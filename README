@@ -1,0 +1,43 @@
+
+This is a prototype of allowing embedding Chromium/Blink into Qt.
+
+-- Build instructions:
+
+(1) Get the Chromium source code, see instructions at http://www.chromium.org/blink/conversion-cheatsheet
+    Currently this is a bit iffy due to the WebKit -> Blink transition, but this is what worked for me:
+
+    * git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+    * Add depot_tools to your PATH
+    * export GYP_GENERATORS=ninja
+    * fetch --dry-run blink
+    * Look at the instructions printed by the above command and manually execute all of the ones that don't involve svn or git svn
+    * It'll eventually boil down to running "gclient sync"
+
+(2) The build of Chromium itself uses ninja and is out-of-source. Go to for example
+
+     cd src/out/Release
+
+     and build the content shell with
+
+     ninja content_shell
+
+     Similarly src/out/Debug can be used for debug builds.
+
+(3) Re-generating the ninja build files after changing a gyp file:
+
+    * Make sure GYP_GENERATORS remains set to ninja
+    * Run src/build/gyp_chromium
+
+(4) On Linux you may get build errors due to -Werror. Create ~/.gyp/include.gypi with the following contents:
+
+    {
+      'variables': {
+        'werror%': '',
+      },
+    }
+
+    So afterwards you have to re-create the ninja files using gyp_chromium
+
+(5) After building content_shell (which depends on all we need), set CHROMIUM_SRC_DIR to /path/to/src
+    and build this module with qmake && make
+
