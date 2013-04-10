@@ -1,0 +1,8 @@
+CHROMIUM_SRC_DIR = $$(CHROMIUM_SRC_DIR)
+isEmpty(CHROMIUM_SRC_DIR): error("Set CHROMIUM_SRC_DIR please...")
+
+INCLUDEPATH += $${CHROMIUM_SRC_DIR}/
+
+QMAKE_LIB_DIR += $${CHROMIUM_SRC_DIR}/out/Release/lib/
+QMAKE_RPATH +=  $${CHROMIUM_SRC_DIR}/out/Release/lib
+
