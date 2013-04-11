@@ -2,6 +2,6 @@ TEMPLATE = app
 
 include(../blinq.pri)
 
-LIBS += -lcontent
+LIBS += $$CONTENT_LIB
 
-
+SOURCES += main.cpp
