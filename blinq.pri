@@ -3,7 +3,8 @@ isEmpty(CHROMIUM_SRC_DIR): error("Set CHROMIUM_SRC_DIR please...")
 
 INCLUDEPATH += $$CHROMIUM_SRC_DIR/
 
-BUILD_DIR = $$CHROMIUM_SRC_DIR/out/Release
+CONFIG(debug, debug|release): BUILD_DIR = $$CHROMIUM_SRC_DIR/out/Debug
+else: BUILD_DIR = $$CHROMIUM_SRC_DIR/out/Release
 
 exists($$BUILD_DIR/obj/content/libcontent_app.a): CONFIG += chromium_is_static
 
@@ -225,5 +226,50 @@ for (dir, DIRS) {
     QMAKE_LIBDIR += $$BUILD_DIR/$$dir
 }
 
+QMAKE_CXXFLAGS += -D_FILE_OFFSET_BITS=64 -DUSE_LINUX_BREAKPAD -DDISABLE_NACL -DCHROMIUM_BUILD -DUSE_DEFAULT_RENDER_THEME=1 -DUSE_LIBJPEG_TURBO=1 -DUSE_NSS=1 -DENABLE_ONE_CLICK_SIGNIN -DGTK_DISABLE_SINGLE_INCLUDES=1 -DENABLE_REMOTING=1 -DENABLE_WEBRTC=1 -DENABLE_CONFIGURATION_POLICY -DENABLE_INPUT_SPEECH -DENABLE_NOTIFICATIONS -DENABLE_GPU=1 -DENABLE_EGLIMAGE=1 -DENABLE_TASK_MANAGER=1 -DENABLE_EXTENSIONS=1 -DENABLE_PLUGIN_INSTALLATION=1 -DENABLE_PLUGINS=1 -DENABLE_SESSION_SERVICE=1 -DENABLE_THEMES=1 -DENABLE_BACKGROUND=1 -DENABLE_AUTOMATION=1 -DENABLE_GOOGLE_NOW=1 -DENABLE_LANGUAGE_DETECTION=1 -DENABLE_PRINTING=1 -DENABLE_CAPTIVE_PORTAL_DETECTION=1 -DENABLE_MANAGED_USERS=1 '-DCONTENT_SHELL_VERSION="19.77.34.5"' -DGL_GLEXT_PROTOTYPES -DLIBPEERCONNECTION_LIB=1 -DSK_BUILD_NO_IMAGE_ENCODE -DSK_DEFERRED_CANVAS_USES_GPIPE=1 '-DGR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"' -DGR_AGGRESSIVE_SHADER_OPTS=1 -DSK_ENABLE_INST_COUNT=0 -DSK_USE_POSIX_THREADS -DU_USING_ICU_NAMESPACE=0 -DU_STATIC_IMPLEMENTATION -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -DNVALGRIND -DDYNAMIC_ANNOTATIONS_ENABLED=0 -D_FORTIFY_SOURCE=2
+
+cr_inc_paths += \
+    ../../third_party/icu/public/common \
+    ../../third_party/icu/public/i18n \
+    ../.. -I../../third_party/khronos \
+    ../../gpu \
+    gen/content \
+    gen/net \
+    ../../skia/config \
+    ../../third_party/skia/src/core \
+    ../../third_party/skia/include/config \
+    ../../third_party/skia/include/core \
+    ../../third_party/skia/include/effects \
+    ../../third_party/skia/include/pdf \
+    ../../third_party/skia/include/gpu \
+    ../../third_party/skia/include/gpu/gl \
+    ../../third_party/skia/include/pipe \
+    ../../third_party/skia/include/ports \
+    ../../third_party/skia/include/utils \
+    ../../skia/ext \
+    gen/ui/gl \
+    ../../third_party/mesa/MesaLib/include \
+    ../../v8/include \
+    gen/webkit \
+    ../../third_party/WebKit/Source/Platform/chromium \
+    ../../third_party/WebKit/Source/Platform/chromium \
+    gen/webcore_headers \
+    ../../third_party/npapi \
+    ../../third_party/npapi/bindings \
+    ../../third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public \
+    ../../third_party/WebKit/Source \
+    ../../third_party/freetype2/include \
+    ../../third_party/freetype2/src/include
+
+for (inc, cr_inc_paths) {
+    INCLUDEPATH += $$BUILD_DIR/$$inc
+}
+
+CONFIG += link_pkgconfig
+PKGCONFIG_PRIVATE = gdk-2.0
+
+DEFINES += QT_NO_KEYWORDS
+
 !chromium_is_static: QMAKE_RPATHDIR += $${BUILD_DIR}/lib
 
+QMAKE_CXXFLAGS += -fno-rtti
