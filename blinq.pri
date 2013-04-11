@@ -266,7 +266,7 @@ for (inc, cr_inc_paths) {
 }
 
 CONFIG += link_pkgconfig
-PKGCONFIG_PRIVATE = gdk-2.0
+PKGCONFIG_PRIVATE = gdk-2.0 gtk+-2.0
 
 DEFINES += QT_NO_KEYWORDS
 
