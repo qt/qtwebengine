@@ -9,9 +9,8 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
     * git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
     * Add depot_tools to your PATH
     * export GYP_GENERATORS=ninja
-    * fetch --dry-run blink
-    * Look at the instructions printed by the above command and manually execute all of the ones that don't involve svn or git svn
-    * It'll eventually boil down to running "gclient sync"
+    * fetch --nosvn=True blink
+    * If that didn't do the trick, it should essentially boil down to running "gclient sync"
 
 (2) The build of Chromium itself uses ninja and is out-of-source. Go to for example
 
