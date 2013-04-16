@@ -111,14 +111,16 @@ if __name__ == '__main__':
         print "Qt 5 is a minimum requirement for Blinq"
         sys.exit(5)
 
-  args.extend(['--generator-output', os.path.abspath(get_output_dir())])
-  args.extend(['-Goutput_dir='+ os.path.abspath(get_output_dir())])
-  args.extend(['-D', 'chromium_src_dir=' + chrome_src])
   args.extend(['-D', 'qt_libdir=' + qt_libs])
   args.extend(['-D', 'qt_headers=' + qt_headers])
   args.extend(['-D', 'qmake_spec=' + qmake_spec])
   args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
   args.extend(["--depth=" + chrome_src])
+  args.extend(['-D', 'chromium_src_dir=' + chrome_src])
+  # Tweak the output location and format (hardcode ninja for now)
+  args.extend(['--generator-output', os.path.abspath(get_output_dir())])
+  args.extend(['-Goutput_dir='+ os.path.abspath(get_output_dir())])
+  args.extend(['--format=ninja'])
   if "BLINQ_GYP_DEBUG" in os.environ:
     args.append("--check")
     args.append("-d all")
