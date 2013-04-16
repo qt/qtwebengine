@@ -8,7 +8,7 @@ class QWindow;
 
 class BlinqPagePrivate;
 
-class BlinqPage
+class Q_DECL_EXPORT BlinqPage
 {
 public:
     BlinqPage();

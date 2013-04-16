@@ -7,14 +7,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/app/content_main_runner.h"
+#include "content/public/common/content_paths.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
+#include "base/files/file_path.h"
 
+#include <QByteArray>
 #include <QWindow>
-
-#include <gtk/gtk.h>
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
 
 namespace {
 
@@ -35,6 +35,27 @@ private:
     Context *context;
 };
 
+
+static inline base::FilePath::StringType qStringToStringType(const QString &str)
+{
+#if defined(OS_POSIX)
+    return str.toStdString();
+#elif defined(OS_WIN)
+    return str.toStdWString();
+#endif
+}
+
+static void initializeBlinkPaths()
+{
+    static bool initialized = false;
+    if (initialized)
+        return;
+    QByteArray processPath = qgetenv("BLINQ_PROCESS_PATH");
+    if (processPath.isEmpty())
+        qFatal("BLINQ_PROCESS_PATH environment variable not set or empty.");
+
+    PathService::Override(content::CHILD_PROCESS_EXE, base::FilePath(qStringToStringType(QString(processPath))));
+}
 
 class Context : public content::BrowserContext
 {
@@ -120,12 +141,7 @@ BlinqPage::~BlinqPage()
 QWindow *BlinqPage::window()
 {
     if (!d->window) {
-        gfx::NativeView view = d->contents->GetView()->GetNativeView();
-        printf("view %p\n", view);
-        gfx::NativeWindow window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-        gtk_container_add(GTK_CONTAINER(window), view);
-        gtk_widget_show_all(GTK_WIDGET(window));
-        d->window = QWindow::fromWinId(GDK_DRAWABLE_XID(gtk_widget_get_window(GTK_WIDGET(view))));
+// FIXME: implement ;)
     }
     return d->window;
 }
