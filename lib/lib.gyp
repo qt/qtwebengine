@@ -25,7 +25,7 @@
         '<(qt_headers)',
         '<(qt_headers)/QtCore',
         '<(qt_headers)/QtGui',
-        '/Foo',
+        '<(qt_headers)/QtGui/5.2.0/QtGui',
       ],
   },
     ],

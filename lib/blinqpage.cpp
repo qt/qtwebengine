@@ -12,9 +12,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/files/file_path.h"
+#include "base/event_types.h"
+#include "ui/aura/root_window_host.h"
+#include "ui/aura/root_window_host_delegate.h"
+#include "ui/gfx/insets.h"
 
 #include <QByteArray>
 #include <QWindow>
+#include <qpa/qplatformwindow.h>
 
 namespace {
 
@@ -110,12 +115,162 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
     return context->GetRequestContext()->GetURLRequestContext();
 }
 
+class RootHostWindowQt : public aura::RootWindowHost
+{
+public:
+    RootHostWindowQt()
+    {
+        m_window.reset(new QWindow);
+        m_delegate = 0;
+    }
+
+    QWindow *window() { return m_window.get(); }
+
+    virtual void SetDelegate(aura::RootWindowHostDelegate* delegate)
+    {
+        m_delegate = delegate;
+    }
+
+    virtual aura::RootWindow* GetRootWindow()
+    {
+        return m_delegate->AsRootWindow();
+    }
+
+    virtual gfx::AcceleratedWidget GetAcceleratedWidget()
+    {
+        // ###
+        return m_window->handle()->winId();
+    }
+
+    virtual void Show()
+    {
+        m_window->show();
+    }
+
+    virtual void Hide()
+    {
+        m_window->hide();
+    }
+
+    virtual void ToggleFullScreen()
+    {
+        // ### Not sure we want that :)
+    }
+
+    virtual gfx::Rect GetBounds() const
+    {
+        return gfx::Rect(m_window->x(), m_window->y(), m_window->width(), m_window->height());
+    }
+
+    virtual void SetBounds(const gfx::Rect& bounds)
+    {
+        QRect r(bounds.x(), bounds.y(), bounds.width(), bounds.height());
+        m_window->setGeometry(r);
+    }
+
+    virtual gfx::Insets GetInsets() const
+    {
+        // ####
+        return gfx::Insets();
+    }
+    virtual void SetInsets(const gfx::Insets& insets)
+    {
+        // ###
+    }
+
+    virtual gfx::Point GetLocationOnNativeScreen() const
+    {
+        return gfx::Point(m_window->x(), m_window->y());
+    }
+
+    virtual void SetCapture()
+    {
+        // ###
+    }
+
+    virtual void ReleaseCapture()
+    {
+        // ###
+    }
+
+    virtual void SetCursor(gfx::NativeCursor cursor)
+    {
+        // ###
+    }
+
+    virtual bool QueryMouseLocation(gfx::Point* location_return)
+    {
+        // ###
+        *location_return = gfx::Point();
+    }
+
+    // Clips the cursor to the bounds of the root window until UnConfineCursor().
+    virtual bool ConfineCursorToRootWindow()
+    {
+        // ###
+    }
+    virtual void UnConfineCursor()
+    {
+        // ###
+    }
+
+    virtual void OnCursorVisibilityChanged(bool show)
+    {
+        // ###
+    }
+
+    virtual void MoveCursorTo(const gfx::Point& location)
+    {
+        // ###
+    }
+
+    virtual void SetFocusWhenShown(bool focus_when_shown)
+    {
+        // ###
+    }
+
+    virtual bool CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
+                                    const gfx::Point& dest_offset,
+                                    SkCanvas* canvas)
+    {
+        // ### TODO
+    }
+
+    virtual bool GrabSnapshot(
+        const gfx::Rect& snapshot_bounds,
+        std::vector<unsigned char>* png_representation)
+    {
+        // ### TODO
+    }
+
+  #if !defined(OS_MACOSX)
+    virtual void PostNativeEvent(const base::NativeEvent& native_event)
+    {
+        // ### Nothing to do?
+    }
+  #endif
+
+    virtual void OnDeviceScaleFactorChanged(float device_scale_factor)
+    {
+        // ###
+    }
+
+    virtual void PrepareForShutdown()
+    {
+        // ###
+    }
+
+private:
+    scoped_ptr<QWindow> m_window;
+    aura::RootWindowHostDelegate *m_delegate;
+};
+
 }
 
 class BlinqPagePrivate
 {
 public:
-    QWindow *window;
+    scoped_ptr<RootHostWindowQt> rootWindowHost;
     scoped_ptr<content::BrowserContext> context;
     scoped_ptr<content::WebContents> contents;
 };
@@ -129,7 +284,7 @@ BlinqPage::BlinqPage()
     }
 
     d.reset(new BlinqPagePrivate);
-    d->window = 0;
+    d->rootWindowHost.reset(new RootHostWindowQt);
     d->context.reset(new Context);
     d->contents.reset(content::WebContents::Create(content::WebContents::CreateParams(d->context.get())));
 }
@@ -140,9 +295,6 @@ BlinqPage::~BlinqPage()
 
 QWindow *BlinqPage::window()
 {
-    if (!d->window) {
-// FIXME: implement ;)
-    }
-    return d->window;
+    return d->rootWindowHost.get()->window();
 }
 
