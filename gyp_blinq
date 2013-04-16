@@ -94,17 +94,37 @@ if __name__ == '__main__':
   if sys.platform not in ('darwin',):
     args.append('--no-circular-check')
 
-  #### HACKS START HERE #####
+  # QMake detection
+  proc = subprocess.Popen(["qmake", "-query"], stdout=subprocess.PIPE)
+  out = proc.communicate()[0].split('\n')
+  for line in out:
+    if line.startswith("QT_INSTALL_LIBS"):
+      qt_libs = line.split(':')[1]
+    elif line.startswith("QT_INSTALL_HEADERS"):
+      qt_headers = line.split(':')[1]
+    elif line.startswith("QMAKE_SPEC"):
+      qmake_spec = line.split(':')[1]
+    elif line.startswith("QT_VERSION"):
+      qt_version = line.split(':')[1]
+      # FIXME: remove this check once it's move up in the pro file
+      if not qt_version.startswith('5'):
+        print "Qt 5 is a minimum requirement for Blinq"
+        sys.exit(5)
 
   args.extend(['--generator-output', os.path.abspath(get_output_dir())])
   args.extend(['-Goutput_dir='+ os.path.abspath(get_output_dir())])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
+  args.extend(['-D', 'qt_libdir=' + qt_libs])
+  args.extend(['-D', 'qt_headers=' + qt_headers])
+  args.extend(['-D', 'qmake_spec=' + qmake_spec])
   args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
   args.extend(["--depth=" + chrome_src])
   if "BLINQ_GYP_DEBUG" in os.environ:
     args.append("--check")
     args.append("-d all")
     print args
+    ret_code = gyp.main(args)
+    sys.exit(ret_code)
 
   ###################################
 

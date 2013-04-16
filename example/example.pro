@@ -5,8 +5,8 @@ SOURCES = main.cpp
 
 INCLUDEPATH += ../lib
 
-LIBS += -L../lib -lblinq
+LIBS += -L../out/Release/lib -lblinq
 
-QT += widgets
+#QT += widgets
 
-QMAKE_RPATHDIR += ../lib
+QMAKE_RPATHDIR += ../out/Release/lib
