@@ -13,9 +13,11 @@
 #include "base/path_service.h"
 #include "base/files/file_path.h"
 #include "base/event_types.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_host_delegate.h"
 #include "ui/gfx/insets.h"
+#include "base/message_loop.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -115,12 +117,13 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
     return context->GetRequestContext()->GetURLRequestContext();
 }
 
-class RootHostWindowQt : public aura::RootWindowHost
+class RootWindowHostQt : public aura::RootWindowHost
 {
 public:
-    RootHostWindowQt()
+    RootWindowHostQt()
     {
         m_window.reset(new QWindow);
+        m_window->create();
         m_delegate = 0;
     }
 
@@ -270,13 +273,16 @@ private:
 class BlinqPagePrivate
 {
 public:
-    scoped_ptr<RootHostWindowQt> rootWindowHost;
+    scoped_ptr<RootWindowHostQt> rootWindowHost;
+    scoped_ptr<aura::RootWindow> rootWindow;
     scoped_ptr<content::BrowserContext> context;
     scoped_ptr<content::WebContents> contents;
 };
 
 BlinqPage::BlinqPage()
 {
+    if (!base::MessageLoop::current())
+        (void)new base::MessageLoopForUI();
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
         runner = content::ContentMainRunner::Create();
@@ -284,9 +290,15 @@ BlinqPage::BlinqPage()
     }
 
     d.reset(new BlinqPagePrivate);
-    d->rootWindowHost.reset(new RootHostWindowQt);
+    d->rootWindowHost.reset(new RootWindowHostQt);
+    {
+        aura::RootWindow::CreateParams params(gfx::Rect(0, 0, 100, 100));
+        params.host = d->rootWindowHost.get();
+        d->rootWindow.reset(new aura::RootWindow(params));
+    }
     d->context.reset(new Context);
     d->contents.reset(content::WebContents::Create(content::WebContents::CreateParams(d->context.get())));
+    d->rootWindow->AddChild(d->contents->GetView()->GetNativeView());
 }
 
 BlinqPage::~BlinqPage()
