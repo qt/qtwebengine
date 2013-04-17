@@ -1,7 +1,4 @@
 {
-  'variables': {
-    'use_aura%': 1,
-  },
   'targets': [
   {
     'target_name': 'blinq',

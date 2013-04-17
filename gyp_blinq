@@ -25,7 +25,9 @@ import gyp
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'WebCore', 'WebCore.gyp', 'scripts'))
+sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
 
+import repack_locales
 
 def additional_include_files(args=[]):
   """
@@ -111,6 +113,7 @@ if __name__ == '__main__':
         print "Qt 5 is a minimum requirement for Blinq"
         sys.exit(5)
 
+  args.extend(['-D', 'use_aura=1'])
   args.extend(['-D', 'qt_libdir=' + qt_libs])
   args.extend(['-D', 'qt_headers=' + qt_headers])
   args.extend(['-D', 'qmake_spec=' + qmake_spec])
