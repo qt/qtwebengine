@@ -5,8 +5,8 @@ SOURCES = main.cpp
 
 INCLUDEPATH += ../lib
 
-LIBS += -L../out/Release/lib -lblinq
+CONFIG(debug, debug|release): LIBPATH = ../out/Debug/lib
+else: LIBPATH = ../out/Release/lib
 
-#QT += widgets
-
-QMAKE_RPATHDIR += ../out/Release/lib
+LIBS += -L$$LIBPATH -lblinq
+QMAKE_RPATHDIR += $$LIBPATH

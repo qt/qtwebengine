@@ -18,6 +18,8 @@
 #include "ui/aura/root_window_host_delegate.h"
 #include "ui/gfx/insets.h"
 #include "base/message_loop.h"
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
+#include "ui/gfx/screen.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -281,12 +283,18 @@ public:
 
 BlinqPage::BlinqPage()
 {
-    if (!base::MessageLoop::current())
-        (void)new base::MessageLoopForUI();
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
         runner = content::ContentMainRunner::Create();
         runner->Initialize(0, 0, 0);
+    }
+    if (!base::MessageLoop::current())
+        (void)new base::MessageLoopForUI();
+
+    static bool init = false;
+    if (!init) {
+        init = true;
+        gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, views::CreateDesktopScreen());
     }
 
     d.reset(new BlinqPagePrivate);
@@ -298,6 +306,7 @@ BlinqPage::BlinqPage()
     }
     d->context.reset(new Context);
     d->contents.reset(content::WebContents::Create(content::WebContents::CreateParams(d->context.get())));
+    d->rootWindow->Init();
     d->rootWindow->AddChild(d->contents->GetView()->GetNativeView());
 }
 
