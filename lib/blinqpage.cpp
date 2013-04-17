@@ -6,13 +6,16 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/main_function_params.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/files/file_path.h"
 #include "base/event_types.h"
+#include "base/command_line.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_host_delegate.h"
@@ -23,6 +26,7 @@
 
 #include <QByteArray>
 #include <QWindow>
+#include <QCoreApplication>
 #include <qpa/qplatformwindow.h>
 
 namespace {
@@ -72,8 +76,6 @@ public:
    Context()
    {
        tempBasePath.CreateUniqueTempDir();
-       if (!content::NotificationService::current())
-           content::NotificationService::Create();
        resourceContext.reset(new ResourceContext(this));
    }
    virtual ~Context() {}
@@ -281,15 +283,26 @@ public:
     scoped_ptr<content::WebContents> contents;
 };
 
-BlinqPage::BlinqPage()
+BlinqPage::BlinqPage(int argc, char **argv)
 {
+    CommandLine::Init(argc, argv);
+
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
         runner = content::ContentMainRunner::Create();
         runner->Initialize(0, 0, 0);
     }
-    if (!base::MessageLoop::current())
-        (void)new base::MessageLoopForUI();
+
+    initializeBlinkPaths();
+
+    static content::BrowserMainRunner *browserRunner = 0;
+    if (!browserRunner) {
+        CommandLine::Init(0, 0);
+
+        browserRunner = content::BrowserMainRunner::Create();
+
+        browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
+    }
 
     static bool init = false;
     if (!init) {
@@ -308,6 +321,11 @@ BlinqPage::BlinqPage()
     d->contents.reset(content::WebContents::Create(content::WebContents::CreateParams(d->context.get())));
     d->rootWindow->Init();
     d->rootWindow->AddChild(d->contents->GetView()->GetNativeView());
+
+    d->contents->GetController().LoadURL(GURL(std::string("http://qt-project.org/")),
+                                         content::Referrer(),
+                                         content::PAGE_TRANSITION_TYPED,
+                                         std::string());
 }
 
 BlinqPage::~BlinqPage()

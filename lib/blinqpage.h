@@ -11,7 +11,7 @@ class BlinqPagePrivate;
 class Q_DECL_EXPORT BlinqPage
 {
 public:
-    BlinqPage();
+    BlinqPage(int argc, char **argv);
     ~BlinqPage();
 
     QWindow *window();
