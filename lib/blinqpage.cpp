@@ -23,6 +23,7 @@
 #include "base/message_loop.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/gfx/screen.h"
+#include "base/threading/thread_restrictions.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -303,6 +304,8 @@ BlinqPage::BlinqPage(int argc, char **argv)
 
         browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
     }
+
+    base::ThreadRestrictions::SetIOAllowed(true);
 
     static bool init = false;
     if (!init) {
