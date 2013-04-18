@@ -12,20 +12,12 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
     * fetch --nosvn=True blink
     * If that didn't do the trick, it should essentially boil down to running "gclient sync"
 
-(2) The build of Chromium itself uses ninja and is out-of-source. Go to for example
+(2) (Re-)generating the ninja build files after changing a gyp file:
 
-     cd src/out/Release
+    * set the CHROMIUM_SRC_DIR environment variable to point to /path/to/src/
+    * Run gyp_blinq
 
-     and build the content shell with
-
-     ninja content_shell
-
-     Similarly src/out/Debug can be used for debug builds.
-
-(3) Re-generating the ninja build files after changing a gyp file:
-
-    * Make sure GYP_GENERATORS remains set to ninja
-    * Run src/build/gyp_chromium
+(3) build with ninja -C out/Release (or out/Debug depending on the needs)
 
 (4) On Linux you may get build errors due to -Werror. Create ~/.gyp/include.gypi with the following contents:
 
@@ -35,8 +27,4 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
       },
     }
 
-    So afterwards you have to re-create the ninja files using gyp_chromium
-
-(5) After building content_shell (which depends on all we need), set CHROMIUM_SRC_DIR to /path/to/src
-    and build this module with qmake && make
-
+    So afterwards you have to re-create the ninja files using gyp_blinq
