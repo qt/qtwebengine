@@ -1,5 +1,8 @@
 #include "blinqpage.h"
 
+// Needed to get access to content::GetContentClient()
+#define CONTENT_IMPLEMENTATION
+
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/resource_context.h"
@@ -8,6 +11,7 @@
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/app/content_main_runner.h"
+#include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/main_function_params.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -24,6 +28,9 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/gfx/screen.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/shell/shell_browser_context.h"
+#include "content/shell/shell_main_delegate.h"
+#include "content/shell/shell_content_browser_client.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -291,7 +298,7 @@ BlinqPage::BlinqPage(int argc, char **argv)
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
         runner = content::ContentMainRunner::Create();
-        runner->Initialize(0, 0, 0);
+        runner->Initialize(0, 0, new content::ShellMainDelegate);
     }
 
     initializeBlinkPaths();
@@ -320,7 +327,9 @@ BlinqPage::BlinqPage(int argc, char **argv)
         params.host = d->rootWindowHost.get();
         d->rootWindow.reset(new aura::RootWindow(params));
     }
-    d->context.reset(new Context);
+    //d->context.reset(new Context);
+    //d->context.reset(new content::ShellBrowserContext(/*off the record*/false));
+    d->context.reset(static_cast<content::ShellContentBrowserClient*>(content::GetContentClient()->browser())->browser_context());
     d->contents.reset(content::WebContents::Create(content::WebContents::CreateParams(d->context.get())));
     d->rootWindow->Init();
     d->rootWindow->AddChild(d->contents->GetView()->GetNativeView());
