@@ -15,7 +15,7 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
 (2) (Re-)generating the ninja build files after changing a gyp file:
 
     * set the CHROMIUM_SRC_DIR environment variable to point to /path/to/src/
-    * Run gyp_blinq
+    * Simply run qmake in the top-level directory
 
 (3) build with ninja -C out/Release (or out/Debug depending on the needs)
 

@@ -1,0 +1,4 @@
+# Resolve root directories for sources
+BLINQ_ROOT = $$replace(PWD, /build/qmake/mkspecs/features$,)
+
+# TODO: Build dir logic

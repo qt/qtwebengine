@@ -1,0 +1,48 @@
+# This file is loaded after the dummy .pro and all the default_post ran.
+# This is the right point to extract the variables we're interested in and generate
+# the .gyp file that we'll use later on when running gyp
+
+load(functions)
+
+GYPI_FILE = $$replace(_PRO_FILE_, .pro$, .gyp)
+
+TARGET_TYPE = $$toGypTargetType()
+
+GYPI_CONTENTS =  "{" \
+                 "  'targets': [" \
+                 "  {" \
+                 "    'target_name': '$$TARGET'," \
+                 "    'type': '$$TARGET_TYPE'," \
+                 "    'includes': [" \
+                 "      '../blinq.gypi'," \
+                 "    ]," \
+                 "    'ldflags': ["
+for (lib, LIBS): GYPI_CONTENTS += "      '$$lib',"
+!isEmpty(QMAKE_RPATHDIR): GYPI_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
+
+GYPI_CONTENTS += "    ],"
+
+!isEmpty(DEFINES) {
+  GYPI_CONTENTS += "    'defines': ["
+  for (define, DEFINES): GYPI_CONTENTS += "      '$$define',"
+  GYPI_CONTENTS += "    ],"
+}
+GYPI_CONTENTS += "    'sources': ["
+for (sourcefile, SOURCES): GYPI_CONTENTS += "      '$$sourcefile',"
+for (headerfile, HEADERS): GYPI_CONTENTS += "      '$$headerfile',"
+GYPI_CONTENTS += "    ],"
+!isEmpty(INCLUDEPATH) {
+  GYPI_CONTENTS += "    'include_dirs': ["
+  for (path, INCLUDEPATH): GYPI_CONTENTS += "      '$$path',"
+  GYPI_CONTENTS += "    ],"
+}
+GYPI_CONTENTS += "  }," \
+                 "  ]," \
+                 "}"
+
+write_file($$GYPI_FILE, GYPI_CONTENTS)
+
+# The generated Makefile shouldn't build anything by itself, just re-run qmake if necessary
+TEMPLATE = aux
+SOURCES =
+HEADERS =

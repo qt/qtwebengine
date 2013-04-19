@@ -1,0 +1,9 @@
+# Map to the correct target type for gyp
+defineReplace(toGypTargetType) {
+  equals(TEMPLATE, "app"):return("executable")
+  equals(TEMPLATE, "lib") {
+    CONFIG(static): return("static_library")
+    return("shared_library")
+  }
+  return("none")
+}

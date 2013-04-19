@@ -5,16 +5,12 @@ import os
 import subprocess
 import sys
 
-#FIXME(pierre): mandatory until we have a git submodule, for now we can't guess where the chromium checkout lives.
-if "CHROMIUM_SRC_DIR" not in os.environ:
-  print "Please set the environment variable CHROMIUM_SRC_DIR to point to your checkout of chromium's 'src' directory"
-  sys.exit(1)
-
-chrome_src = os.path.abspath(os.environ.get('CHROMIUM_SRC_DIR'));
-script_dir = os.path.abspath(os.path.join(chrome_src, 'build'));
+chrome_src = os.path.abspath(os.environ.get('CHROMIUM_SRC_DIR')) # null-checked in build.pro
+script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
 if not os.path.isdir(script_dir):
   print script_dir + " is not a valid directory"
   sys.exit(1)
+root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
 sys.path.insert(0, script_dir)
 import gyp_helper
@@ -60,7 +56,7 @@ def additional_include_files(args=[]):
 
 # TODO: later we probably want to hook that up with qmake to allow shadow builds. (Might not play nice with the rest of chromium though)
 def get_output_dir():
-  outdir = os.path.join(os.getcwd(), "out") # Hardcode for now
+  outdir = os.path.join(root_dir, "out") # Hardcode for now
   if not os.path.isdir(outdir):
     os.mkdir(outdir)
 
@@ -80,7 +76,7 @@ if __name__ == '__main__':
       break
 
   if not gyp_file_specified:
-      args.append(os.path.join(os.getcwd(), 'blinq.gyp'))
+      args.append(os.path.join(root_dir, 'blinq.gyp'))
 
   args.extend(['-I' + i for i in additional_include_files(args)])
 
@@ -96,27 +92,7 @@ if __name__ == '__main__':
   if sys.platform not in ('darwin',):
     args.append('--no-circular-check')
 
-  # QMake detection
-  proc = subprocess.Popen(["qmake", "-query"], stdout=subprocess.PIPE)
-  out = proc.communicate()[0].split('\n')
-  for line in out:
-    if line.startswith("QT_INSTALL_LIBS"):
-      qt_libs = line.split(':')[1]
-    elif line.startswith("QT_INSTALL_HEADERS"):
-      qt_headers = line.split(':')[1]
-    elif line.startswith("QMAKE_SPEC"):
-      qmake_spec = line.split(':')[1]
-    elif line.startswith("QT_VERSION"):
-      qt_version = line.split(':')[1]
-      # FIXME: remove this check once it's move up in the pro file
-      if not qt_version.startswith('5'):
-        print "Qt 5 is a minimum requirement for Blinq"
-        sys.exit(5)
-
   args.extend(['-D', 'use_aura=1'])
-  args.extend(['-D', 'qt_libdir=' + qt_libs])
-  args.extend(['-D', 'qt_headers=' + qt_headers])
-  args.extend(['-D', 'qmake_spec=' + qmake_spec])
   args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
   args.extend(["--depth=" + chrome_src])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
