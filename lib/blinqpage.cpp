@@ -23,6 +23,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/aura/root_window_host_delegate.h"
+#include "ui/aura/client/stacking_client.h"
 #include "ui/gfx/insets.h"
 #include "base/message_loop.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -31,6 +32,8 @@
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/shell/shell_content_browser_client.h"
+#include "content/browser/web_contents/web_contents_view_aura.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -280,6 +283,57 @@ private:
     aura::RootWindowHostDelegate *m_delegate;
 };
 
+class StackingClient : public aura::client::StackingClient
+{
+public:
+    StackingClient(aura::RootWindow *rw)
+        : rootWindow(rw)
+    {
+        aura::client::SetStackingClient(rootWindow, this);
+    }
+
+    virtual aura::Window* GetDefaultParent(aura::Window* context, aura::Window* window, const gfx::Rect& bounds)
+    {
+        return rootWindow;
+    }
+
+private:
+    aura::RootWindow *rootWindow;
+};
+
+class Viewport : public content::WebContentsViewAura
+{
+public:
+    Viewport(content::WebContents* web_contents, content::WebContentsViewDelegate* delegate)
+        : content::WebContentsViewAura(static_cast<content::WebContentsImpl*>(web_contents), delegate)
+    {}
+};
+
+class BrowserClient : public content::ShellContentBrowserClient
+{
+public:
+    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* web_contents, content::RenderViewHostDelegateView** render_view_host_delegate_view)
+    {
+        content::WebContentsViewDelegate* delegate = content::GetContentClient()->browser()->GetWebContentsViewDelegate(web_contents);
+        Viewport *vw = new Viewport(web_contents, delegate);
+        *render_view_host_delegate_view = vw;
+        return vw;
+    }
+};
+
+class MainDelegate : public content::ShellMainDelegate
+{
+public:
+    virtual content::ContentBrowserClient* CreateContentBrowserClient()
+    {
+        browserClient.reset(new BrowserClient);
+        return browserClient.get();
+    };
+
+private:
+    scoped_ptr<BrowserClient> browserClient;
+};
+
 }
 
 class BlinqPagePrivate
@@ -298,14 +352,14 @@ BlinqPage::BlinqPage(int argc, char **argv)
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
         runner = content::ContentMainRunner::Create();
-        runner->Initialize(0, 0, new content::ShellMainDelegate);
+        runner->Initialize(0, 0, new MainDelegate);
     }
 
     initializeBlinkPaths();
 
     static content::BrowserMainRunner *browserRunner = 0;
     if (!browserRunner) {
-        CommandLine::Init(0, 0);
+        //CommandLine::Init(0, 0);
 
         browserRunner = content::BrowserMainRunner::Create();
 
@@ -326,13 +380,17 @@ BlinqPage::BlinqPage(int argc, char **argv)
         aura::RootWindow::CreateParams params(gfx::Rect(0, 0, 100, 100));
         params.host = d->rootWindowHost.get();
         d->rootWindow.reset(new aura::RootWindow(params));
+        d->rootWindow->Init();
+        d->rootWindow->Show();
+        (void*)new ::StackingClient(d->rootWindow.get());
     }
     //d->context.reset(new Context);
     //d->context.reset(new content::ShellBrowserContext(/*off the record*/false));
     d->context.reset(static_cast<content::ShellContentBrowserClient*>(content::GetContentClient()->browser())->browser_context());
-    d->contents.reset(content::WebContents::Create(content::WebContents::CreateParams(d->context.get())));
-    d->rootWindow->Init();
-    d->rootWindow->AddChild(d->contents->GetView()->GetNativeView());
+    content::WebContents::CreateParams p(d->context.get());
+    p.context = d->rootWindow.get();
+    d->contents.reset(content::WebContents::Create(p));
+    d->contents->GetView()->GetNativeView()->Show();
 
     d->contents->GetController().LoadURL(GURL(std::string("http://qt-project.org/")),
                                          content::Referrer(),
