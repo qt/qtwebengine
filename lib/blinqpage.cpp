@@ -28,6 +28,9 @@
 #include "content/shell/shell_main_delegate.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/renderer_host/render_view_host_factory.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -126,26 +129,52 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
     return context->GetRequestContext()->GetURLRequestContext();
 }
 
-class BrowserClient : public content::ShellContentBrowserClient
+class RenderWidgetHostView : public content::RenderWidgetHostViewGtk
 {
 public:
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* web_contents, content::RenderViewHostDelegateView** render_view_host_delegate_view)
+    RenderWidgetHostView(content::RenderWidgetHost* widget)
+        : content::RenderWidgetHostViewGtk(widget)
     {
-        return 0;
     }
 };
 
-class MainDelegate : public content::ShellMainDelegate
+class RenderViewHost : public content::RenderViewHostImpl
 {
 public:
-    virtual content::ContentBrowserClient* CreateContentBrowserClient()
+    RenderViewHost(
+        content::SiteInstance* instance,
+        content::RenderViewHostDelegate* delegate,
+        content::RenderWidgetHostDelegate* widget_delegate,
+        int routing_id,
+        bool swapped_out,
+        content::SessionStorageNamespace* session_storage_namespace)
+        : content::RenderViewHostImpl(instance, delegate, widget_delegate, routing_id, swapped_out, session_storage_namespace)
     {
-        browserClient.reset(new BrowserClient);
-        return browserClient.get();
-    };
+        SetView(new RenderWidgetHostView(this));
+    }
+};
 
-private:
-    scoped_ptr<BrowserClient> browserClient;
+class ViewHostFactory : public content::RenderViewHostFactory
+{
+public:
+    ViewHostFactory()
+    {
+        content::RenderViewHostFactory::RegisterFactory(this);
+    }
+    ~ViewHostFactory()
+    {
+        content::RenderViewHostFactory::UnregisterFactory();
+    }
+
+    virtual content::RenderViewHost *CreateRenderViewHost(content::SiteInstance *instance,
+                                                          content::RenderViewHostDelegate *delegate,
+                                                          content::RenderWidgetHostDelegate *widget_delegate,
+                                                          int routing_id,
+                                                          bool swapped_out,
+                                                          content::SessionStorageNamespace *session_storage_namespace)
+    {
+        return new RenderViewHost(instance, delegate, widget_delegate, routing_id, swapped_out, session_storage_namespace);
+    }
 };
 
 }
@@ -163,8 +192,10 @@ BlinqPage::BlinqPage(int argc, char **argv)
 
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
+        (void)new ViewHostFactory();
+
         runner = content::ContentMainRunner::Create();
-        runner->Initialize(0, 0, new MainDelegate);
+        runner->Initialize(0, 0, new content::ShellMainDelegate);
     }
 
     initializeBlinkPaths();
@@ -184,13 +215,12 @@ BlinqPage::BlinqPage(int argc, char **argv)
 
     d->context.reset(static_cast<content::ShellContentBrowserClient*>(content::GetContentClient()->browser())->browser_context());
     content::WebContents::CreateParams p(d->context.get());
-    d->contents.reset(content::WebContents::Create(p));
-    // d->contents->GetView()->GetNativeView()->Show();
+//    d->contents.reset(content::WebContents::Create(p));
 
-    d->contents->GetController().LoadURL(GURL(std::string("http://qt-project.org/")),
-                                         content::Referrer(),
-                                         content::PAGE_TRANSITION_TYPED,
-                                         std::string());
+//    d->contents->GetController().LoadURL(GURL(std::string("http://qt-project.org/")),
+//                                         content::Referrer(),
+//                                         content::PAGE_TRANSITION_TYPED,
+//                                         std::string());
 }
 
 BlinqPage::~BlinqPage()

@@ -1,0 +1,60 @@
+From 4ce3baa412e9799684c0b7379814384489c2ae5a Mon Sep 17 00:00:00 2001
+From: Simon Hausmann <simon.hausmann@digia.com>
+Date: Mon, 29 Apr 2013 11:25:37 +0200
+Subject: [PATCH] My local fixes
+
+---
+ content/browser/zygote_host/zygote_host_impl_linux.cc | 1 +
+ content/public/app/content_main_runner.h              | 3 ++-
+ content/public/common/content_client.h                | 2 +-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
+index 4e28c55..ddd3513 100644
+--- a/content/browser/zygote_host/zygote_host_impl_linux.cc
++++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
+@@ -70,6 +70,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
+ 
+   base::FilePath chrome_path;
+   CHECK(PathService::Get(base::FILE_EXE, &chrome_path));
++  chrome_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(switches::kBrowserSubprocessPath);
+   CommandLine cmd_line(chrome_path);
+ 
+   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kZygoteProcess);
+diff --git a/content/public/app/content_main_runner.h b/content/public/app/content_main_runner.h
+index bed5ff2..992e0d0 100644
+--- a/content/public/app/content_main_runner.h
++++ b/content/public/app/content_main_runner.h
+@@ -8,6 +8,7 @@
+ #include <string>
+ 
+ #include "build/build_config.h"
++#include "content/common/content_export.h"
+ 
+ #if defined(OS_WIN)
+ #include <windows.h>
+@@ -22,7 +23,7 @@ namespace content {
+ class ContentMainDelegate;
+ 
+ // This class is responsible for content initialization, running and shutdown.
+-class ContentMainRunner {
++class CONTENT_EXPORT ContentMainRunner {
+  public:
+   virtual ~ContentMainRunner() {}
+ 
+diff --git a/content/public/common/content_client.h b/content/public/common/content_client.h
+index 198ecad..778fcac 100644
+--- a/content/public/common/content_client.h
++++ b/content/public/common/content_client.h
+@@ -60,7 +60,7 @@ CONTENT_EXPORT void SetContentClient(ContentClient* client);
+ 
+ #if defined(CONTENT_IMPLEMENTATION)
+ // Content's embedder API should only be used by content.
+-ContentClient* GetContentClient();
++CONTENT_EXPORT ContentClient* GetContentClient();
+ #endif
+ 
+ // Used for tests to override the relevant embedder interfaces. Each method
+-- 
+1.8.1.2
+

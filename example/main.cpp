@@ -8,7 +8,7 @@ int main(int argc, char **argv)
     QGuiApplication app(argc, argv);
 
     BlinqPage page(argc, argv);
-    page.window()->show();
+//    page.window()->show();
 
     return app.exec();
 }
