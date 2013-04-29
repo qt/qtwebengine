@@ -2,7 +2,10 @@ TEMPLATE = subdirs
 
 CONFIG += ordered
 
-SUBDIRS = lib \ # Contains a dummy lib target that is used to generate qt_generated.gypi
+# The first two subdirs contain dummy .pro files that are used by qmake
+# to generate a corresponding .gyp file
+SUBDIRS = lib \
+          process \
           build \ # This is where we use the generated qt_generated.gypi and run gyp
           example \
 
