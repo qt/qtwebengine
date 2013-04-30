@@ -10,3 +10,5 @@ else: LIBPATH = ../out/Release/lib
 
 LIBS += -L$$LIBPATH -lblinq
 QMAKE_RPATHDIR += $$LIBPATH
+
+QT += widgets

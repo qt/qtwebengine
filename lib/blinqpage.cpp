@@ -23,6 +23,7 @@
 #include "ui/gfx/insets.h"
 #include "base/message_loop.h"
 #include "ui/gfx/screen.h"
+#include "ui/surface/transport_dib.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_main_delegate.h"
@@ -31,11 +32,16 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "content/browser/renderer_host/backing_store.h"
+#include "content/browser/renderer_host/backing_store_gtk.h"
+#include "webkit/user_agent/user_agent_util.h"
+#include "skia/ext/platform_canvas.h"
 
 #include <QByteArray>
 #include <QWindow>
 #include <QCoreApplication>
 #include <qpa/qplatformwindow.h>
+#include <QLabel>
 
 namespace {
 
@@ -129,13 +135,66 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
     return context->GetRequestContext()->GetURLRequestContext();
 }
 
+class BackingStore : public QLabel,
+                     public content::BackingStoreGtk
+{
+public:
+    BackingStore(content::RenderWidgetHost *host, const gfx::Size &size)
+        : content::BackingStoreGtk(host, size)
+        , m_size(size)
+    {
+        resize(size.width(), size.height());
+        show();
+    }
+
+    virtual void PaintToBackingStore(content::RenderProcessHost *process,
+                                     TransportDIB::Id bitmap,
+                                     const gfx::Rect &bitmap_rect,
+                                     const std::vector<gfx::Rect> &copy_rects,
+                                     float scale_factor,
+                                     const base::Closure &completion_callback,
+                                     bool *scheduled_completion_callback)
+    {
+        *scheduled_completion_callback = false;
+        TransportDIB* dib = process->GetTransportDIB(bitmap);
+        if (!dib)
+          return;
+
+        scoped_ptr<SkCanvas> canvas(dib->GetPlatformCanvas(bitmap_rect.width(), bitmap_rect.height()));
+
+        BackingStoreGtk::PaintToBackingStore(process, bitmap, bitmap_rect, copy_rects, scale_factor, completion_callback, scheduled_completion_callback);
+    }
+
+    virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
+    {
+        BackingStoreGtk::ScrollBackingStore(delta, clip_rect, view_size);
+    }
+
+    virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
+    {
+        return BackingStoreGtk::CopyFromBackingStore(rect, output);
+    }
+
+private:
+    gfx::Size m_size;
+};
+
 class RenderWidgetHostView : public content::RenderWidgetHostViewGtk
 {
 public:
     RenderWidgetHostView(content::RenderWidgetHost* widget)
         : content::RenderWidgetHostViewGtk(widget)
+        , m_host(widget)
     {
     }
+
+    virtual content::BackingStore *AllocBackingStore(const gfx::Size &size)
+    {
+        return new BackingStore(m_host, size);
+    }
+
+private:
+    content::RenderWidgetHost *m_host;
 };
 
 class RenderViewHost : public content::RenderViewHostImpl
@@ -180,6 +239,108 @@ public:
     }
 };
 
+// Return a timeout suitable for the glib loop, -1 to block forever,
+// 0 to return right away, or a timeout in milliseconds from now.
+int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
+  if (from.is_null())
+    return -1;
+
+  // Be careful here.  TimeDelta has a precision of microseconds, but we want a
+  // value in milliseconds.  If there are 5.5ms left, should the delay be 5 or
+  // 6?  It should be 6 to avoid executing delayed work too early.
+  int delay = static_cast<int>(
+      ceil((from - base::TimeTicks::Now()).InMillisecondsF()));
+
+  // If this value is negative, then we need to run delayed work soon.
+  return delay < 0 ? 0 : delay;
+}
+
+#if 0
+class MessagePump : public QObject,
+                    public base::MessagePump
+{
+public:
+    struct DelayedWorkEvent : public QEvent
+    {
+    public:
+        DelayedWorkEvent(int msecs)
+            : QEvent(static_cast<QEvent::Type>(QEvent::User + 1))
+            , m_secs(msecs)
+        {}
+
+        int m_secs;
+    };
+
+    MessagePump()
+        : m_delegate(0)
+    {
+    }
+
+    virtual void Run(Delegate *delegate)
+    {
+        m_delegate = delegate;
+        printf("RUN\n");
+    }
+
+    virtual void Quit()
+    {
+        printf("QUIT?!\n");
+    }
+
+    virtual void ScheduleWork()
+    {
+        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+        printf("ScheduleWork\n");
+    }
+
+    virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time)
+    {
+        printf("Schedule Delayed Work %d\n", GetTimeIntervalMilliseconds(delayed_work_time));
+//        QCoreApplication::postEvent(this, new DelayedWorkEvent(GetTimeIntervalMilliseconds(delayed_work_time)));
+        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+    }
+
+protected:
+    virtual void customEvent(QEvent *ev)
+    {
+        if (ev->type() == QEvent::User + 1) {
+            startTimer(static_cast<DelayedWorkEvent*>(ev)->m_secs);
+            return;
+        }
+        printf("customEvent\n");
+        if (!m_delegate)
+            return;
+        if (m_delegate->DoWork())
+            return;
+        m_delegate->DoIdleWork();
+    }
+
+    virtual void timerEvent(QTimerEvent *ev)
+    {
+        printf("timerEvent\n");
+        killTimer(ev->timerId());
+        if (!m_delegate)
+            return;
+        base::TimeTicks next_delayed_work_time;
+        if (!m_delegate->DoDelayedWork(&next_delayed_work_time))
+            m_delegate->DoIdleWork();
+
+        if (!next_delayed_work_time.is_null()) {
+            QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+//            startTimer(GetTimeIntervalMilliseconds(next_delayed_work_time));
+        }
+    }
+
+private:
+    Delegate *m_delegate;
+};
+
+base::MessagePump* messagePumpFactory()
+{
+    return new MessagePump;
+}
+#endif
+
 }
 
 class BlinqPagePrivate
@@ -192,7 +353,7 @@ public:
 BlinqPage::BlinqPage(int argc, char **argv)
 {
     {
-        int myArgc = argc + 2;
+        int myArgc = argc + 3;
         const char **myArgv = new const char *[myArgc];
 
         for (int i = 0; i < argc; ++i)
@@ -202,9 +363,17 @@ BlinqPage::BlinqPage(int argc, char **argv)
         myArgv[argc] = subProcessPathOption.constData();
         myArgv[argc + 1] = "--no-sandbox";
 
+        std::string ua = webkit_glue::BuildUserAgentFromProduct("Qrome/0.1");
+
+        QByteArray userAgentParameter("--user-agent=");
+        userAgentParameter.append(QString::fromStdString(ua).toUtf8());
+        myArgv[argc + 2] = userAgentParameter.constData();
+
         CommandLine::Init(myArgc, myArgv);
 
         delete [] myArgv;
+
+//        base::MessageLoop::InitMessagePumpForUIFactory(::messagePumpFactory);
     }
 
     static content::ContentMainRunner *runner = 0;
@@ -238,6 +407,8 @@ BlinqPage::BlinqPage(int argc, char **argv)
 //                                         content::Referrer(),
 //                                         content::PAGE_TRANSITION_TYPED,
 //                                         std::string());
+
+    MessageLoopForUI::current()->Run();
 }
 
 BlinqPage::~BlinqPage()

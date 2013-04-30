@@ -10,7 +10,7 @@ TARGET = blinq
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS
 
-QT += gui-private
+QT += gui-private widgets
 
 SOURCES = \
         blinqpage.cpp
