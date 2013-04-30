@@ -173,7 +173,10 @@ public:
                                                           bool swapped_out,
                                                           content::SessionStorageNamespace *session_storage_namespace)
     {
-        return new RenderViewHost(instance, delegate, widget_delegate, routing_id, swapped_out, session_storage_namespace);
+        content::RenderViewHost *vh = new RenderViewHost(instance, delegate, widget_delegate, routing_id, swapped_out, session_storage_namespace);
+        vh->GetView()->InitAsChild(0);
+
+        return vh;
     }
 };
 
@@ -188,7 +191,21 @@ public:
 
 BlinqPage::BlinqPage(int argc, char **argv)
 {
-    CommandLine::Init(argc, argv);
+    {
+        int myArgc = argc + 2;
+        const char **myArgv = new const char *[myArgc];
+
+        for (int i = 0; i < argc; ++i)
+            myArgv[i] = argv[i];
+        QByteArray subProcessPathOption("--browser-subprocess-path=");
+        subProcessPathOption.append(qgetenv("BLINQ_PROCESS_PATH"));
+        myArgv[argc] = subProcessPathOption.constData();
+        myArgv[argc + 1] = "--no-sandbox";
+
+        CommandLine::Init(myArgc, myArgv);
+
+        delete [] myArgv;
+    }
 
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
