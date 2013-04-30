@@ -3,7 +3,7 @@
 # our gypi_gen.prf feature to the CONFIG variable since it is processed backwards
 CONFIG = gypi_gen $$CONFIG
 
-TARGET = blinq_process
+TARGET = $$BLINQ_PROCESS_NAME
 TEMPLATE = app
 
 QT -= gui core

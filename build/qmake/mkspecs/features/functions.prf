@@ -7,3 +7,8 @@ defineReplace(toGypTargetType) {
   }
   return("none")
 }
+
+defineReplace(getOutDir) {
+  CONFIG(release, debug|release):return("$$BLINQ_ROOT/out/Release")
+  return("$$BLINQ_ROOT/out/Debug")
+}

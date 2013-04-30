@@ -8,7 +8,8 @@ TEMPLATE = lib
 TARGET = blinq
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
-DEFINES += QT_NO_KEYWORDS
+DEFINES += QT_NO_KEYWORDS \
+           BLINQ_PROCESS_PATH=\\\"$$getOutDir()/$$BLINQ_PROCESS_NAME\\\"
 
 QT += gui-private widgets
 

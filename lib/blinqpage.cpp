@@ -75,16 +75,31 @@ static inline base::FilePath::StringType qStringToStringType(const QString &str)
 #endif
 }
 
+static QByteArray blinqProcessPath() {
+    static bool initialized = false;
+#ifdef BLINQ_PROCESS_PATH
+    static QByteArray processPath(BLINQ_PROCESS_PATH);
+#else
+    static QByteArray processPath;
+#endif
+    if (initialized)
+        return processPath;
+    // Allow overriding at runtime for the time being.
+    const QByteArray fromEnv = qgetenv("BLINQ_PROCESS_PATH");
+    if (!fromEnv.isEmpty())
+        processPath = fromEnv;
+    if (processPath.isEmpty())
+        qFatal("BLINQ_PROCESS_PATH environment variable not set or empty.");
+    initialized = true;
+}
+
 static void initializeBlinkPaths()
 {
     static bool initialized = false;
     if (initialized)
         return;
-    QByteArray processPath = qgetenv("BLINQ_PROCESS_PATH");
-    if (processPath.isEmpty())
-        qFatal("BLINQ_PROCESS_PATH environment variable not set or empty.");
 
-    PathService::Override(content::CHILD_PROCESS_EXE, base::FilePath(qStringToStringType(QString(processPath))));
+    PathService::Override(content::CHILD_PROCESS_EXE, base::FilePath(qStringToStringType(QString(blinqProcessPath()))));
 }
 
 class Context : public content::BrowserContext
@@ -486,7 +501,7 @@ BlinqPage::BlinqPage(int argc, char **argv)
         for (int i = 0; i < argc; ++i)
             myArgv[i] = argv[i];
         QByteArray subProcessPathOption("--browser-subprocess-path=");
-        subProcessPathOption.append(qgetenv("BLINQ_PROCESS_PATH"));
+        subProcessPathOption.append(blinqProcessPath());
         myArgv[argc] = subProcessPathOption.constData();
         myArgv[argc + 1] = "--no-sandbox";
 

@@ -13,9 +13,7 @@ GYP_OUTPUT = $$system(./gyp_blinq)
 message($$GYP_OUTPUT)
 
 ninja.target = ninja
-ninja.commands = $$CHROMIUM_SRC_DIR/../depot_tools/ninja -C 
-CONFIG(debug, debug|release): ninja.commands += $$BLINQ_ROOT/out/Debug
-else: ninja.commands += $$BLINQ_ROOT/out/Release
+ninja.commands = $$CHROMIUM_SRC_DIR/../depot_tools/ninja -C $$getOutDir()
 ninja.depends: qmake
 QMAKE_EXTRA_TARGETS += ninja
 
