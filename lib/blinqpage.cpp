@@ -23,6 +23,8 @@
 #include "ui/gfx/insets.h"
 #include "base/message_loop.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/surface/transport_dib.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/shell/shell_browser_context.h"
@@ -45,12 +47,6 @@
 #include <QPainter>
 
 namespace {
-
-QRect toQRect(const gfx::Rect& gfxRect) {
-    gfx::Point topLeft = gfxRect.origin();
-    gfx::Point bottomRight = gfxRect.bottom_right();
-    return QRect(topLeft.x(), topLeft.y(), bottomRight.x(), bottomRight.y());
-}
 
 class Context;
 
@@ -166,23 +162,44 @@ public:
                                      const base::Closure &completion_callback,
                                      bool *scheduled_completion_callback)
     {
+        if (bitmap_rect.IsEmpty())
+            return;
+
         *scheduled_completion_callback = false;
         TransportDIB* dib = process->GetTransportDIB(bitmap);
         if (!dib)
           return;
 
-        m_painter.begin(&m_pixelBuffer);
+        // gfx::Rect pixel_bitmap_rect = gfx::ToEnclosedRect(gfx::ScaleRect(bitmap_rect, scale_factor));
+        gfx::Rect pixel_bitmap_rect = bitmap_rect;
+
 
         uint8_t* bitmapData = static_cast<uint8_t*>(dib->memory());
-        QImage img(bitmapData, bitmap_rect.width(), bitmap_rect.height(), QImage::Format_ARGB32);
+        QImage img(bitmapData, pixel_bitmap_rect.width(), pixel_bitmap_rect.height(), QImage::Format_ARGB32);
 
-        QRect source = QRect(0, 0, bitmap_rect.width(), bitmap_rect.height());
-        m_painter.drawPixmap(toQRect(bitmap_rect), QPixmap::fromImage(img), source);
+        m_painter.begin(&m_pixelBuffer);
+
+        for (size_t i = 0; i < copy_rects.size(); ++i) {
+            gfx::Rect copy_rect = gfx::ToEnclosedRect(gfx::ScaleRect(copy_rects[i], scale_factor));
+
+            QRect source = QRect( copy_rect.x() - pixel_bitmap_rect.x()
+                                , copy_rect.y() - pixel_bitmap_rect.y()
+                                , pixel_bitmap_rect.width()
+                                , pixel_bitmap_rect.height());
+
+            QRect destination = QRect( copy_rect.x()
+                                     , copy_rect.y()
+                                     , copy_rect.width()
+                                     , copy_rect.height());
+
+            m_painter.drawPixmap(destination, QPixmap::fromImage(img), source);
+        }
 
         m_painter.end();
 
         // FIXME: remove QLabel inheritance
         setPixmap(m_pixelBuffer);
+        repaint();
         // FIXME: remove QLabel inheritance
     }
 
