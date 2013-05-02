@@ -12,16 +12,31 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
     * fetch --nosvn=True blink
     * If that didn't do the trick, it should essentially boil down to running "gclient sync"
 
-(2) Build with qmake && make (it will call ninja behind the scenes)
+(2) Apply the necessary patches (located in patches/ subdir) to chromium's source tree.
 
-(3) On Linux you may get build errors due to -Werror. Create ~/.gyp/include.gypi with the following contents:
+(3) (Re-)generating the ninja build files after changing a gyp file:
 
+    * set the CHROMIUM_SRC_DIR environment variable to point to /path/to/src/
+    * Simply run qmake in the top-level directory (it will call ninja behind the scenes).
+    Use qmake -r to forcefully re-gyp (without relying on make to determine if it's necessary).
+
+(4) build with make ;)
+
+(5) Additional tweaks and tips:
+    * linking all the static librairies can be a slow and painful process when developing (especially with debug builds).
+      Use of shared librairies can be enforced by setting the GYP_DEFINES environment variable, like so:
+
+      export GYP_DEFINES=component=shared_library
+
+      Or by using the include.gypi mechanism described below:
+
+    * On Linux you may get build errors due to -Werror. Create ~/.gyp/include.gypi with the following contents:
     {
       'variables': {
         'werror%': '',
+        'component%': 'shared_library',
       },
     }
 
-    So afterwards you have to re-create the ninja files using gyp_blinq
+    So afterwards you have to re-create the ninja files by running "qmake -r"
 
-(4) Tip for faster development cycles with shorter linking times: export GYP_DEFINES="component=shared_library" 
