@@ -42,8 +42,15 @@
 #include <QCoreApplication>
 #include <qpa/qplatformwindow.h>
 #include <QLabel>
+#include <QPainter>
 
 namespace {
+
+QRect toQRect(const gfx::Rect& gfxRect) {
+    gfx::Point topLeft = gfxRect.origin();
+    gfx::Point bottomRight = gfxRect.bottom_right();
+    return QRect(topLeft.x(), topLeft.y(), bottomRight.x(), bottomRight.y());
+}
 
 class Context;
 
@@ -141,12 +148,13 @@ class BackingStoreQt : public QLabel
 public:
     BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size)
         : content::BackingStore(host, size)
+        , m_pixelBuffer(size.width(), size.height())
     {
         resize(size.width(), size.height());
 
         // FIXME: remove QLabel inheritance
         show();
-        setWindowTitle(QStringLiteral("BackintStoreQt"));
+        setWindowTitle(QStringLiteral("BackingStoreQt"));
         // FISME: remove QLabel inheritance
     }
 
@@ -163,20 +171,32 @@ public:
         if (!dib)
           return;
 
+        m_painter.begin(&m_pixelBuffer);
+
         uint8_t* bitmapData = static_cast<uint8_t*>(dib->memory());
         QImage img(bitmapData, bitmap_rect.width(), bitmap_rect.height(), QImage::Format_ARGB32);
-        setPixmap(QPixmap::fromImage(img));
+
+        QRect source = QRect(0, 0, bitmap_rect.width(), bitmap_rect.height());
+        m_painter.drawPixmap(toQRect(bitmap_rect), QPixmap::fromImage(img), source);
+
+        m_painter.end();
+
+        // FIXME: remove QLabel inheritance
+        setPixmap(m_pixelBuffer);
+        // FIXME: remove QLabel inheritance
     }
 
     virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
     {
-        // BackingStoreGtk::ScrollBackingStore(delta, clip_rect, view_size);
     }
 
     virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
     {
-        // return BackingStoreGtk::CopyFromBackingStore(rect, output);
     }
+
+private:
+    QPainter m_painter;
+    QPixmap m_pixelBuffer;
 };
 
 class BackingStore : public QLabel,
@@ -191,7 +211,7 @@ public:
         , m_backingStoreQt(host, size)
     {
         resize(size.width(), size.height());
-        show();
+        // show();
     }
 
     virtual void PaintToBackingStore(content::RenderProcessHost *process,
