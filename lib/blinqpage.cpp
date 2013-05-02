@@ -146,9 +146,8 @@ public:
         : content::BackingStore(host, size)
         , m_pixelBuffer(size.width(), size.height())
     {
-        resize(size.width(), size.height());
-
         // FIXME: remove QLabel inheritance
+        resize(size.width(), size.height());
         show();
         setWindowTitle(QStringLiteral("BackingStoreQt"));
         // FISME: remove QLabel inheritance
@@ -205,10 +204,36 @@ public:
 
     virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
     {
+        DCHECK(delta.x() == 0 || delta.y() == 0);
+
+        m_pixelBuffer.scroll(delta.x(), delta.y(), clip_rect.x(), clip_rect.y(), clip_rect.width(), clip_rect.height());
     }
 
     virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
     {
+        const int width = std::min(m_pixelBuffer.width(), rect.width());
+        const int height = std::min(m_pixelBuffer.height(), rect.height());
+
+        if (!output->Allocate(width, height, true))
+            return false;
+
+        // This code assumes a visual mode where a pixel is
+        // represented using a 32-bit unsigned int, with a byte per component.
+        const SkBitmap& bitmap = output->GetBitmap();
+        SkAutoLockPixels alp(bitmap);
+
+        QPixmap cpy = m_pixelBuffer.copy(rect.x(), rect.y(), rect.width(), rect.height());
+        QImage img = cpy.toImage();
+
+        // Convert the format and remove transparency.
+        if (img.format() != QImage::Format_RGB32)
+            img = img.convertToFormat(QImage::Format_RGB32);
+
+        const uint8_t* src = img.bits();
+        uint8_t* dst = reinterpret_cast<uint8_t*>(bitmap.getAddr32(0,0));
+        memcpy(dst, src, width*height*32);
+
+        return true;
     }
 
 private:
