@@ -135,6 +135,50 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
     return context->GetRequestContext()->GetURLRequestContext();
 }
 
+class BackingStoreQt : public QLabel
+                     , public content::BackingStore
+{
+public:
+    BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size)
+        : content::BackingStore(host, size)
+    {
+        resize(size.width(), size.height());
+
+        // FIXME: remove QLabel inheritance
+        show();
+        setWindowTitle(QStringLiteral("BackintStoreQt"));
+        // FISME: remove QLabel inheritance
+    }
+
+    virtual void PaintToBackingStore(content::RenderProcessHost *process,
+                                     TransportDIB::Id bitmap,
+                                     const gfx::Rect &bitmap_rect,
+                                     const std::vector<gfx::Rect> &copy_rects,
+                                     float scale_factor,
+                                     const base::Closure &completion_callback,
+                                     bool *scheduled_completion_callback)
+    {
+        *scheduled_completion_callback = false;
+        TransportDIB* dib = process->GetTransportDIB(bitmap);
+        if (!dib)
+          return;
+
+        uint8_t* bitmapData = static_cast<uint8_t*>(dib->memory());
+        QImage img(bitmapData, bitmap_rect.width(), bitmap_rect.height(), QImage::Format_ARGB32);
+        setPixmap(QPixmap::fromImage(img));
+    }
+
+    virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
+    {
+        // BackingStoreGtk::ScrollBackingStore(delta, clip_rect, view_size);
+    }
+
+    virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
+    {
+        // return BackingStoreGtk::CopyFromBackingStore(rect, output);
+    }
+};
+
 class BackingStore : public QLabel,
                      public content::BackingStoreGtk
 {
@@ -144,6 +188,7 @@ public:
                                    ui::GetVisualFromGtkWidget(view->GetNativeView()),
                                    gdk_visual_get_depth(gtk_widget_get_visual(view->GetNativeView())))
         , m_size(size)
+        , m_backingStoreQt(host, size)
     {
         resize(size.width(), size.height());
         show();
@@ -174,20 +219,29 @@ public:
         setPixmap(QPixmap::fromImage(img));
 
         BackingStoreGtk::PaintToBackingStore(process, bitmap, bitmap_rect, copy_rects, scale_factor, completion_callback, scheduled_completion_callback);
+
+        m_backingStoreQt.PaintToBackingStore(process, bitmap, bitmap_rect, copy_rects, scale_factor, completion_callback, scheduled_completion_callback);
     }
 
     virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
     {
         BackingStoreGtk::ScrollBackingStore(delta, clip_rect, view_size);
+
+        m_backingStoreQt.ScrollBackingStore(delta, clip_rect, view_size);
     }
 
     virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
     {
-        return BackingStoreGtk::CopyFromBackingStore(rect, output);
+        bool ret = BackingStoreGtk::CopyFromBackingStore(rect, output);
+        m_backingStoreQt.CopyFromBackingStore(rect, output);
+        return ret;
     }
 
 private:
     gfx::Size m_size;
+
+    // Temporary Qt members
+    BackingStoreQt m_backingStoreQt;
 };
 
 class RenderWidgetHostView : public content::RenderWidgetHostViewGtk
