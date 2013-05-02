@@ -139,8 +139,10 @@ class BackingStore : public QLabel,
                      public content::BackingStoreGtk
 {
 public:
-    BackingStore(content::RenderWidgetHost *host, const gfx::Size &size)
-        : content::BackingStoreGtk(host, size)
+    BackingStore(content::RenderWidgetHost *host, const gfx::Size &size, content::RenderWidgetHostView *view)
+        : content::BackingStoreGtk(host, size,
+                                   ui::GetVisualFromGtkWidget(view->GetNativeView()),
+                                   gdk_visual_get_depth(gtk_widget_get_visual(view->GetNativeView())))
         , m_size(size)
     {
         resize(size.width(), size.height());
@@ -161,6 +163,15 @@ public:
           return;
 
         scoped_ptr<SkCanvas> canvas(dib->GetPlatformCanvas(bitmap_rect.width(), bitmap_rect.height()));
+        SkISize size = canvas->getDeviceSize();
+
+        QImage img(size.fWidth, size.fHeight, QImage::Format_ARGB32);
+        img.fill(Qt::green);
+        SkBitmap bm;
+        bm.setConfig(SkBitmap::kARGB_8888_Config, size.fWidth, size.fHeight);
+        bm.setPixels(img.bits());
+        canvas->readPixels(&bm, 0, 0);
+        setPixmap(QPixmap::fromImage(img));
 
         BackingStoreGtk::PaintToBackingStore(process, bitmap, bitmap_rect, copy_rects, scale_factor, completion_callback, scheduled_completion_callback);
     }
@@ -190,7 +201,7 @@ public:
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size)
     {
-        return new BackingStore(m_host, size);
+        return new BackingStore(m_host, size, this);
     }
 
 private:
