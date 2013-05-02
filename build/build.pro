@@ -9,7 +9,7 @@ CHROMIUM_SRC_DIR = $$(CHROMIUM_SRC_DIR)
 isEmpty(CHROMIUM_SRC_DIR):error("please set CHOMIUM_SRC_DIR")
 
 message(Running Gyp...)
-GYP_OUTPUT = $$system(./gyp_blinq $$(GYP_FLAGS))
+GYP_OUTPUT = $$system(./gyp_blinq)
 message($$GYP_OUTPUT)
 
 ninja.target = ninja
