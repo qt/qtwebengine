@@ -94,8 +94,8 @@ if __name__ == '__main__':
 
   args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
   # the top_level source directory is the first common ancestor of our module and the chromium source tree for the build to be sane.
-  toplevel= os.path.commonprefix([root_dir, chrome_src])
-  args.extend(["--toplevel-dir=" + toplevel])
+  # toplevel= os.path.commonprefix([root_dir, chrome_src])
+  # args.extend(["--toplevel-dir=" + toplevel])
   # Chromium specific Hack: for Chromium to build, the depth has to be set to the chromium src dir.
   args.extend(["--depth=" + chrome_src])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
