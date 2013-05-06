@@ -7,7 +7,7 @@ INCLUDEPATH += ../lib
 
 LIBPATH = $$getOutDir()
 
-LIBS += -L$$LIBPATH -lblinq
+LIBS += -L$$LIBPATH/lib -lblinq
 QMAKE_RPATHDIR += $$LIBPATH
 
 QT += widgets
