@@ -91,6 +91,7 @@ static QByteArray blinqProcessPath() {
     if (processPath.isEmpty())
         qFatal("BLINQ_PROCESS_PATH environment variable not set or empty.");
     initialized = true;
+    return processPath;
 }
 
 static void initializeBlinkPaths()
