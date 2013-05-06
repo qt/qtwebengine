@@ -27,6 +27,8 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/surface/transport_dib.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/common/view_messages.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_main_delegate.h"
 #include "content/shell/shell_content_browser_client.h"
@@ -38,17 +40,42 @@
 #include "content/browser/renderer_host/backing_store_gtk.h"
 #include "webkit/user_agent/user_agent_util.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #include <QByteArray>
 #include <QWindow>
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <qpa/qplatformwindow.h>
 #include <QLabel>
 #include <QPainter>
+#include <QScreen>
+#include <qpa/qplatformnativeinterface.h>
+
+#include <X11/Xutil.h>
+
+#define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
 
 namespace {
 
 class Context;
+
+void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
+{
+    QScreen* screen = window->screen();
+
+    WebKit::WebScreenInfo r;
+    r.deviceScaleFactor = screen->devicePixelRatio();
+    r.depthPerComponent = 8;
+    r.depth = screen->depth();
+    r.isMonochrome = (r.depth == 1);
+
+    QRect virtualGeometry = screen->virtualGeometry();
+    r.rect = WebKit::WebRect(virtualGeometry.x(), virtualGeometry.y(), virtualGeometry.width(), virtualGeometry.height());
+    QRect available = screen->availableGeometry();
+    r.availableRect = WebKit::WebRect(available.x(), available.y(), available.width(), available.height());
+    *results = r;
+}
 
 class ResourceContext : public content::ResourceContext
 {
@@ -261,10 +288,8 @@ class BackingStore : public QLabel,
                      public content::BackingStoreGtk
 {
 public:
-    BackingStore(content::RenderWidgetHost *host, const gfx::Size &size, content::RenderWidgetHostView *view)
-        : content::BackingStoreGtk(host, size,
-                                   ui::GetVisualFromGtkWidget(view->GetNativeView()),
-                                   gdk_visual_get_depth(gtk_widget_get_visual(view->GetNativeView())))
+    BackingStore(content::RenderWidgetHost *host, const gfx::Size &size, /*content::RenderWidgetHostView *view*/ void* visual, int depth)
+        : content::BackingStoreGtk(host, size, visual, depth)
         , m_size(size)
         , m_backingStoreQt(host, size)
     {
@@ -322,22 +347,381 @@ private:
     BackingStoreQt m_backingStoreQt;
 };
 
-class RenderWidgetHostView : public content::RenderWidgetHostViewGtk
+class RenderWidgetHostView
+    : public content::RenderWidgetHostViewBase
 {
 public:
     RenderWidgetHostView(content::RenderWidgetHost* widget)
-        : content::RenderWidgetHostViewGtk(widget)
-        , m_host(widget)
+        : m_host(content::RenderWidgetHostImpl::From(widget))
+        , m_view(0)
     {
     }
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size)
     {
-        return new BackingStore(m_host, size, this);
+        QPlatformNativeInterface *native = QGuiApplication::platformNativeInterface();
+        uint32_t visualId = *static_cast<uint32_t*>(native->nativeResourceForWindow("visualid", m_view));
+
+        XVisualInfo visualInfoTemplate;
+        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
+        visualInfoTemplate.visualid = visualId;
+
+        int matchingCount = 0;
+        XVisualInfo *visualInfo = XGetVisualInfo(ui::GetXDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount);
+
+        void* visual = visualInfo->visual;
+        int depth = m_view->format().depthBufferSize();
+        return new BackingStore(m_host, size, /*this,*/ visual, depth);
+    }
+
+    static RenderWidgetHostView* CreateViewForWidget(content::RenderWidgetHost* widget)
+    {
+        return new RenderWidgetHostView(widget);
+    }
+
+    virtual void InitAsChild(gfx::NativeView parent_view)
+    {
+        m_view = new QWindow;
+        // FIXME: should this have backing store size?
+        m_view->resize(200, 200);
+        m_view->show();
+    }
+
+    virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
+    {
+        m_view = new QWindow;
+        // FIXME: should this have backing store size?
+        m_view->resize(200, 200);
+        m_view->show();
+    }
+
+    virtual void InitAsFullscreen(content::RenderWidgetHostView*)
+    {
+        m_view = new QWindow;
+        // FIXME: should this have backing store size?
+        m_view->resize(200, 200);
+        m_view->setWindowState(Qt::WindowFullScreen);
+        m_view->show();
+    }
+
+    virtual content::RenderWidgetHost* GetRenderWidgetHost() const
+    {
+        return m_host;
+    }
+
+    virtual void SetSize(const gfx::Size& size)
+    {
+        int width = size.width();
+        int height = size.height();
+        // int width = std::min(size.width(), kMaxWindowWidth);
+        // int height = std::min(size.height(), kMaxWindowHeight);
+        if (IsPopup()) {
+            // We're a popup, honor the size request.
+            m_view->resize(width,height);
+        }
+
+        if (m_requestedSize.width() != width ||
+            m_requestedSize.height() != height) {
+            m_requestedSize = gfx::Size(width, height);
+            // m_host->SendScreenRects();
+            m_host->WasResized();
+        }
+    }
+
+    virtual void SetBounds(const gfx::Rect& rect)
+    {
+        // This is called when webkit has sent us a Move message.
+        if (IsPopup())
+            m_view->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
+
+        SetSize(rect.size());
+    }
+
+    // FIXME: Should this really return a QWindow pointer?
+    virtual gfx::NativeView GetNativeView() const
+    {
+        QT_NOT_YET_IMPLEMENTED
+        // return m_view;
+        return gfx::NativeView();
+    }
+    virtual gfx::NativeViewId GetNativeViewId() const
+    {
+        QT_NOT_YET_IMPLEMENTED
+        return gfx::NativeViewId();
+    }
+
+    virtual gfx::NativeViewAccessible GetNativeViewAccessible()
+    {
+        NOTIMPLEMENTED();
+        return NULL;
+    }
+
+    // Set focus to the associated View component.
+    virtual void Focus()
+    {
+        m_view->requestActivate();
+    }
+
+    virtual bool HasFocus() const
+    {
+        return m_view->isActive();
+    }
+
+    virtual bool IsSurfaceAvailableForCopy() const
+    {
+        return true;
+    }
+
+    virtual void Show()
+    {
+        m_view->show();
+    }
+
+    virtual void Hide()
+    {
+        m_view->hide();
+    }
+
+    virtual bool IsShowing()
+    {
+        return m_view->isVisible();
+    }
+
+    // Retrieve the bounds of the View, in screen coordinates.
+    virtual gfx::Rect GetViewBounds() const
+    {
+        QRect rect = m_view->geometry();
+        QPoint screenPos = m_view->mapToGlobal(QPoint(0,0));
+
+        return gfx::Rect(screenPos.x(), screenPos.y(), rect.width(), rect.height());
+    }
+
+    // Subclasses should override this method to do what is appropriate to set
+    // the custom background for their platform.
+    virtual void SetBackground(const SkBitmap& background)
+    {
+        RenderWidgetHostViewBase::SetBackground(background);
+        // Send(new ViewMsg_SetBackground(m_host->GetRoutingID(), background));
+    }
+
+    // Return value indicates whether the mouse is locked successfully or not.
+    virtual bool LockMouse()
+    {
+        QT_NOT_YET_IMPLEMENTED
+        return false;
+    }
+    virtual void UnlockMouse()
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    // Returns true if the mouse pointer is currently locked.
+    virtual bool IsMouseLocked()
+    {
+        QT_NOT_YET_IMPLEMENTED
+        return false;
+    }
+
+    // FIXME: remove TOOLKIT_GTK related things.
+#if defined(TOOLKIT_GTK)
+    // Gets the event for the last mouse down.
+    virtual GdkEventButton* GetLastMouseDown()
+    {
+        return 0;
+    }
+
+    // Builds a submenu containing all the gtk input method commands.
+    virtual gfx::NativeView BuildInputMethodsGtkMenu()
+    {
+    }
+#endif  // defined(TOOLKIT_GTK)
+
+    virtual void WasShown()
+    {
+        if (m_view->isVisible())
+            return;
+
+        m_host->WasShown();
+    }
+
+    virtual void WasHidden()
+    {
+        if (!m_view->isVisible())
+            return;
+
+        m_host->WasHidden();
+    }
+
+    virtual void MovePluginWindows(const gfx::Vector2d&, const std::vector<webkit::npapi::WebPluginGeometry>&)
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    virtual void Blur()
+    {
+        m_host->Blur();
+    }
+
+    virtual void UpdateCursor(const WebCursor&)
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    virtual void SetIsLoading(bool)
+    {
+        QT_NOT_YET_IMPLEMENTED
+        // Give visual feedback for loading process.
+    }
+
+    virtual void TextInputStateChanged(const ViewHostMsg_TextInputState_Params&)
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    virtual void ImeCancelComposition()
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    virtual void ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&)
+    {
+        // FIXME: not implemented?
+    }
+
+    virtual void DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects)
+    {
+        if (!m_view->isVisible())
+            return;
+
+        Paint(scroll_rect);
+
+        for (size_t i = 0; i < copy_rects.size(); ++i) {
+            gfx::Rect rect = gfx::SubtractRects(copy_rects[i], scroll_rect);
+            if (rect.IsEmpty())
+                continue;
+
+            Paint(rect);
+        }
+    }
+
+    virtual void RenderViewGone(base::TerminationStatus, int)
+    {
+        Destroy();
+    }
+
+    virtual void Destroy()
+    {
+        delete m_view;
+        m_view = 0;
+    }
+
+    virtual void SetTooltipText(const string16&)
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&)
+    {
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    virtual void ScrollOffsetChanged()
+    {
+        // FIXME: not implemented?
+    }
+
+    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback)
+    {
+        // Grab the snapshot from the renderer as that's the only reliable way to
+        // readback from the GPU for this platform right now.
+        // FIXME: is this true?
+        GetRenderWidgetHost()->GetSnapshotFromRenderer(src_subrect, callback);
+    }
+
+    virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback)
+    {
+        NOTIMPLEMENTED();
+        callback.Run(false);
+    }
+
+    virtual bool CanCopyToVideoFrame() const
+    {
+        return false;
+    }
+
+    virtual void OnAcceleratedCompositingStateChange()
+    {
+        // bool activated = m_host->is_accelerated_compositing_active();
+        QT_NOT_YET_IMPLEMENTED
+    }
+
+    virtual void AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id)
+    {
+        AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+        ack_params.sync_point = 0;
+        content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
+    }
+
+    virtual void AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id)
+    {
+        AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
+        ack_params.sync_point = 0;
+        content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
+    }
+
+    virtual void AcceleratedSurfaceSuspend()
+    {
+        //FIXME: not implemented?
+    }
+
+    virtual void AcceleratedSurfaceRelease()
+    {
+        //FIXME: not implemented?
+    }
+
+    virtual bool HasAcceleratedSurface(const gfx::Size&)
+    {
+        return false;
+    }
+
+    virtual void GetScreenInfo(WebKit::WebScreenInfo* results)
+    {
+        GetScreenInfoFromNativeWindow(m_view, results);
+    }
+
+    virtual gfx::Rect GetBoundsInRootWindow()
+    {
+        QRect r = m_view->frameGeometry();
+        return gfx::Rect(r.x(), r.y(), r.width(), r.height());
+    }
+
+    virtual gfx::GLSurfaceHandle GetCompositingSurface()
+    {
+        QT_NOT_YET_IMPLEMENTED
+        return gfx::GLSurfaceHandle();
+    }
+
+    virtual void SetHasHorizontalScrollbar(bool) { }
+    virtual void SetScrollOffsetPinning(bool, bool) { }
+    virtual void OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&)
+    {
+        QT_NOT_YET_IMPLEMENTED
     }
 
 private:
-    content::RenderWidgetHost *m_host;
+    void Paint(const gfx::Rect& scroll_rect)
+    {
+        // FIXME: implement painting.
+    }
+
+    bool IsPopup() const
+    {
+        return popup_type_ != WebKit::WebPopupTypeNone;
+    }
+
+    content::RenderWidgetHostImpl *m_host;
+    QWindow *m_view;
+    gfx::Size m_requestedSize;
 };
 
 class RenderViewHost : public content::RenderViewHostImpl
