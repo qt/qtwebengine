@@ -284,69 +284,6 @@ private:
     QPixmap m_pixelBuffer;
 };
 
-class BackingStore : public QLabel,
-                     public content::BackingStoreGtk
-{
-public:
-    BackingStore(content::RenderWidgetHost *host, const gfx::Size &size, /*content::RenderWidgetHostView *view*/ void* visual, int depth)
-        : content::BackingStoreGtk(host, size, visual, depth)
-        , m_size(size)
-        , m_backingStoreQt(host, size)
-    {
-        resize(size.width(), size.height());
-        // show();
-    }
-
-    virtual void PaintToBackingStore(content::RenderProcessHost *process,
-                                     TransportDIB::Id bitmap,
-                                     const gfx::Rect &bitmap_rect,
-                                     const std::vector<gfx::Rect> &copy_rects,
-                                     float scale_factor,
-                                     const base::Closure &completion_callback,
-                                     bool *scheduled_completion_callback)
-    {
-        *scheduled_completion_callback = false;
-        TransportDIB* dib = process->GetTransportDIB(bitmap);
-        if (!dib)
-          return;
-
-        scoped_ptr<SkCanvas> canvas(dib->GetPlatformCanvas(bitmap_rect.width(), bitmap_rect.height()));
-        SkISize size = canvas->getDeviceSize();
-
-        QImage img(size.fWidth, size.fHeight, QImage::Format_ARGB32);
-        img.fill(Qt::green);
-        SkBitmap bm;
-        bm.setConfig(SkBitmap::kARGB_8888_Config, size.fWidth, size.fHeight);
-        bm.setPixels(img.bits());
-        canvas->readPixels(&bm, 0, 0);
-        setPixmap(QPixmap::fromImage(img));
-
-        BackingStoreGtk::PaintToBackingStore(process, bitmap, bitmap_rect, copy_rects, scale_factor, completion_callback, scheduled_completion_callback);
-
-        m_backingStoreQt.PaintToBackingStore(process, bitmap, bitmap_rect, copy_rects, scale_factor, completion_callback, scheduled_completion_callback);
-    }
-
-    virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
-    {
-        BackingStoreGtk::ScrollBackingStore(delta, clip_rect, view_size);
-
-        m_backingStoreQt.ScrollBackingStore(delta, clip_rect, view_size);
-    }
-
-    virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
-    {
-        bool ret = BackingStoreGtk::CopyFromBackingStore(rect, output);
-        m_backingStoreQt.CopyFromBackingStore(rect, output);
-        return ret;
-    }
-
-private:
-    gfx::Size m_size;
-
-    // Temporary Qt members
-    BackingStoreQt m_backingStoreQt;
-};
-
 class RenderWidgetHostView
     : public content::RenderWidgetHostViewBase
 {
@@ -371,7 +308,7 @@ public:
 
         void* visual = visualInfo->visual;
         int depth = m_view->format().depthBufferSize();
-        return new BackingStore(m_host, size, /*this,*/ visual, depth);
+        return new BackingStoreQt(m_host, size);
     }
 
     static RenderWidgetHostView* CreateViewForWidget(content::RenderWidgetHost* widget)
