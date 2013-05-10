@@ -296,18 +296,6 @@ public:
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size)
     {
-        QPlatformNativeInterface *native = QGuiApplication::platformNativeInterface();
-        uint32_t visualId = *static_cast<uint32_t*>(native->nativeResourceForWindow("visualid", m_view));
-
-        XVisualInfo visualInfoTemplate;
-        memset(&visualInfoTemplate, 0, sizeof(XVisualInfo));
-        visualInfoTemplate.visualid = visualId;
-
-        int matchingCount = 0;
-        XVisualInfo *visualInfo = XGetVisualInfo(ui::GetXDisplay(), VisualIDMask, &visualInfoTemplate, &matchingCount);
-
-        void* visual = visualInfo->visual;
-        int depth = m_view->format().depthBufferSize();
         return new BackingStoreQt(m_host, size);
     }
 
