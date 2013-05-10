@@ -11,6 +11,9 @@ TARGET = blinq
 DEFINES += QT_NO_KEYWORDS \
            BLINQ_PROCESS_PATH=\\\"$$getOutDir()/$$BLINQ_PROCESS_NAME\\\"
 
+# Keep Skia happy
+CONFIG(release, debug|release): DEFINES += NDEBUG
+
 QT += gui-private widgets
 
 SOURCES = \
