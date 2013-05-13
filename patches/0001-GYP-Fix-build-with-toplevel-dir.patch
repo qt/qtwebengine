@@ -1,0 +1,32 @@
+From 5f2e25825375c613c3cd249f874d7a295de2fefd Mon Sep 17 00:00:00 2001
+From: Pierre Rossi <pierre.rossi@digia.com>
+Date: Mon, 13 May 2013 16:25:46 +0200
+Subject: [GYP] Fix build with toplevel-dir
+
+---
+ pylib/gyp/generator/ninja.py | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/pylib/gyp/generator/ninja.py b/pylib/gyp/generator/ninja.py
+index 619ac39..e10038a 100644
+--- a/pylib/gyp/generator/ninja.py
++++ b/pylib/gyp/generator/ninja.py
+@@ -1309,9 +1309,13 @@ def CalculateVariables(default_variables, params):
+     default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
+     default_variables.setdefault('SHARED_LIB_DIR',
+                                  os.path.join('$!PRODUCT_DIR', 'lib'))
++    # Take into account the fact that toplevel_dir might not be equal to depth
++    toplevel_offset = ''
++    if 'options' in params:
++      options = params['options']
++      toplevel_offset = os.path.relpath(options.depth, options.toplevel_dir)
+     default_variables.setdefault('LIB_DIR',
+-                                 os.path.join('$!PRODUCT_DIR', 'obj'))
+-
++                                 os.path.join('$!PRODUCT_DIR', 'obj', toplevel_offset))
+ 
+ def OpenOutput(path, mode='w'):
+   """Open |path| for writing, creating directories if necessary."""
+-- 
+1.8.2.1
+
