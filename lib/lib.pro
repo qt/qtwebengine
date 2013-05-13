@@ -17,7 +17,8 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 QT += gui-private widgets
 
 SOURCES = \
-        blinqpage.cpp
+        blinqpage.cpp \
+        shell_qt.cpp
 
 HEADERS = \
         blinqpage.h

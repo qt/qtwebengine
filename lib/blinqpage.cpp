@@ -42,6 +42,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
+#include <QBackingStore>
 #include <QByteArray>
 #include <QWindow>
 #include <QCoreApplication>
@@ -50,6 +51,7 @@
 #include <QLabel>
 #include <QPainter>
 #include <QScreen>
+#include <QResizeEvent>
 #include <qpa/qplatformnativeinterface.h>
 
 #include <X11/Xutil.h>
@@ -181,6 +183,70 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
     return context->GetRequestContext()->GetURLRequestContext();
 }
 
+class RasterWindow : public QWindow
+{
+public:
+    RasterWindow(QWindow *parent = 0)
+        : QWindow(parent)
+        , m_update_pending(false)
+    {
+        m_backingStore = new QBackingStore(this);
+        create();
+    }
+
+    void blitPixmap(const QRect& rect, const QPixmap& pixmap)
+    {
+        if (!isExposed())
+            return;
+
+        m_backingStore->beginPaint(rect);
+        QPaintDevice *device = m_backingStore->paintDevice();
+        if (device) {
+            QPainter painter(device);
+
+            painter.drawPixmap(0, 0, width(), height(), pixmap);
+        }
+        m_backingStore->endPaint();
+        m_backingStore->flush(rect);
+    }
+
+    void renderNow()
+    {
+        if (!isExposed())
+            return;
+
+    }
+
+protected:
+    bool event(QEvent *event)
+    {
+        if (event->type() == QEvent::UpdateRequest) {
+            m_update_pending = false;
+            renderNow();
+            return true;
+        }
+        return QWindow::event(event);
+    }
+
+    void resizeEvent(QResizeEvent *resizeEvent)
+    {
+        m_backingStore->resize(resizeEvent->size());
+        if (isExposed())
+            renderNow();
+    }
+    
+    void exposeEvent(QExposeEvent *)
+    {
+        if (isExposed()) {
+            renderNow();
+        }
+    }
+private:
+    QPixmap m_pixmap;
+    QBackingStore *m_backingStore;
+    bool m_update_pending;
+};
+
 class BackingStoreQt : public QLabel
                      , public content::BackingStore
 {
@@ -191,7 +257,7 @@ public:
     {
         // FIXME: remove QLabel inheritance
         resize(size.width(), size.height());
-        show();
+       // show();
         setWindowTitle(QStringLiteral("BackingStoreQt"));
         // FISME: remove QLabel inheritance
     }
@@ -279,6 +345,18 @@ public:
         return true;
     }
 
+    void paintToQWindow(const gfx::Rect& r, QWindow* surface)
+    {
+        // OpenGL painting is currently not supported.
+        if (surface->surfaceType() != QSurface::RasterSurface) {
+            fprintf(stderr, "OpenGL painting is currently NOT supported.");
+            return;
+        }
+
+        RasterWindow* rasterWindow = static_cast<RasterWindow*>(surface);
+        rasterWindow->blitPixmap(QRect(r.x(), r.y(), r.width(), r.height()), m_pixelBuffer);
+    }
+
 private:
     QPainter m_painter;
     QPixmap m_pixelBuffer;
@@ -306,27 +384,17 @@ public:
 
     virtual void InitAsChild(gfx::NativeView parent_view)
     {
-        m_view = new QWindow;
-        // FIXME: should this have backing store size?
-        m_view->resize(200, 200);
-        m_view->show();
+        m_view = new RasterWindow;
     }
 
     virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
     {
-        m_view = new QWindow;
-        // FIXME: should this have backing store size?
-        m_view->resize(200, 200);
-        m_view->show();
+        m_view = new RasterWindow;
     }
 
     virtual void InitAsFullscreen(content::RenderWidgetHostView*)
     {
-        m_view = new QWindow;
-        // FIXME: should this have backing store size?
-        m_view->resize(200, 200);
-        m_view->setWindowState(Qt::WindowFullScreen);
-        m_view->show();
+        m_view = new RasterWindow;
     }
 
     virtual content::RenderWidgetHost* GetRenderWidgetHost() const
@@ -369,6 +437,12 @@ public:
         // return m_view;
         return gfx::NativeView();
     }
+
+    virtual QWindow* GetNativeViewQt() const OVERRIDE
+    {
+        return m_view;
+    }
+
     virtual gfx::NativeViewId GetNativeViewId() const
     {
         QT_NOT_YET_IMPLEMENTED
@@ -636,7 +710,10 @@ public:
 private:
     void Paint(const gfx::Rect& scroll_rect)
     {
-        // FIXME: implement painting.
+        bool force_create = !m_host->empty();
+        BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
+        if (backing_store && m_view)
+            backing_store->paintToQWindow(scroll_rect, m_view);
     }
 
     bool IsPopup() const
