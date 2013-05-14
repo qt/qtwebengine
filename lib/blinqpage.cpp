@@ -30,7 +30,7 @@
 #include "content/common/view_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_main_delegate.h"
+#include "content/shell/app/shell_main_delegate.h"
 #include "content/shell/shell_content_browser_client.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
