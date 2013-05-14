@@ -183,57 +183,35 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
     return context->GetRequestContext()->GetURLRequestContext();
 }
 
+class BackingStoreQt;
+
 class RasterWindow : public QWindow
 {
 public:
     RasterWindow(QWindow *parent = 0)
         : QWindow(parent)
-        , m_update_pending(false)
+        , m_backingStore(0)
     {
-        m_backingStore = new QBackingStore(this);
-        create();
     }
 
-    void blitPixmap(const QRect& rect, const QPixmap& pixmap)
+    void renderNow();
+
+    void setBackingStore(BackingStoreQt* backingStore)
     {
-        if (!isExposed())
-            return;
-
-        m_backingStore->beginPaint(rect);
-        QPaintDevice *device = m_backingStore->paintDevice();
-        if (device) {
-            QPainter painter(device);
-
-            painter.drawPixmap(0, 0, width(), height(), pixmap);
-        }
-        m_backingStore->endPaint();
-        m_backingStore->flush(rect);
-    }
-
-    void renderNow()
-    {
-        if (!isExposed())
-            return;
-
+        m_backingStore = backingStore;
     }
 
 protected:
     bool event(QEvent *event)
     {
         if (event->type() == QEvent::UpdateRequest) {
-            m_update_pending = false;
             renderNow();
             return true;
         }
         return QWindow::event(event);
     }
 
-    void resizeEvent(QResizeEvent *resizeEvent)
-    {
-        m_backingStore->resize(resizeEvent->size());
-        if (isExposed())
-            renderNow();
-    }
+    void resizeEvent(QResizeEvent *resizeEvent);
     
     void exposeEvent(QExposeEvent *)
     {
@@ -242,24 +220,54 @@ protected:
         }
     }
 private:
-    QPixmap m_pixmap;
-    QBackingStore *m_backingStore;
-    bool m_update_pending;
+    BackingStoreQt* m_backingStore;
 };
 
-class BackingStoreQt : public QLabel
+class BackingStoreQt : public QBackingStore
                      , public content::BackingStore
 {
 public:
-    BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size)
-        : content::BackingStore(host, size)
-        , m_pixelBuffer(size.width(), size.height())
+    BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, RasterWindow* surface)
+        : QBackingStore(surface)
+        , m_host(content::RenderWidgetHostImpl::From(host))
+        , content::BackingStore(host, size)
+        , m_surface(surface)
+        , m_isValid(false)
     {
-        // FIXME: remove QLabel inheritance
-        resize(size.width(), size.height());
-       // show();
-        setWindowTitle(QStringLiteral("BackingStoreQt"));
-        // FISME: remove QLabel inheritance
+        int width = size.width();
+        int height = size.height();
+        m_surface->resize(width,height);
+        resize(QSize(width, height));
+        setStaticContents(QRect(0,0,size.width(), size.height()));
+        m_surface->setBackingStore(this);
+        m_surface->create();
+    }
+
+    ~BackingStoreQt()
+    {
+        if (m_surface)
+            m_surface->setBackingStore(0);
+    }
+
+    void resize(const QSize& size)
+    {
+        m_isValid = false;
+        QRect contentRect(0, 0, size.width(), size.height());
+        QBackingStore::resize(size);
+        setStaticContents(contentRect);
+
+        m_host->WasResized();
+    }
+
+    void displayBuffer()
+    {
+        if (!m_surface->isExposed() || !m_isValid)
+            return;
+
+        int width = m_surface->width();
+        int height = m_surface->height();
+        QRect rect(0, 0, width, height);
+        flush(rect);
     }
 
     virtual void PaintToBackingStore(content::RenderProcessHost *process,
@@ -278,14 +286,12 @@ public:
         if (!dib)
           return;
 
-        // gfx::Rect pixel_bitmap_rect = gfx::ToEnclosedRect(gfx::ScaleRect(bitmap_rect, scale_factor));
         gfx::Rect pixel_bitmap_rect = bitmap_rect;
 
-
         uint8_t* bitmapData = static_cast<uint8_t*>(dib->memory());
+        int width = QBackingStore::size().width();
+        int height = QBackingStore::size().height();
         QImage img(bitmapData, pixel_bitmap_rect.width(), pixel_bitmap_rect.height(), QImage::Format_ARGB32);
-
-        m_painter.begin(&m_pixelBuffer);
 
         for (size_t i = 0; i < copy_rects.size(); ++i) {
             gfx::Rect copy_rect = gfx::ToEnclosedRect(gfx::ScaleRect(copy_rects[i], scale_factor));
@@ -300,67 +306,72 @@ public:
                                      , copy_rect.width()
                                      , copy_rect.height());
 
-            m_painter.drawPixmap(destination, QPixmap::fromImage(img), source);
+            beginPaint(destination);
+            m_isValid = true;
+            QPaintDevice *device = paintDevice();
+            if (device) {
+                QPainter painter(device);
+                painter.drawPixmap(destination, QPixmap::fromImage(img), source);
+            }
+            endPaint();
         }
-
-        m_painter.end();
-
-        // FIXME: remove QLabel inheritance
-        setPixmap(m_pixelBuffer);
-        repaint();
-        // FIXME: remove QLabel inheritance
     }
 
     virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
     {
-        DCHECK(delta.x() == 0 || delta.y() == 0);
+        // DCHECK(delta.x() == 0 || delta.y() == 0);
 
-        m_pixelBuffer.scroll(delta.x(), delta.y(), clip_rect.x(), clip_rect.y(), clip_rect.width(), clip_rect.height());
+        // m_pixelBuffer.scroll(delta.x(), delta.y(), clip_rect.x(), clip_rect.y(), clip_rect.width(), clip_rect.height());
     }
 
     virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
     {
-        const int width = std::min(m_pixelBuffer.width(), rect.width());
-        const int height = std::min(m_pixelBuffer.height(), rect.height());
+        // const int width = std::min(m_pixelBuffer.width(), rect.width());
+        // const int height = std::min(m_pixelBuffer.height(), rect.height());
 
-        if (!output->Allocate(width, height, true))
-            return false;
+        // if (!output->Allocate(width, height, true))
+        //     return false;
 
-        // This code assumes a visual mode where a pixel is
-        // represented using a 32-bit unsigned int, with a byte per component.
-        const SkBitmap& bitmap = output->GetBitmap();
-        SkAutoLockPixels alp(bitmap);
+        // // This code assumes a visual mode where a pixel is
+        // // represented using a 32-bit unsigned int, with a byte per component.
+        // const SkBitmap& bitmap = output->GetBitmap();
+        // SkAutoLockPixels alp(bitmap);
 
-        QPixmap cpy = m_pixelBuffer.copy(rect.x(), rect.y(), rect.width(), rect.height());
-        QImage img = cpy.toImage();
+        // QPixmap cpy = m_pixelBuffer.copy(rect.x(), rect.y(), rect.width(), rect.height());
+        // QImage img = cpy.toImage();
 
-        // Convert the format and remove transparency.
-        if (img.format() != QImage::Format_RGB32)
-            img = img.convertToFormat(QImage::Format_RGB32);
+        // // Convert the format and remove transparency.
+        // if (img.format() != QImage::Format_RGB32)
+        //     img = img.convertToFormat(QImage::Format_RGB32);
 
-        const uint8_t* src = img.bits();
-        uint8_t* dst = reinterpret_cast<uint8_t*>(bitmap.getAddr32(0,0));
-        memcpy(dst, src, width*height*32);
+        // const uint8_t* src = img.bits();
+        // uint8_t* dst = reinterpret_cast<uint8_t*>(bitmap.getAddr32(0,0));
+        // memcpy(dst, src, width*height*32);
 
-        return true;
-    }
-
-    void paintToQWindow(const gfx::Rect& r, QWindow* surface)
-    {
-        // OpenGL painting is currently not supported.
-        if (surface->surfaceType() != QSurface::RasterSurface) {
-            fprintf(stderr, "OpenGL painting is currently NOT supported.");
-            return;
-        }
-
-        RasterWindow* rasterWindow = static_cast<RasterWindow*>(surface);
-        rasterWindow->blitPixmap(QRect(r.x(), r.y(), r.width(), r.height()), m_pixelBuffer);
+        // return true;
     }
 
 private:
-    QPainter m_painter;
-    QPixmap m_pixelBuffer;
+    RasterWindow* m_surface;
+    content::RenderWidgetHost* m_host;
+    bool m_isValid;
 };
+
+void RasterWindow::renderNow()
+{
+    if (!isExposed() || !m_backingStore)
+        return;
+    QRect rect(0, 0, width(), height());
+    m_backingStore->displayBuffer();
+}
+
+void RasterWindow::resizeEvent(QResizeEvent *resizeEvent)
+{
+    if (m_backingStore)
+        m_backingStore->resize(resizeEvent->size());
+    if (isExposed())
+        renderNow();
+}
 
 class RenderWidgetHostView
     : public content::RenderWidgetHostViewBase
@@ -374,7 +385,9 @@ public:
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size)
     {
-        return new BackingStoreQt(m_host, size);
+        if (m_view)
+            return new BackingStoreQt(m_host, size, m_view);
+        return 0;
     }
 
     static RenderWidgetHostView* CreateViewForWidget(content::RenderWidgetHost* widget)
@@ -713,7 +726,7 @@ private:
         bool force_create = !m_host->empty();
         BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
         if (backing_store && m_view)
-            backing_store->paintToQWindow(scroll_rect, m_view);
+            backing_store->displayBuffer();
     }
 
     bool IsPopup() const
@@ -722,7 +735,7 @@ private:
     }
 
     content::RenderWidgetHostImpl *m_host;
-    QWindow *m_view;
+    RasterWindow *m_view;
     gfx::Size m_requestedSize;
 };
 

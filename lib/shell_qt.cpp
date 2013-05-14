@@ -110,6 +110,7 @@ void Shell::PlatformSetContents()
 }
 
 void Shell::SizeTo(int width, int height) {
+  fprintf(stderr, "Shell::SizeTo\n");
   content_width_ = width;
   content_height_ = height;
   if (web_contents_) {
