@@ -41,6 +41,7 @@
 #include "webkit/user_agent/user_agent_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 #include <QBackingStore>
 #include <QByteArray>
@@ -54,11 +55,25 @@
 #include <QResizeEvent>
 #include <qpa/qplatformnativeinterface.h>
 
+#include <QDebug>
+
+
 #include <X11/Xutil.h>
 
 #define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
 
 namespace {
+
+static WebKit::WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton || (event->buttons() & Qt::LeftButton))
+        return WebKit::WebMouseEvent::ButtonLeft;
+    else if (event->button() == Qt::RightButton || (event->buttons() & Qt::RightButton))
+        return WebKit::WebMouseEvent::ButtonRight;
+    else if (event->button() == Qt::MidButton || (event->buttons() & Qt::MidButton))
+        return WebKit::WebMouseEvent::ButtonMiddle;
+    return WebKit::WebMouseEvent::ButtonNone;
+}
 
 class Context;
 
@@ -184,13 +199,15 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
 }
 
 class BackingStoreQt;
+class RenderWidgetHostView;
 
 class RasterWindow : public QWindow
 {
 public:
-    RasterWindow(QWindow *parent = 0)
+    RasterWindow(RenderWidgetHostView* view, QWindow *parent = 0)
         : QWindow(parent)
         , m_backingStore(0)
+        , m_view(view)
     {
     }
 
@@ -202,14 +219,8 @@ public:
     }
 
 protected:
-    bool event(QEvent *event)
-    {
-        if (event->type() == QEvent::UpdateRequest) {
-            renderNow();
-            return true;
-        }
-        return QWindow::event(event);
-    }
+
+    bool event(QEvent *event);
 
     void resizeEvent(QResizeEvent *resizeEvent);
     
@@ -219,8 +230,13 @@ protected:
             renderNow();
         }
     }
+
+
+
 private:
     BackingStoreQt* m_backingStore;
+    RenderWidgetHostView *m_view;
+
 };
 
 class BackingStoreQt : public QBackingStore
@@ -383,6 +399,23 @@ public:
     {
     }
 
+    bool handleEvent(QEvent* event) {
+
+        switch(event->type()) {
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+            handleMouseEvent(static_cast<QMouseEvent*>(event));
+            break;
+//        case QEvent::KeyPress:
+//            handleKeyEvent(event);
+//            break;
+        default:
+            Q_ASSERT(false); // not reached
+        }
+        return true;
+    }
+
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size)
     {
         if (m_view)
@@ -397,17 +430,17 @@ public:
 
     virtual void InitAsChild(gfx::NativeView parent_view)
     {
-        m_view = new RasterWindow;
+        m_view = new RasterWindow(this);
     }
 
     virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
     {
-        m_view = new RasterWindow;
+        m_view = new RasterWindow(this);
     }
 
     virtual void InitAsFullscreen(content::RenderWidgetHostView*)
     {
-        m_view = new RasterWindow;
+        m_view = new RasterWindow(this);
     }
 
     virtual content::RenderWidgetHost* GetRenderWidgetHost() const
@@ -734,6 +767,21 @@ private:
         return popup_type_ != WebKit::WebPopupTypeNone;
     }
 
+    void handleMouseEvent(QMouseEvent* ev)
+    {
+        qDebug() << ev << ev->pos();
+        WebKit::WebMouseEvent webKitEvent;
+        webKitEvent.x = ev->x();
+        webKitEvent.y = ev->y();
+        webKitEvent.globalX = ev->globalX();
+        webKitEvent.globalY = ev->globalY();
+        webKitEvent.clickCount = (ev->type() == QEvent::MouseButtonDblClick)? 2 : 1;
+        webKitEvent.button = mouseButtonForEvent(ev);
+        //FIXME: and window coordinates ?
+
+        m_host->ForwardMouseEvent(webKitEvent);
+    }
+
     content::RenderWidgetHostImpl *m_host;
     RasterWindow *m_view;
     gfx::Size m_requestedSize;
@@ -883,6 +931,22 @@ base::MessagePump* messagePumpFactory()
 }
 #endif
 
+}
+
+bool RasterWindow::event(QEvent *event)
+{
+    switch(event->type()) {
+    case QEvent::UpdateRequest:
+        renderNow();
+        return true;
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+//    case QEvent::KeyPress:
+        if (m_view)
+            return m_view->handleEvent(event);
+    }
+    return QWindow::event(event);
 }
 
 class BlinqPagePrivate
