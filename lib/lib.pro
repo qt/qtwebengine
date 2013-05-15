@@ -22,7 +22,8 @@ SOURCES = \
         raster_window.cpp \
         render_widget_host_view_qt.cpp \
         shell_qt.cpp \
-        signal_connector.cpp
+        signal_connector.cpp \
+        moc_signal_connector.cpp 
 
 HEADERS = \
         backing_store_qt.h \
