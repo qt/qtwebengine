@@ -17,11 +17,14 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
+#include "signal_connector.h"
 
 #include <QWindow>
 #include <QLineEdit>
 #include <QWidget>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QToolButton>
 
 namespace content {
 
@@ -62,7 +65,10 @@ void Shell::PlatformSetAddressBarURL(const GURL& url)
   if (headless_)
     return;
 
-  gtk_entry_set_text(GTK_ENTRY(url_edit_view_), url.spec().c_str());
+  fprintf(stderr, "Set Address to: %s\n", url.spec().c_str());
+
+  QLineEdit* addressLine = m_window->findChild<QLineEdit*>("AddressLineEdit");
+  addressLine->setText(QString::fromStdString(url.spec()));
 }
 
 
@@ -90,11 +96,41 @@ void Shell::PlatformCreateWindow(int width, int height) {
     QVBoxLayout* layout = new QVBoxLayout;
 
     // Create a widget based address bar.
+    QHBoxLayout* addressBar = new QHBoxLayout;
+
+    int buttonWidth = 26;
+    QToolButton* backButton = new QToolButton;
+    backButton->setIcon(QIcon::fromTheme("go-previous"));
+    backButton->setObjectName("BackButton");
+    addressBar->addWidget(backButton);
+
+    QToolButton* forwardButton = new QToolButton;
+    forwardButton->setIcon(QIcon::fromTheme("go-next"));
+    forwardButton->setObjectName("ForwardButton");
+    addressBar->addWidget(forwardButton);
+
+    QToolButton* reloadButton = new QToolButton;
+    reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
+    reloadButton->setObjectName("ReloadButton");
+    addressBar->addWidget(reloadButton);
+
     QLineEdit* lineEdit =  new QLineEdit;
-    layout->addWidget(lineEdit);
+    lineEdit->setObjectName("AddressLineEdit");
+    addressBar->addWidget(lineEdit);
+
+    layout->addLayout(addressBar);
+
 
     m_window->setLayout(layout);
     m_window->show();
+
+    // SignalConnector will act as a proxy for the QObject signals received from
+    // m_window. m_window will take ownership of the SignalConnector.
+    // The SignalConnector will search the children list of m_window
+    // for back/forward/reload buttons and for the address line edit.
+    // Therefore the layout must be set and completed before the SignalConnector
+    // is created.
+    SignalConnector* signalConnector = new SignalConnector(this, m_window);
   }
 }
 
@@ -134,34 +170,18 @@ void Shell::Close()
   gtk_widget_destroy(GTK_WIDGET(window_));
 }
 
-void Shell::OnBackButtonClicked(GtkWidget* widget)
-{
-  GoBackOrForward(-1);
-}
+void Shell::OnBackButtonClicked(GtkWidget* widget) { }
 
-void Shell::OnForwardButtonClicked(GtkWidget* widget)
-{
-  GoBackOrForward(1);
-}
+void Shell::OnForwardButtonClicked(GtkWidget* widget) { }
 
-void Shell::OnReloadButtonClicked(GtkWidget* widget)
-{
-  Reload();
-}
+void Shell::OnReloadButtonClicked(GtkWidget* widget) { }
 
 void Shell::OnStopButtonClicked(GtkWidget* widget)
 {
   Stop();
 }
 
-void Shell::OnURLEntryActivate(GtkWidget* entry)
-{
-  const gchar* str = gtk_entry_get_text(GTK_ENTRY(entry));
-  GURL url(str);
-  if (!url.has_scheme())
-    url = GURL(std::string("http://") + std::string(str));
-  LoadURL(GURL(url));
-}
+void Shell::OnURLEntryActivate(GtkWidget* entry) { }
 
 // Callback for when the main window is destroyed.
 gboolean Shell::OnWindowDestroyed(GtkWidget* window)

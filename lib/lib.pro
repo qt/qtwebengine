@@ -21,11 +21,13 @@ SOURCES = \
         blinqpage.cpp \
         raster_window.cpp \
         render_widget_host_view_qt.cpp \
-        shell_qt.cpp
+        shell_qt.cpp \
+        signal_connector.cpp
 
 HEADERS = \
         backing_store_qt.h \
         blinqpage.h \
         raster_window.h \
-        render_widget_host_view_qt.h
+        render_widget_host_view_qt.h \
+        signal_connector.h
 
