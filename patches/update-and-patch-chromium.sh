@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script used temporarily to invoke gclient and apply our patches
 
-if [[ -z $CHROMIUM_SRC_DIR || ! -d $CHROMIUM_SRC_DIR ]]; then
+if [ -z $CHROMIUM_SRC_DIR -o ! -d $CHROMIUM_SRC_DIR ]; then
     echo "CHROMIUM_SRC_DIR not set or pointing to a non existing directory."
     exit 1;
 fi
