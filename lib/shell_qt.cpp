@@ -74,13 +74,7 @@ void Shell::PlatformSetAddressBarURL(const GURL& url)
 
 void Shell::PlatformSetIsLoading(bool loading)
 {
-  if (headless_)
-    return;
-
-  if (loading)
-    gtk_spinner_start(GTK_SPINNER(spinner_));
-  else
-    gtk_spinner_stop(GTK_SPINNER(spinner_));
+    // FIXME: we might want to emit some loadStarted signal here or something...
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
