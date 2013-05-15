@@ -5,6 +5,7 @@
 
 class QEvent;
 class QMouseEvent;
+class QKeyEvent;
 class RasterWindow;
 
 class RenderWidgetHostView
@@ -78,7 +79,8 @@ private:
     void Paint(const gfx::Rect& scroll_rect);
 
     bool IsPopup() const;
-    void handleMouseEvent(QMouseEvent* ev);
+    void handleMouseEvent(QMouseEvent*);
+    void handleKeyEvent(QKeyEvent*);
 
     content::RenderWidgetHostImpl *m_host;
     RasterWindow *m_view;

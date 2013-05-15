@@ -1,6 +1,8 @@
 #include "render_widget_host_view_qt.h"
 
 #include "backing_store_qt.h"
+#include "web_event_factory.h"
+
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "raster_window.h"
@@ -8,6 +10,7 @@
 
 #include <QEvent>
 #include <QMouseEvent>
+#include <QKeyEvent>
 #include <QScreen>
 
 #include <QDebug>
@@ -54,13 +57,15 @@ bool RenderWidgetHostView::handleEvent(QEvent* event) {
     case QEvent::MouseButtonDblClick:
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove:
         handleMouseEvent(static_cast<QMouseEvent*>(event));
         break;
-//        case QEvent::KeyPress:
-//            handleKeyEvent(event);
-//            break;
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        handleKeyEvent(static_cast<QKeyEvent*>(event));
+        break;
     default:
-        Q_ASSERT(false); // not reached
+        return false;
     }
     return true;
 }
@@ -419,17 +424,12 @@ bool RenderWidgetHostView::IsPopup() const
 
 void RenderWidgetHostView::handleMouseEvent(QMouseEvent* ev)
 {
-    qDebug() << ev << ev->pos();
-    WebKit::WebMouseEvent webKitEvent;
-    webKitEvent.x = ev->x();
-    webKitEvent.y = ev->y();
-    webKitEvent.globalX = ev->globalX();
-    webKitEvent.globalY = ev->globalY();
-    webKitEvent.clickCount = (ev->type() == QEvent::MouseButtonDblClick)? 2 : 1;
-    webKitEvent.button = mouseButtonForEvent(ev);
-    //FIXME: and window coordinates ?
+    m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
+}
 
-    m_host->ForwardMouseEvent(webKitEvent);
+void RenderWidgetHostView::handleKeyEvent(QKeyEvent *ev)
+{
+    m_host->ForwardKeyboardEvent(WebEventFactory::toWebKeyboardEvent(ev));
 }
 
 

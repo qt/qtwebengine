@@ -46,12 +46,8 @@ bool RasterWindow::event(QEvent *event)
     case QEvent::UpdateRequest:
         renderNow();
         return true;
-    case QEvent::MouseButtonDblClick:
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-//    case QEvent::KeyPress:
-        if (m_view)
-            return m_view->handleEvent(event);
     }
-    return QWindow::event(event);
+    if (!m_view || !m_view->handleEvent(event))
+        return QWindow::event(event);
+    return true;
 }

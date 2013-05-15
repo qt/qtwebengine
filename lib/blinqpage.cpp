@@ -39,7 +39,6 @@
 #include "content/browser/renderer_host/backing_store_gtk.h"
 #include "webkit/user_agent/user_agent_util.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 #include "backing_store_qt.h"
 #include "raster_window.h"
@@ -51,11 +50,8 @@
 #include <QGuiApplication>
 #include <qpa/qplatformwindow.h>
 #include <QLabel>
-#include <QMouseEvent>
 #include <QPainter>
 #include <qpa/qplatformnativeinterface.h>
-
-#include <X11/Xutil.h>
 
 namespace {
 
@@ -164,6 +160,7 @@ inline net::URLRequestContext* ResourceContext::GetRequestContext()
 {
     return context->GetRequestContext()->GetURLRequestContext();
 }
+
 
 class RenderViewHost : public content::RenderViewHostImpl
 {
