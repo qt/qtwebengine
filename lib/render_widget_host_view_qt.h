@@ -9,11 +9,14 @@ class QKeyEvent;
 class QWheelEvent;
 class RasterWindow;
 
-class RenderWidgetHostView
+namespace content {
+
+class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
 {
 public:
-    RenderWidgetHostView(content::RenderWidgetHost* widget);
+    RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
+    ~RenderWidgetHostViewQt();
 
     bool handleEvent(QEvent* event);
 
@@ -88,5 +91,7 @@ private:
     RasterWindow *m_view;
     gfx::Size m_requestedSize;
 };
+
+}
 
 #endif

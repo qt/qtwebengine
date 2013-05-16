@@ -2,6 +2,7 @@
 
 #include "backing_store_qt.h"
 #include "web_event_factory.h"
+#include "raster_window.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -13,8 +14,6 @@
 #include <QKeyEvent>
 #include <QWheelEvent>
 #include <QScreen>
-
-#include <QDebug>
 
 #define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
 
@@ -35,13 +34,31 @@ static void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo
     *results = r;
 }
 
-RenderWidgetHostView::RenderWidgetHostView(content::RenderWidgetHost* widget)
+namespace content {
+
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
+    RenderWidgetHost* widget) {
+  return new RenderWidgetHostViewQt(widget);
+}
+
+// static
+void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebKit::WebScreenInfo* results) {
+    QWindow dummy;
+    GetScreenInfoFromNativeWindow(&dummy, results);
+}
+
+RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_view(0)
 {
+    m_host->SetView(this);
 }
 
-bool RenderWidgetHostView::handleEvent(QEvent* event) {
+RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
+{
+}
+
+bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
 
     switch(event->type()) {
     case QEvent::MouseButtonDblClick:
@@ -62,39 +79,45 @@ bool RenderWidgetHostView::handleEvent(QEvent* event) {
     return true;
 }
 
-content::BackingStore *RenderWidgetHostView::AllocBackingStore(const gfx::Size &size)
+content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size &size)
 {
     if (m_view)
-        return new BackingStoreQt(m_host, size, m_view);
+        return new BackingStoreQt(m_host, size, new QWindow);
     return 0;
 }
 
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(content::RenderWidgetHost* widget)
+RenderWidgetHostView* RenderWidgetHostViewQt::CreateViewForWidget(content::RenderWidgetHost* widget)
 {
-    return new RenderWidgetHostView(widget);
+    return new RenderWidgetHostViewQt(widget);
 }
 
-void RenderWidgetHostView::InitAsChild(gfx::NativeView parent_view)
+void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView parent_view)
+{
+    m_view = new RasterWindow(this);
+    bool force_create = !m_host->empty();
+    BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
+    m_view->setBackingStore(backing_store);
+
+    RasterWindowContainer* container = reinterpret_cast<RasterWindowContainer*>(parent_view);
+    container->insert(m_view);
+}
+
+void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
 {
     m_view = new RasterWindow(this);
 }
 
-void RenderWidgetHostView::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
+void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 {
     m_view = new RasterWindow(this);
 }
 
-void RenderWidgetHostView::InitAsFullscreen(content::RenderWidgetHostView*)
-{
-    m_view = new RasterWindow(this);
-}
-
-content::RenderWidgetHost* RenderWidgetHostView::GetRenderWidgetHost() const
+content::RenderWidgetHost* RenderWidgetHostViewQt::GetRenderWidgetHost() const
 {
     return m_host;
 }
 
-void RenderWidgetHostView::SetSize(const gfx::Size& size)
+void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
 {
     int width = size.width();
     int height = size.height();
@@ -113,7 +136,7 @@ void RenderWidgetHostView::SetSize(const gfx::Size& size)
     }
 }
 
-void RenderWidgetHostView::SetBounds(const gfx::Rect& rect)
+void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 {
     // This is called when webkit has sent us a Move message.
     if (IsPopup())
@@ -123,63 +146,63 @@ void RenderWidgetHostView::SetBounds(const gfx::Rect& rect)
 }
 
 // FIXME: Should this really return a QWindow pointer?
-gfx::NativeView RenderWidgetHostView::GetNativeView() const
+gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 {
     QT_NOT_YET_IMPLEMENTED
     // return m_view;
     return gfx::NativeView();
 }
 
-QWindow* RenderWidgetHostView::GetNativeViewQt() const OVERRIDE
+QWindow* RenderWidgetHostViewQt::GetNativeViewQt() const OVERRIDE
 {
     return m_view;
 }
 
-gfx::NativeViewId RenderWidgetHostView::GetNativeViewId() const
+gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 {
     QT_NOT_YET_IMPLEMENTED
     return gfx::NativeViewId();
 }
 
-gfx::NativeViewAccessible RenderWidgetHostView::GetNativeViewAccessible()
+gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 {
     NOTIMPLEMENTED();
     return NULL;
 }
 
 // Set focus to the associated View component.
-void RenderWidgetHostView::Focus()
+void RenderWidgetHostViewQt::Focus()
 {
     m_view->requestActivate();
 }
 
-bool RenderWidgetHostView::HasFocus() const
+bool RenderWidgetHostViewQt::HasFocus() const
 {
     return m_view->isActive();
 }
 
-bool RenderWidgetHostView::IsSurfaceAvailableForCopy() const
+bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
 {
     return true;
 }
 
-void RenderWidgetHostView::Show()
+void RenderWidgetHostViewQt::Show()
 {
     m_view->show();
 }
 
-void RenderWidgetHostView::Hide()
+void RenderWidgetHostViewQt::Hide()
 {
     m_view->hide();
 }
 
-bool RenderWidgetHostView::IsShowing()
+bool RenderWidgetHostViewQt::IsShowing()
 {
     return m_view->isVisible();
 }
 
 // Retrieve the bounds of the View, in screen coordinates.
-gfx::Rect RenderWidgetHostView::GetViewBounds() const
+gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 {
     QRect rect = m_view->geometry();
     QPoint screenPos = m_view->mapToGlobal(QPoint(0,0));
@@ -189,25 +212,25 @@ gfx::Rect RenderWidgetHostView::GetViewBounds() const
 
 // Subclasses should override this method to do what is appropriate to set
 // the custom background for their platform.
-void RenderWidgetHostView::SetBackground(const SkBitmap& background)
+void RenderWidgetHostViewQt::SetBackground(const SkBitmap& background)
 {
     RenderWidgetHostViewBase::SetBackground(background);
     // Send(new ViewMsg_SetBackground(m_host->GetRoutingID(), background));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
-bool RenderWidgetHostView::LockMouse()
+bool RenderWidgetHostViewQt::LockMouse()
 {
     QT_NOT_YET_IMPLEMENTED
     return false;
 }
-void RenderWidgetHostView::UnlockMouse()
+void RenderWidgetHostViewQt::UnlockMouse()
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
 // Returns true if the mouse pointer is currently locked.
-bool RenderWidgetHostView::IsMouseLocked()
+bool RenderWidgetHostViewQt::IsMouseLocked()
 {
     QT_NOT_YET_IMPLEMENTED
     return false;
@@ -216,18 +239,18 @@ bool RenderWidgetHostView::IsMouseLocked()
 // FIXME: remove TOOLKIT_GTK related things.
 #if defined(TOOLKIT_GTK)
 // Gets the event for the last mouse down.
-GdkEventButton* RenderWidgetHostView::GetLastMouseDown()
+GdkEventButton* RenderWidgetHostViewQt::GetLastMouseDown()
 {
     return 0;
 }
 
 // Builds a submenu containing all the gtk input method commands.
-gfx::NativeView RenderWidgetHostView::BuildInputMethodsGtkMenu()
+gfx::NativeView RenderWidgetHostViewQt::BuildInputMethodsGtkMenu()
 {
 }
 #endif  // defined(TOOLKIT_GTK)
 
-void RenderWidgetHostView::WasShown()
+void RenderWidgetHostViewQt::WasShown()
 {
     if (m_view->isVisible())
         return;
@@ -235,7 +258,7 @@ void RenderWidgetHostView::WasShown()
     m_host->WasShown();
 }
 
-void RenderWidgetHostView::WasHidden()
+void RenderWidgetHostViewQt::WasHidden()
 {
     if (!m_view->isVisible())
         return;
@@ -243,43 +266,43 @@ void RenderWidgetHostView::WasHidden()
     m_host->WasHidden();
 }
 
-void RenderWidgetHostView::MovePluginWindows(const gfx::Vector2d&, const std::vector<webkit::npapi::WebPluginGeometry>&)
+void RenderWidgetHostViewQt::MovePluginWindows(const gfx::Vector2d&, const std::vector<webkit::npapi::WebPluginGeometry>&)
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::Blur()
+void RenderWidgetHostViewQt::Blur()
 {
     m_host->Blur();
 }
 
-void RenderWidgetHostView::UpdateCursor(const WebCursor&)
+void RenderWidgetHostViewQt::UpdateCursor(const WebCursor&)
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::SetIsLoading(bool)
+void RenderWidgetHostViewQt::SetIsLoading(bool)
 {
     QT_NOT_YET_IMPLEMENTED
     // Give visual feedback for loading process.
 }
 
-void RenderWidgetHostView::TextInputStateChanged(const ViewHostMsg_TextInputState_Params&)
+void RenderWidgetHostViewQt::TextInputStateChanged(const ViewHostMsg_TextInputState_Params&)
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::ImeCancelComposition()
+void RenderWidgetHostViewQt::ImeCancelComposition()
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&)
+void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&)
 {
     // FIXME: not implemented?
 }
 
-void RenderWidgetHostView::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects)
+void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects)
 {
     if (!m_view->isVisible())
         return;
@@ -295,33 +318,33 @@ void RenderWidgetHostView::DidUpdateBackingStore(const gfx::Rect& scroll_rect, c
     }
 }
 
-void RenderWidgetHostView::RenderViewGone(base::TerminationStatus, int)
+void RenderWidgetHostViewQt::RenderViewGone(base::TerminationStatus, int)
 {
     Destroy();
 }
 
-void RenderWidgetHostView::Destroy()
+void RenderWidgetHostViewQt::Destroy()
 {
     delete m_view;
     m_view = 0;
 }
 
-void RenderWidgetHostView::SetTooltipText(const string16&)
+void RenderWidgetHostViewQt::SetTooltipText(const string16&)
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&)
+void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&)
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::ScrollOffsetChanged()
+void RenderWidgetHostViewQt::ScrollOffsetChanged()
 {
     // FIXME: not implemented?
 }
 
-void RenderWidgetHostView::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback)
+void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback)
 {
     // Grab the snapshot from the renderer as that's the only reliable way to
     // readback from the GPU for this platform right now.
@@ -329,104 +352,105 @@ void RenderWidgetHostView::CopyFromCompositingSurface(const gfx::Rect& src_subre
     GetRenderWidgetHost()->GetSnapshotFromRenderer(src_subrect, callback);
 }
 
-void RenderWidgetHostView::CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback)
+void RenderWidgetHostViewQt::CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback)
 {
     NOTIMPLEMENTED();
     callback.Run(false);
 }
 
-bool RenderWidgetHostView::CanCopyToVideoFrame() const
+bool RenderWidgetHostViewQt::CanCopyToVideoFrame() const
 {
     return false;
 }
 
-void RenderWidgetHostView::OnAcceleratedCompositingStateChange()
+void RenderWidgetHostViewQt::OnAcceleratedCompositingStateChange()
 {
     // bool activated = m_host->is_accelerated_compositing_active();
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id)
+void RenderWidgetHostViewQt::AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id)
 {
     AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
     ack_params.sync_point = 0;
     content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
 }
 
-void RenderWidgetHostView::AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id)
+void RenderWidgetHostViewQt::AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id)
 {
     AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
     ack_params.sync_point = 0;
     content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
 }
 
-void RenderWidgetHostView::AcceleratedSurfaceSuspend()
+void RenderWidgetHostViewQt::AcceleratedSurfaceSuspend()
 {
     //FIXME: not implemented?
 }
 
-void RenderWidgetHostView::AcceleratedSurfaceRelease()
+void RenderWidgetHostViewQt::AcceleratedSurfaceRelease()
 {
     //FIXME: not implemented?
 }
 
-bool RenderWidgetHostView::HasAcceleratedSurface(const gfx::Size&)
+bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 {
     return false;
 }
 
-void RenderWidgetHostView::GetScreenInfo(WebKit::WebScreenInfo* results)
+void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
 {
     GetScreenInfoFromNativeWindow(m_view, results);
 }
 
-gfx::Rect RenderWidgetHostView::GetBoundsInRootWindow()
+gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 {
     QRect r = m_view->frameGeometry();
     return gfx::Rect(r.x(), r.y(), r.width(), r.height());
 }
 
-gfx::GLSurfaceHandle RenderWidgetHostView::GetCompositingSurface()
+gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
 {
     QT_NOT_YET_IMPLEMENTED
     return gfx::GLSurfaceHandle();
 }
 
-void RenderWidgetHostView::SetHasHorizontalScrollbar(bool) { }
+void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
 
-void RenderWidgetHostView::SetScrollOffsetPinning(bool, bool) { }
+void RenderWidgetHostViewQt::SetScrollOffsetPinning(bool, bool) { }
 
-void RenderWidgetHostView::OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&)
+void RenderWidgetHostViewQt::OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&)
 {
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostView::Paint(const gfx::Rect& scroll_rect)
+void RenderWidgetHostViewQt::Paint(const gfx::Rect& scroll_rect)
 {
     bool force_create = !m_host->empty();
     BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
     if (backing_store && m_view)
-        backing_store->displayBuffer();
+        backing_store->displayBuffer(m_view);
 }
 
-bool RenderWidgetHostView::IsPopup() const
+bool RenderWidgetHostViewQt::IsPopup() const
 {
     return popup_type_ != WebKit::WebPopupTypeNone;
 }
 
-void RenderWidgetHostView::handleMouseEvent(QMouseEvent* ev)
+void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* ev)
 {
     m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
 }
 
-void RenderWidgetHostView::handleKeyEvent(QKeyEvent *ev)
+void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 {
     m_host->ForwardKeyboardEvent(WebEventFactory::toWebKeyboardEvent(ev));
 }
 
-void RenderWidgetHostView::handleWheelEvent(QWheelEvent *ev)
+void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
     m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev));
 }
 
+}
 

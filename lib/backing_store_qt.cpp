@@ -8,26 +8,20 @@
 
 #include <QPainter>
 
-BackingStoreQt::BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, RasterWindow* surface)
-    : QBackingStore(surface)
+BackingStoreQt::BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, QWindow* parent)
+    : QBackingStore(parent)
     , m_host(content::RenderWidgetHostImpl::From(host))
     , content::BackingStore(host, size)
-    , m_surface(surface)
     , m_isValid(false)
 {
     int width = size.width();
     int height = size.height();
-    m_surface->resize(width,height);
     resize(QSize(width, height));
     setStaticContents(QRect(0,0,size.width(), size.height()));
-    m_surface->setBackingStore(this);
-    m_surface->create();
 }
 
 BackingStoreQt::~BackingStoreQt()
 {
-    if (m_surface)
-        m_surface->setBackingStore(0);
 }
 
 void BackingStoreQt::resize(const QSize& size)
@@ -40,15 +34,15 @@ void BackingStoreQt::resize(const QSize& size)
     m_host->WasResized();
 }
 
-void BackingStoreQt::displayBuffer()
+void BackingStoreQt::displayBuffer(RasterWindow* surface)
 {
-    if (!m_surface->isExposed() || !m_isValid)
+    if (!surface->isExposed() || !m_isValid)
         return;
 
-    int width = m_surface->width();
-    int height = m_surface->height();
+    int width = surface->width();
+    int height = surface->height();
     QRect rect(0, 0, width, height);
-    flush(rect);
+    flush(rect, surface);
 }
 
 void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,

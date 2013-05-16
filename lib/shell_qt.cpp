@@ -13,11 +13,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
+#include "raster_window.h"
 #include "signal_connector.h"
+#include "web_contents_view_qt.h"
 
 #include <QWindow>
 #include <QLineEdit>
@@ -130,13 +131,13 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
 void Shell::PlatformSetContents()
 {
-  if (headless_)
+    if (headless_)
     return;
 
-  WebContentsView* content_view = web_contents_->GetView();
-
-  QWidget* container = QWidget::createWindowContainer(content_view->GetNativeViewQt());
-  m_window->layout()->addWidget(container);
+    WebContentsViewGtk* content_view = static_cast<WebContentsViewGtk*>(web_contents_->GetView());
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_window->layout());
+    if (layout)
+        layout->addLayout(content_view->windowContainer());
 }
 
 void Shell::SizeTo(int width, int height) {

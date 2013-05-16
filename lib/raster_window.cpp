@@ -4,7 +4,7 @@
 #include "render_widget_host_view_qt.h"
 #include <QResizeEvent>
 
-RasterWindow::RasterWindow(RenderWidgetHostView* view, QWindow *parent)
+RasterWindow::RasterWindow(content::RenderWidgetHostViewQt* view, QWindow *parent)
     : QWindow(parent)
     , m_backingStore(0)
     , m_view(view)
@@ -28,7 +28,7 @@ void RasterWindow::renderNow()
     if (!isExposed() || !m_backingStore)
         return;
     QRect rect(0, 0, width(), height());
-    m_backingStore->displayBuffer();
+    m_backingStore->displayBuffer(this);
 }
 
 void RasterWindow::resizeEvent(QResizeEvent *resizeEvent)

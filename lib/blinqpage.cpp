@@ -174,33 +174,7 @@ public:
         content::SessionStorageNamespace* session_storage_namespace)
         : content::RenderViewHostImpl(instance, delegate, widget_delegate, routing_id, swapped_out, session_storage_namespace)
     {
-        SetView(new RenderWidgetHostView(this));
-    }
-};
-
-class ViewHostFactory : public content::RenderViewHostFactory
-{
-public:
-    ViewHostFactory()
-    {
-        content::RenderViewHostFactory::RegisterFactory(this);
-    }
-    ~ViewHostFactory()
-    {
-        content::RenderViewHostFactory::UnregisterFactory();
-    }
-
-    virtual content::RenderViewHost *CreateRenderViewHost(content::SiteInstance *instance,
-                                                          content::RenderViewHostDelegate *delegate,
-                                                          content::RenderWidgetHostDelegate *widget_delegate,
-                                                          int routing_id,
-                                                          bool swapped_out,
-                                                          content::SessionStorageNamespace *session_storage_namespace)
-    {
-        content::RenderViewHost *vh = new RenderViewHost(instance, delegate, widget_delegate, routing_id, swapped_out, session_storage_namespace);
-        vh->GetView()->InitAsChild(0);
-
-        return vh;
+        SetView(new content::RenderWidgetHostViewQt(this));
     }
 };
 
@@ -343,8 +317,6 @@ BlinqPage::BlinqPage(int argc, char **argv)
 
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
-        (void)new ViewHostFactory();
-
         runner = content::ContentMainRunner::Create();
         runner->Initialize(0, 0, new content::ShellMainDelegate);
     }

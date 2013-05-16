@@ -11,11 +11,11 @@ class BackingStoreQt : public QBackingStore
                      , public content::BackingStore
 {
 public:
-    BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, RasterWindow* surface);
+    BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, QWindow* parent);
     ~BackingStoreQt();
 
     void resize(const QSize& size);
-    void displayBuffer();
+    void displayBuffer(RasterWindow*);
 
     virtual void PaintToBackingStore(content::RenderProcessHost *process, TransportDIB::Id bitmap, const gfx::Rect &bitmap_rect,
                                      const std::vector<gfx::Rect> &copy_rects, float scale_factor, const base::Closure &completion_callback,
@@ -25,7 +25,6 @@ public:
     virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output);
 
 private:
-    RasterWindow* m_surface;
     content::RenderWidgetHost* m_host;
     bool m_isValid;
 };
