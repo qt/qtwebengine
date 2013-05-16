@@ -6,11 +6,13 @@
 
 class QMouseEvent;
 class QKeyEvent;
+class QWheelEvent;
 
 class WebEventFactory {
 
 public:
     static WebKit::WebMouseEvent toWebMouseEvent(QMouseEvent*);
+    static WebKit::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
 
 };

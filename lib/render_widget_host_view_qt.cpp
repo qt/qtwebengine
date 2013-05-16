@@ -11,22 +11,12 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QKeyEvent>
+#include <QWheelEvent>
 #include <QScreen>
 
 #include <QDebug>
 
 #define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
-
-static WebKit::WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
-{
-    if (event->button() == Qt::LeftButton || (event->buttons() & Qt::LeftButton))
-        return WebKit::WebMouseEvent::ButtonLeft;
-    else if (event->button() == Qt::RightButton || (event->buttons() & Qt::RightButton))
-        return WebKit::WebMouseEvent::ButtonRight;
-    else if (event->button() == Qt::MidButton || (event->buttons() & Qt::MidButton))
-        return WebKit::WebMouseEvent::ButtonMiddle;
-    return WebKit::WebMouseEvent::ButtonNone;
-}
 
 static void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
 {
@@ -64,6 +54,8 @@ bool RenderWidgetHostView::handleEvent(QEvent* event) {
     case QEvent::KeyRelease:
         handleKeyEvent(static_cast<QKeyEvent*>(event));
         break;
+    case QEvent::Wheel:
+        handleWheelEvent(static_cast<QWheelEvent*>(event));
     default:
         return false;
     }
@@ -430,6 +422,11 @@ void RenderWidgetHostView::handleMouseEvent(QMouseEvent* ev)
 void RenderWidgetHostView::handleKeyEvent(QKeyEvent *ev)
 {
     m_host->ForwardKeyboardEvent(WebEventFactory::toWebKeyboardEvent(ev));
+}
+
+void RenderWidgetHostView::handleWheelEvent(QWheelEvent *ev)
+{
+    m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev));
 }
 
 

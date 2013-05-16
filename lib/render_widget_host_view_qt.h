@@ -6,6 +6,7 @@
 class QEvent;
 class QMouseEvent;
 class QKeyEvent;
+class QWheelEvent;
 class RasterWindow;
 
 class RenderWidgetHostView
@@ -81,6 +82,7 @@ private:
     bool IsPopup() const;
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
+    void handleWheelEvent(QWheelEvent*);
 
     content::RenderWidgetHostImpl *m_host;
     RasterWindow *m_view;
