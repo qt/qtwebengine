@@ -24,7 +24,6 @@ SOURCES = \
         shell_qt.cpp \
         signal_connector.cpp \
         web_event_factory.cpp \
-        moc_signal_connector.cpp
 
 HEADERS = \
         backing_store_qt.h \

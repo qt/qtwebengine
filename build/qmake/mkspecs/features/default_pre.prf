@@ -4,3 +4,5 @@ BLINQ_ROOT = $$replace(PWD, /build/qmake/mkspecs/features$,)
 BLINQ_PROCESS_NAME = blinq_process
 
 load(functions)
+# So that moc generated files don't end up polluting the source tree
+OUT_PWD = $$getOutDir()

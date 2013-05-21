@@ -3,10 +3,38 @@
 # the .gyp file that we'll use later on when running gyp
 
 load(functions)
+load(moc)
+
+defineReplace(mocAction) {
+    INPUT_FILE = $$1
+    OUTPUT_NAME = $$mocOutput($$INPUT_FILE)
+    DEFINES_LIST = $$join(DEFINES, " -D", -D)
+    INCPATH = $$join(INCLUDEPATH, " -I", -I)
+    MOC_COMMAND = $$mocCmdBase()
+    MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(DEFINES)"), $$DEFINES_LIST)
+    MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(INCPATH)"), $$INCPATH)
+    MOC_COMMAND = $$split(MOC_COMMAND, " ")
+    OUTPUT_FILE = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}$${OUTPUT_NAME}
+    contents = "      {" \
+               "        'action_name':'$$OUTPUT_NAME'," \
+               "        'inputs': ['$$INPUT_FILE',]," \
+               "        'outputs': ['$$OUTPUT_FILE',]," \
+               "        'action': ["
+for(token, MOC_COMMAND): contents += "          '$$token',"
+    contents += "          '$$INPUT_FILE'," \
+                "          '-o'," \
+                "          '$$OUTPUT_FILE'," \
+                "        ]," \
+                "     }"
+
+    return($$contents)
+}
 
 GYPI_FILE = $$replace(_PRO_FILE_, .pro$, .gyp)
 
 TARGET_TYPE = $$toGypTargetType()
+MOCABLE_HEADERS = $$findMocables($$HEADERS)
+MOCABLE_SOURCES = $$findMocables($$SOURCES)
 
 GYPI_CONTENTS =  "{" \
                  "  'targets': [" \
@@ -30,12 +58,22 @@ GYPI_CONTENTS += "    ],"
 GYPI_CONTENTS += "    'sources': ["
 for (sourcefile, SOURCES): GYPI_CONTENTS += "      '$$sourcefile',"
 for (headerfile, HEADERS): GYPI_CONTENTS += "      '$$headerfile',"
+MOC_OUT_PATH = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}
+for (mocable_header, MOCABLE_HEADERS): GYPI_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
+for (mocable_source, MOCABLE_SOURCES): GYPI_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_source)',"
 GYPI_CONTENTS += "    ],"
 !isEmpty(INCLUDEPATH) {
   GYPI_CONTENTS += "    'include_dirs': ["
   for (path, INCLUDEPATH): GYPI_CONTENTS += "      '$$path',"
   GYPI_CONTENTS += "    ],"
 }
+# Generate the actions for moc
+!isEmpty(MOCABLE_HEADERS)|!isEmpty(MOCABLE_SOURCES) {
+    GYPI_CONTENTS += "    'actions': ["
+    for(header, MOCABLE_HEADERS): GYPI_CONTENTS += $$mocAction($$header)
+    GYPI_CONTENTS += "    ],"
+}
+
 GYPI_CONTENTS += "  }," \
                  "  ]," \
                  "}"

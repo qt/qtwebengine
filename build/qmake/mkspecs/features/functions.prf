@@ -12,3 +12,20 @@ defineReplace(getOutDir) {
   CONFIG(release, debug|release):return("$$BLINQ_ROOT/out/Release")
   return("$$BLINQ_ROOT/out/Debug")
 }
+
+defineReplace(findMocables) {
+  input = $$1
+  for (file, input): \
+      infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
+  mocables = $$system("$$BLINQ_ROOT/build/scripts/find-mocables $$infiles")
+  mocables = $$replace(mocables, $$_PRO_FILE_PWD_$${QMAKE_DIR_SEP}, '')
+  return($$mocables)
+}
+
+defineReplace(mocOutput) {
+  out = $$1
+  # The order is important, since the output of the second replace would end up accidentaly transformed by the first one
+  out = $$replace(out, ^(.*)($$join(QMAKE_EXT_CPP,|)), $${QMAKE_CPP_MOD_MOC}\\1$${QMAKE_EXT_CPP_MOC})
+  out = $$replace(out, ^(.*)($$join(QMAKE_EXT_H,|)), $${QMAKE_H_MOD_MOC}\\1$${first(QMAKE_EXT_CPP)})
+  return ($$out)
+}
