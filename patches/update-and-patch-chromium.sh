@@ -17,6 +17,7 @@ $DEPOT_TOOLS/gclient sync
 echo "Applying patches..."
 git am $PATCH_DIR/0001-My-local-fixes.patch
 git am $PATCH_DIR/0001-Temporary-patch-add-some-Qt-member-functions-to-Rend.patch
+git am $PATCH_DIR/0001-remove-render_widget_host_view_gtk-and-web_contents_.patch
 
 cd tools/gyp
 echo "Entering $PWD"
