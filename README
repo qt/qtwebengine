@@ -1,4 +1,3 @@
-
 This is a prototype of allowing embedding Chromium/Blink into Qt.
 
 -- Build instructions:
@@ -9,6 +8,7 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
     * git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
     * Add depot_tools to your PATH
     * export GYP_GENERATORS=ninja
+    * ubuntu>$ sudo apt-get build-dep chromium-browser
     * fetch blink --nosvn=True
     * If that didn't do the trick, it should essentially boil down to running "gclient sync"
 
