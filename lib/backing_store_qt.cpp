@@ -9,15 +9,14 @@
 #include <QPainter>
 
 BackingStoreQt::BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, QWindow* parent)
-    : QBackingStore(parent)
-    , m_host(content::RenderWidgetHostImpl::From(host))
+    : m_host(content::RenderWidgetHostImpl::From(host))
+    , m_pixelBuffer(size.width(), size.height())
     , content::BackingStore(host, size)
     , m_isValid(false)
 {
     int width = size.width();
     int height = size.height();
     resize(QSize(width, height));
-    setStaticContents(QRect(0,0,size.width(), size.height()));
 }
 
 BackingStoreQt::~BackingStoreQt()
@@ -27,22 +26,16 @@ BackingStoreQt::~BackingStoreQt()
 void BackingStoreQt::resize(const QSize& size)
 {
     m_isValid = false;
-    QRect contentRect(0, 0, size.width(), size.height());
-    QBackingStore::resize(size);
-    setStaticContents(contentRect);
-
+    if (size != m_pixelBuffer.size())
+    m_pixelBuffer = QPixmap(size);
     m_host->WasResized();
 }
 
-void BackingStoreQt::displayBuffer(RasterWindow* surface)
+void BackingStoreQt::paintToTarget(QPainter* painter, const QRect& rect)
 {
-    if (!surface->isExposed() || !m_isValid)
+    if (m_pixelBuffer.isNull())
         return;
-
-    int width = surface->width();
-    int height = surface->height();
-    QRect rect(0, 0, width, height);
-    flush(rect, surface);
+    painter->drawPixmap(rect, m_pixelBuffer);
 }
 
 void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
@@ -64,9 +57,11 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
     gfx::Rect pixel_bitmap_rect = bitmap_rect;
 
     uint8_t* bitmapData = static_cast<uint8_t*>(dib->memory());
-    int width = QBackingStore::size().width();
-    int height = QBackingStore::size().height();
+    int width = m_pixelBuffer.size().width();
+    int height = m_pixelBuffer.size().height();
     QImage img(bitmapData, pixel_bitmap_rect.width(), pixel_bitmap_rect.height(), QImage::Format_ARGB32);
+
+    m_painter.begin(&m_pixelBuffer);
 
     for (size_t i = 0; i < copy_rects.size(); ++i) {
         gfx::Rect copy_rect = gfx::ToEnclosedRect(gfx::ScaleRect(copy_rects[i], scale_factor));
@@ -81,15 +76,10 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
                                  , copy_rect.width()
                                  , copy_rect.height());
 
-        beginPaint(destination);
-        m_isValid = true;
-        QPaintDevice *device = paintDevice();
-        if (device) {
-            QPainter painter(device);
-            painter.drawPixmap(destination, QPixmap::fromImage(img), source);
-        }
-        endPaint();
+        m_painter.drawPixmap(destination, QPixmap::fromImage(img), source);
     }
+
+    m_painter.end();
 }
 
 void BackingStoreQt::ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)

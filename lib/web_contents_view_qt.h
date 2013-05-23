@@ -19,6 +19,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class RasterWindowContainer;
+class RasterWindow;
 
 namespace content {
 
@@ -50,7 +51,7 @@ class CONTENT_EXPORT WebContentsViewGtk
   // WebContentsView implementation --------------------------------------------
 
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
-  virtual QWindow* GetNativeViewQt() const OVERRIDE;
+  virtual RasterWindow* GetNativeViewQt() const OVERRIDE;
   virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
   virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;

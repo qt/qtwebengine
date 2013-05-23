@@ -3,12 +3,16 @@
 #include "backing_store_qt.h"
 #include "render_widget_host_view_qt.h"
 #include <QResizeEvent>
+#include <QShowEvent>
+#include <QPaintEvent>
 
-RasterWindow::RasterWindow(content::RenderWidgetHostViewQt* view, QWindow *parent)
-    : QWindow(parent)
+RasterWindow::RasterWindow(content::RenderWidgetHostViewQt* view, QWidget *parent)
+    : QWidget(parent)
+    , m_painter(0)
     , m_backingStore(0)
     , m_view(view)
 {
+    setFocusPolicy(Qt::ClickFocus);
 }
 
 void RasterWindow::setBackingStore(BackingStoreQt* backingStore)
@@ -16,38 +20,32 @@ void RasterWindow::setBackingStore(BackingStoreQt* backingStore)
     m_backingStore = backingStore;
 }
 
-void RasterWindow::exposeEvent(QExposeEvent *)
+void RasterWindow::paintEvent(QPaintEvent * event)
 {
-    if (isExposed()) {
-        renderNow();
-    }
+    if (!m_backingStore)
+        return;
+    QPainter painter(this);
+    m_backingStore->paintToTarget(&painter, event->rect());
 }
 
-void RasterWindow::renderNow()
+QPainter* RasterWindow::painter()
 {
-    if (!isExposed() || !m_backingStore)
-        return;
-    QRect rect(0, 0, width(), height());
-    m_backingStore->displayBuffer(this);
+    if (!m_painter)
+        m_painter = new QPainter(this);
+    return m_painter;
 }
 
 void RasterWindow::resizeEvent(QResizeEvent *resizeEvent)
 {
     if (m_backingStore)
         m_backingStore->resize(resizeEvent->size());
-    if (isExposed())
-        renderNow();
+    update();
 }
 
 
 bool RasterWindow::event(QEvent *event)
 {
-    switch(event->type()) {
-    case QEvent::UpdateRequest:
-        renderNow();
-        return true;
-    }
     if (!m_view || !m_view->handleEvent(event))
-        return QWindow::event(event);
+        return QWidget::event(event);
     return true;
 }

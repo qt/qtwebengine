@@ -117,7 +117,7 @@ gfx::NativeView WebContentsViewGtk::GetNativeView() const {
   return expanded_.get();
 }
 
-QWindow* WebContentsViewGtk::GetNativeViewQt() const {
+RasterWindow* WebContentsViewGtk::GetNativeViewQt() const {
   RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (!rwhv)
     return NULL;

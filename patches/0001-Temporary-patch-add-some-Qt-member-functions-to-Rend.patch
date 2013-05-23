@@ -5,7 +5,7 @@ Subject: [PATCH] Temporary patch: add some Qt member functions to
  RenderWidgetHostView.
 
 This patch should be removed again, once we manage to avoid the use of
-GetNativeView() or we manage to make gfx::NativeView a QWindow.w
+GetNativeView() or we manage to make gfx::NativeView a RasterWindow.w
 ---
  content/browser/renderer_host/render_widget_host_view_gtk.h | 1 +
  content/browser/web_contents/web_contents_view_gtk.cc       | 7 +++++++
@@ -37,7 +37,7 @@ index 9cb9212..8202258 100644
    return expanded_.get();
  }
  
-+QWindow* WebContentsViewGtk::GetNativeViewQt() const {
++RasterWindow* WebContentsViewGtk::GetNativeViewQt() const {
 +  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
 +  if (!rwhv)
 +    return NULL;
@@ -55,7 +55,7 @@ index a5a15a2..f4a5a93 100644
    // WebContentsView implementation --------------------------------------------
  
    virtual gfx::NativeView GetNativeView() const OVERRIDE;
-+  virtual QWindow* GetNativeViewQt() const OVERRIDE;
++  virtual RasterWindow* GetNativeViewQt() const OVERRIDE;
    virtual gfx::NativeView GetContentNativeView() const OVERRIDE;
    virtual gfx::NativeWindow GetTopLevelNativeWindow() const OVERRIDE;
    virtual void GetContainerBounds(gfx::Rect* out) const OVERRIDE;
@@ -79,7 +79,7 @@ index b881748..3eccb42 100644
  #endif
  
  class GURL;
-+class QWindow;
++class RasterWindow;
  
  namespace gfx {
  class Rect;
@@ -89,7 +89,7 @@ index b881748..3eccb42 100644
    // renderer in IPC messages.
 +  virtual gfx::NativeView GetNativeViewGTK() const { return 0; };
    virtual gfx::NativeView GetNativeView() const = 0;
-+  virtual QWindow* GetNativeViewQt() const { return 0; }
++  virtual RasterWindow* GetNativeViewQt() const { return 0; }
    virtual gfx::NativeViewId GetNativeViewId() const = 0;
    virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
  
@@ -101,7 +101,7 @@ index d0a7309..9cfddb4 100644
  #include "ui/gfx/size.h"
  
  struct WebDropData;
-+class QWindow;
++class RasterWindow;
  
  namespace content {
  
@@ -109,7 +109,7 @@ index d0a7309..9cfddb4 100644
  
    // Returns the native widget that contains the contents of the tab.
    virtual gfx::NativeView GetNativeView() const = 0;
-+  virtual QWindow* GetNativeViewQt() const { return 0; }
++  virtual RasterWindow* GetNativeViewQt() const { return 0; }
  
    // Returns the native widget with the main content of the tab (i.e. the main
    // render view host, though there may be many popups in the tab as children of

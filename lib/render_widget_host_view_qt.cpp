@@ -153,7 +153,7 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
     return gfx::NativeView();
 }
 
-QWindow* RenderWidgetHostViewQt::GetNativeViewQt() const OVERRIDE
+RasterWindow* RenderWidgetHostViewQt::GetNativeViewQt() const
 {
     return m_view;
 }
@@ -173,12 +173,12 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 // Set focus to the associated View component.
 void RenderWidgetHostViewQt::Focus()
 {
-    m_view->requestActivate();
+    m_view->setFocus(Qt::MouseFocusReason);
 }
 
 bool RenderWidgetHostViewQt::HasFocus() const
 {
-    return m_view->isActive();
+    return m_view->hasFocus();
 }
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
@@ -400,7 +400,10 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 
 void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
 {
-    GetScreenInfoFromNativeWindow(m_view, results);
+    QWindow* window = m_view->window()->windowHandle();
+    if (!window)
+        return;
+    GetScreenInfoFromNativeWindow(window, results);
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
@@ -428,8 +431,12 @@ void RenderWidgetHostViewQt::Paint(const gfx::Rect& scroll_rect)
 {
     bool force_create = !m_host->empty();
     BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
-    if (backing_store && m_view)
-        backing_store->displayBuffer(m_view);
+    if (backing_store && m_view) {
+        QSize s = m_view->size();
+        QRect rect(0, 0, s.width(), s.height());
+        m_view->setBackingStore(backing_store);
+        m_view->update();
+    }
 }
 
 bool RenderWidgetHostViewQt::IsPopup() const

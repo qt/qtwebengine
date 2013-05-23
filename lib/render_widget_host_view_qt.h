@@ -30,7 +30,7 @@ public:
     virtual void SetSize(const gfx::Size& size);
     virtual void SetBounds(const gfx::Rect& rect);
     virtual gfx::NativeView GetNativeView() const;
-    virtual QWindow* GetNativeViewQt() const OVERRIDE;
+    virtual RasterWindow* GetNativeViewQt() const OVERRIDE;
     virtual gfx::NativeViewId GetNativeViewId() const;
     virtual gfx::NativeViewAccessible GetNativeViewAccessible();
     virtual void Focus();
