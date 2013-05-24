@@ -27,7 +27,12 @@ void BackingStoreQt::resize(const QSize& size)
 {
     m_isValid = false;
     if (size != m_pixelBuffer.size()) {
+        QPixmap oldBackingStore = m_pixelBuffer;
         m_pixelBuffer = QPixmap(size);
+
+        QPainter painter(&m_pixelBuffer);
+        painter.drawPixmap(oldBackingStore.rect(), oldBackingStore);
+
         m_host->WasResized();
     }
 }

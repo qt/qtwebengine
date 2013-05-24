@@ -13,6 +13,7 @@ RasterWindow::RasterWindow(content::RenderWidgetHostViewQt* view, QWidget *paren
     , m_view(view)
 {
     setFocusPolicy(Qt::ClickFocus);
+    setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
 void RasterWindow::setBackingStore(BackingStoreQt* backingStore)
