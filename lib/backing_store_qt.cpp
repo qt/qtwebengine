@@ -74,11 +74,11 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
 
         QRect source = QRect( copy_rect.x() - pixel_bitmap_rect.x()
                             , copy_rect.y() - pixel_bitmap_rect.y()
-                            , pixel_bitmap_rect.width()
-                            , pixel_bitmap_rect.height());
+                            , copy_rect.width()
+                            , copy_rect.height());
 
-        QRect destination = QRect( copy_rect.x()
-                                 , copy_rect.y()
+        QRect destination = QRect( copy_rect.x() - pixel_bitmap_rect.x()
+                                 , copy_rect.y() - pixel_bitmap_rect.y()
                                  , copy_rect.width()
                                  , copy_rect.height());
 
@@ -90,9 +90,9 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
 
 void BackingStoreQt::ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
 {
-    // DCHECK(delta.x() == 0 || delta.y() == 0);
+    DCHECK(delta.x() == 0 || delta.y() == 0);
 
-    // m_pixelBuffer.scroll(delta.x(), delta.y(), clip_rect.x(), clip_rect.y(), clip_rect.width(), clip_rect.height());
+    m_pixelBuffer.scroll(delta.x(), delta.y(), m_pixelBuffer.rect());
 }
 
 bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
