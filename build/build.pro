@@ -4,16 +4,12 @@
 
 TEMPLATE = aux
 
-# Fetched from environment for now
-CHROMIUM_SRC_DIR = $$(CHROMIUM_SRC_DIR)
-isEmpty(CHROMIUM_SRC_DIR):error("please set CHOMIUM_SRC_DIR")
-
 message(Running Gyp...)
 GYP_OUTPUT = $$system(./gyp_blinq)
 message($$GYP_OUTPUT)
 
 ninja.target = ninja
-ninja.commands = $$CHROMIUM_SRC_DIR/../depot_tools/ninja -C $$getOutDir()
+ninja.commands = $$CHROMIUM_SRC_DIR/../depot_tools/ninja -C $$getOutDir()/$$getConfigDir()
 ninja.depends: qmake
 QMAKE_EXTRA_TARGETS += ninja
 

@@ -21,8 +21,8 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
     * set the CHROMIUM_SRC_DIR environment variable to point to /path/to/src/
     * Simply run qmake in the top-level directory (it will call ninja behind the scenes).
     Use qmake -r to forcefully re-gyp (without relying on make to determine if it's necessary).
-    * switching between a debug and a release build can still be a bit cumbersome, for now it seems:
-        rm **/Makefile && qmake -r CONFIG+=<debug or release> depending on what's needed should work well
+    * Release or debug builds can be obtained by running 'make release' or 'make debug' in the
+      top level directory (only lib and process for now, and not so smart with dependencies)
 
 (4) build with make ;)
 

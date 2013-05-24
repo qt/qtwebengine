@@ -8,8 +8,10 @@ TEMPLATE = lib
 TARGET = blinq
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
-DEFINES += QT_NO_KEYWORDS \
-           BLINQ_PROCESS_PATH=\\\"$$getOutDir()/$$BLINQ_PROCESS_NAME\\\"
+DEFINES += QT_NO_KEYWORDS
+
+# We need a way to tap into gyp's Debug vs. Release configuration
+PER_CONFIG_DEFINES = BLINQ_PROCESS_PATH=\\\"$$getOutDir()/%config/$$BLINQ_PROCESS_NAME\\\"
 
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG

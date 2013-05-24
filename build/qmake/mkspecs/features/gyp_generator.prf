@@ -55,6 +55,20 @@ GYPI_CONTENTS += "    ],"
   for (define, DEFINES): GYPI_CONTENTS += "      '$$define',"
   GYPI_CONTENTS += "    ],"
 }
+!isEmpty(PER_CONFIG_DEFINES) {
+  GYPI_CONTENTS += "    'configurations': {"\
+                   "      'Release': {" \
+                   "        'defines': ["
+  for (define, PER_CONFIG_DEFINES): GYPI_CONTENTS += "          '$$replace(define,%config,Release)',"
+  GYPI_CONTENTS += "        ]," \
+                   "      }," \
+                   "      'Debug': {" \
+                   "        'defines': ["
+  for (define, PER_CONFIG_DEFINES): GYPI_CONTENTS += "          '$$replace(define,%config,Debug)',"
+  GYPI_CONTENTS += "        ]," \
+                   "      }," \
+                   "    },"
+}
 GYPI_CONTENTS += "    'sources': ["
 for (sourcefile, SOURCES): GYPI_CONTENTS += "      '$$sourcefile',"
 for (headerfile, HEADERS): GYPI_CONTENTS += "      '$$headerfile',"
@@ -79,6 +93,9 @@ GYPI_CONTENTS += "  }," \
                  "}"
 
 write_file($$GYPI_FILE, GYPI_CONTENTS)
+
+# Overwriting the generated gyp file seems like a good reason to re-gyp
+unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$BLINQ_ROOT/build/build.pro")
 
 # The generated Makefile shouldn't build anything by itself, just re-run qmake if necessary
 TEMPLATE = aux

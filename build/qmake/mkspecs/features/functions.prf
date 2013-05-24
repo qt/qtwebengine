@@ -9,8 +9,13 @@ defineReplace(toGypTargetType) {
 }
 
 defineReplace(getOutDir) {
-  CONFIG(release, debug|release):return("$$BLINQ_ROOT/out/Release")
-  return("$$BLINQ_ROOT/out/Debug")
+  # FIXME: rely on env variable in here and in the gyp_blinq script, à la WEBKITOUTPUTDIR
+  return("$$BLINQ_ROOT/out")
+}
+
+defineReplace(getConfigDir) {
+  CONFIG(release, debug|release):return("Release")
+  return("Debug")
 }
 
 defineReplace(findMocables) {

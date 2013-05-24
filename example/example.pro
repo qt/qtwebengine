@@ -5,7 +5,7 @@ SOURCES = main.cpp
 
 INCLUDEPATH += ../lib
 
-LIBPATH = $$getOutDir()/lib
+LIBPATH = $$getOutDir()/$$getConfigDir()/lib
 
 LIBS += -L$$LIBPATH -lblinq
 QMAKE_RPATHDIR += $$LIBPATH
