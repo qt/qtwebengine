@@ -72,13 +72,13 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
     for (size_t i = 0; i < copy_rects.size(); ++i) {
         gfx::Rect copy_rect = gfx::ToEnclosedRect(gfx::ScaleRect(copy_rects[i], scale_factor));
 
-        QRect source = QRect( copy_rect.x() - pixel_bitmap_rect.x()
-                            , copy_rect.y() - pixel_bitmap_rect.y()
+        QRect source = QRect( copy_rect.x()
+                            , copy_rect.y()
                             , copy_rect.width()
                             , copy_rect.height());
 
-        QRect destination = QRect( copy_rect.x() - pixel_bitmap_rect.x()
-                                 , copy_rect.y() - pixel_bitmap_rect.y()
+        QRect destination = QRect( copy_rect.x()
+                                 , copy_rect.y()
                                  , copy_rect.width()
                                  , copy_rect.height());
 
