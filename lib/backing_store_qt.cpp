@@ -26,9 +26,10 @@ BackingStoreQt::~BackingStoreQt()
 void BackingStoreQt::resize(const QSize& size)
 {
     m_isValid = false;
-    if (size != m_pixelBuffer.size())
-    m_pixelBuffer = QPixmap(size);
-    m_host->WasResized();
+    if (size != m_pixelBuffer.size()) {
+        m_pixelBuffer = QPixmap(size);
+        m_host->WasResized();
+    }
 }
 
 void BackingStoreQt::paintToTarget(QPainter* painter, const QRect& rect)

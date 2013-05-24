@@ -18,6 +18,8 @@ RasterWindow::RasterWindow(content::RenderWidgetHostViewQt* view, QWidget *paren
 void RasterWindow::setBackingStore(BackingStoreQt* backingStore)
 {
     m_backingStore = backingStore;
+    if (m_backingStore)
+        m_backingStore->resize(size());
 }
 
 void RasterWindow::paintEvent(QPaintEvent * event)
