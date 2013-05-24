@@ -37,7 +37,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_gtk.h"
-#include "webkit/user_agent/user_agent_util.h"
+#include "webkit/common/user_agent/user_agent_util.h"
 #include "skia/ext/platform_canvas.h"
 
 #include "backing_store_qt.h"
