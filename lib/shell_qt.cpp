@@ -85,6 +85,11 @@ void Shell::PlatformCreateWindow(int width, int height) {
     return;
 
   if (!m_window) {
+
+    // Use oxygen as a fallback.
+    if (QIcon::themeName().isEmpty())
+      QIcon::setThemeName("oxygen");
+
     m_window = new QWidget;
     m_window->setGeometry(100,100, width, height);
 
