@@ -92,7 +92,7 @@ void BackingStoreQt::ScrollBackingStore(const gfx::Vector2d &delta, const gfx::R
 {
     DCHECK(delta.x() == 0 || delta.y() == 0);
 
-    m_pixelBuffer.scroll(delta.x(), delta.y(), m_pixelBuffer.rect());
+    m_pixelBuffer.scroll(delta.x(), delta.y(), clip_rect.x(), clip_rect.y(), clip_rect.width(), clip_rect.height());
 }
 
 bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
