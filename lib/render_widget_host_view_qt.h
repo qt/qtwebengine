@@ -4,8 +4,9 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 class QEvent;
-class QMouseEvent;
+class QFocusEvent;
 class QKeyEvent;
+class QMouseEvent;
 class QWheelEvent;
 class RasterWindow;
 
@@ -86,6 +87,7 @@ private:
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
+    void handleFocusEvent(QFocusEvent*);
 
     content::RenderWidgetHostImpl *m_host;
     RasterWindow *m_view;

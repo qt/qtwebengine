@@ -10,8 +10,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #include <QEvent>
-#include <QMouseEvent>
+#include <QFocusEvent>
 #include <QKeyEvent>
+#include <QMouseEvent>
 #include <QWheelEvent>
 #include <QScreen>
 
@@ -73,6 +74,11 @@ bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
         break;
     case QEvent::Wheel:
         handleWheelEvent(static_cast<QWheelEvent*>(event));
+        break;
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+        handleFocusEvent(static_cast<QFocusEvent*>(event));
+        break;
     default:
         return false;
     }
@@ -300,6 +306,7 @@ void RenderWidgetHostViewQt::ImeCancelComposition()
 void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&)
 {
     // FIXME: not implemented?
+    QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects)
@@ -457,6 +464,19 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
     m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev));
+}
+
+void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
+{
+    if (ev->gotFocus()) {
+        m_host->GotFocus();
+        m_host->SetActive(true);
+        ev->accept();
+    } else if (ev->lostFocus()) {
+        m_host->SetActive(false);
+        m_host->Blur();
+        ev->accept();
+    }
 }
 
 }

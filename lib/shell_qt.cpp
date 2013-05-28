@@ -12,6 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/shell_browser_context.h"
@@ -20,12 +21,13 @@
 #include "signal_connector.h"
 #include "web_contents_view_qt.h"
 
-#include <QWindow>
-#include <QLineEdit>
-#include <QWidget>
-#include <QVBoxLayout>
+#include <QApplication>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QLineEdit>
 #include <QToolButton>
+#include <QWidget>
+#include <QWindow>
 
 namespace content {
 
@@ -138,6 +140,12 @@ void Shell::PlatformSetContents()
 {
     if (headless_)
     return;
+
+    content::RendererPreferences* rendererPrefs = web_contents_->GetMutableRendererPrefs();
+    rendererPrefs->use_custom_colors = true;
+    // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
+    rendererPrefs->caret_blink_interval = static_cast<double>(qApp->cursorFlashTime())/2000;
+    web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
     WebContentsViewGtk* content_view = static_cast<WebContentsViewGtk*>(web_contents_->GetView());
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_window->layout());
