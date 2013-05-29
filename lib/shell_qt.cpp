@@ -197,6 +197,8 @@ void Shell::PlatformSetTitle(const string16& title)
     return;
 
   std::string title_utf8 = UTF16ToUTF8(title);
+  if (window_)
+      reinterpret_cast<QWidget*>(window_)->setWindowTitle(QString::fromStdString(title_utf8));
 }
 
 }  // namespace content
