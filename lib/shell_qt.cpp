@@ -50,7 +50,7 @@ void Shell::PlatformSetAddressBarURL(const GURL& url)
 
   fprintf(stderr, "Set Address to: %s\n", url.spec().c_str());
 
-  QLineEdit* addressLine = m_window->findChild<QLineEdit*>("AddressLineEdit");
+  QLineEdit* addressLine = reinterpret_cast<QWidget*>(window_)->findChild<QLineEdit*>("AddressLineEdit");
   addressLine->setText(QString::fromStdString(url.spec()));
 }
 
@@ -66,14 +66,16 @@ void Shell::PlatformCreateWindow(int width, int height) {
   if (headless_)
     return;
 
-  if (!m_window) {
+  if (!window_) {
 
     // Use oxygen as a fallback.
     if (QIcon::themeName().isEmpty())
       QIcon::setThemeName("oxygen");
 
-    m_window = new QWidget;
-    m_window->setGeometry(100,100, width, height);
+    QWidget* window = new QWidget;
+    window_ = reinterpret_cast<gfx::NativeWindow>(window);
+
+    window->setGeometry(100,100, width, height);
 
     QVBoxLayout* layout = new QVBoxLayout;
 
@@ -103,8 +105,8 @@ void Shell::PlatformCreateWindow(int width, int height) {
     layout->addLayout(addressBar);
 
 
-    m_window->setLayout(layout);
-    m_window->show();
+    window->setLayout(layout);
+    window->show();
 
     // SignalConnector will act as a proxy for the QObject signals received from
     // m_window. m_window will take ownership of the SignalConnector.
@@ -112,7 +114,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
     // for back/forward/reload buttons and for the address line edit.
     // Therefore the layout must be set and completed before the SignalConnector
     // is created.
-    SignalConnector* signalConnector = new SignalConnector(this, m_window);
+    SignalConnector* signalConnector = new SignalConnector(this, window);
   }
 }
 
@@ -129,7 +131,7 @@ void Shell::PlatformSetContents()
 
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
     content_view->setWindowContainer(static_cast<void*>(new RasterWindowContainer));
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_window->layout());
+    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(reinterpret_cast<QWidget*>(window_)->layout());
     if (layout)
         layout->addLayout(static_cast<RasterWindowContainer*>(content_view->windowContainer()));
 }

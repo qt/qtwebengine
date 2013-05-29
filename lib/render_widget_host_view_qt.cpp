@@ -153,7 +153,6 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 {
     QT_NOT_YET_IMPLEMENTED
-    // return m_view;
     return gfx::NativeView();
 }
 

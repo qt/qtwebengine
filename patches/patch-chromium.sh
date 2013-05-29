@@ -21,8 +21,7 @@ fi
 
 echo "Applying patches..."
 git am $PATCH_DIR/0001-My-local-fixes.patch
-git am $PATCH_DIR/0001-Temporary-patch-add-some-Qt-member-functions-to-Rend.patch
-git am $PATCH_DIR/0001-remove-render_widget_host_view_gtk-and-web_contents_.patch
+git am $PATCH_DIR/0001-Exclude-some-Gtk-files-from-the-chromium-build.patch
 
 cd tools/gyp
 echo "Entering $PWD"
