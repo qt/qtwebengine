@@ -16,8 +16,6 @@
 #include <QWheelEvent>
 #include <QScreen>
 
-#define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
-
 static void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
 {
     QScreen* screen = window->screen();

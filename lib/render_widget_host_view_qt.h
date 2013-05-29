@@ -3,6 +3,8 @@
 
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
+#define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
+
 class QEvent;
 class QFocusEvent;
 class QKeyEvent;
