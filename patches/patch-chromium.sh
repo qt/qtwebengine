@@ -11,9 +11,13 @@ DEPOT_TOOLS=$CHROMIUM_SRC_DIR/../depot_tools
 
 cd $CHROMIUM_SRC_DIR
 echo "Entering $PWD"
-$DEPOT_TOOLS/gclient fetch
+
 $DEPOT_TOOLS/gclient revert
-$DEPOT_TOOLS/gclient sync
+
+if [ "$2" = "--update" ]; then
+    $DEPOT_TOOLS/gclient fetch
+    $DEPOT_TOOLS/gclient sync
+fi
 
 echo "Applying patches..."
 git am $PATCH_DIR/0001-My-local-fixes.patch
