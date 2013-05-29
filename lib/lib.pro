@@ -25,7 +25,6 @@ SOURCES = \
         render_widget_host_view_qt.cpp \
         shell_qt.cpp \
         signal_connector.cpp \
-        web_contents_view_qt.cpp \
         web_event_factory.cpp \
 
 HEADERS = \
@@ -33,7 +32,6 @@ HEADERS = \
         blinqpage.h \
         raster_window.h \
         render_widget_host_view_qt.h \
-        web_contents_view_qt.h \
         web_event_factory.h \
         signal_connector.h
 

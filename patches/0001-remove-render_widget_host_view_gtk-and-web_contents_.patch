@@ -20,15 +20,6 @@ index 92798b9..9085fc9 100644
      'browser/renderer_host/render_widget_host_view_guest.cc',
      'browser/renderer_host/render_widget_host_view_guest.h',
      'browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h',
-@@ -992,8 +990,6 @@
-     'browser/web_contents/web_contents_view_android.h',
-     'browser/web_contents/web_contents_view_aura.cc',
-     'browser/web_contents/web_contents_view_aura.h',
--    'browser/web_contents/web_contents_view_gtk.cc',
--    'browser/web_contents/web_contents_view_gtk.h',
-     'browser/web_contents/web_contents_view_guest.cc',
-     'browser/web_contents/web_contents_view_guest.h',
-     'browser/web_contents/web_contents_view_mac.h',
 -- 
 1.8.1.2
 

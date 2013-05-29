@@ -19,6 +19,7 @@
 #include "content/shell/shell_content_browser_client.h"
 #include "raster_window.h"
 #include "signal_connector.h"
+
 #include "web_contents_view_qt.h"
 
 #include <QApplication>
@@ -147,10 +148,11 @@ void Shell::PlatformSetContents()
     rendererPrefs->caret_blink_interval = static_cast<double>(qApp->cursorFlashTime())/2000;
     web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
-    WebContentsViewGtk* content_view = static_cast<WebContentsViewGtk*>(web_contents_->GetView());
+    WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
+    content_view->setWindowContainer(static_cast<void*>(new RasterWindowContainer));
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_window->layout());
     if (layout)
-        layout->addLayout(content_view->windowContainer());
+        layout->addLayout(static_cast<RasterWindowContainer*>(content_view->windowContainer()));
 }
 
 void Shell::SizeTo(int width, int height) {

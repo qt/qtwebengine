@@ -43,6 +43,7 @@
 #include "backing_store_qt.h"
 #include "raster_window.h"
 #include "render_widget_host_view_qt.h"
+#include "web_contents_view_qt.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -72,6 +73,30 @@ private:
     Context *context;
 };
 
+class ContentBrowserClientQt : public content::ShellContentBrowserClient
+{
+public:
+    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* web_contents, content::RenderViewHostDelegateView** render_view_host_delegate_view)
+    {
+      fprintf(stderr, "OverrideCreateWebContentsView\n");
+        WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
+        *render_view_host_delegate_view = rv;
+        return rv;
+    }
+};
+
+class ShellMainDelegateQt : public content::ShellMainDelegate
+{
+public:
+    content::ContentBrowserClient* CreateContentBrowserClient()
+    {
+        m_browserClient.reset(new ContentBrowserClientQt);
+        return m_browserClient.get();
+    }
+
+private:
+    scoped_ptr<ContentBrowserClientQt> m_browserClient;
+};
 
 static inline base::FilePath::StringType qStringToStringType(const QString &str)
 {
@@ -318,7 +343,7 @@ BlinqPage::BlinqPage(int argc, char **argv)
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
         runner = content::ContentMainRunner::Create();
-        runner->Initialize(0, 0, new content::ShellMainDelegate);
+        runner->Initialize(0, 0, new ShellMainDelegateQt);
     }
 
     initializeBlinkPaths();
