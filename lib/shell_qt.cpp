@@ -5,7 +5,6 @@
 #include "content/shell/shell.h"
 
 #include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
 
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
@@ -38,30 +37,10 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size)
 
 void Shell::PlatformCleanUp()
 {
-  // Nothing to clean up; GTK will clean up the widgets shortly after.
 }
 
 void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled)
 {
-  // if (headless_)
-  //   return;
-
-  // GtkToolItem* item = NULL;
-  // switch (control) {
-  //   case BACK_BUTTON:
-  //     item = back_button_;
-  //     break;
-  //   case FORWARD_BUTTON:
-  //     item = forward_button_;
-  //     break;
-  //   case STOP_BUTTON:
-  //     item = stop_button_;
-  //     break;
-  //   default:
-  //     NOTREACHED() << "Unknown UI control";
-  //     return;
-  // }
-  // gtk_widget_set_sensitive(GTK_WIDGET(item), is_enabled);
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url)
@@ -155,19 +134,14 @@ void Shell::PlatformSetContents()
         layout->addLayout(static_cast<RasterWindowContainer*>(content_view->windowContainer()));
 }
 
-void Shell::SizeTo(int width, int height) {
-  fprintf(stderr, "Shell::SizeTo\n");
-  content_width_ = width;
-  content_height_ = height;
-  if (web_contents_) {
-    gtk_widget_set_size_request(web_contents_->GetView()->GetNativeView(),
-                                width, height);
-  }
+void Shell::SizeTo(int width, int height)
+{
+  QT_NOT_YET_IMPLEMENTED
 }
 
 void Shell::PlatformResizeSubViews()
 {
-  SizeTo(content_width_, content_height_);
+    SizeTo(content_width_, content_height_);
 }
 
 void Shell::Close()
@@ -176,8 +150,6 @@ void Shell::Close()
     delete this;
     return;
   }
-
-  gtk_widget_destroy(GTK_WIDGET(window_));
 }
 
 void Shell::OnBackButtonClicked(GtkWidget* widget) { }
@@ -202,24 +174,19 @@ gboolean Shell::OnWindowDestroyed(GtkWidget* window)
 
 gboolean Shell::OnCloseWindowKeyPressed(GtkAccelGroup* accel_group, GObject* acceleratable, guint keyval, GdkModifierType modifier)
 {
-  gtk_widget_destroy(GTK_WIDGET(window_));
-  return TRUE;
+    QT_NOT_YET_IMPLEMENTED
+    return TRUE;
 }
 
 gboolean Shell::OnNewWindowKeyPressed(GtkAccelGroup* accel_group, GObject* acceleratable, guint keyval, GdkModifierType modifier)
 {
   ShellBrowserContext* browser_context = ShellContentBrowserClient::Get()->browser_context();
-  Shell::CreateNewWindow(browser_context,
-                         GURL(),
-                         NULL,
-                         MSG_ROUTING_NONE,
-                         gfx::Size());
+  Shell::CreateNewWindow(browser_context, GURL(), NULL, MSG_ROUTING_NONE, gfx::Size());
   return TRUE;
 }
 
 gboolean Shell::OnHighlightURLView(GtkAccelGroup* accel_group, GObject* acceleratable, guint keyval, GdkModifierType modifier)
 {
-  gtk_widget_grab_focus(GTK_WIDGET(url_edit_view_));
   return TRUE;
 }
 
@@ -229,7 +196,6 @@ void Shell::PlatformSetTitle(const string16& title)
     return;
 
   std::string title_utf8 = UTF16ToUTF8(title);
-  gtk_window_set_title(GTK_WINDOW(window_), title_utf8.c_str());
 }
 
 }  // namespace content

@@ -34,9 +34,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "content/browser/renderer_host/backing_store.h"
-#include "content/browser/renderer_host/backing_store_gtk.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 #include "skia/ext/platform_canvas.h"
 

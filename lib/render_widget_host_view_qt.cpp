@@ -248,7 +248,6 @@ GdkEventButton* RenderWidgetHostViewQt::GetLastMouseDown()
     return 0;
 }
 
-// Builds a submenu containing all the gtk input method commands.
 gfx::NativeView RenderWidgetHostViewQt::BuildInputMethodsGtkMenu()
 {
 }
