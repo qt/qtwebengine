@@ -130,10 +130,9 @@ void Shell::PlatformSetContents()
     web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
-    content_view->setWindowContainer(static_cast<void*>(new RasterWindowContainer));
     QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(reinterpret_cast<QWidget*>(window_)->layout());
     if (layout)
-        layout->addLayout(static_cast<RasterWindowContainer*>(content_view->windowContainer()));
+        layout->addLayout(content_view->windowContainer());
 }
 
 void Shell::SizeTo(int width, int height)

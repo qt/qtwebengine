@@ -14,6 +14,7 @@ class WebContentsViewQt
 {
 public:
     WebContentsViewQt(content::WebContents* web_contents)
+        : m_windowContainer(new RasterWindowContainer)
     { }
 
     content::RenderWidgetHostView* CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
@@ -63,12 +64,10 @@ public:
     virtual void ShowPopupMenu(const gfx::Rect& bounds, int item_height, double item_font_size, int selected_item,
                                 const std::vector<WebMenuItem>& items, bool right_aligned, bool allow_multiple_selection) { QT_NOT_YET_IMPLEMENTED }
 
-
-    void setWindowContainer(void* c) { m_windowContainer = c; }
-    void* windowContainer() { return m_windowContainer; }
+    RasterWindowContainer* windowContainer() { return m_windowContainer; }
 
 private:
-    void* m_windowContainer;
+    RasterWindowContainer* m_windowContainer;
 };
 
 #endif
