@@ -83,7 +83,7 @@ public:
     }
 };
 
-class ShellMainDelegateQt : public content::ShellMainDelegate
+class ContentMainDelegateQt : public content::ContentMainDelegate
 {
 public:
     content::ContentBrowserClient* CreateContentBrowserClient()
@@ -341,7 +341,7 @@ BlinqPage::BlinqPage(int argc, char **argv)
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
         runner = content::ContentMainRunner::Create();
-        runner->Initialize(0, 0, new ShellMainDelegateQt);
+        runner->Initialize(0, 0, new ContentMainDelegateQt);
     }
 
     initializeBlinkPaths();
