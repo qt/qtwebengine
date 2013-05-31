@@ -25,7 +25,7 @@ for(token, MOC_COMMAND): contents += "          '$$token',"
                 "          '-o'," \
                 "          '$$OUTPUT_FILE'," \
                 "        ]," \
-                "     }"
+                "     },"
 
     return($$contents)
 }
