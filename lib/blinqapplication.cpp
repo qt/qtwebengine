@@ -54,10 +54,9 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/main_function_params.h"
-#include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_content_browser_client.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
+#include "content_browser_client_qt.h"
 #include "web_contents_view_qt.h"
 
 namespace {
@@ -192,18 +191,6 @@ base::MessagePump* messagePumpFactory()
 {
     return new MessagePump;
 }
-
-class ContentBrowserClientQt : public content::ShellContentBrowserClient
-{
-public:
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* web_contents, content::RenderViewHostDelegateView** render_view_host_delegate_view)
-    {
-      fprintf(stderr, "OverrideCreateWebContentsView\n");
-        WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
-        *render_view_host_delegate_view = rv;
-        return rv;
-    }
-};
 
 class ContentMainDelegateQt : public content::ContentMainDelegate
 {

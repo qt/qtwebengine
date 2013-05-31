@@ -10,7 +10,7 @@ TARGET = blinq
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS
 
-# We need a way to tap into gyp's Debug vs. Release configuration
+# We need a way to tap into gyp´s Debug vs. Release configuration
 PER_CONFIG_DEFINES = BLINQ_PROCESS_PATH=\\\"$$getOutDir()/%config/$$BLINQ_PROCESS_NAME\\\"
 
 # Keep Skia happy
@@ -22,18 +22,23 @@ SOURCES = \
         backing_store_qt.cpp \
         blinqapplication.cpp \
         blinqpage.cpp \
+        content_browser_client_qt.cpp \
         raster_window.cpp \
         render_widget_host_view_qt.cpp \
+        resource_context_qt.cpp \
         shell_qt.cpp \
         signal_connector.cpp \
-        web_event_factory.cpp \
+        web_event_factory.cpp
 
 HEADERS = \
         backing_store_qt.h \
         blinqapplication.h \
         blinqpage.h \
+        browser_context_qt.h \
+        content_browser_client_qt.h \
         raster_window.h \
         render_widget_host_view_qt.h \
+        resource_context_qt.h \
         web_event_factory.h \
         signal_connector.h
 

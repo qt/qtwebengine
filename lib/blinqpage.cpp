@@ -45,13 +45,9 @@
 #define CONTENT_IMPLEMENTATION
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/resource_context.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/event_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
@@ -63,12 +59,14 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
-#include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_content_browser_client.h"
 #include "skia/ext/platform_canvas.h"
 
 #include "backing_store_qt.h"
+#include "browser_context_qt.h"
+#include "content_browser_client_qt.h"
+#include "raster_window.h"
 #include "render_widget_host_view_qt.h"
+#include "resource_context_qt.h"
 
 #include <QByteArray>
 #include <QWindow>
@@ -80,75 +78,6 @@
 #include <qpa/qplatformnativeinterface.h>
 
 namespace {
-
-class Context;
-
-class ResourceContext : public content::ResourceContext
-{
-public:
-    ResourceContext(Context *ctx)
-        : context(ctx)
-    {}
-
-    virtual net::HostResolver* GetHostResolver() { return 0; }
-
-    inline virtual net::URLRequestContext* GetRequestContext();
-
-private:
-    Context *context;
-};
-
-class Context : public content::BrowserContext
-{
-public:
-   Context()
-   {
-       tempBasePath.CreateUniqueTempDir();
-       resourceContext.reset(new ResourceContext(this));
-   }
-   virtual ~Context() {}
-
-   virtual base::FilePath GetPath()
-   {
-       return tempBasePath.path();
-   }
-
-   virtual bool IsOffTheRecord() const
-   {
-       return false;
-   }
-
-   virtual net::URLRequestContextGetter* GetRequestContext()
-   {
-       return GetDefaultStoragePartition(this)->GetURLRequestContext();
-   }
-   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(int) { return GetRequestContext(); }
-   virtual net::URLRequestContextGetter* GetMediaRequestContext() { return GetRequestContext(); }
-   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(int) { return GetRequestContext(); }
-   virtual net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(const base::FilePath&, bool) { return GetRequestContext(); }
-
-   virtual content::ResourceContext* GetResourceContext()
-   {
-       return resourceContext.get();
-   }
-
-   virtual content::DownloadManagerDelegate* GetDownloadManagerDelegate() { return 0; }
-   virtual content::GeolocationPermissionContext* GetGeolocationPermissionContext() { return 0; }
-   virtual content::SpeechRecognitionPreferences* GetSpeechRecognitionPreferences() { return 0; }
-   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() { return 0; }
-
-private:
-    scoped_ptr<content::ResourceContext> resourceContext;
-    base::ScopedTempDir tempBasePath; // ### Should become permanent location.
-
-    DISALLOW_COPY_AND_ASSIGN(Context);
-};
-
-inline net::URLRequestContext* ResourceContext::GetRequestContext()
-{
-    return context->GetRequestContext()->GetURLRequestContext();
-}
-
 
 class RenderViewHost : public content::RenderViewHostImpl
 {
@@ -179,7 +108,7 @@ BlinqPage::BlinqPage()
 {
     d.reset(new BlinqPagePrivate);
 
-    d->context.reset(static_cast<content::ShellContentBrowserClient*>(content::GetContentClient()->browser())->browser_context());
+    d->context.reset(static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context());
     content::WebContents::CreateParams p(d->context.get());
 //    d->contents.reset(content::WebContents::Create(p));
 
