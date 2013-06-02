@@ -47,6 +47,9 @@ def additional_include_files(args=[]):
   # Always include common.gypi.
   AddInclude(os.path.join(script_dir, 'common.gypi'))
 
+  # Files to exclude from the chromium build.
+  AddInclude(os.path.join(os.getcwd(), 'exclude_chromium_sources.gypi'))
+
   # Optionally add supplemental .gypi files if present.
   supplements = glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
   for supplement in supplements:

@@ -21,7 +21,6 @@ fi
 
 echo "Applying patches..."
 git am $PATCH_DIR/0001-My-local-fixes.patch
-git am $PATCH_DIR/0001-Exclude-some-Gtk-files-from-the-chromium-build.patch
 
 cd tools/gyp
 echo "Entering $PWD"
