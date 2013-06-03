@@ -2,7 +2,10 @@
 
 import re, sys, os
 
+mocables = set()
 for f in filter(os.path.isfile, sys.argv[1:]):
     for line in open(f).readlines():
         if re.match(".*Q_OBJECT", line):
-            print f
+            mocables.add(f)
+for mocable in mocables:
+    print mocable
