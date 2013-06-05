@@ -87,9 +87,10 @@ public:
         content::RenderViewHostDelegate* delegate,
         content::RenderWidgetHostDelegate* widget_delegate,
         int routing_id,
+        int main_frame_routing_id,
         bool swapped_out,
         content::SessionStorageNamespace* session_storage_namespace)
-        : content::RenderViewHostImpl(instance, delegate, widget_delegate, routing_id, swapped_out, session_storage_namespace)
+        : content::RenderViewHostImpl(instance, delegate, widget_delegate, routing_id, main_frame_routing_id, swapped_out, session_storage_namespace)
     {
         SetView(new content::RenderWidgetHostViewQt(this));
     }
