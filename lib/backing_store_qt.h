@@ -54,7 +54,7 @@ public:
     ~BackingStoreQt();
 
     void resize(const QSize& size);
-    void paintToTarget(QPainter*, const QRect& rect);
+    void paintToTarget(QPainter*, const QRectF& rect);
 
     virtual void PaintToBackingStore(content::RenderProcessHost *process, TransportDIB::Id bitmap, const gfx::Rect &bitmap_rect,
                                      const std::vector<gfx::Rect> &copy_rects, float scale_factor, const base::Closure &completion_callback,

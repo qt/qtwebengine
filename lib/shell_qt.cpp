@@ -16,7 +16,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "raster_window.h"
 #include "signal_connector.h"
 
 #include "web_contents_view_qt.h"
@@ -26,8 +25,10 @@
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QToolButton>
-#include <QWidget>
+#include <QQuickView>
 #include <QWindow>
+
+static bool isWidgets = false;
 
 namespace content {
 
@@ -45,13 +46,15 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled)
 
 void Shell::PlatformSetAddressBarURL(const GURL& url)
 {
-  if (headless_)
-    return;
+    if (headless_)
+        return;
 
-  fprintf(stderr, "Set Address to: %s\n", url.spec().c_str());
+    fprintf(stderr, "Set Address to: %s\n", url.spec().c_str());
 
-  QLineEdit* addressLine = reinterpret_cast<QWidget*>(window_)->findChild<QLineEdit*>("AddressLineEdit");
-  addressLine->setText(QString::fromStdString(url.spec()));
+    if (isWidgets) {
+        QLineEdit* addressLine = reinterpret_cast<QWidget*>(window_)->findChild<QLineEdit*>("AddressLineEdit");
+        addressLine->setText(QString::fromStdString(url.spec()));
+    }
 }
 
 
@@ -61,67 +64,83 @@ void Shell::PlatformSetIsLoading(bool loading)
 }
 
 void Shell::PlatformCreateWindow(int width, int height) {
-  SizeTo(width, height);
+    SizeTo(width, height);
 
-  if (headless_)
-    return;
+    if (headless_)
+        return;
 
-  if (!window_) {
+    if (!window_) {
+        if (qgetenv("QQUICKWEBENGINE").isNull()) {
+            fprintf(stderr, "Starting Widgets example...\n");
+            isWidgets = true;
+            QWidget* window = new QWidget;
+            window_ = reinterpret_cast<gfx::NativeWindow>(window);
 
-    // Use oxygen as a fallback.
-    if (QIcon::themeName().isEmpty())
-      QIcon::setThemeName("oxygen");
+            window->setGeometry(100,100, width, height);
 
-    QWidget* window = new QWidget;
-    window_ = reinterpret_cast<gfx::NativeWindow>(window);
+            QVBoxLayout* layout = new QVBoxLayout;
 
-    window->setGeometry(100,100, width, height);
+                // Create a widget based address bar.
+            QHBoxLayout* addressBar = new QHBoxLayout;
 
-    QVBoxLayout* layout = new QVBoxLayout;
+            int buttonWidth = 26;
+            QToolButton* backButton = new QToolButton;
+            backButton->setIcon(QIcon::fromTheme("go-previous"));
+            backButton->setObjectName("BackButton");
+            addressBar->addWidget(backButton);
 
-    // Create a widget based address bar.
-    QHBoxLayout* addressBar = new QHBoxLayout;
+            QToolButton* forwardButton = new QToolButton;
+            forwardButton->setIcon(QIcon::fromTheme("go-next"));
+            forwardButton->setObjectName("ForwardButton");
+            addressBar->addWidget(forwardButton);
 
-    int buttonWidth = 26;
-    QToolButton* backButton = new QToolButton;
-    backButton->setIcon(QIcon::fromTheme("go-previous"));
-    backButton->setObjectName("BackButton");
-    addressBar->addWidget(backButton);
+            QToolButton* reloadButton = new QToolButton;
+            reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
+            reloadButton->setObjectName("ReloadButton");
+            addressBar->addWidget(reloadButton);
 
-    QToolButton* forwardButton = new QToolButton;
-    forwardButton->setIcon(QIcon::fromTheme("go-next"));
-    forwardButton->setObjectName("ForwardButton");
-    addressBar->addWidget(forwardButton);
+            QLineEdit* lineEdit =  new QLineEdit;
+            lineEdit->setObjectName("AddressLineEdit");
+            addressBar->addWidget(lineEdit);
 
-    QToolButton* reloadButton = new QToolButton;
-    reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
-    reloadButton->setObjectName("ReloadButton");
-    addressBar->addWidget(reloadButton);
+            layout->addLayout(addressBar);
 
-    QLineEdit* lineEdit =  new QLineEdit;
-    lineEdit->setObjectName("AddressLineEdit");
-    addressBar->addWidget(lineEdit);
+            window->setLayout(layout);
+            window->show();
 
-    layout->addLayout(addressBar);
+            SignalConnector* signalConnector = new SignalConnector(this, window);
+        } else {
+            fprintf(stderr, "Starting QQuick2 example...\n");
+            // Use oxygen as a fallback.
+            if (QIcon::themeName().isEmpty())
+                QIcon::setThemeName("oxygen");
 
+            QQuickView* window = new QQuickView;
+            window_ = reinterpret_cast<gfx::NativeWindow>(window);
 
-    window->setLayout(layout);
-    window->show();
+            window->setGeometry(100,100, width, height);
 
-    // SignalConnector will act as a proxy for the QObject signals received from
-    // m_window. m_window will take ownership of the SignalConnector.
-    // The SignalConnector will search the children list of m_window
-    // for back/forward/reload buttons and for the address line edit.
-    // Therefore the layout must be set and completed before the SignalConnector
-    // is created.
-    SignalConnector* signalConnector = new SignalConnector(this, window);
-  }
+            window->setSource(QUrl("lib/browser_window.qml"));
+            window->setResizeMode(QQuickView::SizeRootObjectToView);
+            window->setTitle("QQuick Example");
+
+            window->show();
+
+            // SignalConnector will act as a proxy for the QObject signals received from
+            // m_window. m_window will take ownership of the SignalConnector.
+            // The SignalConnector will search the children list of m_window
+            // for back/forward/reload buttons and for the address line edit.
+            // Therefore the layout must be set and completed before the SignalConnector
+            // is created.
+            SignalConnector* signalConnector = new SignalConnector(this, window);
+        }
+    }
 }
 
 void Shell::PlatformSetContents()
 {
     if (headless_)
-    return;
+        return;
 
     content::RendererPreferences* rendererPrefs = web_contents_->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
@@ -129,15 +148,33 @@ void Shell::PlatformSetContents()
     rendererPrefs->caret_blink_interval = static_cast<double>(qApp->cursorFlashTime())/2000;
     web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
-    WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
-    QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(reinterpret_cast<QWidget*>(window_)->layout());
-    if (layout)
-        layout->addLayout(content_view->windowContainer());
+    if (isWidgets) {
+        WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(reinterpret_cast<QWidget*>(window_)->layout());
+        if (layout)
+            layout->addLayout(content_view->windowContainer()->widget());
+    } else {
+        QQuickView* view = reinterpret_cast<QQuickView*>(window_);
+        if (view->status() != QQuickView::Ready)
+            fprintf(stderr, "VIEW NOT READY!!!!\n");
+
+        QQuickItem* rootItem = view->rootObject();
+
+        QQuickItem* viewContainer = rootItem->findChild<QQuickItem*>("viewContainer");
+        if (!viewContainer)
+            return;
+
+        WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
+        QQuickItem* windowContainer = content_view->windowContainer()->qQuickItem();
+        windowContainer->setParentItem(viewContainer);
+        windowContainer->setWidth(100);
+        windowContainer->setHeight(100);
+    }
 }
 
 void Shell::SizeTo(int width, int height)
 {
-  QT_NOT_YET_IMPLEMENTED
+    QT_NOT_YET_IMPLEMENTED
 }
 
 void Shell::PlatformResizeSubViews()
@@ -147,10 +184,10 @@ void Shell::PlatformResizeSubViews()
 
 void Shell::Close()
 {
-  if (headless_) {
-    delete this;
-    return;
-  }
+    if (headless_) {
+        delete this;
+        return;
+    }
 }
 
 void Shell::OnBackButtonClicked(GtkWidget* widget) { }
@@ -161,7 +198,7 @@ void Shell::OnReloadButtonClicked(GtkWidget* widget) { }
 
 void Shell::OnStopButtonClicked(GtkWidget* widget)
 {
-  Stop();
+    Stop();
 }
 
 void Shell::OnURLEntryActivate(GtkWidget* entry) { }
@@ -169,8 +206,8 @@ void Shell::OnURLEntryActivate(GtkWidget* entry) { }
 // Callback for when the main window is destroyed.
 gboolean Shell::OnWindowDestroyed(GtkWidget* window)
 {
-  delete this;
-  return FALSE;  // Don't stop this message.
+    delete this;
+    return FALSE;  // Don't stop this message.
 }
 
 gboolean Shell::OnCloseWindowKeyPressed(GtkAccelGroup* accel_group, GObject* acceleratable, guint keyval, GdkModifierType modifier)
@@ -181,24 +218,24 @@ gboolean Shell::OnCloseWindowKeyPressed(GtkAccelGroup* accel_group, GObject* acc
 
 gboolean Shell::OnNewWindowKeyPressed(GtkAccelGroup* accel_group, GObject* acceleratable, guint keyval, GdkModifierType modifier)
 {
-  ShellBrowserContext* browser_context = ShellContentBrowserClient::Get()->browser_context();
-  Shell::CreateNewWindow(browser_context, GURL(), NULL, MSG_ROUTING_NONE, gfx::Size());
-  return TRUE;
+    ShellBrowserContext* browser_context = ShellContentBrowserClient::Get()->browser_context();
+    Shell::CreateNewWindow(browser_context, GURL(), NULL, MSG_ROUTING_NONE, gfx::Size());
+    return TRUE;
 }
 
 gboolean Shell::OnHighlightURLView(GtkAccelGroup* accel_group, GObject* acceleratable, guint keyval, GdkModifierType modifier)
 {
-  return TRUE;
+    return TRUE;
 }
 
 void Shell::PlatformSetTitle(const string16& title)
 {
-  if (headless_)
-    return;
+    if (headless_)
+        return;
 
-  std::string title_utf8 = UTF16ToUTF8(title);
-  if (window_)
-      reinterpret_cast<QWidget*>(window_)->setWindowTitle(QString::fromStdString(title_utf8));
+    // std::string title_utf8 = UTF16ToUTF8(title);
+    // if (window_)
+    //     reinterpret_cast<QWidget*>(window_)->setWindowTitle(QString::fromStdString(title_utf8));
 }
 
 }  // namespace content

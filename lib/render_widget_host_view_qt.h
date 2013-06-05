@@ -51,7 +51,7 @@ class QFocusEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
-class RasterWindow;
+class NativeViewQt;
 
 namespace content {
 
@@ -74,7 +74,7 @@ public:
     virtual void SetSize(const gfx::Size& size);
     virtual void SetBounds(const gfx::Rect& rect);
     virtual gfx::NativeView GetNativeView() const;
-    virtual RasterWindow* GetNativeViewQt() const OVERRIDE;
+    virtual NativeViewQt* GetNativeViewQt() const OVERRIDE;
     virtual gfx::NativeViewId GetNativeViewId() const;
     virtual gfx::NativeViewAccessible GetNativeViewAccessible();
     virtual void Focus();
@@ -123,17 +123,17 @@ public:
     virtual void SetScrollOffsetPinning(bool, bool);
     virtual void OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&);
 
-private:
-    void Paint(const gfx::Rect& scroll_rect);
-
-    bool IsPopup() const;
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleFocusEvent(QFocusEvent*);
+private:
+    void Paint(const gfx::Rect& scroll_rect);
+
+    bool IsPopup() const;
 
     content::RenderWidgetHostImpl *m_host;
-    RasterWindow *m_view;
+    NativeViewQt *m_view;
     gfx::Size m_requestedSize;
 };
 

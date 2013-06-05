@@ -44,7 +44,7 @@
 
 #include <QObject>
 
-class QWidget;
+class QQuickView;
 class QToolButton;
 class QLineEdit;
 
@@ -56,6 +56,7 @@ class SignalConnector : public QObject
 {
 	Q_OBJECT
 public:
+	SignalConnector(content::Shell* shell, QQuickView* window);
 	SignalConnector(content::Shell* shell, QWidget* window);
 
 public Q_SLOTS:
@@ -67,7 +68,8 @@ public Q_SLOTS:
 
 private:
 	content::Shell* m_shell;
-	QWidget* m_window;
+	QQuickView* m_window;
+	QWidget* m_widget;
 
 	QLineEdit* m_addressLineEdit;
 	QToolButton* m_forwardButton;

@@ -43,20 +43,36 @@
 
 #include "content/shell/shell.h"
 #include <QObject>
-#include <QWidget>
+#include <QQuickView>
+#include <QQuickItem>
 #include <QLineEdit>
 #include <QToolButton>
 #include <QDebug>
 
-SignalConnector::SignalConnector(content::Shell* shell, QWidget* window)
+
+SignalConnector::SignalConnector(content::Shell* shell, QQuickView* window)
 	: m_shell(shell)
 	, m_window(window)
 {
 	setParent(window);
-	m_addressLineEdit = m_window->findChild<QLineEdit*>("AddressLineEdit");
-	m_backButton = m_window->findChild<QToolButton*>("BackButton");
-	m_forwardButton = m_window->findChild<QToolButton*>("ForwardButton");
-	m_reloadButton = m_window->findChild<QToolButton*>("ReloadButton");
+
+	QQuickItem* rootItem = window->rootObject();
+    connect(rootItem, SIGNAL(load(QString)), this, SLOT(load(QString)));
+    QObject::connect(rootItem, SIGNAL(reload()), this, SLOT(reload()));
+    QObject::connect(rootItem, SIGNAL(goForward()), this, SLOT(goForward()));
+    QObject::connect(rootItem, SIGNAL(goBack()), this, SLOT(goBack()));
+}
+
+SignalConnector::SignalConnector(content::Shell* shell, QWidget* window)
+	: m_shell(shell)
+	, m_widget(window)
+{
+	setParent(window);
+
+	m_addressLineEdit = m_widget->findChild<QLineEdit*>("AddressLineEdit");
+	m_backButton = m_widget->findChild<QToolButton*>("BackButton");
+	m_forwardButton = m_widget->findChild<QToolButton*>("ForwardButton");
+	m_reloadButton = m_widget->findChild<QToolButton*>("ReloadButton");
 
 	connect(m_addressLineEdit, SIGNAL(returnPressed()), this, SLOT(loadAddressFromAddressBar()));
 	connect(m_backButton, SIGNAL(clicked()), this, SLOT(goBack()));

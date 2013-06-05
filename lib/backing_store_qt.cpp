@@ -43,7 +43,6 @@
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_process_host.h"
-#include "raster_window.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 
@@ -78,11 +77,11 @@ void BackingStoreQt::resize(const QSize& size)
     }
 }
 
-void BackingStoreQt::paintToTarget(QPainter* painter, const QRect& rect)
+void BackingStoreQt::paintToTarget(QPainter* painter, const QRectF& rect)
 {
     if (m_pixelBuffer.isNull())
         return;
-    painter->drawPixmap(rect, m_pixelBuffer);
+    painter->drawPixmap(rect, m_pixelBuffer, rect);
 }
 
 void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,

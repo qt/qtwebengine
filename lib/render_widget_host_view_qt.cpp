@@ -43,11 +43,11 @@
 
 #include "backing_store_qt.h"
 #include "web_event_factory.h"
-#include "raster_window.h"
+#include "native_view_container_qt.h"
+#include "native_view_qt.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "raster_window.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #include <QEvent>
@@ -56,6 +56,7 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QScreen>
+#include <QQuickWindow>
 
 static void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
 {
@@ -138,23 +139,21 @@ RenderWidgetHostView* RenderWidgetHostViewQt::CreateViewForWidget(content::Rende
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView parent_view)
 {
-    m_view = new RasterWindow(this);
+    NativeViewContainerQt* container = reinterpret_cast<NativeViewContainerQt*>(parent_view);
+    m_view = container->createNativeView(this);
     bool force_create = !m_host->empty();
     BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
     m_view->setBackingStore(backing_store);
-
-    RasterWindowContainer* container = reinterpret_cast<RasterWindowContainer*>(parent_view);
-    container->insert(m_view);
 }
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
 {
-    m_view = new RasterWindow(this);
+    // m_view = new RasterWindow(this);
 }
 
 void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 {
-    m_view = new RasterWindow(this);
+    // m_view = new RasterWindow(this);
 }
 
 content::RenderWidgetHost* RenderWidgetHostViewQt::GetRenderWidgetHost() const
@@ -168,10 +167,8 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
     int height = size.height();
     // int width = std::min(size.width(), kMaxWindowWidth);
     // int height = std::min(size.height(), kMaxWindowHeight);
-    if (IsPopup()) {
-        // We're a popup, honor the size request.
-        m_view->resize(width,height);
-    }
+    // if (IsPopup())
+        // m_view->resize(width,height);
 
     if (m_requestedSize.width() != width ||
         m_requestedSize.height() != height) {
@@ -184,9 +181,8 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
 void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 {
     // This is called when webkit has sent us a Move message.
-    if (IsPopup())
-        m_view->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
-
+    // if (IsPopup())
+        // m_view->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
     SetSize(rect.size());
 }
 
@@ -197,7 +193,7 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
     return gfx::NativeView();
 }
 
-RasterWindow* RenderWidgetHostViewQt::GetNativeViewQt() const
+NativeViewQt* RenderWidgetHostViewQt::GetNativeViewQt() const
 {
     return m_view;
 }
@@ -217,12 +213,13 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 // Set focus to the associated View component.
 void RenderWidgetHostViewQt::Focus()
 {
-    m_view->setFocus(Qt::MouseFocusReason);
+    // m_view->setFocus(Qt::MouseFocusReason);
 }
 
 bool RenderWidgetHostViewQt::HasFocus() const
 {
-    return m_view->hasFocus();
+    // return m_view->hasFocus();
+    return true;
 }
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
@@ -248,10 +245,8 @@ bool RenderWidgetHostViewQt::IsShowing()
 // Retrieve the bounds of the View, in screen coordinates.
 gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 {
-    QRect rect = m_view->geometry();
-    QPoint screenPos = m_view->mapToGlobal(QPoint(0,0));
-
-    return gfx::Rect(screenPos.x(), screenPos.y(), rect.width(), rect.height());
+    QRectF p = m_view->screenRect();
+    return gfx::Rect(p.x(), p.y(), p.width(), p.height());
 }
 
 // Subclasses should override this method to do what is appropriate to set
@@ -348,7 +343,7 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const ui::Range&, const 
 
 void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects)
 {
-    if (!m_view->isVisible())
+    if (!m_view || !m_view->isVisible())
         return;
 
     Paint(scroll_rect);
@@ -444,7 +439,7 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 
 void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
 {
-    QWindow* window = m_view->window()->windowHandle();
+    QWindow* window = m_view->window();
     if (!window)
         return;
     GetScreenInfoFromNativeWindow(window, results);
@@ -452,7 +447,10 @@ void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 {
-    QRect r = m_view->frameGeometry();
+    if (!m_view || !m_view->window())
+        return gfx::Rect();
+
+    QRect r = m_view->window()->frameGeometry();
     return gfx::Rect(r.x(), r.y(), r.width(), r.height());
 }
 
@@ -476,8 +474,8 @@ void RenderWidgetHostViewQt::Paint(const gfx::Rect& scroll_rect)
     bool force_create = !m_host->empty();
     BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
     if (backing_store && m_view) {
-        QSize s = m_view->size();
-        QRect rect(0, 0, s.width(), s.height());
+        QRectF r  = m_view->screenRect();
+        QRect rect(0, 0, r.width(), r.height());
         m_view->setBackingStore(backing_store);
         m_view->update();
     }
