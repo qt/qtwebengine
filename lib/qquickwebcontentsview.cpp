@@ -39,34 +39,76 @@
 **
 ****************************************************************************/
 
-#include <blinqapplication.h>
-#include "quickwindow.h"
-#include "widgetwindow.h"
+#include "qquickwebcontentsview.h"
 
-int mainWidget(int argc, char **argv)
-{
-    BlinqApplication app(argc, argv);
+// Needed to get access to content::GetContentClient()
+#define CONTENT_IMPLEMENTATION
 
-    WidgetWindow window;
-    window.show();
+#include "content/public/browser/web_contents.h"
+#include "content/shell/shell.h"
+#include "content/shell/shell_browser_context.h"
 
-    return app.exec();
+#include "content_browser_client_qt.h"
+
+#include <QWidget>
+#include <QUrl>
+
+namespace content {
+QQuickWebContentsView* gQuickView = 0;
 }
 
-int mainQuick(int argc, char **argv)
+class QQuickWebContentsViewPrivate
 {
-    BlinqApplication app(argc, argv);
+public:
+    scoped_ptr<content::Shell> shell;
+};
 
-    QuickWindow window;
-    window.show();
+QQuickWebContentsView::QQuickWebContentsView()
+{
+    d.reset(new QQuickWebContentsViewPrivate);
 
-    return app.exec();
+    // Cheap hack to allow getting signals from shell_qt.cpp.
+    Q_ASSERT(!content::gQuickView);
+    content::gQuickView = this;
+
+    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
+    d->shell.reset(content::Shell::CreateNewWindow(browser_context,
+        GURL(std::string("http://qt-project.org/")),
+        NULL,
+        MSG_ROUTING_NONE,
+        gfx::Size()));
 }
 
-int main(int argc, char **argv)
+QQuickWebContentsView::~QQuickWebContentsView()
 {
-    if (qgetenv("QQUICKWEBENGINE").isNull())
-        return mainWidget(argc, argv);
-    else
-        return mainQuick(argc, argv);
+}
+
+QUrl QQuickWebContentsView::url() const
+{
+    GURL gurl = d->shell->web_contents()->GetActiveURL();
+    return QUrl(QString::fromStdString(gurl.spec()));
+}
+
+void QQuickWebContentsView::setUrl(const QUrl& url)
+{
+    QString urlString = url.toString();
+    GURL gurl(urlString.toStdString());
+    if (!gurl.has_scheme())
+        gurl = GURL(std::string("http://") + urlString.toStdString());
+    d->shell->LoadURL(gurl);
+}
+
+void QQuickWebContentsView::goBack()
+{
+    d->shell->GoBackOrForward(-1);
+}
+
+void QQuickWebContentsView::goForward()
+{
+    d->shell->GoBackOrForward(1);
+}
+
+void QQuickWebContentsView::reload()
+{
+    d->shell->Reload();
 }

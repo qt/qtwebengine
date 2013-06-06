@@ -39,42 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QT_SIGNAL_CONNECTOR_H
-#define QT_SIGNAL_CONNECTOR_H
+#ifndef QQUICKWEBCONTESTSVIEW_H
+#define QQUICKWEBCONTESTSVIEW_H
 
-#include <QObject>
-
-class QQuickView;
-class QToolButton;
-class QLineEdit;
+#include <QQuickItem>
+#include <QScopedPointer>
 
 namespace content {
-	class Shell;
+    class Shell;
 }
 
-class SignalConnector : public QObject
-{
-	Q_OBJECT
+class QQuickWebContentsViewPrivate;
+
+class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
+    Q_OBJECT
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
 public:
-	SignalConnector(content::Shell* shell, QQuickView* window);
-	SignalConnector(content::Shell* shell, QWidget* window);
+    QQuickWebContentsView();
+    ~QQuickWebContentsView();
+
+    QUrl url() const;
+    void setUrl(const QUrl&);
 
 public Q_SLOTS:
-	void loadAddressFromAddressBar();
-	void load(const QString& url) const;
-	void goBack() const;
-	void goForward() const;
-	void reload() const;
+    void goBack();
+    void goForward();
+    void reload();
+
+Q_SIGNALS:
+    void titleChanged();
+    void urlChanged();
 
 private:
-	content::Shell* m_shell;
-	QQuickView* m_window;
-	QWidget* m_widget;
+    QScopedPointer<QQuickWebContentsViewPrivate> d;
 
-	QLineEdit* m_addressLineEdit;
-	QToolButton* m_forwardButton;
-	QToolButton* m_backButton;
-	QToolButton* m_reloadButton;
+    friend class content::Shell;
 };
 
-#endif
+QML_DECLARE_TYPE(QQuickWebContentsView)
+
+#endif // QQUICKWEBCONTESTSVIEW_H

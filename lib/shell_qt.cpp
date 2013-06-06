@@ -16,21 +16,19 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_content_browser_client.h"
-#include "signal_connector.h"
 
+#include "qquickwebcontentsview.h"
+#include "qwebcontentsview.h"
 #include "web_contents_view_qt.h"
 
 #include <QApplication>
-#include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QLineEdit>
-#include <QToolButton>
-#include <QQuickView>
-#include <QWindow>
-
-static bool isWidgets = false;
+#include <QUrl>
 
 namespace content {
+
+extern QWebContentsView* gWidgetView;
+extern QQuickWebContentsView* gQuickView;
 
 void Shell::PlatformInitialize(const gfx::Size& default_window_size)
 {
@@ -50,11 +48,10 @@ void Shell::PlatformSetAddressBarURL(const GURL& url)
         return;
 
     fprintf(stderr, "Set Address to: %s\n", url.spec().c_str());
-
-    if (isWidgets) {
-        QLineEdit* addressLine = reinterpret_cast<QWidget*>(window_)->findChild<QLineEdit*>("AddressLineEdit");
-        addressLine->setText(QString::fromStdString(url.spec()));
-    }
+    if (gWidgetView)
+        gWidgetView->urlChanged(QUrl(QString::fromStdString(url.spec())));
+    else if (gQuickView)
+        gQuickView->urlChanged();
 }
 
 
@@ -69,71 +66,13 @@ void Shell::PlatformCreateWindow(int width, int height) {
     if (headless_)
         return;
 
-    if (!window_) {
-        if (qgetenv("QQUICKWEBENGINE").isNull()) {
-            fprintf(stderr, "Starting Widgets example...\n");
-            isWidgets = true;
-            QWidget* window = new QWidget;
-            window_ = reinterpret_cast<gfx::NativeWindow>(window);
-
-            window->setGeometry(100,100, width, height);
-
-            QVBoxLayout* layout = new QVBoxLayout;
-
-                // Create a widget based address bar.
-            QHBoxLayout* addressBar = new QHBoxLayout;
-
-            int buttonWidth = 26;
-            QToolButton* backButton = new QToolButton;
-            backButton->setIcon(QIcon::fromTheme("go-previous"));
-            backButton->setObjectName("BackButton");
-            addressBar->addWidget(backButton);
-
-            QToolButton* forwardButton = new QToolButton;
-            forwardButton->setIcon(QIcon::fromTheme("go-next"));
-            forwardButton->setObjectName("ForwardButton");
-            addressBar->addWidget(forwardButton);
-
-            QToolButton* reloadButton = new QToolButton;
-            reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
-            reloadButton->setObjectName("ReloadButton");
-            addressBar->addWidget(reloadButton);
-
-            QLineEdit* lineEdit =  new QLineEdit;
-            lineEdit->setObjectName("AddressLineEdit");
-            addressBar->addWidget(lineEdit);
-
-            layout->addLayout(addressBar);
-
-            window->setLayout(layout);
-            window->show();
-
-            SignalConnector* signalConnector = new SignalConnector(this, window);
-        } else {
-            fprintf(stderr, "Starting QQuick2 example...\n");
-            // Use oxygen as a fallback.
-            if (QIcon::themeName().isEmpty())
-                QIcon::setThemeName("oxygen");
-
-            QQuickView* window = new QQuickView;
-            window_ = reinterpret_cast<gfx::NativeWindow>(window);
-
-            window->setGeometry(100,100, width, height);
-
-            window->setSource(QUrl("lib/browser_window.qml"));
-            window->setResizeMode(QQuickView::SizeRootObjectToView);
-            window->setTitle("QQuick Example");
-
-            window->show();
-
-            // SignalConnector will act as a proxy for the QObject signals received from
-            // m_window. m_window will take ownership of the SignalConnector.
-            // The SignalConnector will search the children list of m_window
-            // for back/forward/reload buttons and for the address line edit.
-            // Therefore the layout must be set and completed before the SignalConnector
-            // is created.
-            SignalConnector* signalConnector = new SignalConnector(this, window);
-        }
+    if (gWidgetView) {
+        // The layout is used in PlatformSetContents.
+        QVBoxLayout* layout = new QVBoxLayout;
+        gWidgetView->setLayout(layout);
+        window_ = reinterpret_cast<gfx::NativeWindow>(gWidgetView);
+    } else if (gQuickView) {
+        window_ = reinterpret_cast<gfx::NativeWindow>(gQuickView);
     }
 }
 
@@ -148,27 +87,15 @@ void Shell::PlatformSetContents()
     rendererPrefs->caret_blink_interval = static_cast<double>(qApp->cursorFlashTime())/2000;
     web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
-    if (isWidgets) {
+    if (gWidgetView) {
         WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
-        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(reinterpret_cast<QWidget*>(window_)->layout());
+        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(gWidgetView->layout());
         if (layout)
             layout->addLayout(content_view->windowContainer()->widget());
-    } else {
-        QQuickView* view = reinterpret_cast<QQuickView*>(window_);
-        if (view->status() != QQuickView::Ready)
-            fprintf(stderr, "VIEW NOT READY!!!!\n");
-
-        QQuickItem* rootItem = view->rootObject();
-
-        QQuickItem* viewContainer = rootItem->findChild<QQuickItem*>("viewContainer");
-        if (!viewContainer)
-            return;
-
+    } else if (gQuickView) {
         WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(web_contents_->GetView());
         QQuickItem* windowContainer = content_view->windowContainer()->qQuickItem();
-        windowContainer->setParentItem(viewContainer);
-        windowContainer->setWidth(100);
-        windowContainer->setHeight(100);
+        windowContainer->setParentItem(gQuickView);
     }
 }
 
@@ -233,9 +160,11 @@ void Shell::PlatformSetTitle(const string16& title)
     if (headless_)
         return;
 
-    // std::string title_utf8 = UTF16ToUTF8(title);
-    // if (window_)
-    //     reinterpret_cast<QWidget*>(window_)->setWindowTitle(QString::fromStdString(title_utf8));
+    if (gWidgetView) {
+        std::string title_utf8 = UTF16ToUTF8(title);
+        gWidgetView->titleChanged(QString::fromStdString(title_utf8));
+    } else if (gQuickView)
+        gQuickView->titleChanged();
 }
 
 }  // namespace content

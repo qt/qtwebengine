@@ -39,72 +39,39 @@
 **
 ****************************************************************************/
 
-#include "signal_connector.h"
+#ifndef QWEBCONTESTSVIEW_H
+#define QWEBCONTESTSVIEW_H
 
-#include "content/shell/shell.h"
-#include <QObject>
-#include <QQuickView>
-#include <QQuickItem>
-#include <QLineEdit>
-#include <QToolButton>
-#include <QDebug>
+#include <QWidget>
+#include <QScopedPointer>
 
-
-SignalConnector::SignalConnector(content::Shell* shell, QQuickView* window)
-	: m_shell(shell)
-	, m_window(window)
-{
-	setParent(window);
-
-	QQuickItem* rootItem = window->rootObject();
-    connect(rootItem, SIGNAL(load(QString)), this, SLOT(load(QString)));
-    QObject::connect(rootItem, SIGNAL(reload()), this, SLOT(reload()));
-    QObject::connect(rootItem, SIGNAL(goForward()), this, SLOT(goForward()));
-    QObject::connect(rootItem, SIGNAL(goBack()), this, SLOT(goBack()));
+namespace content {
+    class Shell;
 }
 
-SignalConnector::SignalConnector(content::Shell* shell, QWidget* window)
-	: m_shell(shell)
-	, m_widget(window)
-{
-	setParent(window);
+class QWebContentsViewPrivate;
 
-	m_addressLineEdit = m_widget->findChild<QLineEdit*>("AddressLineEdit");
-	m_backButton = m_widget->findChild<QToolButton*>("BackButton");
-	m_forwardButton = m_widget->findChild<QToolButton*>("ForwardButton");
-	m_reloadButton = m_widget->findChild<QToolButton*>("ReloadButton");
+class Q_DECL_EXPORT QWebContentsView : public QWidget {
+    Q_OBJECT
+public:
+    QWebContentsView();
+    ~QWebContentsView();
 
-	connect(m_addressLineEdit, SIGNAL(returnPressed()), this, SLOT(loadAddressFromAddressBar()));
-	connect(m_backButton, SIGNAL(clicked()), this, SLOT(goBack()));
-	connect(m_forwardButton, SIGNAL(clicked()), this, SLOT(goForward()));
-	connect(m_reloadButton, SIGNAL(clicked()), this, SLOT(reload()));
-}
+    void load(const QUrl& url);
 
-void SignalConnector::loadAddressFromAddressBar()
-{
-	load(m_addressLineEdit->text());
-}
+public Q_SLOTS:
+    void back();
+    void forward();
+    void reload();
 
-void SignalConnector::load(const QString& url) const
-{
-	GURL gurl(url.toStdString());
-	if (!gurl.has_scheme())
-		gurl = GURL(std::string("http://") + url.toStdString());
-	m_shell->LoadURL(gurl);
-}
+Q_SIGNALS:
+    void titleChanged(const QString& title);
+    void urlChanged(const QUrl& url);
 
-void SignalConnector::goBack() const
-{
-	m_shell->GoBackOrForward(-1);
-}
+private:
+    QScopedPointer<QWebContentsViewPrivate> d;
 
-void SignalConnector::goForward() const
-{
-	m_shell->GoBackOrForward(1);
-}
+    friend class content::Shell;
+};
 
-void SignalConnector::reload() const
-{
-	m_shell->Reload();
-}
-
+#endif // QWEBCONTESTSVIEW_H

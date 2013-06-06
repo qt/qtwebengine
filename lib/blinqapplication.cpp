@@ -58,6 +58,7 @@
 
 #include "content_browser_client_qt.h"
 #include "web_contents_view_qt.h"
+#include "qquickwebcontentsview.h"
 
 namespace {
 
@@ -252,6 +253,9 @@ BlinqApplication::BlinqApplication(int &argc, char **argv)
     }
 
     base::ThreadRestrictions::SetIOAllowed(true);
+
+    // FIXME: Do a proper plugin.
+    qmlRegisterType<QQuickWebContentsView>("QtWebEngine", 1, 0, "WebContentsView");
 }
 
 int BlinqApplication::exec()

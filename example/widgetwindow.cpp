@@ -39,34 +39,64 @@
 **
 ****************************************************************************/
 
-#include <blinqapplication.h>
-#include "quickwindow.h"
 #include "widgetwindow.h"
 
-int mainWidget(int argc, char **argv)
+#include "qwebcontentsview.h"
+
+WidgetWindow::WidgetWindow()
+: m_webView(new QWebContentsView)
+, addressLineEdit(0)
 {
-    BlinqApplication app(argc, argv);
+    // Use oxygen as a fallback.
+    if (QIcon::themeName().isEmpty())
+      QIcon::setThemeName("oxygen");
 
-    WidgetWindow window;
-    window.show();
+    setGeometry(0, 0, 1024, 768);
 
-    return app.exec();
+    QVBoxLayout* layout = new QVBoxLayout;
+
+    // Create a widget based address bar.
+    QHBoxLayout* addressBar = new QHBoxLayout;
+
+    QToolButton* backButton = new QToolButton;
+    backButton->setIcon(QIcon::fromTheme("go-previous"));
+    addressBar->addWidget(backButton);
+
+    QToolButton* forwardButton = new QToolButton;
+    forwardButton->setIcon(QIcon::fromTheme("go-next"));
+    addressBar->addWidget(forwardButton);
+
+    QToolButton* reloadButton = new QToolButton;
+    reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
+    addressBar->addWidget(reloadButton);
+
+    addressLineEdit =  new QLineEdit;
+    addressBar->addWidget(addressLineEdit);
+
+    layout->addLayout(addressBar);
+    layout->addWidget(m_webView.data());
+
+    setLayout(layout);
+
+    connect(addressLineEdit, SIGNAL(returnPressed()), SLOT(loadAddressFromAddressBar()));
+    connect(backButton, SIGNAL(clicked()), m_webView.data(), SLOT(back()));
+    connect(forwardButton, SIGNAL(clicked()), m_webView.data(), SLOT(forward()));
+    connect(reloadButton, SIGNAL(clicked()), m_webView.data(), SLOT(reload()));
+    connect(m_webView.data(), SIGNAL(titleChanged(const QString&)), SLOT(setWindowTitle(const QString&)));
+    connect(m_webView.data(), SIGNAL(urlChanged(const QUrl&)), SLOT(setAddressBarUrl(const QUrl&)));
 }
 
-int mainQuick(int argc, char **argv)
+WidgetWindow::~WidgetWindow()
 {
-    BlinqApplication app(argc, argv);
-
-    QuickWindow window;
-    window.show();
-
-    return app.exec();
 }
 
-int main(int argc, char **argv)
+void WidgetWindow::loadAddressFromAddressBar()
 {
-    if (qgetenv("QQUICKWEBENGINE").isNull())
-        return mainWidget(argc, argv);
-    else
-        return mainQuick(argc, argv);
+    m_webView->load(addressLineEdit->text());
 }
+
+void WidgetWindow::setAddressBarUrl(const QUrl& url)
+{
+    addressLineEdit->setText(url.toString());
+}
+

@@ -1,7 +1,8 @@
 TEMPLATE = app
 TARGET = example
 
-SOURCES = main.cpp
+HEADERS = quickwindow.h widgetwindow.h
+SOURCES = quickwindow.cpp widgetwindow.cpp main.cpp
 
 INCLUDEPATH += ../lib
 
@@ -10,4 +11,4 @@ LIBPATH = $$getOutDir()/$$getConfigDir()/lib
 LIBS += -L$$LIBPATH -lblinq
 QMAKE_RPATHDIR += $$LIBPATH
 
-QT += widgets
+QT += widgets quick

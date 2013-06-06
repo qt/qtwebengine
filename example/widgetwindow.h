@@ -39,34 +39,27 @@
 **
 ****************************************************************************/
 
-#include <blinqapplication.h>
-#include "quickwindow.h"
-#include "widgetwindow.h"
+#ifndef WIDGETWINDOW_H
+#define WIDGETWINDOW_H
 
-int mainWidget(int argc, char **argv)
-{
-    BlinqApplication app(argc, argv);
+#include <QtWidgets>
+#include <QScopedPointer>
 
-    WidgetWindow window;
-    window.show();
+class QWebContentsView;
 
-    return app.exec();
-}
+class WidgetWindow : public QWidget {
+    Q_OBJECT
+public:
+    WidgetWindow();
+    ~WidgetWindow();
 
-int mainQuick(int argc, char **argv)
-{
-    BlinqApplication app(argc, argv);
+private Q_SLOTS:
+    void loadAddressFromAddressBar();
+    void setAddressBarUrl(const QUrl& url);
 
-    QuickWindow window;
-    window.show();
+private:
+    QLineEdit* addressLineEdit;
+    QScopedPointer<QWebContentsView> m_webView;
+};
 
-    return app.exec();
-}
-
-int main(int argc, char **argv)
-{
-    if (qgetenv("QQUICKWEBENGINE").isNull())
-        return mainWidget(argc, argv);
-    else
-        return mainQuick(argc, argv);
-}
+#endif // WIDGETWINDOW_H

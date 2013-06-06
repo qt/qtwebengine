@@ -11,6 +11,7 @@ namespace content {
 class BrowserMainParts;
 class RenderProcessHost;
 class RenderViewHostDelegateView;
+class ShellBrowserContext;
 class ShellBrowserMainParts;
 class WebContentsViewPort;
 class WebContents;
@@ -27,7 +28,7 @@ public:
     virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams& parameters) /*Q_DECL_OVERRIDE*/;
 
 
-    BrowserContextQt *browser_context();
+    content::ShellBrowserContext *browser_context();
 
     net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
 private:

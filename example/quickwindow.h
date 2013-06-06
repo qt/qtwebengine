@@ -39,34 +39,17 @@
 **
 ****************************************************************************/
 
-#include <blinqapplication.h>
-#include "quickwindow.h"
-#include "widgetwindow.h"
+#ifndef QUICKWINDOW_H
+#define QUICKWINDOW_H
 
-int mainWidget(int argc, char **argv)
-{
-    BlinqApplication app(argc, argv);
+#include <QQuickView>
 
-    WidgetWindow window;
-    window.show();
+class QWebContentsView;
 
-    return app.exec();
-}
+class QuickWindow : public QQuickView {
+    Q_OBJECT
+public:
+    QuickWindow();
+};
 
-int mainQuick(int argc, char **argv)
-{
-    BlinqApplication app(argc, argv);
-
-    QuickWindow window;
-    window.show();
-
-    return app.exec();
-}
-
-int main(int argc, char **argv)
-{
-    if (qgetenv("QQUICKWEBENGINE").isNull())
-        return mainWidget(argc, argv);
-    else
-        return mainQuick(argc, argv);
-}
+#endif // QUICKWINDOW_H

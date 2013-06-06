@@ -39,34 +39,11 @@
 **
 ****************************************************************************/
 
-#include <blinqapplication.h>
 #include "quickwindow.h"
-#include "widgetwindow.h"
 
-int mainWidget(int argc, char **argv)
+QuickWindow::QuickWindow()
 {
-    BlinqApplication app(argc, argv);
-
-    WidgetWindow window;
-    window.show();
-
-    return app.exec();
-}
-
-int mainQuick(int argc, char **argv)
-{
-    BlinqApplication app(argc, argv);
-
-    QuickWindow window;
-    window.show();
-
-    return app.exec();
-}
-
-int main(int argc, char **argv)
-{
-    if (qgetenv("QQUICKWEBENGINE").isNull())
-        return mainWidget(argc, argv);
-    else
-        return mainQuick(argc, argv);
+    setSource(QUrl("example/quickwindow.qml"));
+    setResizeMode(QQuickView::SizeRootObjectToView);
+    setTitle("QQuick Example");
 }

@@ -22,10 +22,11 @@ SOURCES = \
         backing_store_qt.cpp \
         blinqapplication.cpp \
         content_browser_client_qt.cpp \
+        qquickwebcontentsview.cpp \
+        qwebcontentsview.cpp \
         render_widget_host_view_qt.cpp \
         resource_context_qt.cpp \
         shell_qt.cpp \
-        signal_connector.cpp \
         web_event_factory.cpp \
         native_view_qt.cpp
 
@@ -34,10 +35,11 @@ HEADERS = \
         blinqapplication.h \
         browser_context_qt.h \
         content_browser_client_qt.h \
+        native_view_container_qt.h \
+        native_view_qt.h \
+        qquickwebcontentsview.h \
+        qwebcontentsview.h \
         render_widget_host_view_qt.h \
         resource_context_qt.h \
-        web_event_factory.h \
-        signal_connector.h \
-        native_view_container_qt.h \
-        native_view_qt.h
+        web_event_factory.h
 

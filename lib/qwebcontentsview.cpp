@@ -39,34 +39,69 @@
 **
 ****************************************************************************/
 
-#include <blinqapplication.h>
-#include "quickwindow.h"
-#include "widgetwindow.h"
+#include "qwebcontentsview.h"
 
-int mainWidget(int argc, char **argv)
-{
-    BlinqApplication app(argc, argv);
+// Needed to get access to content::GetContentClient()
+#define CONTENT_IMPLEMENTATION
 
-    WidgetWindow window;
-    window.show();
+#include "content/shell/shell.h"
+#include "content/shell/shell_browser_context.h"
 
-    return app.exec();
+#include "content_browser_client_qt.h"
+
+#include <QWidget>
+#include <QUrl>
+
+namespace content {
+QWebContentsView* gWidgetView = 0;
 }
 
-int mainQuick(int argc, char **argv)
+class QWebContentsViewPrivate
 {
-    BlinqApplication app(argc, argv);
+public:
+    scoped_ptr<content::Shell> shell;
+};
 
-    QuickWindow window;
-    window.show();
+QWebContentsView::QWebContentsView()
+{
+    d.reset(new QWebContentsViewPrivate);
 
-    return app.exec();
+    // Cheap hack to allow getting signals from shell_qt.cpp.
+    Q_ASSERT(!content::gWidgetView);
+    content::gWidgetView = this;
+
+    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
+    d->shell.reset(content::Shell::CreateNewWindow(browser_context,
+        GURL(std::string("http://qt-project.org/")),
+        NULL,
+        MSG_ROUTING_NONE,
+        gfx::Size()));
 }
 
-int main(int argc, char **argv)
+QWebContentsView::~QWebContentsView()
 {
-    if (qgetenv("QQUICKWEBENGINE").isNull())
-        return mainWidget(argc, argv);
-    else
-        return mainQuick(argc, argv);
+}
+
+void QWebContentsView::load(const QUrl& url)
+{
+    QString urlString = url.toString();
+    GURL gurl(urlString.toStdString());
+    if (!gurl.has_scheme())
+        gurl = GURL(std::string("http://") + urlString.toStdString());
+    d->shell->LoadURL(gurl);
+}
+
+void QWebContentsView::back()
+{
+    d->shell->GoBackOrForward(-1);
+}
+
+void QWebContentsView::forward()
+{
+    d->shell->GoBackOrForward(1);
+}
+
+void QWebContentsView::reload()
+{
+    d->shell->Reload();
 }
