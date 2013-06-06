@@ -58,8 +58,8 @@ private Q_SLOTS:
     void setAddressBarUrl(const QUrl& url);
 
 private:
-    QLineEdit* addressLineEdit;
     QScopedPointer<QWebContentsView> m_webView;
+    QLineEdit* addressLineEdit;
 };
 
 #endif // WIDGETWINDOW_H
