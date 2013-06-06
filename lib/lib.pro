@@ -26,9 +26,9 @@ SOURCES = \
         qwebcontentsview.cpp \
         render_widget_host_view_qt.cpp \
         resource_context_qt.cpp \
-        shell_qt.cpp \
         web_event_factory.cpp \
-        native_view_qt.cpp
+        native_view_qt.cpp \
+        web_contents_delegate_qt.cpp
 
 HEADERS = \
         backing_store_qt.h \
@@ -41,5 +41,6 @@ HEADERS = \
         qwebcontentsview.h \
         render_widget_host_view_qt.h \
         resource_context_qt.h \
-        web_event_factory.h
+        web_event_factory.h \
+        web_contents_delegate_qt.h
 

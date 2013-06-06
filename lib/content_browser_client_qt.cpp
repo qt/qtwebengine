@@ -14,6 +14,22 @@
 #include "net/base/net_util.h"
 #include "browser_context_qt.h"
 #include "web_contents_view_qt.h"
+#include "web_contents_delegate_qt.h"
+
+static GURL GetStartupURL() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const CommandLine::StringVector& args = command_line->GetArgs();
+
+  if (args.empty())
+    return GURL("http://www.google.com/");
+
+  GURL url(args[0]);
+  if (url.is_valid() && url.has_scheme())
+    return url;
+
+  return net::FilePathToFileURL(base::FilePath(args[0]));
+}
+
 
 class BrowserMainPartsQt : public content::BrowserMainParts
 {

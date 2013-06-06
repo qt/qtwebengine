@@ -50,6 +50,7 @@
 #include "content/shell/shell_browser_context.h"
 
 #include "content_browser_client_qt.h"
+#include "web_contents_delegate_qt.h"
 
 #include <QWidget>
 #include <QUrl>
@@ -61,7 +62,7 @@ QWebContentsView* gWidgetView = 0;
 class QWebContentsViewPrivate
 {
 public:
-    scoped_ptr<content::Shell> shell;
+    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
 };
 
 QWebContentsView::QWebContentsView()
@@ -70,14 +71,9 @@ QWebContentsView::QWebContentsView()
 
     // Cheap hack to allow getting signals from shell_qt.cpp.
     Q_ASSERT(!content::gWidgetView);
-    content::gWidgetView = this;
 
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    d->shell.reset(content::Shell::CreateNewWindow(browser_context,
-        GURL(std::string("http://qt-project.org/")),
-        NULL,
-        MSG_ROUTING_NONE,
-        gfx::Size()));
+    d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, GURL(std::string("http://qt-project.org/")), NULL, MSG_ROUTING_NONE, gfx::Size(), this));
 }
 
 QWebContentsView::~QWebContentsView()
@@ -93,24 +89,24 @@ void QWebContentsView::load(const QUrl& url)
 
     content::NavigationController::LoadURLParams params(gurl);
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    d->shell->web_contents()->GetController().LoadURLWithParams(params);
-    d->shell->web_contents()->GetView()->Focus();
+    d->webContentsDelegate->web_contents()->GetController().LoadURLWithParams(params);
+    d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QWebContentsView::back()
 {
-    d->shell->web_contents()->GetController().GoToOffset(-1);
-    d->shell->web_contents()->GetView()->Focus();
+    d->webContentsDelegate->web_contents()->GetController().GoToOffset(-1);
+    d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QWebContentsView::forward()
 {
-    d->shell->web_contents()->GetController().GoToOffset(1);
-    d->shell->web_contents()->GetView()->Focus();
+    d->webContentsDelegate->web_contents()->GetController().GoToOffset(1);
+    d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QWebContentsView::reload()
 {
-    d->shell->web_contents()->GetController().Reload(false);
-    d->shell->web_contents()->GetView()->Focus();
+    d->webContentsDelegate->web_contents()->GetController().Reload(false);
+    d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
