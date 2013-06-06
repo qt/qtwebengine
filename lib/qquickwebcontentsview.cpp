@@ -45,6 +45,7 @@
 #define CONTENT_IMPLEMENTATION
 
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 
@@ -95,20 +96,27 @@ void QQuickWebContentsView::setUrl(const QUrl& url)
     GURL gurl(urlString.toStdString());
     if (!gurl.has_scheme())
         gurl = GURL(std::string("http://") + urlString.toStdString());
-    d->shell->LoadURL(gurl);
+
+    content::NavigationController::LoadURLParams params(gurl);
+    params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    d->shell->web_contents()->GetController().LoadURLWithParams(params);
+    d->shell->web_contents()->GetView()->Focus();
 }
 
 void QQuickWebContentsView::goBack()
 {
-    d->shell->GoBackOrForward(-1);
+    d->shell->web_contents()->GetController().GoToOffset(-1);
+    d->shell->web_contents()->GetView()->Focus();
 }
 
 void QQuickWebContentsView::goForward()
 {
-    d->shell->GoBackOrForward(1);
+    d->shell->web_contents()->GetController().GoToOffset(1);
+    d->shell->web_contents()->GetView()->Focus();
 }
 
 void QQuickWebContentsView::reload()
 {
-    d->shell->Reload();
+    d->shell->web_contents()->GetController().Reload(false);
+    d->shell->web_contents()->GetView()->Focus();
 }
