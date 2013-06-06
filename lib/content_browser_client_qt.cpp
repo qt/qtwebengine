@@ -6,10 +6,76 @@
 #include "content/public/browser/render_process_host.h"
 
 // To be cleaned up
+#include "content/shell/shell.h"
 #include "content/shell/shell_browser_main_parts.h"
+#include "content/shell/shell_browser_context.h"
+#include "content/public/browser/browser_main_parts.h"
+#include "net/base/net_module.h"
+#include "net/base/net_util.h"
 
 #include "browser_context_qt.h"
 #include "web_contents_view_qt.h"
+
+static GURL GetStartupURL() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  const CommandLine::StringVector& args = command_line->GetArgs();
+
+  if (args.empty())
+    return GURL("http://www.google.com/");
+
+  GURL url(args[0]);
+  if (url.is_valid() && url.has_scheme())
+    return url;
+
+  return net::FilePathToFileURL(base::FilePath(args[0]));
+}
+
+
+class BrowserMainPartsQt : public content::BrowserMainParts
+{
+public:
+    BrowserMainPartsQt(const content::MainFunctionParams& parameters)
+        : content::BrowserMainParts()
+        , m_parameters(parameters)
+        , m_runMessageLoop(true)
+    { }
+
+    void PreMainMessageLoopStart() { }
+    void PostMainMessageLoopStart() { }
+    void PreEarlyInitialization() { }
+
+    void PreMainMessageLoopRun() {
+        m_browserContext.reset(new content::ShellBrowserContext(false));
+        m_offTheRecordBrowserContext.reset(new content::ShellBrowserContext(true));
+
+        content::Shell::CreateNewWindow(m_browserContext.get(), GetStartupURL(), NULL, MSG_ROUTING_NONE, gfx::Size());
+
+        if (m_parameters.ui_task) {
+            m_parameters.ui_task->Run();
+            delete m_parameters.ui_task;
+            m_runMessageLoop = false;
+        }
+    }
+
+    bool MainMessageLoopRun(int* result_code)  {
+        return !m_runMessageLoop;
+    }
+
+    void PostMainMessageLoopRun() {
+        m_browserContext.reset();
+        m_offTheRecordBrowserContext.reset();
+    }
+
+private:
+    scoped_ptr<content::ShellBrowserContext> m_browserContext;
+    scoped_ptr<content::ShellBrowserContext> m_offTheRecordBrowserContext;
+
+    // For running content_browsertests.
+    const content::MainFunctionParams& m_parameters;
+    bool m_runMessageLoop;
+
+    DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
+};
 
 
 content::WebContentsViewPort* ContentBrowserClientQt::OverrideCreateWebContentsView(content::WebContents* web_contents, content::RenderViewHostDelegateView** render_view_host_delegate_view)
@@ -22,7 +88,7 @@ content::WebContentsViewPort* ContentBrowserClientQt::OverrideCreateWebContentsV
 
 content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams &parameters)
 {
-    m_browserMainParts = new content::ShellBrowserMainParts(parameters);
+    m_browserMainParts = new BrowserMainPartsQt(parameters);
     m_browser_context = new BrowserContextQt();
     return m_browserMainParts;
 }

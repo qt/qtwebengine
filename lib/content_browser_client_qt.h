@@ -18,6 +18,7 @@ struct MainFunctionParams;
 }
 
 class BrowserContextQt;
+class BrowserMainPartsQt;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient {
 
@@ -31,7 +32,7 @@ public:
     net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
 private:
     BrowserContextQt* m_browser_context;
-    content::ShellBrowserMainParts* m_browserMainParts;
+   	BrowserMainPartsQt* m_browserMainParts;
 
 };
 
