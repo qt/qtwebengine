@@ -21,7 +21,6 @@ QT += gui-private widgets qml quick
 SOURCES = \
         backing_store_qt.cpp \
         blinqapplication.cpp \
-        blinqpage.cpp \
         content_browser_client_qt.cpp \
         render_widget_host_view_qt.cpp \
         resource_context_qt.cpp \
@@ -33,7 +32,6 @@ SOURCES = \
 HEADERS = \
         backing_store_qt.h \
         blinqapplication.h \
-        blinqpage.h \
         browser_context_qt.h \
         content_browser_client_qt.h \
         render_widget_host_view_qt.h \
