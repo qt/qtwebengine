@@ -2,3 +2,7 @@
 Makefile
 process/process
 out/
+lib/lib.gyp
+process/process.gyp
+example/example
+*.pro.user
