@@ -19,6 +19,7 @@ namespace content {
 
 class NativeViewQt {
 public:
+    virtual ~NativeViewQt() {}
     virtual void setBackingStore(BackingStoreQt* backingStore) = 0;
     virtual QRectF screenRect() const = 0;
     virtual void show() = 0;
