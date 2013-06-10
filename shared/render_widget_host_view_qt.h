@@ -128,13 +128,21 @@ public:
     void handleWheelEvent(QWheelEvent*);
     void handleFocusEvent(QFocusEvent*);
 private:
-    void Paint(const gfx::Rect& scroll_rect);
+    void Paint(const gfx::Rect& damage_rect);
 
     bool IsPopup() const;
 
     content::RenderWidgetHostImpl *m_host;
     NativeViewQt *m_view;
     gfx::Size m_requestedSize;
+
+    // This is true when we are currently painting and thus should handle extra
+    // paint requests by expanding the invalid rect rather than actually
+    // painting.
+    bool about_to_validate_and_paint_;
+
+    // This is the rectangle which we'll paint.
+    gfx::Rect invalid_rect_;
 };
 
 }

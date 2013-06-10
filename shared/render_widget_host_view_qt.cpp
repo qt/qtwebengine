@@ -91,6 +91,7 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebKit::WebScreenInfo* resul
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_view(0)
+    , about_to_validate_and_paint_(false)
 {
     m_host->SetView(this);
 }
@@ -346,14 +347,20 @@ void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect,
     if (!m_view || !m_view->isVisible())
         return;
 
-    Paint(scroll_rect);
+    if (about_to_validate_and_paint_)
+        invalid_rect_.Union(scroll_rect);
+    else
+        Paint(scroll_rect);
 
     for (size_t i = 0; i < copy_rects.size(); ++i) {
         gfx::Rect rect = gfx::SubtractRects(copy_rects[i], scroll_rect);
         if (rect.IsEmpty())
             continue;
 
-        Paint(rect);
+        if (about_to_validate_and_paint_)
+            invalid_rect_.Union(rect);
+        else
+            Paint(rect);
     }
 }
 
@@ -469,15 +476,23 @@ void RenderWidgetHostViewQt::OnAccessibilityNotifications(const std::vector<Acce
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostViewQt::Paint(const gfx::Rect& scroll_rect)
+void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
 {
+    DCHECK(!about_to_validate_and_paint_);
+
+    invalid_rect_ = damage_rect;
+    about_to_validate_and_paint_ = true;
+
     bool force_create = !m_host->empty();
     BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
+
+    // Calling GetBackingStore maybe have changed |invalid_rect_|...
+    about_to_validate_and_paint_ = false;
+
     if (backing_store && m_view) {
-        QRectF r  = m_view->screenRect();
-        QRect rect(0, 0, r.width(), r.height());
         m_view->setBackingStore(backing_store);
-        m_view->update();
+        QRect r(invalid_rect_.x(), invalid_rect_.y(), invalid_rect_.width(), invalid_rect_.height());
+        m_view->update(r);
     }
 }
 

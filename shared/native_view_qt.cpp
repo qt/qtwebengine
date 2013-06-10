@@ -44,9 +44,9 @@ QWindow* QWidgetNativeView::window() const
     return QWidget::windowHandle();
 }
 
-void QWidgetNativeView::update()
+void QWidgetNativeView::update(const QRect& rect)
 {
-    QWidget::update();
+    QWidget::update(rect);
 }
 
 void QWidgetNativeView::setBackingStore(BackingStoreQt* backingStore)
@@ -120,9 +120,9 @@ QWindow* QQuickNativeView::window() const
     return QQuickPaintedItem::window();
 }
 
-void QQuickNativeView::update()
+void QQuickNativeView::update(const QRect& rect)
 {
-    QQuickPaintedItem::update();
+    QQuickPaintedItem::update(rect);
 }
 
 void QQuickNativeView::paint(QPainter *painter)

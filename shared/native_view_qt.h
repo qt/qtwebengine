@@ -26,7 +26,7 @@ public:
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
-    virtual void update() = 0;
+    virtual void update(const QRect& rect = QRect()) = 0;
 };
 
 class QWidgetNativeView : public QWidget, public NativeViewQt
@@ -40,7 +40,7 @@ public:
     virtual void hide();
     virtual bool isVisible() const;
     virtual QWindow* window() const;
-    virtual void update();
+    virtual void update(const QRect& rect = QRect());
 
     QPainter* painter();
 
@@ -67,7 +67,7 @@ public:
     virtual void hide();
     virtual bool isVisible() const;
     virtual QWindow* window() const;
-    virtual void update();
+    virtual void update(const QRect& rect = QRect());
 
     void paint(QPainter *painter);
     void resize(int width, int height);
