@@ -57,7 +57,6 @@
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #include "content_browser_client_qt.h"
-#include "web_contents_view_qt.h"
 #include "qquickwebcontentsview.h"
 
 namespace {

@@ -55,7 +55,6 @@ public:
     static WebKit::WebMouseEvent toWebMouseEvent(QMouseEvent*);
     static WebKit::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
-
 };
 
 

@@ -47,8 +47,9 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/web_contents_view_port.h"
-#include "render_widget_host_view_qt.h"
-#include "native_view_container_qt.h"
+
+#include "shared/render_widget_host_view_qt.h"
+#include "shared/native_view_container_qt.h"
 
 class WebContentsViewQt
     : public content::WebContentsViewPort
@@ -66,7 +67,7 @@ public:
 
         return view;
     }
-    
+
     virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context) { QT_NOT_YET_IMPLEMENTED }
 
     virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) { return 0; }

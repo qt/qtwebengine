@@ -32,6 +32,7 @@
       '<(chromium_src_dir)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_test_support',
     ],
     'include_dirs': [
+      '<(qtwebengine_src_dir)',
       '<(chromium_src_dir)',
     ],
     'msvs_settings': {

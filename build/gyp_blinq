@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 
+qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 chrome_src = os.path.abspath(os.environ.get('CHROMIUM_SRC_DIR')) # null-checked in build.pro
 script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
 if not os.path.isdir(script_dir):
@@ -104,6 +105,7 @@ if __name__ == '__main__':
   args.extend(["--toplevel-dir=" + toplevel])
   # Chromium specific Hack: for Chromium to build, the depth has to be set to the chromium src dir.
   args.extend(["--depth=" + chrome_src])
+  args.extend(['-D', 'qtwebengine_src_dir=' + qtwebengine_src])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
   # Tweak the output location and format (hardcode ninja for now)
   args.extend(['--generator-output', os.path.abspath(get_output_dir())])

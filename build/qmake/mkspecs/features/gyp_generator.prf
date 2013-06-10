@@ -50,6 +50,11 @@ for (lib, LIBS): GYPI_CONTENTS += "      '$$lib',"
 
 GYPI_CONTENTS += "    ],"
 
+!isEmpty(GYPDEPENDENCIES) {
+  GYPI_CONTENTS += "    'dependencies': ["
+  for (dep, GYPDEPENDENCIES): GYPI_CONTENTS += "      '$$dep',"
+  GYPI_CONTENTS += "    ],"
+}
 !isEmpty(DEFINES) {
   GYPI_CONTENTS += "    'defines': ["
   for (define, DEFINES): GYPI_CONTENTS += "      '$$define',"

@@ -14,7 +14,6 @@
 #include "net/base/net_util.h"
 #include "browser_context_qt.h"
 #include "web_contents_view_qt.h"
-#include "web_contents_delegate_qt.h"
 
 static GURL GetStartupURL() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
