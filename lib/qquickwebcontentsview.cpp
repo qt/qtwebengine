@@ -55,10 +55,6 @@
 #include <QWidget>
 #include <QUrl>
 
-namespace content {
-QQuickWebContentsView* gQuickView = 0;
-}
-
 class QQuickWebContentsViewPrivate
 {
 public:
@@ -68,10 +64,6 @@ public:
 QQuickWebContentsView::QQuickWebContentsView()
 {
     d.reset(new QQuickWebContentsViewPrivate);
-
-    // Cheap hack to allow getting signals from shell_qt.cpp.
-    Q_ASSERT(!content::gQuickView);
-    content::gQuickView = this;
 
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
     d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, GURL(std::string("http://qt-project.org/")), NULL, MSG_ROUTING_NONE, gfx::Size(), this));

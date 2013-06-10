@@ -55,10 +55,6 @@
 #include <QWidget>
 #include <QUrl>
 
-namespace content {
-QWebContentsView* gWidgetView = 0;
-}
-
 class QWebContentsViewPrivate
 {
 public:
@@ -68,9 +64,6 @@ public:
 QWebContentsView::QWebContentsView()
 {
     d.reset(new QWebContentsViewPrivate);
-
-    // Cheap hack to allow getting signals from shell_qt.cpp.
-    Q_ASSERT(!content::gWidgetView);
 
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
     d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, GURL(std::string("http://qt-project.org/")), NULL, MSG_ROUTING_NONE, gfx::Size(), this));

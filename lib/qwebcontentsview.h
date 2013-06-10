@@ -45,10 +45,6 @@
 #include <QWidget>
 #include <QScopedPointer>
 
-namespace content {
-    class Shell;
-}
-
 class QWebContentsViewPrivate;
 
 class Q_DECL_EXPORT QWebContentsView : public QWidget {
@@ -70,8 +66,6 @@ Q_SIGNALS:
 
 private:
     QScopedPointer<QWebContentsViewPrivate> d;
-
-    friend class content::Shell;
 };
 
 #endif // QWEBCONTESTSVIEW_H

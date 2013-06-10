@@ -45,10 +45,6 @@
 #include <QQuickItem>
 #include <QScopedPointer>
 
-namespace content {
-    class Shell;
-}
-
 class QQuickWebContentsViewPrivate;
 
 class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
@@ -72,8 +68,6 @@ Q_SIGNALS:
 
 private:
     QScopedPointer<QQuickWebContentsViewPrivate> d;
-
-    friend class content::Shell;
 };
 
 QML_DECLARE_TYPE(QQuickWebContentsView)
