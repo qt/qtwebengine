@@ -46,9 +46,9 @@
 
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "content/shell/shell.h"
-#include "content/shell/shell_browser_context.h"
+#include "ipc/ipc_message.h"
 
+#include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "web_contents_delegate_qt.h"
 

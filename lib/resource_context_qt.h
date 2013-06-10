@@ -3,8 +3,8 @@
 #ifndef RESOURCE_CONTEXT_QT
 #define RESOURCE_CONTEXT_QT
 
-namespace content {
-class ShellURLRequestContextGetter;
+namespace net {
+class URLRequestContextGetter;
 }
 
 class BrowserContextQt;
@@ -21,11 +21,11 @@ public:
 
     virtual net::URLRequestContext* GetRequestContext();
 
-    void set_url_request_context_getter(content::ShellURLRequestContextGetter* getter);
+    void set_url_request_context_getter(net::URLRequestContextGetter* getter);
 
 private:
     BrowserContextQt *context;
-    content::ShellURLRequestContextGetter* getter_;
+    net::URLRequestContextGetter* getter_;
 
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };

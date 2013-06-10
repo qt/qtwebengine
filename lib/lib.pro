@@ -25,7 +25,9 @@ SOURCES = \
         qquickwebcontentsview.cpp \
         qwebcontentsview.cpp \
         resource_context_qt.cpp \
+        url_request_context_getter_qt.cpp \
         web_contents_delegate_qt.cpp
+        web_event_factory.cpp
 
 HEADERS = \
         blinqapplication.h \
@@ -34,4 +36,7 @@ HEADERS = \
         qquickwebcontentsview.h \
         qwebcontentsview.h \
         resource_context_qt.h \
+        url_request_context_getter_qt.h \
         web_contents_delegate_qt.h
+        web_event_factory.h
+

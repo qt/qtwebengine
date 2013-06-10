@@ -1,19 +1,25 @@
+#ifndef BROWSER_CONTEXT_QT
+#define BROWSER_CONTEXT_QT
+
 #include "content/public/browser/browser_context.h"
 
 #include "base/files/scoped_temp_dir.h"
+
 #include "base/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_context.h"
+#include "net/proxy/proxy_config_service.h"
 
-#include "content/shell/shell_url_request_context_getter.h"
+#include <qglobal.h>
+#include <QByteArray>
 
 #include "resource_context_qt.h"
+#include "url_request_context_getter_qt.h"
 
-#ifndef BROWSER_CONTEXT_QT
-#define BROWSER_CONTEXT_QT
+
 
 class BrowserContextQt : public content::BrowserContext
 {
@@ -56,8 +62,7 @@ public:
 
    net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers)
    {
-       url_request_getter_ = new content::ShellURLRequestContextGetter(/*ignore_certificate_errors = */ false, GetPath(), content::BrowserThread::UnsafeGetMessageLoopForThread(content::BrowserThread::IO)
-                                                                       , content::BrowserThread::UnsafeGetMessageLoopForThread(content::BrowserThread::FILE), protocol_handlers);
+       url_request_getter_ = new URLRequestContextGetterQt(GetPath());
        static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
        return url_request_getter_.get();
    }
@@ -65,7 +70,7 @@ public:
 private:
    scoped_ptr<content::ResourceContext> resourceContext;
    base::ScopedTempDir tempBasePath; // ### Should become permanent location.
-   scoped_refptr<content::ShellURLRequestContextGetter> url_request_getter_;
+   scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
 
    DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
 };

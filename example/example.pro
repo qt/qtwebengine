@@ -12,3 +12,4 @@ LIBS += -L$$LIBPATH -lblinq
 QMAKE_RPATHDIR += $$LIBPATH
 
 QT += widgets quick
+MOC_DIR=$$PWD

@@ -8,5 +8,3 @@ CHROMIUM_SRC_DIR = $$(CHROMIUM_SRC_DIR)
 isEmpty(CHROMIUM_SRC_DIR):error("please set CHROMIUM_SRC_DIR")
 
 load(functions)
-# So that moc generated files don't end up polluting the source tree
-OUT_PWD = $$getOutDir()
