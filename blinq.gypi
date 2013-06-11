@@ -13,7 +13,13 @@
   },
     'dependencies': [
       '<(chromium_src_dir)/content/content.gyp:content',
-      '<(chromium_src_dir)/content/content.gyp:content_shell_lib',
+      '<(chromium_src_dir)/content/content.gyp:content_app',
+      '<(chromium_src_dir)/content/content.gyp:content_browser',
+      '<(chromium_src_dir)/content/content.gyp:content_common',
+      '<(chromium_src_dir)/content/content.gyp:content_gpu',
+      '<(chromium_src_dir)/content/content.gyp:content_renderer',
+      '<(chromium_src_dir)/content/content.gyp:content_utility',
+      '<(chromium_src_dir)/content/content.gyp:content_worker',
       '<(chromium_src_dir)/content/content_resources.gyp:content_resources',
       '<(chromium_src_dir)/base/base.gyp:base',
       '<(chromium_src_dir)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -70,7 +76,7 @@
       '<(chromium_src_dir)/build/linux/system.gyp:fontconfig',
     ],
   }],
-    ['os_posix==1 and use_aura==1 and linux_use_tcmalloc==1', {
+    ['os_posix==1 and linux_use_tcmalloc==1', {
       'dependencies': [
 # This is needed by content/app/content_main_runner.cc
         '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
