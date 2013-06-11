@@ -81,10 +81,7 @@ QUrl QQuickWebContentsView::url() const
 
 void QQuickWebContentsView::setUrl(const QUrl& url)
 {
-    QString urlString = url.toString();
-    GURL gurl(urlString.toStdString());
-    if (!gurl.has_scheme())
-        gurl = GURL(std::string("http://") + urlString.toStdString());
+    GURL gurl(url.toString().toStdString());
 
     content::NavigationController::LoadURLParams params(gurl);
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);

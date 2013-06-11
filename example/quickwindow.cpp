@@ -41,8 +41,30 @@
 
 #include "quickwindow.h"
 
+#include <QFileInfo>
+#include <QObject>
+#include <QQmlContext>
+#include <QQmlEngine>
+#include <QUrl>
+
+class Utils : public QObject {
+    Q_OBJECT
+public:
+    Utils(QObject* parent = 0) : QObject(parent) { }
+    Q_INVOKABLE static QUrl fromUserInput(const QString& userInput)
+    {
+        QFileInfo fileInfo(userInput);
+        if (fileInfo.exists())
+            return QUrl(fileInfo.absoluteFilePath());
+        return QUrl::fromUserInput(userInput);
+    }
+};
+
+#include "quickwindow.moc"
+
 QuickWindow::QuickWindow()
 {
+    engine()->rootContext()->setContextProperty("utils", new Utils(this));
     setSource(QUrl("example/quickwindow.qml"));
     setResizeMode(QQuickView::SizeRootObjectToView);
     setTitle("QQuick Example");

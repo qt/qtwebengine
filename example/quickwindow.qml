@@ -72,7 +72,7 @@ Item {
             selectByMouse: true
 
             onAccepted: {
-                webContentsView.url = text
+                webContentsView.url = utils.fromUserInput(text)
             }
         }
     }

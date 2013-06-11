@@ -4,6 +4,8 @@ TARGET = example
 HEADERS = quickwindow.h widgetwindow.h
 SOURCES = quickwindow.cpp widgetwindow.cpp main.cpp
 
+OTHER_FILES += quickwindow.qml
+
 INCLUDEPATH += ../lib
 
 LIBPATH = $$getOutDir()/$$getConfigDir()/lib
@@ -13,3 +15,4 @@ QMAKE_RPATHDIR += $$LIBPATH
 
 QT += widgets quick
 MOC_DIR=$$PWD
+
