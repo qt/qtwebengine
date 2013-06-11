@@ -53,7 +53,8 @@
 #include <QToolButton>
 #include <QLineEdit>
 #include <QQuickView>
-#include <QApplication>
+#include <QGuiApplication>
+#include <QStyleHints>
 
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
@@ -164,7 +165,8 @@ void WebContentsDelegateQt::PlatformSetContents()
     content::RendererPreferences* rendererPrefs = m_webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
-    rendererPrefs->caret_blink_interval = static_cast<double>(qApp->cursorFlashTime())/2000;
+    const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
+    rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
     m_webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     if (m_contentsView) {
