@@ -2,9 +2,9 @@
 # We want the gyp generation step to happen after all the other config steps. For that we need to prepend
 # our gyp_generator.prf feature to the CONFIG variable since it is processed backwards
 CONFIG = gyp_generator $$CONFIG
-GYPDEPENDENCIES += ../shared/shared.gyp:blinq_shared
+GYPDEPENDENCIES += ../shared/shared.gyp:qtwebengine_shared
 
-TARGET = $$BLINQ_PROCESS_NAME
+TARGET = $$QTWEBENGINEPROCESS_NAME
 TEMPLATE = app
 
 QT += widgets quick

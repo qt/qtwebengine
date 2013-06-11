@@ -75,19 +75,19 @@ static inline base::FilePath::StringType qStringToStringType(const QString &str)
 
 static QByteArray subProcessPath() {
     static bool initialized = false;
-#ifdef BLINQ_PROCESS_PATH
-    static QByteArray processPath(BLINQ_PROCESS_PATH);
+#ifdef QTWEBENGINEPROCESS_PATH
+    static QByteArray processPath(QTWEBENGINEPROCESS_PATH);
 #else
     static QByteArray processPath;
 #endif
     if (initialized)
         return processPath;
     // Allow overriding at runtime for the time being.
-    const QByteArray fromEnv = qgetenv("BLINQ_PROCESS_PATH");
+    const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
     if (!fromEnv.isEmpty())
         processPath = fromEnv;
     if (processPath.isEmpty())
-        qFatal("BLINQ_PROCESS_PATH environment variable not set or empty.");
+        qFatal("QTWEBENGINEPROCESS_PATH environment variable not set or empty.");
     initialized = true;
     return processPath;
 }

@@ -9,8 +9,8 @@ defineReplace(toGypTargetType) {
 }
 
 defineReplace(getOutDir) {
-  # FIXME: rely on env variable in here and in the gyp_blinq script, à la WEBKITOUTPUTDIR
-  return("$$BLINQ_ROOT/out")
+  # FIXME: rely on env variable in here and in the gyp_qtwebengine script, à la WEBKITOUTPUTDIR
+  return("$$QTWEBENGINE_ROOT/out")
 }
 
 defineReplace(getConfigDir) {
@@ -22,7 +22,7 @@ defineReplace(findMocables) {
   input = $$1
   for (file, input): \
       infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
-  mocables = $$system("$$BLINQ_ROOT/build/scripts/find-mocables $$infiles")
+  mocables = $$system("$$QTWEBENGINE_ROOT/build/scripts/find-mocables $$infiles")
   mocables = $$replace(mocables, $$_PRO_FILE_PWD_$${QMAKE_DIR_SEP}, '')
   return($$mocables)
 }

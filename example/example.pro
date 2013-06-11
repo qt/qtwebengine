@@ -10,7 +10,7 @@ INCLUDEPATH += ../lib
 
 LIBPATH = $$getOutDir()/$$getConfigDir()/lib
 
-LIBS += -L$$LIBPATH -lblinq
+LIBS += -L$$LIBPATH -lQt5WebEngine
 QMAKE_RPATHDIR += $$LIBPATH
 
 QT += widgets quick

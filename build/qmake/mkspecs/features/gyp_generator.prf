@@ -42,7 +42,7 @@ GYPI_CONTENTS =  "{" \
                  "    'target_name': '$$TARGET'," \
                  "    'type': '$$TARGET_TYPE'," \
                  "    'includes': [" \
-                 "      '../blinq.gypi'," \
+                 "      '../qtwebengine.gypi'," \
                  "    ]," \
                  "    'ldflags': ["
 for (lib, LIBS): GYPI_CONTENTS += "      '$$lib',"
@@ -100,7 +100,7 @@ GYPI_CONTENTS += "  }," \
 write_file($$GYPI_FILE, GYPI_CONTENTS)
 
 # Overwriting the generated gyp file seems like a good reason to re-gyp
-unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$BLINQ_ROOT/build/build.pro")
+unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$QTWEBENGINE_ROOT/build/build.pro")
 
 # The generated Makefile shouldn't build anything by itself, just re-run qmake if necessary
 TEMPLATE = aux

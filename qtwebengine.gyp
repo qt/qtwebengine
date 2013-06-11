@@ -1,7 +1,7 @@
 {
   'targets': [
   {
-    'target_name': 'blinq',
+    'target_name': 'qtwebengine',
     'type': 'none',
     'dependencies': [
       'shared/shared.gyp:*',

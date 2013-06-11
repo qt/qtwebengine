@@ -1,11 +1,11 @@
 # This .pro file serves a dual purpose:
-# 1) invoking gyp through the gyp_blinq script, which in turn makes use of the generated gypi include files
+# 1) invoking gyp through the gyp_qtwebengine script, which in turn makes use of the generated gypi include files
 # 2) produce a Makefile that will run ninja, and take care of actually building everything.
 
 TEMPLATE = aux
 
 message(Running Gyp...)
-GYP_OUTPUT = $$system(./gyp_blinq)
+GYP_OUTPUT = $$system(./gyp_qtwebengine)
 message($$GYP_OUTPUT)
 
 ninja.target = ninja

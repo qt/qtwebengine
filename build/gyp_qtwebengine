@@ -80,7 +80,7 @@ if __name__ == '__main__':
       break
 
   if not gyp_file_specified:
-      args.append(os.path.join(root_dir, 'blinq.gyp'))
+      args.append(os.path.join(root_dir, 'qtwebengine.gyp'))
 
   args.extend(['-I' + i for i in additional_include_files(args)])
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
   args.extend(['--generator-output', os.path.abspath(get_output_dir())])
   args.extend(['-Goutput_dir='+ os.path.abspath(get_output_dir())])
   args.extend(['--format=ninja'])
-  if "BLINQ_GYP_DEBUG" in os.environ:
+  if "QTWEBENGINE_GYP_DEBUG" in os.environ:
     args.append("--check")
     args.append("-d all")
     print args
