@@ -1,7 +1,7 @@
-From 4ce3baa412e9799684c0b7379814384489c2ae5a Mon Sep 17 00:00:00 2001
+From 0a3b4029af83089cb313b555a47c5c510dc94cc7 Mon Sep 17 00:00:00 2001
 From: Simon Hausmann <simon.hausmann@digia.com>
 Date: Mon, 29 Apr 2013 11:25:37 +0200
-Subject: [PATCH] My local fixes
+Subject: [PATCH 1/2] My local fixes
 
 ---
  content/browser/zygote_host/zygote_host_impl_linux.cc | 1 +
@@ -10,7 +10,7 @@ Subject: [PATCH] My local fixes
  3 files changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
-index 4e28c55..ddd3513 100644
+index ba7884f8..50eacc8 100644
 --- a/content/browser/zygote_host/zygote_host_impl_linux.cc
 +++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
 @@ -70,6 +70,7 @@ void ZygoteHostImpl::Init(const std::string& sandbox_cmd) {
@@ -43,10 +43,10 @@ index bed5ff2..992e0d0 100644
    virtual ~ContentMainRunner() {}
  
 diff --git a/content/public/common/content_client.h b/content/public/common/content_client.h
-index 198ecad..778fcac 100644
+index 4c1d110..ddf6a32 100644
 --- a/content/public/common/content_client.h
 +++ b/content/public/common/content_client.h
-@@ -60,7 +60,7 @@ CONTENT_EXPORT void SetContentClient(ContentClient* client);
+@@ -63,7 +63,7 @@ CONTENT_EXPORT void SetContentClient(ContentClient* client);
  
  #if defined(CONTENT_IMPLEMENTATION)
  // Content's embedder API should only be used by content.
@@ -56,5 +56,5 @@ index 198ecad..778fcac 100644
  
  // Used for tests to override the relevant embedder interfaces. Each method
 -- 
-1.8.1.2
+1.8.3
 

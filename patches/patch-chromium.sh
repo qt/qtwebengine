@@ -20,7 +20,7 @@ if [ "$2" = "--update" ]; then
 fi
 
 echo "Applying patches..."
-git am $PATCH_DIR/0001-My-local-fixes.patch
+git am $PATCH_DIR/0001-My-local-fixes.patch $PATCH_DIR/0002-Add-WebEngineContext-to-RunLoop-s-friends.patch
 
 cd tools/gyp
 echo "Entering $PWD"

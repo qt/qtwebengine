@@ -51,6 +51,8 @@ class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
 public:
+    static void registerType();
+
     QQuickWebContentsView();
     ~QQuickWebContentsView();
 

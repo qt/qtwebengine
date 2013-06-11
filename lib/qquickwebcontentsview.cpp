@@ -51,19 +51,29 @@
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "web_contents_delegate_qt.h"
+#include "web_engine_context.h"
 
 #include <QWidget>
 #include <QUrl>
 
+void QQuickWebContentsView::registerType()
+{
+    // FIXME: Do a proper plugin.
+    qmlRegisterType<QQuickWebContentsView>("QtWebEngine", 1, 0, "WebContentsView");
+}
+
 class QQuickWebContentsViewPrivate
 {
 public:
+    scoped_refptr<WebEngineContext> context;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
 };
 
 QQuickWebContentsView::QQuickWebContentsView()
 {
     d.reset(new QQuickWebContentsViewPrivate);
+    // This has to be the first thing we do.
+    d->context = WebEngineContext::current();
 
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
     d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, GURL(std::string("http://qt-project.org/")), NULL, MSG_ROUTING_NONE, gfx::Size(), this));

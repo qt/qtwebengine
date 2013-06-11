@@ -1,0 +1,33 @@
+From 1f686ea3aafa4d950d92a7f945cfec5b6fb02dfd Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Tue, 11 Jun 2013 15:44:26 +0200
+Subject: [PATCH 2/2] Add WebEngineContext to RunLoop's friends.
+
+---
+ base/run_loop.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/base/run_loop.h b/base/run_loop.h
+index 380c8bf..12f810a 100644
+--- a/base/run_loop.h
++++ b/base/run_loop.h
+@@ -10,6 +10,8 @@
+ #include "base/memory/weak_ptr.h"
+ #include "base/message_loop.h"
+ 
++class WebEngineContext;
++
+ namespace base {
+ #if defined(OS_ANDROID)
+ class MessagePumpForUI;
+@@ -74,6 +76,7 @@ class BASE_EXPORT RunLoop {
+ 
+  private:
+   friend class MessageLoop;
++  friend class ::WebEngineContext;
+ #if defined(OS_ANDROID)
+   // Android doesn't support the blocking MessageLoop::Run, so it calls
+   // BeforeRun and AfterRun directly.
+-- 
+1.8.3
+

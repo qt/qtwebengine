@@ -39,13 +39,14 @@
 **
 ****************************************************************************/
 
-#include <blinqapplication.h>
 #include "quickwindow.h"
 #include "widgetwindow.h"
 
+#include "qquickwebcontentsview.h"
+
 int mainWidget(int argc, char **argv)
 {
-    BlinqApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     WidgetWindow window;
     window.show();
@@ -55,7 +56,9 @@ int mainWidget(int argc, char **argv)
 
 int mainQuick(int argc, char **argv)
 {
-    BlinqApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
+
+    QQuickWebContentsView::registerType();
 
     QuickWindow window;
     window.show();

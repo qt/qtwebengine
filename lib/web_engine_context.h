@@ -39,15 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef BLINQAPPLICATION_H
-#define BLINQAPPLICATION_H
+#ifndef WEB_ENGINE_CONTEXT_H
+#define WEB_ENGINE_CONTEXT_H
 
-#include <QApplication>
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 
-class Q_DECL_EXPORT BlinqApplication : public QApplication {
+namespace base {
+class RunLoop;
+}
+
+class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
-    BlinqApplication(int &argc, char **argv);
-	static int exec();
+    static scoped_refptr<WebEngineContext> current();
+
+private:
+    friend class base::RefCounted<WebEngineContext>;
+    WebEngineContext();
+    ~WebEngineContext();
+
+    scoped_ptr<base::RunLoop> m_runLoop;
 };
 
 #endif

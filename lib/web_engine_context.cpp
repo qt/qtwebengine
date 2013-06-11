@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "blinqapplication.h"
+#include "web_engine_context.h"
 
 #include <math.h>
 
@@ -57,9 +57,12 @@
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #include "content_browser_client_qt.h"
-#include "qquickwebcontentsview.h"
+#include <QCoreApplication>
+#include <QStringList>
 
 namespace {
+
+static WebEngineContext* sContext = 0;
 
 static inline base::FilePath::StringType qStringToStringType(const QString &str)
 {
@@ -70,7 +73,7 @@ static inline base::FilePath::StringType qStringToStringType(const QString &str)
 #endif
 }
 
-static QByteArray blinqProcessPath() {
+static QByteArray subProcessPath() {
     static bool initialized = false;
 #ifdef BLINQ_PROCESS_PATH
     static QByteArray processPath(BLINQ_PROCESS_PATH);
@@ -95,7 +98,7 @@ static void initializeBlinkPaths()
     if (initialized)
         return;
 
-    PathService::Override(content::CHILD_PROCESS_EXE, base::FilePath(qStringToStringType(QString(blinqProcessPath()))));
+    PathService::Override(content::CHILD_PROCESS_EXE, base::FilePath(qStringToStringType(QString(subProcessPath()))));
 }
 
 // Return a timeout suitable for the glib loop, -1 to block forever,
@@ -114,29 +117,27 @@ int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
   return delay < 0 ? 0 : delay;
 }
 
-class MessagePump : public QObject,
+class MessagePumpForUIQt : public QObject,
                     public base::MessagePump
 {
 public:
-    MessagePump()
-        : m_delegate(0)
+    MessagePumpForUIQt()
+        // Usually this gets passed through Run, but since we have
+        // our own event loop, attach it explicitely ourselves.
+        : m_delegate(base::MessageLoopForUI::current())
     {
     }
 
     virtual void Run(Delegate *delegate)
     {
-        // It would be possible to do like the Android message loop and use
-        // Start(Delegate*) instead of Run to avoid blocking, but we still
-        // need to grab the command line arguments, so keep it simple for now
-        // by forcing the use of BlinqApplication.
-        m_delegate = delegate;
-        QApplication::exec();
-        m_delegate = 0;
+        // FIXME: This could be needed if we want to run Chromium tests.
+        // We could run a QEventLoop here.
+        Q_ASSERT(false);
     }
 
     virtual void Quit()
     {
-        QCoreApplication::instance()->quit();
+        Q_ASSERT(false);
     }
 
     virtual void ScheduleWork()
@@ -189,7 +190,7 @@ private:
 
 base::MessagePump* messagePumpFactory()
 {
-    return new MessagePump;
+    return new MessagePumpForUIQt;
 }
 
 class ContentMainDelegateQt : public content::ContentMainDelegate
@@ -207,31 +208,31 @@ private:
 
 }
 
-BlinqApplication::BlinqApplication(int &argc, char **argv)
-    : QApplication(argc, argv)
+WebEngineContext::WebEngineContext()
 {
+    Q_ASSERT(!sContext);
+    sContext = this;
+
     {
-        int myArgc = argc + 3;
-        const char **myArgv = new const char *[myArgc];
-
-        for (int i = 0; i < argc; ++i)
-            myArgv[i] = argv[i];
         QByteArray subProcessPathOption("--browser-subprocess-path=");
-        subProcessPathOption.append(blinqProcessPath());
-        myArgv[argc] = subProcessPathOption.constData();
-        myArgv[argc + 1] = "--no-sandbox";
+        subProcessPathOption.append(subProcessPath());
 
-        std::string ua = webkit_glue::BuildUserAgentFromProduct("Qrome/0.1");
+        std::string ua = webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1");
 
         QByteArray userAgentParameter("--user-agent=");
         userAgentParameter.append(QString::fromStdString(ua).toUtf8());
-        myArgv[argc + 2] = userAgentParameter.constData();
 
-        CommandLine::Init(myArgc, myArgv);
+        const int argc = 4;
+        const char* argv[4];
+        argv[0] = QCoreApplication::arguments()[0].toLatin1().constData();
+        argv[1] = subProcessPathOption.constData();
+        argv[2] = "--no-sandbox";
+        argv[3] = userAgentParameter.constData();
 
-        delete [] myArgv;
+        CommandLine::Init(argc, argv);
     }
 
+    // This needs to be set before the MessageLoop is created by BrowserMainRunner.
     base::MessageLoop::InitMessagePumpForUIFactory(::messagePumpFactory);
 
     static content::ContentMainRunner *runner = 0;
@@ -253,12 +254,24 @@ BlinqApplication::BlinqApplication(int &argc, char **argv)
 
     base::ThreadRestrictions::SetIOAllowed(true);
 
-    // FIXME: Do a proper plugin.
-    qmlRegisterType<QQuickWebContentsView>("QtWebEngine", 1, 0, "WebContentsView");
+    // Once the MessageLoop has been created, attach a top-level RunLoop.
+    m_runLoop.reset(new base::RunLoop);
+    m_runLoop->BeforeRun();
 }
 
-int BlinqApplication::exec()
+WebEngineContext::~WebEngineContext()
 {
-    base::RunLoop runLoop;
-    runLoop.Run();
+    m_runLoop->AfterRun();
+
+    Q_ASSERT(sContext == this);
+    sContext = 0;
+}
+
+scoped_refptr<WebEngineContext> WebEngineContext::current()
+{
+    scoped_refptr<WebEngineContext> current = sContext;
+    if (!current)
+        current = new WebEngineContext;
+    Q_ASSERT(sContext == current);
+    return current;
 }

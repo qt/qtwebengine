@@ -20,23 +20,21 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 QT += widgets quick
 
 SOURCES = \
-        blinqapplication.cpp \
         content_browser_client_qt.cpp \
         qquickwebcontentsview.cpp \
         qwebcontentsview.cpp \
         resource_context_qt.cpp \
         url_request_context_getter_qt.cpp \
-        web_contents_delegate_qt.cpp
-        web_event_factory.cpp
+        web_contents_delegate_qt.cpp \
+        web_engine_context.cpp
 
 HEADERS = \
-        blinqapplication.h \
         browser_context_qt.h \
         content_browser_client_qt.h \
         qquickwebcontentsview.h \
         qwebcontentsview.h \
         resource_context_qt.h \
         url_request_context_getter_qt.h \
-        web_contents_delegate_qt.h
-        web_event_factory.h
+        web_contents_delegate_qt.h \
+        web_engine_context.h
 
