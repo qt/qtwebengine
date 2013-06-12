@@ -51,20 +51,12 @@ namespace content {
     class SiteInstance;
 }
 
-class QWebContentsView;
-class QQuickWebContentsView;
-
 class WebContentsDelegateQt : public content::WebContentsDelegate
                             , public content::NotificationObserver
 {
 public:
-    static WebContentsDelegateQt* CreateNewWindow(content::BrowserContext*, const GURL&, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
+    static WebContentsDelegateQt* CreateNewWindow(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
     content::WebContents* web_contents();
-    void LoadURL(const GURL&);
-    void LoadURLForFrame(const GURL&, const std::string& frame_name);
-    void GoBackOrForward(int offset);
-    void Reload();
-    void Stop();
 
     virtual void Observe(int, const content::NotificationSource&, const content::NotificationDetails&);
 
@@ -72,8 +64,6 @@ private:
     WebContentsDelegateQt(content::WebContents*);
 
     scoped_ptr<content::WebContents> m_webContents;
-
-    static std::vector<WebContentsDelegateQt*> m_windows;
 };
 
 #endif

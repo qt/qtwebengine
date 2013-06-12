@@ -118,7 +118,7 @@ int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
 }
 
 class MessagePumpForUIQt : public QObject,
-                    public base::MessagePump
+                           public base::MessagePump
 {
 public:
     MessagePumpForUIQt()
@@ -245,10 +245,7 @@ WebEngineContext::WebEngineContext()
 
     static content::BrowserMainRunner *browserRunner = 0;
     if (!browserRunner) {
-        //CommandLine::Init(0, 0);
-
         browserRunner = content::BrowserMainRunner::Create();
-
         browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
     }
 

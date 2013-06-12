@@ -65,7 +65,6 @@ public:
     bool handleEvent(QEvent* event);
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size);
-    static RenderWidgetHostView* CreateViewForWidget(content::RenderWidgetHost* widget);
 
     virtual void InitAsChild(gfx::NativeView parent_view);
     virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&);
@@ -74,7 +73,6 @@ public:
     virtual void SetSize(const gfx::Size& size);
     virtual void SetBounds(const gfx::Rect& rect);
     virtual gfx::NativeView GetNativeView() const;
-    virtual NativeViewQt* GetNativeViewQt() const OVERRIDE;
     virtual gfx::NativeViewId GetNativeViewId() const;
     virtual gfx::NativeViewAccessible GetNativeViewAccessible();
     virtual void Focus();

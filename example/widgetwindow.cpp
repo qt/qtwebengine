@@ -84,6 +84,8 @@ WidgetWindow::WidgetWindow()
     connect(reloadButton, SIGNAL(clicked()), m_webView.data(), SLOT(reload()));
     connect(m_webView.data(), SIGNAL(titleChanged(const QString&)), SLOT(setWindowTitle(const QString&)));
     connect(m_webView.data(), SIGNAL(urlChanged(const QUrl&)), SLOT(setAddressBarUrl(const QUrl&)));
+
+    m_webView->load(QUrl(QStringLiteral("http://qt-project.org/")));
 }
 
 WidgetWindow::~WidgetWindow()

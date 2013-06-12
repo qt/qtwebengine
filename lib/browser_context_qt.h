@@ -47,7 +47,6 @@
 #include "base/files/scoped_temp_dir.h"
 
 #include "base/time.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -59,8 +58,6 @@
 
 #include "resource_context_qt.h"
 #include "url_request_context_getter_qt.h"
-
-
 
 class BrowserContextQt : public content::BrowserContext
 {

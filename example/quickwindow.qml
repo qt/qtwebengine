@@ -84,6 +84,7 @@ Item {
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
+        url: "http://qt-project.org/"
 
         Binding {
             target: webContentsView.children[0]

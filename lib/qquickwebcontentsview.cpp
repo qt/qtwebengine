@@ -45,8 +45,6 @@
 #define CONTENT_IMPLEMENTATION
 
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
-#include "ipc/ipc_message.h"
 
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
@@ -76,7 +74,7 @@ QQuickWebContentsView::QQuickWebContentsView()
     d->context = WebEngineContext::current();
 
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, GURL(std::string("http://qt-project.org/")), NULL, MSG_ROUTING_NONE, gfx::Size()));
+    d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
     QQuickItem* windowContainer = content_view->windowContainer()->qQuickItem();
     windowContainer->setParentItem(this);

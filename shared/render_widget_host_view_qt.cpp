@@ -133,11 +133,6 @@ content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size
     return 0;
 }
 
-RenderWidgetHostView* RenderWidgetHostViewQt::CreateViewForWidget(content::RenderWidgetHost* widget)
-{
-    return new RenderWidgetHostViewQt(widget);
-}
-
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView parent_view)
 {
     NativeViewContainerQt* container = reinterpret_cast<NativeViewContainerQt*>(parent_view);
@@ -192,11 +187,6 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 {
     QT_NOT_YET_IMPLEMENTED
     return gfx::NativeView();
-}
-
-NativeViewQt* RenderWidgetHostViewQt::GetNativeViewQt() const
-{
-    return m_view;
 }
 
 gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
