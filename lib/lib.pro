@@ -36,5 +36,6 @@ HEADERS = \
         resource_context_qt.h \
         url_request_context_getter_qt.h \
         web_contents_delegate_qt.h \
+        web_contents_view_qt.h \
         web_engine_context.h
 

@@ -15,7 +15,7 @@ public:
         : m_embeddable(0)
         , m_currentQQuickNativeView(0)
         , m_currentQWidgetNativeView(0)
-        , m_isQQuick(false)
+        , m_isQQuick(!qgetenv("QQUICKWEBENGINE").isNull())
     {
     }
 

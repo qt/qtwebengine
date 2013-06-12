@@ -61,10 +61,10 @@ static const int kTestWindowHeight = 600;
 
 std::vector<WebContentsDelegateQt*> WebContentsDelegateQt::m_windows;
 
-WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents* web_contents, QWebContentsView* contentsView)
-    : m_contentsView(contentsView)
-    , m_quickContentsView(NULL)
+WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents* web_contents)
+    : m_webContents(web_contents)
 {
+    m_webContents->SetDelegate(this);
 	// const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 	// registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
 	// Source<WebContents>(web_contents));
@@ -76,74 +76,28 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents* web_contents,
 	// }
 }
 
-WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents* web_contents, QQuickWebContentsView* contentsView)
-    : m_contentsView(NULL)
-    , m_quickContentsView(contentsView)
+WebContentsDelegateQt* WebContentsDelegateQt::CreateNewWindow(content::BrowserContext* browser_context, const GURL& url, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size)
 {
-    // const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    // registrar_.Add(this, NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-    // Source<WebContents>(web_contents));
-    m_windows.push_back(this);
-
-    // if (!shell_created_callback_.is_null()) {
-    //  shell_created_callback_.Run(this);
-    //  shell_created_callback_.Reset();
-    // }
-}
-
-WebContentsDelegateQt* WebContentsDelegateQt::commonCreate(content::WebContents* web_contents, const gfx::Size& initial_size, WebContentsDelegateQt* delegate)
-{
-    delegate->PlatformCreateWindow(initial_size.width(), initial_size.height());
-
-    delegate->m_webContents.reset(web_contents);
-    web_contents->SetDelegate(delegate);
-
-    delegate->PlatformSetContents();
-    delegate->PlatformResizeSubViews();
-
-    return delegate; 
-}
-
-content::WebContents* commonCreateWebContents(content::WebContents::CreateParams& create_params, int routing_id, const gfx::Size& initial_size)
-{
+    content::WebContents::CreateParams create_params(browser_context, site_instance);
     create_params.routing_id = routing_id;
     if (!initial_size.IsEmpty())
         create_params.initial_size = initial_size;
     else
         create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
-    return content::WebContents::Create(create_params);
-}
+    content::WebContents::Create(create_params);
+    content::WebContents* web_contents = content::WebContents::Create(create_params);
+    WebContentsDelegateQt* delegate = new WebContentsDelegateQt(web_contents);
 
-WebContentsDelegateQt* WebContentsDelegateQt::Create(content::WebContents* web_contents, const gfx::Size& initial_size, QWebContentsView* contentsView)
-{
-    WebContentsDelegateQt* delegate = new WebContentsDelegateQt(web_contents, contentsView);
-    return commonCreate(web_contents, initial_size, delegate);
-}
+    content::RendererPreferences* rendererPrefs = delegate->m_webContents->GetMutableRendererPrefs();
+    rendererPrefs->use_custom_colors = true;
+    // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
+    const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
+    rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
+    delegate->m_webContents->GetRenderViewHost()->SyncRendererPrefs();
 
-WebContentsDelegateQt* WebContentsDelegateQt::Create(content::WebContents* web_contents, const gfx::Size& initial_size, QQuickWebContentsView* contentsView)
-{
-	WebContentsDelegateQt* delegate = new WebContentsDelegateQt(web_contents, contentsView);
-    return commonCreate(web_contents, initial_size, delegate);
-}
-
-WebContentsDelegateQt* WebContentsDelegateQt::CreateNewWindow(content::BrowserContext* browser_context, const GURL& url, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size, QWebContentsView* contentsView)
-{
-    content::WebContents::CreateParams create_params(browser_context, site_instance);
-    content::WebContents* web_contents = commonCreateWebContents(create_params, routing_id, initial_size);
-    WebContentsDelegateQt* contentsDelegate = Create(web_contents, create_params.initial_size, contentsView);
     if (!url.is_empty())
-        contentsDelegate->LoadURL(url);
-    return contentsDelegate;
-}
-
-WebContentsDelegateQt* WebContentsDelegateQt::CreateNewWindow(content::BrowserContext* browser_context, const GURL& url, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size, QQuickWebContentsView* contentsView)
-{
-    content::WebContents::CreateParams create_params(browser_context, site_instance);
-    content::WebContents* web_contents = commonCreateWebContents(create_params, routing_id, initial_size);
-    WebContentsDelegateQt* contentsDelegate = Create(web_contents, create_params.initial_size, contentsView);
-    if (!url.is_empty())
-        contentsDelegate->LoadURL(url);
-    return contentsDelegate;
+        delegate->LoadURL(url);
+    return delegate;
 }
 
 content::WebContents* WebContentsDelegateQt::web_contents()
@@ -151,40 +105,6 @@ content::WebContents* WebContentsDelegateQt::web_contents()
     return m_webContents.get();
 }
 
-void WebContentsDelegateQt::PlatformCreateWindow(int width, int height)
-{
-    if (m_contentsView) {
-        // The layout is used in PlatformSetContents.
-        QVBoxLayout* layout = new QVBoxLayout;
-        m_contentsView->setLayout(layout);
-    }
-}
-
-void WebContentsDelegateQt::PlatformSetContents()
-{
-    content::RendererPreferences* rendererPrefs = m_webContents->GetMutableRendererPrefs();
-    rendererPrefs->use_custom_colors = true;
-    // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
-    const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
-    rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
-    m_webContents->GetRenderViewHost()->SyncRendererPrefs();
-
-    if (m_contentsView) {
-        WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(m_webContents->GetView());
-        QVBoxLayout* layout = qobject_cast<QVBoxLayout*>(m_contentsView->layout());
-        if (layout)
-            layout->addLayout(content_view->windowContainer()->widget());
-    } else if (m_quickContentsView) {
-        WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(m_webContents->GetView());
-        QQuickItem* windowContainer = content_view->windowContainer()->qQuickItem();
-        windowContainer->setParentItem(m_quickContentsView);
-    }
-}
-
-void WebContentsDelegateQt::PlatformResizeSubViews()
-{
-
-}
 
 void WebContentsDelegateQt::GoBackOrForward(int offset) {
   m_webContents->GetController().GoToOffset(offset);

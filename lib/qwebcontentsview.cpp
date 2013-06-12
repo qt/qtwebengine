@@ -51,8 +51,10 @@
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "web_contents_delegate_qt.h"
+#include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 
+#include <QVBoxLayout>
 #include <QWidget>
 #include <QUrl>
 
@@ -70,7 +72,12 @@ QWebContentsView::QWebContentsView()
     d->context = WebEngineContext::current();
 
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, GURL(std::string("http://qt-project.org/")), NULL, MSG_ROUTING_NONE, gfx::Size(), this));
+    d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, GURL(std::string("http://qt-project.org/")), NULL, MSG_ROUTING_NONE, gfx::Size()));
+    QVBoxLayout *layout = new QVBoxLayout;
+    setLayout(layout);
+
+    WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
+    layout->addLayout(content_view->windowContainer()->widget());
 }
 
 QWebContentsView::~QWebContentsView()
