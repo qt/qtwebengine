@@ -32,5 +32,16 @@ defineReplace(mocOutput) {
   # The order is important, since the output of the second replace would end up accidentaly transformed by the first one
   out = $$replace(out, ^(.*)($$join(QMAKE_EXT_CPP,|)), $${QMAKE_CPP_MOD_MOC}\\1$${QMAKE_EXT_CPP_MOC})
   out = $$replace(out, ^(.*)($$join(QMAKE_EXT_H,|)), $${QMAKE_H_MOD_MOC}\\1$${first(QMAKE_EXT_CPP)})
-  return ($$out)
+  return($$out)
+}
+
+defineReplace(findNinja) {
+  !isEmpty(CACHED_NINJA_EXECUTABLE):exists($$CACHED_NINJA_EXECUTABLE): return($$CACHED_NINJA_EXECUTABLE)
+  out = $$system("which ninja 2>/dev/null")
+  # Try to be smart about it if we know where the chromium sources are located
+  isEmpty(CHROMIUM_SRC_DIR): message(foobar)
+  !exists($$out):!isEmpty(CHROMIUM_SRC_DIR): out = $$absolute_path("../depot_tools/ninja", $$CHROMIUM_SRC_DIR)
+  !exists($$out): error("Ninja executable can't be found.")
+  cache(CACHED_NINJA_EXECUTABLE, set, out)
+  return($$out)
 }

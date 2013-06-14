@@ -9,7 +9,7 @@ GYP_OUTPUT = $$system(./gyp_qtwebengine)
 message($$GYP_OUTPUT)
 
 ninja.target = ninja
-ninja.commands = $$CHROMIUM_SRC_DIR/../depot_tools/ninja -C $$getOutDir()/$$getConfigDir()
+ninja.commands = $$findNinja() -C $$getOutDir()/$$getConfigDir()
 ninja.depends: qmake
 QMAKE_EXTRA_TARGETS += ninja
 

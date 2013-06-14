@@ -10,13 +10,16 @@ SUBDIRS = shared \
           build \ # This is where we use the generated qt_generated.gypi and run gyp
           example \
 
+# Ninja executable location needs to be determined early for extra targets. Should be fetched from cache most of the time anyway.
+NINJA_EXECUTABLE = $$findNinja()
+
 # Extra targets that invoke ninja on the desired configuration added for convenience
 release.target = release
-release.commands = $$CHROMIUM_SRC_DIR/../depot_tools/ninja -C $$getOutDir()/Release
+release.commands = $$NINJA_EXECUTABLE -C $$getOutDir()/Release
 release.depends: qmake
 
 debug.target = debug
-debug.commands = $$CHROMIUM_SRC_DIR/../depot_tools/ninja -C $$getOutDir()/Debug
+debug.commands = $$NINJA_EXECUTABLE -C $$getOutDir()/Debug
 debug.depends: qmake
 
 QMAKE_EXTRA_TARGETS += release \
