@@ -51,6 +51,7 @@
 #define QT_NOT_YET_IMPLEMENTED qt_noop();
 #endif
 
+class BackingStoreQt;
 class QEvent;
 class QFocusEvent;
 class QKeyEvent;
@@ -69,6 +70,7 @@ public:
 
     void SetDelegate(RenderWidgetHostViewQtDelegate* delegate) { m_delegate = delegate; }
     bool handleEvent(QEvent* event);
+    BackingStoreQt* GetBackingStore();
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size);
 
@@ -139,14 +141,6 @@ private:
     content::RenderWidgetHostImpl *m_host;
     RenderWidgetHostViewQtDelegate *m_delegate;
     gfx::Size m_requestedSize;
-
-    // This is true when we are currently painting and thus should handle extra
-    // paint requests by expanding the invalid rect rather than actually
-    // painting.
-    bool about_to_validate_and_paint_;
-
-    // This is the rectangle which we'll paint.
-    gfx::Rect invalid_rect_;
 };
 
 }

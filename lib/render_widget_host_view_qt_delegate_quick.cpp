@@ -2,6 +2,9 @@
 
 #include "shared/backing_store_qt.h"
 #include "shared/render_widget_host_view_qt.h"
+
+#include "content/browser/renderer_host/render_view_host_impl.h"
+
 #include <QQuickWindow>
 #include <QWindow>
 
@@ -42,6 +45,7 @@ QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
 
 void RenderWidgetHostViewQtDelegateQuick::update(const QRect& rect)
 {
+    polish();
     QQuickPaintedItem::update(rect);
 }
 
@@ -53,29 +57,19 @@ void RenderWidgetHostViewQtDelegateQuick::paint(QPainter *painter)
     m_backingStore->paintToTarget(painter, boundingRect());
 }
 
-void RenderWidgetHostViewQtDelegateQuick::setBackingStore(BackingStoreQt* backingStore)
+void RenderWidgetHostViewQtDelegateQuick::updatePolish()
 {
-    m_backingStore = backingStore;
-    if (m_backingStore)
-        m_backingStore->resize(QSize(width(), height()));
-}
-
-QSGNode * RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode * oldNode, UpdatePaintNodeData * data)
-{
-    return QQuickPaintedItem::updatePaintNode(oldNode, data);
+    // paint will be called from the scene graph thread and this doesn't play well
+    // with chromium's use of TLS while getting the backing store.
+    // updatePolish() should be called from the GUI thread right before the rendering thread starts.
+    m_backingStore = m_view->GetBackingStore();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
 
-    resizeBackingStore();
-}
-
-void RenderWidgetHostViewQtDelegateQuick::resizeBackingStore()
-{
-    if (m_backingStore)
-        m_backingStore->resize(QSize(width(), height()));
+    m_view->GetRenderWidgetHost()->WasResized();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)

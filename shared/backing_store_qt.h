@@ -53,7 +53,6 @@ public:
     BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, QWindow* parent);
     ~BackingStoreQt();
 
-    void resize(const QSize& size);
     void paintToTarget(QPainter*, const QRectF& rect);
 
     virtual void PaintToBackingStore(content::RenderProcessHost *process, TransportDIB::Id bitmap, const gfx::Rect &bitmap_rect,
@@ -64,10 +63,7 @@ public:
     virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output);
 
 private:
-    QPainter m_painter;
-    content::RenderWidgetHost* m_host;
     QPixmap m_pixelBuffer;
-    bool m_isValid;
 };
 
 #endif

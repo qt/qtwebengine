@@ -23,7 +23,6 @@ class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public Ren
 public:
     RenderWidgetHostViewQtDelegateQuick(content::RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
 
-    virtual void setBackingStore(BackingStoreQt* backingStore);
     virtual QRectF screenRect() const;
     virtual void show();
     virtual void hide();
@@ -43,11 +42,8 @@ public:
     void keyReleaseEvent(QKeyEvent*);
     void wheelEvent(QWheelEvent*);
 
-protected Q_SLOTS:
-    void resizeBackingStore();
-
 protected:
-    QSGNode* updatePaintNode(QSGNode * oldNode, UpdatePaintNodeData * data);
+    void updatePolish();
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
 private:

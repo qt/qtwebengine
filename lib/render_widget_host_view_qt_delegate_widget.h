@@ -17,7 +17,6 @@ class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidget
 public:
     RenderWidgetHostViewQtDelegateWidget(content::RenderWidgetHostViewQt* view, QWidget *parent = 0);
 
-    virtual void setBackingStore(BackingStoreQt* backingStore);
     virtual QRectF screenRect() const;
     virtual void show();
     virtual void hide();
@@ -33,7 +32,6 @@ protected:
     void resizeEvent(QResizeEvent *resizeEvent);
 
 private:
-    BackingStoreQt* m_backingStore;
     QPainter* m_painter;
     content::RenderWidgetHostViewQt *m_view;
 };

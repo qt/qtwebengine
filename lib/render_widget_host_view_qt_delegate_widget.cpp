@@ -3,13 +3,14 @@
 #include "shared/backing_store_qt.h"
 #include "shared/render_widget_host_view_qt.h"
 
+#include "content/browser/renderer_host/render_view_host_impl.h"
+
 #include <QResizeEvent>
 #include <QPaintEvent>
 
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(content::RenderWidgetHostViewQt* view, QWidget *parent)
     : QWidget(parent)
     , m_painter(0)
-    , m_backingStore(0)
     , m_view(view)
 {
     setFocusPolicy(Qt::ClickFocus);
@@ -47,19 +48,12 @@ void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
     QWidget::update(rect);
 }
 
-void RenderWidgetHostViewQtDelegateWidget::setBackingStore(BackingStoreQt* backingStore)
-{
-    m_backingStore = backingStore;
-    if (m_backingStore)
-        m_backingStore->resize(size());
-}
-
 void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
 {
-    if (!m_backingStore)
-        return;
-    QPainter painter(this);
-    m_backingStore->paintToTarget(&painter, event->rect());
+    if (BackingStoreQt *backingStore = m_view->GetBackingStore()) {
+        QPainter painter(this);
+        backingStore->paintToTarget(&painter, event->rect());
+    }
 }
 
 QPainter* RenderWidgetHostViewQtDelegateWidget::painter()
@@ -71,9 +65,7 @@ QPainter* RenderWidgetHostViewQtDelegateWidget::painter()
 
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
-    if (m_backingStore)
-        m_backingStore->resize(resizeEvent->size());
-    QWidget::update();
+    m_view->GetRenderWidgetHost()->WasResized();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)

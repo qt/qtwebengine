@@ -3,13 +3,11 @@
 
 #include <QRect>
 
-class BackingStoreQt;
 class QWindow;
 
 class RenderWidgetHostViewQtDelegate {
 public:
     virtual ~RenderWidgetHostViewQtDelegate() {}
-    virtual void setBackingStore(BackingStoreQt* backingStore) = 0;
     virtual QRectF screenRect() const = 0;
     virtual void show() = 0;
     virtual void hide() = 0;

@@ -49,32 +49,13 @@
 #include <QPainter>
 
 BackingStoreQt::BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, QWindow* parent)
-    : m_host(content::RenderWidgetHostImpl::From(host))
+    : content::BackingStore(host, size)
     , m_pixelBuffer(size.width(), size.height())
-    , content::BackingStore(host, size)
-    , m_isValid(false)
 {
-    int width = size.width();
-    int height = size.height();
-    resize(QSize(width, height));
 }
 
 BackingStoreQt::~BackingStoreQt()
 {
-}
-
-void BackingStoreQt::resize(const QSize& size)
-{
-    m_isValid = false;
-    if (size != m_pixelBuffer.size()) {
-        QPixmap oldBackingStore = m_pixelBuffer;
-        m_pixelBuffer = QPixmap(size);
-
-        QPainter painter(&m_pixelBuffer);
-        painter.drawPixmap(oldBackingStore.rect(), oldBackingStore);
-
-        m_host->WasResized();
-    }
 }
 
 void BackingStoreQt::paintToTarget(QPainter* painter, const QRectF& rect)
@@ -105,9 +86,9 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
     uint8_t* bitmapData = static_cast<uint8_t*>(dib->memory());
     int width = m_pixelBuffer.size().width();
     int height = m_pixelBuffer.size().height();
-    QImage img(bitmapData, pixel_bitmap_rect.width(), pixel_bitmap_rect.height(), QImage::Format_ARGB32);
+    const QImage img(bitmapData, pixel_bitmap_rect.width(), pixel_bitmap_rect.height(), QImage::Format_ARGB32);
 
-    m_painter.begin(&m_pixelBuffer);
+    QPainter painter(&m_pixelBuffer);
 
     for (size_t i = 0; i < copy_rects.size(); ++i) {
         gfx::Rect copy_rect = gfx::ToEnclosedRect(gfx::ScaleRect(copy_rects[i], scale_factor));
@@ -122,10 +103,8 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
                                  , copy_rect.width()
                                  , copy_rect.height());
 
-        m_painter.drawPixmap(destination, QPixmap::fromImage(img), source);
+        painter.drawImage(destination, img, source);
     }
-
-    m_painter.end();
 }
 
 void BackingStoreQt::ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size)
