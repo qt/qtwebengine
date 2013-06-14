@@ -4,5 +4,10 @@ process/process
 out/
 lib/lib.gyp
 process/process.gyp
+shared/shared.gyp
 example/example
 *.pro.user
+.qmake.cache
+*.moc
+moc_*.cpp
+*.orig
