@@ -222,12 +222,15 @@ WebEngineContext::WebEngineContext()
         QByteArray userAgentParameter("--user-agent=");
         userAgentParameter.append(QString::fromStdString(ua).toUtf8());
 
-        const int argc = 4;
-        const char* argv[4];
-        argv[0] = QCoreApplication::arguments()[0].toLatin1().constData();
-        argv[1] = subProcessPathOption.constData();
-        argv[2] = "--no-sandbox";
-        argv[3] = userAgentParameter.constData();
+        const QStringList args = QCoreApplication::arguments();
+        const int argc = args.size() + 3;
+        const char* argv[argc];
+        int i = 0;
+        for(; i < args.size(); ++i)
+            argv[i] = args.at(i).toLatin1().constData();
+        argv[i++] = subProcessPathOption.constData();
+        argv[i++] = "--no-sandbox";
+        argv[i] = userAgentParameter.constData();
 
         CommandLine::Init(argc, argv);
     }
