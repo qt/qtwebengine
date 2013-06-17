@@ -40,30 +40,16 @@
 ****************************************************************************/
 
 #include "quickwindow.h"
+#include "qquickwebcontentsview.h"
+#include <QApplication>
 
-#include <QFileInfo>
-#include <QObject>
-#include <QQmlContext>
-#include <QQmlEngine>
-#include <QUrl>
-
-class Utils : public QObject {
-    Q_OBJECT
-public:
-    Utils(QObject* parent = 0) : QObject(parent) { }
-    Q_INVOKABLE static QUrl fromUserInput(const QString& userInput)
-    {
-        QFileInfo fileInfo(userInput);
-        if (fileInfo.exists())
-            return QUrl(fileInfo.absoluteFilePath());
-        return QUrl::fromUserInput(userInput);
-    }
-};
-
-#include "quickwindow.moc"
-
-ApplicationEngine::ApplicationEngine()
+int main(int argc, char **argv)
 {
-    rootContext()->setContextProperty("utils", new Utils(this));
-    load(QUrl("example/quickwindow.qml"));
+    QApplication app(argc, argv);
+
+    QQuickWebContentsView::registerType();
+
+    ApplicationEngine appEngine;
+
+    return app.exec();
 }

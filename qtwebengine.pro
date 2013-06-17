@@ -8,7 +8,7 @@ SUBDIRS = shared \
           lib \
           process \
           build \ # This is where we use the generated qt_generated.gypi and run gyp
-          example \
+          examples \
 
 # Ninja executable location needs to be determined early for extra targets. Should be fetched from cache most of the time anyway.
 NINJA_EXECUTABLE = $$findNinja()

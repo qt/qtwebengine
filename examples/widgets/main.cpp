@@ -39,12 +39,10 @@
 **
 ****************************************************************************/
 
-#include "quickwindow.h"
 #include "widgetwindow.h"
+#include <QApplication>
 
-#include "qquickwebcontentsview.h"
-
-int mainWidget(int argc, char **argv)
+int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
@@ -52,23 +50,4 @@ int mainWidget(int argc, char **argv)
     window.show();
 
     return app.exec();
-}
-
-int mainQuick(int argc, char **argv)
-{
-    QApplication app(argc, argv);
-
-    QQuickWebContentsView::registerType();
-
-    ApplicationEngine appEngine;
-
-    return app.exec();
-}
-
-int main(int argc, char **argv)
-{
-    if (qgetenv("QQUICKWEBENGINE").isNull())
-        return mainWidget(argc, argv);
-    else
-        return mainQuick(argc, argv);
 }
