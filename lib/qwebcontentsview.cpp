@@ -46,6 +46,7 @@
 
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
+#include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
@@ -60,9 +61,6 @@ QWebContentsView::QWebContentsView()
     d_ptr->q_ptr = this;
 
     Q_D(QWebContentsView);
-    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    d->webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
-
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
@@ -71,9 +69,6 @@ QWebContentsView::QWebContentsView()
     connect(delegate, SIGNAL(titleChanged(const QString&)), this, SIGNAL(titleChanged(const QString&)));
     connect(delegate, SIGNAL(urlChanged(const QUrl&)), this, SIGNAL(urlChanged(const QUrl&)));
     connect(delegate, SIGNAL(loadingStateChanged()), d, SLOT(loadingStateChanged()));
-
-    WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
-    layout->addLayout(content_view->windowContainer()->widget());
 }
 
 QWebContentsView::~QWebContentsView()
@@ -145,6 +140,11 @@ QWebContentsViewPrivate::QWebContentsViewPrivate()
     : context(WebEngineContext::current())
     , m_isLoading(false)
 {
+    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
+    webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+
+    WebContentsViewQt* contents_view = static_cast<WebContentsViewQt*>(webContentsDelegate->web_contents()->GetView());
+    contents_view->SetClient(this);
 }
 
 void QWebContentsViewPrivate::loadingStateChanged()
@@ -158,4 +158,13 @@ void QWebContentsViewPrivate::loadingStateChanged()
         else
             Q_EMIT q->loadFinished(true);
     }
+}
+
+RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view)
+{
+    Q_Q(QWebContentsView);
+    RenderWidgetHostViewQtDelegateWidget *viewDelegate = new RenderWidgetHostViewQtDelegateWidget(view, q);
+    // Parent the RWHV directly, this might have to be changed to handle popups and fullscreen.
+    q->layout()->addWidget(viewDelegate);
+    return viewDelegate;
 }

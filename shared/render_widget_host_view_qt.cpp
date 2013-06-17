@@ -42,9 +42,8 @@
 #include "render_widget_host_view_qt.h"
 
 #include "backing_store_qt.h"
+#include "render_widget_host_view_qt_delegate.h"
 #include "web_event_factory.h"
-#include "native_view_container_qt.h"
-#include "native_view_qt.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -77,9 +76,9 @@ static void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo
 
 namespace content {
 
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
-    RenderWidgetHost* widget) {
-  return new RenderWidgetHostViewQt(widget);
+RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
+    // WebContentsViewQt should take care of this directly.
+    Q_ASSERT(false);
 }
 
 // static
@@ -90,7 +89,7 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebKit::WebScreenInfo* resul
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
-    , m_view(0)
+    , m_delegate(0)
     , about_to_validate_and_paint_(false)
 {
     m_host->SetView(this);
@@ -128,28 +127,19 @@ bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
 
 content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size &size)
 {
-    if (m_view)
-        return new BackingStoreQt(m_host, size, new QWindow);
-    return 0;
+    return new BackingStoreQt(m_host, size, new QWindow);
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView parent_view)
 {
-    NativeViewContainerQt* container = reinterpret_cast<NativeViewContainerQt*>(parent_view);
-    m_view = container->createNativeView(this);
-    bool force_create = !m_host->empty();
-    BackingStoreQt* backing_store = static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
-    m_view->setBackingStore(backing_store);
 }
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
 {
-    // m_view = new RasterWindow(this);
 }
 
 void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
 {
-    // m_view = new RasterWindow(this);
 }
 
 content::RenderWidgetHost* RenderWidgetHostViewQt::GetRenderWidgetHost() const
@@ -164,7 +154,7 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
     // int width = std::min(size.width(), kMaxWindowWidth);
     // int height = std::min(size.height(), kMaxWindowHeight);
     // if (IsPopup())
-        // m_view->resize(width,height);
+        // m_delegate->resize(width,height);
 
     if (m_requestedSize.width() != width ||
         m_requestedSize.height() != height) {
@@ -178,7 +168,7 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 {
     // This is called when webkit has sent us a Move message.
     // if (IsPopup())
-        // m_view->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
+        // m_delegate->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
     SetSize(rect.size());
 }
 
@@ -204,12 +194,12 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 // Set focus to the associated View component.
 void RenderWidgetHostViewQt::Focus()
 {
-    // m_view->setFocus(Qt::MouseFocusReason);
+    // m_delegate->setFocus(Qt::MouseFocusReason);
 }
 
 bool RenderWidgetHostViewQt::HasFocus() const
 {
-    // return m_view->hasFocus();
+    // return m_delegate->hasFocus();
     return true;
 }
 
@@ -220,23 +210,23 @@ bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
 
 void RenderWidgetHostViewQt::Show()
 {
-    m_view->show();
+    m_delegate->show();
 }
 
 void RenderWidgetHostViewQt::Hide()
 {
-    m_view->hide();
+    m_delegate->hide();
 }
 
 bool RenderWidgetHostViewQt::IsShowing()
 {
-    return m_view->isVisible();
+    return m_delegate->isVisible();
 }
 
 // Retrieve the bounds of the View, in screen coordinates.
 gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 {
-    QRectF p = m_view->screenRect();
+    QRectF p = m_delegate->screenRect();
     return gfx::Rect(p.x(), p.y(), p.width(), p.height());
 }
 
@@ -281,7 +271,7 @@ gfx::NativeView RenderWidgetHostViewQt::BuildInputMethodsGtkMenu()
 
 void RenderWidgetHostViewQt::WasShown()
 {
-    if (m_view->isVisible())
+    if (m_delegate->isVisible())
         return;
 
     m_host->WasShown();
@@ -289,7 +279,7 @@ void RenderWidgetHostViewQt::WasShown()
 
 void RenderWidgetHostViewQt::WasHidden()
 {
-    if (!m_view->isVisible())
+    if (!m_delegate->isVisible())
         return;
 
     m_host->WasHidden();
@@ -334,7 +324,7 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const ui::Range&, const 
 
 void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects)
 {
-    if (!m_view || !m_view->isVisible())
+    if (!m_delegate->isVisible())
         return;
 
     if (about_to_validate_and_paint_)
@@ -361,8 +351,8 @@ void RenderWidgetHostViewQt::RenderViewGone(base::TerminationStatus, int)
 
 void RenderWidgetHostViewQt::Destroy()
 {
-    delete m_view;
-    m_view = 0;
+    delete m_delegate;
+    m_delegate = 0;
 }
 
 void RenderWidgetHostViewQt::SetTooltipText(const string16&)
@@ -436,7 +426,7 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 
 void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
 {
-    QWindow* window = m_view->window();
+    QWindow* window = m_delegate->window();
     if (!window)
         return;
     GetScreenInfoFromNativeWindow(window, results);
@@ -444,10 +434,10 @@ void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 {
-    if (!m_view || !m_view->window())
+    if (!m_delegate->window())
         return gfx::Rect();
 
-    QRect r = m_view->window()->frameGeometry();
+    QRect r = m_delegate->window()->frameGeometry();
     return gfx::Rect(r.x(), r.y(), r.width(), r.height());
 }
 
@@ -479,10 +469,10 @@ void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
     // Calling GetBackingStore maybe have changed |invalid_rect_|...
     about_to_validate_and_paint_ = false;
 
-    if (backing_store && m_view) {
-        m_view->setBackingStore(backing_store);
+    if (backing_store) {
+        m_delegate->setBackingStore(backing_store);
         QRect r(invalid_rect_.x(), invalid_rect_.y(), invalid_rect_.width(), invalid_rect_.height());
-        m_view->update(r);
+        m_delegate->update(r);
     }
 }
 

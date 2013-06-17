@@ -79,6 +79,9 @@ Q_SIGNALS:
     void urlChanged();
     void loadingStateChanged();
 
+protected:
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+
 private:
     Q_DECLARE_PRIVATE(QQuickWebContentsView)
     // Hides QObject::d_ptr allowing us to use the convenience macros.

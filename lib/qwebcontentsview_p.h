@@ -51,13 +51,15 @@
 #include <QScopedPointer>
 #include <QObject>
 
-class QWebContentsViewPrivate : public QObject
+class QWebContentsViewPrivate : public QObject, public WebContentsViewQtClient
 {
     QWebContentsView *q_ptr;
     Q_DECLARE_PUBLIC(QWebContentsView)
     Q_OBJECT
 public:
     QWebContentsViewPrivate();
+
+    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void loadingStateChanged();

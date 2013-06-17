@@ -49,7 +49,12 @@
 #include "content/port/browser/web_contents_view_port.h"
 
 #include "shared/render_widget_host_view_qt.h"
-#include "shared/native_view_container_qt.h"
+
+class WebContentsViewQtClient {
+public:
+    virtual ~WebContentsViewQtClient() { }
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view) = 0;
+};
 
 class WebContentsViewQt
     : public content::WebContentsViewPort
@@ -57,13 +62,16 @@ class WebContentsViewQt
 {
 public:
     WebContentsViewQt(content::WebContents* web_contents)
-        : m_windowContainer(new NativeViewContainerQt)
+        : m_client(0)
     { }
 
-    content::RenderWidgetHostView* CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+    void SetClient(WebContentsViewQtClient* client) { m_client = client; }
+
+    virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
     {
-        content::RenderWidgetHostView* view = content::RenderWidgetHostView::CreateViewForWidget(render_widget_host);
-        view->InitAsChild(reinterpret_cast<gfx::NativeView>(m_windowContainer));
+        content::RenderWidgetHostViewQt *view = new content::RenderWidgetHostViewQt(render_widget_host);
+        RenderWidgetHostViewQtDelegate *viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate(view);
+        view->SetDelegate(viewDelegate);
 
         return view;
     }
@@ -107,10 +115,8 @@ public:
     virtual void ShowPopupMenu(const gfx::Rect& bounds, int item_height, double item_font_size, int selected_item,
                                 const std::vector<WebMenuItem>& items, bool right_aligned, bool allow_multiple_selection) { QT_NOT_YET_IMPLEMENTED }
 
-    NativeViewContainerQt* windowContainer() { return m_windowContainer; }
-
 private:
-    NativeViewContainerQt* m_windowContainer;
+    WebContentsViewQtClient* m_client;
 };
 
 #endif

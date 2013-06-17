@@ -23,6 +23,8 @@ SOURCES = \
         content_browser_client_qt.cpp \
         qquickwebcontentsview.cpp \
         qwebcontentsview.cpp \
+        render_widget_host_view_qt_delegate_quick.cpp \
+        render_widget_host_view_qt_delegate_widget.cpp \
         resource_context_qt.cpp \
         url_request_context_getter_qt.cpp \
         web_contents_delegate_qt.cpp \
@@ -34,6 +36,8 @@ HEADERS = \
         qquickwebcontentsview.h \
         qwebcontentsview.h \
         qwebcontentsview_p.h \
+        render_widget_host_view_qt_delegate_quick.h \
+        render_widget_host_view_qt_delegate_widget.h \
         resource_context_qt.h \
         url_request_context_getter_qt.h \
         web_contents_delegate_qt.h \

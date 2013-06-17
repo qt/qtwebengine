@@ -56,7 +56,7 @@ class QFocusEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
-class NativeViewQt;
+class RenderWidgetHostViewQtDelegate;
 
 namespace content {
 
@@ -67,6 +67,7 @@ public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
     ~RenderWidgetHostViewQt();
 
+    void SetDelegate(RenderWidgetHostViewQtDelegate* delegate) { m_delegate = delegate; }
     bool handleEvent(QEvent* event);
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size);
@@ -136,7 +137,7 @@ private:
     bool IsPopup() const;
 
     content::RenderWidgetHostImpl *m_host;
-    NativeViewQt *m_view;
+    RenderWidgetHostViewQtDelegate *m_delegate;
     gfx::Size m_requestedSize;
 
     // This is true when we are currently painting and thus should handle extra

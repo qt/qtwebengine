@@ -46,12 +46,12 @@
 
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
+#include "render_widget_host_view_qt_delegate_quick.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 
 #include <QUrl>
-#include <QQmlProperty>
 
 void QQuickWebContentsView::registerType()
 {
@@ -59,11 +59,14 @@ void QQuickWebContentsView::registerType()
     qmlRegisterType<QQuickWebContentsView>("QtWebEngine", 1, 0, "WebContentsView");
 }
 
-struct QQuickWebContentsViewPrivate
+class QQuickWebContentsViewPrivate : public WebContentsViewQtClient
 {
     QQuickWebContentsView *q_ptr;
     Q_DECLARE_PUBLIC(QQuickWebContentsView)
+public:
     QQuickWebContentsViewPrivate();
+
+    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
 
     scoped_refptr<WebEngineContext> context;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
@@ -75,18 +78,10 @@ QQuickWebContentsView::QQuickWebContentsView()
     d_ptr->q_ptr = this;
 
     Q_D(QQuickWebContentsView);
-    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    d->webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
-
     WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
     connect(delegate, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
     connect(delegate, SIGNAL(urlChanged(QUrl)), this, SIGNAL(urlChanged()));
     connect(delegate, SIGNAL(loadingStateChanged()), this, SIGNAL(loadingStateChanged()));
-
-    WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
-    QQuickItem* windowContainer = content_view->windowContainer()->qQuickItem();
-    windowContainer->setParentItem(this);
-    QQmlProperty::write(windowContainer, QStringLiteral("anchors.fill"), QVariant::fromValue(this));
 }
 
 QQuickWebContentsView::~QQuickWebContentsView()
@@ -171,8 +166,32 @@ bool QQuickWebContentsView::canGoForward() const
     return d->webContentsDelegate->web_contents()->GetController().CanGoForward();
 }
 
+void QQuickWebContentsView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+
+    Q_FOREACH(QQuickItem *child, childItems()) {
+        Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child));
+        child->setSize(newGeometry.size());
+    }
+}
+
 QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
     // This has to be the first thing we do.
     : context(WebEngineContext::current())
 {
+    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
+    webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+
+    WebContentsViewQt* contents_view = static_cast<WebContentsViewQt*>(webContentsDelegate->web_contents()->GetView());
+    contents_view->SetClient(this);
+}
+
+RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view)
+{
+    Q_Q(QQuickWebContentsView);
+    // Parent the RWHV directly, this might have to be changed to handle popups and fullscreen.
+    RenderWidgetHostViewQtDelegateQuick *viewDelegate = new RenderWidgetHostViewQtDelegateQuick(view, q);
+    viewDelegate->setSize(QSizeF(q->width(), q->height()));
+    return viewDelegate;
 }
