@@ -1,78 +1,43 @@
 import QtQuick 2.0
 import QtWebEngine 1.0
+import QtQuick.Controls 1.0
+import QtQuick.Layouts 1.0
 
-Item {
+ApplicationWindow {
     id: browserWindow
-    height: 480
-    width: 320
+    height: 600
+    width: 800
+    visible: true
 
-    Rectangle {
+    toolBar: ToolBar {
         id: navigationBar
-        color: "grey"
-        anchors.top: parent.top
-        anchors.left: parent.left
-        anchors.right: parent.right
-        height: 26
+        RowLayout {
+            anchors.fill: parent
 
-        Rectangle {
-            id: backButton
-            color: "red"
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: parent.left
-            width: height
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    webContentsView.goBack()
-                }
+            ToolButton {
+                id: backButton
+                iconName: "go-previous"
+                iconSource: "icons/go-previous.png"
+                onClicked: webContentsView.goBack()
             }
-        }
-        Rectangle {
-            id: forwardButton
-            color: "green"
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: backButton.right
-            width: height
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    webContentsView.goForward()
-                }
+            ToolButton {
+                id: forwardButton
+                iconName: "go-next"
+                iconSource: "icons/go-next.png"
+                onClicked: webContentsView.goForward()
             }
-        }
-        Rectangle {
-            id: reloadButton
-            color: "blue"
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: forwardButton.right
-            width: height
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    webContentsView.reload()
-                }
+            ToolButton {
+                id: reloadButton
+                iconName: "view-refresh"
+                iconSource: "icons/view-refresh.png"
+                onClicked: webContentsView.reload()
             }
-        }
-        TextInput {
-            id: addressBar
-            focus: true
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.left: reloadButton.right
-            anchors.right: parent.right
+            TextField {
+                id: addressBar
+                focus: true
+                Layout.fillWidth: true
 
-            cursorVisible: true
-            persistentSelection: true
-            selectByMouse: true
-
-            onAccepted: {
-                webContentsView.url = utils.fromUserInput(text)
+                onAccepted: webContentsView.url = utils.fromUserInput(text)
             }
         }
     }
@@ -80,10 +45,7 @@ Item {
     WebContentsView {
         id: webContentsView
         focus: true
-        anchors.top: navigationBar.bottom
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.fill: parent
         url: "http://qt-project.org/"
 
         Binding {

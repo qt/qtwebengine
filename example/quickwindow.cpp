@@ -62,10 +62,8 @@ public:
 
 #include "quickwindow.moc"
 
-QuickWindow::QuickWindow()
+ApplicationEngine::ApplicationEngine()
 {
-    engine()->rootContext()->setContextProperty("utils", new Utils(this));
-    setSource(QUrl("example/quickwindow.qml"));
-    setResizeMode(QQuickView::SizeRootObjectToView);
-    setTitle("QQuick Example");
+    rootContext()->setContextProperty("utils", new Utils(this));
+    load(QUrl("example/quickwindow.qml"));
 }

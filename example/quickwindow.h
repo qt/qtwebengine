@@ -42,14 +42,14 @@
 #ifndef QUICKWINDOW_H
 #define QUICKWINDOW_H
 
-#include <QQuickView>
+#include <QQmlApplicationEngine>
 
 class QWebContentsView;
 
-class QuickWindow : public QQuickView {
+class ApplicationEngine : public QQmlApplicationEngine {
     Q_OBJECT
 public:
-    QuickWindow();
+    ApplicationEngine();
 };
 
 #endif // QUICKWINDOW_H

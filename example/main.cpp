@@ -56,12 +56,11 @@ int mainWidget(int argc, char **argv)
 
 int mainQuick(int argc, char **argv)
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QQuickWebContentsView::registerType();
 
-    QuickWindow window;
-    window.show();
+    ApplicationEngine appEngine;
 
     return app.exec();
 }
