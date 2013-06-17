@@ -43,7 +43,11 @@
 #define WEB_CONTENTS_DELEGATE_QT
 
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents.h"
+
+#include <QObject>
 
 
 namespace content {
@@ -51,19 +55,28 @@ namespace content {
     class SiteInstance;
 }
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
+class WebContentsDelegateQt : public QObject
+                            , public content::WebContentsDelegate
                             , public content::NotificationObserver
 {
+    Q_OBJECT
 public:
-    static WebContentsDelegateQt* CreateNewWindow(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
+    WebContentsDelegateQt(QObject* webContentsView, content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
     content::WebContents* web_contents();
 
-    virtual void Observe(int, const content::NotificationSource&, const content::NotificationDetails&);
+    virtual void Observe(int type, const content::NotificationSource&, const content::NotificationDetails&);
+    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
+    virtual void LoadingStateChanged(content::WebContents* source);
+
+Q_SIGNALS:
+    void titleChanged(QString title);
+    void urlChanged();
+    void loadingStateChanged();
 
 private:
-    WebContentsDelegateQt(content::WebContents*);
-
     scoped_ptr<content::WebContents> m_webContents;
+    content::NotificationRegistrar m_registrar;
+    QObject* m_webContentsView;
 };
 
 #endif

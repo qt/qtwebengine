@@ -8,6 +8,7 @@ ApplicationWindow {
     height: 600
     width: 800
     visible: true
+    title: webContentsView.title
 
     toolBar: ToolBar {
         id: navigationBar
@@ -28,8 +29,8 @@ ApplicationWindow {
             }
             ToolButton {
                 id: reloadButton
-                iconName: "view-refresh"
-                iconSource: ":/icons/view-refresh.png"
+                iconName: webContentsView.loading ? "process-stop" : "view-refresh"
+                iconSource: webContentsView.loading ? ":/icons/process-stop.png" : ":/icons/view-refresh.png"
                 onClicked: webContentsView.reload()
             }
             TextField {

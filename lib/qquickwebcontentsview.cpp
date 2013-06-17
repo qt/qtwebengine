@@ -44,6 +44,7 @@
 // Needed to get access to content::GetContentClient()
 #define CONTENT_IMPLEMENTATION
 
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 #include "browser_context_qt.h"
@@ -60,9 +61,8 @@ void QQuickWebContentsView::registerType()
     qmlRegisterType<QQuickWebContentsView>("QtWebEngine", 1, 0, "WebContentsView");
 }
 
-class QQuickWebContentsViewPrivate
+struct QQuickWebContentsViewPrivate
 {
-public:
     scoped_refptr<WebEngineContext> context;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
 };
@@ -70,11 +70,18 @@ public:
 QQuickWebContentsView::QQuickWebContentsView()
 {
     d.reset(new QQuickWebContentsViewPrivate);
+
     // This has to be the first thing we do.
     d->context = WebEngineContext::current();
 
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+    d->webContentsDelegate.reset(new WebContentsDelegateQt(this, browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+
+    WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
+    connect(delegate, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
+    connect(delegate, SIGNAL(urlChanged()), this, SIGNAL(urlChanged()));
+    connect(delegate, SIGNAL(loadingStateChanged()), this, SIGNAL(loadingStateChanged()));
+
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
     QQuickItem* windowContainer = content_view->windowContainer()->qQuickItem();
     windowContainer->setParentItem(this);
@@ -117,3 +124,38 @@ void QQuickWebContentsView::reload()
     d->webContentsDelegate->web_contents()->GetController().Reload(false);
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
+
+void QQuickWebContentsView::stop()
+{
+    content::NavigationController& controller = d->webContentsDelegate->web_contents()->GetController();
+
+    int index = controller.GetPendingEntryIndex();
+    if (index != -1)
+        controller.RemoveEntryAtIndex(index);
+
+    d->webContentsDelegate->web_contents()->GetView()->Focus();
+}
+
+bool QQuickWebContentsView::isLoading() const
+{
+    return d->webContentsDelegate->web_contents()->IsLoading();
+}
+
+QString QQuickWebContentsView::title() const
+{
+    content::NavigationEntry* entry = d->webContentsDelegate->web_contents()->GetController().GetVisibleEntry();
+    if (!entry)
+        return QString();
+    return QString::fromUtf16(entry->GetTitle().data());
+}
+
+bool QQuickWebContentsView::canGoBack() const
+{
+    return d->webContentsDelegate->web_contents()->GetController().CanGoBack();
+}
+
+bool QQuickWebContentsView::canGoForward() const
+{
+    return d->webContentsDelegate->web_contents()->GetController().CanGoForward();
+}
+

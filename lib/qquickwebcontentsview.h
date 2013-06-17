@@ -50,6 +50,11 @@ class QQuickWebContentsViewPrivate;
 class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
+
 public:
     static void registerType();
 
@@ -58,15 +63,21 @@ public:
 
     QUrl url() const;
     void setUrl(const QUrl&);
+    bool isLoading() const;
+    QString title() const;
+    bool canGoBack() const;
+    bool canGoForward() const;
 
 public Q_SLOTS:
     void goBack();
     void goForward();
     void reload();
+    void stop();
 
 Q_SIGNALS:
-    void titleChanged();
+    void titleChanged(QString);
     void urlChanged();
+    void loadingStateChanged();
 
 private:
     QScopedPointer<QQuickWebContentsViewPrivate> d;
