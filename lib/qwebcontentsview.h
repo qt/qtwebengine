@@ -59,8 +59,11 @@ public Q_SLOTS:
     void back();
     void forward();
     void reload();
+    void stop();
 
 Q_SIGNALS:
+    void loadFinished(bool ok);
+    void loadStarted();
     void titleChanged(const QString& title);
     void urlChanged(const QUrl& url);
 

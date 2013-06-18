@@ -56,10 +56,13 @@ public:
 private Q_SLOTS:
     void loadAddressFromAddressBar();
     void setAddressBarUrl(const QUrl& url);
+    void loadStarted();
+    void loadFinished(bool);
 
 private:
     QScopedPointer<QWebContentsView> m_webView;
     QLineEdit* addressLineEdit;
+    QToolButton* reloadButton;
 };
 
 #endif // WIDGETWINDOW_H

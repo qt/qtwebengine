@@ -33,6 +33,7 @@ HEADERS = \
         content_browser_client_qt.h \
         qquickwebcontentsview.h \
         qwebcontentsview.h \
+        qwebcontentsview_p.h \
         resource_context_qt.h \
         url_request_context_getter_qt.h \
         web_contents_delegate_qt.h \

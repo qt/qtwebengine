@@ -39,45 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#ifndef QWEBCONTESTSVIEWPRIVATE_H
+#define QWEBCONTESTSVIEWPRIVATE_H
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
+#include "qwebcontentsview.h"
+#include "web_contents_delegate_qt.h"
+#include "web_contents_view_qt.h"
+#include "web_engine_context.h"
 
+
+#include <QScopedPointer>
 #include <QObject>
-#include <QUrl>
 
-
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-}
-
-class WebContentsDelegateQt : public QObject
-                            , public content::WebContentsDelegate
-                            , public content::NotificationObserver
+class QWebContentsViewPrivate : public QObject
 {
     Q_OBJECT
 public:
-    WebContentsDelegateQt(QObject* webContentsView, content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    QWebContentsViewPrivate(QWebContentsView* webContentsView)
+        : q(webContentsView)
+        , m_isLoading(false)
+    { }
 
-    virtual void Observe(int type, const content::NotificationSource&, const content::NotificationDetails&);
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
+public Q_SLOTS:
+    void loadingStateChanged()
+    {
+        bool isLoading = webContentsDelegate->web_contents()->IsLoading();
+        if (m_isLoading != isLoading) {
+            m_isLoading = isLoading;
+            if (m_isLoading)
+                Q_EMIT q->loadStarted();
+            else
+                Q_EMIT q->loadFinished(true);
+        }
+    }
 
-Q_SIGNALS:
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
-    void loadingStateChanged();
-
-private:
-    scoped_ptr<content::WebContents> m_webContents;
-    content::NotificationRegistrar m_registrar;
-    QObject* m_webContentsView;
+public:
+    bool m_isLoading;
+    QWebContentsView* q;
+    scoped_refptr<WebEngineContext> context;
+    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
 };
 
 #endif

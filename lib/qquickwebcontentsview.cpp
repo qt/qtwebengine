@@ -79,7 +79,7 @@ QQuickWebContentsView::QQuickWebContentsView()
 
     WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
     connect(delegate, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
-    connect(delegate, SIGNAL(urlChanged()), this, SIGNAL(urlChanged()));
+    connect(delegate, SIGNAL(urlChanged(QUrl)), this, SIGNAL(urlChanged()));
     connect(delegate, SIGNAL(loadingStateChanged()), this, SIGNAL(loadingStateChanged()));
 
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());

@@ -53,6 +53,7 @@
 
 #include <QGuiApplication>
 #include <QStyleHints>
+#include <QUrl>
 
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
@@ -95,8 +96,11 @@ void WebContentsDelegateQt::Observe(int type, const content::NotificationSource&
 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
 {
-    if (changed_flags & content::INVALIDATE_TYPE_URL)
-        Q_EMIT urlChanged();
+    if (changed_flags & content::INVALIDATE_TYPE_URL) {
+        GURL gurl = web_contents()->GetActiveURL();
+        QUrl url(QString::fromStdString(gurl.spec()));
+        Q_EMIT urlChanged(url);
+    }
 }
 
 void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)

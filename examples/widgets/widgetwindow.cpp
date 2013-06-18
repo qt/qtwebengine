@@ -70,7 +70,7 @@ WidgetWindow::WidgetWindow()
     forwardButton->setIcon(QIcon::fromTheme("go-next"));
     addressBar->addWidget(forwardButton);
 
-    QToolButton* reloadButton = new QToolButton;
+    reloadButton = new QToolButton;
     reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
     addressBar->addWidget(reloadButton);
 
@@ -86,6 +86,8 @@ WidgetWindow::WidgetWindow()
     connect(backButton, SIGNAL(clicked()), m_webView.data(), SLOT(back()));
     connect(forwardButton, SIGNAL(clicked()), m_webView.data(), SLOT(forward()));
     connect(reloadButton, SIGNAL(clicked()), m_webView.data(), SLOT(reload()));
+    connect(m_webView.data(), SIGNAL(loadStarted()), SLOT(loadStarted()));
+    connect(m_webView.data(), SIGNAL(loadFinished(bool)), SLOT(loadFinished(bool)));
     connect(m_webView.data(), SIGNAL(titleChanged(const QString&)), SLOT(setWindowTitle(const QString&)));
     connect(m_webView.data(), SIGNAL(urlChanged(const QUrl&)), SLOT(setAddressBarUrl(const QUrl&)));
 
@@ -106,3 +108,12 @@ void WidgetWindow::setAddressBarUrl(const QUrl& url)
     addressLineEdit->setText(url.toString());
 }
 
+void WidgetWindow::loadStarted()
+{
+    reloadButton->setIcon(QIcon::fromTheme("process-stop"));
+}
+
+void WidgetWindow::loadFinished(bool success)
+{
+    reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
+}

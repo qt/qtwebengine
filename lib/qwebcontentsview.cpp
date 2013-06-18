@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qwebcontentsview.h"
+#include "qwebcontentsview_p.h"
 
 // Needed to get access to content::GetContentClient()
 #define CONTENT_IMPLEMENTATION
@@ -55,16 +56,10 @@
 #include <QVBoxLayout>
 #include <QUrl>
 
-class QWebContentsViewPrivate
-{
-public:
-    scoped_refptr<WebEngineContext> context;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-};
 
 QWebContentsView::QWebContentsView()
 {
-    d.reset(new QWebContentsViewPrivate);
+    d.reset(new QWebContentsViewPrivate(this));
     // This has to be the first thing we do.
     d->context = WebEngineContext::current();
 
@@ -73,6 +68,11 @@ QWebContentsView::QWebContentsView()
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
+
+    WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
+    connect(delegate, SIGNAL(titleChanged(const QString&)), this, SIGNAL(titleChanged(const QString&)));
+    connect(delegate, SIGNAL(urlChanged(const QUrl&)), this, SIGNAL(urlChanged(const QUrl&)));
+    connect(delegate, SIGNAL(loadingStateChanged()), d.data(), SLOT(loadingStateChanged()));
 
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
     layout->addLayout(content_view->windowContainer()->widget());
@@ -110,5 +110,16 @@ void QWebContentsView::forward()
 void QWebContentsView::reload()
 {
     d->webContentsDelegate->web_contents()->GetController().Reload(false);
+    d->webContentsDelegate->web_contents()->GetView()->Focus();
+}
+
+void QWebContentsView::stop()
+{
+    content::NavigationController& controller = d->webContentsDelegate->web_contents()->GetController();
+
+    int index = controller.GetPendingEntryIndex();
+    if (index != -1)
+        controller.RemoveEntryAtIndex(index);
+
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
