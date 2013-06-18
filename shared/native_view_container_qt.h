@@ -15,7 +15,7 @@ public:
         : m_embeddable(0)
         , m_currentQQuickNativeView(0)
         , m_currentQWidgetNativeView(0)
-        , m_isQQuick(!qgetenv("QQUICKWEBENGINE").isNull())
+        , m_isQQuick(true)
     {
     }
 
@@ -34,8 +34,12 @@ public:
 
     QVBoxLayout* widget()
     {
-        if (!m_embeddable)
-            m_embeddable = new QVBoxLayout;
+        if (!m_embeddable) {
+            m_isQQuick = false;
+            QVBoxLayout *l = new QVBoxLayout;
+            l->setContentsMargins(0, 0, 0, 0);
+            m_embeddable = l;
+        }
         return static_cast<QVBoxLayout*>(m_embeddable);
     }
 

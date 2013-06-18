@@ -43,6 +43,8 @@
 
 #include "qwebcontentsview.h"
 
+static const int margin = 1;
+
 WidgetWindow::WidgetWindow()
 : m_webView(new QWebContentsView)
 , addressLineEdit(0)
@@ -51,12 +53,14 @@ WidgetWindow::WidgetWindow()
     if (QIcon::themeName().isEmpty())
       QIcon::setThemeName("oxygen");
 
-    setGeometry(0, 0, 1024, 768);
+    setGeometry(0, 0, 800, 600);
 
     QVBoxLayout* layout = new QVBoxLayout;
+    layout->setContentsMargins(margin, margin, margin, margin);
 
     // Create a widget based address bar.
     QHBoxLayout* addressBar = new QHBoxLayout;
+    addressBar->setSpacing(margin); // Bigger buttons, less space between them
 
     QToolButton* backButton = new QToolButton;
     backButton->setIcon(QIcon::fromTheme("go-previous"));

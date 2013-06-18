@@ -71,6 +71,7 @@ QWebContentsView::QWebContentsView()
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
     d->webContentsDelegate.reset(WebContentsDelegateQt::CreateNewWindow(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
     QVBoxLayout *layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
 
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
