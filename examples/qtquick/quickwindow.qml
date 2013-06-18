@@ -17,19 +17,19 @@ ApplicationWindow {
             ToolButton {
                 id: backButton
                 iconName: "go-previous"
-                iconSource: "icons/go-previous.png"
+                iconSource: ":/icons/go-previous.png"
                 onClicked: webContentsView.goBack()
             }
             ToolButton {
                 id: forwardButton
                 iconName: "go-next"
-                iconSource: "icons/go-next.png"
+                iconSource: ":/icons/go-next.png"
                 onClicked: webContentsView.goForward()
             }
             ToolButton {
                 id: reloadButton
                 iconName: "view-refresh"
-                iconSource: "icons/view-refresh.png"
+                iconSource: ":/icons/view-refresh.png"
                 onClicked: webContentsView.reload()
             }
             TextField {

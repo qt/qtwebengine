@@ -65,5 +65,5 @@ public:
 ApplicationEngine::ApplicationEngine()
 {
     rootContext()->setContextProperty("utils", new Utils(this));
-    load(QUrl("quickwindow.qml"));
+    load(QUrl("qrc:/quickwindow.qml"));
 }
