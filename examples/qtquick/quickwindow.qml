@@ -47,7 +47,7 @@ ApplicationWindow {
         id: webContentsView
         focus: true
         anchors.fill: parent
-        url: "http://qt-project.org/"
+        url: utils.initialUrl()
 
         onUrlChanged: addressBar.text = url
     }

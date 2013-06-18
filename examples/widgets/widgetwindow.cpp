@@ -42,6 +42,7 @@
 #include "widgetwindow.h"
 
 #include "qwebcontentsview.h"
+#include "util.h"
 
 static const int margin = 1;
 
@@ -91,7 +92,7 @@ WidgetWindow::WidgetWindow()
     connect(m_webView.data(), SIGNAL(titleChanged(const QString&)), SLOT(setWindowTitle(const QString&)));
     connect(m_webView.data(), SIGNAL(urlChanged(const QUrl&)), SLOT(setAddressBarUrl(const QUrl&)));
 
-    m_webView->load(QUrl(QStringLiteral("http://qt-project.org/")));
+    m_webView->load(startupUrl());
 }
 
 WidgetWindow::~WidgetWindow()
@@ -115,5 +116,6 @@ void WidgetWindow::loadStarted()
 
 void WidgetWindow::loadFinished(bool success)
 {
+    Q_UNUSED(success);
     reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
 }

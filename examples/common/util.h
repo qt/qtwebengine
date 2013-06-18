@@ -38,29 +38,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef UTIL_H
+#define UTIL_H
 
-#include "quickwindow.h"
+#include <QtCore/QCoreApplication>
+#include <QtCore/QFileInfo>
+#include <QtCore/QUrl>
 
-#include "util.h"
-
-#include <QFileInfo>
-#include <QObject>
-#include <QQmlContext>
-#include <QQmlEngine>
-#include <QUrl>
-
-class Utils : public QObject {
-    Q_OBJECT
-public:
-    Utils(QObject* parent = 0) : QObject(parent) { }
-    Q_INVOKABLE static QUrl fromUserInput(const QString& userInput) { return urlFromUserInput(userInput); }
-    Q_INVOKABLE static QUrl initialUrl() { return startupUrl(); }
-};
-
-#include "quickwindow.moc"
-
-ApplicationEngine::ApplicationEngine()
+QUrl urlFromUserInput(const QString& userInput)
 {
-    rootContext()->setContextProperty("utils", new Utils(this));
-    load(QUrl("qrc:/quickwindow.qml"));
+    QFileInfo fileInfo(userInput);
+    if (fileInfo.exists())
+        return QUrl(fileInfo.absoluteFilePath());
+    return QUrl::fromUserInput(userInput);
 }
+
+QUrl startupUrl()
+{
+    QUrl ret;
+    QStringList args(qApp->arguments());
+    args.takeFirst();
+    Q_FOREACH(const QString& arg, args) {
+        if (arg.startsWith(QLatin1Char('-')))
+             continue;
+        ret = urlFromUserInput(arg);
+        if (ret.isValid())
+            return ret;
+    }
+    return QUrl(QStringLiteral("http://qt-project.org/"));
+}
+
+
+#endif // UTIL_H
