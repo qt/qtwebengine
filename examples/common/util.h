@@ -44,6 +44,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFileInfo>
 #include <QtCore/QUrl>
+#include <QtCore/QStringList>
 
 QUrl urlFromUserInput(const QString& userInput)
 {
