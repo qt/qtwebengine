@@ -54,6 +54,7 @@
 #include "web_engine_context.h"
 
 #include <QUrl>
+#include <QQmlProperty>
 
 void QQuickWebContentsView::registerType()
 {
@@ -85,6 +86,7 @@ QQuickWebContentsView::QQuickWebContentsView()
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
     QQuickItem* windowContainer = content_view->windowContainer()->qQuickItem();
     windowContainer->setParentItem(this);
+    QQmlProperty::write(windowContainer, QStringLiteral("anchors.fill"), QVariant::fromValue(this));
 }
 
 QQuickWebContentsView::~QQuickWebContentsView()

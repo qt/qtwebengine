@@ -49,24 +49,6 @@ ApplicationWindow {
         anchors.fill: parent
         url: "http://qt-project.org/"
 
-        Binding {
-            target: webContentsView.children[0]
-            property: 'anchors.fill'
-            value: webContentsView
-            when: webContentsView.children.length > 0
-        }
-
         onUrlChanged: addressBar.text = url
-    }
-
-    Text {
-        id: info
-        anchors.top: parent.top
-        anchors.right: parent.right
-        horizontalAlignment: "AlignRight"
-        width: 100
-        height: 100
-
-        text: viewContainer.children[0].width + "x" + viewContainer.children[0].height
     }
 }
