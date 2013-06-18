@@ -65,6 +65,7 @@ public:
     {
         if (m_isQQuick) {
             insert(new QQuickNativeView(renderWidgetHostView));
+            connect(m_currentQQuickNativeView, SIGNAL(destroyed(QObject*)), this, SLOT(destroyedNativeView(QObject*)));
             return m_currentQQuickNativeView;
         }
 
@@ -82,7 +83,6 @@ protected:
 
     void insert(QQuickNativeView* nativeView)
     {
-        fprintf(stderr, "replace: %p with %p\n", m_currentQQuickNativeView, nativeView);
         if (m_currentQQuickNativeView)
             m_currentQQuickNativeView->setParentItem(0);
 
@@ -99,6 +99,11 @@ public Q_SLOTS:
         int h = static_cast<unsigned int>(qQuickItem()->height());
         if (m_currentQQuickNativeView)
             m_currentQQuickNativeView->resize(w, h);
+    }
+
+    void destroyedNativeView(QObject* nativeView)
+    {
+        m_currentQQuickNativeView = 0;
     }
 
 private:
