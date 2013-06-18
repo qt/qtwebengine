@@ -20,12 +20,14 @@ ApplicationWindow {
                 iconName: "go-previous"
                 iconSource: ":/icons/go-previous.png"
                 onClicked: webContentsView.goBack()
+                enabled: webContentsView.canGoBack
             }
             ToolButton {
                 id: forwardButton
                 iconName: "go-next"
                 iconSource: ":/icons/go-next.png"
                 onClicked: webContentsView.goForward()
+                enabled: webContentsView.canGoForward
             }
             ToolButton {
                 id: reloadButton

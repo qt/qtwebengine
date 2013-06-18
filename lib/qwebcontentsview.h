@@ -54,6 +54,8 @@ public:
     ~QWebContentsView();
 
     void load(const QUrl& url);
+    bool canGoBack() const;
+    bool canGoForward() const;
 
 public Q_SLOTS:
     void back();

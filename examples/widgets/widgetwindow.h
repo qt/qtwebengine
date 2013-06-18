@@ -62,6 +62,8 @@ private Q_SLOTS:
 private:
     QScopedPointer<QWebContentsView> m_webView;
     QLineEdit* addressLineEdit;
+    QToolButton* forwardButton;
+    QToolButton* backButton;
     QToolButton* reloadButton;
 };
 

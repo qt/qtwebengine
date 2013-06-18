@@ -63,11 +63,11 @@ WidgetWindow::WidgetWindow()
     QHBoxLayout* addressBar = new QHBoxLayout;
     addressBar->setSpacing(margin); // Bigger buttons, less space between them
 
-    QToolButton* backButton = new QToolButton;
+    backButton = new QToolButton;
     backButton->setIcon(QIcon::fromTheme("go-previous"));
     addressBar->addWidget(backButton);
 
-    QToolButton* forwardButton = new QToolButton;
+    forwardButton = new QToolButton;
     forwardButton->setIcon(QIcon::fromTheme("go-next"));
     addressBar->addWidget(forwardButton);
 
@@ -117,5 +117,7 @@ void WidgetWindow::loadStarted()
 void WidgetWindow::loadFinished(bool success)
 {
     Q_UNUSED(success);
+    forwardButton->setEnabled(m_webView->canGoForward());
+    backButton->setEnabled(m_webView->canGoBack());
     reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
 }

@@ -95,6 +95,16 @@ void QWebContentsView::load(const QUrl& url)
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
+bool QWebContentsView::canGoBack() const
+{
+    return d->webContentsDelegate->web_contents()->GetController().CanGoBack();
+}
+
+bool QWebContentsView::canGoForward() const
+{
+    return d->webContentsDelegate->web_contents()->GetController().CanGoForward();
+}
+
 void QWebContentsView::back()
 {
     d->webContentsDelegate->web_contents()->GetController().GoToOffset(-1);
