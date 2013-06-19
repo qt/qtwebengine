@@ -7,16 +7,25 @@ if [ -z $CHROMIUM_SRC_DIR -o ! -d $CHROMIUM_SRC_DIR ]; then
 fi
 
 PATCH_DIR="$( cd "$( dirname "$0" )" && pwd )"
-DEPOT_TOOLS=$CHROMIUM_SRC_DIR/../depot_tools
 
 cd $CHROMIUM_SRC_DIR
 echo "Entering $PWD"
 
-$DEPOT_TOOLS/gclient revert
+GCLIENT=`which gclient 2>/dev/null`
+if [ -z $GCLIENT ]; then
+    # Try to find it in the most likely location
+    GCLIENT=$CHROMIUM_SRC_DIR/../depot_tools/gclient
+    if [ ! -e $GCLIENT ]; then
+        echo "Can't find gclient"
+        exit 2;
+    fi
+fi
+
+$GCLIENT revert
 
 if [ "$2" = "--update" ]; then
-    $DEPOT_TOOLS/gclient fetch
-    $DEPOT_TOOLS/gclient sync
+    $GCLIENT fetch
+    $GCLIENT sync
 fi
 
 echo "Applying patches..."
