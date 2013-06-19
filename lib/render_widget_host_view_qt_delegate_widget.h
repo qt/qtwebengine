@@ -49,14 +49,10 @@
 class BackingStoreQt;
 class QWindow;
 
-namespace content {
-    class RenderWidgetHostViewQt;
-}
-
 class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegateWidget(content::RenderWidgetHostViewQt* view, QWidget *parent = 0);
+    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent = 0);
 
     virtual QRectF screenRect() const;
     virtual void show();
@@ -74,7 +70,7 @@ protected:
 
 private:
     QPainter* m_painter;
-    content::RenderWidgetHostViewQt *m_view;
+    RenderWidgetHostViewQt *m_view;
 };
 
 #endif

@@ -53,16 +53,13 @@ class QFocusEvent;
 class QMouseEvent;
 class QKeyEvent;
 class QWheelEvent;
-
-namespace content {
-    class RenderWidgetHostViewQt;
-}
+class RenderWidgetHostViewQt;
 
 class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(content::RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
 
     virtual QRectF screenRect() const;
     virtual void show();
@@ -89,7 +86,7 @@ protected:
 
 private:
     BackingStoreQt* m_backingStore;
-    content::RenderWidgetHostViewQt *m_view;
+    RenderWidgetHostViewQt *m_view;
 
 };
 

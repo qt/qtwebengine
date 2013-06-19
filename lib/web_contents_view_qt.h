@@ -53,7 +53,7 @@
 class WebContentsViewQtClient {
 public:
     virtual ~WebContentsViewQtClient() { }
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view) = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) = 0;
 };
 
 class WebContentsViewQt
@@ -69,7 +69,7 @@ public:
 
     virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
     {
-        content::RenderWidgetHostViewQt *view = new content::RenderWidgetHostViewQt(render_widget_host);
+        RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
         RenderWidgetHostViewQtDelegate *viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate(view);
         view->SetDelegate(viewDelegate);
 

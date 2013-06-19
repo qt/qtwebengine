@@ -49,7 +49,7 @@
 #include <QResizeEvent>
 #include <QPaintEvent>
 
-RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(content::RenderWidgetHostViewQt* view, QWidget *parent)
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent)
     : QWidget(parent)
     , m_painter(0)
     , m_view(view)

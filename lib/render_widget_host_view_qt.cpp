@@ -57,8 +57,6 @@
 #include <QWheelEvent>
 #include <QWindow>
 
-namespace content {
-
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_delegate(0)
@@ -464,6 +462,3 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         ev->accept();
     }
 }
-
-}
-

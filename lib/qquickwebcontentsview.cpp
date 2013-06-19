@@ -66,7 +66,7 @@ class QQuickWebContentsViewPrivate : public WebContentsViewQtClient
 public:
     QQuickWebContentsViewPrivate();
 
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
+    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
 
     scoped_refptr<WebEngineContext> context;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
@@ -187,7 +187,7 @@ QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
     contents_view->SetClient(this);
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view)
+RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view)
 {
     Q_Q(QQuickWebContentsView);
     // Parent the RWHV directly, this might have to be changed to handle popups and fullscreen.

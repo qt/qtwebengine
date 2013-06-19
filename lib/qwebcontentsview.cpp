@@ -160,7 +160,7 @@ void QWebContentsViewPrivate::_q_onLoadingStateChanged()
     }
 }
 
-RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view)
+RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view)
 {
     Q_Q(QWebContentsView);
     RenderWidgetHostViewQtDelegateWidget *viewDelegate = new RenderWidgetHostViewQtDelegateWidget(view, q);

@@ -56,7 +56,7 @@ class QWebContentsViewPrivate : public WebContentsViewQtClient
 public:
     QWebContentsViewPrivate();
 
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
+    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
 
     void _q_onLoadingStateChanged();
 

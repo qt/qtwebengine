@@ -49,7 +49,7 @@
 #include <QQuickWindow>
 #include <QWindow>
 
-RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(content::RenderWidgetHostViewQt* view, QQuickItem *parent)
+RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent)
     : QQuickPaintedItem(parent)
     , m_backingStore(0)
     , m_view(view)

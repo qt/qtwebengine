@@ -59,8 +59,6 @@ class QMouseEvent;
 class QWheelEvent;
 class RenderWidgetHostViewQtDelegate;
 
-namespace content {
-
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
 {
@@ -142,7 +140,5 @@ private:
     RenderWidgetHostViewQtDelegate *m_delegate;
     gfx::Size m_requestedSize;
 };
-
-}
 
 #endif
