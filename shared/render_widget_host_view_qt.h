@@ -43,8 +43,13 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_QT_H_
 
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include <qglobal.h>
 
+#ifdef QT_WEBENGINE_LOGGING
 #define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
+#else
+#define QT_NOT_YET_IMPLEMENTED qt_noop();
+#endif
 
 class QEvent;
 class QFocusEvent;
