@@ -51,7 +51,7 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 
-#include <QVBoxLayout>
+#include <QStackedLayout>
 #include <QUrl>
 
 
@@ -61,9 +61,8 @@ QWebContentsView::QWebContentsView()
     d_ptr->q_ptr = this;
 
     Q_D(QWebContentsView);
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout);
+    // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
+    setLayout(new QStackedLayout);
 
     WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
     connect(delegate, SIGNAL(titleChanged(const QString&)), this, SIGNAL(titleChanged(const QString&)));
