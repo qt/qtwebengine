@@ -58,8 +58,7 @@
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
 
-WebContentsDelegateQt::WebContentsDelegateQt(QObject* webContentsView, content::BrowserContext* browser_context, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size)
-    : m_webContentsView(webContentsView)
+WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_context, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size)
 {
     content::WebContents::CreateParams create_params(browser_context, site_instance);
     create_params.routing_id = routing_id;

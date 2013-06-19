@@ -50,7 +50,6 @@
 #include <QObject>
 #include <QUrl>
 
-
 namespace content {
     class BrowserContext;
     class SiteInstance;
@@ -62,7 +61,7 @@ class WebContentsDelegateQt : public QObject
 {
     Q_OBJECT
 public:
-    WebContentsDelegateQt(QObject* webContentsView, content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
+    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
     content::WebContents* web_contents();
 
     virtual void Observe(int type, const content::NotificationSource&, const content::NotificationDetails&);
@@ -77,7 +76,6 @@ Q_SIGNALS:
 private:
     scoped_ptr<content::WebContents> m_webContents;
     content::NotificationRegistrar m_registrar;
-    QObject* m_webContentsView;
 };
 
 #endif

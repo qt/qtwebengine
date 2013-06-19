@@ -76,7 +76,7 @@ QQuickWebContentsView::QQuickWebContentsView()
 
     Q_D(QQuickWebContentsView);
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    d->webContentsDelegate.reset(new WebContentsDelegateQt(this, browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+    d->webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
 
     WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
     connect(delegate, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
