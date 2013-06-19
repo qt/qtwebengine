@@ -18,18 +18,10 @@ PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBEN
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
-QT += widgets quick
+QT += gui
 
 SOURCES = \
-        backing_store_qt.cpp \
-        render_widget_host_view_qt.cpp \
-        shared_globals.cpp \
-        web_event_factory.cpp
+        shared_globals.cpp
 
 HEADERS = \
-        backing_store_qt.h \
-        render_widget_host_view_qt.h \
-        render_widget_host_view_qt_delegate.h \
-        shared_globals.h \
-        web_event_factory.h
-
+        shared_globals.h

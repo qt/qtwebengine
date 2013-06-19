@@ -43,8 +43,9 @@
 
 #include "backing_store_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
-#include "shared_globals.h"
 #include "web_event_factory.h"
+
+#include "shared/shared_globals.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"

@@ -7,6 +7,4 @@ GYPDEPENDENCIES += ../shared/shared.gyp:qtwebengine_shared
 TARGET = $$QTWEBENGINEPROCESS_NAME
 TEMPLATE = app
 
-QT += widgets quick
-
 SOURCES = main.cpp

@@ -1,7 +1,7 @@
 #include "render_widget_host_view_qt_delegate_widget.h"
 
-#include "shared/backing_store_qt.h"
-#include "shared/render_widget_host_view_qt.h"
+#include "backing_store_qt.h"
+#include "render_widget_host_view_qt.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 

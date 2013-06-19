@@ -1,7 +1,7 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
 
-#include "shared/render_widget_host_view_qt_delegate.h"
+#include "render_widget_host_view_qt_delegate.h"
 
 #include <QQuickPaintedItem>
 

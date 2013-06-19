@@ -44,7 +44,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 #include <QScreen>
-#include <QQuickWindow>
+#include <QWindow>
 
 namespace content {
 

@@ -48,7 +48,7 @@
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/web_contents_view_port.h"
 
-#include "shared/render_widget_host_view_qt.h"
+#include "render_widget_host_view_qt.h"
 
 class WebContentsViewQtClient {
 public:
