@@ -43,49 +43,20 @@
 
 #include "backing_store_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "shared_globals.h"
 #include "web_event_factory.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 
 #include <QEvent>
 #include <QFocusEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
-#include <QScreen>
-#include <QQuickWindow>
-
-static void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
-{
-    QScreen* screen = window->screen();
-
-    WebKit::WebScreenInfo r;
-    r.deviceScaleFactor = screen->devicePixelRatio();
-    r.depthPerComponent = 8;
-    r.depth = screen->depth();
-    r.isMonochrome = (r.depth == 1);
-
-    QRect virtualGeometry = screen->virtualGeometry();
-    r.rect = WebKit::WebRect(virtualGeometry.x(), virtualGeometry.y(), virtualGeometry.width(), virtualGeometry.height());
-    QRect available = screen->availableGeometry();
-    r.availableRect = WebKit::WebRect(available.x(), available.y(), available.width(), available.height());
-    *results = r;
-}
+#include <QWindow>
 
 namespace content {
-
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
-    // WebContentsViewQt should take care of this directly.
-    Q_ASSERT(false);
-}
-
-// static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebKit::WebScreenInfo* results) {
-    QWindow dummy;
-    GetScreenInfoFromNativeWindow(&dummy, results);
-}
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
