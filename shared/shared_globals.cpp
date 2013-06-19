@@ -46,8 +46,6 @@
 #include <QScreen>
 #include <QWindow>
 
-namespace content {
-
 void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
 {
     QScreen* screen = window->screen();
@@ -64,6 +62,8 @@ void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* resul
     r.availableRect = WebKit::WebRect(available.x(), available.y(), available.width(), available.height());
     *results = r;
 }
+
+namespace content {
 
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
     // WebContentsViewQt should take care of this directly.

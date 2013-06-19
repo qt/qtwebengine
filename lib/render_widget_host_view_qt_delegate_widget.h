@@ -48,6 +48,7 @@
 
 class BackingStoreQt;
 class QWindow;
+class RenderWidgetHostViewQt;
 
 class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {

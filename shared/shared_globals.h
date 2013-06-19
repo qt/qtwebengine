@@ -46,10 +46,6 @@
 
 class QWindow;
 
-namespace content {
-
 void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results);
-
-}
 
 #endif
