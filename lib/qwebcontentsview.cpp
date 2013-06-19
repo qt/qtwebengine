@@ -68,7 +68,7 @@ QWebContentsView::QWebContentsView()
     WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
     connect(delegate, SIGNAL(titleChanged(const QString&)), this, SIGNAL(titleChanged(const QString&)));
     connect(delegate, SIGNAL(urlChanged(const QUrl&)), this, SIGNAL(urlChanged(const QUrl&)));
-    connect(delegate, SIGNAL(loadingStateChanged()), d, SLOT(loadingStateChanged()));
+    connect(delegate, SIGNAL(loadingStateChanged()), this, SLOT(_q_onLoadingStateChanged()));
 }
 
 QWebContentsView::~QWebContentsView()
@@ -147,7 +147,7 @@ QWebContentsViewPrivate::QWebContentsViewPrivate()
     contents_view->SetClient(this);
 }
 
-void QWebContentsViewPrivate::loadingStateChanged()
+void QWebContentsViewPrivate::_q_onLoadingStateChanged()
 {
     Q_Q(QWebContentsView);
     bool isLoading = webContentsDelegate->web_contents()->IsLoading();
@@ -168,3 +168,5 @@ RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostV
     q->layout()->addWidget(viewDelegate);
     return viewDelegate;
 }
+
+#include "moc_qwebcontentsview.cpp"

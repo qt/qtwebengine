@@ -27,6 +27,13 @@ defineReplace(findMocables) {
   return($$mocables)
 }
 
+defineReplace(findIncludedMocFiles) {
+  input = $$1
+  for (file, input): \
+      infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
+  return($$system("$$QTWEBENGINE_ROOT/build/scripts/find-included-moc-files $$infiles"))
+}
+
 defineReplace(mocOutput) {
   out = $$1
   # The order is important, since the output of the second replace would end up accidentaly transformed by the first one

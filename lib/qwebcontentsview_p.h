@@ -47,22 +47,18 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 
-
 #include <QScopedPointer>
-#include <QObject>
 
-class QWebContentsViewPrivate : public QObject, public WebContentsViewQtClient
+class QWebContentsViewPrivate : public WebContentsViewQtClient
 {
     QWebContentsView *q_ptr;
     Q_DECLARE_PUBLIC(QWebContentsView)
-    Q_OBJECT
 public:
     QWebContentsViewPrivate();
 
     RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(content::RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
 
-public Q_SLOTS:
-    void loadingStateChanged();
+    void _q_onLoadingStateChanged();
 
 public:
     scoped_refptr<WebEngineContext> context;

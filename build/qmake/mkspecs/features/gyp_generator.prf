@@ -34,7 +34,7 @@ GYPI_FILE = $$replace(_PRO_FILE_, .pro$, .gyp)
 
 TARGET_TYPE = $$toGypTargetType()
 MOCABLE_HEADERS = $$findMocables($$HEADERS)
-MOCABLE_SOURCES = $$findMocables($$SOURCES)
+INCLUDED_MOC_FILES = $$findIncludedMocFiles($$SOURCES)
 
 GYPI_CONTENTS =  "{" \
                  "  'targets': [" \
@@ -74,20 +74,29 @@ GYPI_CONTENTS += "    ],"
                    "      }," \
                    "    },"
 }
+
+# Source files to compile
 GYPI_CONTENTS += "    'sources': ["
 for (sourcefile, SOURCES): GYPI_CONTENTS += "      '$$sourcefile',"
 for (headerfile, HEADERS): GYPI_CONTENTS += "      '$$headerfile',"
+
+# Add moc output files to compile that aren't included at the end of any other source
 MOC_OUT_PATH = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}
-for (mocable_header, MOCABLE_HEADERS): GYPI_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
-for (mocable_source, MOCABLE_SOURCES): GYPI_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_source)',"
+for (mocable_header, MOCABLE_HEADERS) {
+    !contains(INCLUDED_MOC_FILES, $$mocOutput($$mocable_header)) {
+        GYPI_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
+    }
+}
+
 GYPI_CONTENTS += "    ],"
 !isEmpty(INCLUDEPATH) {
   GYPI_CONTENTS += "    'include_dirs': ["
   for (path, INCLUDEPATH): GYPI_CONTENTS += "      '$$path',"
   GYPI_CONTENTS += "    ],"
 }
+
 # Generate the actions for moc
-!isEmpty(MOCABLE_HEADERS)|!isEmpty(MOCABLE_SOURCES) {
+!isEmpty(MOCABLE_HEADERS) {
     GYPI_CONTENTS += "    'actions': ["
     for(header, MOCABLE_HEADERS): GYPI_CONTENTS += $$mocAction($$header)
     GYPI_CONTENTS += "    ],"

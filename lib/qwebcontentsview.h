@@ -71,6 +71,8 @@ Q_SIGNALS:
 
 private:
     Q_DECLARE_PRIVATE(QWebContentsView)
+    Q_PRIVATE_SLOT(d_func(), void _q_onLoadingStateChanged());
+
     // Hides QObject::d_ptr allowing us to use the convenience macros.
     QScopedPointer<QWebContentsViewPrivate> d_ptr;
 };
