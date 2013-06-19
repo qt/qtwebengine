@@ -6,7 +6,7 @@ if [ -z $CHROMIUM_SRC_DIR -o ! -d $CHROMIUM_SRC_DIR ]; then
     exit 1;
 fi
 
-PATCH_DIR=$PWD
+PATCH_DIR="$( cd "$( dirname "$0" )" && pwd )"
 DEPOT_TOOLS=$CHROMIUM_SRC_DIR/../depot_tools
 
 cd $CHROMIUM_SRC_DIR
