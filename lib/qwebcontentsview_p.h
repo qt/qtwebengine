@@ -53,31 +53,19 @@
 
 class QWebContentsViewPrivate : public QObject
 {
+    QWebContentsView *q_ptr;
+    Q_DECLARE_PUBLIC(QWebContentsView)
     Q_OBJECT
 public:
-    QWebContentsViewPrivate(QWebContentsView* webContentsView)
-        : q(webContentsView)
-        , m_isLoading(false)
-    { }
+    QWebContentsViewPrivate();
 
 public Q_SLOTS:
-    void loadingStateChanged()
-    {
-        bool isLoading = webContentsDelegate->web_contents()->IsLoading();
-        if (m_isLoading != isLoading) {
-            m_isLoading = isLoading;
-            if (m_isLoading)
-                Q_EMIT q->loadStarted();
-            else
-                Q_EMIT q->loadFinished(true);
-        }
-    }
+    void loadingStateChanged();
 
 public:
-    bool m_isLoading;
-    QWebContentsView* q;
     scoped_refptr<WebEngineContext> context;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
+    bool m_isLoading;
 };
 
 #endif

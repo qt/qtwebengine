@@ -80,7 +80,9 @@ Q_SIGNALS:
     void loadingStateChanged();
 
 private:
-    QScopedPointer<QQuickWebContentsViewPrivate> d;
+    Q_DECLARE_PRIVATE(QQuickWebContentsView)
+    // Hides QObject::d_ptr allowing us to use the convenience macros.
+    QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;
 };
 
 QML_DECLARE_TYPE(QQuickWebContentsView)

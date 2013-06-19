@@ -61,17 +61,20 @@ void QQuickWebContentsView::registerType()
 
 struct QQuickWebContentsViewPrivate
 {
+    QQuickWebContentsView *q_ptr;
+    Q_DECLARE_PUBLIC(QQuickWebContentsView)
+    QQuickWebContentsViewPrivate();
+
     scoped_refptr<WebEngineContext> context;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
 };
 
 QQuickWebContentsView::QQuickWebContentsView()
+    : d_ptr(new QQuickWebContentsViewPrivate)
 {
-    d.reset(new QQuickWebContentsViewPrivate);
+    d_ptr->q_ptr = this;
 
-    // This has to be the first thing we do.
-    d->context = WebEngineContext::current();
-
+    Q_D(QQuickWebContentsView);
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
     d->webContentsDelegate.reset(new WebContentsDelegateQt(this, browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
 
@@ -92,12 +95,14 @@ QQuickWebContentsView::~QQuickWebContentsView()
 
 QUrl QQuickWebContentsView::url() const
 {
+    Q_D(const QQuickWebContentsView);
     GURL gurl = d->webContentsDelegate->web_contents()->GetActiveURL();
     return QUrl(QString::fromStdString(gurl.spec()));
 }
 
 void QQuickWebContentsView::setUrl(const QUrl& url)
 {
+    Q_D(QQuickWebContentsView);
     GURL gurl(url.toString().toStdString());
 
     content::NavigationController::LoadURLParams params(gurl);
@@ -108,24 +113,28 @@ void QQuickWebContentsView::setUrl(const QUrl& url)
 
 void QQuickWebContentsView::goBack()
 {
+    Q_D(QQuickWebContentsView);
     d->webContentsDelegate->web_contents()->GetController().GoToOffset(-1);
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QQuickWebContentsView::goForward()
 {
+    Q_D(QQuickWebContentsView);
     d->webContentsDelegate->web_contents()->GetController().GoToOffset(1);
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QQuickWebContentsView::reload()
 {
+    Q_D(QQuickWebContentsView);
     d->webContentsDelegate->web_contents()->GetController().Reload(false);
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QQuickWebContentsView::stop()
 {
+    Q_D(QQuickWebContentsView);
     content::NavigationController& controller = d->webContentsDelegate->web_contents()->GetController();
 
     int index = controller.GetPendingEntryIndex();
@@ -137,11 +146,13 @@ void QQuickWebContentsView::stop()
 
 bool QQuickWebContentsView::isLoading() const
 {
+    Q_D(const QQuickWebContentsView);
     return d->webContentsDelegate->web_contents()->IsLoading();
 }
 
 QString QQuickWebContentsView::title() const
 {
+    Q_D(const QQuickWebContentsView);
     content::NavigationEntry* entry = d->webContentsDelegate->web_contents()->GetController().GetVisibleEntry();
     if (!entry)
         return QString();
@@ -150,11 +161,18 @@ QString QQuickWebContentsView::title() const
 
 bool QQuickWebContentsView::canGoBack() const
 {
+    Q_D(const QQuickWebContentsView);
     return d->webContentsDelegate->web_contents()->GetController().CanGoBack();
 }
 
 bool QQuickWebContentsView::canGoForward() const
 {
+    Q_D(const QQuickWebContentsView);
     return d->webContentsDelegate->web_contents()->GetController().CanGoForward();
 }
 
+QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
+    // This has to be the first thing we do.
+    : context(WebEngineContext::current())
+{
+}

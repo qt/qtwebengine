@@ -70,7 +70,9 @@ Q_SIGNALS:
     void urlChanged(const QUrl& url);
 
 private:
-    QScopedPointer<QWebContentsViewPrivate> d;
+    Q_DECLARE_PRIVATE(QWebContentsView)
+    // Hides QObject::d_ptr allowing us to use the convenience macros.
+    QScopedPointer<QWebContentsViewPrivate> d_ptr;
 };
 
 #endif // QWEBCONTESTSVIEW_H

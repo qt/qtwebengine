@@ -55,13 +55,14 @@
 
 
 QWebContentsView::QWebContentsView()
+    : d_ptr(new QWebContentsViewPrivate)
 {
-    d.reset(new QWebContentsViewPrivate(this));
-    // This has to be the first thing we do.
-    d->context = WebEngineContext::current();
+    d_ptr->q_ptr = this;
 
+    Q_D(QWebContentsView);
     content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
     d->webContentsDelegate.reset(new WebContentsDelegateQt(this, browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
     setLayout(layout);
@@ -69,7 +70,7 @@ QWebContentsView::QWebContentsView()
     WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
     connect(delegate, SIGNAL(titleChanged(const QString&)), this, SIGNAL(titleChanged(const QString&)));
     connect(delegate, SIGNAL(urlChanged(const QUrl&)), this, SIGNAL(urlChanged(const QUrl&)));
-    connect(delegate, SIGNAL(loadingStateChanged()), d.data(), SLOT(loadingStateChanged()));
+    connect(delegate, SIGNAL(loadingStateChanged()), d, SLOT(loadingStateChanged()));
 
     WebContentsViewQt* content_view = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
     layout->addLayout(content_view->windowContainer()->widget());
@@ -81,6 +82,7 @@ QWebContentsView::~QWebContentsView()
 
 void QWebContentsView::load(const QUrl& url)
 {
+    Q_D(QWebContentsView);
     QString urlString = url.toString();
     GURL gurl(urlString.toStdString());
     if (!gurl.has_scheme())
@@ -94,34 +96,40 @@ void QWebContentsView::load(const QUrl& url)
 
 bool QWebContentsView::canGoBack() const
 {
+    Q_D(const QWebContentsView);
     return d->webContentsDelegate->web_contents()->GetController().CanGoBack();
 }
 
 bool QWebContentsView::canGoForward() const
 {
+    Q_D(const QWebContentsView);
     return d->webContentsDelegate->web_contents()->GetController().CanGoForward();
 }
 
 void QWebContentsView::back()
 {
+    Q_D(QWebContentsView);
     d->webContentsDelegate->web_contents()->GetController().GoToOffset(-1);
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QWebContentsView::forward()
 {
+    Q_D(QWebContentsView);
     d->webContentsDelegate->web_contents()->GetController().GoToOffset(1);
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QWebContentsView::reload()
 {
+    Q_D(QWebContentsView);
     d->webContentsDelegate->web_contents()->GetController().Reload(false);
     d->webContentsDelegate->web_contents()->GetView()->Focus();
 }
 
 void QWebContentsView::stop()
 {
+    Q_D(QWebContentsView);
     content::NavigationController& controller = d->webContentsDelegate->web_contents()->GetController();
 
     int index = controller.GetPendingEntryIndex();
@@ -129,4 +137,25 @@ void QWebContentsView::stop()
         controller.RemoveEntryAtIndex(index);
 
     d->webContentsDelegate->web_contents()->GetView()->Focus();
+
+}
+
+QWebContentsViewPrivate::QWebContentsViewPrivate()
+    // This has to be the first thing we do.
+    : context(WebEngineContext::current())
+    , m_isLoading(false)
+{
+}
+
+void QWebContentsViewPrivate::loadingStateChanged()
+{
+    Q_Q(QWebContentsView);
+    bool isLoading = webContentsDelegate->web_contents()->IsLoading();
+    if (m_isLoading != isLoading) {
+        m_isLoading = isLoading;
+        if (m_isLoading)
+            Q_EMIT q->loadStarted();
+        else
+            Q_EMIT q->loadFinished(true);
+    }
 }
