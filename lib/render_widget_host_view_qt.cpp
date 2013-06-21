@@ -281,7 +281,7 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // Give visual feedback for loading process.
 }
 
-void RenderWidgetHostViewQt::TextInputStateChanged(const ViewHostMsg_TextInputState_Params&)
+void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType, bool)
 {
     QT_NOT_YET_IMPLEMENTED
 }
@@ -297,7 +297,7 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const ui::Range&, const 
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects)
+void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo& /* latency_info */)
 {
     if (!m_delegate->isVisible())
         return;
@@ -424,15 +424,6 @@ void RenderWidgetHostViewQt::OnAccessibilityNotifications(const std::vector<Acce
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType, bool)
-{
-    QT_NOT_YET_IMPLEMENTED
-}
-
-void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect&, const gfx::Vector2d&, const std::vector<gfx::Rect>&, const ui::LatencyInfo&)
-{
-    QT_NOT_YET_IMPLEMENTED
-}
 void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
 {
     QRect r(damage_rect.x(), damage_rect.y(), damage_rect.width(), damage_rect.height());
