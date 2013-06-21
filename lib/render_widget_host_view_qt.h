@@ -126,6 +126,8 @@ public:
     virtual void SetHasHorizontalScrollbar(bool);
     virtual void SetScrollOffsetPinning(bool, bool);
     virtual void OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&);
+    virtual void TextInputTypeChanged(ui::TextInputType, bool);
+    virtual void DidUpdateBackingStore(const gfx::Rect&, const gfx::Vector2d&, const std::vector<gfx::Rect>&, const ui::LatencyInfo&);
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);

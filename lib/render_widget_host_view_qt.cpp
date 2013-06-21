@@ -424,6 +424,15 @@ void RenderWidgetHostViewQt::OnAccessibilityNotifications(const std::vector<Acce
     QT_NOT_YET_IMPLEMENTED
 }
 
+void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType, bool)
+{
+    QT_NOT_YET_IMPLEMENTED
+}
+
+void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect&, const gfx::Vector2d&, const std::vector<gfx::Rect>&, const ui::LatencyInfo&)
+{
+    QT_NOT_YET_IMPLEMENTED
+}
 void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
 {
     QRect r(damage_rect.x(), damage_rect.y(), damage_rect.width(), damage_rect.height());
