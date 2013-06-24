@@ -42,7 +42,7 @@
 #ifndef SHARED_GLOBALS_H
 #define SHARED_GLOBALS_H
 
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 
 class QWindow;
 

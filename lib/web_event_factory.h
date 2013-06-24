@@ -43,7 +43,7 @@
 #define WEB_EVENT_FACTORY_H
 
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 class QMouseEvent;
 class QKeyEvent;
