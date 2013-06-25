@@ -60,3 +60,9 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
 
     return view;
 }
+
+void WebContentsViewQt::SetPageTitle(const string16& title)
+{
+    QString string = QString::fromUtf16(title.data());
+    Q_EMIT m_client->webContentsDelegate->titleChanged(string);
+}

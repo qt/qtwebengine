@@ -77,20 +77,6 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_co
     m_webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     m_webContents->SetDelegate(this);
-    m_registrar.Add(this, content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED, content::Source<content::WebContents>(m_webContents.get()));
-}
-
-void WebContentsDelegateQt::Observe(int type, const content::NotificationSource& source, const content::NotificationDetails& details)
-{
-    if (type == content::NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED) {
-        std::pair<content::NavigationEntry*, bool>* title = content::Details<std::pair<content::NavigationEntry*, bool> >(details).ptr();
-
-        if (title->first) {
-            string16 text = title->first->GetTitle();
-            QString title = QString::fromUtf16(text.data());
-            Q_EMIT titleChanged(title);
-        }
-    }
 }
 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)

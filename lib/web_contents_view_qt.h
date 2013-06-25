@@ -79,7 +79,7 @@ public:
 
     virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) { return 0; }
 
-    virtual void SetPageTitle(const string16& title) { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetPageTitle(const string16& title);
 
     virtual void RenderViewCreated(content::RenderViewHost* host) { QT_NOT_YET_IMPLEMENTED }
 
