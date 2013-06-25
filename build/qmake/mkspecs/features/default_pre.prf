@@ -5,6 +5,6 @@ QTWEBENGINEPROCESS_NAME = QtWebEngineProcess
 
 # Fetched from environment for now
 CHROMIUM_SRC_DIR = $$(CHROMIUM_SRC_DIR)
-isEmpty(CHROMIUM_SRC_DIR):error("please set CHROMIUM_SRC_DIR")
+isEmpty(CHROMIUM_SRC_DIR): CHROMIUM_SRC_DIR=$QTWEBENGINE_ROOT/chromium
 
 load(functions)
