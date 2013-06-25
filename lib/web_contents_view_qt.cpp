@@ -39,26 +39,24 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBCONTESTSVIEWPRIVATE_H
-#define QWEBCONTESTSVIEWPRIVATE_H
-
-#include "qwebcontentsview.h"
 #include "web_contents_view_qt.h"
 
-#include <QScopedPointer>
+#include "browser_context_qt.h"
+#include "content_browser_client_qt.h"
 
-class QWebContentsViewPrivate : public WebContentsViewQtClient
+WebContentsViewQtClient::WebContentsViewQtClient()
+// This has to be the first thing we do.
+    : context(WebEngineContext::current())
 {
-    QWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QWebContentsView)
-public:
-    QWebContentsViewPrivate();
+    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
+    webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+}
 
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
+content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+{
+    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
+    RenderWidgetHostViewQtDelegate *viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate(view);
+    view->SetDelegate(viewDelegate);
 
-    void _q_onLoadingStateChanged();
-
-    bool m_isLoading;
-};
-
-#endif
+    return view;
+}

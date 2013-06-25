@@ -44,7 +44,6 @@
 
 #include "content/public/browser/web_contents.h"
 
-#include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_delegate_qt.h"
@@ -135,13 +134,8 @@ void QWebContentsView::stop()
 }
 
 QWebContentsViewPrivate::QWebContentsViewPrivate()
-    // This has to be the first thing we do.
-    : context(WebEngineContext::current())
-    , m_isLoading(false)
+    : m_isLoading(false)
 {
-    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
-    webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
-
     WebContentsViewQt* contents_view = static_cast<WebContentsViewQt*>(webContentsDelegate->web_contents()->GetView());
     contents_view->SetClient(this);
 }
