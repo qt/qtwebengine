@@ -57,14 +57,12 @@ namespace content {
 
 class WebContentsDelegateQt : public QObject
                             , public content::WebContentsDelegate
-                            , public content::NotificationObserver
 {
     Q_OBJECT
 public:
     WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
     content::WebContents* web_contents();
 
-    virtual void Observe(int type, const content::NotificationSource&, const content::NotificationDetails&);
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
     virtual void LoadingStateChanged(content::WebContents* source);
 
@@ -75,7 +73,6 @@ Q_SIGNALS:
 
 private:
     scoped_ptr<content::WebContents> m_webContents;
-    content::NotificationRegistrar m_registrar;
 };
 
 #endif
