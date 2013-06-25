@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qquickwebcontentsview.h"
+#include "qquickwebcontentsview_p.h"
 
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -49,7 +50,6 @@
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
-#include "web_engine_context.h"
 
 #include <QUrl>
 
@@ -58,19 +58,6 @@ void QQuickWebContentsView::registerType()
     // FIXME: Do a proper plugin.
     qmlRegisterType<QQuickWebContentsView>("QtWebEngine", 1, 0, "WebContentsView");
 }
-
-class QQuickWebContentsViewPrivate : public WebContentsViewQtClient
-{
-    QQuickWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QQuickWebContentsView)
-public:
-    QQuickWebContentsViewPrivate();
-
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
-
-    scoped_refptr<WebEngineContext> context;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-};
 
 QQuickWebContentsView::QQuickWebContentsView()
     : d_ptr(new QQuickWebContentsViewPrivate)
