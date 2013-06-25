@@ -38,6 +38,7 @@ HEADERS = \
         browser_context_qt.h \
         content_browser_client_qt.h \
         qquickwebcontentsview.h \
+        qquickwebcontentsview_p.h \
         qwebcontentsview.h \
         qwebcontentsview_p.h \
         render_widget_host_view_qt.h \
