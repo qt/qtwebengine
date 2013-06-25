@@ -43,9 +43,7 @@
 #define QQUICKWEBCONTENTSVIEWPRIVATE_H
 
 #include "qwebcontentsview.h"
-#include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
-#include "web_engine_context.h"
 
 class QQuickWebContentsViewPrivate : public WebContentsViewQtClient
 {
@@ -55,9 +53,6 @@ public:
     QQuickWebContentsViewPrivate();
 
     RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
-
-    scoped_refptr<WebEngineContext> context;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
 };
 
 #endif // QQUICKWEBCONTENTSVIEWPRIVATE_H

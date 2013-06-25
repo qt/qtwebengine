@@ -30,6 +30,7 @@ SOURCES = \
         resource_context_qt.cpp \
         url_request_context_getter_qt.cpp \
         web_contents_delegate_qt.cpp \
+        web_contents_view_qt.cpp \
         web_engine_context.cpp \
         web_event_factory.cpp
 

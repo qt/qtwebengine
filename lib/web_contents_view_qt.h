@@ -49,11 +49,17 @@
 #include "content/port/browser/web_contents_view_port.h"
 
 #include "render_widget_host_view_qt.h"
+#include "web_contents_delegate_qt.h"
+#include "web_engine_context.h"
 
 class WebContentsViewQtClient {
 public:
+    WebContentsViewQtClient();
     virtual ~WebContentsViewQtClient() { }
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) = 0;
+
+    scoped_refptr<WebEngineContext> context;
+    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
 };
 
 class WebContentsViewQt
@@ -67,14 +73,7 @@ public:
 
     void SetClient(WebContentsViewQtClient* client) { m_client = client; }
 
-    virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
-    {
-        RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-        RenderWidgetHostViewQtDelegate *viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate(view);
-        view->SetDelegate(viewDelegate);
-
-        return view;
-    }
+    virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host);
 
     virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context) { QT_NOT_YET_IMPLEMENTED }
 
