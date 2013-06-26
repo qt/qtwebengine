@@ -42,10 +42,11 @@
 #ifndef QWEBCONTESTSVIEWPRIVATE_H
 #define QWEBCONTESTSVIEWPRIVATE_H
 
-#include "qwebcontentsview.h"
 #include "web_contents_view_qt.h"
 
 #include <QScopedPointer>
+
+class QWebContentsView;
 
 class QWebContentsViewPrivate : public WebContentsViewQtClient
 {

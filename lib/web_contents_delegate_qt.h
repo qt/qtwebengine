@@ -42,8 +42,6 @@
 #ifndef WEB_CONTENTS_DELEGATE_QT
 #define WEB_CONTENTS_DELEGATE_QT
 
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
 
