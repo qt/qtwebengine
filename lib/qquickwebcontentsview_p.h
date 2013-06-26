@@ -42,8 +42,9 @@
 #ifndef QQUICKWEBCONTENTSVIEWPRIVATE_H
 #define QQUICKWEBCONTENTSVIEWPRIVATE_H
 
-#include "qwebcontentsview.h"
 #include "web_contents_view_qt.h"
+
+class QQuickWebContentsView;
 
 class QQuickWebContentsViewPrivate : public WebContentsViewQtClient
 {

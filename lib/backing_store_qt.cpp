@@ -41,7 +41,6 @@
 
 #include "backing_store_qt.h"
 
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
