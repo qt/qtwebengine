@@ -48,7 +48,6 @@
 
 class BackingStoreQt;
 class QWindow;
-class RenderWidgetHostViewQt;
 
 class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
@@ -71,7 +70,6 @@ protected:
 
 private:
     QPainter* m_painter;
-    RenderWidgetHostViewQt *m_view;
 };
 
 #endif

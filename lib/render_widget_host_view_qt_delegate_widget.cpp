@@ -51,8 +51,8 @@
 
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent)
     : QWidget(parent)
+    , RenderWidgetHostViewQtDelegate(view)
     , m_painter(0)
-    , m_view(view)
 {
     setFocusPolicy(Qt::ClickFocus);
     setAttribute(Qt::WA_OpaquePaintEvent);
