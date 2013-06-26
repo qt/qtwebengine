@@ -8,7 +8,7 @@ message(Running Gyp...)
 GYP_OUTPUT = $$system(./gyp_qtwebengine)
 message($$GYP_OUTPUT)
 
-ninja.target = ninja
+ninja.target = invoke_ninja
 ninja.commands = $$findNinja() -C $$getOutDir()/$$getConfigDir()
 ninja.depends: qmake
 QMAKE_EXTRA_TARGETS += ninja
