@@ -84,7 +84,7 @@ class Submodule:
         return False
 
     def findSha(self):
-        line = subprocess.check_output(['git', 'submodule', 'status', self.path]);
+        line = subprocess.check_output(['git', 'submodule', 'status', self.path])
         line = line.lstrip(' -')
         self.shasum = line.split(' ')[0]
 
@@ -96,8 +96,9 @@ class Submodule:
             self.findSha()
             currentDir = os.getcwd()
             os.chdir(self.path)
-            #subprocess.call(['git', 'fetch'])
-            #subprocess.call(['git', 'checkout', self.shasum, '-q']) # -q is to silence detached head warnings.
+            # Make sure we have checked out the right shasum.
+            # In case there were other patches applied before.
+            subprocess.call(['git', 'checkout', self.shasum])
             initSubmodules()
             os.chdir(currentDir)
         else:
@@ -159,9 +160,25 @@ def buildNinja():
     subprocess.call(['python', 'bootstrap.py'])
     os.chdir(currentDir)
 
+def addGerritRemote():
+    os.chdir(qtwebengine_src)
+    remotes = subprocess.check_output(['git', 'remote'])
+    if not 'gerrit' in remotes:
+        subprocess.call(['git', 'remote', 'add', 'gerrit', 'ssh://codereview.qt-project.org:29418/qt-labs/qtwebengine.git'])
+
+def installGitHooks():
+    os.chdir(qtwebengine_src)
+    subprocess.call(['scp', '-p', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
+
+def applyPatches():
+    os.chdir(qtwebengine_src)
+    subprocess.call(['sh', './patches/patch-chromium.sh'])
+
 os.chdir(qtwebengine_src)
+addGerritRemote()
+installGitHooks()
 initSubmodules()
-#initSubmodules('HEAD')
+applyPatches()
 updateLastChange()
 buildNinja()
 
