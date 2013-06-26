@@ -53,7 +53,6 @@ class QFocusEvent;
 class QMouseEvent;
 class QKeyEvent;
 class QWheelEvent;
-class RenderWidgetHostViewQt;
 
 class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
 {
@@ -86,8 +85,6 @@ protected:
 
 private:
     BackingStoreQt* m_backingStore;
-    RenderWidgetHostViewQt *m_view;
-
 };
 
 #endif

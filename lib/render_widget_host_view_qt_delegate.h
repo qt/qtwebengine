@@ -42,11 +42,17 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 
+#include "base/memory/scoped_ptr.h"
+
+#include "render_widget_host_view_qt.h"
 #include <QRect>
 
 class QWindow;
 
 class RenderWidgetHostViewQtDelegate {
+protected:
+    scoped_ptr<RenderWidgetHostViewQt> m_view;
+    RenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt* view) : m_view(view) { Q_ASSERT(m_view); }
 public:
     virtual ~RenderWidgetHostViewQtDelegate() {}
     virtual QRectF screenRect() const = 0;

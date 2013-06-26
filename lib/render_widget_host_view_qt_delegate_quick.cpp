@@ -51,8 +51,8 @@
 
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent)
     : QQuickPaintedItem(parent)
+    , RenderWidgetHostViewQtDelegate(view)
     , m_backingStore(0)
-    , m_view(view)
 {
     setFocus(true);
     setAcceptedMouseButtons(Qt::AllButtons);
