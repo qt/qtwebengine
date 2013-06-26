@@ -44,6 +44,8 @@
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 
+#include "content/browser/renderer_host/render_view_host_impl.h"
+
 WebContentsViewQtClient::WebContentsViewQtClient()
 // This has to be the first thing we do.
     : context(WebEngineContext::current())
@@ -65,4 +67,11 @@ void WebContentsViewQt::SetPageTitle(const string16& title)
 {
     QString string = QString::fromUtf16(title.data());
     Q_EMIT m_client->webContentsDelegate->titleChanged(string);
+}
+
+void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
+{
+    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
+    if (rwhv)
+      *out = rwhv->GetViewBounds();
 }

@@ -93,7 +93,7 @@ public:
 
     virtual gfx::NativeWindow GetTopLevelNativeWindow() const { QT_NOT_YET_IMPLEMENTED return 0; }
 
-    virtual void GetContainerBounds(gfx::Rect* out) const { QT_NOT_YET_IMPLEMENTED }
+    virtual void GetContainerBounds(gfx::Rect* out) const;
 
     virtual void OnTabCrashed(base::TerminationStatus status, int error_code) { QT_NOT_YET_IMPLEMENTED }
 
