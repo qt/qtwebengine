@@ -8,13 +8,13 @@ message(Running Gyp...)
 GYP_OUTPUT = $$system(./gyp_qtwebengine)
 message($$GYP_OUTPUT)
 
-ninja.target = ninja
-ninja.commands = $$findNinja() -C $$getOutDir()/$$getConfigDir()
-ninja.depends: qmake
-QMAKE_EXTRA_TARGETS += ninja
+invoke_ninja.target = invoke_ninja
+invoke_ninja.commands = $$findNinja() -C $$getOutDir()/$$getConfigDir()
+invoke_ninja.depends: qmake
+QMAKE_EXTRA_TARGETS += invoke_ninja
 
 build_pass:build_all:default_target.target = all
 else: default_target.target = first
-default_target.depends = ninja
+default_target.depends = invoke_ninja
 
 QMAKE_EXTRA_TARGETS += default_target
