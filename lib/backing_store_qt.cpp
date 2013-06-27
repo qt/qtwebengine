@@ -116,28 +116,44 @@ void BackingStoreQt::ScrollBackingStore(const gfx::Vector2d &delta, const gfx::R
 
 bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
 {
-    // const int width = std::min(m_pixelBuffer.width(), rect.width());
-    // const int height = std::min(m_pixelBuffer.height(), rect.height());
+    const int width = std::min(m_pixelBuffer.width(), rect.width());
+    const int height = std::min(m_pixelBuffer.height(), rect.height());
 
-    // if (!output->Allocate(width, height, true))
-    //     return false;
+    if (!output->Allocate(width, height, true))
+        return false;
 
-    // // This code assumes a visual mode where a pixel is
-    // // represented using a 32-bit unsigned int, with a byte per component.
-    // const SkBitmap& bitmap = output->GetBitmap();
-    // SkAutoLockPixels alp(bitmap);
+    // This code assumes a visual mode where a pixel is
+    // represented using a 32-bit unsigned int, with a byte per component.
+    const SkBitmap& bitmap = output->GetBitmap();
+    if (bitmap.rowBytes() != 4)
+        return false;
 
-    // QPixmap cpy = m_pixelBuffer.copy(rect.x(), rect.y(), rect.width(), rect.height());
-    // QImage img = cpy.toImage();
+    SkAutoLockPixels alp(bitmap);
 
-    // // Convert the format and remove transparency.
-    // if (img.format() != QImage::Format_RGB32)
-    //     img = img.convertToFormat(QImage::Format_RGB32);
+    QPixmap cpy = m_pixelBuffer.copy(rect.x(), rect.y(), rect.width(), rect.height());
+    QImage img = cpy.toImage();
 
-    // const uint8_t* src = img.bits();
-    // uint8_t* dst = reinterpret_cast<uint8_t*>(bitmap.getAddr32(0,0));
-    // memcpy(dst, src, width*height*32);
+    // Convert the format and remove transparency.
+    if (img.format() != QImage::Format_RGB32)
+        img = img.convertToFormat(QImage::Format_RGB32);
 
-    // return true;
+    const uint8_t* src = img.bits();
+    uint8_t* dst = reinterpret_cast<uint8_t*>(bitmap.getAddr32(0,0));
+
+    int bytesPerLine = img.bytesPerLine();
+    int bytesPerPixel = bytesPerLine / img.width();
+    int copyLineLength = width * bytesPerPixel;
+    int lineOffset = rect.y() * img.width();
+    int rowOffset = rect.x() * bytesPerPixel;
+
+    const uint8_t* copyLineBegin = src + rowOffset + lineOffset;
+
+    for (int lineNumber = 0; lineNumber < height; ++lineNumber) {
+        memcpy(dst, copyLineBegin, copyLineLength);
+        dst += copyLineLength;
+        copyLineBegin += img.width();
+    }
+
+    return true;
 }
 
