@@ -44,6 +44,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
+#include "skia/ext/platform_canvas.h"
 
 #include <QPainter>
 
