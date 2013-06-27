@@ -42,34 +42,25 @@
 
 # Script used temporarily to invoke gclient and apply our patches
 
-if [ -z $CHROMIUM_SRC_DIR -o ! -d $CHROMIUM_SRC_DIR ]; then
-    echo "CHROMIUM_SRC_DIR not set or pointing to a non existing directory."
+PATCH_DIR="$( cd "$( dirname "$0" )" && pwd )"
+QTWEBENGINE_SRC_DIR="$( cd $PATCH_DIR/../ && pwd )"
+
+if [ -z "$CHROMIUM_SRC_DIR" ]; then
+    CHROMIUM_SRC_DIR="$( cd $PATCH_DIR/../chromium && pwd )"
+fi
+
+if [ ! -d "$CHROMIUM_SRC_DIR" ]; then
+    echo "CHROMIUM_SRC_DIR pointing to a non existing directory. $CHROMIUM_SRC_DIR"
     exit 1;
 fi
 
-PATCH_DIR="$( cd "$( dirname "$0" )" && pwd )"
+echo "Checking out Chromium HEADs..."
+cd $QTWEBENGINE_SRC_DIR
+git submodule update --recursive
 
 cd $CHROMIUM_SRC_DIR
 echo "Entering $PWD"
 
-GCLIENT=`which gclient 2>/dev/null`
-if [ -z $GCLIENT ]; then
-    # Try to find it in the most likely location
-    GCLIENT=$CHROMIUM_SRC_DIR/../depot_tools/gclient
-    if [ ! -e $GCLIENT ]; then
-        echo "Can't find gclient"
-        exit 2;
-    fi
-fi
-
-$GCLIENT revert
-
-if [ "$2" = "--update" ]; then
-    $GCLIENT fetch
-    $GCLIENT sync
-fi
-
-echo "Applying patches..."
 git am $PATCH_DIR/0001-My-local-fixes.patch $PATCH_DIR/0002-Add-WebEngineContext-to-RunLoop-s-friends.patch
 
 cd tools/gyp
