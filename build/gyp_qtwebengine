@@ -81,6 +81,12 @@ def get_output_dir():
 if __name__ == '__main__':
   args = sys.argv[1:]
 
+  # On Mac we want to override CXX and CC that is provided with
+  # the Chromium GYP environment.
+  if sys.platform.startswith('darwin'):
+    os.environ['CXX'] = 'clang++'
+    os.environ['CC'] = 'clang'
+
   gyp_helper.apply_chromium_gyp_env()
 
   # This could give false positives since it doesn't actually do real option
@@ -95,6 +101,10 @@ if __name__ == '__main__':
       args.append(os.path.join(root_dir, 'qtwebengine.gyp'))
 
   args.extend(['-I' + i for i in additional_include_files(args)])
+
+  # On Mac we want to build in x64 mode. And we want to use libc++.
+  if sys.platform in ('darwin',):
+      args.extend(['-D', 'host_arch=x64', '-D', 'use_libcpp=1'])
 
   # There shouldn't be a circular dependency relationship between .gyp files,
   # but in Chromium's .gyp files, on non-Mac platforms, circular relationships
