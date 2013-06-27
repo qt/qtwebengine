@@ -4,3 +4,4 @@
 [submodule "chromium"]
 	path = chromium
 	url = https://chromium.googlesource.com/chromium/src.git
+	ignore = all
