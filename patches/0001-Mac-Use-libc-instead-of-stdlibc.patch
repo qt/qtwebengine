@@ -1,0 +1,162 @@
+From f5e04b997ca30f12555d6c28dd702108ebb8f6d3 Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno.albisser@digia.com>
+Date: Thu, 27 Jun 2013 15:51:43 +0200
+Subject: [PATCH 1/2] Mac: Use libc++ instead of stdlibc++.
+
+- Add a missing include file to process_iterator_mac.cc.
+- Disable Chromium clang plugins.
+- Add a use_libcpp variable to common.gypi that can be used
+  to build with libc++ instead of libstdc++.
+  In this case several warnings also must be disabled,
+  And the mac deployment target must be bumped to 10.7.
+- ext/hash_map and ext/hash_set are deprecated.
+  Use unordered containers as a replacement.
+---
+ base/process/process_iterator_mac.cc |  1 +
+ build/common.gypi                    | 30 +++++++++++++++++++++++++++---
+ third_party/protobuf/config.h        | 27 ++++++++++++++-------------
+ 3 files changed, 42 insertions(+), 16 deletions(-)
+
+diff --git a/base/process/process_iterator_mac.cc b/base/process/process_iterator_mac.cc
+index 29daa2d..e35c2ae 100644
+--- a/base/process/process_iterator_mac.cc
++++ b/base/process/process_iterator_mac.cc
+@@ -7,6 +7,7 @@
+ #include <errno.h>
+ #include <sys/sysctl.h>
+ #include <sys/types.h>
++#include <unistd.h>
+ 
+ #include "base/logging.h"
+ #include "base/strings/string_util.h"
+diff --git a/build/common.gypi b/build/common.gypi
+index 3fd1c77..0e57abb 100644
+--- a/build/common.gypi
++++ b/build/common.gypi
+@@ -278,7 +278,7 @@
+       # Run tools/clang/scripts/update.sh to make sure they are compiled.
+       # This causes 'clang_chrome_plugins_flags' to be set.
+       # Has no effect if 'clang' is not set as well.
+-      'clang_use_chrome_plugins%': 1,
++      'clang_use_chrome_plugins%': 0,
+ 
+       # Enable building with ASAN (Clang's -fsanitize=address option).
+       # -fsanitize=address only works with clang, but asan=1 implies clang=1
+@@ -1100,6 +1100,9 @@
+     # MDNS is disabled by default.
+     'enable_mdns%' : 0,
+ 
++    # Compile with libc++ instead of libstdc++.
++    'use_libcpp%' : 0,
++
+     'conditions': [
+       # The version of GCC in use, set later in platforms that use GCC and have
+       # not explicitly chosen to build with clang. Currently, this means all
+@@ -1358,10 +1361,10 @@
+           # someplace that Xcode doesn't know about, set mac_sdk_path to the
+           # path to the SDK; when set to a non-empty string, SDK detection
+           # based on mac_sdk_min will be bypassed entirely.
+-          'mac_sdk_min%': '10.6',
++          'mac_sdk_min%': '10.7',
+           'mac_sdk_path%': '',
+ 
+-          'mac_deployment_target%': '10.6',
++          'mac_deployment_target%': '10.7',
+         },
+ 
+         'mac_sdk_min': '<(mac_sdk_min)',
+@@ -1371,6 +1374,7 @@
+         # Compile in Breakpad support by default so that it can be
+         # tested, even if it is not enabled by default at runtime.
+         'mac_breakpad_compiled_in%': 1,
++
+         'conditions': [
+           # mac_product_name is set to the name of the .app bundle as it should
+           # appear on disk.  This duplicates data from
+@@ -1922,6 +1926,16 @@
+       ['use_x11==1', {
+         'defines': ['USE_X11=1'],
+       }],
++      ['use_libcpp==1', {
++        'defines': ['USE_UNORDERED_CONTAINERS=1'],
++        'cflags_cc': [
++          '-Wno-deprecated-declarations',
++          '-Wno-newline-eof',
++          '-Wno-unused-value',
++          '-Wno-unused-variable',
++          '-stdlib=libc++'
++        ],
++      }],
+       ['enable_one_click_signin==1', {
+         'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
+       }],
+@@ -3828,6 +3842,16 @@
+                 '$(inherited)', '-std=gnu++11',
+               ],
+             }],
++            ['use_libcpp==1', {
++              'OTHER_CPLUSPLUSFLAGS': ['-stdlib=libc++'],
++              'USE_LIBCPP': 'YES',
++              'WARNING_CFLAGS': [
++                '-Wno-deprecated-declarations',
++                '-Wno-newline-eof',
++                '-Wno-unused-value',
++                '-Wno-unused-variable',
++              ],
++            }],
+             ['clang==1 and clang_use_chrome_plugins==1', {
+               'OTHER_CFLAGS': [
+                 '<@(clang_chrome_plugins_flags)',
+diff --git a/third_party/protobuf/config.h b/third_party/protobuf/config.h
+index dcc0041..affcf55 100644
+--- a/third_party/protobuf/config.h
++++ b/third_party/protobuf/config.h
+@@ -1,31 +1,32 @@
+ /* config.h.  Generated from config.h.in by configure.  */
+ /* config.h.in.  Generated from configure.ac by autoheader.  */
+ 
+-/* the name of <hash_set> */
+-#define HASH_MAP_CLASS hash_map
++#if defined(USE_UNORDERED_CONTAINERS)
++
++#define HASH_MAP_H <unordered_map>
++#define HASH_SET_H <unordered_set>
++#define HASH_NAMESPACE std
++#define HASH_MAP_CLASS unordered_map
++#define HASH_SET_CLASS unordered_set
+ 
+-/* the location of <hash_map> */
+-#if defined(USE_STLPORT)
+-#define HASH_MAP_H <hash_map>
+ #else
+-#define HASH_MAP_H <ext/hash_map>
+-#endif
+ 
+-/* the namespace of hash_map/hash_set */
+ #if defined(USE_STLPORT)
++#define HASH_MAP_H <hash_map>
++#define HASH_SET_H <hash_set>
+ #define HASH_NAMESPACE std
+ #else
++#define HASH_MAP_H <ext/hash_map>
++#define HASH_SET_H <ext/hash_set>
+ #define HASH_NAMESPACE __gnu_cxx
+ #endif
+ 
+ /* the name of <hash_set> */
++#define HASH_MAP_CLASS hash_map
++
++/* the name of <hash_set> */
+ #define HASH_SET_CLASS hash_set
+ 
+-/* the location of <hash_set> */
+-#if defined(USE_STLPORT)
+-#define HASH_SET_H <hash_set>
+-#else
+-#define HASH_SET_H <ext/hash_set>
+ #endif
+ 
+ /* Define to 1 if you have the <dlfcn.h> header file. */
+-- 
+1.8.0.1
+

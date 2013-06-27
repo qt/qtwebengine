@@ -61,9 +61,18 @@ git submodule update --recursive
 cd $CHROMIUM_SRC_DIR
 echo "Entering $PWD"
 
-git am $PATCH_DIR/0001-My-local-fixes.patch $PATCH_DIR/0002-Add-WebEngineContext-to-RunLoop-s-friends.patch
+git am $PATCH_DIR/0001-My-local-fixes.patch
+git am $PATCH_DIR/0002-Add-WebEngineContext-to-RunLoop-s-friends.patch
+git am $PATCH_DIR/0001-Mac-Use-libc-instead-of-stdlibc.patch
+git am $PATCH_DIR/0002-Clang-libc-does-not-support-incomplete-types-in-temp.patch
 
-cd tools/gyp
+cd $CHROMIUM_SRC_DIR/third_party/WebKit
+echo "Entering $PWD"
+
+git am $PATCH_DIR/0001-Remove-leftovers-from-WebKitSystemInterface.patch
+
+cd $CHROMIUM_SRC_DIR/tools/gyp
 echo "Entering $PWD"
 
 git am $PATCH_DIR/0001-GYP-Fix-build-with-toplevel-dir.patch
+git am $PATCH_DIR/0001-Add-support-for-libc-to-xcode_emulation.py.patch
