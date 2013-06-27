@@ -68,6 +68,7 @@ namespace content {
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
     // WebContentsViewQt should take care of this directly.
     Q_ASSERT(false);
+    return nullptr;
 }
 
 // static
