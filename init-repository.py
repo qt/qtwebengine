@@ -79,7 +79,9 @@ class Submodule:
             return True
         if sys.platform.startswith('win32') and 'win' in self.os:
             return True
-        if (sys.platform.startswith('linux') or sys.platform.startswith('darwin')) and 'unix' in self.os:
+        if sys.platform.startswith('linux') and 'unix' in self.os:
+            return True
+        if sys.platform.startswith('darwin') and ('unix' in self.os or 'mac' in self.os):
             return True
         return False
 
