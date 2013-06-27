@@ -131,6 +131,21 @@ public:
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleFocusEvent(QFocusEvent*);
+
+#if defined(OS_MACOSX)
+    virtual void SetTakesFocusOnlyOnMouseDown(bool flag) { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetActive(bool active) { QT_NOT_YET_IMPLEMENTED }
+    virtual bool IsSpeaking() const { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void SpeakSelection() { QT_NOT_YET_IMPLEMENTED }
+    virtual bool PostProcessEventForPluginIme(const content::NativeWebKeyboardEvent& event) { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void AboutToWaitForBackingStoreMsg() { QT_NOT_YET_IMPLEMENTED }
+    virtual void StopSpeaking() { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetWindowVisibility(bool visible) { QT_NOT_YET_IMPLEMENTED }
+    virtual bool SupportsSpeech() const { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void ShowDefinitionForSelection() { QT_NOT_YET_IMPLEMENTED }
+    virtual void WindowFrameChanged() { QT_NOT_YET_IMPLEMENTED }
+#endif // defined(OS_MACOSX)
+
 private:
     void Paint(const gfx::Rect& damage_rect);
 
