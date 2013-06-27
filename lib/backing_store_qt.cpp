@@ -138,5 +138,6 @@ bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformB
     // memcpy(dst, src, width*height*32);
 
     // return true;
+    return false;
 }
 
