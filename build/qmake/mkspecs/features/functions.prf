@@ -46,7 +46,6 @@ defineReplace(findNinja) {
   !isEmpty(CACHED_NINJA_EXECUTABLE):exists($$CACHED_NINJA_EXECUTABLE): return($$CACHED_NINJA_EXECUTABLE)
   out = $$system("which ninja 2>/dev/null")
   # Try to be smart about it if we know where the chromium sources are located
-  isEmpty(CHROMIUM_SRC_DIR): message(foobar)
   !exists($$out): out = $$absolute_path("$$QTWEBENGINE_ROOT/build/ninja/ninja")
   cache(CACHED_NINJA_EXECUTABLE, set, out)
   return($$out)
