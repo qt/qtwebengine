@@ -103,8 +103,9 @@ if __name__ == '__main__':
   args.extend(['-I' + i for i in additional_include_files(args)])
 
   # On Mac we want to build in x64 mode. And we want to use libc++.
+  # Even though we are not on linux, it seems we specifically have to disable linux_use_tcmalloc.
   if sys.platform in ('darwin',):
-      args.extend(['-D', 'host_arch=x64', '-D', 'use_libcpp=1'])
+      args.extend(['-D', 'host_arch=x64', '-D', 'use_libcpp=1', '-D', 'linux_use_tcmalloc=0'])
 
   # There shouldn't be a circular dependency relationship between .gyp files,
   # but in Chromium's .gyp files, on non-Mac platforms, circular relationships
