@@ -49,11 +49,13 @@
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "ui/gfx/size_conversions.h"
 
 #include <QEvent>
 #include <QFocusEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QScreen>
 #include <QWheelEvent>
 #include <QWindow>
 
@@ -147,22 +149,39 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
     SetSize(rect.size());
 }
 
-// FIXME: Should this really return a QWindow pointer?
+gfx::Size RenderWidgetHostViewQt::GetPhysicalBackingSize() const
+{
+    if (!m_delegate)
+        return gfx::Size();
+
+    const QScreen* screen = m_delegate->window()->screen();
+    return gfx::ToCeiledSize(gfx::ScaleSize(GetViewBounds().size(), screen->devicePixelRatio()));
+}
+
 gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 {
-    QT_NOT_YET_IMPLEMENTED
+    // gfx::NativeView is a typedef to a platform specific view
+    // pointer (HWND, NSView*, GtkWidget*) and other ports use
+    // this function in the renderer_host layer when setting up
+    // the view hierarchy and for generating snapshots in tests.
+    // Since we manage the view hierarchy in Qt we can possibly
+    // avoid calls to this.
+    QT_NOT_USED
     return gfx::NativeView();
 }
 
 gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 {
-    QT_NOT_YET_IMPLEMENTED
-    return gfx::NativeViewId();
+    // This function is used in IPC in place of GetNativeView
+    // and we can possibly avoid calls for now.
+    QT_NOT_USED
+    return m_delegate->window()->winId();
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 {
-    NOTIMPLEMENTED();
+    // We are not using accessibility features at this point.
+    QT_NOT_USED
     return NULL;
 }
 
