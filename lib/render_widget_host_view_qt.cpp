@@ -151,7 +151,7 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 
 gfx::Size RenderWidgetHostViewQt::GetPhysicalBackingSize() const
 {
-    if (!m_delegate)
+    if (!m_delegate || !m_delegate->window() || !m_delegate->window()->screen())
         return gfx::Size();
 
     const QScreen* screen = m_delegate->window()->screen();
