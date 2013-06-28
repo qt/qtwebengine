@@ -41,7 +41,7 @@
 
 #include "url_request_context_getter_qt.h"
 
-#include "base/string_util.h"
+#include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/cache_type.h"
