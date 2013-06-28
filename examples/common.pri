@@ -1,7 +1,8 @@
 INCLUDEPATH += $$absolute_path(../lib, $$PWD) \
                $$absolute_path(common, $$PWD)
 
-LIBPATH = $$getOutDir()/$$getConfigDir()/lib
+macx:LIBPATH = $$getOutDir()/$$getConfigDir()
+else:LIBPATH = $$getOutDir()/$$getConfigDir()/lib
 
 HEADERS += common/util.h
 
