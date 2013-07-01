@@ -48,28 +48,28 @@ GYPI_CONTENTS =  "{" \
 for (lib, LIBS): GYPI_CONTENTS += "      '$$lib',"
 !isEmpty(QMAKE_RPATHDIR): GYPI_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
 
-GYPI_CONTENTS += "    ]," \
-                 "    'link_settings': {" \
-                 "      'libraries': ["
-FRAMEWORKS = $$find(LIBS, "Q*")
-FRAMEWORKS = $$unique(FRAMEWORKS)
-FRAMEWORKS ~= s/-.*/
-FRAMEWORKS -= "-framework"
-for (framework, FRAMEWORKS): {
-    framework_name = $$join(framework, "", "", ".framework")
-    GYPI_CONTENTS += "        '$$framework_name',"
-}
+GYPI_CONTENTS += "    ],"
 
-FRAMEWORK_PATHS = $$find(LIBS, "-F*")
-FRAMEWORK_PATHS = $$unique(FRAMEWORK_PATHS)
-FRAMEWORK_PATHS -= "-framework"
-for (framework_path, FRAMEWORK_PATHS): GYPI_CONTENTS += "        '$$framework_path',"
+macx {
+    GYPI_CONTENTS += "    'link_settings': {" \
+                     "      'libraries': ["
+    FRAMEWORKS = $$find(LIBS, "Q*")
+    FRAMEWORKS = $$unique(FRAMEWORKS)
+    FRAMEWORKS ~= s/-.*/
+    FRAMEWORKS -= "-framework"
+    for (framework, FRAMEWORKS): {
+        framework_name = $$join(framework, "", "", ".framework")
+        GYPI_CONTENTS += "        '$$framework_name',"
+    }
 
+    FRAMEWORK_PATHS = $$find(LIBS, "-F*")
+    FRAMEWORK_PATHS = $$unique(FRAMEWORK_PATHS)
+    FRAMEWORK_PATHS -= "-framework"
+    for (framework_path, FRAMEWORK_PATHS): GYPI_CONTENTS += "        '$$framework_path',"
 
-GYPI_CONTENTS += "      ]," \
+    GYPI_CONTENTS += "      ]," \
                  "    },"
-
-
+}
 
 !isEmpty(GYPDEPENDENCIES) {
   GYPI_CONTENTS += "    'dependencies': ["
