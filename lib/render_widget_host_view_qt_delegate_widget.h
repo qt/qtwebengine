@@ -55,6 +55,8 @@ public:
     RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent = 0);
 
     virtual QRectF screenRect() const;
+    virtual void setKeyboardFocus();
+    virtual bool hasKeyboardFocus();
     virtual void show();
     virtual void hide();
     virtual bool isVisible() const;

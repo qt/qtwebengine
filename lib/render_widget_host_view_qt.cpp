@@ -188,13 +188,12 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 // Set focus to the associated View component.
 void RenderWidgetHostViewQt::Focus()
 {
-    // m_delegate->setFocus(Qt::MouseFocusReason);
+    m_delegate->setKeyboardFocus();
 }
 
 bool RenderWidgetHostViewQt::HasFocus() const
 {
-    // return m_delegate->hasFocus();
-    return true;
+    return m_delegate->hasKeyboardFocus();
 }
 
 bool RenderWidgetHostViewQt::IsSurfaceAvailableForCopy() const
