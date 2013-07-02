@@ -94,7 +94,6 @@ public:
     virtual void SetBackground(const SkBitmap& background);
     virtual bool LockMouse();
     virtual void UnlockMouse();
-    virtual bool IsMouseLocked();
 #if defined(TOOLKIT_GTK)
     virtual GdkEventButton* GetLastMouseDown();
     virtual gfx::NativeView BuildInputMethodsGtkMenu();

@@ -234,19 +234,12 @@ void RenderWidgetHostViewQt::SetBackground(const SkBitmap& background)
 // Return value indicates whether the mouse is locked successfully or not.
 bool RenderWidgetHostViewQt::LockMouse()
 {
-    QT_NOT_YET_IMPLEMENTED
+    QT_NOT_USED
     return false;
 }
 void RenderWidgetHostViewQt::UnlockMouse()
 {
-    QT_NOT_YET_IMPLEMENTED
-}
-
-// Returns true if the mouse pointer is currently locked.
-bool RenderWidgetHostViewQt::IsMouseLocked()
-{
-    QT_NOT_YET_IMPLEMENTED
-    return false;
+    QT_NOT_USED
 }
 
 // FIXME: remove TOOLKIT_GTK related things.
@@ -295,8 +288,7 @@ void RenderWidgetHostViewQt::UpdateCursor(const WebCursor&)
 
 void RenderWidgetHostViewQt::SetIsLoading(bool)
 {
-    QT_NOT_YET_IMPLEMENTED
-    // Give visual feedback for loading process.
+    // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
 void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType, bool)
@@ -439,7 +431,8 @@ void RenderWidgetHostViewQt::SetScrollOffsetPinning(bool, bool) { }
 
 void RenderWidgetHostViewQt::OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&)
 {
-    QT_NOT_YET_IMPLEMENTED
+    // We are not using accessibility features at this point.
+    QT_NOT_USED
 }
 
 void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
