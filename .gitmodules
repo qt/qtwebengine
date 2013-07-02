@@ -1,6 +1,6 @@
 [submodule "build/ninja"]
 	path = build/ninja
-	url = git://github.com/martine/ninja.git
+	url = https://github.com/martine/ninja.git
 [submodule "chromium"]
 	path = chromium
 	url = https://chromium.googlesource.com/chromium/src.git
