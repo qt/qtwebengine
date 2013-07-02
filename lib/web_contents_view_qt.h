@@ -87,11 +87,11 @@ public:
 
     virtual void SetOverscrollControllerEnabled(bool enabled) { QT_NOT_YET_IMPLEMENTED }
 
-    virtual gfx::NativeView GetNativeView() const {  QT_NOT_YET_IMPLEMENTED return 0; }
+    virtual gfx::NativeView GetNativeView() const {  QT_NOT_USED return 0; }
 
-    virtual gfx::NativeView GetContentNativeView() const { QT_NOT_YET_IMPLEMENTED return 0; }
+    virtual gfx::NativeView GetContentNativeView() const { QT_NOT_USED return 0; }
 
-    virtual gfx::NativeWindow GetTopLevelNativeWindow() const { QT_NOT_YET_IMPLEMENTED return 0; }
+    virtual gfx::NativeWindow GetTopLevelNativeWindow() const { QT_NOT_USED return 0; }
 
     virtual void GetContainerBounds(gfx::Rect* out) const;
 
