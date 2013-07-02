@@ -99,13 +99,13 @@ public:
 
     virtual void SizeContents(const gfx::Size& size) { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void Focus() { QT_NOT_YET_IMPLEMENTED }
+    virtual void Focus();
 
-    virtual void SetInitialFocus() { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetInitialFocus();
 
-    virtual void StoreFocus() { QT_NOT_YET_IMPLEMENTED }
+    virtual void StoreFocus() { QT_NOT_USED }
 
-    virtual void RestoreFocus() { QT_NOT_YET_IMPLEMENTED }
+    virtual void RestoreFocus() { QT_NOT_USED }
 
     virtual WebDropData* GetDropData() const { QT_NOT_YET_IMPLEMENTED return 0; }
 
@@ -123,6 +123,7 @@ public:
 
 private:
     WebContentsViewQtClient* m_client;
+    RenderWidgetHostViewQtDelegate* m_viewDelegate;
 };
 
 #endif

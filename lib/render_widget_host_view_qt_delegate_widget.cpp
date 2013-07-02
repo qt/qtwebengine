@@ -63,6 +63,16 @@ QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
     return QRectF(x(), y(), width(), height());
 }
 
+void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
+{
+    setFocus();
+}
+
+bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
+{
+    return hasFocus();
+}
+
 void RenderWidgetHostViewQtDelegateWidget::show()
 {
     QWidget::show();
@@ -72,7 +82,6 @@ void RenderWidgetHostViewQtDelegateWidget::hide()
 {
     QWidget::hide();
 }
-
 
 bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
 {

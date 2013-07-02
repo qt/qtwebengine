@@ -54,7 +54,6 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     , RenderWidgetHostViewQtDelegate(view)
     , m_backingStore(0)
 {
-    setFocus(true);
     setAcceptedMouseButtons(Qt::AllButtons);
 }
 
@@ -62,6 +61,16 @@ QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
 {
     QPointF pos = mapToScene(QPointF(0,0));
     return QRectF(pos.x(), pos.y(), width(), height());
+}
+
+void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
+{
+    setFocus(true);
+}
+
+bool RenderWidgetHostViewQtDelegateQuick::hasKeyboardFocus()
+{
+    return hasFocus();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::show()

@@ -43,6 +43,7 @@
 
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
+#include "render_widget_host_view_qt_delegate.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
@@ -57,8 +58,8 @@ WebContentsViewQtClient::WebContentsViewQtClient()
 content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    RenderWidgetHostViewQtDelegate *viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate(view);
-    view->SetDelegate(viewDelegate);
+    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate(view);
+    view->SetDelegate(m_viewDelegate);
 
     return view;
 }
@@ -74,4 +75,14 @@ void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
     content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
     if (rwhv)
       *out = rwhv->GetViewBounds();
+}
+
+void WebContentsViewQt::Focus()
+{
+    m_viewDelegate->setKeyboardFocus();
+}
+
+void WebContentsViewQt::SetInitialFocus()
+{
+    Focus();
 }
