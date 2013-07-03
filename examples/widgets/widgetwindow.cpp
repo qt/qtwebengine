@@ -50,10 +50,6 @@ WidgetWindow::WidgetWindow()
 : m_webView(new QWebContentsView)
 , addressLineEdit(0)
 {
-    // Use oxygen as a fallback.
-    if (QIcon::themeName().isEmpty())
-      QIcon::setThemeName("oxygen");
-
     setGeometry(0, 0, 800, 600);
 
     QVBoxLayout* layout = new QVBoxLayout;
@@ -64,15 +60,15 @@ WidgetWindow::WidgetWindow()
     addressBar->setSpacing(margin); // Bigger buttons, less space between them
 
     backButton = new QToolButton;
-    backButton->setIcon(QIcon::fromTheme("go-previous"));
+    backButton->setIcon(QIcon(":/icons/go-previous.png"));
     addressBar->addWidget(backButton);
 
     forwardButton = new QToolButton;
-    forwardButton->setIcon(QIcon::fromTheme("go-next"));
+    forwardButton->setIcon(QIcon(":/icons/go-next.png"));
     addressBar->addWidget(forwardButton);
 
     reloadButton = new QToolButton;
-    reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
+    reloadButton->setIcon(QIcon::fromTheme(":/icons/view-refresh.png"));
     addressBar->addWidget(reloadButton);
 
     addressLineEdit =  new QLineEdit;
@@ -111,7 +107,7 @@ void WidgetWindow::setAddressBarUrl(const QUrl& url)
 
 void WidgetWindow::loadStarted()
 {
-    reloadButton->setIcon(QIcon::fromTheme("process-stop"));
+    reloadButton->setIcon(QIcon(":/icons/process-stop.png"));
 }
 
 void WidgetWindow::loadFinished(bool success)
@@ -119,5 +115,5 @@ void WidgetWindow::loadFinished(bool success)
     Q_UNUSED(success);
     forwardButton->setEnabled(m_webView->canGoForward());
     backButton->setEnabled(m_webView->canGoBack());
-    reloadButton->setIcon(QIcon::fromTheme("view-refresh"));
+    reloadButton->setIcon(QIcon(":/icons/view-refresh.png"));
 }
