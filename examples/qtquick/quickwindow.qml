@@ -57,22 +57,19 @@ ApplicationWindow {
 
             ToolButton {
                 id: backButton
-                iconName: "go-previous"
-                iconSource: ":/icons/go-previous.png"
+                iconSource: "icons/go-previous.png"
                 onClicked: webContentsView.goBack()
                 enabled: webContentsView.canGoBack
             }
             ToolButton {
                 id: forwardButton
-                iconName: "go-next"
-                iconSource: ":/icons/go-next.png"
+                iconSource: "icons/go-next.png"
                 onClicked: webContentsView.goForward()
                 enabled: webContentsView.canGoForward
             }
             ToolButton {
                 id: reloadButton
-                iconName: webContentsView.loading ? "process-stop" : "view-refresh"
-                iconSource: webContentsView.loading ? ":/icons/process-stop.png" : ":/icons/view-refresh.png"
+                iconSource: webContentsView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
                 onClicked: webContentsView.reload()
             }
             TextField {

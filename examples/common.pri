@@ -6,6 +6,8 @@ else:LIBPATH = $$getOutDir()/$$getConfigDir()/lib
 
 HEADERS += common/util.h
 
+RESOURCES += $$absolute_path(common/common_resources.qrc)
+
 LIBS += -L$$LIBPATH -lQt5WebEngine
 QMAKE_RPATHDIR += $$LIBPATH
 
