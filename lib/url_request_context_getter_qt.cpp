@@ -59,6 +59,8 @@
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
+#include "net/url_request/data_protocol_handler.h"
+#include "net/url_request/file_protocol_handler.h"
 
 #include "network_delegate_qt.h"
 
@@ -148,6 +150,11 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_storage->set_http_transaction_factory(main_cache);
 
         // FIXME: add protocol handling
+
+        m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
+        m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
+        m_jobFactory->SetProtocolHandler(chrome::kFileScheme, new net::FileProtocolHandler());
+        m_urlRequestContext->set_job_factory(m_jobFactory.get());
     }
 
     return m_urlRequestContext.get();

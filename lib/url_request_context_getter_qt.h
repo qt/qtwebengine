@@ -47,6 +47,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "net/url_request/url_request_context_storage.h"
+#include "net/url_request/url_request_job_factory_impl.h"
+#include "content/public/common/url_constants.h"
 
 namespace net {
 class HostResolver;
@@ -73,6 +75,7 @@ private:
     scoped_ptr<net::URLRequestContext> m_urlRequestContext;
     scoped_ptr<net::NetworkDelegate> m_networkDelegate;
     scoped_ptr<net::URLRequestContextStorage> m_storage;
+    scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
 };
 
 #endif // URL_REQUEST_CONTEXT_GETTER_QT_H
