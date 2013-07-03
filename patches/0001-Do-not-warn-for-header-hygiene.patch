@@ -1,0 +1,29 @@
+From 5f3a19c6f12690d882f1136af4338531c04149b3 Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno.albisser@digia.com>
+Date: Wed, 3 Jul 2013 11:16:56 +0200
+Subject: [PATCH] Do not warn for header-hygiene.
+
+QtDeclarative is consciously leaking the namespace QtQml.
+Therefore clang would warn about header hygiene.
+Unfortunately this cannot be fixed in QtDeclarative,
+unless we accept not to be able to use QtQuick1 and QtQuick2
+in the same application.
+---
+ build/common.gypi | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build/common.gypi b/build/common.gypi
+index 0e57abb..e81104b 100644
+--- a/build/common.gypi
++++ b/build/common.gypi
+@@ -3850,6 +3850,7 @@
+                 '-Wno-newline-eof',
+                 '-Wno-unused-value',
+                 '-Wno-unused-variable',
++                '-Wno-header-hygiene',
+               ],
+             }],
+             ['clang==1 and clang_use_chrome_plugins==1', {
+-- 
+1.7.12.4 (Apple Git-37)
+
