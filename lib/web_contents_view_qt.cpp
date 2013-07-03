@@ -48,7 +48,14 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
 namespace content {
-WebContentsViewPort* CreateWebContentsView(WebContentsImpl* web_contents, WebContentsViewDelegate* delegate, RenderViewHostDelegateView** render_view_host_delegate_view) { return 0; }
+WebContentsViewPort* CreateWebContentsView(WebContentsImpl* web_contents,
+                                           WebContentsViewDelegate* delegate,
+                                           RenderViewHostDelegateView** render_view_host_delegate_view)
+{
+    WebContentsViewQt* rv = new WebContentsViewQt(web_contents, delegate);
+    *render_view_host_delegate_view = rv;
+    return rv;
+}
 }
 
 WebContentsViewQtClient::WebContentsViewQtClient()
