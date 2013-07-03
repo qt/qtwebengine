@@ -3,6 +3,7 @@
 # our gyp_generator.prf feature to the CONFIG variable since it is processed backwards
 CONFIG = gyp_generator $$CONFIG
 GYPDEPENDENCIES += ../shared/shared.gyp:qtwebengine_shared
+GYPINCLUDES += ../qtwebengine.gypi
 
 TEMPLATE = lib
 
