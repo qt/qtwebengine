@@ -2,6 +2,9 @@
   'target_defaults': {
     # patterns used to exclude chromium files from the build when we have a drop-in replacement
     'sources/': [
+      ['exclude', 'ui/base/resource/resource_bundle_gtk.cc$'],
+      ['exclude', 'ui/base/resource/resource_bundle_mac.mm$'],
+      ['exclude', 'ui/base/resource/resource_bundle_win.cc$'],
       ['exclude', 'browser/web_contents/web_contents_view_gtk\\.(cc|h)$'],
       ['exclude', 'browser/web_contents/web_contents_view_mac\\.(mm|h)$'],
       ['exclude', 'browser/web_contents/web_contents_view_win\\.(cc|h)$'],

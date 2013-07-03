@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="data">
+    <file alias="resources.pak">/Users/zeno/work/qtwebengine/out/Release/gen/net/net_resources.pak</file>
+</qresource>
+</RCC>
