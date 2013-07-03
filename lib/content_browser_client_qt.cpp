@@ -45,6 +45,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/url_constants.h"
+#include "grit/net_resources.h"
+#include "net/base/net_module.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #include "browser_context_qt.h"
 #include "web_contents_view_qt.h"
@@ -86,7 +91,7 @@ public:
     {
         // FIXME: This could be needed if we want to run Chromium tests.
         // We could run a QEventLoop here.
-        Q_UNREACHABLE();
+        QT_NOT_YET_IMPLEMENTED
     }
 
     virtual void Quit()
@@ -149,6 +154,14 @@ base::MessagePump* messagePumpFactory()
 
 } // namespace
 
+static base::StringPiece PlatformResourceProvider(int key) {
+    if (key == IDR_DIR_HEADER_HTML) {
+        base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
+        return html_data;
+    }
+    return base::StringPiece();
+}
+
 class BrowserMainPartsQt : public content::BrowserMainParts
 {
 public:
@@ -158,6 +171,8 @@ public:
 
     void PreMainMessageLoopStart() Q_DECL_OVERRIDE
     {
+        net::NetModule::SetResourceProvider(PlatformResourceProvider);
+        ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
         base::MessageLoop::InitMessagePumpForUIFactory(::messagePumpFactory);
     }
 
@@ -216,6 +231,11 @@ content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const 
 {
     m_browserMainParts = new BrowserMainPartsQt;
     return m_browserMainParts;
+}
+
+void ContentBrowserClientQt::RenderProcessHostCreated(content::RenderProcessHost* host)
+{
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), chrome::kFileScheme);
 }
 
 

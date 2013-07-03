@@ -52,6 +52,7 @@ class URLRequestContextGetter;
 namespace content {
 class BrowserContext;
 class BrowserMainParts;
+class RenderProcessHost;
 class RenderViewHostDelegateView;
 class WebContentsViewPort;
 class WebContents;
@@ -69,6 +70,7 @@ public:
     static ContentBrowserClientQt* Get();
     virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
     virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
+    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
 
     BrowserContextQt* browser_context();
 
