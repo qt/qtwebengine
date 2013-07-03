@@ -40,11 +40,13 @@ GYPI_CONTENTS =  "{" \
                  "  'targets': [" \
                  "  {" \
                  "    'target_name': '$$TARGET'," \
-                 "    'type': '$$TARGET_TYPE'," \
-                 "    'includes': [" \
-                 "      '../qtwebengine.gypi'," \
-                 "    ]," \
-                 "    'ldflags': ["
+                 "    'type': '$$TARGET_TYPE',"
+!isEmpty(GYPINCLUDES) {
+GYPI_CONTENTS += "    'includes': ["
+for (incl, GYPINCLUDES): GYPI_CONTENTS += "      '$$incl',"
+GYPI_CONTENTS += "    ],"
+}
+GYPI_CONTENTS += "    'ldflags': ["
 for (lib, LIBS): GYPI_CONTENTS += "      '$$lib',"
 !isEmpty(QMAKE_RPATHDIR): GYPI_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
 
