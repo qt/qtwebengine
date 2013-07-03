@@ -36,100 +36,100 @@ TARGET_TYPE = $$toGypTargetType()
 MOCABLE_HEADERS = $$findMocables($$HEADERS)
 INCLUDED_MOC_FILES = $$findIncludedMocFiles($$SOURCES)
 
-GYPI_CONTENTS =  "{" \
-                 "  'targets': [" \
-                 "  {" \
-                 "    'target_name': '$$TARGET'," \
-                 "    'type': '$$TARGET_TYPE',"
+GYP_CONTENTS =  "{" \
+                "  'targets': [" \
+                "  {" \
+                "    'target_name': '$$TARGET'," \
+                "    'type': '$$TARGET_TYPE',"
 !isEmpty(GYPINCLUDES) {
-GYPI_CONTENTS += "    'includes': ["
-for (incl, GYPINCLUDES): GYPI_CONTENTS += "      '$$incl',"
-GYPI_CONTENTS += "    ],"
+GYP_CONTENTS += "    'includes': ["
+for (incl, GYPINCLUDES): GYP_CONTENTS += "      '$$incl',"
+GYP_CONTENTS += "    ],"
 }
-GYPI_CONTENTS += "    'ldflags': ["
-for (lib, LIBS): GYPI_CONTENTS += "      '$$lib',"
-!isEmpty(QMAKE_RPATHDIR): GYPI_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
+GYP_CONTENTS += "    'ldflags': ["
+for (lib, LIBS): GYP_CONTENTS += "      '$$lib',"
+!isEmpty(QMAKE_RPATHDIR): GYP_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
 
-GYPI_CONTENTS += "    ],"
+GYP_CONTENTS += "    ],"
 
 macx {
-    GYPI_CONTENTS += "    'link_settings': {" \
-                     "      'libraries': ["
+    GYP_CONTENTS += "    'link_settings': {" \
+                    "      'libraries': ["
     FRAMEWORKS = $$find(LIBS, "Q*")
     FRAMEWORKS = $$unique(FRAMEWORKS)
     FRAMEWORKS ~= s/-.*/
     FRAMEWORKS -= "-framework"
     for (framework, FRAMEWORKS): {
         framework_name = $$join(framework, "", "", ".framework")
-        GYPI_CONTENTS += "        '$$framework_name',"
+        GYP_CONTENTS += "        '$$framework_name',"
     }
 
     FRAMEWORK_PATHS = $$find(LIBS, "-F*")
     FRAMEWORK_PATHS = $$unique(FRAMEWORK_PATHS)
     FRAMEWORK_PATHS -= "-framework"
-    for (framework_path, FRAMEWORK_PATHS): GYPI_CONTENTS += "        '$$framework_path',"
+    for (framework_path, FRAMEWORK_PATHS): GYP_CONTENTS += "        '$$framework_path',"
 
-    GYPI_CONTENTS += "      ]," \
+    GYP_CONTENTS += "      ]," \
                  "    },"
 }
 
 !isEmpty(GYPDEPENDENCIES) {
-  GYPI_CONTENTS += "    'dependencies': ["
-  for (dep, GYPDEPENDENCIES): GYPI_CONTENTS += "      '$$dep',"
-  GYPI_CONTENTS += "    ],"
+  GYP_CONTENTS += "    'dependencies': ["
+  for (dep, GYPDEPENDENCIES): GYP_CONTENTS += "      '$$dep',"
+  GYP_CONTENTS += "    ],"
 }
 !isEmpty(DEFINES) {
-  GYPI_CONTENTS += "    'defines': ["
-  for (define, DEFINES): GYPI_CONTENTS += "      '$$define',"
-  GYPI_CONTENTS += "    ],"
+  GYP_CONTENTS += "    'defines': ["
+  for (define, DEFINES): GYP_CONTENTS += "      '$$define',"
+  GYP_CONTENTS += "    ],"
 }
 !isEmpty(PER_CONFIG_DEFINES) {
-  GYPI_CONTENTS += "    'configurations': {"\
-                   "      'Release': {" \
-                   "        'defines': ["
-  for (define, PER_CONFIG_DEFINES): GYPI_CONTENTS += "          '$$replace(define,%config,Release)',"
-  GYPI_CONTENTS += "        ]," \
-                   "      }," \
-                   "      'Debug': {" \
-                   "        'defines': ["
-  for (define, PER_CONFIG_DEFINES): GYPI_CONTENTS += "          '$$replace(define,%config,Debug)',"
-  GYPI_CONTENTS += "        ]," \
-                   "      }," \
-                   "    },"
+  GYP_CONTENTS += "    'configurations': {"\
+                  "      'Release': {" \
+                  "        'defines': ["
+  for (define, PER_CONFIG_DEFINES): GYP_CONTENTS += "          '$$replace(define,%config,Release)',"
+  GYP_CONTENTS += "        ]," \
+                  "      }," \
+                  "      'Debug': {" \
+                  "        'defines': ["
+  for (define, PER_CONFIG_DEFINES): GYP_CONTENTS += "          '$$replace(define,%config,Debug)',"
+  GYP_CONTENTS += "        ]," \
+                  "      }," \
+                  "    },"
 }
 
 # Source files to compile
-GYPI_CONTENTS += "    'sources': ["
-for (sourcefile, SOURCES): GYPI_CONTENTS += "      '$$sourcefile',"
-for (headerfile, HEADERS): GYPI_CONTENTS += "      '$$headerfile',"
+GYP_CONTENTS += "    'sources': ["
+for (sourcefile, SOURCES): GYP_CONTENTS += "      '$$sourcefile',"
+for (headerfile, HEADERS): GYP_CONTENTS += "      '$$headerfile',"
 
 # Add moc output files to compile that aren't included at the end of any other source
 MOC_OUT_PATH = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}
 for (mocable_header, MOCABLE_HEADERS) {
     !contains(INCLUDED_MOC_FILES, $$mocOutput($$mocable_header)) {
-        GYPI_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
+        GYP_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
     }
 }
 
-GYPI_CONTENTS += "    ],"
+GYP_CONTENTS += "    ],"
 !isEmpty(INCLUDEPATH) {
-  GYPI_CONTENTS += "    'include_dirs': ["
-  for (path, INCLUDEPATH): GYPI_CONTENTS += "      '$$path',"
-  GYPI_CONTENTS += "    ],"
+  GYP_CONTENTS += "    'include_dirs': ["
+  for (path, INCLUDEPATH): GYP_CONTENTS += "      '$$path',"
+  GYP_CONTENTS += "    ],"
 }
 
 # Generate the actions for moc
 !isEmpty(MOCABLE_HEADERS) {
-    GYPI_CONTENTS += "    'actions': ["
-    for(header, MOCABLE_HEADERS): GYPI_CONTENTS += $$mocAction($$header)
-    GYPI_CONTENTS += "    ],"
+    GYP_CONTENTS += "    'actions': ["
+    for(header, MOCABLE_HEADERS): GYP_CONTENTS += $$mocAction($$header)
+    GYP_CONTENTS += "    ],"
 }
 
-GYPI_CONTENTS += "  }," \
-                 "  ]," \
-                 "}"
+GYP_CONTENTS += "  }," \
+                "  ]," \
+                "}"
 
-write_file($$GYPI_FILE, GYPI_CONTENTS)
+write_file($$GYPI_FILE, GYP_CONTENTS)
 
 # Overwriting the generated gyp file seems like a good reason to re-gyp
 unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$QTWEBENGINE_ROOT/build/build.pro")
