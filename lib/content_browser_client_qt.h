@@ -43,6 +43,7 @@
 #define CONTENT_BROWSER_CLIENT_QT
 
 #include "content/public/browser/content_browser_client.h"
+#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
 namespace net {
 class URLRequestContextGetter;
@@ -64,8 +65,7 @@ class BrowserMainPartsQt;
 class ContentBrowserClientQt : public content::ContentBrowserClient {
 
 public:
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) /*Q_DECL_OVERRIDE*/;
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams& parameters) /*Q_DECL_OVERRIDE*/;
+    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams& parameters) Q_DECL_OVERRIDE;
 
 
     BrowserContextQt* browser_context();
