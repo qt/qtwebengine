@@ -67,7 +67,7 @@ class WebContentsViewQt
     , public content::RenderViewHostDelegateView
 {
 public:
-    WebContentsViewQt(content::WebContents*, content::WebContentsViewDelegate*)
+    WebContentsViewQt(content::WebContents* web_contents)
         : m_client(0)
     { }
 

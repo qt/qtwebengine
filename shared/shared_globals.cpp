@@ -64,6 +64,12 @@ void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* resul
 }
 
 namespace content {
+WebContentsViewPort* CreateWebContentsView(WebContentsImpl*,
+                                           WebContentsViewDelegate*,
+                                           RenderViewHostDelegateView**)
+{
+    return 0;
+}
 
 RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
     // WebContentsViewQt should take care of this directly.
