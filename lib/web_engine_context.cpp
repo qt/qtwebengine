@@ -230,6 +230,7 @@ WebEngineContext::WebEngineContext()
             argv[i] = args.at(i).toLatin1().constData();
         argv[i++] = subProcessPathOption.constData();
         argv[i++] = "--no-sandbox";
+        argv[i++] = "--disable-plugins";
         argv[i] = userAgentParameter.constData();
 
         CommandLine::Init(argc, argv);
