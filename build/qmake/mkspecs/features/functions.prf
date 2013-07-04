@@ -42,9 +42,25 @@ defineReplace(mocOutput) {
   return($$out)
 }
 
+defineReplace(which) {
+  out = $$1
+  # FIXME: figure out what to do about windows...
+  unix {
+    command = $$split(out, " ")
+    executable = $$first(command)
+    out = $$system("which $$executable 2>/dev/null")
+    isEmpty(out) {
+      message($$executable not found)
+      out = $$executable
+    }
+    for(arg, command): !equals(arg, $$executable): out += $$arg
+  }
+  return($$out)
+}
+
 defineReplace(findNinja) {
   !isEmpty(CACHED_NINJA_EXECUTABLE):exists($$CACHED_NINJA_EXECUTABLE): return($$CACHED_NINJA_EXECUTABLE)
-  out = $$system("which ninja 2>/dev/null")
+  out = $$which(ninja)
   # Try to be smart about it if we know where the chromium sources are located
   !exists($$out): out = $$absolute_path("$$QTWEBENGINE_ROOT/build/ninja/ninja")
   cache(CACHED_NINJA_EXECUTABLE, set, out)
