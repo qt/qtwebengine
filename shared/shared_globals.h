@@ -44,6 +44,13 @@
 
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 
+namespace content {
+class WebContentsImpl;
+class WebContentsViewPort;
+class WebContentsViewDelegate;
+class RenderViewHostDelegateView;
+} // namespace content
+
 class QWindow;
 
 void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results);
