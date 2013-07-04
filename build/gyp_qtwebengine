@@ -63,6 +63,9 @@ def additional_include_files(args=[]):
   # Used for additional build tweaks such as file exclusions
   AddInclude(os.path.join(qtwebengine_src, 'build', 'qtwebengine_extras.gypi'))
 
+  # Common stuff we generate and extract from qmake
+  AddInclude(os.path.join(qtwebengine_src, 'build', 'qmake_extras.gypi'))
+
   # Optionally add supplemental .gypi files if present.
   supplements = glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
   for supplement in supplements:
