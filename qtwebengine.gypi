@@ -11,8 +11,6 @@
         }],
         ],
   },
-# Needed to get access to content::GetContentClient()
-    'defines': ['CONTENT_IMPLEMENTATION'],
     'dependencies': [
       '<(chromium_src_dir)/content/content.gyp:content',
       '<(chromium_src_dir)/content/content.gyp:content_app',
