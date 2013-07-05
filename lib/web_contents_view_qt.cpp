@@ -51,7 +51,7 @@ WebContentsViewQtClient::WebContentsViewQtClient()
 // This has to be the first thing we do.
     : context(WebEngineContext::current())
 {
-    content::BrowserContext* browser_context = static_cast<ContentBrowserClientQt*>(content::GetContentClient()->browser())->browser_context();
+    content::BrowserContext* browser_context = ContentBrowserClientQt::Get()->browser_context();
     webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
 }
 

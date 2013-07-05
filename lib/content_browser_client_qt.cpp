@@ -47,6 +47,12 @@
 #include "browser_context_qt.h"
 #include "web_contents_view_qt.h"
 
+namespace {
+
+ContentBrowserClientQt* gBrowserClient = 0; // Owned by ContentMainDelegateQt.
+
+} // namespace
+
 class BrowserMainPartsQt : public content::BrowserMainParts
 {
 public:
@@ -99,6 +105,23 @@ content::WebContentsViewPort* ContentBrowserClientQt::OverrideCreateWebContentsV
     WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
     *render_view_host_delegate_view = rv;
     return rv;
+}
+
+ContentBrowserClientQt::ContentBrowserClientQt()
+    : m_browserMainParts(0)
+{
+    Q_ASSERT(!gBrowserClient);
+    gBrowserClient = this;
+}
+
+ContentBrowserClientQt::~ContentBrowserClientQt()
+{
+    gBrowserClient = 0;
+}
+
+ContentBrowserClientQt *ContentBrowserClientQt::Get()
+{
+    return gBrowserClient;
 }
 
 content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams &parameters)

@@ -42,19 +42,6 @@ index bed5ff2..992e0d0 100644
   public:
    virtual ~ContentMainRunner() {}
  
-diff --git a/content/public/common/content_client.h b/content/public/common/content_client.h
-index 4c1d110..ddf6a32 100644
---- a/content/public/common/content_client.h
-+++ b/content/public/common/content_client.h
-@@ -63,7 +63,7 @@ CONTENT_EXPORT void SetContentClient(ContentClient* client);
- 
- #if defined(CONTENT_IMPLEMENTATION)
- // Content's embedder API should only be used by content.
--ContentClient* GetContentClient();
-+CONTENT_EXPORT ContentClient* GetContentClient();
- #endif
- 
- // Used for tests to override the relevant embedder interfaces. Each method
 -- 
 1.8.3
 
