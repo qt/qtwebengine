@@ -92,15 +92,6 @@ static QByteArray subProcessPath() {
     return processPath;
 }
 
-static void initializeBlinkPaths()
-{
-    static bool initialized = false;
-    if (initialized)
-        return;
-
-    PathService::Override(content::CHILD_PROCESS_EXE, base::FilePath(qStringToStringType(QString(subProcessPath()))));
-}
-
 // Return a timeout suitable for the glib loop, -1 to block forever,
 // 0 to return right away, or a timeout in milliseconds from now.
 int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
@@ -196,7 +187,15 @@ base::MessagePump* messagePumpFactory()
 class ContentMainDelegateQt : public content::ContentMainDelegate
 {
 public:
-    content::ContentBrowserClient* CreateContentBrowserClient()
+
+    // This is where the embedder puts all of its startup code that needs to run
+    // before the sandbox is engaged.
+    void PreSandboxStartup() Q_DECL_OVERRIDE
+    {
+        PathService::Override(base::FILE_EXE, base::FilePath(qStringToStringType(subProcessPath())));
+    }
+
+    content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE
     {
         m_browserClient.reset(new ContentBrowserClientQt);
         return m_browserClient.get();
@@ -214,26 +213,22 @@ WebEngineContext::WebEngineContext()
     sContext = this;
 
     {
-        QByteArray subProcessPathOption("--browser-subprocess-path=");
-        subProcessPathOption.append(subProcessPath());
-
         std::string ua = webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1");
-
         QByteArray userAgentParameter("--user-agent=");
         userAgentParameter.append(QString::fromStdString(ua).toUtf8());
 
-        const QStringList args = QCoreApplication::arguments();
-        const int argc = args.size() + 3;
-        const char* argv[argc];
-        int i = 0;
-        for(; i < args.size(); ++i)
-            argv[i] = args.at(i).toLatin1().constData();
-        argv[i++] = subProcessPathOption.constData();
-        argv[i++] = "--no-sandbox";
-        argv[i++] = "--disable-plugins";
-        argv[i] = userAgentParameter.constData();
+        QList<QByteArray> args;
+        Q_FOREACH(const QString& arg, QCoreApplication::arguments())
+            args << arg.toUtf8();
+        args << userAgentParameter;
+        args << QByteArrayLiteral("--no-sandbox");
+        args << QByteArrayLiteral("--disable-plugins");
 
-        CommandLine::Init(argc, argv);
+        const char* argv[args.size()];
+        for(int i = 0; i < args.size(); ++i)
+            argv[i] = args[i].constData();
+
+        CommandLine::Init(args.size(), argv);
     }
 
     // This needs to be set before the MessageLoop is created by BrowserMainRunner.
@@ -244,8 +239,6 @@ WebEngineContext::WebEngineContext()
         runner = content::ContentMainRunner::Create();
         runner->Initialize(0, 0, new ContentMainDelegateQt);
     }
-
-    initializeBlinkPaths();
 
     static content::BrowserMainRunner *browserRunner = 0;
     if (!browserRunner) {
