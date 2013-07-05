@@ -61,7 +61,7 @@ git submodule update --recursive
 cd $CHROMIUM_SRC_DIR
 echo "Entering $PWD"
 
-git am $PATCH_DIR/0001-My-local-fixes.patch
+git am $PATCH_DIR/0001-Export-ContentMainRunner.patch
 git am $PATCH_DIR/0002-Add-WebEngineContext-to-RunLoop-s-friends.patch
 git am $PATCH_DIR/0001-Mac-Use-libc-instead-of-stdlibc.patch
 git am $PATCH_DIR/0002-Clang-libc-does-not-support-incomplete-types-in-temp.patch
