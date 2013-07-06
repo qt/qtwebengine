@@ -68,6 +68,7 @@ macx {
     FRAMEWORK_PATHS = $$unique(FRAMEWORK_PATHS)
     FRAMEWORK_PATHS -= "-framework"
     for (framework_path, FRAMEWORK_PATHS): GYP_CONTENTS += "        '$$framework_path',"
+    !isEmpty(QMAKE_FRAMEWORKPATH): GYP_CONTENTS += "        '-F$$QMAKE_FRAMEWORKPATH',"
 
     GYP_CONTENTS += "      ]," \
                  "    },"
