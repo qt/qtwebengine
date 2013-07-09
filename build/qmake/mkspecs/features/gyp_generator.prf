@@ -49,9 +49,18 @@ GYP_CONTENTS += "    ],"
 GYP_CONTENTS += "    'ldflags': ["
 for (lib, LIBS): GYP_CONTENTS += "      '$$lib',"
 !isEmpty(QMAKE_RPATHDIR): GYP_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
-
 GYP_CONTENTS += "    ],"
 
+!isEmpty(QMAKE_CFLAGS) {
+    GYP_CONTENTS += "    'cflags': ["
+    for(flag, QMAKE_CFLAGS): GYP_CONTENTS += "      '$$flag',"
+    GYP_CONTENTS += "    ],"
+}
+!isEmpty(QMAKE_CXXFLAGS) {
+    GYP_CONTENTS += "    'cflags_cc': ["
+    for(flag, QMAKE_CXXFLAGS): GYP_CONTENTS += "      '$$flag',"
+    GYP_CONTENTS += "    ],"
+}
 macx {
     GYP_CONTENTS += "    'link_settings': {" \
                     "      'libraries': ["
