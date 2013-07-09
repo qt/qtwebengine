@@ -151,10 +151,8 @@ base::MessagePump* messagePumpFactory()
 class BrowserMainPartsQt : public content::BrowserMainParts
 {
 public:
-    BrowserMainPartsQt(const content::MainFunctionParams& parameters)
+    BrowserMainPartsQt()
         : content::BrowserMainParts()
-        , m_parameters(parameters)
-        , m_runMessageLoop(true)
     { }
 
     void PreMainMessageLoopStart() Q_DECL_OVERRIDE
@@ -165,16 +163,6 @@ public:
     void PreMainMessageLoopRun() Q_DECL_OVERRIDE
     {
         m_browserContext.reset(new BrowserContextQt());
-
-        if (m_parameters.ui_task) {
-            m_parameters.ui_task->Run();
-            delete m_parameters.ui_task;
-            m_runMessageLoop = false;
-        }
-    }
-
-    bool MainMessageLoopRun(int* result_code)  {
-        return !m_runMessageLoop;
     }
 
     void PostMainMessageLoopRun()
@@ -194,10 +182,6 @@ public:
 
 private:
     scoped_ptr<BrowserContextQt> m_browserContext;
-
-    // For running content_browsertests.
-    const content::MainFunctionParams& m_parameters;
-    bool m_runMessageLoop;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
 };
@@ -227,9 +211,9 @@ ContentBrowserClientQt *ContentBrowserClientQt::Get()
     return gBrowserClient;
 }
 
-content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams &parameters)
+content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams&)
 {
-    m_browserMainParts = new BrowserMainPartsQt(parameters);
+    m_browserMainParts = new BrowserMainPartsQt;
     return m_browserMainParts;
 }
 
