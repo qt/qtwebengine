@@ -1,0 +1,7 @@
+Code-Review+2: Simon Hausmann <simon.hausmann@digia.com>
+Sanity-Review+1: Qt Sanity Bot <qt_sanitybot@qt-project.org>
+Submitted-by: Simon Hausmann <simon.hausmann@digia.com>
+Submitted-at: Tue, 09 Jul 2013 13:54:01 +0200
+Reviewed-on: https://codereview.qt-project.org/60741
+Project: qt-labs/qtwebengine
+Branch: refs/heads/master
