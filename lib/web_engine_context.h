@@ -49,6 +49,13 @@ namespace base {
 class RunLoop;
 }
 
+namespace content {
+class BrowserMainRunner;
+class ContentMainRunner;
+}
+
+class ContentMainDelegateQt;
+
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static scoped_refptr<WebEngineContext> current();
@@ -59,6 +66,9 @@ private:
     ~WebEngineContext();
 
     scoped_ptr<base::RunLoop> m_runLoop;
+    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
+    scoped_ptr<content::ContentMainRunner> m_contentRunner;
+    scoped_ptr<content::BrowserMainRunner> m_browserRunner;
 };
 
 #endif
