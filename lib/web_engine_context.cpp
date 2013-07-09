@@ -91,6 +91,8 @@ static QByteArray subProcessPath() {
     return processPath;
 }
 
+} // namespace
+
 class ContentMainDelegateQt : public content::ContentMainDelegate
 {
 public:
@@ -112,9 +114,10 @@ private:
     scoped_ptr<ContentBrowserClientQt> m_browserClient;
 };
 
-} // namespace
-
 WebEngineContext::WebEngineContext()
+    : m_mainDelegate(new ContentMainDelegateQt)
+    , m_contentRunner(content::ContentMainRunner::Create())
+    , m_browserRunner(content::BrowserMainRunner::Create())
 {
     Q_ASSERT(!sContext);
     sContext = this;
@@ -136,18 +139,8 @@ WebEngineContext::WebEngineContext()
 
     CommandLine::Init(args.size(), argv);
 
-    static content::ContentMainRunner *runner = 0;
-    if (!runner) {
-        runner = content::ContentMainRunner::Create();
-        runner->Initialize(0, 0, new ContentMainDelegateQt);
-    }
-
-    static content::BrowserMainRunner *browserRunner = 0;
-    if (!browserRunner) {
-        browserRunner = content::BrowserMainRunner::Create();
-        browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
-    }
-
+    m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
+    m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
@@ -160,6 +153,9 @@ WebEngineContext::~WebEngineContext()
 
     Q_ASSERT(sContext == this);
     sContext = 0;
+
+    m_browserRunner.reset();
+    m_contentRunner.reset();
 }
 
 scoped_refptr<WebEngineContext> WebEngineContext::current()
