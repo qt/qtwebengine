@@ -45,7 +45,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
@@ -92,98 +91,6 @@ static QByteArray subProcessPath() {
     return processPath;
 }
 
-// Return a timeout suitable for the glib loop, -1 to block forever,
-// 0 to return right away, or a timeout in milliseconds from now.
-int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
-  if (from.is_null())
-    return -1;
-
-  // Be careful here.  TimeDelta has a precision of microseconds, but we want a
-  // value in milliseconds.  If there are 5.5ms left, should the delay be 5 or
-  // 6?  It should be 6 to avoid executing delayed work too early.
-  int delay = static_cast<int>(
-      ceil((from - base::TimeTicks::Now()).InMillisecondsF()));
-
-  // If this value is negative, then we need to run delayed work soon.
-  return delay < 0 ? 0 : delay;
-}
-
-class MessagePumpForUIQt : public QObject,
-                           public base::MessagePump
-{
-public:
-    MessagePumpForUIQt()
-        // Usually this gets passed through Run, but since we have
-        // our own event loop, attach it explicitely ourselves.
-        : m_delegate(base::MessageLoopForUI::current())
-    {
-    }
-
-    virtual void Run(Delegate *delegate)
-    {
-        // FIXME: This could be needed if we want to run Chromium tests.
-        // We could run a QEventLoop here.
-        Q_ASSERT(false);
-    }
-
-    virtual void Quit()
-    {
-        Q_ASSERT(false);
-    }
-
-    virtual void ScheduleWork()
-    {
-        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
-    }
-
-    virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time)
-    {
-        startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
-    }
-
-protected:
-    virtual void customEvent(QEvent *ev)
-    {
-        if (handleScheduledWork())
-            QCoreApplication::postEvent(this, new QEvent(QEvent::User));
-    }
-
-    virtual void timerEvent(QTimerEvent *ev)
-    {
-        killTimer(ev->timerId());
-
-        base::TimeTicks next_delayed_work_time;
-        m_delegate->DoDelayedWork(&next_delayed_work_time);
-
-        if (!next_delayed_work_time.is_null())
-            startTimer(GetTimeIntervalMilliseconds(next_delayed_work_time));
-    }
-
-private:
-    bool handleScheduledWork() {
-        bool more_work_is_plausible = m_delegate->DoWork();
-
-        base::TimeTicks delayed_work_time;
-        more_work_is_plausible |= m_delegate->DoDelayedWork(&delayed_work_time);
-
-        if (more_work_is_plausible)
-            return true;
-
-        more_work_is_plausible |= m_delegate->DoIdleWork();
-        if (!more_work_is_plausible && !delayed_work_time.is_null())
-            startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
-
-        return more_work_is_plausible;
-    }
-
-    Delegate *m_delegate;
-};
-
-base::MessagePump* messagePumpFactory()
-{
-    return new MessagePumpForUIQt;
-}
-
 class ContentMainDelegateQt : public content::ContentMainDelegate
 {
 public:
@@ -205,34 +112,29 @@ private:
     scoped_ptr<ContentBrowserClientQt> m_browserClient;
 };
 
-}
+} // namespace
 
 WebEngineContext::WebEngineContext()
 {
     Q_ASSERT(!sContext);
     sContext = this;
 
-    {
-        std::string ua = webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1");
-        QByteArray userAgentParameter("--user-agent=");
-        userAgentParameter.append(QString::fromStdString(ua).toUtf8());
+    std::string ua = webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1");
+    QByteArray userAgentParameter("--user-agent=");
+    userAgentParameter.append(QString::fromStdString(ua).toUtf8());
 
-        QList<QByteArray> args;
-        Q_FOREACH (const QString& arg, QCoreApplication::arguments())
-            args << arg.toUtf8();
-        args << userAgentParameter;
-        args << QByteArrayLiteral("--no-sandbox");
-        args << QByteArrayLiteral("--disable-plugins");
+    QList<QByteArray> args;
+    Q_FOREACH (const QString& arg, QCoreApplication::arguments())
+        args << arg.toUtf8();
+    args << userAgentParameter;
+    args << QByteArrayLiteral("--no-sandbox");
+    args << QByteArrayLiteral("--disable-plugins");
 
-        const char* argv[args.size()];
-        for (int i = 0; i < args.size(); ++i)
-            argv[i] = args[i].constData();
+    const char* argv[args.size()];
+    for (int i = 0; i < args.size(); ++i)
+        argv[i] = args[i].constData();
 
-        CommandLine::Init(args.size(), argv);
-    }
-
-    // This needs to be set before the MessageLoop is created by BrowserMainRunner.
-    base::MessageLoop::InitMessagePumpForUIFactory(::messagePumpFactory);
+    CommandLine::Init(args.size(), argv);
 
     static content::ContentMainRunner *runner = 0;
     if (!runner) {
@@ -246,7 +148,6 @@ WebEngineContext::WebEngineContext()
         browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
     }
 
-    base::ThreadRestrictions::SetIOAllowed(true);
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
