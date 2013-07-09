@@ -41,15 +41,110 @@
 
 #include "content_browser_client_qt.h"
 
+#include "base/message_loop/message_loop.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
 #include "browser_context_qt.h"
 #include "web_contents_view_qt.h"
 
+#include <QCoreApplication>
+
 namespace {
 
 ContentBrowserClientQt* gBrowserClient = 0; // Owned by ContentMainDelegateQt.
+
+// Return a timeout suitable for the glib loop, -1 to block forever,
+// 0 to return right away, or a timeout in milliseconds from now.
+int GetTimeIntervalMilliseconds(const base::TimeTicks& from) {
+  if (from.is_null())
+    return -1;
+
+  // Be careful here.  TimeDelta has a precision of microseconds, but we want a
+  // value in milliseconds.  If there are 5.5ms left, should the delay be 5 or
+  // 6?  It should be 6 to avoid executing delayed work too early.
+  int delay = static_cast<int>(
+      ceil((from - base::TimeTicks::Now()).InMillisecondsF()));
+
+  // If this value is negative, then we need to run delayed work soon.
+  return delay < 0 ? 0 : delay;
+}
+
+class MessagePumpForUIQt : public QObject,
+                           public base::MessagePump
+{
+public:
+    MessagePumpForUIQt()
+        // Usually this gets passed through Run, but since we have
+        // our own event loop, attach it explicitely ourselves.
+        : m_delegate(base::MessageLoopForUI::current())
+    {
+    }
+
+    virtual void Run(Delegate *delegate)
+    {
+        // FIXME: This could be needed if we want to run Chromium tests.
+        // We could run a QEventLoop here.
+        Q_UNREACHABLE();
+    }
+
+    virtual void Quit()
+    {
+        Q_UNREACHABLE();
+    }
+
+    virtual void ScheduleWork()
+    {
+        QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+    }
+
+    virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time)
+    {
+        startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+    }
+
+protected:
+    virtual void customEvent(QEvent *ev)
+    {
+        if (handleScheduledWork())
+            QCoreApplication::postEvent(this, new QEvent(QEvent::User));
+    }
+
+    virtual void timerEvent(QTimerEvent *ev)
+    {
+        killTimer(ev->timerId());
+
+        base::TimeTicks next_delayed_work_time;
+        m_delegate->DoDelayedWork(&next_delayed_work_time);
+
+        if (!next_delayed_work_time.is_null())
+            startTimer(GetTimeIntervalMilliseconds(next_delayed_work_time));
+    }
+
+private:
+    bool handleScheduledWork() {
+        bool more_work_is_plausible = m_delegate->DoWork();
+
+        base::TimeTicks delayed_work_time;
+        more_work_is_plausible |= m_delegate->DoDelayedWork(&delayed_work_time);
+
+        if (more_work_is_plausible)
+            return true;
+
+        more_work_is_plausible |= m_delegate->DoIdleWork();
+        if (!more_work_is_plausible && !delayed_work_time.is_null())
+            startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+
+        return more_work_is_plausible;
+    }
+
+    Delegate *m_delegate;
+};
+
+base::MessagePump* messagePumpFactory()
+{
+    return new MessagePumpForUIQt;
+}
 
 } // namespace
 
@@ -62,12 +157,13 @@ public:
         , m_runMessageLoop(true)
     { }
 
-    void PreMainMessageLoopStart() { }
-    void PostMainMessageLoopStart() { }
-    void PreEarlyInitialization() { }
+    void PreMainMessageLoopStart() Q_DECL_OVERRIDE
+    {
+        base::MessageLoop::InitMessagePumpForUIFactory(::messagePumpFactory);
+    }
 
-    void PreMainMessageLoopRun() {
-
+    void PreMainMessageLoopRun() Q_DECL_OVERRIDE
+    {
         m_browserContext.reset(new BrowserContextQt());
 
         if (m_parameters.ui_task) {
@@ -81,8 +177,15 @@ public:
         return !m_runMessageLoop;
     }
 
-    void PostMainMessageLoopRun() {
+    void PostMainMessageLoopRun()
+    {
         m_browserContext.reset();
+    }
+
+    int PreCreateThreads() Q_DECL_OVERRIDE
+    {
+        base::ThreadRestrictions::SetIOAllowed(true);
+        return 0;
     }
 
     BrowserContextQt* browser_context() const {
@@ -132,6 +235,7 @@ content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const 
 
 
 BrowserContextQt* ContentBrowserClientQt::browser_context() {
+    Q_ASSERT(m_browserMainParts);
     return static_cast<BrowserMainPartsQt*>(m_browserMainParts)->browser_context();
 }
 
