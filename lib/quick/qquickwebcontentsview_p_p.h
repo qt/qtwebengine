@@ -39,63 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
+#ifndef QQUICKWEBCONTENTSVIEW_P_P_H
+#define QQUICKWEBCONTENTSVIEW_P_P_H
 
-// On Mac we need to reset this define in order to prevent definition
-// of "check" macros etc. The "check" macro collides with a member function name in QtQuick.
-// See AssertMacros.h in the Mac SDK.
-#include <QtGlobal> // We need this for the Q_OS_MAC define.
-#if defined(Q_OS_MAC)
-#undef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
-#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
-#endif
+#include "qwebcontentsviewclient.h"
 
-#include "render_widget_host_view_qt_delegate.h"
+class QQuickWebContentsView;
 
-#include <QQuickPaintedItem>
-
-class BackingStoreQt;
-class QWindow;
-class QQuickItem;
-class QFocusEvent;
-class QMouseEvent;
-class QKeyEvent;
-class QWheelEvent;
-
-class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
+class QQuickWebContentsViewPrivate : public QWebContentsViewClient
 {
-    Q_OBJECT
+    QQuickWebContentsView *q_ptr;
+    Q_DECLARE_PUBLIC(QQuickWebContentsView)
 public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
-
-    void paint(QPainter *painter);
-
-    void focusInEvent(QFocusEvent*);
-    void focusOutEvent(QFocusEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void keyPressEvent(QKeyEvent*);
-    void keyReleaseEvent(QKeyEvent*);
-    void wheelEvent(QWheelEvent*);
-
-protected:
-    void updatePolish();
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-
-private:
-    BackingStoreQt* m_backingStore;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
 };
 
-#endif
+#endif // QQUICKWEBCONTENTSVIEW_P_P_H

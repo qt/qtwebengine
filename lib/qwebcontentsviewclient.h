@@ -38,28 +38,45 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QWEBCONTENTSVIEWCLIENT_H
+#define QWEBCONTENTSVIEWCLIENT_H
 
-#ifndef QWEBCONTESTSVIEWPRIVATE_H
-#define QWEBCONTESTSVIEWPRIVATE_H
-
-#include "web_contents_view_qt.h"
+#include "qtwebengineglobal.h"
 
 #include <QScopedPointer>
+#include <QString>
+#include <QUrl>
 
-class QWebContentsView;
 
-class QWebContentsViewPrivate : public WebContentsViewQtClient
-{
-    QWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QWebContentsView)
+class RenderWidgetHostViewQt;
+class RenderWidgetHostViewQtDelegate;
+class WebEngineContext;
+class WebContentsDelegateQt;
+
+class QWEBENGINE_EXPORT QWebContentsViewClient {
 public:
-    QWebContentsViewPrivate();
+    QWebContentsViewClient();
+    virtual ~QWebContentsViewClient();
+    // Contents to View interface
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
+    virtual void titleChanged(const QString&) = 0;
+    virtual void urlChanged(const QUrl&) = 0;
+    virtual void loadingStateChanged() = 0;
 
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
+    bool canGoBack() const;
+    bool canGoForward() const;
+    bool isLoading() const;
+    void navigateHistory(int);
+    void stop();
+    void reload();
+    void load(const QUrl&);
+    QUrl activeUrl() const;
+    QString pageTitle() const;
 
-    void _q_onLoadingStateChanged();
-
-    bool m_isLoading;
+private:
+    WebEngineContext* context;
+    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
+    friend class WebContentsViewQt;
 };
 
-#endif
+#endif // QWEBCONTENTSVIEWCLIENT_H

@@ -39,34 +39,46 @@
 **
 ****************************************************************************/
 
-#include "qquickwebcontentsview.h"
 #include "qquickwebcontentsview_p.h"
+#include "qquickwebcontentsview_p_p.h"
 
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/web_contents.h"
-
-#include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
-#include "web_contents_delegate_qt.h"
 
 #include <QUrl>
 
-void QQuickWebContentsView::registerType()
+
+RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
-    // FIXME: Do a proper plugin.
-    qmlRegisterType<QQuickWebContentsView>("QtWebEngine", 1, 0, "WebContentsView");
+    Q_Q(QQuickWebContentsView);
+    // Parent the RWHV directly, this might have to be changed to handle popups and fullscreen.
+    RenderWidgetHostViewQtDelegateQuick *viewDelegate = new RenderWidgetHostViewQtDelegateQuick(q);
+    viewDelegate->setSize(QSizeF(q->width(), q->height()));
+    return viewDelegate;
+}
+
+void QQuickWebContentsViewPrivate::titleChanged(const QString &title)
+{
+    Q_Q(QQuickWebContentsView);
+    Q_EMIT q->titleChanged(title);
+}
+
+void QQuickWebContentsViewPrivate::urlChanged(const QUrl &url)
+{
+    Q_Q(QQuickWebContentsView);
+    Q_UNUSED(url);
+    Q_EMIT q->urlChanged();
+}
+
+void QQuickWebContentsViewPrivate::loadingStateChanged()
+{
+    Q_Q(QQuickWebContentsView);
+    Q_EMIT q->loadingStateChanged();
 }
 
 QQuickWebContentsView::QQuickWebContentsView()
     : d_ptr(new QQuickWebContentsViewPrivate)
 {
     d_ptr->q_ptr = this;
-
-    Q_D(QQuickWebContentsView);
-    WebContentsDelegateQt* delegate = d->webContentsDelegate.get();
-    connect(delegate, SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
-    connect(delegate, SIGNAL(urlChanged(QUrl)), this, SIGNAL(urlChanged()));
-    connect(delegate, SIGNAL(loadingStateChanged()), this, SIGNAL(loadingStateChanged()));
 }
 
 QQuickWebContentsView::~QQuickWebContentsView()
@@ -76,79 +88,61 @@ QQuickWebContentsView::~QQuickWebContentsView()
 QUrl QQuickWebContentsView::url() const
 {
     Q_D(const QQuickWebContentsView);
-    GURL gurl = d->webContentsDelegate->web_contents()->GetActiveURL();
-    return QUrl(QString::fromStdString(gurl.spec()));
+    return d->activeUrl();
 }
 
 void QQuickWebContentsView::setUrl(const QUrl& url)
 {
     Q_D(QQuickWebContentsView);
-    GURL gurl(url.toString().toStdString());
-
-    content::NavigationController::LoadURLParams params(gurl);
-    params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    d->webContentsDelegate->web_contents()->GetController().LoadURLWithParams(params);
-    d->webContentsDelegate->web_contents()->GetView()->Focus();
+    d->load(url);
 }
 
 void QQuickWebContentsView::goBack()
 {
     Q_D(QQuickWebContentsView);
-    d->webContentsDelegate->web_contents()->GetController().GoToOffset(-1);
-    d->webContentsDelegate->web_contents()->GetView()->Focus();
+    d->navigateHistory(-1);
 }
 
 void QQuickWebContentsView::goForward()
 {
     Q_D(QQuickWebContentsView);
-    d->webContentsDelegate->web_contents()->GetController().GoToOffset(1);
-    d->webContentsDelegate->web_contents()->GetView()->Focus();
+    d->navigateHistory(1);
 }
 
 void QQuickWebContentsView::reload()
 {
     Q_D(QQuickWebContentsView);
-    d->webContentsDelegate->web_contents()->GetController().Reload(false);
-    d->webContentsDelegate->web_contents()->GetView()->Focus();
+    d->reload();
 }
 
 void QQuickWebContentsView::stop()
 {
     Q_D(QQuickWebContentsView);
-    content::NavigationController& controller = d->webContentsDelegate->web_contents()->GetController();
-
-    int index = controller.GetPendingEntryIndex();
-    if (index != -1)
-        controller.RemoveEntryAtIndex(index);
-
-    d->webContentsDelegate->web_contents()->GetView()->Focus();
+    d->stop();
 }
 
 bool QQuickWebContentsView::isLoading() const
 {
     Q_D(const QQuickWebContentsView);
-    return d->webContentsDelegate->web_contents()->IsLoading();
+    return d->isLoading();
 }
 
 QString QQuickWebContentsView::title() const
 {
     Q_D(const QQuickWebContentsView);
-    content::NavigationEntry* entry = d->webContentsDelegate->web_contents()->GetController().GetVisibleEntry();
-    if (!entry)
-        return QString();
-    return QString::fromUtf16(entry->GetTitle().data());
+    return d->pageTitle();
 }
 
 bool QQuickWebContentsView::canGoBack() const
 {
     Q_D(const QQuickWebContentsView);
-    return d->webContentsDelegate->web_contents()->GetController().CanGoBack();
+    return d->canGoBack();
 }
 
 bool QQuickWebContentsView::canGoForward() const
 {
     Q_D(const QQuickWebContentsView);
-    return d->webContentsDelegate->web_contents()->GetController().CanGoForward();
+    return d->canGoForward();
 }
 
 void QQuickWebContentsView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -159,19 +153,4 @@ void QQuickWebContentsView::geometryChanged(const QRectF &newGeometry, const QRe
         Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child));
         child->setSize(newGeometry.size());
     }
-}
-
-QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
-{
-    WebContentsViewQt* contents_view = static_cast<WebContentsViewQt*>(webContentsDelegate->web_contents()->GetView());
-    contents_view->SetClient(this);
-}
-
-RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view)
-{
-    Q_Q(QQuickWebContentsView);
-    // Parent the RWHV directly, this might have to be changed to handle popups and fullscreen.
-    RenderWidgetHostViewQtDelegateQuick *viewDelegate = new RenderWidgetHostViewQtDelegateQuick(view, q);
-    viewDelegate->setSize(QSizeF(q->width(), q->height()));
-    return viewDelegate;
 }
