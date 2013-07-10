@@ -38,64 +38,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEB_CONTENTS_ADAPTER_H
+#define WEB_CONTENTS_ADAPTER_H
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
+#include "qtwebengineglobal.h"
 
-// On Mac we need to reset this define in order to prevent definition
-// of "check" macros etc. The "check" macro collides with a member function name in QtQuick.
-// See AssertMacros.h in the Mac SDK.
-#include <QtGlobal> // We need this for the Q_OS_MAC define.
-#if defined(Q_OS_MAC)
-#undef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
-#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
-#endif
+#include <QString>
+#include <QUrl>
 
-#include "render_widget_host_view_qt_delegate.h"
+namespace content {
+class WebContents;
+}
 
-#include <QQuickPaintedItem>
+class QWEBENGINE_EXPORT WebContentsAdapter {
 
-class BackingStoreQt;
-class QWindow;
-class QQuickItem;
-class QFocusEvent;
-class QMouseEvent;
-class QKeyEvent;
-class QWheelEvent;
-
-class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
-{
-    Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
+    WebContentsAdapter(content::WebContents* contents)
+        : webContents(contents) {}
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
-
-    void paint(QPainter *painter);
-
-    void focusInEvent(QFocusEvent*);
-    void focusOutEvent(QFocusEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void keyPressEvent(QKeyEvent*);
-    void keyReleaseEvent(QKeyEvent*);
-    void wheelEvent(QWheelEvent*);
-
-protected:
-    void updatePolish();
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    bool canGoBack() const;
+    bool canGoForward() const;
+    bool isLoading() const;
+    void navigateHistory(int);
+    void stop();
+    void reload();
+    void load(const QUrl&);
+    QUrl activeUrl() const;
+    QString pageTitle() const;
 
 private:
-    BackingStoreQt* m_backingStore;
+    content::WebContents* webContents;
 };
-
-#endif
+#endif // WEB_CONTENTS_ADAPTER_H

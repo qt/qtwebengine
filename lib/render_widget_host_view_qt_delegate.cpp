@@ -39,43 +39,48 @@
 **
 ****************************************************************************/
 
-#include "web_contents_view_qt.h"
-
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 
+#include "backing_store_qt.h"
+#include "render_widget_host_view_qt.h"
+
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include <QPainter>
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+RenderWidgetHostViewQtDelegate::RenderWidgetHostViewQtDelegate()
+    : m_view(0), m_backingStore(0)
 {
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->setView(view);
-    view->SetDelegate(m_viewDelegate);
-
-    return view;
 }
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
+RenderWidgetHostViewQtDelegate::~RenderWidgetHostViewQtDelegate()
 {
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
 }
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
+void RenderWidgetHostViewQtDelegate::setView(RenderWidgetHostViewQt* view)
 {
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
+    m_view = view;
 }
 
-void WebContentsViewQt::Focus()
+void RenderWidgetHostViewQtDelegate::paint(QPainter *painter, const QRectF &boundingRect)
 {
-    m_viewDelegate->setKeyboardFocus();
+    if (m_backingStore)
+        m_backingStore->paintToTarget(painter, boundingRect);
 }
 
-void WebContentsViewQt::SetInitialFocus()
+void RenderWidgetHostViewQtDelegate::fetchBackingStore()
 {
-    Focus();
+    Q_ASSERT(m_view);
+    m_backingStore = m_view->GetBackingStore();
+}
+
+void RenderWidgetHostViewQtDelegate::notifyResize()
+{
+    Q_ASSERT(m_view);
+    m_view->GetRenderWidgetHost()->WasResized();
+}
+
+bool RenderWidgetHostViewQtDelegate::forwardEvent(QEvent *event)
+{
+    Q_ASSERT(m_view);
+    return (m_view && m_view->handleEvent(event));
 }

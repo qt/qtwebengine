@@ -39,88 +39,26 @@
 **
 ****************************************************************************/
 
-#include "render_widget_host_view_qt_delegate_widget.h"
+#include <QtQml/qqmlextensionplugin.h>
 
-#include "backing_store_qt.h"
-#include "render_widget_host_view_qt.h"
+#include "qquickwebcontentsview_p.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
+QT_BEGIN_NAMESPACE
 
-#include <QResizeEvent>
-#include <QPaintEvent>
-
-RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent)
-    : QWidget(parent)
-    , RenderWidgetHostViewQtDelegate(view)
-    , m_painter(0)
+class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
-    setFocusPolicy(Qt::ClickFocus);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
+public:
+    virtual void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+        Q_UNUSED(uri);
 
-QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
-{
-    return QRectF(x(), y(), width(), height());
-}
-
-void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
-{
-    setFocus();
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
-{
-    return hasFocus();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::show()
-{
-    QWidget::show();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::hide()
-{
-    QWidget::hide();
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
-{
-    return QWidget::isVisible();
-}
-
-QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
-{
-    return QWidget::windowHandle();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
-{
-    QWidget::update(rect);
-}
-
-void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
-{
-    if (BackingStoreQt *backingStore = m_view->GetBackingStore()) {
-        QPainter painter(this);
-        backingStore->paintToTarget(&painter, event->rect());
+        qmlRegisterType<QQuickWebContentsView>(uri, 1, 0, "WebContentsView");
     }
-}
+};
 
-QPainter* RenderWidgetHostViewQtDelegateWidget::painter()
-{
-    if (!m_painter)
-        m_painter = new QPainter(this);
-    return m_painter;
-}
+QT_END_NAMESPACE
 
-void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
-{
-    m_view->GetRenderWidgetHost()->WasResized();
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
-{
-    if (!m_view || !m_view->handleEvent(event))
-        return QWidget::event(event);
-    return true;
-}
+#include "qtwebengineplugin.moc"

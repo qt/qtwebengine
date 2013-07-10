@@ -39,27 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBCONTESTSVIEWPRIVATE_H
-#define QWEBCONTESTSVIEWPRIVATE_H
+#ifndef QQUICKWEBCONTENTSVIEW_P_P_H
+#define QQUICKWEBCONTENTSVIEW_P_P_H
 
-#include "web_contents_view_qt.h"
+#include "web_contents_adapter_client.h"
 
-#include <QScopedPointer>
+class QQuickWebContentsView;
 
-class QWebContentsView;
-
-class QWebContentsViewPrivate : public WebContentsViewQtClient
+class QQuickWebContentsViewPrivate : public WebContentsAdapterClient
 {
-    QWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QWebContentsView)
+    QQuickWebContentsView *q_ptr;
+    Q_DECLARE_PUBLIC(QQuickWebContentsView)
 public:
-    QWebContentsViewPrivate();
 
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
-
-    void _q_onLoadingStateChanged();
-
-    bool m_isLoading;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
 };
 
-#endif
+#endif // QQUICKWEBCONTENTSVIEW_P_P_H

@@ -39,43 +39,61 @@
 **
 ****************************************************************************/
 
-#include "web_contents_view_qt.h"
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
 
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
+// On Mac we need to reset this define in order to prevent definition
+// of "check" macros etc. The "check" macro collides with a member function name in QtQuick.
+// See AssertMacros.h in the Mac SDK.
+#include <QtGlobal> // We need this for the Q_OS_MAC define.
+#if defined(Q_OS_MAC)
+#undef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
+#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
+#endif
+
 #include "render_widget_host_view_qt_delegate.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include <QQuickPaintedItem>
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+class BackingStoreQt;
+class QWindow;
+class QQuickItem;
+class QFocusEvent;
+class QMouseEvent;
+class QKeyEvent;
+class QWheelEvent;
+
+class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
 {
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->setView(view);
-    view->SetDelegate(m_viewDelegate);
+    Q_OBJECT
+public:
+    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent);
 
-    return view;
-}
+    virtual QRectF screenRect() const;
+    virtual void setKeyboardFocus();
+    virtual bool hasKeyboardFocus();
+    virtual void show();
+    virtual void hide();
+    virtual bool isVisible() const;
+    virtual QWindow* window() const;
+    virtual void update(const QRect& rect = QRect());
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
-{
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
-}
+    void paint(QPainter *painter);
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
-{
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
-}
+    void focusInEvent(QFocusEvent*);
+    void focusOutEvent(QFocusEvent*);
+    void mousePressEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+    void mouseDoubleClickEvent(QMouseEvent*);
+    void keyPressEvent(QKeyEvent*);
+    void keyReleaseEvent(QKeyEvent*);
+    void wheelEvent(QWheelEvent*);
 
-void WebContentsViewQt::Focus()
-{
-    m_viewDelegate->setKeyboardFocus();
-}
+protected:
+    void updatePolish();
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
-void WebContentsViewQt::SetInitialFocus()
-{
-    Focus();
-}
+};
+
+#endif

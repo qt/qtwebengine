@@ -42,12 +42,14 @@
 #ifndef QWEBCONTESTSVIEW_H
 #define QWEBCONTESTSVIEW_H
 
+#include <qtwebengineglobal.h>
+
 #include <QWidget>
 #include <QScopedPointer>
 
 class QWebContentsViewPrivate;
 
-class Q_DECL_EXPORT QWebContentsView : public QWidget {
+class QWEBENGINEWIDGETS_EXPORT QWebContentsView : public QWidget {
     Q_OBJECT
 public:
     QWebContentsView();
@@ -70,10 +72,7 @@ Q_SIGNALS:
     void urlChanged(const QUrl& url);
 
 private:
-    Q_DECLARE_PRIVATE(QWebContentsView)
-    Q_PRIVATE_SLOT(d_func(), void _q_onLoadingStateChanged());
-
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
+    Q_DECLARE_PRIVATE(QWebContentsView);
     QScopedPointer<QWebContentsViewPrivate> d_ptr;
 };
 

@@ -38,44 +38,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include "web_contents_view_qt.h"
+#include "web_contents_adapter_client.h"
 
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
-#include "render_widget_host_view_qt_delegate.h"
+#include "web_contents_adapter.h"
+#include "web_contents_delegate_qt.h"
+#include "web_contents_view_qt.h"
+#include "web_engine_context.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/browser/web_contents.h"
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+WebContentsAdapterClient::WebContentsAdapterClient()
 {
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->setView(view);
-    view->SetDelegate(m_viewDelegate);
+    // This has to be the first thing we do.
+    scoped_refptr<WebEngineContext> webEngineContext(WebEngineContext::current());
+    context = webEngineContext.get();
+    // We can't use a scoped_refptr member so we ref-count by hand here.
+    context->AddRef();
 
-    return view;
+    content::BrowserContext* browser_context = ContentBrowserClientQt::Get()->browser_context();
+    webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+    webContentsDelegate->m_viewClient = this;
+    WebContentsViewQt* contents_view = static_cast<WebContentsViewQt*>(webContentsDelegate->web_contents()->GetView());
+    contents_view->SetClient(this);
+
+    adapter = new WebContentsAdapter(webContentsDelegate->web_contents());
 }
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
+WebContentsAdapterClient::~WebContentsAdapterClient()
 {
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
-}
-
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
-{
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
-}
-
-void WebContentsViewQt::Focus()
-{
-    m_viewDelegate->setKeyboardFocus();
-}
-
-void WebContentsViewQt::SetInitialFocus()
-{
-    Focus();
+    context->Release();
 }

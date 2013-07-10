@@ -39,39 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#ifndef QQUICKWEBCONTESTSVIEW_P_H
+#define QQUICKWEBCONTESTSVIEW_P_H
 
-#include "render_widget_host_view_qt_delegate.h"
+#include <QQuickItem>
+#include <QScopedPointer>
 
-#include <QWidget>
+class QQuickWebContentsViewPrivate;
 
-class BackingStoreQt;
-class QWindow;
+class QQuickWebContentsView : public QQuickItem {
+    Q_OBJECT
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
 
-class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
-{
 public:
-    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent = 0);
+    QQuickWebContentsView();
+    ~QQuickWebContentsView();
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
+    QUrl url() const;
+    void setUrl(const QUrl&);
+    bool isLoading() const;
+    QString title() const;
+    bool canGoBack() const;
+    bool canGoForward() const;
 
-    QPainter* painter();
+public Q_SLOTS:
+    void goBack();
+    void goForward();
+    void reload();
+    void stop();
+
+Q_SIGNALS:
+    void titleChanged();
+    void urlChanged();
+    void loadingStateChanged();
 
 protected:
-    void paintEvent(QPaintEvent * event);
-    bool event(QEvent *event);
-    void resizeEvent(QResizeEvent *resizeEvent);
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
 private:
-    QPainter* m_painter;
+    Q_DECLARE_PRIVATE(QQuickWebContentsView)
+    // Hides QObject::d_ptr allowing us to use the convenience macros.
+    QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;
 };
 
-#endif
+QML_DECLARE_TYPE(QQuickWebContentsView)
+
+#endif // QQUICKWEBCONTESTSVIEW_P_H

@@ -52,11 +52,10 @@ namespace content {
     class BrowserContext;
     class SiteInstance;
 }
+class WebContentsAdapterClient;
 
-class WebContentsDelegateQt : public QObject
-                            , public content::WebContentsDelegate
+class WebContentsDelegateQt : public content::WebContentsDelegate
 {
-    Q_OBJECT
 public:
     WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
     content::WebContents* web_contents();
@@ -64,13 +63,10 @@ public:
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
     virtual void LoadingStateChanged(content::WebContents* source);
 
-Q_SIGNALS:
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
-    void loadingStateChanged();
-
 private:
     scoped_ptr<content::WebContents> m_webContents;
+    WebContentsAdapterClient *m_viewClient;
+    friend class WebContentsAdapterClient;
 };
 
 #endif

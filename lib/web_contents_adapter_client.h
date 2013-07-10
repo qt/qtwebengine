@@ -38,44 +38,39 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEB_CONTENTS_ADAPTER_CLIENT_H
+#define WEB_CONTENTS_ADAPTER_CLIENT_H
 
-#include "web_contents_view_qt.h"
+#include "qtwebengineglobal.h"
 
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
-#include "render_widget_host_view_qt_delegate.h"
+#include <QScopedPointer>
+#include <QString>
+#include <QUrl>
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
-{
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->setView(view);
-    view->SetDelegate(m_viewDelegate);
+class RenderWidgetHostViewQt;
+class RenderWidgetHostViewQtDelegate;
+class WebEngineContext;
+class WebContentsAdapter;
+class WebContentsDelegateQt;
 
-    return view;
-}
+class QWEBENGINE_EXPORT WebContentsAdapterClient {
+public:
+    WebContentsAdapterClient();
+    virtual ~WebContentsAdapterClient();
+    // Contents to View interface
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
+    virtual void titleChanged(const QString&) = 0;
+    virtual void urlChanged(const QUrl&) = 0;
+    virtual void loadingStateChanged() = 0;
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
-{
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
-}
+    inline WebContentsAdapter* webContentsAdapter() const { return adapter; }
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
-{
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
-}
+private:
+    WebEngineContext* context;
+    WebContentsAdapter* adapter;
+    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
+    friend class WebContentsViewQt;
+};
 
-void WebContentsViewQt::Focus()
-{
-    m_viewDelegate->setKeyboardFocus();
-}
-
-void WebContentsViewQt::SetInitialFocus()
-{
-    Focus();
-}
+#endif // WEB_CONTENTS_ADAPTER_CLIENT_H

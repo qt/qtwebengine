@@ -38,44 +38,73 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "web_contents_adapter.h"
 
 #include "web_contents_view_qt.h"
 
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
-#include "render_widget_host_view_qt_delegate.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/navigation_entry.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
-
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+bool WebContentsAdapter::canGoBack() const
 {
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->setView(view);
-    view->SetDelegate(m_viewDelegate);
-
-    return view;
+    return webContents->GetController().CanGoBack();
 }
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
+bool WebContentsAdapter::canGoForward() const
 {
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
+    return webContents->GetController().CanGoForward();
+}
+bool WebContentsAdapter::isLoading() const
+{
+    return webContents->IsLoading();
 }
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
+void WebContentsAdapter::navigateHistory(int offset)
 {
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
+    webContents->GetController().GoToOffset(offset);
+    webContents->GetView()->Focus();
 }
 
-void WebContentsViewQt::Focus()
+void WebContentsAdapter::stop()
 {
-    m_viewDelegate->setKeyboardFocus();
+    content::NavigationController& controller = webContents->GetController();
+
+    int index = controller.GetPendingEntryIndex();
+    if (index != -1)
+        controller.RemoveEntryAtIndex(index);
+
+    webContents->GetView()->Focus();
 }
 
-void WebContentsViewQt::SetInitialFocus()
+void WebContentsAdapter::reload()
 {
-    Focus();
+    webContents->GetController().Reload(/*checkRepost = */false);
+    webContents->GetView()->Focus();
+}
+
+void WebContentsAdapter::load(const QUrl &url)
+{
+    QString urlString = url.toString();
+    GURL gurl(urlString.toStdString());
+    if (!gurl.has_scheme())
+        gurl = GURL(std::string("http://") + urlString.toStdString());
+
+    content::NavigationController::LoadURLParams params(gurl);
+    params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    webContents->GetController().LoadURLWithParams(params);
+    webContents->GetView()->Focus();
+}
+
+QUrl WebContentsAdapter::activeUrl() const
+{
+    GURL gurl = webContents->GetVisibleURL();
+    return QUrl(QString::fromStdString(gurl.spec()));
+}
+
+QString WebContentsAdapter::pageTitle() const
+{
+    content::NavigationEntry* entry = webContents->GetController().GetVisibleEntry();
+    if (!entry)
+        return QString();
+    return QString::fromUtf16(entry->GetTitle().data());
 }

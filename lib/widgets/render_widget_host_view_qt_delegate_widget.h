@@ -39,43 +39,35 @@
 **
 ****************************************************************************/
 
-#include "web_contents_view_qt.h"
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
 
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include <QWidget>
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+class BackingStoreQt;
+class QWindow;
+
+class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->setView(view);
-    view->SetDelegate(m_viewDelegate);
+public:
+    RenderWidgetHostViewQtDelegateWidget(QWidget *parent = 0);
 
-    return view;
-}
+    virtual QRectF screenRect() const;
+    virtual void setKeyboardFocus();
+    virtual bool hasKeyboardFocus();
+    virtual void show();
+    virtual void hide();
+    virtual bool isVisible() const;
+    virtual QWindow* window() const;
+    virtual void update(const QRect& rect = QRect());
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
-{
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
-}
+protected:
+    void paintEvent(QPaintEvent * event);
+    bool event(QEvent *event);
+    void resizeEvent(QResizeEvent *resizeEvent);
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
-{
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
-}
+};
 
-void WebContentsViewQt::Focus()
-{
-    m_viewDelegate->setKeyboardFocus();
-}
-
-void WebContentsViewQt::SetInitialFocus()
-{
-    Focus();
-}
+#endif

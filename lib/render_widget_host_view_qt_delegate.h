@@ -42,19 +42,20 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 
-#include "base/memory/scoped_ptr.h"
+#include "qtwebengineglobal.h"
 
-#include "render_widget_host_view_qt.h"
 #include <QRect>
 
+class BackingStoreQt;
+class QEvent;
+class QPainter;
 class QWindow;
+class RenderWidgetHostViewQt;
 
-class RenderWidgetHostViewQtDelegate {
-protected:
-    scoped_ptr<RenderWidgetHostViewQt> m_view;
-    RenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt* view) : m_view(view) { Q_ASSERT(m_view); }
+class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
+
 public:
-    virtual ~RenderWidgetHostViewQtDelegate() {}
+    virtual ~RenderWidgetHostViewQtDelegate();
     virtual QRectF screenRect() const = 0;
     virtual void setKeyboardFocus() = 0;
     virtual bool hasKeyboardFocus() = 0;
@@ -63,6 +64,18 @@ public:
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
     virtual void update(const QRect& rect = QRect()) = 0;
+    void setView(RenderWidgetHostViewQt*);
+
+protected:
+    RenderWidgetHostViewQtDelegate();
+    void paint(QPainter*, const QRectF& boundingRect);
+    void fetchBackingStore();
+    void notifyResize();
+    bool forwardEvent(QEvent*);
+
+private:
+    RenderWidgetHostViewQt* m_view;
+    BackingStoreQt *m_backingStore;
 };
 
 #endif
