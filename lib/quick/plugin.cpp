@@ -39,42 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBCONTESTSVIEW_H
-#define QWEBCONTESTSVIEW_H
+#include <QtQml/qqmlextensionplugin.h>
 
-#include <QWidget>
-#include <QScopedPointer>
+#include "qquickwebcontentsview_p.h"
 
-class QWebContentsViewPrivate;
+QT_BEGIN_NAMESPACE
 
-class Q_DECL_EXPORT QWebContentsView : public QWidget {
+class QtWebEnginePlugin : public QQmlExtensionPlugin
+{
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
-    QWebContentsView();
-    ~QWebContentsView();
+    virtual void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+        Q_UNUSED(uri);
 
-    void load(const QUrl& url);
-    bool canGoBack() const;
-    bool canGoForward() const;
-
-public Q_SLOTS:
-    void back();
-    void forward();
-    void reload();
-    void stop();
-
-Q_SIGNALS:
-    void loadFinished(bool ok);
-    void loadStarted();
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
-
-private:
-    Q_DECLARE_PRIVATE(QWebContentsView)
-    Q_PRIVATE_SLOT(d_func(), void _q_onLoadingStateChanged());
-
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QWebContentsViewPrivate> d_ptr;
+        qmlRegisterType<QQuickWebContentsView>(uri, 1, 0, "WebContentsView");
+    }
 };
 
-#endif // QWEBCONTESTSVIEW_H
+QT_END_NAMESPACE
+
+#include "plugin.moc"

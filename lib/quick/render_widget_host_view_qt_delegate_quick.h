@@ -67,7 +67,7 @@ class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public Ren
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent);
 
     virtual QRectF screenRect() const;
     virtual void setKeyboardFocus();
@@ -95,8 +95,6 @@ protected:
     void updatePolish();
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
-private:
-    BackingStoreQt* m_backingStore;
 };
 
 #endif

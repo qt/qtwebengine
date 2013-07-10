@@ -44,6 +44,7 @@
 
 #include "shared/shared_globals.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include <qglobal.h>
 
@@ -63,7 +64,7 @@ public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
     ~RenderWidgetHostViewQt();
 
-    void SetDelegate(RenderWidgetHostViewQtDelegate* delegate) { m_delegate = delegate; }
+    void SetDelegate(RenderWidgetHostViewQtDelegate* delegate);
     bool handleEvent(QEvent* event);
     BackingStoreQt* GetBackingStore();
 
@@ -150,7 +151,7 @@ private:
     bool IsPopup() const;
 
     content::RenderWidgetHostImpl *m_host;
-    RenderWidgetHostViewQtDelegate *m_delegate;
+    scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
     gfx::Size m_requestedSize;
 };
 
