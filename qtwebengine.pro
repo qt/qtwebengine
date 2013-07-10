@@ -9,7 +9,12 @@ SUBDIRS = resources \
           lib \
           process \
           build \ # This is where we use the generated qt_generated.gypi and run gyp
-          examples \
+          # Now build the API libraries
+          lib/quick
+qtHaveModule(widgets): SUBDIRS += lib/widgets
+
+SUBDIRS += examples
+
 
 # Ninja executable location needs to be determined early for extra targets. Should be fetched from cache most of the time anyway.
 NINJA_EXECUTABLE = $$findNinja()

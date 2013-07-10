@@ -39,39 +39,23 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#ifndef QQUICKWEBCONTENTSVIEW_P_P_H
+#define QQUICKWEBCONTENTSVIEW_P_P_H
 
-#include "render_widget_host_view_qt_delegate.h"
+#include "qwebcontentsviewclient.h"
 
-#include <QWidget>
+class QQuickWebContentsView;
 
-class BackingStoreQt;
-class QWindow;
-
-class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
+class QQuickWebContentsViewPrivate : public QWebContentsViewClient
 {
+    QQuickWebContentsView *q_ptr;
+    Q_DECLARE_PUBLIC(QQuickWebContentsView)
 public:
-    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent = 0);
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
-
-    QPainter* painter();
-
-protected:
-    void paintEvent(QPaintEvent * event);
-    bool event(QEvent *event);
-    void resizeEvent(QResizeEvent *resizeEvent);
-
-private:
-    QPainter* m_painter;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
 };
 
-#endif
+#endif // QQUICKWEBCONTENTSVIEW_P_P_H

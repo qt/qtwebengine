@@ -8,7 +8,7 @@ HEADERS += common/util.h
 
 RESOURCES += $$absolute_path(common/common_resources.qrc)
 
-LIBS += -L$$LIBPATH -lQt5WebEngine
+#LIBS += -lQt5WebEngineCore
 QMAKE_RPATHDIR += $$LIBPATH
 
 # Quick hack for now as we mess with that for the gyp generation step.

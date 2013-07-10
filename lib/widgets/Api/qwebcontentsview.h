@@ -39,55 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBCONTESTSVIEW_H
-#define QQUICKWEBCONTESTSVIEW_H
+#ifndef QWEBCONTESTSVIEW_H
+#define QWEBCONTESTSVIEW_H
 
-#include <QQuickItem>
+#include <qtwebengineglobal.h>
+
+#include <QWidget>
 #include <QScopedPointer>
 
-class QQuickWebContentsViewPrivate;
+class QWebContentsViewPrivate;
 
-class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
+class QWEBENGINEWIDGETS_EXPORT QWebContentsView : public QWidget {
     Q_OBJECT
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
-
 public:
-    static void registerType();
+    QWebContentsView();
+    ~QWebContentsView();
 
-    QQuickWebContentsView();
-    ~QQuickWebContentsView();
-
-    QUrl url() const;
-    void setUrl(const QUrl&);
-    bool isLoading() const;
-    QString title() const;
+    void load(const QUrl& url);
     bool canGoBack() const;
     bool canGoForward() const;
 
 public Q_SLOTS:
-    void goBack();
-    void goForward();
+    void back();
+    void forward();
     void reload();
     void stop();
 
 Q_SIGNALS:
-    void titleChanged(QString);
-    void urlChanged();
-    void loadingStateChanged();
-
-protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void loadFinished(bool ok);
+    void loadStarted();
+    void titleChanged(const QString& title);
+    void urlChanged(const QUrl& url);
 
 private:
-    Q_DECLARE_PRIVATE(QQuickWebContentsView)
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QWebContentsView);
+    QWebContentsViewPrivate *d_ptr;
+
 };
 
-QML_DECLARE_TYPE(QQuickWebContentsView)
-
-#endif // QQUICKWEBCONTESTSVIEW_H
+#endif // QWEBCONTESTSVIEW_H

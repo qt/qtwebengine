@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWebEngine module of the Qt Toolkit.
+** This file is part of the Qt Quick Layouts module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,27 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBCONTESTSVIEWPRIVATE_H
-#define QWEBCONTESTSVIEWPRIVATE_H
+#include <QtQml/qqmlextensionplugin.h>
 
-#include "web_contents_view_qt.h"
+#include "qquickwebcontentsview_p.h"
 
-#include <QScopedPointer>
+QT_BEGIN_NAMESPACE
 
-class QWebContentsView;
-
-class QWebContentsViewPrivate : public WebContentsViewQtClient
+//![class decl]
+class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
-    QWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QWebContentsView)
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
-    QWebContentsViewPrivate();
+    virtual void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+        Q_UNUSED(uri);
 
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
-
-    void _q_onLoadingStateChanged();
-
-    bool m_isLoading;
+        qmlRegisterType<QQuickWebContentsView>(uri, 1, 0, "WebContentsView");
+    }
 };
+//![class decl]
 
-#endif
+QT_END_NAMESPACE
+
+#include "qtwebengineplugin.moc"

@@ -40,14 +40,11 @@
 ****************************************************************************/
 
 #include "quickwindow.h"
-#include "qquickwebcontentsview.h"
 #include <QApplication>
 
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-
-    QQuickWebContentsView::registerType();
 
     ApplicationEngine appEngine;
 

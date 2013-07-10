@@ -39,44 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
 
-#include "qtwebengineglobal.h"
+#include "render_widget_host_view_qt_delegate.h"
 
-#include <QRect>
-#include <QScopedPointer>
+#include <QWidget>
 
 class BackingStoreQt;
-class QEvent;
-class QPainter;
 class QWindow;
-class RenderWidgetHostViewQt;
 
-class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
-
+class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
+{
 public:
-    virtual ~RenderWidgetHostViewQtDelegate();
-    virtual QRectF screenRect() const = 0;
-    virtual void setKeyboardFocus() = 0;
-    virtual bool hasKeyboardFocus() = 0;
-    virtual void show() = 0;
-    virtual void hide() = 0;
-    virtual bool isVisible() const = 0;
-    virtual QWindow* window() const = 0;
-    virtual void update(const QRect& rect = QRect()) = 0;
+    RenderWidgetHostViewQtDelegateWidget(QWidget *parent = 0);
+
+    virtual QRectF screenRect() const;
+    virtual void setKeyboardFocus();
+    virtual bool hasKeyboardFocus();
+    virtual void show();
+    virtual void hide();
+    virtual bool isVisible() const;
+    virtual QWindow* window() const;
+    virtual void update(const QRect& rect = QRect());
 
 protected:
-    RenderWidgetHostViewQtDelegate();
-    void paint(QPainter*, const QRectF& boundingRect);
-    void fetchBackingStore();
-    void notifyResize();
-    bool forwardEvent(QEvent*);
+    void paintEvent(QPaintEvent * event);
+    bool event(QEvent *event);
+    void resizeEvent(QResizeEvent *resizeEvent);
 
-private:
-    QScopedPointer<RenderWidgetHostViewQt> m_view;
-    BackingStoreQt *m_backingStore;
-    friend class WebContentsViewQt;
 };
 
 #endif

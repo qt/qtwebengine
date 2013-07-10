@@ -39,42 +39,54 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBCONTESTSVIEW_H
-#define QWEBCONTESTSVIEW_H
+#ifndef QQUICKWEBCONTESTSVIEW_P_H
+#define QQUICKWEBCONTESTSVIEW_P_H
 
-#include <QWidget>
+#include <QQuickItem>
 #include <QScopedPointer>
 
-class QWebContentsViewPrivate;
+class QQuickWebContentsViewPrivate;
 
-class Q_DECL_EXPORT QWebContentsView : public QWidget {
+class QQuickWebContentsView : public QQuickItem {
     Q_OBJECT
-public:
-    QWebContentsView();
-    ~QWebContentsView();
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
 
-    void load(const QUrl& url);
+public:
+    QQuickWebContentsView();
+    ~QQuickWebContentsView();
+
+    QUrl url() const;
+    void setUrl(const QUrl&);
+    bool isLoading() const;
+    QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
 
 public Q_SLOTS:
-    void back();
-    void forward();
+    void goBack();
+    void goForward();
     void reload();
     void stop();
 
 Q_SIGNALS:
-    void loadFinished(bool ok);
-    void loadStarted();
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
+    void titleChanged(const QString&);
+    void urlChanged(const QUrl&);
+    void loadingStateChanged();
+
+protected:
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
 private:
-    Q_DECLARE_PRIVATE(QWebContentsView)
-    Q_PRIVATE_SLOT(d_func(), void _q_onLoadingStateChanged());
-
+    Q_DECLARE_PRIVATE(QQuickWebContentsView)
     // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QWebContentsViewPrivate> d_ptr;
+    QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;
+
 };
 
-#endif // QWEBCONTESTSVIEW_H
+QML_DECLARE_TYPE(QQuickWebContentsView)
+
+#endif // QQUICKWEBCONTESTSVIEW_P_H

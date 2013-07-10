@@ -38,45 +38,47 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
+#ifndef QWEBCONTENTSVIEWCLIENT_H
+#define QWEBCONTENTSVIEWCLIENT_H
 
 #include "qtwebengineglobal.h"
 
-#include <QRect>
 #include <QScopedPointer>
+#include <QString>
+#include <QUrl>
 
-class BackingStoreQt;
-class QEvent;
-class QPainter;
-class QWindow;
+
 class RenderWidgetHostViewQt;
+class RenderWidgetHostViewQtDelegate;
+class WebEngineContext;
+class WebContentsDelegateQt;
 
-class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
-
+class QWEBENGINE_EXPORT QWebContentsViewClient {
 public:
-    virtual ~RenderWidgetHostViewQtDelegate();
-    virtual QRectF screenRect() const = 0;
-    virtual void setKeyboardFocus() = 0;
-    virtual bool hasKeyboardFocus() = 0;
-    virtual void show() = 0;
-    virtual void hide() = 0;
-    virtual bool isVisible() const = 0;
-    virtual QWindow* window() const = 0;
-    virtual void update(const QRect& rect = QRect()) = 0;
+    QWebContentsViewClient();
+    virtual ~QWebContentsViewClient();
+    // WebContentsClient interface (intended to be reimplemented in upper layers)
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
+    virtual void titleChanged(const QString&) = 0;
+    virtual void urlChanged(const QUrl&) = 0;
+    virtual void loadingStateChanged() = 0;
 
-protected:
-    RenderWidgetHostViewQtDelegate();
-    void paint(QPainter*, const QRectF& boundingRect);
-    void fetchBackingStore();
-    void notifyResize();
-    bool forwardEvent(QEvent*);
+
+    bool canGoBack() const;
+    bool canGoForward() const;
+    bool isLoading() const;
+    void navigateHistory(int);
+    void stop();
+    void reload();
+    void load(const QUrl&);
+    QUrl activeUrl() const;
+    QString pageTitle() const;
+
 
 private:
-    QScopedPointer<RenderWidgetHostViewQt> m_view;
-    BackingStoreQt *m_backingStore;
+    WebEngineContext* context;
+    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
     friend class WebContentsViewQt;
 };
 
-#endif
+#endif // QWEBCONTENTSVIEWCLIENT_H
