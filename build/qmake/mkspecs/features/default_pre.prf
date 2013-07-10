@@ -9,4 +9,13 @@ isEmpty(CHROMIUM_SRC_DIR): CHROMIUM_SRC_DIR=$$QTWEBENGINE_ROOT/chromium
 
 INCLUDEPATH += $$CHROMIUM_SRC_DIR
 
+# Used for our export macros
+!contains(_PRO_FILE_PWD_, $$QTWEBENGINE_ROOT/examples): DEFINES += BUILDING_CHROMIUM
+
+# Location of sync.profile
+MODULE_BASE_DIR = $$QTWEBENGINE_ROOT
+
+# We have to disable RTTI for now since that's how chromium builds on linux
+unix:!macx:QMAKE_CXXFLAGS += -fno-rtti
+
 load(functions)

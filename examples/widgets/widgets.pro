@@ -6,4 +6,4 @@ include(../common.pri)
 HEADERS = widgetwindow.h
 SOURCES = widgetwindow.cpp main.cpp
 
-QT += widgets
+QT += webenginewidgets

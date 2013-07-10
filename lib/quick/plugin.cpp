@@ -39,55 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBCONTESTSVIEW_H
-#define QQUICKWEBCONTESTSVIEW_H
+#include <QtQml/qqmlextensionplugin.h>
 
-#include <QQuickItem>
-#include <QScopedPointer>
+#include "qquickwebcontentsview_p.h"
 
-class QQuickWebContentsViewPrivate;
+QT_BEGIN_NAMESPACE
 
-class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
+class QtWebEnginePlugin : public QQmlExtensionPlugin
+{
     Q_OBJECT
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
-
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
-    static void registerType();
+    virtual void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+        Q_UNUSED(uri);
 
-    QQuickWebContentsView();
-    ~QQuickWebContentsView();
-
-    QUrl url() const;
-    void setUrl(const QUrl&);
-    bool isLoading() const;
-    QString title() const;
-    bool canGoBack() const;
-    bool canGoForward() const;
-
-public Q_SLOTS:
-    void goBack();
-    void goForward();
-    void reload();
-    void stop();
-
-Q_SIGNALS:
-    void titleChanged(QString);
-    void urlChanged();
-    void loadingStateChanged();
-
-protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-
-private:
-    Q_DECLARE_PRIVATE(QQuickWebContentsView)
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;
+        qmlRegisterType<QQuickWebContentsView>(uri, 1, 0, "WebContentsView");
+    }
 };
 
-QML_DECLARE_TYPE(QQuickWebContentsView)
+QT_END_NAMESPACE
 
-#endif // QQUICKWEBCONTESTSVIEW_H
+#include "qtwebengineplugin.moc"

@@ -7,7 +7,7 @@ GYPINCLUDES += ../qtwebengine.gypi
 
 TEMPLATE = lib
 
-TARGET = Qt5WebEngine
+TARGET = Qt5WebEngineCore
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS
@@ -18,8 +18,6 @@ PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBEN
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
-QT += widgets quick
-
 RESOURCES += lib_resources.qrc
 # We need this to find the include files generated for the .pak resource files.
 INCLUDEPATH += $$absolute_path(../resources, $$PWD)
@@ -27,11 +25,9 @@ INCLUDEPATH += $$absolute_path(../resources, $$PWD)
 SOURCES = \
         backing_store_qt.cpp \
         content_browser_client_qt.cpp \
-        qquickwebcontentsview.cpp \
-        qwebcontentsview.cpp \
+        qwebcontentsviewclient.cpp \
         render_widget_host_view_qt.cpp \
-        render_widget_host_view_qt_delegate_quick.cpp \
-        render_widget_host_view_qt_delegate_widget.cpp \
+        render_widget_host_view_qt_delegate.cpp \
         resource_context_qt.cpp \
         resource_bundle_qt.cpp \
         url_request_context_getter_qt.cpp \
@@ -44,14 +40,9 @@ HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
         content_browser_client_qt.h \
-        qquickwebcontentsview.h \
-        qquickwebcontentsview_p.h \
-        qwebcontentsview.h \
-        qwebcontentsview_p.h \
+        qwebcontentsviewclient.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
-        render_widget_host_view_qt_delegate_quick.h \
-        render_widget_host_view_qt_delegate_widget.h \
         resource_context_qt.h \
         url_request_context_getter_qt.h \
         web_contents_delegate_qt.h \

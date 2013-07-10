@@ -39,34 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#ifndef QWEBCONTESTSVIEW_H
+#define QWEBCONTESTSVIEW_H
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
+#include <qtwebengineglobal.h>
 
-#include <QObject>
-#include <QUrl>
+#include <QWidget>
+#include <QScopedPointer>
 
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-}
-class QWebContentsViewClient;
+class QWebContentsViewPrivate;
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
-{
+class QWEBENGINEWIDGETS_EXPORT QWebContentsView : public QWidget {
+    Q_OBJECT
 public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    QWebContentsView();
+    ~QWebContentsView();
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
+    void load(const QUrl& url);
+    bool canGoBack() const;
+    bool canGoForward() const;
+
+public Q_SLOTS:
+    void back();
+    void forward();
+    void reload();
+    void stop();
+
+Q_SIGNALS:
+    void loadFinished(bool ok);
+    void loadStarted();
+    void titleChanged(const QString& title);
+    void urlChanged(const QUrl& url);
 
 private:
-    scoped_ptr<content::WebContents> m_webContents;
-    QWebContentsViewClient *m_viewClient;
-    friend class QWebContentsViewClient;
+    Q_DECLARE_PRIVATE(QWebContentsView);
+    QWebContentsViewPrivate *d_ptr;
 };
 
-#endif
+#endif // QWEBCONTESTSVIEW_H

@@ -38,22 +38,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QTWEBENGINEGLOBAL_H
+#define QTWEBENGINEGLOBAL_H
 
-#ifndef QQUICKWEBCONTENTSVIEWPRIVATE_H
-#define QQUICKWEBCONTENTSVIEWPRIVATE_H
+#include <QtCore/qglobal.h>
 
-#include "web_contents_view_qt.h"
+#ifndef QT_STATIC
+#  if !defined(QT_BUILD_WEBENGINEWIDGETS_LIB) && defined(BUILDING_CHROMIUM)
+#      define QWEBENGINE_EXPORT Q_DECL_EXPORT
+#  else
+#      define QWEBENGINE_EXPORT Q_DECL_IMPORT
+#  endif
+#  if defined(QT_BUILD_WEBENGINEWIDGETS_LIB)
+#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_EXPORT
+#  else
+#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define QWEBENGINEWIDGETS_EXPORT
+#  define QWEBENGINE_EXPORT
+#endif
 
-class QQuickWebContentsView;
-
-class QQuickWebContentsViewPrivate : public WebContentsViewQtClient
-{
-    QQuickWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QQuickWebContentsView)
-public:
-    QQuickWebContentsViewPrivate();
-
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
-};
-
-#endif // QQUICKWEBCONTENTSVIEWPRIVATE_H
+#endif // QTWEBENGINEGLOBAL_H

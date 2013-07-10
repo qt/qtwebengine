@@ -41,6 +41,8 @@
 
 #include "web_contents_delegate_qt.h"
 
+#include "qwebcontentsviewclient.h"
+
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
@@ -59,6 +61,7 @@ static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_context, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size)
+    : m_viewClient(0)
 {
     content::WebContents::CreateParams create_params(browser_context, site_instance);
     create_params.routing_id = routing_id;
@@ -82,15 +85,16 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_co
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL) {
+        Q_ASSERT(m_viewClient);
         GURL gurl = web_contents()->GetVisibleURL();
         QUrl url(QString::fromStdString(gurl.spec()));
-        Q_EMIT urlChanged(url);
+        m_viewClient->urlChanged(url);
     }
 }
 
 void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)
 {
-    Q_EMIT loadingStateChanged();
+    m_viewClient->loadingStateChanged();
 }
 
 content::WebContents* WebContentsDelegateQt::web_contents()
