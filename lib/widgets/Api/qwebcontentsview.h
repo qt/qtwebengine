@@ -39,39 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#ifndef QWEBCONTESTSVIEW_H
+#define QWEBCONTESTSVIEW_H
 
-#include "render_widget_host_view_qt_delegate.h"
+#include <qtwebengineglobal.h>
 
 #include <QWidget>
+#include <QScopedPointer>
 
-class BackingStoreQt;
-class QWindow;
+class QWebContentsViewPrivate;
 
-class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
-{
+class QWEBENGINEWIDGETS_EXPORT QWebContentsView : public QWidget {
+    Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent = 0);
+    QWebContentsView();
+    ~QWebContentsView();
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
+    void load(const QUrl& url);
+    bool canGoBack() const;
+    bool canGoForward() const;
 
-    QPainter* painter();
+public Q_SLOTS:
+    void back();
+    void forward();
+    void reload();
+    void stop();
 
-protected:
-    void paintEvent(QPaintEvent * event);
-    bool event(QEvent *event);
-    void resizeEvent(QResizeEvent *resizeEvent);
+Q_SIGNALS:
+    void loadFinished(bool ok);
+    void loadStarted();
+    void titleChanged(const QString& title);
+    void urlChanged(const QUrl& url);
 
 private:
-    QPainter* m_painter;
+    Q_DECLARE_PRIVATE(QWebContentsView);
+    QScopedPointer<QWebContentsViewPrivate> d_ptr;
 };
 
-#endif
+#endif // QWEBCONTESTSVIEW_H

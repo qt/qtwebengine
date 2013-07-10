@@ -48,19 +48,10 @@
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/web_contents_view_port.h"
 
+#include "web_contents_adapter_client.h"
 #include "render_widget_host_view_qt.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
-
-class WebContentsViewQtClient {
-public:
-    WebContentsViewQtClient();
-    virtual ~WebContentsViewQtClient() { }
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) = 0;
-
-    scoped_refptr<WebEngineContext> context;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-};
 
 class WebContentsViewQt
     : public content::WebContentsViewPort
@@ -71,7 +62,7 @@ public:
         : m_client(0)
     { }
 
-    void SetClient(WebContentsViewQtClient* client) { m_client = client; }
+    void SetClient(WebContentsAdapterClient* client) { m_client = client; }
 
     virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host);
 
@@ -122,7 +113,7 @@ public:
 #endif // defined(OS_MACOSX)
 
 private:
-    WebContentsViewQtClient* m_client;
+    WebContentsAdapterClient* m_client;
     RenderWidgetHostViewQtDelegate* m_viewDelegate;
 };
 

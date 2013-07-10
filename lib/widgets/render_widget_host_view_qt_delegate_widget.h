@@ -39,34 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
+#include "render_widget_host_view_qt_delegate.h"
 
-#include <QObject>
-#include <QUrl>
+#include <QWidget>
 
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-}
-class WebContentsAdapterClient;
+class BackingStoreQt;
+class QWindow;
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
+class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    RenderWidgetHostViewQtDelegateWidget(QWidget *parent = 0);
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
+    virtual QRectF screenRect() const;
+    virtual void setKeyboardFocus();
+    virtual bool hasKeyboardFocus();
+    virtual void show();
+    virtual void hide();
+    virtual bool isVisible() const;
+    virtual QWindow* window() const;
+    virtual void update(const QRect& rect = QRect());
 
-private:
-    scoped_ptr<content::WebContents> m_webContents;
-    WebContentsAdapterClient *m_viewClient;
-    friend class WebContentsAdapter;
+protected:
+    void paintEvent(QPaintEvent * event);
+    bool event(QEvent *event);
+    void resizeEvent(QResizeEvent *resizeEvent);
+
 };
 
 #endif

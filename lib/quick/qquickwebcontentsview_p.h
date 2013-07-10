@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBCONTESTSVIEW_H
-#define QQUICKWEBCONTESTSVIEW_H
+#ifndef QQUICKWEBCONTESTSVIEW_P_H
+#define QQUICKWEBCONTESTSVIEW_P_H
 
 #include <QQuickItem>
 #include <QScopedPointer>
 
 class QQuickWebContentsViewPrivate;
 
-class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
+class QQuickWebContentsView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
@@ -56,8 +56,6 @@ class Q_DECL_EXPORT QQuickWebContentsView : public QQuickItem {
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
 
 public:
-    static void registerType();
-
     QQuickWebContentsView();
     ~QQuickWebContentsView();
 
@@ -75,7 +73,7 @@ public Q_SLOTS:
     void stop();
 
 Q_SIGNALS:
-    void titleChanged(QString);
+    void titleChanged();
     void urlChanged();
     void loadingStateChanged();
 
@@ -90,4 +88,4 @@ private:
 
 QML_DECLARE_TYPE(QQuickWebContentsView)
 
-#endif // QQUICKWEBCONTESTSVIEW_H
+#endif // QQUICKWEBCONTESTSVIEW_P_H

@@ -39,34 +39,61 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
+// On Mac we need to reset this define in order to prevent definition
+// of "check" macros etc. The "check" macro collides with a member function name in QtQuick.
+// See AssertMacros.h in the Mac SDK.
+#include <QtGlobal> // We need this for the Q_OS_MAC define.
+#if defined(Q_OS_MAC)
+#undef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
+#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
+#endif
 
-#include <QObject>
-#include <QUrl>
+#include "render_widget_host_view_qt_delegate.h"
 
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-}
-class WebContentsAdapterClient;
+#include <QQuickPaintedItem>
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
+class BackingStoreQt;
+class QWindow;
+class QQuickItem;
+class QFocusEvent;
+class QMouseEvent;
+class QKeyEvent;
+class QWheelEvent;
+
+class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
 {
+    Q_OBJECT
 public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent);
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
+    virtual QRectF screenRect() const;
+    virtual void setKeyboardFocus();
+    virtual bool hasKeyboardFocus();
+    virtual void show();
+    virtual void hide();
+    virtual bool isVisible() const;
+    virtual QWindow* window() const;
+    virtual void update(const QRect& rect = QRect());
 
-private:
-    scoped_ptr<content::WebContents> m_webContents;
-    WebContentsAdapterClient *m_viewClient;
-    friend class WebContentsAdapter;
+    void paint(QPainter *painter);
+
+    void focusInEvent(QFocusEvent*);
+    void focusOutEvent(QFocusEvent*);
+    void mousePressEvent(QMouseEvent*);
+    void mouseMoveEvent(QMouseEvent*);
+    void mouseReleaseEvent(QMouseEvent*);
+    void mouseDoubleClickEvent(QMouseEvent*);
+    void keyPressEvent(QKeyEvent*);
+    void keyReleaseEvent(QKeyEvent*);
+    void wheelEvent(QWheelEvent*);
+
+protected:
+    void updatePolish();
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+
 };
 
 #endif

@@ -38,35 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEB_CONTENTS_ADAPTER_CLIENT_H
+#define WEB_CONTENTS_ADAPTER_CLIENT_H
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#include "qtwebengineglobal.h"
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
-
-#include <QObject>
+#include <QString>
 #include <QUrl>
 
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-}
-class WebContentsAdapterClient;
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
-{
+class RenderWidgetHostViewQt;
+class RenderWidgetHostViewQtDelegate;
+class WebContentsDelegateQt;
+
+class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    virtual ~WebContentsAdapterClient() { }
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
-
-private:
-    scoped_ptr<content::WebContents> m_webContents;
-    WebContentsAdapterClient *m_viewClient;
-    friend class WebContentsAdapter;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt*) = 0;
+    virtual void titleChanged(const QString&) = 0;
+    virtual void urlChanged(const QUrl&) = 0;
+    virtual void loadingStateChanged() = 0;
 };
 
-#endif
+#endif // WEB_CONTENTS_ADAPTER_CLIENT_H

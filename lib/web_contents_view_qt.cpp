@@ -47,14 +47,6 @@
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
-WebContentsViewQtClient::WebContentsViewQtClient()
-// This has to be the first thing we do.
-    : context(WebEngineContext::current())
-{
-    content::BrowserContext* browser_context = ContentBrowserClientQt::Get()->browser_context();
-    webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
-}
-
 content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
@@ -67,14 +59,13 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
 void WebContentsViewQt::SetPageTitle(const string16& title)
 {
     QString string = QString::fromUtf16(title.data());
-    Q_EMIT m_client->webContentsDelegate->titleChanged(string);
+    m_client->titleChanged(string);
 }
 
 void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
 {
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
+    const QRectF r(m_viewDelegate->screenRect());
+    *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
 }
 
 void WebContentsViewQt::Focus()

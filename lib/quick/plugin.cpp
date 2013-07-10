@@ -39,21 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBCONTENTSVIEWPRIVATE_H
-#define QQUICKWEBCONTENTSVIEWPRIVATE_H
+#include <QtQml/qqmlextensionplugin.h>
 
-#include "web_contents_view_qt.h"
+#include "qquickwebcontentsview_p.h"
 
-class QQuickWebContentsView;
+QT_BEGIN_NAMESPACE
 
-class QQuickWebContentsViewPrivate : public WebContentsViewQtClient
+class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
-    QQuickWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QQuickWebContentsView)
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
-    QQuickWebContentsViewPrivate();
+    virtual void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+        Q_UNUSED(uri);
 
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
+        qmlRegisterType<QQuickWebContentsView>(uri, 1, 0, "WebContentsView");
+    }
 };
 
-#endif // QQUICKWEBCONTENTSVIEWPRIVATE_H
+QT_END_NAMESPACE
+
+#include "qtwebengineplugin.moc"

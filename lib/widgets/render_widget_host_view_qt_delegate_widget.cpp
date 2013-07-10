@@ -39,63 +39,75 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
+#include "render_widget_host_view_qt_delegate_widget.h"
 
-// On Mac we need to reset this define in order to prevent definition
-// of "check" macros etc. The "check" macro collides with a member function name in QtQuick.
-// See AssertMacros.h in the Mac SDK.
-#include <QtGlobal> // We need this for the Q_OS_MAC define.
-#if defined(Q_OS_MAC)
-#undef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
-#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
-#endif
+#include <QResizeEvent>
+#include <QPainter>
+#include <QPaintEvent>
 
-#include "render_widget_host_view_qt_delegate.h"
-
-#include <QQuickPaintedItem>
-
-class BackingStoreQt;
-class QWindow;
-class QQuickItem;
-class QFocusEvent;
-class QMouseEvent;
-class QKeyEvent;
-class QWheelEvent;
-
-class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidget *parent)
+    : QWidget(parent)
 {
-    Q_OBJECT
-public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
+    setFocusPolicy(Qt::ClickFocus);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+}
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
+QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
+{
+    return QRectF(x(), y(), width(), height());
+}
 
-    void paint(QPainter *painter);
+void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
+{
+    setFocus();
+}
 
-    void focusInEvent(QFocusEvent*);
-    void focusOutEvent(QFocusEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void keyPressEvent(QKeyEvent*);
-    void keyReleaseEvent(QKeyEvent*);
-    void wheelEvent(QWheelEvent*);
+bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
+{
+    return hasFocus();
+}
 
-protected:
-    void updatePolish();
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+void RenderWidgetHostViewQtDelegateWidget::show()
+{
+    QWidget::show();
+}
 
-private:
-    BackingStoreQt* m_backingStore;
-};
+void RenderWidgetHostViewQtDelegateWidget::hide()
+{
+    QWidget::hide();
+}
 
-#endif
+bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
+{
+    return QWidget::isVisible();
+}
+
+QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
+{
+    return QWidget::windowHandle();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
+{
+    QWidget::update(rect);
+}
+
+void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
+{
+    QPainter painter(this);
+    fetchBackingStore();
+    paint(&painter, event->rect());
+}
+
+void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
+{
+    Q_UNUSED(resizeEvent);
+    notifyResize();
+}
+
+bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
+{
+    if (!forwardEvent(event))
+        return QWidget::event(event);
+    return true;
+}

@@ -39,88 +39,29 @@
 **
 ****************************************************************************/
 
-#include "render_widget_host_view_qt_delegate_widget.h"
+#ifndef QQUICKWEBCONTENTSVIEW_P_P_H
+#define QQUICKWEBCONTENTSVIEW_P_P_H
 
-#include "backing_store_qt.h"
-#include "render_widget_host_view_qt.h"
+#include "web_contents_adapter_client.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include <QScopedPointer>
 
-#include <QResizeEvent>
-#include <QPaintEvent>
+class QQuickWebContentsView;
+class WebContentsAdapter;
 
-RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent)
-    : QWidget(parent)
-    , RenderWidgetHostViewQtDelegate(view)
-    , m_painter(0)
+class QQuickWebContentsViewPrivate : public WebContentsAdapterClient
 {
-    setFocusPolicy(Qt::ClickFocus);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-}
+    QQuickWebContentsView *q_ptr;
+    Q_DECLARE_PUBLIC(QQuickWebContentsView)
+public:
+    QQuickWebContentsViewPrivate();
 
-QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
-{
-    return QRectF(x(), y(), width(), height());
-}
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt*) Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
 
-void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
-{
-    setFocus();
-}
+    QScopedPointer<WebContentsAdapter> adapter;
+};
 
-bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
-{
-    return hasFocus();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::show()
-{
-    QWidget::show();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::hide()
-{
-    QWidget::hide();
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
-{
-    return QWidget::isVisible();
-}
-
-QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
-{
-    return QWidget::windowHandle();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
-{
-    QWidget::update(rect);
-}
-
-void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
-{
-    if (BackingStoreQt *backingStore = m_view->GetBackingStore()) {
-        QPainter painter(this);
-        backingStore->paintToTarget(&painter, event->rect());
-    }
-}
-
-QPainter* RenderWidgetHostViewQtDelegateWidget::painter()
-{
-    if (!m_painter)
-        m_painter = new QPainter(this);
-    return m_painter;
-}
-
-void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
-{
-    m_view->GetRenderWidgetHost()->WasResized();
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
-{
-    if (!m_view || !m_view->handleEvent(event))
-        return QWidget::event(event);
-    return true;
-}
+#endif // QQUICKWEBCONTENTSVIEW_P_P_H

@@ -39,42 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBCONTESTSVIEW_H
-#define QWEBCONTESTSVIEW_H
+#include "render_widget_host_view_qt_delegate.h"
 
-#include <QWidget>
-#include <QScopedPointer>
+#include "backing_store_qt.h"
+#include "render_widget_host_view_qt.h"
 
-class QWebContentsViewPrivate;
+#include "content/browser/renderer_host/render_view_host_impl.h"
+#include <QPainter>
 
-class Q_DECL_EXPORT QWebContentsView : public QWidget {
-    Q_OBJECT
-public:
-    QWebContentsView();
-    ~QWebContentsView();
+RenderWidgetHostViewQtDelegate::RenderWidgetHostViewQtDelegate()
+    : m_view(0), m_backingStore(0)
+{
+}
 
-    void load(const QUrl& url);
-    bool canGoBack() const;
-    bool canGoForward() const;
+RenderWidgetHostViewQtDelegate::~RenderWidgetHostViewQtDelegate()
+{
+}
 
-public Q_SLOTS:
-    void back();
-    void forward();
-    void reload();
-    void stop();
+void RenderWidgetHostViewQtDelegate::resetView(RenderWidgetHostViewQt* view)
+{
+    m_view.reset(view);
+}
 
-Q_SIGNALS:
-    void loadFinished(bool ok);
-    void loadStarted();
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
+void RenderWidgetHostViewQtDelegate::paint(QPainter *painter, const QRectF &boundingRect)
+{
+    if (m_backingStore)
+        m_backingStore->paintToTarget(painter, boundingRect);
+}
 
-private:
-    Q_DECLARE_PRIVATE(QWebContentsView)
-    Q_PRIVATE_SLOT(d_func(), void _q_onLoadingStateChanged());
+void RenderWidgetHostViewQtDelegate::fetchBackingStore()
+{
+    Q_ASSERT(m_view);
+    m_backingStore = m_view->GetBackingStore();
+}
 
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QWebContentsViewPrivate> d_ptr;
-};
+void RenderWidgetHostViewQtDelegate::notifyResize()
+{
+    Q_ASSERT(m_view);
+    m_view->GetRenderWidgetHost()->WasResized();
+}
 
-#endif // QWEBCONTESTSVIEW_H
+bool RenderWidgetHostViewQtDelegate::forwardEvent(QEvent *event)
+{
+    Q_ASSERT(m_view);
+    return (m_view && m_view->handleEvent(event));
+}
