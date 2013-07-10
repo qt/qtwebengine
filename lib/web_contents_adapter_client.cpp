@@ -38,28 +38,36 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "web_contents_adapter_client.h"
 
-#ifndef QWEBCONTESTSVIEWPRIVATE_H
-#define QWEBCONTESTSVIEWPRIVATE_H
-
+#include "browser_context_qt.h"
+#include "content_browser_client_qt.h"
+#include "web_contents_adapter.h"
+#include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
+#include "web_engine_context.h"
 
-#include <QScopedPointer>
+#include "content/public/browser/web_contents.h"
 
-class QWebContentsView;
-
-class QWebContentsViewPrivate : public WebContentsViewQtClient
-{
-    QWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QWebContentsView)
+class WebContentsAdapterClientPrivate {
 public:
-    QWebContentsViewPrivate();
-
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
-
-    void _q_onLoadingStateChanged();
-
-    bool m_isLoading;
+    WebContentsAdapterClientPrivate() : engineContext(WebEngineContext::current()) { }
+    scoped_refptr<WebEngineContext> engineContext;
 };
 
-#endif
+
+WebContentsAdapterClient::WebContentsAdapterClient()
+// This has to be the first thing we do.
+    : d(new WebContentsAdapterClientPrivate())
+{
+
+    content::BrowserContext* browser_context = ContentBrowserClientQt::Get()->browser_context();
+    webContentsDelegate.reset(new WebContentsDelegateQt(browser_context, NULL, MSG_ROUTING_NONE, gfx::Size()));
+    webContentsDelegate->m_viewClient = this;
+    WebContentsViewQt* contents_view = static_cast<WebContentsViewQt*>(webContentsDelegate->web_contents()->GetView());
+    contents_view->SetClient(this);
+}
+
+WebContentsAdapterClient::~WebContentsAdapterClient()
+{
+}

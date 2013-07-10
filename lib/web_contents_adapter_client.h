@@ -38,43 +38,37 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEB_CONTENTS_ADAPTER_CLIENT_H
+#define WEB_CONTENTS_ADAPTER_CLIENT_H
 
-#ifndef QWEBCONTESTSVIEW_H
-#define QWEBCONTESTSVIEW_H
+#include "qtwebengineglobal.h"
 
-#include <QWidget>
 #include <QScopedPointer>
+#include <QString>
+#include <QUrl>
 
-class QWebContentsViewPrivate;
 
-class Q_DECL_EXPORT QWebContentsView : public QWidget {
-    Q_OBJECT
+class RenderWidgetHostViewQt;
+class RenderWidgetHostViewQtDelegate;
+class WebContentsDelegateQt;
+class WebContentsAdapterClientPrivate;
+
+class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
-    QWebContentsView();
-    ~QWebContentsView();
+    WebContentsAdapterClient();
+    virtual ~WebContentsAdapterClient();
 
-    void load(const QUrl& url);
-    bool canGoBack() const;
-    bool canGoForward() const;
-
-public Q_SLOTS:
-    void back();
-    void forward();
-    void reload();
-    void stop();
-
-Q_SIGNALS:
-    void loadFinished(bool ok);
-    void loadStarted();
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
+    virtual void adjustSize(RenderWidgetHostViewQtDelegate*) = 0;
+    virtual void titleChanged(const QString&) = 0;
+    virtual void urlChanged(const QUrl&) = 0;
+    virtual void loadingStateChanged() = 0;
 
 private:
-    Q_DECLARE_PRIVATE(QWebContentsView)
-    Q_PRIVATE_SLOT(d_func(), void _q_onLoadingStateChanged());
-
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QWebContentsViewPrivate> d_ptr;
+    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
+    QScopedPointer<WebContentsAdapterClientPrivate> d;
+    friend class WebContentsViewQt;
+    friend class WebContentsAdapter;
 };
 
-#endif // QWEBCONTESTSVIEW_H
+#endif // WEB_CONTENTS_ADAPTER_CLIENT_H

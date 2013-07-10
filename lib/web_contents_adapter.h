@@ -38,89 +38,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEB_CONTENTS_ADAPTER_H
+#define WEB_CONTENTS_ADAPTER_H
 
-#include "render_widget_host_view_qt_delegate_widget.h"
+#include "qtwebengineglobal.h"
 
-#include "backing_store_qt.h"
-#include "render_widget_host_view_qt.h"
+#include <QString>
+#include <QUrl>
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
-
-#include <QResizeEvent>
-#include <QPaintEvent>
-
-RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent)
-    : QWidget(parent)
-    , RenderWidgetHostViewQtDelegate(view)
-    , m_painter(0)
-{
-    setFocusPolicy(Qt::ClickFocus);
-    setAttribute(Qt::WA_OpaquePaintEvent);
+namespace content {
+class WebContents;
 }
+class WebContentsAdapterClient;
 
-QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
-{
-    return QRectF(x(), y(), width(), height());
-}
+class QWEBENGINE_EXPORT WebContentsAdapter {
 
-void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
-{
-    setFocus();
-}
+public:
+    WebContentsAdapter(WebContentsAdapterClient* adapterClient);
 
-bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
-{
-    return hasFocus();
-}
+    bool canGoBack() const;
+    bool canGoForward() const;
+    bool isLoading() const;
+    void navigateHistory(int);
+    void stop();
+    void reload();
+    void load(const QUrl&);
+    QUrl activeUrl() const;
+    QString pageTitle() const;
 
-void RenderWidgetHostViewQtDelegateWidget::show()
-{
-    QWidget::show();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::hide()
-{
-    QWidget::hide();
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
-{
-    return QWidget::isVisible();
-}
-
-QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
-{
-    return QWidget::windowHandle();
-}
-
-void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
-{
-    QWidget::update(rect);
-}
-
-void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
-{
-    if (BackingStoreQt *backingStore = m_view->GetBackingStore()) {
-        QPainter painter(this);
-        backingStore->paintToTarget(&painter, event->rect());
-    }
-}
-
-QPainter* RenderWidgetHostViewQtDelegateWidget::painter()
-{
-    if (!m_painter)
-        m_painter = new QPainter(this);
-    return m_painter;
-}
-
-void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
-{
-    m_view->GetRenderWidgetHost()->WasResized();
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
-{
-    if (!m_view || !m_view->handleEvent(event))
-        return QWidget::event(event);
-    return true;
-}
+private:
+    content::WebContents* webContents;
+};
+#endif // WEB_CONTENTS_ADAPTER_H

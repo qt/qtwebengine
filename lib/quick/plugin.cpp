@@ -39,39 +39,26 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#include <QtQml/qqmlextensionplugin.h>
 
-#include "render_widget_host_view_qt_delegate.h"
+#include "qquickwebcontentsview_p.h"
 
-#include <QWidget>
+QT_BEGIN_NAMESPACE
 
-class BackingStoreQt;
-class QWindow;
-
-class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
+class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
-    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQt* view, QWidget *parent = 0);
+    virtual void registerTypes(const char *uri)
+    {
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+        Q_UNUSED(uri);
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
-
-    QPainter* painter();
-
-protected:
-    void paintEvent(QPaintEvent * event);
-    bool event(QEvent *event);
-    void resizeEvent(QResizeEvent *resizeEvent);
-
-private:
-    QPainter* m_painter;
+        qmlRegisterType<QQuickWebContentsView>(uri, 1, 0, "WebContentsView");
+    }
 };
 
-#endif
+QT_END_NAMESPACE
+
+#include "qtwebengineplugin.moc"

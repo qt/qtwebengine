@@ -39,44 +39,41 @@
 **
 ****************************************************************************/
 
-#include "web_contents_view_qt.h"
+#ifndef QWEBCONTESTSVIEW_H
+#define QWEBCONTESTSVIEW_H
 
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
-#include "render_widget_host_view_qt_delegate.h"
+#include <qtwebengineglobal.h>
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include <QWidget>
+#include <QScopedPointer>
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
-{
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->resetView(view);
-    m_client->adjustSize(m_viewDelegate);
-    view->SetDelegate(m_viewDelegate);
+class QWebContentsViewPrivate;
 
-    return view;
-}
+class QWEBENGINEWIDGETS_EXPORT QWebContentsView : public QWidget {
+    Q_OBJECT
+public:
+    QWebContentsView();
+    ~QWebContentsView();
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
-{
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
-}
+    void load(const QUrl& url);
+    bool canGoBack() const;
+    bool canGoForward() const;
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
-{
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
-}
+public Q_SLOTS:
+    void back();
+    void forward();
+    void reload();
+    void stop();
 
-void WebContentsViewQt::Focus()
-{
-    m_viewDelegate->setKeyboardFocus();
-}
+Q_SIGNALS:
+    void loadFinished(bool ok);
+    void loadStarted();
+    void titleChanged(const QString& title);
+    void urlChanged(const QUrl& url);
 
-void WebContentsViewQt::SetInitialFocus()
-{
-    Focus();
-}
+private:
+    Q_DECLARE_PRIVATE(QWebContentsView);
+    QScopedPointer<QWebContentsViewPrivate> d_ptr;
+};
+
+#endif // QWEBCONTESTSVIEW_H

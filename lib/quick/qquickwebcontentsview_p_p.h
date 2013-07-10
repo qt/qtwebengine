@@ -39,44 +39,30 @@
 **
 ****************************************************************************/
 
-#include "web_contents_view_qt.h"
+#ifndef QQUICKWEBCONTENTSVIEW_P_P_H
+#define QQUICKWEBCONTENTSVIEW_P_P_H
 
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
-#include "render_widget_host_view_qt_delegate.h"
+#include "web_contents_adapter_client.h"
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include <QScopedPointer>
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+class QQuickWebContentsView;
+class WebContentsAdapter;
+
+class QQuickWebContentsViewPrivate : public WebContentsAdapterClient
 {
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->resetView(view);
-    m_client->adjustSize(m_viewDelegate);
-    view->SetDelegate(m_viewDelegate);
+    QQuickWebContentsView *q_ptr;
+    Q_DECLARE_PUBLIC(QQuickWebContentsView)
+public:
+    QQuickWebContentsViewPrivate();
 
-    return view;
-}
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
+    virtual void adjustSize(RenderWidgetHostViewQtDelegate*) Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
-{
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
-}
+    QScopedPointer<WebContentsAdapter> adapter;
+};
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
-{
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
-}
-
-void WebContentsViewQt::Focus()
-{
-    m_viewDelegate->setKeyboardFocus();
-}
-
-void WebContentsViewQt::SetInitialFocus()
-{
-    Focus();
-}
+#endif // QQUICKWEBCONTENTSVIEW_P_P_H

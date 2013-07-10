@@ -39,63 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
+#ifndef QQUICKWEBCONTESTSVIEW_P_H
+#define QQUICKWEBCONTESTSVIEW_P_H
 
-// On Mac we need to reset this define in order to prevent definition
-// of "check" macros etc. The "check" macro collides with a member function name in QtQuick.
-// See AssertMacros.h in the Mac SDK.
-#include <QtGlobal> // We need this for the Q_OS_MAC define.
-#if defined(Q_OS_MAC)
-#undef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
-#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
-#endif
+#include <QQuickItem>
+#include <QScopedPointer>
 
-#include "render_widget_host_view_qt_delegate.h"
+class QQuickWebContentsViewPrivate;
 
-#include <QQuickPaintedItem>
-
-class BackingStoreQt;
-class QWindow;
-class QQuickItem;
-class QFocusEvent;
-class QMouseEvent;
-class QKeyEvent;
-class QWheelEvent;
-
-class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
-{
+class QQuickWebContentsView : public QQuickItem {
     Q_OBJECT
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
+
 public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQt* view, QQuickItem *parent = 0);
+    QQuickWebContentsView();
+    ~QQuickWebContentsView();
 
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
+    QUrl url() const;
+    void setUrl(const QUrl&);
+    bool isLoading() const;
+    QString title() const;
+    bool canGoBack() const;
+    bool canGoForward() const;
 
-    void paint(QPainter *painter);
+public Q_SLOTS:
+    void goBack();
+    void goForward();
+    void reload();
+    void stop();
 
-    void focusInEvent(QFocusEvent*);
-    void focusOutEvent(QFocusEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void keyPressEvent(QKeyEvent*);
-    void keyReleaseEvent(QKeyEvent*);
-    void wheelEvent(QWheelEvent*);
+Q_SIGNALS:
+    void titleChanged();
+    void urlChanged();
+    void loadingStateChanged();
 
 protected:
-    void updatePolish();
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
 private:
-    BackingStoreQt* m_backingStore;
+    Q_DECLARE_PRIVATE(QQuickWebContentsView)
+    // Hides QObject::d_ptr allowing us to use the convenience macros.
+    QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;
 };
 
-#endif
+QML_DECLARE_TYPE(QQuickWebContentsView)
+
+#endif // QQUICKWEBCONTESTSVIEW_P_H

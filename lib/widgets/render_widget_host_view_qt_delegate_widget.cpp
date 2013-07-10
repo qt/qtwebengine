@@ -39,44 +39,75 @@
 **
 ****************************************************************************/
 
-#include "web_contents_view_qt.h"
+#include "render_widget_host_view_qt_delegate_widget.h"
 
-#include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
-#include "render_widget_host_view_qt_delegate.h"
+#include <QResizeEvent>
+#include <QPainter>
+#include <QPaintEvent>
 
-#include "content/browser/renderer_host/render_view_host_impl.h"
-
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidget *parent)
+    : QWidget(parent)
 {
-    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->resetView(view);
-    m_client->adjustSize(m_viewDelegate);
-    view->SetDelegate(m_viewDelegate);
-
-    return view;
+    setFocusPolicy(Qt::ClickFocus);
+    setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
+QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
 {
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
+    return QRectF(x(), y(), width(), height());
 }
 
-void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
+void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
 {
-    content::RenderWidgetHostView* rwhv = m_client->webContentsDelegate->web_contents()->GetRenderWidgetHostView();
-    if (rwhv)
-      *out = rwhv->GetViewBounds();
+    setFocus();
 }
 
-void WebContentsViewQt::Focus()
+bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
 {
-    m_viewDelegate->setKeyboardFocus();
+    return hasFocus();
 }
 
-void WebContentsViewQt::SetInitialFocus()
+void RenderWidgetHostViewQtDelegateWidget::show()
 {
-    Focus();
+    QWidget::show();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::hide()
+{
+    QWidget::hide();
+}
+
+bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
+{
+    return QWidget::isVisible();
+}
+
+QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
+{
+    return QWidget::windowHandle();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
+{
+    QWidget::update(rect);
+}
+
+void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
+{
+    QPainter painter(this);
+    fetchBackingStore();
+    paint(&painter, event->rect());
+}
+
+void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
+{
+    Q_UNUSED(resizeEvent);
+    notifyResize();
+}
+
+bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
+{
+    if (!forwardEvent(event))
+        return QWidget::event(event);
+    return true;
 }
