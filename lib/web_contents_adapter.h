@@ -38,35 +38,41 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEB_CONTENTS_ADAPTER_H
+#define WEB_CONTENTS_ADAPTER_H
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#include "qtwebengineglobal.h"
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
-
-#include <QObject>
+#include <QScopedPointer>
+#include <QString>
 #include <QUrl>
 
 namespace content {
-    class BrowserContext;
-    class SiteInstance;
+class WebContents;
 }
 class WebContentsAdapterClient;
+class WebContentsDelegateQt;
+class WebContentsAdapterPrivate;
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
-{
+class QWEBENGINE_EXPORT WebContentsAdapter {
+
 public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    WebContentsAdapter(WebContentsAdapterClient* adapterClient);
+    ~WebContentsAdapter();
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
+    bool canGoBack() const;
+    bool canGoForward() const;
+    bool isLoading() const;
+    void navigateHistory(int);
+    void stop();
+    void reload();
+    void load(const QUrl&);
+    QUrl activeUrl() const;
+    QString pageTitle() const;
 
 private:
-    scoped_ptr<content::WebContents> m_webContents;
-    WebContentsAdapterClient *m_viewClient;
-    friend class WebContentsAdapter;
+    inline content::WebContents* webContents() const;
+    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
+    QScopedPointer<WebContentsAdapterPrivate> d;
 };
-
-#endif
+#endif // WEB_CONTENTS_ADAPTER_H

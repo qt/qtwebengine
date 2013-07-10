@@ -39,34 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#ifndef QWEBCONTESTSVIEWPRIVATE_H
+#define QWEBCONTESTSVIEWPRIVATE_H
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
+#include "web_contents_adapter_client.h"
 
-#include <QObject>
-#include <QUrl>
+#include <QScopedPointer>
 
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-}
-class WebContentsAdapterClient;
+class QWebContentsView;
+class RenderWidgetHostViewQtDelegate;
+class WebContentsAdapter;
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
+class QWebContentsViewPrivate : public WebContentsAdapterClient
 {
+    Q_DECLARE_PUBLIC(QWebContentsView)
+    QWebContentsView *q_ptr;
+
 public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    QWebContentsViewPrivate();
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *) Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
 
-private:
-    scoped_ptr<content::WebContents> m_webContents;
-    WebContentsAdapterClient *m_viewClient;
-    friend class WebContentsAdapter;
+    bool m_isLoading;
+    QScopedPointer<WebContentsAdapter> adapter;
 };
 
 #endif

@@ -61,13 +61,17 @@
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
-    , m_delegate(0)
 {
     m_host->SetView(this);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+}
+
+void RenderWidgetHostViewQt::SetDelegate(RenderWidgetHostViewQtDelegate* delegate)
+{
+    m_delegate.reset(delegate);
 }
 
 bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
@@ -335,8 +339,7 @@ void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus, int)
 
 void RenderWidgetHostViewQt::Destroy()
 {
-    delete m_delegate;
-    m_delegate = 0;
+    m_delegate.reset();
 }
 
 void RenderWidgetHostViewQt::SetTooltipText(const string16&)

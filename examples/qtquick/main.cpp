@@ -40,14 +40,17 @@
 ****************************************************************************/
 
 #include "quickwindow.h"
-#include "qquickwebcontentsview.h"
-#include <QApplication>
+#ifndef QT_NO_WIDGETS
+#include <QtWidgets/QApplication>
+typedef QApplication Application;
+#else
+#include <QtGui/QGuiApplication>
+typedef QGuiApplication Application;
+#endif
 
 int main(int argc, char **argv)
 {
-    QApplication app(argc, argv);
-
-    QQuickWebContentsView::registerType();
+    Application app(argc, argv);
 
     ApplicationEngine appEngine;
 

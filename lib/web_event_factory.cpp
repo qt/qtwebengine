@@ -43,12 +43,13 @@
 #include "web_event_factory.h"
 #include "third_party/WebKit/Source/core/platform/WindowsKeyboardCodes.h"
 
-#include <QApplication>
 #include <QElapsedTimer>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
+
+static const int wheelScrollLines = 3; // FIXME: Still not available in QStyleHints in 5.1
 
 using namespace WebKit;
 
@@ -592,8 +593,6 @@ WebKit::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
     // Since we report the scroll by the pixel, convert the delta to pixel distance using standard scroll step.
     // Use the same single scroll step as QTextEdit (in QTextEditPrivate::init [h,v]bar->setSingleStep)
     static const float cDefaultQtScrollStep = 20.f;
-
-    const int wheelScrollLines = qApp->wheelScrollLines(); // can be hardcoded to 3 if we don't want to depend on QtWidgets
 
     webEvent.deltaX = webEvent.wheelTicksX * wheelScrollLines * cDefaultQtScrollStep;
     webEvent.deltaY = webEvent.wheelTicksY * wheelScrollLines * cDefaultQtScrollStep;

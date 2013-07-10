@@ -38,28 +38,25 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QTWEBENGINEGLOBAL_H
+#define QTWEBENGINEGLOBAL_H
 
-#ifndef QWEBCONTESTSVIEWPRIVATE_H
-#define QWEBCONTESTSVIEWPRIVATE_H
+#include <QtCore/qglobal.h>
 
-#include "web_contents_view_qt.h"
-
-#include <QScopedPointer>
-
-class QWebContentsView;
-
-class QWebContentsViewPrivate : public WebContentsViewQtClient
-{
-    QWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QWebContentsView)
-public:
-    QWebContentsViewPrivate();
-
-    RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) Q_DECL_OVERRIDE;
-
-    void _q_onLoadingStateChanged();
-
-    bool m_isLoading;
-};
-
+#ifndef QT_STATIC
+#  if !defined(QT_BUILD_WEBENGINEWIDGETS_LIB) && defined(BUILDING_CHROMIUM)
+#      define QWEBENGINE_EXPORT Q_DECL_EXPORT
+#  else
+#      define QWEBENGINE_EXPORT Q_DECL_IMPORT
+#  endif
+#  if defined(QT_BUILD_WEBENGINEWIDGETS_LIB)
+#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_EXPORT
+#  else
+#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define QWEBENGINEWIDGETS_EXPORT
+#  define QWEBENGINE_EXPORT
 #endif
+
+#endif // QTWEBENGINEGLOBAL_H

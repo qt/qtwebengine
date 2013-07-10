@@ -39,34 +39,76 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#include "render_widget_host_view_qt_delegate_widget.h"
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents.h"
+#include <QResizeEvent>
+#include <QPainter>
+#include <QPaintEvent>
 
-#include <QObject>
-#include <QUrl>
-
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-}
-class WebContentsAdapterClient;
-
-class WebContentsDelegateQt : public content::WebContentsDelegate
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidget *parent)
+    : QWidget(parent)
 {
-public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    setFocusPolicy(Qt::ClickFocus);
+    setAttribute(Qt::WA_AcceptTouchEvents);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+}
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void LoadingStateChanged(content::WebContents* source);
+QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
+{
+    return QRectF(x(), y(), width(), height());
+}
 
-private:
-    scoped_ptr<content::WebContents> m_webContents;
-    WebContentsAdapterClient *m_viewClient;
-    friend class WebContentsAdapter;
-};
+void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
+{
+    setFocus();
+}
 
-#endif
+bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
+{
+    return hasFocus();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::show()
+{
+    QWidget::show();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::hide()
+{
+    QWidget::hide();
+}
+
+bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
+{
+    return QWidget::isVisible();
+}
+
+QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
+{
+    return QWidget::windowHandle();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
+{
+    QWidget::update(rect);
+}
+
+void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
+{
+    QPainter painter(this);
+    fetchBackingStore();
+    paint(&painter, event->rect());
+}
+
+void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
+{
+    Q_UNUSED(resizeEvent);
+    notifyResize();
+}
+
+bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
+{
+    if (!forwardEvent(event))
+        return QWidget::event(event);
+    return true;
+}

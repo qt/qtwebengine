@@ -9,5 +9,8 @@ SOURCES = quickwindow.cpp main.cpp
 OTHER_FILES += quickwindow.qml
 RESOURCES += resources.qrc
 
-QT += quick \
-      widgets # QApplication is required to get native styling with QtQuickControls
+
+QT += qml quick
+qtHaveModule(widgets) {
+    QT += widgets # QApplication is required to get native styling with QtQuickControls
+}
