@@ -42,6 +42,7 @@
 #include "content_browser_client_qt.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
