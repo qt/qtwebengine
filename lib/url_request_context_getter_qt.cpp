@@ -102,6 +102,8 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_storage->set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(m_proxyConfigService.release(), 0, NULL));
 
         m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
+        m_storage->set_transport_security_state(new net::TransportSecurityState());
+
         m_storage->set_http_auth_handler_factory(
             net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
         m_storage->set_http_server_properties(new net::HttpServerPropertiesImpl);
@@ -117,6 +119,8 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
                     BrowserThread::CACHE));
 
         net::HttpNetworkSession::Params network_session_params;
+        network_session_params.transport_security_state =
+            m_urlRequestContext->transport_security_state();
         network_session_params.cert_verifier =
             m_urlRequestContext->cert_verifier();
         network_session_params.server_bound_cert_service =
