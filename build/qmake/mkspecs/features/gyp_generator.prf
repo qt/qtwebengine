@@ -4,6 +4,7 @@
 
 load(functions)
 load(moc)
+load(resources)
 
 defineReplace(mocAction) {
     INPUT_FILE = $$1
@@ -20,11 +21,34 @@ defineReplace(mocAction) {
                "        'inputs': ['$$INPUT_FILE',]," \
                "        'outputs': ['$$OUTPUT_FILE',]," \
                "        'action': ["
-for(token, MOC_COMMAND): contents += "          '$$token',"
+    for(token, MOC_COMMAND): contents += "          '$$token',"
     contents += "          '$$INPUT_FILE'," \
                 "          '-o'," \
                 "          '$$OUTPUT_FILE'," \
                 "        ]," \
+                "     },"
+
+    return($$contents)
+}
+
+defineReplace(rccAction) {
+    INPUT_FILE = $$1
+    OUTPUT_NAME = $$rccOutput($$INPUT_FILE)
+    EXTERN_FUNC = $$rccExternFunc($$INPUT_FILE)
+    OUTPUT_FILE = $$absolute_path($$RCC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}$${OUTPUT_NAME}
+    contents = "      {" \
+               "        'action_name':'$$OUTPUT_NAME'," \
+               "        'inputs': ['$$INPUT_FILE',]," \
+               "        'outputs': ['$$OUTPUT_FILE',]," \
+               "        'action': [" \
+               "          '$$QMAKE_RCC',"
+    for(resource_flag, $$QMAKE_RESOURCE_FLAGS): contents += "          '$$resource_flag',"
+    contents += "          '-name'," \
+                "          '$$EXTERN_FUNC'," \
+                "          '$$INPUT_FILE'," \
+                "          '-o'," \
+                "          '$$OUTPUT_FILE',"
+    contents += "        ]," \
                 "     },"
 
     return($$contents)
@@ -117,14 +141,15 @@ for (headerfile, HEADERS): GYP_CONTENTS += "      '$$headerfile',"
 for (resourcefile, RESOURCES) {
   RCC_CPP = $$replace(resourcefile, .qrc, .cpp)
   RCC_CPP = $$join(RCC_CPP, "qrc_", qrc_)
-  GYP_CONTENTS += "      '$$RCC_DIR/$$RCC_CPP',"
+  RCC_CPP = $$absolute_path($$RCC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}$${RCC_CPP}
+  GYP_CONTENTS += "      '$$RCC_CPP',"
 }
 
 # Add moc output files to compile that aren't included at the end of any other source
 MOC_OUT_PATH = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}
 for (mocable_header, MOCABLE_HEADERS) {
     !contains(INCLUDED_MOC_FILES, $$mocOutput($$mocable_header)) {
-        GYP_CONTENTS += "       '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
+        GYP_CONTENTS += "      '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
     }
 }
 
@@ -136,13 +161,11 @@ GYP_CONTENTS += "    ],"
 }
 
 # Generate the actions for moc
-!isEmpty(MOCABLE_HEADERS) {
-    GYP_CONTENTS += "    'actions': ["
-    for(header, MOCABLE_HEADERS): GYP_CONTENTS += $$mocAction($$header)
-    GYP_CONTENTS += "    ],"
-}
-
-GYP_CONTENTS += "  }," \
+GYP_CONTENTS += "    'actions': ["
+for(resourcefile, RESOURCES): GYP_CONTENTS += $$rccAction($$resourcefile)
+for(header, MOCABLE_HEADERS): GYP_CONTENTS += $$mocAction($$header)
+GYP_CONTENTS += "    ]," \
+                "  }," \
                 "  ]," \
                 "}"
 
@@ -155,3 +178,4 @@ unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$QTWEBENGINE_RO
 TEMPLATE = aux
 SOURCES =
 HEADERS =
+RESOURCES =

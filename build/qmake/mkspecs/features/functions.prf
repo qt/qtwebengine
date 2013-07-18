@@ -42,6 +42,19 @@ defineReplace(mocOutput) {
   return($$out)
 }
 
+defineReplace(rccOutput) {
+  out = $$1
+  out = $$replace(out, .qrc, .cpp)
+  out = $$join(out, qrc_, qrc_)
+  return($$out)
+}
+
+defineReplace(rccExternFunc) {
+  out = $$1
+  out = $$replace(out, .qrc, )
+  return($$out)
+}
+
 defineReplace(which) {
   out = $$1
   # FIXME: figure out what to do about windows...
