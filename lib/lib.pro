@@ -3,7 +3,6 @@
 # our gyp_generator.prf feature to the CONFIG variable since it is processed backwards
 CONFIG = gyp_generator $$CONFIG
 GYPDEPENDENCIES += ../shared/shared.gyp:qtwebengine_shared
-GYPDEPENDENCIES += ../chromium/net/net.gyp:net_resources
 GYPINCLUDES += ../qtwebengine.gypi
 
 TEMPLATE = lib
@@ -22,6 +21,8 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 QT += widgets quick
 
 RESOURCES += lib_resources.qrc
+# We need this to find the include files generated for the .pak resource files.
+INCLUDEPATH += $$absolute_path(../resources, $$PWD)
 
 SOURCES = \
         backing_store_qt.cpp \
