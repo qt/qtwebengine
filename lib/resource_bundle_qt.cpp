@@ -144,6 +144,15 @@ void ResourceBundle::LoadCommonResources()
         AddDataPack(data_pack.release());
 }
 
+// As GetLocaleFilePath is excluded for Mac in resource_bundle.cc,
+// we have to add a replacement for it using the inverted logic.
+#if defined(OS_MACOSX)
+base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& /*app_locale*/, bool /*test_file_exists*/)
+{
+    return base::FilePath();
+}
+#endif
+
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl)
 {
     LOG(WARNING) << "Unable to load image with id " << resource_id;
