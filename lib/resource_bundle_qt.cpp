@@ -144,11 +144,6 @@ void ResourceBundle::LoadCommonResources()
         AddDataPack(data_pack.release());
 }
 
-base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& /*app_locale*/, bool /*test_file_exists*/)
-{
-    return base::FilePath();
-}
-
 gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl)
 {
     LOG(WARNING) << "Unable to load image with id " << resource_id;
