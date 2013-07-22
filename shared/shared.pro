@@ -21,6 +21,7 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 QT += gui
 
 SOURCES = \
+        resource_bundle_qt.cpp \
         shared_globals.cpp
 
 HEADERS = \
