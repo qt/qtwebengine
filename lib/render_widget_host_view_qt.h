@@ -58,6 +58,7 @@ class QEvent;
 class QFocusEvent;
 class QKeyEvent;
 class QMouseEvent;
+class QTouchEvent;
 class QWheelEvent;
 class RenderWidgetHostViewQtDelegate;
 
@@ -132,6 +133,7 @@ public:
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
+    void handleTouchEvent(QTouchEvent*);
     void handleFocusEvent(QFocusEvent*);
 
 #if defined(OS_MACOSX)
