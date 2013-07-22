@@ -33,7 +33,6 @@ SOURCES = \
         render_widget_host_view_qt_delegate_quick.cpp \
         render_widget_host_view_qt_delegate_widget.cpp \
         resource_context_qt.cpp \
-        resource_bundle_qt.cpp \
         url_request_context_getter_qt.cpp \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
