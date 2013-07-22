@@ -86,6 +86,11 @@ bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
     case QEvent::Wheel:
         handleWheelEvent(static_cast<QWheelEvent*>(event));
         break;
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        handleTouchEvent(static_cast<QTouchEvent*>(event));
+        break;
     case QEvent::FocusIn:
     case QEvent::FocusOut:
         handleFocusEvent(static_cast<QFocusEvent*>(event));
@@ -460,6 +465,12 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
     m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev));
+}
+
+void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
+{
+    if (m_host->ShouldForwardTouchEvent())
+        m_host->ForwardTouchEventWithLatencyInfo(WebEventFactory::toWebTouchEvent(ev), ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)

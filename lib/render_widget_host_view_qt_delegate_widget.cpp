@@ -55,6 +55,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     , m_painter(0)
 {
     setFocusPolicy(Qt::ClickFocus);
+    setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
