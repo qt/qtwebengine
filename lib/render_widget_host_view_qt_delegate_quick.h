@@ -89,6 +89,7 @@ public:
     void keyPressEvent(QKeyEvent*);
     void keyReleaseEvent(QKeyEvent*);
     void wheelEvent(QWheelEvent*);
+    void touchEvent(QTouchEvent*);
 
 protected:
     void updatePolish();

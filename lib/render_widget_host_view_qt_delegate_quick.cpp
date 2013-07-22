@@ -167,3 +167,8 @@ void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
 {
     m_view->handleWheelEvent(event);
 }
+
+void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
+{
+    m_view->handleTouchEvent(event);
+}
