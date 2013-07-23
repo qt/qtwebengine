@@ -42,16 +42,16 @@ index 3fd1c77..0e57abb 100644
  
        # Enable building with ASAN (Clang's -fsanitize=address option).
        # -fsanitize=address only works with clang, but asan=1 implies clang=1
-@@ -1100,6 +1100,9 @@
-     # MDNS is disabled by default.
-     'enable_mdns%' : 0,
+@@ -1108,6 +1108,9 @@
+     # rlz codes for searches but do not use the library.
+     'enable_rlz%': 0,
  
 +    # Compile with libc++ instead of libstdc++.
 +    'use_libcpp%' : 0,
 +
-     'conditions': [
-       # The version of GCC in use, set later in platforms that use GCC and have
-       # not explicitly chosen to build with clang. Currently, this means all
+     # Turns on compiler optimizations in V8 in Debug build.
+     'v8_optimized_debug': 1,
+ 
 @@ -1358,10 +1361,10 @@
            # someplace that Xcode doesn't know about, set mac_sdk_path to the
            # path to the SDK; when set to a non-empty string, SDK detection

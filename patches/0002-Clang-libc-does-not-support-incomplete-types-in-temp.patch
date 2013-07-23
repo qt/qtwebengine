@@ -1,7 +1,7 @@
-From 9ebab30210abcb9af385d6a7bc2745ca4c790f0a Mon Sep 17 00:00:00 2001
+From 5a81cf6d0797c855a15eef8faa00bb221f24ca8f Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 15:58:32 +0200
-Subject: [PATCH 2/2] Clang / libc++ does not support incomplete types in
+Subject: [PATCH] Clang / libc++ does not support incomplete types in
  templates. See: http://clang.llvm.org/compatibility.html#undep_incomplete
 
 Therefore forward declarations must be removed in several places:
@@ -25,7 +25,7 @@ Therefore forward declarations must be removed in several places:
  base/callback_forward.h                            |   9 +-
  .../browser/devtools/worker_devtools_manager.cc    |  24 ----
  content/browser/devtools/worker_devtools_manager.h |  26 +++-
- .../in_process_webkit/indexed_db_dispatcher_host.h |   2 +-
+ .../indexed_db/indexed_db_dispatcher_host.h        |   2 +-
  .../media/media_stream_dispatcher_host.cc          |  11 --
  .../media/media_stream_dispatcher_host.h           |  12 +-
  .../renderer_host/pepper/browser_ppapi_host_impl.h |   3 +-
@@ -33,22 +33,27 @@ Therefore forward declarations must be removed in several places:
  content/browser/worker_host/message_port_service.h |  16 ++-
  content/common/gpu/gpu_messages.h                  |   4 +-
  content/public/test/test_file_error_injector.h     |   3 +-
- content/renderer/media/media_stream_dispatcher.cc  |  21 ---
- content/renderer/media/media_stream_dispatcher.h   |  22 +++-
+ content/renderer/media/media_stream_center.h       |   1 +
+ content/renderer/media/media_stream_dispatcher.cc  |  31 -----
+ content/renderer/media/media_stream_dispatcher.h   |  31 ++++-
  gpu/config/dx_diag_node.cc                         |   4 +
  gpu/config/dx_diag_node.h                          |   4 +
  media/filters/ffmpeg_audio_decoder.cc              |   6 -
- media/filters/ffmpeg_audio_decoder.h               |   7 +-
+ media/filters/ffmpeg_audio_decoder.h               |   8 +-
  net/cert/mock_cert_verifier.cc                     |  19 ---
  net/cert/mock_cert_verifier.h                      |  20 ++-
  net/dns/mock_host_resolver.cc                      |  31 -----
  net/dns/mock_host_resolver.h                       |  32 ++++-
  net/http/http_auth_cache.h                         | 144 ++++++++++-----------
+ third_party/WebKit                                 |   2 +-
+ tools/grit                                         |   2 +-
+ tools/gritsettings/resource_ids                    |   3 +
+ tools/gyp                                          |   2 +-
  ui/gfx/image/image_family.h                        |  23 ++--
  webkit/browser/dom_storage/dom_storage_namespace.h |   3 +-
  webkit/support/weburl_loader_mock_factory.cc       |   5 -
  webkit/support/weburl_loader_mock_factory.h        |   8 +-
- 26 files changed, 229 insertions(+), 245 deletions(-)
+ 31 files changed, 246 insertions(+), 258 deletions(-)
 
 diff --git a/base/callback_forward.h b/base/callback_forward.h
 index 7983248..8538bb2 100644
@@ -155,13 +160,13 @@ index 7ea8840..0f0111e 100644
    typedef std::list<TerminatedInspectedWorker> TerminatedInspectedWorkers;
    // List of terminated workers for which there may be a devtools client on
    // the UI thread. Worker entry is added into this list when inspected worker
-diff --git a/content/browser/in_process_webkit/indexed_db_dispatcher_host.h b/content/browser/in_process_webkit/indexed_db_dispatcher_host.h
-index 773c7b8..3c52971 100644
---- a/content/browser/in_process_webkit/indexed_db_dispatcher_host.h
-+++ b/content/browser/in_process_webkit/indexed_db_dispatcher_host.h
-@@ -11,8 +11,8 @@
- #include "base/basictypes.h"
+diff --git a/content/browser/indexed_db/indexed_db_dispatcher_host.h b/content/browser/indexed_db/indexed_db_dispatcher_host.h
+index 0731113..773d6e4 100644
+--- a/content/browser/indexed_db/indexed_db_dispatcher_host.h
++++ b/content/browser/indexed_db/indexed_db_dispatcher_host.h
+@@ -12,8 +12,8 @@
  #include "base/id_map.h"
+ #include "base/memory/ref_counted.h"
  #include "content/public/browser/browser_message_filter.h"
 +#include "googleurl/src/gurl.h"
  
@@ -170,7 +175,7 @@ index 773c7b8..3c52971 100644
  struct IndexedDBHostMsg_DatabaseCount_Params;
  struct IndexedDBHostMsg_DatabaseCreateIndex_Params;
 diff --git a/content/browser/renderer_host/media/media_stream_dispatcher_host.cc b/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
-index 688e241..bf02285 100644
+index abd4cd3..2d65d16 100644
 --- a/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
 +++ b/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
 @@ -12,17 +12,6 @@
@@ -289,7 +294,7 @@ index b85e76b..e6bf717 100644
    MessagePorts message_ports_;
  
 diff --git a/content/common/gpu/gpu_messages.h b/content/common/gpu/gpu_messages.h
-index 05afcdb..7bb22d8 100644
+index 92b73a9..1258195 100644
 --- a/content/common/gpu/gpu_messages.h
 +++ b/content/common/gpu/gpu_messages.h
 @@ -110,10 +110,12 @@ IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
@@ -320,14 +325,31 @@ index c056780..23a5520 100644
  
  namespace content {
  
+diff --git a/content/renderer/media/media_stream_center.h b/content/renderer/media/media_stream_center.h
+index 642cda5..83a55f6 100644
+--- a/content/renderer/media/media_stream_center.h
++++ b/content/renderer/media/media_stream_center.h
+@@ -15,6 +15,7 @@
+ #include "third_party/WebKit/public/platform/WebMediaStream.h"
+ #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
+ #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
++#include "third_party/WebKit/public/platform/WebMediaStreamTrackSourcesRequest.h"
+ 
+ namespace WebKit {
+ class WebMediaStreamCenterClient;
 diff --git a/content/renderer/media/media_stream_dispatcher.cc b/content/renderer/media/media_stream_dispatcher.cc
-index 2317380..8b77b13 100644
+index 80b3473..91e1731 100644
 --- a/content/renderer/media/media_stream_dispatcher.cc
 +++ b/content/renderer/media/media_stream_dispatcher.cc
-@@ -14,27 +14,6 @@
+@@ -14,37 +14,6 @@
  
  namespace content {
  
+-// A request is identified by pair (request_id, handler), or ipc_request.
+-// There could be multiple clients making requests and each has its own
+-// request_id sequence.
+-// The ipc_request is garanteed to be unique when it's created in
+-// MediaStreamDispatcher.
 -struct MediaStreamDispatcher::Request {
 -  Request(const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
 -          int request_id,
@@ -335,6 +357,11 @@ index 2317380..8b77b13 100644
 -      : handler(handler),
 -        request_id(request_id),
 -        ipc_request(ipc_request) {
+-  }
+-  bool IsThisRequest(
+-      int request_id1,
+-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler1) {
+-    return (request_id1 == request_id && handler1.get() == handler.get());
 -  }
 -  base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
 -  int request_id;
@@ -353,14 +380,19 @@ index 2317380..8b77b13 100644
      const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
      int request_id)
 diff --git a/content/renderer/media/media_stream_dispatcher.h b/content/renderer/media/media_stream_dispatcher.h
-index e013864..8624e1f 100644
+index 3562a02..3e66252 100644
 --- a/content/renderer/media/media_stream_dispatcher.h
 +++ b/content/renderer/media/media_stream_dispatcher.h
-@@ -91,11 +91,29 @@ class CONTENT_EXPORT MediaStreamDispatcher
+@@ -98,11 +98,38 @@ class CONTENT_EXPORT MediaStreamDispatcher
    FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
    FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);
  
 -  struct Request;
++  // A request is identified by pair (request_id, handler), or ipc_request.
++  // There could be multiple clients making requests and each has its own
++  // request_id sequence.
++  // The ipc_request is garanteed to be unique when it's created in
++  // MediaStreamDispatcher.
 +  struct Request {
 +    Request(const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
 +            int request_id,
@@ -368,6 +400,11 @@ index e013864..8624e1f 100644
 +        : handler(handler),
 +          request_id(request_id),
 +          ipc_request(ipc_request) {
++    }
++    bool IsThisRequest(
++        int request_id1,
++        const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler1) {
++      return (request_id1 == request_id && handler1.get() == handler.get());
 +    }
 +    base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
 +    int request_id;
@@ -384,10 +421,9 @@ index e013864..8624e1f 100644
 +    StreamDeviceInfoArray audio_array;
 +    StreamDeviceInfoArray video_array;
 +  };
-+
  
-   struct EnumerationRequest {
-     EnumerationRequest(
+   // An enumeration request is identified by pair (request_id, handler).
+   // It allows multiple clients to make requests and each client could have
 diff --git a/gpu/config/dx_diag_node.cc b/gpu/config/dx_diag_node.cc
 index e0902ca..c1e84ae 100644
 --- a/gpu/config/dx_diag_node.cc
@@ -428,35 +464,36 @@ index 33d29b3..45ffa65 100644
 +
  #endif  // GPU_CONFIG_DX_DIAG_NODE_H_
 diff --git a/media/filters/ffmpeg_audio_decoder.cc b/media/filters/ffmpeg_audio_decoder.cc
-index 7754a49..8f8d274 100644
+index 3d68b79..366ace0 100644
 --- a/media/filters/ffmpeg_audio_decoder.cc
 +++ b/media/filters/ffmpeg_audio_decoder.cc
-@@ -21,12 +21,6 @@
+@@ -22,12 +22,6 @@
  
  namespace media {
  
 -// Helper structure for managing multiple decoded audio frames per packet.
 -struct QueuedAudioBuffer {
 -  AudioDecoder::Status status;
--  scoped_refptr<DataBuffer> buffer;
+-  scoped_refptr<AudioBuffer> buffer;
 -};
 -
  // Returns true if the decode result was end of stream.
- static inline bool IsEndOfStream(int result, int decoded_size,
-                                  const scoped_refptr<DecoderBuffer>& input) {
+ static inline bool IsEndOfStream(int result,
+                                  int decoded_size,
 diff --git a/media/filters/ffmpeg_audio_decoder.h b/media/filters/ffmpeg_audio_decoder.h
-index 92b1d1b..dc470b7 100644
+index 5181796..4b64525 100644
 --- a/media/filters/ffmpeg_audio_decoder.h
 +++ b/media/filters/ffmpeg_audio_decoder.h
-@@ -26,7 +26,12 @@ class AudioBus;
+@@ -25,7 +25,13 @@ namespace media {
+ 
  class AudioTimestampHelper;
- class DataBuffer;
  class DecoderBuffer;
 -struct QueuedAudioBuffer;
++
 +// Helper structure for managing multiple decoded audio frames per packet.
 +struct QueuedAudioBuffer {
 +  AudioDecoder::Status status;
-+  scoped_refptr<DataBuffer> buffer;
++  scoped_refptr<AudioBuffer> buffer;
 +};
 +
  
@@ -524,7 +561,7 @@ index 5af7b7e..704c66b 100644
  
    int default_result_;
 diff --git a/net/dns/mock_host_resolver.cc b/net/dns/mock_host_resolver.cc
-index dba69d9..28c0b7f 100644
+index 0ddb8cf..b3d1489 100644
 --- a/net/dns/mock_host_resolver.cc
 +++ b/net/dns/mock_host_resolver.cc
 @@ -209,37 +209,6 @@ void MockHostResolverBase::ResolveNow(size_t id) {
@@ -609,7 +646,7 @@ index b73bd0a..282521c 100644
  
    virtual ~RuleBasedHostResolverProc();
 diff --git a/net/http/http_auth_cache.h b/net/http/http_auth_cache.h
-index 3880dbf..d672601 100644
+index 1d6f2d2..75b379f 100644
 --- a/net/http/http_auth_cache.h
 +++ b/net/http/http_auth_cache.h
 @@ -26,7 +26,77 @@ namespace net {
@@ -770,6 +807,41 @@ index 3880dbf..d672601 100644
  }  // namespace net
  
  #endif  // NET_HTTP_HTTP_AUTH_CACHE_H_
+diff --git a/third_party/WebKit b/third_party/WebKit
+index 81619ee..111ddfe 160000
+--- a/third_party/WebKit
++++ b/third_party/WebKit
+@@ -1 +1 @@
+-Subproject commit 81619eeff33e156f163a4ae7b0745b76cc6e2131
++Subproject commit 111ddfef0a553f8d0a9ab786a44ae3aca1dad875
+diff --git a/tools/grit b/tools/grit
+index fbf8c54..c95babe 160000
+--- a/tools/grit
++++ b/tools/grit
+@@ -1 +1 @@
+-Subproject commit fbf8c54856bccf2d3e2431127ab334ab1dbd619e
++Subproject commit c95babeeea70a71aaabca18924e2471fbb065b84
+diff --git a/tools/gritsettings/resource_ids b/tools/gritsettings/resource_ids
+index fdab9ca..ce61195 100644
+--- a/tools/gritsettings/resource_ids
++++ b/tools/gritsettings/resource_ids
+@@ -194,6 +194,9 @@
+   },
+   # This file is generated during the build.
+   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
++  #"tracing_resources.grd": {
++  #"../out/Release/gen/content/browser/tracing/tracing_resources.grd": {
++  #"gen/content/browser/tracing/tracing_resources.grd": {
+     "includes": [25750],
+   },
+   "ash/ash_strings.grd": {
+diff --git a/tools/gyp b/tools/gyp
+index 172357f..9fd5d11 160000
+--- a/tools/gyp
++++ b/tools/gyp
+@@ -1 +1 @@
+-Subproject commit 172357f39aae2e09793d6b2dddec3b2ce518ff8d
++Subproject commit 9fd5d1137459f9ed029d046faa90dc80ca9857c5
 diff --git a/ui/gfx/image/image_family.h b/ui/gfx/image/image_family.h
 index b2a2c07..902dede 100644
 --- a/ui/gfx/image/image_family.h
@@ -828,10 +900,10 @@ index 758ca2e..10d6662 100644
  
  class DomStorageArea;
 diff --git a/webkit/support/weburl_loader_mock_factory.cc b/webkit/support/weburl_loader_mock_factory.cc
-index 1ac9bd4..b5d2e75 100644
+index f18bc07..f459211 100644
 --- a/webkit/support/weburl_loader_mock_factory.cc
 +++ b/webkit/support/weburl_loader_mock_factory.cc
-@@ -23,11 +23,6 @@ using WebKit::WebURLLoader;
+@@ -24,11 +24,6 @@ using WebKit::WebURLLoader;
  using WebKit::WebURLRequest;
  using WebKit::WebURLResponse;
  
