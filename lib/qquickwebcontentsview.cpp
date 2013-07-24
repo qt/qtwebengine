@@ -76,7 +76,7 @@ QQuickWebContentsView::~QQuickWebContentsView()
 QUrl QQuickWebContentsView::url() const
 {
     Q_D(const QQuickWebContentsView);
-    GURL gurl = d->webContentsDelegate->web_contents()->GetActiveURL();
+    GURL gurl = d->webContentsDelegate->web_contents()->GetVisibleURL();
     return QUrl(QString::fromStdString(gurl.spec()));
 }
 

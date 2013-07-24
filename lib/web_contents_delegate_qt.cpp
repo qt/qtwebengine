@@ -82,7 +82,7 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_co
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL) {
-        GURL gurl = web_contents()->GetActiveURL();
+        GURL gurl = web_contents()->GetVisibleURL();
         QUrl url(QString::fromStdString(gurl.spec()));
         Q_EMIT urlChanged(url);
     }

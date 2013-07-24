@@ -100,15 +100,15 @@ public:
 #endif  // defined(TOOLKIT_GTK)
     virtual void WasShown();
     virtual void WasHidden();
-    virtual void MovePluginWindows(const gfx::Vector2d&, const std::vector<webkit::npapi::WebPluginGeometry>&);
+    virtual void MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&);
     virtual void Blur();
     virtual void UpdateCursor(const WebCursor&);
     virtual void SetIsLoading(bool);
-    virtual void TextInputTypeChanged(ui::TextInputType, bool);
+    virtual void TextInputTypeChanged(ui::TextInputType, bool, ui::TextInputMode);
     virtual void ImeCancelComposition();
     virtual void ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&);
     virtual void DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo&);
-    virtual void RenderViewGone(base::TerminationStatus, int);
+    virtual void RenderProcessGone(base::TerminationStatus, int);
     virtual void Destroy();
     virtual void SetTooltipText(const string16&);
     virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&);

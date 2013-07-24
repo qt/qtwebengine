@@ -108,7 +108,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 
         m_storage->set_http_auth_handler_factory(
             net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
-        m_storage->set_http_server_properties(new net::HttpServerPropertiesImpl);
+        m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 
         base::FilePath cache_path = m_basePath.Append(FILE_PATH_LITERAL("Cache"));
         net::HttpCache::DefaultBackend* main_backend =
