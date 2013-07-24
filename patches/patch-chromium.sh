@@ -78,3 +78,7 @@ echo "Entering $PWD"
 
 git am $PATCH_DIR/0001-GYP-Fix-build-with-toplevel-dir.patch
 git am $PATCH_DIR/0001-Add-support-for-libc-to-xcode_emulation.py.patch
+
+cd $CHROMIUM_SRC_DIR/tools/grit
+git am $PATCH_DIR/0001-GRIT-Allow-grd-files-outside-of-chromium-source-dir.patch
+
