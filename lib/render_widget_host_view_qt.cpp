@@ -271,7 +271,7 @@ void RenderWidgetHostViewQt::WasHidden()
     m_host->WasHidden();
 }
 
-void RenderWidgetHostViewQt::MovePluginWindows(const gfx::Vector2d&, const std::vector<webkit::npapi::WebPluginGeometry>&)
+void RenderWidgetHostViewQt::MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&)
 {
     QT_NOT_YET_IMPLEMENTED
 }
@@ -291,7 +291,7 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType, bool)
+void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType, bool, ui::TextInputMode)
 {
     QT_NOT_YET_IMPLEMENTED
 }
@@ -322,7 +322,7 @@ void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect,
     }
 }
 
-void RenderWidgetHostViewQt::RenderViewGone(base::TerminationStatus, int)
+void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus, int)
 {
     Destroy();
 }

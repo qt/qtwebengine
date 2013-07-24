@@ -46,7 +46,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 
-#include "base/time.h"
+#include "base/time/time.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -79,6 +79,12 @@ public:
        return false;
    }
 
+   virtual base::FilePath GetPath() const
+   {
+       // FIXME: return the path of the directory where this context's data is stored.
+       return base::FilePath();
+   }
+
    virtual net::URLRequestContextGetter* GetRequestContext()
    {
        return GetDefaultStoragePartition(this)->GetURLRequestContext();
@@ -88,6 +94,12 @@ public:
    virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(int) { return GetRequestContext(); }
    virtual net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(const base::FilePath&, bool) { return GetRequestContext(); }
 
+   virtual void RequestMIDISysExPermission(int render_process_id, int render_view_id, const GURL& requesting_frame, const MIDISysExPermissionCallback& callback)
+   {
+       // Always reject requests for testing.
+       callback.Run(false);
+   }
+
    virtual content::ResourceContext* GetResourceContext()
    {
        return resourceContext.get();
@@ -95,7 +107,6 @@ public:
 
    virtual content::DownloadManagerDelegate* GetDownloadManagerDelegate() { return 0; }
    virtual content::GeolocationPermissionContext* GetGeolocationPermissionContext() { return 0; }
-   virtual content::SpeechRecognitionPreferences* GetSpeechRecognitionPreferences() { return 0; }
    virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() { return 0; }
 
    net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers)

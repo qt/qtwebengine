@@ -107,12 +107,12 @@ public:
 
     virtual void RestoreFocus() { QT_NOT_USED }
 
-    virtual WebDropData* GetDropData() const { QT_NOT_YET_IMPLEMENTED return 0; }
+    virtual content::DropData* GetDropData() const { QT_NOT_YET_IMPLEMENTED return 0; }
 
     virtual gfx::Rect GetViewBounds() const { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
 
     virtual void ShowPopupMenu(const gfx::Rect& bounds, int item_height, double item_font_size, int selected_item,
-                                const std::vector<WebMenuItem>& items, bool right_aligned, bool allow_multiple_selection) { QT_NOT_YET_IMPLEMENTED }
+                                const std::vector<content::MenuItem>& items, bool right_aligned, bool allow_multiple_selection) { QT_NOT_YET_IMPLEMENTED }
 
 #if defined(OS_MACOSX)
     virtual void SetAllowOverlappingViews(bool overlapping) { QT_NOT_YET_IMPLEMENTED }
