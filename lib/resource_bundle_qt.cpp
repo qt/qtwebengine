@@ -88,7 +88,7 @@ class UI_EXPORT DataPackQt : public DataPack {
         {
             m_data = data;
 
-            if (kHeaderLength > m_data.size())
+            if (kHeaderLength > static_cast<size_t>(m_data.size()))
                 return false;
 
             const uint32* ptr = reinterpret_cast<const uint32*>(m_data.data());

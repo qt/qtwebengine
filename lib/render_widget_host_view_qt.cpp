@@ -252,6 +252,7 @@ GdkEventButton* RenderWidgetHostViewQt::GetLastMouseDown()
 
 gfx::NativeView RenderWidgetHostViewQt::BuildInputMethodsGtkMenu()
 {
+    return 0;
 }
 #endif  // defined(TOOLKIT_GTK)
 
