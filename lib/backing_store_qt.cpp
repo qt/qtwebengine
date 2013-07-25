@@ -84,8 +84,6 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
     gfx::Rect pixel_bitmap_rect = bitmap_rect;
 
     uint8_t* bitmapData = static_cast<uint8_t*>(dib->memory());
-    int width = m_pixelBuffer.size().width();
-    int height = m_pixelBuffer.size().height();
     const QImage img(bitmapData, pixel_bitmap_rect.width(), pixel_bitmap_rect.height(), QImage::Format_ARGB32);
 
     QPainter painter(&m_pixelBuffer);
