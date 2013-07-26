@@ -42,16 +42,10 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_QT_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_QT_H_
 
+#include "shared/shared_globals.h"
+
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include <qglobal.h>
-
-#ifdef QT_WEBENGINE_LOGGING
-#define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
-#define QT_NOT_USED fprintf(stderr, "# function %s should not be used! - %s:%d\n", __func__, __FILE__, __LINE__); Q_UNREACHABLE();
-#else
-#define QT_NOT_YET_IMPLEMENTED qt_noop();
-#define QT_NOT_USED Q_UNREACHABLE(); // This will assert in debug.
-#endif
 
 class BackingStoreQt;
 class QEvent;

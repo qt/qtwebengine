@@ -41,6 +41,7 @@
 
 #include "web_engine_context.h"
 
+#include "shared/shared_globals.h"
 #include <math.h>
 
 #include "base/command_line.h"
@@ -62,15 +63,6 @@
 namespace {
 
 static WebEngineContext* sContext = 0;
-
-static inline base::FilePath::StringType qStringToStringType(const QString &str)
-{
-#if defined(OS_POSIX)
-    return str.toStdString();
-#elif defined(OS_WIN)
-    return str.toStdWString();
-#endif
-}
 
 static QByteArray subProcessPath() {
     static bool initialized = false;
