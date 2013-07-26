@@ -68,6 +68,8 @@ public:
     void resetView(RenderWidgetHostViewQt*);
 
 protected:
+    static bool isCompositingModeForced();
+
     RenderWidgetHostViewQtDelegate();
     void paint(QPainter*, const QRectF& boundingRect);
     void fetchBackingStore();

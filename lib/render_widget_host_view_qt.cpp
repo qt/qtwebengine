@@ -181,10 +181,7 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 
 gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 {
-    // This function is used in IPC in place of GetNativeView
-    // and we can possibly avoid calls for now.
-    QT_NOT_USED
-    return m_delegate->window()->winId();
+    return m_delegate->window() ? m_delegate->window()->winId() : 0;
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
@@ -430,8 +427,8 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 
 gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
 {
-    QT_NOT_YET_IMPLEMENTED
-    return gfx::GLSurfaceHandle();
+    gfx::NativeViewId nativeViewId = GetNativeViewId();
+    return nativeViewId ? gfx::GLSurfaceHandle(nativeViewId, gfx::NATIVE_TRANSPORT) : gfx::GLSurfaceHandle();
 }
 
 void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
