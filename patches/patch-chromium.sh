@@ -54,10 +54,6 @@ if [ ! -d "$CHROMIUM_SRC_DIR" ]; then
     exit 1;
 fi
 
-echo "Checking out Chromium HEADs..."
-cd $QTWEBENGINE_SRC_DIR
-git submodule update --recursive
-
 cd $CHROMIUM_SRC_DIR
 echo "Entering $PWD"
 

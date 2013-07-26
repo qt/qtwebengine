@@ -90,8 +90,32 @@ class Submodule:
         line = line.lstrip(' -')
         self.shasum = line.split(' ')[0]
 
+    def findGitDir(self):
+        try:
+            return subprocess.check_output(['git', 'rev-parse', '--git-dir']).strip()
+        except subprocess.CalledProcessError, e:
+            sys.exit("git dir could not be determined! - Initialization failed!" + e.output)
+
+    def reset(self):
+        currentDir = os.getcwd()
+        os.chdir(self.path)
+        gitdir = self.findGitDir()
+        if os.path.isdir(os.path.join(gitdir, 'rebase-merge')):
+            if os.path.isfile(os.path.join(gitdir, 'MERGE_HEAD')):
+                print 'merge in progress... aborting merge.'
+                subprocess.call(['git', 'merge', '--abort'])
+            else:
+                print 'rebase in progress... aborting merge.'
+                subprocess.call(['git', 'rebase', '--abort'])
+        if os.path.isdir(os.path.join(gitdir, 'rebase-apply')):
+            print 'am in progress... aborting am.'
+            subprocess.call(['git', 'am', '--abort'])
+        subprocess.call(['git', 'reset', '--hard'])
+        os.chdir(currentDir)
+
     def initialize(self):
         if self.matchesOS():
+            self.reset()
             print '-- initializing ' + self.path + ' --'
             subprocess.call(['git', 'submodule', 'init', self.path])
             subprocess.call(['git', 'submodule', 'update', self.path])
@@ -100,7 +124,9 @@ class Submodule:
             os.chdir(self.path)
             # Make sure we have checked out the right shasum.
             # In case there were other patches applied before.
-            subprocess.call(['git', 'checkout', self.shasum])
+            val = subprocess.call(['git', 'checkout', self.shasum])
+            if val != 0:
+                sys.exit("!!! initialization failed !!!")
             initSubmodules()
             os.chdir(currentDir)
         else:
