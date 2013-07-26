@@ -46,6 +46,8 @@
 
 #include "base/files/scoped_temp_dir.h"
 
+#include "shared/shared_globals.h"
+
 #include "base/time/time.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -55,6 +57,11 @@
 
 #include <qglobal.h>
 #include <QByteArray>
+#include <QCoreApplication>
+#include <QDir>
+#include <QStandardPaths>
+#include <QString>
+#include <QStringBuilder>
 
 #include "resource_context_qt.h"
 #include "url_request_context_getter_qt.h"
@@ -64,52 +71,63 @@ class BrowserContextQt : public content::BrowserContext
 public:
    explicit BrowserContextQt()
    {
-       tempBasePath.CreateUniqueTempDir();
        resourceContext.reset(new ResourceContextQt(this));
    }
-   virtual ~BrowserContextQt() {}
 
-   virtual base::FilePath GetPath()
+   virtual ~BrowserContextQt() Q_DECL_OVERRIDE {}
+
+   virtual base::FilePath GetPath() const Q_DECL_OVERRIDE
    {
-       return tempBasePath.path();
+       QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+       if (dataLocation.isEmpty())
+          dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
+
+       dataLocation.append(QDir::separator() % QStringLiteral("QtWebEngine"));
+       return base::FilePath(qStringToStringType(dataLocation));
    }
 
-   virtual bool IsOffTheRecord() const
+   virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE
    {
        return false;
    }
 
-   virtual base::FilePath GetPath() const
-   {
-       // FIXME: return the path of the directory where this context's data is stored.
-       return base::FilePath();
-   }
-
-   virtual net::URLRequestContextGetter* GetRequestContext()
+   virtual net::URLRequestContextGetter* GetRequestContext() Q_DECL_OVERRIDE
    {
        return GetDefaultStoragePartition(this)->GetURLRequestContext();
    }
-   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(int) { return GetRequestContext(); }
-   virtual net::URLRequestContextGetter* GetMediaRequestContext() { return GetRequestContext(); }
-   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(int) { return GetRequestContext(); }
-   virtual net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(const base::FilePath&, bool) { return GetRequestContext(); }
+   virtual net::URLRequestContextGetter* GetRequestContextForRenderProcess(int) Q_DECL_OVERRIDE { return GetRequestContext(); }
+   virtual net::URLRequestContextGetter* GetMediaRequestContext() Q_DECL_OVERRIDE { return GetRequestContext(); }
+   virtual net::URLRequestContextGetter* GetMediaRequestContextForRenderProcess(int) Q_DECL_OVERRIDE { return GetRequestContext(); }
+   virtual net::URLRequestContextGetter* GetMediaRequestContextForStoragePartition(const base::FilePath&, bool) Q_DECL_OVERRIDE { return GetRequestContext(); }
 
-   virtual void RequestMIDISysExPermission(int render_process_id, int render_view_id, const GURL& requesting_frame, const MIDISysExPermissionCallback& callback)
+   virtual void RequestMIDISysExPermission(int render_process_id, int render_view_id, const GURL& requesting_frame, const MIDISysExPermissionCallback& callback) Q_DECL_OVERRIDE
    {
        // Always reject requests for testing.
        callback.Run(false);
    }
 
-   virtual content::ResourceContext* GetResourceContext()
+   virtual content::ResourceContext* GetResourceContext() Q_DECL_OVERRIDE
    {
        return resourceContext.get();
    }
 
-   virtual content::DownloadManagerDelegate* GetDownloadManagerDelegate() { return 0; }
-   virtual content::GeolocationPermissionContext* GetGeolocationPermissionContext() { return 0; }
-   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() { return 0; }
+   virtual content::DownloadManagerDelegate* GetDownloadManagerDelegate() Q_DECL_OVERRIDE
+   {
+       QT_NOT_YET_IMPLEMENTED
+       return 0;
+   }
+   virtual content::GeolocationPermissionContext* GetGeolocationPermissionContext() Q_DECL_OVERRIDE
+   {
+       QT_NOT_YET_IMPLEMENTED
+       return 0;
+   }
+   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() Q_DECL_OVERRIDE
+   {
+       QT_NOT_YET_IMPLEMENTED
+       return 0;
+   }
 
-   net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers)
+   net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers) Q_DECL_OVERRIDE
    {
        url_request_getter_ = new URLRequestContextGetterQt(GetPath());
        static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
@@ -118,7 +136,6 @@ public:
 
 private:
    scoped_ptr<content::ResourceContext> resourceContext;
-   base::ScopedTempDir tempBasePath; // ### Should become permanent location.
    scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
 
    DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
