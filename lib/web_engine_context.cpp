@@ -53,6 +53,7 @@
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
@@ -114,22 +115,18 @@ WebEngineContext::WebEngineContext()
     Q_ASSERT(!sContext);
     sContext = this;
 
-    std::string ua = webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1");
-    QByteArray userAgentParameter("--user-agent=");
-    userAgentParameter.append(QString::fromStdString(ua).toUtf8());
-
     QList<QByteArray> args;
     Q_FOREACH (const QString& arg, QCoreApplication::arguments())
         args << arg.toUtf8();
-    args << userAgentParameter;
-    args << QByteArrayLiteral("--no-sandbox");
-    args << QByteArrayLiteral("--disable-plugins");
-
     const char* argv[args.size()];
     for (int i = 0; i < args.size(); ++i)
         argv[i] = args[i].constData();
-
     CommandLine::Init(args.size(), argv);
+
+    CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
+    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
+    parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+    parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 
     m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
     m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
