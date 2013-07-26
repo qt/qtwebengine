@@ -41,6 +41,7 @@
 
 #include "render_widget_host_view_qt_delegate_widget.h"
 
+#include <QtGlobal>
 #include <QResizeEvent>
 #include <QPainter>
 #include <QPaintEvent>
@@ -51,6 +52,21 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidg
     setFocusPolicy(Qt::ClickFocus);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
+
+#if defined(Q_OS_LINUX)
+    // FOR TESTING ONLY, use at your own risks.
+    // Supporting this properly on all platforms would require duplicating
+    // many tricks done by RenderWidgetHostView[Win|Mac].
+    if (isCompositingModeForced()) {
+        // This sets Qt::WA_NativeWindow and force a native window creation
+        // that we can give to the GPU process for it to render directly
+        // on through windowHandle().
+        winId();
+        // This makes sure that we won't try to paint the regular backing store
+        // on the window at the same time as the compositor.
+        setUpdatesEnabled(false);
+    }
+#endif
 }
 
 QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
