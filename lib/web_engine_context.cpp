@@ -133,8 +133,8 @@ WebEngineContext::WebEngineContext()
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
+    parsedCommandLine->AppendSwitchASCII(switches::kBrowserSubprocessPath, subProcessPath().constData());
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
-    parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 
     m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
     m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
