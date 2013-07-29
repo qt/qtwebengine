@@ -127,7 +127,7 @@ public:
         return 0;
     }
 
-    net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers) Q_DECL_OVERRIDE
+    net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers)
     {
         url_request_getter_ = new URLRequestContextGetterQt(GetPath());
         static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
