@@ -44,6 +44,8 @@
 #include "qwebcontentsview.h"
 #include "util.h"
 
+#include <QShortcut>
+
 static const int margin = 1;
 
 WidgetWindow::WidgetWindow()
@@ -73,6 +75,11 @@ WidgetWindow::WidgetWindow()
 
     addressLineEdit =  new QLineEdit;
     addressBar->addWidget(addressLineEdit);
+
+    QShortcut* focusUrlBarShortcut = new QShortcut(addressLineEdit);
+    focusUrlBarShortcut->setKey(QKeySequence(Qt::CTRL | Qt::Key_L));
+    connect(focusUrlBarShortcut, SIGNAL(activated()), addressLineEdit, SLOT(setFocus()));
+    connect(focusUrlBarShortcut, SIGNAL(activated()), addressLineEdit, SLOT(selectAll()));
 
     layout->addLayout(addressBar);
     layout->addWidget(m_webView.data());
