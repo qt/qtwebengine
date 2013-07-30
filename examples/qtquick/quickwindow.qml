@@ -50,6 +50,16 @@ ApplicationWindow {
     visible: true
     title: webContentsView.title
 
+    // Focus and select text in URL bar
+    Action {
+        id: focus
+        shortcut: "Ctrl+L" // How to have Cmd + L on Mac ?
+        onTriggered: {
+            addressBar.forceActiveFocus();
+            addressBar.selectAll();
+        }
+    }
+
     toolBar: ToolBar {
         id: navigationBar
         RowLayout {
