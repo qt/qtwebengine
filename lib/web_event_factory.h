@@ -47,7 +47,6 @@
 
 class QMouseEvent;
 class QKeyEvent;
-class QTouchEvent;
 class QWheelEvent;
 
 class WebEventFactory {
@@ -55,7 +54,6 @@ class WebEventFactory {
 public:
     static WebKit::WebMouseEvent toWebMouseEvent(QMouseEvent*);
     static WebKit::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*);
-    static WebKit::WebTouchEvent toWebTouchEvent(QTouchEvent*);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
 };
 

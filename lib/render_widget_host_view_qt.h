@@ -151,6 +151,7 @@ private:
     bool IsPopup() const;
 
     content::RenderWidgetHostImpl *m_host;
+    WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
     gfx::Size m_requestedSize;
 };
