@@ -101,6 +101,11 @@ void RenderWidgetHostViewQtDelegateQuick::updateCursor(const QCursor &cursor)
     QQuickPaintedItem::setCursor(cursor);
 }
 
+void RenderWidgetHostViewQtDelegateQuick::resize(int width, int height)
+{
+    setSize(QSizeF(width, height));
+}
+
 void RenderWidgetHostViewQtDelegateQuick::paint(QPainter *painter)
 {
     RenderWidgetHostViewQtDelegate::paint(painter, boundingRect());
