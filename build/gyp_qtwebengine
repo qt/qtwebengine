@@ -134,6 +134,8 @@ if __name__ == '__main__':
   # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
   args.extend(['-D', 'linux_use_gold_binary=0'])
   args.extend(['-D', 'linux_use_gold_flags=0'])
+  # Trigger Qt-specific build conditions.
+  args.extend(['-D', 'use_qt=1'])
   # Tweak the output location and format (hardcode ninja for now)
   args.extend(['--generator-output', os.path.abspath(get_output_dir())])
   args.extend(['-Goutput_dir='+ os.path.abspath(get_output_dir())])

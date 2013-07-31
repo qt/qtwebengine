@@ -44,7 +44,6 @@
 #include "third_party/WebKit/Source/core/platform/WindowsKeyboardCodes.h"
 
 #include <QElapsedTimer>
-#include <QEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
@@ -524,26 +523,6 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
     }
 }
 
-static WebKit::WebTouchPoint::State toWebTouchPointState(Qt::TouchPointState state) {
-    switch (state) {
-    case Qt::TouchPointPressed:
-        return WebKit::WebTouchPoint::StatePressed;
-    case Qt::TouchPointMoved:
-        return WebKit::WebTouchPoint::StateMoved;
-    case Qt::TouchPointStationary:
-        return WebKit::WebTouchPoint::StateStationary;
-    case Qt::TouchPointReleased:
-        return WebKit::WebTouchPoint::StateReleased;
-    default:
-        Q_ASSERT(false);
-        return WebKit::WebTouchPoint::StateUndefined;
-    }
-}
-
-static inline WebKit::WebPoint toWebPoint(const QPoint& point) {
-    return WebKit::WebPoint(point.x(), point.y());
-}
-
 WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
 {
     WebMouseEvent webKitEvent;
@@ -601,28 +580,6 @@ WebKit::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
     webEvent.y = webEvent.windowY = ev->y();
     webEvent.globalX = ev->globalX();
     webEvent.globalY = ev->globalY();
-    return webEvent;
-}
-
-WebKit::WebTouchEvent WebEventFactory::toWebTouchEvent(QTouchEvent *ev)
-{
-    WebTouchEvent webEvent;
-    webEvent.type = webEventTypeForEvent(ev);
-    webEvent.timeStampSeconds = currentTimeForEvent(ev);
-    webEvent.modifiers = modifiersForEvent(ev);
-
-    webEvent.touchesLength = ev->touchPoints().size();
-    webEvent.changedTouchesLength = 0;
-    for (unsigned i = 0; i < webEvent.touchesLength; ++i) {
-        const QTouchEvent::TouchPoint& touchPoint = ev->touchPoints()[i];
-        WebTouchPoint& webTouchPoint = webEvent.touches[i];
-        webTouchPoint.id = touchPoint.id();
-        webTouchPoint.state = toWebTouchPointState(touchPoint.state());
-        webTouchPoint.screenPosition = toWebPoint(touchPoint.screenPos().toPoint());
-        webTouchPoint.position = toWebPoint(touchPoint.pos().toPoint());
-        if (webTouchPoint.state != WebKit::WebTouchPoint::StateStationary)
-            webEvent.changedTouches[webEvent.changedTouchesLength++] = webTouchPoint;
-    }
     return webEvent;
 }
 

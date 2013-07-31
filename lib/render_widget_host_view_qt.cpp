@@ -48,7 +48,9 @@
 #include "shared/shared_globals.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "ui/base/events/event.h"
 #include "ui/gfx/size_conversions.h"
 
 #include <QEvent>
@@ -58,6 +60,38 @@
 #include <QScreen>
 #include <QWheelEvent>
 #include <QWindow>
+
+static inline ui::EventType toUIEventType(Qt::TouchPointState state)
+{
+    switch (state) {
+    case Qt::TouchPointPressed:
+        return ui::ET_TOUCH_PRESSED;
+    case Qt::TouchPointMoved:
+        return ui::ET_TOUCH_MOVED;
+    case Qt::TouchPointStationary:
+        return ui::ET_TOUCH_STATIONARY;
+    case Qt::TouchPointReleased:
+        return ui::ET_TOUCH_RELEASED;
+    default:
+        Q_ASSERT(false);
+        return ui::ET_UNKNOWN;
+    }
+}
+
+static inline gfx::Point toGfxPoint(const QPoint& point)
+{
+    return gfx::Point(point.x(), point.y());
+}
+
+static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKit::WebTouchPoint* point) {
+    if (point->state != WebKit::WebTouchPoint::StateReleased &&
+        point->state != WebKit::WebTouchPoint::StateCancelled)
+        return;
+    --event->touchesLength;
+    for (unsigned i = point - event->touches; i < event->touchesLength; ++i) {
+        event->touches[i] = event->touches[i + 1];
+    }
+}
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
@@ -469,8 +503,34 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 
 void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 {
-    if (m_host->ShouldForwardTouchEvent())
-        m_host->ForwardTouchEventWithLatencyInfo(WebEventFactory::toWebTouchEvent(ev), ui::LatencyInfo());
+    // Convert each of our QTouchEvent::TouchPoint to the simpler ui::TouchEvent to
+    // be able to use the same code path for both gesture recognition and WebTouchEvents.
+    // It's a waste to do a double QTouchEvent -> ui::TouchEvent -> WebKit::WebTouchEvent
+    // conversion but this should hopefully avoid a few bugs in the future.
+    // FIXME: Carry Qt::TouchCancel from the event to each TouchPoint.
+    base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(ev->timestamp());
+    Q_FOREACH (const QTouchEvent::TouchPoint& touchPoint, ev->touchPoints()) {
+        // Stationary touch points are already in our accumulator.
+        if (touchPoint.state() == Qt::TouchPointStationary)
+            continue;
+
+        ui::TouchEvent uiEvent(
+            toUIEventType(touchPoint.state()),
+            toGfxPoint(touchPoint.pos().toPoint()),
+            0, // flags
+            touchPoint.id(),
+            timestamp,
+            0, 0, // radius
+            0, // angle
+            touchPoint.pressure());
+
+        WebKit::WebTouchPoint *point = content::UpdateWebTouchEventFromUIEvent(uiEvent, &m_accumTouchEvent);
+        if (point) {
+            if (m_host->ShouldForwardTouchEvent())
+                m_host->ForwardTouchEventWithLatencyInfo(m_accumTouchEvent, ui::LatencyInfo());
+            UpdateWebTouchEventAfterDispatch(&m_accumTouchEvent, point);
+        }
+    }
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
