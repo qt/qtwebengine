@@ -110,6 +110,11 @@ void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
     QWidget::update(rect);
 }
 
+void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
+{
+    QWidget::setCursor(cursor);
+}
+
 void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
 {
     QPainter painter(this);

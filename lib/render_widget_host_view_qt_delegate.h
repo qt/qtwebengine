@@ -48,6 +48,7 @@
 #include <QScopedPointer>
 
 class BackingStoreQt;
+class QCursor;
 class QEvent;
 class QPainter;
 class QWindow;
@@ -65,6 +66,7 @@ public:
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
     virtual void update(const QRect& rect = QRect()) = 0;
+    virtual void updateCursor(const QCursor &) = 0;
     void resetView(RenderWidgetHostViewQt*);
 
 protected:
