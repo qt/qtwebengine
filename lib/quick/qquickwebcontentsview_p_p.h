@@ -47,6 +47,7 @@
 #include <QScopedPointer>
 
 class QQuickWebContentsView;
+class RenderWidgetHostViewQtDelegateQuick;
 class WebContentsAdapter;
 
 class QQuickWebContentsViewPrivate : public WebContentsAdapterClient
@@ -56,10 +57,11 @@ class QQuickWebContentsViewPrivate : public WebContentsAdapterClient
 public:
     QQuickWebContentsViewPrivate();
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt*) Q_DECL_OVERRIDE;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadingStateChanged() Q_DECL_OVERRIDE;
+    virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
 
     QScopedPointer<WebContentsAdapter> adapter;
 };

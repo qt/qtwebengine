@@ -50,7 +50,8 @@
 content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate(view);
+    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
+    m_viewDelegate->resetView(view);
     view->SetDelegate(m_viewDelegate);
 
     return view;
@@ -64,7 +65,7 @@ void WebContentsViewQt::SetPageTitle(const string16& title)
 
 void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
 {
-    const QRectF r(m_viewDelegate->screenRect());
+    const QRectF r(m_client->viewportRect());
     *out = gfx::Rect(r.x(), r.y(), r.width(), r.height());
 }
 

@@ -53,13 +53,11 @@ QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
 {
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *rwhv)
+RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
     Q_Q(QQuickWebContentsView);
     // Parent the RWHVQtDelegate directly, this might have to be changed to handle popups and fullscreen.
     RenderWidgetHostViewQtDelegateQuick *viewDelegate = new RenderWidgetHostViewQtDelegateQuick(q);
-    viewDelegate->resetView(rwhv);
-    viewDelegate->setSize(QSizeF(q->width(), q->height()));
     return viewDelegate;
 }
 
@@ -81,6 +79,12 @@ void QQuickWebContentsViewPrivate::loadingStateChanged()
 {
     Q_Q(QQuickWebContentsView);
     Q_EMIT q->loadingStateChanged();
+}
+
+QRectF QQuickWebContentsViewPrivate::viewportRect() const
+{
+    Q_Q(const QQuickWebContentsView);
+    return QRectF(q->x(), q->y(), q->width(), q->height());
 }
 
 QQuickWebContentsView::QQuickWebContentsView()

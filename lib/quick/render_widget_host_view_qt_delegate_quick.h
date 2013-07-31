@@ -78,6 +78,7 @@ public:
     virtual QWindow* window() const;
     virtual void update(const QRect& rect = QRect());
     virtual void updateCursor(const QCursor &);
+    virtual void resize(int width, int height);
 
     void paint(QPainter *painter);
 

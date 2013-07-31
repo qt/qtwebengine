@@ -170,7 +170,6 @@ private:
     QMap<int, int> m_touchIdMapping;
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
-    gfx::Size m_requestedSize;
 };
 
 #endif

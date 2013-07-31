@@ -43,6 +43,7 @@
 
 #include "qtwebengineglobal.h"
 
+#include <QRect>
 #include <QString>
 #include <QUrl>
 
@@ -55,10 +56,11 @@ class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
     virtual ~WebContentsAdapterClient() { }
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt*) = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
     virtual void loadingStateChanged() = 0;
+    virtual QRectF viewportRect() const = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

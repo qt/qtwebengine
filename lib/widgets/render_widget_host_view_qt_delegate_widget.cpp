@@ -115,6 +115,11 @@ void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
     QWidget::setCursor(cursor);
 }
 
+void RenderWidgetHostViewQtDelegateWidget::resize(int width, int height)
+{
+    QWidget::resize(width, height);
+}
+
 void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
 {
     QPainter painter(this);
