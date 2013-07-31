@@ -53,13 +53,11 @@ QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
 {
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *rwhv)
+RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
     Q_Q(QQuickWebContentsView);
     // Parent the RWHVQtDelegate directly, this might have to be changed to handle popups and fullscreen.
     RenderWidgetHostViewQtDelegateQuick *viewDelegate = new RenderWidgetHostViewQtDelegateQuick(q);
-    viewDelegate->resetView(rwhv);
-    viewDelegate->setSize(QSizeF(q->width(), q->height()));
     return viewDelegate;
 }
 

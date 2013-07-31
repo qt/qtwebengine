@@ -65,6 +65,7 @@ public:
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
     virtual void update(const QRect& rect = QRect()) = 0;
+    virtual void resize(int width, int height) = 0;
     void resetView(RenderWidgetHostViewQt*);
 
 protected:

@@ -52,8 +52,12 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickI
 
 QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
 {
-    QPointF pos = mapToScene(QPointF(0,0));
-    return QRectF(pos.x(), pos.y(), width(), height());
+    QQuickItem* parent = parentItem();
+    if (!parent)
+        return QRectF();
+
+    QPointF pos = parent->mapToScene(QPointF(0,0));
+    return QRectF(pos.x(), pos.y(), parent->width(), parent->height());
 }
 
 void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
@@ -90,6 +94,11 @@ void RenderWidgetHostViewQtDelegateQuick::update(const QRect& rect)
 {
     polish();
     QQuickPaintedItem::update(rect);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::resize(int width, int height)
+{
+    setSize(QSizeF(width, height));
 }
 
 void RenderWidgetHostViewQtDelegateQuick::paint(QPainter *painter)

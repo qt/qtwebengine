@@ -93,6 +93,11 @@ void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
     QWidget::update(rect);
 }
 
+void RenderWidgetHostViewQtDelegateWidget::resize(int width, int height)
+{
+    QWidget::resize(width, height);
+}
+
 void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
 {
     QPainter painter(this);
