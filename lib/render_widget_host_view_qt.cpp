@@ -95,6 +95,7 @@ static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKi
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
+    , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
 {
     m_host->SetView(this);
 }
@@ -475,10 +476,78 @@ void RenderWidgetHostViewQt::OnAccessibilityNotifications(const std::vector<Acce
     QT_NOT_USED
 }
 
+bool RenderWidgetHostViewQt::DispatchLongPressGestureEvent(ui::GestureEvent* event)
+{
+    return false;
+}
+
+bool RenderWidgetHostViewQt::DispatchCancelTouchEvent(ui::TouchEvent* event)
+{
+    return false;
+}
+
+void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo& touch, content::InputEventAckState ack_result) {
+    ScopedVector<ui::TouchEvent> events;
+    if (!content::MakeUITouchEventsFromWebTouchEvents(touch, &events, content::LOCAL_COORDINATES))
+        return;
+
+    ui::EventResult result = (ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
+    for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(), end = events.end(); iter != end; ++iter)  {
+        (*iter)->latency()->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, static_cast<int64>(ack_result), 0);
+        scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+        gestures.reset(m_gestureRecognizer->ProcessTouchEventForGesture(*(*iter), result, this));
+        ProcessGestures(gestures.get());
+    }
+}
+
 void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
 {
     QRect r(damage_rect.x(), damage_rect.y(), damage_rect.width(), damage_rect.height());
     m_delegate->update(r);
+}
+
+
+void RenderWidgetHostViewQt::ProcessGestures(ui::GestureRecognizer::Gestures* gestures)
+{
+    if (!gestures || gestures->empty())
+        return;
+    for (ui::GestureRecognizer::Gestures::iterator g_it = gestures->begin(); g_it != gestures->end(); ++g_it) {
+        const ui::GestureEvent &uiGestureEvent = **g_it;
+        WebKit::WebGestureEvent webGestureEvent = content::MakeWebGestureEventFromUIEvent(uiGestureEvent);
+        if (webGestureEvent.type != WebKit::WebInputEvent::Undefined) {
+            webGestureEvent.x = uiGestureEvent.x();
+            webGestureEvent.y = uiGestureEvent.y();
+            m_host->ForwardGestureEvent(webGestureEvent);
+        }
+    }
+}
+
+// Find (or create) a mapping to a 0-based ID.
+int RenderWidgetHostViewQt::GetMappedTouch(int qtTouchId)
+{
+    QMap<int, int>::const_iterator it = m_touchIdMapping.find(qtTouchId);
+    if (it != m_touchIdMapping.end())
+        return it.value();
+    int nextValue = 0;
+    for (it = m_touchIdMapping.begin(); it != m_touchIdMapping.end(); ++it)
+        nextValue = std::max(nextValue, it.value() + 1);
+    m_touchIdMapping[qtTouchId] = nextValue;
+    return nextValue;
+}
+
+void RenderWidgetHostViewQt::RemoveExpiredMappings(QTouchEvent *ev)
+{
+    QMap<int, int> newMap;
+    for (QMap<int, int>::const_iterator it = m_touchIdMapping.begin(); it != m_touchIdMapping.end(); ++it) {
+        Q_FOREACH (const QTouchEvent::TouchPoint& touchPoint, ev->touchPoints()) {
+            if ((touchPoint.id() == it.key()) &&
+                (touchPoint.state() != Qt::TouchPointReleased)) {
+                newMap.insert(it.key(), it.value());
+                break;
+            }
+        }
+    }
+    m_touchIdMapping.swap(newMap);
 }
 
 bool RenderWidgetHostViewQt::IsPopup() const
@@ -518,7 +587,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             toUIEventType(touchPoint.state()),
             toGfxPoint(touchPoint.pos().toPoint()),
             0, // flags
-            touchPoint.id(),
+            GetMappedTouch(touchPoint.id()),
             timestamp,
             0, 0, // radius
             0, // angle
@@ -527,10 +596,17 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         WebKit::WebTouchPoint *point = content::UpdateWebTouchEventFromUIEvent(uiEvent, &m_accumTouchEvent);
         if (point) {
             if (m_host->ShouldForwardTouchEvent())
+                // This will come back through ProcessAckedTouchEvent if the page didn't want it.
                 m_host->ForwardTouchEventWithLatencyInfo(m_accumTouchEvent, ui::LatencyInfo());
+            else {
+                scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+                gestures.reset(m_gestureRecognizer->ProcessTouchEventForGesture(uiEvent, ui::ER_UNHANDLED, this));
+                ProcessGestures(gestures.get());
+            }
             UpdateWebTouchEventAfterDispatch(&m_accumTouchEvent, point);
         }
     }
+    RemoveExpiredMappings(ev);
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)

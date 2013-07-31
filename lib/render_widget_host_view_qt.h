@@ -46,7 +46,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include <qglobal.h>
+#include "ui/base/gestures/gesture_recognizer.h"
+#include "ui/base/gestures/gesture_types.h"
+#include <QMap>
+#include <QtGlobal>
 
 class BackingStoreQt;
 class QEvent;
@@ -59,6 +62,8 @@ class RenderWidgetHostViewQtDelegate;
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
+    , public ui::GestureConsumer
+    , public ui::GestureEventHelper
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -124,6 +129,11 @@ public:
     virtual void SetHasHorizontalScrollbar(bool);
     virtual void SetScrollOffsetPinning(bool, bool);
     virtual void OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&);
+    virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo& touch, content::InputEventAckState ack_result);
+
+    // Overridden from ui::GestureEventHelper.
+    virtual bool DispatchLongPressGestureEvent(ui::GestureEvent* event);
+    virtual bool DispatchCancelTouchEvent(ui::TouchEvent* event);
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -147,10 +157,15 @@ public:
 
 private:
     void Paint(const gfx::Rect& damage_rect);
+    void ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
+    int GetMappedTouch(int qtTouchId);
+    void RemoveExpiredMappings(QTouchEvent *ev);
 
     bool IsPopup() const;
 
     content::RenderWidgetHostImpl *m_host;
+    scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
+    QMap<int, int> m_touchIdMapping;
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
     gfx::Size m_requestedSize;
