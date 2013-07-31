@@ -81,6 +81,7 @@ protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
 private:
+    Q_INVOKABLE void q_adjustSize() const;
     Q_DECLARE_PRIVATE(QQuickWebContentsView)
     // Hides QObject::d_ptr allowing us to use the convenience macros.
     QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;

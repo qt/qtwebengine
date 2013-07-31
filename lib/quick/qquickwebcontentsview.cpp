@@ -50,16 +50,17 @@
 
 QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
     : adapter(new WebContentsAdapter(this))
+    , rwhvDelegate(0)
 {
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *rwhv)
+RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
     Q_Q(QQuickWebContentsView);
     // Parent the RWHVQtDelegate directly, this might have to be changed to handle popups and fullscreen.
     RenderWidgetHostViewQtDelegateQuick *viewDelegate = new RenderWidgetHostViewQtDelegateQuick(q);
-    viewDelegate->resetView(rwhv);
-    viewDelegate->setSize(QSizeF(q->width(), q->height()));
+    rwhvDelegate = viewDelegate;
+    QMetaObject::invokeMethod(q, "q_adjustSize", Qt::QueuedConnection);
     return viewDelegate;
 }
 
@@ -161,4 +162,10 @@ void QQuickWebContentsView::geometryChanged(const QRectF &newGeometry, const QRe
         Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child));
         child->setSize(newGeometry.size());
     }
+}
+
+void QQuickWebContentsView::q_adjustSize() const
+{
+    Q_D(const QQuickWebContentsView);
+    d->rwhvDelegate->setSize(QSizeF(width(), height()));
 }
