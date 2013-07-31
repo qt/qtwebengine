@@ -62,6 +62,7 @@ public:
     virtual bool isVisible() const;
     virtual QWindow* window() const;
     virtual void update(const QRect& rect = QRect());
+    virtual void updateCursor(const QCursor &);
 
 protected:
     void paintEvent(QPaintEvent * event);

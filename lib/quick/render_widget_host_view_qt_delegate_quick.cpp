@@ -96,6 +96,11 @@ void RenderWidgetHostViewQtDelegateQuick::update(const QRect& rect)
     QQuickPaintedItem::update(rect);
 }
 
+void RenderWidgetHostViewQtDelegateQuick::updateCursor(const QCursor &cursor)
+{
+    QQuickPaintedItem::setCursor(cursor);
+}
+
 void RenderWidgetHostViewQtDelegateQuick::paint(QPainter *painter)
 {
     RenderWidgetHostViewQtDelegate::paint(painter, boundingRect());

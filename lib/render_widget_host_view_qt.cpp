@@ -50,8 +50,10 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/size_conversions.h"
+#include "webkit/common/cursors/webcursor.h"
 
 #include <QEvent>
 #include <QFocusEvent>
@@ -328,9 +330,101 @@ void RenderWidgetHostViewQt::Blur()
     m_host->Blur();
 }
 
-void RenderWidgetHostViewQt::UpdateCursor(const WebCursor&)
+void RenderWidgetHostViewQt::UpdateCursor(const WebCursor &webCursor)
 {
-    QT_NOT_YET_IMPLEMENTED
+    WebCursor::CursorInfo cursorInfo;
+    webCursor.GetCursorInfo(&cursorInfo);
+    Qt::CursorShape shape;
+    switch (cursorInfo.type) {
+    case WebKit::WebCursorInfo::TypePointer:
+        shape = Qt::ArrowCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeCross:
+        shape = Qt::CrossCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeHand:
+        shape = Qt::PointingHandCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeIBeam:
+        shape = Qt::IBeamCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeWait:
+        shape = Qt::WaitCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeHelp:
+        shape = Qt::WhatsThisCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeEastResize:
+    case WebKit::WebCursorInfo::TypeWestResize:
+    case WebKit::WebCursorInfo::TypeEastWestResize:
+    case WebKit::WebCursorInfo::TypeEastPanning:
+    case WebKit::WebCursorInfo::TypeWestPanning:
+        shape = Qt::SizeHorCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeNorthResize:
+    case WebKit::WebCursorInfo::TypeSouthResize:
+    case WebKit::WebCursorInfo::TypeNorthSouthResize:
+    case WebKit::WebCursorInfo::TypeNorthPanning:
+    case WebKit::WebCursorInfo::TypeSouthPanning:
+        shape = Qt::SizeVerCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeNorthEastResize:
+    case WebKit::WebCursorInfo::TypeSouthWestResize:
+    case WebKit::WebCursorInfo::TypeNorthEastSouthWestResize:
+    case WebKit::WebCursorInfo::TypeNorthEastPanning:
+    case WebKit::WebCursorInfo::TypeSouthWestPanning:
+        shape = Qt::SizeBDiagCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeNorthWestResize:
+    case WebKit::WebCursorInfo::TypeSouthEastResize:
+    case WebKit::WebCursorInfo::TypeNorthWestSouthEastResize:
+    case WebKit::WebCursorInfo::TypeNorthWestPanning:
+    case WebKit::WebCursorInfo::TypeSouthEastPanning:
+        shape = Qt::SizeFDiagCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeColumnResize:
+        shape = Qt::SplitHCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeRowResize:
+        shape = Qt::SplitVCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeMiddlePanning:
+    case WebKit::WebCursorInfo::TypeMove:
+        shape = Qt::SizeAllCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeVerticalText:
+    case WebKit::WebCursorInfo::TypeCell:
+    case WebKit::WebCursorInfo::TypeContextMenu:
+    case WebKit::WebCursorInfo::TypeAlias:
+    case WebKit::WebCursorInfo::TypeProgress:
+    case WebKit::WebCursorInfo::TypeCopy:
+    case WebKit::WebCursorInfo::TypeZoomIn:
+    case WebKit::WebCursorInfo::TypeZoomOut:
+        // FIXME: Load from the resource bundle.
+        shape = Qt::ArrowCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeNoDrop:
+    case WebKit::WebCursorInfo::TypeNotAllowed:
+        shape = Qt::ForbiddenCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeNone:
+        shape = Qt::BlankCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeGrab:
+        shape = Qt::OpenHandCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeGrabbing:
+        shape = Qt::ClosedHandCursor;
+        break;
+    case WebKit::WebCursorInfo::TypeCustom:
+        // FIXME: Extract from the CursorInfo.
+        shape = Qt::ArrowCursor;
+        break;
+    default:
+        Q_UNREACHABLE();
+        shape = Qt::ArrowCursor;
+    }
+    m_delegate->updateCursor(QCursor(shape));
 }
 
 void RenderWidgetHostViewQt::SetIsLoading(bool)
