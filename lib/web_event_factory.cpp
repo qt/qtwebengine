@@ -499,6 +499,10 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
         return WebInputEvent::MouseDown;
     case QEvent::MouseButtonRelease:
         return WebInputEvent::MouseUp;
+    case QEvent::Enter:
+        return WebInputEvent::MouseEnter;
+    case QEvent::Leave:
+        return WebInputEvent::MouseLeave;
     case QEvent::MouseMove:
         return WebInputEvent::MouseMove;
     case QEvent::Wheel:
@@ -507,6 +511,8 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
         return WebInputEvent::KeyDown;
     case QEvent::KeyRelease:
         return WebInputEvent::KeyUp;
+    case QEvent::HoverMove:
+        return WebInputEvent::MouseMove;
     case QEvent::TouchBegin:
         return WebInputEvent::TouchStart;
     case QEvent::TouchUpdate:
@@ -549,6 +555,19 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
         break;
     };
 
+    return webKitEvent;
+}
+
+WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
+{
+    WebMouseEvent webKitEvent;
+    webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
+    webKitEvent.modifiers = modifiersForEvent(ev);
+
+    webKitEvent.x = webKitEvent.windowX = ev->pos().x();
+    webKitEvent.y = webKitEvent.windowY = ev->pos().y();
+
+    webKitEvent.type = webEventTypeForEvent(ev);
     return webKitEvent;
 }
 

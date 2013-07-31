@@ -90,6 +90,7 @@ public:
     void keyReleaseEvent(QKeyEvent*);
     void wheelEvent(QWheelEvent*);
     void touchEvent(QTouchEvent*);
+    void hoverMoveEvent(QHoverEvent*);
 
 protected:
     void updatePolish();

@@ -48,6 +48,7 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickI
     : QQuickPaintedItem(parent)
 {
     setAcceptedMouseButtons(Qt::AllButtons);
+    setAcceptHoverEvents(true);
 }
 
 QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
@@ -161,6 +162,11 @@ void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
 }
 
 void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
+{
+    forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
 {
     forwardEvent(event);
 }
