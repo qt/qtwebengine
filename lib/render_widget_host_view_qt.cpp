@@ -179,15 +179,12 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
 {
     int width = size.width();
     int height = size.height();
-    // int width = std::min(size.width(), kMaxWindowWidth);
-    // int height = std::min(size.height(), kMaxWindowHeight);
-    // if (IsPopup())
-        // m_delegate->resize(width,height);
+
+    m_delegate->resize(width,height);
 
     if (m_requestedSize.width() != width ||
         m_requestedSize.height() != height) {
         m_requestedSize = gfx::Size(width, height);
-        // m_host->SendScreenRects();
         m_host->WasResized();
     }
 }

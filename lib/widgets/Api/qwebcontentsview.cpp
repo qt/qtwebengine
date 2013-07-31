@@ -77,11 +77,16 @@ void QWebContentsViewPrivate::loadingStateChanged()
     }
 }
 
-RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt* rwhv)
+QRectF QWebContentsViewPrivate::viewportRect() const
+{
+    Q_Q(const QWebContentsView);
+    return q->geometry();
+}
+
+RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
     Q_Q(QWebContentsView);
     RenderWidgetHostViewQtDelegateWidget *viewDelegate = new RenderWidgetHostViewQtDelegateWidget(q);
-    viewDelegate->resetView(rwhv);
     // Parent the RWHVQtDelegate directly, this might have to be changed to handle popups and fullscreen.
     q->layout()->addWidget(viewDelegate);
     return viewDelegate;
