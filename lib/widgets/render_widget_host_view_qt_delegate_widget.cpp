@@ -50,6 +50,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidg
     : QWidget(parent)
 {
     setFocusPolicy(Qt::ClickFocus);
+    setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
 

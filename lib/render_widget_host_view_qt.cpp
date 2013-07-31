@@ -130,6 +130,11 @@ bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
     case QEvent::TouchEnd:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+    case QEvent::HoverMove:
+        handleHoverEvent(static_cast<QHoverEvent*>(event));
+        break;
     case QEvent::FocusIn:
     case QEvent::FocusOut:
         handleFocusEvent(static_cast<QFocusEvent*>(event));
@@ -607,6 +612,11 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         }
     }
     RemoveExpiredMappings(ev);
+}
+
+void RenderWidgetHostViewQt::handleHoverEvent(QHoverEvent *ev)
+{
+    m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)

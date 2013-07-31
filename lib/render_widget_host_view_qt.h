@@ -54,6 +54,7 @@
 class BackingStoreQt;
 class QEvent;
 class QFocusEvent;
+class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QTouchEvent;
@@ -139,6 +140,7 @@ public:
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleTouchEvent(QTouchEvent*);
+    void handleHoverEvent(QHoverEvent*);
     void handleFocusEvent(QFocusEvent*);
 
 #if defined(OS_MACOSX)

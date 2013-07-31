@@ -45,14 +45,16 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
-class QMouseEvent;
+class QHoverEvent;
 class QKeyEvent;
+class QMouseEvent;
 class QWheelEvent;
 
 class WebEventFactory {
 
 public:
     static WebKit::WebMouseEvent toWebMouseEvent(QMouseEvent*);
+    static WebKit::WebMouseEvent toWebMouseEvent(QHoverEvent*);
     static WebKit::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
 };
