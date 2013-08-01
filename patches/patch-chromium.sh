@@ -64,6 +64,7 @@ git am $PATCH_DIR/0002-Clang-libc-does-not-support-incomplete-types-in-temp.patc
 git am $PATCH_DIR/0001-Mac-Do-not-modify-the-child-path.patch
 git am $PATCH_DIR/0001-Do-not-warn-for-header-hygiene.patch
 git am $PATCH_DIR/0001-Build-files-necessary-for-touch-and-gestures.patch
+git am $PATCH_DIR/0001-remove-Wno-deprecated-register-from-common.gypi.patch
 
 cd $CHROMIUM_SRC_DIR/third_party/WebKit
 echo "Entering $PWD"
