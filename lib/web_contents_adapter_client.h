@@ -61,6 +61,7 @@ public:
     virtual void urlChanged(const QUrl&) = 0;
     virtual void loadingStateChanged() = 0;
     virtual QRectF viewportRect() const = 0;
+    virtual void loadFinished(bool success) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

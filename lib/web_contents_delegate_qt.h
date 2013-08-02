@@ -43,6 +43,7 @@
 #define WEB_CONTENTS_DELEGATE_QT
 
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents.h"
 
 #include <QObject>
@@ -51,10 +52,12 @@
 namespace content {
     class BrowserContext;
     class SiteInstance;
+    class RenderViewHost;
 }
 class WebContentsAdapterClient;
 
 class WebContentsDelegateQt : public content::WebContentsDelegate
+                            , public content::WebContentsObserver
 {
 public:
     WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
@@ -62,6 +65,8 @@ public:
 
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
     virtual void LoadingStateChanged(content::WebContents* source);
+    virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host);
+    virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
 
 private:
     scoped_ptr<content::WebContents> m_webContents;
