@@ -72,9 +72,14 @@ void QWebContentsViewPrivate::loadingStateChanged()
     if (m_isLoading != wasLoading) {
         if (m_isLoading)
             Q_EMIT q->loadStarted();
-        else
-            Q_EMIT q->loadFinished(true);
     }
+}
+
+void QWebContentsViewPrivate::loadFinished(bool success)
+{
+    Q_Q(QWebContentsView);
+    m_isLoading = adapter->isLoading();
+    Q_EMIT q->loadFinished(success);
 }
 
 RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt* rwhv)
