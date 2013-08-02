@@ -83,6 +83,13 @@ void QQuickWebContentsViewPrivate::loadingStateChanged()
     Q_EMIT q->loadingStateChanged();
 }
 
+void QQuickWebContentsViewPrivate::loadFinished(bool success)
+{
+    Q_Q(QQuickWebContentsView);
+    Q_UNUSED(success);
+    Q_EMIT q->loadingStateChanged();
+}
+
 QQuickWebContentsView::QQuickWebContentsView()
     : d_ptr(new QQuickWebContentsViewPrivate)
 {
