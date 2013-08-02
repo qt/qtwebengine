@@ -87,6 +87,13 @@ QRectF QQuickWebContentsViewPrivate::viewportRect() const
     return QRectF(q->x(), q->y(), q->width(), q->height());
 }
 
+void QQuickWebContentsViewPrivate::loadFinished(bool success)
+{
+    Q_Q(QQuickWebContentsView);
+    Q_UNUSED(success);
+    Q_EMIT q->loadingStateChanged();
+}
+
 QQuickWebContentsView::QQuickWebContentsView()
     : d_ptr(new QQuickWebContentsViewPrivate)
 {
