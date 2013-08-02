@@ -62,6 +62,7 @@ public:
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadingStateChanged() Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
 
     bool m_isLoading;
     QScopedPointer<WebContentsAdapter> adapter;

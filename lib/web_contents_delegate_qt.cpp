@@ -61,7 +61,7 @@ static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_context, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size)
-    : m_viewClient(0)
+    :  m_viewClient(0)
 {
     content::WebContents::CreateParams create_params(browser_context, site_instance);
     create_params.routing_id = routing_id;
@@ -80,6 +80,7 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_co
     m_webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     m_webContents->SetDelegate(this);
+    this->Observe(m_webContents.get());
 }
 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
@@ -96,6 +97,19 @@ void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)
 {
     m_viewClient->loadingStateChanged();
 }
+
+void WebContentsDelegateQt::DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host)
+{
+    if (is_main_frame)
+        m_viewClient->loadFinished(false);
+}
+
+void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host)
+{
+    if (is_main_frame)
+        m_viewClient->loadFinished(true);
+}
+
 
 content::WebContents* WebContentsDelegateQt::web_contents()
 {
