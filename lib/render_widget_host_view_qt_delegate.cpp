@@ -88,6 +88,5 @@ void RenderWidgetHostViewQtDelegate::notifyResize()
 
 bool RenderWidgetHostViewQtDelegate::forwardEvent(QEvent *event)
 {
-    Q_ASSERT(m_view);
     return (m_view && m_view->handleEvent(event));
 }
