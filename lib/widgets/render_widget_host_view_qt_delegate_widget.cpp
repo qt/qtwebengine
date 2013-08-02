@@ -135,7 +135,7 @@ void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent
 
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
-    if (!forwardEvent(event))
+    if (!m_eventForwardingEnabled || !forwardEvent(event))
         return QWidget::event(event);
     return true;
 }

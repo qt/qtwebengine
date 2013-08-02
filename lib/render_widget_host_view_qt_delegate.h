@@ -79,6 +79,7 @@ protected:
     void notifyResize();
     bool forwardEvent(QEvent*);
 
+    bool m_eventForwardingEnabled;
 private:
     QScopedPointer<RenderWidgetHostViewQt> m_view;
     BackingStoreQt *m_backingStore;

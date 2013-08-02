@@ -55,7 +55,7 @@ bool RenderWidgetHostViewQtDelegate::isCompositingModeForced()
 }
 
 RenderWidgetHostViewQtDelegate::RenderWidgetHostViewQtDelegate()
-    : m_view(0), m_backingStore(0)
+    : m_eventForwardingEnabled(false), m_view(0), m_backingStore(0)
 {
 }
 
@@ -66,6 +66,7 @@ RenderWidgetHostViewQtDelegate::~RenderWidgetHostViewQtDelegate()
 void RenderWidgetHostViewQtDelegate::resetView(RenderWidgetHostViewQt* view)
 {
     m_view.reset(view);
+    m_eventForwardingEnabled = !!view;
 }
 
 void RenderWidgetHostViewQtDelegate::paint(QPainter *painter, const QRectF &boundingRect)
