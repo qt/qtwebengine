@@ -1,77 +1,135 @@
-/****************************************************************************
-**
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+/*
+    Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2007 Staikos Computing Services Inc.
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+*/
 
 #ifndef QWEBENGINEVIEW_H
 #define QWEBENGINEVIEW_H
 
-#include <qtwebenginewidgetsglobal.h>
+#include <QtGui/qpainter.h>
+#include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtWidgets/qwidget.h>
 
-#include <QWidget>
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineWidgets/qwebenginepage.h>
 
+class QIcon;
+class QNetworkRequest;
+class QPrinter;
+class QUrl;
+class QWebEnginePage;
 class QWebEngineViewPrivate;
+class QWebEngineNetworkRequest;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
     Q_OBJECT
+// Hack to avoid undefined symbols with properties until we have them implemented.
+#ifndef Q_MOC_RUN
+    Q_PROPERTY(QString title READ title)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl)
+    Q_PROPERTY(QIcon icon READ icon)
+    Q_PROPERTY(QString selectedText READ selectedText)
+    Q_PROPERTY(QString selectedHtml READ selectedHtml)
+    Q_PROPERTY(bool hasSelection READ hasSelection)
+    Q_PROPERTY(bool modified READ isModified)
+    //Q_PROPERTY(Qt::TextInteractionFlags textInteractionFlags READ textInteractionFlags WRITE setTextInteractionFlags)
+    Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
+
+    Q_PROPERTY(QPainter::RenderHints renderHints READ renderHints WRITE setRenderHints)
+    Q_FLAGS(QPainter::RenderHints)
+#endif
+
 public:
-    QWebEngineView(QWidget *parent = 0);
-    ~QWebEngineView();
+    explicit QWebEngineView(QWidget* parent = 0);
+    virtual ~QWebEngineView();
+
+    QWebEnginePage* page() const;
+    void setPage(QWebEnginePage* page);
 
     void load(const QUrl& url);
-    bool canGoBack() const;
-    bool canGoForward() const;
+    void load(const QNetworkRequest& request, QNetworkAccessManager::Operation operation = QNetworkAccessManager::GetOperation, const QByteArray &body = QByteArray());
+    void setHtml(const QString& html, const QUrl& baseUrl = QUrl());
+    void setContent(const QByteArray& data, const QString& mimeType = QString(), const QUrl& baseUrl = QUrl());
+
+    QWebEngineHistory* history() const;
+    QWebEngineSettings* settings() const;
+
+    QString title() const;
+    void setUrl(const QUrl &url);
+    QUrl url() const;
+    QIcon icon() const;
+
+    bool hasSelection() const;
+    QString selectedText() const;
+    QString selectedHtml() const;
+
+#ifndef QT_NO_ACTION
+    QAction* pageAction(QWebEnginePage::WebAction action) const;
+#endif
+    void triggerPageAction(QWebEnginePage::WebAction action, bool checked = false);
+
+    bool isModified() const;
+
+    /*
+    Qt::TextInteractionFlags textInteractionFlags() const;
+    void setTextInteractionFlags(Qt::TextInteractionFlags flags);
+    void setTextInteractionFlag(Qt::TextInteractionFlag flag);
+    */
+
+    qreal zoomFactor() const;
+    void setZoomFactor(qreal factor);
+
+    void setTextSizeMultiplier(qreal factor);
+    qreal textSizeMultiplier() const;
+
+    QPainter::RenderHints renderHints() const;
+    void setRenderHints(QPainter::RenderHints hints);
+    void setRenderHint(QPainter::RenderHint hint, bool enabled = true);
+
+    bool findText(const QString& subString, QWebEnginePage::FindFlags options = 0);
 
 public Q_SLOTS:
+    void stop();
     void back();
     void forward();
     void reload();
-    void stop();
+
+    void print(QPrinter*) const { }
 
 Q_SIGNALS:
-    void loadFinished(bool ok);
     void loadStarted();
+    void loadProgress(int progress);
+    void loadFinished(bool);
     void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
+    void statusBarMessage(const QString& text);
+    void linkClicked(const QUrl&);
+    void selectionChanged();
+    void iconChanged();
+    void urlChanged(const QUrl&);
+
+protected:
+    virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) { Q_UNUSED(type); return 0; }
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);
+    friend class QWebEngineHistory;
 };
 
 #endif // QWEBENGINEVIEW_H
