@@ -39,39 +39,50 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#include "qwebenginepage.h"
+#include "qwebenginepage_p.h"
 
-#include "web_contents_adapter_client.h"
+#include "qwebenginehistory.h"
+#include "qwebenginehistory_p.h"
+#include "qwebengineview.h"
+#include "qwebengineview_p.h"
 
-#include <QScopedPointer>
-#include <QtWidgets/private/qwidget_p.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
-
-class QWebEngineView;
-class RenderWidgetHostViewQtDelegate;
-class WebContentsAdapter;
-
-class QWebEngineViewPrivate : public QWidgetPrivate, public WebContentsAdapterClient
+QWebEnginePagePrivate::QWebEnginePagePrivate()
+    : QObjectPrivate(QObjectPrivateVersion)
+    , history(new QWebEngineHistory)
 {
-public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
+    history->d_func()->pagePrivate = this;
+}
 
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
+QWebEnginePagePrivate::~QWebEnginePagePrivate()
+{
+    delete history;
+}
 
-    QWebEngineViewPrivate();
+QWebEnginePage::QWebEnginePage(QObject* parent)
+    : QObject(*new QWebEnginePagePrivate, parent)
+{
+}
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
-    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
-    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
-    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
-    virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
-    virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
-    virtual void focusContainer() Q_DECL_OVERRIDE;
+QWebEnginePage::~QWebEnginePage()
+{
+}
 
-    bool m_isLoading;
-    QScopedPointer<WebContentsAdapter> adapter;
-    QWebEnginePage *page;
-};
+QWebEngineHistory *QWebEnginePage::history() const
+{
+    Q_D(const QWebEnginePage);
+    return d->history;
+}
 
-#endif // QWEBENGINEVIEW_P_H
+void QWebEnginePage::setView(QWidget *view)
+{
+    QWebEngineViewPrivate::bind(qobject_cast<QWebEngineView*>(view), this);
+}
+
+QWidget *QWebEnginePage::view() const
+{
+    Q_D(const QWebEnginePage);
+    return d->view;
+}
+
+#include "moc_qwebenginepage.cpp"

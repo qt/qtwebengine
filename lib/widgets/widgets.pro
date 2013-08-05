@@ -22,11 +22,15 @@ DESTDIR = $$LIBPATH
 INCLUDEPATH += Api ../
 
 SOURCES = \
+        Api/qwebenginehistory.cpp \
+        Api/qwebenginepage.cpp \
         Api/qwebengineview.cpp\
         render_widget_host_view_qt_delegate_widget.cpp
 
 HEADERS = \
         Api/qtwebenginewidgetsglobal.h \
+        Api/qwebenginehistory.h \
+        Api/qwebenginepage.h \
         Api/qwebengineview.h \
         Api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h

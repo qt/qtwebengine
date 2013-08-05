@@ -42,6 +42,8 @@
 #include "widgetwindow.h"
 
 #include "qwebengineview.h"
+#include "qwebenginepage.h"
+#include "qwebenginehistory.h"
 #include "../../common/util.h"
 
 #include <QShortcut>
@@ -120,7 +122,7 @@ void WidgetWindow::loadStarted()
 void WidgetWindow::loadFinished(bool success)
 {
     Q_UNUSED(success);
-    forwardButton->setEnabled(m_webView->canGoForward());
-    backButton->setEnabled(m_webView->canGoBack());
+    forwardButton->setEnabled(m_webView->page()->history()->canGoForward());
+    backButton->setEnabled(m_webView->page()->history()->canGoBack());
     reloadButton->setIcon(QIcon(":/icons/view-refresh.png"));
 }
