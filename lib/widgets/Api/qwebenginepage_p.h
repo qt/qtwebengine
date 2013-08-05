@@ -39,39 +39,28 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#ifndef QWEBENGINEPAGE_P_H
+#define QWEBENGINEPAGE_P_H
 
-#include "web_contents_adapter_client.h"
+#include "qwebenginepage.h"
 
-#include <QScopedPointer>
-#include <QtWidgets/private/qwidget_p.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
+#include <QtCore/private/qobject_p.h>
 
+class QWebEngineHistory;
+class QWebEnginePage;
 class QWebEngineView;
-class RenderWidgetHostViewQtDelegate;
-class WebContentsAdapter;
 
-class QWebEngineViewPrivate : public QWidgetPrivate, public WebContentsAdapterClient
+class QWebEnginePagePrivate : public QObjectPrivate
 {
 public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
+    Q_DECLARE_PUBLIC(QWebEnginePage)
 
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
+    QWebEnginePagePrivate();
+    ~QWebEnginePagePrivate();
 
-    QWebEngineViewPrivate();
-
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
-    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
-    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
-    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
-    virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
-    virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
-    virtual void focusContainer() Q_DECL_OVERRIDE;
-
+    QWebEngineHistory *history;
+    QWebEngineView *view;
     bool m_isLoading;
-    QScopedPointer<WebContentsAdapter> adapter;
-    QWebEnginePage *page;
 };
 
-#endif // QWEBENGINEVIEW_P_H
+#endif // QWEBENGINEPAGE_P_H
