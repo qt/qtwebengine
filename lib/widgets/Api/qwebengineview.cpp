@@ -42,16 +42,42 @@
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
 
+#include "qwebenginepage_p.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
 
 #include <QStackedLayout>
 #include <QUrl>
 
+void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
+{
+    if (view && page == view->d_func()->page)
+        return;
+
+    if (page) {
+        // Un-bind page from its current view.
+        if (QWebEngineView *oldView = page->d_func()->view) {
+            page->disconnect(oldView);
+            oldView->d_func()->page = 0;
+        }
+        page->d_func()->view = view;
+    }
+
+    if (view) {
+        // Un-bind view from its current page.
+        if (QWebEnginePage *oldPage = view->d_func()->page) {
+            oldPage->disconnect(view);
+            oldPage->d_func()->view = 0;
+        }
+        view->d_func()->page = page;
+    }
+}
+
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : QWidgetPrivate(QObjectPrivateVersion)
     , m_isLoading(false)
     , adapter(new WebContentsAdapter(this))
+    , page(0)
 {
 }
 
@@ -113,22 +139,25 @@ QWebEngineView::~QWebEngineView()
 {
 }
 
+QWebEnginePage* QWebEngineView::page() const
+{
+    Q_D(const QWebEngineView);
+    if (!d->page) {
+        QWebEngineView *that = const_cast<QWebEngineView*>(this);
+        that->setPage(new QWebEnginePage(that));
+    }
+    return d->page;
+}
+
+void QWebEngineView::setPage(QWebEnginePage* page)
+{
+    QWebEngineViewPrivate::bind(this, page);
+}
+
 void QWebEngineView::load(const QUrl& url)
 {
     Q_D(QWebEngineView);
     d->adapter->load(url);
-}
-
-bool QWebEngineView::canGoBack() const
-{
-    Q_D(const QWebEngineView);
-    return d->adapter->canGoBack();
-}
-
-bool QWebEngineView::canGoForward() const
-{
-    Q_D(const QWebEngineView);
-    return d->adapter->canGoForward();
 }
 
 void QWebEngineView::back()
