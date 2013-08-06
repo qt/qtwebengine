@@ -49,7 +49,7 @@
 class AutoSaver;
 class BookmarksToolBar;
 class ChaseWidget;
-class QWebFrame;
+class QWebEngineFrame;
 class TabWidget;
 class ToolbarSearch;
 class WebView;
@@ -124,7 +124,7 @@ private slots:
     void slotShowWindow();
     void slotSwapFocus();
 
-    void printRequested(QWebFrame *frame);
+    void printRequested(QWebEngineFrame *frame);
     void geometryChangeRequested(const QRect &geometry);
     void updateToolbarActionText(bool visible);
     void updateBookmarksToolbarActionText(bool visible);

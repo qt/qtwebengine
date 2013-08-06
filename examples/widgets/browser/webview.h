@@ -42,7 +42,7 @@
 #ifndef WEBVIEW_H
 #define WEBVIEW_H
 
-#include <QWebView>
+#include <QWebEngineView>
 
 QT_BEGIN_NAMESPACE
 class QAuthenticator;
@@ -53,7 +53,7 @@ class QSslError;
 QT_END_NAMESPACE
 
 class BrowserMainWindow;
-class WebPage : public QWebPage {
+class WebPage : public QWebEnginePage {
     Q_OBJECT
 
 signals:
@@ -64,8 +64,8 @@ public:
     BrowserMainWindow *mainWindow();
 
 protected:
-    bool acceptNavigationRequest(QWebFrame *frame, const QNetworkRequest &request, NavigationType type);
-    QWebPage *createWindow(QWebPage::WebWindowType type);
+    bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type);
+    QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type);
 #if !defined(QT_NO_UITOOLS)
     QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 #endif
@@ -83,7 +83,7 @@ private:
     QUrl m_loadingUrl;
 };
 
-class WebView : public QWebView {
+class WebView : public QWebEngineView {
     Q_OBJECT
 
 public:

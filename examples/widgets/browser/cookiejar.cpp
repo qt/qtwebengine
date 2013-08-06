@@ -59,7 +59,7 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtNetwork/QNetworkCookie>
 
-#include <QWebSettings>
+#include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
 
@@ -226,8 +226,8 @@ QList<QNetworkCookie> CookieJar::cookiesForUrl(const QUrl &url) const
     if (!m_loaded)
         that->load();
 
-    QWebSettings *globalSettings = QWebSettings::globalSettings();
-    if (globalSettings->testAttribute(QWebSettings::PrivateBrowsingEnabled)) {
+    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
+    if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled)) {
         QList<QNetworkCookie> noCookies;
         return noCookies;
     }
@@ -240,8 +240,8 @@ bool CookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieList, const
     if (!m_loaded)
         load();
 
-    QWebSettings *globalSettings = QWebSettings::globalSettings();
-    if (globalSettings->testAttribute(QWebSettings::PrivateBrowsingEnabled))
+    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
+    if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
         return false;
 
     QString host = url.host();
