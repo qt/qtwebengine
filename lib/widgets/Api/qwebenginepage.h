@@ -27,24 +27,62 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qvariant.h>
+#include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
 class QUndoStack;
 class QMenu;
-class QNetworkRequest;
-class QNetworkReply;
-class QNetworkAccessManager;
+class QPrinter;
 QT_END_NAMESPACE
 
+// FIXME: Just forward-declare the to-be-removed frame and element classes for now.
+// Referencing calls should be ported to be page-friendly or removed individually.
 class QWebEngineFrame;
-class QWebEngineHistory;
+class QWebEngineElement;
+class QWebEngineElementCollection;
 
+class QWebEngineHistory;
 class QWebEngineHistoryItem;
 class QWebEnginePagePrivate;
 class QWebEnginePluginFactory;
 class QWebEngineSecurityOrigin;
 class QtViewportAttributesPrivate;
+class QWebEngineHitTestResultPrivate;
+
+class QWEBENGINEWIDGETS_EXPORT QWebEngineHitTestResult {
+public:
+    QWebEngineHitTestResult();
+    QWebEngineHitTestResult(const QWebEngineHitTestResult &other);
+    QWebEngineHitTestResult &operator=(const QWebEngineHitTestResult &other);
+    ~QWebEngineHitTestResult();
+
+    bool isNull() const;
+
+    QPoint pos() const;
+    QRect boundingRect() const;
+    QWebEngineElement enclosingBlockElement() const;
+    QString title() const;
+
+    QString linkText() const;
+    QUrl linkUrl() const;
+    QUrl linkTitle() const;
+    QWebEngineFrame *linkTargetFrame() const;
+    QWebEngineElement linkElement() const;
+
+    QString alternateText() const; // for img, area, input and applet
+
+    QUrl imageUrl() const;
+    QPixmap pixmap() const;
+
+    bool isContentEditable() const;
+    bool isContentSelected() const;
+
+    QWebEngineElement element() const;
+
+    QWebEngineFrame *frame() const;
+};
 
 class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_OBJECT
@@ -61,6 +99,18 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
     Q_PROPERTY(bool contentEditable READ isContentEditable WRITE setContentEditable)
     Q_ENUMS(LinkDelegationPolicy NavigationType WebAction)
+
+    // Ex-QWebFrame properties
+    Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
+    Q_PROPERTY(QString title READ title)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl)
+    Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
+    Q_PROPERTY(QUrl baseUrl READ baseUrl)
+    Q_PROPERTY(QIcon icon READ icon)
+    Q_PROPERTY(QSize contentsSize READ contentsSize)
+    Q_PROPERTY(QPoint scrollPosition READ scrollPosition WRITE setScrollPosition)
+    Q_PROPERTY(bool focus READ hasFocus)
 #endif
 
 public:
@@ -195,6 +245,13 @@ public:
     enum Feature {
         Notifications,
         Geolocation
+    };
+
+    // Ex-QWebFrame enum
+    enum ValueOwnership {
+        QtOwnership,
+        ScriptOwnership,
+        AutoOwnership
     };
 
     class QWEBENGINEWIDGETS_EXPORT ViewportAttributes {
@@ -347,6 +404,85 @@ public:
 
     virtual bool shouldInterruptJavaScript() { Q_UNREACHABLE(); return false; }
 
+    // Ex-QWebFrame methods
+    void load(const QUrl &url);
+    void load(const QNetworkRequest &request, QNetworkAccessManager::Operation operation = QNetworkAccessManager::GetOperation, const QByteArray &body = QByteArray());
+    void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
+    void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
+
+    void addToJavaScriptWindowObject(const QString &name, QObject *object, ValueOwnership ownership = QtOwnership);
+    QString toHtml() const;
+    QString toPlainText() const;
+
+    QString title() const;
+    void setUrl(const QUrl &url);
+    QUrl url() const;
+    QUrl requestedUrl() const;
+    QUrl baseUrl() const;
+    QIcon icon() const;
+    QMultiMap<QString, QString> metaData() const;
+
+    QString frameName() const;
+
+    QWebEngineFrame *parentFrame() const;
+    QList<QWebEngineFrame*> childFrames() const;
+
+    Qt::ScrollBarPolicy scrollBarPolicy(Qt::Orientation orientation) const;
+    void setScrollBarPolicy(Qt::Orientation orientation, Qt::ScrollBarPolicy policy);
+
+    void setScrollBarValue(Qt::Orientation orientation, int value);
+    int scrollBarValue(Qt::Orientation orientation) const;
+    int scrollBarMinimum(Qt::Orientation orientation) const;
+    int scrollBarMaximum(Qt::Orientation orientation) const;
+    QRect scrollBarGeometry(Qt::Orientation orientation) const;
+
+    void scroll(int, int);
+    QPoint scrollPosition() const;
+    void setScrollPosition(const QPoint &pos);
+
+    void scrollToAnchor(const QString& anchor);
+
+    enum RenderLayer {
+        ContentsLayer = 0x10,
+        ScrollBarLayer = 0x20,
+        PanIconLayer = 0x40,
+
+        AllLayers = 0xff
+    };
+    Q_DECLARE_FLAGS(RenderLayers, RenderLayer)
+
+    void render(QPainter*, const QRegion& clip = QRegion());
+    void render(QPainter*, RenderLayers layer, const QRegion& clip = QRegion());
+
+    void setTextSizeMultiplier(qreal factor);
+    qreal textSizeMultiplier() const;
+
+    qreal zoomFactor() const;
+    void setZoomFactor(qreal factor);
+
+    bool hasFocus() const;
+    void setFocus();
+
+    QPoint pos() const;
+    QRect geometry() const;
+    QSize contentsSize() const;
+
+    QWebEngineElement documentElement() const;
+    QWebEngineElementCollection findAllElements(const QString &selectorQuery) const;
+    QWebEngineElement findFirstElement(const QString &selectorQuery) const;
+
+    QWebEngineHitTestResult hitTestContent(const QPoint &pos) const;
+
+    QWebEngineSecurityOrigin securityOrigin() const;
+
+public Q_SLOTS:
+    // Ex-QWebFrame slots
+    QVariant evaluateJavaScript(const QString& scriptSource) { Q_UNUSED(scriptSource); Q_UNREACHABLE(); return QVariant(); };
+#ifndef QT_NO_PRINTER
+    void print(QPrinter *printer) const { Q_UNUSED(printer); Q_UNREACHABLE(); };
+#endif
+
+
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);
@@ -383,6 +519,21 @@ Q_SIGNALS:
     void featurePermissionRequested(QWebEngineFrame* frame, QWebEnginePage::Feature feature);
     void featurePermissionRequestCanceled(QWebEngineFrame* frame, QWebEnginePage::Feature feature);
 
+    // Ex-QWebFrame signals
+    void javaScriptWindowObjectCleared();
+
+    void provisionalLoad();
+    void titleChanged(const QString &title);
+    void urlChanged(const QUrl &url);
+
+    void initialLayoutCompleted();
+
+    void iconChanged();
+
+    void contentsSizeChanged(const QSize &size);
+
+    void pageChanged();
+
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type) { Q_UNUSED(type); Q_UNREACHABLE(); return 0; };
     virtual QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues) { Q_UNUSED(classid); Q_UNUSED(url); Q_UNUSED(paramNames); Q_UNUSED(paramValues); Q_UNREACHABLE(); return 0; }
@@ -402,6 +553,7 @@ private:
     friend class QWebEngineViewPrivate;
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::RenderLayers);
 
 #endif // QWEBENGINEPAGE_H
