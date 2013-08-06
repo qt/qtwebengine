@@ -114,6 +114,16 @@ void QWebEngineView::load(const QUrl& url)
     page()->load(url);
 }
 
+QString QWebEngineView::title() const
+{
+    return page()->title();
+}
+
+void QWebEngineView::stop()
+{
+    page()->triggerAction(QWebEnginePage::Stop);
+}
+
 void QWebEngineView::back()
 {
     page()->triggerAction(QWebEnginePage::Back);
@@ -127,11 +137,6 @@ void QWebEngineView::forward()
 void QWebEngineView::reload()
 {
     page()->triggerAction(QWebEnginePage::Reload);
-}
-
-void QWebEngineView::stop()
-{
-    page()->triggerAction(QWebEnginePage::Stop);
 }
 
 #include "moc_qwebengineview.cpp"

@@ -166,4 +166,10 @@ void QWebEnginePage::load(const QUrl& url)
     d->adapter->load(url);
 }
 
+QString QWebEnginePage::title() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->pageTitle();
+}
+
 #include "moc_qwebenginepage.cpp"
