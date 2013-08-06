@@ -172,4 +172,15 @@ QString QWebEnginePage::title() const
     return d->adapter->pageTitle();
 }
 
+void QWebEnginePage::setUrl(const QUrl &url)
+{
+    load(url);
+}
+
+QUrl QWebEnginePage::url() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->activeUrl();
+}
+
 #include "moc_qwebenginepage.cpp"
