@@ -26,6 +26,7 @@ SOURCES = \
         render_widget_host_view_qt_delegate_widget.cpp
 
 HEADERS = \
+        Api/qtwebenginewidgetsglobal.h \
         Api/qwebcontentsview.h \
         Api/qwebcontentsview_p.h \
         render_widget_host_view_qt_delegate_widget.h
