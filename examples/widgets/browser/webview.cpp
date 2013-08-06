@@ -67,7 +67,9 @@ WebPage::WebPage(QObject *parent)
     , m_pressedButtons(Qt::NoButton)
     , m_openInNewTab(false)
 {
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     setNetworkAccessManager(BrowserApplication::networkAccessManager());
+#endif
     connect(this, SIGNAL(unsupportedContent(QNetworkReply*)),
             this, SLOT(handleUnsupportedContent(QNetworkReply*)));
 }
@@ -85,6 +87,7 @@ BrowserMainWindow *WebPage::mainWindow()
 
 bool WebPage::acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type)
 {
+#if defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
     // ctrl open in new tab
     // ctrl-shift open in new tab and select
     // ctrl-alt open in new window
@@ -111,6 +114,7 @@ bool WebPage::acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequ
     }
     m_loadingUrl = request.url();
     emit loadingUrl(m_loadingUrl);
+#endif
     return QWebEnginePage::acceptNavigationRequest(frame, request, type);
 }
 
@@ -141,7 +145,7 @@ QObject *WebPage::createPlugin(const QString &classId, const QUrl &url, const QS
 
 void WebPage::handleUnsupportedContent(QNetworkReply *reply)
 {
-#if defined(QTWEBENGINE_FEATURE_DOWNLOADS)
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     QString errorString = reply->errorString();
 
     if (m_loadingUrl != reply->url()) {
@@ -210,12 +214,15 @@ WebView::WebView(QWidget* parent)
             this, SIGNAL(urlChanged(QUrl)));
     connect(page(), SIGNAL(downloadRequested(QNetworkRequest)),
             this, SLOT(downloadRequested(QNetworkRequest)));
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     page()->setForwardUnsupportedContent(true);
+#endif
 
 }
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
+#if defined(QWEBENGINEPAGE_HITTESTCONTENT)
     QWebEngineHitTestResult r = page()->hitTestContent(event->pos());
     if (!r.linkUrl().isEmpty()) {
         QMenu menu(this);
@@ -231,11 +238,13 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
         menu.exec(mapToGlobal(event->pos()));
         return;
     }
+#endif
     QWebEngineView::contextMenuEvent(event);
 }
 
 void WebView::wheelEvent(QWheelEvent *event)
 {
+#if defined(QWEBENGINEPAGE_SETTEXTSIZEMULTIPLIER)
     if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
         int numDegrees = event->delta() / 8;
         int numSteps = numDegrees / 15;
@@ -243,13 +252,16 @@ void WebView::wheelEvent(QWheelEvent *event)
         event->accept();
         return;
     }
+#endif
     QWebEngineView::wheelEvent(event);
 }
 
 void WebView::openLinkInNewTab()
 {
+#if defined(QWEBENGINEPAGE_ACTION)
     m_page->m_openInNewTab = true;
     pageAction(QWebEnginePage::OpenLinkInNewWindow)->trigger();
+#endif
 }
 
 void WebView::setProgress(int progress)

@@ -67,8 +67,11 @@
 static const unsigned int HISTORY_VERSION = 23;
 
 HistoryManager::HistoryManager(QObject *parent)
-    : QWebEngineHistoryInterface(parent)
-    , m_saveTimer(new AutoSaver(this))
+    :
+#if defined(QWEBENGINEHISTORYINTERFACE)
+      QWebEngineHistoryInterface(parent),
+#endif
+      m_saveTimer(new AutoSaver(this))
     , m_historyLimit(30)
     , m_historyModel(0)
     , m_historyFilterModel(0)
@@ -87,8 +90,10 @@ HistoryManager::HistoryManager(QObject *parent)
     m_historyFilterModel = new HistoryFilterModel(m_historyModel, this);
     m_historyTreeModel = new HistoryTreeModel(m_historyFilterModel, this);
 
+#if defined(QWEBENGINEHISTORYINTERFACE)
     // QWebEngineHistoryInterface will delete the history manager
     QWebEngineHistoryInterface::setDefaultInterface(this);
+#endif
 }
 
 HistoryManager::~HistoryManager()
@@ -180,9 +185,11 @@ void HistoryManager::checkForExpired()
 
 void HistoryManager::addHistoryItem(const HistoryItem &item)
 {
+#if defined(QWEBENGINESETTINGS)
     QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
     if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
         return;
+#endif
 
     m_history.prepend(item);
     emit entryAdded(item);

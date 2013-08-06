@@ -109,8 +109,11 @@ void ToolbarSearch::searchNow()
     if (newList.size() >= m_maxSavedSearches)
         newList.removeLast();
 
+#if defined(QWEBENGINESETTINGS)
     QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-    if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled)) {
+    if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
+#endif
+    {
         m_stringListModel->setStringList(newList);
         m_autosaver->changeOccurred();
     }

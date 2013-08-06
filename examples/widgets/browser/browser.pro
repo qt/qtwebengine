@@ -2,6 +2,8 @@ TEMPLATE = app
 TARGET = browser
 QT += webenginewidgets network widgets printsupport
 
+include($$QTWEBENGINE_ROOT/common.pri)
+
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
 
@@ -23,13 +25,11 @@ HEADERS += \
     browserapplication.h \
     browsermainwindow.h \
     chasewidget.h \
-    cookiejar.h \
     downloadmanager.h \
     edittableview.h \
     edittreeview.h \
     history.h \
     modelmenu.h \
-    networkaccessmanager.h \
     searchlineedit.h \
     settings.h \
     squeezelabel.h \
@@ -45,13 +45,11 @@ SOURCES += \
     browserapplication.cpp \
     browsermainwindow.cpp \
     chasewidget.cpp \
-    cookiejar.cpp \
     downloadmanager.cpp \
     edittableview.cpp \
     edittreeview.cpp \
     history.cpp \
     modelmenu.cpp \
-    networkaccessmanager.cpp \
     searchlineedit.cpp \
     settings.cpp \
     squeezelabel.cpp \
@@ -63,6 +61,11 @@ SOURCES += \
     main.cpp
 
 RESOURCES += data/data.qrc htmls/htmls.qrc
+
+contains(DEFINES, QWEBENGINEPAGE_SETNETWORKACCESSMANAGER) {
+    HEADERS += cookiejar.h networkaccessmanager.h
+    SOURCES += cookiejar.cpp networkaccessmanager.cpp
+}
 
 build_all:!build_pass {
     CONFIG -= build_all

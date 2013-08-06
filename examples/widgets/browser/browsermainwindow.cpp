@@ -641,14 +641,16 @@ void BrowserMainWindow::slotFilePrintPreview()
 
 void BrowserMainWindow::slotFilePrint()
 {
+#if defined(QWEBENGINEPAGE_PRINT)
     if (!currentTab())
         return;
     printRequested(currentTab()->page()->mainFrame());
+#endif
 }
 
 void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
 {
-#if defined(QTWEBENGINE_FEATURE_PRINT)
+#if defined(QWEBENGINEPAGE_PRINT)
 #ifndef QT_NO_PRINTDIALOG
     QPrinter printer;
     QPrintDialog *dialog = new QPrintDialog(&printer, this);
@@ -662,6 +664,7 @@ void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
 
 void BrowserMainWindow::slotPrivateBrowsing()
 {
+#if defined(QWEBENGINESETTINGS)
     QWebEngineSettings *settings = QWebEngineSettings::globalSettings();
     bool pb = settings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled);
     if (!pb) {
@@ -691,6 +694,7 @@ void BrowserMainWindow::slotPrivateBrowsing()
             window->tabWidget()->clear();
         }
     }
+#endif
 }
 
 void BrowserMainWindow::closeEvent(QCloseEvent *event)
@@ -712,6 +716,7 @@ void BrowserMainWindow::closeEvent(QCloseEvent *event)
 
 void BrowserMainWindow::slotEditFind()
 {
+#if defined(QWEBENGINEPAGE_FINDTEXT)
     if (!currentTab())
         return;
     bool ok;
@@ -723,48 +728,61 @@ void BrowserMainWindow::slotEditFind()
         if (!currentTab()->findText(m_lastSearch))
             slotUpdateStatusbar(tr("\"%1\" not found.").arg(m_lastSearch));
     }
+#endif
 }
 
 void BrowserMainWindow::slotEditFindNext()
 {
+#if defined(QWEBENGINEPAGE_FINDTEXT)
     if (!currentTab() && !m_lastSearch.isEmpty())
         return;
     currentTab()->findText(m_lastSearch);
+#endif
 }
 
 void BrowserMainWindow::slotEditFindPrevious()
 {
+#if defined(QWEBENGINEPAGE_FINDTEXT)
     if (!currentTab() && !m_lastSearch.isEmpty())
         return;
     currentTab()->findText(m_lastSearch, QWebEnginePage::FindBackward);
+#endif
 }
 
 void BrowserMainWindow::slotViewZoomIn()
 {
+#if defined(QWEBENGINEPAGE_SETZOOMFACTOR)
     if (!currentTab())
         return;
     currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
+#endif
 }
 
 void BrowserMainWindow::slotViewZoomOut()
 {
+#if defined(QWEBENGINEPAGE_SETZOOMFACTOR)
     if (!currentTab())
         return;
     currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
+#endif
 }
 
 void BrowserMainWindow::slotViewResetZoom()
 {
+#if defined(QWEBENGINEPAGE_SETZOOMFACTOR)
     if (!currentTab())
         return;
     currentTab()->setZoomFactor(1.0);
+#endif
 }
 
 void BrowserMainWindow::slotViewZoomTextOnly(bool enable)
 {
+#if defined(QWEBENGINESETTINGS)
     if (!currentTab())
         return;
     currentTab()->page()->settings()->setAttribute(QWebEngineSettings::ZoomTextOnly, enable);
+#endif
 }
 
 void BrowserMainWindow::slotViewFullScreen(bool makeFullScreen)
@@ -782,6 +800,7 @@ void BrowserMainWindow::slotViewFullScreen(bool makeFullScreen)
 
 void BrowserMainWindow::slotViewPageSource()
 {
+#if defined(QWEBENGINEPAGE_TOHTML)
     if (!currentTab())
         return;
 
@@ -791,6 +810,7 @@ void BrowserMainWindow::slotViewPageSource()
     view->setMinimumWidth(640);
     view->setAttribute(Qt::WA_DeleteOnClose);
     view->show();
+#endif
 }
 
 void BrowserMainWindow::slotHome()
@@ -809,6 +829,7 @@ void BrowserMainWindow::slotWebSearch()
 
 void BrowserMainWindow::slotToggleInspector(bool enable)
 {
+#if defined(QWEBENGINEINSPECTOR)
     QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, enable);
     if (enable) {
         int result = QMessageBox::question(this, tr("Web Inspector"),
@@ -819,6 +840,7 @@ void BrowserMainWindow::slotToggleInspector(bool enable)
             m_tabWidget->reloadAllTabs();
         }
     }
+#endif
 }
 
 void BrowserMainWindow::slotSwapFocus()
@@ -869,6 +891,7 @@ void BrowserMainWindow::slotAboutToShowBackMenu()
     m_historyBackMenu->clear();
     if (!currentTab())
         return;
+#if defined(QWEBENGINEHISTORY)
     QWebEngineHistory *history = currentTab()->history();
     int historyCount = history->count();
     for (int i = history->backItems(historyCount).count() - 1; i >= 0; --i) {
@@ -880,6 +903,7 @@ void BrowserMainWindow::slotAboutToShowBackMenu()
         action->setText(item.title());
         m_historyBackMenu->addAction(action);
     }
+#endif
 }
 
 void BrowserMainWindow::slotAboutToShowForwardMenu()
@@ -887,6 +911,7 @@ void BrowserMainWindow::slotAboutToShowForwardMenu()
     m_historyForwardMenu->clear();
     if (!currentTab())
         return;
+#if defined(QWEBENGINEHISTORY)
     QWebEngineHistory *history = currentTab()->history();
     int historyCount = history->count();
     for (int i = 0; i < history->forwardItems(history->count()).count(); ++i) {
@@ -898,6 +923,7 @@ void BrowserMainWindow::slotAboutToShowForwardMenu()
         action->setText(item.title());
         m_historyForwardMenu->addAction(action);
     }
+#endif
 }
 
 void BrowserMainWindow::slotAboutToShowWindowMenu()
@@ -935,13 +961,16 @@ void BrowserMainWindow::slotShowWindow()
 
 void BrowserMainWindow::slotOpenActionUrl(QAction *action)
 {
+#if defined(QWEBENGINEHISTORY)
+
     int offset = action->data().toInt();
     QWebEngineHistory *history = currentTab()->history();
     if (offset < 0)
         history->goToItem(history->backItems(-1*offset).first()); // back
     else if (offset > 0)
         history->goToItem(history->forwardItems(history->count() - offset + 1).back()); // forward
- }
+#endif
+}
 
 void BrowserMainWindow::geometryChangeRequested(const QRect &geometry)
 {

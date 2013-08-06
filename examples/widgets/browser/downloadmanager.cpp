@@ -429,10 +429,12 @@ void DownloadManager::updateRow()
     downloadsView->setRowHeight(row, item->minimumSizeHint().height());
 
     bool remove = false;
+#if defined(QWEBENGINESETTINGS)
     QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
     if (!item->downloading()
         && globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
         remove = true;
+#endif
 
     if (item->downloadedSuccessfully()
         && removePolicy() == DownloadManager::SuccessFullDownload) {
