@@ -119,6 +119,16 @@ QString QWebEngineView::title() const
     return page()->title();
 }
 
+void QWebEngineView::setUrl(const QUrl &url)
+{
+    page()->setUrl(url);
+}
+
+QUrl QWebEngineView::url() const
+{
+    return page()->url();
+}
+
 void QWebEngineView::stop()
 {
     page()->triggerAction(QWebEnginePage::Stop);
