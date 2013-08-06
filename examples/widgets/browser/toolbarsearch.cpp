@@ -50,7 +50,7 @@
 #include <QtWidgets/QMenu>
 #include <QtCore/QStringListModel>
 
-#include <QWebSettings>
+#include <QWebEngineSettings>
 
 /*
     ToolbarSearch is a very basic search widget that also contains a small history.
@@ -109,8 +109,8 @@ void ToolbarSearch::searchNow()
     if (newList.size() >= m_maxSavedSearches)
         newList.removeLast();
 
-    QWebSettings *globalSettings = QWebSettings::globalSettings();
-    if (!globalSettings->testAttribute(QWebSettings::PrivateBrowsingEnabled)) {
+    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
+    if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled)) {
         m_stringListModel->setStringList(newList);
         m_autosaver->changeOccurred();
     }

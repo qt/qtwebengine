@@ -52,7 +52,7 @@
 
 #include <QtCore/QSortFilterProxyModel>
 
-#include <QWebHistoryInterface>
+#include <QWebEngineHistoryInterface>
 
 class HistoryItem
 {
@@ -79,7 +79,7 @@ class AutoSaver;
 class HistoryModel;
 class HistoryFilterModel;
 class HistoryTreeModel;
-class HistoryManager : public QWebHistoryInterface
+class HistoryManager : public QWebEngineHistoryInterface
 {
     Q_OBJECT
     Q_PROPERTY(int historyLimit READ historyLimit WRITE setHistoryLimit)

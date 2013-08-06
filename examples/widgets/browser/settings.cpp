@@ -50,7 +50,7 @@
 
 #include <QtCore/QSettings>
 #include <QtWidgets/QtWidgets>
-#include <QtWebKitWidgets>
+#include <QtWebEngineWidgets/QtWebEngineWidgets>
 
 SettingsDialog::SettingsDialog(QWidget *parent)
     : QDialog(parent)
@@ -68,21 +68,21 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 void SettingsDialog::loadDefaults()
 {
-    QWebSettings *defaultSettings = QWebSettings::globalSettings();
-    QString standardFontFamily = defaultSettings->fontFamily(QWebSettings::StandardFont);
-    int standardFontSize = defaultSettings->fontSize(QWebSettings::DefaultFontSize);
+    QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
+    QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
+    int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
     standardFont = QFont(standardFontFamily, standardFontSize);
     standardLabel->setText(QString(QLatin1String("%1 %2")).arg(standardFont.family()).arg(standardFont.pointSize()));
 
-    QString fixedFontFamily = defaultSettings->fontFamily(QWebSettings::FixedFont);
-    int fixedFontSize = defaultSettings->fontSize(QWebSettings::DefaultFixedFontSize);
+    QString fixedFontFamily = defaultSettings->fontFamily(QWebEngineSettings::FixedFont);
+    int fixedFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFixedFontSize);
     fixedFont = QFont(fixedFontFamily, fixedFontSize);
     fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
 
     downloadsLocation->setText(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation));
 
-    enableJavascript->setChecked(defaultSettings->testAttribute(QWebSettings::JavascriptEnabled));
-    enablePlugins->setChecked(defaultSettings->testAttribute(QWebSettings::PluginsEnabled));
+    enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
+    enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
 }
 
 void SettingsDialog::loadFromSettings()

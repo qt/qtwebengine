@@ -289,7 +289,7 @@ void TabWidget::moveTab(int fromIndex, int toIndex)
     m_lineEdits->insertWidget(toIndex, lineEdit);
 }
 
-void TabWidget::addWebAction(QAction *action, QWebPage::WebAction webAction)
+void TabWidget::addWebAction(QAction *action, QWebEnginePage::WebAction webAction)
 {
     if (!action)
         return;
@@ -460,8 +460,8 @@ WebView *TabWidget::newTab(bool makeCurrent)
             this, SLOT(windowCloseRequested()));
     connect(webView->page(), SIGNAL(geometryChangeRequested(QRect)),
             this, SIGNAL(geometryChangeRequested(QRect)));
-    connect(webView->page(), SIGNAL(printRequested(QWebFrame*)),
-            this, SIGNAL(printRequested(QWebFrame*)));
+    connect(webView->page(), SIGNAL(printRequested(QWebEngineFrame*)),
+            this, SIGNAL(printRequested(QWebEngineFrame*)));
     connect(webView->page(), SIGNAL(menuBarVisibilityChangeRequested(bool)),
             this, SIGNAL(menuBarVisibilityChangeRequested(bool)));
     connect(webView->page(), SIGNAL(statusBarVisibilityChangeRequested(bool)),
@@ -562,8 +562,8 @@ void TabWidget::closeTab(int index)
         }
         hasFocus = tab->hasFocus();
 
-        QWebSettings *globalSettings = QWebSettings::globalSettings();
-        if (!globalSettings->testAttribute(QWebSettings::PrivateBrowsingEnabled)) {
+        QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
+        if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled)) {
             m_recentlyClosedTabsAction->setEnabled(true);
             m_recentlyClosedTabs.prepend(tab->url());
             if (m_recentlyClosedTabs.size() >= TabWidget::m_recentlyClosedTabsSize)
@@ -757,7 +757,7 @@ bool TabWidget::restoreState(const QByteArray &state)
     return true;
 }
 
-WebActionMapper::WebActionMapper(QAction *root, QWebPage::WebAction webAction, QObject *parent)
+WebActionMapper::WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent)
     : QObject(parent)
     , m_currentParent(0)
     , m_root(root)
@@ -787,7 +787,7 @@ void WebActionMapper::addChild(QAction *action)
     connect(action, SIGNAL(changed()), this, SLOT(childChanged()));
 }
 
-QWebPage::WebAction WebActionMapper::webAction() const
+QWebEnginePage::WebAction WebActionMapper::webAction() const
 {
     return m_webAction;
 }
@@ -812,7 +812,7 @@ void WebActionMapper::childChanged()
     }
 }
 
-void WebActionMapper::updateCurrent(QWebPage *currentParent)
+void WebActionMapper::updateCurrent(QWebEnginePage *currentParent)
 {
     if (m_currentParent)
         disconnect(m_currentParent, SIGNAL(destroyed(QObject*)),
