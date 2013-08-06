@@ -201,11 +201,13 @@ void BrowserApplication::quitBrowser()
  */
 void BrowserApplication::postLaunch()
 {
+#if defined(QWEBENGINESETTINGS)
     QString directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
     if (directory.isEmpty())
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
     QWebEngineSettings::setIconDatabasePath(directory);
     QWebEngineSettings::setOfflineStoragePath(directory);
+#endif
 
     setWindowIcon(QIcon(QLatin1String(":browser.svg")));
 
@@ -224,6 +226,7 @@ void BrowserApplication::postLaunch()
 
 void BrowserApplication::loadSettings()
 {
+#if defined(QWEBENGINESETTINGS)
     QSettings settings;
     settings.beginGroup(QLatin1String("websettings"));
 
@@ -251,6 +254,7 @@ void BrowserApplication::loadSettings()
     defaultSettings->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
 
     settings.endGroup();
+#endif
 }
 
 QList<BrowserMainWindow*> BrowserApplication::mainWindows()
@@ -272,9 +276,11 @@ void BrowserApplication::clean()
 
 void BrowserApplication::saveSession()
 {
+#if defined(QWEBENGINESETTINGS)
     QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
     if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
         return;
+#endif
 
     clean();
 
@@ -410,7 +416,11 @@ void BrowserApplication::newLocalSocketConnection()
 
 CookieJar *BrowserApplication::cookieJar()
 {
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     return (CookieJar*)networkAccessManager()->cookieJar();
+#else
+    return 0;
+#endif
 }
 
 DownloadManager *BrowserApplication::downloadManager()
@@ -423,19 +433,21 @@ DownloadManager *BrowserApplication::downloadManager()
 
 NetworkAccessManager *BrowserApplication::networkAccessManager()
 {
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     if (!s_networkAccessManager) {
         s_networkAccessManager = new NetworkAccessManager();
         s_networkAccessManager->setCookieJar(new CookieJar);
     }
     return s_networkAccessManager;
+#else
+    return 0;
+#endif
 }
 
 HistoryManager *BrowserApplication::historyManager()
 {
-    if (!s_historyManager) {
+    if (!s_historyManager)
         s_historyManager = new HistoryManager();
-        QWebEngineHistoryInterface::setDefaultInterface(s_historyManager);
-    }
     return s_historyManager;
 }
 
@@ -449,9 +461,11 @@ BookmarksManager *BrowserApplication::bookmarksManager()
 
 QIcon BrowserApplication::icon(const QUrl &url) const
 {
+#if defined(QWEBENGINESETTINGS)
     QIcon icon = QWebEngineSettings::iconForUrl(url);
     if (!icon.isNull())
         return icon.pixmap(16, 16);
+#endif
     if (m_defaultIcon.isNull())
         m_defaultIcon = QIcon(QLatin1String(":defaulticon.png"));
     return m_defaultIcon.pixmap(16, 16);

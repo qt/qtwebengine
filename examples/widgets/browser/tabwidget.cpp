@@ -473,10 +473,12 @@ WebView *TabWidget::newTab(bool makeCurrent)
         setCurrentWidget(webView);
 
     // webview actions
+#if defined(QWEBENGINEPAGE_ACTION)
     for (int i = 0; i < m_actions.count(); ++i) {
         WebActionMapper *mapper = m_actions[i];
         mapper->addChild(webView->page()->action(mapper->webAction()));
     }
+#endif
 
     if (count() == 1)
         currentChanged(currentIndex());
@@ -547,6 +549,7 @@ void TabWidget::closeTab(int index)
 
     bool hasFocus = false;
     if (WebView *tab = webView(index)) {
+#if defined(QWEBENGINEPAGE_ISMODIFIED)
         if (tab->isModified()) {
             QMessageBox closeConfirmation(tab);
             closeConfirmation.setWindowFlags(Qt::Sheet);
@@ -560,10 +563,14 @@ void TabWidget::closeTab(int index)
             if (closeConfirmation.exec() == QMessageBox::No)
                 return;
         }
+#endif
         hasFocus = tab->hasFocus();
 
+#if defined(QWEBENGINESETTINGS)
         QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-        if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled)) {
+        if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
+#endif
+        {
             m_recentlyClosedTabsAction->setEnabled(true);
             m_recentlyClosedTabs.prepend(tab->url());
             if (m_recentlyClosedTabs.size() >= TabWidget::m_recentlyClosedTabsSize)
@@ -794,10 +801,12 @@ QWebEnginePage::WebAction WebActionMapper::webAction() const
 
 void WebActionMapper::rootTriggered()
 {
+#if defined(QWEBENGINEPAGE_ACTION)
     if (m_currentParent) {
         QAction *gotoAction = m_currentParent->action(m_webAction);
         gotoAction->trigger();
     }
+#endif
 }
 
 void WebActionMapper::childChanged()
@@ -826,9 +835,11 @@ void WebActionMapper::updateCurrent(QWebEnginePage *currentParent)
         m_root->setChecked(false);
         return;
     }
+#if defined(QWEBENGINEPAGE_ACTION)
     QAction *source = m_currentParent->action(m_webAction);
     m_root->setChecked(source->isChecked());
     m_root->setEnabled(source->isEnabled());
+#endif
     connect(m_currentParent, SIGNAL(destroyed(QObject*)),
             this, SLOT(currentDestroyed()));
 }

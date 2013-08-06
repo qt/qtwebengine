@@ -68,6 +68,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 void SettingsDialog::loadDefaults()
 {
+#if defined(QWEBENGINESETTINGS)
     QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
     QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
     int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
@@ -83,10 +84,12 @@ void SettingsDialog::loadDefaults()
 
     enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
     enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
+#endif
 }
 
 void SettingsDialog::loadFromSettings()
 {
+#if defined(QWEBENGINESETTINGS)
     QSettings settings;
     settings.beginGroup(QLatin1String("MainWindow"));
     QString defaultHome = QLatin1String("http://qt-project.org/");
@@ -180,10 +183,12 @@ void SettingsDialog::loadFromSettings()
     proxyUserName->setText(settings.value(QLatin1String("userName")).toString());
     proxyPassword->setText(settings.value(QLatin1String("password")).toString());
     settings.endGroup();
+#endif
 }
 
 void SettingsDialog::saveToSettings()
 {
+#if defined(QWEBENGINESETTINGS)
     QSettings settings;
     settings.beginGroup(QLatin1String("MainWindow"));
     settings.setValue(QLatin1String("home"), homeLineEdit->text());
@@ -272,6 +277,7 @@ void SettingsDialog::saveToSettings()
     BrowserApplication::networkAccessManager()->loadSettings();
     BrowserApplication::cookieJar()->loadSettings();
     BrowserApplication::historyManager()->loadSettings();
+#endif
 }
 
 void SettingsDialog::accept()
@@ -282,14 +288,18 @@ void SettingsDialog::accept()
 
 void SettingsDialog::showCookies()
 {
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     CookiesDialog *dialog = new CookiesDialog(BrowserApplication::cookieJar(), this);
     dialog->exec();
+#endif
 }
 
 void SettingsDialog::showExceptions()
 {
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     CookiesExceptionsDialog *dialog = new CookiesExceptionsDialog(BrowserApplication::cookieJar(), this);
     dialog->exec();
+#endif
 }
 
 void SettingsDialog::chooseFont()
