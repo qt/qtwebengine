@@ -84,7 +84,7 @@ private:
     int m_dragCurrentIndex;
 };
 
-#include <QWebPage>
+#include <QWebEnginePage>
 
 QT_BEGIN_NAMESPACE
 class QAction;
@@ -102,10 +102,10 @@ class WebActionMapper : public QObject
     Q_OBJECT
 
 public:
-    WebActionMapper(QAction *root, QWebPage::WebAction webAction, QObject *parent);
-    QWebPage::WebAction webAction() const;
+    WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent);
+    QWebEnginePage::WebAction webAction() const;
     void addChild(QAction *action);
-    void updateCurrent(QWebPage *currentParent);
+    void updateCurrent(QWebEnginePage *currentParent);
 
 private slots:
     void rootTriggered();
@@ -114,9 +114,9 @@ private slots:
     void currentDestroyed();
 
 private:
-    QWebPage *m_currentParent;
+    QWebEnginePage *m_currentParent;
     QAction *m_root;
-    QWebPage::WebAction m_webAction;
+    QWebEnginePage::WebAction m_webAction;
 };
 
 #include <QtCore/QUrl>
@@ -152,12 +152,12 @@ signals:
     void menuBarVisibilityChangeRequested(bool visible);
     void statusBarVisibilityChangeRequested(bool visible);
     void toolBarVisibilityChangeRequested(bool visible);
-    void printRequested(QWebFrame *frame);
+    void printRequested(QWebEngineFrame *frame);
 
 public:
     TabWidget(QWidget *parent = 0);
     void clear();
-    void addWebAction(QAction *action, QWebPage::WebAction webAction);
+    void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
 
     QAction *newTabAction() const;
     QAction *closeTabAction() const;

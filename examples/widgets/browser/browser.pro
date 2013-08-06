@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = browser
-QT += webkitwidgets network widgets printsupport
+QT += webenginewidgets network widgets printsupport
 
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
