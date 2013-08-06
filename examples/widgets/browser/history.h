@@ -79,7 +79,12 @@ class AutoSaver;
 class HistoryModel;
 class HistoryFilterModel;
 class HistoryTreeModel;
-class HistoryManager : public QWebEngineHistoryInterface
+class HistoryManager
+#if defined(QWEBENGINEHISTORYINTERFACE)
+ : public QWebEngineHistoryInterface
+#else
+ : public QObject
+#endif
 {
     Q_OBJECT
     Q_PROPERTY(int historyLimit READ historyLimit WRITE setHistoryLimit)
