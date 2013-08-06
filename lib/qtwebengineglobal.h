@@ -49,13 +49,7 @@
 #  else
 #      define QWEBENGINE_EXPORT Q_DECL_IMPORT
 #  endif
-#  if defined(QT_BUILD_WEBENGINEWIDGETS_LIB)
-#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_EXPORT
-#  else
-#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_IMPORT
-#  endif
 #else
-#  define QWEBENGINEWIDGETS_EXPORT
 #  define QWEBENGINE_EXPORT
 #endif
 

@@ -38,42 +38,19 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QTWEBENGINEWIDGETSGLOBAL_H
+#define QTWEBENGINEWIDGETSGLOBAL_H
 
-#ifndef QWEBCONTESTSVIEW_H
-#define QWEBCONTESTSVIEW_H
+#include <QtCore/qglobal.h>
 
-#include <qtwebenginewidgetsglobal.h>
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_WEBENGINEWIDGETS_LIB)
+#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_EXPORT
+#  else
+#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define QWEBENGINEWIDGETS_EXPORT
+#endif
 
-#include <QWidget>
-#include <QScopedPointer>
-
-class QWebContentsViewPrivate;
-
-class QWEBENGINEWIDGETS_EXPORT QWebContentsView : public QWidget {
-    Q_OBJECT
-public:
-    QWebContentsView();
-    ~QWebContentsView();
-
-    void load(const QUrl& url);
-    bool canGoBack() const;
-    bool canGoForward() const;
-
-public Q_SLOTS:
-    void back();
-    void forward();
-    void reload();
-    void stop();
-
-Q_SIGNALS:
-    void loadFinished(bool ok);
-    void loadStarted();
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
-
-private:
-    Q_DECLARE_PRIVATE(QWebContentsView);
-    QScopedPointer<QWebContentsViewPrivate> d_ptr;
-};
-
-#endif // QWEBCONTESTSVIEW_H
+#endif // QTWEBENGINEWIDGETSGLOBAL_H
