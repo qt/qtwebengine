@@ -11,7 +11,12 @@ SUBDIRS = resources \
           build \ # This is where we use the generated qt_generated.gypi and run gyp
           # Now build the API libraries
           lib/quick
-qtHaveModule(widgets): SUBDIRS += lib/widgets
+
+qtHaveModule(widgets) {
+    SUBDIRS += \
+        lib/widgets \
+        tests/widgets
+}
 
 SUBDIRS += examples
 

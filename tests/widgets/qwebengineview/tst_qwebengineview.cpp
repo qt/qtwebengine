@@ -27,8 +27,6 @@
 #include <qwebenginepage.h>
 #include <qnetworkrequest.h>
 #include <qdiriterator.h>
-#include <qwebengineelement.h>
-#include <qwebengineframe.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
@@ -85,6 +83,9 @@ void tst_QWebEngineView::cleanup()
 
 void tst_QWebEngineView::renderHints()
 {
+#if !defined(QWEBENGINEVIEW_RENDERHINTS)
+    QSKIP("QWEBENGINEVIEW_RENDERHINTS");
+#else
     QWebEngineView webView;
 
     // default is only text antialiasing + smooth pixmap transform
@@ -115,11 +116,16 @@ void tst_QWebEngineView::renderHints()
     QVERIFY(webView.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(!(webView.renderHints() & QPainter::SmoothPixmapTransform));
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
+#endif
 }
 
 void tst_QWebEngineView::getWebKitVersion()
 {
+#if !defined(QWEBENGINEVERSION)
+    QSKIP("QWEBENGINEVERSION");
+#else
     QVERIFY(qWebKitVersion().toDouble() > 0);
+#endif
 }
 
 void tst_QWebEngineView::reusePage_data()
@@ -132,6 +138,9 @@ void tst_QWebEngineView::reusePage_data()
 
 void tst_QWebEngineView::reusePage()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     if (!QDir(TESTS_SOURCE_DIR).exists())
         W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
 
@@ -162,6 +171,7 @@ void tst_QWebEngineView::reusePage()
     delete page.data(); // must not crash
 
     QDir::setCurrent(QApplication::applicationDirPath());
+#endif
 }
 
 // Class used in crashTests
@@ -205,6 +215,9 @@ void tst_QWebEngineView::crashTests()
 
 void tst_QWebEngineView::microFocusCoordinates()
 {
+#if !defined(QWEBENGINEPAGE_INPUTMETHODQUERY)
+    QSKIP("QWEBENGINEPAGE_INPUTMETHODQUERY");
+#else
     QWebEnginePage* page = new QWebEnginePage;
     QWebEngineView* webView = new QWebEngineView;
     webView->setPage( page );
@@ -216,7 +229,9 @@ void tst_QWebEngineView::microFocusCoordinates()
         "<canvas id='canvas2' width='500' height='500'></canvas>" \
         "</body></html>");
 
+#if defined(QWEBENGINEFRAME)
     page->mainFrame()->setFocus();
+#endif
 
     QVariant initialMicroFocus = page->inputMethodQuery(Qt::ImMicroFocus);
     QVERIFY(initialMicroFocus.isValid());
@@ -227,10 +242,14 @@ void tst_QWebEngineView::microFocusCoordinates()
     QVERIFY(currentMicroFocus.isValid());
 
     QCOMPARE(initialMicroFocus.toRect().translated(QPoint(0,-50)), currentMicroFocus.toRect());
+#endif
 }
 
 void tst_QWebEngineView::focusInputTypes()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QWebEngineView webView;
     webView.show();
     QTest::qWaitForWindowExposed(&webView);
@@ -301,10 +320,14 @@ void tst_QWebEngineView::focusInputTypes()
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
     QVERIFY(webView.inputMethodHints() == Qt::ImhNone);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
+#endif
 }
 
 void tst_QWebEngineView::horizontalScrollbarTest()
 {
+#if !defined(QWEBENGINEPAGE_SCROLL)
+    QSKIP("QWEBENGINEPAGE_SCROLL");
+#else
     QWebEngineView webView;
     webView.resize(600, 600);
     webView.show();
@@ -325,6 +348,7 @@ void tst_QWebEngineView::horizontalScrollbarTest()
     // Note: The test below assumes that the layout direction is Qt::LeftToRight.
     QTest::mouseClick(&webView, Qt::LeftButton, 0, QPoint(20, 595));
     QVERIFY(webView.page()->scrollPosition() == QPoint(0, 0));
+#endif
 }
 
 
@@ -344,6 +368,9 @@ void tst_QWebEngineView::setPalette_data()
 // custom palette on selections.
 void tst_QWebEngineView::setPalette()
 {
+#if !defined(QWEBCONTENTVIEW_SETPALETTE)
+    QSKIP("QWEBCONTENTVIEW_SETPALETTE");
+#else
     QString html = "<html><head></head>"
                    "<body>"
                    "Some text here"
@@ -456,11 +483,15 @@ void tst_QWebEngineView::setPalette()
     controlView.close();
 
     QVERIFY(img1 != img2);
+#endif
 }
 #endif
 
 void tst_QWebEngineView::renderingAfterMaxAndBack()
 {
+#if !defined(QWEBENGINEPAGE_RENDER)
+    QSKIP("QWEBENGINEPAGE_RENDER");
+#else
     QUrl url = QUrl("data:text/html,<html><head></head>"
                    "<body width=1024 height=768 bgcolor=red>"
                    "</body>"
@@ -514,6 +545,7 @@ void tst_QWebEngineView::renderingAfterMaxAndBack()
     view.page()->render(&painter3);
 
     QCOMPARE(image3, reference3);
+#endif
 }
 
 QTEST_MAIN(tst_QWebEngineView)

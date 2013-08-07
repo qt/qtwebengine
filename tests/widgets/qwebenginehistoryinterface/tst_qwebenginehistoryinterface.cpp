@@ -22,8 +22,6 @@
 
 #include <qwebenginepage.h>
 #include <qwebengineview.h>
-#include <qwebengineframe.h>
-#include <qwebengineelement.h>
 #include <qwebenginehistoryinterface.h>
 #include <QDebug>
 
@@ -85,11 +83,15 @@ public:
  */
 void tst_QWebEngineHistoryInterface::visitedLinks()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QWebEngineHistoryInterface::setDefaultInterface(new FakeHistoryImplementation);
     m_view->setHtml("<html><style>:link{color:green}:visited{color:red}</style><body><a href='http://www.trolltech.com' id='vlink'>Trolltech</a></body></html>");
     QWebEngineElement anchor = m_view->page()->mainFrame()->findFirstElement("a[id=vlink]");
     QString linkColor = anchor.styleProperty("color", QWebEngineElement::ComputedStyle);
     QCOMPARE(linkColor, QString::fromLatin1("rgb(255, 0, 0)"));
+#endif
 }
 
 QTEST_MAIN(tst_QWebEngineHistoryInterface)
