@@ -63,6 +63,7 @@
 #include <QString>
 #include <QStringBuilder>
 
+#include "download_manager_delegate_qt.h"
 #include "resource_context_qt.h"
 #include "url_request_context_getter_qt.h"
 
@@ -72,6 +73,7 @@ public:
     explicit BrowserContextQt()
     {
         resourceContext.reset(new ResourceContextQt(this));
+        downloadManagerDelegate.reset(new DownloadManagerDelegateQt);
     }
 
     virtual ~BrowserContextQt() Q_DECL_OVERRIDE {}
@@ -113,8 +115,7 @@ public:
 
     virtual content::DownloadManagerDelegate* GetDownloadManagerDelegate() Q_DECL_OVERRIDE
     {
-        QT_NOT_YET_IMPLEMENTED
-        return 0;
+        return downloadManagerDelegate.get();
     }
     virtual content::GeolocationPermissionContext* GetGeolocationPermissionContext() Q_DECL_OVERRIDE
     {
@@ -137,6 +138,7 @@ public:
 private:
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
+    scoped_ptr<DownloadManagerDelegateQt> downloadManagerDelegate;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
 };
