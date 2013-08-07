@@ -23,17 +23,17 @@
 #include "../util.h"
 
 #include <qpainter.h>
-#include <qwebview.h>
-#include <qwebpage.h>
+#include <qwebengineview.h>
+#include <qwebenginepage.h>
 #include <qnetworkrequest.h>
 #include <qdiriterator.h>
-#include <qwebelement.h>
-#include <qwebframe.h>
+#include <qwebengineelement.h>
+#include <qwebengineframe.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
 
-class tst_QWebView : public QObject
+class tst_QWebEngineView : public QObject
 {
     Q_OBJECT
 
@@ -63,29 +63,29 @@ private Q_SLOTS:
 
 // This will be called before the first test function is executed.
 // It is only called once.
-void tst_QWebView::initTestCase()
+void tst_QWebEngineView::initTestCase()
 {
 }
 
 // This will be called after the last test function is executed.
 // It is only called once.
-void tst_QWebView::cleanupTestCase()
+void tst_QWebEngineView::cleanupTestCase()
 {
 }
 
 // This will be called before each test function is executed.
-void tst_QWebView::init()
+void tst_QWebEngineView::init()
 {
 }
 
 // This will be called after every test function.
-void tst_QWebView::cleanup()
+void tst_QWebEngineView::cleanup()
 {
 }
 
-void tst_QWebView::renderHints()
+void tst_QWebEngineView::renderHints()
 {
-    QWebView webView;
+    QWebEngineView webView;
 
     // default is only text antialiasing + smooth pixmap transform
     QVERIFY(!(webView.renderHints() & QPainter::Antialiasing));
@@ -117,12 +117,12 @@ void tst_QWebView::renderHints()
     QVERIFY(!(webView.renderHints() & QPainter::HighQualityAntialiasing));
 }
 
-void tst_QWebView::getWebKitVersion()
+void tst_QWebEngineView::getWebKitVersion()
 {
     QVERIFY(qWebKitVersion().toDouble() > 0);
 }
 
-void tst_QWebView::reusePage_data()
+void tst_QWebEngineView::reusePage_data()
 {
     QTest::addColumn<QString>("html");
     QTest::newRow("WithoutPlugin") << "<html><body id='b'>text</body></html>";
@@ -130,7 +130,7 @@ void tst_QWebView::reusePage_data()
     QTest::newRow("WindowlessPlugin") << QString("<html><body id='b'>text<embed src='resources/test.swf' wmode=\"transparent\"></embed></body></html>");
 }
 
-void tst_QWebView::reusePage()
+void tst_QWebEngineView::reusePage()
 {
     if (!QDir(TESTS_SOURCE_DIR).exists())
         W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
@@ -138,12 +138,11 @@ void tst_QWebView::reusePage()
     QDir::setCurrent(TESTS_SOURCE_DIR);
 
     QFETCH(QString, html);
-    QWebView* view1 = new QWebView;
-    QPointer<QWebPage> page = new QWebPage;
+    QWebEngineView* view1 = new QWebEngineView;
+    QPointer<QWebEnginePage> page = new QWebEnginePage;
     view1->setPage(page.data());
-    page.data()->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
-    QWebFrame* mainFrame = page.data()->mainFrame();
-    mainFrame->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
+    page.data()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+    page->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
     if (html.contains("</embed>")) {
         // some reasonable time for the PluginStream to feed test.swf to flash and start painting
         waitForSignal(view1, SIGNAL(loadFinished(bool)), 2000);
@@ -154,7 +153,7 @@ void tst_QWebView::reusePage()
     delete view1;
     QVERIFY(page != 0); // deleting view must not have deleted the page, since it's not a child of view
 
-    QWebView *view2 = new QWebView;
+    QWebEngineView *view2 = new QWebEngineView;
     view2->setPage(page.data());
     view2->show(); // in Windowless mode, you should still be able to see the plugin here
     QTest::qWaitForWindowExposed(view2);
@@ -168,12 +167,12 @@ void tst_QWebView::reusePage()
 // Class used in crashTests
 class WebViewCrashTest : public QObject {
     Q_OBJECT
-    QWebView* m_view;
+    QWebEngineView* m_view;
 public:
     bool m_executed;
 
 
-    WebViewCrashTest(QWebView* view)
+    WebViewCrashTest(QWebEngineView* view)
       : m_view(view)
       , m_executed(false)
     {
@@ -193,24 +192,24 @@ private Q_SLOTS:
 
 
 // Should not crash.
-void tst_QWebView::crashTests()
+void tst_QWebEngineView::crashTests()
 {
     // Test if loading can be stopped in loadProgress handler without crash.
     // Test page should have frames.
-    QWebView view;
+    QWebEngineView view;
     WebViewCrashTest tester(&view);
     QUrl url("qrc:///resources/index.html");
     view.load(url);
     QTRY_VERIFY(tester.m_executed); // If fail it means that the test wasn't executed.
 }
 
-void tst_QWebView::microFocusCoordinates()
+void tst_QWebEngineView::microFocusCoordinates()
 {
-    QWebPage* page = new QWebPage;
-    QWebView* webView = new QWebView;
+    QWebEnginePage* page = new QWebEnginePage;
+    QWebEngineView* webView = new QWebEngineView;
     webView->setPage( page );
 
-    page->mainFrame()->setHtml("<html><body>" \
+    page->setHtml("<html><body>" \
         "<input type='text' id='input1' style='font--family: serif' value='' maxlength='20'/><br>" \
         "<canvas id='canvas1' width='500' height='500'></canvas>" \
         "<input type='password'/><br>" \
@@ -222,7 +221,7 @@ void tst_QWebView::microFocusCoordinates()
     QVariant initialMicroFocus = page->inputMethodQuery(Qt::ImMicroFocus);
     QVERIFY(initialMicroFocus.isValid());
 
-    page->mainFrame()->scroll(0,50);
+    page->scroll(0,50);
 
     QVariant currentMicroFocus = page->inputMethodQuery(Qt::ImMicroFocus);
     QVERIFY(currentMicroFocus.isValid());
@@ -230,21 +229,21 @@ void tst_QWebView::microFocusCoordinates()
     QCOMPARE(initialMicroFocus.toRect().translated(QPoint(0,-50)), currentMicroFocus.toRect());
 }
 
-void tst_QWebView::focusInputTypes()
+void tst_QWebEngineView::focusInputTypes()
 {
-    QWebView webView;
+    QWebEngineView webView;
     webView.show();
     QTest::qWaitForWindowExposed(&webView);
 
     QUrl url("qrc:///resources/input_types.html");
-    QWebFrame* const mainFrame = webView.page()->mainFrame();
-    mainFrame->load(url);
+    QWebEngineFrame* const mainFrame = webView.page()->mainFrame();
+    webView.load(url);
     mainFrame->setFocus();
 
     QVERIFY(waitForSignal(&webView, SIGNAL(loadFinished(bool))));
 
     // 'text' type
-    QWebElement inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=text]"));
+    QWebEngineElement inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=text]"));
     QTest::mouseClick(&webView, Qt::LeftButton, 0, inputElement.geometry().center());
     QVERIFY(webView.inputMethodHints() == Qt::ImhNone);
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
@@ -304,34 +303,33 @@ void tst_QWebView::focusInputTypes()
     QVERIFY(webView.testAttribute(Qt::WA_InputMethodEnabled));
 }
 
-void tst_QWebView::horizontalScrollbarTest()
+void tst_QWebEngineView::horizontalScrollbarTest()
 {
-    QWebView webView;
+    QWebEngineView webView;
     webView.resize(600, 600);
     webView.show();
     QTest::qWaitForWindowExposed(&webView);
 
     QUrl url("qrc:///resources/scrolltest_page.html");
-    QWebFrame* const mainFrame = webView.page()->mainFrame();
-    mainFrame->load(url);
-    mainFrame->setFocus();
+    webView.page()->load(url);
+    webView.page()->setFocus();
 
     QVERIFY(waitForSignal(&webView, SIGNAL(loadFinished(bool))));
 
-    QVERIFY(webView.page()->mainFrame()->scrollPosition() == QPoint(0, 0));
+    QVERIFY(webView.page()->scrollPosition() == QPoint(0, 0));
 
     // Note: The test below assumes that the layout direction is Qt::LeftToRight.
     QTest::mouseClick(&webView, Qt::LeftButton, 0, QPoint(550, 595));
-    QVERIFY(webView.page()->mainFrame()->scrollPosition().x() > 0);
+    QVERIFY(webView.page()->scrollPosition().x() > 0);
 
     // Note: The test below assumes that the layout direction is Qt::LeftToRight.
     QTest::mouseClick(&webView, Qt::LeftButton, 0, QPoint(20, 595));
-    QVERIFY(webView.page()->mainFrame()->scrollPosition() == QPoint(0, 0));
+    QVERIFY(webView.page()->scrollPosition() == QPoint(0, 0));
 }
 
 
 #if !(defined(WTF_USE_QT_MOBILE_THEME) && WTF_USE_QT_MOBILE_THEME)
-void tst_QWebView::setPalette_data()
+void tst_QWebEngineView::setPalette_data()
 {
     QTest::addColumn<bool>("active");
     QTest::addColumn<bool>("background");
@@ -341,10 +339,10 @@ void tst_QWebView::setPalette_data()
     QTest::newRow("inactiveFG") << false << false;
 }
 
-// Render a QWebView to a QImage twice, each time with a different palette set,
+// Render a QWebEngineView to a QImage twice, each time with a different palette set,
 // verify that images rendered are not the same, confirming WebCore usage of
 // custom palette on selections.
-void tst_QWebView::setPalette()
+void tst_QWebEngineView::setPalette()
 {
     QString html = "<html><head></head>"
                    "<body>"
@@ -359,31 +357,31 @@ void tst_QWebView::setPalette()
 
     // Use controlView to manage active/inactive state of test views by raising
     // or lowering their position in the window stack.
-    QWebView controlView;
+    QWebEngineView controlView;
     controlView.setHtml(html);
 
-    QWebView view1;
+    QWebEngineView view1;
 
     QPalette palette1;
     QBrush brush1(Qt::red);
     brush1.setStyle(Qt::SolidPattern);
     if (active && background) {
-        // Rendered image must have red background on an active QWebView.
+        // Rendered image must have red background on an active QWebEngineView.
         palette1.setBrush(QPalette::Active, QPalette::Highlight, brush1);
     } else if (active && !background) {
-        // Rendered image must have red foreground on an active QWebView.
+        // Rendered image must have red foreground on an active QWebEngineView.
         palette1.setBrush(QPalette::Active, QPalette::HighlightedText, brush1);
     } else if (!active && background) {
-        // Rendered image must have red background on an inactive QWebView.
+        // Rendered image must have red background on an inactive QWebEngineView.
         palette1.setBrush(QPalette::Inactive, QPalette::Highlight, brush1);
     } else if (!active && !background) {
-        // Rendered image must have red foreground on an inactive QWebView.
+        // Rendered image must have red foreground on an inactive QWebEngineView.
         palette1.setBrush(QPalette::Inactive, QPalette::HighlightedText, brush1);
     }
 
     view1.setPalette(palette1);
     view1.setHtml(html);
-    view1.page()->setViewportSize(view1.page()->currentFrame()->contentsSize());
+    view1.page()->setViewportSize(view1.page()->contentsSize());
     view1.show();
 
     QTest::qWaitForWindowExposed(&view1);
@@ -400,37 +398,37 @@ void tst_QWebView::setPalette()
 
     QTRY_COMPARE(QApplication::activeWindow(), activeView);
 
-    view1.page()->triggerAction(QWebPage::SelectAll);
+    view1.page()->triggerAction(QWebEnginePage::SelectAll);
 
     QImage img1(view1.page()->viewportSize(), QImage::Format_ARGB32);
     QPainter painter1(&img1);
-    view1.page()->currentFrame()->render(&painter1);
+    view1.page()->render(&painter1);
     painter1.end();
     view1.close();
     controlView.close();
 
-    QWebView view2;
+    QWebEngineView view2;
 
     QPalette palette2;
     QBrush brush2(Qt::blue);
     brush2.setStyle(Qt::SolidPattern);
     if (active && background) {
-        // Rendered image must have blue background on an active QWebView.
+        // Rendered image must have blue background on an active QWebEngineView.
         palette2.setBrush(QPalette::Active, QPalette::Highlight, brush2);
     } else if (active && !background) {
-        // Rendered image must have blue foreground on an active QWebView.
+        // Rendered image must have blue foreground on an active QWebEngineView.
         palette2.setBrush(QPalette::Active, QPalette::HighlightedText, brush2);
     } else if (!active && background) {
-        // Rendered image must have blue background on an inactive QWebView.
+        // Rendered image must have blue background on an inactive QWebEngineView.
         palette2.setBrush(QPalette::Inactive, QPalette::Highlight, brush2);
     } else if (!active && !background) {
-        // Rendered image must have blue foreground on an inactive QWebView.
+        // Rendered image must have blue foreground on an inactive QWebEngineView.
         palette2.setBrush(QPalette::Inactive, QPalette::HighlightedText, brush2);
     }
 
     view2.setPalette(palette2);
     view2.setHtml(html);
-    view2.page()->setViewportSize(view2.page()->currentFrame()->contentsSize());
+    view2.page()->setViewportSize(view2.page()->contentsSize());
     view2.show();
 
     QTest::qWaitForWindowExposed(&view2);
@@ -447,11 +445,11 @@ void tst_QWebView::setPalette()
 
     QTRY_COMPARE(QApplication::activeWindow(), activeView);
 
-    view2.page()->triggerAction(QWebPage::SelectAll);
+    view2.page()->triggerAction(QWebEnginePage::SelectAll);
 
     QImage img2(view2.page()->viewportSize(), QImage::Format_ARGB32);
     QPainter painter2(&img2);
-    view2.page()->currentFrame()->render(&painter2);
+    view2.page()->render(&painter2);
     painter2.end();
 
     view2.close();
@@ -461,15 +459,15 @@ void tst_QWebView::setPalette()
 }
 #endif
 
-void tst_QWebView::renderingAfterMaxAndBack()
+void tst_QWebEngineView::renderingAfterMaxAndBack()
 {
     QUrl url = QUrl("data:text/html,<html><head></head>"
                    "<body width=1024 height=768 bgcolor=red>"
                    "</body>"
                    "</html>");
 
-    QWebView view;
-    view.page()->mainFrame()->load(url);
+    QWebEngineView view;
+    view.page()->load(url);
     QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
     view.show();
 
@@ -482,7 +480,7 @@ void tst_QWebView::renderingAfterMaxAndBack()
 
     QPixmap image(view.page()->viewportSize());
     QPainter painter(&image);
-    view.page()->currentFrame()->render(&painter);
+    view.page()->render(&painter);
 
     QCOMPARE(image, reference);
 
@@ -490,7 +488,7 @@ void tst_QWebView::renderingAfterMaxAndBack()
                      "<body width=1024 height=768 bgcolor=blue>"
                      "</body>"
                      "</html>");
-    view.page()->mainFrame()->load(url2);
+    view.page()->load(url2);
 
     QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
 
@@ -503,7 +501,7 @@ void tst_QWebView::renderingAfterMaxAndBack()
 
     QPixmap image2(view.page()->viewportSize());
     QPainter painter2(&image2);
-    view.page()->currentFrame()->render(&painter2);
+    view.page()->render(&painter2);
 
     QCOMPARE(image2, reference2);
 
@@ -513,10 +511,10 @@ void tst_QWebView::renderingAfterMaxAndBack()
     reference3.fill(Qt::red);
     QPixmap image3(view.page()->viewportSize());
     QPainter painter3(&image3);
-    view.page()->currentFrame()->render(&painter3);
+    view.page()->render(&painter3);
 
     QCOMPARE(image3, reference3);
 }
 
-QTEST_MAIN(tst_QWebView)
-#include "tst_qwebview.moc"
+QTEST_MAIN(tst_QWebEngineView)
+#include "tst_qwebengineview.moc"
