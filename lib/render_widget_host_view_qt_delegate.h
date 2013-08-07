@@ -84,4 +84,4 @@ private:
     BackingStoreQt *m_backingStore;
 };
 
-#endif
+#endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
