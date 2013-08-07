@@ -25,6 +25,7 @@ INCLUDEPATH += $$absolute_path(../resources, $$PWD)
 SOURCES = \
         backing_store_qt.cpp \
         content_browser_client_qt.cpp \
+        download_manager_delegate_qt.cpp \
         render_widget_host_view_qt.cpp \
         render_widget_host_view_qt_delegate.cpp \
         resource_context_qt.cpp \
@@ -33,12 +34,13 @@ SOURCES = \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
         web_engine_context.cpp \
-        web_event_factory.cpp
+        web_event_factory.cpp \
 
 HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
         content_browser_client_qt.h \
+        download_manager_delegate_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         resource_context_qt.h \
