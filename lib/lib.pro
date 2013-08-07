@@ -39,6 +39,7 @@ HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
         content_browser_client_qt.h \
+        download_manager_delegate_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         resource_context_qt.h \
