@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_QT_H_
-#define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_QT_H_
+#ifndef BACKING_STORE_QT_H
+#define BACKING_STORE_QT_H
 
 #include "content/browser/renderer_host/backing_store.h"
 
@@ -66,4 +66,4 @@ private:
     QPixmap m_pixelBuffer;
 };
 
-#endif
+#endif // BACKING_STORE_QT_H

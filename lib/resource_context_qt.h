@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "content/public/browser/resource_context.h"
+#ifndef RESOURCE_CONTEXT_QT_H
+#define RESOURCE_CONTEXT_QT_H
 
-#ifndef RESOURCE_CONTEXT_QT
-#define RESOURCE_CONTEXT_QT
+#include "content/public/browser/resource_context.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -71,4 +71,4 @@ private:
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };
 
-#endif //RESOURCE_CONTEXT_QT
+#endif // RESOURCE_CONTEXT_QT_H

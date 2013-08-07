@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT
-#define WEB_CONTENTS_DELEGATE_QT
+#ifndef WEB_CONTENTS_DELEGATE_QT_H
+#define WEB_CONTENTS_DELEGATE_QT_H
 
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -74,4 +74,4 @@ private:
     friend class WebContentsAdapter;
 };
 
-#endif
+#endif // WEB_CONTENTS_DELEGATE_QT_H

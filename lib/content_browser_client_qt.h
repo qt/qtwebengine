@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_CLIENT_QT
-#define CONTENT_BROWSER_CLIENT_QT
+#ifndef CONTENT_BROWSER_CLIENT_QT_H
+#define CONTENT_BROWSER_CLIENT_QT_H
 
 #include "content/public/browser/content_browser_client.h"
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
@@ -81,4 +81,4 @@ private:
 
 };
 
-#endif // CONTENT_BROWSER_CLIENT_QT
+#endif // CONTENT_BROWSER_CLIENT_QT_H

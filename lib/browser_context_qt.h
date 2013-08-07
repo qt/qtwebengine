@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef BROWSER_CONTEXT_QT
-#define BROWSER_CONTEXT_QT
+#ifndef BROWSER_CONTEXT_QT_H
+#define BROWSER_CONTEXT_QT_H
 
 #include "content/public/browser/browser_context.h"
 
@@ -141,4 +141,4 @@ private:
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
 };
 
-#endif //BROWSER_CONTEXT_QT
+#endif // BROWSER_CONTEXT_QT_H
