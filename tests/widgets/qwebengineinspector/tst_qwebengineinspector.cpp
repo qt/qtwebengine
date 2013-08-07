@@ -35,6 +35,9 @@ private Q_SLOTS:
 
 void tst_QWebEngineInspector::attachAndDestroyPageFirst()
 {
+#if !defined(QWEBENGINEINSPECTOR)
+    QSKIP("QWEBENGINEINSPECTOR");
+#else
     // External inspector + manual destruction of page first
     QWebEnginePage* page = new QWebEnginePage();
     page->settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
@@ -45,10 +48,14 @@ void tst_QWebEngineInspector::attachAndDestroyPageFirst()
 
     delete page;
     delete inspector;
+#endif
 }
 
 void tst_QWebEngineInspector::attachAndDestroyInspectorFirst()
 {
+#if !defined(QWEBENGINEINSPECTOR)
+    QSKIP("QWEBENGINEINSPECTOR");
+#else
     // External inspector + manual destruction of inspector first
     QWebEnginePage* page = new QWebEnginePage();
     page->settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
@@ -59,15 +66,20 @@ void tst_QWebEngineInspector::attachAndDestroyInspectorFirst()
 
     delete inspector;
     delete page;
+#endif
 }
 
 void tst_QWebEngineInspector::attachAndDestroyInternalInspector()
 {
+#if !defined(QWEBENGINEINSPECTOR)
+    QSKIP("QWEBENGINEINSPECTOR");
+#else
     // Internal inspector
     QWebEnginePage page;
     page.settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
     page.updatePositionDependentActions(QPoint(0, 0));
     page.triggerAction(QWebEnginePage::InspectElement);
+#endif
 }
 
 QTEST_MAIN(tst_QWebEngineInspector)

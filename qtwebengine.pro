@@ -15,6 +15,18 @@ qtHaveModule(widgets): SUBDIRS += lib/widgets
 
 SUBDIRS += examples
 
+WIDGETS_TESTS_DIR = $$PWD/tests/widgets
+
+SUBDIRS += \
+    # FIXME: Move useful qwebengineframe tests to qwebenginepage
+    # $$WIDGETS_TESTS_DIR/qwebengineframe \
+    $$WIDGETS_TESTS_DIR/qwebenginepage \
+    $$WIDGETS_TESTS_DIR/qwebenginehistoryinterface \
+    $$WIDGETS_TESTS_DIR/qwebengineview \
+    $$WIDGETS_TESTS_DIR/qwebenginehistory \
+    $$WIDGETS_TESTS_DIR/qwebengineinspector \
+
+
 # Ninja executable location needs to be determined early for extra targets. Should be fetched from cache most of the time anyway.
 NINJA_EXECUTABLE = $$findNinja()
 

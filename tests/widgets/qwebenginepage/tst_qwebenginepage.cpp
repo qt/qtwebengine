@@ -20,7 +20,6 @@
 */
 
 #include "../util.h"
-#include "../WebCoreSupport/DumpRenderTreeSupportQt.h"
 #include <QClipboard>
 #include <QDir>
 #include <QGraphicsWidget>
@@ -34,19 +33,12 @@
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
 #include <private/qinputmethod_p.h>
-#include <qgraphicsscene.h>
-#include <qgraphicsview.h>
-#include <qgraphicswebview.h>
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
 #include <qpa/qplatforminputcontext.h>
-#include <qwebenginedatabase.h>
-#include <qwebengineelement.h>
-#include <qwebengineframe.h>
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
-#include <qwebenginesecurityorigin.h>
 #include <qwebengineview.h>
 #include <qimagewriter.h>
 
@@ -260,6 +252,9 @@ protected:
 
 void tst_QWebEnginePage::acceptNavigationRequest()
 {
+#if !defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
+    QSKIP("QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST");
+#else
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
 
     NavigationRequestOverride* newPage = new NavigationRequestOverride(m_view, false);
@@ -279,8 +274,10 @@ void tst_QWebEnginePage::acceptNavigationRequest()
 
     // Restore default page
     m_view->setPage(0);
+#endif
 }
 
+#if defined(QWEBENGINEPAGE_SETFEATUREPERMISSION)
 class JSTestPage : public QWebEnginePage
 {
 Q_OBJECT
@@ -310,6 +307,7 @@ public:
 private:
     bool m_allowGeolocation;
 };
+#endif
 
 // [Qt] tst_QWebEnginePage::infiniteLoopJS() timeouts with DFG JIT
 // https://bugs.webengine.org/show_bug.cgi?id=79040
@@ -326,6 +324,9 @@ void tst_QWebEnginePage::infiniteLoopJS()
 
 void tst_QWebEnginePage::geolocationRequestJS()
 {
+#if !defined(QWEBENGINEPAGE_SETFEATUREPERMISSION)
+    QSKIP("QWEBENGINEPAGE_SETFEATUREPERMISSION");
+#else
     JSTestPage* newPage = new JSTestPage(m_view);
 
     if (newPage->evaluateJavaScript(QLatin1String("!navigator.geolocation")).toBool()) {
@@ -354,6 +355,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
     //PositionError: const unsigned short PERMISSION_DENIED = 1;
     QVERIFY(empty.type() == QVariant::Double && empty.toInt() != 1);
     delete newPage;
+#endif
 }
 
 void tst_QWebEnginePage::loadFinished()
@@ -380,6 +382,9 @@ void tst_QWebEnginePage::loadFinished()
 
 void tst_QWebEnginePage::actionStates()
 {
+#if !defined(QWEBENGINEPAGE_ACTION)
+    QSKIP("QWEBENGINEPAGE_ACTION");
+#else
     QWebEnginePage* page = m_view->page();
 
     page->load(QUrl("qrc:///resources/script.html"));
@@ -389,6 +394,7 @@ void tst_QWebEnginePage::actionStates()
 
     QTRY_VERIFY(reloadAction->isEnabled());
     QTRY_VERIFY(!stopAction->isEnabled());
+#endif
 }
 
 class ConsolePage : public QWebEnginePage
@@ -410,10 +416,14 @@ public:
 
 void tst_QWebEnginePage::consoleOutput()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     ConsolePage page;
     page.evaluateJavaScript("this is not valid JavaScript");
     QCOMPARE(page.messages.count(), 1);
     QCOMPARE(page.lineNumbers.at(0), 1);
+#endif
 }
 
 class TestPage : public QWebEnginePage {
@@ -425,7 +435,7 @@ public:
     }
 
     struct Navigation {
-        QPointer<QWebEngineFrame> frame;
+        QWebEngineFrame *frame;
         QNetworkRequest request;
         NavigationType type;
     };
@@ -457,6 +467,9 @@ private Q_SLOTS:
 
 void tst_QWebEnginePage::popupFormSubmission()
 {
+#if !defined(QWEBENGINEPAGE_CREATEWINDOW)
+    QSKIP("QWEBENGINEPAGE_CREATEWINDOW");
+#else
     TestPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     page.setHtml("<form name=form1 method=get action='' target=myNewWin>"\
@@ -473,10 +486,14 @@ void tst_QWebEnginePage::popupFormSubmission()
     // Check if the form submission was OK.
     QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118597", Continue);
     QVERIFY(url.contains("?foo=bar"));
+#endif
 }
 
 void tst_QWebEnginePage::acceptNavigationRequestWithNewWindow()
 {
+#if !defined(QWEBENGINESETTINGS)
+    QSKIP("QWEBENGINESETTINGS");
+#else
     TestPage* page = new TestPage(m_view);
     page->settings()->setAttribute(QWebEngineSettings::LinksIncludedInFocusChain, true);
     m_page = page;
@@ -496,11 +513,12 @@ void tst_QWebEnginePage::acceptNavigationRequestWithNewWindow()
     QCOMPARE(page->navigations.count(), 2);
 
     TestPage::Navigation n = page->navigations.at(1);
-    QVERIFY(n.frame.isNull());
+    QVERIFY(!n.frame);
     QCOMPARE(n.request.url().toString(), QString("data:text/html,Reached"));
     QVERIFY(n.type == QWebEnginePage::NavigationTypeLinkClicked);
 
     QCOMPARE(page->createdWindows.count(), 1);
+#endif
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -521,6 +539,9 @@ protected:
 
 void tst_QWebEnginePage::userStyleSheet()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     TestNetworkManager* networkManager = new TestNetworkManager(m_page);
     m_page->setNetworkAccessManager(networkManager);
 
@@ -531,10 +552,14 @@ void tst_QWebEnginePage::userStyleSheet()
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
+#endif
 }
 
 void tst_QWebEnginePage::userStyleSheetFromLocalFileUrl()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     TestNetworkManager* networkManager = new TestNetworkManager(m_page);
     m_page->setNetworkAccessManager(networkManager);
 
@@ -545,10 +570,14 @@ void tst_QWebEnginePage::userStyleSheetFromLocalFileUrl()
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
+#endif
 }
 
 void tst_QWebEnginePage::userStyleSheetFromQrcUrl()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     TestNetworkManager* networkManager = new TestNetworkManager(m_page);
     m_page->setNetworkAccessManager(networkManager);
 
@@ -558,6 +587,7 @@ void tst_QWebEnginePage::userStyleSheetFromQrcUrl()
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
+#endif
 }
 
 void tst_QWebEnginePage::loadHtml5Video()
@@ -576,6 +606,9 @@ void tst_QWebEnginePage::loadHtml5Video()
 
 void tst_QWebEnginePage::viewModes()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     m_view->setHtml("<body></body>");
     m_page->setProperty("_q_viewMode", "minimized");
 
@@ -587,10 +620,14 @@ void tst_QWebEnginePage::viewModes()
 
     QVariant maximized = m_page->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webengine-view-mode: maximized)\")");
     QVERIFY(maximized.type() == QVariant::Bool && !maximized.toBool());
+#endif
 }
 
 void tst_QWebEnginePage::modified()
 {
+#if !defined(QWEBENGINEPAGE_ISMODIFIED)
+    QSKIP("QWEBENGINEPAGE_ISMODIFIED");
+#else
     m_page->setUrl(QUrl("data:text/html,<body>blub"));
     QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
 
@@ -643,11 +680,15 @@ void tst_QWebEnginePage::modified()
     QVERIFY(m_page->history()->count() == 2);
     m_page->setUrl(QUrl("data:text/html,<body>This is fifth page"));
     QVERIFY(::waitForSignal(m_page, SIGNAL(saveFrameStateRequested(QWebEngineFrame*,QWebEngineHistoryItem*))));
+#endif
 }
 
 // https://bugs.webengine.org/show_bug.cgi?id=51331
 void tst_QWebEnginePage::updatePositionDependentActionsCrash()
 {
+#if !defined(QWEBENGINEPAGE_UPDATEPOSITIONDEPENDENTACTIONS)
+    QSKIP("QWEBENGINEPAGE_UPDATEPOSITIONDEPENDENTACTIONS");
+#else
     QWebEngineView view;
     view.setHtml("<p>test");
     QPoint pos(0, 0);
@@ -659,11 +700,15 @@ void tst_QWebEnginePage::updatePositionDependentActionsCrash()
             break;
     }
     QVERIFY(!contextMenu);
+#endif
 }
 
 // https://bugs.webengine.org/show_bug.cgi?id=20357
 void tst_QWebEnginePage::contextMenuCrash()
 {
+#if !defined(QWEBENGINEPAGE_SWALLOWCONTEXTMENUEVENT)
+    QSKIP("QWEBENGINEPAGE_SWALLOWCONTEXTMENUEVENT");
+#else
     QWebEngineView view;
     view.setHtml("<p>test");
     QPoint pos(0, 0);
@@ -678,10 +723,14 @@ void tst_QWebEnginePage::contextMenuCrash()
     }
     QVERIFY(contextMenu);
     delete contextMenu;
+#endif
 }
 
 void tst_QWebEnginePage::database()
 {
+#if !defined(QWEBENGINEDATABASE)
+    QSKIP("QWEBENGINEDATABASE");
+#else
     QString path = tmpDirPath();
     m_page->settings()->setOfflineStoragePath(path);
     QVERIFY(m_page->settings()->offlineStoragePath() == path);
@@ -732,8 +781,10 @@ void tst_QWebEnginePage::database()
     // Remove removed test :-)
     QWebEngineDatabase::removeAllDatabases();
     QVERIFY(!origin.databases().size());
+#endif
 }
 
+#if defined(QWEBENGINEPAGE_CREATEPLUGIN)
 class PluginPage : public QWebEnginePage
 {
 public:
@@ -859,9 +910,13 @@ static void createPlugin(QWebEngineView *view)
         QVERIFY(ci.returnValue->inherits("QPushButton"));
     }
 }
+#endif
 
 void tst_QWebEnginePage::graphicsWidgetPlugin()
 {
+#if !defined(QWEBENGINEPAGE_CREATEPLUGIN)
+    QSKIP("QWEBENGINEPAGE_CREATEPLUGIN");
+#else
     m_view->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     QGraphicsWebView webView;
 
@@ -906,23 +961,33 @@ void tst_QWebEnginePage::graphicsWidgetPlugin()
              QString::fromLatin1("function"));
     QCOMPARE(newPage->evaluateJavaScript("mygraphicswidget.geometryChanged.toString()").toString(),
              QString::fromLatin1("function geometryChanged() {\n    [native code]\n}"));
+#endif
 }
 
 void tst_QWebEnginePage::createPluginWithPluginsEnabled()
 {
+#if !defined(QWEBENGINEPAGE_CREATEPLUGIN)
+    QSKIP("QWEBENGINEPAGE_CREATEPLUGIN");
+#else
     m_view->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     createPlugin(m_view);
+#endif
 }
 
 void tst_QWebEnginePage::createPluginWithPluginsDisabled()
 {
+#if !defined(QWEBENGINEPAGE_CREATEPLUGIN)
+    QSKIP("QWEBENGINEPAGE_CREATEPLUGIN");
+#else
     // Qt Plugins should be loaded by QtWebEngine even when PluginsEnabled is
     // false. The client decides whether a Qt plugin is enabled or not when
     // it decides whether or not to instantiate it.
     m_view->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, false);
     createPlugin(m_view);
+#endif
 }
 
+#if defined(QWEBENGINEPAGE_CREATEPLUGIN)
 // Standard base class for template PluginTracerPage. In tests it is used as interface.
 class PluginCounterPage : public QWebEnginePage {
 public:
@@ -990,14 +1055,20 @@ public:
         QTest::newRow("QGraphicsWidget") << (int)PluginFactory::QGraphicsWidgetType;
     }
 };
+#endif
 
 void tst_QWebEnginePage::destroyPlugin_data()
 {
+#if defined(QWEBENGINEPAGE_CREATEPLUGIN)
     PluginFactory::prepareTestData();
+#endif
 }
 
 void tst_QWebEnginePage::destroyPlugin()
 {
+#if !defined(QWEBENGINEPAGE_CREATEPLUGIN)
+    QSKIP("QWEBENGINEPAGE_CREATEPLUGIN");
+#else
     QFETCH(int, type);
     PluginCounterPage* page = PluginFactory::create((PluginFactory::FactoredType)type, m_view);
     m_view->setPage(page);
@@ -1012,15 +1083,21 @@ void tst_QWebEnginePage::destroyPlugin()
     m_view->setHtml("<html><body>Hi</body></html>");
     QTestEventLoop::instance().enterLoop(1);
     QVERIFY(!page->m_widget);
+#endif
 }
 
 void tst_QWebEnginePage::createViewlessPlugin_data()
 {
+#if defined(QWEBENGINEPAGE_CREATEPLUGIN)
     PluginFactory::prepareTestData();
+#endif
 }
 
 void tst_QWebEnginePage::createViewlessPlugin()
 {
+#if !defined(QWEBENGINEPAGE_CREATEPLUGIN)
+    QSKIP("QWEBENGINEPAGE_CREATEPLUGIN");
+#else
     QFETCH(int, type);
     PluginCounterPage* page = PluginFactory::create((PluginFactory::FactoredType)type);
     QString content("<html><body><object type=\"application/x-qt-plugin\" classid=\"QProgressBar\"></object></body></html>");
@@ -1030,11 +1107,14 @@ void tst_QWebEnginePage::createViewlessPlugin()
     QVERIFY(page->m_pluginParent);
     QVERIFY(page->m_widget.data()->parent() == page->m_pluginParent);
     delete page;
-
+#endif
 }
 
 void tst_QWebEnginePage::multiplePageGroupsAndLocalStorage()
 {
+#if !defined(QWEBENGINESETTINGS_SETLOCALSTORAGEPATH)
+    QSKIP("QWEBENGINESETTINGS_SETLOCALSTORAGEPATH");
+#else
     QDir dir(tmpDirPath());
     dir.mkdir("path1");
     dir.mkdir("path2");
@@ -1073,8 +1153,10 @@ void tst_QWebEnginePage::multiplePageGroupsAndLocalStorage()
     QFile::remove(QDir::toNativeSeparators(tmpDirPath() + "/path2/http_www.myexample.com_0.localstorage"));
     dir.rmdir(QDir::toNativeSeparators("./path1"));
     dir.rmdir(QDir::toNativeSeparators("./path2"));
+#endif
 }
 
+#if defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
 class CursorTrackedPage : public QWebEnginePage
 {
 public:
@@ -1100,9 +1182,13 @@ public:
         return evaluateJavaScript("window.getSelection().getRangeAt(0).collapsed").toBool();
     }
 };
+#endif
 
 void tst_QWebEnginePage::cursorMovements()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     CursorTrackedPage* page = new CursorTrackedPage;
     QString content("<html><body><p id=one>The quick brown fox</p><p id=two>jumps over the lazy dog</p><p>May the source<br/>be with you!</p></body></html>");
     page->setHtml(content);
@@ -1295,10 +1381,14 @@ void tst_QWebEnginePage::cursorMovements()
     QCOMPARE(page->selectionStartOffset(), 12);
 
     delete page;
+#endif
 }
 
 void tst_QWebEnginePage::textSelection()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     CursorTrackedPage* page = new CursorTrackedPage;
     QString content("<html><body><p id=one>The quick brown fox</p>" \
         "<p id=two>jumps over the lazy dog</p>" \
@@ -1392,10 +1482,14 @@ void tst_QWebEnginePage::textSelection()
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfDocument)->isEnabled(), true);
 
     delete page;
+#endif
 }
 
 void tst_QWebEnginePage::textEditing()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     CursorTrackedPage* page = new CursorTrackedPage;
     QString content("<html><body><p id=one>The quick brown fox</p>" \
         "<p id=two>jumps over the lazy dog</p>" \
@@ -1511,6 +1605,7 @@ void tst_QWebEnginePage::textEditing()
     QCOMPARE(page->action(QWebEnginePage::RemoveFormat)->isEnabled(), true);
 
     delete page;
+#endif
 }
 
 void tst_QWebEnginePage::requestCache()
@@ -1542,6 +1637,9 @@ void tst_QWebEnginePage::requestCache()
 
 void tst_QWebEnginePage::loadCachedPage()
 {
+#if !defined(QWEBENGINESETTINGS)
+    QSKIP("QWEBENGINESETTINGS");
+#else
     TestPage page;
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
     page.settings()->setMaximumPagesInCache(3);
@@ -1569,10 +1667,14 @@ void tst_QWebEnginePage::loadCachedPage()
 
     QList<QVariant> arguments1 = urlSpy.takeFirst();
     QCOMPARE(arguments1.at(0).toUrl(), firstPageUrl);
-
+#endif
 }
+
 void tst_QWebEnginePage::backActionUpdate()
 {
+#if !defined(QWEBENGINEPAGE_ACTION)
+    QSKIP("QWEBENGINEPAGE_ACTION");
+#else
     QWebEngineView view;
     QWebEnginePage *page = view.page();
     QAction *action = page->action(QWebEnginePage::Back);
@@ -1586,8 +1688,10 @@ void tst_QWebEnginePage::backActionUpdate()
     QTRY_COMPARE(loadSpy.count(), 2);
 
     QVERIFY(action->isEnabled());
+#endif
 }
 
+#if defined(QWEBENGINEFRAME)
 void frameAtHelper(QWebEnginePage* webPage, QWebEngineFrame* webFrame, QPoint framePosition)
 {
     if (!webFrame)
@@ -1603,9 +1707,13 @@ void frameAtHelper(QWebEnginePage* webPage, QWebEngineFrame* webFrame, QPoint fr
         QVERIFY(children.at(i) == webPage->frameAt(frameRect.topLeft()));
     }
 }
+#endif
 
 void tst_QWebEnginePage::frameAt()
 {
+#if !defined(QWEBENGINEFRAME)
+    QSKIP("QWEBENGINEFRAME");
+#else
     QWebEngineView webView;
     QWebEnginePage* webPage = webView.page();
     QSignalSpy loadSpy(webPage, SIGNAL(loadFinished(bool)));
@@ -1613,6 +1721,7 @@ void tst_QWebEnginePage::frameAt()
     webPage->load(url);
     QTRY_COMPARE(loadSpy.count(), 1);
     frameAtHelper(webPage, webPage->mainFrame(), webPage->mainFrame()->pos());
+#endif
 }
 
 void tst_QWebEnginePage::inputMethods_data()
@@ -1650,6 +1759,9 @@ static void clickOnPage(QWebEnginePage* page, const QPoint& position)
 
 void tst_QWebEnginePage::inputMethods()
 {
+#if !defined(QWEBENGINEPAGE_INPUTMETHODQUERY)
+    QSKIP("QWEBENGINEPAGE_INPUTMETHODQUERY");
+#else
     QFETCH(QString, viewType);
     QWebEnginePage* page = new QWebEnginePage;
     QObject* view = 0;
@@ -2340,6 +2452,7 @@ void tst_QWebEnginePage::inputMethods()
     // END - Newline test for textarea
 
     delete container;
+#endif
 }
 
 void tst_QWebEnginePage::inputMethodsTextFormat_data()
@@ -2366,6 +2479,9 @@ void tst_QWebEnginePage::inputMethodsTextFormat_data()
 
 void tst_QWebEnginePage::inputMethodsTextFormat()
 {
+#if !defined(QINPUTMETHODEVENT_TEXTFORMAT)
+    QSKIP("QINPUTMETHODEVENT_TEXTFORMAT");
+#else
     QWebEnginePage* page = new QWebEnginePage;
     QWebEngineView* view = new QWebEngineView;
     view->setPage(page);
@@ -2391,10 +2507,14 @@ void tst_QWebEnginePage::inputMethodsTextFormat()
     QTest::qWait(1000);
 
     delete view;
+#endif
 }
 
 void tst_QWebEnginePage::protectBindingsRuntimeObjectsFromCollector()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
 
     PluginPage* newPage = new PluginPage(m_view);
@@ -2413,10 +2533,14 @@ void tst_QWebEnginePage::protectBindingsRuntimeObjectsFromCollector()
 
     // don't crash!
     newPage->evaluateJavaScript("testme('bar')");
+#endif
 }
 
 void tst_QWebEnginePage::localURLSchemes()
 {
+#if !defined(QWEBENGINESECURITYORIGIN)
+    QSKIP("QWEBENGINESECURITYORIGIN");
+#else
     int i = QWebEngineSecurityOrigin::localSchemes().size();
 
     QWebEngineSecurityOrigin::removeLocalScheme("file");
@@ -2437,16 +2561,22 @@ void tst_QWebEnginePage::localURLSchemes()
     QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
     QWebEngineSecurityOrigin::removeLocalScheme(myscheme);
     QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
+#endif
 }
 
+#if defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
 static inline bool testFlag(QWebEnginePage& webPage, QWebEngineSettings::WebAttribute settingAttribute, const QString& jsObjectName, bool settingValue)
 {
     webPage.settings()->setAttribute(settingAttribute, settingValue);
     return webPage.evaluateJavaScript(QString("(window.%1 != undefined)").arg(jsObjectName)).toBool();
 }
+#endif
 
 void tst_QWebEnginePage::testOptionalJSObjects()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     // Once a feature is enabled and the JS object is accessed turning off the setting will not turn off
     // the visibility of the JS object any more. For this reason this test uses two QWebEnginePage instances.
     // Part of the test is to make sure that the QWebEnginePage instances do not interfere with each other so turning on
@@ -2469,16 +2599,22 @@ void tst_QWebEnginePage::testOptionalJSObjects()
     QCOMPARE(testFlag(webPage2, QWebEngineSettings::LocalStorageEnabled, "localStorage", true),  true);
     QCOMPARE(testFlag(webPage1, QWebEngineSettings::LocalStorageEnabled, "localStorage", false), false);
     QCOMPARE(testFlag(webPage2, QWebEngineSettings::LocalStorageEnabled, "localStorage", false), true);
+#endif
 }
 
+#if defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
 static inline bool checkLocalStorageVisibility(QWebEnginePage& webPage, bool localStorageEnabled)
 {
     webPage.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, localStorageEnabled);
     return webPage.evaluateJavaScript(QString("(window.localStorage != undefined)")).toBool();
 }
+#endif
 
 void tst_QWebEnginePage::testLocalStorageVisibility()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     // Local storage's visibility depends on its security origin, which depends on base url.
     // Initially, it will test it with base urls that get a globally unique origin, which may not
     // be able to use local storage even if the feature is enabled. Then later the same test is
@@ -2541,10 +2677,14 @@ void tst_QWebEnginePage::testLocalStorageVisibility()
 
     QCOMPARE(checkLocalStorageVisibility(webPage, false), false);
     QCOMPARE(checkLocalStorageVisibility(webPage, true), true);
+#endif
 }
 
 void tst_QWebEnginePage::testEnablePersistentStorage()
 {
+#if !defined(QWEBENGINESETTINGS)
+    QSKIP("QWEBENGINESETTINGS");
+#else
     QWebEnginePage webPage;
 
     // By default all persistent options should be disabled
@@ -2563,10 +2703,14 @@ void tst_QWebEnginePage::testEnablePersistentStorage()
     QTRY_VERIFY(!webPage.settings()->offlineStoragePath().isEmpty());
     QTRY_VERIFY(!webPage.settings()->offlineWebApplicationCachePath().isEmpty());
     QTRY_VERIFY(!webPage.settings()->iconDatabasePath().isEmpty());
+#endif
 }
 
 void tst_QWebEnginePage::defaultTextEncoding()
 {
+#if !defined(QWEBENGINESETTINGS_SETDEFAULTTEXTENCODING)
+    QSKIP("QWEBENGINESETTINGS_SETDEFAULTTEXTENCODING");
+#else
     QWebEngineFrame* mainFrame = m_page->mainFrame();
 
     QString defaultCharset = mainFrame->evaluateJavaScript("document.defaultCharset").toString();
@@ -2587,6 +2731,7 @@ void tst_QWebEnginePage::defaultTextEncoding()
     charset = mainFrame->evaluateJavaScript("document.defaultCharset").toString();
     QCOMPARE(charset, QString("utf-8"));
     QCOMPARE(QWebEngineSettings::globalSettings()->defaultTextEncoding(), charset);
+#endif
 }
 
 class ErrorPage : public QWebEnginePage
@@ -2614,6 +2759,9 @@ public:
 
 void tst_QWebEnginePage::errorPageExtension()
 {
+#if !defined(QWEBENGINEHISTORY)
+    QSKIP("QWEBENGINEHISTORY");
+#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2644,10 +2792,14 @@ void tst_QWebEnginePage::errorPageExtension()
     QTRY_COMPARE(page.history()->currentItem().url(), QUrl("data:text/html,foo"));
 
     m_view->setPage(0);
+#endif
 }
 
 void tst_QWebEnginePage::errorPageExtensionInIFrames()
 {
+#if !defined(QWEBENGINEFRAME)
+    QSKIP("QWEBENGINEFRAME");
+#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2662,10 +2814,14 @@ void tst_QWebEnginePage::errorPageExtensionInIFrames()
     QCOMPARE(page.mainFrame()->childFrames()[1]->toPlainText(), QString("error"));
 
     m_view->setPage(0);
+#endif
 }
 
 void tst_QWebEnginePage::errorPageExtensionInFrameset()
 {
+#if !defined(QWEBENGINEFRAME)
+    QSKIP("QWEBENGINEFRAME");
+#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2677,6 +2833,7 @@ void tst_QWebEnginePage::errorPageExtensionInFrameset()
     QCOMPARE(page.mainFrame()->childFrames()[1]->toPlainText(), QString("error"));
 
     m_view->setPage(0);
+#endif
 }
 
 void tst_QWebEnginePage::errorPageExtensionLoadFinished()
@@ -2716,6 +2873,9 @@ public:
 
 void tst_QWebEnginePage::userAgentApplicationName()
 {
+#if !defined(QWEBENGINEPAGE_USERAGENTFORURL)
+    QSKIP("QWEBENGINEPAGE_USERAGENTFORURL");
+#else
     const QString oldApplicationName = QCoreApplication::applicationName();
     FriendlyWebPage page;
 
@@ -2724,6 +2884,7 @@ void tst_QWebEnginePage::userAgentApplicationName()
     QVERIFY(page.userAgentForUrl(QUrl()).contains(applicationNameMarker));
 
     QCoreApplication::setApplicationName(oldApplicationName);
+#endif
 }
 
 class CustomUserAgentWebPage : public QWebEnginePage
@@ -2740,14 +2901,21 @@ const QLatin1String CustomUserAgentWebPage::filteredUserAgent("My User AgentX-Ne
 
 void tst_QWebEnginePage::userAgentNewlineStripping()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     CustomUserAgentWebPage page;
     QWebEngineFrame* mainFrame = page.mainFrame();
     mainFrame->setHtml("<html><body></body></html>");
     QCOMPARE(mainFrame->evaluateJavaScript("navigator.userAgent").toString(), CustomUserAgentWebPage::filteredUserAgent);
+#endif
 }
 
 void tst_QWebEnginePage::crashTests_LazyInitializationOfMainFrame()
 {
+#if !defined(QWEBENGINEPAGE_SELECTEDTEXT)
+    QSKIP("QWEBENGINEPAGE_SELECTEDTEXT");
+#else
     {
         QWebEnginePage webPage;
     }
@@ -2768,8 +2936,10 @@ void tst_QWebEnginePage::crashTests_LazyInitializationOfMainFrame()
         QPoint pos(10,10);
         webPage.updatePositionDependentActions(pos);
     }
+#endif
 }
 
+#if defined(QWEBENGINEPAGE_RENDER)
 static void takeScreenshot(QWebEnginePage* page)
 {
     page->setViewportSize(page->contentsSize());
@@ -2778,6 +2948,7 @@ static void takeScreenshot(QWebEnginePage* page)
     page->render(&painter);
     painter.end();
 }
+#endif
 
 void tst_QWebEnginePage::screenshot_data()
 {
@@ -2789,6 +2960,9 @@ void tst_QWebEnginePage::screenshot_data()
 
 void tst_QWebEnginePage::screenshot()
 {
+#if !defined(QWEBENGINESETTINGS)
+    QSKIP("QWEBENGINESETTINGS");
+#else
     if (!QDir(TESTS_SOURCE_DIR).exists())
         W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
 
@@ -2813,6 +2987,7 @@ void tst_QWebEnginePage::screenshot()
     delete view;
 
     QDir::setCurrent(QApplication::applicationDirPath());
+#endif
 }
 
 #if defined(ENABLE_WEBGL) && ENABLE_WEBGL
@@ -2843,6 +3018,9 @@ void tst_QWebEnginePage::unacceleratedWebGLScreenshotWithoutView()
 
 void tst_QWebEnginePage::originatingObjectInNetworkRequests()
 {
+#if !defined(QWEBENGINEFRAME)
+    QSKIP("QWEBENGINEFRAME");
+#else
     TestNetworkManager* networkManager = new TestNetworkManager(m_page);
     m_page->setNetworkAccessManager(networkManager);
     networkManager->requests.clear();
@@ -2860,10 +3038,14 @@ void tst_QWebEnginePage::originatingObjectInNetworkRequests()
 
     for (int i = 0; i < 2; ++i)
         QVERIFY(qobject_cast<QWebEngineFrame*>(networkManager->requests.at(i).originatingObject()) == childFrames.at(i));
+#endif
 }
 
 void tst_QWebEnginePage::networkReplyParentDidntChange()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     TestNetworkManager* networkManager = new TestNetworkManager(m_page);
     m_page->setNetworkAccessManager(networkManager);
     networkManager->requests.clear();
@@ -2873,10 +3055,14 @@ void tst_QWebEnginePage::networkReplyParentDidntChange()
 
     QVERIFY(networkManager->requests.count() > 0);
     QVERIFY(networkManager->findChildren<QNetworkReply*>().size() > 0);
+#endif
 }
 
 void tst_QWebEnginePage::destroyQNAMBeforeAbortDoesntCrash()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     QNetworkAccessManager* networkManager = new QNetworkAccessManager;
     m_page->setNetworkAccessManager(networkManager);
 
@@ -2886,6 +3072,7 @@ void tst_QWebEnginePage::destroyQNAMBeforeAbortDoesntCrash()
     // PingLoader isn't attached to a QWebEnginePage and can be kept alive
     // for 60000 seconds (~16.7 hours) to then cancel its ResourceHandle.
     m_view->stop();
+#endif
 }
 
 /**
@@ -2927,6 +3114,9 @@ public:
 
 void tst_QWebEnginePage::testJSPrompt()
 {
+#if !defined(QWEBENGINEPAGE_JAVASCRIPTPROMPT)
+    QSKIP("QWEBENGINEPAGE_JAVASCRIPTPROMPT");
+#else
     JSPromptPage page;
     bool res;
 
@@ -2953,6 +3143,7 @@ void tst_QWebEnginePage::testJSPrompt()
             "var retval = prompt('test4');"
             "retval===null;").toBool();
     QVERIFY(res);
+#endif
 }
 
 class TestModalPage : public QWebEnginePage
@@ -2970,15 +3161,22 @@ public:
 
 void tst_QWebEnginePage::showModalDialog()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     TestModalPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     page.setHtml(QString("<html></html>"));
     QString res = page.evaluateJavaScript("window.showModalDialog('javascript:window.returnValue=dialogArguments; window.close();', 'This is a test');").toString();
     QCOMPARE(res, QString("This is a test"));
+#endif
 }
 
 void tst_QWebEnginePage::testStopScheduledPageRefresh()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     // Without QWebEnginePage::StopScheduledPageRefresh
     QWebEnginePage page1;
     page1.setNetworkAccessManager(new TestNetworkManager(&page1));
@@ -3001,10 +3199,14 @@ void tst_QWebEnginePage::testStopScheduledPageRefresh()
     QTest::qWait(1500);
     QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118673", Continue);
     QCOMPARE(page2.url().toString(), QLatin1String("about:blank"));
+#endif
 }
 
 void tst_QWebEnginePage::findText()
 {
+#if !defined(QWEBENGINEPAGE_FINDTEXT)
+    QSKIP("QWEBENGINEPAGE_FINDTEXT");
+#else
     m_view->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
     m_page->triggerAction(QWebEnginePage::SelectAll);
     QVERIFY(!m_page->selectedText().isEmpty());
@@ -3021,6 +3223,7 @@ void tst_QWebEnginePage::findText()
         QVERIFY(m_page->selectedText().isEmpty());
         QVERIFY(m_page->selectedHtml().isEmpty());
     }
+#endif
 }
 
 static QString getMimeTypeForExtension(const QString &ext)
@@ -3034,6 +3237,9 @@ static QString getMimeTypeForExtension(const QString &ext)
 
 void tst_QWebEnginePage::supportedContentType()
 {
+#if !defined(QWEBENGINEPAGE_SUPPORTEDCONTENTTYPES)
+    QSKIP("QWEBENGINEPAGE_SUPPORTEDCONTENTTYPES");
+#else
     QStringList contentTypes;
 
     // Add supported non image types...
@@ -3060,11 +3266,15 @@ void tst_QWebEnginePage::supportedContentType()
 
     Q_FOREACH(const QString& mimeType, contentTypes)
         QVERIFY2(m_page->supportsContentType(mimeType), QString("Cannot handle content types '%1'!").arg(mimeType).toLatin1());
+#endif
 }
 
 
 void tst_QWebEnginePage::navigatorCookieEnabled()
 {
+#if !defined(QWEBENGINEPAGE_NETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_NETWORKACCESSMANAGER");
+#else
     m_page->networkAccessManager()->setCookieJar(0);
     QVERIFY(!m_page->networkAccessManager()->cookieJar());
     QVERIFY(!m_page->evaluateJavaScript("navigator.cookieEnabled").toBool());
@@ -3072,10 +3282,14 @@ void tst_QWebEnginePage::navigatorCookieEnabled()
     m_page->networkAccessManager()->setCookieJar(new QNetworkCookieJar());
     QVERIFY(m_page->networkAccessManager()->cookieJar());
     QVERIFY(m_page->evaluateJavaScript("navigator.cookieEnabled").toBool());
+#endif
 }
 
 void tst_QWebEnginePage::thirdPartyCookiePolicy()
 {
+#if !defined(DUMPRENDERTREESUPPORTQT)
+    QSKIP("DUMPRENDERTREESUPPORTQT");
+#else
     QWebEngineSettings::globalSettings()->setThirdPartyCookiePolicy(QWebEngineSettings::AlwaysBlockThirdPartyCookies);
     m_page->networkAccessManager()->setCookieJar(new QNetworkCookieJar());
     QVERIFY(m_page->networkAccessManager()->cookieJar());
@@ -3111,6 +3325,7 @@ void tst_QWebEnginePage::thirdPartyCookiePolicy()
             QUrl("http://example.co.uk"), QUrl("http://anotherexample.co.uk")));
     QVERIFY(!DumpRenderTreeSupportQt::thirdPartyCookiePolicyAllows(m_page->handle(),
             QUrl("http://anotherexample.co.uk"), QUrl("http://example.co.uk")));
+#endif
 }
 
 #ifdef Q_OS_MAC
@@ -3130,6 +3345,9 @@ void tst_QWebEnginePage::macCopyUnicodeToClipboard()
 
 void tst_QWebEnginePage::contextMenuCopy()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QWebEngineView view;
 
     view.setHtml("<a href=\"http://www.google.com\">You cant miss this</a>");
@@ -3151,11 +3369,15 @@ void tst_QWebEnginePage::contextMenuCopy()
     QList<QAction *> list = contextMenu->actions();
     int index = list.indexOf(view.page()->action(QWebEnginePage::Copy));
     QVERIFY(index != -1);
+#endif
 }
 
 // https://bugs.webengine.org/show_bug.cgi?id=62139
 void tst_QWebEnginePage::contextMenuPopulatedOnce()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QWebEngineView view;
 
     view.setHtml("<input type=\"text\">");
@@ -3178,6 +3400,7 @@ void tst_QWebEnginePage::contextMenuPopulatedOnce()
         QVERIFY(!entries.contains(entry));
         entries << entry;
     }
+#endif
 }
 
 void tst_QWebEnginePage::deleteQWebEngineViewTwice()
@@ -3192,6 +3415,7 @@ void tst_QWebEnginePage::deleteQWebEngineViewTwice()
     }
 }
 
+#if defined(QWEBENGINEPAGE_RENDER)
 class RepaintRequestedRenderer : public QObject {
     Q_OBJECT
 public:
@@ -3223,9 +3447,13 @@ private:
     QPainter* m_painter;
     int m_recursionCount;
 };
+#endif
 
 void tst_QWebEnginePage::renderOnRepaintRequestedShouldNotRecurse()
 {
+#if !defined(QWEBENGINEPAGE_RENDER)
+    QSKIP("QWEBENGINEPAGE_RENDER");
+#else
     QSize viewportSize(720, 576);
     QWebEnginePage page;
 
@@ -3239,6 +3467,7 @@ void tst_QWebEnginePage::renderOnRepaintRequestedShouldNotRecurse()
     page.setHtml("zalan loves trunk", QUrl());
 
     QVERIFY(::waitForSignal(&r, SIGNAL(finished())));
+#endif
 }
 
 class SpyForLoadSignalsOrder : public QStateMachine {
@@ -3295,6 +3524,9 @@ void tst_QWebEnginePage::loadSignalsOrder()
 
 void tst_QWebEnginePage::undoActionHaveCustomText()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     m_page->setHtml("<div id=test contenteditable></div>");
     m_page->evaluateJavaScript("document.getElementById('test').focus()");
 
@@ -3305,10 +3537,14 @@ void tst_QWebEnginePage::undoActionHaveCustomText()
     QString alignActionText = m_page->action(QWebEnginePage::Undo)->text();
 
     QVERIFY(typingActionText != alignActionText);
+#endif
 }
 
 void tst_QWebEnginePage::openWindowDefaultSize()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     TestPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     // Open a default window.
@@ -3329,10 +3565,14 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     // Check minimum size has been requested.
     QVERIFY(requestedGeometry.width() == 100);
     QVERIFY(requestedGeometry.height() == 100);
+#endif
 }
 
 void tst_QWebEnginePage::cssMediaTypeGlobalSetting()
 {
+#if !defined(QWEBENGINESETTINGS_SETCSSMEDIATYPE)
+    QSKIP("QWEBENGINESETTINGS_SETCSSMEDIATYPE");
+#else
     QString testHtml("<style>@media tv {body{background-color:red;}}@media handheld {body{background-color:green;}}@media screen {body{background-color:blue;}}</style>");
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
 
@@ -3359,10 +3599,14 @@ void tst_QWebEnginePage::cssMediaTypeGlobalSetting()
     QTRY_COMPARE(loadSpy.count(), 3);
     QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('screen').matches == true").toBool());
     QVERIFY(QWebEngineSettings::globalSettings()->cssMediaType() == "screen");
+#endif
 }
 
 void tst_QWebEnginePage::cssMediaTypePageSetting()
 {
+#if !defined(QWEBENGINESETTINGS_SETCSSMEDIATYPE)
+    QSKIP("QWEBENGINESETTINGS_SETCSSMEDIATYPE");
+#else
     QString testHtml("<style>@media tv {body{background-color:red;}}@media handheld {body{background-color:green;}}@media screen {body{background-color:blue;}}</style>");
     QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
 
@@ -3383,6 +3627,7 @@ void tst_QWebEnginePage::cssMediaTypePageSetting()
     QTRY_COMPARE(loadSpy.count(), 3);
     QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('screen').matches == true").toBool());
     QVERIFY(m_view->page()->settings()->cssMediaType() == "screen");
+#endif
 }
 
 QTEST_MAIN(tst_QWebEnginePage)
