@@ -1,7 +1,4 @@
-[submodule "build/ninja"]
-	path = build/ninja
-	url = https://github.com/martine/ninja.git
-[submodule "chromium"]
-	path = chromium
-	url = https://chromium.googlesource.com/chromium/src.git
-	ignore = all
+[submodule "3rdparty"]
+    path = 3rdparty
+    url = git://gitorious.org/qt-labs/chromium.git
+    ignore = all
