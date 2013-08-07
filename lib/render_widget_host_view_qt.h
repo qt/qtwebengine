@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_QT_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_QT_H_
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_H
+#define RENDER_WIDGET_HOST_VIEW_QT_H
 
 #include "shared/shared_globals.h"
 
@@ -172,4 +172,4 @@ private:
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 };
 
-#endif
+#endif // RENDER_WIDGET_HOST_VIEW_QT_H

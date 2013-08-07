@@ -71,4 +71,4 @@ private:
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
 };
 
-#endif
+#endif // WEB_ENGINE_CONTEXT_H

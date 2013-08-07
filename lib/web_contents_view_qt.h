@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_VIEW_QT_
-#define WEB_CONTENTS_VIEW_QT_
+#ifndef WEB_CONTENTS_VIEW_QT_H
+#define WEB_CONTENTS_VIEW_QT_H
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_view_host.h"
@@ -117,4 +117,4 @@ private:
     RenderWidgetHostViewQtDelegate* m_viewDelegate;
 };
 
-#endif
+#endif // WEB_CONTENTS_VIEW_QT_H
