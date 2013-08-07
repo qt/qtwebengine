@@ -20,20 +20,20 @@
 
 #include <QtTest/QtTest>
 
-#include <qwebpage.h>
-#include <qwebview.h>
-#include <qwebframe.h>
-#include <qwebelement.h>
-#include <qwebhistoryinterface.h>
+#include <qwebenginepage.h>
+#include <qwebengineview.h>
+#include <qwebengineframe.h>
+#include <qwebengineelement.h>
+#include <qwebenginehistoryinterface.h>
 #include <QDebug>
 
-class tst_QWebHistoryInterface : public QObject
+class tst_QWebEngineHistoryInterface : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QWebHistoryInterface();
-    virtual ~tst_QWebHistoryInterface();
+    tst_QWebEngineHistoryInterface();
+    virtual ~tst_QWebEngineHistoryInterface();
 
 public Q_SLOTS:
     void init();
@@ -46,30 +46,30 @@ private:
 
 
 private:
-    QWebView* m_view;
-    QWebPage* m_page;
+    QWebEngineView* m_view;
+    QWebEnginePage* m_page;
 };
 
-tst_QWebHistoryInterface::tst_QWebHistoryInterface()
+tst_QWebEngineHistoryInterface::tst_QWebEngineHistoryInterface()
 {
 }
 
-tst_QWebHistoryInterface::~tst_QWebHistoryInterface()
+tst_QWebEngineHistoryInterface::~tst_QWebEngineHistoryInterface()
 {
 }
 
-void tst_QWebHistoryInterface::init()
+void tst_QWebEngineHistoryInterface::init()
 {
-    m_view = new QWebView();
+    m_view = new QWebEngineView();
     m_page = m_view->page();
 }
 
-void tst_QWebHistoryInterface::cleanup()
+void tst_QWebEngineHistoryInterface::cleanup()
 {
     delete m_view;
 }
 
-class FakeHistoryImplementation : public QWebHistoryInterface {
+class FakeHistoryImplementation : public QWebEngineHistoryInterface {
 public:
     void addHistoryEntry(const QString&) {}
     bool historyContains(const QString& url) const {
@@ -83,14 +83,14 @@ public:
  * as visited, so the below website should have exactly one element in the a:visited
  * state.
  */
-void tst_QWebHistoryInterface::visitedLinks()
+void tst_QWebEngineHistoryInterface::visitedLinks()
 {
-    QWebHistoryInterface::setDefaultInterface(new FakeHistoryImplementation);
+    QWebEngineHistoryInterface::setDefaultInterface(new FakeHistoryImplementation);
     m_view->setHtml("<html><style>:link{color:green}:visited{color:red}</style><body><a href='http://www.trolltech.com' id='vlink'>Trolltech</a></body></html>");
-    QWebElement anchor = m_view->page()->mainFrame()->findFirstElement("a[id=vlink]");
-    QString linkColor = anchor.styleProperty("color", QWebElement::ComputedStyle);
+    QWebEngineElement anchor = m_view->page()->mainFrame()->findFirstElement("a[id=vlink]");
+    QString linkColor = anchor.styleProperty("color", QWebEngineElement::ComputedStyle);
     QCOMPARE(linkColor, QString::fromLatin1("rgb(255, 0, 0)"));
 }
 
-QTEST_MAIN(tst_QWebHistoryInterface)
-#include "tst_qwebhistoryinterface.moc"
+QTEST_MAIN(tst_QWebEngineHistoryInterface)
+#include "tst_qwebenginehistoryinterface.moc"

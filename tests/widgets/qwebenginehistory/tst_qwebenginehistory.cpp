@@ -21,24 +21,23 @@
 #include <QAction>
 
 #include "../util.h"
-#include "qwebpage.h"
-#include "qwebview.h"
-#include "qwebframe.h"
-#include "qwebhistory.h"
+#include "qwebenginepage.h"
+#include "qwebengineview.h"
+#include "qwebenginehistory.h"
 #include "qdebug.h"
 
-class tst_QWebHistory : public QObject
+class tst_QWebEngineHistory : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QWebHistory();
-    virtual ~tst_QWebHistory();
+    tst_QWebEngineHistory();
+    virtual ~tst_QWebEngineHistory();
 
 protected :
     void loadPage(int nr)
     {
-        frame->load(QUrl("qrc:/resources/page" + QString::number(nr) + ".html"));
+        page->load(QUrl("qrc:/resources/page" + QString::number(nr) + ".html"));
         loadFinishedBarrier->ensureSignalEmitted();
     }
 
@@ -54,9 +53,9 @@ private Q_SLOTS:
     void itemAt();
     void goToItem();
     void items();
-    void serialize_1(); //QWebHistory countity
-    void serialize_2(); //QWebHistory index
-    void serialize_3(); //QWebHistoryItem
+    void serialize_1(); //QWebEngineHistory countity
+    void serialize_2(); //QWebEngineHistory index
+    void serialize_3(); //QWebEngineHistoryItem
     // Those tests shouldn't crash
     void saveAndRestore_crash_1();
     void saveAndRestore_crash_2();
@@ -70,26 +69,24 @@ private Q_SLOTS:
 
 
 private:
-    QWebPage* page;
-    QWebFrame* frame;
-    QWebHistory* hist;
+    QWebEnginePage* page;
+    QWebEngineHistory* hist;
     QScopedPointer<SignalBarrier> loadFinishedBarrier;
     int histsize;
 };
 
-tst_QWebHistory::tst_QWebHistory()
+tst_QWebEngineHistory::tst_QWebEngineHistory()
 {
 }
 
-tst_QWebHistory::~tst_QWebHistory()
+tst_QWebEngineHistory::~tst_QWebEngineHistory()
 {
 }
 
-void tst_QWebHistory::init()
+void tst_QWebEngineHistory::init()
 {
-    page = new QWebPage(this);
-    frame = page->mainFrame();
-    loadFinishedBarrier.reset(new SignalBarrier(frame, SIGNAL(loadFinished(bool))));
+    page = new QWebEnginePage(this);
+    loadFinishedBarrier.reset(new SignalBarrier(page, SIGNAL(loadFinished(bool))));
 
     for (int i = 1;i < 6;i++) {
         loadPage(i);
@@ -98,47 +95,47 @@ void tst_QWebHistory::init()
     histsize = 5;
 }
 
-void tst_QWebHistory::cleanup()
+void tst_QWebEngineHistory::cleanup()
 {
     loadFinishedBarrier.reset();
     delete page;
 }
 
 /**
-  * Check QWebHistoryItem::title() method
+  * Check QWebEngineHistoryItem::title() method
   */
-void tst_QWebHistory::title()
+void tst_QWebEngineHistory::title()
 {
     QCOMPARE(hist->currentItem().title(), QString("page5"));
 }
 
 /**
-  * Check QWebHistory::count() method
+  * Check QWebEngineHistory::count() method
   */
-void tst_QWebHistory::count()
+void tst_QWebEngineHistory::count()
 {
     QCOMPARE(hist->count(), histsize);
 }
 
 /**
-  * Check QWebHistory::back() method
+  * Check QWebEngineHistory::back() method
   */
-void tst_QWebHistory::back()
+void tst_QWebEngineHistory::back()
 {
     for (int i = histsize;i > 1;i--) {
-        QCOMPARE(page->mainFrame()->toPlainText(), QString("page") + QString::number(i));
+        QCOMPARE(page->toPlainText(), QString("page") + QString::number(i));
         hist->back();
         loadFinishedBarrier->ensureSignalEmitted();
     }
     //try one more time (too many). crash test
     hist->back();
-    QCOMPARE(page->mainFrame()->toPlainText(), QString("page1"));
+    QCOMPARE(page->toPlainText(), QString("page1"));
 }
 
 /**
-  * Check QWebHistory::forward() method
+  * Check QWebEngineHistory::forward() method
   */
-void tst_QWebHistory::forward()
+void tst_QWebEngineHistory::forward()
 {
     //rewind history :-)
     while (hist->canGoBack()) {
@@ -147,19 +144,19 @@ void tst_QWebHistory::forward()
     }
 
     for (int i = 1;i < histsize;i++) {
-        QCOMPARE(page->mainFrame()->toPlainText(), QString("page") + QString::number(i));
+        QCOMPARE(page->toPlainText(), QString("page") + QString::number(i));
         hist->forward();
         loadFinishedBarrier->ensureSignalEmitted();
     }
     //try one more time (too many). crash test
     hist->forward();
-    QCOMPARE(page->mainFrame()->toPlainText(), QString("page") + QString::number(histsize));
+    QCOMPARE(page->toPlainText(), QString("page") + QString::number(histsize));
 }
 
 /**
-  * Check QWebHistory::itemAt() method
+  * Check QWebEngineHistory::itemAt() method
   */
-void tst_QWebHistory::itemAt()
+void tst_QWebEngineHistory::itemAt()
 {
     for (int i = 1;i < histsize;i++) {
         QCOMPARE(hist->itemAt(i - 1).title(), QString("page") + QString::number(i));
@@ -171,11 +168,11 @@ void tst_QWebHistory::itemAt()
 }
 
 /**
-  * Check QWebHistory::goToItem() method
+  * Check QWebEngineHistory::goToItem() method
   */
-void tst_QWebHistory::goToItem()
+void tst_QWebEngineHistory::goToItem()
 {
-    QWebHistoryItem current = hist->currentItem();
+    QWebEngineHistoryItem current = hist->currentItem();
     hist->back();
     loadFinishedBarrier->ensureSignalEmitted();
     hist->back();
@@ -187,11 +184,11 @@ void tst_QWebHistory::goToItem()
 }
 
 /**
-  * Check QWebHistory::items() method
+  * Check QWebEngineHistory::items() method
   */
-void tst_QWebHistory::items()
+void tst_QWebEngineHistory::items()
 {
-    QList<QWebHistoryItem> items = hist->items();
+    QList<QWebEngineHistoryItem> items = hist->items();
     //check count
     QCOMPARE(histsize, items.count());
 
@@ -205,7 +202,7 @@ void tst_QWebHistory::items()
   * Check history state after serialization (pickle, persistent..) method
   * Checks history size, history order
   */
-void tst_QWebHistory::serialize_1()
+void tst_QWebEngineHistory::serialize_1()
 {
     QByteArray tmp;  //buffer
     QDataStream save(&tmp, QIODevice::WriteOnly); //here data will be saved
@@ -224,7 +221,7 @@ void tst_QWebHistory::serialize_1()
     QCOMPARE(hist->count(), histsize);
 
     //check order of historyItems
-    QList<QWebHistoryItem> items = hist->items();
+    QList<QWebEngineHistoryItem> items = hist->items();
     for (int i = 1;i <= histsize;i++) {
         QCOMPARE(items.at(i - 1).title(), QString("page") + QString::number(i));
     }
@@ -234,14 +231,14 @@ void tst_QWebHistory::serialize_1()
   * Check history state after serialization (pickle, persistent..) method
   * Checks history currentIndex value
   */
-void tst_QWebHistory::serialize_2()
+void tst_QWebEngineHistory::serialize_2()
 {
     QByteArray tmp;  //buffer
     QDataStream save(&tmp, QIODevice::WriteOnly); //here data will be saved
     QDataStream load(&tmp, QIODevice::ReadOnly); //from here data will be loaded
 
     // Force a "same document" navigation.
-    frame->load(frame->url().toString() + QLatin1String("#dummyAnchor"));
+    page->load(page->url().toString() + QLatin1String("#dummyAnchor"));
 
     int initialCurrentIndex = hist->currentItemIndex();
 
@@ -275,16 +272,16 @@ void tst_QWebHistory::serialize_2()
 
 /**
   * Check history state after serialization (pickle, persistent..) method
-  * Checks QWebHistoryItem public property after serialization
+  * Checks QWebEngineHistoryItem public property after serialization
   */
-void tst_QWebHistory::serialize_3()
+void tst_QWebEngineHistory::serialize_3()
 {
     QByteArray tmp;  //buffer
     QDataStream save(&tmp, QIODevice::WriteOnly); //here data will be saved
     QDataStream load(&tmp, QIODevice::ReadOnly); //from here data will be loaded
 
     //prepare two different history items
-    QWebHistoryItem a = hist->currentItem();
+    QWebEngineHistoryItem a = hist->currentItem();
     a.setUserData("A - user data");
 
     //check properties BEFORE serialization
@@ -301,7 +298,7 @@ void tst_QWebHistory::serialize_3()
     QVERIFY(hist->count() == 1);
     load >> *hist;
     QVERIFY(load.status() == QDataStream::Ok);
-    QWebHistoryItem b = hist->currentItem();
+    QWebEngineHistoryItem b = hist->currentItem();
 
     //check properties AFTER serialization
     QCOMPARE(b.title(), title);
@@ -314,20 +311,20 @@ void tst_QWebHistory::serialize_3()
     QVERIFY(load.atEnd());
 }
 
-static void saveHistory(QWebHistory* history, QByteArray* in)
+static void saveHistory(QWebEngineHistory* history, QByteArray* in)
 {
     in->clear();
     QDataStream save(in, QIODevice::WriteOnly);
     save << *history;
 }
 
-static void restoreHistory(QWebHistory* history, QByteArray* out)
+static void restoreHistory(QWebEngineHistory* history, QByteArray* out)
 {
     QDataStream load(out, QIODevice::ReadOnly);
     load >> *history;
 }
 
-void tst_QWebHistory::saveAndRestore_crash_1()
+void tst_QWebEngineHistory::saveAndRestore_crash_1()
 {
     QByteArray buffer;
     saveHistory(hist, &buffer);
@@ -337,12 +334,12 @@ void tst_QWebHistory::saveAndRestore_crash_1()
     }
 }
 
-void tst_QWebHistory::saveAndRestore_crash_2()
+void tst_QWebEngineHistory::saveAndRestore_crash_2()
 {
     QByteArray buffer;
     saveHistory(hist, &buffer);
-    QWebPage* page2 = new QWebPage(this);
-    QWebHistory* hist2 = page2->history();
+    QWebEnginePage* page2 = new QWebEnginePage(this);
+    QWebEngineHistory* hist2 = page2->history();
     for (unsigned i = 0; i < 5; i++) {
         restoreHistory(hist2, &buffer);
         saveHistory(hist2, &buffer);
@@ -350,13 +347,13 @@ void tst_QWebHistory::saveAndRestore_crash_2()
     delete page2;
 }
 
-void tst_QWebHistory::saveAndRestore_crash_3()
+void tst_QWebEngineHistory::saveAndRestore_crash_3()
 {
     QByteArray buffer;
     saveHistory(hist, &buffer);
-    QWebPage* page2 = new QWebPage(this);
-    QWebHistory* hist1 = hist;
-    QWebHistory* hist2 = page2->history();
+    QWebEnginePage* page2 = new QWebEnginePage(this);
+    QWebEngineHistory* hist1 = hist;
+    QWebEngineHistory* hist2 = page2->history();
     for (unsigned i = 0; i < 5; i++) {
         restoreHistory(hist1, &buffer);
         restoreHistory(hist2, &buffer);
@@ -369,12 +366,12 @@ void tst_QWebHistory::saveAndRestore_crash_3()
     delete page2;
 }
 
-void tst_QWebHistory::saveAndRestore_crash_4()
+void tst_QWebEngineHistory::saveAndRestore_crash_4()
 {
     QByteArray buffer;
     saveHistory(hist, &buffer);
 
-    QWebPage* page2 = new QWebPage(this);
+    QWebEnginePage* page2 = new QWebEnginePage(this);
     // The initial crash was in PageCache.
     page2->settings()->setMaximumPagesInCache(3);
 
@@ -390,7 +387,7 @@ void tst_QWebHistory::saveAndRestore_crash_4()
     QTest::qWait(50);
 }
 
-void tst_QWebHistory::popPushState_data()
+void tst_QWebEngineHistory::popPushState_data()
 {
     QTest::addColumn<QString>("script");
     QTest::newRow("pushState") << "history.pushState(123, \"foo\");";
@@ -400,21 +397,21 @@ void tst_QWebHistory::popPushState_data()
     QTest::newRow("clearState") << "history.clearState();";
 }
 
-/** Crash test, WebKit bug 38840 (https://bugs.webkit.org/show_bug.cgi?id=38840) */
-void tst_QWebHistory::popPushState()
+/** Crash test, WebKit bug 38840 (https://bugs.webengine.org/show_bug.cgi?id=38840) */
+void tst_QWebEngineHistory::popPushState()
 {
     QFETCH(QString, script);
-    QWebPage page;
-    page.mainFrame()->setHtml("<html><body>long live Qt!</body></html>");
-    page.mainFrame()->evaluateJavaScript(script);
+    QWebEnginePage page;
+    page.setHtml("<html><body>long live Qt!</body></html>");
+    page.evaluateJavaScript(script);
 }
 
 /** ::clear */
-void tst_QWebHistory::clear()
+void tst_QWebEngineHistory::clear()
 {
     QByteArray buffer;
 
-    QAction* actionBack = page->action(QWebPage::Back);
+    QAction* actionBack = page->action(QWebEnginePage::Back);
     QVERIFY(actionBack->isEnabled());
     saveHistory(hist, &buffer);
     QVERIFY(hist->count() > 1);
@@ -422,15 +419,15 @@ void tst_QWebHistory::clear()
     QVERIFY(hist->count() == 1);  // Leave current item.
     QVERIFY(!actionBack->isEnabled());
 
-    QWebPage* page2 = new QWebPage(this);
-    QWebHistory* hist2 = page2->history();
+    QWebEnginePage* page2 = new QWebEnginePage(this);
+    QWebEngineHistory* hist2 = page2->history();
     QVERIFY(hist2->count() == 0);
     hist2->clear();
     QVERIFY(hist2->count() == 0); // Do not change anything.
     delete page2;
 }
 
-// static void dumpCurrentVersion(QWebHistory* history)
+// static void dumpCurrentVersion(QWebEngineHistory* history)
 // {
 //     QByteArray buffer;
 //     saveHistory(history, &buffer);
@@ -443,7 +440,7 @@ void tst_QWebHistory::clear()
 //     printf("};\n");
 // }
 
-void tst_QWebHistory::restoreIncompatibleVersion1()
+void tst_QWebEngineHistory::restoreIncompatibleVersion1()
 {
     // Uncomment this code to generate a dump similar to the one below with the current stream version.
     // dumpCurrentVersion(hist);
@@ -524,5 +521,5 @@ void tst_QWebHistory::restoreIncompatibleVersion1()
     QVERIFY(stream.status() == QDataStream::ReadCorruptData);
 }
 
-QTEST_MAIN(tst_QWebHistory)
-#include "tst_qwebhistory.moc"
+QTEST_MAIN(tst_QWebEngineHistory)
+#include "tst_qwebenginehistory.moc"
