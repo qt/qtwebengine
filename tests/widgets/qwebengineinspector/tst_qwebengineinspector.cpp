@@ -20,11 +20,11 @@
 #include <QtTest/QtTest>
 
 #include <qdir.h>
-#include <qwebinspector.h>
-#include <qwebpage.h>
-#include <qwebsettings.h>
+#include <qwebengineinspector.h>
+#include <qwebenginepage.h>
+#include <qwebenginesettings.h>
 
-class tst_QWebInspector : public QObject {
+class tst_QWebEngineInspector : public QObject {
     Q_OBJECT
 
 private Q_SLOTS:
@@ -33,43 +33,43 @@ private Q_SLOTS:
     void attachAndDestroyInternalInspector();
 };
 
-void tst_QWebInspector::attachAndDestroyPageFirst()
+void tst_QWebEngineInspector::attachAndDestroyPageFirst()
 {
     // External inspector + manual destruction of page first
-    QWebPage* page = new QWebPage();
-    page->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-    QWebInspector* inspector = new QWebInspector();
+    QWebEnginePage* page = new QWebEnginePage();
+    page->settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
+    QWebEngineInspector* inspector = new QWebEngineInspector();
     inspector->setPage(page);
     page->updatePositionDependentActions(QPoint(0, 0));
-    page->triggerAction(QWebPage::InspectElement);
+    page->triggerAction(QWebEnginePage::InspectElement);
 
     delete page;
     delete inspector;
 }
 
-void tst_QWebInspector::attachAndDestroyInspectorFirst()
+void tst_QWebEngineInspector::attachAndDestroyInspectorFirst()
 {
     // External inspector + manual destruction of inspector first
-    QWebPage* page = new QWebPage();
-    page->settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
-    QWebInspector* inspector = new QWebInspector();
+    QWebEnginePage* page = new QWebEnginePage();
+    page->settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
+    QWebEngineInspector* inspector = new QWebEngineInspector();
     inspector->setPage(page);
     page->updatePositionDependentActions(QPoint(0, 0));
-    page->triggerAction(QWebPage::InspectElement);
+    page->triggerAction(QWebEnginePage::InspectElement);
 
     delete inspector;
     delete page;
 }
 
-void tst_QWebInspector::attachAndDestroyInternalInspector()
+void tst_QWebEngineInspector::attachAndDestroyInternalInspector()
 {
     // Internal inspector
-    QWebPage page;
-    page.settings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
+    QWebEnginePage page;
+    page.settings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, true);
     page.updatePositionDependentActions(QPoint(0, 0));
-    page.triggerAction(QWebPage::InspectElement);
+    page.triggerAction(QWebEnginePage::InspectElement);
 }
 
-QTEST_MAIN(tst_QWebInspector)
+QTEST_MAIN(tst_QWebEngineInspector)
 
-#include "tst_qwebinspector.moc"
+#include "tst_qwebengineinspector.moc"
