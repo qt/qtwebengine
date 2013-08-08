@@ -45,10 +45,6 @@ Therefore forward declarations must be removed in several places:
  net/dns/mock_host_resolver.cc                      |  31 -----
  net/dns/mock_host_resolver.h                       |  32 ++++-
  net/http/http_auth_cache.h                         | 144 ++++++++++-----------
- third_party/WebKit                                 |   2 +-
- tools/grit                                         |   2 +-
- tools/gritsettings/resource_ids                    |   3 +
- tools/gyp                                          |   2 +-
  ui/gfx/image/image_family.h                        |  23 ++--
  webkit/browser/dom_storage/dom_storage_namespace.h |   3 +-
  webkit/support/weburl_loader_mock_factory.cc       |   5 -
@@ -807,41 +803,6 @@ index 1d6f2d2..75b379f 100644
  }  // namespace net
  
  #endif  // NET_HTTP_HTTP_AUTH_CACHE_H_
-diff --git a/third_party/WebKit b/third_party/WebKit
-index 81619ee..111ddfe 160000
---- a/third_party/WebKit
-+++ b/third_party/WebKit
-@@ -1 +1 @@
--Subproject commit 81619eeff33e156f163a4ae7b0745b76cc6e2131
-+Subproject commit 111ddfef0a553f8d0a9ab786a44ae3aca1dad875
-diff --git a/tools/grit b/tools/grit
-index fbf8c54..c95babe 160000
---- a/tools/grit
-+++ b/tools/grit
-@@ -1 +1 @@
--Subproject commit fbf8c54856bccf2d3e2431127ab334ab1dbd619e
-+Subproject commit c95babeeea70a71aaabca18924e2471fbb065b84
-diff --git a/tools/gritsettings/resource_ids b/tools/gritsettings/resource_ids
-index fdab9ca..ce61195 100644
---- a/tools/gritsettings/resource_ids
-+++ b/tools/gritsettings/resource_ids
-@@ -194,6 +194,9 @@
-   },
-   # This file is generated during the build.
-   "<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.grd": {
-+  #"tracing_resources.grd": {
-+  #"../out/Release/gen/content/browser/tracing/tracing_resources.grd": {
-+  #"gen/content/browser/tracing/tracing_resources.grd": {
-     "includes": [25750],
-   },
-   "ash/ash_strings.grd": {
-diff --git a/tools/gyp b/tools/gyp
-index 172357f..9fd5d11 160000
---- a/tools/gyp
-+++ b/tools/gyp
-@@ -1 +1 @@
--Subproject commit 172357f39aae2e09793d6b2dddec3b2ce518ff8d
-+Subproject commit 9fd5d1137459f9ed029d046faa90dc80ca9857c5
 diff --git a/ui/gfx/image/image_family.h b/ui/gfx/image/image_family.h
 index b2a2c07..902dede 100644
 --- a/ui/gfx/image/image_family.h
