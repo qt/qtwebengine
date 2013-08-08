@@ -46,6 +46,8 @@
 #include "content/public/browser/web_contents.h"
 #include "shared/shared_globals.h"
 
+#include <QStandardPaths>
+
 DownloadManagerDelegateQt::DownloadManagerDelegateQt() : m_currentId(0)
 {
 }
@@ -57,6 +59,7 @@ void DownloadManagerDelegateQt::Shutdown()
 
 void DownloadManagerDelegateQt::GetNextId(const content::DownloadIdCallback& callback)
 {
+    QT_NOT_YET_IMPLEMENTED
     callback.Run(++m_currentId);
 }
 
@@ -84,6 +87,14 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
                                                         const content::DownloadTargetCallback& callback)
 {
     QT_NOT_YET_IMPLEMENTED
+    base::FilePath downloadFilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
+    std::string fileName = item->GetURL().ExtractFileName();
+    std::string tmpFileName = fileName + ".tmp";
+
+    callback.Run(downloadFilePath.Append(fileName),
+                 content::DownloadItem::TARGET_DISPOSITION_OVERWRITE, content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                 downloadFilePath.Append(tmpFileName));
+
     return true;
 }
 
@@ -126,5 +137,8 @@ void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_cont
                         bool* skip_dir_check)
 {
     QT_NOT_YET_IMPLEMENTED
+    *website_save_dir = base::FilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
+    *download_save_dir = base::FilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
+    *skip_dir_check = true;
 }
 
