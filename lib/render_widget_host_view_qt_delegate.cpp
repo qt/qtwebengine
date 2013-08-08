@@ -63,11 +63,6 @@ RenderWidgetHostViewQtDelegate::~RenderWidgetHostViewQtDelegate()
 {
 }
 
-void RenderWidgetHostViewQtDelegate::resetView(RenderWidgetHostViewQt* view)
-{
-    m_view.reset(view);
-}
-
 void RenderWidgetHostViewQtDelegate::paint(QPainter *painter, const QRectF &boundingRect)
 {
     if (m_backingStore)
@@ -89,4 +84,9 @@ void RenderWidgetHostViewQtDelegate::notifyResize()
 bool RenderWidgetHostViewQtDelegate::forwardEvent(QEvent *event)
 {
     return (m_view && m_view->handleEvent(event));
+}
+
+void RenderWidgetHostViewQtDelegate::setView(RenderWidgetHostViewQt* view)
+{
+    m_view = view;
 }

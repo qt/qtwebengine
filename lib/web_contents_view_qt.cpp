@@ -51,7 +51,6 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
     RenderWidgetHostViewQtDelegate* viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    viewDelegate->resetView(view);
     view->SetDelegate(viewDelegate);
 
     return view;
