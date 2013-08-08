@@ -51,7 +51,6 @@ namespace content {
 class WebContents;
 }
 class WebContentsAdapterClient;
-class WebContentsDelegateQt;
 class WebContentsAdapterPrivate;
 
 class QWEBENGINE_EXPORT WebContentsAdapter {
@@ -72,7 +71,7 @@ public:
 
 private:
     inline content::WebContents* webContents() const;
-    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
-    QScopedPointer<WebContentsAdapterPrivate> d;
+    Q_DECLARE_PRIVATE(WebContentsAdapter);
+    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 };
 #endif // WEB_CONTENTS_ADAPTER_H

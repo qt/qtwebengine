@@ -53,19 +53,25 @@
 // Used to maintain a WebEngineContext for as long as we need one
 class WebContentsAdapterPrivate {
 public:
-    WebContentsAdapterPrivate() : engineContext(WebEngineContext::current()) { }
+    WebContentsAdapterPrivate();
     scoped_refptr<WebEngineContext> engineContext;
+    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
 };
 
+WebContentsAdapterPrivate::WebContentsAdapterPrivate()
+    // This has to be the first thing we create, and the last we destroy.
+    : engineContext(WebEngineContext::current())
+{
+}
 
 WebContentsAdapter::WebContentsAdapter(WebContentsAdapterClient *adapterClient)
-// This has to be the first thing we do.
-    : d(new WebContentsAdapterPrivate())
+    : d_ptr(new WebContentsAdapterPrivate)
 {
+    Q_D(WebContentsAdapter);
     content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
-    webContentsDelegate.reset(new WebContentsDelegateQt(browserContext, NULL, MSG_ROUTING_NONE, gfx::Size()));
-    webContentsDelegate->m_viewClient = adapterClient;
-    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(webContentsDelegate->web_contents()->GetView());
+    d->webContentsDelegate.reset(new WebContentsDelegateQt(browserContext, NULL, MSG_ROUTING_NONE, gfx::Size()));
+    d->webContentsDelegate->m_viewClient = adapterClient;
+    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
     contentsView->SetClient(adapterClient);
 }
 
@@ -139,6 +145,7 @@ QString WebContentsAdapter::pageTitle() const
 
 content::WebContents *WebContentsAdapter::webContents() const
 {
-    Q_ASSERT(webContentsDelegate);
-    return webContentsDelegate->web_contents();
+    Q_D(const WebContentsAdapter);
+    Q_ASSERT(d->webContentsDelegate);
+    return d->webContentsDelegate->web_contents();
 }
