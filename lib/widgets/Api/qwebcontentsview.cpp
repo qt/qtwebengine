@@ -88,6 +88,12 @@ void QWebContentsViewPrivate::loadFinished(bool success)
     Q_EMIT q->loadFinished(success);
 }
 
+void QWebContentsViewPrivate::focusContainer()
+{
+    Q_Q(QWebContentsView);
+    q->setFocus();
+}
+
 RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
     Q_Q(QWebContentsView);

@@ -94,6 +94,12 @@ void QQuickWebContentsViewPrivate::loadFinished(bool success)
     Q_EMIT q->loadingStateChanged();
 }
 
+void QQuickWebContentsViewPrivate::focusContainer()
+{
+    Q_Q(QQuickWebContentsView);
+    q->forceActiveFocus();
+}
+
 QQuickWebContentsView::QQuickWebContentsView()
     : d_ptr(new QQuickWebContentsViewPrivate)
 {

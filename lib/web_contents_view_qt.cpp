@@ -50,9 +50,9 @@
 content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    m_viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    m_viewDelegate->resetView(view);
-    view->SetDelegate(m_viewDelegate);
+    RenderWidgetHostViewQtDelegate* viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
+    viewDelegate->resetView(view);
+    view->SetDelegate(viewDelegate);
 
     return view;
 }
@@ -71,7 +71,7 @@ void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
 
 void WebContentsViewQt::Focus()
 {
-    m_viewDelegate->setKeyboardFocus();
+    m_client->focusContainer();
 }
 
 void WebContentsViewQt::SetInitialFocus()
