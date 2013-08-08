@@ -16,6 +16,6 @@ INCLUDEPATH += $$CHROMIUM_SRC_DIR
 MODULE_BASE_DIR = $$QTWEBENGINE_ROOT
 
 # We have to disable RTTI for now since that's how chromium builds on linux
-unix:!macx:QMAKE_CXXFLAGS += -fno-rtti
+unix:QMAKE_CXXFLAGS += -fno-rtti
 
 load(functions)
