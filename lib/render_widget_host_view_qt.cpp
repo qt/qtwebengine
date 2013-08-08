@@ -109,6 +109,7 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 void RenderWidgetHostViewQt::SetDelegate(RenderWidgetHostViewQtDelegate* delegate)
 {
     m_delegate.reset(delegate);
+    delegate->setView(this);
 }
 
 bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
@@ -461,7 +462,7 @@ void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus, int)
 
 void RenderWidgetHostViewQt::Destroy()
 {
-    m_delegate.reset();
+    delete this;
 }
 
 void RenderWidgetHostViewQt::SetTooltipText(const string16&)

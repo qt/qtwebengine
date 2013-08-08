@@ -68,7 +68,6 @@ public:
     virtual void update(const QRect& rect = QRect()) = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
-    void resetView(RenderWidgetHostViewQt*);
 
 protected:
     static bool isCompositingModeForced();
@@ -80,8 +79,10 @@ protected:
     bool forwardEvent(QEvent*);
 
 private:
-    QScopedPointer<RenderWidgetHostViewQt> m_view;
+    void setView(RenderWidgetHostViewQt*);
+    RenderWidgetHostViewQt *m_view;
     BackingStoreQt *m_backingStore;
+    friend class RenderWidgetHostViewQt;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
