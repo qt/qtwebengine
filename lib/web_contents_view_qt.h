@@ -114,7 +114,6 @@ public:
 
 private:
     WebContentsAdapterClient* m_client;
-    RenderWidgetHostViewQtDelegate* m_viewDelegate;
 };
 
 #endif // WEB_CONTENTS_VIEW_QT_H

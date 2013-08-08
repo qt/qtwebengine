@@ -63,6 +63,7 @@ public:
     virtual void loadingStateChanged() Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
+    virtual void focusContainer() Q_DECL_OVERRIDE;
 
     QScopedPointer<WebContentsAdapter> adapter;
 };
