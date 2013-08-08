@@ -56,12 +56,13 @@ class DownloadItem;
 class WebContents;
 }
 
+class DownloadTargetHelper;
 
 class DownloadManagerDelegateQt : public content::DownloadManagerDelegate
 {
 public:
     DownloadManagerDelegateQt();
-    virtual ~DownloadManagerDelegateQt() { }
+    virtual ~DownloadManagerDelegateQt();
 
     void Shutdown() Q_DECL_OVERRIDE;
     void GetNextId(const content::DownloadIdCallback& callback) Q_DECL_OVERRIDE;
@@ -93,8 +94,8 @@ public:
                     bool* skip_dir_check) Q_DECL_OVERRIDE;
 
 private:
+    DownloadTargetHelper* m_targetHelper;
     uint64 m_currentId;
-
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
 };
 

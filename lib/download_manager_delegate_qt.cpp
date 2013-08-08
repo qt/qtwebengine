@@ -46,9 +46,117 @@
 #include "content/public/browser/web_contents.h"
 #include "shared/shared_globals.h"
 
-DownloadManagerDelegateQt::DownloadManagerDelegateQt() : m_currentId(0)
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QMap>
+#include <QStandardPaths>
+
+// Helper class to track currently ongoing downloads to prevent file name
+// clashes / overwriting of files.
+class DownloadTargetHelper : public content::DownloadItem::Observer {
+public:
+    DownloadTargetHelper()
+        : m_standardDownloadLocation(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation))
+        , m_defaultDownloadDirectory(m_standardDownloadLocation)
+    {
+
+    }
+    virtual ~DownloadTargetHelper() {}
+
+    bool determineDownloadTarget(content::DownloadItem *item, const content::DownloadTargetCallback &callback);
+
+    virtual void OnDownloadUpdated(content::DownloadItem *download);
+    virtual void OnDownloadDestroyed(content::DownloadItem *download);
+private:
+    bool isPathAvailable(const QString& path);
+
+    QString m_standardDownloadLocation;
+    QDir m_defaultDownloadDirectory;
+    QMap<content::DownloadItem*, QString> m_ongoingDownloads;    
+};
+
+bool DownloadTargetHelper::isPathAvailable(const QString& path)
 {
+    return !m_ongoingDownloads.values().contains(path) && !QFile::exists(path);
 }
+
+bool DownloadTargetHelper::determineDownloadTarget(content::DownloadItem *item, const content::DownloadTargetCallback &callback)
+{
+    std::string suggestedFilename = item->GetSuggestedFilename();
+    if (suggestedFilename.empty())
+        suggestedFilename = item->GetTargetFilePath().AsUTF8Unsafe();
+
+    if (suggestedFilename.empty())
+        suggestedFilename = item->GetURL().ExtractFileName();
+
+    if (suggestedFilename.empty())
+        suggestedFilename = "qwe_download";
+
+    if (!m_defaultDownloadDirectory.exists() && !m_defaultDownloadDirectory.mkpath(m_standardDownloadLocation))
+        return false;
+
+    QString filenameToUse = QString::fromStdString(suggestedFilename);
+    QString suggestedFilePath = m_defaultDownloadDirectory.absoluteFilePath(filenameToUse);
+
+    if (!isPathAvailable(suggestedFilePath)) {
+        int i = 1;
+        for (; i < 99; i++) {
+            QFileInfo tmpFile(suggestedFilePath);
+            QString tmpFilePath = QString("%1%2%3(%4).%5").arg(tmpFile.absolutePath()).arg(QDir::separator()).arg(tmpFile.baseName()).arg(i).arg(tmpFile.completeSuffix());
+            if (isPathAvailable(tmpFilePath)) {
+                suggestedFilePath = tmpFilePath;
+                break;
+            }
+        }
+        if (i >= 99) {
+            callback.Run(base::FilePath(), content::DownloadItem::TARGET_DISPOSITION_PROMPT, content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, base::FilePath());
+            return false;
+        }
+    }
+
+    m_ongoingDownloads.insert(item, suggestedFilePath);
+    item->AddObserver(this);
+
+    base::FilePath filePathForCallback(suggestedFilePath.toStdString());
+    callback.Run(filePathForCallback, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+                 content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, filePathForCallback.AddExtension("download"));
+    return true;
+}
+
+void DownloadTargetHelper::OnDownloadUpdated(content::DownloadItem *download)
+{    
+    switch (download->GetState()) {
+    case content::DownloadItem::COMPLETE:
+    case content::DownloadItem::CANCELLED:
+    case content::DownloadItem::INTERRUPTED:
+        download->RemoveObserver(this);
+        m_ongoingDownloads.remove(download);
+        break;
+    case content::DownloadItem::IN_PROGRESS:
+    default:
+        break;
+    }
+}
+
+void DownloadTargetHelper::OnDownloadDestroyed(content::DownloadItem *download)
+{
+    download->RemoveObserver(this);
+    m_ongoingDownloads.remove(download);
+}
+
+DownloadManagerDelegateQt::DownloadManagerDelegateQt()
+    : m_targetHelper(new DownloadTargetHelper())
+    , m_currentId(0)
+{
+
+}
+
+DownloadManagerDelegateQt::~DownloadManagerDelegateQt()
+{
+    delete m_targetHelper;
+}
+
 
 void DownloadManagerDelegateQt::Shutdown()
 {
@@ -83,8 +191,20 @@ bool DownloadManagerDelegateQt::ShouldOpenDownload(content::DownloadItem* item,
 bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* item,
                                                         const content::DownloadTargetCallback& callback)
 {
-    QT_NOT_YET_IMPLEMENTED
-    return true;
+    base::FilePath downloadFilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
+
+
+    // Keep the forced file path if set, also as the temporary file, so the check for existence
+    // will already return that the file exists. Forced file paths seem to be only used for
+    // store downloads and other special downloads, so they might never end up here anyway.
+    if (!item->GetForcedFilePath().empty()) {
+        callback.Run(item->GetForcedFilePath(), content::DownloadItem::TARGET_DISPOSITION_PROMPT,
+                     content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, item->GetForcedFilePath());
+        return true;
+    }
+
+    // Let the target helper determine the download target path.
+    return m_targetHelper->determineDownloadTarget(item, callback);;
 }
 
 bool DownloadManagerDelegateQt::GenerateFileHash()
@@ -125,6 +245,9 @@ void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_cont
                         base::FilePath* download_save_dir,
                         bool* skip_dir_check)
 {
-    QT_NOT_YET_IMPLEMENTED
+    *website_save_dir = base::FilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
+    *download_save_dir = base::FilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
+    *skip_dir_check = true;
 }
+
 
