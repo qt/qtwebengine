@@ -63,7 +63,7 @@
 
 namespace {
 
-static WebEngineContext* sContext = 0;
+scoped_refptr<WebEngineContext> sContext;
 
 static QByteArray subProcessPath() {
     static bool initialized = false;
@@ -112,9 +112,6 @@ WebEngineContext::WebEngineContext()
     , m_contentRunner(content::ContentMainRunner::Create())
     , m_browserRunner(content::BrowserMainRunner::Create())
 {
-    Q_ASSERT(!sContext);
-    sContext = this;
-
     QList<QByteArray> args;
     Q_FOREACH (const QString& arg, QCoreApplication::arguments())
         args << arg.toUtf8();
@@ -140,19 +137,11 @@ WebEngineContext::WebEngineContext()
 WebEngineContext::~WebEngineContext()
 {
     m_runLoop->AfterRun();
-
-    Q_ASSERT(sContext == this);
-    sContext = 0;
-
-    m_browserRunner.reset();
-    m_contentRunner.reset();
 }
 
 scoped_refptr<WebEngineContext> WebEngineContext::current()
 {
-    scoped_refptr<WebEngineContext> current = sContext;
-    if (!current)
-        current = new WebEngineContext;
-    Q_ASSERT(sContext == current);
-    return current;
+    if (!sContext)
+        sContext = new WebEngineContext;
+    return sContext;
 }
