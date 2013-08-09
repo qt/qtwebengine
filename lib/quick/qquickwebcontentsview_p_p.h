@@ -66,6 +66,7 @@ public:
     virtual void focusContainer() Q_DECL_OVERRIDE;
 
     QScopedPointer<WebContentsAdapter> adapter;
+    friend class RenderWidgetHostViewQtDelegateQuick;
 };
 
 #endif // QQUICKWEBCONTENTSVIEW_P_P_H

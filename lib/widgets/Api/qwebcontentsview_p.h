@@ -68,6 +68,7 @@ public:
 
     bool m_isLoading;
     QScopedPointer<WebContentsAdapter> adapter;
+    friend class RenderWidgetHostViewQtDelegateWidget;
 };
 
 #endif

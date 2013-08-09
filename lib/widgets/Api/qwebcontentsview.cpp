@@ -96,11 +96,7 @@ void QWebContentsViewPrivate::focusContainer()
 
 RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
-    Q_Q(QWebContentsView);
-    RenderWidgetHostViewQtDelegateWidget *viewDelegate = new RenderWidgetHostViewQtDelegateWidget(q);
-    // Parent the RWHVQtDelegate directly, this might have to be changed to handle popups and fullscreen.
-    q->layout()->addWidget(viewDelegate);
-    return viewDelegate;
+    return new RenderWidgetHostViewQtDelegateWidget;
 }
 
 QWebContentsView::QWebContentsView()

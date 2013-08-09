@@ -67,8 +67,9 @@ class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public Ren
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent);
+    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent = 0);
 
+    virtual void initAsChild(WebContentsAdapterClient* container);
     virtual QRectF screenRect() const;
     virtual void setKeyboardFocus();
     virtual bool hasKeyboardFocus();

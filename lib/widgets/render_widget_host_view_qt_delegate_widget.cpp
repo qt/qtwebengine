@@ -41,7 +41,10 @@
 
 #include "render_widget_host_view_qt_delegate_widget.h"
 
+#include "qwebcontentsview.h"
+#include "qwebcontentsview_p.h"
 #include <QtGlobal>
+#include <QLayout>
 #include <QResizeEvent>
 #include <QPainter>
 #include <QPaintEvent>
@@ -68,6 +71,12 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidg
         setUpdatesEnabled(false);
     }
 #endif
+}
+
+void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
+{
+    QWebContentsViewPrivate *viewPrivate = static_cast<QWebContentsViewPrivate *>(container);
+    viewPrivate->q_func()->layout()->addWidget(this);
 }
 
 QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
