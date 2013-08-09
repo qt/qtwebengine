@@ -161,6 +161,7 @@ content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView parent_view)
 {
+    m_delegate->initAsChild(reinterpret_cast<WebContentsAdapterClient*>(parent_view));
 }
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)

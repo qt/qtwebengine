@@ -19,7 +19,7 @@ QMAKE_RPATHDIR += $$LIBPATH
 
 DESTDIR = $$LIBPATH
 
-INCLUDEPATH += ../
+INCLUDEPATH += Api ../
 
 SOURCES = \
         Api/qwebcontentsview.cpp\

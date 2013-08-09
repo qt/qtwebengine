@@ -55,10 +55,7 @@ QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
 
 RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
-    Q_Q(QQuickWebContentsView);
-    // Parent the RWHVQtDelegate directly, this might have to be changed to handle popups and fullscreen.
-    RenderWidgetHostViewQtDelegateQuick *viewDelegate = new RenderWidgetHostViewQtDelegateQuick(q);
-    return viewDelegate;
+    return new RenderWidgetHostViewQtDelegateQuick;
 }
 
 void QQuickWebContentsViewPrivate::titleChanged(const QString &title)

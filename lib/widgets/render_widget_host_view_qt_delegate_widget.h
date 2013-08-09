@@ -54,6 +54,7 @@ class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidget
 public:
     RenderWidgetHostViewQtDelegateWidget(QWidget *parent = 0);
 
+    virtual void initAsChild(WebContentsAdapterClient* container);
     virtual QRectF screenRect() const;
     virtual void setKeyboardFocus();
     virtual bool hasKeyboardFocus();

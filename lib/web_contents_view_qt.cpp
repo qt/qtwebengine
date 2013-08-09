@@ -52,6 +52,10 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
     RenderWidgetHostViewQtDelegate* viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
     view->SetDelegate(viewDelegate);
+    // The delegate has been bound to its view, now initialize it.
+    // gfx::NativeView logically maps to our client here but the reinterpret_cast is still ugly.
+    // The alternative is be to have a duplicated method with the proper signature.
+    view->InitAsChild(reinterpret_cast<gfx::NativeView>(m_client));
 
     return view;
 }

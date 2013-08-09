@@ -41,6 +41,8 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 
+#include "qquickwebcontentsview_p.h"
+#include "qquickwebcontentsview_p_p.h"
 #include <QQuickWindow>
 #include <QWindow>
 
@@ -49,6 +51,12 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickI
 {
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptHoverEvents(true);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
+{
+    QQuickWebContentsViewPrivate *viewPrivate = static_cast<QQuickWebContentsViewPrivate *>(container);
+    setParentItem(viewPrivate->q_func());
 }
 
 QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
