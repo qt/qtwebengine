@@ -49,6 +49,7 @@
 #include "shared/shared_globals.h"
 
 #include "base/time/time.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -76,7 +77,11 @@ public:
         downloadManagerDelegate.reset(new DownloadManagerDelegateQt);
     }
 
-    virtual ~BrowserContextQt() Q_DECL_OVERRIDE {}
+    virtual ~BrowserContextQt() Q_DECL_OVERRIDE
+    {
+        if (resourceContext)
+            content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, resourceContext.release());
+    }
 
     virtual base::FilePath GetPath() const Q_DECL_OVERRIDE
     {
