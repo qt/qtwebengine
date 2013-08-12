@@ -6,8 +6,16 @@ lib/lib.gyp
 process/process.gyp
 shared/shared.gyp
 example/example
-*.pro.user
+*.pro.user*
 .qmake.cache
 *.moc
 moc_*.cpp
 *.orig
+*.rej
+*.pak
+.uic
+.rcc
+*nanobrowser
+tst_*
+!tst_*.cpp
+!tst_*.qrc
