@@ -1,0 +1,7 @@
+Sanity-Review+1: Qt Sanity Bot <qt_sanitybot@qt-project.org>
+Code-Review+2: Zeno Albisser <zeno.albisser@digia.com>
+Submitted-by: Zeno Albisser <zeno.albisser@digia.com>
+Submitted-at: Tue, 13 Aug 2013 15:07:24 +0200
+Reviewed-on: https://codereview.qt-project.org/62911
+Project: qt-labs/qtwebengine
+Branch: refs/heads/master
