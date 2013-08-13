@@ -43,8 +43,6 @@
 #include "qwebenginehistory_p.h"
 
 #include "qwebenginepage_p.h"
-#include "qwebengineview.h"
-#include "qwebengineview_p.h"
 #include "web_contents_adapter.h"
 
 QWebEngineHistoryPrivate::QWebEngineHistoryPrivate()
@@ -65,11 +63,11 @@ QWebEngineHistory::~QWebEngineHistory()
 bool QWebEngineHistory::canGoBack() const
 {
     Q_D(const QWebEngineHistory);
-    return d->pagePrivate->view->d_func()->adapter->canGoBack();
+    return d->pagePrivate->adapter->canGoBack();
 }
 
 bool QWebEngineHistory::canGoForward() const
 {
     Q_D(const QWebEngineHistory);
-    return d->pagePrivate->view->d_func()->adapter->canGoForward();
+    return d->pagePrivate->adapter->canGoForward();
 }

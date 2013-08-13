@@ -46,10 +46,18 @@
 #include "qwebenginehistory_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
+#include "render_widget_host_view_qt_delegate_widget.h"
+#include "web_contents_adapter.h"
+
+#include <QUrl>
+#include <QLayout>
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
+    , adapter(new WebContentsAdapter(this))
     , history(new QWebEngineHistory)
+    , view(0)
+    , m_isLoading(false)
 {
     history->d_func()->pagePrivate = this;
 }
@@ -57,6 +65,52 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
     delete history;
+}
+
+void QWebEnginePagePrivate::titleChanged(const QString &title)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->titleChanged(title);
+}
+
+void QWebEnginePagePrivate::urlChanged(const QUrl &url)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->urlChanged(url);
+}
+
+void QWebEnginePagePrivate::loadingStateChanged()
+{
+    Q_Q(QWebEnginePage);
+    const bool wasLoading = m_isLoading;
+    m_isLoading = adapter->isLoading();
+    if (m_isLoading != wasLoading) {
+        if (m_isLoading)
+            Q_EMIT q->loadStarted();
+    }
+}
+
+QRectF QWebEnginePagePrivate::viewportRect() const
+{
+    return view ? view->geometry() : QRectF();
+}
+
+void QWebEnginePagePrivate::loadFinished(bool success)
+{
+    Q_Q(QWebEnginePage);
+    m_isLoading = adapter->isLoading();
+    Q_EMIT q->loadFinished(success);
+}
+
+void QWebEnginePagePrivate::focusContainer()
+{
+    if (view)
+        view->setFocus();
+}
+
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate()
+{
+    return new RenderWidgetHostViewQtDelegateWidget;
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)
@@ -83,6 +137,33 @@ QWidget *QWebEnginePage::view() const
 {
     Q_D(const QWebEnginePage);
     return d->view;
+}
+
+void QWebEnginePage::triggerAction(WebAction action, bool)
+{
+    Q_D(QWebEnginePage);
+    switch (action) {
+    case Back:
+        d->adapter->navigateHistory(-1);
+        break;
+    case Forward:
+        d->adapter->navigateHistory(1);
+        break;
+    case Stop:
+        d->adapter->stop();
+        break;
+    case Reload:
+        d->adapter->reload();
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+}
+
+void QWebEnginePage::load(const QUrl& url)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->load(url);
 }
 
 #include "moc_qwebenginepage.cpp"

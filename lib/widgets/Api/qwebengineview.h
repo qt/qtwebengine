@@ -129,7 +129,6 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);
-    friend class QWebEngineHistory;
 };
 
 #endif // QWEBENGINEVIEW_H
