@@ -3,7 +3,7 @@ TARGET = qtwebengineplugin
 TARGETPATH = QtWebEngine
 IMPORT_VERSION = 1.0
 
-QT += qml quick
+QT += qml quick qml-private v8-private quick-private gui-private core-private
 
 INCLUDEPATH += ../
 

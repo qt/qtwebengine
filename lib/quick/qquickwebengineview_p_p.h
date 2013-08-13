@@ -45,14 +45,14 @@
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
+#include <QtQuick/private/qquickitem_p.h>
 
 class QQuickWebEngineView;
 class RenderWidgetHostViewQtDelegateQuick;
 class WebContentsAdapter;
 
-class QQuickWebEngineViewPrivate : public WebContentsAdapterClient
+class QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsAdapterClient
 {
-    QQuickWebEngineView *q_ptr;
     Q_DECLARE_PUBLIC(QQuickWebEngineView)
 public:
     QQuickWebEngineViewPrivate();
