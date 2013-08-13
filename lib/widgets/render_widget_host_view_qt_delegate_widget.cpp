@@ -42,7 +42,7 @@
 #include "render_widget_host_view_qt_delegate_widget.h"
 
 #include "qwebengineview.h"
-#include "qwebengineview_p.h"
+#include "qwebenginepage_p.h"
 #include <QtGlobal>
 #include <QLayout>
 #include <QResizeEvent>
@@ -75,8 +75,10 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidg
 
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
 {
-    QWebEngineViewPrivate *viewPrivate = static_cast<QWebEngineViewPrivate *>(container);
-    viewPrivate->q_func()->layout()->addWidget(this);
+    QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
+    // FIXME: What is going to trigger this if the page is attached later to the view?
+    if (pagePrivate->view)
+        pagePrivate->view->layout()->addWidget(this);
 }
 
 QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
