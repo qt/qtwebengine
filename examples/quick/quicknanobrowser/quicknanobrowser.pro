@@ -1,7 +1,7 @@
 TEMPLATE = app
-TARGET = qtquick-nano-browser
+TARGET = quicknanobrowser
 
-include(../common.pri)
+include(../../common.pri)
 
 HEADERS = quickwindow.h
 SOURCES = quickwindow.cpp main.cpp
