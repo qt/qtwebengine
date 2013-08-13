@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
   # On Mac we want to override CXX and CC that is provided with
   # the Chromium GYP environment.
-  if sys.platform.startswith('darwin'):
+  if sys.platform.startswith('darwin') and not 'GYP_CROSSCOMPILE' in os.environ:
     os.environ['CXX'] = 'clang++'
     os.environ['CC'] = 'clang'
 
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
   # On Mac we want to build in x64 mode. And we want to use libc++.
   # Even though we are not on linux, it seems we specifically have to disable linux_use_tcmalloc.
-  if sys.platform in ('darwin',):
+  if sys.platform in ('darwin',) and not 'GYP_CROSSCOMPILE' in os.environ:
       args.extend(['-D', 'host_arch=x64', '-D', 'use_libcpp=1', '-D', 'linux_use_tcmalloc=0'])
 
   # There shouldn't be a circular dependency relationship between .gyp files,
@@ -141,10 +141,11 @@ if __name__ == '__main__':
   args.extend(['-D', 'linux_use_gold_flags=0'])
   # Trigger Qt-specific build conditions.
   args.extend(['-D', 'use_qt=1'])
-  # Tweak the output location and format (hardcode ninja for now)
+  # Tweak the output location and format (hardcode ninja for now if not set)
   args.extend(['--generator-output', os.path.abspath(get_output_dir())])
   args.extend(['-Goutput_dir='+ os.path.abspath(get_output_dir())])
-  args.extend(['--format=ninja'])
+  if not os.environ.get('GYP_GENERATORS'):
+    args.extend(['--format=ninja'])
   if "QTWEBENGINE_GYP_DEBUG" in os.environ:
     args.append("--check")
     args.append("-d all")
