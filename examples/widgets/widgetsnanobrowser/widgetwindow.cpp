@@ -42,7 +42,7 @@
 #include "widgetwindow.h"
 
 #include "qwebcontentsview.h"
-#include "util.h"
+#include "../../common/util.h"
 
 #include <QShortcut>
 
