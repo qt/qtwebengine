@@ -1,7 +1,7 @@
 TEMPLATE = app
-TARGET = widget-nano-browser
+TARGET = widgetsnanobrowser
 
-include(../common.pri)
+include(../../common.pri)
 
 HEADERS = widgetwindow.h
 SOURCES = widgetwindow.cpp main.cpp

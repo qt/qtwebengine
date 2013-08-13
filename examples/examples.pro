@@ -1,4 +1,4 @@
 TEMPLATE=subdirs
 
-SUBDIRS += qtquick
-qtHaveModule(widgets): SUBDIRS += widgets
+SUBDIRS += quick/quicknanobrowser
+qtHaveModule(widgets): SUBDIRS += widgets/widgetsnanobrowser
