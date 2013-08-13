@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qwebcontentsview.h"
-#include "qwebcontentsview_p.h"
+#include "qwebengineview.h"
+#include "qwebengineview_p.h"
 
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
@@ -48,25 +48,25 @@
 #include <QStackedLayout>
 #include <QUrl>
 
-QWebContentsViewPrivate::QWebContentsViewPrivate()
+QWebEngineViewPrivate::QWebEngineViewPrivate()
     : m_isLoading(false)
     , adapter(new WebContentsAdapter(this))
 {
 }
 
-void QWebContentsViewPrivate::titleChanged(const QString &title)
+void QWebEngineViewPrivate::titleChanged(const QString &title)
 {
     Q_EMIT q_ptr->titleChanged(title);
 }
 
-void QWebContentsViewPrivate::urlChanged(const QUrl &url)
+void QWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
     Q_EMIT q_ptr->urlChanged(url);
 }
 
-void QWebContentsViewPrivate::loadingStateChanged()
+void QWebEngineViewPrivate::loadingStateChanged()
 {
-    Q_Q(QWebContentsView);
+    Q_Q(QWebEngineView);
     const bool wasLoading = m_isLoading;
     m_isLoading = adapter->isLoading();
     if (m_isLoading != wasLoading) {
@@ -75,82 +75,82 @@ void QWebContentsViewPrivate::loadingStateChanged()
     }
 }
 
-QRectF QWebContentsViewPrivate::viewportRect() const
+QRectF QWebEngineViewPrivate::viewportRect() const
 {
-    Q_Q(const QWebContentsView);
+    Q_Q(const QWebEngineView);
     return q->geometry();
 }
 
-void QWebContentsViewPrivate::loadFinished(bool success)
+void QWebEngineViewPrivate::loadFinished(bool success)
 {
-    Q_Q(QWebContentsView);
+    Q_Q(QWebEngineView);
     m_isLoading = adapter->isLoading();
     Q_EMIT q->loadFinished(success);
 }
 
-void QWebContentsViewPrivate::focusContainer()
+void QWebEngineViewPrivate::focusContainer()
 {
-    Q_Q(QWebContentsView);
+    Q_Q(QWebEngineView);
     q->setFocus();
 }
 
-RenderWidgetHostViewQtDelegate *QWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
+RenderWidgetHostViewQtDelegate *QWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
     return new RenderWidgetHostViewQtDelegateWidget;
 }
 
-QWebContentsView::QWebContentsView()
-    : d_ptr(new QWebContentsViewPrivate)
+QWebEngineView::QWebEngineView()
+    : d_ptr(new QWebEngineViewPrivate)
 {
     d_ptr->q_ptr=this;
     // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
     setLayout(new QStackedLayout);
 }
 
-QWebContentsView::~QWebContentsView()
+QWebEngineView::~QWebEngineView()
 {
 }
 
-void QWebContentsView::load(const QUrl& url)
+void QWebEngineView::load(const QUrl& url)
 {
-    Q_D(QWebContentsView);
+    Q_D(QWebEngineView);
     d->adapter->load(url);
 }
 
-bool QWebContentsView::canGoBack() const
+bool QWebEngineView::canGoBack() const
 {
-    Q_D(const QWebContentsView);
+    Q_D(const QWebEngineView);
     return d->adapter->canGoBack();
 }
 
-bool QWebContentsView::canGoForward() const
+bool QWebEngineView::canGoForward() const
 {
-    Q_D(const QWebContentsView);
+    Q_D(const QWebEngineView);
     return d->adapter->canGoForward();
 }
 
-void QWebContentsView::back()
+void QWebEngineView::back()
 {
-    Q_D(QWebContentsView);
+    Q_D(QWebEngineView);
     d->adapter->navigateHistory(-1);
 }
 
-void QWebContentsView::forward()
+void QWebEngineView::forward()
 {
-    Q_D(QWebContentsView);
+    Q_D(QWebEngineView);
     d->adapter->navigateHistory(1);
 }
 
-void QWebContentsView::reload()
+void QWebEngineView::reload()
 {
-    Q_D(QWebContentsView);
+    Q_D(QWebEngineView);
     d->adapter->reload();
 }
 
-void QWebContentsView::stop()
+void QWebEngineView::stop()
 {
-    Q_D(QWebContentsView);
+    Q_D(QWebEngineView);
     d->adapter->stop();
 }
 
-#include "moc_qwebcontentsview.cpp"
+#include "moc_qwebengineview.cpp"
