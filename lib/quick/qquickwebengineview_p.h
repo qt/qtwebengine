@@ -43,7 +43,6 @@
 #define QQUICKWEBENGINEVIEW_P_H
 
 #include <QQuickItem>
-#include <QScopedPointer>
 
 class QQuickWebEngineViewPrivate;
 
@@ -56,7 +55,7 @@ class QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
 
 public:
-    QQuickWebEngineView();
+    QQuickWebEngineView(QQuickItem *parent = 0);
     ~QQuickWebEngineView();
 
     QUrl url() const;
@@ -82,8 +81,6 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
 };
 
 QML_DECLARE_TYPE(QQuickWebEngineView)

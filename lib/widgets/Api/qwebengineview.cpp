@@ -49,19 +49,22 @@
 #include <QUrl>
 
 QWebEngineViewPrivate::QWebEngineViewPrivate()
-    : m_isLoading(false)
+    : QWidgetPrivate(QObjectPrivateVersion)
+    , m_isLoading(false)
     , adapter(new WebContentsAdapter(this))
 {
 }
 
 void QWebEngineViewPrivate::titleChanged(const QString &title)
 {
-    Q_EMIT q_ptr->titleChanged(title);
+    Q_Q(QWebEngineView);
+    Q_EMIT q->titleChanged(title);
 }
 
 void QWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
-    Q_EMIT q_ptr->urlChanged(url);
+    Q_Q(QWebEngineView);
+    Q_EMIT q->urlChanged(url);
 }
 
 void QWebEngineViewPrivate::loadingStateChanged()
@@ -99,10 +102,9 @@ RenderWidgetHostViewQtDelegate *QWebEngineViewPrivate::CreateRenderWidgetHostVie
     return new RenderWidgetHostViewQtDelegateWidget;
 }
 
-QWebEngineView::QWebEngineView()
-    : d_ptr(new QWebEngineViewPrivate)
+QWebEngineView::QWebEngineView(QWidget *parent)
+    : QWidget(*(new QWebEngineViewPrivate), parent, 0)
 {
-    d_ptr->q_ptr=this;
     // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
     setLayout(new QStackedLayout);
 }
