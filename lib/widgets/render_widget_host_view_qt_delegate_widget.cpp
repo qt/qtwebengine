@@ -41,8 +41,8 @@
 
 #include "render_widget_host_view_qt_delegate_widget.h"
 
-#include "qwebcontentsview.h"
-#include "qwebcontentsview_p.h"
+#include "qwebengineview.h"
+#include "qwebengineview_p.h"
 #include <QtGlobal>
 #include <QLayout>
 #include <QResizeEvent>
@@ -75,7 +75,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidg
 
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
 {
-    QWebContentsViewPrivate *viewPrivate = static_cast<QWebContentsViewPrivate *>(container);
+    QWebEngineViewPrivate *viewPrivate = static_cast<QWebEngineViewPrivate *>(container);
     viewPrivate->q_func()->layout()->addWidget(this);
 }
 

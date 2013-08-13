@@ -16,13 +16,13 @@ QMAKE_RPATHDIR += $$LIBPATH
 #DESTDIR = $$LIBPATH
 
 SOURCES = \
-        qquickwebcontentsview.cpp \
+        qquickwebengineview.cpp \
         plugin.cpp \
         render_widget_host_view_qt_delegate_quick.cpp
 
 HEADERS = \
-        qquickwebcontentsview_p.h \
-        qquickwebcontentsview_p_p.h \
+        qquickwebengineview_p.h \
+        qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h
 
 load(qml_plugin)

@@ -39,53 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBCONTESTSVIEW_P_H
-#define QQUICKWEBCONTESTSVIEW_P_H
+#ifndef QWEBENGINEVIEWPRIVATE_H
+#define QWEBENGINEVIEWPRIVATE_H
 
-#include <QQuickItem>
+#include "web_contents_adapter_client.h"
+
 #include <QScopedPointer>
 
-class QQuickWebContentsViewPrivate;
+class QWebEngineView;
+class RenderWidgetHostViewQtDelegate;
+class WebContentsAdapter;
 
-class QQuickWebContentsView : public QQuickItem {
-    Q_OBJECT
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
+class QWebEngineViewPrivate : public WebContentsAdapterClient
+{
+    Q_DECLARE_PUBLIC(QWebEngineView)
+    QWebEngineView *q_ptr;
 
 public:
-    QQuickWebContentsView();
-    ~QQuickWebContentsView();
+    QWebEngineViewPrivate();
 
-    QUrl url() const;
-    void setUrl(const QUrl&);
-    bool isLoading() const;
-    QString title() const;
-    bool canGoBack() const;
-    bool canGoForward() const;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
+    virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
+    virtual void focusContainer() Q_DECL_OVERRIDE;
 
-public Q_SLOTS:
-    void goBack();
-    void goForward();
-    void reload();
-    void stop();
-
-Q_SIGNALS:
-    void titleChanged();
-    void urlChanged();
-    void loadingStateChanged();
-
-protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-
-private:
-    Q_DECLARE_PRIVATE(QQuickWebContentsView)
-    // Hides QObject::d_ptr allowing us to use the convenience macros.
-    QScopedPointer<QQuickWebContentsViewPrivate> d_ptr;
+    bool m_isLoading;
+    QScopedPointer<WebContentsAdapter> adapter;
+    friend class RenderWidgetHostViewQtDelegateWidget;
 };
 
-QML_DECLARE_TYPE(QQuickWebContentsView)
-
-#endif // QQUICKWEBCONTESTSVIEW_P_H
+#endif

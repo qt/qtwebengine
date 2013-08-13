@@ -39,34 +39,53 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBCONTENTSVIEW_P_P_H
-#define QQUICKWEBCONTENTSVIEW_P_P_H
+#ifndef QQUICKWEBENGINEVIEW_P_H
+#define QQUICKWEBENGINEVIEW_P_H
 
-#include "web_contents_adapter_client.h"
-
+#include <QQuickItem>
 #include <QScopedPointer>
 
-class QQuickWebContentsView;
-class RenderWidgetHostViewQtDelegateQuick;
-class WebContentsAdapter;
+class QQuickWebEngineViewPrivate;
 
-class QQuickWebContentsViewPrivate : public WebContentsAdapterClient
-{
-    QQuickWebContentsView *q_ptr;
-    Q_DECLARE_PUBLIC(QQuickWebContentsView)
+class QQuickWebEngineView : public QQuickItem {
+    Q_OBJECT
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
+
 public:
-    QQuickWebContentsViewPrivate();
+    QQuickWebEngineView();
+    ~QQuickWebEngineView();
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
-    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
-    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
-    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
-    virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
-    virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
-    virtual void focusContainer() Q_DECL_OVERRIDE;
+    QUrl url() const;
+    void setUrl(const QUrl&);
+    bool isLoading() const;
+    QString title() const;
+    bool canGoBack() const;
+    bool canGoForward() const;
 
-    QScopedPointer<WebContentsAdapter> adapter;
-    friend class RenderWidgetHostViewQtDelegateQuick;
+public Q_SLOTS:
+    void goBack();
+    void goForward();
+    void reload();
+    void stop();
+
+Q_SIGNALS:
+    void titleChanged();
+    void urlChanged();
+    void loadingStateChanged();
+
+protected:
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+
+private:
+    Q_DECLARE_PRIVATE(QQuickWebEngineView)
+    // Hides QObject::d_ptr allowing us to use the convenience macros.
+    QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
 };
 
-#endif // QQUICKWEBCONTENTSVIEW_P_P_H
+QML_DECLARE_TYPE(QQuickWebEngineView)
+
+#endif // QQUICKWEBENGINEVIEW_P_H

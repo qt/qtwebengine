@@ -39,41 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBCONTESTSVIEW_H
-#define QWEBCONTESTSVIEW_H
+#ifndef QQUICKWEBENGINEVIEW_P_P_H
+#define QQUICKWEBENGINEVIEW_P_P_H
 
-#include <qtwebenginewidgetsglobal.h>
+#include "web_contents_adapter_client.h"
 
-#include <QWidget>
 #include <QScopedPointer>
 
-class QWebContentsViewPrivate;
+class QQuickWebEngineView;
+class RenderWidgetHostViewQtDelegateQuick;
+class WebContentsAdapter;
 
-class QWEBENGINEWIDGETS_EXPORT QWebContentsView : public QWidget {
-    Q_OBJECT
+class QQuickWebEngineViewPrivate : public WebContentsAdapterClient
+{
+    QQuickWebEngineView *q_ptr;
+    Q_DECLARE_PUBLIC(QQuickWebEngineView)
 public:
-    QWebContentsView();
-    ~QWebContentsView();
+    QQuickWebEngineViewPrivate();
 
-    void load(const QUrl& url);
-    bool canGoBack() const;
-    bool canGoForward() const;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
+    virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
+    virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
+    virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
+    virtual void focusContainer() Q_DECL_OVERRIDE;
 
-public Q_SLOTS:
-    void back();
-    void forward();
-    void reload();
-    void stop();
-
-Q_SIGNALS:
-    void loadFinished(bool ok);
-    void loadStarted();
-    void titleChanged(const QString& title);
-    void urlChanged(const QUrl& url);
-
-private:
-    Q_DECLARE_PRIVATE(QWebContentsView);
-    QScopedPointer<QWebContentsViewPrivate> d_ptr;
+    QScopedPointer<WebContentsAdapter> adapter;
+    friend class RenderWidgetHostViewQtDelegateQuick;
 };
 
-#endif // QWEBCONTESTSVIEW_H
+#endif // QQUICKWEBENGINEVIEW_P_P_H

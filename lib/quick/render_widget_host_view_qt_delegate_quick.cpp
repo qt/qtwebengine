@@ -41,8 +41,8 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 
-#include "qquickwebcontentsview_p.h"
-#include "qquickwebcontentsview_p_p.h"
+#include "qquickwebengineview_p.h"
+#include "qquickwebengineview_p_p.h"
 #include <QQuickWindow>
 #include <QWindow>
 
@@ -55,7 +55,7 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickI
 
 void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
 {
-    QQuickWebContentsViewPrivate *viewPrivate = static_cast<QQuickWebContentsViewPrivate *>(container);
+    QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
     setParentItem(viewPrivate->q_func());
 }
 
