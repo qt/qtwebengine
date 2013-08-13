@@ -44,7 +44,7 @@
 
 #include <QQmlApplicationEngine>
 
-class QWebContentsView;
+class QWebEngineView;
 
 class ApplicationEngine : public QQmlApplicationEngine {
     Q_OBJECT

@@ -45,7 +45,7 @@
 #include <QtWidgets>
 #include <QScopedPointer>
 
-class QWebContentsView;
+class QWebEngineView;
 
 class WidgetWindow : public QWidget {
     Q_OBJECT
@@ -60,7 +60,7 @@ private Q_SLOTS:
     void loadFinished(bool);
 
 private:
-    QScopedPointer<QWebContentsView> m_webView;
+    QScopedPointer<QWebEngineView> m_webView;
     QLineEdit* addressLineEdit;
     QToolButton* forwardButton;
     QToolButton* backButton;

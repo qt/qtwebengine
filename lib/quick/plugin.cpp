@@ -41,7 +41,7 @@
 
 #include <QtQml/qqmlextensionplugin.h>
 
-#include "qquickwebcontentsview_p.h"
+#include "qquickwebengineview_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -55,7 +55,7 @@ public:
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
         Q_UNUSED(uri);
 
-        qmlRegisterType<QQuickWebContentsView>(uri, 1, 0, "WebContentsView");
+        qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
     }
 };
 

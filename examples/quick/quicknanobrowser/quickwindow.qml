@@ -48,7 +48,7 @@ ApplicationWindow {
     height: 600
     width: 800
     visible: true
-    title: webContentsView.title
+    title: webEngineView.title
 
     // Focus and select text in URL bar
     Action {
@@ -68,32 +68,32 @@ ApplicationWindow {
             ToolButton {
                 id: backButton
                 iconSource: "icons/go-previous.png"
-                onClicked: webContentsView.goBack()
-                enabled: webContentsView.canGoBack
+                onClicked: webEngineView.goBack()
+                enabled: webEngineView.canGoBack
             }
             ToolButton {
                 id: forwardButton
                 iconSource: "icons/go-next.png"
-                onClicked: webContentsView.goForward()
-                enabled: webContentsView.canGoForward
+                onClicked: webEngineView.goForward()
+                enabled: webEngineView.canGoForward
             }
             ToolButton {
                 id: reloadButton
-                iconSource: webContentsView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
-                onClicked: webContentsView.reload()
+                iconSource: webEngineView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
+                onClicked: webEngineView.reload()
             }
             TextField {
                 id: addressBar
                 focus: true
                 Layout.fillWidth: true
 
-                onAccepted: webContentsView.url = utils.fromUserInput(text)
+                onAccepted: webEngineView.url = utils.fromUserInput(text)
             }
         }
     }
 
-    WebContentsView {
-        id: webContentsView
+    WebEngineView {
+        id: webEngineView
         focus: true
         anchors.fill: parent
         url: utils.initialUrl()

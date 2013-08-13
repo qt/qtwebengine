@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qquickwebcontentsview_p.h"
-#include "qquickwebcontentsview_p_p.h"
+#include "qquickwebengineview_p.h"
+#include "qquickwebengineview_p_p.h"
 
 #include "web_contents_adapter.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
@@ -48,126 +48,126 @@
 #include <QUrl>
 
 
-QQuickWebContentsViewPrivate::QQuickWebContentsViewPrivate()
+QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(this))
 {
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebContentsViewPrivate::CreateRenderWidgetHostViewQtDelegate()
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate()
 {
     return new RenderWidgetHostViewQtDelegateQuick;
 }
 
-void QQuickWebContentsViewPrivate::titleChanged(const QString &title)
+void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
 {
-    Q_Q(QQuickWebContentsView);
+    Q_Q(QQuickWebEngineView);
     Q_UNUSED(title);
     Q_EMIT q->titleChanged();
 }
 
-void QQuickWebContentsViewPrivate::urlChanged(const QUrl &url)
+void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
-    Q_Q(QQuickWebContentsView);
+    Q_Q(QQuickWebEngineView);
     Q_UNUSED(url);
     Q_EMIT q->urlChanged();
 }
 
-void QQuickWebContentsViewPrivate::loadingStateChanged()
+void QQuickWebEngineViewPrivate::loadingStateChanged()
 {
-    Q_Q(QQuickWebContentsView);
+    Q_Q(QQuickWebEngineView);
     Q_EMIT q->loadingStateChanged();
 }
 
-QRectF QQuickWebContentsViewPrivate::viewportRect() const
+QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
-    Q_Q(const QQuickWebContentsView);
+    Q_Q(const QQuickWebEngineView);
     return QRectF(q->x(), q->y(), q->width(), q->height());
 }
 
-void QQuickWebContentsViewPrivate::loadFinished(bool success)
+void QQuickWebEngineViewPrivate::loadFinished(bool success)
 {
-    Q_Q(QQuickWebContentsView);
+    Q_Q(QQuickWebEngineView);
     Q_UNUSED(success);
     Q_EMIT q->loadingStateChanged();
 }
 
-void QQuickWebContentsViewPrivate::focusContainer()
+void QQuickWebEngineViewPrivate::focusContainer()
 {
-    Q_Q(QQuickWebContentsView);
+    Q_Q(QQuickWebEngineView);
     q->forceActiveFocus();
 }
 
-QQuickWebContentsView::QQuickWebContentsView()
-    : d_ptr(new QQuickWebContentsViewPrivate)
+QQuickWebEngineView::QQuickWebEngineView()
+    : d_ptr(new QQuickWebEngineViewPrivate)
 {
     d_ptr->q_ptr = this;
 }
 
-QQuickWebContentsView::~QQuickWebContentsView()
+QQuickWebEngineView::~QQuickWebEngineView()
 {
 }
 
-QUrl QQuickWebContentsView::url() const
+QUrl QQuickWebEngineView::url() const
 {
-    Q_D(const QQuickWebContentsView);
+    Q_D(const QQuickWebEngineView);
     return d->adapter->activeUrl();
 }
 
-void QQuickWebContentsView::setUrl(const QUrl& url)
+void QQuickWebEngineView::setUrl(const QUrl& url)
 {
-    Q_D(QQuickWebContentsView);
+    Q_D(QQuickWebEngineView);
     d->adapter->load(url);
 }
 
-void QQuickWebContentsView::goBack()
+void QQuickWebEngineView::goBack()
 {
-    Q_D(QQuickWebContentsView);
+    Q_D(QQuickWebEngineView);
     d->adapter->navigateHistory(-1);
 }
 
-void QQuickWebContentsView::goForward()
+void QQuickWebEngineView::goForward()
 {
-    Q_D(QQuickWebContentsView);
+    Q_D(QQuickWebEngineView);
     d->adapter->navigateHistory(1);
 }
 
-void QQuickWebContentsView::reload()
+void QQuickWebEngineView::reload()
 {
-    Q_D(QQuickWebContentsView);
+    Q_D(QQuickWebEngineView);
     d->adapter->reload();
 }
 
-void QQuickWebContentsView::stop()
+void QQuickWebEngineView::stop()
 {
-    Q_D(QQuickWebContentsView);
+    Q_D(QQuickWebEngineView);
     d->adapter->stop();
 }
 
-bool QQuickWebContentsView::isLoading() const
+bool QQuickWebEngineView::isLoading() const
 {
-    Q_D(const QQuickWebContentsView);
+    Q_D(const QQuickWebEngineView);
     return d->adapter->isLoading();
 }
 
-QString QQuickWebContentsView::title() const
+QString QQuickWebEngineView::title() const
 {
-    Q_D(const QQuickWebContentsView);
+    Q_D(const QQuickWebEngineView);
     return d->adapter->pageTitle();
 }
 
-bool QQuickWebContentsView::canGoBack() const
+bool QQuickWebEngineView::canGoBack() const
 {
-    Q_D(const QQuickWebContentsView);
+    Q_D(const QQuickWebEngineView);
     return d->adapter->canGoBack();
 }
 
-bool QQuickWebContentsView::canGoForward() const
+bool QQuickWebEngineView::canGoForward() const
 {
-    Q_D(const QQuickWebContentsView);
+    Q_D(const QQuickWebEngineView);
     return d->adapter->canGoForward();
 }
 
-void QQuickWebContentsView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
 

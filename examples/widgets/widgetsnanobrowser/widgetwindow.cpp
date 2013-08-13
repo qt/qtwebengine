@@ -41,7 +41,7 @@
 
 #include "widgetwindow.h"
 
-#include "qwebcontentsview.h"
+#include "qwebengineview.h"
 #include "../../common/util.h"
 
 #include <QShortcut>
@@ -49,7 +49,7 @@
 static const int margin = 1;
 
 WidgetWindow::WidgetWindow()
-: m_webView(new QWebContentsView)
+: m_webView(new QWebEngineView)
 , addressLineEdit(0)
 {
     setGeometry(0, 0, 800, 600);
