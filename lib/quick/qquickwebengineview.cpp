@@ -97,10 +97,9 @@ void QQuickWebEngineViewPrivate::focusContainer()
     q->forceActiveFocus();
 }
 
-QQuickWebEngineView::QQuickWebEngineView()
-    : d_ptr(new QQuickWebEngineViewPrivate)
+QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
+    : QQuickItem(*(new QQuickWebEngineViewPrivate), parent)
 {
-    d_ptr->q_ptr = this;
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()
