@@ -45,16 +45,15 @@
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
+#include <QtWidgets/private/qwidget_p.h>
 
 class QWebEngineView;
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapter;
 
-class QWebEngineViewPrivate : public WebContentsAdapterClient
+class QWebEngineViewPrivate : public QWidgetPrivate, public WebContentsAdapterClient
 {
     Q_DECLARE_PUBLIC(QWebEngineView)
-    QWebEngineView *q_ptr;
-
 public:
     QWebEngineViewPrivate();
 

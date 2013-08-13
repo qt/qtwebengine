@@ -45,14 +45,13 @@
 #include <qtwebenginewidgetsglobal.h>
 
 #include <QWidget>
-#include <QScopedPointer>
 
 class QWebEngineViewPrivate;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
     Q_OBJECT
 public:
-    QWebEngineView();
+    QWebEngineView(QWidget *parent = 0);
     ~QWebEngineView();
 
     void load(const QUrl& url);
@@ -73,7 +72,6 @@ Q_SIGNALS:
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);
-    QScopedPointer<QWebEngineViewPrivate> d_ptr;
 };
 
 #endif // QWEBENGINEVIEW_H
