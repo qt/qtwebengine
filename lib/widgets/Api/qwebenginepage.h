@@ -319,7 +319,7 @@ public:
 #ifndef QT_NO_ACTION
     QAction *action(WebAction action) const;
 #endif
-    virtual void triggerAction(WebAction action, bool checked = false) { Q_UNUSED(action); Q_UNUSED(checked); Q_UNREACHABLE(); }
+    virtual void triggerAction(WebAction action, bool checked = false);
 
     QSize viewportSize() const;
     void setViewportSize(const QSize &size) const;
