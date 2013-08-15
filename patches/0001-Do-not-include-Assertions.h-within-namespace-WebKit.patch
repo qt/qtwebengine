@@ -1,0 +1,68 @@
+From 98fb04e24e92a17a2e8bd8c1d5449392896004d1 Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno.albisser@digia.com>
+Date: Thu, 15 Aug 2013 15:40:24 +0200
+Subject: [PATCH] Do not include Assertions.h within namespace WebKit.
+
+Including Assertions.h leads to __darwin_ssize_t being
+defined inside namespace WebKit but not outside that namespace.
+This is because certain headers will not be pulled in again
+later on in the same compilation unit.
+
+This bug is caused by: r155495
+This patch will be upstreamed right away.
+---
+ public/platform/WebDeviceMotionData.h      | 6 ++++--
+ public/platform/WebDeviceOrientationData.h | 6 ++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/public/platform/WebDeviceMotionData.h b/public/platform/WebDeviceMotionData.h
+index e7b165f..3284d3a 100644
+--- a/public/platform/WebDeviceMotionData.h
++++ b/public/platform/WebDeviceMotionData.h
+@@ -33,6 +33,10 @@
+ 
+ #include "WebCommon.h"
+ 
++#if WEBKIT_IMPLEMENTATION
++#include "wtf/Assertions.h"
++#endif
++
+ namespace WebKit {
+ 
+ #pragma pack(push, 1)
+@@ -72,8 +76,6 @@ public:
+ };
+ 
+ #if WEBKIT_IMPLEMENTATION
+-#include "wtf/Assertions.h"
+-
+ COMPILE_ASSERT(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), WebDeviceMotionData_has_wrong_size);
+ #endif
+ 
+diff --git a/public/platform/WebDeviceOrientationData.h b/public/platform/WebDeviceOrientationData.h
+index 4aa950e..072dd09 100644
+--- a/public/platform/WebDeviceOrientationData.h
++++ b/public/platform/WebDeviceOrientationData.h
+@@ -33,6 +33,10 @@
+ 
+ #include "WebCommon.h"
+ 
++#if WEBKIT_IMPLEMENTATION
++#include "wtf/Assertions.h"
++#endif
++
+ namespace WebKit {
+ 
+ #pragma pack(push, 1)
+@@ -57,8 +61,6 @@ public:
+ };
+ 
+ #if WEBKIT_IMPLEMENTATION
+-#include "wtf/Assertions.h"
+-
+ COMPILE_ASSERT(sizeof(WebDeviceOrientationData) == (3 * sizeof(double) + 1 * sizeof(char)), WebDeviceOrientationData_has_wrong_size);
+ #endif
+ 
+-- 
+1.7.12.4 (Apple Git-37)
+
