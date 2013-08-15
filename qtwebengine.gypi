@@ -13,7 +13,7 @@
   },
     'dependencies': [
       '<(chromium_src_dir)/content/content.gyp:content',
-      '<(chromium_src_dir)/content/content.gyp:content_app',
+      '<(chromium_src_dir)/content/content.gyp:content_app_browser',
       '<(chromium_src_dir)/content/content.gyp:content_browser',
       '<(chromium_src_dir)/content/content.gyp:content_common',
       '<(chromium_src_dir)/content/content.gyp:content_gpu',
