@@ -34,8 +34,8 @@
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
       '<(chromium_src_dir)/webkit/webkit_resources.gyp:webkit_resources',
       '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_support',
-      '<(chromium_src_dir)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-      '<(chromium_src_dir)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit_test_support',
+      '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
+      '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit_test_support',
     ],
     'include_dirs': [
       '<(qtwebengine_src_dir)',
