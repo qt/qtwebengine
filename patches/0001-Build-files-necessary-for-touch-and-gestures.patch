@@ -1,4 +1,4 @@
-From 883f355400eb42d8c8ed1b3094b06055941a6932 Mon Sep 17 00:00:00 2001
+From f6f4790eba13beb53ee0a1e169fd75e04ec9eefa Mon Sep 17 00:00:00 2001
 From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
 Date: Thu, 25 Jul 2013 17:25:47 +0200
 Subject: [PATCH] Build files necessary for touch and gestures.
@@ -12,23 +12,23 @@ build it to get symbols depending on base::NativeEvent.
  3 files changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/content/content_browser.gypi b/content/content_browser.gypi
-index a985d0b..091b425 100644
+index b3751ac..3597da6 100644
 --- a/content/content_browser.gypi
 +++ b/content/content_browser.gypi
-@@ -1389,7 +1389,7 @@
+@@ -1441,7 +1441,7 @@
          ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
        ],
      }],
 -    ['use_aura!=1 and OS!="win"', {
 +    ['use_aura!=1 and use_qt!=1 and OS!="win"', {
        'sources!': [
+         'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
          'browser/renderer_host/ui_events_helper.cc',
-         'browser/renderer_host/ui_events_helper.h',
 diff --git a/ui/base/x/events_x.cc b/ui/base/x/events_x.cc
-index cfed6ce..f50cfa5 100644
+index 03d4ae2..5152168 100644
 --- a/ui/base/x/events_x.cc
 +++ b/ui/base/x/events_x.cc
-@@ -273,7 +273,11 @@ double GetTouchParamFromXEvent(XEvent* xev,
+@@ -275,7 +275,11 @@ double GetTouchParamFromXEvent(XEvent* xev,
  
  Atom GetNoopEventAtom() {
    return XInternAtom(
@@ -41,10 +41,10 @@ index cfed6ce..f50cfa5 100644
  }
  
 diff --git a/ui/ui.gyp b/ui/ui.gyp
-index a0eff77..bd1e59d 100644
+index e17d242..d4897cc 100644
 --- a/ui/ui.gyp
 +++ b/ui/ui.gyp
-@@ -687,7 +687,7 @@
+@@ -694,7 +694,7 @@
              ['exclude', 'base/dragdrop/drag_utils_aura.cc'],
            ],
          }],
@@ -53,7 +53,7 @@ index a0eff77..bd1e59d 100644
            'sources/': [
              ['exclude', '^base/gestures/*'],
            ]
-@@ -859,7 +859,7 @@
+@@ -866,7 +866,7 @@
              'base/cursor/cursor_loader_null.h',
            ],
          }],
@@ -63,5 +63,5 @@ index a0eff77..bd1e59d 100644
              'base/events/event.cc',
              'base/events/event.h',
 -- 
-1.8.3
+1.7.12.4 (Apple Git-37)
 
