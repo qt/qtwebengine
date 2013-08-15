@@ -1,7 +1,7 @@
-From f5e04b997ca30f12555d6c28dd702108ebb8f6d3 Mon Sep 17 00:00:00 2001
+From ef6535b235613885abc20eb61879c4f97874cb5b Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 15:51:43 +0200
-Subject: [PATCH 1/2] Mac: Use libc++ instead of stdlibc++.
+Subject: [PATCH] Mac: Use libc++ instead of stdlibc++.
 
 - Add a missing include file to process_iterator_mac.cc.
 - Disable Chromium clang plugins.
@@ -30,10 +30,10 @@ index 29daa2d..e35c2ae 100644
  #include "base/logging.h"
  #include "base/strings/string_util.h"
 diff --git a/build/common.gypi b/build/common.gypi
-index 3fd1c77..0e57abb 100644
+index 72e9ecb..04f023c 100644
 --- a/build/common.gypi
 +++ b/build/common.gypi
-@@ -278,7 +278,7 @@
+@@ -288,7 +288,7 @@
        # Run tools/clang/scripts/update.sh to make sure they are compiled.
        # This causes 'clang_chrome_plugins_flags' to be set.
        # Has no effect if 'clang' is not set as well.
@@ -42,17 +42,17 @@ index 3fd1c77..0e57abb 100644
  
        # Enable building with ASAN (Clang's -fsanitize=address option).
        # -fsanitize=address only works with clang, but asan=1 implies clang=1
-@@ -1108,6 +1108,9 @@
+@@ -1121,6 +1121,9 @@
      # rlz codes for searches but do not use the library.
      'enable_rlz%': 0,
  
 +    # Compile with libc++ instead of libstdc++.
 +    'use_libcpp%' : 0,
 +
-     # Turns on compiler optimizations in V8 in Debug build.
-     'v8_optimized_debug': 1,
+     # Turns on the i18n support in V8.
+     'v8_enable_i18n_support': 1,
  
-@@ -1358,10 +1361,10 @@
+@@ -1382,10 +1385,10 @@
            # someplace that Xcode doesn't know about, set mac_sdk_path to the
            # path to the SDK; when set to a non-empty string, SDK detection
            # based on mac_sdk_min will be bypassed entirely.
@@ -65,7 +65,7 @@ index 3fd1c77..0e57abb 100644
          },
  
          'mac_sdk_min': '<(mac_sdk_min)',
-@@ -1371,6 +1374,7 @@
+@@ -1395,6 +1398,7 @@
          # Compile in Breakpad support by default so that it can be
          # tested, even if it is not enabled by default at runtime.
          'mac_breakpad_compiled_in%': 1,
@@ -73,7 +73,7 @@ index 3fd1c77..0e57abb 100644
          'conditions': [
            # mac_product_name is set to the name of the .app bundle as it should
            # appear on disk.  This duplicates data from
-@@ -1922,6 +1926,16 @@
+@@ -1960,6 +1964,16 @@
        ['use_x11==1', {
          'defines': ['USE_X11=1'],
        }],
@@ -90,7 +90,7 @@ index 3fd1c77..0e57abb 100644
        ['enable_one_click_signin==1', {
          'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
        }],
-@@ -3828,6 +3842,16 @@
+@@ -3899,6 +3913,16 @@
                  '$(inherited)', '-std=gnu++11',
                ],
              }],
@@ -158,5 +158,5 @@ index dcc0041..affcf55 100644
  
  /* Define to 1 if you have the <dlfcn.h> header file. */
 -- 
-1.8.0.1
+1.7.12.4 (Apple Git-37)
 
