@@ -62,6 +62,9 @@ public:
 
     virtual net::URLRequestContext* GetRequestContext();
 
+    virtual bool AllowMicAccess(const GURL& origin) { return false; }
+    virtual bool AllowCameraAccess(const GURL& origin) { return false; }
+
     void set_url_request_context_getter(net::URLRequestContextGetter* getter);
 
 private:
