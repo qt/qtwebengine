@@ -19,3 +19,6 @@ MODULE_BASE_DIR = $$QTWEBENGINE_ROOT
 unix:QMAKE_CXXFLAGS += -fno-rtti
 
 load(functions)
+
+# Call the original default_pre.
+load(default_pre)
