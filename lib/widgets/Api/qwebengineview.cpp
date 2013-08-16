@@ -129,6 +129,18 @@ QUrl QWebEngineView::url() const
     return page()->url();
 }
 
+#ifndef QT_NO_ACTION
+QAction* QWebEngineView::pageAction(QWebEnginePage::WebAction action) const
+{
+    return page()->action(action);
+}
+#endif
+
+void QWebEngineView::triggerPageAction(QWebEnginePage::WebAction action, bool checked)
+{
+    page()->triggerAction(action, checked);
+}
+
 void QWebEngineView::stop()
 {
     page()->triggerAction(QWebEnginePage::Stop);
