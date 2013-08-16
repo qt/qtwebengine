@@ -70,9 +70,14 @@ public:
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
 
+    void updateAction(QWebEnginePage::WebAction) const;
+    void updateNavigationActions();
+    void _q_webActionTriggered(bool checked);
+
     QScopedPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineView *view;
+    mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
 };
 

@@ -258,10 +258,8 @@ void WebView::wheelEvent(QWheelEvent *event)
 
 void WebView::openLinkInNewTab()
 {
-#if defined(QWEBENGINEPAGE_ACTION)
     m_page->m_openInNewTab = true;
     pageAction(QWebEnginePage::OpenLinkInNewWindow)->trigger();
-#endif
 }
 
 void WebView::setProgress(int progress)

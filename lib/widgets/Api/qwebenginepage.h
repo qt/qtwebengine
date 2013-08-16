@@ -549,6 +549,10 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QWebEnginePage);
+#ifndef QT_NO_ACTION
+    Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
+#endif
+
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
 };

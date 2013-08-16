@@ -382,9 +382,6 @@ void tst_QWebEnginePage::loadFinished()
 
 void tst_QWebEnginePage::actionStates()
 {
-#if !defined(QWEBENGINEPAGE_ACTION)
-    QSKIP("QWEBENGINEPAGE_ACTION");
-#else
     QWebEnginePage* page = m_view->page();
 
     page->load(QUrl("qrc:///resources/script.html"));
@@ -394,7 +391,6 @@ void tst_QWebEnginePage::actionStates()
 
     QTRY_VERIFY(reloadAction->isEnabled());
     QTRY_VERIFY(!stopAction->isEnabled());
-#endif
 }
 
 class ConsolePage : public QWebEnginePage
@@ -1672,9 +1668,6 @@ void tst_QWebEnginePage::loadCachedPage()
 
 void tst_QWebEnginePage::backActionUpdate()
 {
-#if !defined(QWEBENGINEPAGE_ACTION)
-    QSKIP("QWEBENGINEPAGE_ACTION");
-#else
     QWebEngineView view;
     QWebEnginePage *page = view.page();
     QAction *action = page->action(QWebEnginePage::Back);
@@ -1688,7 +1681,6 @@ void tst_QWebEnginePage::backActionUpdate()
     QTRY_COMPARE(loadSpy.count(), 2);
 
     QVERIFY(action->isEnabled());
-#endif
 }
 
 #if defined(QWEBENGINEFRAME)

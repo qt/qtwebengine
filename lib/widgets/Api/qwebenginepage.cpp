@@ -1,43 +1,24 @@
-/****************************************************************************
-**
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
-** Contact: http://www.qt-project.org/legal
-**
-** This file is part of the QtWebEngine module of the Qt Toolkit.
-**
-** $QT_BEGIN_LICENSE:LGPL$
-** Commercial License Usage
-** Licensees holding valid commercial Qt licenses may use this file in
-** accordance with the commercial license agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Digia.  For licensing terms and
-** conditions see http://qt.digia.com/licensing.  For further information
-** use the contact form at http://qt.digia.com/contact-us.
-**
-** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
-**
-** $QT_END_LICENSE$
-**
-****************************************************************************/
+/*
+    Copyright (C) 2012, 2013 Digia Plc and/or its subsidiary(-ies).
+    Copyright (C) 2008, 2009, 2012 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2007 Staikos Computing Services Inc.
+    Copyright (C) 2007 Apple Inc.
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+*/
 
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
@@ -49,8 +30,9 @@
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
 
-#include <QUrl>
+#include <QAction>
 #include <QLayout>
+#include <QUrl>
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
@@ -60,11 +42,17 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , m_isLoading(false)
 {
     history->d_func()->pagePrivate = this;
+    memset(actions, 0, sizeof(actions));
 }
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
     delete history;
+}
+
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate()
+{
+    return new RenderWidgetHostViewQtDelegateWidget;
 }
 
 void QWebEnginePagePrivate::titleChanged(const QString &title)
@@ -88,6 +76,7 @@ void QWebEnginePagePrivate::loadingStateChanged()
         if (m_isLoading)
             Q_EMIT q->loadStarted();
     }
+    updateNavigationActions();
 }
 
 QRectF QWebEnginePagePrivate::viewportRect() const
@@ -108,10 +97,59 @@ void QWebEnginePagePrivate::focusContainer()
         view->setFocus();
 }
 
-RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate()
+void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
-    return new RenderWidgetHostViewQtDelegateWidget;
+#ifdef QT_NO_ACTION
+    Q_UNUSED(action)
+#else
+    QAction *a = actions[action];
+    if (!a)
+        return;
+
+    bool enabled = false;
+
+    switch (action) {
+    case QWebEnginePage::Back:
+        enabled = adapter->canGoBack();
+        break;
+    case QWebEnginePage::Forward:
+        enabled = adapter->canGoForward();
+        break;
+    case QWebEnginePage::Stop:
+        enabled = adapter->isLoading();
+        break;
+    case QWebEnginePage::Reload:
+    case QWebEnginePage::ReloadAndBypassCache:
+        enabled = !adapter->isLoading();
+        break;
+    default:
+        break;
+    }
+
+    a->setEnabled(enabled);
+#endif // QT_NO_ACTION
 }
+
+void QWebEnginePagePrivate::updateNavigationActions()
+{
+    updateAction(QWebEnginePage::Back);
+    updateAction(QWebEnginePage::Forward);
+    updateAction(QWebEnginePage::Stop);
+    updateAction(QWebEnginePage::Reload);
+    updateAction(QWebEnginePage::ReloadAndBypassCache);
+}
+
+#ifndef QT_NO_ACTION
+void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
+{
+    Q_Q(QWebEnginePage);
+    QAction *a = qobject_cast<QAction *>(q->sender());
+    if (!a)
+        return;
+    QWebEnginePage::WebAction action = static_cast<QWebEnginePage::WebAction>(a->data().toInt());
+    q->triggerAction(action, checked);
+}
+#endif // QT_NO_ACTION
 
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(*new QWebEnginePagePrivate, parent)
@@ -138,6 +176,53 @@ QWidget *QWebEnginePage::view() const
     Q_D(const QWebEnginePage);
     return d->view;
 }
+
+#ifndef QT_NO_ACTION
+QAction *QWebEnginePage::action(WebAction action) const
+{
+    Q_D(const QWebEnginePage);
+    if (action == QWebEnginePage::NoWebAction)
+        return 0;
+    if (d->actions[action])
+        return d->actions[action];
+
+    QString text;
+    QIcon icon;
+    QStyle *style = d->view ? d->view->style() : qApp->style();
+
+    switch (action) {
+    case Back:
+        text = tr("Back");
+        icon = style->standardIcon(QStyle::SP_ArrowBack);
+        break;
+    case Forward:
+        text = tr("Forward");
+        icon = style->standardIcon(QStyle::SP_ArrowForward);
+        break;
+    case Stop:
+        text = tr("Stop");
+        icon = style->standardIcon(QStyle::SP_BrowserStop);
+        break;
+    case Reload:
+        text = tr("Reload");
+        icon = style->standardIcon(QStyle::SP_BrowserReload);
+        break;
+    default:
+        break;
+    }
+
+    QAction *a = new QAction(const_cast<QWebEnginePage*>(this));
+    a->setText(text);
+    a->setData(action);
+    a->setIcon(icon);
+
+    connect(a, SIGNAL(triggered(bool)), this, SLOT(_q_webActionTriggered(bool)));
+
+    d->actions[action] = a;
+    d->updateAction(action);
+    return a;
+}
+#endif // QT_NO_ACTION
 
 void QWebEnginePage::triggerAction(WebAction action, bool)
 {
