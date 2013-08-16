@@ -6,14 +6,20 @@ import subprocess
 import sys
 
 qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-chrome_src = os.environ.get('CHROMIUM_SRC_DIR')
-if chrome_src:
-  chrome_src = os.path.abspath(chrome_src)
-if not chrome_src or not os.path.isdir(chrome_src):
-  chrome_src = os.path.join(qtwebengine_src, '3rdparty/chromium')
-  print 'CHROMIUM_SRC_DIR not set, falling back to ' + chrome_src
+chromium_src = os.environ.get('CHROMIUM_SRC_DIR')
+if chromium_src:
+  chromium_src = os.path.abspath(chromium_src)
 
-script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
+# Check git config for chromium_src path.
+if not chromium_src or not os.path.isdir(chromium_src):
+  chromium_src = subprocess.check_output(['git', 'config', 'qtwebengine.chromiumsrcdir']).strip()
+  chromium_src = os.path.abspath(os.path.join(qtwebengine_src, chromium_src))
+
+if not chromium_src or not os.path.isdir(chromium_src):
+  chromium_src = os.path.join(qtwebengine_src, '3rdparty/chromium')
+  print 'CHROMIUM_SRC_DIR not set, falling back to ' + chromium_src
+
+script_dir = os.path.abspath(os.path.join(chromium_src, 'build'))
 if not os.path.isdir(script_dir):
   print script_dir + " is not a valid directory"
   sys.exit(1)
@@ -21,20 +27,20 @@ root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 
 sys.path.insert(0, script_dir)
 import gyp_helper
-sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
+sys.path.insert(0, os.path.join(chromium_src, 'tools', 'gyp', 'pylib'))
 import gyp
 
 # Add paths so that pymod_do_main(...) can import files.
-sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
+sys.path.insert(1, os.path.join(chromium_src, 'tools', 'grit'))
 
-sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
+sys.path.insert(1, os.path.join(chromium_src, 'third_party', 'WebKit',
     'Source', 'core', 'core.gyp', 'scripts'))
 # Remove the above and keep the line below once we require a newer specific
 # Chromium revision.
-sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
+sys.path.insert(1, os.path.join(chromium_src, 'third_party', 'WebKit',
     'Source', 'core', 'scripts'))
 
-sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
+sys.path.insert(1, os.path.join(chromium_src, 'chrome', 'tools', 'build'))
 
 import repack_locales
 
@@ -64,7 +70,7 @@ def additional_include_files(args=[]):
   AddInclude(os.path.join(qtwebengine_src, 'build', 'qtwebengine_extras.gypi'))
 
   # Optionally add supplemental .gypi files if present.
-  supplements = glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
+  supplements = glob.glob(os.path.join(chromium_src, '*', 'supplement.gypi'))
   for supplement in supplements:
     AddInclude(supplement)
 
@@ -119,17 +125,17 @@ if __name__ == '__main__':
   if sys.platform not in ('darwin',):
     args.append('--no-circular-check')
 
-  args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
+  args.extend(['-D', 'webkit_src_dir=' + chromium_src + '/third_party/WebKit'])
   # the top_level source directory is the first common ancestor of our module and the chromium source tree for the build to be sane.
   # commonprefix works on a character basis, so it might return a phony common prefix (not the common parent directory we expect),
-  toplevel= os.path.commonprefix([root_dir, chrome_src])
+  toplevel= os.path.commonprefix([root_dir, chromium_src])
   if not os.path.exists(toplevel):
     toplevel = os.path.join(toplevel, os.pardir)
   args.extend(["--toplevel-dir=" + toplevel])
   # Chromium specific Hack: for Chromium to build, the depth has to be set to the chromium src dir.
-  args.extend(["--depth=" + chrome_src])
+  args.extend(["--depth=" + chromium_src])
   args.extend(['-D', 'qtwebengine_src_dir=' + qtwebengine_src])
-  args.extend(['-D', 'chromium_src_dir=' + chrome_src])
+  args.extend(['-D', 'chromium_src_dir=' + chromium_src])
   # linux_use_gold_binary currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
   # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
   args.extend(['-D', 'linux_use_gold_binary=0'])
