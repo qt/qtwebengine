@@ -46,7 +46,7 @@ PATCH_DIR="$( cd "$( dirname "$0" )" && pwd )"
 QTWEBENGINE_SRC_DIR="$( cd $PATCH_DIR/../ && pwd )"
 
 if [ -z "$CHROMIUM_SRC_DIR" ]; then
-    CHROMIUM_SRC_DIR="$( cd $PATCH_DIR/../chromium && pwd )"
+    CHROMIUM_SRC_DIR="$( cd `git config qtwebengine.chromiumsrcdir` && pwd )"
 fi
 
 if [ ! -d "$CHROMIUM_SRC_DIR" ]; then
