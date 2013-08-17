@@ -52,12 +52,17 @@ qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 sys.path.append(os.path.join(qtwebengine_src, 'tools'))
 import git_submodule as GitSubmodule
 
-chrome_src = os.environ.get('CHROMIUM_SRC_DIR')
-if chrome_src:
-  chrome_src = os.path.abspath(chrome_src)
-if not chrome_src or not os.path.isdir(chrome_src):
-  chrome_src = os.path.join(qtwebengine_src, 'chromium')
-  print 'CHROMIUM_SRC_DIR not set, falling back to ' + chrome_src
+chromium_src = os.environ.get('CHROMIUM_SRC_DIR')
+if chromium_src:
+  chromium_src = os.path.abspath(chromium_src)
+if not chromium_src or not os.path.isdir(chromium_src):
+  chromium_src = os.path.join(qtwebengine_src, '3rdparty_upstream/chromium')
+  print 'CHROMIUM_SRC_DIR not set, falling back to ' + chromium_src
+
+# Write our chromium sources directory into git config.
+relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_src)
+subprocess.call(['git', 'config', 'qtwebengine.chromiumsrcdir', relative_chromium_src])
+
 
 def which(tool_name):
     path = os.environ.get('PATH')
@@ -69,7 +74,7 @@ def which(tool_name):
 
 def updateLastChange():
     currentDir = os.getcwd()
-    os.chdir(chrome_src)
+    os.chdir(chromium_src)
     print 'updating LASTCHANGE files'
     subprocess.call(['python', 'build/util/lastchange.py', '-o', 'build/util/LASTCHANGE'])
     subprocess.call(['python', 'build/util/lastchange.py', '-s', 'third_party/WebKit', '-o', 'build/util/LASTCHANGE.blink'])
@@ -81,7 +86,7 @@ def buildNinja():
         print 'found ninja in: ' + ninja_tool + ' ...not building new ninja.'
         return
     currentDir = os.getcwd()
-    ninja_src = os.path.join(qtwebengine_src, 'build/ninja')
+    ninja_src = os.path.join(qtwebengine_src, '3rdparty_upstream/ninja')
     os.chdir(ninja_src)
     print 'building ninja...'
     subprocess.call(['python', 'bootstrap.py'])
@@ -101,11 +106,58 @@ def applyPatches():
     os.chdir(qtwebengine_src)
     subprocess.call(['sh', './patches/patch-chromium.sh'])
 
+def initUpstreamSubmodules():
+    ninja_url = 'https://github.com/martine/ninja.git'
+    chromium_url = 'https://chromium.googlesource.com/chromium/src.git'
+    ninja_shasum = '40b51a0b986b8675e15b0cd1b10c272bf51fdb84'
+    chromium_shasum = '29d2d710e0e7961dff032ad4ab73887cc33122bb'
+    os.chdir(qtwebengine_src)
+
+    current_submodules = subprocess.check_output(['git', 'submodule'])
+    if not '3rdparty_upstream/ninja' in current_submodules:
+        subprocess.call(['git', 'submodule', 'add', ninja_url, '3rdparty_upstream/ninja'])
+        gitmodules_file = open('.gitmodules', 'a')
+        gitmodules_file.writelines(['       ignore = all\n'])
+        gitmodules_file.close()
+    if not '3rdparty_upstream/chromium' in current_submodules:
+        subprocess.call(['git', 'submodule', 'add', chromium_url, '3rdparty_upstream/chromium'])
+        gitmodules_file = open('.gitmodules', 'a')
+        gitmodules_file.writelines(['       ignore = all\n'])
+        gitmodules_file.close()
+
+    gitignore_file = open('.gitignore')
+    gitignore_content = gitignore_file.readlines()
+    gitignore_file.close()
+
+    gitmodules_is_ignored = False
+    for gitignore_line in gitignore_content:
+        if '.gitmodules' in gitignore_line:
+            gitmodules_is_ignored = True
+    if not gitmodules_is_ignored:
+        gitignore_file = open('.gitignore', 'a')
+        gitignore_file.writelines(['.gitmodules\n'])
+        gitignore_file.close()
+
+    ninjaSubmodule = GitSubmodule.Submodule()
+    ninjaSubmodule.path = '3rdparty_upstream/ninja'
+    ninjaSubmodule.shasum = ninja_shasum
+    ninjaSubmodule.url = ninja_url
+    ninjaSubmodule.os = 'all'
+    ninjaSubmodule.initialize()
+
+    chromiumSubmodule = GitSubmodule.Submodule()
+    chromiumSubmodule.path = '3rdparty_upstream/chromium'
+    chromiumSubmodule.shasum = chromium_shasum
+    chromiumSubmodule.url = chromium_url
+    chromiumSubmodule.os = 'all'
+    chromiumSubmodule.initialize()
+
+
 os.chdir(qtwebengine_src)
 addGerritRemote()
 installGitHooks()
-GitSubmodule.initSubmodules()
-applyPatches()
+initUpstreamSubmodules()
 updateLastChange()
-buildNinja()
+applyPatches()
+#buildNinja()
 
