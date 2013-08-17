@@ -65,6 +65,8 @@ class Submodule:
         return False
 
     def findSha(self):
+        if self.shasum != '':
+            return
         line = subprocess.check_output(['git', 'submodule', 'status', self.path])
         line = line.lstrip(' -')
         self.shasum = line.split(' ')[0]
@@ -106,7 +108,7 @@ class Submodule:
             val = subprocess.call(['git', 'checkout', self.shasum])
             if val != 0:
                 sys.exit("!!! initialization failed !!!")
-            initSubmodules()
+            self.initSubmodules()
             os.chdir(currentDir)
         else:
             print '-- skipping ' + self.path + ' for this operating system. --'
@@ -123,36 +125,36 @@ class Submodule:
             return []
 
 
-def readSubmodules():
-    currentDir = os.getcwd()
-    if not os.path.isfile('.gitmodules'):
-        return []
-    gitmodules_file = open('.gitmodules')
-    gitmodules_lines = gitmodules_file.readlines()
-    gitmodules_file.close()
+    def readSubmodules(self):
+        currentDir = os.getcwd()
+        if not os.path.isfile('.gitmodules'):
+            return []
+        gitmodules_file = open('.gitmodules')
+        gitmodules_lines = gitmodules_file.readlines()
+        gitmodules_file.close()
 
-    submodules = []
-    currentSubmodule = None
-    for line in gitmodules_lines:
-        if line.find('[submodule') == 0:
-            if currentSubmodule:
-                submodules.append(currentSubmodule)
-            currentSubmodule = Submodule()
-        tokens = line.split('=')
-        if len(tokens) >= 2:
-            key = tokens[0].strip()
-            value = tokens[1].strip()
-            if key == 'path':
-                currentSubmodule.path = value
-            elif key == 'url':
-                currentSubmodule.url = value
-            elif key == 'os':
-                currentSubmodule.os = value.split(',')
-    if currentSubmodule:
-        submodules.append(currentSubmodule)
-    return submodules
+        submodules = []
+        currentSubmodule = None
+        for line in gitmodules_lines:
+            if line.find('[submodule') == 0:
+                if currentSubmodule:
+                    submodules.append(currentSubmodule)
+                currentSubmodule = Submodule()
+            tokens = line.split('=')
+            if len(tokens) >= 2:
+                key = tokens[0].strip()
+                value = tokens[1].strip()
+                if key == 'path':
+                    currentSubmodule.path = value
+                elif key == 'url':
+                    currentSubmodule.url = value
+                elif key == 'os':
+                    currentSubmodule.os = value.split(',')
+        if currentSubmodule:
+            submodules.append(currentSubmodule)
+        return submodules
 
-def initSubmodules():
-    submodules = readSubmodules()
-    for submodule in submodules:
-        submodule.initialize()
+    def initSubmodules(self):
+        submodules = self.readSubmodules()
+        for submodule in submodules:
+            submodule.initialize()
