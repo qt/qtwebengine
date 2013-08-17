@@ -8,9 +8,11 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
 
 (2) Initialize the repository
 
-    This will clone the chromium sources and apply some necessary patches on top.
+    This will clone a submodule called 3rdparty that contains a snapshot of chromium sources.
+    In case that any patches are necessary on top of the regular chromium sources,
+    they will already be included in this snapshot.
 
-    * ./init-repository.py
+    * git submodule init && git submodule update --recursive
 
 (3) Generate the ninja build files by running qmake.
 
@@ -24,6 +26,14 @@ This is a prototype of allowing embedding Chromium/Blink into Qt.
     top level directory (only lib and process for now, and not so smart with dependencies)
 
 (5) Additional tweaks and tips:
+    * If you want to have a complete chromium checkout with the complete history instead of the snapshot,
+      then do not run step (2). Instead just run the init-repository.py script.
+
+      This will then create a complete ninja and chromium checkout in the subdirectory 3rdparty_upstream.
+      qmake will automatically pickup the location and make use of the sources in the subsequent step (3) and (4).
+
+      ./init-repository.py
+
     * linking all the static librairies can be a slow and painful process when developing (especially with debug builds).
       Use of shared librairies can be enforced by setting the GYP_DEFINES environment variable, like so:
 
