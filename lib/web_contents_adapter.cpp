@@ -42,6 +42,7 @@
 
 #include "content_browser_client_qt.h"
 #include "browser_context_qt.h"
+#include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
@@ -88,15 +89,10 @@ bool WebContentsAdapter::canGoForward() const
 {
     return webContents()->GetController().CanGoForward();
 }
+
 bool WebContentsAdapter::isLoading() const
 {
     return webContents()->IsLoading();
-}
-
-void WebContentsAdapter::navigateHistory(int offset)
-{
-    webContents()->GetController().GoToOffset(offset);
-    webContents()->GetView()->Focus();
 }
 
 void WebContentsAdapter::stop()
@@ -133,6 +129,52 @@ QString WebContentsAdapter::pageTitle() const
 {
     content::NavigationEntry* entry = webContents()->GetController().GetVisibleEntry();
     return entry ? toQt(entry->GetTitle()) : QString();
+}
+
+void WebContentsAdapter::navigateToIndex(int offset)
+{
+    webContents()->GetController().GoToIndex(offset);
+    webContents()->GetView()->Focus();
+}
+
+void WebContentsAdapter::navigateToOffset(int offset)
+{
+    webContents()->GetController().GoToOffset(offset);
+    webContents()->GetView()->Focus();
+}
+
+int WebContentsAdapter::navigationEntryCount()
+{
+    return webContents()->GetController().GetEntryCount();
+}
+
+int WebContentsAdapter::currentNavigationEntryIndex()
+{
+    return webContents()->GetController().GetCurrentEntryIndex();
+}
+
+QUrl WebContentsAdapter::getNavigationEntryOriginalUrl(int index)
+{
+    content::NavigationEntry *entry = webContents()->GetController().GetEntryAtIndex(index);
+    return entry ? toQt(entry->GetOriginalRequestURL()) : QUrl();
+}
+
+QUrl WebContentsAdapter::getNavigationEntryUrl(int index)
+{
+    content::NavigationEntry *entry = webContents()->GetController().GetEntryAtIndex(index);
+    return entry ? toQt(entry->GetURL()) : QUrl();
+}
+
+QString WebContentsAdapter::getNavigationEntryTitle(int index)
+{
+    content::NavigationEntry *entry = webContents()->GetController().GetEntryAtIndex(index);
+    return entry ? toQt(entry->GetTitle()) : QString();
+}
+
+void WebContentsAdapter::clearNavigationHistory()
+{
+    if (webContents()->GetController().CanPruneAllButVisible())
+        webContents()->GetController().PruneAllButVisible();
 }
 
 content::WebContents *WebContentsAdapter::webContents() const

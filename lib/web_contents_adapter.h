@@ -62,12 +62,20 @@ public:
     bool canGoBack() const;
     bool canGoForward() const;
     bool isLoading() const;
-    void navigateHistory(int);
     void stop();
     void reload();
     void load(const QUrl&);
     QUrl activeUrl() const;
     QString pageTitle() const;
+
+    void navigateToIndex(int);
+    void navigateToOffset(int);
+    int navigationEntryCount();
+    int currentNavigationEntryIndex();
+    QUrl getNavigationEntryOriginalUrl(int index);
+    QUrl getNavigationEntryUrl(int index);
+    QString getNavigationEntryTitle(int index);
+    void clearNavigationHistory();
 
 private:
     inline content::WebContents* webContents() const;
