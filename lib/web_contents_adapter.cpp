@@ -120,8 +120,6 @@ void WebContentsAdapter::load(const QUrl &url)
 {
     QString urlString = url.toString();
     GURL gurl(urlString.toStdString());
-    if (!gurl.has_scheme())
-        gurl = GURL(std::string("http://") + urlString.toStdString());
 
     content::NavigationController::LoadURLParams params(gurl);
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
