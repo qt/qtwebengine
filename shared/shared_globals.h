@@ -42,10 +42,7 @@
 #ifndef SHARED_GLOBALS_H
 #define SHARED_GLOBALS_H
 
-#include "base/files/file_path.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
-
-#include <QString>
 
 #ifdef QT_WEBENGINE_LOGGING
 #define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
@@ -55,25 +52,8 @@
 #define QT_NOT_USED Q_UNREACHABLE(); // This will assert in debug.
 #endif
 
-namespace content {
-class WebContentsImpl;
-class WebContentsViewPort;
-class WebContentsViewDelegate;
-class RenderViewHostDelegateView;
-} // namespace content
-
 class QWindow;
 
 void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results);
-
-
-inline base::FilePath::StringType qStringToStringType(const QString &str)
-{
-#if defined(OS_POSIX)
-    return str.toStdString();
-#elif defined(OS_WIN)
-    return str.toStdWString();
-#endif
-}
 
 #endif

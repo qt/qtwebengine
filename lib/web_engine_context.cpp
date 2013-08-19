@@ -58,6 +58,7 @@
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #include "content_browser_client_qt.h"
+#include "type_conversion.h"
 #include <QCoreApplication>
 #include <QStringList>
 
@@ -94,7 +95,7 @@ public:
     // before the sandbox is engaged.
     void PreSandboxStartup() Q_DECL_OVERRIDE
     {
-        PathService::Override(base::FILE_EXE, base::FilePath(qStringToStringType(subProcessPath())));
+        PathService::Override(base::FILE_EXE, base::FilePath(toFilePathString(subProcessPath())));
     }
 
     content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE

@@ -62,8 +62,7 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
 
 void WebContentsViewQt::SetPageTitle(const string16& title)
 {
-    QString string = QString::fromUtf16(title.data());
-    m_client->titleChanged(string);
+    m_client->titleChanged(toQt(title));
 }
 
 void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
