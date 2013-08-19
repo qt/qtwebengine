@@ -113,30 +113,15 @@ def initUpstreamSubmodules():
     chromium_shasum = '29d2d710e0e7961dff032ad4ab73887cc33122bb'
     os.chdir(qtwebengine_src)
 
+    print 'Configuring git to ignore all submodules. Submodule changes will not show up in "git diff"!'
+    subprocess.call(['git', 'config', 'diff.ignoreSubmodules', 'all'])
+    subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
+
     current_submodules = subprocess.check_output(['git', 'submodule'])
     if not '3rdparty_upstream/ninja' in current_submodules:
         subprocess.call(['git', 'submodule', 'add', ninja_url, '3rdparty_upstream/ninja'])
-        gitmodules_file = open('.gitmodules', 'a')
-        gitmodules_file.writelines(['       ignore = all\n'])
-        gitmodules_file.close()
     if not '3rdparty_upstream/chromium' in current_submodules:
         subprocess.call(['git', 'submodule', 'add', chromium_url, '3rdparty_upstream/chromium'])
-        gitmodules_file = open('.gitmodules', 'a')
-        gitmodules_file.writelines(['       ignore = all\n'])
-        gitmodules_file.close()
-
-    gitignore_file = open('.gitignore')
-    gitignore_content = gitignore_file.readlines()
-    gitignore_file.close()
-
-    gitmodules_is_ignored = False
-    for gitignore_line in gitignore_content:
-        if '.gitmodules' in gitignore_line:
-            gitmodules_is_ignored = True
-    if not gitmodules_is_ignored:
-        gitignore_file = open('.gitignore', 'a')
-        gitignore_file.writelines(['.gitmodules\n'])
-        gitignore_file.close()
 
     ninjaSubmodule = GitSubmodule.Submodule()
     ninjaSubmodule.path = '3rdparty_upstream/ninja'
