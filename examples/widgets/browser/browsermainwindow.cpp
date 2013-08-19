@@ -891,7 +891,6 @@ void BrowserMainWindow::slotAboutToShowBackMenu()
     m_historyBackMenu->clear();
     if (!currentTab())
         return;
-#if defined(QWEBENGINEHISTORY)
     QWebEngineHistory *history = currentTab()->history();
     int historyCount = history->count();
     for (int i = history->backItems(historyCount).count() - 1; i >= 0; --i) {
@@ -903,7 +902,6 @@ void BrowserMainWindow::slotAboutToShowBackMenu()
         action->setText(item.title());
         m_historyBackMenu->addAction(action);
     }
-#endif
 }
 
 void BrowserMainWindow::slotAboutToShowForwardMenu()
@@ -911,7 +909,6 @@ void BrowserMainWindow::slotAboutToShowForwardMenu()
     m_historyForwardMenu->clear();
     if (!currentTab())
         return;
-#if defined(QWEBENGINEHISTORY)
     QWebEngineHistory *history = currentTab()->history();
     int historyCount = history->count();
     for (int i = 0; i < history->forwardItems(history->count()).count(); ++i) {
@@ -923,7 +920,6 @@ void BrowserMainWindow::slotAboutToShowForwardMenu()
         action->setText(item.title());
         m_historyForwardMenu->addAction(action);
     }
-#endif
 }
 
 void BrowserMainWindow::slotAboutToShowWindowMenu()
@@ -961,15 +957,12 @@ void BrowserMainWindow::slotShowWindow()
 
 void BrowserMainWindow::slotOpenActionUrl(QAction *action)
 {
-#if defined(QWEBENGINEHISTORY)
-
     int offset = action->data().toInt();
     QWebEngineHistory *history = currentTab()->history();
     if (offset < 0)
         history->goToItem(history->backItems(-1*offset).first()); // back
     else if (offset > 0)
         history->goToItem(history->forwardItems(history->count() - offset + 1).back()); // forward
-#endif
 }
 
 void BrowserMainWindow::geometryChangeRequested(const QRect &geometry)

@@ -2751,9 +2751,6 @@ public:
 
 void tst_QWebEnginePage::errorPageExtension()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2764,7 +2761,9 @@ void tst_QWebEnginePage::errorPageExtension()
 
     page.setUrl(QUrl("http://non.existent/url"));
     QTRY_COMPARE(spyLoadFinished.count(), 2);
+#if defined(QWEBENGINEPAGE_TOPLAINTEXT)
     QCOMPARE(page.toPlainText(), QString("error"));
+#endif
     QCOMPARE(page.history()->count(), 2);
     QCOMPARE(page.history()->currentItem().url(), QUrl("http://non.existent/url"));
     QCOMPARE(page.history()->canGoBack(), true);
@@ -2784,7 +2783,6 @@ void tst_QWebEnginePage::errorPageExtension()
     QTRY_COMPARE(page.history()->currentItem().url(), QUrl("data:text/html,foo"));
 
     m_view->setPage(0);
-#endif
 }
 
 void tst_QWebEnginePage::errorPageExtensionInIFrames()

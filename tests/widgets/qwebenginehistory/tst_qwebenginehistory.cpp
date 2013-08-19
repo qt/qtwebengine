@@ -53,6 +53,7 @@ private Q_SLOTS:
     void itemAt();
     void goToItem();
     void items();
+    void backForwardItems();
     void serialize_1(); //QWebEngineHistory countity
     void serialize_2(); //QWebEngineHistory index
     void serialize_3(); //QWebEngineHistoryItem
@@ -65,6 +66,7 @@ private Q_SLOTS:
     void popPushState_data();
     void popPushState();
     void clear();
+    void historyItemFromDeletedPage();
     void restoreIncompatibleVersion1();
 
 
@@ -106,11 +108,7 @@ void tst_QWebEngineHistory::cleanup()
   */
 void tst_QWebEngineHistory::title()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QCOMPARE(hist->currentItem().title(), QString("page5"));
-#endif
 }
 
 /**
@@ -118,11 +116,7 @@ void tst_QWebEngineHistory::title()
   */
 void tst_QWebEngineHistory::count()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QCOMPARE(hist->count(), histsize);
-#endif
 }
 
 /**
@@ -174,9 +168,6 @@ void tst_QWebEngineHistory::forward()
   */
 void tst_QWebEngineHistory::itemAt()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     for (int i = 1;i < histsize;i++) {
         QCOMPARE(hist->itemAt(i - 1).title(), QString("page") + QString::number(i));
         QVERIFY(hist->itemAt(i - 1).isValid());
@@ -184,7 +175,6 @@ void tst_QWebEngineHistory::itemAt()
     //check out of range values
     QVERIFY(!hist->itemAt(-1).isValid());
     QVERIFY(!hist->itemAt(histsize).isValid());
-#endif
 }
 
 /**
@@ -192,9 +182,6 @@ void tst_QWebEngineHistory::itemAt()
   */
 void tst_QWebEngineHistory::goToItem()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QWebEngineHistoryItem current = hist->currentItem();
     hist->back();
     loadFinishedBarrier->ensureSignalEmitted();
@@ -204,7 +191,6 @@ void tst_QWebEngineHistory::goToItem()
     hist->goToItem(current);
     loadFinishedBarrier->ensureSignalEmitted();
     QCOMPARE(hist->currentItem().title(), current.title());
-#endif
 }
 
 /**
@@ -212,9 +198,6 @@ void tst_QWebEngineHistory::goToItem()
   */
 void tst_QWebEngineHistory::items()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QList<QWebEngineHistoryItem> items = hist->items();
     //check count
     QCOMPARE(histsize, items.count());
@@ -223,7 +206,19 @@ void tst_QWebEngineHistory::items()
     for (int i = 1;i <= histsize;i++) {
         QCOMPARE(items.at(i - 1).title(), QString("page") + QString::number(i));
     }
-#endif
+}
+
+void tst_QWebEngineHistory::backForwardItems()
+{
+    hist->back();
+    loadFinishedBarrier->ensureSignalEmitted();
+    hist->back();
+    loadFinishedBarrier->ensureSignalEmitted();
+    QCOMPARE(hist->items().size(), 5);
+    QCOMPARE(hist->backItems(100).size(), 2);
+    QCOMPARE(hist->backItems(1).size(), 1);
+    QCOMPARE(hist->forwardItems(100).size(), 2);
+    QCOMPARE(hist->forwardItems(1).size(), 1);
 }
 
 /**
@@ -232,9 +227,6 @@ void tst_QWebEngineHistory::items()
   */
 void tst_QWebEngineHistory::serialize_1()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QByteArray tmp;  //buffer
     QDataStream save(&tmp, QIODevice::WriteOnly); //here data will be saved
     QDataStream load(&tmp, QIODevice::ReadOnly); //from here data will be loaded
@@ -256,7 +248,6 @@ void tst_QWebEngineHistory::serialize_1()
     for (int i = 1;i <= histsize;i++) {
         QCOMPARE(items.at(i - 1).title(), QString("page") + QString::number(i));
     }
-#endif
 }
 
 /**
@@ -265,9 +256,6 @@ void tst_QWebEngineHistory::serialize_1()
   */
 void tst_QWebEngineHistory::serialize_2()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QByteArray tmp;  //buffer
     QDataStream save(&tmp, QIODevice::WriteOnly); //here data will be saved
     QDataStream load(&tmp, QIODevice::ReadOnly); //from here data will be loaded
@@ -303,7 +291,6 @@ void tst_QWebEngineHistory::serialize_2()
     hist->forward();
     loadFinishedBarrier->ensureSignalEmitted();
     QCOMPARE(hist->currentItemIndex(), initialCurrentIndex);
-#endif
 }
 
 /**
@@ -312,9 +299,6 @@ void tst_QWebEngineHistory::serialize_2()
   */
 void tst_QWebEngineHistory::serialize_3()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QByteArray tmp;  //buffer
     QDataStream save(&tmp, QIODevice::WriteOnly); //here data will be saved
     QDataStream load(&tmp, QIODevice::ReadOnly); //from here data will be loaded
@@ -348,10 +332,8 @@ void tst_QWebEngineHistory::serialize_3()
 
     //Check if all data was read
     QVERIFY(load.atEnd());
-#endif
 }
 
-#if defined(QWEBENGINEHISTORY)
 static void saveHistory(QWebEngineHistory* history, QByteArray* in)
 {
     in->clear();
@@ -364,27 +346,19 @@ static void restoreHistory(QWebEngineHistory* history, QByteArray* out)
     QDataStream load(out, QIODevice::ReadOnly);
     load >> *history;
 }
-#endif
 
 void tst_QWebEngineHistory::saveAndRestore_crash_1()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QByteArray buffer;
     saveHistory(hist, &buffer);
     for (unsigned i = 0; i < 5; i++) {
         restoreHistory(hist, &buffer);
         saveHistory(hist, &buffer);
     }
-#endif
 }
 
 void tst_QWebEngineHistory::saveAndRestore_crash_2()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QByteArray buffer;
     saveHistory(hist, &buffer);
     QWebEnginePage* page2 = new QWebEnginePage(this);
@@ -394,14 +368,10 @@ void tst_QWebEngineHistory::saveAndRestore_crash_2()
         saveHistory(hist2, &buffer);
     }
     delete page2;
-#endif
 }
 
 void tst_QWebEngineHistory::saveAndRestore_crash_3()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QByteArray buffer;
     saveHistory(hist, &buffer);
     QWebEnginePage* page2 = new QWebEnginePage(this);
@@ -417,13 +387,12 @@ void tst_QWebEngineHistory::saveAndRestore_crash_3()
         hist2->clear();
     }
     delete page2;
-#endif
 }
 
 void tst_QWebEngineHistory::saveAndRestore_crash_4()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
+#if !defined(QWEBENGINESETTINGS)
+    QSKIP("QWEBENGINESETTINGS");
 #else
     QByteArray buffer;
     saveHistory(hist, &buffer);
@@ -471,9 +440,6 @@ void tst_QWebEngineHistory::popPushState()
 /** ::clear */
 void tst_QWebEngineHistory::clear()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     QByteArray buffer;
 
     QAction* actionBack = page->action(QWebEnginePage::Back);
@@ -490,7 +456,24 @@ void tst_QWebEngineHistory::clear()
     hist2->clear();
     QVERIFY(hist2->count() == 0); // Do not change anything.
     delete page2;
-#endif
+}
+
+void tst_QWebEngineHistory::historyItemFromDeletedPage()
+{
+    QList<QWebEngineHistoryItem> items = page->history()->items();
+    delete page;
+    page = 0;
+
+    foreach(QWebEngineHistoryItem item, items) {
+        QVERIFY(!item.isValid());
+        QCOMPARE(item.originalUrl(), QUrl());
+        QCOMPARE(item.url(), QUrl());
+        QCOMPARE(item.title(), QString());
+        QCOMPARE(item.lastVisited(), QDateTime());
+        QCOMPARE(item.icon(), QIcon());
+        item.setUserData(42);
+        QCOMPARE(item.userData(), QVariant());
+    }
 }
 
 // static void dumpCurrentVersion(QWebEngineHistory* history)
@@ -508,9 +491,6 @@ void tst_QWebEngineHistory::clear()
 
 void tst_QWebEngineHistory::restoreIncompatibleVersion1()
 {
-#if !defined(QWEBENGINEHISTORY)
-    QSKIP("QWEBENGINEHISTORY");
-#else
     // Uncomment this code to generate a dump similar to the one below with the current stream version.
     // dumpCurrentVersion(hist);
     static const unsigned char version1Dump[] = {
@@ -588,7 +568,6 @@ void tst_QWebEngineHistory::restoreIncompatibleVersion1()
     QVERIFY(!hist->canGoBack());
     QVERIFY(!hist->canGoForward());
     QVERIFY(stream.status() == QDataStream::ReadCorruptData);
-#endif
 }
 
 QTEST_MAIN(tst_QWebEngineHistory)
