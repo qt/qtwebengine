@@ -228,10 +228,10 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     Q_D(QWebEnginePage);
     switch (action) {
     case Back:
-        d->adapter->navigateHistory(-1);
+        d->adapter->navigateToOffset(-1);
         break;
     case Forward:
-        d->adapter->navigateHistory(1);
+        d->adapter->navigateToOffset(1);
         break;
     case Stop:
         d->adapter->stop();

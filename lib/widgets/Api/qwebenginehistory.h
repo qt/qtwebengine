@@ -28,6 +28,8 @@
 #include <QtGui/qicon.h>
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
+class QWebEngineHistory;
+class QWebEngineHistoryItemPrivate;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 
@@ -49,6 +51,12 @@ public:
     void setUserData(const QVariant& userData);
 
     bool isValid() const;
+private:
+    QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *priv);
+    Q_DECLARE_PRIVATE_D(d.data(), QWebEngineHistoryItem);
+    QExplicitlySharedDataPointer<QWebEngineHistoryItemPrivate> d;
+    friend class QWebEngineHistory;
+    friend class QWebEngineHistoryPrivate;
 };
 
 

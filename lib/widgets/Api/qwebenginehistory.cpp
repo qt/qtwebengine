@@ -45,9 +45,106 @@
 #include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
+QWebEngineHistoryItemPrivate::QWebEngineHistoryItemPrivate(WebContentsAdapter *adapter, int index)
+    : adapter(adapter)
+    , index(index)
+{
+}
+
+QWebEngineHistoryItem::QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *d)
+    : d(d)
+{
+}
+
+QWebEngineHistoryItem::QWebEngineHistoryItem(const QWebEngineHistoryItem &other)
+    : d(other.d)
+{
+}
+
+QWebEngineHistoryItem &QWebEngineHistoryItem::operator=(const QWebEngineHistoryItem &other)
+{
+    d = other.d;
+    return *this;
+}
+
+QWebEngineHistoryItem::~QWebEngineHistoryItem()
+{
+}
+
+QUrl QWebEngineHistoryItem::originalUrl() const
+{
+    Q_D(const QWebEngineHistoryItem);
+    return d->adapter ? d->adapter->getNavigationEntryOriginalUrl(d->index) : QUrl();
+}
+
+QUrl QWebEngineHistoryItem::url() const
+{
+    Q_D(const QWebEngineHistoryItem);
+    return d->adapter ? d->adapter->getNavigationEntryUrl(d->index) : QUrl();
+}
+
+QString QWebEngineHistoryItem::title() const
+{
+    Q_D(const QWebEngineHistoryItem);
+    return d->adapter ? d->adapter->getNavigationEntryTitle(d->index) : QString();
+}
+
+QDateTime QWebEngineHistoryItem::lastVisited() const
+{
+    qWarning("Not implemented: %s", __func__);
+    return QDateTime();
+}
+
+QIcon QWebEngineHistoryItem::icon() const
+{
+    qWarning("Not implemented: %s", __func__);
+    return QIcon();
+}
+
+QVariant QWebEngineHistoryItem::userData() const
+{
+    return QVariant();
+}
+
+void QWebEngineHistoryItem::setUserData(const QVariant& userData)
+{
+    qWarning("Not implemented: %s", __func__);
+}
+
+bool QWebEngineHistoryItem::isValid() const
+{
+    Q_D(const QWebEngineHistoryItem);
+    if (!d->adapter)
+        return false;
+    return d->index >= 0 && d->index < d->adapter->navigationEntryCount();
+}
+
 QWebEngineHistoryPrivate::QWebEngineHistoryPrivate(WebContentsAdapter *adapter)
     : adapter(adapter)
 {
+}
+
+QWebEngineHistoryPrivate::~QWebEngineHistoryPrivate()
+{
+    // Invalidate shared item references possibly still out there.
+    QList<QWebEngineHistoryItem>::iterator it, end;
+    for (it = items.begin(), end = items.end(); it != end; ++it)
+        it->d->adapter = 0;
+}
+
+void QWebEngineHistoryPrivate::updateItems() const
+{
+    // Keep track of items we return to be able to invalidate them
+    // and avoid dangling references to our adapter.
+    int entryCount = adapter->navigationEntryCount();
+    while (items.size() > entryCount) {
+        items.last().d->adapter = 0;
+        items.removeLast();
+    }
+    while (items.size() < entryCount) {
+        int nextIndex = items.size();
+        items.append(QWebEngineHistoryItem(new QWebEngineHistoryItemPrivate(adapter, nextIndex)));
+    }
 }
 
 QWebEngineHistory::QWebEngineHistory(QWebEngineHistoryPrivate *d)
@@ -57,6 +154,37 @@ QWebEngineHistory::QWebEngineHistory(QWebEngineHistoryPrivate *d)
 
 QWebEngineHistory::~QWebEngineHistory()
 {
+}
+
+void QWebEngineHistory::clear()
+{
+    Q_D(const QWebEngineHistory);
+    d->adapter->clearNavigationHistory();
+}
+
+QList<QWebEngineHistoryItem> QWebEngineHistory::items() const
+{
+    Q_D(const QWebEngineHistory);
+    d->updateItems();
+    return d->items;
+}
+
+QList<QWebEngineHistoryItem> QWebEngineHistory::backItems(int maxItems) const
+{
+    Q_D(const QWebEngineHistory);
+    d->updateItems();
+    const int end = currentItemIndex();
+    const int start = std::max(0, end - maxItems);
+    return d->items.mid(start, end - start);
+}
+
+QList<QWebEngineHistoryItem> QWebEngineHistory::forwardItems(int maxItems) const
+{
+    Q_D(const QWebEngineHistory);
+    d->updateItems();
+    const int start = currentItemIndex() + 1;
+    const int end = std::min(count(), start + maxItems);
+    return d->items.mid(start, end - start);
 }
 
 bool QWebEngineHistory::canGoBack() const
@@ -69,4 +197,88 @@ bool QWebEngineHistory::canGoForward() const
 {
     Q_D(const QWebEngineHistory);
     return d->adapter->canGoForward();
+}
+
+void QWebEngineHistory::back()
+{
+    Q_D(const QWebEngineHistory);
+    d->adapter->navigateToOffset(-1);
+}
+
+void QWebEngineHistory::forward()
+{
+    Q_D(const QWebEngineHistory);
+    d->adapter->navigateToOffset(1);
+}
+
+void QWebEngineHistory::goToItem(const QWebEngineHistoryItem &item)
+{
+    Q_D(const QWebEngineHistory);
+    Q_ASSERT(item.d->adapter == d->adapter);
+    d->adapter->navigateToIndex(item.d->index);
+}
+
+QWebEngineHistoryItem QWebEngineHistory::backItem() const
+{
+    return itemAt(currentItemIndex() - 1);
+}
+
+QWebEngineHistoryItem QWebEngineHistory::currentItem() const
+{
+    Q_D(const QWebEngineHistory);
+    d->updateItems();
+    return d->items[currentItemIndex()];
+}
+
+QWebEngineHistoryItem QWebEngineHistory::forwardItem() const
+{
+    return itemAt(currentItemIndex() + 1);
+}
+
+QWebEngineHistoryItem QWebEngineHistory::itemAt(int i) const
+{
+    Q_D(const QWebEngineHistory);
+    if (i >= 0 && i < count()) {
+        d->updateItems();
+        return d->items[i];
+    } else {
+        // Return an invalid item right away.
+        QWebEngineHistoryItem item(new QWebEngineHistoryItemPrivate(0, i));
+        Q_ASSERT(!item.isValid());
+        return item;
+    }
+}
+
+int QWebEngineHistory::currentItemIndex() const
+{
+    Q_D(const QWebEngineHistory);
+    return d->adapter->currentNavigationEntryIndex();
+}
+
+int QWebEngineHistory::count() const
+{
+    Q_D(const QWebEngineHistory);
+    return d->adapter->navigationEntryCount();
+}
+
+int QWebEngineHistory::maximumItemCount() const
+{
+    return 100;
+}
+
+void QWebEngineHistory::setMaximumItemCount(int count)
+{
+    qWarning("Not implemented: %s", __func__);
+}
+
+QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)
+{
+    qWarning("Not implemented: %s", __func__);
+    return stream;
+}
+
+QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history)
+{
+    qWarning("Not implemented: %s", __func__);
+    return stream;
 }

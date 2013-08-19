@@ -42,14 +42,28 @@
 #ifndef QWEBENGINEHISTORY_P_H
 #define QWEBENGINEHISTORY_P_H
 
+#include <QtCore/qshareddata.h>
+
 class WebContentsAdapter;
+
+class QWebEngineHistoryItemPrivate : public QSharedData
+{
+public:
+    QWebEngineHistoryItemPrivate(WebContentsAdapter *adapter = 0, int index = 0);
+
+    WebContentsAdapter *adapter;
+    int index;
+};
 
 class QWebEngineHistoryPrivate
 {
 public:
     QWebEngineHistoryPrivate(WebContentsAdapter *adapter);
+    ~QWebEngineHistoryPrivate();
+    void updateItems() const;
 
     WebContentsAdapter *adapter;
+    mutable QList<QWebEngineHistoryItem> items;
 };
 
 #endif // QWEBENGINEHISTORY_P_H

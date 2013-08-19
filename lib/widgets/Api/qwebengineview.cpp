@@ -114,6 +114,11 @@ void QWebEngineView::load(const QUrl& url)
     page()->load(url);
 }
 
+QWebEngineHistory* QWebEngineView::history() const
+{
+    return page()->history();
+}
+
 QString QWebEngineView::title() const
 {
     return page()->title();

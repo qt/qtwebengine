@@ -121,13 +121,13 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
 void QQuickWebEngineView::goBack()
 {
     Q_D(QQuickWebEngineView);
-    d->adapter->navigateHistory(-1);
+    d->adapter->navigateToOffset(-1);
 }
 
 void QQuickWebEngineView::goForward()
 {
     Q_D(QQuickWebEngineView);
-    d->adapter->navigateHistory(1);
+    d->adapter->navigateToOffset(1);
 }
 
 void QQuickWebEngineView::reload()
