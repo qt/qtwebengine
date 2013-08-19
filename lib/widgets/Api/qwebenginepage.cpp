@@ -37,11 +37,10 @@
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
     , adapter(new WebContentsAdapter(this))
-    , history(new QWebEngineHistory)
+    , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
     , view(0)
     , m_isLoading(false)
 {
-    history->d_func()->pagePrivate = this;
     memset(actions, 0, sizeof(actions));
 }
 

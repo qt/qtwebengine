@@ -42,17 +42,14 @@
 #ifndef QWEBENGINEHISTORY_P_H
 #define QWEBENGINEHISTORY_P_H
 
-class QWebEngineHistoryPrivate;
-class QWebEnginePagePrivate;
+class WebContentsAdapter;
 
 class QWebEngineHistoryPrivate
 {
-    QWebEngineHistory *q_ptr;
 public:
-    Q_DECLARE_PUBLIC(QWebEngineHistory)
+    QWebEngineHistoryPrivate(WebContentsAdapter *adapter);
 
-    QWebEngineHistoryPrivate();
-    QWebEnginePagePrivate *pagePrivate;
+    WebContentsAdapter *adapter;
 };
 
 #endif // QWEBENGINEHISTORY_P_H
