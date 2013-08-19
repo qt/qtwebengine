@@ -125,18 +125,9 @@ def initUpstreamSubmodules():
         gitmodules_file.writelines(['       ignore = all\n'])
         gitmodules_file.close()
 
-    gitignore_file = open('.gitignore')
-    gitignore_content = gitignore_file.readlines()
-    gitignore_file.close()
-
-    gitmodules_is_ignored = False
-    for gitignore_line in gitignore_content:
-        if '.gitmodules' in gitignore_line:
-            gitmodules_is_ignored = True
-    if not gitmodules_is_ignored:
-        gitignore_file = open('.gitignore', 'a')
-        gitignore_file.writelines(['.gitmodules\n'])
-        gitignore_file.close()
+    print 'Configuring git to ignore all submodules. Submodule changes will not show up in "git diff"!'
+    subprocess.call(['git', 'config', 'diff.ignoreSubmodules', 'all'])
+    subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
 
     ninjaSubmodule = GitSubmodule.Submodule()
     ninjaSubmodule.path = '3rdparty_upstream/ninja'
