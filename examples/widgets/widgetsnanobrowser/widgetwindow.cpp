@@ -106,7 +106,7 @@ WidgetWindow::~WidgetWindow()
 
 void WidgetWindow::loadAddressFromAddressBar()
 {
-    m_webView->load(addressLineEdit->text());
+    m_webView->load(urlFromUserInput(addressLineEdit->text()));
 }
 
 void WidgetWindow::setAddressBarUrl(const QUrl& url)
