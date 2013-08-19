@@ -45,15 +45,14 @@
 #include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
-QWebEngineHistoryPrivate::QWebEngineHistoryPrivate()
-    : pagePrivate(0)
+QWebEngineHistoryPrivate::QWebEngineHistoryPrivate(WebContentsAdapter *adapter)
+    : adapter(adapter)
 {
 }
 
-QWebEngineHistory::QWebEngineHistory()
-    : d_ptr(new QWebEngineHistoryPrivate)
+QWebEngineHistory::QWebEngineHistory(QWebEngineHistoryPrivate *d)
+    : d_ptr(d)
 {
-    d_ptr->q_ptr=this;
 }
 
 QWebEngineHistory::~QWebEngineHistory()
@@ -63,11 +62,11 @@ QWebEngineHistory::~QWebEngineHistory()
 bool QWebEngineHistory::canGoBack() const
 {
     Q_D(const QWebEngineHistory);
-    return d->pagePrivate->adapter->canGoBack();
+    return d->adapter->canGoBack();
 }
 
 bool QWebEngineHistory::canGoForward() const
 {
     Q_D(const QWebEngineHistory);
-    return d->pagePrivate->adapter->canGoForward();
+    return d->adapter->canGoForward();
 }

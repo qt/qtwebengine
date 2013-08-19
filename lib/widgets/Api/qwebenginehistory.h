@@ -81,7 +81,7 @@ public:
     void setMaximumItemCount(int count);
 
 private:
-    QWebEngineHistory();
+    QWebEngineHistory(QWebEngineHistoryPrivate *d);
     ~QWebEngineHistory();
 
     Q_DISABLE_COPY(QWebEngineHistory)
