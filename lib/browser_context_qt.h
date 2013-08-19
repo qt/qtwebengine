@@ -66,6 +66,7 @@
 
 #include "download_manager_delegate_qt.h"
 #include "resource_context_qt.h"
+#include "type_conversion.h"
 #include "url_request_context_getter_qt.h"
 
 class BrowserContextQt : public content::BrowserContext
@@ -90,7 +91,7 @@ public:
             dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
 
         dataLocation.append(QDir::separator() % QStringLiteral("QtWebEngine"));
-        return base::FilePath(qStringToStringType(dataLocation));
+        return base::FilePath(toFilePathString(dataLocation));
     }
 
     virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE

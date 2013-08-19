@@ -46,9 +46,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents.h"
 
-#include <QObject>
-#include <QUrl>
-
 namespace content {
     class BrowserContext;
     class SiteInstance;

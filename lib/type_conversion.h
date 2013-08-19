@@ -39,53 +39,36 @@
 **
 ****************************************************************************/
 
-#include "shared_globals.h"
+#ifndef TYPE_CONVERSION_H
+#define TYPE_CONVERSION_H
 
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include <QString>
+#include <QUrl>
+#include "base/files/file_path.h"
+#include "url/gurl.h"
 
-#include <QScreen>
-#include <QWindow>
-
-void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
+inline QString toQt(const string16 &string)
 {
-    QScreen* screen = window->screen();
-
-    WebKit::WebScreenInfo r;
-    r.deviceScaleFactor = screen->devicePixelRatio();
-    r.depthPerComponent = 8;
-    r.depth = screen->depth();
-    r.isMonochrome = (r.depth == 1);
-
-    QRect virtualGeometry = screen->virtualGeometry();
-    r.rect = WebKit::WebRect(virtualGeometry.x(), virtualGeometry.y(), virtualGeometry.width(), virtualGeometry.height());
-    QRect available = screen->availableGeometry();
-    r.availableRect = WebKit::WebRect(available.x(), available.y(), available.width(), available.height());
-    *results = r;
+    return QString::fromUtf16(string.data());
 }
 
-namespace content {
-class WebContentsImpl;
-class WebContentsViewPort;
-class WebContentsViewDelegate;
-class RenderViewHostDelegateView;
-
-WebContentsViewPort* CreateWebContentsView(WebContentsImpl*,
-                                           WebContentsViewDelegate*,
-                                           RenderViewHostDelegateView**)
+inline QUrl toQt(const GURL &url)
 {
-    return 0;
+    return QUrl(QString::fromStdString(url.spec()));
 }
 
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
-    // WebContentsViewQt should take care of this directly.
-    Q_UNREACHABLE();
-    return NULL;
+inline GURL toGurl(const QUrl& url)
+{
+    return GURL(url.toString().toStdString());
 }
 
-// static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebKit::WebScreenInfo* results) {
-    QWindow dummy;
-    GetScreenInfoFromNativeWindow(&dummy, results);
+inline base::FilePath::StringType toFilePathString(const QString &str)
+{
+#if defined(OS_POSIX)
+    return str.toStdString();
+#elif defined(OS_WIN)
+    return str.toStdWString();
+#endif
 }
 
-}
+#endif // TYPE_CONVERSION_H

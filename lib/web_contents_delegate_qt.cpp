@@ -41,6 +41,7 @@
 
 #include "web_contents_delegate_qt.h"
 
+#include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 
 #include "content/public/browser/navigation_controller.h"
@@ -87,9 +88,7 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL) {
         Q_ASSERT(m_viewClient);
-        GURL gurl = web_contents()->GetVisibleURL();
-        QUrl url(QString::fromStdString(gurl.spec()));
-        m_viewClient->urlChanged(url);
+        m_viewClient->urlChanged(toQt(web_contents()->GetVisibleURL()));
     }
 }
 

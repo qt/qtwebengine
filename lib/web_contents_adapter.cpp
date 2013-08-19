@@ -118,10 +118,7 @@ void WebContentsAdapter::reload()
 
 void WebContentsAdapter::load(const QUrl &url)
 {
-    QString urlString = url.toString();
-    GURL gurl(urlString.toStdString());
-
-    content::NavigationController::LoadURLParams params(gurl);
+    content::NavigationController::LoadURLParams params(toGurl(url));
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     webContents()->GetController().LoadURLWithParams(params);
     webContents()->GetView()->Focus();
@@ -129,16 +126,13 @@ void WebContentsAdapter::load(const QUrl &url)
 
 QUrl WebContentsAdapter::activeUrl() const
 {
-    GURL gurl = webContents()->GetVisibleURL();
-    return QUrl(QString::fromStdString(gurl.spec()));
+    return toQt(webContents()->GetVisibleURL());
 }
 
 QString WebContentsAdapter::pageTitle() const
 {
     content::NavigationEntry* entry = webContents()->GetController().GetVisibleEntry();
-    if (!entry)
-        return QString();
-    return QString::fromUtf16(entry->GetTitle().data());
+    return entry ? toQt(entry->GetTitle()) : QString();
 }
 
 content::WebContents *WebContentsAdapter::webContents() const
