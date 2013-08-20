@@ -49,6 +49,7 @@ class URLRequestContextGetter;
 }
 
 class BrowserContextQt;
+class GURL;
 
 class ResourceContextQt : public content::ResourceContext
 {
