@@ -75,11 +75,16 @@ defineReplace(findNinja) {
   !isEmpty(CACHED_NINJA_EXECUTABLE):exists($$CACHED_NINJA_EXECUTABLE): return($$CACHED_NINJA_EXECUTABLE)
   out = $$which(ninja)
   # Try to be smart about it if we know where the chromium sources are located
-  !exists($$out): out = $$absolute_path("$$QTWEBENGINE_ROOT/3rdparty/ninja/ninja")
-  # If we still did not find ninja, then we bootstrap it.
   !exists($$out) {
-    message("bootstrapping ninja...")
-    system("python $$QTWEBENGINE_ROOT/3rdparty/ninja/bootstrap.py")
+    ninjadir = $$absolute_path("$$QTWEBENGINE_ROOT/3rdparty/ninja")
+    # We might deal with an upstream chromium build
+    !exists($$ninjadir): ninjadir = $$absolute_path("$$QTWEBENGINE_ROOT/3rdparty_upstream/ninja")
+    out = "$$ninjadir/ninja"
+    # If we still did not find ninja, then we bootstrap it.
+    !exists($$out) {
+      message("bootstrapping ninja...")
+      system("python $$ninjadir/bootstrap.py")
+    }
   }
   message("using $$out")
   cache(CACHED_NINJA_EXECUTABLE, set, out)
