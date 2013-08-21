@@ -76,13 +76,16 @@ defineReplace(findNinja) {
   out = $$which(ninja)
   # Try to be smart about it if we know where the chromium sources are located
   !exists($$out) {
-    ninjadir = $$absolute_path("$$QTWEBENGINE_ROOT/3rdparty/ninja")
-    # We might deal with an upstream chromium build
-    !exists($$ninjadir): ninjadir = $$absolute_path("$$QTWEBENGINE_ROOT/3rdparty_upstream/ninja")
-    out = "$$ninjadir/ninja"
+    ninja_tool = $$system("git config qtwebengine.ninja")
+
+    # Fall back to the snapshot path if git does not know about ninja (i.e. init-repository.py has not been used)
+    isEmpty(ninja_tool): ninja_tool = "3rdparty/ninja/ninja"
+
+    out = $$absolute_path("$$QTWEBENGINE_ROOT/$$ninja_tool")
     # If we still did not find ninja, then we bootstrap it.
     !exists($$out) {
       message("bootstrapping ninja...")
+      ninjadir = $$dirname(out)
       system("python $$ninjadir/bootstrap.py")
     }
   }

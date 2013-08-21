@@ -46,6 +46,7 @@ import os
 import subprocess
 import sys
 import string
+import argparse
 
 qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 
@@ -53,11 +54,26 @@ sys.path.append(os.path.join(qtwebengine_src, 'tools'))
 import git_submodule as GitSubmodule
 
 chromium_src = os.environ.get('CHROMIUM_SRC_DIR')
+ninja_src = os.path.join(qtwebengine_src, '3rdparty_upstream/ninja')
+use_external_chromium = False
+
+parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule (default)')
+group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule')
+args = parser.parse_args()
+
 if chromium_src:
-  chromium_src = os.path.abspath(chromium_src)
+    chromium_src = os.path.abspath(chromium_src)
+    use_external_chromium = True
 if not chromium_src or not os.path.isdir(chromium_src):
-  chromium_src = os.path.join(qtwebengine_src, '3rdparty_upstream/chromium')
-  print 'CHROMIUM_SRC_DIR not set, falling back to ' + chromium_src
+    if args.snapshot:
+        chromium_src = os.path.join(qtwebengine_src, '3rdparty/chromium')
+        ninja_src = os.path.join(qtwebengine_src, '3rdparty/ninja')
+    if args.upstream or not chromium_src:
+        chromium_src = os.path.join(qtwebengine_src, '3rdparty_upstream/chromium')
+        args.upstream = True
+    print 'CHROMIUM_SRC_DIR not set, using Chromium in' + chromium_src
 
 # Write our chromium sources directory into git config.
 relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_src)
@@ -73,6 +89,8 @@ def which(tool_name):
     return ''
 
 def updateLastChange():
+    if use_external_chromium:
+        return
     currentDir = os.getcwd()
     os.chdir(chromium_src)
     print 'updating LASTCHANGE files'
@@ -80,17 +98,23 @@ def updateLastChange():
     subprocess.call(['python', 'build/util/lastchange.py', '-s', 'third_party/WebKit', '-o', 'build/util/LASTCHANGE.blink'])
     os.chdir(currentDir)
 
-def buildNinja():
+def buildNinjaIfNotFound():
     ninja_tool = which('ninja')
-    if ninja_tool:
+    if not ninja_tool:
+        ninja_tool = subprocess.check_output("git config qtwebengine.ninja || true", shell=True).strip()
+        ninja_tool = os.path.join(qtwebengine_src, ninja_tool)
+    if os.path.isfile(ninja_tool) and os.access(ninja_tool, os.X_OK):
         print 'found ninja in: ' + ninja_tool + ' ...not building new ninja.'
         return
     currentDir = os.getcwd()
-    ninja_src = os.path.join(qtwebengine_src, '3rdparty_upstream/ninja')
     os.chdir(ninja_src)
     print 'building ninja...'
     subprocess.call(['python', 'bootstrap.py'])
     os.chdir(currentDir)
+    ninja_tool = os.path.join(ninja_src, 'ninja')
+    relative_ninja_path = os.path.relpath(ninja_tool, qtwebengine_src)
+    subprocess.call(['git', 'config', 'qtwebengine.ninja', relative_ninja_path])
+
 
 def addGerritRemote():
     os.chdir(qtwebengine_src)
@@ -103,6 +127,8 @@ def installGitHooks():
     subprocess.call(['scp', '-p', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
 
 def applyPatches():
+    if use_external_chromium:
+        return
     os.chdir(qtwebengine_src)
     subprocess.call(['sh', './patches/patch-chromium.sh'])
 
@@ -113,14 +139,10 @@ def initUpstreamSubmodules():
     chromium_shasum = '29d2d710e0e7961dff032ad4ab73887cc33122bb'
     os.chdir(qtwebengine_src)
 
-    print 'Configuring git to ignore all submodules. Submodule changes will not show up in "git diff"!'
-    subprocess.call(['git', 'config', 'diff.ignoreSubmodules', 'all'])
-    subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
-
     current_submodules = subprocess.check_output(['git', 'submodule'])
     if not '3rdparty_upstream/ninja' in current_submodules:
         subprocess.call(['git', 'submodule', 'add', ninja_url, '3rdparty_upstream/ninja'])
-    if not '3rdparty_upstream/chromium' in current_submodules:
+    if not use_external_chromium and not '3rdparty_upstream/chromium' in current_submodules:
         subprocess.call(['git', 'submodule', 'add', chromium_url, '3rdparty_upstream/chromium'])
 
     ninjaSubmodule = GitSubmodule.Submodule()
@@ -130,19 +152,34 @@ def initUpstreamSubmodules():
     ninjaSubmodule.os = 'all'
     ninjaSubmodule.initialize()
 
-    chromiumSubmodule = GitSubmodule.Submodule()
-    chromiumSubmodule.path = '3rdparty_upstream/chromium'
-    chromiumSubmodule.shasum = chromium_shasum
-    chromiumSubmodule.url = chromium_url
-    chromiumSubmodule.os = 'all'
-    chromiumSubmodule.initialize()
+    if not use_external_chromium:
+        chromiumSubmodule = GitSubmodule.Submodule()
+        chromiumSubmodule.path = '3rdparty_upstream/chromium'
+        chromiumSubmodule.shasum = chromium_shasum
+        chromiumSubmodule.url = chromium_url
+        chromiumSubmodule.os = 'all'
+        chromiumSubmodule.initialize()
 
+def initSnapshot():
+    snapshot = GitSubmodule.Submodule()
+    snapshot.path = '3rdparty'
+    snapshot.os = 'all'
+    snapshot.initialize()
 
 os.chdir(qtwebengine_src)
+
 addGerritRemote()
 installGitHooks()
-initUpstreamSubmodules()
-updateLastChange()
-applyPatches()
-#buildNinja()
 
+print 'Configuring git to ignore all submodules. Submodule changes will not show up in "git diff"!'
+subprocess.call(['git', 'config', 'diff.ignoreSubmodules', 'all'])
+subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
+
+if args.upstream:
+    initUpstreamSubmodules()
+    updateLastChange()
+    applyPatches()
+if args.snapshot:
+    initSnapshot()
+
+buildNinjaIfNotFound()
