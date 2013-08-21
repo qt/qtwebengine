@@ -611,6 +611,7 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
 
     webKitEvent.nativeKeyCode = ev->nativeVirtualKey();
     webKitEvent.windowsKeyCode = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
+    webKitEvent.setKeyIdentifierFromWindowsKeyCode();
 
     memcpy(&webKitEvent.text, ev->text().utf16(), qMin(sizeof(webKitEvent.text), sizeof(ev->text().utf16())));
     return webKitEvent;
