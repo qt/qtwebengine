@@ -3321,6 +3321,9 @@ void tst_QWebEnginePage::thirdPartyCookiePolicy()
 #ifdef Q_OS_MAC
 void tst_QWebEnginePage::macCopyUnicodeToClipboard()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     QString unicodeText = QString::fromUtf8("αβγδεζηθικλμπ");
     m_page->setHtml(QString("<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" /></head><body>%1</body></html>").arg(unicodeText));
     m_page->triggerAction(QWebEnginePage::SelectAll);
@@ -3330,6 +3333,7 @@ void tst_QWebEnginePage::macCopyUnicodeToClipboard()
 
     QVERIFY(clipboardData.contains(QLatin1String("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />")));
     QVERIFY(clipboardData.contains(unicodeText));
+#endif
 }
 #endif
 
