@@ -106,7 +106,7 @@ def addGerritRemote():
 
 def installGitHooks():
     os.chdir(qtwebengine_src)
-    subprocess.call(['scp', '-p', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
+    subprocess.call(['scp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
 
 def applyPatches():
     if use_external_chromium:
