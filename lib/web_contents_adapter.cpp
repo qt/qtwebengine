@@ -58,7 +58,6 @@
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
 
-// Used to maintain a WebEngineContext for as long as we need one
 class WebContentsAdapterPrivate {
 public:
     WebContentsAdapterPrivate();
@@ -108,103 +107,113 @@ WebContentsAdapter::~WebContentsAdapter()
 
 bool WebContentsAdapter::canGoBack() const
 {
-    return webContents()->GetController().CanGoBack();
+    Q_D(const WebContentsAdapter);
+    return d->webContents->GetController().CanGoBack();
 }
 
 bool WebContentsAdapter::canGoForward() const
 {
-    return webContents()->GetController().CanGoForward();
+    Q_D(const WebContentsAdapter);
+    return d->webContents->GetController().CanGoForward();
 }
 
 bool WebContentsAdapter::isLoading() const
 {
-    return webContents()->IsLoading();
+    Q_D(const WebContentsAdapter);
+    return d->webContents->IsLoading();
 }
 
 void WebContentsAdapter::stop()
 {
-    content::NavigationController& controller = webContents()->GetController();
+    Q_D(WebContentsAdapter);
+    content::NavigationController& controller = d->webContents->GetController();
 
     int index = controller.GetPendingEntryIndex();
     if (index != -1)
         controller.RemoveEntryAtIndex(index);
 
-    webContents()->GetView()->Focus();
+    d->webContents->GetView()->Focus();
 }
 
 void WebContentsAdapter::reload()
 {
-    webContents()->GetController().Reload(/*checkRepost = */false);
-    webContents()->GetView()->Focus();
+    Q_D(WebContentsAdapter);
+    d->webContents->GetController().Reload(/*checkRepost = */false);
+    d->webContents->GetView()->Focus();
 }
 
 void WebContentsAdapter::load(const QUrl &url)
 {
+    Q_D(WebContentsAdapter);
     content::NavigationController::LoadURLParams params(toGurl(url));
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
-    webContents()->GetController().LoadURLWithParams(params);
-    webContents()->GetView()->Focus();
+    d->webContents->GetController().LoadURLWithParams(params);
+    d->webContents->GetView()->Focus();
 }
 
 QUrl WebContentsAdapter::activeUrl() const
 {
-    return toQt(webContents()->GetVisibleURL());
+    Q_D(const WebContentsAdapter);
+    return toQt(d->webContents->GetVisibleURL());
 }
 
 QString WebContentsAdapter::pageTitle() const
 {
-    content::NavigationEntry* entry = webContents()->GetController().GetVisibleEntry();
+    Q_D(const WebContentsAdapter);
+    content::NavigationEntry* entry = d->webContents->GetController().GetVisibleEntry();
     return entry ? toQt(entry->GetTitle()) : QString();
 }
 
 void WebContentsAdapter::navigateToIndex(int offset)
 {
-    webContents()->GetController().GoToIndex(offset);
-    webContents()->GetView()->Focus();
+    Q_D(WebContentsAdapter);
+    d->webContents->GetController().GoToIndex(offset);
+    d->webContents->GetView()->Focus();
 }
 
 void WebContentsAdapter::navigateToOffset(int offset)
 {
-    webContents()->GetController().GoToOffset(offset);
-    webContents()->GetView()->Focus();
+    Q_D(WebContentsAdapter);
+    d->webContents->GetController().GoToOffset(offset);
+    d->webContents->GetView()->Focus();
 }
 
 int WebContentsAdapter::navigationEntryCount()
 {
-    return webContents()->GetController().GetEntryCount();
+    Q_D(WebContentsAdapter);
+    return d->webContents->GetController().GetEntryCount();
 }
 
 int WebContentsAdapter::currentNavigationEntryIndex()
 {
-    return webContents()->GetController().GetCurrentEntryIndex();
+    Q_D(WebContentsAdapter);
+    return d->webContents->GetController().GetCurrentEntryIndex();
 }
 
 QUrl WebContentsAdapter::getNavigationEntryOriginalUrl(int index)
 {
-    content::NavigationEntry *entry = webContents()->GetController().GetEntryAtIndex(index);
+    Q_D(WebContentsAdapter);
+    content::NavigationEntry *entry = d->webContents->GetController().GetEntryAtIndex(index);
     return entry ? toQt(entry->GetOriginalRequestURL()) : QUrl();
 }
 
 QUrl WebContentsAdapter::getNavigationEntryUrl(int index)
 {
-    content::NavigationEntry *entry = webContents()->GetController().GetEntryAtIndex(index);
+    Q_D(WebContentsAdapter);
+    content::NavigationEntry *entry = d->webContents->GetController().GetEntryAtIndex(index);
     return entry ? toQt(entry->GetURL()) : QUrl();
 }
 
 QString WebContentsAdapter::getNavigationEntryTitle(int index)
 {
-    content::NavigationEntry *entry = webContents()->GetController().GetEntryAtIndex(index);
+    Q_D(WebContentsAdapter);
+    content::NavigationEntry *entry = d->webContents->GetController().GetEntryAtIndex(index);
     return entry ? toQt(entry->GetTitle()) : QString();
 }
 
 void WebContentsAdapter::clearNavigationHistory()
 {
-    if (webContents()->GetController().CanPruneAllButVisible())
-        webContents()->GetController().PruneAllButVisible();
-}
-
-content::WebContents *WebContentsAdapter::webContents() const
-{
-    Q_D(const WebContentsAdapter);
-    return d->webContents.get();
+    Q_D(WebContentsAdapter);
+    if (d->webContents->GetController().CanPruneAllButVisible())
+        d->webContents->GetController().PruneAllButVisible();
 }

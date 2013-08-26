@@ -78,7 +78,6 @@ public:
     void clearNavigationHistory();
 
 private:
-    inline content::WebContents* webContents() const;
     Q_DECLARE_PRIVATE(WebContentsAdapter);
     QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 };
