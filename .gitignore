@@ -1,8 +1,6 @@
 *.o
 Makefile
 process/process
-3rdparty/
-3rdparty_upstream/
 out/
 lib/lib.gyp
 process/process.gyp
