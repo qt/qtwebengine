@@ -44,7 +44,7 @@
 
 #include "web_contents_adapter_client.h"
 
-#include <QScopedPointer>
+#include <QSharedData>
 #include <QtQuick/private/qquickitem_p.h>
 
 class QQuickWebEngineView;
@@ -65,7 +65,7 @@ public:
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
 
-    QScopedPointer<WebContentsAdapter> adapter;
+    QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     friend class RenderWidgetHostViewQtDelegateQuick;
 };
 
