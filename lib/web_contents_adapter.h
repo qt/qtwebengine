@@ -44,6 +44,7 @@
 #include "qtwebengineglobal.h"
 
 #include <QScopedPointer>
+#include <QSharedData>
 #include <QString>
 #include <QUrl>
 
@@ -53,7 +54,7 @@ class WebContents;
 class WebContentsAdapterClient;
 class WebContentsAdapterPrivate;
 
-class QWEBENGINE_EXPORT WebContentsAdapter {
+class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 
 public:
     WebContentsAdapter(WebContentsAdapterClient* adapterClient);
@@ -78,6 +79,7 @@ public:
     void clearNavigationHistory();
 
 private:
+    Q_DISABLE_COPY(WebContentsAdapter);
     Q_DECLARE_PRIVATE(WebContentsAdapter);
     QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 };

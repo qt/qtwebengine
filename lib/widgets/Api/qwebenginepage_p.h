@@ -46,7 +46,7 @@
 
 #include "web_contents_adapter_client.h"
 #include <QtCore/private/qobject_p.h>
-#include <QScopedPointer>
+#include <QSharedData>
 
 class QWebEngineHistory;
 class QWebEnginePage;
@@ -74,7 +74,7 @@ public:
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
 
-    QScopedPointer<WebContentsAdapter> adapter;
+    QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineView *view;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
