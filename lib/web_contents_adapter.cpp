@@ -50,13 +50,22 @@
 
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/renderer_preferences.h"
+
+#include <QGuiApplication>
+#include <QStyleHints>
+
+static const int kTestWindowWidth = 800;
+static const int kTestWindowHeight = 600;
 
 // Used to maintain a WebEngineContext for as long as we need one
 class WebContentsAdapterPrivate {
 public:
     WebContentsAdapterPrivate();
     scoped_refptr<WebEngineContext> engineContext;
-    QScopedPointer<WebContentsDelegateQt> webContentsDelegate;
+    scoped_ptr<content::WebContents> webContents;
+    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
+    WebContentsAdapterClient *adapterClient;
 };
 
 WebContentsAdapterPrivate::WebContentsAdapterPrivate()
@@ -69,10 +78,26 @@ WebContentsAdapter::WebContentsAdapter(WebContentsAdapterClient *adapterClient)
     : d_ptr(new WebContentsAdapterPrivate)
 {
     Q_D(WebContentsAdapter);
+    d->adapterClient = adapterClient;
+
     content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
-    d->webContentsDelegate.reset(new WebContentsDelegateQt(browserContext, NULL, MSG_ROUTING_NONE, gfx::Size()));
-    d->webContentsDelegate->m_viewClient = adapterClient;
-    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContentsDelegate->web_contents()->GetView());
+    content::WebContents::CreateParams create_params(browserContext, NULL);
+    create_params.routing_id = MSG_ROUTING_NONE;
+    create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
+    d->webContents.reset(content::WebContents::Create(create_params));
+
+    content::RendererPreferences* rendererPrefs = d->webContents->GetMutableRendererPrefs();
+    rendererPrefs->use_custom_colors = true;
+    // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
+    const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
+    rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
+    d->webContents->GetRenderViewHost()->SyncRendererPrefs();
+
+    // Create and attach a WebContentsDelegateQt to the WebContents.
+    d->webContentsDelegate.reset(new WebContentsDelegateQt(d->webContents.get(), adapterClient));
+
+    // Let the WebContent's view know about the WebContentsAdapterClient.
+    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContents->GetView());
     contentsView->SetClient(adapterClient);
 }
 
@@ -180,6 +205,5 @@ void WebContentsAdapter::clearNavigationHistory()
 content::WebContents *WebContentsAdapter::webContents() const
 {
     Q_D(const WebContentsAdapter);
-    Q_ASSERT(d->webContentsDelegate);
-    return d->webContentsDelegate->web_contents();
+    return d->webContents.get();
 }

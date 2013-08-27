@@ -42,54 +42,25 @@
 #include "web_contents_delegate_qt.h"
 
 #include "type_conversion.h"
+#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/invalidate_type.h"
-#include "content/public/common/renderer_preferences.h"
 
-#include <QGuiApplication>
-#include <QStyleHints>
-#include <QUrl>
-
-static const int kTestWindowWidth = 800;
-static const int kTestWindowHeight = 600;
-
-WebContentsDelegateQt::WebContentsDelegateQt(content::BrowserContext* browser_context, content::SiteInstance* site_instance, int routing_id, const gfx::Size& initial_size)
-    : m_viewClient(0)
+WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
+    : m_webContents(webContents)
+    , m_viewClient(adapterClient)
 {
-    content::WebContents::CreateParams create_params(browser_context, site_instance);
-    create_params.routing_id = routing_id;
-    if (!initial_size.IsEmpty())
-        create_params.initial_size = initial_size;
-    else
-        create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
-
-    m_webContents.reset(content::WebContents::Create(create_params));
-
-    content::RendererPreferences* rendererPrefs = m_webContents->GetMutableRendererPrefs();
-    rendererPrefs->use_custom_colors = true;
-    // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
-    const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
-    rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
-    m_webContents->GetRenderViewHost()->SyncRendererPrefs();
-
-    m_webContents->SetDelegate(this);
-    this->Observe(m_webContents.get());
+    webContents->SetDelegate(this);
+    Observe(webContents);
 }
 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
 {
-    if (changed_flags & content::INVALIDATE_TYPE_URL) {
-        Q_ASSERT(m_viewClient);
-        m_viewClient->urlChanged(toQt(web_contents()->GetVisibleURL()));
-    }
+    if (changed_flags & content::INVALIDATE_TYPE_URL)
+        m_viewClient->urlChanged(toQt(m_webContents->GetVisibleURL()));
 }
 
 void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)
@@ -108,11 +79,3 @@ void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_
     if (is_main_frame)
         m_viewClient->loadFinished(true);
 }
-
-
-content::WebContents* WebContentsDelegateQt::web_contents()
-{
-    return m_webContents.get();
-}
-
-
