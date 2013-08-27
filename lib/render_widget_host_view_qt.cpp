@@ -98,6 +98,8 @@ static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKi
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
+    , m_adapterClient(0)
+    , m_initPending(false)
 {
     m_host->SetView(this);
 }
@@ -106,10 +108,19 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
 }
 
-void RenderWidgetHostViewQt::SetDelegate(RenderWidgetHostViewQtDelegate* delegate)
+void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
 {
     m_delegate.reset(delegate);
     delegate->setView(this);
+}
+
+void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterClient)
+{
+    Q_ASSERT(!m_adapterClient);
+
+    m_adapterClient = adapterClient;
+    if (m_initPending)
+        InitAsChild(0);
 }
 
 bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
@@ -159,9 +170,14 @@ content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size
     return new BackingStoreQt(m_host, size, new QWindow);
 }
 
-void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView parent_view)
+void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 {
-    m_delegate->initAsChild(reinterpret_cast<WebContentsAdapterClient*>(parent_view));
+    if (!m_adapterClient) {
+        m_initPending = true;
+        return;
+    }
+    m_initPending = false;
+    m_delegate->initAsChild(m_adapterClient);
 }
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)

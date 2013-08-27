@@ -64,6 +64,7 @@ public:
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
+    virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) Q_DECL_OVERRIDE;
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     friend class RenderWidgetHostViewQtDelegateQuick;

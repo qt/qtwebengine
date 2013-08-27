@@ -63,6 +63,24 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
         m_viewClient->urlChanged(toQt(m_webContents->GetVisibleURL()));
 }
 
+void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
+{
+    WebContentsAdapter *newAdapter = new WebContentsAdapter(new_contents);
+    // Do the first ref-count manually to be able to know if the application is handling adoptNewWindow through the public API.
+    newAdapter->ref.ref();
+
+    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition));
+
+    if (!newAdapter->ref.deref()) {
+        // adoptNewWindow didn't increase the ref-count, new_contents needs to be discarded.
+        delete newAdapter;
+        newAdapter = 0;
+    }
+
+    if (was_blocked)
+        *was_blocked = !newAdapter;
+}
+
 void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)
 {
     m_viewClient->loadingStateChanged();

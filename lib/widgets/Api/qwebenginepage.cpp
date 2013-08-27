@@ -36,11 +36,12 @@
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
-    , adapter(new WebContentsAdapter(this))
+    , adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
     , view(0)
     , m_isLoading(false)
 {
+    adapter->initialize(this);
     memset(actions, 0, sizeof(actions));
 }
 
@@ -94,6 +95,17 @@ void QWebEnginePagePrivate::focusContainer()
 {
     if (view)
         view->setFocus();
+}
+
+void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition)
+{
+    Q_Q(QWebEnginePage);
+    QWebEnginePage *newPage = q->createWindow(disposition == WebContentsAdapterClient::NewPopupDisposition ? QWebEnginePage::WebModalDialog : QWebEnginePage::WebBrowserWindow);
+    // Overwrite the new page's WebContents with ours.
+    if (newPage) {
+        newPage->d_func()->adapter = newWebContents;
+        newWebContents->initialize(newPage->d_func());
+    }
 }
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
@@ -265,6 +277,17 @@ QUrl QWebEnginePage::url() const
 {
     Q_D(const QWebEnginePage);
     return d->adapter->activeUrl();
+}
+
+QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
+{
+    Q_D(const QWebEnginePage);
+    if (d->view) {
+        QWebEngineView *newView = d->view->createWindow(type);
+        if (newView)
+            return newView->page();
+    }
+    return 0;
 }
 
 #include "moc_qwebenginepage.cpp"
