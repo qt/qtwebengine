@@ -125,10 +125,12 @@ Q_SIGNALS:
     void urlChanged(const QUrl&);
 
 protected:
-    virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) { Q_UNUSED(type); return 0; }
+    virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);
+
+    friend class QWebEnginePage;
 };
 
 #endif // QWEBENGINEVIEW_H
