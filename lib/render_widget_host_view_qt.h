@@ -60,6 +60,7 @@ class QMouseEvent;
 class QTouchEvent;
 class QWheelEvent;
 class RenderWidgetHostViewQtDelegate;
+class WebContentsAdapterClient;
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
@@ -70,13 +71,14 @@ public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
     ~RenderWidgetHostViewQt();
 
-    void SetDelegate(RenderWidgetHostViewQtDelegate* delegate);
+    void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
+    void setAdapterClient(WebContentsAdapterClient *adapterClient);
     bool handleEvent(QEvent* event);
     BackingStoreQt* GetBackingStore();
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size);
 
-    virtual void InitAsChild(gfx::NativeView parent_view);
+    virtual void InitAsChild(gfx::NativeView);
     virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&);
     virtual void InitAsFullscreen(content::RenderWidgetHostView*);
     virtual content::RenderWidgetHost* GetRenderWidgetHost() const;
@@ -170,6 +172,9 @@ private:
     QMap<int, int> m_touchIdMapping;
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
+    WebContentsAdapterClient *m_adapterClient;
+
+    bool m_initPending;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

@@ -58,15 +58,17 @@ class WebContentsViewQt
     , public content::RenderViewHostDelegateView
 {
 public:
-    WebContentsViewQt(content::WebContents* web_contents)
-        : m_client(0)
+    WebContentsViewQt(content::WebContents* webContents)
+        : m_webContents(webContents)
+        , m_client(0)
+        , m_factoryClient(0)
     { }
 
-    void SetClient(WebContentsAdapterClient* client) { m_client = client; }
+    void initialize(WebContentsAdapterClient* client);
 
     virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host);
 
-    virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context) { QT_NOT_YET_IMPLEMENTED }
+    virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context);
 
     virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) { return 0; }
 
@@ -78,7 +80,7 @@ public:
 
     virtual void SetOverscrollControllerEnabled(bool enabled) { QT_NOT_YET_IMPLEMENTED }
 
-    virtual gfx::NativeView GetNativeView() const {  QT_NOT_USED return 0; }
+    virtual gfx::NativeView GetNativeView() const;
 
     virtual gfx::NativeView GetContentNativeView() const { QT_NOT_USED return 0; }
 
@@ -113,7 +115,9 @@ public:
 #endif // defined(OS_MACOSX)
 
 private:
-    WebContentsAdapterClient* m_client;
+    content::WebContents *m_webContents;
+    WebContentsAdapterClient *m_client;
+    WebContentsAdapterClient *m_factoryClient;
 };
 
 #endif // WEB_CONTENTS_VIEW_QT_H

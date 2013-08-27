@@ -166,4 +166,10 @@ void QWebEngineView::reload()
     page()->triggerAction(QWebEnginePage::Reload);
 }
 
+QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
+{
+    Q_UNUSED(type)
+    return 0;
+}
+
 #include "moc_qwebengineview.cpp"

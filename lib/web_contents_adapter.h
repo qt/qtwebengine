@@ -57,8 +57,10 @@ class WebContentsAdapterPrivate;
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 
 public:
-    WebContentsAdapter(WebContentsAdapterClient* adapterClient);
+    // Takes ownership of the WebContents.
+    WebContentsAdapter(content::WebContents *webContents = 0);
     ~WebContentsAdapter();
+    void initialize(WebContentsAdapterClient *adapterClient);
 
     bool canGoBack() const;
     bool canGoForward() const;

@@ -463,8 +463,8 @@ private Q_SLOTS:
 
 void tst_QWebEnginePage::popupFormSubmission()
 {
-#if !defined(QWEBENGINEPAGE_CREATEWINDOW)
-    QSKIP("QWEBENGINEPAGE_CREATEWINDOW");
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
 #else
     TestPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
