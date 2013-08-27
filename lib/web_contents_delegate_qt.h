@@ -57,8 +57,7 @@ class WebContentsDelegateQt : public content::WebContentsDelegate
                             , public content::WebContentsObserver
 {
 public:
-    WebContentsDelegateQt(content::BrowserContext*, content::SiteInstance*, int routing_id, const gfx::Size& initial_size);
-    content::WebContents* web_contents();
+    WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
 
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
     virtual void LoadingStateChanged(content::WebContents* source);
@@ -66,9 +65,8 @@ public:
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
 
 private:
-    scoped_ptr<content::WebContents> m_webContents;
+    content::WebContents *m_webContents;
     WebContentsAdapterClient *m_viewClient;
-    friend class WebContentsAdapter;
 };
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H
