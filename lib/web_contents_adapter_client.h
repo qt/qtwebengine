@@ -50,10 +50,25 @@
 
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
+class WebContentsAdapter;
 class WebContentsDelegateQt;
 
 class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
+    enum WindowOpenDisposition {
+        UnknownDisposition = 0,
+        SuppressOpenDisposition = 1,
+        CurrentTabDisposition = 2,
+        SingletonTabDisposition = 3,
+        NewForegroundTabDisposition = 4,
+        NewBackgroundTabDisposition = 5,
+        NewPopupDisposition = 6,
+        NewWindowDisposition = 7,
+        SaveToDiskDisposition = 8,
+        OffTheRecordDisposition = 9,
+        IgnoreActionDisposition = 10,
+    };
+
     virtual ~WebContentsAdapterClient() { }
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
@@ -63,6 +78,7 @@ public:
     virtual QRectF viewportRect() const = 0;
     virtual void loadFinished(bool success) = 0;
     virtual void focusContainer() = 0;
+    virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

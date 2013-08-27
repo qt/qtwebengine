@@ -49,8 +49,9 @@
 
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
-    : adapter(new WebContentsAdapter(this))
+    : adapter(new WebContentsAdapter)
 {
+    adapter->initialize(this);
 }
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate()
@@ -95,6 +96,13 @@ void QQuickWebEngineViewPrivate::focusContainer()
 {
     Q_Q(QQuickWebEngineView);
     q->forceActiveFocus();
+}
+
+void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition)
+{
+    Q_UNUSED(newWebContents);
+    Q_UNUSED(disposition);
+    Q_UNREACHABLE();
 }
 
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)

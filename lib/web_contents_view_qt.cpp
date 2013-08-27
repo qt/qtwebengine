@@ -47,22 +47,46 @@
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
+void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
+{
+    m_client = client;
+
+    // Check if a RWHV was created before the initialization.
+    if (m_webContents->GetRenderWidgetHostView())
+        static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())->setAdapterClient(client);
+}
+
 content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
-    RenderWidgetHostViewQtDelegate* viewDelegate = m_client->CreateRenderWidgetHostViewQtDelegate();
-    view->SetDelegate(viewDelegate);
-    // The delegate has been bound to its view, now initialize it.
-    // gfx::NativeView logically maps to our client here but the reinterpret_cast is still ugly.
-    // The alternative is be to have a duplicated method with the proper signature.
-    view->InitAsChild(reinterpret_cast<gfx::NativeView>(m_client));
+
+    Q_ASSERT(m_factoryClient);
+    RenderWidgetHostViewQtDelegate* viewDelegate = m_factoryClient->CreateRenderWidgetHostViewQtDelegate();
+    view->setDelegate(viewDelegate);
+    view->setAdapterClient(m_client);
+
+    // Tell the RWHV delegate to attach itself to the native view container.
+    view->InitAsChild(0);
 
     return view;
+}
+
+void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
+{
+    // This is passed through content::WebContents::CreateParams::context either as the native view's client
+    // directly or, in the case of a page-created new window, the client of the creating window's native view.
+    m_factoryClient = reinterpret_cast<WebContentsAdapterClient *>(context);
 }
 
 void WebContentsViewQt::SetPageTitle(const string16& title)
 {
     m_client->titleChanged(toQt(title));
+}
+
+gfx::NativeView WebContentsViewQt::GetNativeView() const
+{
+    // Hack to provide the client to WebContentsImpl::CreateNewWindow.
+    return reinterpret_cast<gfx::NativeView>(m_client);
 }
 
 void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const

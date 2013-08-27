@@ -73,17 +73,31 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
 {
 }
 
-WebContentsAdapter::WebContentsAdapter(WebContentsAdapterClient *adapterClient)
+WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
     : d_ptr(new WebContentsAdapterPrivate)
+{
+    Q_D(WebContentsAdapter);
+    d->webContents.reset(webContents);
+}
+
+WebContentsAdapter::~WebContentsAdapter()
+{
+}
+
+void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 {
     Q_D(WebContentsAdapter);
     d->adapterClient = adapterClient;
 
-    content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
-    content::WebContents::CreateParams create_params(browserContext, NULL);
-    create_params.routing_id = MSG_ROUTING_NONE;
-    create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
-    d->webContents.reset(content::WebContents::Create(create_params));
+    // Create our own if a WebContents wasn't provided at construction.
+    if (!d->webContents) {
+        content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
+        content::WebContents::CreateParams create_params(browserContext, NULL);
+        create_params.routing_id = MSG_ROUTING_NONE;
+        create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
+        create_params.context = reinterpret_cast<gfx::NativeView>(adapterClient);
+        d->webContents.reset(content::WebContents::Create(create_params));
+    }
 
     content::RendererPreferences* rendererPrefs = d->webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
@@ -97,11 +111,7 @@ WebContentsAdapter::WebContentsAdapter(WebContentsAdapterClient *adapterClient)
 
     // Let the WebContent's view know about the WebContentsAdapterClient.
     WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContents->GetView());
-    contentsView->SetClient(adapterClient);
-}
-
-WebContentsAdapter::~WebContentsAdapter()
-{
+    contentsView->initialize(adapterClient);
 }
 
 bool WebContentsAdapter::canGoBack() const

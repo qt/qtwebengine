@@ -535,7 +535,7 @@ Q_SIGNALS:
     void pageChanged();
 
 protected:
-    virtual QWebEnginePage *createWindow(WebWindowType type) { Q_UNUSED(type); Q_UNREACHABLE(); return 0; };
+    virtual QWebEnginePage *createWindow(WebWindowType type);
     virtual QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues) { Q_UNUSED(classid); Q_UNUSED(url); Q_UNUSED(paramNames); Q_UNUSED(paramValues); Q_UNREACHABLE(); return 0; }
 
     virtual bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type) { Q_UNUSED(frame); Q_UNUSED(request); Q_UNUSED(type); Q_UNREACHABLE(); return false; }
