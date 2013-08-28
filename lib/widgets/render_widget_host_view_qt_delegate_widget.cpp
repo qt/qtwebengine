@@ -48,6 +48,7 @@
 #include <QResizeEvent>
 #include <QPainter>
 #include <QPaintEvent>
+#include <QWindow>
 
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidget *parent)
     : QWidget(parent)
@@ -111,9 +112,16 @@ bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
     return QWidget::isVisible();
 }
 
+WId RenderWidgetHostViewQtDelegateWidget::platformId() const
+{
+    QWindow* window = QWidget::windowHandle();
+    return window ? window->winId() : 0;
+}
+
 QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 {
-    return QWidget::windowHandle();
+    const QWidget* root = QWidget::window();
+    return root ? root->windowHandle() : 0;
 }
 
 void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
