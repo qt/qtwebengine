@@ -44,6 +44,9 @@
 
 #include "qwebenginepage_p.h"
 
+#include <QAction>
+#include <QMenu>
+#include <QContextMenuEvent>
 #include <QStackedLayout>
 
 QT_BEGIN_NAMESPACE
@@ -184,6 +187,24 @@ qreal QWebEngineView::zoomFactor() const
 void QWebEngineView::setZoomFactor(qreal factor)
 {
     page()->setZoomFactor(factor);
+}
+
+bool QWebEngineView::event(QEvent *ev)
+{
+    Q_D(QWebEngineView);
+    // We swallow spontaneous contextMenu events and synthethize those back later on when we get the
+    // HandleContextMenu callback from chromium
+    if (ev->type() == QEvent::ContextMenu) {
+        ev->accept();
+        return true;
+    }
+    return QWidget::event(ev);
+}
+
+void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu *menu = page()->createStandardContextMenu();
+    menu->popup(event->globalPos());
 }
 
 QT_END_NAMESPACE

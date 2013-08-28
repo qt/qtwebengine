@@ -59,6 +59,7 @@ public:
     QWebEngineViewPrivate();
 
     QWebEnginePage *page;
+    bool m_pendingContextMenuEvent;
 };
 
 QT_END_NAMESPACE
