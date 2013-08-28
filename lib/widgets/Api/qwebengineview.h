@@ -29,6 +29,7 @@
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 
+class QContextMenuEvent;
 class QIcon;
 class QNetworkRequest;
 class QPrinter;
@@ -36,6 +37,8 @@ class QUrl;
 class QWebEnginePage;
 class QWebEngineViewPrivate;
 class QWebEngineNetworkRequest;
+// FIXME: Rename and expose as public API
+class WebEngineContextMenuData;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
     Q_OBJECT
@@ -126,11 +129,14 @@ Q_SIGNALS:
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
+    virtual void contextMenuEvent(QContextMenuEvent*) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent*) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);
 
     friend class QWebEnginePage;
+    friend class QWebEnginePagePrivate;
 };
 
 #endif // QWEBENGINEVIEW_H
