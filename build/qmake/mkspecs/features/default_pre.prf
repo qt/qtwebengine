@@ -12,14 +12,16 @@ CHROMIUM_SRC_DIR = $$absolute_path("$$QTWEBENGINE_ROOT/$$git_chromium_src_dir")
 
 INCLUDEPATH += $$CHROMIUM_SRC_DIR
 
-# Used for our export macros
-!contains(_PRO_FILE_PWD_, $$QTWEBENGINE_ROOT/examples): DEFINES += BUILDING_CHROMIUM
-
+# Tweaks that shouldn't affect our examples
+!contains(_PRO_FILE_PWD_, $$QTWEBENGINE_ROOT/examples) {
+    # Used for our export macros
+    DEFINES += BUILDING_CHROMIUM
+    # We have to disable RTTI for now since that's how chromium builds on linux
+    unix:QMAKE_CXXFLAGS += -fno-rtti
+}
 # Location of sync.profile
 MODULE_BASE_DIR = $$QTWEBENGINE_ROOT
 
-# We have to disable RTTI for now since that's how chromium builds on linux
-unix:QMAKE_CXXFLAGS += -fno-rtti
 
 load(functions)
 
