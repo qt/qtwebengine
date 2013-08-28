@@ -79,3 +79,20 @@ void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_
     if (is_main_frame)
         m_viewClient->loadFinished(true);
 }
+
+static WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
+{
+    WebEngineContextMenuData ret;
+    ret.pos = QPoint(params.x, params.y);
+    ret.linkUrl = toQt(params.link_url);
+    ret.linkText = QString::fromUtf16(params.link_text.data());
+    ret.selectedText = QString::fromUtf16(params.selection_text.data());
+    return ret;
+}
+
+bool WebContentsDelegateQt::HandleContextMenu(const content::ContextMenuParams &params)
+{
+    WebEngineContextMenuData contextMenuData(fromParams(params));
+    return m_viewClient->contextMenuRequested(contextMenuData);
+}
+
