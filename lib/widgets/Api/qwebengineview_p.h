@@ -57,6 +57,7 @@ public:
     QWebEngineViewPrivate();
 
     QWebEnginePage *page;
+    bool m_pendingContextMenuEvent;
 };
 
 #endif // QWEBENGINEVIEW_P_H

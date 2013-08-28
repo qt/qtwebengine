@@ -45,6 +45,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/context_menu_params.h"
 
 namespace content {
     class BrowserContext;
@@ -64,6 +65,7 @@ public:
     virtual void LoadingStateChanged(content::WebContents* source);
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host);
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
+    virtual bool HandleContextMenu(const content::ContextMenuParams& params);
 
 private:
     content::WebContents *m_webContents;

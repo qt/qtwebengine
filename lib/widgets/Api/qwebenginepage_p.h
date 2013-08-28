@@ -70,6 +70,7 @@ public:
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) Q_DECL_OVERRIDE;
+    virtual bool contextMenuRequested(const WebEngineContextMenuData &data);
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
@@ -80,6 +81,7 @@ public:
     QWebEngineView *view;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
+    WebEngineContextMenuData m_menuData;
 };
 
 #endif // QWEBENGINEPAGE_P_H
