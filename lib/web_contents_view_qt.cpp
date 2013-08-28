@@ -48,6 +48,7 @@
 #include "base/command_line.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/context_menu_params.h"
 
 void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
 {
@@ -110,4 +111,20 @@ void WebContentsViewQt::Focus()
 void WebContentsViewQt::SetInitialFocus()
 {
     Focus();
+}
+
+static WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
+{
+    WebEngineContextMenuData ret;
+    ret.pos = QPoint(params.x, params.y);
+    ret.linkUrl = toQt(params.link_url);
+    ret.linkText = toQt(params.link_text.data());
+    ret.selectedText = toQt(params.selection_text.data());
+    return ret;
+}
+
+void WebContentsViewQt::ShowContextMenu(const content::ContextMenuParams &params)
+{
+    WebEngineContextMenuData contextMenuData(fromParams(params));
+    m_client->contextMenuRequested(contextMenuData);
 }

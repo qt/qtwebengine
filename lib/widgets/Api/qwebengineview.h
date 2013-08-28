@@ -30,6 +30,7 @@
 #include <QtWebEngineWidgets/qwebenginepage.h>
 
 QT_BEGIN_NAMESPACE
+class QContextMenuEvent;
 class QIcon;
 class QNetworkRequest;
 class QPrinter;
@@ -129,11 +130,14 @@ Q_SIGNALS:
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
+    virtual void contextMenuEvent(QContextMenuEvent*) Q_DECL_OVERRIDE;
+    virtual bool event(QEvent*) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);
 
     friend class QWebEnginePage;
+    friend class QWebEnginePagePrivate;
 };
 
 QT_END_NAMESPACE
