@@ -76,6 +76,7 @@ public:
     virtual void show();
     virtual void hide();
     virtual bool isVisible() const;
+    virtual WId nativeWindowIdForCompositor() const;
     virtual QWindow* window() const;
     virtual void update(const QRect& rect = QRect());
     virtual void updateCursor(const QCursor &);

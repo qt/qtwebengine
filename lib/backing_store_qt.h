@@ -63,6 +63,9 @@ public:
     virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output);
 
 private:
+    // Number of physical pixels per view unit. This is 1 or 2 in practice.
+    float m_deviceScaleFactor;
+
     QPixmap m_pixelBuffer;
 };
 

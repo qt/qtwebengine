@@ -167,7 +167,8 @@ BackingStoreQt* RenderWidgetHostViewQt::GetBackingStore()
 
 content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size &size)
 {
-    return new BackingStoreQt(m_host, size, new QWindow);
+    Q_ASSERT(m_delegate);
+    return new BackingStoreQt(m_host, size, m_delegate->window());
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
@@ -232,7 +233,7 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 
 gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 {
-    return m_delegate->window() ? m_delegate->window()->winId() : 0;
+    return m_delegate->nativeWindowIdForCompositor();
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()

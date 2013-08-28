@@ -46,6 +46,7 @@
 
 #include <QRect>
 #include <QScopedPointer>
+#include <QtGui/qwindowdefs.h>
 
 class BackingStoreQt;
 class QCursor;
@@ -66,6 +67,7 @@ public:
     virtual void show() = 0;
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
+    virtual WId nativeWindowIdForCompositor() const = 0;
     virtual QWindow* window() const = 0;
     virtual void update(const QRect& rect = QRect()) = 0;
     virtual void updateCursor(const QCursor &) = 0;
