@@ -44,6 +44,9 @@
 
 #include "qwebenginepage_p.h"
 
+#include <QAction>
+#include <QMenu>
+#include <QContextMenuEvent>
 #include <QStackedLayout>
 
 void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
@@ -171,5 +174,24 @@ QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
     Q_UNUSED(type)
     return 0;
 }
+
+bool QWebEngineView::event(QEvent *ev)
+{
+    Q_D(QWebEngineView);
+    // We swallow spontaneous contextMenu events and synthethize those back later on when we get the
+    // HandleContextMenu callback from chromium
+    if (ev->type() == QEvent::ContextMenu) {
+        ev->accept();
+        return true;
+    }
+    return QWidget::event(ev);
+}
+
+void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
+{
+    QMenu *menu = page()->createStandardContextMenu();
+    menu->popup(event->globalPos());
+}
+
 
 #include "moc_qwebengineview.cpp"

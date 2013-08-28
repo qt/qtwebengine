@@ -47,11 +47,27 @@
 #include <QString>
 #include <QUrl>
 
-
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapter;
 class WebContentsDelegateQt;
+
+// FIXME: make this ref-counted and implicitely shared and expose as public API maybe ?
+class WebEngineContextMenuData {
+
+public:
+    QPoint pos;
+    QUrl linkUrl;
+    QString linkText;
+    QString selectedText;
+// Some likely candidates for future additions as we add support for the related actions:
+//    bool isImageBlocked;
+//    bool isEditable;
+//    bool isSpellCheckingEnabled;
+//    QStringList spellCheckingSuggestions;
+//    <enum tbd> mediaType;
+//    ...
+};
 
 class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
@@ -80,6 +96,7 @@ public:
     virtual void loadFinished(bool success) = 0;
     virtual void focusContainer() = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) = 0;
+    virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

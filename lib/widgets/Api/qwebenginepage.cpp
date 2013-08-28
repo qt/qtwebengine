@@ -31,7 +31,11 @@
 #include "web_contents_adapter.h"
 
 #include <QAction>
+#include <QApplication>
+#include <QClipboard>
+#include <QIcon>
 #include <QLayout>
+#include <QMenu>
 #include <QUrl>
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
@@ -254,6 +258,78 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     default:
         Q_UNREACHABLE();
     }
+}
+
+bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
+{
+    if (!view)
+        return false;
+
+    QContextMenuEvent event(QContextMenuEvent::Mouse, data.pos, view->mapToGlobal(data.pos));
+    switch (view->contextMenuPolicy()) {
+    case Qt::PreventContextMenu:
+        return false;
+    case Qt::DefaultContextMenu:
+        m_menuData = data;
+        view->contextMenuEvent(&event);
+        break;
+    case Qt::CustomContextMenu:
+        Q_EMIT view->customContextMenuRequested(data.pos);
+        break;
+    case Qt::ActionsContextMenu:
+        if (view->actions().count()) {
+            QMenu::exec(view->actions(), event.globalPos(), 0, view);
+            break;
+        }
+        // fall through
+    default:
+        event.ignore();
+        return false;
+        break;
+    }
+    Q_ASSERT(view->d_func()->m_pendingContextMenuEvent);
+    view->d_func()->m_pendingContextMenuEvent = false;
+    m_menuData = WebEngineContextMenuData();
+    return true;
+}
+
+QMenu *QWebEnginePage::createStandardContextMenu()
+{
+    Q_D(QWebEnginePage);
+    QMenu *menu = new QMenu(d->view);
+    QAction *action = 0;
+    WebEngineContextMenuData contextMenuData(d->m_menuData);
+    if (contextMenuData.selectedText.isEmpty()) {
+        action = new QAction(QIcon::fromTheme(QStringLiteral("go-previous")), tr("&Back"), menu);
+        connect(action, &QAction::triggered, d->view, &QWebEngineView::back);
+        action->setEnabled(d->adapter->canGoBack());
+        menu->addAction(action);
+
+        action = new QAction(QIcon::fromTheme(QStringLiteral("go-next")), tr("&Forward"), menu);
+        connect(action, &QAction::triggered, d->view, &QWebEngineView::forward);
+        action->setEnabled(d->adapter->canGoForward());
+        menu->addAction(action);
+
+        action = new QAction(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("&Reload"), menu);
+        connect(action, &QAction::triggered, d->view, &QWebEngineView::reload);
+        menu->addAction(action);
+    } else {
+        action = new QAction(tr("Copy..."), menu);
+        // FIXME: We probably can't keep "cheating" with lambdas, but for now it keeps this patch smaller ;)
+        connect(action, &QAction::triggered, [=]() { qApp->clipboard()->setText(contextMenuData.selectedText); });
+        menu->addAction(action);
+    }
+
+    if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
+        menu->addSeparator();
+        action = new QAction(tr("Navigate to..."), menu);
+        connect(action, &QAction::triggered, [=]() { load(contextMenuData.linkUrl); });
+        menu->addAction(action);
+        action = new QAction(tr("Copy link address"), menu);
+        connect(action, &QAction::triggered, [=]() { qApp->clipboard()->setText(contextMenuData.linkUrl.toString()); });
+        menu->addAction(action);
+    }
+    return menu;
 }
 
 void QWebEnginePage::load(const QUrl& url)
