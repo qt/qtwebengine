@@ -156,7 +156,8 @@ BackingStoreQt* RenderWidgetHostViewQt::GetBackingStore()
 
 content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size &size)
 {
-    return new BackingStoreQt(m_host, size, new QWindow);
+    Q_ASSERT(m_delegate);
+    return new BackingStoreQt(m_host, size, m_delegate->window());
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView parent_view)

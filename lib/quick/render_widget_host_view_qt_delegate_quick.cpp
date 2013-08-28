@@ -92,10 +92,7 @@ bool RenderWidgetHostViewQtDelegateQuick::isVisible() const
 
 QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
 {
-    // Only used to enable accelerated compositing by the compositor
-    // directly on our native window, which we want to eventually do
-    // through the delegated renderer instead.
-    return 0;
+    return QQuickPaintedItem::window();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::update(const QRect& rect)

@@ -113,7 +113,8 @@ bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
 
 QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 {
-    return QWidget::windowHandle();
+    const QWidget* root = QWidget::window();
+    return root ? root->windowHandle() : 0;
 }
 
 void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
