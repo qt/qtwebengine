@@ -315,7 +315,7 @@ void RenderWidgetHostViewQt::WasHidden()
 
 void RenderWidgetHostViewQt::MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&)
 {
-    QT_NOT_YET_IMPLEMENTED
+    // QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::Blur()
@@ -468,7 +468,7 @@ void RenderWidgetHostViewQt::Destroy()
 
 void RenderWidgetHostViewQt::SetTooltipText(const string16&)
 {
-    QT_NOT_YET_IMPLEMENTED
+    // QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&)
@@ -478,7 +478,7 @@ void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionB
 
 void RenderWidgetHostViewQt::ScrollOffsetChanged()
 {
-    // FIXME: not implemented?
+    // Not used.
 }
 
 void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback)
@@ -522,12 +522,12 @@ void RenderWidgetHostViewQt::AcceleratedSurfacePostSubBuffer(const GpuHostMsg_Ac
 
 void RenderWidgetHostViewQt::AcceleratedSurfaceSuspend()
 {
-    //FIXME: not implemented?
+    QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::AcceleratedSurfaceRelease()
 {
-    //FIXME: not implemented?
+    QT_NOT_YET_IMPLEMENTED
 }
 
 bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
