@@ -478,7 +478,7 @@ void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionB
 
 void RenderWidgetHostViewQt::ScrollOffsetChanged()
 {
-    // FIXME: not implemented?
+    QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback)
@@ -522,12 +522,12 @@ void RenderWidgetHostViewQt::AcceleratedSurfacePostSubBuffer(const GpuHostMsg_Ac
 
 void RenderWidgetHostViewQt::AcceleratedSurfaceSuspend()
 {
-    //FIXME: not implemented?
+    QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::AcceleratedSurfaceRelease()
 {
-    //FIXME: not implemented?
+    QT_NOT_YET_IMPLEMENTED
 }
 
 bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
