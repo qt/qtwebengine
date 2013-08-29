@@ -1,0 +1,2 @@
+CONFIG -= build_all
+load(default_post)
