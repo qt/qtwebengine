@@ -1,0 +1,7 @@
+Sanity-Review+1: Qt Sanity Bot <qt_sanitybot@qt-project.org>
+Code-Review+2: Andras Becsi <andras.becsi@digia.com>
+Submitted-by: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Submitted-at: Thu, 29 Aug 2013 17:40:47 +0200
+Reviewed-on: https://codereview.qt-project.org/63972
+Project: qt-labs/qtwebengine
+Branch: refs/heads/master
