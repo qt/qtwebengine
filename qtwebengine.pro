@@ -19,6 +19,10 @@ qtHaveModule(widgets) {
         tests/widgets
 }
 
+# FIXME: We probably want a bunch of functions and config options to tweak what to build/ship or not
+WEBENGINE_CONFIG = use_default_ui_delegates
+contains(WEBENGINE_CONFIG, use_default_ui_delegates): SUBDIRS += lib/quick/ui
+
 SUBDIRS += examples
 
 # Ninja executable location needs to be determined early for extra targets. Should be fetched from cache most of the time anyway.

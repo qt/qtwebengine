@@ -47,7 +47,12 @@
 #include <QSharedData>
 #include <QtQuick/private/qquickitem_p.h>
 
+class QQmlComponent;
+class QQmlContext;
+class QQuickWebEngineView;
+class RenderWidgetHostViewQtDelegateQuick;
 class WebContentsAdapter;
+class MenuItem;
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
@@ -68,12 +73,25 @@ public:
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) Q_DECL_OVERRIDE;
-    virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE { return false;}
+    virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QUrl icon;
     int loadProgress;
+    friend class RenderWidgetHostViewQtDelegateQuick;
+    QQmlComponent* contextMenuExtraItems;
+    QQmlComponent* menuComponent;
+    QQmlComponent* menuItemComponent;
+    QQmlComponent* menuSeparatorComponent;
+
+private:
+    bool ensureComponentLoaded(QQmlComponent *&, const QString &);
+    QQmlContext* creationContextForComponent(QQmlComponent *);
+    QQmlComponent* loadDefaultUIDelegate(const QString &);
+    void addMenuItem(QObject *menu, MenuItem *menuItem);
+    void addMenuSeparator(QObject *menu);
+    QObject* addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
 };
 
 QT_END_NAMESPACE

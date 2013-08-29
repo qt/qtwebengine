@@ -1,5 +1,6 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>
-    <file>quickwindow.qml</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>quickwindow.qml</file>
+        <file>ContextMenuExtras.qml</file>
+    </qresource>
 </RCC>

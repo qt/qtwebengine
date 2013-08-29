@@ -9,6 +9,8 @@ QT_PRIVATE += qml-private quick-private gui-private core-private
 # Remove this as soon as we have a hard-dependency on Qt 5.2
 qtHaveModule(v8): QT_PRIVATE += v8-private
 
+QT_PRIVATE += qml-private
+
 INCLUDEPATH += ../
 
 # FIXME: all this should eventually be turned into QT += webenginecore
@@ -18,6 +20,9 @@ LIBS += -lQt5WebEngineCore -L$$LIBPATH
 QMAKE_RPATHDIR += $$LIBPATH
 
 #DESTDIR = $$LIBPATH
+
+QMAKE_CXXFLAGS += -fPIC
+QMAKE_CFLAGS += -fPIC
 
 SOURCES = \
         qquickwebengineview.cpp \

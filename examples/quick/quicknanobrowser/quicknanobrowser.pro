@@ -4,9 +4,12 @@ TARGET = quicknanobrowser
 include($$QTWEBENGINE_ROOT/common.pri)
 
 HEADERS = quickwindow.h
-SOURCES = quickwindow.cpp main.cpp
+SOURCES = quickwindow.cpp \
+          main.cpp
 
-OTHER_FILES += quickwindow.qml
+OTHER_FILES += ContextMenuExtras.qml \
+               quickwindow.qml
+
 
 RESOURCES += resources.qrc
 RESOURCES += ../../common/common_resources.qrc
