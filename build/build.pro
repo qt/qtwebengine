@@ -5,7 +5,7 @@
 TEMPLATE = aux
 
 message(Running Gyp...)
-GYP_OUTPUT = $$system(./gyp_qtwebengine)
+GYP_OUTPUT = $$system(python ./gyp_qtwebengine)
 message($$GYP_OUTPUT)
 
 ninja.target = invoke_ninja
