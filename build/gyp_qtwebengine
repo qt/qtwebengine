@@ -5,6 +5,8 @@ import os
 import subprocess
 import sys
 
+print 'using python: ' + sys.executable + ' version: ' + sys.version
+
 qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir || true", shell=True).strip()
 if chrome_src:
