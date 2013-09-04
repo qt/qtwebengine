@@ -47,6 +47,14 @@
 
 #include "shared/shared_globals.h"
 
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/thread_proxy.h"
+#include "cc/output/compositor_frame_ack.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/resources/resource_provider.h"
+#include "cc/quads/draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
+#include "cc/quads/tile_draw_quad.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -54,6 +62,10 @@
 #include "ui/base/events/event.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
+#include "content/browser/renderer_host/image_transport_factory.h"
+#include "ui/compositor/compositor.h"
+#include "ui/gfx/size_conversions.h"
+#include "base/memory/weak_ptr.h"
 
 #include <QEvent>
 #include <QFocusEvent>
@@ -101,7 +113,28 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_adapterClient(0)
     , m_initPending(false)
 {
+    ui::Compositor::Initialize();
+
     m_host->SetView(this);
+    // dummy for Xlib
+    QWindow* dummy = new QWindow;
+    dummy->setGeometry(0,0,100,100);
+    dummy->create();
+
+    m_compositorDelegate.reset(new CompositorDelegateQt);
+    m_compositor.reset(new ui::Compositor(m_compositorDelegate.get(), dummy->winId()));
+    m_compositor->SetScaleAndSize(1, gfx::Size(100,100)); // FIXME: This is certainly not correct!
+    layer_ = new ui::Layer(ui::LAYER_NOT_DRAWN); // should we use this instead???
+    layer_owner_.reset(layer_);
+    layer_->set_delegate(this);
+    m_compositorDelegate->setCompositor(m_compositor.get());
+    m_compositor->SetRootLayer(layer());
+
+    m_texturedLayer = new ui::Layer(ui::LAYER_TEXTURED);
+    layer_->Add(m_texturedLayer);
+
+    m_texturedLayer->SetBounds(gfx::Rect(0, 0, 800, 600));
+    layer_->SetBounds(gfx::Rect(0, 0, 800, 600));
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -199,6 +232,8 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
     int width = size.width();
     int height = size.height();
 
+    m_compositor->SetScaleAndSize(1, gfx::Size(width,height));
+
     m_delegate->resize(width,height);
 }
 
@@ -212,11 +247,8 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 
 gfx::Size RenderWidgetHostViewQt::GetPhysicalBackingSize() const
 {
-    if (!m_delegate || !m_delegate->window() || !m_delegate->window()->screen())
-        return gfx::Size();
 
-    const QScreen* screen = m_delegate->window()->screen();
-    return gfx::ToCeiledSize(gfx::ScaleSize(GetViewBounds().size(), screen->devicePixelRatio()));
+    return GetViewBounds().size();
 }
 
 gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
@@ -571,8 +603,12 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 
 gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
 {
-    gfx::NativeViewId nativeViewId = GetNativeViewId();
-    return nativeViewId ? gfx::GLSurfaceHandle(nativeViewId, gfx::NATIVE_TRANSPORT) : gfx::GLSurfaceHandle();
+  if (shared_surface_handle_.is_null()) {
+      content::ImageTransportFactory* factory = content::ImageTransportFactory::GetInstance();
+    shared_surface_handle_ = factory->CreateSharedSurfaceHandle();
+    factory->AddObserver(this);
+  }
+  return shared_surface_handle_;
 }
 
 void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
@@ -735,3 +771,167 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         ev->accept();
     }
 }
+
+void RenderWidgetHostViewQt::SwapDelegatedFrame(
+    uint32 output_surface_id,
+    scoped_ptr<cc::DelegatedFrameData> frame_data,
+    float frame_device_scale_factor,
+    const ui::LatencyInfo& latency_info) {
+    gfx::Size frame_size_in_dip;
+    if (!frame_data->render_pass_list.empty())
+        frame_size_in_dip = gfx::ToFlooredSize(gfx::ScaleSize(frame_data->render_pass_list.back()->output_rect.size(), 1.f/frame_device_scale_factor));
+
+    // if (ShouldSkipFrame(frame_size_in_dip)) {
+    //     cc::CompositorFrameAck ack;
+    //     ack.resources.swap(frame_data->resource_list);
+    //     RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+    //         host_->GetRoutingID(), output_surface_id,
+    //         host_->GetProcess()->GetID(), ack);
+    //     return;
+    // }
+
+    m_texturedLayer->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
+    // released_front_lock_ = NULL;
+    // current_frame_size_ = frame_size_in_dip;
+    // CheckResizeLock();
+
+    // if (paint_observer_)
+    //     paint_observer_->OnUpdateCompositorContent();
+
+    if (!m_compositor) {
+        fprintf(stderr, "    - Directly sending DelegatedFrameAck\n");
+        SendDelegatedFrameAck(output_surface_id);
+    } else {
+        m_compositor->SetLatencyInfo(latency_info);
+        fprintf(stderr, "    - Registering SendDelegatedFrameAck callback\n");
+        AddOnCommitCallbackAndDisableLocks(base::Bind(&RenderWidgetHostViewQt::SendDelegatedFrameAck, AsWeakPtr(), output_surface_id));
+    }
+}
+
+// Swap ack for the renderer when kCompositeToMailbox is enabled.
+void SendCompositorFrameAck(
+    int32 route_id,
+    uint32 output_surface_id,
+    int renderer_host_id,
+    const gpu::Mailbox& received_mailbox,
+    const gfx::Size& received_size,
+    bool skip_frame,
+    const scoped_refptr<ui::Texture>& texture_to_produce) {
+  cc::CompositorFrameAck ack;
+  ack.gl_frame_data.reset(new cc::GLFrameData());
+  DCHECK(!texture_to_produce.get() || !skip_frame);
+  if (texture_to_produce.get()) {
+    std::string mailbox_name = texture_to_produce->Produce();
+    std::copy(mailbox_name.data(),
+              mailbox_name.data() + mailbox_name.length(),
+              reinterpret_cast<char*>(ack.gl_frame_data->mailbox.name));
+    ack.gl_frame_data->size = texture_to_produce->size();
+    ack.gl_frame_data->sync_point =
+        content::ImageTransportFactory::GetInstance()->InsertSyncPoint();
+  } else if (skip_frame) {
+    // Skip the frame, i.e. tell the producer to reuse the same buffer that
+    // we just received.
+    ack.gl_frame_data->size = received_size;
+    ack.gl_frame_data->mailbox = received_mailbox;
+  }
+
+  content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(route_id, output_surface_id, renderer_host_id, ack);
+}
+
+void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
+{
+    if (frame->delegated_frame_data) {
+        fprintf(stderr, "******************SwapDelegatedFrame*********************\n");
+
+        SwapDelegatedFrame(output_surface_id,
+                           frame->delegated_frame_data.Pass(),
+                           frame->metadata.device_scale_factor,
+                           frame->metadata.latency_info);
+
+        m_compositor->layer_tree_host()->SetNeedsCommit();
+        return;
+    }
+
+    if (frame->software_frame_data) {
+        fprintf(stderr, "***********THIS IS A SOFTWARE FRAME AND NEEDS TO BE HANDLED SEPERATELY***************\n");
+    // SwapSoftwareFrame(output_surface_id,
+    //                   frame->software_frame_data.Pass(),
+    //                   frame->metadata.device_scale_factor,
+    //                   frame->metadata.latency_info);
+    //     return;
+    }
+
+    fprintf(stderr, "***********THIS IS A UNKNOWN FRAME AND NEEDS TO BE HANDLED SEPERATELY***************\n");
+    if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
+        return;
+
+    BufferPresentedCallback ack_callback = base::Bind(
+        &SendCompositorFrameAck,
+        m_host->GetRoutingID(), output_surface_id, m_host->GetProcess()->GetID(),
+        frame->gl_frame_data->mailbox, frame->gl_frame_data->size);
+
+    if (!frame->gl_frame_data->sync_point) {
+        LOG(ERROR) << "CompositorFrame without sync point. Skipping frame...";
+        ack_callback.Run(true, scoped_refptr<ui::Texture>());
+        return;
+    }
+
+    content::ImageTransportFactory* factory = content::ImageTransportFactory::GetInstance();
+    factory->WaitSyncPoint(frame->gl_frame_data->sync_point);
+
+    // std::string mailbox_name(
+    //     reinterpret_cast<const char*>(frame->gl_frame_data->mailbox.name),
+    //     sizeof(frame->gl_frame_data->mailbox.name));
+    // BuffersSwapped(frame->gl_frame_data->size,
+    //              frame->gl_frame_data->sub_buffer_rect,
+    //              frame->metadata.device_scale_factor,
+    //              mailbox_name,
+    //              frame->metadata.latency_info,
+    //              ack_callback);
+
+}
+
+void RenderWidgetHostViewQt::RunOnCommitCallbacks() {
+  for (std::vector<base::Closure>::const_iterator
+      it = on_compositing_did_commit_callbacks_.begin();
+      it != on_compositing_did_commit_callbacks_.end(); ++it) {
+    it->Run();
+  }
+  on_compositing_did_commit_callbacks_.clear();
+}
+
+void RenderWidgetHostViewQt::SendDelegatedFrameAck(uint32 output_surface_id) {
+  cc::CompositorFrameAck ack;
+  layer()->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+      m_host->GetRoutingID(), output_surface_id,
+      m_host->GetProcess()->GetID(), ack);
+}
+
+void RenderWidgetHostViewQt::AddOnCommitCallbackAndDisableLocks(const base::Closure& callback) {
+  if (!m_compositor->HasObserver(this))
+    m_compositor->AddObserver(this);
+
+  // can_lock_compositor_ = NO_PENDING_COMMIT;
+  on_compositing_did_commit_callbacks_.push_back(callback);
+}
+
+void RenderWidgetHostViewQt::OnCompositingDidCommit(ui::Compositor* compositor)
+{
+    fprintf(stderr, "%s\n", __PRETTY_FUNCTION__);
+  // if (can_lock_compositor_ == NO_PENDING_COMMIT) {
+  //   can_lock_compositor_ = YES;
+  //   if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
+  //     can_lock_compositor_ = YES_DID_LOCK;
+  // }
+  RunOnCommitCallbacks();
+  // if (resize_lock_ && resize_lock_->expected_size() == current_frame_size_) {
+  //   resize_lock_.reset();
+  //   host_->WasResized();
+  //   // We may have had a resize while we had the lock (e.g. if the lock expired,
+  //   // or if the UI still gave us some resizes), so make sure we grab a new lock
+  //   // if necessary.
+  //   MaybeCreateResizeLock();
+  // }
+}
+

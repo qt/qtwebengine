@@ -141,9 +141,21 @@ void RenderWidgetHostViewQtDelegateWidget::resize(int width, int height)
 
 void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
 {
-    QPainter painter(this);
-    fetchBackingStore();
-    paint(&painter, event->rect());
+    //fprintf(stderr, "-- %s\n", __PRETTY_FUNCTION__);
+    // WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(m_webContents->GetView());
+    const QRect& damage_rect = event->rect();
+    // contentsView->compositor()->ScheduleRedrawRect(gfx::Rect(damage_rect.x(), damage_rect.y(), damage_rect.width(), damage_rect.height()));
+
+    scheduleRedraw(damage_rect);
+
+    //contentsView->compositorDelegate()->ScheduleDraw();
+    //WebContentsViewQt* contents_view = static_cast<WebContentsViewQt*>(web_contents()->GetView());
+    //contents_view
+
+    /*if (BackingStoreQt *backingStore = m_view->GetBackingStore()) {
+        QPainter painter(this);
+        backingStore->paintToTarget(&painter, event->rect());
+    }*/
 }
 
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)

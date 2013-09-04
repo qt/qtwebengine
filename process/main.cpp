@@ -40,6 +40,14 @@
 ****************************************************************************/
 
 #include "content/public/app/content_main.h"
+#include "cc/resources/resource_provider.h"
+
+namespace cc {
+void ResourceProvider::saveImage(ResourceProvider::ResourceId resource_id, int width, int height)
+{
+    fprintf(stderr, "This is just a dummy implementation, and should not be called!\n");
+}
+}
 
 int main(int argc, const char **argv)
 {

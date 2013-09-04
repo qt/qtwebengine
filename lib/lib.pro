@@ -29,6 +29,7 @@ SOURCES = \
         render_widget_host_view_qt.cpp \
         render_widget_host_view_qt_delegate.cpp \
         resource_context_qt.cpp \
+        resource_provider_qt.cpp \
         url_request_context_getter_qt.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \

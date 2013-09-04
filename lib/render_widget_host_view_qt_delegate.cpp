@@ -90,3 +90,8 @@ void RenderWidgetHostViewQtDelegate::setView(RenderWidgetHostViewQt* view)
 {
     m_view = view;
 }
+
+void RenderWidgetHostViewQtDelegate::scheduleRedraw(const QRect& redrawRect)
+{
+    m_view->compositor()->ScheduleRedrawRect(gfx::Rect(redrawRect.x(), redrawRect.y(), redrawRect.width(), redrawRect.height()));
+}

@@ -81,6 +81,7 @@ protected:
     void fetchBackingStore();
     void notifyResize();
     bool forwardEvent(QEvent*);
+    void scheduleRedraw(const QRect&);
 
 private:
     void setView(RenderWidgetHostViewQt*);

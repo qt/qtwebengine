@@ -53,6 +53,18 @@
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 
+#include <QWindow>
+
+class WebContentsViewQtClient {
+public:
+    WebContentsViewQtClient();
+    virtual ~WebContentsViewQtClient() { }
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQt *view) = 0;
+
+    scoped_refptr<WebEngineContext> context;
+    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
+};
+
 class WebContentsViewQt
     : public content::WebContentsViewPort
     , public content::RenderViewHostDelegateView

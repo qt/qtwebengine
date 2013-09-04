@@ -73,6 +73,7 @@ WebContentsViewPort* CreateWebContentsView(WebContentsImpl*,
                                            WebContentsViewDelegate*,
                                            RenderViewHostDelegateView**)
 {
+    fprintf(stderr, "CreateWebContentsView was called!!! - This is probably not good.\n");
     return 0;
 }
 

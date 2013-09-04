@@ -43,6 +43,15 @@
 #define RENDER_WIDGET_HOST_VIEW_QT_H
 
 #include "shared/shared_globals.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/image_transport_factory.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/layer_delegate.h"
+#include "ui/compositor/layer_owner.h"
+#include "base/bind.h"
+
+#include <qglobal.h>
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -62,10 +71,63 @@ class QWheelEvent;
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapterClient;
 
+
+// An interface to allow the compositor to communicate with its owner.
+class CompositorDelegateQt : public ui::CompositorDelegate {
+ public:
+    CompositorDelegateQt()
+        : schedule_paint_factory_(this)
+        , compositor_(0)
+        , defer_draw_scheduling_(false)
+        , draw_on_compositing_end_(false)
+        , waiting_on_compositing_end_(false)
+    { }
+
+  // Requests the owner to schedule a redraw of the layer tree.
+    virtual void ScheduleDraw() {
+        //fprintf(stderr, "CompositorDelegateQt::ScheduleDraw\n");
+
+        if (!defer_draw_scheduling_) {
+            defer_draw_scheduling_ = true;
+            base::MessageLoop::current()->PostTask(
+                FROM_HERE,
+                base::Bind(&CompositorDelegateQt::Draw, schedule_paint_factory_.GetWeakPtr()));
+        }
+    }
+
+    void Draw() {
+        fprintf(stderr, "++++ %s\n", __PRETTY_FUNCTION__);
+        defer_draw_scheduling_ = false;
+        if (waiting_on_compositing_end_) {
+            draw_on_compositing_end_ = true;
+            return;
+        }
+        waiting_on_compositing_end_ = true;
+        compositor_->Draw();
+    }
+
+    void setCompositor(ui::Compositor* compositor) { compositor_ = compositor; }
+
+    // protected:
+    virtual ~CompositorDelegateQt() {}
+
+private:
+    base::WeakPtrFactory<CompositorDelegateQt> schedule_paint_factory_;
+    ui::Compositor* compositor_;
+    bool defer_draw_scheduling_;
+    bool draw_on_compositing_end_;
+    bool waiting_on_compositing_end_;
+};
+
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
     , public ui::GestureConsumer
     , public ui::GestureEventHelper
+    , public content::ImageTransportFactoryObserver
+    , public ui::CompositorObserver
+    , public ui::LayerOwner
+    , public ui::LayerDelegate
+    , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -159,6 +221,25 @@ public:
     virtual void WindowFrameChanged() { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
+    virtual void OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
+    virtual void OnLostResources() { QT_NOT_YET_IMPLEMENTED; fprintf(stderr, "BUT WE REALLY NEED THIS IN FUTURE TO RELEASE RESOURCES\n"); }
+    virtual void SwapDelegatedFrame(uint32 output_surface_id, scoped_ptr<cc::DelegatedFrameData> frame_data, float frame_device_scale_factor, const ui::LatencyInfo& latency_info);
+    void SendDelegatedFrameAck(uint32 output_surface_id);
+    void AddOnCommitCallbackAndDisableLocks(const base::Closure& callback);
+    void RunOnCommitCallbacks();
+
+    virtual void OnPaintLayer(gfx::Canvas* canvas) { fprintf(stderr, "***********MISSING*********** %s\n", __PRETTY_FUNCTION__); }
+    virtual void OnDeviceScaleFactorChanged(float device_scale_factor) { }
+    virtual base::Closure PrepareForLayerBoundsChange() { fprintf(stderr, "***********MISSING*********** %s\n", __PRETTY_FUNCTION__); return base::Closure(); }
+
+    ui::Compositor* compositor() { return m_compositor.get(); }
+  virtual void OnCompositingDidCommit(ui::Compositor* compositor);
+  virtual void OnCompositingStarted(ui::Compositor* compositor, base::TimeTicks start_time) { }
+  virtual void OnCompositingEnded(ui::Compositor* compositor) { }
+  virtual void OnCompositingAborted(ui::Compositor* compositor) { }
+  virtual void OnCompositingLockStateChanged(ui::Compositor* compositor) { }
+  virtual void OnUpdateVSyncParameters(ui::Compositor* compositor, base::TimeTicks timebase, base::TimeDelta interval) { }
+
 private:
     void Paint(const gfx::Rect& damage_rect);
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
@@ -168,10 +249,20 @@ private:
     bool IsPopup() const;
 
     content::RenderWidgetHostImpl *m_host;
+
     scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
     QMap<int, int> m_touchIdMapping;
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
+
+    gfx::Size m_requestedSize;
+    gfx::GLSurfaceHandle shared_surface_handle_;
+    scoped_ptr<CompositorDelegateQt> m_compositorDelegate;
+    scoped_ptr<ui::Compositor> m_compositor;
+    std::vector<base::Closure> on_compositing_did_commit_callbacks_;
+    ui::Layer* m_texturedLayer;
+
+    typedef base::Callback<void(bool, const scoped_refptr<ui::Texture>&)> BufferPresentedCallback;
     WebContentsAdapterClient *m_adapterClient;
 
     bool m_initPending;
