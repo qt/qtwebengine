@@ -38,42 +38,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef JAVASCRIPT_DIALOG_MANAGER_QT_H
+#define JAVASCRIPT_DIALOG_MANAGER_QT_H
 
-#ifndef TYPE_CONVERSION_H
-#define TYPE_CONVERSION_H
+#include "content/public/browser/javascript_dialog_manager.h"
 
-#include <QString>
-#include <QUrl>
-#include "base/files/file_path.h"
-#include "url/gurl.h"
+#include "content/public/common/javascript_message_type.h"
 
-inline QString toQt(const base::string16 &string)
-{
-    return QString::fromUtf16(string.data());
+#include "qglobal.h"
+
+namespace content {
+class WebContents;
 }
 
-inline base::string16 toString16(const QString &qString)
+class JavaScriptDialogManagerQt : public content::JavaScriptDialogManager
 {
-    return base::string16(qString.utf16());
-}
+public:
+    // For use with the Singleton helper class from chromium
+    static JavaScriptDialogManagerQt *GetInstance();
 
-inline QUrl toQt(const GURL &url)
-{
-    return QUrl(QString::fromStdString(url.spec()));
-}
+    virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType,
+                                       const base::string16 &messageText, const base::string16 &defaultPromptText,
+                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage);
+    virtual void RunBeforeUnloadDialog(content::WebContents *, const base::string16 &messageText, bool isReload,
+                                         const content::JavaScriptDialogManager::DialogClosedCallback &callback) { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
+    virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride);
+    virtual void CancelActiveAndPendingDialogs(content::WebContents *) {}
+    virtual void WebContentsDestroyed(content::WebContents *) {}
 
-inline GURL toGurl(const QUrl& url)
-{
-    return GURL(url.toString().toStdString());
-}
+};
 
-inline base::FilePath::StringType toFilePathString(const QString &str)
-{
-#if defined(OS_POSIX)
-    return str.toStdString();
-#elif defined(OS_WIN)
-    return str.toStdWString();
-#endif
-}
+#endif // JAVASCRIPT_DIALOG_MANAGER_QT_H
 
-#endif // TYPE_CONVERSION_H

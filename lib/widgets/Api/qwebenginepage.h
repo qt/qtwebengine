@@ -540,9 +540,9 @@ protected:
 
     virtual bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type) { Q_UNUSED(frame); Q_UNUSED(request); Q_UNUSED(type); Q_UNREACHABLE(); return false; }
     virtual QString chooseFile(QWebEngineFrame *originatingFrame, const QString& oldFile) { Q_UNUSED(originatingFrame); Q_UNUSED(oldFile); Q_UNREACHABLE(); return QString(); }
-    virtual void javaScriptAlert(QWebEngineFrame *originatingFrame, const QString& msg) { Q_UNUSED(originatingFrame); Q_UNUSED(msg); Q_UNREACHABLE(); }
-    virtual bool javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString& msg) { Q_UNUSED(originatingFrame); Q_UNUSED(msg); Q_UNREACHABLE(); return false; }
-    virtual bool javaScriptPrompt(QWebEngineFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result) { Q_UNUSED(originatingFrame); Q_UNUSED(msg); Q_UNUSED(defaultValue); Q_UNUSED(result); Q_UNREACHABLE(); return false; }
+    virtual void javaScriptAlert(QWebEngineFrame *originatingFrame, const QString& msg);
+    virtual bool javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString& msg);
+    virtual bool javaScriptPrompt(QWebEngineFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result);
     virtual void javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID) { Q_UNUSED(message); Q_UNUSED(lineNumber); Q_UNUSED(sourceID); Q_UNREACHABLE(); }
 
     virtual QString userAgentForUrl(const QUrl& url) const { Q_UNUSED(url); Q_UNREACHABLE(); return QString(); }

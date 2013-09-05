@@ -34,8 +34,10 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QIcon>
+#include <QInputDialog>
 #include <QLayout>
 #include <QMenu>
+#include <QMessageBox>
 #include <QUrl>
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
@@ -293,6 +295,22 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     return true;
 }
 
+bool QWebEnginePagePrivate::javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue, QString *result)
+{
+    Q_Q(QWebEnginePage);
+    switch (type) {
+    case AlertDialog:
+        q->javaScriptAlert(0, message);
+        return true;
+    case ConfirmDialog:
+        return q->javaScriptConfirm(0, message);
+    case PromptDialog:
+        return q->javaScriptPrompt(0, message, defaultValue, result);
+    }
+    Q_UNREACHABLE();
+    return false;
+}
+
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
@@ -364,6 +382,27 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
             return newView->page();
     }
     return 0;
+}
+
+void QWebEnginePage::javaScriptAlert(QWebEngineFrame *originatingFrame, const QString &msg)
+{
+    Q_UNUSED(originatingFrame);
+    QMessageBox::information(view(), QStringLiteral("Javascript Alert - %1").arg(url().toString()), msg);
+}
+
+bool QWebEnginePage::javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString &msg)
+{
+    Q_UNUSED(originatingFrame);
+    return (QMessageBox::information(view(), QStringLiteral("Javascript Confirm - %1").arg(url().toString()), msg, QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok);
+}
+
+bool QWebEnginePage::javaScriptPrompt(QWebEngineFrame *originatingFrame, const QString &msg, const QString &defaultValue, QString *result)
+{
+    Q_UNUSED(originatingFrame);
+    bool ret = false;
+    if (result)
+        *result = QInputDialog::getText(view(), QStringLiteral("Javascript Prompt - %1").arg(url().toString()), msg, QLineEdit::Normal, defaultValue, &ret);
+    return ret;
 }
 
 #include "moc_qwebenginepage.cpp"
