@@ -39,40 +39,40 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_DELEGATE_QT_H
-#define WEB_CONTENTS_DELEGATE_QT_H
-
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
-
 #include "javascript_dialog_manager_qt.h"
 
-namespace content {
-    class BrowserContext;
-    class SiteInstance;
-    class RenderViewHost;
-    class JavaScriptDialogManager;
-    class WebContents;
-}
-class WebContentsAdapterClient;
+#include "web_contents_adapter_client.h"
+#include "web_contents_view_qt.h"
+#include "type_conversion.h"
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
-                            , public content::WebContentsObserver
+#include "base/memory/singleton.h"
+
+Q_STATIC_ASSERT_X(static_cast<int>(content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) == static_cast<int>(WebContentsAdapterClient::PromptDialog), "These enums should be in sync.");
+
+JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
 {
-public:
-    WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
+    return Singleton<JavaScriptDialogManagerQt>::get();
+}
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked);
-    virtual void LoadingStateChanged(content::WebContents* source);
-    virtual void LoadProgressChanged(content::WebContents* source, double progress);
-    virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host);
-    virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
-    virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates);
-    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager();
+void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)
+{
+    Q_UNUSED(originUrl);
+    Q_UNUSED(acceptLang);
 
-private:
-    WebContentsAdapterClient *m_viewClient;
-};
+    WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
+    if (!client) {
+        *didSuppressMessage = true;
+        return;
+    }
 
-#endif // WEB_CONTENTS_DELEGATE_QT_H
+    QString promptInput;
+    WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(javascriptMessageType);
+    bool res = client->javascriptDialog(dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), &promptInput);
+    callback.Run(res, toString16(promptInput));
+}
+
+bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride)
+{
+    // FIXME: We might need to keep a queue of modal dialogs in there and unqueue them...
+    return false;
+}

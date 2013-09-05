@@ -38,41 +38,34 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef JAVASCRIPT_DIALOG_MANAGER_QT_H
+#define JAVASCRIPT_DIALOG_MANAGER_QT_H
 
-#ifndef WEB_CONTENTS_DELEGATE_QT_H
-#define WEB_CONTENTS_DELEGATE_QT_H
+#include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/common/javascript_message_type.h"
 
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/browser/web_contents_observer.h"
-
-#include "javascript_dialog_manager_qt.h"
+#include "qglobal.h"
 
 namespace content {
-    class BrowserContext;
-    class SiteInstance;
-    class RenderViewHost;
-    class JavaScriptDialogManager;
-    class WebContents;
+class WebContents;
 }
-class WebContentsAdapterClient;
 
-class WebContentsDelegateQt : public content::WebContentsDelegate
-                            , public content::WebContentsObserver
+class JavaScriptDialogManagerQt : public content::JavaScriptDialogManager
 {
 public:
-    WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
+    // For use with the Singleton helper class from chromium
+    static JavaScriptDialogManagerQt *GetInstance();
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked);
-    virtual void LoadingStateChanged(content::WebContents* source);
-    virtual void LoadProgressChanged(content::WebContents* source, double progress);
-    virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host);
-    virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
-    virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates);
-    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager();
+    virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType,
+                                       const base::string16 &messageText, const base::string16 &defaultPromptText,
+                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage);
+    virtual void RunBeforeUnloadDialog(content::WebContents *, const base::string16 &messageText, bool isReload,
+                                         const content::JavaScriptDialogManager::DialogClosedCallback &callback) { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
+    virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride);
+    virtual void CancelActiveAndPendingDialogs(content::WebContents *) {}
+    virtual void WebContentsDestroyed(content::WebContents *) {}
 
-private:
-    WebContentsAdapterClient *m_viewClient;
 };
 
-#endif // WEB_CONTENTS_DELEGATE_QT_H
+#endif // JAVASCRIPT_DIALOG_MANAGER_QT_H
+

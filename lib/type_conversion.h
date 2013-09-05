@@ -51,9 +51,14 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
-inline QString toQt(const string16 &string)
+inline QString toQt(const base::string16 &string)
 {
     return QString::fromUtf16(string.data());
+}
+
+inline base::string16 toString16(const QString &qString)
+{
+    return base::string16(qString.utf16());
 }
 
 inline QUrl toQt(const GURL &url)
