@@ -39,50 +39,37 @@
 **
 ****************************************************************************/
 
-#ifndef TYPE_CONVERSION_H
-#define TYPE_CONVERSION_H
+#include "javascript_dialog_manager_qt.h"
 
-#include <QString>
-#include <QUrl>
-#include "base/files/file_path.h"
-#include "url/gurl.h"
+#include "base/memory/singleton.h"
 
-inline QString toQt(const base::string16 &string)
+#include "web_contents_adapter_client.h"
+#include "web_contents_view_qt.h"
+#include "type_conversion.h"
+
+using base::string16;
+
+Q_STATIC_ASSERT_X((int)content::JAVASCRIPT_MESSAGE_TYPE_PROMPT == (int)WebContentsAdapterClient::PromptDialog, "These enums should be in sync.");
+
+JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
 {
-#if defined(WCHAR_T_IS_UTF16)
-    return QString::fromStdWString(string);
-#else
-    return QString::fromUtf16(string.data());
-#endif
-
+    return Singleton<JavaScriptDialogManagerQt>::get();
 }
 
-inline base::string16 toString16(const QString &qString)
+void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &origin_url, const std::string &accept_lang, content::JavaScriptMessageType javascript_message_type, const string16 &message_text, const string16 &default_prompt_text, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *did_suppress_message)
 {
-#if defined(WCHAR_T_IS_UTF16)
-    return qString.toStdWString();
-#else
-    return base::string16(qString.utf16());
-#endif
+    WebContentsAdapterClient* client = WebContentsViewQt::from(webContents->GetView())->client();
+    bool res = false;
+    QString promptInput;
+    if (client) {
+        WebContentsAdapterClient::JavascriptDialogType dialogType = (WebContentsAdapterClient::JavascriptDialogType)javascript_message_type;
+        res = client->javascriptDialog(dialogType, toQt(message_text).toHtmlEscaped(), toQt(default_prompt_text).toHtmlEscaped(), &promptInput);
+    }
+    callback.Run(res, toString16(promptInput));
 }
 
-inline QUrl toQt(const GURL &url)
+bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *web_contents, bool accept, const string16 *prompt_override)
 {
-    return QUrl(QString::fromStdString(url.spec()));
+    // FIXME: We might need to keep a queue of modal dialogs in there and unqueue them...
+    return false;
 }
-
-inline GURL toGurl(const QUrl& url)
-{
-    return GURL(url.toString().toStdString());
-}
-
-inline base::FilePath::StringType toFilePathString(const QString &str)
-{
-#if defined(OS_POSIX)
-    return str.toStdString();
-#elif defined(OS_WIN)
-    return str.toStdWString();
-#endif
-}
-
-#endif // TYPE_CONVERSION_H
