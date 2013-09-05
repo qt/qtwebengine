@@ -58,6 +58,8 @@ class WebContentsViewQt
     , public content::RenderViewHostDelegateView
 {
 public:
+    static inline WebContentsViewQt* from(WebContentsView* view) { return static_cast<WebContentsViewQt*>(view); }
+
     WebContentsViewQt(content::WebContents* webContents)
         : m_webContents(webContents)
         , m_client(0)
@@ -65,6 +67,7 @@ public:
     { }
 
     void initialize(WebContentsAdapterClient* client);
+    WebContentsAdapterClient* client() { return m_client; }
 
     virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host);
 
