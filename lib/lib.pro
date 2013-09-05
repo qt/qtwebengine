@@ -26,6 +26,7 @@ SOURCES = \
         backing_store_qt.cpp \
         content_browser_client_qt.cpp \
         download_manager_delegate_qt.cpp \
+        javascript_dialog_manager_qt.cpp \
         render_widget_host_view_qt.cpp \
         render_widget_host_view_qt_delegate.cpp \
         resource_context_qt.cpp \
@@ -41,6 +42,7 @@ HEADERS = \
         browser_context_qt.h \
         content_browser_client_qt.h \
         download_manager_delegate_qt.h \
+        javascript_dialog_manager_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         resource_context_qt.h \

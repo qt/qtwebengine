@@ -86,6 +86,13 @@ public:
         IgnoreActionDisposition = 10,
     };
 
+    // Match the values in javascript_message_type.h
+    enum JavascriptDialogType {
+        AlertDialog,
+        ConfirmDialog,
+        PromptDialog
+    };
+
     virtual ~WebContentsAdapterClient() { }
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
@@ -97,6 +104,7 @@ public:
     virtual void focusContainer() = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
+    virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

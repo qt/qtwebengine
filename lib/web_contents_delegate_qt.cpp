@@ -113,3 +113,8 @@ bool WebContentsDelegateQt::HandleContextMenu(const content::ContextMenuParams &
     return m_viewClient->contextMenuRequested(contextMenuData);
 }
 
+content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
+{
+    return JavaScriptDialogManagerQt::GetInstance();
+}
+
