@@ -5,11 +5,10 @@
 TEMPLATE = aux
 
 message(Running Gyp...)
-GYP_OUTPUT = $$system(python ./gyp_qtwebengine)
-message($$GYP_OUTPUT)
+!system(python ./gyp_qtwebengine): error("-- running gyp_qtwebengine failed --")
 
 ninja.target = invoke_ninja
-ninja.commands = $$findNinja() $$(NINJAFLAGS) -C $$getOutDir()/$$getConfigDir()
+ninja.commands = $$findOrBuildNinja() $$(NINJAFLAGS) -C $$getOutDir()/$$getConfigDir()
 ninja.depends: qmake
 QMAKE_EXTRA_TARGETS += ninja
 
