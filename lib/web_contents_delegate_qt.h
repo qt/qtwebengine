@@ -68,7 +68,6 @@ public:
     virtual bool HandleContextMenu(const content::ContextMenuParams& params);
 
 private:
-    content::WebContents *m_webContents;
     WebContentsAdapterClient *m_viewClient;
 };
 
