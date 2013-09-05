@@ -62,7 +62,7 @@
 #include "ui/base/events/event.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "content/browser/renderer_host/image_transport_factory.h"
+#include "content/browser/aura/image_transport_factory.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/size_conversions.h"
 #include "base/memory/weak_ptr.h"

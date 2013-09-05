@@ -35,7 +35,27 @@ SOURCES = \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
         web_engine_context.cpp \
-        web_event_factory.cpp
+        web_event_factory.cpp \
+        ../3rdparty/chromium/content/browser/aura/image_transport_factory.cc \
+        ../3rdparty/chromium/content/browser/aura/no_transport_image_transport_factory.cc \
+        ../3rdparty/chromium/content/browser/aura/gpu_process_transport_factory.cc \
+        ../3rdparty/chromium/content/browser/aura/browser_compositor_output_surface.cc \
+        ../3rdparty/chromium/content/browser/aura/browser_compositor_output_surface_proxy.cc \
+        ../3rdparty/chromium/content/browser/aura/software_output_device_x11.cc \
+        ../3rdparty/chromium/content/browser/aura/reflector_impl.cc \
+        ../3rdparty/chromium/content/browser/aura/software_browser_compositor_output_surface.cc \
+        ../3rdparty/chromium/ui/compositor/compositor_switches.cc \
+        ../3rdparty/chromium/ui/compositor/compositor.cc \
+        ../3rdparty/chromium/ui/compositor/layer.cc \
+        ../3rdparty/chromium/ui/compositor/layer_animator.cc \
+        ../3rdparty/chromium/ui/compositor/dip_util.cc \
+        ../3rdparty/chromium/ui/compositor/layer_animation_sequence.cc \
+        ../3rdparty/chromium/ui/compositor/layer_animation_element.cc \
+        ../3rdparty/chromium/ui/compositor/layer_animation_observer.cc \
+        ../3rdparty/chromium/ui/compositor/float_animation_curve_adapter.cc \
+        ../3rdparty/chromium/ui/compositor/transform_animation_curve_adapter.cc \
+        ../3rdparty/chromium/ui/compositor/scoped_animation_duration_scale_mode.cc \
+        ../3rdparty/chromium/ui/compositor/layer_owner.cc
 
 HEADERS = \
         backing_store_qt.h \
