@@ -44,12 +44,15 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_contents.h"
+
+#include "javascript_dialog_manager_qt.h"
 
 namespace content {
     class BrowserContext;
     class SiteInstance;
     class RenderViewHost;
+    class JavaScriptDialogManager;
+    class WebContents;
 }
 class WebContentsAdapterClient;
 
@@ -66,6 +69,7 @@ public:
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host);
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates);
+    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager();
 
 private:
     WebContentsAdapterClient *m_viewClient;

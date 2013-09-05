@@ -113,3 +113,8 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector
         }
     }
 }
+
+content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
+{
+    return JavaScriptDialogManagerQt::GetInstance();
+}
