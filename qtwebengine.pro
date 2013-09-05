@@ -22,7 +22,7 @@ qtHaveModule(widgets) {
 SUBDIRS += examples
 
 # Ninja executable location needs to be determined early for extra targets. Should be fetched from cache most of the time anyway.
-NINJA_EXECUTABLE = $$findNinja()
+NINJA_EXECUTABLE = $$findOrBuildNinja()
 
 # Extra targets that invoke ninja on the desired configuration added for convenience
 release.target = release

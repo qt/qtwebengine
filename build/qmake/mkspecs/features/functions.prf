@@ -71,7 +71,7 @@ defineReplace(which) {
   return($$out)
 }
 
-defineReplace(findNinja) {
+defineReplace(findOrBuildNinja) {
   !isEmpty(CACHED_NINJA_EXECUTABLE):exists($$CACHED_NINJA_EXECUTABLE): return($$CACHED_NINJA_EXECUTABLE)
   out = $$which(ninja)
   # Try to be smart about it if we know where the chromium sources are located
