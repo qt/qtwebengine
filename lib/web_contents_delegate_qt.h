@@ -66,7 +66,6 @@ public:
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
 
 private:
-    content::WebContents *m_webContents;
     WebContentsAdapterClient *m_viewClient;
 };
 

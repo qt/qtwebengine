@@ -50,8 +50,7 @@
 #include "content/public/browser/invalidate_type.h"
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
-    : m_webContents(webContents)
-    , m_viewClient(adapterClient)
+    : m_viewClient(adapterClient)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -60,7 +59,7 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL)
-        m_viewClient->urlChanged(toQt(m_webContents->GetVisibleURL()));
+        m_viewClient->urlChanged(toQt(source->GetVisibleURL()));
 }
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
