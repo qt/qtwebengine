@@ -96,3 +96,9 @@ void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_
     if (is_main_frame)
         m_viewClient->loadFinished(true);
 }
+
+content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
+{
+    return JavaScriptDialogManagerQt::GetInstance();
+}
+
