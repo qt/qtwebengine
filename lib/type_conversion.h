@@ -56,6 +56,11 @@ inline QString toQt(const base::string16 &string)
     return QString::fromUtf16(string.data());
 }
 
+inline QString toQt(const std::string &string)
+{
+    return QString::fromStdString(string);
+}
+
 inline base::string16 toString16(const QString &qString)
 {
     return base::string16(qString.utf16());
