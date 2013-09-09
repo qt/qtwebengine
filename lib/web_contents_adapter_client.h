@@ -46,6 +46,7 @@
 #include <QRect>
 #include <QString>
 #include <QUrl>
+#include <QVariant>
 
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
