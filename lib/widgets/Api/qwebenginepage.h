@@ -50,6 +50,22 @@ class QWebEngineSecurityOrigin;
 class QtViewportAttributesPrivate;
 class QWebEngineHitTestResultPrivate;
 
+namespace QtWebEnginePrivate {
+
+struct FunctorBase {
+    virtual ~FunctorBase() {}
+    virtual void operator()(const QVariant &) = 0;
+};
+
+template <typename F>
+struct FunctorCallback : public FunctorBase {
+    FunctorCallback(F callback) : m_callback(callback) {}
+    virtual void operator()(const QVariant &value) { m_callback(value); }
+private:
+    F m_callback;
+};
+}
+
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHitTestResult {
 public:
     QWebEngineHitTestResult();
@@ -474,11 +490,15 @@ public:
 
     QWebEngineSecurityOrigin securityOrigin() const;
 
+    void runJavaScript(const QString& scriptSource, const QString &xPath = QString());
+
+    template <typename F>
+    void runJavaScript(const QString& scriptSource, F func, const QString &xPath = QString());
+
 public Q_SLOTS:
-    // Ex-QWebFrame slots
-    QVariant evaluateJavaScript(const QString& scriptSource) { Q_UNUSED(scriptSource); Q_UNREACHABLE(); return QVariant(); };
+    // Ex-QWebFrame slot
 #ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const { Q_UNUSED(printer); Q_UNREACHABLE(); };
+    void print(QPrinter *printer) const { Q_UNUSED(printer); Q_UNREACHABLE(); }
 #endif
 
 
@@ -551,6 +571,7 @@ private:
 #ifndef QT_NO_ACTION
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
+    void runJavaScriptHelper(const QString &source, QtWebEnginePrivate::FunctorBase *, const QString &xPath);
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
@@ -558,6 +579,13 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::RenderLayers);
+
+
+template <typename F>
+inline void QWebEnginePage::runJavaScript(const QString &scriptSource, F func, const QString &xPath)
+{
+    runJavaScriptHelper(scriptSource, new QtWebEnginePrivate::FunctorCallback<F>(func), xPath);
+}
 
 QT_END_NAMESPACE
 

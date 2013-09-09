@@ -406,6 +406,28 @@ void QWebEnginePage::setZoomFactor(qreal factor)
     d->adapter->setZoomFactor(factor);
 }
 
+void QWebEnginePage::runJavaScript(const QString &scriptSource, const QString &xPath)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->runJavaScript(scriptSource, xPath);
+}
+
+namespace {
+struct JSCallbackFunctor : public JSCallbackBase {
+    JSCallbackFunctor(QtWebEnginePrivate::FunctorBase *functor) : m_func(functor) { }
+    ~JSCallbackFunctor() { delete m_func; }
+    void call(const QVariant &value) { (*m_func)(value); }
+private:
+    QtWebEnginePrivate::FunctorBase *m_func;
+};
+}
+
+void QWebEnginePage::runJavaScriptHelper(const QString &source, QtWebEnginePrivate::FunctorBase *functor, const QString &xPath)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->runJavaScript(source, xPath, new JSCallbackFunctor(functor));
+}
+
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
 {
     Q_D(QWebEnginePage);
