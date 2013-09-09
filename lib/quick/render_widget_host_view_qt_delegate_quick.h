@@ -63,11 +63,11 @@ class QMouseEvent;
 class QKeyEvent;
 class QWheelEvent;
 
-class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
+template<typename ItemBaseType>
+class RenderWidgetHostViewQtDelegateQuickBase : public ItemBaseType, public RenderWidgetHostViewQtDelegate
 {
-    Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuickBase(QQuickItem *parent = 0);
 
     virtual void initAsChild(WebContentsAdapterClient* container);
     virtual QRectF screenRect() const;
@@ -76,13 +76,9 @@ public:
     virtual void show();
     virtual void hide();
     virtual bool isVisible() const;
-    virtual WId nativeWindowIdForCompositor() const;
     virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
     virtual void updateCursor(const QCursor &);
     virtual void resize(int width, int height);
-
-    void paint(QPainter *painter);
 
     void focusInEvent(QFocusEvent*);
     void focusOutEvent(QFocusEvent*);
@@ -97,9 +93,22 @@ public:
     void hoverMoveEvent(QHoverEvent*);
 
 protected:
-    void updatePolish();
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+};
 
+class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>
+{
+    Q_OBJECT
+public:
+    RenderWidgetHostViewQtDelegateQuickPainted(QQuickItem *parent = 0);
+
+    virtual WId nativeWindowIdForCompositor() const;
+    virtual void update(const QRect& rect = QRect());
+
+    void paint(QPainter *painter);
+
+protected:
+    void updatePolish();
 };
 
 #endif

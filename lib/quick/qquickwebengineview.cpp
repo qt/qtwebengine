@@ -56,7 +56,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(CompositingMode)
 {
-    return new RenderWidgetHostViewQtDelegateQuick;
+    return new RenderWidgetHostViewQtDelegateQuickPainted;
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
@@ -179,7 +179,7 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
 
     Q_FOREACH(QQuickItem *child, childItems()) {
-        Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child));
+        Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted *>(child));
         child->setSize(newGeometry.size());
     }
 }
