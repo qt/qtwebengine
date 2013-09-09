@@ -406,6 +406,29 @@ void QWebEnginePage::setZoomFactor(qreal factor)
     d->adapter->setZoomFactor(factor);
 }
 
+// FIXME: Decide if we want to keep QWebEngineFrame or clutter all relevant functions with extra XPath args...
+void QWebEnginePage::evaluateJavaScriptAsynchronously(const QString &scriptSource)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->evaluateJavaScript(scriptSource);
+}
+
+namespace {
+struct JSCallBackFunctor : public JSCallbackBase {
+    JSCallBackFunctor(QtWebEnginePrivate::FunctorBase *functor) : m_func(functor) { }
+    ~JSCallBackFunctor() { delete m_func; }
+    void call(const QVariant &value) { (*m_func)(value); }
+private:
+    QtWebEnginePrivate::FunctorBase *m_func;
+};
+}
+
+void QWebEnginePage::evaluateJavaScriptHelper(QtWebEnginePrivate::FunctorBase *functor, const QString &source)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->evaluateJavaScriptWithCallback(new JSCallBackFunctor(functor), source);
+}
+
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
 {
     Q_D(const QWebEnginePage);
