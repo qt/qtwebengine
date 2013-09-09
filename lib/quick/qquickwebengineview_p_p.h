@@ -47,7 +47,6 @@
 #include <QSharedData>
 #include <QtQuick/private/qquickitem_p.h>
 
-class RenderWidgetHostViewQtDelegateQuick;
 class WebContentsAdapter;
 
 QT_BEGIN_NAMESPACE
@@ -55,8 +54,8 @@ class QQuickWebEngineView;
 
 class QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsAdapterClient
 {
-    Q_DECLARE_PUBLIC(QQuickWebEngineView)
 public:
+    Q_DECLARE_PUBLIC(QQuickWebEngineView)
     QQuickWebEngineViewPrivate();
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(CompositingMode mode) Q_DECL_OVERRIDE;
@@ -69,7 +68,6 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) Q_DECL_OVERRIDE;
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
-    friend class ::RenderWidgetHostViewQtDelegateQuick;
 };
 
 QT_END_NAMESPACE
