@@ -50,6 +50,22 @@ class QWebEngineSecurityOrigin;
 class QtViewportAttributesPrivate;
 class QWebEngineHitTestResultPrivate;
 
+namespace QtWebEnginePrivate {
+
+struct FunctorBase {
+    virtual ~FunctorBase() {}
+    virtual void operator()(const QVariant &) = 0;
+};
+
+template <typename F>
+struct FunctorCallback : public FunctorBase {
+    FunctorCallback(F callback) : m_callback(callback) {}
+    virtual void operator()(const QVariant &value) { m_callback(value); }
+private:
+    F m_callback;
+};
+}
+
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHitTestResult {
 public:
     QWebEngineHitTestResult();
@@ -251,6 +267,11 @@ public:
         QtOwnership,
         ScriptOwnership,
         AutoOwnership
+    };
+
+    // New enum for evaluateJS
+    enum EvaluateJavaScriptResultPolicy {
+        IgnoreJavaScriptResult = 0
     };
 
     class QWEBENGINEWIDGETS_EXPORT ViewportAttributes {
@@ -474,11 +495,13 @@ public:
 
     QWebEngineSecurityOrigin securityOrigin() const;
 
+    template <typename F>
+    void evaluateJavaScript(const QString& scriptSource, F func, const QString &xPath = QString());
+
 public Q_SLOTS:
-    // Ex-QWebFrame slots
-    QVariant evaluateJavaScript(const QString& scriptSource) { Q_UNUSED(scriptSource); Q_UNREACHABLE(); return QVariant(); };
+    // Ex-QWebFrame slot
 #ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const { Q_UNUSED(printer); Q_UNREACHABLE(); };
+    void print(QPrinter *printer) const { Q_UNUSED(printer); Q_UNREACHABLE(); }
 #endif
 
 
@@ -551,6 +574,7 @@ private:
 #ifndef QT_NO_ACTION
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
+    void evaluateJavaScriptHelper(const QString &source, const QString &xPath, QtWebEnginePrivate::FunctorBase * = 0);
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
@@ -558,6 +582,20 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::RenderLayers);
+
+
+template <typename F>
+inline void QWebEnginePage::evaluateJavaScript(const QString &scriptSource, F func, const QString &xPath)
+{
+    evaluateJavaScriptHelper(scriptSource, xPath, new QtWebEnginePrivate::FunctorCallback<F>(func));
+}
+
+template<>
+inline void QWebEnginePage::evaluateJavaScript(const QString &scriptSource, QWebEnginePage::EvaluateJavaScriptResultPolicy policy, const QString &xPath)
+{
+    Q_ASSERT(policy == QWebEnginePage::IgnoreJavaScriptResult);
+    evaluateJavaScriptHelper(scriptSource, xPath);
+}
 
 QT_END_NAMESPACE
 
