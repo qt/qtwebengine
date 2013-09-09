@@ -43,6 +43,7 @@
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
 
 #include "render_widget_host_view_qt_delegate.h"
+#include "web_contents_adapter_client.h"
 
 #include <QWidget>
 
@@ -52,7 +53,7 @@ class QWindow;
 class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegateWidget(QWidget *parent = 0);
+    RenderWidgetHostViewQtDelegateWidget(WebContentsAdapterClient::CompositingMode mode, QWidget *parent = 0);
 
     virtual void initAsChild(WebContentsAdapterClient* container);
     virtual QRectF screenRect() const;

@@ -49,11 +49,6 @@
 #include "content/public/common/content_switches.h"
 #include <QPainter>
 
-bool RenderWidgetHostViewQtDelegate::isCompositingModeForced()
-{
-    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCompositingMode);
-}
-
 RenderWidgetHostViewQtDelegate::RenderWidgetHostViewQtDelegate()
     : m_view(0), m_backingStore(0)
 {

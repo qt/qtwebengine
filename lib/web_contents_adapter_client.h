@@ -55,6 +55,11 @@ class WebContentsDelegateQt;
 
 class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
+    enum CompositingMode {
+        NoCompositing,
+        ForcedGpuProcessCompositing
+    };
+
     // This must match window_open_disposition_list.h.
     enum WindowOpenDisposition {
         UnknownDisposition = 0,
@@ -72,7 +77,7 @@ public:
 
     virtual ~WebContentsAdapterClient() { }
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(CompositingMode mode) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
     virtual void loadingStateChanged() = 0;
