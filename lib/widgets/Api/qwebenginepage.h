@@ -50,6 +50,22 @@ class QWebEngineSecurityOrigin;
 class QtViewportAttributesPrivate;
 class QWebEngineHitTestResultPrivate;
 
+namespace QtWebEnginePrivate {
+
+struct FunctorBase {
+    virtual ~FunctorBase() {}
+    virtual void operator()(const QVariant &) = 0;
+};
+
+template <typename F>
+struct FunctorCallback : public FunctorBase {
+    FunctorCallback(F callback) : m_callback(callback) {}
+    void operator()(const QVariant &value) { m_callback(value); }
+private:
+    F m_callback;
+};
+}
+
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHitTestResult {
 public:
     QWebEngineHitTestResult();
@@ -474,11 +490,18 @@ public:
 
     QWebEngineSecurityOrigin securityOrigin() const;
 
+    template <typename F>
+    void evaluateJavaScriptAsynchronously(const QString& scriptSource, F func);
+
 public Q_SLOTS:
-    // Ex-QWebFrame slots
-    QVariant evaluateJavaScript(const QString& scriptSource) { Q_UNUSED(scriptSource); Q_UNREACHABLE(); return QVariant(); };
+    // Now async FIXME: document in porting guide that this might screw people using invokeMethod and Q_RET
+    // as well as people relying on the synchronous nature of that call...
+//    QVariant evaluateJavaScript(const QString&) { Q_STATIC_ASSERT_X(false, "That stuff is deprecated. Use evaluateJavascriptAsynchronously instead"); }
+
+    void evaluateJavaScriptAsynchronously(const QString& scriptSource);
+    // Ex-QWebFrame slot
 #ifndef QT_NO_PRINTER
-    void print(QPrinter *printer) const { Q_UNUSED(printer); Q_UNREACHABLE(); };
+    void print(QPrinter *printer) const { Q_UNUSED(printer); Q_UNREACHABLE(); }
 #endif
 
 
@@ -551,6 +574,7 @@ private:
 #ifndef QT_NO_ACTION
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
+    void evaluateJavaScriptHelper(QtWebEnginePrivate::FunctorBase *, const QString& source);
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
@@ -558,6 +582,13 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::RenderLayers);
+
+
+template <typename F>
+inline void QWebEnginePage::evaluateJavaScriptAsynchronously(const QString &scriptSource, F func)
+{
+    evaluateJavaScriptHelper(new QtWebEnginePrivate::FunctorCallback<F>(func), scriptSource);
+}
 
 QT_END_NAMESPACE
 

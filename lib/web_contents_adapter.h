@@ -47,12 +47,18 @@
 #include <QSharedData>
 #include <QString>
 #include <QUrl>
+#include <QVariant>
 
 namespace content {
 class WebContents;
 }
 class WebContentsAdapterClient;
 class WebContentsAdapterPrivate;
+
+struct JSCallbackBase {
+    virtual ~JSCallbackBase() {}
+    virtual void call(const QVariant&) = 0;
+};
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 
@@ -81,6 +87,8 @@ public:
     void clearNavigationHistory();
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
+    void evaluateJavaScriptWithCallback(JSCallbackBase *, const QString &javaScript, const QString &xPath = QString());
+    void evaluateJavaScript(const QString &javaScript, const QString &xPath = QString());
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);

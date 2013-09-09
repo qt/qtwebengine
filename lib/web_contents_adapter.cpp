@@ -48,8 +48,10 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 
-#include "content/public/browser/web_contents.h"
+#include "base/values.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 
@@ -239,4 +241,104 @@ qreal WebContentsAdapter::currentZoomFactor() const
 {
     Q_D(const WebContentsAdapter);
     return static_cast<qreal>(content::ZoomLevelToZoomFactor(d->webContents->GetZoomLevel()));
+}
+
+void WebContentsAdapter::evaluateJavaScript(const QString &javaScript, const QString &xPath)
+{
+    Q_D(WebContentsAdapter);
+    if (content::RenderViewHost *rvh = d->webContents->GetRenderViewHost())
+            rvh->ExecuteJavascriptInWebFrame(toString16(xPath), toString16(javaScript));
+}
+
+static QVariant fromJSValue(const base::Value *result)
+{
+    QVariant ret;
+    switch (result->GetType()) {
+    case base::Value::TYPE_NULL:
+        break;
+    case base::Value::TYPE_BOOLEAN:
+    {
+        bool out;
+        if (result->GetAsBoolean(&out))
+            ret.setValue(out);
+        break;
+    }
+    case base::Value::TYPE_INTEGER:
+    {
+        int out;
+        if (result->GetAsInteger(&out))
+            ret.setValue(out);
+        break;
+    }
+    case base::Value::TYPE_DOUBLE:
+    {
+        double out;
+        if (result->GetAsDouble(&out))
+            ret.setValue(out);
+        break;
+    }
+    case base::Value::TYPE_STRING:
+    {
+        base::string16 out;
+        if (result->GetAsString(&out))
+            ret.setValue(toQt(out));
+        break;
+    }
+    case base::Value::TYPE_LIST: // QList<QVariant>
+    {
+        const base::ListValue *out;
+        if (result->GetAsList(&out)) {
+            // FIXME: investigate the possibility to make this a QStringList when appropriate???
+            QList<QVariant> list;
+            list.reserve(out->GetSize());
+            for (size_t i = 0; i < out->GetSize(); ++i) {
+                const base::Value *outVal = 0;
+                if (out->Get(i, &outVal) && outVal)
+                    list.insert(i, fromJSValue(outVal));
+            }
+            ret.setValue(list);
+        }
+        break;
+    }
+    case base::Value::TYPE_DICTIONARY: // QMap <QString, QVariant>
+    {
+        const base::DictionaryValue *out;
+        if (result->GetAsDictionary(&out)) {
+            QMap<QString, QVariant> map;
+            base::DictionaryValue::Iterator it(*out);
+            while (!it.IsAtEnd()) {
+                map.insert(toQt(it.key()), fromJSValue(&it.value()));
+                it.Advance();
+            }
+            ret.setValue(map);
+        }
+        break;
+    }
+    case base::Value::TYPE_BINARY: // QByteArray?
+    {
+        const base::BinaryValue *out = static_cast<const base::BinaryValue*>(result);
+        QByteArray data(out->GetBuffer(), out->GetSize());
+        ret.setValue(data);
+        break;
+    }
+    default:
+        Q_UNREACHABLE();
+        break;
+    }
+    return ret;
+}
+
+static void callbackOnEvaluateJS(JSCallbackBase *callback, const base::Value *result)
+{
+    callback->call(fromJSValue(result));
+    delete callback;
+}
+
+void WebContentsAdapter::evaluateJavaScriptWithCallback(JSCallbackBase *func, const QString &javaScript, const QString &xPath)
+{
+    Q_D(WebContentsAdapter);
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    Q_ASSERT(rvh);
+    content::RenderViewHost::JavascriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, func);
+    rvh->ExecuteJavascriptInWebFrameCallbackResult(toString16(xPath), toString16(javaScript), callback);
 }
