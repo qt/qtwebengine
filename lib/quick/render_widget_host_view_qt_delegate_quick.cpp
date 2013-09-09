@@ -41,56 +41,12 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 
-#include "qquickwebengineview_p.h"
-#include "qquickwebengineview_p_p.h"
-#include <QQuickWindow>
-#include <QWindow>
-
-RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent)
-    : QQuickPaintedItem(parent)
+RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(QQuickItem *parent)
+    : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(parent)
 {
-    setAcceptedMouseButtons(Qt::AllButtons);
-    setAcceptHoverEvents(true);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
-{
-    QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
-    setParentItem(viewPrivate->q_func());
-}
-
-QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
-{
-    QPointF pos = mapToScene(QPointF(0,0));
-    return QRectF(pos.x(), pos.y(), width(), height());
-}
-
-void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
-{
-    setFocus(true);
-}
-
-bool RenderWidgetHostViewQtDelegateQuick::hasKeyboardFocus()
-{
-    return hasFocus();
-}
-
-void RenderWidgetHostViewQtDelegateQuick::show()
-{
-    setVisible(true);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::hide()
-{
-    setVisible(false);
-}
-
-bool RenderWidgetHostViewQtDelegateQuick::isVisible() const
-{
-    return QQuickPaintedItem::isVisible();
-}
-
-WId RenderWidgetHostViewQtDelegateQuick::nativeWindowIdForCompositor() const
+WId RenderWidgetHostViewQtDelegateQuickPainted::nativeWindowIdForCompositor() const
 {
     // Only used to enable accelerated compositing by the compositor
     // directly on our native window, which we want to eventually do
@@ -98,98 +54,21 @@ WId RenderWidgetHostViewQtDelegateQuick::nativeWindowIdForCompositor() const
     return 0;
 }
 
-QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
-{
-    return QQuickPaintedItem::window();
-}
-
-void RenderWidgetHostViewQtDelegateQuick::update(const QRect& rect)
+void RenderWidgetHostViewQtDelegateQuickPainted::update(const QRect& rect)
 {
     polish();
     QQuickPaintedItem::update(rect);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::updateCursor(const QCursor &cursor)
-{
-    QQuickPaintedItem::setCursor(cursor);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::resize(int width, int height)
-{
-    setSize(QSizeF(width, height));
-}
-
-void RenderWidgetHostViewQtDelegateQuick::paint(QPainter *painter)
+void RenderWidgetHostViewQtDelegateQuickPainted::paint(QPainter *painter)
 {
     RenderWidgetHostViewQtDelegate::paint(painter, boundingRect());
 }
 
-void RenderWidgetHostViewQtDelegateQuick::updatePolish()
+void RenderWidgetHostViewQtDelegateQuickPainted::updatePolish()
 {
     // paint will be called from the scene graph thread and this doesn't play well
     // with chromium's use of TLS while getting the backing store.
     // updatePolish() should be called from the GUI thread right before the rendering thread starts.
     fetchBackingStore();
-}
-
-void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
-{
-    QQuickPaintedItem::geometryChanged(newGeometry, oldGeometry);
-    notifyResize();
-}
-
-void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::focusOutEvent(QFocusEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::mousePressEvent(QMouseEvent *event)
-{
-    setFocus(true);
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::mouseMoveEvent(QMouseEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::mouseReleaseEvent(QMouseEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::mouseDoubleClickEvent(QMouseEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::keyPressEvent(QKeyEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::keyReleaseEvent(QKeyEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
-{
-    forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
-{
-    forwardEvent(event);
 }

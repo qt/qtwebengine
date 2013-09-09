@@ -53,53 +53,152 @@
 
 #include "render_widget_host_view_qt_delegate.h"
 
+#include "qquickwebengineview_p.h"
+#include "qquickwebengineview_p_p.h"
 #include <QQuickPaintedItem>
+#include <QQuickWindow>
+#include <QWindow>
 
-class BackingStoreQt;
-class QWindow;
-class QQuickItem;
-class QFocusEvent;
-class QMouseEvent;
-class QKeyEvent;
-class QWheelEvent;
+template<typename ItemBaseT>
+class RenderWidgetHostViewQtDelegateQuickBase : public ItemBaseT, public RenderWidgetHostViewQtDelegate
+{
+public:
+    RenderWidgetHostViewQtDelegateQuickBase(QQuickItem *parent = 0)
+        : ItemBaseT(parent)
+    {
+        this->setAcceptedMouseButtons(Qt::AllButtons);
+        this->setAcceptHoverEvents(true);
+    }
 
-class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
+    virtual void initAsChild(WebContentsAdapterClient* container)
+    {
+        QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
+        this->setParentItem(viewPrivate->q_func());
+    }
+
+    virtual QRectF screenRect() const
+    {
+        QPointF pos = this->mapToScene(QPointF(0,0));
+        return QRectF(pos.x(), pos.y(), this->width(), this->height());
+    }
+
+    virtual void setKeyboardFocus()
+    {
+        this->setFocus(true);
+    }
+
+    virtual bool hasKeyboardFocus()
+    {
+        return this->hasFocus();
+    }
+
+    virtual void show()
+    {
+        this->setVisible(true);
+    }
+
+    virtual void hide()
+    {
+        this->setVisible(false);
+    }
+
+    virtual bool isVisible() const
+    {
+        return ItemBaseT::isVisible();
+    }
+
+    virtual QWindow* window() const
+    {
+        return ItemBaseT::window();
+    }
+
+    virtual void updateCursor(const QCursor &cursor)
+    {
+        this->setCursor(cursor);
+    }
+
+    virtual void resize(int width, int height)
+    {
+        this->setSize(QSizeF(width, height));
+    }
+
+    void focusInEvent(QFocusEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void focusOutEvent(QFocusEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void mousePressEvent(QMouseEvent *event)
+    {
+        this->setFocus(true);
+        forwardEvent(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void mouseReleaseEvent(QMouseEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void mouseDoubleClickEvent(QMouseEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void keyPressEvent(QKeyEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void keyReleaseEvent(QKeyEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void wheelEvent(QWheelEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void touchEvent(QTouchEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+    void hoverMoveEvent(QHoverEvent *event)
+    {
+        forwardEvent(event);
+    }
+
+protected:
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+    {
+        ItemBaseT::geometryChanged(newGeometry, oldGeometry);
+        notifyResize();
+    }
+};
+
+class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuickPainted(QQuickItem *parent = 0);
 
-    virtual void initAsChild(WebContentsAdapterClient* container);
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
     virtual WId nativeWindowIdForCompositor() const;
-    virtual QWindow* window() const;
     virtual void update(const QRect& rect = QRect());
-    virtual void updateCursor(const QCursor &);
-    virtual void resize(int width, int height);
 
     void paint(QPainter *painter);
 
-    void focusInEvent(QFocusEvent*);
-    void focusOutEvent(QFocusEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseMoveEvent(QMouseEvent*);
-    void mouseReleaseEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-    void keyPressEvent(QKeyEvent*);
-    void keyReleaseEvent(QKeyEvent*);
-    void wheelEvent(QWheelEvent*);
-    void touchEvent(QTouchEvent*);
-    void hoverMoveEvent(QHoverEvent*);
-
 protected:
     void updatePolish();
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-
 };
 
 #endif
