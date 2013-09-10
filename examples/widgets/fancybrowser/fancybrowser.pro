@@ -1,4 +1,7 @@
 QT      +=  webenginewidgets
+
+include($$QTWEBENGINE_ROOT/common.pri)
+
 HEADERS =   mainwindow.h
 SOURCES =   main.cpp \
             mainwindow.cpp
