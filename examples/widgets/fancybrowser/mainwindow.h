@@ -40,8 +40,8 @@
 
 #include <QtWidgets>
 
-class QWebView;
 QT_BEGIN_NAMESPACE
+class QWebEngineView;
 class QLineEdit;
 QT_END_NAMESPACE
 
@@ -72,7 +72,7 @@ protected slots:
 
 private:
     QString jQuery;
-    QWebView *view;
+    QWebEngineView *view;
     QLineEdit *locationEdit;
     QAction *rotateAction;
     int progress;
