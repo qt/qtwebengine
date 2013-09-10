@@ -39,8 +39,7 @@
 ****************************************************************************/
 
 #include <QtWidgets>
-#include <QtNetwork>
-#include <QtWebKitWidgets>
+#include <QtWebEngineWidgets>
 #include "mainwindow.h"
 
 //! [1]
@@ -55,12 +54,9 @@ MainWindow::MainWindow(const QUrl& url)
     jQuery = file.readAll();
     jQuery.append("\nvar qt = { 'jQuery': jQuery.noConflict(true) };");
     file.close();
+
 //! [1]
-
-    QNetworkProxyFactory::setUseSystemConfiguration(true);
-
-//! [2]
-    view = new QWebView(this);
+    view = new QWebEngineView(this);
     view->load(url);
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
     connect(view, SIGNAL(titleChanged(QString)), SLOT(adjustTitle()));
@@ -72,12 +68,12 @@ MainWindow::MainWindow(const QUrl& url)
     connect(locationEdit, SIGNAL(returnPressed()), SLOT(changeLocation()));
 
     QToolBar *toolBar = addToolBar(tr("Navigation"));
-    toolBar->addAction(view->pageAction(QWebPage::Back));
-    toolBar->addAction(view->pageAction(QWebPage::Forward));
-    toolBar->addAction(view->pageAction(QWebPage::Reload));
-    toolBar->addAction(view->pageAction(QWebPage::Stop));
+    toolBar->addAction(view->pageAction(QWebEnginePage::Back));
+    toolBar->addAction(view->pageAction(QWebEnginePage::Forward));
+    toolBar->addAction(view->pageAction(QWebEnginePage::Reload));
+    toolBar->addAction(view->pageAction(QWebEnginePage::Stop));
     toolBar->addWidget(locationEdit);
-//! [2]
+//! [1]
 
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
     QAction* viewSourceAction = new QAction("Page Source", this);
@@ -108,7 +104,8 @@ MainWindow::MainWindow(const QUrl& url)
 
 void MainWindow::viewSource()
 {
-    QWebFrame *mainFrame = view->page()->mainFrame();
+#ifdef QWEBENGINEPAGE_TOHTML
+    QWebEnginePage *mainFrame = view->page();
     QTextEdit* textEdit = new QTextEdit(NULL);
     textEdit->setAttribute(Qt::WA_DeleteOnClose);
     textEdit->adjustSize();
@@ -116,6 +113,7 @@ void MainWindow::viewSource()
 
     textEdit->setPlainText(mainFrame->toHtml());
     textEdit->show();
+#endif
 }
 
 //! [4]
@@ -153,7 +151,7 @@ void MainWindow::finishLoading(bool)
 {
     progress = 100;
     adjustTitle();
-    view->page()->mainFrame()->evaluateJavaScript(jQuery);
+    view->page()->evaluateJavaScript(jQuery, QWebEnginePage::IgnoreJavaScriptResult);
 
     rotateImages(rotateAction->isChecked());
 }
@@ -166,7 +164,7 @@ void MainWindow::highlightAllLinks()
     // the way the elements returned by the each iterator elements reference each other, which causes problems upon
     // converting them to QVariants.
     QString code = "qt.jQuery('a').each( function () { qt.jQuery(this).css('background-color', 'yellow') } ); undefined";
-    view->page()->mainFrame()->evaluateJavaScript(code);
+    view->page()->evaluateJavaScript(code, QWebEnginePage::IgnoreJavaScriptResult);
 }
 //! [7]
 
@@ -182,7 +180,7 @@ void MainWindow::rotateImages(bool invert)
         code = "qt.jQuery('img').each( function () { qt.jQuery(this).css('-webkit-transition', '-webkit-transform 2s'); qt.jQuery(this).css('-webkit-transform', 'rotate(180deg)') } ); undefined";
     else
         code = "qt.jQuery('img').each( function () { qt.jQuery(this).css('-webkit-transition', '-webkit-transform 2s'); qt.jQuery(this).css('-webkit-transform', 'rotate(0deg)') } ); undefined";
-    view->page()->mainFrame()->evaluateJavaScript(code);
+    view->page()->evaluateJavaScript(code, QWebEnginePage::IgnoreJavaScriptResult);
 }
 //! [8]
 
@@ -190,25 +188,25 @@ void MainWindow::rotateImages(bool invert)
 void MainWindow::removeGifImages()
 {
     QString code = "qt.jQuery('[src*=gif]').remove()";
-    view->page()->mainFrame()->evaluateJavaScript(code);
+    view->page()->evaluateJavaScript(code, QWebEnginePage::IgnoreJavaScriptResult);
 }
 
 void MainWindow::removeInlineFrames()
 {
     QString code = "qt.jQuery('iframe').remove()";
-    view->page()->mainFrame()->evaluateJavaScript(code);
+    view->page()->evaluateJavaScript(code, QWebEnginePage::IgnoreJavaScriptResult);
 }
 
 void MainWindow::removeObjectElements()
 {
     QString code = "qt.jQuery('object').remove()";
-    view->page()->mainFrame()->evaluateJavaScript(code);
+    view->page()->evaluateJavaScript(code, QWebEnginePage::IgnoreJavaScriptResult);
 }
 
 void MainWindow::removeEmbeddedElements()
 {
     QString code = "qt.jQuery('embed').remove()";
-    view->page()->mainFrame()->evaluateJavaScript(code);
+    view->page()->evaluateJavaScript(code, QWebEnginePage::IgnoreJavaScriptResult);
 }
 //! [9]
 
