@@ -16,6 +16,7 @@ moc_*.cpp
 .rcc
 *nanobrowser
 examples/widgets/browser/browser
+examples/widgets/fancybrowser/fancybrowser
 tests/widgets/qwebenginehistoryinterface/tst_qwebenginehistoryinterface
 tests/widgets/qwebenginehistory/tst_qwebenginehistory
 tests/widgets/qwebengineinspector/tst_qwebengineinspector
