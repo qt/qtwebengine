@@ -71,4 +71,13 @@ inline base::FilePath::StringType toFilePathString(const QString &str)
 #endif
 }
 
+inline QString fromFilePathString(const base::FilePath::StringType &str)
+{
+#if defined(OS_POSIX)
+    return QString::fromStdString(str);
+#elif defined(OS_WIN)
+    return QString::fromStdWString(str);
+#endif
+}
+
 #endif // TYPE_CONVERSION_H
