@@ -496,6 +496,7 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
 {
     switch (event->type()) {
     case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonDblClick:    
         return WebInputEvent::MouseDown;
     case QEvent::MouseButtonRelease:
         return WebInputEvent::MouseUp;
@@ -521,8 +522,6 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
         return WebInputEvent::TouchEnd;
     case QEvent::TouchCancel:
         return WebInputEvent::TouchCancel;
-    case QEvent::MouseButtonDblClick:
-        return WebInputEvent::Undefined;
     default:
         Q_ASSERT(false);
         return WebInputEvent::MouseMove;
