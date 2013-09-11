@@ -166,6 +166,11 @@ void QWebEngineView::reload()
     page()->triggerAction(QWebEnginePage::Reload);
 }
 
+QSize QWebEngineView::sizeHint() const
+{
+    return page()->viewportSize();
+}
+
 QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
 {
     Q_UNUSED(type)
