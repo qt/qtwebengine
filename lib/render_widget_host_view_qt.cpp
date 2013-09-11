@@ -126,7 +126,10 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
 bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
 
     switch(event->type()) {
+    //FIXME: Add proper handling of double and triple clicks that does not add additional mouse presses.
+    //Swallow double clicks for now, but let the Qt application think we handled them.
     case QEvent::MouseButtonDblClick:
+        break;
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:
