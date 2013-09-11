@@ -44,6 +44,8 @@ import os
 import subprocess
 import sys
 
+extra_os = []
+
 class Submodule:
     def __init__(self):
         self.path = ''
@@ -62,6 +64,11 @@ class Submodule:
             return True
         if sys.platform.startswith('darwin') and ('unix' in self.os or 'mac' in self.os):
             return True
+        for os in extra_os:
+            if os in self.os:
+                return True
+        print self.os
+        print extra_os
         return False
 
     def findSha(self):
