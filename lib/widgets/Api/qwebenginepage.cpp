@@ -290,4 +290,10 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
     return 0;
 }
 
+QSize QWebEnginePage::viewportSize() const
+{
+    Q_D(const QWebEnginePage);
+    return d->viewportRect().size().toSize();
+}
+
 #include "moc_qwebenginepage.cpp"

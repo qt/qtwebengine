@@ -103,6 +103,8 @@ public:
     void setRenderHints(QPainter::RenderHints hints);
     void setRenderHint(QPainter::RenderHint hint, bool enabled = true);
 
+    QSize sizeHint() const;
+
     bool findText(const QString& subString, QWebEnginePage::FindFlags options = 0);
 
 public Q_SLOTS:
