@@ -52,6 +52,8 @@
 #include <QMap>
 #include <QStandardPaths>
 
+#include "type_conversion.h"
+
 // Helper class to track currently ongoing downloads to prevent file name
 // clashes / overwriting of files.
 class DownloadTargetHelper : public content::DownloadItem::Observer {
@@ -82,6 +84,7 @@ bool DownloadTargetHelper::isPathAvailable(const QString& path)
 bool DownloadTargetHelper::determineDownloadTarget(content::DownloadItem *item, const content::DownloadTargetCallback &callback)
 {
     std::string suggestedFilename = item->GetSuggestedFilename();
+
     if (suggestedFilename.empty())
         suggestedFilename = item->GetTargetFilePath().AsUTF8Unsafe();
 
@@ -94,9 +97,7 @@ bool DownloadTargetHelper::determineDownloadTarget(content::DownloadItem *item, 
     if (!m_defaultDownloadDirectory.exists() && !m_defaultDownloadDirectory.mkpath(m_defaultDownloadDirectory.absolutePath()))
         return false;
 
-    QString filenameToUse = QString::fromStdString(suggestedFilename);
-    QString suggestedFilePath = m_defaultDownloadDirectory.absoluteFilePath(filenameToUse);
-
+    QString suggestedFilePath = m_defaultDownloadDirectory.absoluteFilePath(QString::fromStdString(suggestedFilename));
     if (!isPathAvailable(suggestedFilePath)) {
         int i = 1;
         for (; i < 99; i++) {
@@ -116,7 +117,7 @@ bool DownloadTargetHelper::determineDownloadTarget(content::DownloadItem *item, 
     m_ongoingDownloads.insert(item, suggestedFilePath);
     item->AddObserver(this);
 
-    base::FilePath filePathForCallback(suggestedFilePath.toStdString());
+    base::FilePath filePathForCallback(toFilePathString(suggestedFilePath));
     callback.Run(filePathForCallback, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, filePathForCallback.AddExtension("download"));
     return true;
@@ -189,9 +190,6 @@ bool DownloadManagerDelegateQt::ShouldOpenDownload(content::DownloadItem* item,
 bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* item,
                                                         const content::DownloadTargetCallback& callback)
 {
-    base::FilePath downloadFilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
-
-
     // Keep the forced file path if set, also as the temporary file, so the check for existence
     // will already return that the file exists. Forced file paths seem to be only used for
     // store downloads and other special downloads, so they might never end up here anyway.
@@ -202,7 +200,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
     }
 
     // Let the target helper determine the download target path.
-    return m_targetHelper->determineDownloadTarget(item, callback);;
+    return m_targetHelper->determineDownloadTarget(item, callback);
 }
 
 bool DownloadManagerDelegateQt::GenerateFileHash()
@@ -243,8 +241,9 @@ void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_cont
                         base::FilePath* download_save_dir,
                         bool* skip_dir_check)
 {
-    *website_save_dir = base::FilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
-    *download_save_dir = base::FilePath(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation).toStdString());
+    static base::FilePath::StringType save_dir = toFilePathString(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
+    *website_save_dir = base::FilePath(save_dir);
+    *download_save_dir = base::FilePath(save_dir);
     *skip_dir_check = true;
 }
 
