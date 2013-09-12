@@ -105,6 +105,8 @@ public:
 
     bool findText(const QString& subString, QWebEnginePage::FindFlags options = 0);
 
+    virtual QSize sizeHint() const { return QSize(800, 600); }
+
 public Q_SLOTS:
     void stop();
     void back();
