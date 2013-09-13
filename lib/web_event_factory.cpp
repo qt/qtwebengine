@@ -521,8 +521,6 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
         return WebInputEvent::TouchEnd;
     case QEvent::TouchCancel:
         return WebInputEvent::TouchCancel;
-    case QEvent::MouseButtonDblClick:
-        return WebInputEvent::Undefined;
     default:
         Q_ASSERT(false);
         return WebInputEvent::MouseMove;
@@ -542,18 +540,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
     webKitEvent.globalY = ev->globalY();
 
     webKitEvent.type = webEventTypeForEvent(ev);
-
-    switch (ev->type()) {
-    case QEvent::MouseButtonPress:
-        webKitEvent.clickCount = 1;
-        break;
-    case QEvent::MouseButtonDblClick:
-        webKitEvent.clickCount = 2;
-        break;
-    default:
-        webKitEvent.clickCount = 0;
-        break;
-    };
+    webKitEvent.clickCount = 0;
 
     return webKitEvent;
 }

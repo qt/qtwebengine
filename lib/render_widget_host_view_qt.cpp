@@ -57,9 +57,11 @@
 
 #include <QEvent>
 #include <QFocusEvent>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QScreen>
+#include <QStyleHints>
 #include <QWheelEvent>
 #include <QWindow>
 
@@ -664,9 +666,26 @@ bool RenderWidgetHostViewQt::IsPopup() const
     return popup_type_ != WebKit::WebPopupTypeNone;
 }
 
-void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* ev)
+void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 {
-    m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
+    int eventType = event->type();
+    if (eventType == QEvent::MouseButtonDblClick)
+        return;
+
+    WebKit::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event);
+    if (eventType == QMouseEvent::MouseButtonPress) {
+        if (event->button() != m_clickHelper.lastPressButton
+            || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
+            || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength() > qGuiApp->styleHints()->startDragDistance())
+            m_clickHelper.clickCounter = 0;
+
+        m_clickHelper.lastPressTimestamp = event->timestamp();
+        webEvent.clickCount = ++m_clickHelper.clickCounter;
+        m_clickHelper.lastPressButton = event->button();
+        m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
+    }
+
+    m_host->ForwardMouseEvent(webEvent);
 }
 
 void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
