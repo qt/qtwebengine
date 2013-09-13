@@ -1,0 +1,77 @@
+From 08012c5c84dc6f63c1c91d8035ec11b497e6e11c Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Fri, 6 Sep 2013 17:08:45 +0200
+Subject: [PATCH] Solve conflicts when including both QtOpenGL headers and
+ resource_provider.h
+
+If resource_provider.h is going to be used to integrate delegated frame
+to external compositors, it should avoid conflicting with the system's gl.h.
+
+Change-Id: Ie37d6cde263157e6717cc006a9896f0b9ebdaa5d
+Reviewed-by: Zeno Albisser <zeno.albisser@digia.com>
+---
+ cc/layers/texture_layer.cc        | 1 +
+ cc/output/delegating_renderer.cc  | 1 +
+ cc/quads/content_draw_quad_base.h | 1 -
+ cc/resources/resource_provider.h  | 5 ++++-
+ 4 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/cc/layers/texture_layer.cc b/cc/layers/texture_layer.cc
+index 316042b..2325a80 100644
+--- a/cc/layers/texture_layer.cc
++++ b/cc/layers/texture_layer.cc
+@@ -10,6 +10,7 @@
+ #include "cc/layers/texture_layer_client.h"
+ #include "cc/layers/texture_layer_impl.h"
+ #include "cc/trees/layer_tree_host.h"
++#include "third_party/khronos/GLES2/gl2.h"
+ #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+ 
+ namespace cc {
+diff --git a/cc/output/delegating_renderer.cc b/cc/output/delegating_renderer.cc
+index bd1c5d1..0c3051c 100644
+--- a/cc/output/delegating_renderer.cc
++++ b/cc/output/delegating_renderer.cc
+@@ -23,6 +23,7 @@
+ #include "cc/quads/yuv_video_draw_quad.h"
+ #include "cc/resources/resource_provider.h"
+ #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
++#include "third_party/khronos/GLES2/gl2.h"
+ #include "third_party/khronos/GLES2/gl2ext.h"
+ 
+ using WebKit::WebGraphicsContext3D;
+diff --git a/cc/quads/content_draw_quad_base.h b/cc/quads/content_draw_quad_base.h
+index cbf18ca..6229d61 100644
+--- a/cc/quads/content_draw_quad_base.h
++++ b/cc/quads/content_draw_quad_base.h
+@@ -8,7 +8,6 @@
+ #include "base/memory/scoped_ptr.h"
+ #include "cc/base/cc_export.h"
+ #include "cc/quads/draw_quad.h"
+-#include "third_party/khronos/GLES2/gl2.h"
+ #include "ui/gfx/point.h"
+ #include "ui/gfx/size.h"
+ 
+diff --git a/cc/resources/resource_provider.h b/cc/resources/resource_provider.h
+index b5dccc8..1d51a27 100644
+--- a/cc/resources/resource_provider.h
++++ b/cc/resources/resource_provider.h
+@@ -20,11 +20,14 @@
+ #include "cc/output/output_surface.h"
+ #include "cc/resources/texture_mailbox.h"
+ #include "cc/resources/transferable_resource.h"
+-#include "third_party/khronos/GLES2/gl2.h"
+ #include "third_party/skia/include/core/SkBitmap.h"
+ #include "third_party/skia/include/core/SkCanvas.h"
+ #include "ui/gfx/size.h"
+ 
++// A correct fix would be not to use GL types in this interal API file.
++typedef unsigned int     GLenum;
++typedef int              GLint;
++
+ namespace WebKit { class WebGraphicsContext3D; }
+ 
+ namespace gfx {
+-- 
+1.8.4
+
