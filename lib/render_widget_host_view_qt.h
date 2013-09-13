@@ -62,6 +62,8 @@ class QWheelEvent;
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapterClient;
 
+struct MultipleMouseClickHelper;
+
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
     , public ui::GestureConsumer
@@ -173,6 +175,7 @@ private:
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
     WebContentsAdapterClient *m_adapterClient;
+    MultipleMouseClickHelper *m_clickHelper;
 
     bool m_initPending;
 };

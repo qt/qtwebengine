@@ -57,9 +57,12 @@
 
 #include <QEvent>
 #include <QFocusEvent>
+#include <QGuiApplication>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QPoint>
 #include <QScreen>
+#include <QStyleHints>
 #include <QWheelEvent>
 #include <QWindow>
 
@@ -95,10 +98,32 @@ static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKi
     }
 }
 
+struct MultipleMouseClickHelper
+{
+    QPoint lastClickPosition;
+    Qt::MouseButton lastClickButton;
+    int clickCounter;
+    ulong lastClickTimestamp;
+    ulong multiClickInterval;
+    int dragDistance;
+
+    MultipleMouseClickHelper()
+        : lastClickPosition(QPoint())
+        , lastClickButton(Qt::NoButton)
+        , clickCounter(0)
+        , lastClickTimestamp(0)
+        , multiClickInterval(static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
+        , dragDistance(qGuiApp->styleHints()->startDragDistance())
+    {
+    }
+};
+
+
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
     , m_adapterClient(0)
+    , m_clickHelper(new MultipleMouseClickHelper)
     , m_initPending(false)
 {
     m_host->SetView(this);
@@ -106,6 +131,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    delete m_clickHelper;
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -664,9 +690,25 @@ bool RenderWidgetHostViewQt::IsPopup() const
     return popup_type_ != WebKit::WebPopupTypeNone;
 }
 
-void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* ev)
+void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 {
-    m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
+    int eventType = event->type();
+    if (eventType == QEvent::MouseButtonDblClick)
+        return;
+
+    WebKit::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event);
+    if (eventType == QMouseEvent::MouseButtonPress) {
+        if (event->button() != m_clickHelper->lastClickButton || (event->timestamp() - m_clickHelper->lastClickTimestamp > m_clickHelper->multiClickInterval)
+            || (event->pos() - m_clickHelper->lastClickPosition).manhattanLength() > m_clickHelper->dragDistance)
+            m_clickHelper->clickCounter = 0;
+
+        m_clickHelper->lastClickTimestamp = event->timestamp();
+        webEvent.clickCount = ++m_clickHelper->clickCounter;
+        m_clickHelper->lastClickButton = event->button();
+        m_clickHelper->lastClickPosition = QPointF(event->pos()).toPoint();
+    }
+
+    m_host->ForwardMouseEvent(webEvent);
 }
 
 void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
