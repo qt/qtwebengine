@@ -47,6 +47,7 @@
 
 #include "shared/shared_globals.h"
 
+#include "cc/output/compositor_frame_ack.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -159,6 +160,18 @@ bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
         return false;
     }
     return true;
+}
+
+void RenderWidgetHostViewQt::releaseAndAckDelegatedFrame()
+{
+    cc::CompositorFrameAck ack;
+    // FIXME: This releases all resources of the frame for now.
+    ack.resources = m_pendingFrameData->resource_list;
+    content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+        m_host->GetRoutingID(), m_pendingOutputSurfaceId,
+        m_host->GetProcess()->GetID(), ack);
+
+    m_pendingFrameData.reset();
 }
 
 BackingStoreQt* RenderWidgetHostViewQt::GetBackingStore()
@@ -554,6 +567,15 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
     return false;
 }
 
+void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
+{
+    Q_ASSERT(frame->delegated_frame_data);
+    SwapDelegatedFrame(output_surface_id,
+                       frame->delegated_frame_data.Pass(),
+                       frame->metadata.device_scale_factor,
+                       frame->metadata.latency_info);
+}
+
 void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
 {
     QWindow* window = m_delegate->window();
@@ -617,6 +639,15 @@ void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
     m_delegate->update(r);
 }
 
+void RenderWidgetHostViewQt::SwapDelegatedFrame(uint32 output_surface_id, scoped_ptr<cc::DelegatedFrameData> frame_data, float frame_device_scale_factor, const ui::LatencyInfo& latency_info) {
+    gfx::Size frame_size_in_dip;
+    if (!frame_data->render_pass_list.empty())
+        frame_size_in_dip = gfx::ToFlooredSize(gfx::ScaleSize(frame_data->render_pass_list.back()->output_rect.size(), 1.f/frame_device_scale_factor));
+
+    m_pendingOutputSurfaceId = output_surface_id;
+    m_pendingFrameData = frame_data.Pass();
+    m_delegate->update();
+}
 
 void RenderWidgetHostViewQt::ProcessGestures(ui::GestureRecognizer::Gestures *gestures)
 {

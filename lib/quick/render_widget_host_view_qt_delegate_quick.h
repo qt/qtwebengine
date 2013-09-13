@@ -42,15 +42,6 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICK_H
 
-// On Mac we need to reset this define in order to prevent definition
-// of "check" macros etc. The "check" macro collides with a member function name in QtQuick.
-// See AssertMacros.h in the Mac SDK.
-#include <QtGlobal> // We need this for the Q_OS_MAC define.
-#if defined(Q_OS_MAC)
-#undef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
-#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
-#endif
-
 #include "render_widget_host_view_qt_delegate.h"
 
 #include "qquickwebengineview_p.h"
@@ -185,6 +176,20 @@ protected:
         notifyResize();
     }
 };
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>
+{
+    Q_OBJECT
+public:
+    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent = 0);
+
+    virtual WId nativeWindowIdForCompositor() const;
+    virtual void update(const QRect& rect = QRect());
+
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
+};
+#endif // QT_VERSION
 
 class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>
 {
