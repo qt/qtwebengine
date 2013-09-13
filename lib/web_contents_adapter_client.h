@@ -73,6 +73,7 @@ class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
     enum CompositingMode {
         NoCompositing,
+        DelegatedCompositing,
         ForcedGpuProcessCompositing
     };
 
