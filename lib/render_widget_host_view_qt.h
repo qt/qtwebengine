@@ -49,6 +49,7 @@
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
 #include <QMap>
+#include <QPoint>
 #include <QtGlobal>
 
 class BackingStoreQt;
@@ -61,6 +62,22 @@ class QTouchEvent;
 class QWheelEvent;
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapterClient;
+
+struct MultipleMouseClickHelper
+{
+    QPoint lastPressPosition;
+    Qt::MouseButton lastPressButton;
+    int clickCounter;
+    ulong lastPressTimestamp;
+
+    MultipleMouseClickHelper()
+        : lastPressPosition(QPoint())
+        , lastPressButton(Qt::NoButton)
+        , clickCounter(0)
+        , lastPressTimestamp(0)
+    {
+    }
+};
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
@@ -173,6 +190,7 @@ private:
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
     WebContentsAdapterClient *m_adapterClient;
+    MultipleMouseClickHelper m_clickHelper;
 
     bool m_initPending;
 };
