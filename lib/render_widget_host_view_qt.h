@@ -45,6 +45,7 @@
 #include "shared/shared_globals.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
@@ -66,6 +67,7 @@ class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
     , public ui::GestureConsumer
     , public ui::GestureEventHelper
+    , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -74,6 +76,8 @@ public:
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
     bool handleEvent(QEvent* event);
+    cc::DelegatedFrameData *pendingDelegatedFrame() const { return m_pendingFrameData.get(); }
+    void releaseAndAckDelegatedFrame();
     BackingStoreQt* GetBackingStore();
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size);
@@ -126,6 +130,7 @@ public:
     virtual void AcceleratedSurfaceSuspend();
     virtual void AcceleratedSurfaceRelease();
     virtual bool HasAcceleratedSurface(const gfx::Size&);
+    virtual void OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
     virtual void GetScreenInfo(WebKit::WebScreenInfo* results);
     virtual gfx::Rect GetBoundsInRootWindow();
     virtual gfx::GLSurfaceHandle GetCompositingSurface();
@@ -161,6 +166,7 @@ public:
 
 private:
     void Paint(const gfx::Rect& damage_rect);
+    void SwapDelegatedFrame(uint32 output_surface_id, scoped_ptr<cc::DelegatedFrameData> frame_data, float frame_device_scale_factor, const ui::LatencyInfo& latency_info);
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
     int GetMappedTouch(int qtTouchId);
     void RemoveExpiredMappings(QTouchEvent *ev);
@@ -172,6 +178,10 @@ private:
     QMap<int, int> m_touchIdMapping;
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
+
+    uint32 m_pendingOutputSurfaceId;
+    scoped_ptr<cc::DelegatedFrameData> m_pendingFrameData;
+
     WebContentsAdapterClient *m_adapterClient;
 
     bool m_initPending;
