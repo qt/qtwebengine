@@ -42,9 +42,13 @@
 #ifndef TYPE_CONVERSION_H
 #define TYPE_CONVERSION_H
 
+#include <QMatrix4x4>
+#include <QRect>
 #include <QString>
 #include <QUrl>
 #include "base/files/file_path.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
+#include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
 inline QString toQt(const string16 &string)
@@ -60,6 +64,25 @@ inline QUrl toQt(const GURL &url)
 inline GURL toGurl(const QUrl& url)
 {
     return GURL(url.toString().toStdString());
+}
+
+inline QRect toQt(const gfx::Rect &rect)
+{
+    return QRect(rect.x(), rect.y(), rect.width(), rect.height());
+}
+
+inline QSize toQt(const gfx::Size &size)
+{
+    return QSize(size.width(), size.height());
+}
+
+inline QMatrix4x4 toQt(const SkMatrix44 &m)
+{
+    return QMatrix4x4(
+        m.get(0, 0), m.get(0, 1), m.get(0, 2), m.get(0, 3),
+        m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
+        m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
+        m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
 }
 
 inline base::FilePath::StringType toFilePathString(const QString &str)

@@ -52,6 +52,8 @@ class BackingStoreQt;
 class QCursor;
 class QEvent;
 class QPainter;
+class QQuickWindow;
+class QSGNode;
 class QWindow;
 class RenderWidgetHostViewQt;
 class WebContentsAdapterClient;
@@ -76,6 +78,9 @@ public:
 protected:
     RenderWidgetHostViewQtDelegate();
     void paint(QPainter*, const QRectF& boundingRect);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+    QSGNode *updatePaintNode(QSGNode *, QQuickWindow *);
+#endif
     void fetchBackingStore();
     void notifyResize();
     bool forwardEvent(QEvent*);

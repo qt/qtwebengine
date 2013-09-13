@@ -186,6 +186,20 @@ protected:
     }
 };
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>
+{
+    Q_OBJECT
+public:
+    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent = 0);
+
+    virtual WId nativeWindowIdForCompositor() const;
+    virtual void update(const QRect& rect = QRect());
+
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
+};
+#endif // QT_VERSION
+
 class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>
 {
     Q_OBJECT
