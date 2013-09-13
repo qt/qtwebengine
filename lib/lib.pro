@@ -9,6 +9,10 @@ TEMPLATE = lib
 
 TARGET = Qt5WebEngineCore
 
+QT += qml quick
+QT_PRIVATE += qml-private quick-private gui-private core-private
+qtHaveModule(v8): QT_PRIVATE += v8-private
+
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
            Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS

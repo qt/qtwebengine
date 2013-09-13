@@ -64,7 +64,9 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
     WebContentsAdapterClient::CompositingMode compositingMode = WebContentsAdapterClient::NoCompositing;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCompositingMode))
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableDelegatedRenderer))
+        compositingMode = WebContentsAdapterClient::DelegatedCompositing;
+    else if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCompositingMode))
         compositingMode = WebContentsAdapterClient::ForcedGpuProcessCompositing;
 
     Q_ASSERT(m_factoryClient);
