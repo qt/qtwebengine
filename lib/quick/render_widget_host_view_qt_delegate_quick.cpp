@@ -41,6 +41,30 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent)
+    : RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>(parent)
+{
+    setFlag(ItemHasContents);
+}
+
+WId RenderWidgetHostViewQtDelegateQuick::nativeWindowIdForCompositor() const
+{
+    return QQuickItem::window()->winId();
+}
+
+void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
+{
+    QQuickItem::update();
+}
+
+QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
+{
+    return RenderWidgetHostViewQtDelegate::updatePaintNode(oldNode, QQuickItem::window());
+}
+#endif // QT_VERSION
+
+
 RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(QQuickItem *parent)
     : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(parent)
 {
@@ -48,9 +72,7 @@ RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickP
 
 WId RenderWidgetHostViewQtDelegateQuickPainted::nativeWindowIdForCompositor() const
 {
-    // Only used to enable accelerated compositing by the compositor
-    // directly on our native window, which we want to eventually do
-    // through the delegated renderer instead.
+    // This causes a failure of the compositor initialization which ends up disabling it completely.
     return 0;
 }
 
