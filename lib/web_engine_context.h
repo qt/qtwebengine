@@ -54,6 +54,8 @@ class BrowserMainRunner;
 class ContentMainRunner;
 }
 
+QT_BEGIN_NAMESPACE
+
 class ContentMainDelegateQt;
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
@@ -70,5 +72,7 @@ private:
     scoped_ptr<content::ContentMainRunner> m_contentRunner;
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
 };
+
+QT_END_NAMESPACE
 
 #endif // WEB_ENGINE_CONTEXT_H

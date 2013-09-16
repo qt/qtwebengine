@@ -87,6 +87,8 @@ static QByteArray subProcessPath() {
 
 } // namespace
 
+QT_BEGIN_NAMESPACE
+
 class ContentMainDelegateQt : public content::ContentMainDelegate
 {
 public:
@@ -146,3 +148,5 @@ scoped_refptr<WebEngineContext> WebEngineContext::current()
         sContext = new WebEngineContext;
     return sContext;
 }
+
+QT_END_NAMESPACE

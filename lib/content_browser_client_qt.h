@@ -59,6 +59,8 @@ class WebContents;
 struct MainFunctionParams;
 }
 
+QT_BEGIN_NAMESPACE
+
 class BrowserContextQt;
 class BrowserMainPartsQt;
 
@@ -80,5 +82,7 @@ private:
     BrowserMainPartsQt* m_browserMainParts;
 
 };
+
+QT_END_NAMESPACE
 
 #endif // CONTENT_BROWSER_CLIENT_QT_H

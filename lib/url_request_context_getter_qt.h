@@ -57,6 +57,8 @@ class NetworkDelegate;
 class ProxyConfigService;
 }
 
+QT_BEGIN_NAMESPACE
+
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
     explicit URLRequestContextGetterQt(const base::FilePath&);
@@ -77,5 +79,7 @@ private:
     scoped_ptr<net::URLRequestContextStorage> m_storage;
     scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
 };
+
+QT_END_NAMESPACE
 
 #endif // URL_REQUEST_CONTEXT_GETTER_QT_H

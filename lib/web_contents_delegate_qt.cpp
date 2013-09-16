@@ -49,6 +49,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/invalidate_type.h"
 
+QT_BEGIN_NAMESPACE
+
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
 {
@@ -96,3 +98,5 @@ void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_
     if (is_main_frame)
         m_viewClient->loadFinished(true);
 }
+
+QT_END_NAMESPACE

@@ -46,6 +46,8 @@
 #include <QQuickWindow>
 #include <QWindow>
 
+QT_BEGIN_NAMESPACE
+
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent)
     : QQuickPaintedItem(parent)
 {
@@ -193,3 +195,5 @@ void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
 {
     forwardEvent(event);
 }
+
+QT_END_NAMESPACE

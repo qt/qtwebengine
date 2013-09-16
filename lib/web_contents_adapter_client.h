@@ -47,6 +47,7 @@
 #include <QString>
 #include <QUrl>
 
+QT_BEGIN_NAMESPACE
 
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
@@ -81,5 +82,7 @@ public:
     virtual void focusContainer() = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) = 0;
 };
+
+QT_END_NAMESPACE
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

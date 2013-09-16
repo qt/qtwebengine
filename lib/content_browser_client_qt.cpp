@@ -153,6 +153,8 @@ base::MessagePump* messagePumpFactory()
 
 } // namespace
 
+QT_BEGIN_NAMESPACE
+
 static base::StringPiece PlatformResourceProvider(int key) {
     if (key == IDR_DIR_HEADER_HTML) {
         base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
@@ -250,3 +252,5 @@ net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(conte
         fprintf(stderr, "Warning: off the record browser context not implemented !\n");
     return static_cast<BrowserContextQt*>(browser_context())->CreateRequestContext(protocol_handlers);
 }
+
+QT_END_NAMESPACE

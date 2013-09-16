@@ -95,6 +95,8 @@ static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKi
     }
 }
 
+QT_BEGIN_NAMESPACE
+
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
@@ -735,3 +737,5 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         ev->accept();
     }
 }
+
+QT_END_NAMESPACE

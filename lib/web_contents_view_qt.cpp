@@ -47,6 +47,8 @@
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
+QT_BEGIN_NAMESPACE
+
 void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
 {
     m_client = client;
@@ -105,3 +107,5 @@ void WebContentsViewQt::SetInitialFocus()
 {
     Focus();
 }
+
+QT_END_NAMESPACE

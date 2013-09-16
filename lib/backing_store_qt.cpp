@@ -52,6 +52,8 @@
 #include <QSizeF>
 #include <QWindow>
 
+QT_BEGIN_NAMESPACE
+
 BackingStoreQt::BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, QWindow* parent)
     : content::BackingStore(host, size)
     , m_deviceScaleFactor((parent && parent->screen()) ? parent->screen()->devicePixelRatio() : 1)
@@ -179,3 +181,4 @@ bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformB
     return true;
 }
 
+QT_END_NAMESPACE

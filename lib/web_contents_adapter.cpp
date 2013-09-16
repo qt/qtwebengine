@@ -58,6 +58,8 @@
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
 
+QT_BEGIN_NAMESPACE
+
 class WebContentsAdapterPrivate {
 public:
     WebContentsAdapterPrivate();
@@ -226,3 +228,5 @@ void WebContentsAdapter::clearNavigationHistory()
     if (d->webContents->GetController().CanPruneAllButVisible())
         d->webContents->GetController().PruneAllButVisible();
 }
+
+QT_END_NAMESPACE

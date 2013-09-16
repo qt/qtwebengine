@@ -56,6 +56,8 @@ class DownloadItem;
 class WebContents;
 }
 
+QT_BEGIN_NAMESPACE
+
 class DownloadTargetHelper;
 
 class DownloadManagerDelegateQt : public content::DownloadManagerDelegate
@@ -98,5 +100,7 @@ private:
     uint64 m_currentId;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
 };
+
+QT_END_NAMESPACE
 
 #endif //DOWNLOAD_MANAGER_DELEGATE_QT_H

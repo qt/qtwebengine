@@ -55,6 +55,8 @@
 
 #include <QQuickPaintedItem>
 
+QT_BEGIN_NAMESPACE
+
 class BackingStoreQt;
 class QWindow;
 class QQuickItem;
@@ -101,5 +103,7 @@ protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
 
 };
+
+QT_END_NAMESPACE
 
 #endif

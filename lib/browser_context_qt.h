@@ -69,6 +69,8 @@
 #include "type_conversion.h"
 #include "url_request_context_getter_qt.h"
 
+QT_BEGIN_NAMESPACE
+
 class BrowserContextQt : public content::BrowserContext
 {
 public:
@@ -148,5 +150,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
 };
+
+QT_END_NAMESPACE
 
 #endif // BROWSER_CONTEXT_QT_H

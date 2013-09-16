@@ -43,6 +43,8 @@
 
 #include "net/base/network_delegate.h"
 
+QT_BEGIN_NAMESPACE
+
 class NetworkDelegateQt : public net::NetworkDelegate {
  public:
   NetworkDelegateQt() {}
@@ -113,5 +115,7 @@ class NetworkDelegateQt : public net::NetworkDelegate {
   }
 
 };
+
+QT_END_NAMESPACE
 
 #endif // NETWORK_DELEGATE_QT_H

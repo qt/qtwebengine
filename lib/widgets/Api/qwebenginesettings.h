@@ -24,6 +24,8 @@
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtCore/qstring.h>
 
+QT_BEGIN_NAMESPACE
+
 class QIcon;
 class QPixmap;
 class QUrl;
@@ -162,5 +164,7 @@ private:
 
     QWebEngineSettingsPrivate *d;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINESETTINGS_H

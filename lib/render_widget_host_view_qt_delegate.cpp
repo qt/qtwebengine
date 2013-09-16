@@ -49,6 +49,8 @@
 #include "content/public/common/content_switches.h"
 #include <QPainter>
 
+QT_BEGIN_NAMESPACE
+
 bool RenderWidgetHostViewQtDelegate::isCompositingModeForced()
 {
     return CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCompositingMode);
@@ -90,3 +92,5 @@ void RenderWidgetHostViewQtDelegate::setView(RenderWidgetHostViewQt* view)
 {
     m_view = view;
 }
+
+QT_END_NAMESPACE
