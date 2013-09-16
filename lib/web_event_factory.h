@@ -45,10 +45,14 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
+#include <QtGlobal>
+
+QT_BEGIN_NAMESPACE
 class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QWheelEvent;
+QT_END_NAMESPACE
 
 class WebEventFactory {
 

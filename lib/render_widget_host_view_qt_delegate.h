@@ -49,10 +49,14 @@
 #include <QtGui/qwindowdefs.h>
 
 class BackingStoreQt;
+
+QT_BEGIN_NAMESPACE
 class QCursor;
 class QEvent;
 class QPainter;
 class QWindow;
+QT_END_NAMESPACE
+
 class RenderWidgetHostViewQt;
 class WebContentsAdapterClient;
 

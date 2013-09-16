@@ -43,6 +43,7 @@
 #define SHARED_GLOBALS_H
 
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
+#include <QtGlobal>
 
 #ifdef QT_WEBENGINE_LOGGING
 #define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
@@ -52,7 +53,9 @@
 #define QT_NOT_USED Q_UNREACHABLE(); // This will assert in debug.
 #endif
 
+QT_BEGIN_NAMESPACE
 class QWindow;
+QT_END_NAMESPACE
 
 void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results);
 

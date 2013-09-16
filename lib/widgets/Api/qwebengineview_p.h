@@ -45,6 +45,8 @@
 #include <QtWidgets/private/qwidget_p.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWebEngineView;
 
 class QWebEngineViewPrivate : public QWidgetPrivate
@@ -58,5 +60,7 @@ public:
 
     QWebEnginePage *page;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEVIEW_P_H

@@ -47,9 +47,11 @@
 #include <QSharedData>
 #include <QtQuick/private/qquickitem_p.h>
 
-class QQuickWebEngineView;
 class RenderWidgetHostViewQtDelegateQuick;
 class WebContentsAdapter;
+
+QT_BEGIN_NAMESPACE
+class QQuickWebEngineView;
 
 class QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsAdapterClient
 {
@@ -67,7 +69,9 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition) Q_DECL_OVERRIDE;
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
-    friend class RenderWidgetHostViewQtDelegateQuick;
+    friend class ::RenderWidgetHostViewQtDelegateQuick;
 };
+
+QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H

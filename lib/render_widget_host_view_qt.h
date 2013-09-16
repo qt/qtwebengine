@@ -53,6 +53,8 @@
 #include <QtGlobal>
 
 class BackingStoreQt;
+
+QT_BEGIN_NAMESPACE
 class QEvent;
 class QFocusEvent;
 class QHoverEvent;
@@ -60,6 +62,8 @@ class QKeyEvent;
 class QMouseEvent;
 class QTouchEvent;
 class QWheelEvent;
+QT_END_NAMESPACE
+
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapterClient;
 
