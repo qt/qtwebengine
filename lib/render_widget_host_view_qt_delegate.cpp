@@ -44,15 +44,8 @@
 #include "backing_store_qt.h"
 #include "render_widget_host_view_qt.h"
 
-#include "base/command_line.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/public/common/content_switches.h"
 #include <QPainter>
-
-bool RenderWidgetHostViewQtDelegate::isCompositingModeForced()
-{
-    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCompositingMode);
-}
 
 RenderWidgetHostViewQtDelegate::RenderWidgetHostViewQtDelegate()
     : m_view(0), m_backingStore(0)

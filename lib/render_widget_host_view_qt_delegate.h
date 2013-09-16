@@ -74,8 +74,6 @@ public:
     virtual void resize(int width, int height) = 0;
 
 protected:
-    static bool isCompositingModeForced();
-
     RenderWidgetHostViewQtDelegate();
     void paint(QPainter*, const QRectF& boundingRect);
     void fetchBackingStore();
