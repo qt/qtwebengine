@@ -59,7 +59,7 @@ class QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsA
 public:
     QQuickWebEngineViewPrivate();
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate() Q_DECL_OVERRIDE;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(CompositingMode mode) Q_DECL_OVERRIDE;
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadingStateChanged() Q_DECL_OVERRIDE;

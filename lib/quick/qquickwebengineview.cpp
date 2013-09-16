@@ -55,7 +55,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     adapter->initialize(this);
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate()
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(CompositingMode)
 {
     return new RenderWidgetHostViewQtDelegateQuick;
 }

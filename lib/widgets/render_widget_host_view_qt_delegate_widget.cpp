@@ -50,7 +50,7 @@
 #include <QPaintEvent>
 #include <QWindow>
 
-RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidget *parent)
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(WebContentsAdapterClient::CompositingMode mode, QWidget *parent)
     : QWidget(parent)
 {
     setFocusPolicy(Qt::ClickFocus);
@@ -62,7 +62,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(QWidg
     // FOR TESTING ONLY, use at your own risks.
     // Supporting this properly on all platforms would require duplicating
     // many tricks done by RenderWidgetHostView[Win|Mac].
-    if (isCompositingModeForced()) {
+    if (mode == WebContentsAdapterClient::ForcedGpuProcessCompositing) {
         // This sets Qt::WA_NativeWindow and force a native window creation
         // that we can give to the GPU process for it to render directly
         // on through windowHandle().
