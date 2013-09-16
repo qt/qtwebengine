@@ -46,6 +46,8 @@
 
 class WebContentsAdapter;
 
+QT_BEGIN_NAMESPACE
+
 class QWebEngineHistoryItemPrivate : public QSharedData
 {
 public:
@@ -65,5 +67,7 @@ public:
     WebContentsAdapter *adapter;
     mutable QList<QWebEngineHistoryItem> items;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEHISTORY_P_H

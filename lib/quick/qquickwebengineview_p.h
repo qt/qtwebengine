@@ -44,6 +44,8 @@
 
 #include <QQuickItem>
 
+QT_BEGIN_NAMESPACE
+
 class QQuickWebEngineViewPrivate;
 
 class QQuickWebEngineView : public QQuickItem {
@@ -84,5 +86,7 @@ private:
 };
 
 QML_DECLARE_TYPE(QQuickWebEngineView)
+
+QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINEVIEW_P_H

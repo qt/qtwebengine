@@ -47,6 +47,7 @@
 
 #include <QUrl>
 
+QT_BEGIN_NAMESPACE
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter)
@@ -183,3 +184,5 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
         child->setSize(newGeometry.size());
     }
 }
+
+QT_END_NAMESPACE

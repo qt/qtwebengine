@@ -48,12 +48,16 @@
 #include <QtCore/private/qobject_p.h>
 #include <QSharedData>
 
+QT_BEGIN_NAMESPACE
 class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEngineView;
+QT_END_NAMESPACE
+
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapter;
 
+QT_BEGIN_NAMESPACE
 class QWebEnginePagePrivate : public QObjectPrivate, public WebContentsAdapterClient
 {
 public:
@@ -81,5 +85,7 @@ public:
     mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEPAGE_P_H

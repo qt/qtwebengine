@@ -29,6 +29,7 @@
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 
+QT_BEGIN_NAMESPACE
 class QIcon;
 class QNetworkRequest;
 class QPrinter;
@@ -134,5 +135,7 @@ private:
 
     friend class QWebEnginePage;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEVIEW_H

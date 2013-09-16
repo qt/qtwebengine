@@ -34,6 +34,8 @@
 #include <QLayout>
 #include <QUrl>
 
+QT_BEGIN_NAMESPACE
+
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
     , adapter(new WebContentsAdapter)
@@ -291,3 +293,6 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
 }
 
 #include "moc_qwebenginepage.cpp"
+
+QT_END_NAMESPACE
+

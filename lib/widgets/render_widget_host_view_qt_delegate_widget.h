@@ -47,7 +47,10 @@
 #include <QWidget>
 
 class BackingStoreQt;
+
+QT_BEGIN_NAMESPACE
 class QWindow;
+QT_END_NAMESPACE
 
 class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
