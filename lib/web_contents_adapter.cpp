@@ -55,6 +55,8 @@
 #include <QGuiApplication>
 #include <QStyleHints>
 
+QT_BEGIN_NAMESPACE
+
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
 
@@ -226,3 +228,5 @@ void WebContentsAdapter::clearNavigationHistory()
     if (d->webContents->GetController().CanPruneAllButVisible())
         d->webContents->GetController().PruneAllButVisible();
 }
+
+QT_END_NAMESPACE

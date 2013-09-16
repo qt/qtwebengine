@@ -51,6 +51,9 @@
 namespace content {
 class WebContents;
 }
+
+QT_BEGIN_NAMESPACE
+
 class WebContentsAdapterClient;
 class WebContentsAdapterPrivate;
 
@@ -85,4 +88,7 @@ private:
     Q_DECLARE_PRIVATE(WebContentsAdapter);
     QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 };
+
+QT_END_NAMESPACE
+
 #endif // WEB_CONTENTS_ADAPTER_H

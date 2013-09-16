@@ -53,6 +53,8 @@
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 
+QT_BEGIN_NAMESPACE
+
 class WebContentsViewQt
     : public content::WebContentsViewPort
     , public content::RenderViewHostDelegateView
@@ -119,5 +121,7 @@ private:
     WebContentsAdapterClient *m_client;
     WebContentsAdapterClient *m_factoryClient;
 };
+
+QT_END_NAMESPACE
 
 #endif // WEB_CONTENTS_VIEW_QT_H

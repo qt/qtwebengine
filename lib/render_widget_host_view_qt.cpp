@@ -63,6 +63,8 @@
 #include <QWheelEvent>
 #include <QWindow>
 
+QT_BEGIN_NAMESPACE
+
 static inline ui::EventType toUIEventType(Qt::TouchPointState state)
 {
     switch (state) {
@@ -735,3 +737,5 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         ev->accept();
     }
 }
+
+QT_END_NAMESPACE

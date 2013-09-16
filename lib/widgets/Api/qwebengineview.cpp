@@ -46,6 +46,8 @@
 
 #include <QStackedLayout>
 
+QT_BEGIN_NAMESPACE
+
 void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
 {
     if (view && page == view->d_func()->page)
@@ -173,3 +175,5 @@ QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
 }
 
 #include "moc_qwebengineview.cpp"
+
+QT_END_NAMESPACE

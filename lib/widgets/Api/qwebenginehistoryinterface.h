@@ -26,6 +26,8 @@
 #include <QtCore/qobject.h>
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistoryInterface : public QObject {
     Q_OBJECT
 public:
@@ -38,5 +40,7 @@ public:
     virtual bool historyContains(const QString &url) const = 0;
     virtual void addHistoryEntry(const QString &url) = 0;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEHISTORYINTERFACE_H

@@ -48,6 +48,8 @@
 #include <QScopedPointer>
 #include <QtGui/qwindowdefs.h>
 
+QT_BEGIN_NAMESPACE
+
 class BackingStoreQt;
 class QCursor;
 class QEvent;
@@ -88,5 +90,7 @@ private:
     BackingStoreQt *m_backingStore;
     friend class RenderWidgetHostViewQt;
 };
+
+QT_END_NAMESPACE
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H

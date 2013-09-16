@@ -51,6 +51,8 @@
 #include <QMap>
 #include <QtGlobal>
 
+QT_BEGIN_NAMESPACE
+
 class BackingStoreQt;
 class QEvent;
 class QFocusEvent;
@@ -176,5 +178,7 @@ private:
 
     bool m_initPending;
 };
+
+QT_END_NAMESPACE
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

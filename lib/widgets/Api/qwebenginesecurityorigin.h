@@ -23,6 +23,8 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWebEngineDatabase;
 class QWebEngineSecurityOriginPrivate;
 
@@ -45,5 +47,7 @@ public:
     void setApplicationCacheQuota(qint64 quota);
     QList<QWebEngineDatabase> databases() const;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINESECURITYORIGIN_H_

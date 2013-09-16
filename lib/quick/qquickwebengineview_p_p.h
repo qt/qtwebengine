@@ -47,6 +47,8 @@
 #include <QSharedData>
 #include <QtQuick/private/qquickitem_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QQuickWebEngineView;
 class RenderWidgetHostViewQtDelegateQuick;
 class WebContentsAdapter;
@@ -69,5 +71,7 @@ public:
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     friend class RenderWidgetHostViewQtDelegateQuick;
 };
+
+QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H
