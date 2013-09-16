@@ -62,6 +62,8 @@
 #include <QCoreApplication>
 #include <QStringList>
 
+QT_BEGIN_NAMESPACE
+
 namespace {
 
 scoped_refptr<WebEngineContext> sContext;
@@ -146,3 +148,5 @@ scoped_refptr<WebEngineContext> WebEngineContext::current()
         sContext = new WebEngineContext;
     return sContext;
 }
+
+QT_END_NAMESPACE

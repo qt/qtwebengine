@@ -43,8 +43,7 @@
 #define DOWNLOAD_MANAGER_DELEGATE_QT_H
 
 #include "content/public/browser/download_manager_delegate.h"
-
-#include <qglobal.h>
+#include "qtwebengineglobal.h"
 
 namespace base {
 class FilePath;
@@ -55,6 +54,8 @@ class BrowserContext;
 class DownloadItem;
 class WebContents;
 }
+
+QT_BEGIN_NAMESPACE
 
 class DownloadTargetHelper;
 
@@ -98,5 +99,7 @@ private:
     uint64 m_currentId;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
 };
+
+QT_END_NAMESPACE
 
 #endif //DOWNLOAD_MANAGER_DELEGATE_QT_H

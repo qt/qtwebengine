@@ -48,6 +48,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
+QT_BEGIN_NAMESPACE
+
 static const int wheelScrollLines = 3; // FIXME: Still not available in QStyleHints in 5.1
 
 using namespace WebKit;
@@ -616,3 +618,5 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     memcpy(&webKitEvent.text, ev->text().utf16(), qMin(sizeof(webKitEvent.text), sizeof(ev->text().utf16())));
     return webKitEvent;
 }
+
+QT_END_NAMESPACE

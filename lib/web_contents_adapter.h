@@ -41,16 +41,19 @@
 #ifndef WEB_CONTENTS_ADAPTER_H
 #define WEB_CONTENTS_ADAPTER_H
 
-#include "qtwebengineglobal.h"
-
 #include <QScopedPointer>
 #include <QSharedData>
 #include <QString>
 #include <QUrl>
 
+#include "qtwebengineglobal.h"
+
 namespace content {
 class WebContents;
 }
+
+QT_BEGIN_NAMESPACE
+
 class WebContentsAdapterClient;
 class WebContentsAdapterPrivate;
 
@@ -85,4 +88,7 @@ private:
     Q_DECLARE_PRIVATE(WebContentsAdapter);
     QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 };
+
+QT_END_NAMESPACE
+
 #endif // WEB_CONTENTS_ADAPTER_H

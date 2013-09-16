@@ -50,6 +50,9 @@
 #include "ui/base/gestures/gesture_types.h"
 #include <QMap>
 #include <QtGlobal>
+#include "qtwebengineglobal.h"
+
+QT_BEGIN_NAMESPACE
 
 class BackingStoreQt;
 class QEvent;
@@ -176,5 +179,7 @@ private:
 
     bool m_initPending;
 };
+
+QT_END_NAMESPACE
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

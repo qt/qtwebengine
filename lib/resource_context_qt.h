@@ -44,12 +44,17 @@
 
 #include "content/public/browser/resource_context.h"
 
+#include "qtwebengineglobal.h"
+
 namespace net {
 class URLRequestContextGetter;
 }
 
-class BrowserContextQt;
 class GURL;
+
+QT_BEGIN_NAMESPACE
+
+class BrowserContextQt;
 
 class ResourceContextQt : public content::ResourceContext
 {
@@ -74,5 +79,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };
+
+QT_END_NAMESPACE
 
 #endif // RESOURCE_CONTEXT_QT_H

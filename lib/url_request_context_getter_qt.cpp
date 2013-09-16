@@ -66,6 +66,8 @@
 
 using content::BrowserThread;
 
+QT_BEGIN_NAMESPACE
+
 URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &basePath)
     : m_ignoreCertificateErrors(false)
     , m_basePath(basePath)
@@ -165,3 +167,5 @@ scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetwor
 {
     return content::BrowserThread::GetMessageLoopProxyForThread(content::BrowserThread::IO);
 }
+
+QT_END_NAMESPACE

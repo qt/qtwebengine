@@ -47,6 +47,10 @@
 #include <QPainter>
 #include <QPixmap>
 
+#include "qtwebengineglobal.h"
+
+QT_BEGIN_NAMESPACE
+
 class BackingStoreQt : public content::BackingStore
 {
 public:
@@ -68,5 +72,7 @@ private:
 
     QPixmap m_pixelBuffer;
 };
+
+QT_END_NAMESPACE
 
 #endif // BACKING_STORE_QT_H

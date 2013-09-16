@@ -42,6 +42,9 @@
 #define NETWORK_DELEGATE_QT_H
 
 #include "net/base/network_delegate.h"
+#include "qtwebengineglobal.h"
+
+QT_BEGIN_NAMESPACE
 
 class NetworkDelegateQt : public net::NetworkDelegate {
  public:
@@ -113,5 +116,7 @@ class NetworkDelegateQt : public net::NetworkDelegate {
   }
 
 };
+
+QT_END_NAMESPACE
 
 #endif // NETWORK_DELEGATE_QT_H

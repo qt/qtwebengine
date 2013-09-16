@@ -23,6 +23,8 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWebEnginePage;
 class QWebEngineInspectorPrivate;
 
@@ -35,5 +37,7 @@ public:
     void setPage(QWebEnginePage* page);
     QWebEnginePage* page() const;
 };
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEINSPECTOR_H

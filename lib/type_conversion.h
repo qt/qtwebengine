@@ -47,6 +47,10 @@
 #include "base/files/file_path.h"
 #include "url/gurl.h"
 
+#include "qtwebengineglobal.h"
+
+QT_BEGIN_NAMESPACE
+
 inline QString toQt(const string16 &string)
 {
     return QString::fromUtf16(string.data());
@@ -70,5 +74,7 @@ inline base::FilePath::StringType toFilePathString(const QString &str)
     return str.toStdWString();
 #endif
 }
+
+QT_END_NAMESPACE
 
 #endif // TYPE_CONVERSION_H

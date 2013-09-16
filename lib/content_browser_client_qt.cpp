@@ -56,6 +56,8 @@
 
 #include <QCoreApplication>
 
+QT_BEGIN_NAMESPACE
+
 namespace {
 
 ContentBrowserClientQt* gBrowserClient = 0; // Owned by ContentMainDelegateQt.
@@ -250,3 +252,5 @@ net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(conte
         fprintf(stderr, "Warning: off the record browser context not implemented !\n");
     return static_cast<BrowserContextQt*>(browser_context())->CreateRequestContext(protocol_handlers);
 }
+
+QT_END_NAMESPACE

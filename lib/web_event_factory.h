@@ -44,6 +44,9 @@
 
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "qtwebengineglobal.h"
+
+QT_BEGIN_NAMESPACE
 
 class QHoverEvent;
 class QKeyEvent;
@@ -59,5 +62,6 @@ public:
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
 };
 
+QT_END_NAMESPACE
 
 #endif // WEB_EVENT_FACTORY_H

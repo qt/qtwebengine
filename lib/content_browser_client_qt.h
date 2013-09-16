@@ -44,6 +44,7 @@
 
 #include "content/public/browser/content_browser_client.h"
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include "qtwebengineglobal.h"
 
 namespace net {
 class URLRequestContextGetter;
@@ -58,6 +59,8 @@ class WebContentsViewPort;
 class WebContents;
 struct MainFunctionParams;
 }
+
+QT_BEGIN_NAMESPACE
 
 class BrowserContextQt;
 class BrowserMainPartsQt;
@@ -80,5 +83,7 @@ private:
     BrowserMainPartsQt* m_browserMainParts;
 
 };
+
+QT_END_NAMESPACE
 
 #endif // CONTENT_BROWSER_CLIENT_QT_H

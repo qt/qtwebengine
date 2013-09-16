@@ -46,11 +46,16 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents.h"
 
+#include "qtwebengineglobal.h"
+
 namespace content {
     class BrowserContext;
     class SiteInstance;
     class RenderViewHost;
 }
+
+QT_BEGIN_NAMESPACE
+
 class WebContentsAdapterClient;
 
 class WebContentsDelegateQt : public content::WebContentsDelegate
@@ -68,5 +73,7 @@ public:
 private:
     WebContentsAdapterClient *m_viewClient;
 };
+
+QT_END_NAMESPACE
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H

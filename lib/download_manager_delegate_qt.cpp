@@ -54,6 +54,8 @@
 
 #include "type_conversion.h"
 
+QT_BEGIN_NAMESPACE
+
 // Helper class to track currently ongoing downloads to prevent file name
 // clashes / overwriting of files.
 class DownloadTargetHelper : public content::DownloadItem::Observer {
@@ -247,4 +249,4 @@ void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_cont
     *skip_dir_check = true;
 }
 
-
+QT_END_NAMESPACE

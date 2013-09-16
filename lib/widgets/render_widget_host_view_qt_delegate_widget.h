@@ -46,6 +46,7 @@
 
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
 class BackingStoreQt;
 class QWindow;
 
@@ -73,5 +74,5 @@ protected:
     void resizeEvent(QResizeEvent *resizeEvent);
 
 };
-
+QT_END_NAMESPACE
 #endif

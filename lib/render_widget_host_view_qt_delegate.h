@@ -42,11 +42,13 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 
-#include "qtwebengineglobal.h"
-
 #include <QRect>
 #include <QScopedPointer>
 #include <QtGui/qwindowdefs.h>
+
+#include "qtwebengineglobal.h"
+
+QT_BEGIN_NAMESPACE
 
 class BackingStoreQt;
 class QCursor;
@@ -88,5 +90,7 @@ private:
     BackingStoreQt *m_backingStore;
     friend class RenderWidgetHostViewQt;
 };
+
+QT_END_NAMESPACE
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H

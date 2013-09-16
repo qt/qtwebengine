@@ -45,6 +45,8 @@
 
 #include "browser_context_qt.h"
 
+QT_BEGIN_NAMESPACE
+
 net::HostResolver *ResourceContextQt::GetHostResolver()
 {
     CHECK(getter_);
@@ -62,3 +64,5 @@ void ResourceContextQt::set_url_request_context_getter(net::URLRequestContextGet
 {
     getter_ = getter;
 }
+
+QT_END_NAMESPACE

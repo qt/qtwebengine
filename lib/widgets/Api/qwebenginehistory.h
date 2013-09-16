@@ -28,6 +28,8 @@
 #include <QtGui/qicon.h>
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
+QT_BEGIN_NAMESPACE
+
 class QWebEngineHistory;
 class QWebEngineHistoryItemPrivate;
 class QWebEnginePage;
@@ -104,5 +106,7 @@ private:
 
 QWEBENGINEWIDGETS_EXPORT QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history);
 QWEBENGINEWIDGETS_EXPORT QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history);
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEHISTORY_H
