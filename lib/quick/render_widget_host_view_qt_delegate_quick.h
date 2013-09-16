@@ -56,12 +56,15 @@
 #include <QQuickPaintedItem>
 
 class BackingStoreQt;
+
+QT_BEGIN_NAMESPACE
 class QWindow;
 class QQuickItem;
 class QFocusEvent;
 class QMouseEvent;
 class QKeyEvent;
 class QWheelEvent;
+QT_END_NAMESPACE
 
 class RenderWidgetHostViewQtDelegateQuick : public QQuickPaintedItem, public RenderWidgetHostViewQtDelegate
 {

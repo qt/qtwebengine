@@ -46,10 +46,13 @@
 #include <QtGui/QIcon>
 #include <QtCore/QUrl>
 
+QT_BEGIN_NAMESPACE
+class QWebEngineFrame;
+QT_END_NAMESPACE
+
 class AutoSaver;
 class BookmarksToolBar;
 class ChaseWidget;
-class QWebEngineFrame;
 class TabWidget;
 class ToolbarSearch;
 class WebView;

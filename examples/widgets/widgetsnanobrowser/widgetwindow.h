@@ -45,7 +45,9 @@
 #include <QtWidgets>
 #include <QScopedPointer>
 
+QT_BEGIN_NAMESPACE
 class QWebEngineView;
+QT_END_NAMESPACE
 
 class WidgetWindow : public QWidget {
     Q_OBJECT

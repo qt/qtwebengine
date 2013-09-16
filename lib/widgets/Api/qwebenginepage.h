@@ -35,7 +35,6 @@ QT_BEGIN_NAMESPACE
 class QUndoStack;
 class QMenu;
 class QPrinter;
-QT_END_NAMESPACE
 
 // FIXME: Just forward-declare the to-be-removed frame and element classes for now.
 // Referencing calls should be ported to be page-friendly or removed individually.
@@ -559,5 +558,7 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::RenderLayers);
+
+QT_END_NAMESPACE
 
 #endif // QWEBENGINEPAGE_H

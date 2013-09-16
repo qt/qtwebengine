@@ -45,6 +45,8 @@
 #include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
+QT_BEGIN_NAMESPACE
+
 QWebEngineHistoryItemPrivate::QWebEngineHistoryItemPrivate(WebContentsAdapter *adapter, int index)
     : adapter(adapter)
     , index(index)
@@ -282,3 +284,5 @@ QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history)
     qWarning("Not implemented: %s", __func__);
     return stream;
 }
+
+QT_END_NAMESPACE
