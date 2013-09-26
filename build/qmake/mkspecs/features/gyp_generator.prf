@@ -70,6 +70,13 @@ GYP_CONTENTS += "    'includes': ["
 for (incl, GYPINCLUDES): GYP_CONTENTS += "      '$$incl',"
 GYP_CONTENTS += "    ],"
 }
+
+# Split LIBS into linker flags and actual libraries, and add them to the
+# appropriate section (ldflags vs link_settings: libraries) in the gyp file.
+LIBRARIES = $$find(LIBS, "-l")
+LIBRARIES = $$unique(LIBRARIES)
+for (library, LIBRARIES): LIBS -= "$$library"
+
 GYP_CONTENTS += "    'ldflags': ["
 for (lib, LIBS): GYP_CONTENTS += "      '$$lib',"
 !isEmpty(QMAKE_RPATHDIR): GYP_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
@@ -85,9 +92,10 @@ GYP_CONTENTS += "    ],"
     for(flag, QMAKE_CXXFLAGS): GYP_CONTENTS += "      '$$flag',"
     GYP_CONTENTS += "    ],"
 }
+GYP_CONTENTS += "    'link_settings': {" \
+                "      'libraries': ["
+for (library, LIBRARIES): GYP_CONTENTS += "        '$$library',"
 macx {
-    GYP_CONTENTS += "    'link_settings': {" \
-                    "      'libraries': ["
     FRAMEWORKS = $$find(LIBS, "Q*")
     FRAMEWORKS = $$unique(FRAMEWORKS)
     FRAMEWORKS ~= s/-.*/
@@ -102,10 +110,9 @@ macx {
     FRAMEWORK_PATHS -= "-framework"
     for (framework_path, FRAMEWORK_PATHS): GYP_CONTENTS += "        '$$framework_path',"
     !isEmpty(QMAKE_FRAMEWORKPATH): GYP_CONTENTS += "        '-F$$QMAKE_FRAMEWORKPATH',"
-
-    GYP_CONTENTS += "      ]," \
-                 "    },"
 }
+GYP_CONTENTS += "      ]," \
+             "    },"
 
 !isEmpty(GYPDEPENDENCIES) {
   GYP_CONTENTS += "    'dependencies': ["
