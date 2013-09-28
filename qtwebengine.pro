@@ -4,7 +4,8 @@ CONFIG += ordered
 
 # The first three subdirs contain dummy .pro files that are used by qmake
 # to generate a corresponding .gyp file
-SUBDIRS = resources \
+SUBDIRS = build/qmake_extras \ # Phony pro file that extracts things like compiler and linker from qmake
+          resources \
           shared \
           lib \
           process \
