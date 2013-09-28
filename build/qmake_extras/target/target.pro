@@ -1,9 +1,16 @@
 # Prevent generating a makefile that attempts to create a lib
 TEMPLATE = aux
 
-GYPI_CONTENTS += "    ['CC', '$$which($$QMAKE_CC)']," \
-                 "    ['CXX', '$$which($$QMAKE_CXX)']," \
-                 "    ['LD', '$$which($$QMAKE_LINK)'],"
+android-no-sdk {
+    GYPI_CONTENTS += "    ['CC', '<!(/bin/echo -n $${ANDROID_TOOLCHAIN}/*-gcc)']," \
+                     "    ['CXX', '<!(/bin/echo -n $${ANDROID_TOOLCHAIN}/*-g++)']," \
+                     "    ['LD', '<!(/bin/echo -n $${ANDROID_TOOLCHAIN}/*-g++)'],"
+} else {
+    GYPI_CONTENTS += "    ['CC', '$$which($$QMAKE_CC)']," \
+                     "    ['CXX', '$$which($$QMAKE_CXX)']," \
+                     "    ['LD', '$$which($$QMAKE_LINK)'],"
+}
+
 GYPI_CONTENTS += "  ],"
 GYPI_CONTENTS += "}"
 

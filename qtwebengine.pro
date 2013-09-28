@@ -8,6 +8,7 @@ NINJA_EXECUTABLE = $$findOrBuildNinja()
 # The first three subdirs contain dummy .pro files that are used by qmake
 # to generate a corresponding .gyp file
 SUBDIRS = build/qmake_extras \ # Phony pro file that extracts things like compiler and linker from qmake
+          build/target_extras \ # Generates an additional gypi file with target specific rules
           resources \
           shared \
           lib \

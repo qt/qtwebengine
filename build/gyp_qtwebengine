@@ -68,6 +68,9 @@ def additional_include_files(args=[]):
   # Common stuff we generate and extract from qmake
   AddInclude(os.path.join(qtwebengine_src, 'build', 'qmake_extras.gypi'))
 
+  if build_android_no_sdk:
+    AddInclude(os.path.join(qtwebengine_src, 'build', 'target_extras.gypi'))
+
   # Optionally add supplemental .gypi files if present.
   supplements = glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
   for supplement in supplements:
