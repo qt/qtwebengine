@@ -751,29 +751,23 @@ void BrowserMainWindow::slotEditFindPrevious()
 
 void BrowserMainWindow::slotViewZoomIn()
 {
-#if defined(QWEBENGINEPAGE_SETZOOMFACTOR)
     if (!currentTab())
         return;
     currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
-#endif
 }
 
 void BrowserMainWindow::slotViewZoomOut()
 {
-#if defined(QWEBENGINEPAGE_SETZOOMFACTOR)
     if (!currentTab())
         return;
     currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
-#endif
 }
 
 void BrowserMainWindow::slotViewResetZoom()
 {
-#if defined(QWEBENGINEPAGE_SETZOOMFACTOR)
     if (!currentTab())
         return;
     currentTab()->setZoomFactor(1.0);
-#endif
 }
 
 void BrowserMainWindow::slotViewZoomTextOnly(bool enable)

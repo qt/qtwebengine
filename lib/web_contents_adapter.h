@@ -79,6 +79,8 @@ public:
     QUrl getNavigationEntryUrl(int index);
     QString getNavigationEntryTitle(int index);
     void clearNavigationHistory();
+    void setZoomFactor(qreal);
+    qreal currentZoomFactor() const;
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);

@@ -50,6 +50,7 @@
 
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 
 #include <QGuiApplication>
@@ -225,4 +226,17 @@ void WebContentsAdapter::clearNavigationHistory()
     Q_D(WebContentsAdapter);
     if (d->webContents->GetController().CanPruneAllButVisible())
         d->webContents->GetController().PruneAllButVisible();
+}
+
+void WebContentsAdapter::setZoomFactor(qreal factor)
+{
+    Q_D(WebContentsAdapter);
+    if (content::RenderViewHost *rvh = d->webContents->GetRenderViewHost())
+        rvh->SetZoomLevel(content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
+}
+
+qreal WebContentsAdapter::currentZoomFactor() const
+{
+    Q_D(const WebContentsAdapter);
+    return static_cast<qreal>(content::ZoomLevelToZoomFactor(d->webContents->GetZoomLevel()));
 }
