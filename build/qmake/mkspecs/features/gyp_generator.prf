@@ -79,7 +79,7 @@ for (library, LIBRARIES): LIBS -= "$$library"
 
 GYP_CONTENTS += "    'ldflags': ["
 for (lib, LIBS): GYP_CONTENTS += "      '$$lib',"
-!isEmpty(QMAKE_RPATHDIR): GYP_CONTENTS += "      '$$QMAKE_RPATH$$QMAKE_RPATHDIR',"
+for (rpath, QMAKE_RPATHDIR): GYP_CONTENTS += "      '$$QMAKE_RPATH$$rpath',"
 GYP_CONTENTS += "    ],"
 
 !isEmpty(QMAKE_CFLAGS) {
