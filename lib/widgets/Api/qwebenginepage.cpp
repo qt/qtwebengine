@@ -281,6 +281,18 @@ QUrl QWebEnginePage::url() const
     return d->adapter->activeUrl();
 }
 
+qreal QWebEnginePage::zoomFactor() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->currentZoomFactor();
+}
+
+void QWebEnginePage::setZoomFactor(qreal factor)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->setZoomFactor(factor);
+}
+
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
 {
     Q_D(const QWebEnginePage);
