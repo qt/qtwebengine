@@ -174,6 +174,17 @@ QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
     return 0;
 }
 
+
+qreal QWebEngineView::zoomFactor() const
+{
+    return page()->zoomFactor();
+}
+
+void QWebEngineView::setZoomFactor(qreal factor)
+{
+    page()->setZoomFactor(factor);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwebengineview.cpp"
