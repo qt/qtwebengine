@@ -16,7 +16,6 @@
 %dependencies = (
     "qtbase" => "refs/heads/stable",
     "qtdeclarative" => "refs/heads/stable",
-    "qtjsbackend" => "refs/heads/stable",
     "qtxmlpatterns" => "refs/heads/stable",
 # FIXME: take examples out into their own module to avoid a potential circular dependency later ?
     "qtquickcontrols" => "refs/heads/stable",
