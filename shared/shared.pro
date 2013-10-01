@@ -13,6 +13,9 @@ TARGET = qtwebengine_shared
 DEFINES += QT_NO_KEYWORDS \
            Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS
 
+# something fishy with qmake in 5.2 ?
+INCLUDEPATH += $$[QT_INSTALL_HEADERS]
+
 # We need a way to tap into gyp´s Debug vs. Release configuration
 PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBENGINEPROCESS_NAME\\\"
 
