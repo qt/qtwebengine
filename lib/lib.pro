@@ -22,6 +22,9 @@ RESOURCES += lib_resources.qrc
 # We need this to find the include files generated for the .pak resource files.
 INCLUDEPATH += $$absolute_path(../resources, $$PWD)
 
+# something fishy with qmake in 5.2 ?
+INCLUDEPATH += $$[QT_INSTALL_HEADERS]
+
 SOURCES = \
         backing_store_qt.cpp \
         content_browser_client_qt.cpp \
