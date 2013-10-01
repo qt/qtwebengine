@@ -67,8 +67,6 @@ class Submodule:
         for os in extra_os:
             if os in self.os:
                 return True
-        print self.os
-        print extra_os
         return False
 
     def findSha(self):
