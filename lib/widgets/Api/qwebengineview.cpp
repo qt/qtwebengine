@@ -75,6 +75,7 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
         QObject::connect(page, &QWebEnginePage::titleChanged, view, &QWebEngineView::titleChanged);
         QObject::connect(page, &QWebEnginePage::urlChanged, view, &QWebEngineView::urlChanged);
         QObject::connect(page, &QWebEnginePage::loadStarted, view, &QWebEngineView::loadStarted);
+        QObject::connect(page, &QWebEnginePage::loadProgress, view, &QWebEngineView::loadProgress);
         QObject::connect(page, &QWebEnginePage::loadFinished, view, &QWebEngineView::loadFinished);
     }
 }

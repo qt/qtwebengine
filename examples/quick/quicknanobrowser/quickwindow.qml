@@ -62,36 +62,43 @@ ApplicationWindow {
 
     toolBar: ToolBar {
         id: navigationBar
-        RowLayout {
+        ColumnLayout {
             anchors.fill: parent
+            RowLayout {
+                ToolButton {
+                    id: backButton
+                    iconSource: "icons/go-previous.png"
+                    onClicked: webEngineView.goBack()
+                    enabled: webEngineView.canGoBack
+                }
+                ToolButton {
+                    id: forwardButton
+                    iconSource: "icons/go-next.png"
+                    onClicked: webEngineView.goForward()
+                    enabled: webEngineView.canGoForward
+                }
+                ToolButton {
+                    id: reloadButton
+                    iconSource: webEngineView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
+                    onClicked: webEngineView.reload()
+                }
+                Image {
+                    id: faviconImage
+                    width: 16; height: 16
+                }
+                TextField {
+                    id: addressBar
+                    focus: true
+                    Layout.fillWidth: true
 
-            ToolButton {
-                id: backButton
-                iconSource: "icons/go-previous.png"
-                onClicked: webEngineView.goBack()
-                enabled: webEngineView.canGoBack
+                    onAccepted: webEngineView.url = utils.fromUserInput(text)
+                }
             }
-            ToolButton {
-                id: forwardButton
-                iconSource: "icons/go-next.png"
-                onClicked: webEngineView.goForward()
-                enabled: webEngineView.canGoForward
-            }
-            ToolButton {
-                id: reloadButton
-                iconSource: webEngineView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
-                onClicked: webEngineView.reload()
-            }
-            Image {
-                id: faviconImage
-                width: 16; height: 16
-            }
-            TextField {
-                id: addressBar
-                focus: true
+            ProgressBar {
                 Layout.fillWidth: true
-
-                onAccepted: webEngineView.url = utils.fromUserInput(text)
+                id: progressBar
+                minimumValue: 0
+                maximumValue: 100
             }
         }
     }
@@ -104,5 +111,6 @@ ApplicationWindow {
 
         onUrlChanged: addressBar.text = url
         onIconChanged: faviconImage.source = url
+        onLoadProgressChanged: progressBar.value = loadProgress
     }
 }

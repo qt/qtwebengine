@@ -86,6 +86,11 @@ void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)
     m_viewClient->loadingStateChanged();
 }
 
+void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
+{
+    m_viewClient->loadProgressChanged(qRound(progress * 100));
+}
+
 void WebContentsDelegateQt::DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host)
 {
     if (is_main_frame)
