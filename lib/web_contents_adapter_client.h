@@ -82,6 +82,7 @@ public:
     virtual void urlChanged(const QUrl&) = 0;
     virtual void iconChanged(const QUrl&) = 0;
     virtual void loadingStateChanged() = 0;
+    virtual void loadProgressChanged(int progress) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual void loadFinished(bool success) = 0;
     virtual void focusContainer() = 0;
