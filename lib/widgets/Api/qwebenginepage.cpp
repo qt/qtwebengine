@@ -81,6 +81,12 @@ void QWebEnginePagePrivate::loadingStateChanged()
     updateNavigationActions();
 }
 
+void QWebEnginePagePrivate::loadProgressChanged(int progress)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->loadProgress(progress);
+}
+
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
     return view ? view->geometry() : QRectF();

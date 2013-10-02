@@ -52,6 +52,7 @@ class QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
+    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
@@ -63,6 +64,7 @@ public:
     QUrl url() const;
     void setUrl(const QUrl&);
     bool isLoading() const;
+    int loadProgress() const;
     QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
@@ -77,6 +79,7 @@ Q_SIGNALS:
     void titleChanged();
     void urlChanged();
     void loadingStateChanged();
+    void loadProgressChanged();
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

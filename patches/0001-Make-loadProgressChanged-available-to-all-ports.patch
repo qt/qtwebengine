@@ -1,0 +1,63 @@
+From cc803f3d1db24fe85c8e9bcf5257450b44932b48 Mon Sep 17 00:00:00 2001
+From: Arvid Nilsson <anilsson@blackberry.com>
+Date: Wed, 2 Oct 2013 16:51:08 +0200
+Subject: [PATCH] Make loadProgressChanged available to all ports
+
+LoadProgressChanged was Android-specific, but has been made available to all
+ports upstream. Apply the same change locally, effectively backporting it.
+---
+ chromium/content/browser/web_contents/web_contents_impl.cc | 2 --
+ chromium/content/public/browser/web_contents_delegate.h    | 2 --
+ chromium/content/renderer/render_view_impl.cc              | 2 --
+ 3 files changed, 6 deletions(-)
+
+diff --git a/chromium/content/browser/web_contents/web_contents_impl.cc b/chromium/content/browser/web_contents/web_contents_impl.cc
+index 157a17d..f6d246e 100644
+--- a/chromium/content/browser/web_contents/web_contents_impl.cc
++++ b/chromium/content/browser/web_contents/web_contents_impl.cc
+@@ -3171,10 +3171,8 @@ void WebContentsImpl::DidCancelLoading() {
+ }
+ 
+ void WebContentsImpl::DidChangeLoadProgress(double progress) {
+-#if defined(OS_ANDROID)
+   if (delegate_)
+     delegate_->LoadProgressChanged(this, progress);
+-#endif
+ }
+ 
+ void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
+diff --git a/chromium/content/public/browser/web_contents_delegate.h b/chromium/content/public/browser/web_contents_delegate.h
+index 69ac871..cff4d2c 100644
+--- a/chromium/content/public/browser/web_contents_delegate.h
++++ b/chromium/content/public/browser/web_contents_delegate.h
+@@ -116,13 +116,11 @@ class CONTENT_EXPORT WebContentsDelegate {
+   // loading feedback. See WebContents::IsLoading()
+   virtual void LoadingStateChanged(WebContents* source) {}
+ 
+-#if defined(OS_ANDROID)
+   // Notifies the delegate that the page has made some progress loading.
+   // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully
+   // loaded).
+   virtual void LoadProgressChanged(WebContents* source,
+                                    double progress) {}
+-#endif
+ 
+   // Request the delegate to close this web contents, and do whatever cleanup
+   // it needs to do.
+diff --git a/chromium/content/renderer/render_view_impl.cc b/chromium/content/renderer/render_view_impl.cc
+index d64150c..39cdf5e 100644
+--- a/chromium/content/renderer/render_view_impl.cc
++++ b/chromium/content/renderer/render_view_impl.cc
+@@ -833,9 +833,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
+       pepper_last_mouse_event_target_(NULL),
+ #endif
+       enumeration_completion_id_(0),
+-#if defined(OS_ANDROID)
+       load_progress_tracker_(new LoadProgressTracker(this)),
+-#endif
+       session_storage_namespace_id_(params->session_storage_namespace_id),
+       decrement_shared_popup_at_destruction_(false),
+       handling_select_range_(false),
+-- 
+1.8.1.2
+

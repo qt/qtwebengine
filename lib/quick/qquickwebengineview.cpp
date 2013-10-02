@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter)
+    , loadProgress(0)
 {
     adapter->initialize(this);
 }
@@ -78,6 +79,13 @@ void QQuickWebEngineViewPrivate::loadingStateChanged()
 {
     Q_Q(QQuickWebEngineView);
     Q_EMIT q->loadingStateChanged();
+}
+
+void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
+{
+    Q_Q(QQuickWebEngineView);
+    loadProgress = progress;
+    Q_EMIT q->loadProgressChanged();
 }
 
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
@@ -155,6 +163,12 @@ bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
     return d->adapter->isLoading();
+}
+
+int QQuickWebEngineView::loadProgress() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->loadProgress;
 }
 
 QString QQuickWebEngineView::title() const
