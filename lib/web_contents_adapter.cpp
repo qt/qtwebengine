@@ -231,10 +231,8 @@ void WebContentsAdapter::clearNavigationHistory()
 void WebContentsAdapter::setZoomFactor(qreal factor)
 {
     Q_D(WebContentsAdapter);
-    if (content::RenderViewHost *rvh = d->webContents->GetRenderViewHost()) {
+    if (content::RenderViewHost *rvh = d->webContents->GetRenderViewHost())
         rvh->SetZoomLevel(content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
-    }
-
 }
 
 qreal WebContentsAdapter::currentZoomFactor() const
