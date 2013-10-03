@@ -51,6 +51,7 @@ class QQuickWebEngineViewPrivate;
 class QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(QUrl icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
@@ -62,6 +63,7 @@ public:
 
     QUrl url() const;
     void setUrl(const QUrl&);
+    QUrl icon() const;
     bool isLoading() const;
     QString title() const;
     bool canGoBack() const;
@@ -76,6 +78,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void titleChanged();
     void urlChanged();
+    void iconChanged();
     void loadingStateChanged();
 
 protected:
