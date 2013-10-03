@@ -48,6 +48,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/invalidate_type.h"
+#include "content/public/common/favicon_url.h"
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
@@ -95,4 +96,15 @@ void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_
 {
     if (is_main_frame)
         m_viewClient->loadFinished(true);
+}
+
+void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
+{
+    Q_UNUSED(page_id)
+    Q_FOREACH(content::FaviconURL candidate, candidates) {
+        if (candidate.icon_type == content::FaviconURL::FAVICON && !candidate.icon_url.is_empty()) {
+            m_viewClient->iconChanged(toQt(candidate.icon_url));
+            break;
+        }
+    }
 }

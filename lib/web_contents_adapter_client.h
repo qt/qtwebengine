@@ -80,6 +80,7 @@ public:
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(CompositingMode mode) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
+    virtual void iconChanged(const QUrl&) = 0;
     virtual void loadingStateChanged() = 0;
     virtual QRectF viewportRect() const = 0;
     virtual void loadFinished(bool success) = 0;

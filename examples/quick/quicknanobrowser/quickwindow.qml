@@ -82,6 +82,10 @@ ApplicationWindow {
                 iconSource: webEngineView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
                 onClicked: webEngineView.reload()
             }
+            Image {
+                id: faviconImage
+                width: 16; height: 16
+            }
             TextField {
                 id: addressBar
                 focus: true
@@ -99,5 +103,6 @@ ApplicationWindow {
         url: utils.initialUrl()
 
         onUrlChanged: addressBar.text = url
+        onIconChanged: faviconImage.source = url
     }
 }
