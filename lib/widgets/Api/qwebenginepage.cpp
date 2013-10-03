@@ -69,6 +69,11 @@ void QWebEnginePagePrivate::urlChanged(const QUrl &url)
     Q_EMIT q->urlChanged(url);
 }
 
+void QWebEnginePagePrivate::iconChanged(const QUrl &url)
+{
+    Q_UNUSED(url)
+}
+
 void QWebEnginePagePrivate::loadingStateChanged()
 {
     Q_Q(QWebEnginePage);

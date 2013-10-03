@@ -74,6 +74,13 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
     Q_EMIT q->urlChanged();
 }
 
+void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
+{
+    Q_Q(QQuickWebEngineView);
+    icon = url;
+    Q_EMIT q->iconChanged();
+}
+
 void QQuickWebEngineViewPrivate::loadingStateChanged()
 {
     Q_Q(QQuickWebEngineView);
@@ -125,6 +132,12 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
 {
     Q_D(QQuickWebEngineView);
     d->adapter->load(url);
+}
+
+QUrl QQuickWebEngineView::icon() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->icon;
 }
 
 void QQuickWebEngineView::goBack()
