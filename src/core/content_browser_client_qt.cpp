@@ -45,6 +45,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/media_observer.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
@@ -54,6 +55,7 @@
 
 #include "browser_context_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
+#include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "web_contents_view_qt.h"
 
@@ -308,6 +310,11 @@ gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
     if (!m_shareGroupQtQuick)
         m_shareGroupQtQuick = new ShareGroupQtQuick;
     return m_shareGroupQtQuick.get();
+}
+
+content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
+{
+    return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
 BrowserContextQt* ContentBrowserClientQt::browser_context() {

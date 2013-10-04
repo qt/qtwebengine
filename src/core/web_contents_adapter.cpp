@@ -48,6 +48,7 @@
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "javascript_dialog_manager_qt.h"
+#include "media_capture_devices_dispatcher.h"
 #include "qt_render_view_observer_host.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
@@ -674,6 +675,12 @@ void WebContentsAdapter::wasHidden()
 {
     Q_D(WebContentsAdapter);
     d->webContents->WasHidden();
+}
+
+void WebContentsAdapter::grantMediaAccessPermission(WebContentsAdapterClient::MediaRequestFlags flags)
+{
+    Q_D(WebContentsAdapter);
+    MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(d->webContents.get(), flags);
 }
 
 void WebContentsAdapter::dpiScaleChanged()

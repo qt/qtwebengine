@@ -46,7 +46,9 @@
 #include "content/public/browser/web_contents_observer.h"
 
 #include "javascript_dialog_manager_qt.h"
+#include "web_contents_adapter_client.h"
 #include <QtCore/qcompilerdetection.h>
+#include <QPair>
 
 namespace content {
     class BrowserContext;
@@ -80,6 +82,7 @@ public:
     virtual void RunFileChooser(content::WebContents *, const content::FileChooserParams &params) Q_DECL_OVERRIDE;
     virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const base::string16& message, int32 line_no, const base::string16& source_id) Q_DECL_OVERRIDE;
     virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
+    virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;
