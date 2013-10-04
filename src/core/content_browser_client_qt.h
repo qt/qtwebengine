@@ -80,6 +80,7 @@ public:
     virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
     virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
     virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
+    virtual content::MediaObserver* GetMediaObserver();
 
     BrowserContextQt* browser_context();
 

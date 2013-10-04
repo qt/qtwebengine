@@ -41,6 +41,7 @@
 
 #include "web_contents_delegate_qt.h"
 
+#include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
@@ -152,4 +153,12 @@ bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, in
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(static_cast<int>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
     return false;
+}
+
+void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request, const content::MediaResponseCallback &callback)
+{
+// FIXME: Need to expose the authorization request part to the application level.
+//      GURL origin(request.security_origin);
+//    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MediaCaptureDevicesDispatcher::RunRequestMediaAccessPermission(web_contents, request, callback);
 }

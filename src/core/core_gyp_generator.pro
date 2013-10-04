@@ -33,6 +33,7 @@ INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
 
 SOURCES = \
         backing_store_qt.cpp \
+        chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         common/qt_messages.cpp \
         content_client_qt.cpp \
@@ -44,6 +45,7 @@ SOURCES = \
         chromium_gpu_helper.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
+        media_capture_devices_dispatcher.cpp \
         process_main.cpp \
         qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
@@ -66,6 +68,7 @@ SOURCES = \
 HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
+        chromium_gpu_helper.h \
         chromium_overrides.h \
         common/qt_messages.h \
         content_client_qt.h \
@@ -78,6 +81,7 @@ HEADERS = \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
+        media_capture_devices_dispatcher.h \
         process_main.h \
         qt_render_view_observer_host.h \
         render_widget_host_view_qt.h \
