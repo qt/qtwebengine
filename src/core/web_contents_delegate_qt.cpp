@@ -41,6 +41,7 @@
 
 #include "web_contents_delegate_qt.h"
 
+#include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
@@ -182,4 +183,9 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     Q_UNUSED(active_match_ordinal)
     if (final_update)
         m_viewClient->didFindText(request_id, number_of_matches);
+}
+
+void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request, const content::MediaResponseCallback &callback)
+{
+    MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, callback);
 }

@@ -38,10 +38,12 @@ SOURCES = \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
         delegated_frame_node.cpp \
+        desktop_streams_registry.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
+        media_capture_devices_dispatcher.cpp \
         process_main.cpp \
         qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
@@ -66,6 +68,7 @@ SOURCES = \
 HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
+        chromium_gpu_helper.h \
         chromium_overrides.h \
         clipboard_qt.h \
         common/qt_messages.h \
@@ -73,12 +76,15 @@ HEADERS = \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
         delegated_frame_node.h \
+        desktop_media_list.h \
+        desktop_streams_registry.h \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
+        media_capture_devices_dispatcher.h \
         process_main.h \
         qt_render_view_observer_host.h \
         render_widget_host_view_qt.h \
