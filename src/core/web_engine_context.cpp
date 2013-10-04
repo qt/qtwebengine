@@ -73,6 +73,10 @@
 #include <QVector>
 #include <qpa/qplatformnativeinterface.h>
 
+#ifndef CHROMIUM_VERSION // This should be defined at build time. Set a dummy version number in case something went wrong
+#define CHROMIUM_VERSION "31.2.3456.78"
+#endif
+
 namespace {
 
 scoped_refptr<WebEngineContext> sContext;
@@ -130,7 +134,7 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
     CommandLine::Init(argv.size(), argv.constData());
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
-    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
+    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1 Chromium/" CHROMIUM_VERSION));
 
     base::FilePath subprocessPath;
     PathService::Get(content::CHILD_PROCESS_EXE, &subprocessPath);

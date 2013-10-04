@@ -31,6 +31,7 @@
     'defines': [
       '__STDC_CONSTANT_MACROS',
       '__STDC_FORMAT_MACROS',
+      'CHROMIUM_VERSION=\"<!(python <(chromium_src_dir)/chrome/tools/build/version.py -f <(chromium_src_dir)/chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")\"',
     ],
     'msvs_settings': {
       'VCLinkerTool': {

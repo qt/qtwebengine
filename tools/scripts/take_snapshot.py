@@ -91,6 +91,7 @@ def isInChromiumBlacklist(file_path):
         or (file_path.startswith('chrome/') and
             not 'repack_locales' in file_path and
             not file_path.endswith('version.py'))
+            not file_path.endswith('VERSION'))
         or file_path.startswith('chrome_frame')
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
