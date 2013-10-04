@@ -1,15 +1,13 @@
 {
   'variables': {
-    'blink_process_product_name': 'Blink Process',
-# Define used when building the user agent. Pass as recent enough chrome with an irrealistic minor version.
-      'user_agent_version': '22.42.5.2',
-      'conditions': [
-        ['OS=="linux"', {
-          'use_custom_freetype%': 1,
-        }, {
-          'use_custom_freetype%': 0,
-        }],
-        ],
+    'conditions': [
+      ['OS=="linux"', {
+         'use_custom_freetype%': 1,
+       }, {
+         'use_custom_freetype%': 0,
+       }],
+     ],
+     'version_script_location%': '<(chromium_src_dir)/chrome/tools/build/version.py',
   },
     'dependencies': [
       '<(chromium_src_dir)/content/content.gyp:content',
@@ -43,6 +41,7 @@
     'defines': [
       '__STDC_CONSTANT_MACROS',
       '__STDC_FORMAT_MACROS',
+      'CHROMIUM_VERSION=\"<!(python <(version_script_location) -f <(chromium_src_dir)/chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")\"',
     ],
     'msvs_settings': {
       'VCLinkerTool': {

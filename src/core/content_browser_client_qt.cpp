@@ -44,8 +44,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
-#include "content/public/common/main_function_params.h"
+#include "content/public/browser/media_observer.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -53,6 +54,7 @@
 
 #include "browser_context_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
+#include "media_capture_devices_dispatcher.h"
 #include "web_contents_view_qt.h"
 
 #include <QGuiApplication>
@@ -294,6 +296,16 @@ gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
         m_shareGroupQtQuick = new ShareGroupQtQuick;
     return m_shareGroupQtQuick.get();
 }
+content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
+{
+    return MediaCaptureDevicesDispatcher::GetInstance();
+}
+
+net::URLRequestContextGetter *ContentBrowserClientQt::GetMediaRequestContextForRenderProcess(int renderer_child_id)
+{
+    return static_cast<BrowserContextQt*>(browser_context())->CreateRequestContext(0);
+}
+
 
 BrowserContextQt* ContentBrowserClientQt::browser_context() {
     Q_ASSERT(m_browserMainParts);

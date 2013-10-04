@@ -33,6 +33,7 @@ INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 
 SOURCES = \
         backing_store_qt.cpp \
+        chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
@@ -40,8 +41,8 @@ SOURCES = \
         delegated_frame_node.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
-        chromium_gpu_helper.cpp \
         javascript_dialog_manager_qt.cpp \
+        media_capture_devices_dispatcher.cpp \
         process_main.cpp \
         render_widget_host_view_qt.cpp \
         resource_bundle_qt.cpp \
@@ -60,6 +61,7 @@ SOURCES = \
 HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
+        chromium_gpu_helper.h \
         chromium_overrides.h \
         content_client_qt.h \
         content_browser_client_qt.h \
@@ -67,8 +69,8 @@ HEADERS = \
         delegated_frame_node.h \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
-        chromium_gpu_helper.h \
         javascript_dialog_manager_qt.h \
+        media_capture_devices_dispatcher.h \
         process_main.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \

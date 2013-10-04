@@ -41,6 +41,7 @@
 
 #include "web_contents_delegate_qt.h"
 
+#include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
@@ -129,4 +130,12 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector
 content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
 {
     return JavaScriptDialogManagerQt::GetInstance();
+}
+
+void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request, const content::MediaResponseCallback &callback)
+{
+// FIXME: Need to expose the authorization request part to the application level.
+//      GURL origin(request.security_origin);
+//    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    MediaCaptureDevicesDispatcher::RunRequestMediaAccessPermission(web_contents, request, callback);
 }
