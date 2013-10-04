@@ -45,6 +45,7 @@ SOURCES = \
         gl_context_qt.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
+        media_capture_devices_dispatcher.cpp \
         process_main.cpp \
         qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
@@ -85,6 +86,7 @@ HEADERS = \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
+        media_capture_devices_dispatcher.h \
         process_main.h \
         qt_render_view_observer_host.h \
         render_widget_host_view_qt.h \
