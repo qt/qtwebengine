@@ -103,6 +103,6 @@ ApplicationWindow {
         url: utils.initialUrl()
 
         onUrlChanged: addressBar.text = url
-        onIconChanged: faviconImage.source = url
+        onIconChanged: faviconImage.source = icon
     }
 }
