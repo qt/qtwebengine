@@ -6,6 +6,9 @@ IMPORT_VERSION = 1.0
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
 
+# Remove this as soon as we have a hard-dependency on Qt 5.2
+qtHaveModule(v8): QT_PRIVATE += v8-private
+
 INCLUDEPATH += ../
 
 # FIXME: all this should eventually be turned into QT += webenginecore
