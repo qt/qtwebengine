@@ -38,54 +38,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef WEB_CONTENTS_ADAPTER_H
-#define WEB_CONTENTS_ADAPTER_H
 
-#include "qtwebengineglobal.h"
+#include "content_client_qt.h"
 
-#include <QScopedPointer>
-#include <QSharedData>
-#include <QString>
-#include <QUrl>
+#include "base/strings/string_piece.h"
+#include "ui/base/layout.h"
+#include "ui/base/resource/resource_bundle.h"
 
-namespace content {
-class WebContents;
+base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor) const {
+    return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }
-class WebContentsAdapterClient;
-class WebContentsAdapterPrivate;
-
-class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
-
-public:
-    // Takes ownership of the WebContents.
-    WebContentsAdapter(content::WebContents *webContents = 0);
-    ~WebContentsAdapter();
-    void initialize(WebContentsAdapterClient *adapterClient);
-
-    bool canGoBack() const;
-    bool canGoForward() const;
-    bool isLoading() const;
-    void stop();
-    void reload();
-    void load(const QUrl&);
-    QUrl activeUrl() const;
-    QString pageTitle() const;
-
-    void navigateToIndex(int);
-    void navigateToOffset(int);
-    int navigationEntryCount();
-    int currentNavigationEntryIndex();
-    QUrl getNavigationEntryOriginalUrl(int index);
-    QUrl getNavigationEntryUrl(int index);
-    QString getNavigationEntryTitle(int index);
-    void clearNavigationHistory();
-    void setZoomFactor(qreal);
-    qreal currentZoomFactor() const;
-    void enableInspector(bool);
-
-private:
-    Q_DISABLE_COPY(WebContentsAdapter);
-    Q_DECLARE_PRIVATE(WebContentsAdapter);
-    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
-};
-#endif // WEB_CONTENTS_ADAPTER_H

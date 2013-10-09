@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter)
     , loadProgress(0)
+    , inspectable(false)
 {
     adapter->initialize(this);
 }
@@ -209,6 +210,19 @@ bool QQuickWebEngineView::canGoForward() const
 {
     Q_D(const QQuickWebEngineView);
     return d->adapter->canGoForward();
+}
+
+bool QQuickWebEngineView::inspectable() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->inspectable;
+}
+
+void QQuickWebEngineView::setInspectable(bool enable)
+{
+    Q_D(QQuickWebEngineView);
+    d->inspectable = enable;
+    d->adapter->enableInspector(enable);
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)

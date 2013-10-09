@@ -38,54 +38,71 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef WEB_CONTENTS_ADAPTER_H
-#define WEB_CONTENTS_ADAPTER_H
 
-#include "qtwebengineglobal.h"
+#include "dev_tools_http_handler_delegate_qt.h"
 
-#include <QScopedPointer>
-#include <QSharedData>
-#include <QString>
-#include <QUrl>
+#include <QByteArray>
+#include <QFile>
 
-namespace content {
-class WebContents;
+#include "base/files/file_path.h"
+#include "content/public/browser/devtools_http_handler.h"
+#include "net/socket/stream_listen_socket.h"
+#include "net/socket/tcp_listen_socket.h"
+
+DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(content::BrowserContext* browser_context)
+    : m_browserContext(browser_context)
+{
+    m_devtoolsHttpHandler = content::DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", 1337), std::string(), this);
 }
-class WebContentsAdapterClient;
-class WebContentsAdapterPrivate;
 
-class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
+DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()
+{
+    m_devtoolsHttpHandler->Stop();
+}
 
-public:
-    // Takes ownership of the WebContents.
-    WebContentsAdapter(content::WebContents *webContents = 0);
-    ~WebContentsAdapter();
-    void initialize(WebContentsAdapterClient *adapterClient);
+std::string DevToolsHttpHandlerDelegateQt::GetDiscoveryPageHTML()
+{
+    static std::string html;
+    if (html.empty()) {
+        QFile html_file(":/data/discovery_page.html");
+        html_file.open(QIODevice::ReadOnly);
+        QByteArray contents = html_file.readAll();
+        html = contents.data();
+    }
+    return html;
+}
 
-    bool canGoBack() const;
-    bool canGoForward() const;
-    bool isLoading() const;
-    void stop();
-    void reload();
-    void load(const QUrl&);
-    QUrl activeUrl() const;
-    QString pageTitle() const;
+bool DevToolsHttpHandlerDelegateQt::BundlesFrontendResources()
+{
+    return true;
+}
 
-    void navigateToIndex(int);
-    void navigateToOffset(int);
-    int navigationEntryCount();
-    int currentNavigationEntryIndex();
-    QUrl getNavigationEntryOriginalUrl(int index);
-    QUrl getNavigationEntryUrl(int index);
-    QString getNavigationEntryTitle(int index);
-    void clearNavigationHistory();
-    void setZoomFactor(qreal);
-    qreal currentZoomFactor() const;
-    void enableInspector(bool);
+base::FilePath DevToolsHttpHandlerDelegateQt::GetDebugFrontendDir()
+{
+    return base::FilePath();
+}
 
-private:
-    Q_DISABLE_COPY(WebContentsAdapter);
-    Q_DECLARE_PRIVATE(WebContentsAdapter);
-    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
-};
-#endif // WEB_CONTENTS_ADAPTER_H
+std::string DevToolsHttpHandlerDelegateQt::GetPageThumbnailData(const GURL& url)
+{
+    return std::string();
+}
+
+content::RenderViewHost* DevToolsHttpHandlerDelegateQt::CreateNewTarget()
+{
+    return NULL;
+}
+
+content::DevToolsHttpHandlerDelegate::TargetType DevToolsHttpHandlerDelegateQt::GetTargetType(content::RenderViewHost*)
+{
+    return kTargetTypeTab;
+}
+
+std::string DevToolsHttpHandlerDelegateQt::GetViewDescription(content::RenderViewHost*)
+{
+    return std::string();
+}
+
+scoped_refptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)
+{
+    return NULL;
+}

@@ -38,54 +38,43 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef WEB_CONTENTS_ADAPTER_H
-#define WEB_CONTENTS_ADAPTER_H
 
-#include "qtwebengineglobal.h"
+#ifndef DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
+#define DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
 
-#include <QScopedPointer>
-#include <QSharedData>
-#include <QString>
-#include <QUrl>
+#include "content/public/browser/devtools_http_handler_delegate.h"
+
+#include <QtCore/qcompilerdetection.h> // needed for Q_DECL_OVERRIDE
+
+namespace net {
+class StreamListenSocket;
+}
 
 namespace content {
-class WebContents;
+class BrowserContext;
+class DevToolsHttpHandler;
+class RenderViewHost;
 }
-class WebContentsAdapterClient;
-class WebContentsAdapterPrivate;
 
-class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
-
+class DevToolsHttpHandlerDelegateQt : public content::DevToolsHttpHandlerDelegate {
 public:
-    // Takes ownership of the WebContents.
-    WebContentsAdapter(content::WebContents *webContents = 0);
-    ~WebContentsAdapter();
-    void initialize(WebContentsAdapterClient *adapterClient);
 
-    bool canGoBack() const;
-    bool canGoForward() const;
-    bool isLoading() const;
-    void stop();
-    void reload();
-    void load(const QUrl&);
-    QUrl activeUrl() const;
-    QString pageTitle() const;
+    explicit DevToolsHttpHandlerDelegateQt(content::BrowserContext* browser_context);
+    virtual ~DevToolsHttpHandlerDelegateQt();
 
-    void navigateToIndex(int);
-    void navigateToOffset(int);
-    int navigationEntryCount();
-    int currentNavigationEntryIndex();
-    QUrl getNavigationEntryOriginalUrl(int index);
-    QUrl getNavigationEntryUrl(int index);
-    QString getNavigationEntryTitle(int index);
-    void clearNavigationHistory();
-    void setZoomFactor(qreal);
-    qreal currentZoomFactor() const;
-    void enableInspector(bool);
+    // content::DevToolsHttpHandlerDelegate Overrides
+    virtual std::string GetDiscoveryPageHTML() Q_DECL_OVERRIDE;
+    virtual bool BundlesFrontendResources() Q_DECL_OVERRIDE;
+    virtual base::FilePath GetDebugFrontendDir() Q_DECL_OVERRIDE;
+    virtual std::string GetPageThumbnailData(const GURL& url) Q_DECL_OVERRIDE;
+    virtual content::RenderViewHost* CreateNewTarget() Q_DECL_OVERRIDE;
+    virtual TargetType GetTargetType(content::RenderViewHost*) Q_DECL_OVERRIDE;
+    virtual std::string GetViewDescription(content::RenderViewHost*) Q_DECL_OVERRIDE;
+    virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name) Q_DECL_OVERRIDE;
 
 private:
-    Q_DISABLE_COPY(WebContentsAdapter);
-    Q_DECLARE_PRIVATE(WebContentsAdapter);
-    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
+    content::BrowserContext* m_browserContext;
+    content::DevToolsHttpHandler* m_devtoolsHttpHandler;
 };
-#endif // WEB_CONTENTS_ADAPTER_H
+
+#endif // DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H

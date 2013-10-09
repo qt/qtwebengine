@@ -42,6 +42,7 @@
 #ifndef CONTENT_BROWSER_CLIENT_QT_H
 #define CONTENT_BROWSER_CLIENT_QT_H
 
+#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
@@ -61,6 +62,7 @@ struct MainFunctionParams;
 
 class BrowserContextQt;
 class BrowserMainPartsQt;
+class DevToolsHttpHandlerDelegateQt;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient {
 
@@ -76,8 +78,11 @@ public:
 
     net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
 
+    void enableInspector(bool);
+
 private:
     BrowserMainPartsQt* m_browserMainParts;
+    scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
 
 };
 

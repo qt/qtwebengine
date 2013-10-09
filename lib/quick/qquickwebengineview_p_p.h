@@ -75,6 +75,7 @@ public:
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QUrl icon;
     int loadProgress;
+    bool inspectable;
 };
 
 QT_END_NAMESPACE

@@ -43,6 +43,7 @@
 #include "ui/base/resource/data_pack.h"
 
 #include <QFile>
+#include <QStringList>
 
 namespace ui {
 
@@ -135,13 +136,19 @@ class UI_EXPORT DataPackQt : public DataPack {
 
 void ResourceBundle::LoadCommonResources()
 {
-    QFile pak_file(":/data/resources.pak");
-    if (!pak_file.open(QIODevice::ReadOnly))
-        return;
+    QStringList resources;
+    resources << ":/data/resources.pak" << ":/data/devtools.pak";
+    Q_FOREACH (const QString& pak, resources) {
+        QFile pak_file(pak);
+        if (!pak_file.open(QIODevice::ReadOnly)) {
+            qWarning("Resource file %s not loaded", qPrintable(pak));
+            continue;
+        }
 
-    scoped_ptr<DataPackQt> data_pack(new DataPackQt(SCALE_FACTOR_100P));
-    if (data_pack->LoadFromByteArray(pak_file.readAll()))
-        AddDataPack(data_pack.release());
+        scoped_ptr<DataPackQt> data_pack(new DataPackQt(SCALE_FACTOR_100P));
+        if (data_pack->LoadFromByteArray(pak_file.readAll()))
+            AddDataPack(data_pack.release());
+    }
 }
 
 // As GetLocaleFilePath is excluded for Mac in resource_bundle.cc,
