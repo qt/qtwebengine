@@ -202,6 +202,19 @@ bool QQuickWebEngineView::canGoForward() const
     return d->adapter->canGoForward();
 }
 
+bool QQuickWebEngineView::inspectable() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->inspectable;
+}
+
+void QQuickWebEngineView::setInspectable(bool enable)
+{
+    Q_D(QQuickWebEngineView);
+    d->inspectable = enable;
+    d->adapter->enableInspector(enable);
+}
+
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);

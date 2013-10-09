@@ -39,50 +39,66 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_CLIENT_QT_H
-#define CONTENT_BROWSER_CLIENT_QT_H
+// FIXME: This is a hack until we figure out where to put this and/or where the embedder should tell us to find it
 
-#include "content/public/browser/content_browser_client.h"
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#ifndef DEV_TOOLS_CONSTANTS_H
+#define DEV_TOOLS_CONSTANTS_H
 
-namespace net {
-class URLRequestContextGetter;
-}
+const char* DISCOVERY_PAGE_HTML =
+"<html>"
+"<head>"
+"<title>Content shell remote debugging</title>"
+"<style>"
+"</style>"
+""
+"<script>"
+"function onLoad() {"
+"  var tabs_list_request = new XMLHttpRequest();"
+"  tabs_list_request.open('GET', '/json/list?t=' + new Date().getTime(), true);"
+"  tabs_list_request.onreadystatechange = onReady;"
+"  tabs_list_request.send();"
+"}"
+""
+"function onReady() {"
+"  if(this.readyState == 4 && this.status == 200) {"
+"    if(this.response != null)"
+"      var responseJSON = JSON.parse(this.response);"
+"      for (var i = 0; i < responseJSON.length; ++i)"
+"        appendItem(responseJSON[i]);"
+"  }"
+"}"
+""
+"function appendItem(item_object) {"
+"  var frontend_ref;"
+"  if (item_object.devtoolsFrontendUrl) {"
+"    frontend_ref = document.createElement('a');"
+"    frontend_ref.href = item_object.devtoolsFrontendUrl;"
+"    frontend_ref.title = item_object.title;"
+"  } else {"
+"    frontend_ref = document.createElement('div');"
+"    frontend_ref.title = 'The tab already has active debugging session';"
+"  }"
+""
+"  var text = document.createElement('div');"
+"  if (item_object.title)"
+"    text.innerText = item_object.title;"
+"  else"
+"    text.innerText = '(untitled tab)';"
+"  text.style.cssText = 'background-image:url(' + item_object.faviconUrl + ')';"
+"  frontend_ref.appendChild(text);"
+""
+"  var item = document.createElement('p');"
+"  item.appendChild(frontend_ref);"
+""
+"  document.getElementById('items').appendChild(item);"
+"}"
+"</script>"
+"</head>"
+"<body onload='onLoad()'>"
+"  <div id='caption'>Inspectable WebContents</div>"
+"  <div id='items'></div>"
+"</body>"
+"</html>"
+"";
 
-namespace content {
-class BrowserContext;
-class BrowserMainParts;
-class RenderProcessHost;
-class RenderViewHostDelegateView;
-class WebContentsViewPort;
-class WebContents;
-struct MainFunctionParams;
-}
-
-class BrowserContextQt;
-class BrowserMainPartsQt;
-class DevToolsHttpHandlerDelegateQt;
-
-class ContentBrowserClientQt : public content::ContentBrowserClient {
-
-public:
-    ContentBrowserClientQt();
-    ~ContentBrowserClientQt();
-    static ContentBrowserClientQt* Get();
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
-
-    BrowserContextQt* browser_context();
-
-    net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
-
-    void enableInspector(bool);
-
-private:
-    BrowserMainPartsQt* m_browserMainParts;
-    DevToolsHttpHandlerDelegateQt* m_devtools;
-
-};
-
-#endif // CONTENT_BROWSER_CLIENT_QT_H
+#endif // DEV_TOOLS_CONSTANTS_H
