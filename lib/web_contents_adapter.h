@@ -81,6 +81,7 @@ public:
     void clearNavigationHistory();
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
+    void enableInspector(bool);
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);

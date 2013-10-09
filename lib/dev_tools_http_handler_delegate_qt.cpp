@@ -39,50 +39,74 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_CLIENT_QT_H
-#define CONTENT_BROWSER_CLIENT_QT_H
+#include "dev_tools_http_handler_delegate_qt.h"
 
-#include "content/public/browser/content_browser_client.h"
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include <QByteArray>
+#include <QFile>
 
-namespace net {
-class URLRequestContextGetter;
+#include "base/files/file_path.h"
+#include "content/public/browser/devtools_http_handler.h"
+#include "net/socket/stream_listen_socket.h"
+#include "net/socket/tcp_listen_socket.h"
+
+DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(content::BrowserContext* browser_context)
+    : m_browserContext(browser_context)
+{
+    m_devtoolsHttpHandler = content::DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", 1337), std::string(), this);
 }
 
-namespace content {
-class BrowserContext;
-class BrowserMainParts;
-class RenderProcessHost;
-class RenderViewHostDelegateView;
-class WebContentsViewPort;
-class WebContents;
-struct MainFunctionParams;
+DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()
+{
 }
 
-class BrowserContextQt;
-class BrowserMainPartsQt;
-class DevToolsHttpHandlerDelegateQt;
+void DevToolsHttpHandlerDelegateQt::Stop()
+{
+    m_devtoolsHttpHandler->Stop(); // I think this might destroy this delegate
+}
 
-class ContentBrowserClientQt : public content::ContentBrowserClient {
+std::string DevToolsHttpHandlerDelegateQt::GetDiscoveryPageHTML()
+{
+    static std::string html;
+    if (html.empty()) {
+        QFile html_file(":/data/discovery_page.html");
+        html_file.open(QIODevice::ReadOnly);
+        QByteArray contents = html_file.readAll();
+        html = contents.data();
+    }
+    return html;
+}
 
-public:
-    ContentBrowserClientQt();
-    ~ContentBrowserClientQt();
-    static ContentBrowserClientQt* Get();
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
+bool DevToolsHttpHandlerDelegateQt::BundlesFrontendResources()
+{
+    return true;
+}
 
-    BrowserContextQt* browser_context();
+base::FilePath DevToolsHttpHandlerDelegateQt::GetDebugFrontendDir()
+{
+    return base::FilePath();
+}
 
-    net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
+std::string DevToolsHttpHandlerDelegateQt::GetPageThumbnailData(const GURL& url)
+{
+    return std::string();
+}
 
-    void enableInspector(bool);
+content::RenderViewHost* DevToolsHttpHandlerDelegateQt::CreateNewTarget()
+{
+    return NULL;
+}
 
-private:
-    BrowserMainPartsQt* m_browserMainParts;
-    DevToolsHttpHandlerDelegateQt* m_devtools;
+content::DevToolsHttpHandlerDelegate::TargetType DevToolsHttpHandlerDelegateQt::GetTargetType(content::RenderViewHost*)
+{
+    return kTargetTypeTab;
+}
 
-};
+std::string DevToolsHttpHandlerDelegateQt::GetViewDescription(content::RenderViewHost*)
+{
+    return std::string();
+}
 
-#endif // CONTENT_BROWSER_CLIENT_QT_H
+scoped_refptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)
+{
+    return NULL;
+}

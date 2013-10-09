@@ -58,6 +58,7 @@
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #include "content_browser_client_qt.h"
+#include "content_client_qt.h"
 #include "type_conversion.h"
 #include <QCoreApplication>
 #include <QStringList>
@@ -102,6 +103,12 @@ public:
     {
         m_browserClient.reset(new ContentBrowserClientQt);
         return m_browserClient.get();
+    }
+
+    bool BasicStartupComplete(int* exit_code) Q_DECL_OVERRIDE
+    {
+        SetContentClient(new ContentClientQt);
+        return false;
     }
 
 private:
