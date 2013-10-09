@@ -240,3 +240,8 @@ qreal WebContentsAdapter::currentZoomFactor() const
     Q_D(const WebContentsAdapter);
     return static_cast<qreal>(content::ZoomLevelToZoomFactor(d->webContents->GetZoomLevel()));
 }
+
+void WebContentsAdapter::enableInspector(bool enable)
+{
+    ContentBrowserClientQt::Get()->enableInspector(enable);
+}

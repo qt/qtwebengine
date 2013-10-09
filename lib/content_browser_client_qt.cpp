@@ -52,6 +52,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #include "browser_context_qt.h"
+#include "dev_tools_http_handler_delegate_qt.h"
 #include "web_contents_view_qt.h"
 
 #include <QCoreApplication>
@@ -249,4 +250,13 @@ net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(conte
     if (content_browser_context != browser_context())
         fprintf(stderr, "Warning: off the record browser context not implemented !\n");
     return static_cast<BrowserContextQt*>(browser_context())->CreateRequestContext(protocol_handlers);
+}
+
+void ContentBrowserClientQt::enableInspector(bool enable)
+{
+    if (enable && !m_devtools) {
+        m_devtools.reset(new DevToolsHttpHandlerDelegateQt(browser_context()));
+    } else if (!enable && m_devtools) {
+        m_devtools.reset();
+    }
 }
