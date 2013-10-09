@@ -57,6 +57,7 @@ class QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -70,6 +71,8 @@ public:
     QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
+    bool inspectable() const;
+    void setInspectable(bool);
 
 public Q_SLOTS:
     void goBack();

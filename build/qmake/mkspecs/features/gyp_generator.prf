@@ -167,13 +167,26 @@ GYP_CONTENTS += "    ],"
   GYP_CONTENTS += "    ],"
 }
 
-# Generate the actions for moc
+# Generate the actions for moc, copy
 GYP_CONTENTS += "    'actions': ["
 for(resourcefile, RESOURCES): GYP_CONTENTS += $$rccAction($$resourcefile)
 for(header, MOCABLE_HEADERS): GYP_CONTENTS += $$mocAction($$header)
+!isEmpty(COPY_FILE) {
+!isEmpty(COPY_DESTINATION) {
+filename = $$basename(COPY_FILE)
+GYP_CONTENTS += "      {" \
+                "        'action_name': 'copy'," \
+                "        'inputs': ['$$COPY_FILE']," \
+                "        'outputs': ['$$COPY_DESTINATION$$filename']," \
+                "        'action': ['cp', '$$COPY_FILE', '$$COPY_DESTINATION']," \
+                "        'message': 'Copying $$COPY_FILE to $$COPY_DESTINATION'," \
+                "      },"
+}
+}
 GYP_CONTENTS += "    ]," \
-                "  }," \
-                "  ]," \
+                "  },"
+
+GYP_CONTENTS += "  ]," \
                 "}"
 
 write_file($$GYPI_FILE, GYP_CONTENTS)

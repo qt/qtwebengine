@@ -39,50 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_CLIENT_QT_H
-#define CONTENT_BROWSER_CLIENT_QT_H
+#include "content_client_qt.h"
 
-#include "content/public/browser/content_browser_client.h"
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include "base/strings/string_piece.h"
+#include "ui/base/layout.h"
+#include "ui/base/resource/resource_bundle.h"
 
-namespace net {
-class URLRequestContextGetter;
+base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor) const {
+    return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }
-
-namespace content {
-class BrowserContext;
-class BrowserMainParts;
-class RenderProcessHost;
-class RenderViewHostDelegateView;
-class WebContentsViewPort;
-class WebContents;
-struct MainFunctionParams;
-}
-
-class BrowserContextQt;
-class BrowserMainPartsQt;
-class DevToolsHttpHandlerDelegateQt;
-
-class ContentBrowserClientQt : public content::ContentBrowserClient {
-
-public:
-    ContentBrowserClientQt();
-    ~ContentBrowserClientQt();
-    static ContentBrowserClientQt* Get();
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
-
-    BrowserContextQt* browser_context();
-
-    net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
-
-    void enableInspector(bool);
-
-private:
-    BrowserMainPartsQt* m_browserMainParts;
-    DevToolsHttpHandlerDelegateQt* m_devtools;
-
-};
-
-#endif // CONTENT_BROWSER_CLIENT_QT_H

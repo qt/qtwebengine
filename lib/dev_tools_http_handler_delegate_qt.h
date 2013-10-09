@@ -39,50 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_CLIENT_QT_H
-#define CONTENT_BROWSER_CLIENT_QT_H
+#ifndef DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
+#define DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
 
-#include "content/public/browser/content_browser_client.h"
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include "content/public/browser/devtools_http_handler_delegate.h"
+
+#include <QtCore/qcompilerdetection.h> // needed for Q_DECL_OVERRIDE
 
 namespace net {
-class URLRequestContextGetter;
+class StreamListenSocket;
 }
 
 namespace content {
 class BrowserContext;
-class BrowserMainParts;
-class RenderProcessHost;
-class RenderViewHostDelegateView;
-class WebContentsViewPort;
-class WebContents;
-struct MainFunctionParams;
+class DevToolsHttpHandler;
+class RenderViewHost;
 }
 
-class BrowserContextQt;
-class BrowserMainPartsQt;
-class DevToolsHttpHandlerDelegateQt;
-
-class ContentBrowserClientQt : public content::ContentBrowserClient {
-
+class DevToolsHttpHandlerDelegateQt : public content::DevToolsHttpHandlerDelegate {
 public:
-    ContentBrowserClientQt();
-    ~ContentBrowserClientQt();
-    static ContentBrowserClientQt* Get();
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
 
-    BrowserContextQt* browser_context();
+    explicit DevToolsHttpHandlerDelegateQt(content::BrowserContext* browser_context);
+    virtual ~DevToolsHttpHandlerDelegateQt();
 
-    net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
+    void Stop();
 
-    void enableInspector(bool);
+    // content::DevToolsHttpHandlerDelegate Overrides
+    virtual std::string GetDiscoveryPageHTML() Q_DECL_OVERRIDE;
+    virtual bool BundlesFrontendResources() Q_DECL_OVERRIDE;
+    virtual base::FilePath GetDebugFrontendDir() Q_DECL_OVERRIDE;
+    virtual std::string GetPageThumbnailData(const GURL& url) Q_DECL_OVERRIDE;
+    virtual content::RenderViewHost* CreateNewTarget() Q_DECL_OVERRIDE;
+    virtual TargetType GetTargetType(content::RenderViewHost*) Q_DECL_OVERRIDE;
+    virtual std::string GetViewDescription(content::RenderViewHost*) Q_DECL_OVERRIDE;
+    virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name) Q_DECL_OVERRIDE;
 
 private:
-    BrowserMainPartsQt* m_browserMainParts;
-    DevToolsHttpHandlerDelegateQt* m_devtools;
-
+    content::BrowserContext* m_browserContext;
+    content::DevToolsHttpHandler* m_devtoolsHttpHandler;
 };
 
-#endif // CONTENT_BROWSER_CLIENT_QT_H
+#endif // DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H

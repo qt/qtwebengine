@@ -2,12 +2,15 @@
 # We want the gyp generation step to happen after all the other config steps. For that we need to prepend
 # our gyp_generator.prf feature to the CONFIG variable since it is processed backwards
 CONFIG = gyp_generator $$CONFIG
-GYPDEPENDENCIES += ../shared/shared.gyp:qtwebengine_shared
+GYPDEPENDENCIES += ../shared/shared.gyp:qtwebengine_shared <(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources
 GYPINCLUDES += ../qtwebengine.gypi
 
 TEMPLATE = lib
 
 TARGET = Qt5WebEngineCore
+
+COPY_FILE = <(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak
+COPY_DESTINATION = ../resources/
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS
@@ -18,13 +21,15 @@ PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBEN
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
-RESOURCES += lib_resources.qrc
+RESOURCES += lib_resources.qrc devtools.qrc
 # We need this to find the include files generated for the .pak resource files.
 INCLUDEPATH += $$absolute_path(../resources, $$PWD)
 
 SOURCES = \
         backing_store_qt.cpp \
+        content_client_qt.cpp \
         content_browser_client_qt.cpp \
+        dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         render_widget_host_view_qt.cpp \
         render_widget_host_view_qt_delegate.cpp \
@@ -39,7 +44,10 @@ SOURCES = \
 HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
+        content_client_qt.h \
         content_browser_client_qt.h \
+        dev_tools_constants.h \
+        dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \

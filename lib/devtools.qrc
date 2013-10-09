@@ -1,0 +1,5 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="data">
+    <file alias="devtools.pak">../resources/devtools_resources.pak</file>
+</qresource>
+</RCC>
