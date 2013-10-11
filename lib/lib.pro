@@ -10,7 +10,8 @@ TEMPLATE = lib
 TARGET = Qt5WebEngineCore
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
-DEFINES += QT_NO_KEYWORDS
+DEFINES += QT_NO_KEYWORDS \
+           Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS
 
 # We need a way to tap into gyp´s Debug vs. Release configuration
 PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBENGINEPROCESS_NAME\\\"
