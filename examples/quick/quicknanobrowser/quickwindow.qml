@@ -41,6 +41,7 @@
 import QtQuick 2.0
 import QtWebEngine 1.0
 import QtQuick.Controls 1.0
+import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
 
 ApplicationWindow {
@@ -62,9 +63,8 @@ ApplicationWindow {
 
     toolBar: ToolBar {
         id: navigationBar
-        ColumnLayout {
-            anchors.fill: parent
             RowLayout {
+                anchors.fill: parent;
                 ToolButton {
                     id: backButton
                     iconSource: "icons/go-previous.png"
@@ -82,27 +82,43 @@ ApplicationWindow {
                     iconSource: webEngineView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
                     onClicked: webEngineView.reload()
                 }
-                Image {
-                    id: faviconImage
-                    width: 16; height: 16
-                }
                 TextField {
                     id: addressBar
+                    Image {
+                        anchors.verticalCenter: addressBar.verticalCenter;
+                        x: 5
+                        z: 2
+                        id: faviconImage
+                        width: 16; height: 16
+                    }
+                    style: TextFieldStyle {
+                        padding {
+                            left: 26;
+                        }
+                    }
                     focus: true
                     Layout.fillWidth: true
-
                     onAccepted: webEngineView.url = utils.fromUserInput(text)
                 }
             }
             ProgressBar {
-                Layout.fillWidth: true
                 id: progressBar
+                height: 3
+                anchors {
+                    left: parent.left
+                    top: parent.bottom
+                    right: parent.right
+                    leftMargin: -parent.leftMargin
+                    rightMargin: -parent.rightMargin
+                }
+                style: ProgressBarStyle {
+                    background: Item {}
+                }
+                z: -2;
                 minimumValue: 0
                 maximumValue: 100
             }
-        }
     }
-
     WebEngineView {
         id: webEngineView
         focus: true
