@@ -22,7 +22,7 @@ defineReplace(findMocables) {
   input = $$1
   for (file, input): \
       infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
-  mocables = $$system("$$QTWEBENGINE_ROOT/build/scripts/find-mocables $$infiles")
+  mocables = $$system("python $$QTWEBENGINE_ROOT/build/scripts/find-mocables $$infiles")
   mocables = $$replace(mocables, $$_PRO_FILE_PWD_$${QMAKE_DIR_SEP}, '')
   return($$mocables)
 }
@@ -31,7 +31,7 @@ defineReplace(findIncludedMocFiles) {
   input = $$1
   for (file, input): \
       infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
-  return($$system("$$QTWEBENGINE_ROOT/build/scripts/find-included-moc-files $$infiles"))
+  return($$system("python $$QTWEBENGINE_ROOT/build/scripts/find-included-moc-files $$infiles"))
 }
 
 defineReplace(mocOutput) {
