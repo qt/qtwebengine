@@ -11,4 +11,6 @@ GYPI_CONTENTS = "{" \
                 "    ['LD.host', '$$which($$QMAKE_LINK)'],"
 
 GYPI_FILE = $$absolute_path('build/qmake_extras.gypi', $$QTWEBENGINE_ROOT)
-write_file($$GYPI_FILE, GYPI_CONTENTS)
+!build_pass {
+    write_file($$GYPI_FILE, GYPI_CONTENTS)
+}
