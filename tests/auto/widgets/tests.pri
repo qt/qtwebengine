@@ -1,5 +1,6 @@
 TEMPLATE = app
 
+CONFIG += testcase
 VPATH += $$_PRO_FILE_PWD_
 TARGET = tst_$$TARGET
 
