@@ -16,10 +16,7 @@ SUBDIRS = build/qmake_extras \ # Phony pro file that extracts things like compil
 qtHaveModule(widgets) {
     SUBDIRS += \
         lib/widgets \
-        tests/widgets
 }
-
-SUBDIRS += examples
 
 # Ninja executable location needs to be determined early for extra targets. Should be fetched from cache most of the time anyway.
 NINJA_EXECUTABLE = $$findOrBuildNinja()
@@ -35,3 +32,5 @@ debug.depends: qmake
 
 QMAKE_EXTRA_TARGETS += release \
                        debug
+
+load(qt_parts)
