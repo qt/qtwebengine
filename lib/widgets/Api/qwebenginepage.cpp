@@ -431,7 +431,7 @@ void QWebEnginePage::evaluateJavaScriptHelper(QtWebEnginePrivate::FunctorBase *f
 
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
 {
-    Q_D(const QWebEnginePage);
+    Q_D(QWebEnginePage);
     if (d->view) {
         QWebEngineView *newView = d->view->createWindow(type);
         if (newView)
