@@ -408,7 +408,7 @@ void QWebEnginePage::setZoomFactor(qreal factor)
 
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
 {
-    Q_D(const QWebEnginePage);
+    Q_D(QWebEnginePage);
     if (d->view) {
         QWebEngineView *newView = d->view->createWindow(type);
         if (newView)
