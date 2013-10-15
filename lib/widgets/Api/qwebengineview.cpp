@@ -191,7 +191,6 @@ void QWebEngineView::setZoomFactor(qreal factor)
 
 bool QWebEngineView::event(QEvent *ev)
 {
-    Q_D(QWebEngineView);
     // We swallow spontaneous contextMenu events and synthethize those back later on when we get the
     // HandleContextMenu callback from chromium
     if (ev->type() == QEvent::ContextMenu) {
