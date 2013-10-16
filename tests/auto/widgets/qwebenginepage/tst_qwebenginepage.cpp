@@ -202,6 +202,8 @@ private:
 
 tst_QWebEnginePage::tst_QWebEnginePage()
 {
+    // Don't clutter the output with chromium's messages
+    freopen ("chromium_log.txt","w",stderr);
 }
 
 tst_QWebEnginePage::~tst_QWebEnginePage()
@@ -264,10 +266,10 @@ void tst_QWebEnginePage::acceptNavigationRequest()
                             "<input type='text'><input type='submit'></form></body></html>"), QUrl());
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    m_view->page()->evaluateJavaScript("tstform.submit();");
+    evaluateJavaScriptSync(m_view->page(), "tstform.submit();");
 
     newPage->m_acceptNavigationRequest = true;
-    m_view->page()->evaluateJavaScript("tstform.submit();");
+    evaluateJavaScriptSync(m_view->page(), "tstform.submit();");
     QTRY_COMPARE(loadSpy.count(), 2);
 
     QCOMPARE(m_view->page()->toPlainText(), QString("foo?"));
@@ -329,7 +331,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
 #else
     JSTestPage* newPage = new JSTestPage(m_view);
 
-    if (newPage->evaluateJavaScript(QLatin1String("!navigator.geolocation")).toBool()) {
+    if (evaluateJavaScriptSync(newPage, QLatin1String("!navigator.geolocation")).toBool()) {
         delete newPage;
         W_QSKIP("Geolocation is not supported.", SkipSingle);
     }
@@ -340,16 +342,16 @@ void tst_QWebEnginePage::geolocationRequestJS()
     newPage->setGeolocationPermission(false);
     m_view->setPage(newPage);
     m_view->setHtml(QString("<html><body>test</body></html>"), QUrl());
-    m_view->page()->evaluateJavaScript("var errorCode = 0; function error(err) { errorCode = err.code; } function success(pos) { } navigator.geolocation.getCurrentPosition(success, error)");
+    evaluateJavaScriptSync(m_view->page(), "var errorCode = 0; function error(err) { errorCode = err.code; } function success(pos) { } navigator.geolocation.getCurrentPosition(success, error)");
     QTest::qWait(2000);
-    QVariant empty = m_view->page()->evaluateJavaScript("errorCode");
+    QVariant empty = evaluateJavaScriptSync(m_view->page(), "errorCode");
 
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=102235", Continue);
     QVERIFY(empty.type() == QVariant::Double && empty.toInt() != 0);
 
     newPage->setGeolocationPermission(true);
-    m_view->page()->evaluateJavaScript("errorCode = 0; navigator.geolocation.getCurrentPosition(success, error);");
-    empty = m_view->page()->evaluateJavaScript("errorCode");
+    evaluateJavaScriptSync(m_view->page(), "errorCode = 0; navigator.geolocation.getCurrentPosition(success, error);");
+    empty = evaluateJavaScriptSync(m_view->page(), "errorCode");
 
     //http://dev.w3.org/geo/api/spec-source.html#position
     //PositionError: const unsigned short PERMISSION_DENIED = 1;
@@ -412,11 +414,12 @@ public:
 
 void tst_QWebEnginePage::consoleOutput()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_JAVASCRIPTCONSOLEMESSAGE)
+    QSKIP("QWEBENGINEPAGE_JAVASCRIPTCONSOLEMESSAGE");
 #else
     ConsolePage page;
-    page.evaluateJavaScript("this is not valid JavaScript");
+    // We don't care about the result but want this to be synchronous
+    evaluateJavaScriptSync(&page, "this is not valid JavaScript");
     QCOMPARE(page.messages.count(), 1);
     QCOMPARE(page.lineNumbers.at(0), 1);
 #endif
@@ -463,16 +466,16 @@ private Q_SLOTS:
 
 void tst_QWebEnginePage::popupFormSubmission()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_SETTINGS)
+  QSKIP("QWEBENGINEPAGE_SETTINGS");
 #else
     TestPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     page.setHtml("<form name=form1 method=get action='' target=myNewWin>"\
                                 "<input type=hidden name=foo value='bar'>"\
                                 "</form>");
-    page.evaluateJavaScript("window.open('', 'myNewWin', 'width=500,height=300,toolbar=0')");
-    page.evaluateJavaScript("document.form1.submit();");
+    page.runJavaScript("window.open('', 'myNewWin', 'width=500,height=300,toolbar=0')");
+    evaluateJavaScriptSync(&page, "document.form1.submit();");
 
     QTest::qWait(500);
     // The number of popup created should be one.
@@ -602,19 +605,19 @@ void tst_QWebEnginePage::loadHtml5Video()
 
 void tst_QWebEnginePage::viewModes()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_VIEW_MODES)
+    QSKIP("QWEBENGINEPAGE_VIEW_MODES");
 #else
     m_view->setHtml("<body></body>");
     m_page->setProperty("_q_viewMode", "minimized");
 
-    QVariant empty = m_page->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webengine-view-mode)\")");
+    QVariant empty = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode)\")");
     QVERIFY(empty.type() == QVariant::Bool && empty.toBool());
 
-    QVariant minimized = m_page->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webengine-view-mode: minimized)\")");
+    QVariant minimized = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode: minimized)\")");
     QVERIFY(minimized.type() == QVariant::Bool && minimized.toBool());
 
-    QVariant maximized = m_page->evaluateJavaScript("window.styleMedia.matchMedium(\"(-webengine-view-mode: maximized)\")");
+    QVariant maximized = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode: maximized)\")");
     QVERIFY(maximized.type() == QVariant::Bool && !maximized.toBool());
 #endif
 }
@@ -632,17 +635,16 @@ void tst_QWebEnginePage::modified()
 
     QVERIFY(!m_page->isModified());
 
-//    m_page->evaluateJavaScript("alert(document.getElementById('foo'))");
-    m_page->evaluateJavaScript("document.getElementById('foo').focus()");
-    m_page->evaluateJavaScript("document.execCommand('InsertText', true, 'Test');");
+    m_page->runJavaScript("document.getElementById('foo').focus()");
+    evaluateJavaScriptSync(m_page, "document.execCommand('InsertText', true, 'Test');");
 
     QVERIFY(m_page->isModified());
 
-    m_page->evaluateJavaScript("document.execCommand('Undo', true);");
+    evaluateJavaScriptSync(m_page, "document.execCommand('Undo', true);");
 
     QVERIFY(!m_page->isModified());
 
-    m_page->evaluateJavaScript("document.execCommand('Redo', true);");
+    evaluateJavaScriptSync(m_page, "document.execCommand('Redo', true);");
 
     QVERIFY(m_page->isModified());
 
@@ -660,10 +662,10 @@ void tst_QWebEnginePage::modified()
 
     QVERIFY(!m_page->isModified());
 
-    QVERIFY(m_page->history()->currentItemIndex() == 0);
+    QCOMPARE(m_page->history()->currentItemIndex(), 0);
 
     m_page->history()->setMaximumItemCount(3);
-    QVERIFY(m_page->history()->maximumItemCount() == 3);
+    QCOMPARE(m_page->history()->maximumItemCount(), 3);
 
     QVariant variant("string test");
     m_page->history()->currentItem().setUserData(variant);
@@ -671,9 +673,9 @@ void tst_QWebEnginePage::modified()
 
     m_page->setUrl(QUrl("data:text/html,<body>This is second page"));
     m_page->setUrl(QUrl("data:text/html,<body>This is third page"));
-    QVERIFY(m_page->history()->count() == 2);
+    QCOMPARE(m_page->history()->count(), 2);
     m_page->setUrl(QUrl("data:text/html,<body>This is fourth page"));
-    QVERIFY(m_page->history()->count() == 2);
+    QCOMPARE(m_page->history()->count(), 2);
     m_page->setUrl(QUrl("data:text/html,<body>This is fifth page"));
     QVERIFY(::waitForSignal(m_page, SIGNAL(saveFrameStateRequested(QWebEngineFrame*,QWebEngineHistoryItem*))));
 #endif
@@ -746,22 +748,22 @@ void tst_QWebEnginePage::database()
     QSignalSpy spy(m_page, SIGNAL(databaseQuotaExceeded(QWebEngineFrame*,QString)));
     m_view->setHtml(QString("<html><head><script>var db; db=openDatabase('testdb', '1.0', 'test database API', 50000); </script></head><body><div></div></body></html>"), QUrl("http://www.myexample.com"));
     QTRY_COMPARE(spy.count(), 1);
-    m_page->evaluateJavaScript("var db2; db2=openDatabase('testdb', '1.0', 'test database API', 50000);");
+    evaluateJavaScriptSync(m_page, "var db2; db2=openDatabase('testdb', '1.0', 'test database API', 50000);");
     QTRY_COMPARE(spy.count(),1);
 
-    m_page->evaluateJavaScript("localStorage.test='This is a test for local storage';");
+    evaluateJavaScriptSync(m_page, "localStorage.test='This is a test for local storage';");
     m_view->setHtml(QString("<html><body id='b'>text</body></html>"), QUrl("http://www.myexample.com"));
 
-    QVariant s1 = m_page->evaluateJavaScript("localStorage.test");
+    QVariant s1 = evaluateJavaScriptSync(m_page, "localStorage.test");
     QCOMPARE(s1.toString(), QString("This is a test for local storage"));
 
-    m_page->evaluateJavaScript("sessionStorage.test='This is a test for session storage';");
+    evaluateJavaScriptSync(m_page, "sessionStorage.test='This is a test for session storage';");
     m_view->setHtml(QString("<html><body id='b'>text</body></html>"), QUrl("http://www.myexample.com"));
-    QVariant s2 = m_page->evaluateJavaScript("sessionStorage.test");
+    QVariant s2 = evaluateJavaScriptSync(m_page, "sessionStorage.test");
     QCOMPARE(s2.toString(), QString("This is a test for session storage"));
 
     m_view->setHtml(QString("<html><head></head><body><div></div></body></html>"), QUrl("http://www.myexample.com"));
-    m_page->evaluateJavaScript("var db3; db3=openDatabase('testdb', '1.0', 'test database API', 50000);db3.transaction(function(tx) { tx.executeSql('CREATE TABLE IF NOT EXISTS Test (text TEXT)', []); }, function(tx, result) { }, function(tx, error) { });");
+    evaluateJavaScriptSync(m_page, "var db3; db3=openDatabase('testdb', '1.0', 'test database API', 50000);db3.transaction(function(tx) { tx.executeSql('CREATE TABLE IF NOT EXISTS Test (text TEXT)', []); }, function(tx, result) { }, function(tx, error) { });");
     QTest::qWait(200);
 
     // Remove all databases.
@@ -856,17 +858,17 @@ static void createPlugin(QWebEngineView *view)
         QVERIFY(ci.returnValue->inherits("QPushButton"));
     }
     // test JS bindings
-    QCOMPARE(newPage->evaluateJavaScript("document.getElementById('mybutton').toString()").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "document.getElementById('mybutton').toString()").toString(),
              QString::fromLatin1("[object HTMLObjectElement]"));
-    QCOMPARE(newPage->evaluateJavaScript("mybutton.toString()").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "mybutton.toString()").toString(),
              QString::fromLatin1("[object HTMLObjectElement]"));
-    QCOMPARE(newPage->evaluateJavaScript("typeof mybutton.objectName").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "typeof mybutton.objectName").toString(),
              QString::fromLatin1("string"));
-    QCOMPARE(newPage->evaluateJavaScript("mybutton.objectName").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "mybutton.objectName").toString(),
              QString::fromLatin1("pushbutton"));
-    QCOMPARE(newPage->evaluateJavaScript("typeof mybutton.clicked").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "typeof mybutton.clicked").toString(),
              QString::fromLatin1("function"));
-    QCOMPARE(newPage->evaluateJavaScript("mybutton.clicked.toString()").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "mybutton.clicked.toString()").toString(),
              QString::fromLatin1("function clicked() {\n    [native code]\n}"));
 
     view->setHtml(QString("<html><body><table>"
@@ -945,17 +947,17 @@ void tst_QWebEnginePage::graphicsWidgetPlugin()
         QVERIFY(ci.returnValue->inherits("QGraphicsWidget"));
     }
     // test JS bindings
-    QCOMPARE(newPage->evaluateJavaScript("document.getElementById('mygraphicswidget').toString()").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "document.getElementById('mygraphicswidget').toString()").toString(),
              QString::fromLatin1("[object HTMLObjectElement]"));
-    QCOMPARE(newPage->evaluateJavaScript("mygraphicswidget.toString()").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "mygraphicswidget.toString()").toString(),
              QString::fromLatin1("[object HTMLObjectElement]"));
-    QCOMPARE(newPage->evaluateJavaScript("typeof mygraphicswidget.objectName").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "typeof mygraphicswidget.objectName").toString(),
              QString::fromLatin1("string"));
-    QCOMPARE(newPage->evaluateJavaScript("mygraphicswidget.objectName").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "mygraphicswidget.objectName").toString(),
              QString::fromLatin1("graphicswidget"));
-    QCOMPARE(newPage->evaluateJavaScript("typeof mygraphicswidget.geometryChanged").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "typeof mygraphicswidget.geometryChanged").toString(),
              QString::fromLatin1("function"));
-    QCOMPARE(newPage->evaluateJavaScript("mygraphicswidget.geometryChanged.toString()").toString(),
+    QCOMPARE(evaluateJavaScriptSync(newPage, "mygraphicswidget.geometryChanged.toString()").toString(),
              QString::fromLatin1("function geometryChanged() {\n    [native code]\n}"));
 #endif
 }
@@ -1131,16 +1133,16 @@ void tst_QWebEnginePage::multiplePageGroupsAndLocalStorage()
     view1.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
     view2.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
 
-    view1.page()->evaluateJavaScript("localStorage.test='value1';");
-    view2.page()->evaluateJavaScript("localStorage.test='value2';");
+    evaluateJavaScriptSync(view1.page(), "localStorage.test='value1';");
+    evaluateJavaScriptSync(view2.page(), "localStorage.test='value2';");
 
     view1.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
     view2.setHtml(QString("<html><body> </body></html>"), QUrl("http://www.myexample.com"));
 
-    QVariant s1 = view1.page()->evaluateJavaScript("localStorage.test");
+    QVariant s1 = evaluateJavaScriptSync(view1.page(), "localStorage.test");
     QCOMPARE(s1.toString(), QString("value1"));
 
-    QVariant s2 = view2.page()->evaluateJavaScript("localStorage.test");
+    QVariant s2 = evaluateJavaScriptSync(view2.page(), "localStorage.test");
     QCOMPARE(s2.toString(), QString("value2"));
 
     QTest::qWait(1000);
@@ -1162,28 +1164,28 @@ public:
     }
 
     QString selectedText() {
-        return evaluateJavaScript("window.getSelection().toString()").toString();
+        return evaluateJavaScriptSync(this, "window.getSelection().toString()").toString();
     }
 
     int selectionStartOffset() {
-        return evaluateJavaScript("window.getSelection().getRangeAt(0).startOffset").toInt();
+        return evaluateJavaScriptSync(this, "window.getSelection().getRangeAt(0).startOffset").toInt();
     }
 
     int selectionEndOffset() {
-        return evaluateJavaScript("window.getSelection().getRangeAt(0).endOffset").toInt();
+        return evaluateJavaScriptSync(this, "window.getSelection().getRangeAt(0).endOffset").toInt();
     }
 
     // true if start offset == end offset, i.e. no selected text
     int isSelectionCollapsed() {
-        return evaluateJavaScript("window.getSelection().getRangeAt(0).collapsed").toBool();
+        return evaluateJavaScriptSync(this, "window.getSelection().getRangeAt(0).collapsed").toBool();
     }
 };
 #endif
 
 void tst_QWebEnginePage::cursorMovements()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_SELECTEDTEXT)
+    QSKIP("QWEBENGINEPAGE_SELECTEDTEXT");
 #else
     CursorTrackedPage* page = new CursorTrackedPage;
     QString content("<html><body><p id=one>The quick brown fox</p><p id=two>jumps over the lazy dog</p><p>May the source<br/>be with you!</p></body></html>");
@@ -1194,7 +1196,7 @@ void tst_QWebEnginePage::cursorMovements()
         "var node = document.getElementById(\"one\"); " \
         "range.selectNode(node); " \
         "getSelection().addRange(range);";
-    page->evaluateJavaScript(script);
+    evaluateJavaScriptSync(page, script);
     QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
 
     QRegExp regExp(" style=\".*\"");
@@ -1432,7 +1434,7 @@ void tst_QWebEnginePage::textSelection()
         "var node = document.getElementById(\"one\"); " \
         "range.selectNode(node); " \
         "getSelection().addRange(range);";
-    page->evaluateJavaScript(selectScript);
+    evaluateJavaScriptSync(page, selectScript);
     QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
     QRegExp regExp(" style=\".*\"");
     regExp.setMinimal(true);
@@ -2033,20 +2035,20 @@ void tst_QWebEnginePage::inputMethods()
     page->setHtml("<html><body>" \
                                             "<input type='text' id='input3' value='QtWebEngine2'/>" \
                                             "</body></html>");
-    page->evaluateJavaScript("var inputEle = document.getElementById('input3'); inputEle.focus(); inputEle.select();");
+    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input3'); inputEle.focus(); inputEle.select();");
 
     //Send empty QInputMethodEvent
     QInputMethodEvent emptyEvent;
     page->event(&emptyEvent);
 
-    QString inputValue = page->evaluateJavaScript("document.getElementById('input3').value").toString();
+    QString inputValue = evaluateJavaScriptSync(page, "document.getElementById('input3').value").toString();
     QCOMPARE(inputValue, QString("QtWebEngine2"));
     //END - Test for sending empty QInputMethodEvent
 
     page->setHtml("<html><body>" \
                                             "<input type='text' id='input4' value='QtWebEngine inputMethod'/>" \
                                             "</body></html>");
-    page->evaluateJavaScript("var inputEle = document.getElementById('input4'); inputEle.focus(); inputEle.select();");
+    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input4'); inputEle.focus(); inputEle.select();");
 
     // Clear the selection, also cancel the ongoing composition if there is one.
     {
@@ -2366,7 +2368,7 @@ void tst_QWebEnginePage::inputMethods()
     page->setHtml("<html><body>" \
                                             "<textarea rows='5' cols='1' id='input5' value=''/>" \
                                             "</body></html>");
-    page->evaluateJavaScript("var inputEle = document.getElementById('input5'); inputEle.focus(); inputEle.select();");
+    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input5'); inputEle.focus(); inputEle.select();");
 
     // Enter Key without key text
     QKeyEvent keyEnter(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
@@ -2382,12 +2384,12 @@ void tst_QWebEnginePage::inputMethods()
     page->event(&eventText2);
     qApp->processEvents();
 
-    QString inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    QString inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString("\n\nthird line"));
 
     // Enter Key with key text '\r'
-    page->evaluateJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString(""));
 
     QKeyEvent keyEnterWithCarriageReturn(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\r");
@@ -2396,12 +2398,12 @@ void tst_QWebEnginePage::inputMethods()
     page->event(&eventText2);
     qApp->processEvents();
 
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString("\n\nthird line"));
 
     // Enter Key with key text '\n'
-    page->evaluateJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    page->runJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString(""));
 
     QKeyEvent keyEnterWithLineFeed(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\n");
@@ -2410,12 +2412,12 @@ void tst_QWebEnginePage::inputMethods()
     page->event(&eventText2);
     qApp->processEvents();
 
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString("\n\nthird line"));
 
     // Enter Key with key text "\n\r"
-    page->evaluateJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    page->runJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString(""));
 
     QKeyEvent keyEnterWithLFCR(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\n\r");
@@ -2424,12 +2426,12 @@ void tst_QWebEnginePage::inputMethods()
     page->event(&eventText2);
     qApp->processEvents();
 
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString("\n\nthird line"));
 
     // Return Key without key text
-    page->evaluateJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    page->runJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString(""));
 
     QKeyEvent keyReturn(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
@@ -2438,7 +2440,7 @@ void tst_QWebEnginePage::inputMethods()
     page->event(&eventText2);
     qApp->processEvents();
 
-    inputValue2 = page->evaluateJavaScript("document.getElementById('input5').value").toString();
+    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
     QCOMPARE(inputValue2, QString("\n\nthird line"));
 
     // END - Newline test for textarea
@@ -2480,7 +2482,7 @@ void tst_QWebEnginePage::inputMethodsTextFormat()
     page->settings()->setFontFamily(QWebEngineSettings::SerifFont, "FooSerifFont");
     page->setHtml("<html><body>" \
                                             "<input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>");
-    page->evaluateJavaScript("document.getElementById('input1').focus()");
+    evaluateJavaScriptSync(page, "document.getElementById('input1').focus()");
     page->mainFrame()->setFocus();
     view->show();
 
@@ -2517,14 +2519,14 @@ void tst_QWebEnginePage::protectBindingsRuntimeObjectsFromCollector()
     m_view->setHtml(QString("<html><body><object type='application/x-qt-plugin' classid='lineedit' id='mylineedit'/></body></html>"));
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    newPage->evaluateJavaScript("function testme(text) { var lineedit = document.getElementById('mylineedit'); lineedit.setText(text); lineedit.selectAll(); }");
+    newPage->runJavaScript("function testme(text) { var lineedit = document.getElementById('mylineedit'); lineedit.setText(text); lineedit.selectAll(); }");
 
-    newPage->evaluateJavaScript("testme('foo')");
+    evaluateJavaScriptSync(newPage, "testme('foo')");
 
     DumpRenderTreeSupportQt::garbageCollectorCollect();
 
     // don't crash!
-    newPage->evaluateJavaScript("testme('bar')");
+    evaluateJavaScriptSync(newPage, "testme('bar')");
 #endif
 }
 
@@ -2556,11 +2558,11 @@ void tst_QWebEnginePage::localURLSchemes()
 #endif
 }
 
-#if defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+#if defined(QWEBENGINEPAGE_SETTINGS)
 static inline bool testFlag(QWebEnginePage& webPage, QWebEngineSettings::WebAttribute settingAttribute, const QString& jsObjectName, bool settingValue)
 {
     webPage.settings()->setAttribute(settingAttribute, settingValue);
-    return webPage.evaluateJavaScript(QString("(window.%1 != undefined)").arg(jsObjectName)).toBool();
+    return evaluateJavaScriptSync(&webPage, QString("(window.%1 != undefined)").arg(jsObjectName)).toBool();
 }
 #endif
 
@@ -2594,18 +2596,18 @@ void tst_QWebEnginePage::testOptionalJSObjects()
 #endif
 }
 
-#if defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+#if defined(QWEBENGINEPAGE_SETTINGS)
 static inline bool checkLocalStorageVisibility(QWebEnginePage& webPage, bool localStorageEnabled)
 {
     webPage.settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, localStorageEnabled);
-    return webPage.evaluateJavaScript(QString("(window.localStorage != undefined)")).toBool();
+    return evaluateJavaScriptSync(&webPage, QString("(window.localStorage != undefined)")).toBool();
 }
 #endif
 
 void tst_QWebEnginePage::testLocalStorageVisibility()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_SETTINGS)
+    QSKIP("QWEBENGINEPAGE_SETTINGS");
 #else
     // Local storage's visibility depends on its security origin, which depends on base url.
     // Initially, it will test it with base urls that get a globally unique origin, which may not
@@ -2703,24 +2705,23 @@ void tst_QWebEnginePage::defaultTextEncoding()
 #if !defined(QWEBENGINESETTINGS_SETDEFAULTTEXTENCODING)
     QSKIP("QWEBENGINESETTINGS_SETDEFAULTTEXTENCODING");
 #else
-    QWebEngineFrame* mainFrame = m_page->mainFrame();
 
-    QString defaultCharset = mainFrame->evaluateJavaScript("document.defaultCharset").toString();
+    QString defaultCharset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QVERIFY(!defaultCharset.isEmpty());
     QCOMPARE(QWebEngineSettings::globalSettings()->defaultTextEncoding(), defaultCharset);
 
     m_page->settings()->setDefaultTextEncoding(QString("utf-8"));
-    QString charset = mainFrame->evaluateJavaScript("document.defaultCharset").toString();
+    QString charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QCOMPARE(charset, QString("utf-8"));
     QCOMPARE(m_page->settings()->defaultTextEncoding(), charset);
 
     m_page->settings()->setDefaultTextEncoding(QString());
-    charset = mainFrame->evaluateJavaScript("document.defaultCharset").toString();
+    charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QVERIFY(!charset.isEmpty());
     QCOMPARE(charset, defaultCharset);
 
     QWebEngineSettings::globalSettings()->setDefaultTextEncoding(QString("utf-8"));
-    charset = mainFrame->evaluateJavaScript("document.defaultCharset").toString();
+    charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QCOMPARE(charset, QString("utf-8"));
     QCOMPARE(QWebEngineSettings::globalSettings()->defaultTextEncoding(), charset);
 #endif
@@ -2891,13 +2892,12 @@ const QLatin1String CustomUserAgentWebPage::filteredUserAgent("My User AgentX-Ne
 
 void tst_QWebEnginePage::userAgentNewlineStripping()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_USERAGENTFORURL)
+    QSKIP("QWEBENGINEPAGE_USERAGENTFORURL");
 #else
     CustomUserAgentWebPage page;
-    QWebEngineFrame* mainFrame = page.mainFrame();
-    mainFrame->setHtml("<html><body></body></html>");
-    QCOMPARE(mainFrame->evaluateJavaScript("navigator.userAgent").toString(), CustomUserAgentWebPage::filteredUserAgent);
+    page.setHtml("<html><body></body></html>");
+    QCOMPARE(evaluateJavaScriptSync(&page, "navigator.userAgent").toString(), CustomUserAgentWebPage::filteredUserAgent);
 #endif
 }
 
@@ -3104,36 +3104,32 @@ public:
 
 void tst_QWebEnginePage::testJSPrompt()
 {
-#if !defined(QWEBENGINEPAGE_JAVASCRIPTPROMPT)
-    QSKIP("QWEBENGINEPAGE_JAVASCRIPTPROMPT");
-#else
     JSPromptPage page;
     bool res;
 
     // OK + QString()
-    res = page.evaluateJavaScript(
+    res = evaluateJavaScriptSync(&page,
             "var retval = prompt('test1');"
             "retval=='' && retval.length == 0;").toBool();
     QVERIFY(res);
 
     // OK + "text"
-    res = page.evaluateJavaScript(
+    res = evaluateJavaScriptSync(&page,
             "var retval = prompt('test2');"
             "retval=='text' && retval.length == 4;").toBool();
     QVERIFY(res);
 
     // Cancel + QString()
-    res = page.evaluateJavaScript(
+    res = evaluateJavaScriptSync(&page,
             "var retval = prompt('test3');"
             "retval===null;").toBool();
     QVERIFY(res);
 
     // Cancel + "text"
-    res = page.evaluateJavaScript(
+    res = evaluateJavaScriptSync(&page,
             "var retval = prompt('test4');"
             "retval===null;").toBool();
     QVERIFY(res);
-#endif
 }
 
 class TestModalPage : public QWebEnginePage
@@ -3151,13 +3147,13 @@ public:
 
 void tst_QWebEnginePage::showModalDialog()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINESETTINGS)
+    QSKIP("QWEBENGINESETTINGS");
 #else
     TestModalPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     page.setHtml(QString("<html></html>"));
-    QString res = page.evaluateJavaScript("window.showModalDialog('javascript:window.returnValue=dialogArguments; window.close();', 'This is a test');").toString();
+    QString res = evaluateJavaScriptSync(&page, "window.showModalDialog('javascript:window.returnValue=dialogArguments; window.close();', 'This is a test');").toString();
     QCOMPARE(res, QString("This is a test"));
 #endif
 }
@@ -3267,11 +3263,11 @@ void tst_QWebEnginePage::navigatorCookieEnabled()
 #else
     m_page->networkAccessManager()->setCookieJar(0);
     QVERIFY(!m_page->networkAccessManager()->cookieJar());
-    QVERIFY(!m_page->evaluateJavaScript("navigator.cookieEnabled").toBool());
+    QVERIFY(!evaluateJavaScriptSync(m_page, "navigator.cookieEnabled").toBool());
 
     m_page->networkAccessManager()->setCookieJar(new QNetworkCookieJar());
     QVERIFY(m_page->networkAccessManager()->cookieJar());
-    QVERIFY(m_page->evaluateJavaScript("navigator.cookieEnabled").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_page, "navigator.cookieEnabled").toBool());
 #endif
 }
 
@@ -3518,16 +3514,16 @@ void tst_QWebEnginePage::loadSignalsOrder()
 
 void tst_QWebEnginePage::undoActionHaveCustomText()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_UNDOACTION)
+    QSKIP("QWEBENGINEPAGE_UNDOACTION");
 #else
     m_page->setHtml("<div id=test contenteditable></div>");
-    m_page->evaluateJavaScript("document.getElementById('test').focus()");
+    evaluateJavaScriptSync(m_page, "document.getElementById('test').focus()");
 
-    m_page->evaluateJavaScript("document.execCommand('insertText', true, 'Test');");
+    evaluateJavaScriptSync(m_page, "document.execCommand('insertText', true, 'Test');");
     QString typingActionText = m_page->action(QWebEnginePage::Undo)->text();
 
-    m_page->evaluateJavaScript("document.execCommand('indent', true);");
+    evaluateJavaScriptSync(m_page, "document.execCommand('indent', true);");
     QString alignActionText = m_page->action(QWebEnginePage::Undo)->text();
 
     QVERIFY(typingActionText != alignActionText);
@@ -3536,15 +3532,15 @@ void tst_QWebEnginePage::undoActionHaveCustomText()
 
 void tst_QWebEnginePage::openWindowDefaultSize()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#if !defined(QWEBENGINEPAGE_SETTINGS)
+    QSKIP("QWEBENGINEPAGE_SETTINGS");
 #else
     TestPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     // Open a default window.
-    page.evaluateJavaScript("window.open()");
+    page.runJavaScript("window.open()");
     // Open a too small window.
-    page.evaluateJavaScript("window.open('', '', 'width=10,height=10')");
+    evaluateJavaScriptSync(&page, "window.open('', '', 'width=10,height=10')");
 
     QTest::qWait(500);
     // The number of popups created should be two.
@@ -3575,7 +3571,7 @@ void tst_QWebEnginePage::cssMediaTypeGlobalSetting()
     m_view->page()->settings()->setCSSMediaType(QString());
     m_view->setHtml(testHtml);
     QTRY_COMPARE(loadSpy.count(), 1);
-    QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('tv').matches == true").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_view->page(), "window.matchMedia('tv').matches == true").toBool());
     QVERIFY(QWebEngineSettings::globalSettings()->cssMediaType() == "tv");
 
     QWebEngineSettings::globalSettings()->setCSSMediaType("handheld");
@@ -3583,7 +3579,7 @@ void tst_QWebEnginePage::cssMediaTypeGlobalSetting()
     m_view->page()->settings()->setCSSMediaType(QString());
     m_view->setHtml(testHtml);
     QTRY_COMPARE(loadSpy.count(), 2);
-    QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('handheld').matches == true").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_view->page(), "window.matchMedia('handheld').matches == true").toBool());
     QVERIFY(QWebEngineSettings::globalSettings()->cssMediaType() == "handheld");
 
     QWebEngineSettings::globalSettings()->setCSSMediaType("screen");
@@ -3591,7 +3587,7 @@ void tst_QWebEnginePage::cssMediaTypeGlobalSetting()
     m_view->page()->settings()->setCSSMediaType(QString());
     m_view->setHtml(testHtml);
     QTRY_COMPARE(loadSpy.count(), 3);
-    QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('screen').matches == true").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_view->page(), "window.matchMedia('screen').matches == true").toBool());
     QVERIFY(QWebEngineSettings::globalSettings()->cssMediaType() == "screen");
 #endif
 }
@@ -3607,19 +3603,19 @@ void tst_QWebEnginePage::cssMediaTypePageSetting()
     m_view->page()->settings()->setCSSMediaType("tv");
     m_view->setHtml(testHtml);
     QTRY_COMPARE(loadSpy.count(), 1);
-    QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('tv').matches == true").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_view->page(), "window.matchMedia('tv').matches == true").toBool());
     QVERIFY(m_view->page()->settings()->cssMediaType() == "tv");
 
     m_view->page()->settings()->setCSSMediaType("handheld");
     m_view->setHtml(testHtml);
     QTRY_COMPARE(loadSpy.count(), 2);
-    QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('handheld').matches == true").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_view->page(), "window.matchMedia('handheld').matches == true").toBool());
     QVERIFY(m_view->page()->settings()->cssMediaType() == "handheld");
 
     m_view->page()->settings()->setCSSMediaType("screen");
     m_view->setHtml(testHtml);
     QTRY_COMPARE(loadSpy.count(), 3);
-    QVERIFY(m_view->page()->evaluateJavaScript("window.matchMedia('screen').matches == true").toBool());
+    QVERIFY(evaluateJavaScriptSync(m_view->page(), "window.matchMedia('screen').matches == true").toBool());
     QVERIFY(m_view->page()->settings()->cssMediaType() == "screen");
 #endif
 }
