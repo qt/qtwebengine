@@ -25,6 +25,7 @@
 #include <QEventLoop>
 #include <QSignalSpy>
 #include <QTimer>
+#include <QWebEnginePage>
 
 #if !defined(TESTS_SOURCE_DIR)
 #define TESTS_SOURCE_DIR ""
@@ -51,6 +52,42 @@ static inline bool waitForSignal(QObject* obj, const char* signal, int timeout =
     }
     loop.exec();
     return timeoutSpy.isEmpty();
+}
+
+/**
+ * Spins an event loop in order to get the result of a
+ * javascript evaluation.
+ *
+ */
+struct JSReturnValueFunctor {
+    JSReturnValueFunctor(QEventLoop* loop, QVariant *ret)
+        : m_loop(loop)
+        , m_ret(ret)
+    {}
+
+    void operator()(const QVariant& value) {
+        *m_ret = value;
+        m_loop->quit();
+    }
+
+private:
+    QEventLoop* m_loop;
+    QVariant* m_ret;
+};
+
+static inline QVariant evaluateJavaScriptSync(QWebEnginePage *page, const QString &script, int timeout = 10000)
+{
+    QVariant ret;
+    QEventLoop loop;
+    QTimer timer;
+    if (timeout > 0) {
+        QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        timer.setSingleShot(true);
+        timer.start(timeout);
+    }
+    page->runJavaScript(script, JSReturnValueFunctor(&loop, &ret));
+    loop.exec();
+    return ret;
 }
 
 /**
