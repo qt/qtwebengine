@@ -142,4 +142,11 @@ static inline QString toHtml(QWebEnginePage *page)
     return spy.waitForResult();
 }
 
+static inline QVariant evaluateJavaScriptSync(QWebEnginePage *page, const QString &script)
+{
+    CallbackSpy<QVariant> spy;
+    page->runJavaScript(script, spy.ref());
+    return spy.waitForResult();
+}
+
 #define W_QSKIP(a, b) QSKIP(a)
