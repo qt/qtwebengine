@@ -1,0 +1,66 @@
+From 8db4ebda3c21287b8b185469cb88b733ba9922ec Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno.albisser@digia.com>
+Date: Wed, 16 Oct 2013 10:17:11 +0200
+Subject: [PATCH] Do not forward declare WebRtcVoiceChannelInfo.
+
+Clang / libc++ does not support incomplete types in
+templates. See:
+http://clang.llvm.org/compatibility.html#undep_incomplete
+
+This fixes the fixes the "error: field has incomplete type" compiler error.
+---
+ media/webrtc/webrtcvoiceengine.cc | 13 -------------
+ media/webrtc/webrtcvoiceengine.h  | 13 ++++++++++++-
+ 2 files changed, 12 insertions(+), 14 deletions(-)
+
+diff --git a/media/webrtc/webrtcvoiceengine.cc b/media/webrtc/webrtcvoiceengine.cc
+index 5c16d6e..a8d2754 100644
+--- a/media/webrtc/webrtcvoiceengine.cc
++++ b/media/webrtc/webrtcvoiceengine.cc
+@@ -1506,19 +1506,6 @@ void WebRtcVoiceEngine::StopAecDump() {
+   }
+ }
+ 
+-// This struct relies on the generated copy constructor and assignment operator
+-// since it is used in an stl::map.
+-struct WebRtcVoiceMediaChannel::WebRtcVoiceChannelInfo {
+-  WebRtcVoiceChannelInfo() : channel(-1), renderer(NULL) {}
+-  WebRtcVoiceChannelInfo(int ch, AudioRenderer* r)
+-      : channel(ch),
+-        renderer(r) {}
+-  ~WebRtcVoiceChannelInfo() {}
+-
+-  int channel;
+-  AudioRenderer* renderer;
+-};
+-
+ // WebRtcVoiceMediaChannel
+ WebRtcVoiceMediaChannel::WebRtcVoiceMediaChannel(WebRtcVoiceEngine *engine)
+     : WebRtcMediaChannel<VoiceMediaChannel, WebRtcVoiceEngine>(
+diff --git a/media/webrtc/webrtcvoiceengine.h b/media/webrtc/webrtcvoiceengine.h
+index 7809706..e6fb699 100644
+--- a/media/webrtc/webrtcvoiceengine.h
++++ b/media/webrtc/webrtcvoiceengine.h
+@@ -372,7 +372,18 @@ class WebRtcVoiceMediaChannel
+   static Error WebRtcErrorToChannelError(int err_code);
+ 
+  private:
+-  struct WebRtcVoiceChannelInfo;
++  // This struct relies on the generated copy constructor and assignment operator
++  // since it is used in an stl::map.
++  struct WebRtcVoiceChannelInfo {
++    WebRtcVoiceChannelInfo() : channel(-1), renderer(NULL) {}
++    WebRtcVoiceChannelInfo(int ch, AudioRenderer* r)
++        : channel(ch),
++          renderer(r) {}
++    ~WebRtcVoiceChannelInfo() {}
++
++    int channel;
++    AudioRenderer* renderer;
++  };
+   typedef std::map<uint32, WebRtcVoiceChannelInfo> ChannelMap;
+ 
+   void SetNack(int channel, bool nack_enabled);
+-- 
+1.8.3.4
+
