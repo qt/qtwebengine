@@ -98,8 +98,8 @@ public:
         QObject::connect(&timeoutTimer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
     }
 
-    T waitForResult() {
-        timeoutTimer.start(10000);
+    T waitForResult(int timeout = 10000) {
+        timeoutTimer.start(timeout);
         eventLoop.exec();
         return result;
     }
@@ -128,6 +128,13 @@ static inline QString toHtml(QWebEnginePage *page)
     CallbackSpy<QString> spy;
     page->toHtml(ref(spy));
     return spy.waitForResult();
+}
+
+static inline QVariant evaluateJavaScriptSync(QWebEnginePage *page, const QString &script, int timeout = 10000)
+{
+    CallbackSpy<QVariant> spy;
+    page->runJavaScript(script, ref(spy));
+    return spy.waitForResult(timeout);
 }
 
 #define W_QSKIP(a, b) QSKIP(a)
