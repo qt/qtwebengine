@@ -16,7 +16,7 @@ SUBDIRS = build/qmake_extras \ # Phony pro file that extracts things like compil
 qtHaveModule(widgets) {
     SUBDIRS += \
         lib/widgets \
-        tests/widgets
+        tests/auto/widgets
 }
 
 SUBDIRS += examples
