@@ -47,6 +47,7 @@
 
 #include <QSharedData>
 #include <QtQuick/private/qquickitem_p.h>
+#include <QtGui/qaccessibleobject.h>
 
 class WebContentsAdapter;
 
@@ -87,12 +88,29 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE { return false;}
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
+    virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QQuickWebEngineViewExperimental *e;
     QUrl icon;
     int loadProgress;
     bool inspectable;
+};
+
+class QQuickWebEngineViewAccessible : public QAccessibleObject
+{
+public:
+    QQuickWebEngineViewAccessible(QQuickWebEngineView *o);
+    QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
+    int childCount() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface*) const Q_DECL_OVERRIDE;
+    QString text(QAccessible::Text) const Q_DECL_OVERRIDE;
+    QAccessible::Role role() const Q_DECL_OVERRIDE;
+    QAccessible::State state() const Q_DECL_OVERRIDE;
+
+private:
+    QQuickWebEngineView *engineView() const { return static_cast<QQuickWebEngineView*>(object()); }
 };
 
 QT_END_NAMESPACE

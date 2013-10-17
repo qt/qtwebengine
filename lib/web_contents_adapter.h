@@ -59,6 +59,10 @@ struct JSCallbackBase {
     virtual ~JSCallbackBase() {}
     virtual void call(const QVariant&) = 0;
 };
+QT_BEGIN_NAMESPACE
+class QAccessibleInterface;
+QT_END_NAMESPACE
+
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
@@ -88,6 +92,9 @@ public:
     qreal currentZoomFactor() const;
     void enableInspector(bool);
     void runJavaScript(const QString &javaScript, const QString &xPath = QString(), JSCallbackBase * = 0);
+
+    // rename me!
+    QAccessibleInterface *browserAccessible();
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);

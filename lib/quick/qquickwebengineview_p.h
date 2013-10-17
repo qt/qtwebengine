@@ -95,6 +95,7 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
+    friend class QQuickWebEngineViewAccessible;
 };
 
 QT_END_NAMESPACE

@@ -575,6 +575,7 @@ private:
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
+    friend class QWebEngineViewAccessible;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
