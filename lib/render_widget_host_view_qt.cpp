@@ -183,8 +183,14 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
     m_delegate->initAsChild(m_adapterClient);
 }
 
-void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
+void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView* parent, const gfx::Rect& rect)
 {
+    if (parent) {
+        RenderWidgetHostViewQt* parentView = static_cast<RenderWidgetHostViewQt*>(parent);
+        m_delegate->setParentWidget(parentView->delegate());
+    }
+    QRect qrect(rect.x(), rect.y(), rect.width(), rect.height());
+    m_delegate->initAsPopup(qrect);
 }
 
 void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)

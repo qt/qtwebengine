@@ -65,6 +65,8 @@ class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
 public:
     virtual ~RenderWidgetHostViewQtDelegate();
     virtual void initAsChild(WebContentsAdapterClient*) = 0;
+    virtual void initAsPopup(QRect&) = 0;
+    virtual void setParentWidget(RenderWidgetHostViewQtDelegate*) = 0;
     virtual QRectF screenRect() const = 0;
     virtual void setKeyboardFocus() = 0;
     virtual bool hasKeyboardFocus() = 0;

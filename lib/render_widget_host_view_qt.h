@@ -93,6 +93,7 @@ public:
     ~RenderWidgetHostViewQt();
 
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
+    RenderWidgetHostViewQtDelegate* delegate() { return m_delegate.get(); }
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
     bool handleEvent(QEvent* event);
     BackingStoreQt* GetBackingStore();

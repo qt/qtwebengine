@@ -70,7 +70,7 @@ public:
 
     virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context);
 
-    virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) { return 0; }
+    virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host);
 
     virtual void SetPageTitle(const string16& title);
 

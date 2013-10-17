@@ -76,6 +76,21 @@ public:
         this->setParentItem(viewPrivate->q_func());
     }
 
+    virtual void initAsPopup(QRect& rect)
+    {
+        QPointF pos = this->mapFromScene(QPointF(rect.x(), rect.y()));
+        this->setX(pos.x());
+        this->setY(pos.y());
+        this->setWidth(rect.width());
+        this->setHeight(rect.height());
+        this->setVisible(true);
+    }
+
+    virtual void setParentWidget(RenderWidgetHostViewQtDelegate* widget)
+    {
+        this->setParentItem(static_cast<RenderWidgetHostViewQtDelegateQuickBase*>(widget));
+    }
+
     virtual QRectF screenRect() const
     {
         QPointF pos = this->mapToScene(QPointF(0,0));

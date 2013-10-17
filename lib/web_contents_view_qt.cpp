@@ -78,6 +78,26 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
     return view;
 }
 
+content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host)
+{
+    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
+
+    WebContentsAdapterClient::CompositingMode compositingMode = WebContentsAdapterClient::NoCompositing;
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCompositingMode))
+        compositingMode = WebContentsAdapterClient::ForcedGpuProcessCompositing;
+
+    Q_ASSERT(m_factoryClient);
+    RenderWidgetHostViewQtDelegate* viewDelegate = m_factoryClient->CreateRenderWidgetHostViewQtDelegate(compositingMode);
+    view->setDelegate(viewDelegate);
+    if (m_client)
+        view->setAdapterClient(m_client);
+
+    // Tell the RWHV delegate the size and position.
+    view->InitAsPopup(0, gfx::Rect(0,0, 728, 1280));
+
+    return view;
+}
+
 void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
 {
     // This is passed through content::WebContents::CreateParams::context either as the native view's client
