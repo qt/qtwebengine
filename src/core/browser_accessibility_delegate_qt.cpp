@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,45 +39,56 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#include "browser_accessibility_delegate_qt.h"
 
-#include <QtWidgets/private/qwidget_p.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
+#include <QtCore/qglobal.h>
 
-#include <QtWidgets/qaccessiblewidget.h>
-
-QT_BEGIN_NAMESPACE
-
-class QWebEngineView;
-
-class QWebEngineViewPrivate : public QWidgetPrivate
+BrowserAccessibilityDelegateQt::BrowserAccessibilityDelegateQt(content::RenderWidgetHostViewBase *rwhv)
+    : m_rwhv(rwhv)
 {
-public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
+    Q_ASSERT(m_rwhv);
+}
 
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
-
-    QWebEngineViewPrivate();
-
-    QWebEnginePage *page;
-    bool m_pendingContextMenuEvent;
-};
-
-class QWebEngineViewAccessible : public QAccessibleWidget
+bool BrowserAccessibilityDelegateQt::HasFocus() const
 {
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o, QAccessible::Document)
-    {}
+    return m_rwhv->HasFocus();
+}
 
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+gfx::Rect BrowserAccessibilityDelegateQt::GetViewBounds() const
+{
+    return m_rwhv->GetViewBounds();
+}
 
-private:
-    QWebEngineView *engineView() const { return static_cast<QWebEngineView*>(object()); }
-};
+void BrowserAccessibilityDelegateQt::SetAccessibilityFocus(int acc_obj_id)
+{
+}
 
+void BrowserAccessibilityDelegateQt::AccessibilityDoDefaultAction(int acc_obj_id)
+{
+}
 
-QT_END_NAMESPACE
+void BrowserAccessibilityDelegateQt::AccessibilityScrollToMakeVisible(
+    int acc_obj_id, gfx::Rect subfocus)
+{
+}
 
-#endif // QWEBENGINEVIEW_P_H
+void BrowserAccessibilityDelegateQt::AccessibilityScrollToPoint(
+    int acc_obj_id, gfx::Point point)
+{
+}
+
+void BrowserAccessibilityDelegateQt::AccessibilitySetTextSelection(
+    int acc_obj_id, int start_offset, int end_offset)
+{
+}
+
+gfx::Point BrowserAccessibilityDelegateQt::GetLastTouchEventLocation() const
+{
+    return gfx::Point();
+}
+
+void BrowserAccessibilityDelegateQt::FatalAccessibilityTreeError()
+{
+    qWarning("BrowserAccessibilityDelegateQt::FatalAccessibilityTreeError");
+    m_rwhv->SetBrowserAccessibilityManager(0);
+}

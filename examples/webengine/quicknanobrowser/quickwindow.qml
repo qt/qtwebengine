@@ -175,6 +175,7 @@ ApplicationWindow {
         Component {
             id: tabComponent
             WebEngineView {
+                Accessible.role: Accessible.Document
                 id: webEngineView
                 focus: true
 

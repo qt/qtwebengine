@@ -867,6 +867,12 @@ void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString &
     QMessageBox::information(view(), QStringLiteral("Javascript Alert - %1").arg(url().toString()), msg);
 }
 
+QObject *QWebEnginePagePrivate::accessibilityParentObject()
+{
+    return view;
+}
+
+
 bool QWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString &msg)
 {
     Q_UNUSED(securityOrigin);

@@ -139,6 +139,8 @@ public:
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
 
+    virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
+
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);

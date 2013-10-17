@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,45 +39,41 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#ifndef BROWSER_ACCESSIBILITY_DELEGATE_QT_H
+#define BROWSER_ACCESSIBILITY_DELEGATE_QT_H
 
-#include <QtWidgets/private/qwidget_p.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
+#include <QtCore/qglobal.h>
 
-#include <QtWidgets/qaccessiblewidget.h>
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 
-QT_BEGIN_NAMESPACE
-
-class QWebEngineView;
-
-class QWebEngineViewPrivate : public QWidgetPrivate
+class BrowserAccessibilityDelegateQt
+        : public content::BrowserAccessibilityDelegate
 {
 public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
+    BrowserAccessibilityDelegateQt(content::RenderWidgetHostViewBase *rwhv);
 
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
+    virtual bool HasFocus() const Q_DECL_OVERRIDE;
+    virtual void SetAccessibilityFocus(int acc_obj_id) Q_DECL_OVERRIDE;
 
-    QWebEngineViewPrivate();
+    virtual void AccessibilityDoDefaultAction(int acc_obj_id) Q_DECL_OVERRIDE;
 
-    QWebEnginePage *page;
-    bool m_pendingContextMenuEvent;
-};
+    virtual gfx::Rect GetViewBounds() const Q_DECL_OVERRIDE;
+    virtual void AccessibilityScrollToMakeVisible(
+        int acc_obj_id, gfx::Rect subfocus) Q_DECL_OVERRIDE;
+    virtual void AccessibilityScrollToPoint(
+        int acc_obj_id, gfx::Point point) Q_DECL_OVERRIDE;
 
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o, QAccessible::Document)
-    {}
+    virtual void AccessibilitySetTextSelection(
+        int acc_obj_id, int start_offset, int end_offset) Q_DECL_OVERRIDE;
 
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    virtual gfx::Point GetLastTouchEventLocation() const Q_DECL_OVERRIDE;
+
+    virtual void FatalAccessibilityTreeError() Q_DECL_OVERRIDE;
 
 private:
-    QWebEngineView *engineView() const { return static_cast<QWebEngineView*>(object()); }
+    Q_DISABLE_COPY(BrowserAccessibilityDelegateQt)
+    content::RenderWidgetHostViewBase *m_rwhv;
 };
 
-
-QT_END_NAMESPACE
-
-#endif // QWEBENGINEVIEW_P_H
+#endif
