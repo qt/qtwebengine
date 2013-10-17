@@ -39,67 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEVIEW_P_H
-#define QQUICKWEBENGINEVIEW_P_H
+#ifndef BROWSER_ACCESSIBILITY_QT_H
+#define BROWSER_ACCESSIBILITY_QT_H
 
-#include <qtwebengineglobal_p.h>
-#include <QQuickItem>
+#include <QtGui/qaccessible.h>
+#include "content/browser/accessibility/browser_accessibility.h"
 
-QT_BEGIN_NAMESPACE
+namespace content {
 
-class QQuickWebEngineViewPrivate;
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
-    Q_OBJECT
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(QUrl icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
-    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
-
+class BrowserAccessibilityQt
+    : public BrowserAccessibility
+    , public QAccessibleInterface
+{
 public:
-    QQuickWebEngineView(QQuickItem *parent = 0);
-    ~QQuickWebEngineView();
+    // QAccessibleInterface
+    virtual bool isValid() const Q_DECL_OVERRIDE;
+    virtual QObject *object() const Q_DECL_OVERRIDE;
+    virtual QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
 
-    QUrl url() const;
-    void setUrl(const QUrl&);
-    QUrl icon() const;
-    bool isLoading() const;
-    int loadProgress() const;
-    QString title() const;
-    bool canGoBack() const;
-    bool canGoForward() const;
-    bool inspectable() const;
-    void setInspectable(bool);
+    // navigation, hierarchy
+    virtual QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
+    virtual QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    virtual int childCount() const Q_DECL_OVERRIDE;
+    virtual int indexOfChild(const QAccessibleInterface *) const Q_DECL_OVERRIDE;
 
-public Q_SLOTS:
-    void goBack();
-    void goForward();
-    void reload();
-    void stop();
+    // properties and state
+    virtual QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
+    virtual void setText(QAccessible::Text t, const QString &text) Q_DECL_OVERRIDE;
+    virtual QRect rect() const Q_DECL_OVERRIDE;
+    virtual QAccessible::Role role() const Q_DECL_OVERRIDE;
+    virtual QAccessible::State state() const Q_DECL_OVERRIDE;
 
-Q_SIGNALS:
-    void titleChanged();
-    void urlChanged();
-    void iconChanged();
-    void loadingStateChanged();
-    void loadProgressChanged();
-
-protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-
-private:
-    Q_DECLARE_PRIVATE(QQuickWebEngineView)
-    friend class QQuickWebEngineViewExperimental;
-    friend class QQuickWebEngineViewExperimentalExtension;
-    friend class QQuickWebEngineViewAccessible;
+    // BrowserAccessible
+    void NativeAddReference() Q_DECL_OVERRIDE;
+    void NativeReleaseReference() Q_DECL_OVERRIDE;
+    bool IsNative() const Q_DECL_OVERRIDE { return true; }
 };
 
-QT_END_NAMESPACE
+}
 
-QML_DECLARE_TYPE(QQuickWebEngineView)
-
-#endif // QQUICKWEBENGINEVIEW_P_H
+#endif

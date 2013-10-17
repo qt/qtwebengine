@@ -43,6 +43,7 @@
 #include "qwebengineview_p.h"
 
 #include "qwebenginepage_p.h"
+#include "web_contents_adapter.h"
 
 #include <QAction>
 #include <QMenu>
@@ -83,10 +84,19 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
     }
 }
 
+
+QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
+{
+    if (QWebEngineView *v = qobject_cast<QWebEngineView*>(object))
+        return new QWebEngineViewAccessible(v);
+    return 0;
+}
+
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : QWidgetPrivate(QObjectPrivateVersion)
     , page(0)
 {
+    QAccessible::installFactory(&webAccessibleFactory);
 }
 
 QWebEngineView::QWebEngineView(QWidget *parent)
@@ -94,6 +104,8 @@ QWebEngineView::QWebEngineView(QWidget *parent)
 {
     // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
     setLayout(new QStackedLayout);
+
+    setAccessibleName(QStringLiteral("QWebEngineView"));
 }
 
 QWebEngineView::~QWebEngineView()
@@ -204,6 +216,20 @@ void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = page()->createStandardContextMenu();
     menu->popup(event->globalPos());
+}
+
+int QWebEngineViewAccessible::childCount() const
+{
+    if (engineView() && child(0))
+        return 1;
+    return 0;
+}
+
+QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
+{
+    if (index == 0)
+        return engineView()->page()->d_func()->adapter->browserAccessible();
+    return 0;
 }
 
 QT_END_NAMESPACE
