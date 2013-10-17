@@ -39,45 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#ifndef BROWSER_ACCESSIBILITY_DELEGATE_QT_H
+#define BROWSER_ACCESSIBILITY_DELEGATE_QT_H
 
-#include <QtWidgets/private/qwidget_p.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 
-#include <QtWidgets/qaccessiblewidget.h>
-
-QT_BEGIN_NAMESPACE
-
-class QWebEngineView;
-
-class QWebEngineViewPrivate : public QWidgetPrivate
+class BrowserAccessibilityDelegateQt
+        : public content::BrowserAccessibilityDelegate
 {
 public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
+    BrowserAccessibilityDelegateQt(content::RenderWidgetHostViewBase *rwhv);
 
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
+    // Implementation of BrowserAccessibilityDelegate:
+    virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
+    virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE;
+    virtual void AccessibilityScrollToMakeVisible(
+        int acc_obj_id, gfx::Rect subfocus) OVERRIDE;
+    virtual void AccessibilityScrollToPoint(
+        int acc_obj_id, gfx::Point point) OVERRIDE;
+    virtual void AccessibilitySetTextSelection(
+        int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+    virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
+    virtual void FatalAccessibilityTreeError() OVERRIDE;
 
-    QWebEngineViewPrivate();
-
-    QWebEnginePage *page;
-    bool m_pendingContextMenuEvent;
-};
-
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o, QAccessible::Document)
-    {}
-
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    virtual bool HasFocus() const OVERRIDE;
+    virtual gfx::Rect GetViewBounds() const OVERRIDE;
 
 private:
-    QWebEngineView *engineView() const { return static_cast<QWebEngineView*>(object()); }
+    content::RenderWidgetHostViewBase *m_rwhv;
 };
 
-
-QT_END_NAMESPACE
-
-#endif // QWEBENGINEVIEW_P_H
+#endif

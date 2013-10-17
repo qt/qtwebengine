@@ -131,6 +131,9 @@ public:
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) = 0;
     virtual void didRunJavaScript(const QVariant& result, quint64 requestId) = 0;
     virtual void didFetchDocumentMarkup(const QString& result, quint64 requestId) = 0;
+    // returns the last QObject (QWidget/QQuickItem) based object in the accessibility
+    // hierarchy before going into the BrowserAccessibility tree
+    virtual QObject *accessibilityParentObject() = 0;
     virtual void didFetchDocumentInnerText(const QString& result, quint64 requestId) = 0;
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) = 0;
 };
