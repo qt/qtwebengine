@@ -39,45 +39,45 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#ifndef BROWSER_ACCESSIBILITY_QT_H
+#define BROWSER_ACCESSIBILITY_QT_H
 
-#include <QtWidgets/private/qwidget_p.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
+#include <QtGui/qaccessible.h>
+#include "content/browser/accessibility/browser_accessibility.h"
 
-#include <QtWidgets/qaccessiblewidget.h>
+namespace content {
 
-QT_BEGIN_NAMESPACE
-
-class QWebEngineView;
-
-class QWebEngineViewPrivate : public QWidgetPrivate
+class BrowserAccessibilityQt
+    : public BrowserAccessibility
+    , public QAccessibleInterface
 {
 public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
+    BrowserAccessibilityQt();
 
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
+    // QAccessibleInterface
+    virtual bool isValid() const Q_DECL_OVERRIDE;
+    virtual QObject *object() const Q_DECL_OVERRIDE;
+    virtual QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
 
-    QWebEngineViewPrivate();
+    // navigation, hierarchy
+    virtual QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
+    virtual QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    virtual int childCount() const Q_DECL_OVERRIDE;
+    virtual int indexOfChild(const QAccessibleInterface *) const Q_DECL_OVERRIDE;
 
-    QWebEnginePage *page;
-    bool m_pendingContextMenuEvent;
+    // properties and state
+    virtual QString text(QAccessible::Text t) const Q_DECL_OVERRIDE;
+    virtual void setText(QAccessible::Text t, const QString &text) Q_DECL_OVERRIDE;
+    virtual QRect rect() const Q_DECL_OVERRIDE;
+    virtual QAccessible::Role role() const Q_DECL_OVERRIDE;
+    virtual QAccessible::State state() const Q_DECL_OVERRIDE;
+
+    // BrowserAccessible
+    void NativeAddReference() Q_DECL_OVERRIDE;
+    void NativeReleaseReference() Q_DECL_OVERRIDE;
+    bool IsNative() const Q_DECL_OVERRIDE { return true; }
 };
 
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o, QAccessible::Document)
-    {}
+}
 
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
-
-private:
-    QWebEngineView *engineView() const { return static_cast<QWebEngineView*>(object()); }
-};
-
-
-QT_END_NAMESPACE
-
-#endif // QWEBENGINEVIEW_P_H
+#endif

@@ -215,6 +215,7 @@ private:
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
+    friend class QWebEngineViewAccessible;
 };
 
 

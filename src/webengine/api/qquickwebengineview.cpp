@@ -66,6 +66,13 @@
 
 QT_BEGIN_NAMESPACE
 
+QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
+{
+    if (QQuickWebEngineView *v = qobject_cast<QQuickWebEngineView*>(object))
+        return new QQuickWebEngineViewAccessible(v);
+    return 0;
+}
+
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter)
     , e(new QQuickWebEngineViewExperimental(this))
@@ -94,6 +101,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
         // 1x, 2x, 3x etc assets that fit an integral number of pixels.
         setDevicePixelRatio(qMax(1, qRound(webPixelRatio)));
     }
+    QAccessible::installFactory(&webAccessibleFactory);
 }
 
 QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
@@ -368,6 +376,59 @@ void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
     this->devicePixelRatio = devicePixelRatio;
     QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
     m_dpiScale = devicePixelRatio / screen->devicePixelRatio();
+}
+
+QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
+{
+    Q_Q(QQuickWebEngineView);
+    return q;
+}
+
+QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView *o)
+    : QAccessibleObject(o)
+{}
+
+QAccessibleInterface *QQuickWebEngineViewAccessible::parent() const
+{
+    QQuickItem *parent = engineView()->parentItem();
+    return QAccessible::queryAccessibleInterface(parent);
+}
+
+int QQuickWebEngineViewAccessible::childCount() const
+{
+    if (engineView() && child(0))
+        return 1;
+    return 0;
+}
+
+QAccessibleInterface *QQuickWebEngineViewAccessible::child(int index) const
+{
+    if (index == 0)
+        return engineView()->d_func()->adapter->browserAccessible();
+    return 0;
+}
+
+int QQuickWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
+{
+    if (c == child(0))
+        return 0;
+    return -1;
+}
+
+QString QQuickWebEngineViewAccessible::text(QAccessible::Text) const
+{
+    return QString();
+}
+
+QAccessible::Role QQuickWebEngineViewAccessible::role() const
+{
+    return QAccessible::Document;
+}
+
+QAccessible::State QQuickWebEngineViewAccessible::state() const
+{
+    QAccessible::State s;
+    return s;
 }
 
 void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContents)

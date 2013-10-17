@@ -54,6 +54,8 @@ class WebContents;
 }
 class WebContentsAdapterPrivate;
 
+QT_FORWARD_DECLARE_CLASS(QAccessibleInterface);
+
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
     static QExplicitlySharedDataPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
@@ -99,6 +101,9 @@ public:
     void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
     void runJavaScript(const QString &javaScript);
     quint64 runJavaScriptCallbackResult(const QString &javaScript);
+
+    // rename me!
+    QAccessibleInterface *browserAccessible();
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
     quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);

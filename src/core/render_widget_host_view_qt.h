@@ -44,9 +44,11 @@
 
 #include "render_widget_host_view_qt_delegate.h"
 
+#include "browser_accessibility_delegate_qt.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/transferable_resource.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "delegated_frame_node.h"
 #include "ui/events/gestures/gesture_recognizer.h"
@@ -65,6 +67,7 @@ class QMouseEvent;
 class QTouchEvent;
 class QVariant;
 class QWheelEvent;
+class QAccessibleInterface;
 QT_END_NAMESPACE
 
 class WebContentsAdapterClient;
@@ -207,6 +210,8 @@ public:
 #endif // defined(USE_AURA)
 #endif // defined(OS_WIN)
 
+    QAccessibleInterface *GetQtAccessible();
+
 private:
     void sendDelegatedFrameAck();
     void Paint(const gfx::Rect& damage_rect);
@@ -217,6 +222,7 @@ private:
     float dpiScale() const;
 
     bool IsPopup() const;
+    void CreateBrowserAccessibilityManagerIfNeeded();
 
     content::RenderWidgetHostImpl *m_host;
     scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
@@ -224,6 +230,7 @@ private:
     QMap<int, int> m_touchIdMapping;
     blink::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
+    scoped_ptr<BrowserAccessibilityDelegateQt> m_accessibilityDelegate;
 
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
     cc::ReturnedResourceArray m_resourcesToRelease;
