@@ -120,6 +120,7 @@ ApplicationWindow {
             }
     }
     WebEngineView {
+        Accessible.role: Accessible.Document
         id: webEngineView
         focus: true
         anchors.fill: parent

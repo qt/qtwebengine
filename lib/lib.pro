@@ -41,6 +41,8 @@ INCLUDEPATH += $$[QT_INSTALL_HEADERS]
 SOURCES = \
         backing_store_qt.cpp \
         chromium_overrides.cpp \
+        browser_accessibility_manager_qt.cpp \
+        browser_accessibility_qt.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         delegated_frame_node.cpp \
@@ -62,6 +64,8 @@ SOURCES = \
 
 HEADERS = \
         backing_store_qt.h \
+        browser_accessibility_manager_qt.h \
+        browser_accessibility_qt.h \
         browser_context_qt.h \
         chromium_overrides.h \
         content_client_qt.h \

@@ -114,6 +114,9 @@ public:
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) = 0;
+    // returns the last QObject (QWidget/QQuickItem) based object in the accessibility
+    // hierarchy before going into the BrowserAccessibility tree
+    virtual QObject *accessibilityParentObject() = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

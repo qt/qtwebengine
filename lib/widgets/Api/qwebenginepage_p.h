@@ -78,6 +78,8 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE;
 
+    virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
+
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
