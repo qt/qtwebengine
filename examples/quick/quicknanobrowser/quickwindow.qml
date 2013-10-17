@@ -160,6 +160,7 @@ ApplicationWindow {
         Component {
             id: tabComponent
             WebEngineView {
+                Accessible.role: Accessible.Document
                 function adoptHandle(viewHandle) { experimental.adoptHandle(viewHandle) }
 
                 focus: true
