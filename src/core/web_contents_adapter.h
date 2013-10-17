@@ -54,6 +54,8 @@ class WebContents;
 }
 class WebContentsAdapterPrivate;
 
+QT_FORWARD_DECLARE_CLASS(QAccessibleInterface);
+
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
     // Takes ownership of the WebContents.
@@ -84,6 +86,9 @@ public:
     qreal currentZoomFactor() const;
     void enableInspector(bool);
     void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
+
+    // rename me!
+    QAccessibleInterface *browserAccessible();
     void runJavaScript(const QString &javaScript, const QString &xPath);
     quint64 runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath);
     quint64 fetchDocumentMarkup();

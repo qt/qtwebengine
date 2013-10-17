@@ -43,17 +43,24 @@
 
 #include "backing_store_qt.h"
 #include "chromium_overrides.h"
+#include "browser_accessibility_manager_qt.h"
+#include "browser_accessibility_qt.h"
 #include "delegated_frame_node.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
+#include "web_contents_adapter.h"
+#include "web_contents_adapter_client.h"
+
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/events/event.h"
 #include "ui/gfx/size_conversions.h"
@@ -69,6 +76,7 @@
 #include <QVariant>
 #include <QWheelEvent>
 #include <QWindow>
+#include <QtGui/qaccessible.h>
 
 static inline ui::EventType toUIEventType(Qt::TouchPointState state)
 {
@@ -250,9 +258,20 @@ gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 {
-    // We are not using accessibility features at this point.
-    QT_NOT_USED
-    return NULL;
+    CreateBrowserAccessibilityManagerIfNeeded();
+    return GetBrowserAccessibilityManager()->GetRoot();
+}
+
+void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
+{
+    if (GetBrowserAccessibilityManager())
+        return;
+
+    m_accessibilityDelegate = scoped_ptr<BrowserAccessibilityDelegateQt>(new BrowserAccessibilityDelegateQt(this));
+    SetBrowserAccessibilityManager(new content::BrowserAccessibilityManagerQt(
+        m_adapterClient->accessibilityParentObject(),
+        content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
+        m_accessibilityDelegate.get()));
 }
 
 // Set focus to the associated View component.
@@ -616,10 +635,10 @@ void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
 
 void RenderWidgetHostViewQt::SetScrollOffsetPinning(bool, bool) { }
 
-void RenderWidgetHostViewQt::OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams>&)
+void RenderWidgetHostViewQt::OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams> &notifications)
 {
-    // We are not using accessibility features at this point.
-    QT_NOT_USED
+    CreateBrowserAccessibilityManagerIfNeeded();
+    GetBrowserAccessibilityManager()->OnAccessibilityEvents(notifications);
 }
 
 bool RenderWidgetHostViewQt::DispatchLongPressGestureEvent(ui::GestureEvent *)
@@ -910,4 +929,17 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         m_host->Blur();
         ev->accept();
     }
+}
+
+QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
+{
+    // Assume we have a screen reader doing stuff
+    CreateBrowserAccessibilityManagerIfNeeded();
+    content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
+    content::BrowserAccessibilityStateImpl::GetInstance()->SetAccessibilityMode(
+                AccessibilityModeComplete);
+
+    content::BrowserAccessibility *acc = GetBrowserAccessibilityManager()->GetRoot();
+    content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
+    return accQt;
 }
