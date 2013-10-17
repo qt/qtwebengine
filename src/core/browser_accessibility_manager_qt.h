@@ -39,45 +39,44 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEVIEW_P_H
-#define QWEBENGINEVIEW_P_H
+#ifndef BROWSER_ACCESSIBILITY_MANAGER_QT_H
+#define BROWSER_ACCESSIBILITY_MANAGER_QT_H
 
-#include <QtWidgets/private/qwidget_p.h>
-#include <QtWebEngineWidgets/qwebengineview.h>
-
-#include <QtWidgets/qaccessiblewidget.h>
+#include "content/browser/accessibility/browser_accessibility_manager.h"
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
-
-class QWebEngineView;
-
-class QWebEngineViewPrivate : public QWidgetPrivate
-{
-public:
-    Q_DECLARE_PUBLIC(QWebEngineView)
-
-    static void bind(QWebEngineView *view, QWebEnginePage *page);
-
-    QWebEngineViewPrivate();
-
-    QWebEnginePage *page;
-    bool m_pendingContextMenuEvent;
-};
-
-class QWebEngineViewAccessible : public QAccessibleWidget
-{
-public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o, QAccessible::Document)
-    {}
-
-    int childCount() const Q_DECL_OVERRIDE;
-    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
-
-private:
-    QWebEngineView *engineView() const { return static_cast<QWebEngineView*>(object()); }
-};
-
-
+class QAccessibleInterface;
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEVIEW_P_H
+namespace content {
+
+class BrowserAccessibilityFactoryQt : public BrowserAccessibilityFactory
+{
+public:
+    BrowserAccessibility* Create() Q_DECL_OVERRIDE;
+};
+
+class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
+{
+public:
+    BrowserAccessibilityManagerQt(
+        QObject* parentObject,
+        const AccessibilityNodeData& src,
+        BrowserAccessibilityDelegate* delegate,
+        BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactoryQt());
+
+    void NotifyRootChanged() Q_DECL_OVERRIDE;
+    void NotifyAccessibilityEvent(
+        WebKit::WebAXEvent event_type,
+        BrowserAccessibility* node) Q_DECL_OVERRIDE;
+
+    QAccessibleInterface *rootParentAccessible();
+
+private:
+    QObject *m_parentObject;
+};
+
+}
+
+#endif

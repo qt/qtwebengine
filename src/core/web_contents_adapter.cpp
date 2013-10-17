@@ -63,6 +63,7 @@
 #include <QStringList>
 #include <QStyleHints>
 #include <QVariant>
+#include <QtGui/qaccessible.h>
 
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
@@ -381,6 +382,13 @@ qreal WebContentsAdapter::currentZoomFactor() const
 void WebContentsAdapter::enableInspector(bool enable)
 {
     ContentBrowserClientQt::Get()->enableInspector(enable);
+}
+
+QAccessibleInterface *WebContentsAdapter::browserAccessible()
+{
+    Q_D(const WebContentsAdapter);
+    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(d->webContents->GetRenderWidgetHostView());
+    return rwhv->GetQtAccessible();
 }
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript, const QString &xPath)

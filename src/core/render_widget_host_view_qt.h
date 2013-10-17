@@ -47,6 +47,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/transferable_resource.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "delegated_frame_node.h"
 #include "ui/base/gestures/gesture_recognizer.h"
@@ -67,6 +68,7 @@ class QMouseEvent;
 class QTouchEvent;
 class QVariant;
 class QWheelEvent;
+class QAccessibleInterface;
 QT_END_NAMESPACE
 
 class WebContentsAdapterClient;
@@ -93,6 +95,7 @@ class RenderWidgetHostViewQt
     , public ui::GestureEventHelper
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
+    , public content::BrowserAccessibilityDelegate
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -205,6 +208,21 @@ public:
     virtual void WillWmDestroy(void) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_WIN)
 
+    // Implementation of BrowserAccessibilityDelegate:
+    virtual void SetAccessibilityFocus(int acc_obj_id) OVERRIDE;
+    virtual void AccessibilityDoDefaultAction(int acc_obj_id) OVERRIDE;
+    virtual void AccessibilityScrollToMakeVisible(
+        int acc_obj_id, gfx::Rect subfocus) OVERRIDE;
+    virtual void AccessibilityScrollToPoint(
+        int acc_obj_id, gfx::Point point) OVERRIDE;
+    virtual void AccessibilitySetTextSelection(
+        int acc_obj_id, int start_offset, int end_offset) OVERRIDE;
+    virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
+    virtual void FatalAccessibilityTreeError() OVERRIDE;
+
+    QAccessibleInterface *GetQtAccessible();
+
+
 private:
     void sendDelegatedFrameAck();
     void Paint(const gfx::Rect& damage_rect);
@@ -214,6 +232,7 @@ private:
     float dpiScale() const;
 
     bool IsPopup() const;
+    void CreateBrowserAccessibilityManagerIfNeeded();
 
     content::RenderWidgetHostImpl *m_host;
     scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
