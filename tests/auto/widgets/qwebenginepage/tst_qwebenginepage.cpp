@@ -174,7 +174,7 @@ private Q_SLOTS:
     void findText();
     void supportedContentType();
     // [Qt] tst_QWebEnginePage::infiniteLoopJS() timeouts with DFG JIT
-    // https://bugs.webengine.org/show_bug.cgi?id=79040
+    // https://bugs.webkit.org/show_bug.cgi?id=79040
     // void infiniteLoopJS();
     void navigatorCookieEnabled();
     void deleteQWebEngineViewTwice();
@@ -310,7 +310,7 @@ private:
 #endif
 
 // [Qt] tst_QWebEnginePage::infiniteLoopJS() timeouts with DFG JIT
-// https://bugs.webengine.org/show_bug.cgi?id=79040
+// https://bugs.webkit.org/show_bug.cgi?id=79040
 /*
 void tst_QWebEnginePage::infiniteLoopJS()
 {
@@ -344,7 +344,7 @@ void tst_QWebEnginePage::geolocationRequestJS()
     QTest::qWait(2000);
     QVariant empty = m_view->page()->evaluateJavaScript("errorCode");
 
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=102235", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=102235", Continue);
     QVERIFY(empty.type() == QVariant::Double && empty.toInt() != 0);
 
     newPage->setGeolocationPermission(true);
@@ -480,7 +480,7 @@ void tst_QWebEnginePage::popupFormSubmission()
 
     QString url = page.createdWindows.takeFirst()->url().toString();
     // Check if the form submission was OK.
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118597", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118597", Continue);
     QVERIFY(url.contains("?foo=bar"));
 #endif
 }
@@ -593,7 +593,7 @@ void tst_QWebEnginePage::loadHtml5Video()
     m_view->setHtml("<p><video id ='video' src='" + url + "' autoplay/></p>");
     QTest::qWait(2000);
     QUrl mUrl = DumpRenderTreeSupportQt::mediaContentUrlByElementId(m_page->mainFrame()->handle(), "video");
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=65452", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=65452", Continue);
     QCOMPARE(mUrl.toEncoded(), url);
 #else
     W_QSKIP("This test requires Qt Multimedia", SkipAll);
@@ -679,7 +679,7 @@ void tst_QWebEnginePage::modified()
 #endif
 }
 
-// https://bugs.webengine.org/show_bug.cgi?id=51331
+// https://bugs.webkit.org/show_bug.cgi?id=51331
 void tst_QWebEnginePage::updatePositionDependentActionsCrash()
 {
 #if !defined(QWEBENGINEPAGE_UPDATEPOSITIONDEPENDENTACTIONS)
@@ -699,7 +699,7 @@ void tst_QWebEnginePage::updatePositionDependentActionsCrash()
 #endif
 }
 
-// https://bugs.webengine.org/show_bug.cgi?id=20357
+// https://bugs.webkit.org/show_bug.cgi?id=20357
 void tst_QWebEnginePage::contextMenuCrash()
 {
 #if !defined(QWEBENGINEPAGE_SWALLOWCONTEXTMENUEVENT)
@@ -2580,10 +2580,10 @@ void tst_QWebEnginePage::testOptionalJSObjects()
     webPage1.currentFrame()->setHtml(QString("<html><body>test</body></html>"), QUrl("http://www.example.com/"));
     webPage2.currentFrame()->setHtml(QString("<html><body>test</body></html>"), QUrl("http://www.example.com/"));
 
-    QEXPECT_FAIL("","Feature enabled/disabled checking problem. Look at bugs.webengine.org/show_bug.cgi?id=29867", Continue);
+    QEXPECT_FAIL("","Feature enabled/disabled checking problem. Look at bugs.webkit.org/show_bug.cgi?id=29867", Continue);
     QCOMPARE(testFlag(webPage1, QWebEngineSettings::OfflineWebApplicationCacheEnabled, "applicationCache", false), false);
     QCOMPARE(testFlag(webPage2, QWebEngineSettings::OfflineWebApplicationCacheEnabled, "applicationCache", true),  true);
-    QEXPECT_FAIL("","Feature enabled/disabled checking problem. Look at bugs.webengine.org/show_bug.cgi?id=29867", Continue);
+    QEXPECT_FAIL("","Feature enabled/disabled checking problem. Look at bugs.webkit.org/show_bug.cgi?id=29867", Continue);
     QCOMPARE(testFlag(webPage1, QWebEngineSettings::OfflineWebApplicationCacheEnabled, "applicationCache", false), false);
     QCOMPARE(testFlag(webPage2, QWebEngineSettings::OfflineWebApplicationCacheEnabled, "applicationCache", false), true);
 
@@ -2981,7 +2981,7 @@ void tst_QWebEnginePage::screenshot()
 }
 
 #if defined(ENABLE_WEBGL) && ENABLE_WEBGL
-// https://bugs.webengine.org/show_bug.cgi?id=54138
+// https://bugs.webkit.org/show_bug.cgi?id=54138
 static void webGLScreenshotWithoutView(bool accelerated)
 {
     QWebEnginePage page;
@@ -3023,7 +3023,7 @@ void tst_QWebEnginePage::originatingObjectInNetworkRequests()
     QCOMPARE(networkManager->requests.count(), 2);
 
     QList<QWebEngineFrame*> childFrames = m_page->mainFrame()->childFrames();
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118660", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118660", Continue);
     QCOMPARE(childFrames.count(), 2);
 
     for (int i = 0; i < 2; ++i)
@@ -3066,7 +3066,7 @@ void tst_QWebEnginePage::destroyQNAMBeforeAbortDoesntCrash()
 }
 
 /**
- * Test fixups for https://bugs.webengine.org/show_bug.cgi?id=30914
+ * Test fixups for https://bugs.webkit.org/show_bug.cgi?id=30914
  *
  * From JS we test the following conditions.
  *
@@ -3187,7 +3187,7 @@ void tst_QWebEnginePage::testStopScheduledPageRefresh()
                                "</body></html>");
     page2.triggerAction(QWebEnginePage::StopScheduledPageRefresh);
     QTest::qWait(1500);
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118673", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118673", Continue);
     QCOMPARE(page2.url().toString(), QLatin1String("about:blank"));
 #endif
 }
@@ -3366,7 +3366,7 @@ void tst_QWebEnginePage::contextMenuCopy()
 #endif
 }
 
-// https://bugs.webengine.org/show_bug.cgi?id=62139
+// https://bugs.webkit.org/show_bug.cgi?id=62139
 void tst_QWebEnginePage::contextMenuPopulatedOnce()
 {
 #if !defined(QWEBENGINEELEMENT)
