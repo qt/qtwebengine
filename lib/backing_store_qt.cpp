@@ -57,8 +57,6 @@ BackingStoreQt::BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size 
     , m_deviceScaleFactor((parent && parent->screen()) ? parent->screen()->devicePixelRatio() : 1)
     , m_pixelBuffer(size.width() * m_deviceScaleFactor, size.height() * m_deviceScaleFactor)
 {
-    Q_ASSERT(parent);
-    Q_ASSERT(parent->screen());
 }
 
 BackingStoreQt::~BackingStoreQt()
