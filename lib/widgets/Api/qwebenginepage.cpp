@@ -116,7 +116,7 @@ void QWebEnginePagePrivate::focusContainer()
         view->setFocus();
 }
 
-void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition)
+void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &initialGeometry)
 {
     Q_Q(QWebEnginePage);
     QWebEnginePage *newPage = q->createWindow(disposition == WebContentsAdapterClient::NewPopupDisposition ? QWebEnginePage::WebModalDialog : QWebEnginePage::WebBrowserWindow);
@@ -124,6 +124,8 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     if (newPage) {
         newPage->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
+        if (!initialGeometry.isEmpty())
+            emit newPage->geometryChangeRequested(initialGeometry);
     }
 }
 

@@ -69,7 +69,7 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
     // Do the first ref-count manually to be able to know if the application is handling adoptNewWindow through the public API.
     newAdapter->ref.ref();
 
-    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition));
+    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), toQt(initial_pos));
 
     if (!newAdapter->ref.deref()) {
         // adoptNewWindow didn't increase the ref-count, new_contents needs to be discarded.

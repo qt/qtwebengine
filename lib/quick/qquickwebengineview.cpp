@@ -118,7 +118,7 @@ void QQuickWebEngineViewPrivate::focusContainer()
     q->forceActiveFocus();
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition)
+void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &)
 {
     Q_UNUSED(newWebContents);
     Q_UNUSED(disposition);
