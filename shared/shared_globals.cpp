@@ -56,8 +56,8 @@ void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* resul
     r.depth = screen->depth();
     r.isMonochrome = (r.depth == 1);
 
-    QRect virtualGeometry = screen->virtualGeometry();
-    r.rect = WebKit::WebRect(virtualGeometry.x(), virtualGeometry.y(), virtualGeometry.width(), virtualGeometry.height());
+    QRect screenGeometry = screen->geometry();
+    r.rect = WebKit::WebRect(screenGeometry.x(), screenGeometry.y(), screenGeometry.width(), screenGeometry.height());
     QRect available = screen->availableGeometry();
     r.availableRect = WebKit::WebRect(available.x(), available.y(), available.width(), available.height());
     *results = r;
