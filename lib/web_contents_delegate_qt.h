@@ -64,6 +64,7 @@ public:
 
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
     virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked);
+    virtual void CloseContents(content::WebContents *source);
     virtual void LoadingStateChanged(content::WebContents* source);
     virtual void LoadProgressChanged(content::WebContents* source, double progress);
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host);

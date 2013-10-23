@@ -81,6 +81,11 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
         *was_blocked = !newAdapter;
 }
 
+void WebContentsDelegateQt::CloseContents(content::WebContents *source)
+{
+    m_viewClient->close();
+}
+
 void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)
 {
     m_viewClient->loadingStateChanged();

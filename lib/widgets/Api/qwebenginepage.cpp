@@ -127,6 +127,12 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     }
 }
 
+void QWebEnginePagePrivate::close()
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->windowCloseRequested();
+}
+
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
