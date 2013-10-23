@@ -118,18 +118,70 @@ bool WebPage::acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequ
     return QWebEnginePage::acceptNavigationRequest(frame, request, type);
 }
 
+class PopupWindow : public QWidget {
+    Q_OBJECT
+public:
+    PopupWindow()
+        : m_addressBar(new QLineEdit(this))
+        , m_view(new WebView(this))
+    {
+        QVBoxLayout *layout = new QVBoxLayout;
+        layout->setMargin(0);
+        setLayout(layout);
+        layout->addWidget(m_addressBar);
+        layout->addWidget(m_view);
+        m_view->setFocus();
+
+        connect(m_view, &WebView::titleChanged, this, &QWidget::setWindowTitle);
+        connect(m_view, &WebView::urlChanged, this, &PopupWindow::setUrl);
+        connect(page(), &WebPage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
+        connect(page(), &WebPage::windowCloseRequested, this, &QWidget::close);
+    }
+
+    QWebEnginePage* page() const { return m_view->page(); }
+
+private Q_SLOTS:
+    void setUrl(const QUrl &url)
+    {
+        m_addressBar->setText(url.toString());
+    }
+
+    void adjustGeometry(const QRect &newGeometry)
+    {
+        const int x1 = frameGeometry().left() - geometry().left();
+        const int y1 = frameGeometry().top() - geometry().top();
+        const int x2 = frameGeometry().right() - geometry().right();
+        const int y2 = frameGeometry().bottom() - geometry().bottom();
+
+        setGeometry(newGeometry.adjusted(x1, y1 - m_addressBar->height(), x2, y2));
+    }
+
+private:
+    QLineEdit *m_addressBar;
+    WebView *m_view;
+
+};
+
+#include "webview.moc"
+
 QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type)
 {
-    Q_UNUSED(type);
     if (m_keyboardModifiers & Qt::ControlModifier || m_pressedButtons == Qt::MidButton)
         m_openInNewTab = true;
     if (m_openInNewTab) {
         m_openInNewTab = false;
         return mainWindow()->tabWidget()->newTab()->page();
     }
-    BrowserApplication::instance()->newMainWindow();
-    BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
-    return mainWindow->currentTab()->page();
+    if (type == QWebEnginePage::WebBrowserWindow) {
+        BrowserApplication::instance()->newMainWindow();
+        BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
+        return mainWindow->currentTab()->page();
+    } else {
+        PopupWindow *popup = new PopupWindow;
+        popup->setAttribute(Qt::WA_DeleteOnClose);
+        popup->show();
+        return popup->page();
+    }
 }
 
 #if !defined(QT_NO_UITOOLS)
