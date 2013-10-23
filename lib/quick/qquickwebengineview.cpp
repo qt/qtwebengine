@@ -125,6 +125,11 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
     Q_UNREACHABLE();
 }
 
+void QQuickWebEngineViewPrivate::close()
+{
+    Q_UNREACHABLE();
+}
+
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     : QQuickItem(*(new QQuickWebEngineViewPrivate), parent)
 {
