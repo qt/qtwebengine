@@ -46,12 +46,67 @@ import sys
 
 extra_os = []
 
-class Submodule:
+class DEPSParser:
     def __init__(self):
-        self.path = ''
-        self.url = ''
-        self.shasum = ''
-        self.os = []
+        self.global_scope = {
+          'Var': self.Lookup,
+          'deps_os': {},
+        }
+        self.local_scope = {}
+
+    def Lookup(self, var_name):
+        return self.local_scope["vars"][var_name]
+
+    def createSubmodulesFromScope(self, scope, os):
+        submodules = []
+        for dep in scope:
+            if (type(scope[dep]) == str):
+                repo_rev = scope[dep].split('@')
+                repo = repo_rev[0]
+                rev = repo_rev[1]
+                subdir = dep
+                if subdir.startswith('src/'):
+                    subdir = subdir[4:]
+                submodule = Submodule(subdir, repo, rev, os)
+                submodule.deps = True
+                submodules.append(submodule)
+        return submodules
+
+    def sanityCheckModules(self, submodules):
+        subdirectories = []
+        for submodule in submodules:
+            if submodule.path in subdirectories:
+                print 'SUBMODULE WARNING: duplicate for submodule' + submodule.path
+            subdirectories.append(submodule.path)
+
+    def parseFile(self, deps_file_name):
+        currentDir = os.getcwd()
+        if not os.path.isfile(deps_file_name):
+            return []
+        deps_file = open(deps_file_name)
+        deps_content = deps_file.read().decode('utf-8')
+        deps_file.close()
+        exec(deps_content, self.global_scope, self.local_scope)
+
+        submodules = []
+        submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps'], 'all'))
+        for os_dep in self.local_scope['deps_os']:
+            submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps_os'][os_dep], os_dep))
+
+        self.sanityCheckModules(submodules)
+
+        return submodules
+
+
+
+class Submodule:
+    def __init__(self, path='', url='', shasum='', os=[], ref=''):
+        self.path = path
+        self.url = url
+        self.shasum = shasum
+        self.os = os
+        self.ref = ''
+        self.deps = False
 
     def matchesOS(self):
         if not self.os:
@@ -101,8 +156,11 @@ class Submodule:
 
     def initialize(self):
         if self.matchesOS():
-            self.reset()
             print '-- initializing ' + self.path + ' --'
+            if os.path.isdir(self.path):
+                self.reset()
+            if self.deps:
+                subprocess.call(['git', 'submodule', 'add', self.url, self.path])
             subprocess.call(['git', 'submodule', 'init', self.path])
             subprocess.call(['git', 'submodule', 'update', self.path])
             self.findSha()
@@ -110,9 +168,15 @@ class Submodule:
             os.chdir(self.path)
             # Make sure we have checked out the right shasum.
             # In case there were other patches applied before.
-            val = subprocess.call(['git', 'checkout', self.shasum])
-            if val != 0:
-                sys.exit("!!! initialization failed !!!")
+            if self.ref:
+                val = subprocess.call(['git', 'fetch', 'origin', self.ref]);
+                if val != 0:
+                    sys.exit("Could not fetch branch from upstream.")
+                subprocess.call(['git', 'checkout', 'FETCH_HEAD']);
+            else:
+                val = subprocess.call(['git', 'checkout', self.shasum])
+                if val != 0:
+                    sys.exit("!!! initialization failed !!!")
             self.initSubmodules()
             os.chdir(currentDir)
         else:
@@ -159,7 +223,22 @@ class Submodule:
             submodules.append(currentSubmodule)
         return submodules
 
+    def readDeps(self):
+        parser = DEPSParser()
+        return parser.parseFile('.DEPS.git')
+
     def initSubmodules(self):
+        # try reading submodules from .gitmodules.
         submodules = self.readSubmodules()
         for submodule in submodules:
             submodule.initialize()
+        if submodules:
+            return
+        # if we could not find any submodules in .gitmodules, try .DEPS.git
+        submodules = self.readDeps()
+        print 'DEPS file provides the following submodules:'
+        for submodule in submodules:
+            print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.shasum
+        for submodule in submodules:
+            submodule.initialize()
+        subprocessCall(['git', 'commit', '-a', '-m', '"initialize submodules"'])
