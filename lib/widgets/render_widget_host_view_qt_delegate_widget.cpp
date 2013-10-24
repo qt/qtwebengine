@@ -49,6 +49,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QWindow>
+#include <QtWidgets/QApplication>
 
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(WebContentsAdapterClient::CompositingMode mode, QWidget *parent)
     : QWidget(parent)
@@ -137,6 +138,21 @@ void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
 void RenderWidgetHostViewQtDelegateWidget::resize(int width, int height)
 {
     QWidget::resize(width, height);
+}
+
+void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVisible)
+{
+    if (qApp->inputMethod()->isVisible() == editorVisible)
+        return;
+
+    QWidget::setAttribute(Qt::WA_InputMethodEnabled, editorVisible);
+    qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
+    qApp->inputMethod()->setVisible(editorVisible);
+}
+
+QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    return forwardInputMethodQuery(query);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)

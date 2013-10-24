@@ -51,6 +51,7 @@
 #include "ui/base/gestures/gesture_types.h"
 #include <QMap>
 #include <QPoint>
+#include <QRect>
 #include <QtGlobal>
 
 class BackingStoreQt;
@@ -62,6 +63,7 @@ class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
 class QTouchEvent;
+class QVariant;
 class QWheelEvent;
 QT_END_NAMESPACE
 
@@ -171,6 +173,8 @@ public:
     void handleHoverEvent(QHoverEvent*);
     void handleFocusEvent(QFocusEvent*);
 
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
 #if defined(OS_MACOSX)
     virtual void SetTakesFocusOnlyOnMouseDown(bool flag) { QT_NOT_YET_IMPLEMENTED }
     virtual void SetActive(bool active) { QT_NOT_YET_IMPLEMENTED }
@@ -205,6 +209,11 @@ private:
 
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
+
+    ui::TextInputType m_currentInputType;
+    QRect m_cursorRect;
+    size_t m_anchorPositionWithinSelection;
+    size_t m_cursorPositionWithinSelection;
 
     bool m_initPending;
 };

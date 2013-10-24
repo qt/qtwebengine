@@ -65,6 +65,7 @@ class QEvent;
 class QPainter;
 class QQuickWindow;
 class QSGNode;
+class QVariant;
 class QWindow;
 QT_END_NAMESPACE
 
@@ -87,6 +88,7 @@ public:
     virtual void update(const QRect& rect = QRect()) = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
+    virtual void inputMethodStateChanged(bool editorVisible) = 0;
 
 protected:
     RenderWidgetHostViewQtDelegate();
@@ -97,6 +99,7 @@ protected:
     void fetchBackingStore();
     void notifyResize();
     bool forwardEvent(QEvent*);
+    QVariant forwardInputMethodQuery(Qt::InputMethodQuery query) const;
 
 private:
     void setView(RenderWidgetHostViewQt*);

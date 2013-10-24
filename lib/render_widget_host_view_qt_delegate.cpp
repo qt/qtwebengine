@@ -47,6 +47,8 @@
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 
+#include <QVariant>
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -416,4 +418,12 @@ bool RenderWidgetHostViewQtDelegate::forwardEvent(QEvent *event)
 void RenderWidgetHostViewQtDelegate::setView(RenderWidgetHostViewQt* view)
 {
     m_view = view;
+}
+
+QVariant RenderWidgetHostViewQtDelegate::forwardInputMethodQuery(Qt::InputMethodQuery query) const
+{
+    if (!m_view)
+        return QVariant();
+
+    return m_view->inputMethodQuery(query);
 }

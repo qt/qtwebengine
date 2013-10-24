@@ -51,6 +51,8 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/view_messages.h"
+#include "lib/type_conversion.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/size_conversions.h"
@@ -63,6 +65,7 @@
 #include <QMouseEvent>
 #include <QScreen>
 #include <QStyleHints>
+#include <QVariant>
 #include <QWheelEvent>
 #include <QWindow>
 
@@ -80,6 +83,41 @@ static inline ui::EventType toUIEventType(Qt::TouchPointState state)
     default:
         Q_ASSERT(false);
         return ui::ET_UNKNOWN;
+    }
+}
+
+static inline Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputType)
+{
+    switch (inputType) {
+    case ui::TEXT_INPUT_TYPE_TEXT:
+        return Qt::ImhPreferLowercase;
+    case ui::TEXT_INPUT_TYPE_SEARCH:
+        return Qt::ImhPreferLowercase | Qt::ImhNoAutoUppercase;
+    case ui::TEXT_INPUT_TYPE_PASSWORD:
+        return Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase;
+    case ui::TEXT_INPUT_TYPE_EMAIL:
+        return Qt::ImhEmailCharactersOnly;
+    case ui::TEXT_INPUT_TYPE_NUMBER:
+        return Qt::ImhFormattedNumbersOnly;
+    case ui::TEXT_INPUT_TYPE_TELEPHONE:
+        return Qt::ImhDialableCharactersOnly;
+    case ui::TEXT_INPUT_TYPE_URL:
+        return Qt::ImhUrlCharactersOnly | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase;
+    case ui::TEXT_INPUT_TYPE_DATE_TIME:
+    case ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
+    case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
+        return Qt::ImhDate | Qt::ImhTime;
+    case ui::TEXT_INPUT_TYPE_DATE:
+    case ui::TEXT_INPUT_TYPE_MONTH:
+    case ui::TEXT_INPUT_TYPE_WEEK:
+        return Qt::ImhDate;
+    case ui::TEXT_INPUT_TYPE_TIME:
+        return Qt::ImhTime;
+    case ui::TEXT_INPUT_TYPE_TEXT_AREA:
+    case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
+        return Qt::ImhMultiLine | Qt::ImhPreferLowercase;
+    default:
+        return Qt::ImhNone;
     }
 }
 
@@ -102,6 +140,8 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
     , m_adapterClient(0)
+    , m_anchorPositionWithinSelection(0)
+    , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
 {
     m_host->SetView(this);
@@ -131,6 +171,7 @@ bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
     switch(event->type()) {
     case QEvent::MouseButtonDblClick:
     case QEvent::MouseButtonPress:
+        Focus(); // Fall through.
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:
         handleMouseEvent(static_cast<QMouseEvent*>(event));
@@ -143,6 +184,7 @@ bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
         handleWheelEvent(static_cast<QWheelEvent*>(event));
         break;
     case QEvent::TouchBegin:
+        Focus(); // Fall through.
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
@@ -261,7 +303,9 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 // Set focus to the associated View component.
 void RenderWidgetHostViewQt::Focus()
 {
+    m_host->SetInputMethodActive(true);
     m_delegate->setKeyboardFocus();
+    m_host->Focus();
 }
 
 bool RenderWidgetHostViewQt::HasFocus() const
@@ -352,6 +396,7 @@ void RenderWidgetHostViewQt::MovePluginWindows(const gfx::Vector2d&, const std::
 
 void RenderWidgetHostViewQt::Blur()
 {
+    m_host->SetInputMethodActive(false);
     m_host->Blur();
 }
 
@@ -457,9 +502,10 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType, bool, ui::TextInputMode)
+void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, bool, ui::TextInputMode)
 {
-    QT_NOT_YET_IMPLEMENTED
+    m_currentInputType = type;
+    m_delegate->inputMethodStateChanged(static_cast<bool>(type));
 }
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
@@ -503,9 +549,20 @@ void RenderWidgetHostViewQt::SetTooltipText(const string16&)
     // QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&)
+void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params &params)
 {
-    QT_NOT_YET_IMPLEMENTED
+    if (selection_range_.IsValid()) {
+        if (params.is_anchor_first) {
+            m_anchorPositionWithinSelection = selection_range_.GetMin() - selection_text_offset_;
+            m_cursorPositionWithinSelection = selection_range_.GetMax() - selection_text_offset_;
+        } else {
+            m_anchorPositionWithinSelection = selection_range_.GetMax() - selection_text_offset_;
+            m_cursorPositionWithinSelection = selection_range_.GetMin() - selection_text_offset_;
+        }
+    }
+
+    gfx::Rect caretRect = gfx::UnionRects(params.anchor_rect, params.focus_rect);
+    m_cursorRect = QRect(caretRect.x(), caretRect.y(), caretRect.width(), caretRect.height());
 }
 
 void RenderWidgetHostViewQt::ScrollOffsetChanged()
@@ -695,6 +752,32 @@ void RenderWidgetHostViewQt::RemoveExpiredMappings(QTouchEvent *ev)
 bool RenderWidgetHostViewQt::IsPopup() const
 {
     return popup_type_ != WebKit::WebPopupTypeNone;
+}
+
+QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    switch (query) {
+    case Qt::ImEnabled:
+        return QVariant(m_currentInputType != ui::TEXT_INPUT_TYPE_NONE);
+    case Qt::ImCursorRectangle:
+        return m_cursorRect;
+    case Qt::ImFont:
+        return QVariant();
+    case Qt::ImCursorPosition:
+        return static_cast<uint>(m_cursorPositionWithinSelection);
+    case Qt::ImAnchorPosition:
+        return static_cast<uint>(m_anchorPositionWithinSelection);
+    case Qt::ImSurroundingText:
+        return toQt(selection_text_);
+    case Qt::ImCurrentSelection:
+        return toQt(GetSelectedText());
+    case Qt::ImMaximumTextLength:
+        return QVariant(); // No limit.
+    case Qt::ImHints:
+        return int(toQtInputMethodHints(m_currentInputType));
+    default:
+        return QVariant();
+    }
 }
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
