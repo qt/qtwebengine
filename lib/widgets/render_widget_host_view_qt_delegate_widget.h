@@ -70,12 +70,14 @@ public:
     virtual void update(const QRect& rect = QRect());
     virtual void updateCursor(const QCursor &);
     virtual void resize(int width, int height);
+    virtual void inputMethodStateChanged(bool editorVisible);
 
 protected:
     void paintEvent(QPaintEvent * event);
     bool event(QEvent *event);
     void resizeEvent(QResizeEvent *resizeEvent);
 
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 };
 
 #endif
