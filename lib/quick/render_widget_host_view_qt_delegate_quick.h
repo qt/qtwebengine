@@ -46,8 +46,10 @@
 
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
+#include <QGuiApplication>
 #include <QQuickPaintedItem>
 #include <QQuickWindow>
+#include <QVariant>
 #include <QWindow>
 
 template<typename ItemBaseT>
@@ -167,6 +169,21 @@ public:
     void hoverMoveEvent(QHoverEvent *event)
     {
         forwardEvent(event);
+    }
+
+    void inputMethodStateChanged(bool editorVisible)
+    {
+        if (qApp->inputMethod()->isVisible() == editorVisible)
+            return;
+
+        this->setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
+        qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
+        qApp->inputMethod()->setVisible(editorVisible);
+    }
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const
+    {
+        return forwardInputMethodQuery(query);
     }
 
 protected:
