@@ -46,6 +46,14 @@ import sys
 
 extra_os = []
 
+def subprocessCall(args):
+    print args
+    return subprocess.call(args)
+
+def subprocessCheckOutput(args):
+    print args
+    return subprocess.check_output(args)
+
 class DEPSParser:
     def __init__(self):
         self.global_scope = {
@@ -127,13 +135,13 @@ class Submodule:
     def findSha(self):
         if self.shasum != '':
             return
-        line = subprocess.check_output(['git', 'submodule', 'status', self.path])
+        line = subprocessCheckOutput(['git', 'submodule', 'status', self.path])
         line = line.lstrip(' -')
         self.shasum = line.split(' ')[0]
 
     def findGitDir(self):
         try:
-            return subprocess.check_output(['git', 'rev-parse', '--git-dir']).strip()
+            return subprocessCheckOutput(['git', 'rev-parse', '--git-dir']).strip()
         except subprocess.CalledProcessError, e:
             sys.exit("git dir could not be determined! - Initialization failed!" + e.output)
 
@@ -144,14 +152,14 @@ class Submodule:
         if os.path.isdir(os.path.join(gitdir, 'rebase-merge')):
             if os.path.isfile(os.path.join(gitdir, 'MERGE_HEAD')):
                 print 'merge in progress... aborting merge.'
-                subprocess.call(['git', 'merge', '--abort'])
+                subprocessCall(['git', 'merge', '--abort'])
             else:
                 print 'rebase in progress... aborting merge.'
-                subprocess.call(['git', 'rebase', '--abort'])
+                subprocessCall(['git', 'rebase', '--abort'])
         if os.path.isdir(os.path.join(gitdir, 'rebase-apply')):
             print 'am in progress... aborting am.'
-            subprocess.call(['git', 'am', '--abort'])
-        subprocess.call(['git', 'reset', '--hard'])
+            subprocessCall(['git', 'am', '--abort'])
+        subprocessCall(['git', 'reset', '--hard'])
         os.chdir(currentDir)
 
     def initialize(self):
@@ -160,21 +168,21 @@ class Submodule:
             if os.path.isdir(self.path):
                 self.reset()
             if self.deps:
-                subprocess.call(['git', 'submodule', 'add', self.url, self.path])
-            subprocess.call(['git', 'submodule', 'init', self.path])
-            subprocess.call(['git', 'submodule', 'update', self.path])
+                subprocessCall(['git', 'submodule', 'add', '-f', self.url, self.path])
+            subprocessCall(['git', 'submodule', 'init', self.path])
+            subprocessCall(['git', 'submodule', 'update', self.path])
             self.findSha()
             currentDir = os.getcwd()
             os.chdir(self.path)
             # Make sure we have checked out the right shasum.
             # In case there were other patches applied before.
             if self.ref:
-                val = subprocess.call(['git', 'fetch', 'origin', self.ref]);
+                val = subprocessCall(['git', 'fetch', 'origin', self.ref]);
                 if val != 0:
                     sys.exit("Could not fetch branch from upstream.")
-                subprocess.call(['git', 'checkout', 'FETCH_HEAD']);
+                subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
             else:
-                val = subprocess.call(['git', 'checkout', self.shasum])
+                val = subprocessCall(['git', 'checkout', self.shasum])
                 if val != 0:
                     sys.exit("!!! initialization failed !!!")
             self.initSubmodules()
@@ -186,7 +194,7 @@ class Submodule:
         if self.matchesOS():
             currentDir = os.getcwd()
             os.chdir(self.path)
-            files = subprocess.check_output(['git', 'ls-files']).splitlines()
+            files = subprocessCheckOutput(['git', 'ls-files']).splitlines()
             os.chdir(currentDir)
             return files
         else:
