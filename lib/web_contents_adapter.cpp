@@ -242,6 +242,11 @@ void WebContentsAdapter::load(const QUrl &url)
 {
     Q_D(WebContentsAdapter);
     content::NavigationController::LoadURLParams params(toGurl(url));
+    // Discard initial about:blank
+    if (!d->webContents->GetController().GetEntryCount()
+            && LowerCaseEqualsASCII(d->webContents->GetVisibleURL().spec(), content::kAboutBlankURL))
+        params.should_clear_history_list = true;
+
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->GetView()->Focus();

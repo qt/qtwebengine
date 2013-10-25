@@ -63,6 +63,7 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
             oldView->d_func()->page = 0;
         }
         page->d_func()->view = view;
+        page->d_func()->reparentRenderWidgetHostViewDelegate();
     }
 
     if (view) {

@@ -47,6 +47,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , adapter(new WebContentsAdapter(SoftwareRenderingMode))
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
     , view(0)
+    , rwhvDelegate(0)
     , m_isLoading(false)
 {
     adapter->initialize(this);
@@ -193,6 +194,11 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(*new QWebEnginePagePrivate, parent)
 {
+    Q_D(const QWebEnginePage);
+    // This is used to preserve QWebPage's behavior from QtWebKit (mostly for tests)
+    // Upon page creation, we load "about:blank" in order to be able to do things such as running
+    // JavaScript on the render process side on a freshly create QWebEnginePage
+    load(QUrl::fromEncoded(QByteArrayLiteral("about:blank")));
 }
 
 QWebEnginePage::~QWebEnginePage()
@@ -331,6 +337,20 @@ bool QWebEnginePagePrivate::javascriptDialog(JavascriptDialogType type, const QS
     }
     Q_UNREACHABLE();
     return false;
+}
+
+void QWebEnginePagePrivate::registerRenderWidgetHostViewDelegate(QObject *rwhvQtDelegateWidget)
+{
+    Q_ASSERT(rwhvQtDelegateWidget);
+    rwhvDelegate = rwhvQtDelegateWidget;
+    reparentRenderWidgetHostViewDelegate();
+}
+
+void QWebEnginePagePrivate::reparentRenderWidgetHostViewDelegate()
+{
+    // in case we ever need to revive QGraphicsWebView
+    if (QWidget *widget = qobject_cast<QWidget*>(rwhvDelegate))
+        widget->setParent(view);
 }
 
 QMenu *QWebEnginePage::createStandardContextMenu()
