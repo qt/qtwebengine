@@ -78,6 +78,8 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE;
 
+    void registerRenderWidgetHostViewDelegate(QObject *);
+    void reparentRenderWidgetHostViewDelegate();
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
@@ -85,6 +87,7 @@ public:
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineView *view;
+    QObject *rwhvDelegate;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
     WebEngineContextMenuData m_menuData;
