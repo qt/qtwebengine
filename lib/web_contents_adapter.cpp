@@ -148,6 +148,8 @@ static void callbackOnEvaluateJS(JSCallbackBase *callback, const base::Value *re
 class WebContentsAdapterPrivate {
 public:
     WebContentsAdapterPrivate();
+    void loadAboutBlankIfNeeded();
+
     scoped_refptr<WebEngineContext> engineContext;
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
@@ -158,6 +160,12 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
 {
+}
+
+void WebContentsAdapterPrivate::loadAboutBlankIfNeeded()
+{
+    if (!webContents->GetController().GetLastCommittedEntry())
+        webContents->GetController().LoadURL(GURL(content::kAboutBlankURL), content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
 }
 
 WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
@@ -335,6 +343,7 @@ void WebContentsAdapter::enableInspector(bool enable)
 void WebContentsAdapter::evaluateJavaScript(const QString &javaScript, JSCallbackBase *func, const QString &xPath)
 {
     Q_D(WebContentsAdapter);
+    d->loadAboutBlankIfNeeded();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!func)
