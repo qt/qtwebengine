@@ -148,6 +148,7 @@ static void callbackOnEvaluateJS(JSCallbackBase *callback, const base::Value *re
 class WebContentsAdapterPrivate {
 public:
     WebContentsAdapterPrivate();
+
     scoped_refptr<WebEngineContext> engineContext;
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
@@ -185,7 +186,6 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
         create_params.context = reinterpret_cast<gfx::NativeView>(adapterClient);
         d->webContents.reset(content::WebContents::Create(create_params));
     }
-
     content::RendererPreferences* rendererPrefs = d->webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
@@ -242,6 +242,11 @@ void WebContentsAdapter::load(const QUrl &url)
 {
     Q_D(WebContentsAdapter);
     content::NavigationController::LoadURLParams params(toGurl(url));
+    // Discard initial about:blank
+    if (!d->webContents->GetController().GetEntryCount()
+            && LowerCaseEqualsASCII(d->webContents->GetVisibleURL().spec(), content::kAboutBlankURL))
+        params.should_clear_history_list = true;
+
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->GetView()->Focus();
