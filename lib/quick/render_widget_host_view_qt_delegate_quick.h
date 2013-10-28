@@ -69,6 +69,15 @@ public:
         this->setParentItem(viewPrivate->q_func());
     }
 
+    virtual void initAsPopup(const QRect& rect)
+    {
+        this->setX(rect.x());
+        this->setY(rect.y());
+        this->setWidth(rect.width());
+        this->setHeight(rect.height());
+        this->setVisible(true);
+    }
+
     virtual QRectF screenRect() const
     {
         QPointF pos = this->mapToScene(QPointF(0,0));

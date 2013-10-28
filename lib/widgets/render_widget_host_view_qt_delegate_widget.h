@@ -59,6 +59,7 @@ public:
     RenderWidgetHostViewQtDelegateWidget(WebContentsAdapterClient::CompositingMode mode, QWidget *parent = 0);
 
     virtual void initAsChild(WebContentsAdapterClient* container);
+    virtual void initAsPopup(const QRect&);
     virtual QRectF screenRect() const;
     virtual void setKeyboardFocus();
     virtual bool hasKeyboardFocus();
