@@ -52,6 +52,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "type_conversion.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
@@ -196,8 +197,10 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
     m_delegate->initAsChild(m_adapterClient);
 }
 
-void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
+void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView* parent, const gfx::Rect& rect)
 {
+    QRect qrect = toQt(rect);
+    m_delegate->initAsPopup(qrect);
 }
 
 void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
