@@ -82,6 +82,14 @@ void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient*
         pagePrivate->view->layout()->addWidget(this);
 }
 
+void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& rect)
+{
+    QPoint pos = QWidget::mapToGlobal(rect.topLeft());
+    QRect qrect = QRect(pos, rect.size());
+    setGeometry(qrect);
+    show();
+}
+
 QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
 {
     return QRectF(x(), y(), width(), height());

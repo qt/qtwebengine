@@ -43,6 +43,7 @@
 
 #include "backing_store_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "type_conversion.h"
 #include "web_event_factory.h"
 
 #include "shared/shared_globals.h"
@@ -196,8 +197,9 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
     m_delegate->initAsChild(m_adapterClient);
 }
 
-void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&)
+void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect)
 {
+    m_delegate->initAsPopup(toQt(rect));
 }
 
 void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
