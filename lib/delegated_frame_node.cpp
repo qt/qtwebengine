@@ -52,8 +52,11 @@
 #define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
 #endif
 
+#include "chromium_gpu_helper.h"
 #include "type_conversion.h"
 
+#include "base/message_loop/message_loop.h"
+#include "base/bind.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -66,6 +69,7 @@
 #include <QtQuick/private/qquickwindow_p.h>
 #include <QtQuick/private/qsgcontext_p.h>
 #include <QtQuick/private/qsgrenderer_p.h>
+#include <QtQuick/private/qsgtexture_p.h>
 
 class RenderPassTexture : public QSGTexture
 {
@@ -100,14 +104,41 @@ private:
     QSGRenderContext *m_context;
 };
 
-class RawTextureNode : public QSGSimpleTextureNode {
+class MailboxTexture : public QSGTexture {
 public:
-    RawTextureNode(GLuint textureId, const QSize &textureSize, bool hasAlpha, QQuickWindow *window);
+    MailboxTexture(const cc::TransferableResource *resource, bool hasAlpha);
+    virtual int textureId() const { return m_textureId; }
+    void setTextureSize(const QSize& size) { m_textureSize = size; }
+    virtual QSize textureSize() const { return m_textureSize; }
+    virtual bool hasAlphaChannel() const { return m_hasAlpha; }
+    virtual bool hasMipmaps() const { return false; }
+    virtual void bind();
+
+    bool needsToFetch() const { return m_resource; }
+    const cc::TransferableResource *resource() const { return m_resource; }
+    void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
 
 private:
-    QScopedPointer<QSGTexture> m_texture;
+    // This is just a pointer to the cc::DelegatedFrameData. It has to be held until DelegatedFrameNode::preprocess is done.
+    const cc::TransferableResource *m_resource;
+    int m_textureId;
+    QSize m_textureSize;
+    bool m_hasAlpha;
 };
 
+static const cc::TransferableResource *findResource(const cc::TransferableResourceArray &array, unsigned id)
+{
+    // A 0 ID means that there is no resource.
+    if (!id)
+        return 0;
+
+    for (unsigned i = 0; i < array.size(); ++i) {
+        const cc::TransferableResource &res = array.at(i);
+        if (res.id == id)
+            return &res;
+    }
+    return 0;
+}
 
 static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::RenderPass::Id &id, const QList<QSharedPointer<RenderPassTexture> > &list)
 {
@@ -182,7 +213,6 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
-
 RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id, QSGRenderContext *context)
     : QSGTexture()
     , m_id(id)
@@ -235,55 +265,79 @@ void RenderPassTexture::grab()
     m_context->renderNextFrame(m_renderer.data(), m_fbo->handle());
 }
 
-RawTextureNode::RawTextureNode(GLuint textureId, const QSize &textureSize, bool hasAlpha, QQuickWindow *window)
-    : m_texture(window->createTextureFromId(textureId, textureSize, QQuickWindow::CreateTextureOption(hasAlpha ? QQuickWindow::TextureHasAlphaChannel : 0)))
+MailboxTexture::MailboxTexture(const cc::TransferableResource *resource, bool hasAlpha)
+    : m_resource(resource)
+    , m_textureId(0)
+    , m_textureSize(toQt(resource->size))
+    , m_hasAlpha(hasAlpha)
 {
-    setTexture(m_texture.data());
+}
+
+void MailboxTexture::bind()
+{
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+}
+
+void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
+{
+    Q_ASSERT(m_resource);
+    gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, GL_TEXTURE_2D, *reinterpret_cast<const gpu::gles2::MailboxName*>(m_resource->mailbox.name));
+
+    // The texture might already have been deleted.
+    // FIXME: We might be able to avoid this check with better synchronization.
+    if (tex)
+        m_textureId = service_id(tex);
+
+    // We do not need to fetch this texture again.
+    m_resource = 0;
 }
 
 DelegatedFrameNode::DelegatedFrameNode(QQuickWindow *window)
     : m_window(window)
-    , m_testTexturesSize(sizeof(m_testTextures) / sizeof(GLuint))
+    , m_numPendingSyncPoints(0)
 {
     setFlag(UsePreprocess);
-
-    // Generate plain color textures to be used until we can use the real textures from the ResourceProvider.
-    glGenTextures(m_testTexturesSize, m_testTextures);
-    for (unsigned i = 0; i < m_testTexturesSize; ++i) {
-        QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
-        image.fill(static_cast<Qt::GlobalColor>(i + Qt::red));
-
-        // Swizzle
-        const int width = image.width();
-        const int height = image.height();
-        for (int j = 0; j < height; ++j) {
-            uint *p = (uint *) image.scanLine(j);
-            for (int x = 0; x < width; ++x)
-                p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
-        }
-
-        glBindTexture(GL_TEXTURE_2D, m_testTextures[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width(), image.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.constBits() );
-    }
 }
 
 DelegatedFrameNode::~DelegatedFrameNode()
 {
-    glDeleteTextures(m_testTexturesSize, m_testTextures);
 }
 
 void DelegatedFrameNode::preprocess()
 {
-    // Render any intermediate RenderPass in order.
-    Q_FOREACH (const QSharedPointer<RenderPassTexture> &texture, m_renderPassTextures)
-        texture->grab();
+    // With the threaded render loop the GUI thread has been unlocked at this point.
+    // We can now wait for the Chromium GPU thread to produce textures that will be
+    // rendered on our quads and fetch the IDs from the mailboxes we were given.
+    QList<MailboxTexture *> mailboxesToFetch;
+    Q_FOREACH (const QSharedPointer<MailboxTexture> &mailboxTexture, m_mailboxTextures.values())
+        if (mailboxTexture->needsToFetch())
+            mailboxesToFetch.append(mailboxTexture.data());
+
+    if (!mailboxesToFetch.isEmpty()) {
+        QMutexLocker lock(&m_mutex);
+        base::MessageLoop *gpuMessageLoop = gpu_message_loop();
+        content::SyncPointManager *syncPointManager = sync_point_manager();
+
+        Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
+            m_numPendingSyncPoints++;
+            AddSyncPointCallbackOnGpuThread(gpuMessageLoop, syncPointManager, mailboxTexture->resource()->sync_point, base::Bind(&DelegatedFrameNode::syncPointRetired, this, &mailboxesToFetch));
+        }
+
+        m_mailboxesFetchedWaitCond.wait(&m_mutex);
+    }
+
+    // Then render any intermediate RenderPass in order.
+    Q_FOREACH (const QSharedPointer<RenderPassTexture> &renderPass, m_renderPassTextures)
+        renderPass->grab();
 }
 
 void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData)
 {
-    // Keep the old list around to find the ones we can re-use.
+    // Keep the old texture lists around to find the ones we can re-use.
     QList<QSharedPointer<RenderPassTexture> > oldRenderPassTextures;
     m_renderPassTextures.swap(oldRenderPassTextures);
+    QMap<int, QSharedPointer<MailboxTexture> > oldMailboxTextures;
+    m_mailboxTextures.swap(oldMailboxTextures);
 
     // The RenderPasses list is actually a tree where a parent RenderPass is connected
     // to its dependencies through a RenderPass::Id reference in one or more RenderPassQuads.
@@ -330,37 +384,97 @@ void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData)
                 currentLayerChain = buildLayerChain(renderPassChain, currentLayerState);
             }
 
-            QSGSimpleTextureNode *textureNode = 0;
             switch (quad->material) {
             case cc::DrawQuad::RENDER_PASS: {
                 const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
                 QSGTexture *texture = findRenderPassTexture(renderPassQuad->render_pass_id, m_renderPassTextures).data();
                 if (texture) {
-                    textureNode = new QSGSimpleTextureNode;
+                    QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
+                    textureNode->setRect(toQt(quad->rect));
                     textureNode->setTexture(texture);
+                    currentLayerChain->appendChildNode(textureNode);
                 } else {
                     qWarning("Unknown RenderPass layer: Id %d", renderPassQuad->render_pass_id.layer_id);
-                    textureNode = new RawTextureNode(0, QSize(1, 1), false, m_window);
+                    continue;
                 }
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
-                uint32 resourceId = cc::TextureDrawQuad::MaterialCast(quad)->resource_id;
-                textureNode = new RawTextureNode(m_testTextures[resourceId % m_testTexturesSize], QSize(1, 1), false, m_window);
+                const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
+                const cc::TransferableResource *res = findResource(frameData->resource_list, tquad->resource_id);
+
+                // See if we already have a texture for this resource ID. The ID changes when the contents is updated,
+                // even if the GL texture ID is the same as a previous resource.
+                // Reusing a texture only saves us the sync point waiting and mailbox fetching.
+                QSharedPointer<MailboxTexture> &texture = m_mailboxTextures[res->id] = oldMailboxTextures.value(res->id);
+                if (!texture) {
+                    texture = QSharedPointer<MailboxTexture>(new MailboxTexture(res, quad->ShouldDrawWithBlending()));
+                    // TransferableResource::size isn't always set properly for TextureDrawQuads, use the size of its DrawQuad::rect instead.
+                    texture->setTextureSize(toQt(quad->rect.size()));
+                }
+
+                QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
+                textureNode->setTextureCoordinatesTransform(tquad->flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
+                textureNode->setRect(toQt(quad->rect));
+                textureNode->setFiltering(res->filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
+                textureNode->setTexture(texture.data());
+                currentLayerChain->appendChildNode(textureNode);
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
-                uint32 resourceId = cc::TileDrawQuad::MaterialCast(quad)->resource_id;
-                textureNode = new RawTextureNode(m_testTextures[resourceId % m_testTexturesSize], QSize(1, 1), false, m_window);
+                const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
+                const cc::TransferableResource *res = findResource(frameData->resource_list, tquad->resource_id);
+
+                QSharedPointer<MailboxTexture> &texture = m_mailboxTextures[res->id] = oldMailboxTextures.value(res->id);
+                if (!texture)
+                    texture = QSharedPointer<MailboxTexture>(new MailboxTexture(res, quad->ShouldDrawWithBlending()));
+
+                QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
+                textureNode->setRect(toQt(quad->rect));
+                textureNode->setFiltering(res->filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
+                textureNode->setTexture(texture.data());
+
+                // FIXME: Find out if we can implement a QSGSimpleTextureNode::setSourceRect instead of this hack.
+                // This has to be done at the end since many QSGSimpleTextureNode methods would overwrite this.
+                QSGGeometry::updateTexturedRectGeometry(textureNode->geometry(), textureNode->rect(), textureNode->texture()->convertToNormalizedSourceRect(toQt(tquad->tex_coord_rect)));
+                currentLayerChain->appendChildNode(textureNode);
+
                 break;
             } default:
                 qWarning("Unimplemented quad material: %d", quad->material);
-                textureNode = new RawTextureNode(0, QSize(1, 1), false, m_window);
+                continue;
             }
-
-            textureNode->setRect(toQt(quad->rect));
-            textureNode->setFiltering(QSGTexture::Linear);
-            currentLayerChain->appendChildNode(textureNode);
         }
     }
+}
+
+void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)
+{
+    // Fetch texture IDs from the mailboxes while we're on the GPU thread, where the MailboxManager lives.
+    gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
+    Q_FOREACH (MailboxTexture *mailboxTexture, *mailboxesToFetch)
+        mailboxTexture->fetchTexture(mailboxManager);
+
+    // glFlush before yielding to the SG thread, whose context might already start using
+    // some shared resources provided by the unflushed context here, on the Chromium GPU thread.
+    glFlush();
+
+    // Chromium provided everything we were waiting for, let Qt start rendering.
+    QMutexLocker lock(&frameNode->m_mutex);
+    frameNode->m_mailboxesFetchedWaitCond.wakeOne();
+}
+
+void DelegatedFrameNode::syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)
+{
+    // The way that sync points are normally used by the GpuCommandBufferStub is that it asks
+    // the GpuScheduler to resume the work of the associated GL command stream / context once
+    // the sync point has been retired by the dependency's context. In other words, a produced
+    // texture means that the mailbox can be consumed, but the texture itself isn't expected
+    // to be ready until to control is given back to the GpuScheduler through the event loop.
+    // Do the same for our implementation by posting a message to the event loop once the last
+    // of our syncpoints has been retired (the syncpoint callback is called synchronously) and
+    // only at this point we wake the Qt rendering thread.
+    QMutexLocker lock(&frameNode->m_mutex);
+    if (!--frameNode->m_numPendingSyncPoints)
+        base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fetchTexturesAndUnlockQt, frameNode, mailboxesToFetch));
 }
 
 #endif // QT_VERSION

@@ -99,7 +99,6 @@ public:
 
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
-    void releaseAndAckDelegatedFrame();
     BackingStoreQt* GetBackingStore();
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size);
@@ -168,6 +167,7 @@ public:
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     virtual void paint(QPainter *, const QRectF& boundingRect) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) Q_DECL_OVERRIDE;
+    virtual void sendDelegatedFrameAck() Q_DECL_OVERRIDE;
     virtual void fetchBackingStore() Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
@@ -196,7 +196,6 @@ public:
 
 private:
     void Paint(const gfx::Rect& damage_rect);
-    void SwapDelegatedFrame(uint32 output_surface_id, scoped_ptr<cc::DelegatedFrameData> frame_data, float frame_device_scale_factor, const ui::LatencyInfo& latency_info);
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
     int GetMappedTouch(int qtTouchId);
     void RemoveExpiredMappings(QTouchEvent *ev);
@@ -211,7 +210,8 @@ private:
 
     BackingStoreQt *m_backingStore;
     uint32 m_pendingOutputSurfaceId;
-    scoped_ptr<cc::DelegatedFrameData> m_pendingFrameData;
+    scoped_ptr<cc::DelegatedFrameData> m_pendingUpdateFrameData;
+    scoped_ptr<cc::DelegatedFrameData> m_pendingAckFrameData;
 
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
