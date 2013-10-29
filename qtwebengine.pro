@@ -1,5 +1,3 @@
-load(qt_parts)
-
 TEMPLATE = subdirs
 
 # The first three subdirs contain dummy .pro files that are used by qmake
@@ -55,3 +53,6 @@ debug.depends: qmake
 
 QMAKE_EXTRA_TARGETS += release \
                        debug
+
+# Move this to the beginning of the project file as soon as we moved to the src layout
+load(qt_parts)
