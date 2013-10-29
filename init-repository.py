@@ -120,6 +120,10 @@ def initUpstreamSubmodules():
     chromium_url = 'https://chromium.googlesource.com/chromium/src.git'
     ninja_shasum = '40b51a0b986b8675e15b0cd1b10c272bf51fdb84'
     chromium_shasum = '29d2d710e0e7961dff032ad4ab73887cc33122bb'
+    # Do not define a branch for now.
+    # We will turn this on, once we actually switch to using the release branch.
+    #chromium_ref = 'refs/branch-heads/1599'
+    chromium_ref = ''
     os.chdir(qtwebengine_src)
 
     current_submodules = subprocess.check_output(['git', 'submodule'])
@@ -139,6 +143,7 @@ def initUpstreamSubmodules():
         chromiumSubmodule = GitSubmodule.Submodule()
         chromiumSubmodule.path = '3rdparty_upstream/chromium'
         chromiumSubmodule.shasum = chromium_shasum
+        chromiumSubmodule.ref = chromium_ref
         chromiumSubmodule.url = chromium_url
         chromiumSubmodule.os = 'all'
         if args.android:
