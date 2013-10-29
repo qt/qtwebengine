@@ -1,0 +1,84 @@
+From e40d3482d46ff88755aa2bd76048de698ae03915 Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Fri, 20 Sep 2013 15:00:47 +0200
+Subject: [PATCH] Add accessors for the Qt delegated renderer integration.
+
+This is needed to fetch the MessageLoop, the MailboxManager and the
+SyncPointManager of the GPU in-process host.
+---
+ content/common/gpu/gpu_channel_manager.h | 2 ++
+ content/gpu/gpu_child_thread.cc          | 6 ++++++
+ content/gpu/gpu_child_thread.h           | 6 ++++++
+ 3 files changed, 14 insertions(+)
+
+diff --git a/content/common/gpu/gpu_channel_manager.h b/content/common/gpu/gpu_channel_manager.h
+index f01a1c5..e41a548 100644
+--- a/content/common/gpu/gpu_channel_manager.h
++++ b/content/common/gpu/gpu_channel_manager.h
+@@ -89,6 +89,8 @@ class GpuChannelManager : public IPC::Listener,
+ 
+   gpu::gles2::ProgramCache* program_cache();
+ 
++  gpu::gles2::MailboxManager* mailbox_manager() { return mailbox_manager_.get(); }
++
+   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
+ 
+   GpuChannel* LookupChannel(int32 client_id);
+diff --git a/content/gpu/gpu_child_thread.cc b/content/gpu/gpu_child_thread.cc
+index 170b364..a84a9e0 100644
+--- a/content/gpu/gpu_child_thread.cc
++++ b/content/gpu/gpu_child_thread.cc
+@@ -40,6 +40,8 @@ bool GpuProcessLogMessageHandler(int severity,
+ 
+ }  // namespace
+ 
++GpuChildThread* GpuChildThread::instance_ = 0;
++
+ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
+                                bool dead_on_arrival,
+                                const gpu::GPUInfo& gpu_info,
+@@ -53,6 +55,8 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
+   target_services_ = NULL;
+ #endif
+   g_thread_safe_sender.Get() = thread_safe_sender();
++
++  instance_ = this;
+ }
+ 
+ GpuChildThread::GpuChildThread(const std::string& channel_id)
+@@ -71,6 +75,8 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
+     VLOG(1) << "gfx::GLSurface::InitializeOneOff()";
+   }
+   g_thread_safe_sender.Get() = thread_safe_sender();
++
++  instance_ = this;
+ }
+ 
+ GpuChildThread::~GpuChildThread() {
+diff --git a/content/gpu/gpu_child_thread.h b/content/gpu/gpu_child_thread.h
+index ff0c925..82bb32a 100644
+--- a/content/gpu/gpu_child_thread.h
++++ b/content/gpu/gpu_child_thread.h
+@@ -56,6 +56,10 @@ class GpuChildThread : public ChildThread {
+   virtual bool Send(IPC::Message* msg) OVERRIDE;
+   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
+ 
++  GpuChannelManager* ChannelManager() const { return gpu_channel_manager_.get(); }
++
++  static GpuChildThread* instance() { return instance_; }
++
+  private:
+   // Message handlers.
+   void OnInitialize();
+@@ -94,6 +98,8 @@ class GpuChildThread : public ChildThread {
+   // Whether the GPU thread is running in the browser process.
+   bool in_browser_process_;
+ 
++  static GpuChildThread* instance_;
++
+   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
+ };
+ 
+-- 
+1.8.4.2
+

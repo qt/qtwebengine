@@ -69,6 +69,8 @@ git am $PATCH_DIR/0001-Solve-conflicts-when-including-both-QtOpenGL-headers.patc
 git am $PATCH_DIR/0001-Do-not-forward-declare-UIResourceRequest-Identity-an.patch
 git am $PATCH_DIR/0001-Fix-the-build-with-a-GL-ES2-configured-Qt.patch
 git am $PATCH_DIR/0001-Hide-the-definition-of-MessagePumpGtk-GetDefaultXDis.patch
+git am $PATCH_DIR/0001-Add-accessors-for-the-Qt-delegated-renderer-integrat.patch
+git am $PATCH_DIR/0001-Add-seams-to-setup-GL-contexts-sharing-with-QtQuick.patch
 
 cd $CHROMIUM_SRC_DIR/third_party/WebKit
 echo "Entering $PWD"
