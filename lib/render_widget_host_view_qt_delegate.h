@@ -64,6 +64,7 @@ public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
     virtual void paint(QPainter *, const QRectF& boundingRect) = 0;
     virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) = 0;
+    virtual void sendDelegatedFrameAck() = 0;
     virtual void fetchBackingStore() = 0;
     virtual void notifyResize() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
