@@ -39,48 +39,38 @@
 **
 ****************************************************************************/
 
-#ifndef DELEGATED_FRAME_NODE_H
-#define DELEGATED_FRAME_NODE_H
+#ifndef CHROMIUM_GPU_HELPER_H
+#define CHROMIUM_GPU_HELPER_H
 
-#include <QMutex>
-#include <QSGNode>
-#include <QSharedPointer>
-#include <QWaitCondition>
+#include "base/callback.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-
-QT_BEGIN_NAMESPACE
-class QQuickWindow;
-QT_END_NAMESPACE
-
-namespace cc {
-class DelegatedFrameData;
+namespace base {
+class MessageLoop;
 }
 
-class MailboxTexture;
-class RenderPassTexture;
+namespace content {
+class SyncPointManager;
+}
 
-class DelegatedFrameNode : public QSGNode {
-public:
-    DelegatedFrameNode(QQuickWindow *window);
-    ~DelegatedFrameNode();
-    void preprocess();
-    void commit(cc::DelegatedFrameData *frameData);
+namespace gpu {
+namespace gles2 {
+class MailboxManager;
+class MailboxName;
+class Texture;
+}
+}
 
-private:
-    QQuickWindow *m_window;
-    QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
-    QMap<int, QSharedPointer<MailboxTexture> > m_mailboxTextures;
-    int m_numPendingSyncPoints;
-    QWaitCondition m_mailboxesFetchedWaitCond;
-    QMutex m_mutex;
+// These functions wrap code that needs to include headers that are
+// incompatible with Qt GL headers.
+// From the outside, types from incompatible headers referenced in these
+// functions should only be forward-declared and considered as opaque types.
 
-    // Making those callbacks static bypasses base::Bind's ref-counting requirement
-    // of the this pointer when the callback is a method.
-    static void fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
-    static void syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
-};
+base::MessageLoop *gpu_message_loop();
+content::SyncPointManager *sync_point_manager();
+gpu::gles2::MailboxManager *mailbox_manager();
 
-#endif // QT_VERSION
+void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback);
+gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::gles2::MailboxName& name);
+unsigned int service_id(gpu::gles2::Texture *tex);
 
-#endif // DELEGATED_FRAME_NODE_H
+#endif // CHROMIUM_GPU_HELPER_H

@@ -50,12 +50,17 @@
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gl/gl_context.h"
+#include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_share_group.h"
 
 #include "browser_context_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
 #include "web_contents_view_qt.h"
 
-#include <QCoreApplication>
+#include <QGuiApplication>
+#include <QtQuick/private/qsgcontext_p.h>
+#include <qpa/qplatformnativeinterface.h>
 
 namespace {
 
@@ -202,6 +207,57 @@ private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
 };
 
+class QtShareGLContext : public gfx::GLContext {
+public:
+    QtShareGLContext(QOpenGLContext *qtContext)
+        : gfx::GLContext(0)
+        , m_handle(0)
+    {
+        QString platform = qApp->platformName();
+        QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
+        if (platform == QStringLiteral("xcb")) {
+            if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+                m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
+            else
+                m_handle = pni->nativeResourceForContext(QByteArrayLiteral("glxcontext"), qtContext);
+        } else if (platform == QStringLiteral("Cocoa"))
+            m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
+        else
+            // Add missing platforms once they work.
+            Q_UNREACHABLE();
+    }
+
+    virtual void* GetHandle() { return m_handle; }
+
+    // We don't care about the rest, this context shouldn't be used except for its handle.
+    virtual bool Initialize(gfx::GLSurface *, gfx::GpuPreference) { Q_UNREACHABLE(); return false; }
+    virtual void Destroy() { Q_UNREACHABLE(); }
+    virtual bool MakeCurrent(gfx::GLSurface *) { Q_UNREACHABLE(); return false; }
+    virtual void ReleaseCurrent(gfx::GLSurface *) { Q_UNREACHABLE(); }
+    virtual bool IsCurrent(gfx::GLSurface *) { Q_UNREACHABLE(); return false; }
+    virtual void SetSwapInterval(int) { Q_UNREACHABLE(); }
+
+private:
+    void *m_handle;
+};
+
+class ShareGroupQtQuick : public gfx::GLShareGroup {
+public:
+    virtual gfx::GLContext* GetContext() Q_DECL_OVERRIDE { return m_shareContextQtQuick.get(); }
+    virtual void AboutToAddFirstContext() Q_DECL_OVERRIDE;
+
+private:
+    scoped_refptr<QtShareGLContext> m_shareContextQtQuick;
+};
+
+void ShareGroupQtQuick::AboutToAddFirstContext()
+{
+    // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
+    QOpenGLContext *shareContext = QSGContext::sharedOpenGLContext();
+    Q_ASSERT(shareContext);
+    m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
+}
+
 content::WebContentsViewPort* ContentBrowserClientQt::OverrideCreateWebContentsView(content::WebContents* web_contents,
                                                                                     content::RenderViewHostDelegateView** render_view_host_delegate_view)
 {
@@ -239,6 +295,12 @@ void ContentBrowserClientQt::RenderProcessHostCreated(content::RenderProcessHost
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), chrome::kFileScheme);
 }
 
+gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
+{
+    if (!m_shareGroupQtQuick)
+        m_shareGroupQtQuick = new ShareGroupQtQuick;
+    return m_shareGroupQtQuick.get();
+}
 
 BrowserContextQt* ContentBrowserClientQt::browser_context() {
     Q_ASSERT(m_browserMainParts);

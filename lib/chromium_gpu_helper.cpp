@@ -39,48 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef DELEGATED_FRAME_NODE_H
-#define DELEGATED_FRAME_NODE_H
+#include "chromium_gpu_helper.h"
 
-#include <QMutex>
-#include <QSGNode>
-#include <QSharedPointer>
-#include <QWaitCondition>
+#include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/sync_point_manager.h"
+#include "content/gpu/gpu_child_thread.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-
-QT_BEGIN_NAMESPACE
-class QQuickWindow;
-QT_END_NAMESPACE
-
-namespace cc {
-class DelegatedFrameData;
+static void addSyncPointCallbackDelegate(content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
+{
+    syncPointManager->AddSyncPointCallback(sync_point, callback);
 }
 
-class MailboxTexture;
-class RenderPassTexture;
+base::MessageLoop *gpu_message_loop()
+{
+    return content::GpuChildThread::instance()->message_loop();
+}
 
-class DelegatedFrameNode : public QSGNode {
-public:
-    DelegatedFrameNode(QQuickWindow *window);
-    ~DelegatedFrameNode();
-    void preprocess();
-    void commit(cc::DelegatedFrameData *frameData);
+content::SyncPointManager *sync_point_manager()
+{
+    content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
+    return gpuChannelManager->sync_point_manager();
+}
 
-private:
-    QQuickWindow *m_window;
-    QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
-    QMap<int, QSharedPointer<MailboxTexture> > m_mailboxTextures;
-    int m_numPendingSyncPoints;
-    QWaitCondition m_mailboxesFetchedWaitCond;
-    QMutex m_mutex;
+void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
+{
+    // We need to set our callback from the GPU thread, where the SyncPointManager lives.
+    gpuMessageLoop->PostTask(FROM_HERE, base::Bind(&addSyncPointCallbackDelegate, make_scoped_refptr(syncPointManager), sync_point, callback));
+}
 
-    // Making those callbacks static bypasses base::Bind's ref-counting requirement
-    // of the this pointer when the callback is a method.
-    static void fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
-    static void syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
-};
+gpu::gles2::MailboxManager *mailbox_manager()
+{
+    content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
+    return gpuChannelManager->mailbox_manager();
+}
 
-#endif // QT_VERSION
+gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::gles2::MailboxName& name)
+{
+    return mailboxManager->ConsumeTexture(target, name);
+}
 
-#endif // DELEGATED_FRAME_NODE_H
+unsigned int service_id(gpu::gles2::Texture *tex)
+{
+    return tex->service_id();
+}
