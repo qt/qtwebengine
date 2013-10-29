@@ -44,6 +44,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
+
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
 namespace net {
@@ -60,9 +61,14 @@ class WebContents;
 struct MainFunctionParams;
 }
 
+namespace gfx {
+class GLShareGroup;
+}
+
 class BrowserContextQt;
 class BrowserMainPartsQt;
 class DevToolsHttpHandlerDelegateQt;
+class ShareGroupQtQuick;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient {
 
@@ -73,6 +79,7 @@ public:
     virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
     virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
     virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
+    virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
 
     BrowserContextQt* browser_context();
 
@@ -83,7 +90,7 @@ public:
 private:
     BrowserMainPartsQt* m_browserMainParts;
     scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
-
+    scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
 };
 
 #endif // CONTENT_BROWSER_CLIENT_QT_H
