@@ -40,6 +40,7 @@ SOURCES = \
         delegated_frame_node.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
+        chromium_gpu_helper.cpp \
         javascript_dialog_manager_qt.cpp \
         render_widget_host_view_qt.cpp \
         resource_context_qt.cpp \
@@ -58,6 +59,7 @@ HEADERS = \
         delegated_frame_node.h \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
+        chromium_gpu_helper.h \
         javascript_dialog_manager_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
