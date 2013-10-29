@@ -203,7 +203,6 @@ class Submodule:
 
 
     def readSubmodules(self):
-        currentDir = os.getcwd()
         if not os.path.isfile('.gitmodules'):
             return []
         gitmodules_file = open('.gitmodules')
@@ -244,6 +243,10 @@ class Submodule:
             return
         # if we could not find any submodules in .gitmodules, try .DEPS.git
         submodules = self.readDeps()
+
+        if not submodules:
+            return
+
         print 'DEPS file provides the following submodules:'
         for submodule in submodules:
             print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.shasum
