@@ -55,13 +55,15 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "ui/gl/gl_switches.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
 #include "type_conversion.h"
-#include <QCoreApplication>
+#include <QGuiApplication>
 #include <QStringList>
+#include <qpa/qplatformnativeinterface.h>
 
 namespace {
 
@@ -133,6 +135,10 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitchASCII(switches::kBrowserSubprocessPath, subProcessPath().constData());
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
+
+    // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
+    if (qApp->platformName() == QStringLiteral("xcb") && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
+        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
 
     m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
     m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));

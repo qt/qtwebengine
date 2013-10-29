@@ -168,16 +168,18 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
         InitAsChild(0);
 }
 
-void RenderWidgetHostViewQt::releaseAndAckDelegatedFrame()
+void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 {
+    if (!m_pendingAckFrameData)
+        return;
+
     cc::CompositorFrameAck ack;
-    // FIXME: This releases all resources of the frame for now.
-    ack.resources = m_pendingFrameData->resource_list;
+    ack.resources = m_pendingAckFrameData->resource_list;
     content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
         m_host->GetRoutingID(), m_pendingOutputSurfaceId,
         m_host->GetProcess()->GetID(), ack);
 
-    m_pendingFrameData.reset();
+    m_pendingAckFrameData.reset();
 }
 
 BackingStoreQt* RenderWidgetHostViewQt::GetBackingStore()
@@ -592,10 +594,9 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
 {
     Q_ASSERT(frame->delegated_frame_data);
-    SwapDelegatedFrame(output_surface_id,
-                       frame->delegated_frame_data.Pass(),
-                       frame->metadata.device_scale_factor,
-                       frame->metadata.latency_info);
+    m_pendingOutputSurfaceId = output_surface_id;
+    m_pendingUpdateFrameData = frame->delegated_frame_data.Pass();
+    m_delegate->update();
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
@@ -650,19 +651,19 @@ void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-    if (!m_pendingFrameData) {
-        delete oldNode;
-        return 0;
-    }
+    if (!m_pendingUpdateFrameData)
+        return oldNode;
+
     DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
     if (!frameNode)
         frameNode = new DelegatedFrameNode(window);
 
-    frameNode->commit(m_pendingFrameData.get());
+    // Switch the frame from one pointer to the other to keep track of its state
+    // to be able to update and then ack each frame only once.
+    Q_ASSERT(!m_pendingAckFrameData);
+    m_pendingAckFrameData.reset(m_pendingUpdateFrameData.release());
 
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderWidgetHostViewQt::releaseAndAckDelegatedFrame, this->AsWeakPtr()));
-
+    frameNode->commit(m_pendingAckFrameData.get());
     return frameNode;
 #else
     return 0;
@@ -761,16 +762,6 @@ void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
 {
     QRect r(damage_rect.x(), damage_rect.y(), damage_rect.width(), damage_rect.height());
     m_delegate->update(r);
-}
-
-void RenderWidgetHostViewQt::SwapDelegatedFrame(uint32 output_surface_id, scoped_ptr<cc::DelegatedFrameData> frame_data, float frame_device_scale_factor, const ui::LatencyInfo& latency_info) {
-    gfx::Size frame_size_in_dip;
-    if (!frame_data->render_pass_list.empty())
-        frame_size_in_dip = gfx::ToFlooredSize(gfx::ScaleSize(frame_data->render_pass_list.back()->output_rect.size(), 1.f/frame_device_scale_factor));
-
-    m_pendingOutputSurfaceId = output_surface_id;
-    m_pendingFrameData = frame_data.Pass();
-    m_delegate->update();
 }
 
 void RenderWidgetHostViewQt::ProcessGestures(ui::GestureRecognizer::Gestures *gestures)

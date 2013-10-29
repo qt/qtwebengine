@@ -12,6 +12,8 @@ RESOURCES += resources.qrc
 RESOURCES += ../../common/common_resources.qrc
 
 QT += qml quick
+QT_PRIVATE += quick-private gui-private core-private
+
 qtHaveModule(widgets) {
     QT += widgets # QApplication is required to get native styling with QtQuickControls
 }
