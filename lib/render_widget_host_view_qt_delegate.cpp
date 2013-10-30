@@ -65,7 +65,7 @@
 class RenderPassTexture : public QSGTexture
 {
 public:
-    RenderPassTexture(const cc::RenderPass::Id &id, QSGContext *context);
+    RenderPassTexture(const cc::RenderPass::Id &id, QSGRenderContext *context);
 
     const cc::RenderPass::Id &id() const { return m_id; }
     void bind();
@@ -92,10 +92,10 @@ private:
     QScopedPointer<QSGRenderer> m_renderer;
     QScopedPointer<QOpenGLFramebufferObject> m_fbo;
 
-    QSGContext *m_context;
+    QSGRenderContext *m_context;
 };
 
-RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id, QSGContext *context)
+RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id, QSGRenderContext *context)
     : QSGTexture()
     , m_id(id)
     , m_device_pixel_ratio(1)
@@ -329,8 +329,8 @@ QSGNode *RenderWidgetHostViewQtDelegate::updatePaintNode(QSGNode *oldNode, QQuic
         if (pass != rootRenderPass) {
             QSharedPointer<RenderPassTexture> rpTexture = findRenderPassTexture(pass->id, oldRenderPassTextures);
             if (!rpTexture) {
-                QSGContext *sgContext = QQuickWindowPrivate::get(window)->context;
-                rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id, sgContext));
+                QSGRenderContext *sgrc = QQuickWindowPrivate::get(window)->context;
+                rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id, sgrc));
             }
             frameNode->renderPassTextures.append(rpTexture);
             rpTexture->setDevicePixelRatio(window->devicePixelRatio());
