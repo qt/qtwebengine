@@ -41,10 +41,17 @@
 
 #include "shared_globals.h"
 
+#include "base/message_loop/message_pump_gtk.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
+#include <QGuiApplication>
 #include <QScreen>
 #include <QWindow>
+#include <qpa/qplatformnativeinterface.h>
+
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
 
 void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
 {
@@ -61,6 +68,23 @@ void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* resul
     QRect available = screen->availableGeometry();
     r.availableRect = WebKit::WebRect(available.x(), available.y(), available.width(), available.height());
     *results = r;
+}
+
+namespace base {
+
+#if defined(USE_X11)
+Display* MessagePumpGtk::GetDefaultXDisplay() {
+  static void *display = qApp->platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
+  if (!display) {
+    // XLib isn't available or has not been initialized, which is a decision we wish to
+    // support, for example for the GPU process.
+    static Display* xdisplay = XOpenDisplay(NULL);
+    return xdisplay;
+  }
+  return static_cast<Display*>(display);
+}
+#endif
+
 }
 
 namespace content {
