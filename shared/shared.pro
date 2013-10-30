@@ -23,6 +23,7 @@ PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBEN
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
 QT += gui
+QT_PRIVATE += gui-private
 
 SOURCES = \
         resource_bundle_qt.cpp \
