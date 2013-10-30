@@ -1,0 +1,34 @@
+From 717b027460dbda87c965ea0069fd11bbe7aad59f Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Fri, 20 Sep 2013 15:01:41 +0200
+Subject: [PATCH] Hide the definition of MessagePumpGtk::GetDefaultXDisplay.
+
+---
+ base/message_loop/message_pump_gtk.cc | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/base/message_loop/message_pump_gtk.cc b/base/message_loop/message_pump_gtk.cc
+index ad65113..af59685 100644
+--- a/base/message_loop/message_pump_gtk.cc
++++ b/base/message_loop/message_pump_gtk.cc
+@@ -85,6 +85,9 @@ void MessagePumpGtk::DispatchEvents(GdkEvent* event) {
+   DidProcessEvent(event);
+ }
+ 
++// FIXME: Get our own MessagePumpUI to avoid this.
++// Comment out this version so that our Qt version in shared_globals.cpp is used.
++/*
+ // static
+ Display* MessagePumpGtk::GetDefaultXDisplay() {
+   static GdkDisplay* display = gdk_display_get_default();
+@@ -96,6 +99,7 @@ Display* MessagePumpGtk::GetDefaultXDisplay() {
+   }
+   return GDK_DISPLAY_XDISPLAY(display);
+ }
++*/
+ 
+ void MessagePumpGtk::WillProcessEvent(GdkEvent* event) {
+   FOR_EACH_OBSERVER(MessagePumpObserver, observers(), WillProcessEvent(event));
+-- 
+1.8.4
+
