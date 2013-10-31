@@ -58,9 +58,9 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
     delete history;
 }
 
-RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(CompositingMode mode)
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, CompositingMode mode)
 {
-    return new RenderWidgetHostViewQtDelegateWidget(mode);
+    return new RenderWidgetHostViewQtDelegateWidget(client, mode);
 }
 
 void QWebEnginePagePrivate::titleChanged(const QString &title)

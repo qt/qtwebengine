@@ -42,6 +42,7 @@
 #include "render_widget_host_view_qt.h"
 
 #include "backing_store_qt.h"
+#include "delegated_frame_node.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
 #include "web_event_factory.h"
@@ -140,6 +141,7 @@ static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKi
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
+    , m_backingStore(0)
     , m_adapterClient(0)
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
@@ -155,7 +157,6 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
 {
     m_delegate.reset(delegate);
-    delegate->setView(this);
 }
 
 void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterClient)
@@ -165,44 +166,6 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
     m_adapterClient = adapterClient;
     if (m_initPending)
         InitAsChild(0);
-}
-
-bool RenderWidgetHostViewQt::handleEvent(QEvent* event) {
-
-    switch(event->type()) {
-    case QEvent::MouseButtonDblClick:
-    case QEvent::MouseButtonPress:
-        Focus(); // Fall through.
-    case QEvent::MouseButtonRelease:
-    case QEvent::MouseMove:
-        handleMouseEvent(static_cast<QMouseEvent*>(event));
-        break;
-    case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-        handleKeyEvent(static_cast<QKeyEvent*>(event));
-        break;
-    case QEvent::Wheel:
-        handleWheelEvent(static_cast<QWheelEvent*>(event));
-        break;
-    case QEvent::TouchBegin:
-        Focus(); // Fall through.
-    case QEvent::TouchUpdate:
-    case QEvent::TouchEnd:
-        handleTouchEvent(static_cast<QTouchEvent*>(event));
-        break;
-    case QEvent::HoverEnter:
-    case QEvent::HoverLeave:
-    case QEvent::HoverMove:
-        handleHoverEvent(static_cast<QHoverEvent*>(event));
-        break;
-    case QEvent::FocusIn:
-    case QEvent::FocusOut:
-        handleFocusEvent(static_cast<QFocusEvent*>(event));
-        break;
-    default:
-        return false;
-    }
-    return true;
 }
 
 void RenderWidgetHostViewQt::releaseAndAckDelegatedFrame()
@@ -678,6 +641,108 @@ bool RenderWidgetHostViewQt::DispatchCancelTouchEvent(ui::TouchEvent *)
     return false;
 }
 
+void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect)
+{
+    if (m_backingStore)
+        m_backingStore->paintToTarget(painter, boundingRect);
+}
+
+QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+    if (!m_pendingFrameData) {
+        delete oldNode;
+        return 0;
+    }
+    DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
+    if (!frameNode)
+        frameNode = new DelegatedFrameNode(window);
+
+    frameNode->commit(m_pendingFrameData.get());
+
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&RenderWidgetHostViewQt::releaseAndAckDelegatedFrame, this->AsWeakPtr()));
+
+    return frameNode;
+#else
+    return 0;
+#endif // QT_VERSION
+}
+
+void RenderWidgetHostViewQt::fetchBackingStore()
+{
+    m_backingStore = GetBackingStore();
+}
+
+void RenderWidgetHostViewQt::notifyResize()
+{
+    GetRenderWidgetHost()->WasResized();
+}
+
+bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
+{
+    switch (event->type()) {
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseButtonPress:
+        Focus(); // Fall through.
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseMove:
+        handleMouseEvent(static_cast<QMouseEvent*>(event));
+        break;
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        handleKeyEvent(static_cast<QKeyEvent*>(event));
+        break;
+    case QEvent::Wheel:
+        handleWheelEvent(static_cast<QWheelEvent*>(event));
+        break;
+    case QEvent::TouchBegin:
+        Focus(); // Fall through.
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+        handleTouchEvent(static_cast<QTouchEvent*>(event));
+        break;
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+    case QEvent::HoverMove:
+        handleHoverEvent(static_cast<QHoverEvent*>(event));
+        break;
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+        handleFocusEvent(static_cast<QFocusEvent*>(event));
+        break;
+    default:
+        return false;
+    }
+    return true;
+}
+
+QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    switch (query) {
+    case Qt::ImEnabled:
+        return QVariant(m_currentInputType != ui::TEXT_INPUT_TYPE_NONE);
+    case Qt::ImCursorRectangle:
+        return m_cursorRect;
+    case Qt::ImFont:
+        return QVariant();
+    case Qt::ImCursorPosition:
+        return static_cast<uint>(m_cursorPositionWithinSelection);
+    case Qt::ImAnchorPosition:
+        return static_cast<uint>(m_anchorPositionWithinSelection);
+    case Qt::ImSurroundingText:
+        return toQt(selection_text_);
+    case Qt::ImCurrentSelection:
+        return toQt(GetSelectedText());
+    case Qt::ImMaximumTextLength:
+        return QVariant(); // No limit.
+    case Qt::ImHints:
+        return int(toQtInputMethodHints(m_currentInputType));
+    default:
+        return QVariant();
+    }
+}
+
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     ScopedVector<ui::TouchEvent> events;
     if (!content::MakeUITouchEventsFromWebTouchEvents(touch, &events, content::LOCAL_COORDINATES))
@@ -754,32 +819,6 @@ void RenderWidgetHostViewQt::RemoveExpiredMappings(QTouchEvent *ev)
 bool RenderWidgetHostViewQt::IsPopup() const
 {
     return popup_type_ != WebKit::WebPopupTypeNone;
-}
-
-QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) const
-{
-    switch (query) {
-    case Qt::ImEnabled:
-        return QVariant(m_currentInputType != ui::TEXT_INPUT_TYPE_NONE);
-    case Qt::ImCursorRectangle:
-        return m_cursorRect;
-    case Qt::ImFont:
-        return QVariant();
-    case Qt::ImCursorPosition:
-        return static_cast<uint>(m_cursorPositionWithinSelection);
-    case Qt::ImAnchorPosition:
-        return static_cast<uint>(m_anchorPositionWithinSelection);
-    case Qt::ImSurroundingText:
-        return toQt(selection_text_);
-    case Qt::ImCurrentSelection:
-        return toQt(GetSelectedText());
-    case Qt::ImMaximumTextLength:
-        return QVariant(); // No limit.
-    case Qt::ImHints:
-        return int(toQtInputMethodHints(m_currentInputType));
-    default:
-        return QVariant();
-    }
 }
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
