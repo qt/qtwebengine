@@ -101,9 +101,6 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
 
     // Ex-QWebFrame properties
     Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
-    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
-    Q_PROPERTY(QString title READ title)
-    Q_PROPERTY(QUrl url READ url WRITE setUrl)
     Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
     Q_PROPERTY(QUrl baseUrl READ baseUrl)
     Q_PROPERTY(QIcon icon READ icon)
@@ -111,6 +108,9 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QPoint scrollPosition READ scrollPosition WRITE setScrollPosition)
     Q_PROPERTY(bool focus READ hasFocus)
 #endif
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
+    Q_PROPERTY(QString title READ title)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl)
 
 public:
     enum NavigationType {
