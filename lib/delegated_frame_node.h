@@ -39,79 +39,35 @@
 **
 ****************************************************************************/
 
-#include "render_widget_host_view_qt_delegate.h"
+#ifndef DELEGATED_FRAME_NODE_H
+#define DELEGATED_FRAME_NODE_H
 
-#include "backing_store_qt.h"
-#include "delegated_frame_node.h"
-#include "render_widget_host_view_qt.h"
-#include "type_conversion.h"
-
-#include "content/browser/renderer_host/render_view_host_impl.h"
-
-#include <QVariant>
-
-RenderWidgetHostViewQtDelegate::RenderWidgetHostViewQtDelegate()
-    : m_view(0), m_backingStore(0)
-{
-}
-
-RenderWidgetHostViewQtDelegate::~RenderWidgetHostViewQtDelegate()
-{
-}
-
-void RenderWidgetHostViewQtDelegate::paint(QPainter *painter, const QRectF &boundingRect)
-{
-    if (m_backingStore)
-        m_backingStore->paintToTarget(painter, boundingRect);
-}
+#include <QSGNode>
+#include <QSharedPointer>
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-QSGNode *RenderWidgetHostViewQtDelegate::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
-{
-    cc::DelegatedFrameData *frameData = m_view->pendingDelegatedFrame();
-    if (!frameData) {
-        delete oldNode;
-        return 0;
-    }
-    DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
-    if (!frameNode)
-        frameNode = new DelegatedFrameNode(window);
 
-    frameNode->commit(frameData);
-
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderWidgetHostViewQt::releaseAndAckDelegatedFrame, m_view->AsWeakPtr()));
-
-    return frameNode;
+namespace cc {
+class DelegatedFrameData;
 }
+
+class QQuickWindow;
+class RenderPassTexture;
+
+class DelegatedFrameNode : public QSGNode {
+public:
+    DelegatedFrameNode(QQuickWindow *window);
+    ~DelegatedFrameNode();
+    void preprocess();
+    void commit(cc::DelegatedFrameData *frameData);
+
+private:
+    QQuickWindow *m_window;
+    QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
+    const size_t m_testTexturesSize;
+    GLuint m_testTextures[Qt::transparent - Qt::red];
+};
+
 #endif // QT_VERSION
 
-void RenderWidgetHostViewQtDelegate::fetchBackingStore()
-{
-    Q_ASSERT(m_view);
-    m_backingStore = m_view->GetBackingStore();
-}
-
-void RenderWidgetHostViewQtDelegate::notifyResize()
-{
-    Q_ASSERT(m_view);
-    m_view->GetRenderWidgetHost()->WasResized();
-}
-
-bool RenderWidgetHostViewQtDelegate::forwardEvent(QEvent *event)
-{
-    return (m_view && m_view->handleEvent(event));
-}
-
-void RenderWidgetHostViewQtDelegate::setView(RenderWidgetHostViewQt* view)
-{
-    m_view = view;
-}
-
-QVariant RenderWidgetHostViewQtDelegate::forwardInputMethodQuery(Qt::InputMethodQuery query) const
-{
-    if (!m_view)
-        return QVariant();
-
-    return m_view->inputMethodQuery(query);
-}
+#endif // DELEGATED_FRAME_NODE_H
