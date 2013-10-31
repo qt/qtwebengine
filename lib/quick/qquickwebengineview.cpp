@@ -57,13 +57,13 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     adapter->initialize(this);
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(CompositingMode mode)
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, CompositingMode mode)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
     if (mode == DelegatedCompositing)
-        return new RenderWidgetHostViewQtDelegateQuick;
+        return new RenderWidgetHostViewQtDelegateQuick(client);
 #endif
-    return new RenderWidgetHostViewQtDelegateQuickPainted;
+    return new RenderWidgetHostViewQtDelegateQuickPainted(client);
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
