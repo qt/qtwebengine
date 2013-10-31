@@ -37,6 +37,7 @@ SOURCES = \
         backing_store_qt.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
+        delegated_frame_node.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         javascript_dialog_manager_qt.cpp \
@@ -55,6 +56,7 @@ HEADERS = \
         browser_context_qt.h \
         content_client_qt.h \
         content_browser_client_qt.h \
+        delegated_frame_node.h \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         javascript_dialog_manager_qt.h \
