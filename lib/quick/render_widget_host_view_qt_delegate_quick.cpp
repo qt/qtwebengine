@@ -42,8 +42,8 @@
 #include "render_widget_host_view_qt_delegate_quick.h"
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent)
-    : RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>(parent)
+RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent)
+    : RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>(client, parent)
 {
     setFlag(ItemHasContents);
 }
@@ -60,13 +60,13 @@ void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
 
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    return RenderWidgetHostViewQtDelegate::updatePaintNode(oldNode, QQuickItem::window());
+    return m_client->updatePaintNode(oldNode, QQuickItem::window());
 }
 #endif // QT_VERSION
 
 
-RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(QQuickItem *parent)
-    : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(parent)
+RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent)
+    : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(client, parent)
 {
 }
 
@@ -84,7 +84,7 @@ void RenderWidgetHostViewQtDelegateQuickPainted::update(const QRect& rect)
 
 void RenderWidgetHostViewQtDelegateQuickPainted::paint(QPainter *painter)
 {
-    RenderWidgetHostViewQtDelegate::paint(painter, boundingRect());
+    m_client->paint(painter, boundingRect());
 }
 
 void RenderWidgetHostViewQtDelegateQuickPainted::updatePolish()
@@ -92,5 +92,5 @@ void RenderWidgetHostViewQtDelegateQuickPainted::updatePolish()
     // paint will be called from the scene graph thread and this doesn't play well
     // with chromium's use of TLS while getting the backing store.
     // updatePolish() should be called from the GUI thread right before the rendering thread starts.
-    fetchBackingStore();
+    m_client->fetchBackingStore();
 }

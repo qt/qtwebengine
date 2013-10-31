@@ -42,6 +42,7 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_H
 #define RENDER_WIDGET_HOST_VIEW_QT_H
 
+#include "render_widget_host_view_qt_delegate.h"
 #include "shared/shared_globals.h"
 
 #include "base/memory/scoped_ptr.h"
@@ -67,7 +68,6 @@ class QVariant;
 class QWheelEvent;
 QT_END_NAMESPACE
 
-class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapterClient;
 
 struct MultipleMouseClickHelper
@@ -90,6 +90,7 @@ class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
     , public ui::GestureConsumer
     , public ui::GestureEventHelper
+    , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
 {
 public:
@@ -98,8 +99,6 @@ public:
 
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
-    bool handleEvent(QEvent* event);
-    cc::DelegatedFrameData *pendingDelegatedFrame() const { return m_pendingFrameData.get(); }
     void releaseAndAckDelegatedFrame();
     BackingStoreQt* GetBackingStore();
 
@@ -166,14 +165,20 @@ public:
     virtual bool DispatchLongPressGestureEvent(ui::GestureEvent *event) Q_DECL_OVERRIDE;
     virtual bool DispatchCancelTouchEvent(ui::TouchEvent *event) Q_DECL_OVERRIDE;
 
+    // Overridden from RenderWidgetHostViewQtDelegateClient.
+    virtual void paint(QPainter *, const QRectF& boundingRect) Q_DECL_OVERRIDE;
+    virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) Q_DECL_OVERRIDE;
+    virtual void fetchBackingStore() Q_DECL_OVERRIDE;
+    virtual void notifyResize() Q_DECL_OVERRIDE;
+    virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
+
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
     void handleWheelEvent(QWheelEvent*);
     void handleTouchEvent(QTouchEvent*);
     void handleHoverEvent(QHoverEvent*);
     void handleFocusEvent(QFocusEvent*);
-
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
 #if defined(OS_MACOSX)
     virtual void SetTakesFocusOnlyOnMouseDown(bool flag) { QT_NOT_YET_IMPLEMENTED }
@@ -204,6 +209,7 @@ private:
     WebKit::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
+    BackingStoreQt *m_backingStore;
     uint32 m_pendingOutputSurfaceId;
     scoped_ptr<cc::DelegatedFrameData> m_pendingFrameData;
 

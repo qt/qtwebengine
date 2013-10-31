@@ -41,6 +41,11 @@
       '<(qtwebengine_src_dir)',
       '<(chromium_src_dir)',
     ],
+    # Chromium code defines those in common.gypi, do the same for our code that include Chromium headers.
+    'defines': [
+      '__STDC_CONSTANT_MACROS',
+      '__STDC_FORMAT_MACROS',
+    ],
     'msvs_settings': {
       'VCLinkerTool': {
         'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
