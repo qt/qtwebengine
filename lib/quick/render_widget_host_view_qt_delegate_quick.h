@@ -56,8 +56,9 @@ template<typename ItemBaseT>
 class RenderWidgetHostViewQtDelegateQuickBase : public ItemBaseT, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegateQuickBase(QQuickItem *parent = 0)
+    RenderWidgetHostViewQtDelegateQuickBase(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0)
         : ItemBaseT(parent)
+        , m_client(client)
     {
         this->setAcceptedMouseButtons(Qt::AllButtons);
         this->setAcceptHoverEvents(true);
@@ -126,58 +127,58 @@ public:
 
     void focusInEvent(QFocusEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void focusOutEvent(QFocusEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void mousePressEvent(QMouseEvent *event)
     {
         this->setFocus(true);
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void mouseMoveEvent(QMouseEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void mouseReleaseEvent(QMouseEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void mouseDoubleClickEvent(QMouseEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void keyPressEvent(QKeyEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void keyReleaseEvent(QKeyEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void wheelEvent(QWheelEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void touchEvent(QTouchEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void hoverMoveEvent(QHoverEvent *event)
     {
-        forwardEvent(event);
+        m_client->forwardEvent(event);
     }
 
     void inputMethodStateChanged(bool editorVisible)
@@ -192,15 +193,17 @@ public:
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const
     {
-        return forwardInputMethodQuery(query);
+        return m_client->inputMethodQuery(query);
     }
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
     {
         ItemBaseT::geometryChanged(newGeometry, oldGeometry);
-        notifyResize();
+        m_client->notifyResize();
     }
+
+    RenderWidgetHostViewQtDelegateClient *m_client;
 };
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
@@ -208,7 +211,7 @@ class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegat
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
 
     virtual WId nativeWindowIdForCompositor() const;
     virtual void update(const QRect& rect = QRect());
@@ -221,7 +224,7 @@ class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQt
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuickPainted(QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
 
     virtual WId nativeWindowIdForCompositor() const;
     virtual void update(const QRect& rect = QRect());

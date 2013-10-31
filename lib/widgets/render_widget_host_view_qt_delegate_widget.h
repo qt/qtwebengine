@@ -56,7 +56,7 @@ QT_END_NAMESPACE
 class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegateWidget(WebContentsAdapterClient::CompositingMode mode, QWidget *parent = 0);
+    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::CompositingMode mode, QWidget *parent = 0);
 
     virtual void initAsChild(WebContentsAdapterClient* container);
     virtual void initAsPopup(const QRect&);
@@ -79,6 +79,9 @@ protected:
     void resizeEvent(QResizeEvent *resizeEvent);
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
+private:
+    RenderWidgetHostViewQtDelegateClient *m_client;
 };
 
 #endif
