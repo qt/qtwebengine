@@ -45,10 +45,7 @@
 #include "qtwebengineglobal.h"
 
 #include <QRect>
-#include <QScopedPointer>
 #include <QtGui/qwindowdefs.h>
-
-class BackingStoreQt;
 
 QT_BEGIN_NAMESPACE
 class QCursor;
@@ -60,13 +57,22 @@ class QVariant;
 class QWindow;
 QT_END_NAMESPACE
 
-class RenderWidgetHostViewQt;
 class WebContentsAdapterClient;
 
-class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
-
+class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegateClient {
 public:
-    virtual ~RenderWidgetHostViewQtDelegate();
+    virtual ~RenderWidgetHostViewQtDelegateClient() { }
+    virtual void paint(QPainter *, const QRectF& boundingRect) = 0;
+    virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) = 0;
+    virtual void fetchBackingStore() = 0;
+    virtual void notifyResize() = 0;
+    virtual bool forwardEvent(QEvent *) = 0;
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;
+};
+
+class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
+public:
+    virtual ~RenderWidgetHostViewQtDelegate() { }
     virtual void initAsChild(WebContentsAdapterClient*) = 0;
     virtual void initAsPopup(const QRect&) = 0;
     virtual QRectF screenRect() const = 0;
@@ -81,23 +87,6 @@ public:
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
     virtual void inputMethodStateChanged(bool editorVisible) = 0;
-
-protected:
-    RenderWidgetHostViewQtDelegate();
-    void paint(QPainter*, const QRectF& boundingRect);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-    QSGNode *updatePaintNode(QSGNode *, QQuickWindow *);
-#endif
-    void fetchBackingStore();
-    void notifyResize();
-    bool forwardEvent(QEvent*);
-    QVariant forwardInputMethodQuery(Qt::InputMethodQuery query) const;
-
-private:
-    void setView(RenderWidgetHostViewQt*);
-    RenderWidgetHostViewQt *m_view;
-    BackingStoreQt *m_backingStore;
-    friend class RenderWidgetHostViewQt;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H

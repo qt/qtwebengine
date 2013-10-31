@@ -49,6 +49,7 @@
 
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
+class RenderWidgetHostViewQtDelegateClient;
 class WebContentsAdapter;
 class WebContentsDelegateQt;
 
@@ -101,7 +102,7 @@ public:
 
     virtual ~WebContentsAdapterClient() { }
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(CompositingMode mode) = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, CompositingMode mode) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
     virtual void iconChanged(const QUrl&) = 0;

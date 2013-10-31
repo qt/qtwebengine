@@ -51,8 +51,9 @@
 #include <QWindow>
 #include <QtWidgets/QApplication>
 
-RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(WebContentsAdapterClient::CompositingMode mode, QWidget *parent)
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::CompositingMode mode, QWidget *parent)
     : QWidget(parent)
+    , m_client(client)
 {
     setFocusPolicy(Qt::ClickFocus);
     setMouseTracking(true);
@@ -160,25 +161,25 @@ void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVi
 
 QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    return forwardInputMethodQuery(query);
+    return m_client->inputMethodQuery(query);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
 {
     QPainter painter(this);
-    fetchBackingStore();
-    paint(&painter, event->rect());
+    m_client->fetchBackingStore();
+    m_client->paint(&painter, event->rect());
 }
 
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
     Q_UNUSED(resizeEvent);
-    notifyResize();
+    m_client->notifyResize();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
-    if (!forwardEvent(event))
+    if (!m_client->forwardEvent(event))
         return QWidget::event(event);
     return true;
 }

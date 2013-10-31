@@ -80,8 +80,7 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(conte
         compositingMode = WebContentsAdapterClient::ForcedGpuProcessCompositing;
 
     Q_ASSERT(m_factoryClient);
-    RenderWidgetHostViewQtDelegate* viewDelegate = m_factoryClient->CreateRenderWidgetHostViewQtDelegate(compositingMode);
-    view->setDelegate(viewDelegate);
+    view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view, compositingMode));
     if (m_client)
         view->setAdapterClient(m_client);
 
