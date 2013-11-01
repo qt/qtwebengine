@@ -1,0 +1,121 @@
+From d391efb98d1213f3ddc22d5bee28bffbc0dc3180 Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Wed, 30 Oct 2013 14:27:28 +0100
+Subject: [PATCH] Fix the build with a GL ES2 configured Qt.
+
+GLES/gl2.h is included through Qt public headers and the copy of
+Chromium is used since its include path comes before /usr/include.
+The problem is that this header is incompatible for some reasons,
+one of them being that it converts all GL function symbols from
+gl* to GLES2*.
+
+Qt layer code should always need to go through GL directly,
+so make sure that only GYP targets that depend directly on gpu.gyp,
+khronos.gyp or webkit_gpu.gyp will have an include path
+pointing to those headers.
+
+Replace all_dependent_settings with direct_dependent_settings and
+control which target inherits this include_dirs from its dependencies
+by using export_dependent_settings.
+
+Change-Id: Id4d98fe22ef8b778b5ba8da300dad28e69507732
+---
+ gpu/command_buffer_client.gypi   | 3 +++
+ gpu/command_buffer_common.gypi   | 3 +++
+ gpu/gpu.gyp                      | 9 +++++++++
+ third_party/khronos/khronos.gyp  | 2 +-
+ webkit/common/gpu/webkit_gpu.gyp | 3 +++
+ 5 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/gpu/command_buffer_client.gypi b/gpu/command_buffer_client.gypi
+index b4d5b78..75bea79 100644
+--- a/gpu/command_buffer_client.gypi
++++ b/gpu/command_buffer_client.gypi
+@@ -14,6 +14,9 @@
+   'dependencies': [
+     '../third_party/khronos/khronos.gyp:khronos_headers',
+   ],
++  'export_dependent_settings': [
++    '../third_party/khronos/khronos.gyp:khronos_headers',
++  ],
+   'sources': [
+     'command_buffer/client/atomicops.cc',
+     'command_buffer/client/atomicops.h',
+diff --git a/gpu/command_buffer_common.gypi b/gpu/command_buffer_common.gypi
+index 85431e4..f159355 100644
+--- a/gpu/command_buffer_common.gypi
++++ b/gpu/command_buffer_common.gypi
+@@ -6,6 +6,9 @@
+   'dependencies': [
+     '../third_party/khronos/khronos.gyp:khronos_headers',
+   ],
++  'export_dependent_settings': [
++    '../third_party/khronos/khronos.gyp:khronos_headers',
++  ],
+   'sources': [
+     'command_buffer/common/bitfield_helpers.h',
+     'command_buffer/common/buffer.h',
+diff --git a/gpu/gpu.gyp b/gpu/gpu.gyp
+index 316aa91..73df723 100644
+--- a/gpu/gpu.gyp
++++ b/gpu/gpu.gyp
+@@ -23,6 +23,9 @@
+         'command_buffer/command_buffer.gyp:gles2_utils',
+         'gles2_cmd_helper',
+       ],
++      'export_dependent_settings': [
++        '../third_party/khronos/khronos.gyp:khronos_headers',
++      ],
+       'defines': [
+         'GLES2_IMPL_IMPLEMENTATION',
+       ],
+@@ -348,6 +351,9 @@
+             'gpu_config',
+             'gpu_ipc',
+           ],
++          'export_dependent_settings': [
++            'command_buffer_common',
++          ],
+           'sources': [
+             'gpu_export.h',
+           ],
+@@ -390,6 +396,9 @@
+           'dependencies': [
+             'command_buffer_common',
+           ],
++          'export_dependent_settings': [
++            'command_buffer_common',
++          ],
+           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+           'msvs_disabled_warnings': [4267, ],
+         },
+diff --git a/third_party/khronos/khronos.gyp b/third_party/khronos/khronos.gyp
+index 8a85572..88130d2 100644
+--- a/third_party/khronos/khronos.gyp
++++ b/third_party/khronos/khronos.gyp
+@@ -7,7 +7,7 @@
+     {
+       'target_name': 'khronos_headers',
+       'type': 'none',
+-      'all_dependent_settings': {
++      'direct_dependent_settings': {
+         'include_dirs': [
+           '.',
+           '../../gpu',  # Contains GLES2/gl2chromium.h
+diff --git a/webkit/common/gpu/webkit_gpu.gyp b/webkit/common/gpu/webkit_gpu.gyp
+index 5390c9a..effc5b7 100644
+--- a/webkit/common/gpu/webkit_gpu.gyp
++++ b/webkit/common/gpu/webkit_gpu.gyp
+@@ -26,6 +26,9 @@
+             '<(DEPTH)/ui/gl/gl.gyp:gl',
+             '<(DEPTH)/ui/ui.gyp:ui',
+           ],
++          'export_dependent_settings': [
++            '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
++          ],
+           'sources': [
+             # This list contains all .h and .cc in gpu except for test code.
+             'context_provider_in_process.cc',
+-- 
+1.8.4
+
