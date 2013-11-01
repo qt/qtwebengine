@@ -47,81 +47,65 @@ import subprocess
 import sys
 import imp
 import errno
+import shutil
 
 import git_submodule as GitSubmodule
 
-def isBlacklisted(file_path):
+qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+os.chdir(qtwebengine_src)
+
+def isInGitBlacklist(file_path):
+    # We do need all the gyp files.
+    if file_path.endswith('.gyp') or file_path.endswith('.gypi'):
+        False
+    if ( '.gitignore' in file_path
+        or '.gitmodules' in file_path
+        or '.DEPS' in file_path ):
+        return True
+
+def isInChromiumBlacklist(file_path):
     # Filter out empty submodule directories.
     if (os.path.isdir(file_path)):
         return True
     # We do need all the gyp files.
     if file_path.endswith('.gyp') or file_path.endswith('.gypi'):
         return False
-    if '/tests/' in file_path:
-        return True
-    if ('/test/' in file_path and
-        not '/webrtc/test/testsupport/' in file_path and
-        not file_path.startswith('net/test/') and
-        not file_path.endswith('mock_chrome_application_mac.h')):
-        return True
-    if file_path.startswith('third_party/WebKit/LayoutTests'):
-        return True
-    if file_path.startswith('third_party/WebKit/PerformanceTests'):
-        return True
-    if file_path.startswith('third_party/WebKit/ManualTests'):
-        return True
-    if file_path.startswith('android_webview'):
-        return True
-    if file_path.startswith('apps/'):
-        return True
-    if file_path.startswith('build/android/'):
-        return True
-    if (file_path.startswith('chrome/') and
-        not 'repack_locales' in file_path and
-        not file_path.endswith('version.py')):
-        return True
-    if file_path.startswith('chrome_frame'):
-        return True
-    if file_path.startswith('chromeos'):
-        return True
-    if file_path.startswith('breakpad'):
-        return True
-    if file_path.startswith('third_party/GTM'):
-        return True
-    if file_path.startswith('third_party/chromite'):
-        return True
-    if file_path.startswith('third_party/webgl_conformance'):
-        return True
-    if file_path.startswith('third_party/hunspell_dictionaries'):
-        return True
-    if file_path.startswith('cloud_print'):
-        return True
-    if file_path.startswith('ios'):
-        return True
-    if file_path.startswith('google_update'):
-        return True
-    if file_path.startswith('courgette'):
-        return True
-    if file_path.startswith('native_client'):
-        return True
-    if (file_path.startswith('third_party/trace-viewer') and
-        not file_path.endswith('.template') and
-        not file_path.endswith('.html') and
-        not file_path.endswith('.js') and
-        not file_path.endswith('.css') and
-        not file_path.endswith('.png') and
-        not '/build/' in file_path):
-        return True
-    if file_path.startswith('remoting'):
-        return True
-    if file_path.startswith('win8'):
-        return True
-    if '.gitignore' in file_path:
-        return True
-    if '.gitmodules' in file_path:
-        return True
-    if '.DEPS' in file_path:
-        return True
+    if ( '/tests/' in file_path
+        or ('/test/' in file_path and
+            not '/webrtc/test/testsupport/' in file_path and
+            not file_path.startswith('net/test/') and
+            not file_path.endswith('mock_chrome_application_mac.h'))
+        or file_path.startswith('third_party/WebKit/LayoutTests')
+        or file_path.startswith('third_party/WebKit/PerformanceTests')
+        or file_path.startswith('third_party/WebKit/ManualTests')
+        or file_path.startswith('android_webview')
+        or file_path.startswith('apps/')
+        or file_path.startswith('build/android/')
+        or (file_path.startswith('chrome/') and
+            not 'repack_locales' in file_path and
+            not file_path.endswith('version.py'))
+        or file_path.startswith('chrome_frame')
+        or file_path.startswith('chromeos')
+        or file_path.startswith('breakpad')
+        or file_path.startswith('third_party/GTM')
+        or file_path.startswith('third_party/chromite')
+        or file_path.startswith('third_party/webgl_conformance')
+        or file_path.startswith('third_party/hunspell_dictionaries')
+        or file_path.startswith('cloud_print')
+        or file_path.startswith('ios')
+        or file_path.startswith('google_update')
+        or file_path.startswith('courgette')
+        or file_path.startswith('native_client')
+        or (file_path.startswith('third_party/trace-viewer') and
+            not file_path.endswith('.template') and
+            not file_path.endswith('.html') and
+            not file_path.endswith('.js') and
+            not file_path.endswith('.css') and
+            not file_path.endswith('.png') and
+            not '/build/' in file_path)
+        or file_path.startswith('remoting')
+        or file_path.startswith('win8') ):
+            return True
     return False
 
 
@@ -145,31 +129,61 @@ def createHardLinkForFile(src, dst):
             raise
 
 
-if len(sys.argv) != 2:
-    print 'usage: ' + sys.argv[0] + ' [output directory]'
-    exit(1)
+third_party_upstream = os.path.join(qtwebengine_src, '3rdparty_upstream')
+third_party = os.path.join(qtwebengine_src, '3rdparty')
+
+def clearDirectory(directory):
+    currentDir = os.getcwd()
+    os.chdir(directory)
+    print 'clearing the directory:' + directory
+    for direntry in os.listdir(directory):
+        if not direntry == '.git':
+            print 'clearing:' + direntry
+            shutil.rmtree(direntry)
+    os.chdir(currentDir)
+
+def listFilesInCurrentRepository():
+    currentRepo = GitSubmodule.Submodule(os.getcwd())
+    files = subprocess.check_output(['git', 'ls-files']).splitlines()
+    submodules = currentRepo.readSubmodules()
+    for submodule in submodules:
+        submodule_files = submodule.listFiles()
+        for submodule_file in submodule_files:
+            files.append(os.path.join(submodule.path, submodule_file))
+    return files
+
+def exportNinja():
+    third_party_upstream_ninja = os.path.join(third_party_upstream, 'ninja')
+    third_party_ninja = os.path.join(third_party, 'ninja')
+    os.makedirs(third_party_ninja);
+    print 'exporting contents of:' + third_party_upstream_ninja
+    os.chdir(third_party_upstream_ninja)
+    files = listFilesInCurrentRepository()
+    print 'creating hardlinks in ' + third_party_ninja
+    for f in files:
+        if not isInGitBlacklist(f):
+            createHardLinkForFile(f, os.path.join(third_party_ninja, f))
+
+def exportChromium():
+    third_party_upstream_chromium = os.path.join(third_party_upstream, 'chromium')
+    third_party_chromium = os.path.join(third_party, 'chromium')
+    os.makedirs(third_party_chromium);
+    print 'exporting contents of:' + third_party_upstream_chromium
+    os.chdir(third_party_upstream_chromium)
+    files = listFilesInCurrentRepository()
+    # Add LASTCHANGE files which are not tracked by git.
+    files.append('build/util/LASTCHANGE')
+    files.append('build/util/LASTCHANGE.blink')
+    print 'creating hardlinks in ' + third_party_chromium
+    for f in files:
+        if not isInChromiumBlacklist(f) and not isInGitBlacklist(f):
+            createHardLinkForFile(f, os.path.join(third_party_chromium, f))
 
 
-output_directory = sys.argv[1]
-files = subprocess.check_output(['git', 'ls-files']).splitlines()
-submodules = GitSubmodule.readSubmodules()
-for submodule in submodules:
-    submodule_files = submodule.listFiles()
-    for submodule_file in submodule_files:
-        files.append(os.path.join(submodule.path, submodule_file))
+clearDirectory(third_party)
 
-# Add LASTCHANGE files which are not tracked by git.
-files.append('build/util/LASTCHANGE')
-files.append('build/util/LASTCHANGE.blink')
-
-print 'creating hardlinks...'
-file_list = open('/tmp/file_list', 'w')
-for f in files:
-    if not isBlacklisted(f):
-        createHardLinkForFile(f, os.path.join(output_directory, f))
-        file_list.write(f + '\n');
-
-file_list.close()
+exportNinja()
+exportChromium()
 
 print 'done.'
 
