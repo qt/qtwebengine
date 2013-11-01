@@ -412,15 +412,11 @@ public:
 
 void tst_QWebEnginePage::consoleOutput()
 {
-#if !defined(QWEBENGINEPAGE_JAVASCRIPTCONSOLEMESSAGE)
-    QSKIP("QWEBENGINEPAGE_JAVASCRIPTCONSOLEMESSAGE");
-#else
     ConsolePage page;
     // We don't care about the result but want this to be synchronous
     evaluateJavaScriptSync(&page, "this is not valid JavaScript");
     QCOMPARE(page.messages.count(), 1);
     QCOMPARE(page.lineNumbers.at(0), 1);
-#endif
 }
 
 class TestPage : public QWebEnginePage {

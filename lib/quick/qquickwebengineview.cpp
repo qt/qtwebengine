@@ -131,6 +131,13 @@ void QQuickWebEngineViewPrivate::close()
     Q_UNREACHABLE();
 }
 
+void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_UNUSED(level);
+    Q_EMIT q->javaScriptConsoleMessage(message, lineNumber, sourceID);
+}
+
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     : QQuickItem(*(new QQuickWebEngineViewPrivate), parent)
 {
