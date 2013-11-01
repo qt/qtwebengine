@@ -333,6 +333,13 @@ bool QWebEnginePagePrivate::javascriptDialog(JavascriptDialogType type, const QS
     return false;
 }
 
+void QWebEnginePagePrivate::javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID)
+{
+    Q_Q(QWebEnginePage);
+    Q_UNUSED(level);
+    q->javaScriptConsoleMessage(level, message, lineNumber, sourceID);
+}
+
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
