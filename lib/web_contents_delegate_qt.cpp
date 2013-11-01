@@ -123,3 +123,11 @@ content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogMana
 {
     return JavaScriptDialogManagerQt::GetInstance();
 }
+
+bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const string16 &message, int32 line_no, const string16 &source_id)
+{
+    Q_UNUSED(source)
+    qDebug() << level << toQt(message)<< line_no << toQt(source_id);
+    m_viewClient->javaScriptConsoleMessage(static_cast<int>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
+    return false;
+}
