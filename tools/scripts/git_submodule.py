@@ -162,7 +162,7 @@ class Submodule:
         subprocessCall(['git', 'reset', '--hard'])
         os.chdir(currentDir)
 
-    def initialize(self):
+    def initialize(self, useDeps = False):
         if self.matchesOS():
             print '-- initializing ' + self.path + ' --'
             if os.path.isdir(self.path):
@@ -185,7 +185,7 @@ class Submodule:
                 val = subprocessCall(['git', 'checkout', self.shasum])
                 if val != 0:
                     sys.exit("!!! initialization failed !!!")
-            self.initSubmodules()
+            self.initSubmodules(useDeps)
             os.chdir(currentDir)
         else:
             print '-- skipping ' + self.path + ' for this operating system. --'
@@ -202,54 +202,49 @@ class Submodule:
             return []
 
 
-    def readSubmodules(self):
-        if not os.path.isfile('.gitmodules'):
-            return []
-        gitmodules_file = open('.gitmodules')
-        gitmodules_lines = gitmodules_file.readlines()
-        gitmodules_file.close()
+    def readSubmodules(self, useDeps):
+        if useDeps:
+            submodules = self.readDeps()
+        else:
+            if not os.path.isfile('.gitmodules'):
+                return []
+            gitmodules_file = open('.gitmodules')
+            gitmodules_lines = gitmodules_file.readlines()
+            gitmodules_file.close()
 
-        submodules = []
-        currentSubmodule = None
-        for line in gitmodules_lines:
-            if line.find('[submodule') == 0:
-                if currentSubmodule:
-                    submodules.append(currentSubmodule)
-                currentSubmodule = Submodule()
-            tokens = line.split('=')
-            if len(tokens) >= 2:
-                key = tokens[0].strip()
-                value = tokens[1].strip()
-                if key == 'path':
-                    currentSubmodule.path = value
-                elif key == 'url':
-                    currentSubmodule.url = value
-                elif key == 'os':
-                    currentSubmodule.os = value.split(',')
-        if currentSubmodule:
-            submodules.append(currentSubmodule)
+            submodules = []
+            currentSubmodule = None
+            for line in gitmodules_lines:
+                if line.find('[submodule') == 0:
+                    if currentSubmodule:
+                        submodules.append(currentSubmodule)
+                    currentSubmodule = Submodule()
+                tokens = line.split('=')
+                if len(tokens) >= 2:
+                    key = tokens[0].strip()
+                    value = tokens[1].strip()
+                    if key == 'path':
+                        currentSubmodule.path = value
+                    elif key == 'url':
+                        currentSubmodule.url = value
+                    elif key == 'os':
+                        currentSubmodule.os = value.split(',')
+            if currentSubmodule:
+                submodules.append(currentSubmodule)
         return submodules
 
     def readDeps(self):
         parser = DEPSParser()
-        return parser.parseFile('.DEPS.git')
-
-    def initSubmodules(self):
-        # try reading submodules from .gitmodules.
-        submodules = self.readSubmodules()
-        for submodule in submodules:
-            submodule.initialize()
-        if submodules:
-            return
-        # if we could not find any submodules in .gitmodules, try .DEPS.git
-        submodules = self.readDeps()
-
-        if not submodules:
-            return
-
+        submodules = parser.parseFile('.DEPS.git')
         print 'DEPS file provides the following submodules:'
         for submodule in submodules:
             print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.shasum
+        return submodules
+
+    def initSubmodules(self, useDeps):
+        submodules = self.readSubmodules()
         for submodule in submodules:
-            submodule.initialize()
-        subprocessCall(['git', 'commit', '-a', '-m', '"initialize submodules"'])
+            submodule.initialize(useDeps)
+        if useDeps:
+            subprocessCall(['git', 'commit', '-a', '-m', 'initialize submodules'])
+
