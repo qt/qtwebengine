@@ -57,13 +57,13 @@ class YUVVideoMaterial : public QSGMaterial
 public:
     YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, const QSizeF &texScale);
 
-    virtual QSGMaterialType *type() const {
+    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE {
         static QSGMaterialType theType;
         return &theType;
     }
 
-    virtual QSGMaterialShader *createShader() const;
-    virtual int compare(const QSGMaterial *other) const;
+    virtual QSGMaterialShader *createShader() const Q_DECL_OVERRIDE;
+    virtual int compare(const QSGMaterial *other) const Q_DECL_OVERRIDE;
 
     QSGTexture *m_yTexture;
     QSGTexture *m_uTexture;
@@ -76,13 +76,13 @@ class YUVAVideoMaterial : public YUVVideoMaterial
 public:
     YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QSizeF &texScale);
 
-    virtual QSGMaterialType *type() const {
+    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE{
         static QSGMaterialType theType;
         return &theType;
     }
 
-    virtual QSGMaterialShader *createShader() const;
-    virtual int compare(const QSGMaterial *other) const;
+    virtual QSGMaterialShader *createShader() const Q_DECL_OVERRIDE;
+    virtual int compare(const QSGMaterial *other) const Q_DECL_OVERRIDE;
 
     QSGTexture *m_aTexture;
 };

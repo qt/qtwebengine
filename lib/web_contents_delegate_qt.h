@@ -62,15 +62,16 @@ class WebContentsDelegateQt : public content::WebContentsDelegate
 public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
 
-    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags);
-    virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked);
-    virtual void CloseContents(content::WebContents *source);
-    virtual void LoadingStateChanged(content::WebContents* source);
-    virtual void LoadProgressChanged(content::WebContents* source, double progress);
-    virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host);
-    virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
-    virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates);
-    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager();
+    virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags) Q_DECL_OVERRIDE;
+    virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked) Q_DECL_OVERRIDE;
+    virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
+    virtual void LoadingStateChanged(content::WebContents* source) Q_DECL_OVERRIDE;
+    // FIXME: with the next chromium update LoadProgressChanged with progress becomes available. Q_DECL_OVERRIDE must then be activated.
+    virtual void LoadProgressChanged(content::WebContents* source, double progress) /*Q_DECL_OVERRIDE*/;
+    virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
+    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;

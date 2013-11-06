@@ -109,12 +109,12 @@ private:
 class MailboxTexture : public QSGTexture {
 public:
     MailboxTexture(const cc::TransferableResource *resource, bool hasAlpha);
-    virtual int textureId() const { return m_textureId; }
+    virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
     void setTextureSize(const QSize& size) { m_textureSize = size; }
-    virtual QSize textureSize() const { return m_textureSize; }
-    virtual bool hasAlphaChannel() const { return m_hasAlpha; }
-    virtual bool hasMipmaps() const { return false; }
-    virtual void bind();
+    virtual QSize textureSize() const Q_DECL_OVERRIDE { return m_textureSize; }
+    virtual bool hasAlphaChannel() const Q_DECL_OVERRIDE { return m_hasAlpha; }
+    virtual bool hasMipmaps() const Q_DECL_OVERRIDE { return false; }
+    virtual void bind() Q_DECL_OVERRIDE;
 
     bool needsToFetch() const { return m_resource; }
     const cc::TransferableResource *resource() const { return m_resource; }

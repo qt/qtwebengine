@@ -93,35 +93,35 @@ public:
     {
     }
 
-    virtual void Run(Delegate *delegate)
+    virtual void Run(Delegate *delegate) Q_DECL_OVERRIDE
     {
         // FIXME: This could be needed if we want to run Chromium tests.
         // We could run a QEventLoop here.
     }
 
-    virtual void Quit()
+    virtual void Quit() Q_DECL_OVERRIDE
     {
         Q_UNREACHABLE();
     }
 
-    virtual void ScheduleWork()
+    virtual void ScheduleWork() Q_DECL_OVERRIDE
     {
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
-    virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time)
+    virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) Q_DECL_OVERRIDE
     {
         startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
     }
 
 protected:
-    virtual void customEvent(QEvent *ev)
+    virtual void customEvent(QEvent *ev) Q_DECL_OVERRIDE
     {
         if (handleScheduledWork())
             QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
 
-    virtual void timerEvent(QTimerEvent *ev)
+    virtual void timerEvent(QTimerEvent *ev) Q_DECL_OVERRIDE
     {
         killTimer(ev->timerId());
 
@@ -229,15 +229,15 @@ public:
             Q_UNREACHABLE();
     }
 
-    virtual void* GetHandle() { return m_handle; }
+    virtual void* GetHandle() Q_DECL_OVERRIDE { return m_handle; }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
-    virtual bool Initialize(gfx::GLSurface *, gfx::GpuPreference) { Q_UNREACHABLE(); return false; }
-    virtual void Destroy() { Q_UNREACHABLE(); }
-    virtual bool MakeCurrent(gfx::GLSurface *) { Q_UNREACHABLE(); return false; }
-    virtual void ReleaseCurrent(gfx::GLSurface *) { Q_UNREACHABLE(); }
-    virtual bool IsCurrent(gfx::GLSurface *) { Q_UNREACHABLE(); return false; }
-    virtual void SetSwapInterval(int) { Q_UNREACHABLE(); }
+    virtual bool Initialize(gfx::GLSurface *, gfx::GpuPreference) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
+    virtual void Destroy() Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual bool MakeCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
+    virtual void ReleaseCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual bool IsCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
+    virtual void SetSwapInterval(int) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
 
 private:
     void *m_handle;

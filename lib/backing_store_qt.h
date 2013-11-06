@@ -57,10 +57,10 @@ public:
 
     virtual void PaintToBackingStore(content::RenderProcessHost *process, TransportDIB::Id bitmap, const gfx::Rect &bitmap_rect,
                                      const std::vector<gfx::Rect> &copy_rects, float scale_factor, const base::Closure &completion_callback,
-                                     bool *scheduled_completion_callback);
+                                     bool *scheduled_completion_callback) Q_DECL_OVERRIDE;
 
-    virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size);
-    virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output);
+    virtual void ScrollBackingStore(const gfx::Vector2d &delta, const gfx::Rect &clip_rect, const gfx::Size &view_size) Q_DECL_OVERRIDE;
+    virtual bool CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output) Q_DECL_OVERRIDE;
 
 private:
     // Number of physical pixels per view unit. This is 1 or 2 in practice.
