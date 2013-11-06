@@ -49,7 +49,8 @@ SOURCES = \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
         web_engine_context.cpp \
-        web_event_factory.cpp
+        web_event_factory.cpp \
+        yuv_video_node.cpp
 
 HEADERS = \
         backing_store_qt.h \
@@ -70,5 +71,6 @@ HEADERS = \
         web_contents_delegate_qt.h \
         web_contents_view_qt.h \
         web_engine_context.h \
-        web_event_factory.h
+        web_event_factory.h \
+        yuv_video_node.h
 
