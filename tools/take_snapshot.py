@@ -145,7 +145,8 @@ def clearDirectory(directory):
 def listFilesInCurrentRepository():
     currentRepo = GitSubmodule.Submodule(os.getcwd())
     files = subprocess.check_output(['git', 'ls-files']).splitlines()
-    submodules = currentRepo.readSubmodules()
+    useDeps = True
+    submodules = currentRepo.readSubmodules(useDeps)
     for submodule in submodules:
         submodule_files = submodule.listFiles()
         for submodule_file in submodule_files:
