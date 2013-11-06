@@ -3,7 +3,7 @@
 ** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWebEngine module of the Qt Toolkit.
+** This file is part of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,79 +39,63 @@
 **
 ****************************************************************************/
 
-#ifndef TYPE_CONVERSION_H
-#define TYPE_CONVERSION_H
+#ifndef YUV_VIDEO_NODE_H
+#define YUV_VIDEO_NODE_H
 
-#include <QMatrix4x4>
-#include <QRect>
-#include <QString>
-#include <QUrl>
-#include "base/files/file_path.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
-#include "ui/gfx/rect.h"
-#include "url/gurl.h"
+#include <QtQuick/qsgmaterial.h>
+#include <QtQuick/qsgnode.h>
 
-inline QString toQt(const base::string16 &string)
+QT_BEGIN_NAMESPACE
+class QSGTexture;
+QT_END_NAMESPACE
+
+// These classes duplicate, QtQuick style, the logic of GLRenderer::DrawYUVVideoQuad.
+// Their behavior should stay as close as possible to GLRenderer.
+
+class YUVVideoMaterial : public QSGMaterial
 {
-    return QString::fromUtf16(string.data());
-}
+public:
+    YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, const QSizeF &texScale);
 
-inline QString toQt(const std::string &string)
+    virtual QSGMaterialType *type() const {
+        static QSGMaterialType theType;
+        return &theType;
+    }
+
+    virtual QSGMaterialShader *createShader() const;
+    virtual int compare(const QSGMaterial *other) const;
+
+    QSGTexture *m_yTexture;
+    QSGTexture *m_uTexture;
+    QSGTexture *m_vTexture;
+    QSizeF m_texScale;
+};
+
+class YUVAVideoMaterial : public YUVVideoMaterial
 {
-    return QString::fromStdString(string);
-}
+public:
+    YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QSizeF &texScale);
 
-inline base::string16 toString16(const QString &qString)
+    virtual QSGMaterialType *type() const {
+        static QSGMaterialType theType;
+        return &theType;
+    }
+
+    virtual QSGMaterialShader *createShader() const;
+    virtual int compare(const QSGMaterial *other) const;
+
+    QSGTexture *m_aTexture;
+};
+
+class YUVVideoNode : public QSGGeometryNode
 {
-    return base::string16(qString.utf16());
-}
+public:
+    YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QSizeF &texScale);
+    void setRect(const QRectF &rect);
 
-inline QUrl toQt(const GURL &url)
-{
-    return QUrl(QString::fromStdString(url.spec()));
-}
+private:
+    QSGGeometry m_geometry;
+    YUVVideoMaterial *m_material;
+};
 
-inline GURL toGurl(const QUrl& url)
-{
-    return GURL(url.toString().toStdString());
-}
-
-inline QRect toQt(const gfx::Rect &rect)
-{
-    return QRect(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
-inline QRectF toQt(const gfx::RectF &rect)
-{
-    return QRectF(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
-inline QSize toQt(const gfx::Size &size)
-{
-    return QSize(size.width(), size.height());
-}
-
-inline QSizeF toQt(const gfx::SizeF &size)
-{
-    return QSizeF(size.width(), size.height());
-}
-
-inline QMatrix4x4 toQt(const SkMatrix44 &m)
-{
-    return QMatrix4x4(
-        m.get(0, 0), m.get(0, 1), m.get(0, 2), m.get(0, 3),
-        m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
-        m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
-        m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
-}
-
-inline base::FilePath::StringType toFilePathString(const QString &str)
-{
-#if defined(OS_POSIX)
-    return str.toStdString();
-#elif defined(OS_WIN)
-    return str.toStdWString();
-#endif
-}
-
-#endif // TYPE_CONVERSION_H
+#endif // YUV_VIDEO_NODE_H
