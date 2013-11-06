@@ -54,6 +54,7 @@
 
 #include "chromium_gpu_helper.h"
 #include "type_conversion.h"
+#include "yuv_video_node.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/bind.h"
@@ -62,6 +63,7 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/quads/yuv_video_draw_quad.h"
 #include <QOpenGLFramebufferObject>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
@@ -436,7 +438,36 @@ void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData)
                 // This has to be done at the end since many QSGSimpleTextureNode methods would overwrite this.
                 QSGGeometry::updateTexturedRectGeometry(textureNode->geometry(), textureNode->rect(), textureNode->texture()->convertToNormalizedSourceRect(toQt(tquad->tex_coord_rect)));
                 currentLayerChain->appendChildNode(textureNode);
+                break;
+            } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
+                const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
+                const cc::TransferableResource *yRes = findResource(frameData->resource_list, vquad->y_plane_resource_id);
+                const cc::TransferableResource *uRes = findResource(frameData->resource_list, vquad->u_plane_resource_id);
+                const cc::TransferableResource *vRes = findResource(frameData->resource_list, vquad->v_plane_resource_id);
+                const cc::TransferableResource *aRes = findResource(frameData->resource_list, vquad->a_plane_resource_id);
 
+                QSharedPointer<MailboxTexture> &yTexture = m_mailboxTextures[yRes->id] = oldMailboxTextures.value(yRes->id);
+                QSharedPointer<MailboxTexture> &uTexture = m_mailboxTextures[uRes->id] = oldMailboxTextures.value(uRes->id);
+                QSharedPointer<MailboxTexture> &vTexture = m_mailboxTextures[vRes->id] = oldMailboxTextures.value(vRes->id);
+                if (!yTexture) {
+                    yTexture = QSharedPointer<MailboxTexture>(new MailboxTexture(yRes, /* hasAlpha */ false));
+                    uTexture = QSharedPointer<MailboxTexture>(new MailboxTexture(uRes, /* hasAlpha */ false));
+                    vTexture = QSharedPointer<MailboxTexture>(new MailboxTexture(vRes, /* hasAlpha */ false));
+                }
+
+                // Do not use a reference for aTexture since we don't necessarily want an entry for it in m_mailboxTextures.
+                QSharedPointer<MailboxTexture> aTexture;
+                // This currently requires --enable-vp8-alpha-playback to apply.
+                if (aRes) {
+                    aTexture = oldMailboxTextures.value(aRes->id);
+                    if (!aTexture)
+                        aTexture = QSharedPointer<MailboxTexture>(new MailboxTexture(aRes, /* hasAlpha */ false));
+                    m_mailboxTextures[aRes->id] = aTexture;
+                }
+
+                YUVVideoNode *videoNode = new YUVVideoNode(yTexture.data(), uTexture.data(), vTexture.data(), aTexture.data(), toQt(vquad->tex_scale));
+                videoNode->setRect(toQt(quad->rect));
+                currentLayerChain->appendChildNode(videoNode);
                 break;
             } default:
                 qWarning("Unimplemented quad material: %d", quad->material);
