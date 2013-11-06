@@ -104,7 +104,18 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('.png') and
             not '/build/' in file_path)
         or file_path.startswith('remoting')
-        or file_path.startswith('win8') ):
+        or file_path.startswith('win8')
+        or (file_path.startswith('third_party/android_tools') and
+            not 'android/cpufeatures' in file_path)
+        or file_path.startswith('third_party/aosp')
+        or file_path.startswith('third_party/apache-mime4j')
+        or file_path.startswith('third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille')
+        or file_path.startswith('third_party/findbugs')
+        or file_path.startswith('third_party/guava/src')
+        or file_path.startswith('third_party/httpcomponents-client')
+        or file_path.startswith('third_party/httpcomponents-core')
+        or file_path.startswith('third_party/jarjar')
+        or file_path.startswith('third_party/jsr-305/src') ):
             return True
     return False
 
@@ -145,7 +156,8 @@ def clearDirectory(directory):
 def listFilesInCurrentRepository():
     currentRepo = GitSubmodule.Submodule(os.getcwd())
     files = subprocess.check_output(['git', 'ls-files']).splitlines()
-    submodules = currentRepo.readSubmodules()
+    useDeps = True
+    submodules = currentRepo.readSubmodules(useDeps)
     for submodule in submodules:
         submodule_files = submodule.listFiles()
         for submodule_file in submodule_files:
@@ -179,6 +191,7 @@ def exportChromium():
         if not isInChromiumBlacklist(f) and not isInGitBlacklist(f):
             createHardLinkForFile(f, os.path.join(third_party_chromium, f))
 
+GitSubmodule.extra_os = ['android']
 
 clearDirectory(third_party)
 
