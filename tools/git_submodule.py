@@ -162,7 +162,7 @@ class Submodule:
         subprocessCall(['git', 'reset', '--hard'])
         os.chdir(currentDir)
 
-    def initialize(self):
+    def initialize(self, useDeps):
         if self.matchesOS():
             print '-- initializing ' + self.path + ' --'
             if os.path.isdir(self.path):
@@ -185,7 +185,7 @@ class Submodule:
                 val = subprocessCall(['git', 'checkout', self.shasum])
                 if val != 0:
                     sys.exit("!!! initialization failed !!!")
-            self.initSubmodules()
+            self.initSubmodules(useDeps)
             os.chdir(currentDir)
         else:
             print '-- skipping ' + self.path + ' for this operating system. --'
@@ -234,22 +234,17 @@ class Submodule:
         parser = DEPSParser()
         return parser.parseFile('.DEPS.git')
 
-    def initSubmodules(self):
-        # try reading submodules from .gitmodules.
-        submodules = self.readSubmodules()
-        for submodule in submodules:
-            submodule.initialize()
-        if submodules:
-            return
-        # if we could not find any submodules in .gitmodules, try .DEPS.git
-        submodules = self.readDeps()
+    def initSubmodules(self, useDeps = False):
+        if useDeps:
+            submodules = self.readDeps()
+            print 'DEPS file provides the following submodules:'
+            for submodule in submodules:
+                print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.shasum
+            for submodule in submodules:
+                submodule.initialize(useDeps)
+            subprocessCall(['git', 'commit', '-a', '-m', '"initialize submodules"'])
+        else:
+            submodules = self.readSubmodules()
+            for submodule in submodules:
+                submodule.initialize(useDeps)
 
-        if not submodules:
-            return
-
-        print 'DEPS file provides the following submodules:'
-        for submodule in submodules:
-            print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.shasum
-        for submodule in submodules:
-            submodule.initialize()
-        subprocessCall(['git', 'commit', '-a', '-m', '"initialize submodules"'])
