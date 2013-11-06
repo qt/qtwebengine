@@ -58,12 +58,12 @@ public:
 
     virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType,
                                        const base::string16 &messageText, const base::string16 &defaultPromptText,
-                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage);
+                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) Q_DECL_OVERRIDE;
     virtual void RunBeforeUnloadDialog(content::WebContents *, const base::string16 &messageText, bool isReload,
-                                         const content::JavaScriptDialogManager::DialogClosedCallback &callback) { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
-    virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride);
-    virtual void CancelActiveAndPendingDialogs(content::WebContents *) {}
-    virtual void WebContentsDestroyed(content::WebContents *) {}
+                                         const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
+    virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) Q_DECL_OVERRIDE;
+    virtual void CancelActiveAndPendingDialogs(content::WebContents *) Q_DECL_OVERRIDE {}
+    virtual void WebContentsDestroyed(content::WebContents *) Q_DECL_OVERRIDE {}
 
 };
 

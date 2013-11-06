@@ -58,20 +58,20 @@ class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidget
 public:
     RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
 
-    virtual void initAsChild(WebContentsAdapterClient* container);
-    virtual void initAsPopup(const QRect&);
-    virtual QRectF screenRect() const;
-    virtual void setKeyboardFocus();
-    virtual bool hasKeyboardFocus();
-    virtual void show();
-    virtual void hide();
-    virtual bool isVisible() const;
-    virtual WId nativeWindowIdForCompositor() const;
-    virtual QWindow* window() const;
-    virtual void update(const QRect& rect = QRect());
-    virtual void updateCursor(const QCursor &);
-    virtual void resize(int width, int height);
-    virtual void inputMethodStateChanged(bool editorVisible);
+    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
+    virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
+    virtual QRectF screenRect() const Q_DECL_OVERRIDE;
+    virtual void setKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual void show() Q_DECL_OVERRIDE;
+    virtual void hide() Q_DECL_OVERRIDE;
+    virtual bool isVisible() const Q_DECL_OVERRIDE;
+    virtual WId nativeWindowIdForCompositor() const Q_DECL_OVERRIDE;
+    virtual QWindow* window() const Q_DECL_OVERRIDE;
+    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
+    virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
+    virtual void resize(int width, int height) Q_DECL_OVERRIDE;
+    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
 
 protected:
     void paintEvent(QPaintEvent * event);

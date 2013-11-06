@@ -50,6 +50,8 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "content/public/common/url_constants.h"
 
+#include "qglobal.h"
+
 namespace net {
 class HostResolver;
 class MappedHostResolver;
@@ -61,9 +63,9 @@ class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
     explicit URLRequestContextGetterQt(const base::FilePath&);
 
-    virtual net::URLRequestContext* GetURLRequestContext() /*OVERRIDE*/;
+    virtual net::URLRequestContext* GetURLRequestContext() Q_DECL_OVERRIDE;
 
-    virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const /*OVERRIDE*/;
+    virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
 
 private:
     virtual ~URLRequestContextGetterQt() {}

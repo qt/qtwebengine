@@ -69,54 +69,54 @@ public:
     void initialize(WebContentsAdapterClient* client);
     WebContentsAdapterClient *client() { return m_client; }
 
-    virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host);
+    virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
 
-    virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context);
+    virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context) Q_DECL_OVERRIDE;
 
-    virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host);
+    virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
 
-    virtual void SetPageTitle(const string16& title);
+    virtual void SetPageTitle(const string16& title) Q_DECL_OVERRIDE;
 
-    virtual void RenderViewCreated(content::RenderViewHost* host) { QT_NOT_YET_IMPLEMENTED }
+    virtual void RenderViewCreated(content::RenderViewHost* host) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void RenderViewSwappedIn(content::RenderViewHost* host) { QT_NOT_YET_IMPLEMENTED }
+    virtual void RenderViewSwappedIn(content::RenderViewHost* host) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void SetOverscrollControllerEnabled(bool enabled) { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetOverscrollControllerEnabled(bool enabled) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
-    virtual gfx::NativeView GetNativeView() const;
+    virtual gfx::NativeView GetNativeView() const Q_DECL_OVERRIDE;
 
-    virtual gfx::NativeView GetContentNativeView() const { QT_NOT_USED return 0; }
+    virtual gfx::NativeView GetContentNativeView() const Q_DECL_OVERRIDE { QT_NOT_USED return 0; }
 
-    virtual gfx::NativeWindow GetTopLevelNativeWindow() const { QT_NOT_USED return 0; }
+    virtual gfx::NativeWindow GetTopLevelNativeWindow() const Q_DECL_OVERRIDE { QT_NOT_USED return 0; }
 
-    virtual void GetContainerBounds(gfx::Rect* out) const;
+    virtual void GetContainerBounds(gfx::Rect* out) const Q_DECL_OVERRIDE;
 
-    virtual void OnTabCrashed(base::TerminationStatus status, int error_code) { QT_NOT_YET_IMPLEMENTED }
+    virtual void OnTabCrashed(base::TerminationStatus status, int error_code) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void SizeContents(const gfx::Size& size) { QT_NOT_YET_IMPLEMENTED }
+    virtual void SizeContents(const gfx::Size& size) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void Focus();
+    virtual void Focus() Q_DECL_OVERRIDE;
 
-    virtual void SetInitialFocus();
+    virtual void SetInitialFocus() Q_DECL_OVERRIDE;
 
-    virtual void StoreFocus() { QT_NOT_USED }
+    virtual void StoreFocus() Q_DECL_OVERRIDE { QT_NOT_USED }
 
-    virtual void RestoreFocus() { QT_NOT_USED }
+    virtual void RestoreFocus() Q_DECL_OVERRIDE { QT_NOT_USED }
 
-    virtual content::DropData* GetDropData() const { QT_NOT_YET_IMPLEMENTED return 0; }
+    virtual content::DropData* GetDropData() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return 0; }
 
-    virtual gfx::Rect GetViewBounds() const { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
+    virtual gfx::Rect GetViewBounds() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
 
     virtual void ShowPopupMenu(const gfx::Rect& bounds, int item_height, double item_font_size, int selected_item,
-                                const std::vector<content::MenuItem>& items, bool right_aligned, bool allow_multiple_selection) { QT_NOT_YET_IMPLEMENTED }
+                                const std::vector<content::MenuItem>& items, bool right_aligned, bool allow_multiple_selection) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void ShowContextMenu(const content::ContextMenuParams &params);
+    virtual void ShowContextMenu(const content::ContextMenuParams &params) Q_DECL_OVERRIDE;
 
 #if defined(OS_MACOSX)
-    virtual void SetAllowOverlappingViews(bool overlapping) { QT_NOT_YET_IMPLEMENTED }
-    virtual void CloseTabAfterEventTracking() { QT_NOT_YET_IMPLEMENTED }
-    virtual bool GetAllowOverlappingViews() const { QT_NOT_YET_IMPLEMENTED; return false; }
-    virtual bool IsEventTracking() const { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void SetAllowOverlappingViews(bool overlapping) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void CloseTabAfterEventTracking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual bool GetAllowOverlappingViews() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual bool IsEventTracking() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
 #endif // defined(OS_MACOSX)
 
 private:

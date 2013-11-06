@@ -64,13 +64,13 @@ public:
         this->setAcceptHoverEvents(true);
     }
 
-    virtual void initAsChild(WebContentsAdapterClient* container)
+    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE
     {
         QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
         this->setParentItem(viewPrivate->q_func());
     }
 
-    virtual void initAsPopup(const QRect& rect)
+    virtual void initAsPopup(const QRect& rect) Q_DECL_OVERRIDE
     {
         this->setX(rect.x());
         this->setY(rect.y());
@@ -79,48 +79,48 @@ public:
         this->setVisible(true);
     }
 
-    virtual QRectF screenRect() const
+    virtual QRectF screenRect() const Q_DECL_OVERRIDE
     {
         QPointF pos = this->mapToScene(QPointF(0,0));
         return QRectF(pos.x(), pos.y(), this->width(), this->height());
     }
 
-    virtual void setKeyboardFocus()
+    virtual void setKeyboardFocus() Q_DECL_OVERRIDE
     {
         this->setFocus(true);
     }
 
-    virtual bool hasKeyboardFocus()
+    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE
     {
         return this->hasFocus();
     }
 
-    virtual void show()
+    virtual void show() Q_DECL_OVERRIDE
     {
         this->setVisible(true);
     }
 
-    virtual void hide()
+    virtual void hide() Q_DECL_OVERRIDE
     {
         this->setVisible(false);
     }
 
-    virtual bool isVisible() const
+    virtual bool isVisible() const Q_DECL_OVERRIDE
     {
         return ItemBaseT::isVisible();
     }
 
-    virtual QWindow* window() const
+    virtual QWindow* window() const Q_DECL_OVERRIDE
     {
         return ItemBaseT::window();
     }
 
-    virtual void updateCursor(const QCursor &cursor)
+    virtual void updateCursor(const QCursor &cursor) Q_DECL_OVERRIDE
     {
         this->setCursor(cursor);
     }
 
-    virtual void resize(int width, int height)
+    virtual void resize(int width, int height) Q_DECL_OVERRIDE
     {
         this->setSize(QSizeF(width, height));
     }
@@ -213,12 +213,12 @@ class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegat
 public:
     RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
 
-    virtual WId nativeWindowIdForCompositor() const;
-    virtual void update(const QRect& rect = QRect());
+    virtual WId nativeWindowIdForCompositor() const Q_DECL_OVERRIDE;
+    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
 
-    virtual void itemChange(ItemChange, const ItemChangeData &);
-    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
-    virtual void releaseResources();
+    virtual void itemChange(ItemChange, const ItemChangeData &) Q_DECL_OVERRIDE;
+    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
+    virtual void releaseResources() Q_DECL_OVERRIDE;
 
 public Q_SLOTS:
     void onFrameSwapped();
@@ -231,8 +231,8 @@ class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQt
 public:
     RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
 
-    virtual WId nativeWindowIdForCompositor() const;
-    virtual void update(const QRect& rect = QRect());
+    virtual WId nativeWindowIdForCompositor() const Q_DECL_OVERRIDE;
+    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
 
     void paint(QPainter *painter);
 

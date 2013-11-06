@@ -44,6 +44,8 @@
 
 #include "content/public/browser/resource_context.h"
 
+#include "qglobal.h"
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -59,12 +61,12 @@ public:
         , getter_(0)
     {}
 
-    virtual net::HostResolver* GetHostResolver();
+    virtual net::HostResolver* GetHostResolver() Q_DECL_OVERRIDE;
 
-    virtual net::URLRequestContext* GetRequestContext();
+    virtual net::URLRequestContext* GetRequestContext() Q_DECL_OVERRIDE;
 
-    virtual bool AllowMicAccess(const GURL& origin) { return false; }
-    virtual bool AllowCameraAccess(const GURL& origin) { return false; }
+    virtual bool AllowMicAccess(const GURL& origin) Q_DECL_OVERRIDE { return false; }
+    virtual bool AllowCameraAccess(const GURL& origin) Q_DECL_OVERRIDE { return false; }
 
     void set_url_request_context_getter(net::URLRequestContextGetter* getter);
 

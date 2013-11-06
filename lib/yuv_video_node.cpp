@@ -45,9 +45,9 @@
 class YUVVideoMaterialShader : public QSGMaterialShader
 {
 public:
-    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial);
+    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) Q_DECL_OVERRIDE;
 
-    virtual char const *const *attributeNames() const {
+    virtual char const *const *attributeNames() const Q_DECL_OVERRIDE {
         static const char *names[] = {
             "a_position",
             "a_texCoord",
@@ -57,7 +57,7 @@ public:
     }
 
 protected:
-    virtual const char *vertexShader() const {
+    virtual const char *vertexShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::VertexShaderPosTexYUVStretch
         const char *shader =
         "attribute highp vec4 a_position;\n"
@@ -72,7 +72,7 @@ protected:
         return shader;
     }
 
-    virtual const char *fragmentShader() const {
+    virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::FragmentShaderYUVVideo
         static const char *shader =
         "varying mediump vec2 v_texCoord;\n"
@@ -93,7 +93,7 @@ protected:
         return shader;
     }
 
-    virtual void initialize() {
+    virtual void initialize() Q_DECL_OVERRIDE {
         m_id_matrix = program()->uniformLocation("matrix");
         m_id_texScale = program()->uniformLocation("texScale");
         m_id_yTexture = program()->uniformLocation("y_texture");
@@ -116,10 +116,10 @@ protected:
 
 class YUVAVideoMaterialShader : public YUVVideoMaterialShader
 {
-    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial);
+    virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial) Q_DECL_OVERRIDE;
 
 protected:
-    virtual const char *fragmentShader() const {
+    virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::FragmentShaderYUVAVideo
         static const char *shader =
         // "precision mediump float;\n"
@@ -144,7 +144,7 @@ protected:
         return shader;
     }
 
-    virtual void initialize() {
+    virtual void initialize() Q_DECL_OVERRIDE {
         // YUVVideoMaterialShader has a subset of the uniforms.
         YUVVideoMaterialShader::initialize();
         m_id_aTexture = program()->uniformLocation("a_texture");

@@ -67,8 +67,8 @@ public:
 
     bool determineDownloadTarget(content::DownloadItem *item, const content::DownloadTargetCallback &callback);
 
-    virtual void OnDownloadUpdated(content::DownloadItem *download);
-    virtual void OnDownloadDestroyed(content::DownloadItem *download);
+    virtual void OnDownloadUpdated(content::DownloadItem *download) Q_DECL_OVERRIDE;
+    virtual void OnDownloadDestroyed(content::DownloadItem *download) Q_DECL_OVERRIDE;
 private:
     bool isPathAvailable(const QString& path);
 

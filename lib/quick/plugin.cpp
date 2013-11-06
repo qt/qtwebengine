@@ -50,7 +50,7 @@ class QtWebEnginePlugin : public QQmlExtensionPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
-    virtual void registerTypes(const char *uri)
+    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
         Q_UNUSED(uri);

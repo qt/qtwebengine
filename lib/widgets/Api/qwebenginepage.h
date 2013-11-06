@@ -60,7 +60,7 @@ struct FunctorBase {
 template <typename F>
 struct FunctorCallback : public FunctorBase {
     FunctorCallback(F callback) : m_callback(callback) {}
-    virtual void operator()(const QVariant &value) { m_callback(value); }
+    virtual void operator()(const QVariant &value) Q_DECL_OVERRIDE { m_callback(value); }
 private:
     F m_callback;
 };
