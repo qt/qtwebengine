@@ -103,63 +103,63 @@ public:
     void releaseAndAckDelegatedFrame();
     BackingStoreQt* GetBackingStore();
 
-    virtual content::BackingStore *AllocBackingStore(const gfx::Size &size);
+    virtual content::BackingStore *AllocBackingStore(const gfx::Size &size) Q_DECL_OVERRIDE;
 
-    virtual void InitAsChild(gfx::NativeView);
-    virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&);
-    virtual void InitAsFullscreen(content::RenderWidgetHostView*);
-    virtual content::RenderWidgetHost* GetRenderWidgetHost() const;
-    virtual void SetSize(const gfx::Size& size);
-    virtual void SetBounds(const gfx::Rect& rect);
-    virtual gfx::Size GetPhysicalBackingSize() const;
-    virtual gfx::NativeView GetNativeView() const;
-    virtual gfx::NativeViewId GetNativeViewId() const;
-    virtual gfx::NativeViewAccessible GetNativeViewAccessible();
-    virtual void Focus();
-    virtual bool HasFocus() const;
-    virtual bool IsSurfaceAvailableForCopy() const;
-    virtual void Show();
-    virtual void Hide();
-    virtual bool IsShowing();
-    virtual gfx::Rect GetViewBounds() const;
-    virtual void SetBackground(const SkBitmap& background);
-    virtual bool LockMouse();
-    virtual void UnlockMouse();
+    virtual void InitAsChild(gfx::NativeView) Q_DECL_OVERRIDE;
+    virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) Q_DECL_OVERRIDE;
+    virtual void InitAsFullscreen(content::RenderWidgetHostView*) Q_DECL_OVERRIDE;
+    virtual content::RenderWidgetHost* GetRenderWidgetHost() const Q_DECL_OVERRIDE;
+    virtual void SetSize(const gfx::Size& size) Q_DECL_OVERRIDE;
+    virtual void SetBounds(const gfx::Rect& rect) Q_DECL_OVERRIDE;
+    virtual gfx::Size GetPhysicalBackingSize() const Q_DECL_OVERRIDE;
+    virtual gfx::NativeView GetNativeView() const Q_DECL_OVERRIDE;
+    virtual gfx::NativeViewId GetNativeViewId() const Q_DECL_OVERRIDE;
+    virtual gfx::NativeViewAccessible GetNativeViewAccessible() Q_DECL_OVERRIDE;
+    virtual void Focus() Q_DECL_OVERRIDE;
+    virtual bool HasFocus() const Q_DECL_OVERRIDE;
+    virtual bool IsSurfaceAvailableForCopy() const Q_DECL_OVERRIDE;
+    virtual void Show() Q_DECL_OVERRIDE;
+    virtual void Hide() Q_DECL_OVERRIDE;
+    virtual bool IsShowing() Q_DECL_OVERRIDE;
+    virtual gfx::Rect GetViewBounds() const Q_DECL_OVERRIDE;
+    virtual void SetBackground(const SkBitmap& background) Q_DECL_OVERRIDE;
+    virtual bool LockMouse() Q_DECL_OVERRIDE;
+    virtual void UnlockMouse() Q_DECL_OVERRIDE;
 #if defined(TOOLKIT_GTK)
-    virtual GdkEventButton* GetLastMouseDown();
-    virtual gfx::NativeView BuildInputMethodsGtkMenu();
+    virtual GdkEventButton* GetLastMouseDown() Q_DECL_OVERRIDE;
+    virtual gfx::NativeView BuildInputMethodsGtkMenu() Q_DECL_OVERRIDE;
 #endif  // defined(TOOLKIT_GTK)
-    virtual void WasShown();
-    virtual void WasHidden();
-    virtual void MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&);
-    virtual void Blur();
-    virtual void UpdateCursor(const WebCursor&);
-    virtual void SetIsLoading(bool);
-    virtual void TextInputTypeChanged(ui::TextInputType, bool, ui::TextInputMode);
-    virtual void ImeCancelComposition();
-    virtual void ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&);
-    virtual void DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo&);
-    virtual void RenderProcessGone(base::TerminationStatus, int);
-    virtual void Destroy();
-    virtual void SetTooltipText(const string16&);
-    virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&);
-    virtual void ScrollOffsetChanged();
-    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback);
-    virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback);
-    virtual bool CanCopyToVideoFrame() const;
-    virtual void OnAcceleratedCompositingStateChange();
-    virtual void AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id);
-    virtual void AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id);
-    virtual void AcceleratedSurfaceSuspend();
-    virtual void AcceleratedSurfaceRelease();
-    virtual bool HasAcceleratedSurface(const gfx::Size&);
+    virtual void WasShown() Q_DECL_OVERRIDE;
+    virtual void WasHidden() Q_DECL_OVERRIDE;
+    virtual void MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&) Q_DECL_OVERRIDE;
+    virtual void Blur() Q_DECL_OVERRIDE;
+    virtual void UpdateCursor(const WebCursor&) Q_DECL_OVERRIDE;
+    virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
+    virtual void TextInputTypeChanged(ui::TextInputType, bool, ui::TextInputMode) Q_DECL_OVERRIDE;
+    virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
+    virtual void ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
+    virtual void DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo&) Q_DECL_OVERRIDE;
+    virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
+    virtual void Destroy() Q_DECL_OVERRIDE;
+    virtual void SetTooltipText(const string16&) Q_DECL_OVERRIDE;
+    virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&) Q_DECL_OVERRIDE;
+    virtual void ScrollOffsetChanged() Q_DECL_OVERRIDE;
+    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback) Q_DECL_OVERRIDE;
+    virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback) Q_DECL_OVERRIDE;
+    virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
+    virtual void OnAcceleratedCompositingStateChange() Q_DECL_OVERRIDE;
+    virtual void AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
+    virtual void AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
+    virtual void AcceleratedSurfaceSuspend() Q_DECL_OVERRIDE;
+    virtual void AcceleratedSurfaceRelease() Q_DECL_OVERRIDE;
+    virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
     virtual void OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
-    virtual void GetScreenInfo(WebKit::WebScreenInfo* results);
-    virtual gfx::Rect GetBoundsInRootWindow();
-    virtual gfx::GLSurfaceHandle GetCompositingSurface();
-    virtual void SetHasHorizontalScrollbar(bool);
-    virtual void SetScrollOffsetPinning(bool, bool);
-    virtual void OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&);
+    virtual void GetScreenInfo(WebKit::WebScreenInfo* results) Q_DECL_OVERRIDE;
+    virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
+    virtual gfx::GLSurfaceHandle GetCompositingSurface() Q_DECL_OVERRIDE;
+    virtual void SetHasHorizontalScrollbar(bool) Q_DECL_OVERRIDE;
+    virtual void SetScrollOffsetPinning(bool, bool) Q_DECL_OVERRIDE;
+    virtual void OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&) Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
 
     // Overridden from ui::GestureEventHelper.
@@ -176,17 +176,17 @@ public:
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
 #if defined(OS_MACOSX)
-    virtual void SetTakesFocusOnlyOnMouseDown(bool flag) { QT_NOT_YET_IMPLEMENTED }
-    virtual void SetActive(bool active) { QT_NOT_YET_IMPLEMENTED }
-    virtual bool IsSpeaking() const { QT_NOT_YET_IMPLEMENTED; return false; }
-    virtual void SpeakSelection() { QT_NOT_YET_IMPLEMENTED }
-    virtual bool PostProcessEventForPluginIme(const content::NativeWebKeyboardEvent& event) { QT_NOT_YET_IMPLEMENTED; return false; }
-    virtual void AboutToWaitForBackingStoreMsg() { QT_NOT_YET_IMPLEMENTED }
-    virtual void StopSpeaking() { QT_NOT_YET_IMPLEMENTED }
-    virtual void SetWindowVisibility(bool visible) { QT_NOT_YET_IMPLEMENTED }
-    virtual bool SupportsSpeech() const { QT_NOT_YET_IMPLEMENTED; return false; }
-    virtual void ShowDefinitionForSelection() { QT_NOT_YET_IMPLEMENTED }
-    virtual void WindowFrameChanged() { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetTakesFocusOnlyOnMouseDown(bool flag) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetActive(bool active) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual bool IsSpeaking() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void SpeakSelection() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual bool PostProcessEventForPluginIme(const content::NativeWebKeyboardEvent& event) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void AboutToWaitForBackingStoreMsg() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void StopSpeaking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void SetWindowVisibility(bool visible) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual bool SupportsSpeech() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void ShowDefinitionForSelection() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void WindowFrameChanged() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
 private:
