@@ -70,3 +70,16 @@ HEADERS = \
         web_engine_context.h \
         web_event_factory.h
 
+unix {
+    OUTPUT_DIR = $$getOutDir()
+    CONFIG(release, debug|release): OUTPUT_DIR = $$OUTPUT_DIR/Release
+    CONFIG(debug, debug|release): OUTPUT_DIR = $$OUTPUT_DIR/Debug
+    target.files = $$OUTPUT_DIR/lib/libQt5WebEngineCore.so
+    target.path = $$[QT_INSTALL_LIBS]
+    INSTALLS += target
+
+    process.files = $$OUTPUT_DIR/$$QTWEBENGINEPROCESS_NAME
+    process.path = $$[QT_INSTALL_BINS]
+    INSTALLS += process
+}
+
