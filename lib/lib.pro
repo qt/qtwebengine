@@ -84,3 +84,17 @@ HEADERS = \
         web_event_factory.h \
         yuv_video_node.h
 
+# It's difficult to convince the gyp/ninja combination to install the
+# output, so use qmake for that purpose. We need to use target.extra
+# rather than target.files since qmake is not convinced this file will
+# exist after the build completes.
+# FIXME: Remove this once we get rid of libQt5WebEngineCore.so and fold
+#        the object files into libQt5WebEngine.so instead.
+unix {
+    OUTPUT_DIR = $$getOutDir()
+    CONFIG(release, debug|release): OUTPUT_DIR = $$OUTPUT_DIR/Release
+    CONFIG(debug, debug|release): OUTPUT_DIR = $$OUTPUT_DIR/Debug
+    target.extra = $(INSTALL_FILE) $$OUTPUT_DIR/lib/lib$${TARGET}.so $$[QT_INSTALL_LIBS]
+    target.path = $$[QT_INSTALL_LIBS]
+    INSTALLS += target
+}

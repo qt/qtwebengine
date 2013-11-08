@@ -11,3 +11,7 @@ DESTDIR = $$getOutDir()/$$getConfigDir()
 INCLUDEPATH += ../lib
 
 SOURCES = main.cpp
+
+target.files = $$DESTDIR/$$QTWEBENGINEPROCESS_NAME
+target.path = $$[QT_INSTALL_BINS]
+INSTALLS += target
