@@ -58,31 +58,11 @@ void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
     QQuickItem::update();
 }
 
-void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
-{
-    QQuickItem::itemChange(change, value);
-    if (change == QQuickItem::ItemSceneChange && value.window)
-        connect(value.window, SIGNAL(frameSwapped()), SLOT(onFrameSwapped()));
-}
-
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     return m_client->updatePaintNode(oldNode, QQuickItem::window());
 }
-
-void RenderWidgetHostViewQtDelegateQuick::releaseResources()
-{
-    // This is the only callback we get before being removed from a window while we still know it.
-    QQuickItem::window()->disconnect(this);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::onFrameSwapped()
-{
-    m_client->sendDelegatedFrameAck();
-}
-
 #endif // QT_VERSION
-
 
 RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent)
     : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(client, parent)

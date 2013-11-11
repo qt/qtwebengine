@@ -47,6 +47,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/resources/transferable_resource.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
@@ -167,7 +168,6 @@ public:
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     virtual void paint(QPainter *, const QRectF& boundingRect) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) Q_DECL_OVERRIDE;
-    virtual void sendDelegatedFrameAck() Q_DECL_OVERRIDE;
     virtual void fetchBackingStore() Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
@@ -195,6 +195,7 @@ public:
 #endif // defined(OS_MACOSX)
 
 private:
+    void sendDelegatedFrameAck();
     void Paint(const gfx::Rect& damage_rect);
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
     int GetMappedTouch(int qtTouchId);
@@ -209,9 +210,9 @@ private:
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     BackingStoreQt *m_backingStore;
+    scoped_ptr<cc::DelegatedFrameData> m_pendingFrameData;
+    cc::TransferableResourceArray m_resourcesToRelease;
     uint32 m_pendingOutputSurfaceId;
-    scoped_ptr<cc::DelegatedFrameData> m_pendingUpdateFrameData;
-    scoped_ptr<cc::DelegatedFrameData> m_pendingAckFrameData;
 
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
