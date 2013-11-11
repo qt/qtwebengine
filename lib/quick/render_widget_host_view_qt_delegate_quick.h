@@ -215,13 +215,7 @@ public:
 
     virtual WId nativeWindowIdForCompositor() const;
     virtual void update(const QRect& rect = QRect());
-
-    virtual void itemChange(ItemChange, const ItemChangeData &);
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
-    virtual void releaseResources();
-
-public Q_SLOTS:
-    void onFrameSwapped();
 };
 #endif // QT_VERSION
 
