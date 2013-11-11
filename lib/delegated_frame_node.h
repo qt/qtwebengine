@@ -42,6 +42,7 @@
 #ifndef DELEGATED_FRAME_NODE_H
 #define DELEGATED_FRAME_NODE_H
 
+#include "cc/resources/transferable_resource.h"
 #include <QMutex>
 #include <QSGNode>
 #include <QSharedPointer>
@@ -65,7 +66,7 @@ public:
     DelegatedFrameNode(QQuickWindow *window);
     ~DelegatedFrameNode();
     void preprocess();
-    void commit(cc::DelegatedFrameData *frameData);
+    void commit(cc::DelegatedFrameData *frameData, cc::TransferableResourceArray *resourcesToRelease);
 
 private:
     QQuickWindow *m_window;

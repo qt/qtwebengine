@@ -215,13 +215,7 @@ public:
 
     virtual WId nativeWindowIdForCompositor() const Q_DECL_OVERRIDE;
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
-
-    virtual void itemChange(ItemChange, const ItemChangeData &) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
-    virtual void releaseResources() Q_DECL_OVERRIDE;
-
-public Q_SLOTS:
-    void onFrameSwapped();
 };
 #endif // QT_VERSION
 
