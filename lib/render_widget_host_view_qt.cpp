@@ -168,20 +168,6 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
         InitAsChild(0);
 }
 
-void RenderWidgetHostViewQt::sendDelegatedFrameAck()
-{
-    if (!m_pendingAckFrameData)
-        return;
-
-    cc::CompositorFrameAck ack;
-    ack.resources = m_pendingAckFrameData->resource_list;
-    content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-        m_host->GetRoutingID(), m_pendingOutputSurfaceId,
-        m_host->GetProcess()->GetID(), ack);
-
-    m_pendingAckFrameData.reset();
-}
-
 BackingStoreQt* RenderWidgetHostViewQt::GetBackingStore()
 {
     bool force_create = !m_host->empty();
@@ -593,9 +579,10 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 
 void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
 {
+    Q_ASSERT(!m_pendingFrameData);
     Q_ASSERT(frame->delegated_frame_data);
     m_pendingOutputSurfaceId = output_surface_id;
-    m_pendingUpdateFrameData = frame->delegated_frame_data.Pass();
+    m_pendingFrameData = frame->delegated_frame_data.Pass();
     m_delegate->update();
 }
 
@@ -651,19 +638,21 @@ void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-    if (!m_pendingUpdateFrameData)
+    if (!m_pendingFrameData)
         return oldNode;
 
     DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
     if (!frameNode)
         frameNode = new DelegatedFrameNode(window);
 
-    // Switch the frame from one pointer to the other to keep track of its state
-    // to be able to update and then ack each frame only once.
-    Q_ASSERT(!m_pendingAckFrameData);
-    m_pendingAckFrameData.reset(m_pendingUpdateFrameData.release());
+    frameNode->commit(m_pendingFrameData.get(), &m_resourcesToRelease);
+    m_pendingFrameData.reset();
 
-    frameNode->commit(m_pendingAckFrameData.get());
+    // This is possibly called from the Qt render thread, post the ack back to the UI
+    // to tell the child compositors to release resources and trigger a new frame.
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&RenderWidgetHostViewQt::sendDelegatedFrameAck, AsWeakPtr()));
+
     return frameNode;
 #else
     return 0;
@@ -756,6 +745,17 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
         gestures.reset(m_gestureRecognizer->ProcessTouchEventForGesture(*(*iter), result, this));
         ProcessGestures(gestures.get());
     }
+}
+
+void RenderWidgetHostViewQt::sendDelegatedFrameAck()
+{
+    cc::CompositorFrameAck ack;
+    ack.resources = m_resourcesToRelease;
+    content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+        m_host->GetRoutingID(), m_pendingOutputSurfaceId,
+        m_host->GetProcess()->GetID(), ack);
+
+    m_resourcesToRelease.clear();
 }
 
 void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
