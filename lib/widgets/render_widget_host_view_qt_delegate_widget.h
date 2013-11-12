@@ -56,7 +56,7 @@ QT_END_NAMESPACE
 class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::CompositingMode mode, QWidget *parent = 0);
+    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
 
     virtual void initAsChild(WebContentsAdapterClient* container);
     virtual void initAsPopup(const QRect&);

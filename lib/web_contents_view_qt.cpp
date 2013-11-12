@@ -76,8 +76,6 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(conte
     WebContentsAdapterClient::CompositingMode compositingMode = WebContentsAdapterClient::NoCompositing;
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableDelegatedRenderer))
         compositingMode = WebContentsAdapterClient::DelegatedCompositing;
-    else if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kForceCompositingMode))
-        compositingMode = WebContentsAdapterClient::ForcedGpuProcessCompositing;
 
     Q_ASSERT(m_factoryClient);
     view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view, compositingMode));

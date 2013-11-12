@@ -51,7 +51,7 @@
 #include <QWindow>
 #include <QtWidgets/QApplication>
 
-RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::CompositingMode mode, QWidget *parent)
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
     : QWidget(parent)
     , m_client(client)
 {
@@ -59,21 +59,6 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
-
-#if defined(Q_OS_LINUX)
-    // FOR TESTING ONLY, use at your own risks.
-    // Supporting this properly on all platforms would require duplicating
-    // many tricks done by RenderWidgetHostView[Win|Mac].
-    if (mode == WebContentsAdapterClient::ForcedGpuProcessCompositing) {
-        // This sets Qt::WA_NativeWindow and force a native window creation
-        // that we can give to the GPU process for it to render directly
-        // on through windowHandle().
-        winId();
-        // This makes sure that we won't try to paint the regular backing store
-        // on the window at the same time as the compositor.
-        setUpdatesEnabled(false);
-    }
-#endif
 }
 
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
@@ -124,8 +109,8 @@ bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
 
 WId RenderWidgetHostViewQtDelegateWidget::nativeWindowIdForCompositor() const
 {
-    QWindow* window = QWidget::windowHandle();
-    return window ? window->winId() : 0;
+    // The QtWidgets API doesn't support hardware acceleration.
+    return 0;
 }
 
 QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
