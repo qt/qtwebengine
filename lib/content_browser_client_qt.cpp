@@ -222,6 +222,8 @@ public:
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("glxcontext"), qtContext);
         } else if (platform == QStringLiteral("Cocoa"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
+        else if (platform == QStringLiteral("qnx"))
+            m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else
             // Add missing platforms once they work.
             Q_UNREACHABLE();
