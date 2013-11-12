@@ -60,7 +60,8 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, CompositingMode mode)
 {
-    return new RenderWidgetHostViewQtDelegateWidget(client, mode);
+    Q_UNUSED(mode);
+    return new RenderWidgetHostViewQtDelegateWidget(client);
 }
 
 void QWebEnginePagePrivate::titleChanged(const QString &title)

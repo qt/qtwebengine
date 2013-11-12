@@ -74,8 +74,7 @@ class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
     enum CompositingMode {
         NoCompositing,
-        DelegatedCompositing,
-        ForcedGpuProcessCompositing
+        DelegatedCompositing
     };
 
     // This must match window_open_disposition_list.h.
