@@ -41,6 +41,8 @@
 
 #include "backing_store_qt.h"
 
+#include "type_conversion.h"
+
 #include "content/public/browser/render_process_host.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
@@ -52,10 +54,15 @@
 #include <QSizeF>
 #include <QWindow>
 
+QT_BEGIN_NAMESPACE
+// from qbackingstore.cpp
+extern void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset);
+QT_END_NAMESPACE
+
 BackingStoreQt::BackingStoreQt(content::RenderWidgetHost *host, const gfx::Size &size, QWindow* parent)
     : content::BackingStore(host, size)
     , m_deviceScaleFactor((parent && parent->screen()) ? parent->screen()->devicePixelRatio() : 1)
-    , m_pixelBuffer(size.width() * m_deviceScaleFactor, size.height() * m_deviceScaleFactor)
+    , m_pixelBuffer(size.width() * m_deviceScaleFactor, size.height() * m_deviceScaleFactor, QImage::Format_ARGB32_Premultiplied)
 {
 }
 
@@ -74,7 +81,7 @@ void BackingStoreQt::paintToTarget(QPainter* painter, const QRectF& rect)
     qreal h = rect.height() * m_deviceScaleFactor;
 
     QRectF source(x, y, w, h);
-    painter->drawPixmap(rect, m_pixelBuffer, source);
+    painter->drawImage(rect, m_pixelBuffer, source);
 }
 
 void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
@@ -125,13 +132,10 @@ void BackingStoreQt::ScrollBackingStore(const gfx::Vector2d &delta, const gfx::R
     gfx::Rect pixel_rect = gfx::ToEnclosingRect(gfx::ScaleRect(clip_rect, m_deviceScaleFactor));
     gfx::Vector2d pixel_delta = gfx::ToFlooredVector2d(gfx::ScaleVector2d(delta, m_deviceScaleFactor));
 
-    m_pixelBuffer.scroll(pixel_delta.x()
-                         , pixel_delta.y()
-                         , pixel_rect.x()
-                         , pixel_rect.y()
-                         , pixel_rect.width()
-                         , pixel_rect.height());
-
+    // Logic borrowed from QPixmap::scroll and QRasterPlatformPixmap::scroll.
+    QRect dest = toQt(pixel_rect) & m_pixelBuffer.rect();
+    QRect src = dest.translated(-pixel_delta.x(), -pixel_delta.y()) & dest;
+    qt_scrollRectInImage(m_pixelBuffer, src, QPoint(pixel_delta.x(), pixel_delta.y()));
 }
 
 bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformBitmap *output)
@@ -150,20 +154,19 @@ bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformB
 
     SkAutoLockPixels alp(bitmap);
 
-    QPixmap cpy = m_pixelBuffer.copy(rect.x(), rect.y(), rect.width(), rect.height());
-    QImage img = cpy.toImage();
+    QImage cpy = m_pixelBuffer.copy(rect.x(), rect.y(), rect.width(), rect.height());
 
     // Convert the format and remove transparency.
-    if (img.format() != QImage::Format_RGB32)
-        img = img.convertToFormat(QImage::Format_RGB32);
+    if (cpy.format() != QImage::Format_RGB32)
+        cpy = cpy.convertToFormat(QImage::Format_RGB32);
 
-    const uint8_t* src = img.bits();
+    const uint8_t* src = cpy.bits();
     uint8_t* dst = reinterpret_cast<uint8_t*>(bitmap.getAddr32(0,0));
 
-    int bytesPerLine = img.bytesPerLine();
-    int bytesPerPixel = bytesPerLine / img.width();
+    int bytesPerLine = cpy.bytesPerLine();
+    int bytesPerPixel = bytesPerLine / cpy.width();
     int copyLineLength = width * bytesPerPixel;
-    int lineOffset = rect.y() * img.width();
+    int lineOffset = rect.y() * cpy.width();
     int rowOffset = rect.x() * bytesPerPixel;
 
     const uint8_t* copyLineBegin = src + rowOffset + lineOffset;
@@ -171,7 +174,7 @@ bool BackingStoreQt::CopyFromBackingStore(const gfx::Rect &rect, skia::PlatformB
     for (int lineNumber = 0; lineNumber < height; ++lineNumber) {
         memcpy(dst, copyLineBegin, copyLineLength);
         dst += copyLineLength;
-        copyLineBegin += img.width();
+        copyLineBegin += cpy.width();
     }
 
     return true;
