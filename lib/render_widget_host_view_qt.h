@@ -172,6 +172,7 @@ public:
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
+    virtual void compositingSurfaceUpdated() Q_DECL_OVERRIDE;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -223,6 +224,7 @@ private:
     size_t m_cursorPositionWithinSelection;
 
     bool m_initPending;
+    bool m_readyForSurface;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

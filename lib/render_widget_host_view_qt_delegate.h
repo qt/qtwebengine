@@ -68,6 +68,7 @@ public:
     virtual void notifyResize() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;
+    virtual void compositingSurfaceUpdated() = 0;
 };
 
 class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
