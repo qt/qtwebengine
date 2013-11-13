@@ -60,6 +60,7 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
+#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
@@ -68,6 +69,7 @@
 #include <QSGTexture>
 #include <QtQuick/private/qquickclipnode_p.h>
 #include <QtQuick/private/qquickwindow_p.h>
+#include <QtQuick/private/qsgadaptationlayer_p.h>
 #include <QtQuick/private/qsgcontext_p.h>
 #include <QtQuick/private/qsgrenderer_p.h>
 #include <QtQuick/private/qsgtexture_p.h>
@@ -411,6 +413,21 @@ void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData, cc::Transfera
                 textureNode->setFiltering(texture->resource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
                 textureNode->setTexture(texture.data());
                 currentLayerChain->appendChildNode(textureNode);
+                break;
+            } case cc::DrawQuad::SOLID_COLOR: {
+                const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
+                QSGRenderContext *sgrc = QQuickWindowPrivate::get(m_window)->context;
+                QSGRectangleNode *rectangleNode = sgrc->sceneGraphContext()->createRectangleNode();
+
+                // Qt only supports MSAA and this flag shouldn't be needed.
+                // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
+                // try to see if we can do something similar for tile quads first.
+                Q_UNUSED(scquad->force_anti_aliasing_off);
+
+                rectangleNode->setRect(toQt(quad->rect));
+                rectangleNode->setColor(toQt(scquad->color));
+                rectangleNode->update();
+                currentLayerChain->appendChildNode(rectangleNode);
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
