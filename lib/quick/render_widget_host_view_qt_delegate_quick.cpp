@@ -50,7 +50,14 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
 
 WId RenderWidgetHostViewQtDelegateQuick::nativeWindowIdForCompositor() const
 {
-    return QQuickItem::window()->winId();
+    return QQuickItem::window() ? QQuickItem::window()->winId() : 0;
+}
+
+void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
+{
+    QQuickItem::itemChange(change, value);
+    if (change == QQuickItem::ItemSceneChange && value.window)
+        m_client->compositingSurfaceUpdated();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
