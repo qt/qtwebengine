@@ -117,7 +117,37 @@ private:
     scoped_ptr<ContentBrowserClientQt> m_browserClient;
 };
 
-WebEngineContext::WebEngineContext()
+
+WebEngineContext::~WebEngineContext()
+{
+    m_runLoop->AfterRun();
+}
+
+scoped_refptr<WebEngineContext> WebEngineContext::currentOrCreate(WebContentsAdapterClient::RenderingMode renderingMode)
+{
+    if (!sContext)
+        sContext = new WebEngineContext(renderingMode);
+    else if (renderingMode != sContext->renderingMode())
+        qFatal("Switching the QtWebEngine rendering mode once initialized in an application is not supported."
+            " If you're using both a QQuickWebView and a QtQuick WebEngineView, make sure that the"
+            " later is configured to use software rendering by setting:"
+            "\nqApp->setProperty(\"QQuickWebEngineView_DisableHardwareAcceleration\", QVariant(true));");
+    return sContext;
+}
+
+scoped_refptr<WebEngineContext> WebEngineContext::current()
+{
+    return sContext;
+}
+
+WebContentsAdapterClient::RenderingMode WebEngineContext::renderingMode()
+{
+    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableDelegatedRenderer)
+        ? WebContentsAdapterClient::HardwareAccelerationMode
+        : WebContentsAdapterClient::SoftwareRenderingMode;
+}
+
+WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode renderingMode)
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_contentRunner(content::ContentMainRunner::Create())
     , m_browserRunner(content::BrowserMainRunner::Create())
@@ -136,6 +166,12 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 
+    if (renderingMode == WebContentsAdapterClient::HardwareAccelerationMode && !parsedCommandLine->HasSwitch(switches::kDisableDelegatedRenderer)) {
+        parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
+        parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
+        parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+    }
+
     // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
     if (qApp->platformName() == QStringLiteral("xcb") && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
@@ -146,16 +182,4 @@ WebEngineContext::WebEngineContext()
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
-}
-
-WebEngineContext::~WebEngineContext()
-{
-    m_runLoop->AfterRun();
-}
-
-scoped_refptr<WebEngineContext> WebEngineContext::current()
-{
-    if (!sContext)
-        sContext = new WebEngineContext;
-    return sContext;
 }

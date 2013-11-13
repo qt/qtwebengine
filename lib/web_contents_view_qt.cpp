@@ -44,10 +44,9 @@
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "web_engine_context.h"
 
-#include "base/command_line.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 
 void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
@@ -73,12 +72,8 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(conte
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
-    WebContentsAdapterClient::CompositingMode compositingMode = WebContentsAdapterClient::NoCompositing;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableDelegatedRenderer))
-        compositingMode = WebContentsAdapterClient::DelegatedCompositing;
-
     Q_ASSERT(m_factoryClient);
-    view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view, compositingMode));
+    view->setDelegate(m_factoryClient->CreateRenderWidgetHostViewQtDelegate(view, WebEngineContext::current()->renderingMode()));
     if (m_client)
         view->setAdapterClient(m_client);
 

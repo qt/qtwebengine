@@ -50,17 +50,17 @@
 QT_BEGIN_NAMESPACE
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
-    : adapter(new WebContentsAdapter)
+    : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
     , loadProgress(0)
     , inspectable(false)
 {
     adapter->initialize(this);
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, CompositingMode mode)
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-    if (mode == DelegatedCompositing)
+    if (mode == HardwareAccelerationMode)
         return new RenderWidgetHostViewQtDelegateQuick(client);
 #endif
     return new RenderWidgetHostViewQtDelegateQuickPainted(client);

@@ -42,6 +42,7 @@
 #define WEB_CONTENTS_ADAPTER_H
 
 #include "qtwebengineglobal.h"
+#include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
 #include <QSharedData>
@@ -52,7 +53,6 @@ QT_FORWARD_DECLARE_CLASS(QVariant)
 namespace content {
 class WebContents;
 }
-class WebContentsAdapterClient;
 class WebContentsAdapterPrivate;
 
 struct JSCallbackBase {
@@ -61,10 +61,9 @@ struct JSCallbackBase {
 };
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
-
 public:
     // Takes ownership of the WebContents.
-    WebContentsAdapter(content::WebContents *webContents = 0);
+    WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents = 0);
     ~WebContentsAdapter();
     void initialize(WebContentsAdapterClient *adapterClient);
 

@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
-    , adapter(new WebContentsAdapter)
+    , adapter(new WebContentsAdapter(SoftwareRenderingMode))
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
     , view(0)
     , m_isLoading(false)
@@ -58,7 +58,7 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
     delete history;
 }
 
-RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, CompositingMode mode)
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
     Q_UNUSED(mode);
     return new RenderWidgetHostViewQtDelegateWidget(client);
