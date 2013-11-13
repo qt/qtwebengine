@@ -147,21 +147,21 @@ static void callbackOnEvaluateJS(JSCallbackBase *callback, const base::Value *re
 
 class WebContentsAdapterPrivate {
 public:
-    WebContentsAdapterPrivate();
+    WebContentsAdapterPrivate(WebContentsAdapterClient::RenderingMode renderingMode);
     scoped_refptr<WebEngineContext> engineContext;
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
     WebContentsAdapterClient *adapterClient;
 };
 
-WebContentsAdapterPrivate::WebContentsAdapterPrivate()
+WebContentsAdapterPrivate::WebContentsAdapterPrivate(WebContentsAdapterClient::RenderingMode renderingMode)
     // This has to be the first thing we create, and the last we destroy.
-    : engineContext(WebEngineContext::current())
+    : engineContext(WebEngineContext::currentOrCreate(renderingMode))
 {
 }
 
-WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
-    : d_ptr(new WebContentsAdapterPrivate)
+WebContentsAdapter::WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents)
+    : d_ptr(new WebContentsAdapterPrivate(renderingMode))
 {
     Q_D(WebContentsAdapter);
     d->webContents.reset(webContents);

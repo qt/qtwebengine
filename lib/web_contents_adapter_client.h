@@ -72,9 +72,9 @@ public:
 
 class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
-    enum CompositingMode {
-        NoCompositing,
-        DelegatedCompositing
+    enum RenderingMode {
+        SoftwareRenderingMode,
+        HardwareAccelerationMode
     };
 
     // This must match window_open_disposition_list.h.
@@ -101,7 +101,7 @@ public:
 
     virtual ~WebContentsAdapterClient() { }
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, CompositingMode mode) = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
     virtual void iconChanged(const QUrl&) = 0;

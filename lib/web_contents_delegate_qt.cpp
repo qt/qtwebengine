@@ -44,6 +44,7 @@
 #include "type_conversion.h"
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
+#include "web_engine_context.h"
 
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -65,7 +66,7 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
-    WebContentsAdapter *newAdapter = new WebContentsAdapter(new_contents);
+    WebContentsAdapter *newAdapter = new WebContentsAdapter(WebEngineContext::current()->renderingMode(), new_contents);
     // Do the first ref-count manually to be able to know if the application is handling adoptNewWindow through the public API.
     newAdapter->ref.ref();
 
