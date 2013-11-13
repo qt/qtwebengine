@@ -45,7 +45,7 @@
 #include "content/browser/renderer_host/backing_store.h"
 
 #include <QPainter>
-#include <QPixmap>
+#include <QImage>
 
 class BackingStoreQt : public content::BackingStore
 {
@@ -66,7 +66,7 @@ private:
     // Number of physical pixels per view unit. This is 1 or 2 in practice.
     float m_deviceScaleFactor;
 
-    QPixmap m_pixelBuffer;
+    QImage m_pixelBuffer;
 };
 
 #endif // BACKING_STORE_QT_H
