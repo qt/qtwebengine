@@ -214,6 +214,7 @@ public:
     RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
 
     virtual WId nativeWindowIdForCompositor() const;
+    virtual void itemChange(ItemChange change, const ItemChangeData &value);
     virtual void update(const QRect& rect = QRect());
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *);
 };
