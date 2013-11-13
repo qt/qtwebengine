@@ -146,6 +146,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
+    , m_readyForSurface(false)
 {
     m_host->SetView(this);
 }
@@ -243,6 +244,7 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 
 gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 {
+    const_cast<RenderWidgetHostViewQt *>(this)->m_readyForSurface = true;
     return m_delegate->nativeWindowIdForCompositor();
 }
 
@@ -731,6 +733,13 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
     default:
         return QVariant();
     }
+}
+
+void RenderWidgetHostViewQt::compositingSurfaceUpdated()
+{
+    // Don't report an update until we get asked at least once.
+    if (m_readyForSurface)
+        m_host->CompositingSurfaceUpdated();
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
