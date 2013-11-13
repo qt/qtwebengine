@@ -42,12 +42,14 @@
 #ifndef TYPE_CONVERSION_H
 #define TYPE_CONVERSION_H
 
+#include <QColor>
 #include <QMatrix4x4>
 #include <QRect>
 #include <QString>
 #include <QUrl>
 #include "base/files/file_path.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
@@ -94,6 +96,11 @@ inline QSize toQt(const gfx::Size &size)
 inline QSizeF toQt(const gfx::SizeF &size)
 {
     return QSizeF(size.width(), size.height());
+}
+
+inline QColor toQt(const SkColor &c)
+{
+    return QColor(SkColorGetR(c), SkColorGetG(c), SkColorGetB(c), SkColorGetA(c));
 }
 
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
