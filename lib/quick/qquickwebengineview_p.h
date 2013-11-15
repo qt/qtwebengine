@@ -79,6 +79,7 @@ public Q_SLOTS:
     void goForward();
     void reload();
     void stop();
+    void runJavaScript(const QString&, const QJSValue & = QJSValue());
 
 Q_SIGNALS:
     void titleChanged();
