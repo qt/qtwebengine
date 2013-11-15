@@ -38,19 +38,27 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QTWEBENGINEGLOBAL_H
-#define QTWEBENGINEGLOBAL_H
 
-#include <QtCore/qglobal.h>
+#ifndef QTWEBENGINEGLOBAL_P_H
+#define QTWEBENGINEGLOBAL_P_H
 
-#ifndef QT_STATIC
-#  if !defined(QT_BUILD_WEBENGINEWIDGETS_LIB) && defined(BUILDING_CHROMIUM)
-#      define QWEBENGINE_EXPORT Q_DECL_EXPORT
-#  else
-#      define QWEBENGINE_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define QWEBENGINE_EXPORT
-#endif
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#endif // QTWEBENGINEGLOBAL_H
+#include "qtwebengineglobal.h"
+
+QT_BEGIN_NAMESPACE
+
+#define Q_WEBENGINE_PRIVATE_EXPORT Q_WEBENGINE_EXPORT
+
+QT_END_NAMESPACE
+
+#endif // QTWEBENGINEGLOBAL_P_H

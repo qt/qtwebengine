@@ -1,7 +1,8 @@
-CXX_MODULE = qml
-TARGET = qtwebengineplugin
-TARGETPATH = QtWebEngine
-IMPORT_VERSION = 1.0
+TARGET = QtWebEngine
+MODULE = webengine
+
+# For our export macros
+DEFINES += QT_BUILD_WEBENGINE_LIB
 
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
@@ -21,12 +22,13 @@ QMAKE_RPATHDIR += $$LIBPATH
 
 SOURCES = \
         qquickwebengineview.cpp \
-        plugin.cpp \
         render_widget_host_view_qt_delegate_quick.cpp
 
 HEADERS = \
+        qtwebengineglobal.h \
+        qtwebengineglobal_p.h \
         qquickwebengineview_p.h \
         qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h
 
-load(qml_plugin)
+load(qt_module)

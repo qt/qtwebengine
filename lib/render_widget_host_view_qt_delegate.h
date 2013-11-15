@@ -42,7 +42,7 @@
 #ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 #define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
 
-#include "qtwebengineglobal.h"
+#include "qtwebenginecoreglobal.h"
 
 #include <QRect>
 #include <QtGui/qwindowdefs.h>

@@ -12,15 +12,18 @@ lib.depends = qmake_extras
 process.depends = qmake_extras
 
 # API libraries
-quick_lib.subdir = lib/quick
-quick_lib.target = sub-quick-lib
-quick_lib.depends = build
+webengine_lib.subdir = lib/quick
+webengine_lib.target = sub-webengine-lib
+webengine_lib.depends = build
+quick_plugin_lib.subdir = lib/quick/plugin
+quick_plugin_lib.target = sub-quick-plugin-lib
+quick_plugin_lib.depends = webengine_lib
 widgets_lib.subdir = lib/widgets
 widgets_lib.target = sub-widgets-lib
 widgets_lib.depends = build
 
-sub_examples.depends = quick_lib
-sub_tests.depends = quick_lib
+sub_examples.depends = quick_plugin_lib
+sub_tests.depends = quick_plugin_lib
 
 # This is where we use the generated gypi files and run gyp_qtwebengine
 build.depends = resources shared lib process
@@ -31,7 +34,8 @@ SUBDIRS += qmake_extras \
           lib \
           process \
           build \
-          quick_lib
+          webengine_lib \
+          quick_plugin_lib
 
 qtHaveModule(widgets) {
     SUBDIRS += widgets_lib

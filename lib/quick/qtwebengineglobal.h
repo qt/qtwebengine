@@ -38,65 +38,23 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QTWEBENGINEGLOBAL_H
+#define QTWEBENGINEGLOBAL_H
 
-#ifndef QQUICKWEBENGINEVIEW_P_H
-#define QQUICKWEBENGINEVIEW_P_H
-
-#include <qtwebengineglobal_p.h>
-#include <QQuickItem>
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineViewPrivate;
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
-    Q_OBJECT
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(QUrl icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
-    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
-
-public:
-    QQuickWebEngineView(QQuickItem *parent = 0);
-    ~QQuickWebEngineView();
-
-    QUrl url() const;
-    void setUrl(const QUrl&);
-    QUrl icon() const;
-    bool isLoading() const;
-    int loadProgress() const;
-    QString title() const;
-    bool canGoBack() const;
-    bool canGoForward() const;
-    bool inspectable() const;
-    void setInspectable(bool);
-
-public Q_SLOTS:
-    void goBack();
-    void goForward();
-    void reload();
-    void stop();
-
-Q_SIGNALS:
-    void titleChanged();
-    void urlChanged();
-    void iconChanged();
-    void loadingStateChanged();
-    void loadProgressChanged();
-
-protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-
-private:
-    Q_DECLARE_PRIVATE(QQuickWebEngineView)
-};
+#ifndef QT_STATIC
+#  if defined(QT_BUILD_WEBENGINE_LIB)
+#      define Q_WEBENGINE_EXPORT Q_DECL_EXPORT
+#  else
+#      define Q_WEBENGINE_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define Q_WEBENGINE_EXPORT
+#endif
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineView)
-
-#endif // QQUICKWEBENGINEVIEW_P_H
+#endif // QTWEBENGINEGLOBAL_H
