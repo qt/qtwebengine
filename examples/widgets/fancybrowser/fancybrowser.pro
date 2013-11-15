@@ -1,6 +1,6 @@
 QT      +=  webenginewidgets
 
-include($$QTWEBENGINE_ROOT/common.pri)
+macx: CONFIG -= app_bundle
 
 HEADERS =   mainwindow.h
 SOURCES =   main.cpp \

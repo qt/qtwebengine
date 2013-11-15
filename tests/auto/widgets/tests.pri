@@ -18,7 +18,7 @@ INCLUDEPATH += \
     $$PWD/../Api
 
 QT += testlib network webenginewidgets widgets
-include($$QTWEBENGINE_ROOT/common.pri)
+macx: CONFIG -= app_bundle
 
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"

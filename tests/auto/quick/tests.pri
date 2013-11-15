@@ -12,7 +12,7 @@ INCLUDEPATH += \
 QT += testlib network quick
 QT_PRIVATE += quick-private gui-private core-private
 
-include($$QTWEBENGINE_ROOT/common.pri)
+macx: CONFIG -= app_bundle
 
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"

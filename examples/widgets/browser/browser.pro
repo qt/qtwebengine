@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = browser
 QT += webenginewidgets network widgets printsupport
 
-include($$QTWEBENGINE_ROOT/common.pri)
+macx: CONFIG -= app_bundle
 
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS

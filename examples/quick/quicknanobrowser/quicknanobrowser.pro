@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = quicknanobrowser
 
-include($$QTWEBENGINE_ROOT/common.pri)
+macx: CONFIG -= app_bundle
 
 HEADERS = quickwindow.h
 SOURCES = quickwindow.cpp main.cpp

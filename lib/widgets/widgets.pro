@@ -17,7 +17,7 @@ QT_PRIVATE += widgets-private gui-private core-private
 # FIXME: all this should eventually be turned into QT += webenginecore
 macx:LIBPATH = $$getOutDir()/$$getConfigDir()
 else:LIBPATH = $$getOutDir()/$$getConfigDir()/lib
-LIBS += -L$$LIBPATH -lQt5WebEngineCore
+LIBS_PRIVATE += -lQt5WebEngineCore -L$$LIBPATH
 QMAKE_RPATHDIR += $$LIBPATH
 
 DESTDIR = $$LIBPATH
