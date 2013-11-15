@@ -189,6 +189,29 @@ void QQuickWebEngineView::stop()
     d->adapter->stop();
 }
 
+namespace {
+struct JSCallbackQml : public JSCallbackBase {
+    JSCallbackQml(const QJSValue &closure) : m_qmlCallback(closure) {}
+    void call(const QVariant &value)
+    {
+        QJSValueList args;
+        args.append(m_qmlCallback.engine()->toScriptValue(value));
+        m_qmlCallback.call(args);
+    }
+private:
+    QJSValue m_qmlCallback;
+};
+}
+
+void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &callback)
+{
+    Q_D(QQuickWebEngineView);
+    if (callback.isCallable())
+        d->adapter->runJavaScript(script, /*xPath=*/QString(), new JSCallbackQml(callback));
+    else
+        d->adapter->runJavaScript(script);
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
