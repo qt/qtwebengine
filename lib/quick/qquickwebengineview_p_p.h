@@ -53,11 +53,26 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
+    Q_OBJECT
+public:
+
+private:
+    QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
+    QQuickWebEngineView *q_ptr;
+    QQuickWebEngineViewPrivate *d_ptr;
+
+    Q_DECLARE_PRIVATE(QQuickWebEngineView)
+    Q_DECLARE_PUBLIC(QQuickWebEngineView)
+};
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineView)
     QQuickWebEngineViewPrivate();
+
+    QQuickWebEngineViewExperimental *experimental() const;
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode) Q_DECL_OVERRIDE;
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
@@ -74,11 +89,14 @@ public:
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
+    QQuickWebEngineViewExperimental *e;
     QUrl icon;
     int loadProgress;
     bool inspectable;
 };
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QQuickWebEngineViewExperimental)
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H

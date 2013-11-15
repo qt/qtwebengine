@@ -51,10 +51,16 @@ QT_BEGIN_NAMESPACE
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
+    , e(new QQuickWebEngineViewExperimental(this))
     , loadProgress(0)
     , inspectable(false)
 {
     adapter->initialize(this);
+}
+
+QQuickWebEngineViewExperimental *QQuickWebEngineViewPrivate::experimental() const
+{
+    return e;
 }
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
@@ -134,6 +140,8 @@ void QQuickWebEngineViewPrivate::close()
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     : QQuickItem(*(new QQuickWebEngineViewPrivate), parent)
 {
+    Q_D(const QQuickWebEngineView);
+    d->e->q_ptr = this;
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()
@@ -237,6 +245,12 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
             qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted *>(child));
         child->setSize(newGeometry.size());
     }
+}
+
+QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
+    : q_ptr(0)
+    , d_ptr(viewPrivate)
+{
 }
 
 QT_END_NAMESPACE

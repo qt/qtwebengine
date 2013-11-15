@@ -39,66 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEVIEW_P_H
-#define QQUICKWEBENGINEVIEW_P_H
+#include <QtQml/qqmlextensionplugin.h>
 
-#include <qtwebengineglobal_p.h>
-#include <QQuickItem>
+#include "qquickwebengineview_p.h"
+#include "qquickwebengineview_p_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineViewPrivate;
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
+class QQuickWebEngineViewExperimentalExtension : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(QUrl icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
-    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
-
+    Q_PROPERTY(QQuickWebEngineViewExperimental* experimental READ experimental CONSTANT FINAL)
 public:
-    QQuickWebEngineView(QQuickItem *parent = 0);
-    ~QQuickWebEngineView();
+    QQuickWebEngineViewExperimentalExtension(QObject *parent = 0) : QObject(parent) { }
+    QQuickWebEngineViewExperimental* experimental() { return static_cast<QQuickWebEngineView*>(parent())->d_func()->experimental(); }
+};
 
-    QUrl url() const;
-    void setUrl(const QUrl&);
-    QUrl icon() const;
-    bool isLoading() const;
-    int loadProgress() const;
-    QString title() const;
-    bool canGoBack() const;
-    bool canGoForward() const;
-    bool inspectable() const;
-    void setInspectable(bool);
+class QtWebEngineExperimentalPlugin : public QQmlExtensionPlugin
+{
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
+public:
+    virtual void registerTypes(const char *uri)
+    {
+        qWarning("\nWARNING: This project is using the experimental QML API extensions for QtWebEngine and is therefore tied to a specific QtWebEngine release.\n"
+                 "WARNING: The experimental API will change from version to version, or even be removed. You have been warned!\n");
 
-public Q_SLOTS:
-    void goBack();
-    void goForward();
-    void reload();
-    void stop();
+        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine.experimental"));
 
-Q_SIGNALS:
-    void titleChanged();
-    void urlChanged();
-    void iconChanged();
-    void loadingStateChanged();
-    void loadProgressChanged();
-
-protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-
-private:
-    Q_DECLARE_PRIVATE(QQuickWebEngineView)
-    friend class QQuickWebEngineViewExperimental;
-    friend class QQuickWebEngineViewExperimentalExtension;
+        qmlRegisterExtendedType<QQuickWebEngineView, QQuickWebEngineViewExperimentalExtension>(uri, 1, 0, "WebEngineView");
+        qmlRegisterUncreatableType<QQuickWebEngineViewExperimental>(uri, 1, 0, "WebEngineViewExperimental",
+            QObject::tr("Cannot create a separate instance of WebEngineViewExperimental"));
+    }
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QQuickWebEngineView)
-
-#endif // QQUICKWEBENGINEVIEW_P_H
+#include "plugin.moc"
