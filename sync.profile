@@ -1,4 +1,5 @@
 %modules = ( # path to module name map
+    "QtWebEngine" => "$basedir/lib/quick",
     "QtWebEngineWidgets" => "$basedir/lib/widgets",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path

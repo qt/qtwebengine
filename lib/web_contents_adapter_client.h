@@ -41,7 +41,7 @@
 #ifndef WEB_CONTENTS_ADAPTER_CLIENT_H
 #define WEB_CONTENTS_ADAPTER_CLIENT_H
 
-#include "qtwebengineglobal.h"
+#include "qtwebenginecoreglobal.h"
 
 #include <QRect>
 #include <QString>

@@ -42,6 +42,7 @@
 #ifndef QQUICKWEBENGINEVIEW_P_P_H
 #define QQUICKWEBENGINEVIEW_P_P_H
 
+#include "qquickwebengineview_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QSharedData>
@@ -52,7 +53,7 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
 
-class QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsAdapterClient
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineView)

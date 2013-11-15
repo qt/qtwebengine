@@ -41,7 +41,7 @@
 #ifndef WEB_CONTENTS_ADAPTER_H
 #define WEB_CONTENTS_ADAPTER_H
 
-#include "qtwebengineglobal.h"
+#include "qtwebenginecoreglobal.h"
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
