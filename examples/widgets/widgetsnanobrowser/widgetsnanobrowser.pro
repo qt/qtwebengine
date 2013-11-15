@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = widgetsnanobrowser
 
-include($$QTWEBENGINE_ROOT/common.pri)
+macx: CONFIG -= app_bundle
 
 HEADERS = widgetwindow.h
 SOURCES = widgetwindow.cpp main.cpp
