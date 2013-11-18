@@ -1,9 +1,10 @@
 %modules = ( # path to module name map
-    "QtWebEngine" => "$basedir/lib/quick",
-    "QtWebEngineWidgets" => "$basedir/lib/widgets",
+    "QtWebEngine" => "$basedir/src/webengine",
+    "QtWebEngineWidgets" => "$basedir/src/webenginewidgets",
 );
 %moduleheaders = ( # restrict the module headers to those found in relative path
-    "QtWebEngineWidgets" => "Api",
+    "QtWebEngine" => "api",
+    "QtWebEngineWidgets" => "api",
 );
 %classnames = (
 );

@@ -13,9 +13,7 @@ contains(MOBILITY_CONFIG, multimedia) {
 }
 
 SOURCES += $${TARGET}.cpp
-INCLUDEPATH += \
-    $$PWD \
-    $$PWD/../Api
+INCLUDEPATH += $$PWD
 
 QT += testlib network webenginewidgets widgets
 macx: CONFIG -= app_bundle

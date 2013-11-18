@@ -5,9 +5,7 @@ VPATH += $$_PRO_FILE_PWD_
 TARGET = tst_$$TARGET
 
 SOURCES += $${TARGET}.cpp
-INCLUDEPATH += \
-    $$PWD \
-    $$PWD/../Api
+INCLUDEPATH += $$PWD
 
 QT += testlib network quick
 QT_PRIVATE += quick-private gui-private core-private

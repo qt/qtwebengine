@@ -51,8 +51,8 @@ import shutil
 
 import git_submodule as GitSubmodule
 
-qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-os.chdir(qtwebengine_src)
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+os.chdir(qtwebengine_root)
 
 def isInGitBlacklist(file_path):
     # We do need all the gyp files.
@@ -129,8 +129,8 @@ def createHardLinkForFile(src, dst):
             raise
 
 
-third_party_upstream = os.path.join(qtwebengine_src, '3rdparty_upstream')
-third_party = os.path.join(qtwebengine_src, '3rdparty')
+third_party_upstream = os.path.join(qtwebengine_root, 'src/3rdparty_upstream')
+third_party = os.path.join(qtwebengine_root, 'src/3rdparty')
 
 def clearDirectory(directory):
     currentDir = os.getcwd()

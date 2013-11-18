@@ -46,7 +46,7 @@ cross_compile {
 
 !build_pass {
   message(Running gyp_qtwebengine $${GYP_ARGS}...)
-  !system("python ./gyp_qtwebengine $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
+  !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
 }
 
 ninja.target = invoke_ninja
