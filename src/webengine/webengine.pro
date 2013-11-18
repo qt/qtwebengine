@@ -1,5 +1,4 @@
 TARGET = QtWebEngine
-MODULE = webengine
 
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINE_LIB
@@ -10,7 +9,7 @@ QT_PRIVATE += qml-private quick-private gui-private core-private
 # Remove this as soon as we have a hard-dependency on Qt 5.2
 qtHaveModule(v8): QT_PRIVATE += v8-private
 
-INCLUDEPATH += ../
+INCLUDEPATH += api ../core
 
 # FIXME: all this should eventually be turned into QT += webenginecore
 macx:LIBPATH = $$getOutDir()/$$getConfigDir()
@@ -21,14 +20,14 @@ QMAKE_RPATHDIR += $$LIBPATH
 #DESTDIR = $$LIBPATH
 
 SOURCES = \
-        qquickwebengineview.cpp \
+        api/qquickwebengineview.cpp \
         render_widget_host_view_qt_delegate_quick.cpp
 
 HEADERS = \
-        qtwebengineglobal.h \
-        qtwebengineglobal_p.h \
-        qquickwebengineview_p.h \
-        qquickwebengineview_p_p.h \
+        api/qtwebengineglobal.h \
+        api/qtwebengineglobal_p.h \
+        api/qquickwebengineview_p.h \
+        api/qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h
 
 load(qt_module)

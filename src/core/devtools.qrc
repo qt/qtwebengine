@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="data">
-    <file alias="devtools.pak">../resources/devtools_resources.pak</file>
-    <file alias="discovery_page.html">../resources/devtools_discovery_page.html</file>
+    <file alias="devtools.pak">resources/devtools_resources.pak</file>
+    <file alias="discovery_page.html">resources/devtools_discovery_page.html</file>
 </qresource>
 </RCC>

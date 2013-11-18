@@ -2,6 +2,4 @@
 # These files will then be bundled using the Qt Resource System.
 TEMPLATE = aux
 
-system(python ../build/scripts/build_resources.py)
-
-
+system("python $$QTWEBENGINE_ROOT/tools/buildscripts/build_resources.py")

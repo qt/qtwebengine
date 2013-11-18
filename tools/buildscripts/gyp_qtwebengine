@@ -7,19 +7,20 @@ import sys
 
 print 'using python: ' + sys.executable + ' version: ' + sys.version
 
-qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+qtwebengine_src = os.path.join(qtwebengine_root, 'src')
 chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir || true", shell=True).strip()
 if chrome_src:
-  chrome_src = os.path.join(qtwebengine_src, chrome_src)
+  chrome_src = os.path.join(qtwebengine_root, chrome_src)
 if not chrome_src or not os.path.isdir(chrome_src):
-  chrome_src = os.path.join(qtwebengine_src, '3rdparty/chromium')
+  chrome_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
   print 'CHROMIUM_SRC_DIR not set, falling back to ' + chrome_src
 
 script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
 if not os.path.isdir(script_dir):
   print script_dir + " is not a valid directory"
   sys.exit(1)
-root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir))
 
 sys.path.insert(0, script_dir)
 import gyp_helper
@@ -64,10 +65,10 @@ def additional_include_files(args=[]):
   AddInclude(os.path.join(script_dir, 'common.gypi'))
 
   # Used for additional build tweaks such as file exclusions
-  AddInclude(os.path.join(qtwebengine_src, 'build', 'qtwebengine_extras.gypi'))
+  AddInclude(os.path.join(qtwebengine_root, 'src', 'core', 'qtwebengine_extras.gypi'))
 
   # Common stuff we generate and extract from qmake
-  AddInclude(os.path.join(qtwebengine_src, 'build', 'qmake_extras.gypi'))
+  AddInclude(os.path.join(qtwebengine_root, 'src', 'core', 'qmake_extras.gypi'))
 
   # Optionally add supplemental .gypi files if present.
   supplements = glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
@@ -104,7 +105,7 @@ if __name__ == '__main__':
       break
 
   if not gyp_file_specified:
-      args.append(os.path.join(root_dir, 'qtwebengine.gyp'))
+      args.append(os.path.join(root_dir, 'src/core/core.gyp'))
 
   args.extend(['-I' + i for i in additional_include_files(args)])
 

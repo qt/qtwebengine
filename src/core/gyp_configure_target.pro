@@ -26,9 +26,9 @@ GYPI_CONTENTS += "        ]," \
 
 GYPI_CONTENTS += "}"
 
-GYPI_FILE = $$absolute_path('build/qmake_extras.gypi', $$QTWEBENGINE_ROOT)
+GYPI_FILE = $$absolute_path('qmake_extras.gypi')
 
-!exists($$GYPI_FILE): error("-- $$GYPI not found --")
+!exists($$GYPI_FILE): error("-- $$GYPI_FILE not found --")
 
 # Append to the file already containing the host settings.
 !build_pass {
