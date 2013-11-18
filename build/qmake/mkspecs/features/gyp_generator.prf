@@ -32,6 +32,7 @@ defineReplace(mocAction) {
 }
 
 defineReplace(rccAction) {
+    win32-*: QMAKE_RCC ~= s,\\\\,/,g
     INPUT_FILE = $$1
     OUTPUT_NAME = $$rccOutput($$INPUT_FILE)
     EXTERN_FUNC = $$rccExternFunc($$INPUT_FILE)
