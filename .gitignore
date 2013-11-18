@@ -2,9 +2,9 @@
 Makefile
 process/process
 out/
-lib/lib.gyp
-process/process.gyp
-shared/shared.gyp
+src/core/core.gyp
+src/process/process.gyp
+src/shared/shared.gyp
 *.pro.user*
 .qmake.cache
 *.moc

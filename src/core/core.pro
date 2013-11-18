@@ -31,7 +31,7 @@ PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBEN
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
-RESOURCES += lib_resources.qrc devtools.qrc
+RESOURCES += core_resources.qrc devtools.qrc
 # We need this to find the include files generated for the .pak resource files.
 INCLUDEPATH += $$absolute_path(../resources, $$PWD)
 

@@ -54,7 +54,6 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
-#include "lib/type_conversion.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/events/event.h"
 #include "ui/gfx/size_conversions.h"

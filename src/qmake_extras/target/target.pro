@@ -7,7 +7,7 @@ GYPI_CONTENTS += "    ['CC', '$$which($$QMAKE_CC)']," \
 GYPI_CONTENTS += "  ],"
 GYPI_CONTENTS += "}"
 
-GYPI_FILE = $$absolute_path('build/qmake_extras.gypi', $$QTWEBENGINE_ROOT)
+GYPI_FILE = $$absolute_path('src/qmake_extras.gypi', $$QTWEBENGINE_ROOT)
 
 !exists($$GYPI_FILE): error("-- $$GYPI not found --")
 

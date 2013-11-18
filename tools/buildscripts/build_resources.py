@@ -48,18 +48,18 @@ import sys
 import string
 import time
 
-qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
 
 chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir || true", shell=True).strip()
 if chrome_src:
-  chrome_src = os.path.join(qtwebengine_src, chrome_src)
+  chrome_src = os.path.join(qtwebengine_root, chrome_src)
 if not chrome_src or not os.path.isdir(chrome_src):
-  chrome_src = os.path.join(qtwebengine_src, '3rdparty/chromium')
+  chrome_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
   print 'CHROMIUM_SRC_DIR not set, falling back to ' + chrome_src
 
 grit_tool = os.path.join(chrome_src, 'tools/grit/grit.py')
-resources_subdir = os.path.join(qtwebengine_src, 'resources')
+resources_subdir = os.path.join(qtwebengine_root, 'src/resources')
 
 def checkNeedForRebuild(grd_file):
     grit_files = subprocess.check_output(['python', grit_tool, '-i', grd_file, 'buildinfo']).splitlines()

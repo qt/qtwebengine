@@ -6,7 +6,7 @@
     'dependencies': [
       'shared/shared.gyp:*',
       'process/process.gyp:*',
-      'lib/lib.gyp:*',
+      'core/core.gyp:*',
     ],
   }
   ]

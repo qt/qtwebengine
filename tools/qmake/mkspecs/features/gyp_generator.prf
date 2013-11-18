@@ -198,7 +198,7 @@ GYP_CONTENTS += "  ]," \
 write_file($$GYPI_FILE, GYP_CONTENTS)
 
 # Overwriting the generated gyp file seems like a good reason to re-gyp
-unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$QTWEBENGINE_ROOT/build/build.pro")
+unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$QTWEBENGINE_ROOT/src/gypwrapper.pro")
 
 # The generated Makefile shouldn't build anything by itself, just re-run qmake if necessary
 TEMPLATE = aux
