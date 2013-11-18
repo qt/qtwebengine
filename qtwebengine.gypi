@@ -62,7 +62,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
       ],
       'dependencies': [
-        '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_strings',
+        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
       ],
       'configurations': {
         'Debug_Base': {
