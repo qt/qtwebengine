@@ -1,5 +1,4 @@
 TARGET = QtWebEngine
-MODULE = webengine
 
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINE_LIB
@@ -10,7 +9,7 @@ QT_PRIVATE += qml-private quick-private gui-private core-private
 # Remove this as soon as we have a hard-dependency on Qt 5.2
 qtHaveModule(v8): QT_PRIVATE += v8-private
 
-INCLUDEPATH += ../
+INCLUDEPATH += ../core
 
 # FIXME: all this should eventually be turned into QT += webenginecore
 macx:LIBPATH = $$getOutDir()/$$getConfigDir()

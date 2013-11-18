@@ -8,6 +8,6 @@ QMAKE_RPATHDIR += $$LIBPATH
 
 DESTDIR = $$getOutDir()/$$getConfigDir()
 
-INCLUDEPATH += ../lib
+INCLUDEPATH += ../core
 
 SOURCES = main.cpp

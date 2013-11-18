@@ -1,10 +1,7 @@
 *.o
 Makefile
-process/process
 out/
-lib/lib.gyp
-process/process.gyp
-shared/shared.gyp
+src/core/core.gyp
 *.pro.user*
 .qmake.cache
 *.moc

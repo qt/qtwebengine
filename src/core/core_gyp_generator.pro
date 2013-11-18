@@ -2,8 +2,9 @@
 # We want the gyp generation step to happen after all the other config steps. For that we need to prepend
 # our gyp_generator.prf feature to the CONFIG variable since it is processed backwards
 CONFIG = gyp_generator $$CONFIG
+GYPFILE = $$PWD/core.gyp
 GYPDEPENDENCIES += <(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources
-GYPINCLUDES += ../qtwebengine.gypi
+GYPINCLUDES += qtwebengine.gypi
 
 TEMPLATE = lib
 
@@ -19,7 +20,7 @@ QT_PRIVATE += qml-private quick-private gui-private core-private
 qtHaveModule(v8): QT_PRIVATE += v8-private
 
 COPY_FILES = <(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak
-COPY_DESTINATIONS = ../resources/
+COPY_DESTINATIONS = resources/
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
@@ -31,9 +32,9 @@ PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBEN
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
-RESOURCES += lib_resources.qrc devtools.qrc
+RESOURCES += core_resources.qrc devtools.qrc
 # We need this to find the include files generated for the .pak resource files.
-INCLUDEPATH += $$absolute_path(../resources, $$PWD)
+INCLUDEPATH += $$absolute_path(resources, $$PWD)
 
 # something fishy with qmake in 5.2 ?
 INCLUDEPATH += $$[QT_INSTALL_HEADERS]
@@ -83,4 +84,3 @@ HEADERS = \
         web_engine_context.h \
         web_event_factory.h \
         yuv_video_node.h
-

@@ -48,13 +48,13 @@ import sys
 import string
 import argparse
 
-qtwebengine_src = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 
-sys.path.append(os.path.join(qtwebengine_src, 'tools'))
+sys.path.append(os.path.join(qtwebengine_root, 'tools'))
 import git_submodule as GitSubmodule
 
 chromium_src = os.environ.get('CHROMIUM_SRC_DIR')
-ninja_src = os.path.join(qtwebengine_src, '3rdparty_upstream/ninja')
+ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/ninja')
 use_external_chromium = False
 
 parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
@@ -69,15 +69,15 @@ if chromium_src:
     use_external_chromium = True
 if not chromium_src or not os.path.isdir(chromium_src):
     if args.snapshot:
-        chromium_src = os.path.join(qtwebengine_src, '3rdparty/chromium')
-        ninja_src = os.path.join(qtwebengine_src, '3rdparty/ninja')
+        chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
+        ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty/ninja')
     if args.upstream or not chromium_src:
-        chromium_src = os.path.join(qtwebengine_src, '3rdparty_upstream/chromium')
+        chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/chromium')
         args.upstream = True
     print 'CHROMIUM_SRC_DIR not set, using Chromium in' + chromium_src
 
 # Write our chromium sources directory into git config.
-relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_src)
+relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_root)
 subprocess.call(['git', 'config', 'qtwebengine.chromiumsrcdir', relative_chromium_src])
 
 
@@ -100,19 +100,19 @@ def updateLastChange():
     os.chdir(currentDir)
 
 def addGerritRemote():
-    os.chdir(qtwebengine_src)
+    os.chdir(qtwebengine_root)
     remotes = subprocess.check_output(['git', 'remote'])
     if not 'gerrit' in remotes:
         subprocess.call(['git', 'remote', 'add', 'gerrit', 'ssh://codereview.qt-project.org:29418/qt-labs/qtwebengine.git'])
 
 def installGitHooks():
-    os.chdir(qtwebengine_src)
+    os.chdir(qtwebengine_root)
     subprocess.call(['scp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
 
 def applyPatches():
     if use_external_chromium:
         return
-    os.chdir(qtwebengine_src)
+    os.chdir(qtwebengine_root)
     subprocess.call(['sh', './patches/patch-chromium.sh'])
 
 def initUpstreamSubmodules():
@@ -124,16 +124,16 @@ def initUpstreamSubmodules():
     # We will turn this on, once we actually switch to using the release branch.
     #chromium_ref = 'refs/branch-heads/1599'
     chromium_ref = ''
-    os.chdir(qtwebengine_src)
+    os.chdir(qtwebengine_root)
 
     current_submodules = subprocess.check_output(['git', 'submodule'])
-    if not '3rdparty_upstream/ninja' in current_submodules:
-        subprocess.call(['git', 'submodule', 'add', ninja_url, '3rdparty_upstream/ninja'])
-    if not use_external_chromium and not '3rdparty_upstream/chromium' in current_submodules:
-        subprocess.call(['git', 'submodule', 'add', chromium_url, '3rdparty_upstream/chromium'])
+    if not 'src/3rdparty_upstream/ninja' in current_submodules:
+        subprocess.call(['git', 'submodule', 'add', ninja_url, 'src/3rdparty_upstream/ninja'])
+    if not use_external_chromium and not 'src/3rdparty_upstream/chromium' in current_submodules:
+        subprocess.call(['git', 'submodule', 'add', chromium_url, 'src/3rdparty_upstream/chromium'])
 
     ninjaSubmodule = GitSubmodule.Submodule()
-    ninjaSubmodule.path = '3rdparty_upstream/ninja'
+    ninjaSubmodule.path = 'src/3rdparty_upstream/ninja'
     ninjaSubmodule.shasum = ninja_shasum
     ninjaSubmodule.url = ninja_url
     ninjaSubmodule.os = 'all'
@@ -141,7 +141,7 @@ def initUpstreamSubmodules():
 
     if not use_external_chromium:
         chromiumSubmodule = GitSubmodule.Submodule()
-        chromiumSubmodule.path = '3rdparty_upstream/chromium'
+        chromiumSubmodule.path = 'src/3rdparty_upstream/chromium'
         chromiumSubmodule.shasum = chromium_shasum
         chromiumSubmodule.ref = chromium_ref
         chromiumSubmodule.url = chromium_url
@@ -152,11 +152,11 @@ def initUpstreamSubmodules():
 
 def initSnapshot():
     snapshot = GitSubmodule.Submodule()
-    snapshot.path = '3rdparty'
+    snapshot.path = 'src/3rdparty'
     snapshot.os = 'all'
     snapshot.initialize()
 
-os.chdir(qtwebengine_src)
+os.chdir(qtwebengine_root)
 addGerritRemote()
 installGitHooks()
 
