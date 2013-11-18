@@ -12,7 +12,7 @@ qnx: QMAKE_RPATHLINKDIR += $${QNX_DIR}/$${QNX_CPUDIR}/usr/lib/qt5/lib
 
 DESTDIR = $$getOutDir()/$$getConfigDir()
 
-INCLUDEPATH += ../lib
+INCLUDEPATH += ../core
 
 SOURCES = main.cpp
 

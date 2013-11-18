@@ -8,7 +8,7 @@ QT_PRIVATE += webengine-private qml-private quick-private gui-private core-priva
 
 qtHaveModule(v8): QT_PRIVATE += v8-private
 
-INCLUDEPATH += $$QTWEBENGINE_ROOT/lib $$QTWEBENGINE_ROOT/lib/quick
+INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core $$QTWEBENGINE_ROOT/src/webengine
 
 SOURCES = plugin.cpp
 

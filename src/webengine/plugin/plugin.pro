@@ -6,7 +6,7 @@ IMPORT_VERSION = 1.0
 QT += webengine qml quick
 QT_PRIVATE += webengine-private qml-private quick-private gui-private core-private
 
-INCLUDEPATH += $$QTWEBENGINE_ROOT/lib $$QTWEBENGINE_ROOT/lib/quick
+INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core $$QTWEBENGINE_ROOT/src/webengine
 
 SOURCES = plugin.cpp
 
