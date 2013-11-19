@@ -138,6 +138,11 @@ GYP_CONTENTS += "      ]," \
                   "      }," \
                   "    },"
 }
+!isEmpty(GYP_DYLIB_INSTALL_NAME_BASE) {
+  GYP_CONTENTS += "    'xcode_settings': {" \
+                  "      'DYLIB_INSTALL_NAME_BASE': '$$GYP_DYLIB_INSTALL_NAME_BASE'," \
+                  "    },"
+}
 
 # Source files to compile
 GYP_CONTENTS += "    'sources': ["
