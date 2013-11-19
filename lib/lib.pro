@@ -9,6 +9,11 @@ TEMPLATE = lib
 
 TARGET = Qt5WebEngineCore
 
+# gyp sets the default install name to /usr/local/lib and we need the module libraries to
+# know its install_name so that they can let the dynamic linker load the core library.
+# FIXME: Remove this and put it in qtwebengine.gypi once we can use a relative path to @loader_path.
+macx: GYP_DYLIB_INSTALL_NAME_BASE = $$getOutDir()/$$getConfigDir()
+
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
 qtHaveModule(v8): QT_PRIVATE += v8-private
