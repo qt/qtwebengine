@@ -190,7 +190,7 @@ GYP_CONTENTS += "    ]," \
 GYP_CONTENTS += "  ]," \
                 "}"
 
-write_file($$GYPI_FILE, GYP_CONTENTS)
+!build_pass: write_file($$GYPI_FILE, GYP_CONTENTS)
 
 # Overwriting the generated gyp file seems like a good reason to re-gyp
 unix: phony_variable_name_for_qmake_to_be_happy=$$system("touch $$QTWEBENGINE_ROOT/build/build.pro")
