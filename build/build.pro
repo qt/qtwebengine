@@ -4,8 +4,10 @@
 
 TEMPLATE = aux
 
-message(Running Gyp...)
-!system(python ./gyp_qtwebengine): error("-- running gyp_qtwebengine failed --")
+!build_pass {
+  message(Running Gyp...)
+  !system(python ./gyp_qtwebengine): error("-- running gyp_qtwebengine failed --")
+}
 
 ninja.target = invoke_ninja
 ninja.commands = $$findOrBuildNinja() $$(NINJAFLAGS) -C $$getOutDir()/$$getConfigDir()
