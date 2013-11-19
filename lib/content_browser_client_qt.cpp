@@ -213,14 +213,14 @@ public:
         : gfx::GLContext(0)
         , m_handle(0)
     {
-        QString platform = qApp->platformName();
+        QString platform = qApp->platformName().toLower();
         QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
         if (platform == QStringLiteral("xcb")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
             else
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("glxcontext"), qtContext);
-        } else if (platform == QStringLiteral("Cocoa"))
+        } else if (platform == QStringLiteral("cocoa"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
         else if (platform == QStringLiteral("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
