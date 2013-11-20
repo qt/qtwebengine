@@ -46,8 +46,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 
-#include "shared/shared_globals.h"
-
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -65,6 +63,7 @@
 #include <QStringBuilder>
 
 #include "download_manager_delegate_qt.h"
+#include "qtwebenginecoreglobal.h"
 #include "resource_context_qt.h"
 #include "type_conversion.h"
 #include "url_request_context_getter_qt.h"

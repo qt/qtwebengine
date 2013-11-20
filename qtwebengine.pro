@@ -7,7 +7,6 @@ TEMPLATE = subdirs
 qmake_extras.subdir = build/qmake_extras
 
 # Phony pro files that generate gyp files. Will be built by ninja.
-shared.depends = qmake_extras
 lib.depends = qmake_extras
 
 # API libraries
@@ -29,11 +28,10 @@ sub_examples.depends = quick_plugin_lib quick_experimental_plugin_lib
 sub_tests.depends = quick_plugin_lib quick_experimental_plugin_lib
 
 # This is where we use the generated gypi files and run gyp_qtwebengine
-build.depends = resources shared lib
+build.depends = resources lib
 
 SUBDIRS += qmake_extras \
           resources \
-          shared \
           lib \
           process \
           build \

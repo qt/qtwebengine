@@ -43,6 +43,14 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef QT_WEBENGINE_LOGGING
+#define QT_NOT_YET_IMPLEMENTED fprintf(stderr, "function %s not implemented! - %s:%d\n", __func__, __FILE__, __LINE__);
+#define QT_NOT_USED fprintf(stderr, "# function %s should not be used! - %s:%d\n", __func__, __FILE__, __LINE__); Q_UNREACHABLE();
+#else
+#define QT_NOT_YET_IMPLEMENTED qt_noop();
+#define QT_NOT_USED Q_UNREACHABLE(); // This will assert in debug.
+#endif
+
 #ifndef QT_STATIC
 #  if defined(BUILDING_CHROMIUM)
 #      define QWEBENGINE_EXPORT Q_DECL_EXPORT

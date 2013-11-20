@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "shared_globals.h"
+#include "chromium_overrides.h"
 
 #include "base/message_loop/message_pump_gtk.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
