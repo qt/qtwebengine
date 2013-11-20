@@ -40,9 +40,13 @@
 ****************************************************************************/
 
 #include "process_main.h"
+#include "content/public/app/content_main.h"
 
-int main(int argc, const char **argv)
+namespace QtWebEngine {
+
+int processMain(int argc, const char **argv)
 {
-    return QtWebEngine::processMain(argc, argv);
+    return content::ContentMain(argc, argv, 0);
 }
 
+}

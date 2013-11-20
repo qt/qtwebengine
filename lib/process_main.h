@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#include "process_main.h"
+#include "qtwebenginecoreglobal.h"
 
-int main(int argc, const char **argv)
-{
-    return QtWebEngine::processMain(argc, argv);
+namespace QtWebEngine {
+
+QWEBENGINE_EXPORT int processMain(int argc, const char **argv);
+
 }
-
