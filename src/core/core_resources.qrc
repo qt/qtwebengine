@@ -1,5 +1,0 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="data">
-    <file alias="resources.pak">resources/net_resources.pak</file>
-</qresource>
-</RCC>

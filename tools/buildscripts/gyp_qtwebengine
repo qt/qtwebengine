@@ -135,7 +135,7 @@ if __name__ == '__main__':
   args.extend(["--toplevel-dir=" + toplevel])
   # Chromium specific Hack: for Chromium to build, the depth has to be set to the chromium src dir.
   args.extend(["--depth=" + chrome_src])
-  args.extend(['-D', 'qtwebengine_src_dir=' + qtwebengine_src])
+  args.extend(['-D', 'qtwebengine_root=' + qtwebengine_root])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
 
   if 'qt_cross_compile=1' in sys.argv:
