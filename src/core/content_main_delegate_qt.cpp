@@ -39,18 +39,56 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_CLIENT_QT_H
-#define CONTENT_CLIENT_QT_H
+#include "content_main_delegate_qt.h"
 
-#include "base/strings/string_piece.h"
-#include "content/public/common/content_client.h"
-#include "ui/base/layout.h"
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include "base/path_service.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_paths.h"
+#include "ui/base/resource/resource_bundle.h"
+#include <QByteArray>
+#include <QLibraryInfo>
+#include <QStringBuilder>
 
-class ContentClientQt : public content::ContentClient {
-public:
-    virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) const Q_DECL_OVERRIDE;
-    virtual base::string16 GetLocalizedString(int message_id) const Q_DECL_OVERRIDE;
-};
+#include "content_client_qt.h"
+#include "type_conversion.h"
 
-#endif // CONTENT_CLIENT_QT_H
+static QByteArray subProcessPath() {
+    static bool initialized = false;
+#ifdef QTWEBENGINEPROCESS_PATH
+    static QByteArray processPath(QTWEBENGINEPROCESS_PATH);
+#else
+    static QByteArray processPath;
+#endif
+    if (initialized)
+        return processPath;
+    // Allow overriding at runtime for the time being.
+    const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
+    if (!fromEnv.isEmpty())
+        processPath = fromEnv;
+    if (processPath.isEmpty())
+        qFatal("QTWEBENGINEPROCESS_PATH environment variable not set or empty.");
+    initialized = true;
+    return processPath;
+}
+
+void ContentMainDelegateQt::PreSandboxStartup()
+{
+    PathService::Override(base::FILE_EXE, base::FilePath(toFilePathString(subProcessPath())));
+    const QString localesPath(QLibraryInfo::location(QLibraryInfo::TranslationsPath) % QStringLiteral("/qtwebengine_locales"));
+    PathService::Override(ui::DIR_LOCALES, base::FilePath(toFilePathString(localesPath)));
+
+    ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);
+}
+
+content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()
+{
+    m_browserClient.reset(new ContentBrowserClientQt);
+    return m_browserClient.get();
+}
+
+bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
+{
+    SetContentClient(new ContentClientQt);
+    return false;
+}
+

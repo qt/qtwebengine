@@ -2,19 +2,13 @@
 
 import glob
 import os
-import subprocess
 import sys
 
 print 'using python: ' + sys.executable + ' version: ' + sys.version
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-qtwebengine_src = os.path.join(qtwebengine_root, 'src')
-chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir || true", shell=True).strip()
-if chrome_src:
-  chrome_src = os.path.join(qtwebengine_root, chrome_src)
-if not chrome_src or not os.path.isdir(chrome_src):
-  chrome_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
-  print 'CHROMIUM_SRC_DIR not set, falling back to ' + chrome_src
+import qtwebengine_utils as utils
+chrome_src = utils.getChromiumSrcDir()
 
 script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
 if not os.path.isdir(script_dir):
@@ -22,9 +16,9 @@ if not os.path.isdir(script_dir):
   sys.exit(1)
 root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir))
 
-sys.path.insert(0, script_dir)
+sys.path.insert(1, script_dir)
 import gyp_helper
-sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
+sys.path.insert(1, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
 import gyp
 
 # Add paths so that pymod_do_main(...) can import files.
@@ -37,10 +31,6 @@ sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
 # Chromium revision.
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'core', 'scripts'))
-
-sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
-
-import repack_locales
 
 def additional_include_files(args=[]):
   """
@@ -135,7 +125,7 @@ if __name__ == '__main__':
   args.extend(["--toplevel-dir=" + toplevel])
   # Chromium specific Hack: for Chromium to build, the depth has to be set to the chromium src dir.
   args.extend(["--depth=" + chrome_src])
-  args.extend(['-D', 'qtwebengine_src_dir=' + qtwebengine_src])
+  args.extend(['-D', 'qtwebengine_root=' + qtwebengine_root])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
 
   if 'qt_cross_compile=1' in sys.argv:

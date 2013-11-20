@@ -40,13 +40,15 @@
 ****************************************************************************/
 
 #include "process_main.h"
+
+#include "content_main_delegate_qt.h"
 #include "content/public/app/content_main.h"
 
 namespace QtWebEngine {
 
 int processMain(int argc, const char **argv)
 {
-    return content::ContentMain(argc, argv, 0);
+    return content::ContentMain(argc, argv, new ContentMainDelegateQt);
 }
 
 }

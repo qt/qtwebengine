@@ -13,10 +13,18 @@ gyp_configure_target.depends = gyp_configure_host
 # gyp_run.pro calls gyp through gyp_qtwebengine on the qmake step, and ninja on the make step.
 gyp_run.file = gyp_run.pro
 
-gyp_run.depends = resources core_gyp_generator gyp_configure_host gyp_configure_target
+gyp_run.depends = core_gyp_generator gyp_configure_host gyp_configure_target
 
 SUBDIRS += core_gyp_generator \
            gyp_configure_host \
            gyp_configure_target \
-           gyp_run \
-           resources \
+           gyp_run
+
+OUTPUT_DIR = $$getOutDir()/$$getConfigDir()
+locales.files = $$OUTPUT_DIR/gen/repack/qtwebengine_locales
+locales.path = $$[QT_INSTALL_TRANSLATIONS]
+resources.files = $$OUTPUT_DIR/gen/repack/qtwebengine_resources.pak
+resources.path = $$[QT_INSTALL_DATA]
+
+INSTALLS += locales resources
+

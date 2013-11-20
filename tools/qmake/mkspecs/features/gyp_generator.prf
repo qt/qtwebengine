@@ -114,11 +114,6 @@ macx {
 GYP_CONTENTS += "      ]," \
              "    },"
 
-!isEmpty(GYPDEPENDENCIES) {
-  GYP_CONTENTS += "    'dependencies': ["
-  for (dep, GYPDEPENDENCIES): GYP_CONTENTS += "      '$$dep',"
-  GYP_CONTENTS += "    ],"
-}
 !isEmpty(DEFINES) {
   GYP_CONTENTS += "    'defines': ["
   for (define, DEFINES): GYP_CONTENTS += "      '$$define',"
@@ -172,20 +167,7 @@ GYP_CONTENTS += "    ],"
   GYP_CONTENTS += "    ],"
 }
 
-# Some needed files (like devtools_resources.pak) are both _generated_ as part of the build process and are _needed_ as part of the build process.
-!isEmpty(COPY_FILES) {
-  GYP_CONTENTS += "    'copies': ["
-  for (index, 0..$$size(COPY_FILES)) {
-    copyFile = $$member(COPY_FILES, $$index)
-    !isEmpty(copyFile) {
-      copyDestination = $$member(COPY_DESTINATIONS, $$index)
-      GYP_CONTENTS += "        {'destination': '$$copyDestination', 'files': ['$$copyFile']},"
-    }
-  }
-  GYP_CONTENTS += "    ],"
-}
-
-# Generate the actions for moc, copy
+# Generate the actions for moc and rcc
 GYP_CONTENTS += "    'actions': ["
 for(resourcefile, RESOURCES): GYP_CONTENTS += $$rccAction($$resourcefile)
 for(header, MOCABLE_HEADERS): GYP_CONTENTS += $$mocAction($$header)

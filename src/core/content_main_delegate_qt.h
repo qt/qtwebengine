@@ -39,18 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_CLIENT_QT_H
-#define CONTENT_CLIENT_QT_H
+#ifndef CONTENT_MAIN_DELEGATE_QT_H
+#define CONTENT_MAIN_DELEGATE_QT_H
 
-#include "base/strings/string_piece.h"
-#include "content/public/common/content_client.h"
-#include "ui/base/layout.h"
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include "content/public/app/content_main_delegate.h"
 
-class ContentClientQt : public content::ContentClient {
+#include "base/memory/scoped_ptr.h"
+#include <QtCore/qcompilerdetection.h>
+
+#include "content_browser_client_qt.h"
+
+
+class ContentMainDelegateQt : public content::ContentMainDelegate
+{
 public:
-    virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) const Q_DECL_OVERRIDE;
-    virtual base::string16 GetLocalizedString(int message_id) const Q_DECL_OVERRIDE;
+
+    // This is where the embedder puts all of its startup code that needs to run
+    // before the sandbox is engaged.
+    void PreSandboxStartup() Q_DECL_OVERRIDE;
+
+    content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE;
+
+    bool BasicStartupComplete(int* /*exit_code*/) Q_DECL_OVERRIDE;
+
+private:
+    scoped_ptr<ContentBrowserClientQt> m_browserClient;
 };
 
-#endif // CONTENT_CLIENT_QT_H
+#endif // CONTENT_MAIN_DELEGATE_QT_H

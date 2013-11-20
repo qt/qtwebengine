@@ -10,6 +10,7 @@
           'use_custom_freetype%': 0,
         }],
         ],
+
   },
     'dependencies': [
       '<(chromium_src_dir)/content/content.gyp:content',
@@ -32,13 +33,13 @@
       '<(chromium_src_dir)/ui/ui.gyp:ui',
       '<(chromium_src_dir)/url/url.gyp:url_lib',
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-      '<(chromium_src_dir)/webkit/webkit_resources.gyp:webkit_resources',
       '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_support',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
     ],
     'include_dirs': [
-      '<(qtwebengine_src_dir)',
+      '<(qtwebengine_root)/src/core',
       '<(chromium_src_dir)',
+      '<(SHARED_INTERMEDIATE_DIR)/net', # Needed to include grit/net_resources.h
     ],
     # Chromium code defines those in common.gypi, do the same for our code that include Chromium headers.
     'defines': [
@@ -59,9 +60,6 @@
     ['OS=="win"', {
       'resource_include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
-      ],
-      'dependencies': [
-        '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
       ],
       'configurations': {
         'Debug_Base': {
