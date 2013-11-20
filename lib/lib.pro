@@ -47,6 +47,7 @@ SOURCES = \
         download_manager_delegate_qt.cpp \
         chromium_gpu_helper.cpp \
         javascript_dialog_manager_qt.cpp \
+        process_main.cpp \
         render_widget_host_view_qt.cpp \
         resource_context_qt.cpp \
         url_request_context_getter_qt.cpp \
@@ -67,6 +68,7 @@ HEADERS = \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
         javascript_dialog_manager_qt.h \
+        process_main.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         resource_context_qt.h \
