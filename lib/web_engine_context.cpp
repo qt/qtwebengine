@@ -41,7 +41,6 @@
 
 #include "web_engine_context.h"
 
-#include "shared/shared_globals.h"
 #include <math.h>
 
 #include "base/command_line.h"

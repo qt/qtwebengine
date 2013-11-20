@@ -43,7 +43,6 @@
 #define RENDER_WIDGET_HOST_VIEW_QT_H
 
 #include "render_widget_host_view_qt_delegate.h"
-#include "shared/shared_globals.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

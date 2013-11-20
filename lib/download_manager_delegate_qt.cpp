@@ -44,7 +44,6 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
-#include "shared/shared_globals.h"
 
 #include <QDir>
 #include <QFile>
@@ -53,6 +52,7 @@
 #include <QStandardPaths>
 
 #include "type_conversion.h"
+#include "qtwebenginecoreglobal.h"
 
 // Helper class to track currently ongoing downloads to prevent file name
 // clashes / overwriting of files.
