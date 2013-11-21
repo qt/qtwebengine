@@ -61,7 +61,7 @@ defineReplace(which) {
     command = $$split(out, " ")
     executable = $$first(command)
     # Return the first match only
-    out = $$system("((for /f \"usebackq delims=\" %i in (`where $$executable 2^> NUL`) do @if not defined _endwhich (@echo %i & set _endwhich)) & set _endwhich=)")
+    out = $$system("((for /f \"usebackq delims=\" %i in (`where $$executable 2^> NUL`) do @if not defined _endwhich (@echo %i & set _endwhich=true)) & set _endwhich=)")
     isEmpty(out) {
       message($$executable not found)
       out = $$executable
