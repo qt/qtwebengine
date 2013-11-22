@@ -69,6 +69,7 @@ class BrowserContextQt;
 class BrowserMainPartsQt;
 class DevToolsHttpHandlerDelegateQt;
 class ShareGroupQtQuick;
+class ResourceDispatcherHostDelegateQt;
 
 class ContentBrowserClientQt : public content::ContentBrowserClient {
 
@@ -80,6 +81,7 @@ public:
     virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
     virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
     virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
+    virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
 
     BrowserContextQt* browser_context();
 
@@ -91,6 +93,7 @@ private:
     BrowserMainPartsQt* m_browserMainParts;
     scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
+    scoped_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
 };
 
 #endif // CONTENT_BROWSER_CLIENT_QT_H

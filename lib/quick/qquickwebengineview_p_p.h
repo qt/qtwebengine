@@ -87,7 +87,7 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE { return false;}
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
-
+    virtual bool authenticationDialog(const QString &message, QString &username, QString &password)  Q_DECL_OVERRIDE { return false; };
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QQuickWebEngineViewExperimental *e;
     QUrl icon;

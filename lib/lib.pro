@@ -57,6 +57,8 @@ SOURCES = \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
         web_engine_context.cpp \
+        resource_dispatcher_host_login_delegate_qt.cpp \
+        resource_dispatcher_host_delegate_qt.cpp \
         web_event_factory.cpp \
         yuv_video_node.cpp
 
@@ -81,6 +83,8 @@ HEADERS = \
         web_contents_delegate_qt.h \
         web_contents_view_qt.h \
         web_engine_context.h \
+        resource_dispatcher_host_login_delegate_qt.h \
+        resource_dispatcher_host_delegate_qt.h \
         web_event_factory.h \
         yuv_video_node.h
 

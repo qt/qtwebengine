@@ -114,6 +114,7 @@ public:
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) = 0;
+    virtual bool authenticationDialog(const QString &message, QString &username, QString &password) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H
