@@ -3,6 +3,7 @@ TARGET = browser
 QT += webenginewidgets network widgets printsupport
 
 macx: CONFIG -= app_bundle
+qnx: QMAKE_LFLAGS += $$QMAKE_LFLAGS_RPATHLINK$$getOutDir()/$$getConfigDir()/lib
 
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
