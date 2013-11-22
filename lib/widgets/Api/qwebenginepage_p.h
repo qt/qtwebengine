@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEngineView;
+class AuthenticationPopupDialog;
 
 class QWebEnginePagePrivate : public QObjectPrivate, public WebContentsAdapterClient
 {
@@ -77,6 +78,7 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE;
+    virtual bool authenticationDialog(const QString &host, const QString &realm, QString &username, QString &password) Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
@@ -88,6 +90,7 @@ public:
     mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
     WebEngineContextMenuData m_menuData;
+    AuthenticationPopupDialog *authenDialog;
 };
 
 QT_END_NAMESPACE

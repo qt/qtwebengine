@@ -39,61 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_CLIENT_QT_H
-#define CONTENT_BROWSER_CLIENT_QT_H
+#include "resource_dispatcher_host_delegate_qt.h"
+#include "resource_dispatcher_host_login_delegate_qt.h"
+#include "web_contents_adapter_client.h"
 
-#include "base/memory/scoped_ptr.h"
-#include "content/public/browser/content_browser_client.h"
+#include "grit/net_resources.h"
+#include "net/base/net_module.h"
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
-
-namespace net {
-class URLRequestContextGetter;
+ResourceDispatcherHostDelegateQt::ResourceDispatcherHostDelegateQt()
+{
 }
 
-namespace content {
-class BrowserContext;
-class BrowserMainParts;
-class RenderProcessHost;
-class RenderViewHostDelegateView;
-class WebContentsViewPort;
-class WebContents;
-struct MainFunctionParams;
+ResourceDispatcherHostDelegateQt::~ResourceDispatcherHostDelegateQt()
+{
 }
 
-namespace gfx {
-class GLShareGroup;
+bool ResourceDispatcherHostDelegateQt::AcceptAuthRequest(net::URLRequest* request, net::AuthChallengeInfo* auth_info)
+{
+    return true;
 }
 
-class BrowserContextQt;
-class BrowserMainPartsQt;
-class DevToolsHttpHandlerDelegateQt;
-class ShareGroupQtQuick;
-class ResourceDispatcherHostDelegateQt;
-
-class ContentBrowserClientQt : public content::ContentBrowserClient {
-
-public:
-    ContentBrowserClientQt();
-    ~ContentBrowserClientQt();
-    static ContentBrowserClientQt* Get();
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
-    virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
-    virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
-
-    BrowserContextQt* browser_context();
-
-    net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
-
-    void enableInspector(bool);
-
-private:
-    BrowserMainPartsQt* m_browserMainParts;
-    scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
-    scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
-    scoped_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
-};
-
-#endif // CONTENT_BROWSER_CLIENT_QT_H
+content::ResourceDispatcherHostLoginDelegate* ResourceDispatcherHostDelegateQt::CreateLoginDelegate(net::AuthChallengeInfo* auth_info, net::URLRequest* request)
+{
+    return new ResourceDispatcherHostLoginDelegateQt(auth_info, request);
+}

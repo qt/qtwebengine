@@ -47,6 +47,8 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/browser/resource_dispatcher_host.h"
+
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -57,6 +59,7 @@
 #include "browser_context_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
 #include "web_contents_view_qt.h"
+#include "resource_dispatcher_host_delegate_qt.h"
 
 #include <QGuiApplication>
 #include <QtQuick/private/qsgcontext_p.h>
@@ -302,6 +305,12 @@ gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
     if (!m_shareGroupQtQuick)
         m_shareGroupQtQuick = new ShareGroupQtQuick;
     return m_shareGroupQtQuick.get();
+}
+
+void ContentBrowserClientQt::ResourceDispatcherHostCreated()
+{
+    m_resourceDispatcherHostDelegate.reset(new ResourceDispatcherHostDelegateQt());
+    content::ResourceDispatcherHost::Get()->SetDelegate(m_resourceDispatcherHostDelegate.get());
 }
 
 BrowserContextQt* ContentBrowserClientQt::browser_context() {

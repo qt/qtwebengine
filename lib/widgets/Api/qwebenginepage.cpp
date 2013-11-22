@@ -29,6 +29,7 @@
 #include "qwebengineview_p.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
+#include "authentication_dialog_qt.h"
 
 #include <QAction>
 #include <QApplication>
@@ -48,6 +49,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
     , view(0)
     , m_isLoading(false)
+    , authenDialog(0)
 {
     adapter->initialize(this);
     memset(actions, 0, sizeof(actions));
@@ -56,6 +58,8 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
     delete history;
+    delete authenDialog;
+    authenDialog = 0;
 }
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
@@ -331,6 +335,24 @@ bool QWebEnginePagePrivate::javascriptDialog(JavascriptDialogType type, const QS
     }
     Q_UNREACHABLE();
     return false;
+}
+
+bool QWebEnginePagePrivate::authenticationDialog(const QString &host, const QString &realm, QString &username, QString &password)
+{
+    bool ret = false;
+
+    if (this->authenDialog != 0) {
+        delete this->authenDialog;
+        this->authenDialog = 0;
+    }
+    this->authenDialog = new AuthenticationPopupDialog(host, realm, view);
+
+    if (0 != this->authenDialog->exec()) {
+        this->authenDialog->authenticationConfirmed(username, password);
+        ret = true;
+    }
+
+    return ret;
 }
 
 QMenu *QWebEnginePage::createStandardContextMenu()

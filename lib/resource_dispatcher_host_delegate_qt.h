@@ -39,61 +39,32 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_BROWSER_CLIENT_QT_H
-#define CONTENT_BROWSER_CLIENT_QT_H
+#ifndef RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H_
+#define RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
-namespace net {
-class URLRequestContextGetter;
+namespace net
+{
+    class URLRequest;
+    class AuthChallengeInfo;
 }
 
-namespace content {
-class BrowserContext;
-class BrowserMainParts;
-class RenderProcessHost;
-class RenderViewHostDelegateView;
-class WebContentsViewPort;
-class WebContents;
-struct MainFunctionParams;
-}
-
-namespace gfx {
-class GLShareGroup;
-}
-
-class BrowserContextQt;
-class BrowserMainPartsQt;
-class DevToolsHttpHandlerDelegateQt;
-class ShareGroupQtQuick;
-class ResourceDispatcherHostDelegateQt;
-
-class ContentBrowserClientQt : public content::ContentBrowserClient {
-
+class ResourceDispatcherHostDelegateQt: public content::ResourceDispatcherHostDelegate
+{
 public:
-    ContentBrowserClientQt();
-    ~ContentBrowserClientQt();
-    static ContentBrowserClientQt* Get();
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
-    virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
-    virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
-    virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
+    ResourceDispatcherHostDelegateQt();
+    virtual ~ResourceDispatcherHostDelegateQt();
 
-    BrowserContextQt* browser_context();
+    virtual bool AcceptAuthRequest(net::URLRequest* request, net::AuthChallengeInfo* auth_info) Q_DECL_OVERRIDE;
 
-    net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
-
-    void enableInspector(bool);
+    virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo* auth_info, net::URLRequest* request) Q_DECL_OVERRIDE;
 
 private:
-    BrowserMainPartsQt* m_browserMainParts;
-    scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
-    scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
-    scoped_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
+    DISALLOW_COPY_AND_ASSIGN (ResourceDispatcherHostDelegateQt);
 };
 
-#endif // CONTENT_BROWSER_CLIENT_QT_H
+
+#endif  // RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H_

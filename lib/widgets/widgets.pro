@@ -28,6 +28,7 @@ SOURCES = \
         Api/qwebenginehistory.cpp \
         Api/qwebenginepage.cpp \
         Api/qwebengineview.cpp\
+        authentication_dialog_qt.cpp \
         render_widget_host_view_qt_delegate_widget.cpp
 
 HEADERS = \
@@ -36,6 +37,7 @@ HEADERS = \
         Api/qwebenginepage.h \
         Api/qwebengineview.h \
         Api/qwebengineview_p.h \
+        authentication_dialog_qt.h \
         render_widget_host_view_qt_delegate_widget.h
 
 load(qt_module)
