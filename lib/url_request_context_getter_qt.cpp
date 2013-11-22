@@ -44,9 +44,9 @@
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -88,8 +88,13 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_networkDelegate.reset(new NetworkDelegateQt);
 
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
+
+        base::FilePath cookiesPath = m_basePath.Append(FILE_PATH_LITERAL("Cookies"));
+        scoped_refptr<net::CookieStore> cookieStore = content::CreatePersistentCookieStore(cookiesPath, true, NULL, NULL);
+        cookieStore->GetCookieMonster()->SetPersistSessionCookies(true);
+
         m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
-        m_storage->set_cookie_store(new net::CookieMonster(NULL, NULL));
+        m_storage->set_cookie_store(cookieStore.get());
         m_storage->set_server_bound_cert_service(new net::ServerBoundCertService(
             new net::DefaultServerBoundCertStore(NULL),
             base::WorkerPool::GetTaskRunner(true)));
