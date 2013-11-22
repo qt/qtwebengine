@@ -53,6 +53,7 @@
 #include "qglobal.h"
 
 namespace net {
+class CookieStore;
 class HostResolver;
 class MappedHostResolver;
 class NetworkDelegate;
@@ -68,7 +69,7 @@ public:
     virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
 
 private:
-    virtual ~URLRequestContextGetterQt() {}
+    virtual ~URLRequestContextGetterQt();
 
     bool m_ignoreCertificateErrors;
     base::FilePath m_basePath;
@@ -76,6 +77,7 @@ private:
     scoped_ptr<net::ProxyConfigService> m_proxyConfigService;
     scoped_ptr<net::URLRequestContext> m_urlRequestContext;
     scoped_ptr<net::NetworkDelegate> m_networkDelegate;
+    scoped_refptr<net::CookieStore> m_cookieStore;
     scoped_ptr<net::URLRequestContextStorage> m_storage;
     scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
 };
