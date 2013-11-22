@@ -8,6 +8,8 @@ macx {
 LIBS_PRIVATE += -lQt5WebEngineCore -L$$LIBPATH
 QMAKE_RPATHDIR += $$LIBPATH
 
+qnx: QMAKE_RPATHLINKDIR += $${QNX_DIR}/$${QNX_CPUDIR}/usr/lib/qt5/lib
+
 DESTDIR = $$getOutDir()/$$getConfigDir()
 
 INCLUDEPATH += ../lib
