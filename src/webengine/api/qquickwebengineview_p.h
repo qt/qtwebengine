@@ -107,6 +107,7 @@ Q_SIGNALS:
     void iconChanged();
     void loadingStateChanged(QQuickWebEngineLoadRequest *loadRequest);
     void loadProgressChanged();
+    void javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
