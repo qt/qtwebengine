@@ -51,6 +51,7 @@
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"
 
 inline QString toQt(const base::string16 &string)
@@ -124,6 +125,33 @@ inline base::FilePath::StringType toFilePathString(const QString &str)
 #elif defined(OS_WIN)
     return str.toStdWString();
 #endif
+}
+
+template <typename T>
+inline T fileListingHelper(const QString &) {qFatal("Specialization missing for %s.", Q_FUNC_INFO);}
+
+template <>
+inline ui::SelectedFileInfo fileListingHelper<ui::SelectedFileInfo>(const QString &file)
+{
+    base::FilePath fp(toFilePathString(file));
+    return ui::SelectedFileInfo(fp, fp);
+}
+
+template <>
+inline base::FilePath fileListingHelper<base::FilePath>(const QString &file)
+{
+    return base::FilePath(toFilePathString(file));
+}
+
+
+template <typename T>
+inline std::vector<T> toVector(const QStringList &fileList)
+{
+    std::vector<T> selectedFiles;
+    selectedFiles.reserve(fileList.size());
+    Q_FOREACH (const QString &file, fileList)
+        selectedFiles.push_back(fileListingHelper<T>(file));
+    return selectedFiles;
 }
 
 #endif // TYPE_CONVERSION_H

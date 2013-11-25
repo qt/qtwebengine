@@ -46,6 +46,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 #include "javascript_dialog_manager_qt.h"
+#include <QtCore/qcompilerdetection.h>
 
 namespace content {
     class BrowserContext;
@@ -73,6 +74,7 @@ public:
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
     virtual void DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
+    virtual void RunFileChooser(content::WebContents *, const content::FileChooserParams &params) Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;
