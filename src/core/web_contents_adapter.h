@@ -88,6 +88,7 @@ public:
     qreal currentZoomFactor() const;
     void enableInspector(bool);
     void runJavaScript(const QString &javaScript, const QString &xPath = QString(), JSCallbackBase * = 0);
+    void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
 
     void dpiScaleChanged();
 
