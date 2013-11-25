@@ -46,6 +46,8 @@
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
+#include <QSharedData>
+#include <QtCore/qcompilerdetection.h>
 #include <QtQuick/private/qquickitem_p.h>
 
 class WebContentsAdapter;
@@ -109,6 +111,7 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE { return false;}
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
+    virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QString &title, const QStringList &acceptedMimeTypes) { Q_UNUSED(defaultFileName); Q_UNUSED(title); Q_UNUSED(acceptedMimeTypes);}
 
     void setDevicePixelRatio(qreal);
 

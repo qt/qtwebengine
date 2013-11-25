@@ -33,11 +33,13 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QFileDialog>
 #include <QIcon>
 #include <QInputDialog>
 #include <QLayout>
 #include <QMenu>
 #include <QMessageBox>
+#include <QStandardPaths>
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
@@ -406,6 +408,19 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     return menu;
 }
 
+static inline QWebEnginePage::FileSelectionMode toPublic(WebContentsAdapterClient::FileChooserMode mode)
+{
+// Should the underlying values change, we'll need a switch here.
+    return static_cast<QWebEnginePage::FileSelectionMode>(mode);
+}
+
+void QWebEnginePagePrivate::runFileChooser(WebContentsAdapterClient::FileChooserMode mode, const QString &defaultFileName, const QString &title, const QStringList &acceptedMimeTypes)
+{
+    Q_Q(QWebEnginePage);
+    QStringList selectedFileNames = q->chooseFiles(toPublic(mode), defaultFileName, title, acceptedMimeTypes);
+    adapter->filesSelectedInChooser(selectedFileNames, mode);
+}
+
 void QWebEnginePage::load(const QUrl& url)
 {
     Q_D(QWebEnginePage);
@@ -472,6 +487,32 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
             return newView->page();
     }
     return 0;
+}
+
+QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QString &suggestedFileName, const QString &title, const QStringList &acceptedMimeTypes)
+{
+    // FIXME: Should we expose this in QWebPage's API ? Right now it is very open and can contain a mix and match of file extensions (which QFileDialog
+    // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    Q_UNUSED(acceptedMimeTypes);
+    QStringList ret;
+    switch (mode) {
+    case FileSelectOpen:
+        ret << QFileDialog::getOpenFileName(view(), title, suggestedFileName);
+        break;
+    case FileSelectSave:
+        ret << QFileDialog::getSaveFileName(view(), title, (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + suggestedFileName));
+        break;
+    case FileSelectOpenMultiple:
+        ret = QFileDialog::getOpenFileNames(view(), title);
+        break;
+    case FileSelectUploadFolder:
+        ret << QFileDialog::getExistingDirectory(view(), title) + QLatin1Char('/');
+        break;
+    default:
+        Q_UNREACHABLE();
+        return QStringList();
+    }
+    return ret;
 }
 
 void QWebEnginePage::javaScriptAlert(QWebEngineFrame *originatingFrame, const QString &msg)
