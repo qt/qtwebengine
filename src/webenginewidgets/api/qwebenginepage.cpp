@@ -33,11 +33,13 @@
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QFileDialog>
 #include <QIcon>
 #include <QInputDialog>
 #include <QLayout>
 #include <QMenu>
 #include <QMessageBox>
+#include <QStandardPaths>
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
@@ -408,6 +410,19 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     return menu;
 }
 
+static inline QWebEnginePage::FileSelectionMode toPublic(WebContentsAdapterClient::FileChooserMode mode)
+{
+    // Should the underlying values change, we'll need a switch here.
+    return static_cast<QWebEnginePage::FileSelectionMode>(mode);
+}
+
+void QWebEnginePagePrivate::runFileChooser(WebContentsAdapterClient::FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes)
+{
+    Q_Q(QWebEnginePage);
+    QStringList selectedFileNames = q->chooseFiles(toPublic(mode), (QStringList() << defaultFileName), acceptedMimeTypes);
+    adapter->filesSelectedInChooser(selectedFileNames, mode);
+}
+
 void QWebEnginePage::load(const QUrl& url)
 {
     Q_D(QWebEnginePage);
@@ -474,6 +489,34 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
             return newView->page();
     }
     return 0;
+}
+
+Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Open) == static_cast<int>(QWebEnginePage::FileSelectOpen), "Enums out of sync");
+Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::OpenMultiple) == static_cast<int>(QWebEnginePage::FileSelectOpenMultiple), "Enums out of sync");
+
+QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
+{
+    // FIXME: Should we expose this in QWebPage's API ? Right now it is very open and can contain a mix and match of file extensions (which QFileDialog
+    // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    Q_UNUSED(acceptedMimeTypes);
+    QStringList ret;
+    switch (static_cast<WebContentsAdapterClient::FileChooserMode>(mode)) {
+    case WebContentsAdapterClient::OpenMultiple:
+        ret = QFileDialog::getOpenFileNames(view(), QString());
+        break;
+    // Chromium extension, not exposed as part of the public API for now.
+    case WebContentsAdapterClient::UploadFolder:
+        ret << QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
+        break;
+    case WebContentsAdapterClient::Save:
+        ret << QFileDialog::getSaveFileName(view(), QString(), (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + oldFiles.first()));
+        break;
+    default:
+    case WebContentsAdapterClient::Open:
+        ret << QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        break;
+    }
+    return ret;
 }
 
 void QWebEnginePage::javaScriptAlert(QWebEngineFrame *originatingFrame, const QString &msg)
