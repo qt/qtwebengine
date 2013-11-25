@@ -269,6 +269,11 @@ public:
         AutoOwnership
     };
 
+    enum FileSelectionMode {
+        FileSelectOpen,
+        FileSelectOpenMultiple,
+    };
+
     class QWEBENGINEWIDGETS_EXPORT ViewportAttributes {
     public:
         ViewportAttributes();
@@ -375,24 +380,12 @@ public:
     bool supportsContentType(const QString& mimeType) const;
 
     enum Extension {
-        ChooseMultipleFilesExtension,
         ErrorPageExtension
     };
     class ExtensionOption
     {};
     class ExtensionReturn
     {};
-
-    class ChooseMultipleFilesExtensionOption : public ExtensionOption {
-    public:
-        QWebEngineFrame *parentFrame;
-        QStringList suggestedFileNames;
-    };
-
-    class ChooseMultipleFilesExtensionReturn : public ExtensionReturn {
-    public:
-        QStringList fileNames;
-    };
 
     enum ErrorDomain { QtNetwork, Http, WebKit };
     class ErrorPageExtensionOption : public ExtensionOption {
@@ -558,7 +551,7 @@ protected:
     virtual QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues) { Q_UNUSED(classid); Q_UNUSED(url); Q_UNUSED(paramNames); Q_UNUSED(paramValues); Q_UNREACHABLE(); return 0; }
 
     virtual bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type) { Q_UNUSED(frame); Q_UNUSED(request); Q_UNUSED(type); Q_UNREACHABLE(); return false; }
-    virtual QString chooseFile(QWebEngineFrame *originatingFrame, const QString& oldFile) { Q_UNUSED(originatingFrame); Q_UNUSED(oldFile); Q_UNREACHABLE(); return QString(); }
+    virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes);
     virtual void javaScriptAlert(QWebEngineFrame *originatingFrame, const QString& msg);
     virtual bool javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString& msg);
     virtual bool javaScriptPrompt(QWebEngineFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result);
