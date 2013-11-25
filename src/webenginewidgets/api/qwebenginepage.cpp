@@ -383,6 +383,12 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         controller->reject();
 }
 
+void QWebEnginePagePrivate::javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID)
+{
+    Q_Q(QWebEnginePage);
+    q->javaScriptConsoleMessage(level, message, lineNumber, sourceID);
+}
+
 namespace {
 class SaveToClipboardFunctor
 {
@@ -596,6 +602,14 @@ bool QWebEnginePage::javaScriptPrompt(QWebEngineFrame *originatingFrame, const Q
     if (result)
         *result = QInputDialog::getText(view(), QStringLiteral("Javascript Prompt - %1").arg(url().toString()), msg, QLineEdit::Normal, defaultValue, &ret);
     return ret;
+}
+
+void QWebEnginePage::javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID)
+{
+    Q_UNUSED(level);
+    Q_UNUSED(message);
+    Q_UNUSED(lineNumber);
+    Q_UNUSED(sourceID);
 }
 QT_END_NAMESPACE
 
