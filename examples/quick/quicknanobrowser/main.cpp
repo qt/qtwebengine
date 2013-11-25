@@ -53,12 +53,14 @@ int main(int argc, char **argv)
 {
     Application app(argc, argv);
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
     // This is currently needed by all QtWebEngine application using the HW accelerated QQuickWebView.
     // It enables sharing between the QOpenGLContext of all QQuickWindows of the application.
     // We have to do so until we expose a public API for it, or chose enable it by default in Qt 5.3.0.
     QOpenGLContext shareContext;
     shareContext.create();
     QSGContext::setSharedOpenGLContext(&shareContext);
+#endif
 
     ApplicationEngine appEngine;
 

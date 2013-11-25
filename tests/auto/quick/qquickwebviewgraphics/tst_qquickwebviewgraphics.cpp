@@ -108,7 +108,7 @@ tst_QQuickWebViewGraphics::~tst_QQuickWebViewGraphics()
 // It is only called once.
 void tst_QQuickWebViewGraphics::initTestCase()
 {
-#if defined(TST_QQUICKWEBVIEWGRAPHICS_SOFTWARE)
+#if defined(TST_QQUICKWEBVIEWGRAPHICS_SOFTWARE) || (QT_VERSION < QT_VERSION_CHECK(5, 2, 0))
     qApp->setProperty("QQuickWebEngineView_DisableHardwareAcceleration", QVariant(true));
 #else
     // This is currently needed by all QtWebEngine application using the HW accelerated QQuickWebView.
