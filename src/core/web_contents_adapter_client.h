@@ -45,6 +45,7 @@
 
 #include <QRect>
 #include <QString>
+#include <QStringList>
 #include <QUrl>
 
 class RenderWidgetHostViewQt;
@@ -99,6 +100,14 @@ public:
         PromptDialog
     };
 
+    // Must match the ones in file_chooser_params.h
+    enum FileChooserMode {
+        Open,
+        OpenMultiple,
+        UploadFolder,
+        Save
+    };
+
     virtual ~WebContentsAdapterClient() { }
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) = 0;
@@ -115,6 +124,7 @@ public:
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) = 0;
+    virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QString &title = QString(), const QStringList &acceptedMimeTypes = QStringList()) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H
