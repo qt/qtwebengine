@@ -64,9 +64,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
 {
     QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
-    // FIXME: What is going to trigger this if the page is attached later to the view?
-    if (pagePrivate->view)
-        pagePrivate->view->layout()->addWidget(this);
+    pagePrivate->registerRenderWidgetHostViewDelegate(this);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& rect)
@@ -164,6 +162,10 @@ void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent
 
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
+    if (event->type() == QEvent::ParentChange)
+        if (QWidget *view = qobject_cast<QWidget*>(parent()))
+            view->layout()->addWidget(this);
+
     if (!m_client->forwardEvent(event))
         return QWidget::event(event);
     return true;

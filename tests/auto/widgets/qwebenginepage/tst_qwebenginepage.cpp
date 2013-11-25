@@ -202,6 +202,7 @@ private:
 
 tst_QWebEnginePage::tst_QWebEnginePage()
 {
+    freopen ("chromium_log.txt","w",stderr);
 }
 
 tst_QWebEnginePage::~tst_QWebEnginePage()
