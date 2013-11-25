@@ -35,7 +35,6 @@
       '<(chromium_src_dir)/webkit/webkit_resources.gyp:webkit_resources',
       '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_support',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
-      '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit_test_support',
     ],
     'include_dirs': [
       '<(qtwebengine_src_dir)',
@@ -93,7 +92,6 @@
         '<(chromium_src_dir)/ui/base/strings/ui_strings.gyp:ui_strings',
         '<(chromium_src_dir)/ui/views/controls/webview/webview.gyp:webview',
         '<(chromium_src_dir)/ui/views/views.gyp:views',
-        '<(chromium_src_dir)/ui/views/views.gyp:views_test_support',
         '<(chromium_src_dir)/ui/ui.gyp:ui_resources',
       ],
     }],  # use_aura==1
