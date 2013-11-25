@@ -71,6 +71,7 @@ public:
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host);
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates);
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager();
+    virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const string16& message, int32 line_no, const string16& source_id);
 
 private:
     WebContentsAdapterClient *m_viewClient;
