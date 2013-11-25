@@ -72,6 +72,7 @@ public:
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
+    virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const string16& message, int32 line_no, const string16& source_id) Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;

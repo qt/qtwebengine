@@ -114,6 +114,7 @@ public:
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) = 0;
+    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H
