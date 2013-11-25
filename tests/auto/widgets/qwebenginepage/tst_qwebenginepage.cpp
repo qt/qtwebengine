@@ -399,13 +399,15 @@ class ConsolePage : public QWebEnginePage
 public:
     ConsolePage(QObject* parent = 0) : QWebEnginePage(parent) {}
 
-    virtual void javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID)
+    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID)
     {
+        levels.append(level);
         messages.append(message);
         lineNumbers.append(lineNumber);
         sourceIDs.append(sourceID);
     }
 
+    QList<int> levels;
     QStringList messages;
     QList<int> lineNumbers;
     QStringList sourceIDs;
@@ -413,15 +415,11 @@ public:
 
 void tst_QWebEnginePage::consoleOutput()
 {
-#if !defined(QWEBENGINEPAGE_JAVASCRIPTCONSOLEMESSAGE)
-    QSKIP("QWEBENGINEPAGE_JAVASCRIPTCONSOLEMESSAGE");
-#else
     ConsolePage page;
     // We don't care about the result but want this to be synchronous
     evaluateJavaScriptSync(&page, "this is not valid JavaScript");
     QCOMPARE(page.messages.count(), 1);
     QCOMPARE(page.lineNumbers.at(0), 1);
-#endif
 }
 
 class TestPage : public QWebEnginePage {

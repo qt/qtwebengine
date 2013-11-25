@@ -141,6 +141,7 @@ public:
     virtual void didRunJavaScript(const QVariant&, quint64) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentMarkup(const QString&, quint64) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(const QString&, quint64) Q_DECL_OVERRIDE { }
+    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
 
