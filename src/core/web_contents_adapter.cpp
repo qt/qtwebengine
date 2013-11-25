@@ -55,8 +55,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "ui/shell_dialogs/selected_file_info.h"
 
 #include <QGuiApplication>
+#include <QStringList>
 #include <QStyleHints>
 #include <QVariant>
 
@@ -144,6 +146,19 @@ static void callbackOnEvaluateJS(JSCallbackBase *callback, const base::Value *re
 {
     callback->call(fromJSValue(result));
     delete callback;
+}
+
+static QStringList listRecursively(const QDir& dir) {
+    QStringList ret;
+    QFileInfoList infoList(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot |QDir::Hidden));
+    Q_FOREACH (const QFileInfo &fileInfo, infoList) {
+        if (fileInfo.isDir()) {
+            ret.append(fileInfo.absolutePath() + QStringLiteral("/.")); // Match chromium's behavior. See chrome/browser/file_select_helper.cc
+            ret.append(listRecursively(QDir(fileInfo.absoluteFilePath())));
+        } else
+            ret.append(fileInfo.absoluteFilePath());
+    }
+    return ret;
 }
 
 class WebContentsAdapterPrivate {
@@ -354,4 +369,16 @@ void WebContentsAdapter::dpiScaleChanged()
         impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost());
     if (impl)
         impl->NotifyScreenInfoChanged();
+}
+
+void WebContentsAdapter::filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode mode)
+{
+    Q_D(WebContentsAdapter);
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    Q_ASSERT(rvh);
+    QStringList files(fileList);
+    if (mode == WebContentsAdapterClient::UploadFolder && !fileList.isEmpty()
+            && QFileInfo(fileList.first()).isDir()) // Enumerate the directory
+        files = listRecursively(QDir(fileList.first()));
+    rvh->FilesSelectedInChooser(toVector<ui::SelectedFileInfo>(files), static_cast<content::FileChooserParams::Mode>(mode));
 }

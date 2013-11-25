@@ -50,6 +50,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/common/file_chooser_params.h"
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
@@ -129,4 +130,19 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector
 content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
 {
     return JavaScriptDialogManagerQt::GetInstance();
+}
+
+Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Open) == static_cast<int>(content::FileChooserParams::Open), "Enums out of sync");
+Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Save) == static_cast<int>(content::FileChooserParams::Save), "Enums out of sync");
+
+void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, const content::FileChooserParams &params)
+{
+    Q_UNUSED(web_contents)
+    QStringList acceptedMimeTypes;
+    acceptedMimeTypes.reserve(params.accept_types.size());
+    for (std::vector<base::string16>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
+        acceptedMimeTypes.append(toQt(*it));
+
+    m_viewClient->runFileChooser(static_cast<WebContentsAdapterClient::FileChooserMode>(params.mode), toQt(params.default_file_name.value()), toQt(params.title)
+                                 , acceptedMimeTypes);
 }
