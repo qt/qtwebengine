@@ -9,8 +9,6 @@ MODULE = webenginewidgets
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 
-CONFIG += c++11
-
 QT += widgets
 QT_PRIVATE += widgets-private gui-private core-private
 
