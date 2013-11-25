@@ -333,6 +333,34 @@ bool QWebEnginePagePrivate::javascriptDialog(JavascriptDialogType type, const QS
     return false;
 }
 
+class SaveToClipboardFunctor
+{
+    QString m_text;
+public:
+    SaveToClipboardFunctor(const QString &text)
+      : m_text(text)
+    {}
+    void operator()() const
+    {
+        qApp->clipboard()->setText(m_text);
+    }
+};
+
+class LoadUrlFunctor
+{
+    QWebEnginePage *m_page;
+    QUrl m_url;
+public:
+    LoadUrlFunctor(QWebEnginePage *page, const QUrl &url)
+      : m_page(page)
+      , m_url(url)
+    {}
+    void operator()() const
+    {
+        m_page->load(m_url);
+    }
+};
+
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
@@ -355,18 +383,17 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         menu->addAction(action);
     } else {
         action = new QAction(tr("Copy..."), menu);
-        // FIXME: We probably can't keep "cheating" with lambdas, but for now it keeps this patch smaller ;)
-        connect(action, &QAction::triggered, [=]() { qApp->clipboard()->setText(contextMenuData.selectedText); });
+        connect(action, &QAction::triggered, SaveToClipboardFunctor(contextMenuData.selectedText));
         menu->addAction(action);
     }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
         menu->addSeparator();
         action = new QAction(tr("Navigate to..."), menu);
-        connect(action, &QAction::triggered, [=]() { load(contextMenuData.linkUrl); });
+        connect(action, &QAction::triggered, LoadUrlFunctor(this, contextMenuData.linkUrl));
         menu->addAction(action);
         action = new QAction(tr("Copy link address"), menu);
-        connect(action, &QAction::triggered, [=]() { qApp->clipboard()->setText(contextMenuData.linkUrl.toString()); });
+        connect(action, &QAction::triggered, SaveToClipboardFunctor(contextMenuData.linkUrl.toString()));
         menu->addAction(action);
     }
     return menu;
