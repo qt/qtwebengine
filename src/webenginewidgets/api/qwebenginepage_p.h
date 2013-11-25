@@ -46,6 +46,7 @@
 
 #include "web_contents_adapter_client.h"
 #include <QtCore/private/qobject_p.h>
+#include <QtCore/qcompilerdetection.h>
 #include <QSharedData>
 
 class RenderWidgetHostViewQtDelegate;
@@ -78,6 +79,7 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE;
+    virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QString &title, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
