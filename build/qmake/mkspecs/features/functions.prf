@@ -18,6 +18,12 @@ defineReplace(getConfigDir) {
   return("Debug")
 }
 
+defineReplace(extractCFlag) {
+    OPTION = $$find(QMAKE_CFLAGS, $$1)
+    OPTION = $$split(OPTION, =)
+    return ($$member(OPTION, 1))
+}
+
 defineReplace(findMocables) {
   input = $$1
   for (file, input): \

@@ -28,6 +28,7 @@ import gyp
 
 # Add paths so that pymod_do_main(...) can import files.
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
+sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
 
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'core', 'core.gyp', 'scripts'))
@@ -39,6 +40,8 @@ sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
 sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
 
 import repack_locales
+
+gyp_crosscompile = ('qt_cross_compile=1' in sys.argv)
 
 def additional_include_files(args=[]):
   """
@@ -67,6 +70,9 @@ def additional_include_files(args=[]):
 
   # Common stuff we generate and extract from qmake
   AddInclude(os.path.join(qtwebengine_src, 'build', 'qmake_extras.gypi'))
+
+  if gyp_crosscompile:
+    AddInclude(os.path.join(qtwebengine_src, 'build', 'target_extras.gypi'))
 
   # Optionally add supplemental .gypi files if present.
   supplements = glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
@@ -135,6 +141,11 @@ if __name__ == '__main__':
   args.extend(["--depth=" + chrome_src])
   args.extend(['-D', 'qtwebengine_src_dir=' + qtwebengine_src])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
+
+  if gyp_crosscompile:
+    print("\n... cross compiling ...\n")
+    os.environ['GYP_CROSSCOMPILE'] = '1'
+
   # linux_use_gold_binary currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
   # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
   args.extend(['-D', 'linux_use_gold_binary=0'])

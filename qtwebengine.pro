@@ -28,7 +28,14 @@ sub_examples.depends = quick_plugin_lib quick_experimental_plugin_lib
 sub_tests.depends = quick_plugin_lib quick_experimental_plugin_lib
 
 # This is where we use the generated gypi files and run gyp_qtwebengine
-build.depends = resources lib
+build.depends = resources lib target_extras
+
+cross_compile {
+    # Generates target_extras.gypi file with target specific options needed for cross compilation
+    target_extras.subdir = build/target_extras
+    build.depends += target_extras
+    SUBDIRS += target_extras
+}
 
 SUBDIRS += qmake_extras \
           resources \
