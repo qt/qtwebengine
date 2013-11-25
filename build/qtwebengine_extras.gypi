@@ -19,5 +19,33 @@
       ['exclude', 'browser/renderer_host/render_widget_host_view_qnx\\.(cc|h)$'],
       ['exclude', 'browser/web_contents/web_contents_view_qnx\\.(cc|h)$'],
     ],
-  }
+  },
+  'conditions': [
+    [ 'OS=="linux" and qt_cross_compile==1', {
+      'target_defaults': {
+        'defines': [
+          'TOOLKIT_QT',
+        ],
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'ldflags!': ['-L/usr/lib'], # garbage added by icu-config
+            'conditions': [
+              [ '_target_name=="gl"', {
+                'defines': [
+                  'GL_GLEXT_PROTOTYPES',
+                  'EGL_EGLEXT_PROTOTYPES',
+                ],
+              }],
+              ['_type=="shared_library"', {
+                'ldflags': [
+                  # Tell the linker to prefer symbols within the library before looking outside
+                  '-Wl,-shared,-Bsymbolic',
+                ],
+              }],
+            ],
+          }],
+        ],
+      },
+    }],
+  ],
 }
