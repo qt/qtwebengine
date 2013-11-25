@@ -146,3 +146,10 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
 
     m_viewClient->runFileChooser(static_cast<WebContentsAdapterClient::FileChooserMode>(params.mode), toQt(params.default_file_name.value()), acceptedMimeTypes);
 }
+
+bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const string16 &message, int32 line_no, const string16 &source_id)
+{
+    Q_UNUSED(source)
+    m_viewClient->javaScriptConsoleMessage(static_cast<int>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
+    return false;
+}
