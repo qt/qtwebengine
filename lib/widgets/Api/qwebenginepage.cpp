@@ -337,6 +337,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
     QMenu *menu = new QMenu(d->view);
+#if defined(Q_COMPILER_LAMBDA)
     QAction *action = 0;
     WebEngineContextMenuData contextMenuData(d->m_menuData);
     if (contextMenuData.selectedText.isEmpty()) {
@@ -369,6 +370,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         connect(action, &QAction::triggered, [=]() { qApp->clipboard()->setText(contextMenuData.linkUrl.toString()); });
         menu->addAction(action);
     }
+#endif
     return menu;
 }
 
