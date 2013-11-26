@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = browser
-QT += webenginewidgets webengine network widgets printsupport
+QT += webenginewidgets network widgets printsupport
 
 macx: CONFIG -= app_bundle
 
