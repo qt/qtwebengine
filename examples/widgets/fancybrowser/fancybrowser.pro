@@ -1,4 +1,4 @@
-QT      +=  webenginewidgets
+QT      +=  webenginewidgets webengine
 
 macx: CONFIG -= app_bundle
 

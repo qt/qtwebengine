@@ -8,4 +8,4 @@ SOURCES = widgetwindow.cpp main.cpp
 
 RESOURCES += ../../common/common_resources.qrc
 
-QT += webenginewidgets
+QT += webenginewidgets webengine

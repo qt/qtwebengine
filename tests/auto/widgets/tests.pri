@@ -17,7 +17,7 @@ INCLUDEPATH += \
     $$PWD \
     $$PWD/../Api
 
-QT += testlib network webenginewidgets widgets
+QT += testlib network webenginewidgets webengine widgets
 macx: CONFIG -= app_bundle
 
 # This define is used by some tests to look up resources in the source tree

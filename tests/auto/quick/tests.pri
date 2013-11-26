@@ -9,7 +9,7 @@ INCLUDEPATH += \
     $$PWD \
     $$PWD/../Api
 
-QT += testlib network quick
+QT += testlib network quick webengine
 QT_PRIVATE += quick-private gui-private core-private
 
 macx: CONFIG -= app_bundle
