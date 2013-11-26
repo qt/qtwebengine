@@ -127,6 +127,8 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect & initialGeometry) = 0;
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
+    virtual void requestFullScreen(bool) = 0;
+    virtual bool isFullScreen() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) = 0;
     virtual void didRunJavaScript(const QVariant& result, quint64 requestId) = 0;

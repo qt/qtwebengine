@@ -133,6 +133,19 @@ content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogMana
     return JavaScriptDialogManagerQt::GetInstance();
 }
 
+void WebContentsDelegateQt::ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen)
+{
+    if (m_viewClient->isFullScreen() != enter_fullscreen) {
+        m_viewClient->requestFullScreen(enter_fullscreen);
+        web_contents->GetRenderViewHost()->WasResized();
+    }
+}
+
+bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents) const
+{
+    return m_viewClient->isFullScreen();
+}
+
 Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Open) == static_cast<int>(content::FileChooserParams::Open), "Enums out of sync");
 Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Save) == static_cast<int>(content::FileChooserParams::Save), "Enums out of sync");
 
