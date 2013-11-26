@@ -71,6 +71,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , loadProgress(0)
     , inspectable(false)
     , m_isLoading(false)
+    , m_isFullScreen(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -315,6 +316,16 @@ void QQuickWebEngineViewPrivate::close()
     Q_UNREACHABLE();
 }
 
+void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
+{
+    Q_EMIT e->fullScreenRequested(fullScreen);
+}
+
+bool QQuickWebEngineViewPrivate::isFullScreen() const
+{
+    return e->isFullScreen();
+}
+
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
 {
     this->devicePixelRatio = devicePixelRatio;
@@ -416,6 +427,12 @@ void QQuickWebEngineView::setInspectable(bool enable)
     Q_D(QQuickWebEngineView);
     d->inspectable = enable;
     d->adapter->enableInspector(enable);
+}
+
+void QQuickWebEngineViewExperimental::setIsFullScreen(bool fullscreen)
+{
+    d_ptr->m_isFullScreen = fullscreen;
+    emit isFullScreenChanged();
 }
 
 void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlComponent *contextMenuExtras)

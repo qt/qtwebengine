@@ -93,8 +93,13 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
+    Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
 
 public:
+    void setIsFullScreen(bool fullscreen);
+    bool isFullScreen() const { return d_ptr->m_isFullScreen; }
+
+public Q_SLOTS:
     QQuickWebEngineViewport *viewport() const;
     Q_INVOKABLE void adoptHandle(QQuickWebEngineViewHandle *viewHandle);
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
@@ -102,6 +107,8 @@ public:
 
 Q_SIGNALS:
     void createWindow(const QJSValue &newViewHandle, const QString &newViewDisposition);
+    void fullScreenRequested(bool fullScreen);
+    void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();
 
 private:
@@ -135,6 +142,8 @@ public:
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
+    virtual void requestFullScreen(bool) Q_DECL_OVERRIDE;
+    virtual bool isFullScreen() const Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
@@ -152,6 +161,7 @@ public:
     int loadProgress;
     bool inspectable;
     bool m_isLoading;
+    bool m_isFullScreen;
     qreal devicePixelRatio;
 
 private:
