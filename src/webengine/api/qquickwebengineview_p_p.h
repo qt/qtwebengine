@@ -73,14 +73,20 @@ private:
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
     Q_OBJECT
+    Q_PROPERTY(bool allowFullScreen READ allowFullScreen WRITE setAllowFullScreen)
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
 public:
+    bool allowFullScreen() const { return m_allowFullScreen; }
+
+public Q_SLOTS:
+    void setAllowFullScreen(bool allow) { m_allowFullScreen = allow; }
     QQuickWebEngineViewport *viewport() const;
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
     QQuickWebEngineView *q_ptr;
     QQuickWebEngineViewPrivate *d_ptr;
+    bool m_allowFullScreen;
 
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     Q_DECLARE_PUBLIC(QQuickWebEngineView)
@@ -109,6 +115,8 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE { return false;}
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
+    virtual void setFullScreen(bool) Q_DECL_OVERRIDE;
+    virtual bool isFullScreen() const Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
 
@@ -118,11 +126,38 @@ public:
     QUrl icon;
     int loadProgress;
     bool inspectable;
+    QQuickItem* nonFullScreenFill;
+    QQuickItem *nonFullScreenParent;
     qreal devicePixelRatio;
 
 private:
     qreal m_dpiScale;
 };
+
+class WindowStateListener : public QObject
+{
+    Q_OBJECT
+public:
+    WindowStateListener(QQuickWebEngineViewPrivate *v)
+        : viewPrivate(v)
+    {
+        QObject::connect(viewPrivate->q_func(), SIGNAL(destroyed(QObject*)), this, SLOT(deleteLater()));
+    }
+
+public Q_SLOTS:
+    void windowStateChanged(Qt::WindowState windowState)
+    {
+        if (!(windowState & Qt::WindowFullScreen)) {
+            viewPrivate->setFullScreen(false);
+            deleteLater();
+        }
+    }
+
+private:
+    QQuickWebEngineViewPrivate *viewPrivate;
+};
+
+
 
 QT_END_NAMESPACE
 

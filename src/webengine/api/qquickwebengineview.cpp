@@ -56,6 +56,8 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , v(new QQuickWebEngineViewport(this))
     , loadProgress(0)
     , inspectable(false)
+    , nonFullScreenFill(0)
+    , nonFullScreenParent(0)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -166,6 +168,58 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
 void QQuickWebEngineViewPrivate::close()
 {
     Q_UNREACHABLE();
+}
+
+void QQuickWebEngineViewPrivate::setFullScreen(bool fullScreen)
+{
+    Q_Q(QQuickWebEngineView);
+
+    if (!experimental()->allowFullScreen())
+        return;
+
+    QQuickWindow *window = q->window();
+    QQuickItem *rootItem = q;
+
+    if (window)
+        rootItem = window->contentItem();
+
+    while (rootItem->parentItem())
+        rootItem = rootItem->parentItem();
+
+    QQuickAnchors *anchors = q->d_func()->anchors();
+    if (fullScreen) {
+        nonFullScreenFill = anchors->fill();
+        nonFullScreenParent = q->parentItem();
+
+        q->setParentItem(rootItem);
+        anchors->setFill(rootItem);
+        window->showFullScreen();
+
+        QObject::connect(window, &QQuickWindow::windowStateChanged, new WindowStateListener(this), &WindowStateListener::windowStateChanged);
+    } else {
+        q->setParentItem(nonFullScreenParent);
+        anchors->setFill(nonFullScreenFill);
+        if (window->windowState() & Qt::WindowFullScreen)
+            window->showNormal();
+    }
+}
+
+bool QQuickWebEngineViewPrivate::isFullScreen() const
+{
+    Q_Q(const QQuickWebEngineView);
+    QQuickWindow *window = q->window();
+    if (window && !(window->windowState() & Qt::WindowFullScreen))
+        return false;
+
+    // If the WebEngineView does not fill the dimensions of the rootItem,
+    // then it cannot be fullscreen either.
+    const QQuickItem *rootItem = q;
+    while (rootItem->parentItem())
+        rootItem = rootItem->parentItem();
+
+    QPointF topLeft(0,0);
+    QPointF bottomRight(q->width(),q->height());
+    return q->mapToScene(topLeft) == topLeft && q->mapToScene(bottomRight) == bottomRight;
 }
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
@@ -288,6 +342,7 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
     : q_ptr(0)
     , d_ptr(viewPrivate)
+    , m_allowFullScreen(false)
 {
 }
 

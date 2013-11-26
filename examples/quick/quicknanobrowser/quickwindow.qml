@@ -40,6 +40,7 @@
 
 import QtQuick 2.0
 import QtWebEngine 1.0
+import QtWebEngine.experimental 1.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
@@ -51,6 +52,9 @@ ApplicationWindow {
     visible: true
     title: webEngineView.title
 
+    // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
+    Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
+
     // Focus and select text in URL bar
     Action {
         id: focus
@@ -58,6 +62,14 @@ ApplicationWindow {
         onTriggered: {
             addressBar.forceActiveFocus();
             addressBar.selectAll();
+        }
+    }
+
+    Action {
+        id: exitFullScreen
+        shortcut: "Escape"
+        onTriggered: {
+            showNormal()
         }
     }
 
@@ -124,6 +136,7 @@ ApplicationWindow {
         focus: true
         anchors.fill: parent
         url: utils.initialUrl()
+        experimental.allowFullScreen: true
 
         onUrlChanged: addressBar.text = url
         onIconChanged: faviconImage.source = icon
