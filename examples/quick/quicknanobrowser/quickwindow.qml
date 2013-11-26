@@ -44,16 +44,22 @@ import QtWebEngine.experimental 1.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
+import QtQuick.Window 2.1
 
 ApplicationWindow {
     id: browserWindow
     function load(url) { tabs.currentView.url = url }
     function adoptHandle(viewHandle) { tabs.currentView.adoptHandle(viewHandle) }
 
+    property bool isFullScreen: visibility & Window.FullScreen
+
     height: 600
     width: 800
     visible: true
     title: tabs.currentView && tabs.currentView.title
+
+    // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
+    Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
 
     Action {
         id: focus
@@ -78,6 +84,21 @@ ApplicationWindow {
                 browserWindow.close()
             else
                 tabs.removeTab(tabs.currentIndex)
+        }
+    }
+
+    Action {
+        shortcut: "Ctrl+R"
+        onTriggered: {
+            tabs.currentView.reload()
+        }
+    }
+
+    Action {
+        shortcut: "Escape"
+        onTriggered: {
+            if (browserWindow.isFullScreen)
+                browserWindow.showNormal()
         }
     }
 
@@ -160,11 +181,61 @@ ApplicationWindow {
         Component {
             id: tabComponent
             WebEngineView {
+                id: webEngineView
                 function adoptHandle(viewHandle) { experimental.adoptHandle(viewHandle) }
 
                 focus: true
 
+                states: [
+                    State {
+                        name: ""
+                        PropertyChanges {
+                            target: tabs
+                            frameVisible: true
+                            tabsVisible: true
+                        }
+                        PropertyChanges {
+                            target: navigationBar
+                            visible: true
+                        }
+                        PropertyChanges {
+                            target: browserWindow
+                            visibility: Window.AutomaticVisibility
+                        }
+                    },
+                    State {
+                        name: "FullScreen"
+                        when: fullScreenWasRequested && browserWindow.isFullScreen
+                        PropertyChanges {
+                            target: tabs
+                            frameVisible: false
+                            tabsVisible: false
+                        }
+                        PropertyChanges {
+                            target: navigationBar
+                            visible: false
+                        }
+                        PropertyChanges {
+                            target: browserWindow
+                            visibility: Window.FullScreen
+                        }
+                    }
+                ]
+
+                property bool fullScreenWasRequested: false
+
                 experimental {
+                    isFullScreen: webEngineView.state == "FullScreen"
+                    onFullScreenRequested: {
+                        if (fullScreen) {
+                            webEngineView.state = "FullScreen"
+                            fullScreenWasRequested = true
+                        } else {
+                            webEngineView.state = ""
+                            fullScreenWasRequested = false
+                        }
+                    }
+
                     onCreateWindow: {
                         if (newViewDisposition == "popup")
                             print("Warning: Ignored a popup window.")
