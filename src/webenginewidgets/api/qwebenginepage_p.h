@@ -78,6 +78,8 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE;
+    virtual void setFullScreen(bool);
+    virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; }
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();

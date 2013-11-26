@@ -130,3 +130,16 @@ content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogMana
 {
     return JavaScriptDialogManagerQt::GetInstance();
 }
+
+void WebContentsDelegateQt::ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen)
+{
+    if (m_viewClient->isFullScreen() != enter_fullscreen) {
+        m_viewClient->setFullScreen(enter_fullscreen);
+        web_contents->GetRenderViewHost()->WasResized();
+    }
+}
+
+bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents) const
+{
+    return m_viewClient->isFullScreen();
+}
