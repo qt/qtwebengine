@@ -71,6 +71,7 @@ public:
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
+    virtual void DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
 
 private:
