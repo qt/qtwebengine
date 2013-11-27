@@ -11,22 +11,33 @@ cross_compile {
     !isEmpty(TOOLCHAIN_SYSROOT): GYP_ARGS += "-D sysroot=\"$${TOOLCHAIN_SYSROOT}\""
 
     contains(QT_ARCH, "arm") {
-        # Extract ARM specific compiler options that we have to pass to gyp
-        MARCH = $$extractCFlag("-march=.*")
-        MFPU = $$extractCFlag("-mfpu=.*")
-        MTUNE = $$extractCFlag("-mtune=.*")
-        MFLOAT = $$extractCFlag("-mfloat-abi=.*")
-        MARMV = $$replace(MARCH, "armv",)
-        MARMV = $$split(MARMV,)
-        MARMV = $$member(MARMV, 0)
-        MTHUMB = 0
-        contains(QMAKE_CFLAGS, "-mthumb"): MTHUMB = 1
-        NEON = 0
-        contains(MFPU, "neon"): NEON = 1
+        GYP_ARGS += "-D target_arch=arm"
 
-        GYP_ARGS += "-D target_arch=arm -D arm_version=\"$$MARMV\" -D arm_arch=\"$$MARCH\"" \
-                    "-D arm_tune=\"$$MTUNE\" -D arm_fpu=\"$$MFPU\" -D arm_float_abi=\"$$MFLOAT\"" \
-                    "-D arm_thumb=\"$$MTHUMB\" -D arm_neon=\"$$NEON\""
+        # Extract ARM specific compiler options that we have to pass to gyp,
+        # but let gyp figure out a default if an option is not present.
+        MARCH = $$extractCFlag("-march=.*")
+        !isEmpty(MARCH): GYP_ARGS += "-D arm_arch=\"$$MARCH\""
+
+        MFPU = $$extractCFlag("-mfpu=.*")
+        !isEmpty(MFPU) {
+            GYP_ARGS += "-D arm_fpu=\"$$MFPU\""
+            contains(MFPU, "neon"): GYP_ARGS += "-D arm_neon=\"$$NEON\""
+        }
+
+        MTUNE = $$extractCFlag("-mtune=.*")
+        !isEmpty(MTUNE): GYP_ARGS += "-D arm_tune=\"$$MTUNE\""
+
+        MFLOAT = $$extractCFlag("-mfloat-abi=.*")
+        !isEmpty(MFLOAT): GYP_ARGS += "-D arm_float_abi=\"$$MFLOAT\""
+
+        MARMV = $$replace(MARCH, "armv",)
+        !isEmpty(MARMV) {
+            MARMV = $$split(MARMV,)
+            MARMV = $$member(MARMV, 0)
+            GYP_ARGS += "-D arm_version=\"$$MARMV\""
+        }
+
+        contains(QMAKE_CFLAGS, "-mthumb"): GYP_ARGS += "-D arm_thumb=1"
     }
 
     # Needed for v8, see chromium/v8/build/toolchain.gypi
