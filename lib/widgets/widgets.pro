@@ -37,3 +37,11 @@ HEADERS = \
         render_widget_host_view_qt_delegate_widget.h
 
 load(qt_module)
+
+# QNX ld only supports staging-relative rpath values and can't use the rpath specified above.
+# Instead, append an appropriate rpath-link to lib_qt_webenginewidgets.pri.
+qnx:!build_pass {
+    local_build_rpath_link = "QMAKE_RPATHLINKDIR += $$LIBPATH"
+    # MODULE_PRI is defined in qt_module_pris.prf
+    write_file($$MODULE_PRI, local_build_rpath_link, append)
+}
