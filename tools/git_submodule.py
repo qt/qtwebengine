@@ -121,7 +121,7 @@ class Submodule:
             return True
         if 'all' in self.os:
             return True
-        if sys.platform.startswith('win32') and 'win' in self.os:
+        if (sys.platform.startswith('win32') or sys.platform.startswith('cygwin')) and 'win' in self.os:
             return True
         if sys.platform.startswith('linux') and 'unix' in self.os:
             return True
