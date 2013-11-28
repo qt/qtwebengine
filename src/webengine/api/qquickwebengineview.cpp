@@ -45,6 +45,7 @@
 #include "web_contents_adapter.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 
+#include <QScreen>
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
@@ -52,15 +53,40 @@ QT_BEGIN_NAMESPACE
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
     , e(new QQuickWebEngineViewExperimental(this))
+    , v(new QQuickWebEngineViewport(this))
     , loadProgress(0)
     , inspectable(false)
+    , devicePixelRatio(0.0)
+    , m_dpiScale(1.0)
 {
+    // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
+    // is the (possibly quantized) ratio of device dpi to 160 dpi.
+    // However GUI toolkits on non-iOS platforms may be using different criteria than relative
+    // DPI (depending on the history of that platform), dictating the choice of
+    // QScreen::devicePixelRatio().
+    // Where applicable (i.e. non-iOS mobile platforms), override QScreen::devicePixelRatio
+    // and instead use a reasonable default value for viewport.devicePixelRatio to avoid every
+    // app having to use this experimental API.
+    QString platform = qApp->platformName().toLower();
+    if (platform == QStringLiteral("qnx")) {
+        qreal webPixelRatio = QGuiApplication::primaryScreen()->physicalDotsPerInch() / 160;
+
+        // Quantize devicePixelRatio to increments of 1 to allow JS and media queries to select
+        // 1x, 2x, 3x etc assets that fit an integral number of pixels.
+        setDevicePixelRatio(qMax(1, qRound(webPixelRatio)));
+    }
+
     adapter->initialize(this);
 }
 
 QQuickWebEngineViewExperimental *QQuickWebEngineViewPrivate::experimental() const
 {
-    return e;
+    return e.data();
+}
+
+QQuickWebEngineViewport *QQuickWebEngineViewPrivate::viewport() const
+{
+    return v.data();
 }
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
@@ -112,6 +138,11 @@ QRectF QQuickWebEngineViewPrivate::viewportRect() const
     return QRectF(q->x(), q->y(), q->width(), q->height());
 }
 
+qreal QQuickWebEngineViewPrivate::dpiScale() const
+{
+    return m_dpiScale;
+}
+
 void QQuickWebEngineViewPrivate::loadFinished(bool success)
 {
     Q_Q(QQuickWebEngineView);
@@ -135,6 +166,16 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
 void QQuickWebEngineViewPrivate::close()
 {
     Q_UNREACHABLE();
+}
+
+void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
+{
+  this->devicePixelRatio = devicePixelRatio;
+  if (devicePixelRatio > 0) {
+    QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
+    m_dpiScale = devicePixelRatio / screen->devicePixelRatio();
+  } else
+    m_dpiScale = 1.0;
 }
 
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
@@ -251,6 +292,33 @@ QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngine
     : q_ptr(0)
     , d_ptr(viewPrivate)
 {
+}
+
+QQuickWebEngineViewport* QQuickWebEngineViewExperimental::viewport() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->viewport();
+}
+
+QQuickWebEngineViewport::QQuickWebEngineViewport(QQuickWebEngineViewPrivate *viewPrivate)
+    : d_ptr(viewPrivate)
+{
+}
+
+qreal QQuickWebEngineViewport::devicePixelRatio() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->devicePixelRatio;
+}
+
+void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->devicePixelRatio == devicePixelRatio)
+        return;
+    d->setDevicePixelRatio(devicePixelRatio);
+    d->adapter->dpiScaleChanged();
+    Q_EMIT devicePixelRatioChanged();
 }
 
 QT_END_NAMESPACE
