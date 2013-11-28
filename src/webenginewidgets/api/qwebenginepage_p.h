@@ -71,6 +71,7 @@ public:
     virtual void loadingStateChanged() Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
+    virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &initialGeometry) Q_DECL_OVERRIDE;

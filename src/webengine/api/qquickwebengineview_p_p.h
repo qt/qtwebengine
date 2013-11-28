@@ -45,7 +45,7 @@
 #include "qquickwebengineview_p.h"
 #include "web_contents_adapter_client.h"
 
-#include <QSharedData>
+#include <QScopedPointer>
 #include <QtQuick/private/qquickitem_p.h>
 
 class WebContentsAdapter;
@@ -53,9 +53,29 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio WRITE setDevicePixelRatio NOTIFY devicePixelRatioChanged)
+public:
+    QQuickWebEngineViewport(QQuickWebEngineViewPrivate *viewPrivate);
+
+    qreal devicePixelRatio() const;
+    void setDevicePixelRatio(qreal);
+
+Q_SIGNALS:
+    void devicePixelRatioChanged();
+
+private:
+    QQuickWebEngineViewPrivate *d_ptr;
+
+    Q_DECLARE_PRIVATE(QQuickWebEngineView)
+};
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
 public:
+    QQuickWebEngineViewport *viewport() const;
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -73,6 +93,7 @@ public:
     QQuickWebEngineViewPrivate();
 
     QQuickWebEngineViewExperimental *experimental() const;
+    QQuickWebEngineViewport *viewport() const;
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode) Q_DECL_OVERRIDE;
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
@@ -81,6 +102,7 @@ public:
     virtual void loadingStateChanged() Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
+    virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &) Q_DECL_OVERRIDE;
@@ -88,15 +110,23 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE { return false;}
     virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
 
+    void setDevicePixelRatio(qreal);
+
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
-    QQuickWebEngineViewExperimental *e;
+    QScopedPointer<QQuickWebEngineViewExperimental> e;
+    QScopedPointer<QQuickWebEngineViewport> v;
     QUrl icon;
     int loadProgress;
     bool inspectable;
+    qreal devicePixelRatio;
+
+private:
+    qreal m_dpiScale;
 };
 
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineViewExperimental)
+QML_DECLARE_TYPE(QQuickWebEngineViewport)
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H
