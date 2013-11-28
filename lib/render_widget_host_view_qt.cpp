@@ -226,7 +226,8 @@ gfx::Size RenderWidgetHostViewQt::GetPhysicalBackingSize() const
         return gfx::Size();
 
     const QScreen* screen = m_delegate->window()->screen();
-    return gfx::ToCeiledSize(gfx::ScaleSize(GetViewBounds().size(), screen->devicePixelRatio()));
+    gfx::SizeF size = fromQt(m_delegate->screenRect().size());
+    return gfx::ToCeiledSize(gfx::ScaleSize(size, screen->devicePixelRatio()));
 }
 
 gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
@@ -291,7 +292,10 @@ bool RenderWidgetHostViewQt::IsShowing()
 gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 {
     QRectF p = m_delegate->screenRect();
-    return gfx::Rect(p.x(), p.y(), p.width(), p.height());
+    float s = GetDpiScale();
+    gfx::Point p1(floor(p.x() / s), floor(p.y() / s));
+    gfx::Point p2(ceil(p.right() /s), ceil(p.bottom() / s));
+    return gfx::BoundingRect(p1, p2);
 }
 
 // Subclasses should override this method to do what is appropriate to set
@@ -593,6 +597,7 @@ void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
     if (!window)
         return;
     GetScreenInfoFromNativeWindow(window, results);
+    results->deviceScaleFactor *= GetDpiScale();
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
@@ -815,6 +820,11 @@ void RenderWidgetHostViewQt::RemoveExpiredMappings(QTouchEvent *ev)
     m_touchIdMapping.swap(newMap);
 }
 
+float RenderWidgetHostViewQt::GetDpiScale() const
+{
+    return m_delegate ? m_delegate->dpiScale() : 1.0;
+}
+
 bool RenderWidgetHostViewQt::IsPopup() const
 {
     return popup_type_ != WebKit::WebPopupTypeNone;
@@ -826,7 +836,7 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
     if (eventType == QEvent::MouseButtonDblClick)
         return;
 
-    WebKit::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event);
+    WebKit::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, GetDpiScale());
     if (eventType == QMouseEvent::MouseButtonPress) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
@@ -849,7 +859,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
-    m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev));
+    m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, GetDpiScale()));
 }
 
 void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
@@ -867,7 +877,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 
         ui::TouchEvent uiEvent(
             toUIEventType(touchPoint.state()),
-            toGfxPoint(touchPoint.pos().toPoint()),
+            toGfxPoint((touchPoint.pos() / GetDpiScale()).toPoint()),
             0, // flags
             GetMappedTouch(touchPoint.id()),
             timestamp,
@@ -893,7 +903,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 
 void RenderWidgetHostViewQt::handleHoverEvent(QHoverEvent *ev)
 {
-    m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev));
+    m_host->ForwardMouseEvent(WebEventFactory::toWebMouseEvent(ev, GetDpiScale()));
 }
 
 void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)

@@ -218,6 +218,19 @@ public:
 
     virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
+
+    virtual qreal dpiScale() const Q_DECL_OVERRIDE
+    {
+        return m_dpiScale;
+    }
+
+    Q_SLOT void setDpiScale(qreal dpiScale)
+    {
+        m_dpiScale = dpiScale;
+    }
+
+private:
+    qreal m_dpiScale;
 };
 #endif // QT_VERSION
 

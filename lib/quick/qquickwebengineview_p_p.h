@@ -53,9 +53,28 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio WRITE setDevicePixelRatio)
+public:
+    QQuickWebEngineViewport(QQuickWebEngineViewPrivate* viewPrivate);
+
+    qreal devicePixelRatio() const;
+    void setDevicePixelRatio(qreal);
+
+private:
+    QQuickWebEngineView *q_ptr;
+    QQuickWebEngineViewPrivate *d_ptr;
+
+    Q_DECLARE_PRIVATE(QQuickWebEngineView)
+    Q_DECLARE_PUBLIC(QQuickWebEngineView)
+};
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
     Q_OBJECT
+    Q_PROPERTY(QQuickWebEngineViewport* viewport READ viewport)
 public:
+    QQuickWebEngineViewport* viewport() const;
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -90,13 +109,16 @@ public:
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QQuickWebEngineViewExperimental *e;
+    QQuickWebEngineViewport *viewport;
     QUrl icon;
     int loadProgress;
     bool inspectable;
+    qreal devicePixelRatio;
 };
 
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineViewExperimental)
+QML_DECLARE_TYPE(QQuickWebEngineViewport)
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H

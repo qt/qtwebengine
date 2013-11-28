@@ -44,6 +44,7 @@
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent)
     : RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>(client, parent)
+    , m_dpiScale(1.0)
 {
     setFlag(ItemHasContents);
 }

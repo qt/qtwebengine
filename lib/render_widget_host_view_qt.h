@@ -205,6 +205,7 @@ private:
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
     int GetMappedTouch(int qtTouchId);
     void RemoveExpiredMappings(QTouchEvent *ev);
+    float GetDpiScale() const;
 
     bool IsPopup() const;
 

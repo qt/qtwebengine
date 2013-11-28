@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
     , e(new QQuickWebEngineViewExperimental(this))
+    , viewport(new QQuickWebEngineViewport(this))
     , loadProgress(0)
     , inspectable(false)
 {
@@ -66,8 +67,11 @@ QQuickWebEngineViewExperimental *QQuickWebEngineViewPrivate::experimental() cons
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-    if (mode == HardwareAccelerationMode)
-        return new RenderWidgetHostViewQtDelegateQuick(client);
+    if (mode == HardwareAccelerationMode) {
+        RenderWidgetHostViewQtDelegateQuick* delegate = new RenderWidgetHostViewQtDelegateQuick(client);
+        delegate->setDpiScale(devicePixelRatio);
+        return delegate;
+    }
 #endif
     return new RenderWidgetHostViewQtDelegateQuickPainted(client);
 }
@@ -251,6 +255,30 @@ QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngine
     : q_ptr(0)
     , d_ptr(viewPrivate)
 {
+}
+
+QQuickWebEngineViewport* QQuickWebEngineViewExperimental::viewport() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->viewport;
+}
+
+QQuickWebEngineViewport::QQuickWebEngineViewport(QQuickWebEngineViewPrivate *viewPrivate)
+    : q_ptr(0)
+    , d_ptr(viewPrivate)
+{
+}
+
+qreal QQuickWebEngineViewport::devicePixelRatio() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->devicePixelRatio;
+}
+
+void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
+{
+    Q_D(QQuickWebEngineView);
+    d->devicePixelRatio = devicePixelRatio;
 }
 
 QT_END_NAMESPACE
