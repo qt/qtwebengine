@@ -89,6 +89,8 @@ public:
     void enableInspector(bool);
     void runJavaScript(const QString &javaScript, const QString &xPath = QString(), JSCallbackBase * = 0);
 
+    void dpiScaleChanged();
+
 private:
     Q_DISABLE_COPY(WebContentsAdapter);
     Q_DECLARE_PRIVATE(WebContentsAdapter);
