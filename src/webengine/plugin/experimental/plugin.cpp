@@ -69,6 +69,8 @@ public:
         qmlRegisterExtendedType<QQuickWebEngineView, QQuickWebEngineViewExperimentalExtension>(uri, 1, 0, "WebEngineView");
         qmlRegisterUncreatableType<QQuickWebEngineViewExperimental>(uri, 1, 0, "WebEngineViewExperimental",
             QObject::tr("Cannot create a separate instance of WebEngineViewExperimental"));
+        qmlRegisterUncreatableType<QQuickWebEngineViewport>(uri, 1, 0, "WebEngineViewport",
+            QObject::tr("Cannot create a separate instance of WebEngineViewport"));
     }
 };
 

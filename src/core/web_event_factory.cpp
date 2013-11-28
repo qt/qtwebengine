@@ -527,15 +527,15 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
     }
 }
 
-WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
+WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
     webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
     webKitEvent.button = mouseButtonForEvent(ev);
     webKitEvent.modifiers = modifiersForEvent(ev);
 
-    webKitEvent.x = webKitEvent.windowX = ev->x();
-    webKitEvent.y = webKitEvent.windowY = ev->y();
+    webKitEvent.x = webKitEvent.windowX = ev->x() / dpiScale;
+    webKitEvent.y = webKitEvent.windowY = ev->y() / dpiScale;
     webKitEvent.globalX = ev->globalX();
     webKitEvent.globalY = ev->globalY();
 
@@ -545,20 +545,20 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QMouseEvent *ev)
     return webKitEvent;
 }
 
-WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev)
+WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
 {
     WebMouseEvent webKitEvent;
     webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
     webKitEvent.modifiers = modifiersForEvent(ev);
 
-    webKitEvent.x = webKitEvent.windowX = ev->pos().x();
-    webKitEvent.y = webKitEvent.windowY = ev->pos().y();
+    webKitEvent.x = webKitEvent.windowX = ev->pos().x() / dpiScale;
+    webKitEvent.y = webKitEvent.windowY = ev->pos().y() / dpiScale;
 
     webKitEvent.type = webEventTypeForEvent(ev);
     return webKitEvent;
 }
 
-WebKit::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
+WebKit::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {
     WebMouseWheelEvent webEvent;
     webEvent.type = webEventTypeForEvent(ev);
@@ -582,8 +582,8 @@ WebKit::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev)
     webEvent.deltaX = webEvent.wheelTicksX * wheelScrollLines * cDefaultQtScrollStep;
     webEvent.deltaY = webEvent.wheelTicksY * wheelScrollLines * cDefaultQtScrollStep;
 
-    webEvent.x = webEvent.windowX = ev->x();
-    webEvent.y = webEvent.windowY = ev->y();
+    webEvent.x = webEvent.windowX = ev->x() / dpiScale;
+    webEvent.y = webEvent.windowY = ev->y() / dpiScale;
     webEvent.globalX = ev->globalX();
     webEvent.globalY = ev->globalY();
     return webEvent;

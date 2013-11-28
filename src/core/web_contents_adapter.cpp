@@ -49,6 +49,7 @@
 #include "web_engine_context.h"
 
 #include "base/values.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -343,4 +344,14 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, const QString 
         content::RenderViewHost::JavascriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, func);
         rvh->ExecuteJavascriptInWebFrameCallbackResult(toString16(xPath), toString16(javaScript), callback);
     }
+}
+
+void WebContentsAdapter::dpiScaleChanged()
+{
+    Q_D(WebContentsAdapter);
+    content::RenderWidgetHostImpl* impl = NULL;
+    if (d->webContents->GetRenderViewHost())
+        impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost());
+    if (impl)
+        impl->NotifyScreenInfoChanged();
 }
