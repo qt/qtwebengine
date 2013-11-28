@@ -218,6 +218,9 @@ public:
 
     virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
+
+public Q_SLOTS:
+    void devicePixelRatioChanged() { m_client->notifyScreenInfoChanged(); }
 };
 #endif // QT_VERSION
 
@@ -231,6 +234,9 @@ public:
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
 
     void paint(QPainter *painter);
+
+public Q_SLOTS:
+    void devicePixelRatioChanged() { m_client->notifyScreenInfoChanged(); }
 
 protected:
     void updatePolish();

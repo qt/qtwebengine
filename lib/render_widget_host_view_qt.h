@@ -169,6 +169,7 @@ public:
     virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) Q_DECL_OVERRIDE;
     virtual void fetchBackingStore() Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
+    virtual void notifyScreenInfoChanged() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
     virtual void compositingSurfaceUpdated() Q_DECL_OVERRIDE;
@@ -205,6 +206,7 @@ private:
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
     int GetMappedTouch(int qtTouchId);
     void RemoveExpiredMappings(QTouchEvent *ev);
+    float dpiScale() const;
 
     bool IsPopup() const;
 

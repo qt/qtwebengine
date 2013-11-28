@@ -66,6 +66,7 @@ public:
     virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) = 0;
     virtual void fetchBackingStore() = 0;
     virtual void notifyResize() = 0;
+    virtual void notifyScreenInfoChanged() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;
     virtual void compositingSurfaceUpdated() = 0;

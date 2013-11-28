@@ -104,6 +104,15 @@ QRectF QWebEnginePagePrivate::viewportRect() const
     return view ? view->geometry() : QRectF();
 }
 
+qreal QWebEnginePagePrivate::dpiScale() const
+{
+    // FIXME: The main use case for widget API is desktop. Only macx uses
+    // QScreen::devicePixelRatio() to deal with high DPI devices, so in the
+    // future win and linux might want to do something here if they opt
+    // to stay at QScreen::devicePixelRatio of 1.0 even for high DPI devices.
+    return 1.0;
+}
+
 void QWebEnginePagePrivate::loadFinished(bool success)
 {
     Q_Q(QWebEnginePage);

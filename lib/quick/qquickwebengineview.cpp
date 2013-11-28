@@ -45,6 +45,7 @@
 #include "web_contents_adapter.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 
+#include <QScreen>
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
@@ -52,24 +53,50 @@ QT_BEGIN_NAMESPACE
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
     , e(new QQuickWebEngineViewExperimental(this))
+    , v(new QQuickWebEngineViewport(this))
     , loadProgress(0)
     , inspectable(false)
+    , devicePixelRatio(1.0)
 {
+    // Where applicable (i.e. non-iOS mobile platforms), use a reasonable
+    // default value for devicePixelRatio to avoid every app having to use
+    // this experimental API.
+    // FIXME: On Android, devicePixelRatio is quantized and should be
+    // initialized to the value of Java_DeviceDisplayInfo_getDIPScale.
+    QString platform = qApp->platformName().toLower();
+    if (platform == QStringLiteral("qnx")) {
+        QScreen *primaryScreen = QGuiApplication::primaryScreen();
+        devicePixelRatio = qMax(1, qRound(primaryScreen->physicalDotsPerInch() / 160));
+    }
+
     adapter->initialize(this);
 }
 
 QQuickWebEngineViewExperimental *QQuickWebEngineViewPrivate::experimental() const
 {
-    return e;
+    return e.data();
+}
+
+QQuickWebEngineViewport *QQuickWebEngineViewPrivate::viewport() const
+{
+    return v.data();
+}
+
+template<typename T>
+RenderWidgetHostViewQtDelegate *createDelegate(QQuickWebEngineViewPrivate* viewPrivate, RenderWidgetHostViewQtDelegateClient *client)
+{
+    T* delegate = new T(client);
+    QObject::connect(viewPrivate->viewport(), SIGNAL(devicePixelRatioChanged()), delegate, SLOT(devicePixelRatioChanged()));
+    return delegate;
 }
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
     if (mode == HardwareAccelerationMode)
-        return new RenderWidgetHostViewQtDelegateQuick(client);
+        return createDelegate<RenderWidgetHostViewQtDelegateQuick>(this, client);
 #endif
-    return new RenderWidgetHostViewQtDelegateQuickPainted(client);
+    return createDelegate<RenderWidgetHostViewQtDelegateQuickPainted>(this, client);
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
@@ -110,6 +137,11 @@ QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
     Q_Q(const QQuickWebEngineView);
     return QRectF(q->x(), q->y(), q->width(), q->height());
+}
+
+qreal QQuickWebEngineViewPrivate::dpiScale() const
+{
+    return devicePixelRatio;
 }
 
 void QQuickWebEngineViewPrivate::loadFinished(bool success)
@@ -251,6 +283,32 @@ QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngine
     : q_ptr(0)
     , d_ptr(viewPrivate)
 {
+}
+
+QQuickWebEngineViewport* QQuickWebEngineViewExperimental::viewport() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->viewport();
+}
+
+QQuickWebEngineViewport::QQuickWebEngineViewport(QQuickWebEngineViewPrivate *viewPrivate)
+    : d_ptr(viewPrivate)
+{
+}
+
+qreal QQuickWebEngineViewport::devicePixelRatio() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->devicePixelRatio;
+}
+
+void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->devicePixelRatio == devicePixelRatio)
+        return;
+    d->devicePixelRatio = devicePixelRatio;
+    Q_EMIT devicePixelRatioChanged();
 }
 
 QT_END_NAMESPACE
