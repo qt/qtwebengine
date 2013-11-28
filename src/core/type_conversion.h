@@ -93,6 +93,11 @@ inline QSize toQt(const gfx::Size &size)
     return QSize(size.width(), size.height());
 }
 
+inline gfx::SizeF toGfx(const QSizeF& size)
+{
+  return gfx::SizeF(size.width(), size.height());
+}
+
 inline QSizeF toQt(const gfx::SizeF &size)
 {
     return QSizeF(size.width(), size.height());

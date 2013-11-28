@@ -104,6 +104,11 @@ QRectF QWebEnginePagePrivate::viewportRect() const
     return view ? view->geometry() : QRectF();
 }
 
+qreal QWebEnginePagePrivate::dpiScale() const
+{
+    return 1.0;
+}
+
 void QWebEnginePagePrivate::loadFinished(bool success)
 {
     Q_Q(QWebEnginePage);
