@@ -21,7 +21,7 @@ cross_compile {
         MFPU = $$extractCFlag("-mfpu=.*")
         !isEmpty(MFPU) {
             GYP_ARGS += "-D arm_fpu=\"$$MFPU\""
-            contains(MFPU, "neon"): GYP_ARGS += "-D arm_neon=\"$$NEON\""
+            contains(MFPU, "neon"): GYP_ARGS += "-D arm_neon=1"
         }
 
         MTUNE = $$extractCFlag("-mtune=.*")
