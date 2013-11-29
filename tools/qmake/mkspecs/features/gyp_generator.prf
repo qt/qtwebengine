@@ -119,20 +119,6 @@ GYP_CONTENTS += "      ]," \
   for (define, DEFINES): GYP_CONTENTS += "      '$$define',"
   GYP_CONTENTS += "    ],"
 }
-!isEmpty(PER_CONFIG_DEFINES) {
-  GYP_CONTENTS += "    'configurations': {"\
-                  "      'Release': {" \
-                  "        'defines': ["
-  for (define, PER_CONFIG_DEFINES): GYP_CONTENTS += "          '$$replace(define,%config,Release)',"
-  GYP_CONTENTS += "        ]," \
-                  "      }," \
-                  "      'Debug': {" \
-                  "        'defines': ["
-  for (define, PER_CONFIG_DEFINES): GYP_CONTENTS += "          '$$replace(define,%config,Debug)',"
-  GYP_CONTENTS += "        ]," \
-                  "      }," \
-                  "    },"
-}
 !isEmpty(GYP_DYLIB_INSTALL_NAME_BASE) {
   GYP_CONTENTS += "    'xcode_settings': {" \
                   "      'DYLIB_INSTALL_NAME_BASE': '$$GYP_DYLIB_INSTALL_NAME_BASE'," \

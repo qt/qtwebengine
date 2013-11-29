@@ -20,10 +20,8 @@ qtHaveModule(v8): QT_PRIVATE += v8-private
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
-           Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS
-
-# We need a way to tap into gyp´s Debug vs. Release configuration
-PER_CONFIG_DEFINES = QTWEBENGINEPROCESS_PATH=\\\"$$getOutDir()/%config/$$QTWEBENGINEPROCESS_NAME\\\"
+           Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS \
+           QTWEBENGINEPROCESS_NAME=\\\"$$QTWEBENGINEPROCESS_NAME\\\"
 
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG

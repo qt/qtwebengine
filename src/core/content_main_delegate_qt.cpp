@@ -46,27 +46,30 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
 #include <QByteArray>
+#include <QDir>
+#include <QFileInfo>
 #include <QLibraryInfo>
 #include <QStringBuilder>
 
 #include "content_client_qt.h"
 #include "type_conversion.h"
 
-static QByteArray subProcessPath() {
-    static bool initialized = false;
-#ifdef QTWEBENGINEPROCESS_PATH
-    static QByteArray processPath(QTWEBENGINEPROCESS_PATH);
-#else
-    static QByteArray processPath;
+#ifndef QTWEBENGINEPROCESS_NAME
+#error "No name defined for QtWebEngine's process"
 #endif
+static QString subProcessPath() {
+    static bool initialized = false;
+    static QString processPath (QLibraryInfo::location(QLibraryInfo::LibraryExecutablesPath)
+                                % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME));
     if (initialized)
         return processPath;
+
     // Allow overriding at runtime for the time being.
     const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
     if (!fromEnv.isEmpty())
-        processPath = fromEnv;
-    if (processPath.isEmpty())
-        qFatal("QTWEBENGINEPROCESS_PATH environment variable not set or empty.");
+        processPath = QString::fromLatin1(fromEnv);
+    if (processPath.isEmpty() || !QFileInfo(processPath).exists())
+        qFatal("QtWebEngineProcess not found at location %s. Try setting the QTWEBENGINEPROCESS_PATH environment variable.", qPrintable(processPath));
     initialized = true;
     return processPath;
 }
