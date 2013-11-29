@@ -39,28 +39,37 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef qwebengineloadrequest_p_h
+#define qwebengineloadrequest_p_h
 
+#include "qtwebengineglobal_p.h"
 #include "qquickwebengineview_p.h"
-#include "qwebengineloadrequest_p.h"
+#include "web_engine_error.h"
+#include <QtCore/QObject>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QUrl>
 
-QT_BEGIN_NAMESPACE
+class QWebEngineLoadRequestPrivate;
 
-class QtWebEnginePlugin : public QQmlExtensionPlugin
-{
+class Q_WEBENGINE_EXPORT QWebEngineLoadRequest : public QObject {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
-public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
-        Q_UNUSED(uri);
+    Q_PROPERTY(QUrl url READ url)
+    Q_PROPERTY(QQuickWebEngineView::LoadStatus status READ status)
+    Q_PROPERTY(QString errorString READ errorString)
+    Q_PROPERTY(QQuickWebEngineView::ErrorDomain errorDomain READ errorDomain)
+    Q_PROPERTY(int errorCode READ errorCode)
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-    }
+public:
+    QWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString = QString(), int errorCode = 0, QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain, QObject* parent = 0);
+    ~QWebEngineLoadRequest();
+    QUrl url() const;
+    QQuickWebEngineView::LoadStatus status() const;
+    QString errorString() const;
+    QQuickWebEngineView::ErrorDomain errorDomain() const;
+    int errorCode() const;
+
+private:
+    QScopedPointer<QWebEngineLoadRequestPrivate> d;
 };
 
-QT_END_NAMESPACE
-
-#include "plugin.moc"
+#endif // qwebengineloadrequest_p_h

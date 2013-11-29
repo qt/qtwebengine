@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineViewPrivate;
+class QWebEngineLoadRequest;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -59,6 +60,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
     Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
+    Q_ENUMS(LoadStatus);
+    Q_ENUMS(ErrorDomain);
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -75,6 +78,22 @@ public:
     bool inspectable() const;
     void setInspectable(bool);
 
+    enum LoadStatus {
+        LoadStartedStatus,
+        LoadStoppedStatus,
+        LoadSucceededStatus,
+        LoadFailedStatus
+    };
+
+   enum ErrorDomain {
+        NoErrorDomain,
+        InternalErrorDomain,
+        NetworkErrorDomain,
+        HttpErrorDomain,
+        DownloadErrorDomain
+    };
+
+
 public Q_SLOTS:
     void goBack();
     void goForward();
@@ -85,7 +104,7 @@ Q_SIGNALS:
     void titleChanged();
     void urlChanged();
     void iconChanged();
-    void loadingStateChanged();
+    void loadingStateChanged(QWebEngineLoadRequest &loadRequest);
     void loadProgressChanged();
 
 protected:

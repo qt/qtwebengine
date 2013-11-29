@@ -47,6 +47,10 @@
 #include <QString>
 #include <QUrl>
 
+namespace content {
+    class RenderViewHost;
+}
+
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
@@ -109,7 +113,7 @@ public:
     virtual void loadProgressChanged(int progress) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
-    virtual void loadFinished(bool success) = 0;
+    virtual void loadFinished(bool success, int error_code = 0, const QString error_description = "") = 0;
     virtual void focusContainer() = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect & initialGeometry) = 0;
     virtual void close() = 0;

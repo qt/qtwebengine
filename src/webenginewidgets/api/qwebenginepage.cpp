@@ -109,9 +109,11 @@ qreal QWebEnginePagePrivate::dpiScale() const
     return 1.0;
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success)
+void QWebEnginePagePrivate::loadFinished(bool success, int error_code, QString error_description)
 {
     Q_Q(QWebEnginePage);
+    Q_UNUSED(error_code);
+    Q_UNUSED(error_description);
     m_isLoading = adapter->isLoading();
     Q_EMIT q->loadFinished(success);
 }

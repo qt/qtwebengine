@@ -39,28 +39,25 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef WEB_ENGINE_ERROR_H
+#define WEB_ENGINE_ERROR_H
 
-#include "qquickwebengineview_p.h"
-#include "qwebengineloadrequest_p.h"
+#include "qtwebenginecoreglobal.h"
 
-QT_BEGIN_NAMESPACE
-
-class QtWebEnginePlugin : public QQmlExtensionPlugin
+class QWEBENGINE_EXPORT WebEngineError
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
-public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
-        Q_UNUSED(uri);
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-    }
+public:
+    enum ErrorDomain {
+         NoErrorDomain,
+         InternalErrorDomain,
+         NetworkErrorDomain,
+         HttpErrorDomain,
+         DownloadErrorDomain
+    };
+
+    static ErrorDomain toQtErrorDomain(int error_code);
+
 };
 
-QT_END_NAMESPACE
-
-#include "plugin.moc"
+#endif // WEB_ENGINE_ERROR_H
