@@ -505,7 +505,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);
-    void loadFinished(bool ok);
+    void loadFinished(bool ok, int error_code, QString error_description);
 
     void linkHovered(const QString &link, const QString &title, const QString &textContent);
     void statusBarMessage(const QString& text);

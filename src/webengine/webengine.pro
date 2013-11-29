@@ -21,6 +21,7 @@ QMAKE_RPATHDIR += $$LIBPATH
 
 SOURCES = \
         api/qquickwebengineview.cpp \
+        api/plugin/plugin.cpp \
         render_widget_host_view_qt_delegate_quick.cpp
 
 HEADERS = \
@@ -28,6 +29,7 @@ HEADERS = \
         api/qtwebengineglobal_p.h \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
+        api/qwebengineloadrequest_p.h \
         render_widget_host_view_qt_delegate_quick.h
 
 load(qt_module)

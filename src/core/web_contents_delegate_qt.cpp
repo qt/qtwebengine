@@ -97,10 +97,17 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, do
     m_viewClient->loadProgressChanged(qRound(progress * 100));
 }
 
+void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(int64 frame_id, int64 parent_frame_id, bool is_main_frame, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc, content::RenderViewHost* render_view_host)
+{
+    if (is_main_frame)
+        m_viewClient->didStartProvisionalLoadForFrame(int64 frame_id, int64 parent_frame_id, bool is_main_frame, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc, content::RenderViewHost* render_view_host);
+}
+
+
 void WebContentsDelegateQt::DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host)
 {
     if (is_main_frame)
-        m_viewClient->loadFinished(false);
+        m_viewClient->loadFinished(false, error_code, toQt(error_description));
 }
 
 void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host)

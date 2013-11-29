@@ -104,9 +104,11 @@ QRectF QWebEnginePagePrivate::viewportRect() const
     return view ? view->geometry() : QRectF();
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success)
+void QWebEnginePagePrivate::loadFinished(bool success, int error_code, QString error_description)
 {
     Q_Q(QWebEnginePage);
+    Q_UNSUSED(error_code);
+    Q_UNUSED(error_description);
     m_isLoading = adapter->isLoading();
     Q_EMIT q->loadFinished(success);
 }
