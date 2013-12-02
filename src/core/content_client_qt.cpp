@@ -43,8 +43,14 @@
 
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor) const {
     return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
+}
+
+base::string16 ContentClientQt::GetLocalizedString(int message_id) const
+{
+    return l10n_util::GetStringUTF16(message_id);
 }

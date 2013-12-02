@@ -21,8 +21,10 @@ SUBDIRS += core_gyp_generator \
            gyp_run
 
 REPACK_DIR = $$getOutDir()/$$getConfigDir()/gen/repack
+locales.files = $$REPACK_DIR/qtwebengine_locales
+locales.path = $$[QT_INSTALL_TRANSLATIONS]
 resources.files = $$REPACK_DIR/qtwebengine_resources.pak
 resources.path = $$[QT_INSTALL_DATA]
 
-INSTALLS += resources
+INSTALLS += locales resources
 

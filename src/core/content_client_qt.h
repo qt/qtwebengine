@@ -50,6 +50,7 @@
 class ContentClientQt : public content::ContentClient {
 public:
     virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) const Q_DECL_OVERRIDE;
+    virtual base::string16 GetLocalizedString(int message_id) const Q_DECL_OVERRIDE;
 };
 
 #endif // CONTENT_CLIENT_QT_H

@@ -2,19 +2,13 @@
 
 import glob
 import os
-import subprocess
 import sys
 
 print 'using python: ' + sys.executable + ' version: ' + sys.version
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-qtwebengine_src = os.path.join(qtwebengine_root, 'src')
-chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir || true", shell=True).strip()
-if chrome_src:
-  chrome_src = os.path.join(qtwebengine_root, chrome_src)
-if not chrome_src or not os.path.isdir(chrome_src):
-  chrome_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
-  print 'CHROMIUM_SRC_DIR not set, falling back to ' + chrome_src
+import qtwebengine_utils as utils
+chrome_src = utils.getChromiumSrcDir()
 
 script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
 if not os.path.isdir(script_dir):
@@ -37,10 +31,6 @@ sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
 # Chromium revision.
 sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
     'Source', 'core', 'scripts'))
-
-sys.path.insert(1, os.path.join(chrome_src, 'chrome', 'tools', 'build'))
-
-import repack_locales
 
 def additional_include_files(args=[]):
   """
