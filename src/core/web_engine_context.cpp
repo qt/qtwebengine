@@ -45,10 +45,8 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/app/content_main_delegate.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
@@ -59,6 +57,7 @@
 
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
+#include "content_main_delegate_qt.h"
 #include "type_conversion.h"
 #include <QGuiApplication>
 #include <QStringList>
@@ -68,54 +67,7 @@ namespace {
 
 scoped_refptr<WebEngineContext> sContext;
 
-static QByteArray subProcessPath() {
-    static bool initialized = false;
-#ifdef QTWEBENGINEPROCESS_PATH
-    static QByteArray processPath(QTWEBENGINEPROCESS_PATH);
-#else
-    static QByteArray processPath;
-#endif
-    if (initialized)
-        return processPath;
-    // Allow overriding at runtime for the time being.
-    const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
-    if (!fromEnv.isEmpty())
-        processPath = fromEnv;
-    if (processPath.isEmpty())
-        qFatal("QTWEBENGINEPROCESS_PATH environment variable not set or empty.");
-    initialized = true;
-    return processPath;
-}
-
 } // namespace
-
-class ContentMainDelegateQt : public content::ContentMainDelegate
-{
-public:
-
-    // This is where the embedder puts all of its startup code that needs to run
-    // before the sandbox is engaged.
-    void PreSandboxStartup() Q_DECL_OVERRIDE
-    {
-        PathService::Override(base::FILE_EXE, base::FilePath(toFilePathString(subProcessPath())));
-    }
-
-    content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE
-    {
-        m_browserClient.reset(new ContentBrowserClientQt);
-        return m_browserClient.get();
-    }
-
-    bool BasicStartupComplete(int* exit_code) Q_DECL_OVERRIDE
-    {
-        SetContentClient(new ContentClientQt);
-        return false;
-    }
-
-private:
-    scoped_ptr<ContentBrowserClientQt> m_browserClient;
-};
-
 
 WebEngineContext::~WebEngineContext()
 {
@@ -161,7 +113,6 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
-    parsedCommandLine->AppendSwitchASCII(switches::kBrowserSubprocessPath, subProcessPath().constData());
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 

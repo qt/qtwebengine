@@ -44,6 +44,7 @@ SOURCES = \
         chromium_overrides.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
+        content_main_delegate_qt.cpp \
         delegated_frame_node.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
@@ -67,6 +68,7 @@ HEADERS = \
         chromium_overrides.h \
         content_client_qt.h \
         content_browser_client_qt.h \
+        content_main_delegate_qt.h \
         delegated_frame_node.h \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
