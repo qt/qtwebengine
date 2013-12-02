@@ -1,7 +1,8 @@
 *.o
 Makefile
+Makefile.*
 out/
-src/core/core.gyp
+src/core/core_generated.gyp
 *.pro.user*
 .qmake.cache
 *.moc
@@ -19,3 +20,4 @@ tests/widgets/qwebenginehistory/tst_qwebenginehistory
 tests/widgets/qwebengineinspector/tst_qwebengineinspector
 tests/widgets/qwebenginepage/tst_qwebenginepage
 tests/widgets/qwebengineview/tst_qwebengineview
+tools/**/*.pyc
