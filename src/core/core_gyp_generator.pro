@@ -52,7 +52,9 @@ SOURCES = \
         web_contents_view_qt.cpp \
         web_engine_context.cpp \
         web_event_factory.cpp \
-        yuv_video_node.cpp
+        yuv_video_node.cpp \
+        qrc_protocol_handler_qt.cpp \
+        url_request_qrc_job_qt.cpp
 
 HEADERS = \
         backing_store_qt.h \
@@ -77,7 +79,9 @@ HEADERS = \
         web_contents_view_qt.h \
         web_engine_context.h \
         web_event_factory.h \
-        yuv_video_node.h
+        yuv_video_node.h \
+        qrc_protocol_handler_qt.h \
+        url_request_qrc_job_qt.h
 
 OUTPUT_DIR = $$getOutDir()/$$getConfigDir()
 target.files = $$OUTPUT_DIR/lib/lib$${TARGET}.so
