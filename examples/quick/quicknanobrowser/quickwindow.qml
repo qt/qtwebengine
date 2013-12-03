@@ -40,6 +40,7 @@
 
 import QtQuick 2.0
 import QtWebEngine 1.0
+import QtWebEngine.experimental 1.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
@@ -117,6 +118,20 @@ ApplicationWindow {
                 z: -2;
                 minimumValue: 0
                 maximumValue: 100
+            }
+            Slider {
+                height: 64
+                anchors {
+                    left: parent.left
+                    top: parent.bottom
+                    right: parent.right
+                    leftMargin: -parent.leftMargin
+                    rightMargin: -parent.rightMargin
+                }
+                minimumValue: 1.0
+                maximumValue: 5.0
+                value: 2.0
+                onValueChanged: { webEngineView.experimental.viewport.devicePixelRatio = value; }
             }
     }
     WebEngineView {
