@@ -63,6 +63,9 @@
 #include "net/url_request/file_protocol_handler.h"
 
 #include "network_delegate_qt.h"
+#include "qrc_protocol_handler_qt.h"
+
+static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
@@ -159,6 +162,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
         m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
         m_jobFactory->SetProtocolHandler(chrome::kFileScheme, new net::FileProtocolHandler());
+        m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
         m_urlRequestContext->set_job_factory(m_jobFactory.get());
     }
 
