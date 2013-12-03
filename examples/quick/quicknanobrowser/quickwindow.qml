@@ -40,6 +40,7 @@
 
 import QtQuick 2.0
 import QtWebEngine 1.0
+import QtWebEngine.experimental 1.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
@@ -118,6 +119,25 @@ ApplicationWindow {
                 minimumValue: 0
                 maximumValue: 100
             }
+            Slider {
+                id: dprSlider
+                height: 64
+                anchors {
+                    left: parent.left
+                    top: parent.bottom
+                    right: parent.right
+                    leftMargin: -parent.leftMargin
+                    rightMargin: -parent.rightMargin
+                }
+                minimumValue: -5.0
+                maximumValue: 5.0
+                onValueChanged: { webEngineView.experimental.viewport.devicePixelRatio = value; }
+            }
+            Button {
+                height: 64
+                text: "Reset devicePixelRatio"
+                onClicked: webEngineView.experimental.viewport.resetDevicePixelRatio()
+            }
     }
     WebEngineView {
         id: webEngineView
@@ -128,5 +148,11 @@ ApplicationWindow {
         onUrlChanged: addressBar.text = url
         onIconChanged: faviconImage.source = icon
         onLoadProgressChanged: progressBar.value = loadProgress
+        //experimental.viewport.devicePixelRatio: dprSlider.value
+    }
+    Binding {
+        target: dprSlider
+        property: "value"
+        value: webEngineView.experimental.viewport.devicePixelRatio
     }
 }
