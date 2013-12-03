@@ -36,7 +36,6 @@
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
     ],
     'include_dirs': [
-      '<(qtwebengine_root)/src/core',
       '<(chromium_src_dir)',
       '<(SHARED_INTERMEDIATE_DIR)/net', # Needed to include grit/net_resources.h
     ],
