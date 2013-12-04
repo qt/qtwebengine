@@ -121,7 +121,12 @@ void BackingStoreQt::PaintToBackingStore(content::RenderProcessHost *process,
                                  , copy_rect_dst.width()
                                  , copy_rect_dst.height());
 
+#if defined(OS_ANDROID)
+        // The received image format is BGRA with Android so we have to swizzle the image data.
+        painter.drawImage(destination, img.rgbSwapped(), source);
+#else
         painter.drawImage(destination, img, source);
+#endif
     }
 }
 
