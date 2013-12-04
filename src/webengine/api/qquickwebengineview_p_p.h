@@ -55,18 +55,26 @@ class QQuickWebEngineView;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
     Q_OBJECT
-    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio WRITE setDevicePixelRatio NOTIFY devicePixelRatioChanged)
+    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio WRITE setDevicePixelRatio NOTIFY devicePixelRatioChanged RESET resetDevicePixelRatio)
 public:
     QQuickWebEngineViewport(QQuickWebEngineViewPrivate *viewPrivate);
 
     qreal devicePixelRatio() const;
     void setDevicePixelRatio(qreal);
+    Q_INVOKABLE void resetDevicePixelRatio();
+
+    void setWindow(QQuickWindow*);
 
 Q_SIGNALS:
     void devicePixelRatioChanged();
 
+protected Q_SLOTS:
+    void screenChanged(QScreen*);
+
 private:
     QQuickWebEngineViewPrivate *d_ptr;
+    QQuickWindow* m_window;
+    QScreen* m_screen;
 
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
 };

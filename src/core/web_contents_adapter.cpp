@@ -346,7 +346,7 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, const QString 
     }
 }
 
-void WebContentsAdapter::dpiScaleChanged()
+void WebContentsAdapter::screenChanged()
 {
     Q_D(WebContentsAdapter);
     content::RenderWidgetHostImpl* impl = NULL;
