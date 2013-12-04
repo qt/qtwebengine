@@ -122,6 +122,13 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
         parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
     }
 
+#if defined(OS_ANDROID)
+    // Force single-process mode for now.
+    parsedCommandLine->AppendSwitch(switches::kSingleProcess);
+    // This is needed so that we do not assert in single process mode.
+    parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
+#endif
+
     // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
     if (qApp->platformName() == QStringLiteral("xcb") && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
