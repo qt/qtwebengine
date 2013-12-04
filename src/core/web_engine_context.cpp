@@ -106,7 +106,7 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
     QList<QByteArray> args;
     Q_FOREACH (const QString& arg, QCoreApplication::arguments())
         args << arg.toUtf8();
-    const char* argv[args.size()];
+    const char** argv = new const char* [args.size()];
     for (int i = 0; i < args.size(); ++i)
         argv[i] = args[i].constData();
     CommandLine::Init(args.size(), argv);
