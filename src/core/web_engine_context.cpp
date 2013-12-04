@@ -61,6 +61,7 @@
 #include "type_conversion.h"
 #include <QGuiApplication>
 #include <QStringList>
+#include <QVector>
 #include <qpa/qplatformnativeinterface.h>
 
 namespace {
@@ -106,10 +107,11 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
     QList<QByteArray> args;
     Q_FOREACH (const QString& arg, QCoreApplication::arguments())
         args << arg.toUtf8();
-    const char* argv[args.size()];
+
+    QVector<const char*> argv(args.size());
     for (int i = 0; i < args.size(); ++i)
         argv[i] = args[i].constData();
-    CommandLine::Init(args.size(), argv);
+    CommandLine::Init(argv.size(), argv.constData());
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
