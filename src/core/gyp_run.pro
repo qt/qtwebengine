@@ -8,6 +8,16 @@ GYP_ARGS = "-D qt_cross_compile=0"
 cross_compile {
     GYP_ARGS = "-D qt_cross_compile=1 -D os_posix=1"
     TOOLCHAIN_SYSROOT = $$[QT_SYSROOT]
+
+    linux-android {
+        CC = $$which($$QMAKE_CC)
+        ANDROID_TOOLCHAIN = $$dirname(CC)
+        TOOLCHAIN_SYSROOT = $$ANDROID_BUILD_TOP
+
+        GYP_ARGS += "-D android_src=\"$${ANDROID_BUILD_TOP}\" -D android_toolchain=\"$${ANDROID_TOOLCHAIN}\"" \
+                    "-D android_ndk_root=\"$${ANDROID_BUILD_TOP}\" -D android_product_out=\"$${ANDROID_PRODUCT_OUT}\""
+    }
+
     !isEmpty(TOOLCHAIN_SYSROOT): GYP_ARGS += "-D sysroot=\"$${TOOLCHAIN_SYSROOT}\""
 
     contains(QT_ARCH, "arm") {
