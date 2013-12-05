@@ -1,9 +1,9 @@
-/****************************************************************************
+/***************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 BlackBerry Limited. All rights reserved.
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the QtWebEngine module of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,41 +39,35 @@
 **
 ****************************************************************************/
 
-#include "base/command_line.h"
-#include "content/public/common/content_switches.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "type_conversion.h"
-#include "web_engine_library_info.h"
+#ifndef WEB_ENGINE_LIBRARY_INFO_H
+#define WEB_ENGINE_LIBRARY_INFO_H
 
-#include <QFileInfo>
-#include <QStringBuilder>
+#include <QLibraryInfo>
 
-namespace ui {
+class WebEngineLibraryInfo {
+public:
+    enum LibraryLocation
+    {
+        PrefixPath = QLibraryInfo::PrefixPath,
+        DocumentationPath = QLibraryInfo::DocumentationPath,
+        HeadersPath = QLibraryInfo::HeadersPath,
+        LibrariesPath = QLibraryInfo::LibrariesPath,
+        LibraryExecutablesPath = QLibraryInfo::LibraryExecutablesPath,
+        BinariesPath = QLibraryInfo::BinariesPath,
+        PluginsPath = QLibraryInfo::PluginsPath,
+        ImportsPath = QLibraryInfo::ImportsPath,
+        Qml2ImportsPath = QLibraryInfo::Qml2ImportsPath,
+        ArchDataPath = QLibraryInfo::ArchDataPath,
+        DataPath = QLibraryInfo::DataPath,
+        TranslationsPath = QLibraryInfo::TranslationsPath,
+        ExamplesPath = QLibraryInfo::ExamplesPath,
+        TestsPath = QLibraryInfo::TestsPath,
+        SettingsPath = QLibraryInfo::SettingsPath
+    };
 
-void ResourceBundle::LoadCommonResources()
-{
-    // Loading these resources probably only makes sense for the browser process
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
-        return;
+    static QString subProcessPath();
+    static QString location(LibraryLocation);
+};
 
-    // We repacked the resources we need and installed them. now let chromium mmap that file.
-    AddDataPackFromPath(base::FilePath(toFilePathString(WebEngineLibraryInfo::location(WebEngineLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak"))) , SCALE_FACTOR_100P);
-}
 
-// As GetLocaleFilePath is excluded for Mac in resource_bundle.cc,
-// we have to add a replacement for it using the inverted logic.
-#if defined(OS_MACOSX)
-base::FilePath ResourceBundle::GetLocaleFilePath(const std::string& /*app_locale*/, bool /*test_file_exists*/)
-{
-    return base::FilePath();
-}
-#endif
-
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl)
-{
-    LOG(WARNING) << "Unable to load image with id " << resource_id;
-    NOTREACHED();  // Want to assert in debug mode.
-    return GetEmptyImage();
-}
-
-}  // namespace ui
+#endif // WEB_ENGINE_LIBRARY_INFO_H
