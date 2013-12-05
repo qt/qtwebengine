@@ -83,8 +83,12 @@ HEADERS = \
         qrc_protocol_handler_qt.h \
         url_request_qrc_job_qt.h
 
-OUTPUT_DIR = $$getOutDir()/$$getConfigDir()
-target.files = $$OUTPUT_DIR/lib/lib$${TARGET}.so
+VERSION = $$MODULE_VERSION
+load(resolve_target)
+TARGET_NAME = $$basename(QMAKE_RESOLVED_TARGET)
+TARGET_NAME = $$replace(TARGET_NAME, .$${VERSION},)
+
+target.files = $$getOutDir()/$$getConfigDir()/lib/$$TARGET_NAME
 target.CONFIG += no_check_exist # Trust us, qmake...
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
