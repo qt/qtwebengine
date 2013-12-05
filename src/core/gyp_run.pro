@@ -60,8 +60,7 @@ cross_compile {
 }
 
 ninja.target = invoke_ninja
-ninja.commands = $$findOrBuildNinja() $$(NINJAFLAGS) -C $$getOutDir()/$$getConfigDir()
-ninja.depends: qmake
+ninja.commands = $$findOrBuildNinja() \$\(NINJAFLAGS\) -C $$getOutDir()/$$getConfigDir()
 QMAKE_EXTRA_TARGETS += ninja
 
 build_pass:build_all:default_target.target = all
