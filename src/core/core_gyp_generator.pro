@@ -79,8 +79,13 @@ HEADERS = \
         web_event_factory.h \
         yuv_video_node.h
 
-OUTPUT_DIR = $$getOutDir()/$$getConfigDir()
-target.files = $$OUTPUT_DIR/lib/lib$${TARGET}.so
+# Specify the version so that we know what to strip away after resolve_target.
+VERSION = $$MODULE_VERSION
+load(resolve_target)
+TARGET_NAME = $$basename(QMAKE_RESOLVED_TARGET)
+TARGET_NAME = $$replace(TARGET_NAME, .$${VERSION},)
+
+target.files = $$getOutDir()/$$getConfigDir()/lib/$$TARGET_NAME
 target.CONFIG += no_check_exist # Trust us, qmake...
 target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
