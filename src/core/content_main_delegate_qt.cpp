@@ -45,40 +45,14 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
-#include <QByteArray>
-#include <QDir>
-#include <QFileInfo>
-#include <QLibraryInfo>
-#include <QStringBuilder>
 
 #include "content_client_qt.h"
-#include "type_conversion.h"
-
-#ifndef QTWEBENGINEPROCESS_NAME
-#error "No name defined for QtWebEngine's process"
-#endif
-static QString subProcessPath() {
-    static bool initialized = false;
-    static QString processPath (QLibraryInfo::location(QLibraryInfo::LibraryExecutablesPath)
-                                % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME));
-    if (initialized)
-        return processPath;
-
-    // Allow overriding at runtime for the time being.
-    const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
-    if (!fromEnv.isEmpty())
-        processPath = QString::fromLatin1(fromEnv);
-    if (processPath.isEmpty() || !QFileInfo(processPath).exists())
-        qFatal("QtWebEngineProcess not found at location %s. Try setting the QTWEBENGINEPROCESS_PATH environment variable.", qPrintable(processPath));
-    initialized = true;
-    return processPath;
-}
+#include "web_engine_library_info.h"
 
 void ContentMainDelegateQt::PreSandboxStartup()
 {
-    PathService::Override(base::FILE_EXE, base::FilePath(toFilePathString(subProcessPath())));
-    const QString localesPath(QLibraryInfo::location(QLibraryInfo::TranslationsPath) % QStringLiteral("/qtwebengine_locales"));
-    PathService::Override(ui::DIR_LOCALES, base::FilePath(toFilePathString(localesPath)));
+    PathService::Override(base::FILE_EXE, WebEngineLibraryInfo::subProcessPath());
+    PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::localesPath());
 
     ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);
 }
