@@ -70,7 +70,7 @@ public:
     virtual content::RenderViewHost* CreateNewTarget() Q_DECL_OVERRIDE;
     virtual TargetType GetTargetType(content::RenderViewHost*) Q_DECL_OVERRIDE;
     virtual std::string GetViewDescription(content::RenderViewHost*) Q_DECL_OVERRIDE;
-    virtual scoped_refptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name) Q_DECL_OVERRIDE;
+    virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name) Q_DECL_OVERRIDE;
 
 private:
     content::BrowserContext* m_browserContext;
