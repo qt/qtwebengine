@@ -4,8 +4,8 @@ Date: Mon, 29 Apr 2013 11:25:37 +0200
 Subject: Export ContentMainRunner
 
 ---
- content/public/app/content_main_runner.h              | 3 ++-
- 3 files changed, 4 insertions(+), 2 deletions(-)
+ content/public/app/content_main_runner.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/content/public/app/content_main_runner.h b/content/public/app/content_main_runner.h
 index bed5ff2..992e0d0 100644
@@ -29,5 +29,5 @@ index bed5ff2..992e0d0 100644
    virtual ~ContentMainRunner() {}
  
 -- 
-1.8.3
+1.8.4.2
 

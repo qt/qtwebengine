@@ -1,4 +1,4 @@
-From 7a3ceac028997022cb2c6b09fd611ace6d84d932 Mon Sep 17 00:00:00 2001
+From 3920838a47cac775bb9f1eebc2c144bd1bde9848 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 19:21:34 +0200
 Subject: [PATCH] Remove leftovers from WebKitSystemInterface
@@ -8,7 +8,7 @@ Subject: [PATCH] Remove leftovers from WebKitSystemInterface
  1 file changed, 5 deletions(-)
 
 diff --git a/Source/core/platform/graphics/mac/ComplexTextControllerCoreText.mm b/Source/core/platform/graphics/mac/ComplexTextControllerCoreText.mm
-index e5c514b..6bcdf0b 100644
+index c5be0bb..5882bcd 100644
 --- a/Source/core/platform/graphics/mac/ComplexTextControllerCoreText.mm
 +++ b/Source/core/platform/graphics/mac/ComplexTextControllerCoreText.mm
 @@ -223,14 +223,9 @@ void ComplexTextController::collectComplexTextRunsForCharacters(const UChar* cp,
@@ -27,5 +27,5 @@ index e5c514b..6bcdf0b 100644
          line.adoptCF(CTTypesetterCreateLine(typesetter.get(), CFRangeMake(0, 0)));
      } else {
 -- 
-1.8.0.1
+1.8.4.2
 
