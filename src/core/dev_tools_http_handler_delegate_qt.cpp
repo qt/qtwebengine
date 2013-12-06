@@ -102,7 +102,7 @@ std::string DevToolsHttpHandlerDelegateQt::GetViewDescription(content::RenderVie
     return std::string();
 }
 
-scoped_refptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)
+scoped_ptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)
 {
-    return NULL;
+    return scoped_ptr<net::StreamListenSocket>();
 }

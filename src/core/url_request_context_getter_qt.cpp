@@ -43,6 +43,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/cache_type.h"
@@ -95,7 +96,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
         base::FilePath cookiesPath = m_basePath.Append(FILE_PATH_LITERAL("Cookies"));
-        scoped_refptr<net::CookieStore> cookieStore = content::CreatePersistentCookieStore(cookiesPath, true, NULL, NULL);
+        scoped_refptr<net::CookieStore> cookieStore = content::CreatePersistentCookieStore(cookiesPath, true, NULL, NULL, scoped_refptr<base::SequencedTaskRunner>());
         cookieStore->GetCookieMonster()->SetPersistSessionCookies(true);
 
         m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
@@ -163,7 +164,9 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 
         m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
         m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
-        m_jobFactory->SetProtocolHandler(chrome::kFileScheme, new net::FileProtocolHandler());
+        m_jobFactory->SetProtocolHandler(
+            chrome::kFileScheme,
+            new net::FileProtocolHandler(content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
         m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
         m_jobFactory->SetProtocolHandler(chrome::kFtpScheme, new net::FtpProtocolHandler(
                 new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
