@@ -55,7 +55,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
-#include "ui/base/events/event.h"
+#include "ui/events/event.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
 
@@ -460,7 +460,7 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, bool, ui::TextInputMode)
+void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, ui::TextInputMode, bool)
 {
     m_currentInputType = type;
     m_delegate->inputMethodStateChanged(static_cast<bool>(type));
@@ -471,7 +471,7 @@ void RenderWidgetHostViewQt::ImeCancelComposition()
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&)
+void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&)
 {
     // FIXME: not implemented?
     QT_NOT_YET_IMPLEMENTED
@@ -619,7 +619,7 @@ void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
 
 void RenderWidgetHostViewQt::SetScrollOffsetPinning(bool, bool) { }
 
-void RenderWidgetHostViewQt::OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&)
+void RenderWidgetHostViewQt::OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams>&)
 {
     // We are not using accessibility features at this point.
     QT_NOT_USED
@@ -763,7 +763,7 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 {
     cc::CompositorFrameAck ack;
-    ack.resources = m_resourcesToRelease;
+    cc::TransferableResource::ReturnResources(m_resourcesToRelease, &ack.resources);
     content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
         m_host->GetRoutingID(), m_pendingOutputSurfaceId,
         m_host->GetProcess()->GetID(), ack);
