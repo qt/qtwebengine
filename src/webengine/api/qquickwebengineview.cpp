@@ -42,12 +42,20 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
-#include "web_contents_adapter.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
+#include "ui_delegates_manager.h"
+#include "web_contents_adapter.h"
 
+#include <QQmlEngine>
+#include <QQmlComponent>
+#include <QQmlContext>
+#include <QQmlProperty>
 #include <QScreen>
+#include <QStringBuilder>
 #include <QUrl>
 #include <QQmlEngine>
+
+#include <private/qqmlmetatype_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,6 +63,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
     , e(new QQuickWebEngineViewExperimental(this))
     , v(new QQuickWebEngineViewport(this))
+    , contextMenuExtraItems(0)
     , loadProgress(0)
     , inspectable(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
@@ -90,6 +99,14 @@ QQuickWebEngineViewport *QQuickWebEngineViewPrivate::viewport() const
     return v.data();
 }
 
+UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
+{
+    Q_Q(QQuickWebEngineView);
+    if (m_uIDelegatesManager.isNull())
+        m_uIDelegatesManager.reset(new UIDelegatesManager(q));
+    return m_uIDelegatesManager.data();
+}
+
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
@@ -97,6 +114,65 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
         return new RenderWidgetHostViewQtDelegateQuick(client);
 #endif
     return new RenderWidgetHostViewQtDelegateQuickPainted(client);
+}
+
+bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
+{
+    Q_Q(QQuickWebEngineView);
+
+    QObject *menu = ui()->addMenu(0, QString(), data.pos);
+    if (!menu)
+        return false;
+
+    // Populate our menu
+    MenuItemData *item = 0;
+
+    if (data.selectedText.isEmpty()) {
+        item = new MenuItemData(QObject::tr("Back"), QStringLiteral("go-previous"));
+        QObject::connect(item, &MenuItemData::triggered, q, &QQuickWebEngineView::goBack);
+        item->setEnabled(q->canGoBack());
+        ui()->addMenuItem(menu, item);
+
+        item = new MenuItemData(QObject::tr("Forward"), QStringLiteral("go-next"));
+        QObject::connect(item, &MenuItemData::triggered, q, &QQuickWebEngineView::goForward);
+        item->setEnabled(q->canGoForward());
+        ui()->addMenuItem(menu, item);
+
+        item = new MenuItemData(QObject::tr("Reload"), QStringLiteral("view-refresh"));
+        QObject::connect(item, &MenuItemData::triggered, q, &QQuickWebEngineView::reload);
+        ui()->addMenuItem(menu, item);
+    } else {
+        item = new CopyMenuItem(QObject::tr("Copy..."), data.selectedText);
+        ui()-> addMenuItem(menu, item);
+    }
+
+    if (!data.linkText.isEmpty() && data.linkUrl.isValid()) {
+        item = new NavigateMenuItem(QObject::tr("Navigate to..."), adapter, data.linkUrl);
+        ui()->addMenuItem(menu, item);
+        item = new CopyMenuItem(QObject::tr("Copy link address"), data.linkUrl.toString());
+        ui()->addMenuItem(menu, item);
+    }
+
+    // FIXME: expose the context menu data as an attached property to make this more useful
+    if (contextMenuExtraItems) {
+        ui()->addMenuSeparator(menu);
+        if (QObject* menuExtras = contextMenuExtraItems->create(ui()->creationContextForComponent(contextMenuExtraItems))) {
+            menuExtras->setParent(menu);
+            QQmlListReference entries(menu, QQmlMetaType::defaultProperty(menu).name(), qmlEngine(q));
+            if (entries.isValid())
+                entries.append(menuExtras);
+        }
+    }
+
+    // Now fire the popup() method on the top level menu
+    QMetaObject::invokeMethod(menu, "popup");
+    return true;
+}
+
+bool QQuickWebEngineViewPrivate::javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue, QString *result)
+{
+    Q_UNUSED(message); Q_UNUSED(defaultValue); Q_UNUSED(result);
+    return false;
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
@@ -309,6 +385,19 @@ void QQuickWebEngineView::setInspectable(bool enable)
     Q_D(QQuickWebEngineView);
     d->inspectable = enable;
     d->adapter->enableInspector(enable);
+}
+
+void QQuickWebEngineViewExperimental::setContextMenuExtraItems(QQmlComponent *contextMenuExtras)
+{
+    if (d_ptr->contextMenuExtraItems == contextMenuExtras)
+        return;
+    d_ptr->contextMenuExtraItems = contextMenuExtras;
+    emit contextMenuExtraItemsChanged();
+}
+
+QQmlComponent *QQuickWebEngineViewExperimental::contextMenuExtraItems() const
+{
+    return d_ptr->contextMenuExtraItems;
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)

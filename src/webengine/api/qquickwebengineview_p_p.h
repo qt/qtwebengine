@@ -47,13 +47,17 @@
 
 #include <QScopedPointer>
 #include <QSharedData>
+#include <QString>
 #include <QtCore/qcompilerdetection.h>
 #include <QtQuick/private/qquickitem_p.h>
 
 class WebContentsAdapter;
+class UIDelegatesManager;
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
+class QQmlComponent;
+class QQmlContext;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
     Q_OBJECT
@@ -88,12 +92,17 @@ private:
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
+    Q_PROPERTY(QQmlComponent *contextMenuExtraItems READ contextMenuExtraItems WRITE setContextMenuExtraItems NOTIFY contextMenuExtraItemsChanged)
+
 public:
     QQuickWebEngineViewport *viewport() const;
     Q_INVOKABLE void adoptHandle(QQuickWebEngineViewHandle *viewHandle);
+    void setContextMenuExtraItems(QQmlComponent *);
+    QQmlComponent *contextMenuExtraItems() const;
 
 Q_SIGNALS:
     void createWindow(const QJSValue &newViewHandle, const QString &newViewDisposition);
+    void contextMenuExtraItemsChanged();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -112,6 +121,7 @@ public:
 
     QQuickWebEngineViewExperimental *experimental() const;
     QQuickWebEngineViewport *viewport() const;
+    UIDelegatesManager *ui();
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode) Q_DECL_OVERRIDE;
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
@@ -125,8 +135,8 @@ public:
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
-    virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE { return false;}
-    virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { return false; }
+    virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
+    virtual bool javascriptDialog(JavascriptDialogType, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { Q_UNUSED(message); Q_UNUSED(defaultValue); Q_UNUSED(result); return false; }
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QString &title, const QStringList &acceptedMimeTypes) { Q_UNUSED(defaultFileName); Q_UNUSED(title); Q_UNUSED(acceptedMimeTypes);}
 
     void setDevicePixelRatio(qreal);
@@ -134,13 +144,17 @@ public:
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineViewExperimental> e;
     QScopedPointer<QQuickWebEngineViewport> v;
+    QQmlComponent *contextMenuExtraItems;
+
     QUrl icon;
     int loadProgress;
     bool inspectable;
     qreal devicePixelRatio;
 
 private:
+    QScopedPointer<UIDelegatesManager> m_uIDelegatesManager;
     qreal m_dpiScale;
+
 };
 
 QT_END_NAMESPACE
