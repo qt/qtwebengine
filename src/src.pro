@@ -17,6 +17,10 @@ SUBDIRS += core \
            webengine_plugin \
            webengine_experimental_plugin
 
+# FIXME: We probably want a bit more control over config options to tweak what to build/ship or not
+# another example that comes to mind is to make it easy to build proprietery codecs support for instance
+!contains(WEBENGINE_CONFIG, no_ui_delegates): SUBDIRS += webengine/ui
+
 qtHaveModule(widgets) {
     SUBDIRS += webenginewidgets
 }
