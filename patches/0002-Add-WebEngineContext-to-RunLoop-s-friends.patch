@@ -8,7 +8,7 @@ Subject: [PATCH 2/2] Add WebEngineContext to RunLoop's friends.
  1 file changed, 3 insertions(+)
 
 diff --git a/base/run_loop.h b/base/run_loop.h
-index 380c8bf..12f810a 100644
+index f5ee5c3..b167907 100644
 --- a/base/run_loop.h
 +++ b/base/run_loop.h
 @@ -10,6 +10,8 @@
@@ -20,7 +20,7 @@ index 380c8bf..12f810a 100644
  namespace base {
  #if defined(OS_ANDROID)
  class MessagePumpForUI;
-@@ -74,6 +76,7 @@ class BASE_EXPORT RunLoop {
+@@ -76,6 +78,7 @@ class BASE_EXPORT RunLoop {
  
   private:
    friend class MessageLoop;
@@ -29,5 +29,5 @@ index 380c8bf..12f810a 100644
    // Android doesn't support the blocking MessageLoop::Run, so it calls
    // BeforeRun and AfterRun directly.
 -- 
-1.8.3
+1.8.4.2
 
