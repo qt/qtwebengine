@@ -43,6 +43,7 @@ import glob
 import os
 import subprocess
 import sys
+import version_resolver as resolver
 
 extra_os = []
 
@@ -75,17 +76,62 @@ class DEPSParser:
                 subdir = dep
                 if subdir.startswith('src/'):
                     subdir = subdir[4:]
-                submodule = Submodule(subdir, repo, rev, os)
-                submodule.deps = True
+                if subdir.startswith('src'):
+                    # Ignore the information about chromium since we get that from git.
+                    continue
+                shasum = ''
+                if len(rev) == 40: # Lenght of a git shasum
+                    shasum = rev
+                submodule = Submodule(subdir, repo)
+                submodule.os = os
+                submodule.shasum = shasum
+                if not submodule.shasum:
+                    ref = repo
+                    ref_path = repo.split('branches/')
+                    if len(ref_path) > 1:
+                        ref = ref_path[1]
+                    if 'trunk' in ref or 'svn' in ref:
+                        ref = 'HEAD'
+                    name_path = subdir.split('/')
+                    if len(name_path) > 1:
+                        name = name_path[-1]
+                        if ref.endswith(name):
+                            branch = ref[:-(len(name) + 1)]
+                            ref = 'refs/branch-heads/' + branch
+                        if name in ref:
+                            branch = ref.split('/')[-1]
+                            ref = 'refs/branch-heads/' + branch
+                    if 'HEAD' not in ref and 'refs' not in ref:
+                        ref = 'refs/branch-heads/' + ref
+                    submodule.ref = ref
+                    submodule.revision = int(rev)
                 submodules.append(submodule)
         return submodules
 
     def sanityCheckModules(self, submodules):
-        subdirectories = []
+        submodule_dict = {}
         for submodule in submodules:
-            if submodule.path in subdirectories:
-                print 'SUBMODULE WARNING: duplicate for submodule' + submodule.path
-            subdirectories.append(submodule.path)
+            if submodule.path in submodule_dict:
+                prev_module = submodule_dict[submodule.path]
+                # We might have to create our own DEPS file if different platforms use different branches,
+                # but for now it should be safe to select the latest revision from the requirements.
+                if submodule.shasum or prev_module.revision >= submodule.revision:
+                    continue
+                if prev_module.ref != submodule.ref:
+                    sys.exit('ERROR: branch mismatch for ' + submodule.path + '(' + prev_module.ref + ' vs ' + submodule.ref + ')')
+                print('Duplicate submodule ' + submodule.path + '. Using latest revison ' + str(submodule.revision) + '.')
+            submodule_dict[submodule.path] = submodule
+        return list(submodule_dict.values())
+
+    def parse(self, deps_content):
+        exec(deps_content, self.global_scope, self.local_scope)
+
+        submodules = []
+        submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps'], 'all'))
+        for os_dep in self.local_scope['deps_os']:
+            submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps_os'][os_dep], os_dep))
+
+        return self.sanityCheckModules(submodules)
 
     def parseFile(self, deps_file_name):
         currentDir = os.getcwd()
@@ -94,16 +140,7 @@ class DEPSParser:
         deps_file = open(deps_file_name)
         deps_content = deps_file.read().decode('utf-8')
         deps_file.close()
-        exec(deps_content, self.global_scope, self.local_scope)
-
-        submodules = []
-        submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps'], 'all'))
-        for os_dep in self.local_scope['deps_os']:
-            submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps_os'][os_dep], os_dep))
-
-        self.sanityCheckModules(submodules)
-
-        return submodules
+        return self.parse(deps_content)
 
 
 
@@ -114,7 +151,7 @@ class Submodule:
         self.shasum = shasum
         self.os = os
         self.ref = ''
-        self.deps = False
+        self.revision = None
 
     def matchesOS(self):
         if not self.os:
@@ -133,17 +170,31 @@ class Submodule:
         return False
 
     def findSha(self):
-        if self.shasum != '':
+        if self.shasum and not self.revision:
             return
-        line = subprocessCheckOutput(['git', 'submodule', 'status', self.path])
-        line = line.lstrip(' -')
-        self.shasum = line.split(' ')[0]
+        oldCwd = os.getcwd()
+        os.chdir(self.path)
+        if self.ref:
+            val = subprocessCall(['git', 'fetch', 'origin', self.ref])
+            if val != 0:
+                sys.exit("Could not fetch branch from upstream " + self.ref)
+            subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
+            if self.revision:
+                line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', '--grep=@' + str(self.revision) + ' '])
+                if line:
+                    self.shasum = line.split(' ')[0]
+            else:
+                os.chdir(oldCwd)
+                line = subprocessCheckOutput(['git', 'submodule', 'status', self.path])
+                line = line.lstrip(' -+')
+                self.shasum = line.split(' ')[0]
+        os.chdir(oldCwd)
 
     def findGitDir(self):
         try:
             return subprocessCheckOutput(['git', 'rev-parse', '--git-dir']).strip()
         except subprocess.CalledProcessError, e:
-            sys.exit("git dir could not be determined! - Initialization failed!" + e.output)
+            sys.exit("git dir could not be determined! - Initialization failed! " + e.output)
 
     def reset(self):
         currentDir = os.getcwd()
@@ -167,26 +218,17 @@ class Submodule:
             print '-- initializing ' + self.path + ' --'
             if os.path.isdir(self.path):
                 self.reset()
-            if self.deps:
-                subprocessCall(['git', 'submodule', 'add', '-f', self.url, self.path])
+
+            subprocessCall(['git', 'submodule', 'add', '-f', self.url, self.path])
             subprocessCall(['git', 'submodule', 'init', self.path])
             subprocessCall(['git', 'submodule', 'update', self.path])
+            oldCwd = os.getcwd()
             self.findSha()
-            currentDir = os.getcwd()
             os.chdir(self.path)
-            # Make sure we have checked out the right shasum.
-            # In case there were other patches applied before.
-            if self.ref:
-                val = subprocessCall(['git', 'fetch', 'origin', self.ref]);
-                if val != 0:
-                    sys.exit("Could not fetch branch from upstream.")
-                subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
-            else:
-                val = subprocessCall(['git', 'checkout', self.shasum])
-                if val != 0:
-                    sys.exit("!!! initialization failed !!!")
-            self.initSubmodules()
-            os.chdir(currentDir)
+            val = subprocessCall(['git', 'checkout', self.shasum])
+            if val != 0:
+                sys.exit("!!! initialization failed !!!")
+            os.chdir(oldCwd)
         else:
             print '-- skipping ' + self.path + ' for this operating system. --'
 
@@ -203,53 +245,50 @@ class Submodule:
 
 
     def readSubmodules(self):
-        if not os.path.isfile('.gitmodules'):
-            return []
-        gitmodules_file = open('.gitmodules')
-        gitmodules_lines = gitmodules_file.readlines()
-        gitmodules_file.close()
+        if self.path.endswith('ninja'):
+             return []
+        submodules = resolver.readSubmodules()
+        if submodules:
+            print 'DEPS file provides the following submodules:'
+            for submodule in submodules:
+                submodule_ref = submodule.shasum
+                if submodule.revision:
+                    submodule_ref = submodule.ref + '@' + str(submodule.revision)
+                print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule_ref
+        else:
+            if not os.path.isfile('.gitmodules'):
+                return []
+            gitmodules_file = open('.gitmodules')
+            gitmodules_lines = gitmodules_file.readlines()
+            gitmodules_file.close()
 
-        submodules = []
-        currentSubmodule = None
-        for line in gitmodules_lines:
-            if line.find('[submodule') == 0:
-                if currentSubmodule:
-                    submodules.append(currentSubmodule)
-                currentSubmodule = Submodule()
-            tokens = line.split('=')
-            if len(tokens) >= 2:
-                key = tokens[0].strip()
-                value = tokens[1].strip()
-                if key == 'path':
-                    currentSubmodule.path = value
-                elif key == 'url':
-                    currentSubmodule.url = value
-                elif key == 'os':
-                    currentSubmodule.os = value.split(',')
-        if currentSubmodule:
-            submodules.append(currentSubmodule)
+            submodules = []
+            currentSubmodule = None
+            for line in gitmodules_lines:
+                if line.find('[submodule') == 0:
+                    if currentSubmodule:
+                        submodules.append(currentSubmodule)
+                    currentSubmodule = Submodule()
+                tokens = line.split('=')
+                if len(tokens) >= 2:
+                    key = tokens[0].strip()
+                    value = tokens[1].strip()
+                    if key == 'path':
+                        currentSubmodule.path = value
+                    elif key == 'url':
+                        currentSubmodule.url = value
+                    elif key == 'os':
+                        currentSubmodule.os = value.split(',')
+            if currentSubmodule:
+                submodules.append(currentSubmodule)
         return submodules
 
-    def readDeps(self):
-        parser = DEPSParser()
-        return parser.parseFile('.DEPS.git')
-
     def initSubmodules(self):
-        # try reading submodules from .gitmodules.
+        oldCwd = os.getcwd()
+        os.chdir(self.path)
         submodules = self.readSubmodules()
         for submodule in submodules:
             submodule.initialize()
-        if submodules:
-            return
-        # if we could not find any submodules in .gitmodules, try .DEPS.git
-        submodules = self.readDeps()
-
-        if not submodules:
-            return
-
-        print 'DEPS file provides the following submodules:'
-        for submodule in submodules:
-            print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.shasum
-        for submodule in submodules:
-            submodule.initialize()
-        subprocessCall(['git', 'commit', '-a', '-m', '"initialize submodules"'])
+        if self.ref:
+            subprocessCall(['git', 'commit', '-a', '-m', 'initialize submodules'])
+        os.chdir(oldCwd)
