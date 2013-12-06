@@ -1,4 +1,4 @@
-From b127cb37c9624ffc48c9cbbf08271d3aca899f59 Mon Sep 17 00:00:00 2001
+From 22f77b7305fa13a3d3987a1c4609a7fe51a603b4 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Wed, 16 Oct 2013 10:17:11 +0200
 Subject: [PATCH] Do not forward declare WebRtcVoiceChannelInfo.
@@ -14,10 +14,10 @@ This fixes the fixes the "error: field has incomplete type" compiler error.
  2 files changed, 12 insertions(+), 14 deletions(-)
 
 diff --git a/media/webrtc/webrtcvoiceengine.cc b/media/webrtc/webrtcvoiceengine.cc
-index 855a9e4..4331385 100644
+index 2a6ccd7..8686038 100644
 --- a/media/webrtc/webrtcvoiceengine.cc
 +++ b/media/webrtc/webrtcvoiceengine.cc
-@@ -1472,19 +1472,6 @@ void WebRtcVoiceEngine::StopAecDump() {
+@@ -1475,19 +1475,6 @@ void WebRtcVoiceEngine::StopAecDump() {
    }
  }
  
@@ -38,7 +38,7 @@ index 855a9e4..4331385 100644
  WebRtcVoiceMediaChannel::WebRtcVoiceMediaChannel(WebRtcVoiceEngine *engine)
      : WebRtcMediaChannel<VoiceMediaChannel, WebRtcVoiceEngine>(
 diff --git a/media/webrtc/webrtcvoiceengine.h b/media/webrtc/webrtcvoiceengine.h
-index 0c2b613..76f5be7 100644
+index 6cb0b30..62d3bc1 100644
 --- a/media/webrtc/webrtcvoiceengine.h
 +++ b/media/webrtc/webrtcvoiceengine.h
 @@ -374,7 +374,18 @@ class WebRtcVoiceMediaChannel
@@ -60,7 +60,7 @@ index 0c2b613..76f5be7 100644
 +  };
    typedef std::map<uint32, WebRtcVoiceChannelInfo> ChannelMap;
  
-   void SetNack(uint32 ssrc, int channel, bool nack_enabled);
+   void SetNack(int channel, bool nack_enabled);
 -- 
-1.8.3.4
+1.8.4.2
 

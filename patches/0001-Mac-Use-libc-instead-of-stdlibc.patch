@@ -30,10 +30,10 @@ index 29daa2d..e35c2ae 100644
  #include "base/logging.h"
  #include "base/strings/string_util.h"
 diff --git a/build/common.gypi b/build/common.gypi
-index 72e9ecb..04f023c 100644
+index e13aba4..9961053 100644
 --- a/build/common.gypi
 +++ b/build/common.gypi
-@@ -288,7 +288,7 @@
+@@ -287,7 +287,7 @@
        # Run tools/clang/scripts/update.sh to make sure they are compiled.
        # This causes 'clang_chrome_plugins_flags' to be set.
        # Has no effect if 'clang' is not set as well.
@@ -42,7 +42,7 @@ index 72e9ecb..04f023c 100644
  
        # Enable building with ASAN (Clang's -fsanitize=address option).
        # -fsanitize=address only works with clang, but asan=1 implies clang=1
-@@ -1121,6 +1121,9 @@
+@@ -1144,6 +1144,9 @@
      # rlz codes for searches but do not use the library.
      'enable_rlz%': 0,
  
@@ -52,7 +52,7 @@ index 72e9ecb..04f023c 100644
      # Turns on the i18n support in V8.
      'v8_enable_i18n_support': 1,
  
-@@ -1382,10 +1385,10 @@
+@@ -1414,10 +1417,10 @@
            # someplace that Xcode doesn't know about, set mac_sdk_path to the
            # path to the SDK; when set to a non-empty string, SDK detection
            # based on mac_sdk_min will be bypassed entirely.
@@ -65,7 +65,7 @@ index 72e9ecb..04f023c 100644
          },
  
          'mac_sdk_min': '<(mac_sdk_min)',
-@@ -1395,6 +1398,7 @@
+@@ -1427,6 +1430,7 @@
          # Compile in Breakpad support by default so that it can be
          # tested, even if it is not enabled by default at runtime.
          'mac_breakpad_compiled_in%': 1,
@@ -73,7 +73,7 @@ index 72e9ecb..04f023c 100644
          'conditions': [
            # mac_product_name is set to the name of the .app bundle as it should
            # appear on disk.  This duplicates data from
-@@ -1960,6 +1964,16 @@
+@@ -1997,6 +2001,16 @@
        ['use_x11==1', {
          'defines': ['USE_X11=1'],
        }],
@@ -90,8 +90,8 @@ index 72e9ecb..04f023c 100644
        ['enable_one_click_signin==1', {
          'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
        }],
-@@ -3899,6 +3913,16 @@
-                 '$(inherited)', '-std=gnu++11',
+@@ -3914,6 +3928,16 @@
+                 '-Wno-deprecated-register',
                ],
              }],
 +            ['use_libcpp==1', {
@@ -158,5 +158,5 @@ index dcc0041..affcf55 100644
  
  /* Define to 1 if you have the <dlfcn.h> header file. */
 -- 
-1.7.12.4 (Apple Git-37)
+1.8.4.2
 
