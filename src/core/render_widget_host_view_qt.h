@@ -133,9 +133,9 @@ public:
     virtual void Blur() Q_DECL_OVERRIDE;
     virtual void UpdateCursor(const WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
-    virtual void TextInputTypeChanged(ui::TextInputType, bool, ui::TextInputMode) Q_DECL_OVERRIDE;
+    virtual void TextInputTypeChanged(ui::TextInputType, ui::TextInputMode, bool) Q_DECL_OVERRIDE;
     virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
-    virtual void ImeCompositionRangeChanged(const ui::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
+    virtual void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
     virtual void DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
@@ -157,7 +157,7 @@ public:
     virtual gfx::GLSurfaceHandle GetCompositingSurface() Q_DECL_OVERRIDE;
     virtual void SetHasHorizontalScrollbar(bool) Q_DECL_OVERRIDE;
     virtual void SetScrollOffsetPinning(bool, bool) Q_DECL_OVERRIDE;
-    virtual void OnAccessibilityNotifications(const std::vector<AccessibilityHostMsg_NotificationParams>&) Q_DECL_OVERRIDE;
+    virtual void OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams>&) Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
 
     // Overridden from ui::GestureEventHelper.
