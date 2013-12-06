@@ -51,7 +51,7 @@ import shutil
 
 import git_submodule as GitSubmodule
 
-qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 os.chdir(qtwebengine_root)
 
 def isInGitBlacklist(file_path):
@@ -104,7 +104,18 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('.png') and
             not '/build/' in file_path)
         or file_path.startswith('remoting')
-        or file_path.startswith('win8') ):
+        or file_path.startswith('win8')
+        or (file_path.startswith('third_party/android_tools') and
+            not 'android/cpufeatures' in file_path)
+        or file_path.startswith('third_party/aosp')
+        or file_path.startswith('third_party/apache-mime4j')
+        or file_path.startswith('third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille')
+        or file_path.startswith('third_party/findbugs')
+        or file_path.startswith('third_party/guava/src')
+        or file_path.startswith('third_party/httpcomponents-client')
+        or file_path.startswith('third_party/httpcomponents-core')
+        or file_path.startswith('third_party/jarjar')
+        or file_path.startswith('third_party/jsr-305/src') ):
             return True
     return False
 
@@ -132,6 +143,7 @@ def createHardLinkForFile(src, dst):
 third_party_upstream = os.path.join(qtwebengine_root, 'src/3rdparty_upstream')
 third_party = os.path.join(qtwebengine_root, 'src/3rdparty')
 
+
 def clearDirectory(directory):
     currentDir = os.getcwd()
     os.chdir(directory)
@@ -142,8 +154,9 @@ def clearDirectory(directory):
             shutil.rmtree(direntry)
     os.chdir(currentDir)
 
-def listFilesInCurrentRepository():
+def listFilesInCurrentRepository(ref = ''):
     currentRepo = GitSubmodule.Submodule(os.getcwd())
+    currentRepo.ref = ref
     files = subprocess.check_output(['git', 'ls-files']).splitlines()
     submodules = currentRepo.readSubmodules()
     for submodule in submodules:
@@ -167,10 +180,15 @@ def exportNinja():
 def exportChromium():
     third_party_upstream_chromium = os.path.join(third_party_upstream, 'chromium')
     third_party_chromium = os.path.join(third_party, 'chromium')
+    refPath = os.path.join(third_party_upstream_chromium, '.chromium_ref')
+    chromium_ref = ''
+    if os.path.exists(refPath):
+        with open(refPath, 'r') as ref:
+            chromium_ref = ref.readline().strip()
     os.makedirs(third_party_chromium);
     print 'exporting contents of:' + third_party_upstream_chromium
     os.chdir(third_party_upstream_chromium)
-    files = listFilesInCurrentRepository()
+    files = listFilesInCurrentRepository(chromium_ref)
     # Add LASTCHANGE files which are not tracked by git.
     files.append('build/util/LASTCHANGE')
     files.append('build/util/LASTCHANGE.blink')
@@ -179,6 +197,7 @@ def exportChromium():
         if not isInChromiumBlacklist(f) and not isInGitBlacklist(f):
             createHardLinkForFile(f, os.path.join(third_party_chromium, f))
 
+GitSubmodule.extra_os = ['android']
 
 clearDirectory(third_party)
 
