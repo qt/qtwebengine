@@ -40,7 +40,7 @@ index 8b466bd..fe3f7b3 100644
    }
  
 diff --git a/content/public/browser/content_browser_client.h b/content/public/browser/content_browser_client.h
-index 1f5e836..2168769 100644
+index cc664c6..f817cb2 100644
 --- a/content/public/browser/content_browser_client.h
 +++ b/content/public/browser/content_browser_client.h
 @@ -48,6 +48,7 @@ class CryptoModuleBlockingPasswordDelegate;
@@ -51,7 +51,7 @@ index 1f5e836..2168769 100644
  class ImageSkia;
  }
  
-@@ -563,6 +564,10 @@ class CONTENT_EXPORT ContentBrowserClient {
+@@ -570,6 +571,10 @@ class CONTENT_EXPORT ContentBrowserClient {
    // Return NULL to use the default one for the platform to be created.
    virtual LocationProvider* OverrideSystemLocationProvider();
  

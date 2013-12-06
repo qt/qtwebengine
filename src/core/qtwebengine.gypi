@@ -32,7 +32,6 @@
       '<(chromium_src_dir)/ui/ui.gyp:ui',
       '<(chromium_src_dir)/url/url.gyp:url_lib',
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-      '<(chromium_src_dir)/webkit/support/webkit_support.gyp:webkit_support',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
     ],
     'include_dirs': [

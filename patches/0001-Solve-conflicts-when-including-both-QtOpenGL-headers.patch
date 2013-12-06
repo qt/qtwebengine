@@ -17,19 +17,19 @@ Reviewed-by: Zeno Albisser <zeno.albisser@digia.com>
  4 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/cc/layers/texture_layer.cc b/cc/layers/texture_layer.cc
-index 316042b..2325a80 100644
+index 21c5e93..a845709 100644
 --- a/cc/layers/texture_layer.cc
 +++ b/cc/layers/texture_layer.cc
-@@ -10,6 +10,7 @@
- #include "cc/layers/texture_layer_client.h"
- #include "cc/layers/texture_layer_impl.h"
+@@ -13,6 +13,7 @@
+ #include "cc/resources/single_release_callback.h"
+ #include "cc/trees/blocking_task_runner.h"
  #include "cc/trees/layer_tree_host.h"
 +#include "third_party/khronos/GLES2/gl2.h"
  #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
  
  namespace cc {
 diff --git a/cc/output/delegating_renderer.cc b/cc/output/delegating_renderer.cc
-index bd1c5d1..0c3051c 100644
+index e3413a5..1b4021f 100644
 --- a/cc/output/delegating_renderer.cc
 +++ b/cc/output/delegating_renderer.cc
 @@ -23,6 +23,7 @@
@@ -53,11 +53,11 @@ index cbf18ca..6229d61 100644
  #include "ui/gfx/size.h"
  
 diff --git a/cc/resources/resource_provider.h b/cc/resources/resource_provider.h
-index b5dccc8..1d51a27 100644
+index fb1e5f0..928d4f9 100644
 --- a/cc/resources/resource_provider.h
 +++ b/cc/resources/resource_provider.h
-@@ -20,11 +20,14 @@
- #include "cc/output/output_surface.h"
+@@ -25,11 +25,14 @@
+ #include "cc/resources/single_release_callback.h"
  #include "cc/resources/texture_mailbox.h"
  #include "cc/resources/transferable_resource.h"
 -#include "third_party/khronos/GLES2/gl2.h"
@@ -73,5 +73,5 @@ index b5dccc8..1d51a27 100644
  
  namespace gfx {
 -- 
-1.8.4
+1.8.4.2
 
