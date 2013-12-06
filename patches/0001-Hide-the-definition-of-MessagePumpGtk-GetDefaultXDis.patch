@@ -8,10 +8,10 @@ Subject: [PATCH] Hide the definition of MessagePumpGtk::GetDefaultXDisplay.
  1 file changed, 4 insertions(+)
 
 diff --git a/base/message_loop/message_pump_gtk.cc b/base/message_loop/message_pump_gtk.cc
-index ad65113..af59685 100644
+index 86d2415..6023c11 100644
 --- a/base/message_loop/message_pump_gtk.cc
 +++ b/base/message_loop/message_pump_gtk.cc
-@@ -85,6 +85,9 @@ void MessagePumpGtk::DispatchEvents(GdkEvent* event) {
+@@ -79,6 +79,9 @@ void MessagePumpGtk::DispatchEvents(GdkEvent* event) {
    DidProcessEvent(event);
  }
  
@@ -21,14 +21,14 @@ index ad65113..af59685 100644
  // static
  Display* MessagePumpGtk::GetDefaultXDisplay() {
    static GdkDisplay* display = gdk_display_get_default();
-@@ -96,6 +99,7 @@ Display* MessagePumpGtk::GetDefaultXDisplay() {
+@@ -90,6 +93,7 @@ Display* MessagePumpGtk::GetDefaultXDisplay() {
    }
    return GDK_DISPLAY_XDISPLAY(display);
  }
 +*/
  
- void MessagePumpGtk::WillProcessEvent(GdkEvent* event) {
-   FOR_EACH_OBSERVER(MessagePumpObserver, observers(), WillProcessEvent(event));
+ void MessagePumpGtk::AddObserver(MessagePumpGdkObserver* observer) {
+   observers_.AddObserver(observer);
 -- 
-1.8.4
+1.8.4.2
 

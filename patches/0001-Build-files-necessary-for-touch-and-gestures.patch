@@ -7,15 +7,14 @@ Also guard the use of MessagePumpAuraX11 in events_x.cc. We need to
 build it to get symbols depending on base::NativeEvent.
 ---
  content/content_browser.gypi | 2 +-
- ui/base/x/events_x.cc        | 4 ++++
  ui/ui.gyp                    | 4 ++--
- 3 files changed, 7 insertions(+), 3 deletions(-)
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/content/content_browser.gypi b/content/content_browser.gypi
-index b3751ac..3597da6 100644
+index 1e3485c..c2e5f18 100644
 --- a/content/content_browser.gypi
 +++ b/content/content_browser.gypi
-@@ -1441,7 +1441,7 @@
+@@ -1479,7 +1479,7 @@
          ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
        ],
      }],
@@ -24,27 +23,11 @@ index b3751ac..3597da6 100644
        'sources!': [
          'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
          'browser/renderer_host/ui_events_helper.cc',
-diff --git a/ui/base/x/events_x.cc b/ui/base/x/events_x.cc
-index 03d4ae2..5152168 100644
---- a/ui/base/x/events_x.cc
-+++ b/ui/base/x/events_x.cc
-@@ -275,7 +275,11 @@ double GetTouchParamFromXEvent(XEvent* xev,
- 
- Atom GetNoopEventAtom() {
-   return XInternAtom(
-+#if defined(USE_AURA)
-       base::MessagePumpAuraX11::GetDefaultXDisplay(),
-+#else
-+      XOpenDisplay(NULL),
-+#endif
-       "noop", False);
- }
- 
 diff --git a/ui/ui.gyp b/ui/ui.gyp
-index e17d242..d4897cc 100644
+index 09c011c..4716f6c 100644
 --- a/ui/ui.gyp
 +++ b/ui/ui.gyp
-@@ -694,7 +694,7 @@
+@@ -708,7 +708,7 @@
              ['exclude', 'base/dragdrop/drag_utils_aura.cc'],
            ],
          }],
@@ -53,15 +36,15 @@ index e17d242..d4897cc 100644
            'sources/': [
              ['exclude', '^base/gestures/*'],
            ]
-@@ -866,7 +866,7 @@
+@@ -886,7 +886,7 @@
              'base/cursor/cursor_loader_null.h',
            ],
          }],
 -        ['toolkit_views==0', {
 +        ['use_qt==0 and toolkit_views==0', {
            'sources!': [
-             'base/events/event.cc',
-             'base/events/event.h',
+             'base/x/events_x.cc',
+             'events/event.cc',
 -- 
-1.7.12.4 (Apple Git-37)
+1.8.4.2
 
