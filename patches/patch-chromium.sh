@@ -56,7 +56,6 @@ fi
 cd $CHROMIUM_SRC_DIR
 echo "Entering $PWD"
 
-git am $PATCH_DIR/0001-Export-ContentMainRunner.patch
 git am $PATCH_DIR/0002-Add-WebEngineContext-to-RunLoop-s-friends.patch
 git am $PATCH_DIR/0001-Mac-Use-libc-instead-of-stdlibc.patch
 git am $PATCH_DIR/0002-Clang-libc-does-not-support-incomplete-types-in-temp.patch
@@ -75,7 +74,6 @@ cd $CHROMIUM_SRC_DIR/third_party/WebKit
 echo "Entering $PWD"
 
 git am $PATCH_DIR/0001-Remove-leftovers-from-WebKitSystemInterface.patch
-git am $PATCH_DIR/0001-Do-not-include-Assertions.h-within-namespace-WebKit.patch
 
 cd $CHROMIUM_SRC_DIR/third_party/libjingle/source/talk
 echo "Entering $PWD"
