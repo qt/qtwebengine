@@ -47,9 +47,13 @@ import sys
 
 def getChromiumSrcDir():
 
+  saved_cwd = os.getcwd()
   qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
+  os.chdir(qtwebengine_root)
   chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir || true", shell=True).strip()
+  os.chdir(saved_cwd)
+
   if chrome_src:
     chrome_src = os.path.join(qtwebengine_root, chrome_src)
   if not chrome_src or not os.path.isdir(chrome_src):
