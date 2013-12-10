@@ -45,15 +45,52 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
+<<<<<<< HEAD
+#include "ui/webui/jstemplate_builder.h"
+=======
+>>>>>>> 84fc0e2476ddfc7a5eb2750f3c9b8679a01f948c
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
 
 #include "content_client_qt.h"
 #include "web_engine_library_info.h"
 
+<<<<<<< HEAD
+#include<QObject>
+
+namespace {
+
+// FIXME: makes more sense to default string.
+struct LazyDirectoryListerCacher {
+  LazyDirectoryListerCacher() {
+    base::DictionaryValue value;
+    value.SetString("header", QObject::tr("Index of LOCATION").toStdString());
+    value.SetString("parentDirText", QObject::tr("[parent directory]").toStdString());
+    value.SetString("headerName", QObject::tr("Name").toStdString());
+    value.SetString("headerSize", QObject::tr("size").toStdString());
+    value.SetString("headerDateModified", QObject::tr("Date Modified").toStdString());
+    value.SetString("listingParsingErrorBoxText", QObject::tr("Oh, no! This server is sending data I can't understand.").toStdString());
+
+    html_data = webui::GetI18nTemplateHtml(
+        ResourceBundle::GetSharedInstance().GetRawDataResource(
+            IDR_DIR_HEADER_HTML),
+        &value);
+  }
+
+  std::string html_data;
+};
+
+}  // namespace
+
+static base::StringPiece PlatformResourceProvider(int key) {
+    CR_DEFINE_STATIC_LOCAL(LazyDirectoryListerCacher, lazy_dir_lister, ());
+    if (key == IDR_DIR_HEADER_HTML) {
+        base::StringPiece html_data = base::StringPiece(lazy_dir_lister.html_data);
+=======
 static base::StringPiece PlatformResourceProvider(int key) {
     if (key == IDR_DIR_HEADER_HTML) {
         base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
+>>>>>>> 84fc0e2476ddfc7a5eb2750f3c9b8679a01f948c
         return html_data;
     }
     return base::StringPiece();
