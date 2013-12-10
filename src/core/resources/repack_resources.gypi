@@ -8,8 +8,7 @@
     'pak_inputs': [
       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
-# FIXME: we'll probably want those as well
-#      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
+      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
     ],
   },
   'inputs': [
