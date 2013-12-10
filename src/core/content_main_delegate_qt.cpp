@@ -45,15 +45,26 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "grit/net_resources.h"
+#include "net/base/net_module.h"
 
 #include "content_client_qt.h"
 #include "web_engine_library_info.h"
+
+static base::StringPiece PlatformResourceProvider(int key) {
+    if (key == IDR_DIR_HEADER_HTML) {
+        base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
+        return html_data;
+    }
+    return base::StringPiece();
+}
 
 void ContentMainDelegateQt::PreSandboxStartup()
 {
     PathService::Override(base::FILE_EXE, WebEngineLibraryInfo::subProcessPath());
     PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::localesPath());
 
+    net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);
 }
 
