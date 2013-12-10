@@ -52,6 +52,14 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+
+#include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/utility/in_process_utility_thread.h"
+#include "content/renderer/in_process_renderer_thread.h"
+#include "content/gpu/in_process_gpu_thread.h"
+
 #include "ui/gl/gl_switches.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
@@ -134,6 +142,10 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
     // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
     if (qApp->platformName() == QStringLiteral("xcb") && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
+
+    content::UtilityProcessHost::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
+    content::RenderProcessHost::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
+    content::GpuProcessHost::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 
     m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
     m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
