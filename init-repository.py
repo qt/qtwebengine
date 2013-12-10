@@ -62,7 +62,7 @@ parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule (default)')
 group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule')
-group.add_argument('--android', action='store_true', help='initialize using upstream Chromium and also clone android tools')
+parser.add_argument('--os', nargs='*', help='Only valid with --upstream. Download additional platform specific dependencies (valid OSes are: android, win, mac)')
 args = parser.parse_args()
 
 if chromium_src:
@@ -75,6 +75,8 @@ if not chromium_src or not os.path.isdir(chromium_src):
     if args.upstream or not chromium_src:
         chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/chromium')
         args.upstream = True
+        if args.os:
+            GitSubmodule.extra_os = args.os
     print 'CHROMIUM_SRC_DIR not set, using Chromium in' + chromium_src
 
 # Write our chromium sources directory into git config.
@@ -151,8 +153,6 @@ def initUpstreamSubmodules():
         chromiumSubmodule.ref = chromium_ref
         chromiumSubmodule.url = chromium_url
         chromiumSubmodule.os = 'all'
-        if args.android:
-            GitSubmodule.extra_os = ['android']
         chromiumSubmodule.initialize()
         chromiumSubmodule.initSubmodules()
 
