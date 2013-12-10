@@ -61,6 +61,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
+#include "net/url_request/ftp_protocol_handler.h"
+#include "net/ftp/ftp_network_layer.h"
 
 #include "network_delegate_qt.h"
 #include "qrc_protocol_handler_qt.h"
@@ -163,6 +165,8 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
         m_jobFactory->SetProtocolHandler(chrome::kFileScheme, new net::FileProtocolHandler());
         m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
+        m_jobFactory->SetProtocolHandler(chrome::kFtpScheme, new net::FtpProtocolHandler(
+                new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
         m_urlRequestContext->set_job_factory(m_jobFactory.get());
     }
 

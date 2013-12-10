@@ -48,10 +48,6 @@ namespace ui {
 
 void ResourceBundle::LoadCommonResources()
 {
-    // Loading these resources probably only makes sense for the browser process
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
-        return;
-
     // We repacked the resources we need and installed them. now let chromium mmap that file.
     AddDataPackFromPath(WebEngineLibraryInfo::repackedResourcesPath(), SCALE_FACTOR_100P);
 }
