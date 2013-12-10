@@ -47,9 +47,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/url_constants.h"
-#include "grit/net_resources.h"
-#include "net/base/net_module.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
@@ -161,14 +158,6 @@ base::MessagePump* messagePumpFactory()
 
 } // namespace
 
-static base::StringPiece PlatformResourceProvider(int key) {
-    if (key == IDR_DIR_HEADER_HTML) {
-        base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
-        return html_data;
-    }
-    return base::StringPiece();
-}
-
 class BrowserMainPartsQt : public content::BrowserMainParts
 {
 public:
@@ -178,8 +167,6 @@ public:
 
     void PreMainMessageLoopStart() Q_DECL_OVERRIDE
     {
-        net::NetModule::SetResourceProvider(PlatformResourceProvider);
-        ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
         base::MessageLoop::InitMessagePumpForUIFactory(::messagePumpFactory);
     }
 
