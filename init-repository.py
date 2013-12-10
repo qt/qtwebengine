@@ -62,7 +62,6 @@ parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule (default)')
 group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule')
-group.add_argument('--android', action='store_true', help='initialize using upstream Chromium and also clone android tools')
 args = parser.parse_args()
 
 if chromium_src:
@@ -142,8 +141,6 @@ def initUpstreamSubmodules():
         chromiumSubmodule.ref = chromium_ref
         chromiumSubmodule.url = chromium_url
         chromiumSubmodule.os = 'all'
-        if args.android:
-            GitSubmodule.extra_os = ['android']
         chromiumSubmodule.initialize()
         chromiumSubmodule.initSubmodules()
 
