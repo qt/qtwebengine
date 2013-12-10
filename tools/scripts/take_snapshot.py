@@ -50,8 +50,9 @@ import errno
 import shutil
 
 import git_submodule as GitSubmodule
+import version_resolver as resolver
 
-qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 os.chdir(qtwebengine_root)
 
 def isInGitBlacklist(file_path):
@@ -72,6 +73,7 @@ def isInChromiumBlacklist(file_path):
         return False
     if ( '/tests/' in file_path
         or ('/test/' in file_path and
+            not file_path.endswith('isolate') and
             not '/webrtc/test/testsupport/' in file_path and
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h'))
@@ -104,7 +106,18 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('.png') and
             not '/build/' in file_path)
         or file_path.startswith('remoting')
-        or file_path.startswith('win8') ):
+        or file_path.startswith('win8')
+        or (file_path.startswith('third_party/android_tools') and
+            not 'android/cpufeatures' in file_path)
+        or file_path.startswith('third_party/aosp')
+        or file_path.startswith('third_party/apache-mime4j')
+        or file_path.startswith('third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille')
+        or file_path.startswith('third_party/findbugs')
+        or file_path.startswith('third_party/guava/src')
+        or file_path.startswith('third_party/httpcomponents-client')
+        or file_path.startswith('third_party/httpcomponents-core')
+        or file_path.startswith('third_party/jarjar')
+        or file_path.startswith('third_party/jsr-305/src') ):
             return True
     return False
 
@@ -131,6 +144,8 @@ def createHardLinkForFile(src, dst):
 
 third_party_upstream = os.path.join(qtwebengine_root, 'src/3rdparty_upstream')
 third_party = os.path.join(qtwebengine_root, 'src/3rdparty')
+chromium_shasum = ''
+chromium_ref = ''
 
 def clearDirectory(directory):
     currentDir = os.getcwd()
@@ -144,6 +159,8 @@ def clearDirectory(directory):
 
 def listFilesInCurrentRepository():
     currentRepo = GitSubmodule.Submodule(os.getcwd())
+    currentRepo.ref = chromium_ref
+    currentRepo.shasum = chromium_shasum
     files = subprocess.check_output(['git', 'ls-files']).splitlines()
     submodules = currentRepo.readSubmodules()
     for submodule in submodules:
@@ -167,6 +184,11 @@ def exportNinja():
 def exportChromium():
     third_party_upstream_chromium = os.path.join(third_party_upstream, 'chromium')
     third_party_chromium = os.path.join(third_party, 'chromium')
+    chromium_version = resolver.readVersionFile()
+    if chromium_version:
+        chromium_ref = 'refs/branch-heads/' + chromium_version['branch']
+    else:
+        chromium_shasum = 'lkgr'
     os.makedirs(third_party_chromium);
     print 'exporting contents of:' + third_party_upstream_chromium
     os.chdir(third_party_upstream_chromium)
@@ -179,6 +201,7 @@ def exportChromium():
         if not isInChromiumBlacklist(f) and not isInGitBlacklist(f):
             createHardLinkForFile(f, os.path.join(third_party_chromium, f))
 
+GitSubmodule.extra_os = ['android']
 
 clearDirectory(third_party)
 
