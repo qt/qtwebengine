@@ -822,7 +822,7 @@ void RenderWidgetHostViewQt::RemoveExpiredMappings(QTouchEvent *ev)
 
 float RenderWidgetHostViewQt::dpiScale() const
 {
-    return m_adapterClient->dpiScale();
+    return m_adapterClient ? m_adapterClient->dpiScale() : 1.0;
 }
 
 bool RenderWidgetHostViewQt::IsPopup() const
