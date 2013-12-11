@@ -33,7 +33,7 @@
               'GL_GLEXT_PROTOTYPES',
               'EGL_EGLEXT_PROTOTYPES',
             ],
-            'conditions': [
+            'target_conditions': [
               ['_type=="shared_library"', {
                 'ldflags': [
                   # Tell the linker to prefer symbols within the library before looking outside
