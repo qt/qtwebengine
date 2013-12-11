@@ -312,7 +312,7 @@ void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
 {
     Q_D(QQuickWebEngineView);
     // Valid range is [1, inf)
-    devicePixelRatio = qMax(1.0, devicePixelRatio);
+    devicePixelRatio = qMax(qreal(1.0), devicePixelRatio);
     if (d->devicePixelRatio == devicePixelRatio)
         return;
     d->setDevicePixelRatio(devicePixelRatio);
