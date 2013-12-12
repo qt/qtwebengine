@@ -49,6 +49,7 @@
 #include "net/base/net_module.h"
 
 #include "content_client_qt.h"
+#include "type_conversion.h"
 #include "web_engine_library_info.h"
 
 static base::StringPiece PlatformResourceProvider(int key) {
@@ -61,8 +62,8 @@ static base::StringPiece PlatformResourceProvider(int key) {
 
 void ContentMainDelegateQt::PreSandboxStartup()
 {
-    PathService::Override(base::FILE_EXE, WebEngineLibraryInfo::subProcessPath());
-    PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::localesPath());
+    PathService::Override(base::FILE_EXE, base::FilePath(toFilePathString(WebEngineLibraryInfo::subProcessPath())));
+    PathService::Override(ui::DIR_LOCALES, base::FilePath(toFilePathString(WebEngineLibraryInfo::localesPath())));
 
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);

@@ -41,8 +41,6 @@
 
 #include "web_engine_library_info.h"
 
-#include "type_conversion.h"
-
 #include <QByteArray>
 #include <QDir>
 #include <QFileInfo>
@@ -86,7 +84,7 @@ static QString location(QLibraryInfo::LibraryLocation path)
     return QLibraryInfo::location(path);
 }
 
-base::FilePath WebEngineLibraryInfo::subProcessPath()
+QString WebEngineLibraryInfo::subProcessPath()
 {
     static bool initialized = false;
     static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
@@ -101,17 +99,15 @@ base::FilePath WebEngineLibraryInfo::subProcessPath()
         initialized = true;
     }
 
-    return base::FilePath(toFilePathString(processPath));
+    return processPath;
 }
 
-base::FilePath WebEngineLibraryInfo::localesPath()
+QString WebEngineLibraryInfo::localesPath()
 {
-    QString path = location(QLibraryInfo::TranslationsPath) % QStringLiteral("/qtwebengine_locales");
-    return base::FilePath(toFilePathString(path));
+    return location(QLibraryInfo::TranslationsPath) % QStringLiteral("/qtwebengine_locales");
 }
 
-base::FilePath WebEngineLibraryInfo::repackedResourcesPath()
+QString WebEngineLibraryInfo::repackedResourcesPath()
 {
-    QString path = location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak");
-    return base::FilePath(toFilePathString(path));
+    return location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak");
 }

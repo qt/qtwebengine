@@ -42,13 +42,13 @@
 #ifndef WEB_ENGINE_LIBRARY_INFO_H
 #define WEB_ENGINE_LIBRARY_INFO_H
 
-#include "base/files/file_path.h"
+#include <QString>
 
 class WebEngineLibraryInfo {
 public:
-    static base::FilePath subProcessPath();
-    static base::FilePath localesPath();
-    static base::FilePath repackedResourcesPath();
+    static QString subProcessPath();
+    static QString localesPath();
+    static QString repackedResourcesPath();
 };
 
 

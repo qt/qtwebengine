@@ -59,6 +59,7 @@
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
 #include "type_conversion.h"
+#include "web_engine_library_info.h"
 #include <QGuiApplication>
 #include <QStringList>
 #include <QVector>
@@ -115,6 +116,7 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
+    parsedCommandLine->AppendSwitchASCII(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::subProcessPath().toUtf8().constData());
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 

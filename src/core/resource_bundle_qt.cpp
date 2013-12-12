@@ -39,17 +39,20 @@
 **
 ****************************************************************************/
 
+#include "type_conversion.h"
+#include "web_engine_library_info.h"
+
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "web_engine_library_info.h"
+
 
 namespace ui {
 
 void ResourceBundle::LoadCommonResources()
 {
     // We repacked the resources we need and installed them. now let chromium mmap that file.
-    AddDataPackFromPath(WebEngineLibraryInfo::repackedResourcesPath(), SCALE_FACTOR_100P);
+    AddDataPackFromPath(base::FilePath(toFilePathString(WebEngineLibraryInfo::repackedResourcesPath())), SCALE_FACTOR_100P);
 }
 
 // As GetLocaleFilePath is excluded for Mac in resource_bundle.cc,
