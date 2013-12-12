@@ -254,7 +254,7 @@ class Submodule:
             print '-- skipping ' + self.path + ' for this operating system. --'
 
     def listFiles(self):
-        if self.matchesOS():
+        if self.matchesOS() and os.path.isdir(self.path):
             currentDir = os.getcwd()
             os.chdir(self.path)
             files = subprocessCheckOutput(['git', 'ls-files']).splitlines()
