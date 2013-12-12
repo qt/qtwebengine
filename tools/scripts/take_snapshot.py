@@ -51,7 +51,7 @@ import shutil
 
 import git_submodule as GitSubmodule
 
-qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 os.chdir(qtwebengine_root)
 
 def isInGitBlacklist(file_path):
@@ -72,6 +72,7 @@ def isInChromiumBlacklist(file_path):
         return False
     if ( '/tests/' in file_path
         or ('/test/' in file_path and
+            not file_path.endswith('isolate') and
             not '/webrtc/test/testsupport/' in file_path and
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h'))
@@ -80,6 +81,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/WebKit/ManualTests')
         or file_path.startswith('android_webview')
         or file_path.startswith('apps/')
+        or file_path.startswith('ash/')
         or file_path.startswith('build/android/')
         or (file_path.startswith('chrome/') and
             not 'repack_locales' in file_path and
@@ -93,9 +95,12 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/hunspell_dictionaries')
         or file_path.startswith('cloud_print')
         or file_path.startswith('ios')
+        or file_path.startswith('mojo')
         or file_path.startswith('google_update')
         or file_path.startswith('courgette')
         or file_path.startswith('native_client')
+        or file_path.startswith('cloud_print')
+        or file_path.startswith('extensions')
         or (file_path.startswith('third_party/trace-viewer') and
             not file_path.endswith('.template') and
             not file_path.endswith('.html') and
@@ -104,7 +109,57 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('.png') and
             not '/build/' in file_path)
         or file_path.startswith('remoting')
-        or file_path.startswith('win8') ):
+        or file_path.startswith('win8')
+        or file_path.startswith('rlz')
+        or file_path.startswith('third_party/cld_2')
+        or (file_path.startswith('third_party/android_tools') and
+            not 'android/cpufeatures' in file_path)
+        or file_path.startswith('android_webview')
+        or file_path.startswith('base/android/java')
+        or file_path.startswith('content/public/android/java')
+        or file_path.startswith('content/shell/android/java')
+        or file_path.startswith('sync/android')
+        or file_path.startswith('media/base/android/java')
+        or file_path.startswith('net/android/java')
+        or file_path.startswith('ui/android/java')
+        or '_jni' in file_path
+        or 'jni_' in file_path
+        or 'testdata/' in file_path
+        or file_path.endswith('.java')
+        or file_path.startswith('testing/android')
+        or file_path.startswith('tools/page_cycler')
+        or file_path.startswith('tools/win')
+        or file_path.startswith('tools/telemetry')
+        or file_path.startswith('tools/perf')
+        or file_path.startswith('tools/gn')
+        or file_path.startswith('tools/deep_memory_profiler')
+        or file_path.startswith('tools/android')
+        or file_path.startswith('third_party/cacheinvalidation')
+        or file_path.startswith('third_party/hunspell')
+        or file_path.startswith('third_party/active_doc')
+        or file_path.startswith('third_party/apple_sample_code')
+        or file_path.startswith('third_party/scons-2.0.1')
+        or file_path.startswith('third_party/GTM')
+        or file_path.startswith('third_party/swig')
+        or file_path.startswith('third_party/libphonenumber')
+        or file_path.startswith('third_party/pdfsqueeze')
+        or file_path.startswith('third_party/lighttpd')
+        or file_path.startswith('third_party/android_platform')
+        or file_path.startswith('third_party/android_testrunner')
+        or file_path.startswith('third_party/chromite')
+        or file_path.startswith('third_party/codesighs')
+        or file_path.startswith('third_party/gtk+')
+        or file_path.startswith('third_party/aosp')
+        or file_path.startswith('third_party/cros_dbus_cplusplus')
+        or file_path.startswith('third_party/cros_system_api')
+        or file_path.startswith('third_party/apache-mime4j')
+        or file_path.startswith('third_party/eyesfree')
+        or file_path.startswith('third_party/findbugs')
+        or file_path.startswith('third_party/guava/src')
+        or file_path.startswith('third_party/httpcomponents-client')
+        or file_path.startswith('third_party/httpcomponents-core')
+        or file_path.startswith('third_party/jarjar')
+        or file_path.startswith('third_party/jsr-305/src') ):
             return True
     return False
 
@@ -178,7 +233,6 @@ def exportChromium():
     for f in files:
         if not isInChromiumBlacklist(f) and not isInGitBlacklist(f):
             createHardLinkForFile(f, os.path.join(third_party_chromium, f))
-
 
 clearDirectory(third_party)
 
