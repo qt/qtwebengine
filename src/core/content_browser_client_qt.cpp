@@ -301,6 +301,11 @@ void ContentBrowserClientQt::RenderProcessHostCreated(content::RenderProcessHost
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), chrome::kFileScheme);
 }
 
+std::string ContentBrowserClientQt::GetApplicationLocale()
+{
+    return QLocale::system().bcp47Name().toStdString();
+}
+
 gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
 {
     if (!m_shareGroupQtQuick)
