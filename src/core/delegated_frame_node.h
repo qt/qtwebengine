@@ -42,9 +42,11 @@
 #ifndef DELEGATED_FRAME_NODE_H
 #define DELEGATED_FRAME_NODE_H
 
+#include "base/memory/scoped_ptr.h"
 #include "cc/resources/transferable_resource.h"
 #include <QMutex>
 #include <QSGNode>
+#include <QSharedData>
 #include <QSharedPointer>
 #include <QWaitCondition>
 
@@ -61,17 +63,25 @@ class DelegatedFrameData;
 class MailboxTexture;
 class RenderPassTexture;
 
+// Separating this data allows another DelegatedFrameNode to reconstruct the QSGNode tree from the mailbox textures
+// and render pass information.
+class DelegatedFrameNodeData : public QSharedData {
+public:
+    QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextures;
+    scoped_ptr<cc::DelegatedFrameData> frameData;
+};
+
 class DelegatedFrameNode : public QSGNode {
 public:
     DelegatedFrameNode(QQuickWindow *window);
     ~DelegatedFrameNode();
     void preprocess();
-    void commit(cc::DelegatedFrameData *frameData, cc::TransferableResourceArray *resourcesToRelease);
+    void commit(DelegatedFrameNodeData* data, cc::ReturnedResourceArray *resourcesToRelease);
 
 private:
+    QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_data;
     QQuickWindow *m_window;
     QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
-    QMap<int, QSharedPointer<MailboxTexture> > m_mailboxTextures;
     int m_numPendingSyncPoints;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;

@@ -89,6 +89,9 @@ public:
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
 
+    void wasShown();
+    void wasHidden();
+
     void dpiScaleChanged();
 
 private:
