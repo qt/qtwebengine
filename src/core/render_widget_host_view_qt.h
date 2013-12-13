@@ -48,10 +48,12 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "delegated_frame_node.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
 #include <QMap>
 #include <QPoint>
+#include <QQueue>
 #include <QRect>
 #include <QtGlobal>
 
@@ -171,7 +173,7 @@ public:
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
-    virtual void compositingSurfaceUpdated() Q_DECL_OVERRIDE;
+    virtual void windowChanged() Q_DECL_OVERRIDE;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -205,7 +207,8 @@ public:
 #endif // defined(OS_WIN)
 
 private:
-    void sendDelegatedFrameAck();
+    void sendDelegatedFrameAck(uint32 outputSurfaceId);
+    void runAckCallbacks();
     void Paint(const gfx::Rect& damage_rect);
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
     int GetMappedTouch(int qtTouchId);
@@ -222,8 +225,9 @@ private:
 
     BackingStoreQt *m_backingStore;
     scoped_ptr<cc::DelegatedFrameData> m_pendingFrameData;
-    cc::TransferableResourceArray m_resourcesToRelease;
-    uint32 m_pendingOutputSurfaceId;
+    QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
+    cc::ReturnedResourceArray m_resourcesToRelease;
+    QQueue<base::Closure> m_ackCallbacks;
 
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
@@ -234,7 +238,6 @@ private:
     size_t m_cursorPositionWithinSelection;
 
     bool m_initPending;
-    bool m_readyForSurface;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

@@ -145,7 +145,6 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
-    , m_readyForSurface(false)
 {
     m_host->SetView(this);
 }
@@ -244,8 +243,7 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 
 gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 {
-    const_cast<RenderWidgetHostViewQt *>(this)->m_readyForSurface = true;
-    return m_delegate->nativeWindowIdForCompositor();
+    return 0;
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
@@ -333,17 +331,11 @@ gfx::NativeView RenderWidgetHostViewQt::BuildInputMethodsGtkMenu()
 
 void RenderWidgetHostViewQt::WasShown()
 {
-    if (m_delegate->isVisible())
-        return;
-
     m_host->WasShown();
 }
 
 void RenderWidgetHostViewQt::WasHidden()
 {
-    if (!m_delegate->isVisible())
-        return;
-
     m_host->WasHidden();
 }
 
@@ -584,11 +576,24 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 
 void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
 {
-    Q_ASSERT(!m_pendingFrameData);
+    if (!m_frameNodeData)
+        m_frameNodeData = new DelegatedFrameNodeData;
+
     Q_ASSERT(frame->delegated_frame_data);
-    m_pendingOutputSurfaceId = output_surface_id;
-    m_pendingFrameData = frame->delegated_frame_data.Pass();
-    m_delegate->update();
+    base::Closure ackCallback = base::Bind(&RenderWidgetHostViewQt::sendDelegatedFrameAck, AsWeakPtr(), output_surface_id);
+    scoped_ptr<cc::DelegatedFrameData> frameData = frame->delegated_frame_data.Pass();
+    if (m_delegate->window()) {
+        m_ackCallbacks.enqueue(ackCallback);
+        if (m_frameNodeData->frameData)
+            cc::TransferableResource::ReturnResources(m_frameNodeData->frameData->resource_list, &m_resourcesToRelease);
+        m_frameNodeData->frameData = frameData.Pass();
+        m_delegate->update();
+    } else {
+        // Updates should be suspended while we have no window, because shown/hidden status is based on the presence of
+        // a window. If one comes in anyway, we need to ack immediately.
+        cc::TransferableResource::ReturnResources(frameData->resource_list, &m_resourcesToRelease);
+        ackCallback.Run();
+    }
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
@@ -611,12 +616,9 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 
 gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
 {
-    gfx::NativeViewId nativeViewId = GetNativeViewId();
-#if defined(OS_WIN)
-    return nativeViewId ? gfx::GLSurfaceHandle(reinterpret_cast<gfx::PluginWindowHandle>(nativeViewId), gfx::NATIVE_TRANSPORT) : gfx::GLSurfaceHandle();
-#else
-    return nativeViewId ? gfx::GLSurfaceHandle(nativeViewId, gfx::NATIVE_TRANSPORT) : gfx::GLSurfaceHandle();
-#endif
+    if (!m_delegate->supportsHardwareAcceleration())
+        return gfx::GLSurfaceHandle();
+    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
 
 void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
@@ -648,20 +650,17 @@ void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-    if (!m_pendingFrameData)
-        return oldNode;
-
     DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
     if (!frameNode)
         frameNode = new DelegatedFrameNode(window);
 
-    frameNode->commit(m_pendingFrameData.get(), &m_resourcesToRelease);
-    m_pendingFrameData.reset();
+    if (m_frameNodeData)
+        frameNode->commit(m_frameNodeData.data(), &m_resourcesToRelease);
 
     // This is possibly called from the Qt render thread, post the ack back to the UI
     // to tell the child compositors to release resources and trigger a new frame.
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&RenderWidgetHostViewQt::sendDelegatedFrameAck, AsWeakPtr()));
+        base::Bind(&RenderWidgetHostViewQt::runAckCallbacks, AsWeakPtr()));
 
     return frameNode;
 #else
@@ -743,11 +742,10 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
     }
 }
 
-void RenderWidgetHostViewQt::compositingSurfaceUpdated()
+void RenderWidgetHostViewQt::windowChanged()
 {
-    // Don't report an update until we get asked at least once.
-    if (m_readyForSurface)
-        m_host->CompositingSurfaceUpdated();
+    if (m_delegate->window())
+        m_host->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
@@ -764,15 +762,20 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
     }
 }
 
-void RenderWidgetHostViewQt::sendDelegatedFrameAck()
+void RenderWidgetHostViewQt::sendDelegatedFrameAck(uint32 outputSurfaceId)
 {
     cc::CompositorFrameAck ack;
-    cc::TransferableResource::ReturnResources(m_resourcesToRelease, &ack.resources);
+    m_resourcesToRelease.swap(ack.resources);
     content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-        m_host->GetRoutingID(), m_pendingOutputSurfaceId,
+        m_host->GetRoutingID(), outputSurfaceId,
         m_host->GetProcess()->GetID(), ack);
+}
 
-    m_resourcesToRelease.clear();
+void RenderWidgetHostViewQt::runAckCallbacks() {
+    while (!m_ackCallbacks.isEmpty()) {
+        m_ackCallbacks.head().Run();
+        m_ackCallbacks.dequeue();
+    }
 }
 
 void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)

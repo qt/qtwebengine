@@ -369,6 +369,18 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript, const QString 
     }
 }
 
+void WebContentsAdapter::wasShown()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->WasShown();
+}
+
+void WebContentsAdapter::wasHidden()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->WasHidden();
+}
+
 void WebContentsAdapter::dpiScaleChanged()
 {
     Q_D(WebContentsAdapter);
