@@ -142,12 +142,6 @@ void tst_QQuickWebViewGraphics::renderAfterNodeCleanup()
     // Do it twice in a row, if the window isn't visible, the scene graph is going to be trashed by QQuickWindow::grabWindow after the first render.
     QVERIFY(!m_view->isVisible());
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
-
-#if !defined(TST_QQUICKWEBVIEWGRAPHICS_SOFTWARE)
-    QEXPECT_FAIL("", "FIXME: This isn't working properly yet, QQuickWindow::grab() destroys the DelegatedFrameNode after it's done."
-        " There might be a way to trigger a repaint in Chromium, or we might have to prevent the destruction of our node tree.", Continue);
-#endif
-
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
 }
 

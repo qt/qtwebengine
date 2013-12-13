@@ -446,6 +446,18 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
     }
 }
 
+void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
+{
+    Q_D(QQuickWebEngineView);
+    if (change == ItemSceneChange || change == ItemVisibleHasChanged) {
+        if (window() && isVisible())
+            d->adapter->wasShown();
+        else
+            d->adapter->wasHidden();
+    }
+    QQuickItem::itemChange(change, value);
+}
+
 QQuickWebEngineViewHandle::QQuickWebEngineViewHandle()
 {
 }
