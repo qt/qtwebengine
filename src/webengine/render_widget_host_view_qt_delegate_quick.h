@@ -126,6 +126,11 @@ public:
         this->setSize(QSizeF(width, height));
     }
 
+    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE
+    {
+        return false;
+    }
+
     void focusInEvent(QFocusEvent *event)
     {
         m_client->forwardEvent(event);
@@ -214,8 +219,8 @@ class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegat
 public:
     RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
 
-    virtual WId nativeWindowIdForCompositor() const;
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
+    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
 
     virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
@@ -228,7 +233,6 @@ class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQt
 public:
     RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
 
-    virtual WId nativeWindowIdForCompositor() const Q_DECL_OVERRIDE;
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
 
     void paint(QPainter *painter);

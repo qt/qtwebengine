@@ -415,6 +415,18 @@ quint64 WebContentsAdapter::fetchDocumentInnerText()
     return d->lastRequestId;
 }
 
+void WebContentsAdapter::wasShown()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->WasShown();
+}
+
+void WebContentsAdapter::wasHidden()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->WasHidden();
+}
+
 void WebContentsAdapter::dpiScaleChanged()
 {
     Q_D(WebContentsAdapter);
