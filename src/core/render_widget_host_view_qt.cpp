@@ -141,11 +141,11 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
     , m_backingStore(0)
+    , m_frameNode(0)
     , m_adapterClient(0)
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
-    , m_readyForSurface(false)
 {
     m_host->SetView(this);
 }
@@ -244,8 +244,7 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
 
 gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 {
-    const_cast<RenderWidgetHostViewQt *>(this)->m_readyForSurface = true;
-    return m_delegate->nativeWindowIdForCompositor();
+    return 0;
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
@@ -333,17 +332,11 @@ gfx::NativeView RenderWidgetHostViewQt::BuildInputMethodsGtkMenu()
 
 void RenderWidgetHostViewQt::WasShown()
 {
-    if (m_delegate->isVisible())
-        return;
-
     m_host->WasShown();
 }
 
 void RenderWidgetHostViewQt::WasHidden()
 {
-    if (!m_delegate->isVisible())
-        return;
-
     m_host->WasHidden();
 }
 
@@ -611,8 +604,7 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 
 gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
 {
-    gfx::NativeViewId nativeViewId = GetNativeViewId();
-    return nativeViewId ? gfx::GLSurfaceHandle(nativeViewId, gfx::NATIVE_TRANSPORT) : gfx::GLSurfaceHandle();
+    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
 
 void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
@@ -643,15 +635,16 @@ void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
 {
+    Q_UNUSED(oldNode);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
     if (!m_pendingFrameData)
-        return oldNode;
+        return m_frameNode;
 
-    DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
-    if (!frameNode)
-        frameNode = new DelegatedFrameNode(window);
+    // FIXME: What about window changes?
+    if (!m_frameNode)
+        m_frameNode = new DelegatedFrameNode(window);
 
-    frameNode->commit(m_pendingFrameData.get(), &m_resourcesToRelease);
+    m_frameNode->commit(m_pendingFrameData.get(), &m_resourcesToRelease);
     m_pendingFrameData.reset();
 
     // This is possibly called from the Qt render thread, post the ack back to the UI
@@ -659,8 +652,9 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow 
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
         base::Bind(&RenderWidgetHostViewQt::sendDelegatedFrameAck, AsWeakPtr()));
 
-    return frameNode;
+    return m_frameNode;
 #else
+    Q_UNUSED(window);
     return 0;
 #endif // QT_VERSION
 }
@@ -737,13 +731,6 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
     default:
         return QVariant();
     }
-}
-
-void RenderWidgetHostViewQt::compositingSurfaceUpdated()
-{
-    // Don't report an update until we get asked at least once.
-    if (m_readyForSurface)
-        m_host->CompositingSurfaceUpdated();
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {

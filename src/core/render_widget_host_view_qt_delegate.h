@@ -68,7 +68,6 @@ public:
     virtual void notifyResize() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;
-    virtual void compositingSurfaceUpdated() = 0;
 };
 
 class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
@@ -82,7 +81,6 @@ public:
     virtual void show() = 0;
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
-    virtual WId nativeWindowIdForCompositor() const = 0;
     virtual QWindow* window() const = 0;
     virtual void update(const QRect& rect = QRect()) = 0;
     virtual void updateCursor(const QCursor &) = 0;

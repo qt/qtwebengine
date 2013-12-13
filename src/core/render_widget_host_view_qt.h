@@ -56,6 +56,7 @@
 #include <QtGlobal>
 
 class BackingStoreQt;
+class DelegatedFrameNode;
 
 QT_BEGIN_NAMESPACE
 class QEvent;
@@ -171,7 +172,6 @@ public:
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
-    virtual void compositingSurfaceUpdated() Q_DECL_OVERRIDE;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -216,6 +216,7 @@ private:
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     BackingStoreQt *m_backingStore;
+    DelegatedFrameNode *m_frameNode;
     scoped_ptr<cc::DelegatedFrameData> m_pendingFrameData;
     cc::TransferableResourceArray m_resourcesToRelease;
     uint32 m_pendingOutputSurfaceId;
@@ -229,7 +230,6 @@ private:
     size_t m_cursorPositionWithinSelection;
 
     bool m_initPending;
-    bool m_readyForSurface;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

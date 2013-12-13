@@ -88,6 +88,8 @@ public:
     qreal currentZoomFactor() const;
     void enableInspector(bool);
     void runJavaScript(const QString &javaScript, const QString &xPath = QString(), JSCallbackBase * = 0);
+    void wasShown();
+    void wasHidden();
 
     void dpiScaleChanged();
 
