@@ -48,6 +48,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "delegated_frame_node.h"
 #include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/gestures/gesture_types.h"
 #include <QMap>
@@ -171,7 +172,7 @@ public:
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
-    virtual void compositingSurfaceUpdated() Q_DECL_OVERRIDE;
+    virtual void windowChanged() Q_DECL_OVERRIDE;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -221,8 +222,9 @@ private:
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     BackingStoreQt *m_backingStore;
-    scoped_ptr<cc::DelegatedFrameData> m_pendingFrameData;
-    cc::TransferableResourceArray m_resourcesToRelease;
+    QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
+    cc::ReturnedResourceArray m_resourcesToRelease;
+    bool m_needsDelegatedFrameAck;
     uint32 m_pendingOutputSurfaceId;
 
     WebContentsAdapterClient *m_adapterClient;
@@ -234,7 +236,6 @@ private:
     size_t m_cursorPositionWithinSelection;
 
     bool m_initPending;
-    bool m_readyForSurface;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H
