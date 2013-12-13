@@ -285,6 +285,23 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
     }
 }
 
+void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
+{
+    Q_D(QQuickWebEngineView);
+    if (change == ItemSceneChange) {
+        if (value.window) {
+            d->adapter->wasShown();
+            // We need to get WebScreenInfo for item that was
+            // created outside the scene graph and is now brought in.
+            // FIXME: dpiScaleChanged should be renamed screenChanged/windowChanged?
+            d->adapter->dpiScaleChanged();
+        } else {
+            d->adapter->wasHidden();
+        }
+    }
+    QQuickItem::itemChange(change, value);
+}
+
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
     : q_ptr(0)
     , d_ptr(viewPrivate)

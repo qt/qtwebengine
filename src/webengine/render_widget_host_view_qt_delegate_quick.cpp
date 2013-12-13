@@ -48,11 +48,6 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     setFlag(ItemHasContents);
 }
 
-WId RenderWidgetHostViewQtDelegateQuick::nativeWindowIdForCompositor() const
-{
-    return QQuickItem::window() ? QQuickItem::window()->winId() : 0;
-}
-
 void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
 {
     QQuickItem::update();
@@ -61,8 +56,6 @@ void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
 void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
 {
     QQuickItem::itemChange(change, value);
-    if (change == QQuickItem::ItemSceneChange && value.window)
-        m_client->compositingSurfaceUpdated();
 }
 
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
@@ -74,12 +67,6 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
 RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent)
     : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(client, parent)
 {
-}
-
-WId RenderWidgetHostViewQtDelegateQuickPainted::nativeWindowIdForCompositor() const
-{
-    // This causes a failure of the compositor initialization which ends up disabling it completely.
-    return 0;
 }
 
 void RenderWidgetHostViewQtDelegateQuickPainted::update(const QRect& rect)

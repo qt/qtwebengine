@@ -90,6 +90,7 @@ Q_SIGNALS:
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void itemChange(ItemChange, const ItemChangeData &);
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)

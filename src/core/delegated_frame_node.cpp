@@ -281,6 +281,7 @@ DelegatedFrameNode::DelegatedFrameNode(QQuickWindow *window)
     , m_numPendingSyncPoints(0)
 {
     setFlag(UsePreprocess);
+    setFlag(OwnedByParent, false);
 }
 
 DelegatedFrameNode::~DelegatedFrameNode()

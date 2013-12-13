@@ -107,12 +107,6 @@ bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
     return QWidget::isVisible();
 }
 
-WId RenderWidgetHostViewQtDelegateWidget::nativeWindowIdForCompositor() const
-{
-    // The QtWidgets API doesn't support hardware acceleration.
-    return 0;
-}
-
 QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 {
     const QWidget* root = QWidget::window();
