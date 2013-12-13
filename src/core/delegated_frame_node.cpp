@@ -276,11 +276,17 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
         m_textureId = service_id(tex);
 }
 
-DelegatedFrameNode::DelegatedFrameNode(QQuickWindow *window)
-    : m_window(window)
+DelegatedFrameNode::DelegatedFrameNode(QQuickWindow *window, DelegatedFrameNodeData* data)
+    : d(data)
+    , m_window(window)
     , m_numPendingSyncPoints(0)
 {
     setFlag(UsePreprocess);
+    if (d->frameData) {
+        cc::TransferableResourceArray temp;
+        commit(d->frameData.Pass(), &temp);
+        Q_ASSERT(temp.empty());
+    }
 }
 
 DelegatedFrameNode::~DelegatedFrameNode()
@@ -293,7 +299,7 @@ void DelegatedFrameNode::preprocess()
     // We can now wait for the Chromium GPU thread to produce textures that will be
     // rendered on our quads and fetch the IDs from the mailboxes we were given.
     QList<MailboxTexture *> mailboxesToFetch;
-    Q_FOREACH (const QSharedPointer<MailboxTexture> &mailboxTexture, m_mailboxTextures.values())
+    Q_FOREACH (const QSharedPointer<MailboxTexture> &mailboxTexture, d->mailboxTextures.values())
         if (mailboxTexture->needsToFetch())
             mailboxesToFetch.append(mailboxTexture.data());
 
@@ -315,13 +321,13 @@ void DelegatedFrameNode::preprocess()
         renderPass->grab();
 }
 
-void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData, cc::TransferableResourceArray *resourcesToRelease)
+void DelegatedFrameNode::commit(scoped_ptr<cc::DelegatedFrameData> frameData, cc::TransferableResourceArray *resourcesToRelease)
 {
     // Keep the old texture lists around to find the ones we can re-use.
     QList<QSharedPointer<RenderPassTexture> > oldRenderPassTextures;
     m_renderPassTextures.swap(oldRenderPassTextures);
-    QMap<int, QSharedPointer<MailboxTexture> > mailboxTextureCandidates;
-    m_mailboxTextures.swap(mailboxTextureCandidates);
+    QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextureCandidates;
+    d->mailboxTextures.swap(mailboxTextureCandidates);
 
     // A frame's resource_list only contains the new resources to be added to the scene. Quads can
     // still reference resources that were added in previous frames. Add them to the list of
@@ -392,7 +398,7 @@ void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData, cc::Transfera
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = m_mailboxTextures[tquad->resource_id] = mailboxTextureCandidates.take(tquad->resource_id);
+                QSharedPointer<MailboxTexture> &texture = d->mailboxTextures[tquad->resource_id] = mailboxTextureCandidates.take(tquad->resource_id);
                 Q_ASSERT(texture);
 
                 // FIXME: TransferableResource::size isn't always set properly for TextureDrawQuads, use the size of its DrawQuad::rect instead.
@@ -431,7 +437,7 @@ void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData, cc::Transfera
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = m_mailboxTextures[tquad->resource_id] = mailboxTextureCandidates.take(tquad->resource_id);
+                QSharedPointer<MailboxTexture> &texture = d->mailboxTextures[tquad->resource_id] = mailboxTextureCandidates.take(tquad->resource_id);
                 Q_ASSERT(texture);
 
                 if (!quad->visible_rect.IsEmpty() && !quad->opaque_rect.Contains(quad->visible_rect))
@@ -449,16 +455,16 @@ void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData, cc::Transfera
                 break;
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
                 const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &yTexture = m_mailboxTextures[vquad->y_plane_resource_id] = mailboxTextureCandidates.take(vquad->y_plane_resource_id);
-                QSharedPointer<MailboxTexture> &uTexture = m_mailboxTextures[vquad->u_plane_resource_id] = mailboxTextureCandidates.take(vquad->u_plane_resource_id);
-                QSharedPointer<MailboxTexture> &vTexture = m_mailboxTextures[vquad->v_plane_resource_id] = mailboxTextureCandidates.take(vquad->v_plane_resource_id);
+                QSharedPointer<MailboxTexture> &yTexture = d->mailboxTextures[vquad->y_plane_resource_id] = mailboxTextureCandidates.take(vquad->y_plane_resource_id);
+                QSharedPointer<MailboxTexture> &uTexture = d->mailboxTextures[vquad->u_plane_resource_id] = mailboxTextureCandidates.take(vquad->u_plane_resource_id);
+                QSharedPointer<MailboxTexture> &vTexture = d->mailboxTextures[vquad->v_plane_resource_id] = mailboxTextureCandidates.take(vquad->v_plane_resource_id);
                 Q_ASSERT(yTexture && uTexture && vTexture);
 
                 // Do not use a reference for this one, it might be null.
                 QSharedPointer<MailboxTexture> aTexture;
                 // This currently requires --enable-vp8-alpha-playback and needs a video with alpha data to be triggered.
                 if (vquad->a_plane_resource_id)
-                    aTexture = m_mailboxTextures[vquad->a_plane_resource_id] = mailboxTextureCandidates.take(vquad->a_plane_resource_id);
+                    aTexture = d->mailboxTextures[vquad->a_plane_resource_id] = mailboxTextureCandidates.take(vquad->a_plane_resource_id);
 
                 YUVVideoNode *videoNode = new YUVVideoNode(yTexture.data(), uTexture.data(), vTexture.data(), aTexture.data(), toQt(vquad->tex_scale));
                 videoNode->setRect(toQt(quad->rect));
@@ -483,6 +489,10 @@ void DelegatedFrameNode::commit(cc::DelegatedFrameData *frameData, cc::Transfera
 
         resourcesToRelease->push_back(mailboxTexture->resource());
     }
+
+    // Keep the current frameData around so we can reconstruct the QSGNode tree from the render pass information.
+    d->frameData = frameData.Pass();
+    d->frameData->resource_list.clear();
 }
 
 void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)

@@ -285,6 +285,20 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
     }
 }
 
+void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
+{
+    Q_D(QQuickWebEngineView);
+    // Don't use ItemVisibleHasChanged to hook up Chromium visibility, key off the window instead.
+    // The visibility can still be true for an item that doesn't have a window.
+    if (change == ItemSceneChange) {
+        if (value.window)
+            d->adapter->wasShown();
+        else
+            d->adapter->wasHidden();
+    }
+    QQuickItem::itemChange(change, value);
+}
+
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
     : q_ptr(0)
     , d_ptr(viewPrivate)

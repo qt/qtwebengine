@@ -66,7 +66,6 @@ public:
     virtual void show() Q_DECL_OVERRIDE;
     virtual void hide() Q_DECL_OVERRIDE;
     virtual bool isVisible() const Q_DECL_OVERRIDE;
-    virtual WId nativeWindowIdForCompositor() const Q_DECL_OVERRIDE;
     virtual QWindow* window() const Q_DECL_OVERRIDE;
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
     virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
