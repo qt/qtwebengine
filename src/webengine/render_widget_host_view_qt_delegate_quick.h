@@ -68,6 +68,7 @@ public:
     {
         QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
         this->setParentItem(viewPrivate->q_func());
+        this->setSize(viewPrivate->q_func()->boundingRect().size());
     }
 
     virtual void initAsPopup(const QRect& rect) Q_DECL_OVERRIDE
