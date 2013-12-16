@@ -173,6 +173,12 @@ void QQuickWebEngineViewPrivate::javascriptDialog(JavaScriptDialogController *di
     ui()->showDialog(dialog);
 }
 
+
+void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes)
+{
+    ui()->showFilePicker(mode, defaultFileName, acceptedMimeTypes, adapter);
+}
+
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
 {
     Q_Q(QQuickWebEngineView);
