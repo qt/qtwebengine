@@ -44,6 +44,7 @@
 
 #include "qglobal.h"
 #include "web_contents_adapter.h"
+#include "web_contents_adapter_client.h"
 
 #include <QExplicitlySharedDataPointer>
 #include <QPoint>
@@ -57,7 +58,8 @@
     F(MenuSeparator, menuSeparator) SEPARATOR \
     F(AlertDialog, alertDialog) SEPARATOR \
     F(ConfirmDialog, confirmDialog) SEPARATOR \
-    F(PromptDialog, promptDialog) SEPARATOR
+    F(PromptDialog, promptDialog) SEPARATOR \
+    F(FilePicker, filePicker) SEPARATOR
 
 #define COMMA_SEPARATOR ,
 #define SEMICOLON_SEPARATOR ;
@@ -134,6 +136,8 @@ public:
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
     void showDialog(JavaScriptDialogController *);
+    void showFilePicker(WebContentsAdapterClient::FileChooserMode, const QString &defaultFileName, const QString &title
+                        , const QStringList &acceptedMimeTypes, const QExplicitlySharedDataPointer<WebContentsAdapter> &);
 
 private:
     bool ensureComponentLoaded(ComponentType);

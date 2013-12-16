@@ -246,8 +246,6 @@ QQmlComponent *UIDelegatesManager::loadDefaultUIDelegate(const QString &fileName
     return new QQmlComponent(engine, QUrl(absolutePath), QQmlComponent::PreferSynchronous, m_view);
 }
 
-#include "ui_delegates_manager.moc"
-
 #define ASSIGN_DIALOG_COMPONENT_DATA_CASE_STATEMENT(TYPE, COMPONENT) \
     case TYPE:\
         dialogComponent = COMPONENT##Component.data(); \
@@ -318,3 +316,98 @@ void UIDelegatesManager::showDialog(JavaScriptDialogController *dialogController
 
     QMetaObject::invokeMethod(dialog, "open");
 }
+
+namespace {
+class FilePickerController : public QObject {
+    Q_OBJECT
+public:
+    FilePickerController(WebContentsAdapterClient::FileChooserMode, const QExplicitlySharedDataPointer<WebContentsAdapter> &, QObject * = 0);
+
+public Q_SLOTS:
+    void accepted(const QVariant &files);
+    void rejected();
+
+private:
+    QExplicitlySharedDataPointer<WebContentsAdapter> m_adapter;
+    WebContentsAdapterClient::FileChooserMode m_mode;
+
+};
+
+
+FilePickerController::FilePickerController(WebContentsAdapterClient::FileChooserMode mode, const QExplicitlySharedDataPointer<WebContentsAdapter> &adapter, QObject *parent)
+    : QObject(parent)
+    , m_adapter(adapter)
+    , m_mode(mode)
+{
+}
+
+void FilePickerController::accepted(const QVariant &files)
+{
+    QStringList stringList;
+    // Qt Quick's file dialog returns a list of QUrls.
+    Q_FOREACH(const QUrl &url, files.value<QList<QUrl> >())
+        stringList.append(url.toLocalFile());
+
+    m_adapter->filesSelectedInChooser(stringList, m_mode);
+}
+
+void FilePickerController::rejected()
+{
+    m_adapter->filesSelectedInChooser(QStringList(), m_mode);
+}
+
+} // namespace
+
+
+void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMode mode, const QString &defaultFileName, const QString &title, const QStringList &acceptedMimeTypes, const QExplicitlySharedDataPointer<WebContentsAdapter> &adapter)
+{
+    Q_UNUSED(defaultFileName);
+    Q_UNUSED(acceptedMimeTypes);
+
+    if (!ensureComponentLoaded(FilePicker))
+        return;
+    QQmlContext *context(creationContextForComponent(filePickerComponent.data()));
+    QObject *filePicker = filePickerComponent->beginCreate(context);
+    if (QQuickItem* item = qobject_cast<QQuickItem*>(filePicker))
+        item->setParentItem(m_view);
+    filePicker->setParent(m_view);
+    filePickerComponent->completeCreate();
+
+    // Fine-tune some properties depending on the mode.
+    switch (mode) {
+    case WebContentsAdapterClient::Open:
+        break;
+    case WebContentsAdapterClient::Save:
+        filePicker->setProperty("selectExisting", false);
+        break;
+    case WebContentsAdapterClient::OpenMultiple:
+        filePicker->setProperty("selectMultiple", true);
+        break;
+    case WebContentsAdapterClient::UploadFolder:
+        filePicker->setProperty("selectFolder", true);
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    FilePickerController *controller = new FilePickerController(mode, adapter, filePicker);
+    QQmlProperty titleProp(filePicker, QStringLiteral("title"));
+    titleProp.write(title);
+    QQmlProperty filesPickedSignal(filePicker, QStringLiteral("onFilesSelected"));
+    CHECK_QML_SIGNAL_PROPERTY(filesPickedSignal, filePickerComponent->url());
+    QQmlProperty rejectSignal(filePicker, QStringLiteral("onRejected"));
+    CHECK_QML_SIGNAL_PROPERTY(rejectSignal, filePickerComponent->url());
+    static int acceptedIndex = controller->metaObject()->indexOfSlot("accepted(QVariant)");
+    QObject::connect(filePicker, filesPickedSignal.method(), controller, controller->metaObject()->method(acceptedIndex));
+    static int rejectedIndex = controller->metaObject()->indexOfSlot("rejected()");
+    QObject::connect(filePicker, rejectSignal.method(), controller, controller->metaObject()->method(rejectedIndex));
+
+    // delete when done.
+    static int deleteLaterIndex = filePicker->metaObject()->indexOfSlot("deleteLater()");
+    QObject::connect(filePicker, filesPickedSignal.method(), filePicker, filePicker->metaObject()->method(deleteLaterIndex));
+    QObject::connect(filePicker, rejectSignal.method(), filePicker, filePicker->metaObject()->method(deleteLaterIndex));
+
+    QMetaObject::invokeMethod(filePicker, "open");
+}
+
+#include "ui_delegates_manager.moc"
