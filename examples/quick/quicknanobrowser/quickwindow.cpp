@@ -54,7 +54,6 @@ class Utils : public QObject {
 public:
     Utils(QObject* parent = 0) : QObject(parent) { }
     Q_INVOKABLE static QUrl fromUserInput(const QString& userInput) { return urlFromUserInput(userInput); }
-    Q_INVOKABLE static QUrl initialUrl() { return startupUrl(); }
 };
 
 #include "quickwindow.moc"
@@ -63,4 +62,5 @@ ApplicationEngine::ApplicationEngine()
 {
     rootContext()->setContextProperty("utils", new Utils(this));
     load(QUrl("qrc:/quickwindow.qml"));
+    QMetaObject::invokeMethod(rootObjects().first(), "load", Q_ARG(QVariant, startupUrl()));
 }

@@ -40,24 +40,44 @@
 
 import QtQuick 2.0
 import QtWebEngine 1.0
+import QtWebEngine.experimental 1.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
 
 ApplicationWindow {
     id: browserWindow
+    function load(url) { tabs.currentView.url = url }
+    function adoptHandle(viewHandle) { tabs.currentView.adoptHandle(viewHandle) }
+
     height: 600
     width: 800
     visible: true
-    title: webEngineView.title
+    title: tabs.currentView && tabs.currentView.title
 
-    // Focus and select text in URL bar
     Action {
         id: focus
-        shortcut: "Ctrl+L" // How to have Cmd + L on Mac ?
+        shortcut: "Ctrl+L"
         onTriggered: {
             addressBar.forceActiveFocus();
             addressBar.selectAll();
+        }
+    }
+    Action {
+        shortcut: "Ctrl+T"
+        onTriggered: {
+            tabs.createEmptyTab()
+            addressBar.forceActiveFocus();
+            addressBar.selectAll();
+        }
+    }
+    Action {
+        shortcut: "Ctrl+W"
+        onTriggered: {
+            if (tabs.count == 1)
+                browserWindow.close()
+            else
+                tabs.removeTab(tabs.currentIndex)
         }
     }
 
@@ -68,19 +88,19 @@ ApplicationWindow {
                 ToolButton {
                     id: backButton
                     iconSource: "icons/go-previous.png"
-                    onClicked: webEngineView.goBack()
-                    enabled: webEngineView.canGoBack
+                    onClicked: tabs.currentView.goBack()
+                    enabled: tabs.currentView && tabs.currentView.canGoBack
                 }
                 ToolButton {
                     id: forwardButton
                     iconSource: "icons/go-next.png"
-                    onClicked: webEngineView.goForward()
-                    enabled: webEngineView.canGoForward
+                    onClicked: tabs.currentView.goForward()
+                    enabled: tabs.currentView && tabs.currentView.canGoForward
                 }
                 ToolButton {
                     id: reloadButton
-                    iconSource: webEngineView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
-                    onClicked: webEngineView.reload()
+                    iconSource: tabs.currentView && tabs.currentView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
+                    onClicked: tabs.currentView.reload()
                 }
                 TextField {
                     id: addressBar
@@ -90,6 +110,7 @@ ApplicationWindow {
                         z: 2
                         id: faviconImage
                         width: 16; height: 16
+                        source: tabs.currentView && tabs.currentView.icon
                     }
                     style: TextFieldStyle {
                         padding {
@@ -98,7 +119,8 @@ ApplicationWindow {
                     }
                     focus: true
                     Layout.fillWidth: true
-                    onAccepted: webEngineView.url = utils.fromUserInput(text)
+                    text: tabs.currentView && tabs.currentView.url
+                    onAccepted: tabs.currentView.url = utils.fromUserInput(text)
                 }
             }
             ProgressBar {
@@ -117,16 +139,46 @@ ApplicationWindow {
                 z: -2;
                 minimumValue: 0
                 maximumValue: 100
+                value: tabs.currentView && tabs.currentView.loadProgress
             }
     }
-    WebEngineView {
-        id: webEngineView
-        focus: true
-        anchors.fill: parent
-        url: utils.initialUrl()
 
-        onUrlChanged: addressBar.text = url
-        onIconChanged: faviconImage.source = icon
-        onLoadProgressChanged: progressBar.value = loadProgress
+    TabView {
+        id: tabs
+        property Item currentView: currentIndex < count ? getTab(currentIndex).item : null
+        function createEmptyTab() {
+            var tab = addTab("", tabComponent)
+            // We must do this first to make sure that tab.active gets set so that tab.item gets instantiated immediately.
+            tabs.currentIndex = tabs.count - 1
+            tab.title = Qt.binding(function() { return tab.item.title })
+            return tab
+        }
+
+        anchors.fill: parent
+        Component.onCompleted: createEmptyTab()
+
+        Component {
+            id: tabComponent
+            WebEngineView {
+                function adoptHandle(viewHandle) { experimental.adoptHandle(viewHandle) }
+
+                focus: true
+
+                experimental {
+                    onCreateWindow: {
+                        if (newViewDisposition == "popup")
+                            print("Warning: Ignored a popup window.")
+                        else if (newViewDisposition == "tab") {
+                            var tab = tabs.createEmptyTab()
+                            tab.item.adoptHandle(newViewHandle)
+                        } else {
+                            var component = Qt.createComponent("quickwindow.qml")
+                            var window = component.createObject()
+                            window.adoptHandle(newViewHandle)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
