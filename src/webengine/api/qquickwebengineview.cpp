@@ -47,6 +47,7 @@
 
 #include <QScreen>
 #include <QUrl>
+#include <QQmlEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -158,9 +159,48 @@ void QQuickWebEngineViewPrivate::focusContainer()
 
 void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &)
 {
-    Q_UNUSED(newWebContents);
-    Q_UNUSED(disposition);
-    Q_UNREACHABLE();
+    Q_Q(QQuickWebEngineView);
+    QQmlEngine *engine = QtQml::qmlEngine(q);
+    // This is currently only supported for QML instantiated WebEngineViews.
+    // We could emit a QObject* and set JavaScriptOwnership explicitely on it
+    // but this would make the signal cumbersome to use in C++ where one, and
+    // only one, of the connected slots would have to destroy the given handle.
+    // A virtual method instead of a signal would work better in this case.
+    if (!engine)
+        return;
+    static const QMetaMethod createWindowSignal = QMetaMethod::fromSignal(&QQuickWebEngineViewExperimental::createWindow);
+    if (!e->isSignalConnected(createWindowSignal))
+        return;
+
+    QQuickWebEngineViewHandle *handle = new QQuickWebEngineViewHandle;
+    // This increases the ref-count of newWebContents and will tell Chromium
+    // to start loading it and possibly return it to its parent page window.open().
+    handle->adapter = newWebContents;
+    // Clearly mark our wrapper as owned by JavaScript, we then depend on it
+    // being adopted or else eventually cleaned up by the GC.
+    QJSValue jsHandle = engine->newQObject(handle);
+
+    QString dispositionString;
+    switch (disposition) {
+    case WebContentsAdapterClient::NewForegroundTabDisposition:
+    case WebContentsAdapterClient::NewBackgroundTabDisposition:
+        dispositionString = QStringLiteral("tab");
+        break;
+    case WebContentsAdapterClient::NewPopupDisposition:
+        dispositionString = QStringLiteral("popup");
+        break;
+    case WebContentsAdapterClient::NewWindowDisposition:
+        dispositionString = QStringLiteral("window");
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    emit e->createWindow(jsHandle, dispositionString);
+
+    // We currently require the adoption to happen within the signal handler to avoid having
+    // to support a null WebContentsAdapterClient for too long after having returned.
+    handle->adapter.reset();
 }
 
 void QQuickWebEngineViewPrivate::close()
@@ -285,6 +325,14 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
     }
 }
 
+QQuickWebEngineViewHandle::QQuickWebEngineViewHandle()
+{
+}
+
+QQuickWebEngineViewHandle::~QQuickWebEngineViewHandle()
+{
+}
+
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
     : q_ptr(0)
     , d_ptr(viewPrivate)
@@ -320,4 +368,34 @@ void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
     Q_EMIT devicePixelRatioChanged();
 }
 
+void QQuickWebEngineViewExperimental::adoptHandle(QQuickWebEngineViewHandle *viewHandle)
+{
+    if (!viewHandle || !viewHandle->adapter) {
+        qWarning("Trying to adopt an empty handle, it was either already adopted or was invalidated."
+            "\nYou must do the adoption synchronously within the createWindow signal handler."
+            " If the handle hasn't been adopted before returning, it will be invalidated.");
+        return;
+    }
+
+    Q_Q(QQuickWebEngineView);
+    Q_D(QQuickWebEngineView);
+
+    // This throws away the WebContentsAdapter that has been used until now.
+    // All its states, particulary the loading URL, are replaced by the adopted WebContentsAdapter.
+    d->adapter = viewHandle->adapter;
+    viewHandle->adapter.reset();
+
+    d->adapter->initialize(d);
+
+    // Emit signals for values that might be different from the previous WebContentsAdapter.
+    emit q->titleChanged();
+    emit q->urlChanged();
+    emit q->iconChanged();
+    emit q->loadingStateChanged();
+    emit q->loadProgressChanged();
+}
+
 QT_END_NAMESPACE
+
+#include "moc_qquickwebengineview_p.cpp"
+#include "moc_qquickwebengineview_p_p.cpp"

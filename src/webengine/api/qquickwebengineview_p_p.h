@@ -71,11 +71,27 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
 };
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewHandle : public QObject {
+    Q_OBJECT
+public:
+    QQuickWebEngineViewHandle();
+    ~QQuickWebEngineViewHandle();
+
+private:
+    QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
+    friend class QQuickWebEngineViewExperimental;
+    friend class QQuickWebEngineViewPrivate;
+};
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
 public:
     QQuickWebEngineViewport *viewport() const;
+    Q_INVOKABLE void adoptHandle(QQuickWebEngineViewHandle *viewHandle);
+
+Q_SIGNALS:
+    void createWindow(const QJSValue &newViewHandle, const QString &newViewDisposition);
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
