@@ -23,25 +23,34 @@ Therefore forward declarations must be removed in several places:
 - WorkerDevToolsManager::InspectedWorker
 - WorkerDevToolsManager::TerminatedInspectedWorker
 ---
- base/callback_forward.h                            |  9 +-----
- .../browser/devtools/worker_devtools_manager.cc    | 24 ----------------
- content/browser/devtools/worker_devtools_manager.h | 26 ++++++++++++++++--
- .../media/media_stream_dispatcher_host.cc          | 11 --------
- .../media/media_stream_dispatcher_host.h           | 12 +++++++-
- .../browser/worker_host/message_port_service.cc    | 22 ---------------
- content/browser/worker_host/message_port_service.h | 23 +++++++++++++++-
- content/common/gpu/gpu_messages.h                  |  4 ++-
- content/renderer/media/media_stream_dispatcher.cc  | 31 ---------------------
- content/renderer/media/media_stream_dispatcher.h   | 31 +++++++++++++++++++--
- gpu/config/dx_diag_node.cc                         |  4 +++
- gpu/config/dx_diag_node.h                          |  4 +++
- media/filters/ffmpeg_audio_decoder.cc              |  6 ----
- media/filters/ffmpeg_audio_decoder.h               |  8 +++++-
- net/cert/mock_cert_verifier.cc                     | 19 -------------
- net/cert/mock_cert_verifier.h                      | 20 +++++++++++++-
- net/dns/mock_host_resolver.cc                      | 31 ---------------------
- net/dns/mock_host_resolver.h                       | 32 +++++++++++++++++++++-
- 18 files changed, 155 insertions(+), 162 deletions(-)
+ base/callback_forward.h                            |   9 +-
+ .../browser/devtools/worker_devtools_manager.cc    |  24 ----
+ content/browser/devtools/worker_devtools_manager.h |  26 +++-
+ .../browser/dom_storage/dom_storage_namespace.h    |   3 +-
+ .../indexed_db/indexed_db_dispatcher_host.h        |   2 +-
+ .../media/media_stream_dispatcher_host.cc          |  11 --
+ .../media/media_stream_dispatcher_host.h           |  12 +-
+ .../renderer_host/pepper/browser_ppapi_host_impl.h |   3 +-
+ .../browser/worker_host/message_port_service.cc    |  15 ---
+ content/browser/worker_host/message_port_service.h |  16 ++-
+ content/common/gpu/gpu_messages.h                  |   4 +-
+ content/public/test/test_file_error_injector.h     |   3 +-
+ content/renderer/media/media_stream_center.h       |   1 +
+ content/renderer/media/media_stream_dispatcher.cc  |  31 -----
+ content/renderer/media/media_stream_dispatcher.h   |  31 ++++-
+ gpu/config/dx_diag_node.cc                         |   4 +
+ gpu/config/dx_diag_node.h                          |   4 +
+ media/filters/ffmpeg_audio_decoder.cc              |   6 -
+ media/filters/ffmpeg_audio_decoder.h               |   8 +-
+ net/cert/mock_cert_verifier.cc                     |  19 ---
+ net/cert/mock_cert_verifier.h                      |  20 ++-
+ net/dns/mock_host_resolver.cc                      |  31 -----
+ net/dns/mock_host_resolver.h                       |  32 ++++-
+ net/http/http_auth_cache.h                         | 144 ++++++++++-----------
+ ui/gfx/image/image_family.h                        |  23 ++--
+ webkit/support/weburl_loader_mock_factory.cc       |   5 -
+ webkit/support/weburl_loader_mock_factory.h        |   8 +-
+ 27 files changed, 240 insertions(+), 255 deletions(-)
 
 diff --git a/base/callback_forward.h b/base/callback_forward.h
 index 7983248..8538bb2 100644
@@ -63,10 +72,10 @@ index 7983248..8538bb2 100644
  
  #endif  // BASE_CALLBACK_FORWARD_H
 diff --git a/content/browser/devtools/worker_devtools_manager.cc b/content/browser/devtools/worker_devtools_manager.cc
-index f08523b..983c55c 100644
+index dd54f80..14efaa5 100644
 --- a/content/browser/devtools/worker_devtools_manager.cc
 +++ b/content/browser/devtools/worker_devtools_manager.cc
-@@ -51,17 +51,6 @@ base::LazyInstance<AgentHosts>::Leaky g_orphan_map = LAZY_INSTANCE_INITIALIZER;
+@@ -41,17 +41,6 @@ base::LazyInstance<AgentHosts>::Leaky g_orphan_map = LAZY_INSTANCE_INITIALIZER;
  
  }  // namespace
  
@@ -84,7 +93,7 @@ index f08523b..983c55c 100644
  class WorkerDevToolsManager::WorkerDevToolsAgentHost
      : public IPCDevToolsAgentHost {
   public:
-@@ -200,19 +189,6 @@ class WorkerDevToolsManager::DetachedClientHosts {
+@@ -190,19 +179,6 @@ class WorkerDevToolsManager::DetachedClientHosts {
    }
  };
  
@@ -105,10 +114,10 @@ index f08523b..983c55c 100644
  WorkerDevToolsManager* WorkerDevToolsManager::GetInstance() {
    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 diff --git a/content/browser/devtools/worker_devtools_manager.h b/content/browser/devtools/worker_devtools_manager.h
-index 8a9a708..e6d090c 100644
+index 7ea8840..0f0111e 100644
 --- a/content/browser/devtools/worker_devtools_manager.h
 +++ b/content/browser/devtools/worker_devtools_manager.h
-@@ -54,7 +54,20 @@ class WorkerDevToolsManager {
+@@ -49,7 +49,20 @@ class WorkerDevToolsManager {
   private:
    friend struct DefaultSingletonTraits<WorkerDevToolsManager>;
    class DetachedClientHosts;
@@ -130,7 +139,7 @@ index 8a9a708..e6d090c 100644
    typedef std::list<InspectedWorker> InspectedWorkersList;
  
    WorkerDevToolsManager();
-@@ -84,7 +97,16 @@ class WorkerDevToolsManager {
+@@ -79,7 +92,16 @@ class WorkerDevToolsManager {
  
    InspectedWorkersList inspected_workers_;
  
@@ -148,6 +157,34 @@ index 8a9a708..e6d090c 100644
    typedef std::list<TerminatedInspectedWorker> TerminatedInspectedWorkers;
    // List of terminated workers for which there may be a devtools client on
    // the UI thread. Worker entry is added into this list when inspected worker
+diff --git a/content/browser/dom_storage/dom_storage_namespace.h b/content/browser/dom_storage/dom_storage_namespace.h
+index f33042f..5860685 100644
+--- a/content/browser/dom_storage/dom_storage_namespace.h
++++ b/content/browser/dom_storage/dom_storage_namespace.h
+@@ -11,8 +11,7 @@
+ #include "base/files/file_path.h"
+ #include "base/memory/ref_counted.h"
+ #include "content/common/content_export.h"
+-
+-class GURL;
++#include "url/gurl.h"
+ 
+ namespace content {
+ 
+diff --git a/content/browser/indexed_db/indexed_db_dispatcher_host.h b/content/browser/indexed_db/indexed_db_dispatcher_host.h
+index 0731113..e254cad 100644
+--- a/content/browser/indexed_db/indexed_db_dispatcher_host.h
++++ b/content/browser/indexed_db/indexed_db_dispatcher_host.h
+@@ -12,8 +12,8 @@
+ #include "base/id_map.h"
+ #include "base/memory/ref_counted.h"
+ #include "content/public/browser/browser_message_filter.h"
++#include "url/gurl.h"
+ 
+-class GURL;
+ struct IndexedDBDatabaseMetadata;
+ struct IndexedDBHostMsg_DatabaseCount_Params;
+ struct IndexedDBHostMsg_DatabaseCreateIndex_Params;
 diff --git a/content/browser/renderer_host/media/media_stream_dispatcher_host.cc b/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
 index ebc4d89..9135b71 100644
 --- a/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
@@ -193,11 +230,32 @@ index ec1dd15..cfc6913 100644
    typedef std::map<std::string, StreamRequest> StreamMap;
    // Streams generated for this host.
    StreamMap streams_;
+diff --git a/content/browser/renderer_host/pepper/browser_ppapi_host_impl.h b/content/browser/renderer_host/pepper/browser_ppapi_host_impl.h
+index 9723634..c46ab13 100644
+--- a/content/browser/renderer_host/pepper/browser_ppapi_host_impl.h
++++ b/content/browser/renderer_host/pepper/browser_ppapi_host_impl.h
+@@ -15,6 +15,7 @@
+ #include "content/browser/renderer_host/pepper/content_browser_pepper_host_factory.h"
+ #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
+ #include "content/common/content_export.h"
++#include "content/common/pepper_renderer_instance_data.h"
+ #include "content/public/browser/browser_ppapi_host.h"
+ #include "content/public/common/process_type.h"
+ #include "ipc/ipc_channel_proxy.h"
+@@ -22,8 +23,6 @@
+ 
+ namespace content {
+ 
+-struct PepperRendererInstanceData;
+-
+ class CONTENT_EXPORT BrowserPpapiHostImpl : public BrowserPpapiHost {
+  public:
+   // The creator is responsible for calling set_plugin_process_handle as soon
 diff --git a/content/browser/worker_host/message_port_service.cc b/content/browser/worker_host/message_port_service.cc
-index 3bc8f5a..b413c1f 100644
+index 2ad3b19..d0563f0 100644
 --- a/content/browser/worker_host/message_port_service.cc
 +++ b/content/browser/worker_host/message_port_service.cc
-@@ -9,28 +9,6 @@
+@@ -9,21 +9,6 @@
  
  namespace content {
  
@@ -212,13 +270,6 @@ index 3bc8f5a..b413c1f 100644
 -  // The globally unique id of the entangled message port.
 -  int entangled_message_port_id;
 -  // If true, all messages to this message port are queued and not delivered.
--  // This is needed so that when a message port is sent between processes all
--  // pending message get transferred. There are two possibilities for pending
--  // messages: either they are already received by the child process, or they're
--  // in-flight. This flag ensures that the latter type get flushed through the
--  // system.
--  // This flag should only be set to true in response to
--  // WorkerProcessHostMsg_QueueMessages.
 -  bool queue_messages;
 -  QueuedMessages queued_messages;
 -};
@@ -227,10 +278,10 @@ index 3bc8f5a..b413c1f 100644
    return Singleton<MessagePortService>::get();
  }
 diff --git a/content/browser/worker_host/message_port_service.h b/content/browser/worker_host/message_port_service.h
-index b85e76b..30645c7 100644
+index b85e76b..e6bf717 100644
 --- a/content/browser/worker_host/message_port_service.h
 +++ b/content/browser/worker_host/message_port_service.h
-@@ -61,7 +61,28 @@ class MessagePortService {
+@@ -61,7 +61,21 @@ class MessagePortService {
    // verify that the message port id exists.
    void Erase(int message_port_id);
  
@@ -246,13 +297,6 @@ index b85e76b..30645c7 100644
 +    // The globally unique id of the entangled message port.
 +    int entangled_message_port_id;
 +    // If true, all messages to this message port are queued and not delivered.
-+    // This is needed so that when a message port is sent between processes all
-+    // pending message get transferred. There are two possibilities for pending
-+    // messages: either they are already received by the child process, or they're
-+    // in-flight. This flag ensures that the latter type get flushed through the
-+    // system.
-+    // This flag should only be set to true in response to
-+    // WorkerProcessHostMsg_QueueMessages.
 +    bool queue_messages;
 +    QueuedMessages queued_messages;
 +  };
@@ -261,10 +305,10 @@ index b85e76b..30645c7 100644
    MessagePorts message_ports_;
  
 diff --git a/content/common/gpu/gpu_messages.h b/content/common/gpu/gpu_messages.h
-index b4e5be5..3952d79 100644
+index 49493d9..35c4635 100644
 --- a/content/common/gpu/gpu_messages.h
 +++ b/content/common/gpu/gpu_messages.h
-@@ -116,10 +116,12 @@ IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
+@@ -112,10 +112,12 @@ IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
  IPC_STRUCT_END()
  #endif
  
@@ -278,6 +322,32 @@ index b4e5be5..3952d79 100644
  
  IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPerformanceStats)
    IPC_STRUCT_TRAITS_MEMBER(graphics)
+diff --git a/content/public/test/test_file_error_injector.h b/content/public/test/test_file_error_injector.h
+index c056780..306c7e2 100644
+--- a/content/public/test/test_file_error_injector.h
++++ b/content/public/test/test_file_error_injector.h
+@@ -13,8 +13,7 @@
+ #include "base/memory/scoped_ptr.h"
+ #include "base/memory/ref_counted.h"
+ #include "content/public/browser/download_interrupt_reasons.h"
+-
+-class GURL;
++#include "url/gurl.h"
+ 
+ namespace content {
+ 
+diff --git a/content/renderer/media/media_stream_center.h b/content/renderer/media/media_stream_center.h
+index 642cda5..83a55f6 100644
+--- a/content/renderer/media/media_stream_center.h
++++ b/content/renderer/media/media_stream_center.h
+@@ -15,6 +15,7 @@
+ #include "third_party/WebKit/public/platform/WebMediaStream.h"
+ #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
+ #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
++#include "third_party/WebKit/public/platform/WebMediaStreamTrackSourcesRequest.h"
+ 
+ namespace WebKit {
+ class WebMediaStreamCenterClient;
 diff --git a/content/renderer/media/media_stream_dispatcher.cc b/content/renderer/media/media_stream_dispatcher.cc
 index cc241fa..57d65b6 100644
 --- a/content/renderer/media/media_stream_dispatcher.cc
@@ -405,7 +475,7 @@ index 33d29b3..45ffa65 100644
 +
  #endif  // GPU_CONFIG_DX_DIAG_NODE_H_
 diff --git a/media/filters/ffmpeg_audio_decoder.cc b/media/filters/ffmpeg_audio_decoder.cc
-index f922e98..f41c893 100644
+index 34fc793..53dec64 100644
 --- a/media/filters/ffmpeg_audio_decoder.cc
 +++ b/media/filters/ffmpeg_audio_decoder.cc
 @@ -22,12 +22,6 @@
@@ -502,10 +572,10 @@ index 5af7b7e..704c66b 100644
  
    int default_result_;
 diff --git a/net/dns/mock_host_resolver.cc b/net/dns/mock_host_resolver.cc
-index ff5ffbc..25918ba 100644
+index 0ddb8cf..b3d1489 100644
 --- a/net/dns/mock_host_resolver.cc
 +++ b/net/dns/mock_host_resolver.cc
-@@ -212,37 +212,6 @@ void MockHostResolverBase::ResolveNow(size_t id) {
+@@ -209,37 +209,6 @@ void MockHostResolverBase::ResolveNow(size_t id) {
  
  //-----------------------------------------------------------------------------
  
@@ -544,10 +614,10 @@ index ff5ffbc..25918ba 100644
      : HostResolverProc(previous) {
  }
 diff --git a/net/dns/mock_host_resolver.h b/net/dns/mock_host_resolver.h
-index 3593fbd..f8a4240 100644
+index b73bd0a..282521c 100644
 --- a/net/dns/mock_host_resolver.h
 +++ b/net/dns/mock_host_resolver.h
-@@ -209,7 +209,37 @@ class RuleBasedHostResolverProc : public HostResolverProc {
+@@ -201,7 +201,37 @@ class RuleBasedHostResolverProc : public HostResolverProc {
                        int* os_error) OVERRIDE;
  
   private:
@@ -586,6 +656,256 @@ index 3593fbd..f8a4240 100644
    typedef std::list<Rule> RuleList;
  
    virtual ~RuleBasedHostResolverProc();
+diff --git a/net/http/http_auth_cache.h b/net/http/http_auth_cache.h
+index 1d6f2d2..75b379f 100644
+--- a/net/http/http_auth_cache.h
++++ b/net/http/http_auth_cache.h
+@@ -26,7 +26,77 @@ namespace net {
+ // Entries can be looked up by either (origin, realm, scheme) or (origin, path).
+ class NET_EXPORT_PRIVATE HttpAuthCache {
+  public:
+-  class Entry;
++  class NET_EXPORT_PRIVATE Entry {
++   public:
++    ~Entry();
++
++    const GURL& origin() const {
++      return origin_;
++    }
++
++    // The case-sensitive realm string of the challenge.
++    const std::string realm() const {
++      return realm_;
++    }
++
++    // The authentication scheme of the challenge.
++    HttpAuth::Scheme scheme() const {
++      return scheme_;
++    }
++
++    // The authentication challenge.
++    const std::string auth_challenge() const {
++      return auth_challenge_;
++    }
++
++    // The login credentials.
++    const AuthCredentials& credentials() const {
++      return credentials_;
++    }
++
++    int IncrementNonceCount() {
++      return ++nonce_count_;
++    }
++
++    void UpdateStaleChallenge(const std::string& auth_challenge);
++
++   private:
++    friend class HttpAuthCache;
++    FRIEND_TEST_ALL_PREFIXES(HttpAuthCacheTest, AddPath);
++    FRIEND_TEST_ALL_PREFIXES(HttpAuthCacheTest, AddToExistingEntry);
++
++    typedef std::list<std::string> PathList;
++
++    Entry();
++
++    // Adds a path defining the realm's protection space. If the path is
++    // already contained in the protection space, is a no-op.
++    void AddPath(const std::string& path);
++
++    // Returns true if |dir| is contained within the realm's protection
++    // space.  |*path_len| is set to the length of the enclosing path if
++    // such a path exists and |path_len| is non-NULL.  If no enclosing
++    // path is found, |*path_len| is left unmodified.
++    //
++    // Note that proxy auth cache entries are associated with empty
++    // paths.  Therefore it is possible for HasEnclosingPath() to return
++    // true and set |*path_len| to 0.
++    bool HasEnclosingPath(const std::string& dir, size_t* path_len);
++
++    // |origin_| contains the {protocol, host, port} of the server.
++    GURL origin_;
++    std::string realm_;
++    HttpAuth::Scheme scheme_;
++
++    // Identity.
++    std::string auth_challenge_;
++    AuthCredentials credentials_;
++
++    int nonce_count_;
++
++    // List of paths that define the realm's protection space.
++    PathList paths_;
++  };
+ 
+   // Prevent unbounded memory growth. These are safeguards for abuse; it is
+   // not expected that the limits will be reached in ordinary usage.
+@@ -106,78 +176,6 @@ class NET_EXPORT_PRIVATE HttpAuthCache {
+ };
+ 
+ // An authentication realm entry.
+-class NET_EXPORT_PRIVATE HttpAuthCache::Entry {
+- public:
+-  ~Entry();
+-
+-  const GURL& origin() const {
+-    return origin_;
+-  }
+-
+-  // The case-sensitive realm string of the challenge.
+-  const std::string realm() const {
+-    return realm_;
+-  }
+-
+-  // The authentication scheme of the challenge.
+-  HttpAuth::Scheme scheme() const {
+-    return scheme_;
+-  }
+-
+-  // The authentication challenge.
+-  const std::string auth_challenge() const {
+-    return auth_challenge_;
+-  }
+-
+-  // The login credentials.
+-  const AuthCredentials& credentials() const {
+-    return credentials_;
+-  }
+-
+-  int IncrementNonceCount() {
+-    return ++nonce_count_;
+-  }
+-
+-  void UpdateStaleChallenge(const std::string& auth_challenge);
+-
+- private:
+-  friend class HttpAuthCache;
+-  FRIEND_TEST_ALL_PREFIXES(HttpAuthCacheTest, AddPath);
+-  FRIEND_TEST_ALL_PREFIXES(HttpAuthCacheTest, AddToExistingEntry);
+-
+-  typedef std::list<std::string> PathList;
+-
+-  Entry();
+-
+-  // Adds a path defining the realm's protection space. If the path is
+-  // already contained in the protection space, is a no-op.
+-  void AddPath(const std::string& path);
+-
+-  // Returns true if |dir| is contained within the realm's protection
+-  // space.  |*path_len| is set to the length of the enclosing path if
+-  // such a path exists and |path_len| is non-NULL.  If no enclosing
+-  // path is found, |*path_len| is left unmodified.
+-  //
+-  // Note that proxy auth cache entries are associated with empty
+-  // paths.  Therefore it is possible for HasEnclosingPath() to return
+-  // true and set |*path_len| to 0.
+-  bool HasEnclosingPath(const std::string& dir, size_t* path_len);
+-
+-  // |origin_| contains the {protocol, host, port} of the server.
+-  GURL origin_;
+-  std::string realm_;
+-  HttpAuth::Scheme scheme_;
+-
+-  // Identity.
+-  std::string auth_challenge_;
+-  AuthCredentials credentials_;
+-
+-  int nonce_count_;
+-
+-  // List of paths that define the realm's protection space.
+-  PathList paths_;
+-};
+-
+ }  // namespace net
+ 
+ #endif  // NET_HTTP_HTTP_AUTH_CACHE_H_
+diff --git a/ui/gfx/image/image_family.h b/ui/gfx/image/image_family.h
+index b2a2c07..902dede 100644
+--- a/ui/gfx/image/image_family.h
++++ b/ui/gfx/image/image_family.h
+@@ -27,8 +27,16 @@ class Size;
+ // include high-DPI representations).
+ class UI_EXPORT ImageFamily {
+  private:
+-  // Forward declaration.
+-  struct MapKey;
++  // An <aspect ratio, DIP width> pair.
++  // A 0x0 image has aspect ratio 1.0. 0xN and Nx0 images are treated as 0x0.
++  struct MapKey : std::pair<float, int> {
++    MapKey(float aspect, int width)
++        : std::pair<float, int>(aspect, width) {}
++
++    float aspect() const { return first; }
++
++    int width() const { return second; }
++  };
+ 
+  public:
+   // Type for iterating over all images in the family, in order.
+@@ -127,17 +135,6 @@ class UI_EXPORT ImageFamily {
+   const gfx::Image* GetBest(const gfx::Size& size) const;
+ 
+  private:
+-  // An <aspect ratio, DIP width> pair.
+-  // A 0x0 image has aspect ratio 1.0. 0xN and Nx0 images are treated as 0x0.
+-  struct MapKey : std::pair<float, int> {
+-    MapKey(float aspect, int width)
+-        : std::pair<float, int>(aspect, width) {}
+-
+-    float aspect() const { return first; }
+-
+-    int width() const { return second; }
+-  };
+-
+   // Find the closest aspect ratio in the map to |desired_aspect|.
+   // Ties are broken by the thinner aspect.
+   // |map_| must not be empty. |desired_aspect| must be > 0.0.
+diff --git a/webkit/support/weburl_loader_mock_factory.cc b/webkit/support/weburl_loader_mock_factory.cc
+index f18bc07..f459211 100644
+--- a/webkit/support/weburl_loader_mock_factory.cc
++++ b/webkit/support/weburl_loader_mock_factory.cc
+@@ -24,11 +24,6 @@ using WebKit::WebURLLoader;
+ using WebKit::WebURLRequest;
+ using WebKit::WebURLResponse;
+ 
+-struct WebURLLoaderMockFactory::ResponseInfo {
+-  WebKit::WebURLResponse response;
+-  base::FilePath file_path;
+-};
+-
+ WebURLLoaderMockFactory::WebURLLoaderMockFactory() {}
+ 
+ WebURLLoaderMockFactory::~WebURLLoaderMockFactory() {}
+diff --git a/webkit/support/weburl_loader_mock_factory.h b/webkit/support/weburl_loader_mock_factory.h
+index 78abd96..8f00fc0 100644
+--- a/webkit/support/weburl_loader_mock_factory.h
++++ b/webkit/support/weburl_loader_mock_factory.h
+@@ -9,12 +9,12 @@
+ 
+ #include "base/files/file_path.h"
+ #include "third_party/WebKit/public/platform/WebURL.h"
++#include "third_party/WebKit/public/platform/WebURLError.h"
+ #include "third_party/WebKit/public/platform/WebURLRequest.h"
+ #include "third_party/WebKit/public/platform/WebURLResponse.h"
+ 
+ namespace WebKit {
+ class WebData;
+-struct WebURLError;
+ class WebURLLoader;
+ }
+ 
+@@ -75,7 +75,11 @@ class WebURLLoaderMockFactory {
+   void CancelLoad(WebURLLoaderMock* loader);
+ 
+  private:
+-  struct ResponseInfo;
++  struct ResponseInfo {
++    WebKit::WebURLResponse response;
++    base::FilePath file_path;
++  };
++
+ 
+   // Loads the specified request and populates the response, error and data
+   // accordingly.
 -- 
-1.8.4.2
+1.7.12.4 (Apple Git-37)
 

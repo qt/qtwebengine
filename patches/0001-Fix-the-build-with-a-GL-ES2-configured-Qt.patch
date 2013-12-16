@@ -29,10 +29,10 @@ Change-Id: Id4d98fe22ef8b778b5ba8da300dad28e69507732
  6 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/content/content_browser.gypi b/content/content_browser.gypi
-index c2e5f18..f820ad0 100644
+index 22d857a..8a37d91 100644
 --- a/content/content_browser.gypi
 +++ b/content/content_browser.gypi
-@@ -1270,6 +1270,7 @@
+@@ -1234,6 +1234,7 @@
        'dependencies': [
          'browser/devtools/devtools_resources.gyp:devtools_resources',
          '../cc/cc.gyp:cc',
@@ -55,7 +55,7 @@ index b4d5b78..75bea79 100644
      'command_buffer/client/atomicops.cc',
      'command_buffer/client/atomicops.h',
 diff --git a/gpu/command_buffer_common.gypi b/gpu/command_buffer_common.gypi
-index 55e825e..4c1044a 100644
+index 85431e4..f159355 100644
 --- a/gpu/command_buffer_common.gypi
 +++ b/gpu/command_buffer_common.gypi
 @@ -6,6 +6,9 @@
@@ -146,10 +146,10 @@ index 8a85572..88130d2 100644
            '.',
            '../../gpu',  # Contains GLES2/gl2chromium.h
 diff --git a/webkit/common/gpu/webkit_gpu.gyp b/webkit/common/gpu/webkit_gpu.gyp
-index 2831446..be79c22 100644
+index 5390c9a..effc5b7 100644
 --- a/webkit/common/gpu/webkit_gpu.gyp
 +++ b/webkit/common/gpu/webkit_gpu.gyp
-@@ -27,6 +27,9 @@
+@@ -26,6 +26,9 @@
              '<(DEPTH)/ui/gl/gl.gyp:gl',
              '<(DEPTH)/ui/ui.gyp:ui',
            ],
@@ -160,5 +160,5 @@ index 2831446..be79c22 100644
              # This list contains all .h and .cc in gpu except for test code.
              'context_provider_in_process.cc',
 -- 
-1.8.4.2
+1.8.4
 
