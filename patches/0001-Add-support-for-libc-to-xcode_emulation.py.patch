@@ -1,4 +1,4 @@
-From 43673a67cdcced912cad207ee0fbca7321f72ecf Mon Sep 17 00:00:00 2001
+From ade7ffb418d848084cd35efdadfdc6524700115c Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 20:04:51 +0200
 Subject: [PATCH] Add support for libc++ to xcode_emulation.py
@@ -8,10 +8,10 @@ Subject: [PATCH] Add support for libc++ to xcode_emulation.py
  1 file changed, 3 insertions(+)
 
 diff --git a/pylib/gyp/xcode_emulation.py b/pylib/gyp/xcode_emulation.py
-index b4af0fd..fb40048 100644
+index c6f018c..f118b94 100644
 --- a/pylib/gyp/xcode_emulation.py
 +++ b/pylib/gyp/xcode_emulation.py
-@@ -580,6 +580,9 @@ class XcodeSettings(object):
+@@ -541,6 +541,9 @@ class XcodeSettings(object):
      for ldflag in self._Settings().get('OTHER_LDFLAGS', []):
        ldflags.append(self._MapLinkerFlagFilename(ldflag, gyp_to_build_path))
  
@@ -22,5 +22,5 @@ index b4af0fd..fb40048 100644
        ldflags.append('-Wl,-dead_strip')
  
 -- 
-1.8.4.2
+1.8.0.1
 

@@ -7,13 +7,13 @@ Subject: [PATCH] Do not forward declare UIResourceRequest, Identity and
 Clang / libc++ does not support incomplete types in templates.
 See: http://clang.llvm.org/compatibility.html#undep_incomplete
 ---
- cc/trees/layer_tree_impl.h                         |  1 +
- .../browser/media/webrtc_identity_store_backend.cc | 37 -------------------
- .../browser/media/webrtc_identity_store_backend.h  | 42 ++++++++++++++++++++--
- 3 files changed, 40 insertions(+), 40 deletions(-)
+ cc/trees/layer_tree_impl.h                         |    2 +-
+ .../browser/media/webrtc_identity_store_backend.cc |   37 -----------------
+ .../browser/media/webrtc_identity_store_backend.h  |   42 ++++++++++++++++++--
+ 3 files changed, 40 insertions(+), 41 deletions(-)
 
 diff --git a/cc/trees/layer_tree_impl.h b/cc/trees/layer_tree_impl.h
-index eb6a015..2ae33df 100644
+index 7e66da8..4f1afbe 100644
 --- a/cc/trees/layer_tree_impl.h
 +++ b/cc/trees/layer_tree_impl.h
 @@ -12,6 +12,7 @@
@@ -22,7 +22,15 @@ index eb6a015..2ae33df 100644
  #include "cc/layers/layer_impl.h"
 +#include "cc/trees/layer_tree_host.h"
  #include "cc/resources/ui_resource_client.h"
- #include "ui/events/latency_info.h"
+ #include "ui/base/latency_info.h"
+ 
+@@ -42,7 +43,6 @@ class Proxy;
+ class ResourceProvider;
+ class TileManager;
+ struct RendererCapabilities;
+-struct UIResourceRequest;
+ 
+ typedef std::list<UIResourceRequest> UIResourceRequestQueue;
  
 diff --git a/content/browser/media/webrtc_identity_store_backend.cc b/content/browser/media/webrtc_identity_store_backend.cc
 index 9ec73e9..4188116 100644
@@ -133,5 +141,5 @@ index ab4e1ed..e660c73 100644
  
    ~WebRTCIdentityStoreBackend();
 -- 
-1.8.4.2
+1.7.10.2 (Apple Git-33)
 

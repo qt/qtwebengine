@@ -75,6 +75,7 @@ cd $CHROMIUM_SRC_DIR/third_party/WebKit
 echo "Entering $PWD"
 
 git am $PATCH_DIR/0001-Remove-leftovers-from-WebKitSystemInterface.patch
+git am $PATCH_DIR/0001-Do-not-include-Assertions.h-within-namespace-WebKit.patch
 
 cd $CHROMIUM_SRC_DIR/third_party/libjingle/source/talk
 echo "Entering $PWD"
