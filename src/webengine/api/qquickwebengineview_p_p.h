@@ -123,7 +123,7 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(JavaScriptDialogController *) Q_DECL_OVERRIDE;
-    virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QString &title, const QStringList &acceptedMimeTypes) { Q_UNUSED(defaultFileName); Q_UNUSED(title); Q_UNUSED(acceptedMimeTypes);}
+    virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QString &title, const QStringList &acceptedMimeTypes);
 
     void setDevicePixelRatio(qreal);
 
