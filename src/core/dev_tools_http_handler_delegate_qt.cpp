@@ -44,15 +44,28 @@
 #include <QByteArray>
 #include <QFile>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/browser/devtools_http_handler.h"
+#include "content/public/common/content_switches.h"
 #include "net/socket/stream_listen_socket.h"
 #include "net/socket/tcp_listen_socket.h"
 
 DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(content::BrowserContext* browser_context)
     : m_browserContext(browser_context)
 {
-    m_devtoolsHttpHandler = content::DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", 1337), std::string(), this);
+    const int defaultPort = 1337;
+    int listeningPort = defaultPort;
+    const CommandLine &commandLine = *CommandLine::ForCurrentProcess();
+    if (commandLine.HasSwitch(switches::kRemoteDebuggingPort)) {
+        std::string portString =
+            commandLine.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
+        int portInt = 0;
+        if (base::StringToInt(portString, &portInt) && portInt > 0 && portInt < 65535)
+            listeningPort = portInt;
+    }
+    m_devtoolsHttpHandler = content::DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", listeningPort), std::string(), this);
 }
 
 DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()
