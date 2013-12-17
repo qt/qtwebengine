@@ -40,8 +40,9 @@
 ****************************************************************************/
 #include "web_contents_adapter.h"
 
-#include "content_browser_client_qt.h"
 #include "browser_context_qt.h"
+#include "content_browser_client_qt.h"
+#include "javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_delegate_qt.h"

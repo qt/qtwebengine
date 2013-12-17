@@ -48,6 +48,7 @@
 #include <QStringList>
 #include <QUrl>
 
+class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
@@ -123,7 +124,7 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect & initialGeometry) = 0;
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
-    virtual bool javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue = QString(), QString *result = 0) = 0;
+    virtual void javascriptDialog(JavaScriptDialogController *) = 0;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes = QStringList()) = 0;
 };
 

@@ -54,7 +54,10 @@
 #define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR) \
     F(Menu, menu) SEPARATOR \
     F(MenuItem, menuItem) SEPARATOR \
-    F(MenuSeparator, menuSeparator) SEPARATOR
+    F(MenuSeparator, menuSeparator) SEPARATOR \
+    F(AlertDialog, alertDialog) SEPARATOR \
+    F(ConfirmDialog, confirmDialog) SEPARATOR \
+    F(PromptDialog, promptDialog) SEPARATOR
 
 #define COMMA_SEPARATOR ,
 #define SEMICOLON_SEPARATOR ;
@@ -63,6 +66,7 @@
 #define MEMBER_DECLARATION(TYPE, COMPONENT) \
     QScopedPointer<QQmlComponent> COMPONENT##Component
 
+class JavaScriptDialogController;
 class QQuickWebEngineView;
 
 QT_FORWARD_DECLARE_CLASS(QObject)
@@ -105,7 +109,9 @@ class UIDelegatesManager {
 
 public:
     enum ComponentType {
+        Invalid = -1,
         FOR_EACH_COMPONENT_TYPE(ENUM_DECLARATION, COMMA_SEPARATOR)
+        ComponentTypeCount
     };
 
     UIDelegatesManager(QQuickWebEngineView *);
@@ -114,6 +120,7 @@ public:
     void addMenuSeparator(QObject *menu);
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
+    void showDialog(JavaScriptDialogController *);
 
 private:
     bool ensureComponentLoaded(ComponentType);
