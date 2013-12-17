@@ -41,6 +41,7 @@ SOURCES = \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         chromium_gpu_helper.cpp \
+        javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         process_main.cpp \
         render_widget_host_view_qt.cpp \
@@ -68,6 +69,8 @@ HEADERS = \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
+        javascript_dialog_controller_p.h \
+        javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
         process_main.h \
         render_widget_host_view_qt.h \
