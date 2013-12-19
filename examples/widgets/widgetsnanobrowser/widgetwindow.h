@@ -48,6 +48,7 @@
 QT_BEGIN_NAMESPACE
 class QWebEngineView;
 QT_END_NAMESPACE
+class FullScreenParent;
 
 class WidgetWindow : public QWidget {
     Q_OBJECT
@@ -60,6 +61,7 @@ private Q_SLOTS:
     void setAddressBarUrl(const QUrl& url);
     void loadStarted();
     void loadFinished(bool);
+    void fullScreenRequested(bool);
 
 private:
     QScopedPointer<QWebEngineView> m_webView;
@@ -67,6 +69,9 @@ private:
     QToolButton* forwardButton;
     QToolButton* backButton;
     QToolButton* reloadButton;
+    FullScreenParent* fullScreenParent;
+
+    friend class FullScreenParent;
 };
 
 #endif // WIDGETWINDOW_H
