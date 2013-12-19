@@ -53,6 +53,10 @@ static const int margin = 1;
 WidgetWindow::WidgetWindow()
 : m_webView(new QWebEngineView)
 , addressLineEdit(0)
+, forwardButton(0)
+, backButton(0)
+, reloadButton(0)
+, fullScreenParent(0)
 {
     setGeometry(0, 0, 800, 600);
 
@@ -96,6 +100,7 @@ WidgetWindow::WidgetWindow()
     connect(m_webView.data(), SIGNAL(loadFinished(bool)), SLOT(loadFinished(bool)));
     connect(m_webView.data(), SIGNAL(titleChanged(const QString&)), SLOT(setWindowTitle(const QString&)));
     connect(m_webView.data(), SIGNAL(urlChanged(const QUrl&)), SLOT(setAddressBarUrl(const QUrl&)));
+    connect(m_webView.data(), SIGNAL(fullScreenRequested(bool)), SLOT(fullScreenRequested(bool)));
 
     m_webView->load(startupUrl());
 }
@@ -126,3 +131,62 @@ void WidgetWindow::loadFinished(bool success)
     backButton->setEnabled(m_webView->page()->history()->canGoBack());
     reloadButton->setIcon(QIcon(":/icons/view-refresh.png"));
 }
+
+class FullScreenParent : public QWidget
+{
+public:
+    FullScreenParent(WidgetWindow *parent)
+        : QWidget(parent, Qt::Window)
+    {
+        setLayout(new QVBoxLayout);
+        layout()->setContentsMargins(0, 0, 0, 0);
+        setFocusPolicy(Qt::StrongFocus);
+
+        // Make sure the new window pops up at the same position as the view currently has.
+        // This is necessary to make the full screen animation on mac look somewhat acceptable.
+        QWebEngineView *view = parent->m_webView.data();
+        QPoint globalPos = parent->m_webView.data()->mapToGlobal(QPoint(0,0));
+        setGeometry(QRect(globalPos, view->size()));
+        layout()->addWidget(view);
+        showFullScreen();
+        // The view must be set to fullscreen as well, as this is what is being checked by Chromium.
+        view->showFullScreen();
+    }
+
+    ~FullScreenParent()
+    {
+        // Reparent the view back into it's original position.
+        WidgetWindow* originalParent = qobject_cast<WidgetWindow*>(parent());
+        originalParent->layout()->addWidget(originalParent->m_webView.data());
+    }
+
+protected:
+    virtual void changeEvent(QEvent * event) Q_DECL_OVERRIDE
+    {
+        if (event->type() == QEvent::WindowStateChange
+            && !(windowState() & Qt::WindowFullScreen)) {
+            qobject_cast<WidgetWindow*>(parent())->fullScreenRequested(false);
+        } else
+            QWidget::changeEvent(event);
+    }
+
+    virtual void keyPressEvent(QKeyEvent * event) Q_DECL_OVERRIDE
+    {
+        if (event->key() == Qt::Key_Escape)
+            qobject_cast<WidgetWindow*>(parent())->fullScreenRequested(false);
+        else
+            QWidget::keyPressEvent(event);
+    }
+};
+
+void WidgetWindow::fullScreenRequested(bool fullScreen)
+{
+    if (fullScreen) {
+        // Create a new parent top level window that can be scaled to full screen.
+        fullScreenParent = new FullScreenParent(this);
+    } else {
+        fullScreenParent->deleteLater();
+        fullScreenParent = 0;
+    }
+}
+
