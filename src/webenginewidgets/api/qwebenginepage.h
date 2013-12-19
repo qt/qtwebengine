@@ -559,6 +559,8 @@ Q_SIGNALS:
 
     void pageChanged();
 
+    void fullScreenRequested(bool fullScreen);
+
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);
     virtual QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues) { Q_UNUSED(classid); Q_UNUSED(url); Q_UNUSED(paramNames); Q_UNUSED(paramValues); Q_UNREACHABLE(); return 0; }

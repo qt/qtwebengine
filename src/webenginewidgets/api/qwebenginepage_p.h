@@ -78,8 +78,8 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &initialGeometry) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
-    virtual void requestFullScreen(bool) Q_DECL_OVERRIDE { };
-    virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; };
+    virtual void requestFullScreen(bool) Q_DECL_OVERRIDE;
+    virtual bool isFullScreen() const Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(const QVariant& result, quint64 requestId) Q_DECL_OVERRIDE;
