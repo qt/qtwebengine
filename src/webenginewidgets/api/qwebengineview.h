@@ -127,6 +127,7 @@ Q_SIGNALS:
     void selectionChanged();
     void iconChanged();
     void urlChanged(const QUrl&);
+    void fullScreenRequested(bool fullScreen);
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);

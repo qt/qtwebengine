@@ -338,6 +338,17 @@ bool QWebEnginePagePrivate::javascriptDialog(JavascriptDialogType type, const QS
     return false;
 }
 
+void QWebEnginePagePrivate::setFullScreen(bool fullScreen)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->fullScreenRequested(fullScreen);
+}
+
+bool QWebEnginePagePrivate::isFullScreen() const
+{
+    return view && view->isFullScreen();
+}
+
 namespace {
 class SaveToClipboardFunctor
 {
