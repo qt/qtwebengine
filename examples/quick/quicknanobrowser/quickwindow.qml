@@ -127,6 +127,6 @@ ApplicationWindow {
 
         onUrlChanged: addressBar.text = url
         onIconChanged: faviconImage.source = icon
-        onLoadProgressChanged: progressBar.value = loadProgress
+        onLoadProgressChanged: progressBar.value = (loadProgress == 100) ? 0 : loadProgress
     }
 }
