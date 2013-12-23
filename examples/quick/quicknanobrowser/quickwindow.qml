@@ -139,7 +139,7 @@ ApplicationWindow {
                 z: -2;
                 minimumValue: 0
                 maximumValue: 100
-                value: tabs.currentView && tabs.currentView.loadProgress
+                value: (tabs.currentView && tabs.currentView.loadProgress < 100) ? tabs.currentView.loadProgress : 0
             }
     }
 
