@@ -39,27 +39,58 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef QQUICKWEBENGINELOADREQUEST_P_H
+#define QQUICKWEBENGINELOADREQUEST_P_H
 
+#include "qtwebengineglobal_p.h"
 #include "qquickwebengineview_p.h"
-#include "qquickwebengineloadrequest_p.h"
+#include "web_engine_error.h"
 
 QT_BEGIN_NAMESPACE
 
-class QtWebEnginePlugin : public QQmlExtensionPlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
-public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+class QQuickWebEngineLoadRequestPrivate;
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
+class Q_WEBENGINE_EXPORT QQuickWebEngineLoadRequest : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QUrl url READ url)
+    Q_PROPERTY(QQuickWebEngineView::LoadStatus status READ status)
+    Q_PROPERTY(QString errorString READ errorString)
+    Q_PROPERTY(QQuickWebEngineView::ErrorDomain errorDomain READ errorDomain)
+    Q_PROPERTY(int errorCode READ errorCode)
+
+public:
+    QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString = QString(), int errorCode = 0, QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain, QObject* parent = 0);
+    ~QQuickWebEngineLoadRequest();
+    QUrl url() const;
+    QQuickWebEngineView::LoadStatus status() const;
+    QString errorString() const;
+    QQuickWebEngineView::ErrorDomain errorDomain() const;
+    int errorCode() const;
+
+private:
+    QScopedPointer<QQuickWebEngineLoadRequestPrivate> d;
+};
+
+class QQuickWebEngineLoadRequestPrivate {
+public:
+    QQuickWebEngineLoadRequestPrivate(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain)
+        : url(url)
+        , status(status)
+        , errorString(errorString)
+        , errorCode(errorCode)
+        , errorDomain(errorDomain)
+    {
     }
+
+    QUrl url;
+    QQuickWebEngineView::LoadStatus status;
+    QString errorString;
+    int errorCode;
+    QQuickWebEngineView::ErrorDomain errorDomain;
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+QML_DECLARE_TYPE(QQuickWebEngineLoadRequest)
+
+#endif // QQUICKWEBENGINELOADREQUEST_P_H
