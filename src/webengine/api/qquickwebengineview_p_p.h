@@ -119,7 +119,7 @@ public:
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
-    virtual void loadFinished(bool success) Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
@@ -134,6 +134,7 @@ public:
     QUrl icon;
     int loadProgress;
     bool inspectable;
+    bool m_isLoading;
     qreal devicePixelRatio;
 
 private:

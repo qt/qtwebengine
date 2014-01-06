@@ -100,7 +100,7 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, do
 void WebContentsDelegateQt::DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host)
 {
     if (is_main_frame)
-        m_viewClient->loadFinished(false);
+        m_viewClient->loadFinished(false, error_code, toQt(error_description));
 }
 
 void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host)

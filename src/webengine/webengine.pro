@@ -20,12 +20,14 @@ QMAKE_RPATHDIR += $$LIBPATH
 #DESTDIR = $$LIBPATH
 
 SOURCES = \
+        api/qquickwebengineloadrequest.cpp \
         api/qquickwebengineview.cpp \
         render_widget_host_view_qt_delegate_quick.cpp
 
 HEADERS = \
         api/qtwebengineglobal.h \
         api/qtwebengineglobal_p.h \
+        api/qquickwebengineloadrequest_p.h \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h
