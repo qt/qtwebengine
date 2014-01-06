@@ -39,27 +39,75 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
+#include <qquickwebengineloadrequest_p.h>
 
-#include "qquickwebengineview_p.h"
-#include "qquickwebengineloadrequest_p.h"
+/*!
+    \qmltype WebEngineLoadRequest
+    \instantiates QQuickWebEngineLoadRequest
+    \inqmlmodule QtWebEngine 1.0
 
-QT_BEGIN_NAMESPACE
+    \brief A utility class for the WebEngineView::loadingStateChanged signal.
 
-class QtWebEnginePlugin : public QQmlExtensionPlugin
+    This class contains information about a requested load of a web page, like the URL and
+    current loading status (started, finished, failed).
+
+    \sa WebEngineView::onLoadingStateChanged
+*/
+QQuickWebEngineLoadRequest::QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain, QObject* parent)
+    : QObject(parent)
+    , d(new QQuickWebEngineLoadRequestPrivate(url, status, errorString, errorCode, errorDomain))
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
-public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+}
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-    }
-};
+QQuickWebEngineLoadRequest::~QQuickWebEngineLoadRequest()
+{
+}
 
-QT_END_NAMESPACE
+/*!
+    \qmlproperty url WebEngineLoadRequest::url
+    \brief The URL of the load request.
+ */
+QUrl QQuickWebEngineLoadRequest::url() const
+{
+    return d->url;
+}
 
-#include "plugin.moc"
+/*!
+    \qmlproperty enumeration WebEngineLoadRequest::status
+
+    The load status of a web page load request.
+
+    \list
+    \li WebEngineView::LoadStartedStatus - the page is currently loading.
+    \li WebEngineView::LoadSucceededStatus - the page has been loaded with success.
+    \li WebEngineView::LoadFailedStatus - the page has failed loading.
+    \endlist
+
+    \sa WebEngineLoadRequest
+    \sa WebEngineView::onLoadingStateChanged
+*/
+QQuickWebEngineView::LoadStatus QQuickWebEngineLoadRequest::status() const
+{
+    return d->status;
+}
+
+/*!
+    \qmlproperty string WebEngineLoadRequest::errorString
+*/
+QString QQuickWebEngineLoadRequest::errorString() const
+{
+    return d->errorString;
+}
+
+QQuickWebEngineView::ErrorDomain QQuickWebEngineLoadRequest::errorDomain() const
+{
+    return d->errorDomain;
+}
+
+/*!
+    \qmlproperty int WebEngineLoadRequest::errorCode
+*/
+int QQuickWebEngineLoadRequest::errorCode() const
+{
+    return d->errorCode;
+}
