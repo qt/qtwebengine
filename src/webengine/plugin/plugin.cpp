@@ -53,7 +53,6 @@ public:
     virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
-        Q_UNUSED(uri);
 
         qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
     }
