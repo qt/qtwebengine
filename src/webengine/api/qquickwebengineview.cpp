@@ -42,7 +42,9 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
+#include "qquickwebengineloadrequest_p.h"
 #include "web_contents_adapter.h"
+#include "web_engine_error.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 
 #include <QScreen>
@@ -57,6 +59,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , v(new QQuickWebEngineViewport(this))
     , loadProgress(0)
     , inspectable(false)
+    , m_isLoading(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -123,7 +126,15 @@ void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 void QQuickWebEngineViewPrivate::loadingStateChanged()
 {
     Q_Q(QQuickWebEngineView);
-    Q_EMIT q->loadingStateChanged();
+    const bool wasLoading = m_isLoading;
+    m_isLoading = adapter->isLoading();
+    // TODO: m_wasLoading == true -> m_isLoading == false
+    if (m_isLoading != wasLoading) {
+        if (m_isLoading) {
+            QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStartedStatus);
+            Q_EMIT q->loadingStateChanged(&loadRequest);
+        }
+    }
 }
 
 void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
@@ -144,11 +155,22 @@ qreal QQuickWebEngineViewPrivate::dpiScale() const
     return m_dpiScale;
 }
 
-void QQuickWebEngineViewPrivate::loadFinished(bool success)
+void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);
-    Q_UNUSED(success);
-    Q_EMIT q->loadingStateChanged();
+    if (success) {
+        QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadSucceededStatus);
+        Q_EMIT q->loadingStateChanged(&loadRequest);
+    } else {
+        if (error_code) {
+            QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadFailedStatus, error_description, error_code, static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(error_code)));
+            Q_EMIT q->loadingStateChanged(&loadRequest);
+        }
+
+    // TODO: LoadStoppedStatus should be emitted when the request is cancelled.
+    // QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
+    // Q_EMIT q->loadingStateChanged(loadRequest);
+    }
 }
 
 void QQuickWebEngineViewPrivate::focusContainer()
@@ -391,7 +413,13 @@ void QQuickWebEngineViewExperimental::adoptHandle(QQuickWebEngineViewHandle *vie
     emit q->titleChanged();
     emit q->urlChanged();
     emit q->iconChanged();
-    emit q->loadingStateChanged();
+    // FIXME: This is a workaround for fix compilation failure with the QQuickWebEngineLoadRequest change.
+    // The loadingStateChanged signal has a QQuickWebEngineLoadRequest as an argument. In this fix the
+    // state of the QQuickWebEngineLoadRequest is always LoadSucceededStatus.
+    // New implementation is needed: the state should be stored in the WebContentAdapter
+    // and check whether the signal emission is really necessary (state is not changed).
+    QQuickWebEngineLoadRequest loadRequest(viewHandle->adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
+    emit q->loadingStateChanged(&loadRequest);
     emit q->loadProgressChanged();
 }
 
