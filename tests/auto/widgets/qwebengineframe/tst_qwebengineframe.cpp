@@ -21,9 +21,7 @@
 #include <QtTest/QtTest>
 
 #include <qwebenginepage.h>
-#include <qwebengineelement.h>
 #include <qwebengineview.h>
-#include <qwebengineframe.h>
 #include <qwebenginehistory.h>
 #include <QAbstractItemView>
 #include <QApplication>
@@ -129,6 +127,9 @@ void tst_QWebEngineFrame::cleanup()
 
 void tst_QWebEngineFrame::symmetricUrl()
 {
+#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
+    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
+#else
     QVERIFY(m_view->url().isEmpty());
 
     QCOMPARE(m_view->history()->count(), 0);
@@ -140,12 +141,12 @@ void tst_QWebEngineFrame::symmetricUrl()
     QCOMPARE(m_view->history()->count(), 0);
 
     // loading is _not_ immediate, so the text isn't set just yet.
-    QVERIFY(m_view->page()->mainFrame()->toPlainText().isEmpty());
+    QVERIFY(m_view->page()->toPlainText().isEmpty());
 
     ::waitForSignal(m_view, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(m_view->history()->count(), 1);
-    QCOMPARE(m_view->page()->mainFrame()->toPlainText(), QString("Test"));
+    QCOMPARE(m_view->page()->toPlainText(), QString("Test"));
 
     QUrl dataUrl2("data:text/html,<h1>Test2");
     QUrl dataUrl3("data:text/html,<h1>Test3");
@@ -159,7 +160,8 @@ void tst_QWebEngineFrame::symmetricUrl()
 
     QCOMPARE(m_view->history()->count(), 2);
 
-    QCOMPARE(m_view->page()->mainFrame()->toPlainText(), QString("Test3"));
+    QCOMPARE(m_view->page()->toPlainText(), QString("Test3"));
+#endif
 }
 
 void tst_QWebEngineFrame::progressSignal()
@@ -182,19 +184,19 @@ void tst_QWebEngineFrame::progressSignal()
 
 void tst_QWebEngineFrame::urlChange()
 {
-    QSignalSpy urlSpy(m_page->mainFrame(), SIGNAL(urlChanged(QUrl)));
+    QSignalSpy urlSpy(m_page, SIGNAL(urlChanged(QUrl)));
 
     QUrl dataUrl("data:text/html,<h1>Test");
     m_view->setUrl(dataUrl);
 
-    ::waitForSignal(m_page->mainFrame(), SIGNAL(urlChanged(QUrl)));
+    ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
 
     QCOMPARE(urlSpy.size(), 1);
 
     QUrl dataUrl2("data:text/html,<html><head><title>title</title></head><body><h1>Test</body></html>");
     m_view->setUrl(dataUrl2);
 
-    ::waitForSignal(m_page->mainFrame(), SIGNAL(urlChanged(QUrl)));
+    ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
 
     QCOMPARE(urlSpy.size(), 2);
 }
@@ -291,67 +293,73 @@ protected:
 
 void tst_QWebEngineFrame::requestedUrl()
 {
+#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
+    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
+#else
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
 
     // in few seconds, the image should be completely loaded
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
     FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
     page.setNetworkAccessManager(networkManager);
 
-    frame->setUrl(QUrl("qrc:/test1.html"));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
+    page.setUrl(QUrl("qrc:/test1.html"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(spy.count(), 1);
-    QCOMPARE(frame->requestedUrl(), QUrl("qrc:/test1.html"));
-    QCOMPARE(frame->url(), QUrl("qrc:/test2.html"));
+    QCOMPARE(page.requestedUrl(), QUrl("qrc:/test1.html"));
+    QCOMPARE(page.url(), QUrl("qrc:/test2.html"));
 
-    frame->setUrl(QUrl("qrc:/non-existent.html"));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
+    page.setUrl(QUrl("qrc:/non-existent.html"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(spy.count(), 2);
-    QCOMPARE(frame->requestedUrl(), QUrl("qrc:/non-existent.html"));
-    QCOMPARE(frame->url(), QUrl("qrc:/non-existent.html"));
+    QCOMPARE(page.requestedUrl(), QUrl("qrc:/non-existent.html"));
+    QCOMPARE(page.url(), QUrl("qrc:/non-existent.html"));
 
-    frame->setUrl(QUrl("http://abcdef.abcdef"));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
+    page.setUrl(QUrl("http://abcdef.abcdef"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(spy.count(), 3);
-    QCOMPARE(frame->requestedUrl(), QUrl("http://abcdef.abcdef/"));
-    QCOMPARE(frame->url(), QUrl("http://abcdef.abcdef/"));
+    QCOMPARE(page.requestedUrl(), QUrl("http://abcdef.abcdef/"));
+    QCOMPARE(page.url(), QUrl("http://abcdef.abcdef/"));
 
 #ifndef QT_NO_OPENSSL
     qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
     qRegisterMetaType<QNetworkReply* >("QNetworkReply*");
 
     QSignalSpy spy2(page.networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
-    frame->setUrl(QUrl("qrc:/fake-ssl-error.html"));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
+    page.setUrl(QUrl("qrc:/fake-ssl-error.html"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(spy2.count(), 1);
-    QCOMPARE(frame->requestedUrl(), QUrl("qrc:/fake-ssl-error.html"));
-    QCOMPARE(frame->url(), QUrl("qrc:/fake-ssl-error.html"));
+    QCOMPARE(page.requestedUrl(), QUrl("qrc:/fake-ssl-error.html"));
+    QCOMPARE(page.url(), QUrl("qrc:/fake-ssl-error.html"));
+#endif
 #endif
 }
 
 void tst_QWebEngineFrame::requestedUrlAfterSetAndLoadFailures()
 {
+#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
+    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
+#else
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
 
-    QSignalSpy spy(frame, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     const QUrl first("http://abcdef.abcdef/");
-    frame->setUrl(first);
-    ::waitForSignal(frame, SIGNAL(loadFinished(bool)));
-    QCOMPARE(frame->url(), first);
-    QCOMPARE(frame->requestedUrl(), first);
+    page.setUrl(first);
+    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), first);
+    QCOMPARE(page.requestedUrl(), first);
     QVERIFY(!spy.at(0).first().toBool());
 
     const QUrl second("http://abcdef.abcdef/another_page.html");
     QVERIFY(first != second);
 
-    frame->load(second);
-    ::waitForSignal(frame, SIGNAL(loadFinished(bool)));
-    QCOMPARE(frame->url(), first);
-    QCOMPARE(frame->requestedUrl(), second);
+    page.load(second);
+    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), first);
+    QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
+#endif
 }
 
 void tst_QWebEngineFrame::javaScriptWindowObjectCleared_data()
@@ -366,28 +374,34 @@ void tst_QWebEngineFrame::javaScriptWindowObjectCleared_data()
 
 void tst_QWebEngineFrame::javaScriptWindowObjectCleared()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
-    QSignalSpy spy(frame, SIGNAL(javaScriptWindowObjectCleared()));
+    QSignalSpy spy(&page, SIGNAL(javaScriptWindowObjectCleared()));
     QFETCH(QString, html);
-    frame->setHtml(html);
+    page.setHtml(html);
 
     QFETCH(int, signalCount);
     QCOMPARE(spy.count(), signalCount);
+#endif
 }
 
 void tst_QWebEngineFrame::javaScriptWindowObjectClearedOnEvaluate()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
-    QSignalSpy spy(frame, SIGNAL(javaScriptWindowObjectCleared()));
-    frame->setHtml("<html></html>");
+    QSignalSpy spy(&page, SIGNAL(javaScriptWindowObjectCleared()));
+    page.setHtml("<html></html>");
     QCOMPARE(spy.count(), 0);
-    frame->evaluateJavaScript("var a = 'a';");
+    page.evaluateJavaScript("var a = 'a';");
     QCOMPARE(spy.count(), 1);
     // no new clear for a new script:
-    frame->evaluateJavaScript("var a = 1;");
+    page.evaluateJavaScript("var a = 1;");
     QCOMPARE(spy.count(), 1);
+#endif
 }
 
 void tst_QWebEngineFrame::earlyToHtml()
@@ -398,42 +412,52 @@ void tst_QWebEngineFrame::earlyToHtml()
 
 void tst_QWebEngineFrame::setHtml()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     QString html("<html><head></head><body><p>hello world</p></body></html>");
     QSignalSpy spy(m_view->page(), SIGNAL(loadFinished(bool)));
-    m_view->page()->mainFrame()->setHtml(html);
-    QCOMPARE(m_view->page()->mainFrame()->toHtml(), html);
+    m_view->page()->setHtml(html);
+    QCOMPARE(m_view->page()->toHtml(), html);
     QCOMPARE(spy.count(), 1);
+#endif
 }
 
 void tst_QWebEngineFrame::setHtmlWithImageResource()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     // By default, only security origins of local files can load local resources.
     // So we should specify baseUrl to be a local file in order to get a proper origin and load the local image.
 
     QLatin1String html("<html><body><p>hello world</p><img src='qrc:/image.png'/></body></html>");
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
 
-    frame->setHtml(html, QUrl(QLatin1String("file:///path/to/file")));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
+    page.setHtml(html, QUrl(QLatin1String("file:///path/to/file")));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
 
-    QCOMPARE(frame->evaluateJavaScript("document.images.length").toInt(), 1);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].width").toInt(), 128);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].height").toInt(), 128);
+    QCOMPARE(page.evaluateJavaScript("document.images.length").toInt(), 1);
+    QCOMPARE(page.evaluateJavaScript("document.images[0].width").toInt(), 128);
+    QCOMPARE(page.evaluateJavaScript("document.images[0].height").toInt(), 128);
 
     // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
 
-    frame->setHtml(html);
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(frame->evaluateJavaScript("document.images.length").toInt(), 1);
+    page.setHtml(html);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    QCOMPARE(page.evaluateJavaScript("document.images.length").toInt(), 1);
     QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118659", Continue);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].width").toInt(), 0);
+    QCOMPARE(page.evaluateJavaScript("document.images[0].width").toInt(), 0);
     QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118659", Continue);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].height").toInt(), 0);
+    QCOMPARE(page.evaluateJavaScript("document.images[0].height").toInt(), 0);
+#endif
 }
 
 void tst_QWebEngineFrame::setHtmlWithStylesheetResource()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     // By default, only security origins of local files can load local resources.
     // So we should specify baseUrl to be a local file in order to be able to download the local stylesheet.
 
@@ -448,25 +472,28 @@ void tst_QWebEngineFrame::setHtmlWithStylesheetResource()
         "</html>";
     QLatin1String html(htmlData);
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
     QWebEngineElement webElement;
 
-    frame->setHtml(html, QUrl(QLatin1String("qrc:///file")));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
-    webElement = frame->documentElement().findFirst("p");
+    page.setHtml(html, QUrl(QLatin1String("qrc:///file")));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    webElement = page.documentElement().findFirst("p");
     QCOMPARE(webElement.styleProperty("color", QWebEngineElement::CascadedStyle), QLatin1String("red"));
 
     // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
 
-    frame->setHtml(html, QUrl(QLatin1String("http://www.example.com/")));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
-    webElement = frame->documentElement().findFirst("p");
+    page.setHtml(html, QUrl(QLatin1String("http://www.example.com/")));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    webElement = page.documentElement().findFirst("p");
     QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(webElement.styleProperty("color", QWebEngineElement::CascadedStyle), QString());
+#endif
 }
 
 void tst_QWebEngineFrame::setHtmlWithBaseURL()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     // This tests if baseUrl is indeed affecting the relative paths from resources.
     // As we are using a local file as baseUrl, its security origin should be able to load local resources.
 
@@ -478,21 +505,21 @@ void tst_QWebEngineFrame::setHtmlWithBaseURL()
     QString html("<html><body><p>hello world</p><img src='resources/image2.png'/></body></html>");
 
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
 
     // in few seconds, the image should be completey loaded
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
-    frame->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
+    page.setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(spy.count(), 1);
 
-    QCOMPARE(frame->evaluateJavaScript("document.images.length").toInt(), 1);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].width").toInt(), 128);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].height").toInt(), 128);
+    QCOMPARE(page.evaluateJavaScript("document.images.length").toInt(), 1);
+    QCOMPARE(page.evaluateJavaScript("document.images[0].width").toInt(), 128);
+    QCOMPARE(page.evaluateJavaScript("document.images[0].height").toInt(), 128);
 
     // no history item has to be added.
     QCOMPARE(m_view->page()->history()->count(), 0);
+#endif
 }
 
 class MyPage : public QWebEnginePage
@@ -514,13 +541,17 @@ protected:
 
 void tst_QWebEngineFrame::setHtmlWithJSAlert()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     QString html("<html><head></head><body><script>alert('foo');</script><p>hello world</p></body></html>");
     MyPage page;
     m_view->setPage(&page);
-    page.mainFrame()->setHtml(html);
+    page.setHtml(html);
     QCOMPARE(page.alerts, 1);
     QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118663", Continue);
-    QCOMPARE(m_view->page()->mainFrame()->toHtml(), html);
+    QCOMPARE(m_view->page()->toHtml(), html);
+#endif
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -541,22 +572,29 @@ protected:
 
 void tst_QWebEngineFrame::ipv6HostEncoding()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     TestNetworkManager* networkManager = new TestNetworkManager(m_page);
     m_page->setNetworkAccessManager(networkManager);
     networkManager->requestedUrls.clear();
 
     QUrl baseUrl = QUrl::fromEncoded("http://[::1]/index.html");
     m_view->setHtml("<p>Hi", baseUrl);
-    m_view->page()->mainFrame()->evaluateJavaScript("var r = new XMLHttpRequest();"
+    m_view->page()->evaluateJavaScript("var r = new XMLHttpRequest();"
             "r.open('GET', 'http://[::1]/test.xml', false);"
             "r.send(null);"
             );
     QCOMPARE(networkManager->requestedUrls.count(), 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl::fromEncoded("http://[::1]/test.xml"));
+#endif
 }
 
 void tst_QWebEngineFrame::metaData()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     m_view->setHtml("<html>"
                     "    <head>"
                     "        <meta name=\"description\" content=\"Test description\">"
@@ -564,7 +602,7 @@ void tst_QWebEngineFrame::metaData()
                     "    </head>"
                     "</html>");
 
-    QMultiMap<QString, QString> metaData = m_view->page()->mainFrame()->metaData();
+    QMultiMap<QString, QString> metaData = m_view->page()->metaData();
 
     QCOMPARE(metaData.count(), 2);
 
@@ -579,7 +617,7 @@ void tst_QWebEngineFrame::metaData()
                     "    </head>"
                     "</html>");
 
-    metaData = m_view->page()->mainFrame()->metaData();
+    metaData = m_view->page()->metaData();
 
     QCOMPARE(metaData.count(), 2);
 
@@ -590,11 +628,15 @@ void tst_QWebEngineFrame::metaData()
     QVERIFY(values.contains("SecondValue"));
 
     QCOMPARE(metaData.value("nonexistent"), QString());
+#endif
 }
 
 #if !defined(QT_NO_COMBOBOX)
 void tst_QWebEngineFrame::popupFocus()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QWebEngineView view;
     view.setHtml("<html>"
                  "    <body>"
@@ -618,7 +660,7 @@ void tst_QWebEngineFrame::popupFocus()
     QTRY_VERIFY(view.hasFocus());
 
     // open the popup by clicking. check if focus is on the popup
-    const QWebEngineElement webCombo = view.page()->mainFrame()->documentElement().findFirst(QLatin1String("select[name=select]"));
+    const QWebEngineElement webCombo = view.page()->documentElement().findFirst(QLatin1String("select[name=select]"));
     QTest::mouseClick(&view, Qt::LeftButton, 0, webCombo.geometry().center());
 
     QComboBox* combo = view.findChild<QComboBox*>();
@@ -628,11 +670,15 @@ void tst_QWebEngineFrame::popupFocus()
     // hide the popup and check if focus is on the page
     combo->hidePopup();
     QTRY_VERIFY(view.hasFocus()); // Focus should be back on the WebView
+#endif
 }
 #endif
 
 void tst_QWebEngineFrame::inputFieldFocus()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QWebEngineView view;
     view.setHtml("<html><body><input type=\"text\"></input></body></html>");
     view.resize(400, 100);
@@ -648,7 +694,7 @@ void tst_QWebEngineFrame::inputFieldFocus()
     // focus the lineedit and check if it blinks
     bool autoSipEnabled = qApp->autoSipEnabled();
     qApp->setAutoSipEnabled(false);
-    const QWebEngineElement inputElement = view.page()->mainFrame()->documentElement().findFirst(QLatin1String("input[type=text]"));
+    const QWebEngineElement inputElement = view.page()->documentElement().findFirst(QLatin1String("input[type=text]"));
     QTest::mouseClick(&view, Qt::LeftButton, 0, inputElement.geometry().center());
     m_inputFieldsTestView = &view;
     view.installEventFilter( this );
@@ -656,21 +702,25 @@ void tst_QWebEngineFrame::inputFieldFocus()
     QVERIFY2(m_inputFieldTestPaintCount >= 3,
              "The input field should have a blinking caret");
     qApp->setAutoSipEnabled(autoSipEnabled);
+#endif
 }
 
 void tst_QWebEngineFrame::hitTestContent()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QString html("<html><body><p>A paragraph</p><br/><br/><br/><a href=\"about:blank\" target=\"_foo\" id=\"link\">link text</a></body></html>");
 
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
-    frame->setHtml(html);
+    page.setHtml(html);
     page.setViewportSize(QSize(200, 0)); //no height so link is not visible
-    const QWebEngineElement linkElement = frame->documentElement().findFirst(QLatin1String("a#link"));
-    QWebEngineHitTestResult result = frame->hitTestContent(linkElement.geometry().center());
+    const QWebEngineElement linkElement = page.documentElement().findFirst(QLatin1String("a#link"));
+    QWebEngineHitTestResult result = page.hitTestContent(linkElement.geometry().center());
     QCOMPARE(result.linkText(), QString("link text"));
     QWebEngineElement link = result.linkElement();
     QCOMPARE(link.attribute("target"), QString("_foo"));
+#endif
 }
 
 void tst_QWebEngineFrame::baseUrl_data()
@@ -697,29 +747,36 @@ void tst_QWebEngineFrame::baseUrl_data()
 
 void tst_QWebEngineFrame::baseUrl()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     QFETCH(QString, html);
     QFETCH(QUrl, loadUrl);
     QFETCH(QUrl, url);
     QFETCH(QUrl, baseUrl);
 
-    m_page->mainFrame()->setHtml(html, loadUrl);
-    QCOMPARE(m_page->mainFrame()->url(), url);
-    QCOMPARE(m_page->mainFrame()->baseUrl(), baseUrl);
+    m_page->setHtml(html, loadUrl);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->baseUrl(), baseUrl);
+#endif
 }
 
 void tst_QWebEngineFrame::hasSetFocus()
 {
+#if !defined(QWEBENGINEFRAME)
+    QSKIP("QWEBENGINEFRAME");
+#else
     QString html("<html><body><p>top</p>" \
                     "<iframe width='80%' height='30%'/>" \
                  "</body></html>");
 
     QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
-    m_page->mainFrame()->setHtml(html);
+    m_page->setHtml(html);
 
-    waitForSignal(m_page->mainFrame(), SIGNAL(loadFinished(bool)), 200);
+    waitForSignal(m_page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(loadSpy.size(), 1);
 
-    QList<QWebEngineFrame*> children = m_page->mainFrame()->childFrames();
+    QList<QWebEngineFrame*> children = m_page->childFrames();
     QWebEngineFrame* frame = children.at(0);
     QString innerHtml("<html><body><p>another iframe</p>" \
                         "<iframe width='80%' height='30%'/>" \
@@ -729,21 +786,25 @@ void tst_QWebEngineFrame::hasSetFocus()
     waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(loadSpy.size(), 2);
 
-    m_page->mainFrame()->setFocus();
-    QTRY_VERIFY(m_page->mainFrame()->hasFocus());
+    m_page->setFocus();
+    QTRY_VERIFY(m_page->hasFocus());
 
     for (int i = 0; i < children.size(); ++i) {
         children.at(i)->setFocus();
         QTRY_VERIFY(children.at(i)->hasFocus());
-        QVERIFY(!m_page->mainFrame()->hasFocus());
+        QVERIFY(!m_page->hasFocus());
     }
 
-    m_page->mainFrame()->setFocus();
-    QTRY_VERIFY(m_page->mainFrame()->hasFocus());
+    m_page->setFocus();
+    QTRY_VERIFY(m_page->hasFocus());
+#endif
 }
 
 void tst_QWebEngineFrame::renderGeometry()
 {
+#if !defined(QWEBENGINEFRAME)
+    QSKIP("QWEBENGINEFRAME");
+#else
     QString html("<html>" \
                     "<head><style>" \
                        "body, iframe { margin: 0px; border: none; }" \
@@ -752,9 +813,9 @@ void tst_QWebEngineFrame::renderGeometry()
                  "</html>");
 
     QWebEnginePage page;
-    page.mainFrame()->setHtml(html);
+    page.setHtml(html);
 
-    QList<QWebEngineFrame*> frames = page.mainFrame()->childFrames();
+    QList<QWebEngineFrame*> frames = page.childFrames();
     QWebEngineFrame *frame = frames.at(0);
     QString innerHtml("<body style='margin: 0px;'><img src='qrc:/image.png'/></body>");
 
@@ -765,7 +826,7 @@ void tst_QWebEngineFrame::renderGeometry()
 
     QPicture picture;
 
-    QSize size = page.mainFrame()->contentsSize();
+    QSize size = page.contentsSize();
     page.setViewportSize(size);
 
     // render contents layer only (the iframe is smaller than the image, so it will have scrollbars)
@@ -783,6 +844,7 @@ void tst_QWebEngineFrame::renderGeometry()
 
     QCOMPARE(size.width(), picture.boundingRect().width());   // width: 100px
     QCOMPARE(size.height(), picture.boundingRect().height()); // height: 100px
+#endif
 }
 
 
@@ -882,11 +944,14 @@ int DummyPaintDevice::metric(PaintDeviceMetric metric) const
 
 void tst_QWebEngineFrame::renderHints()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     QString html("<html><body><p>Hello, world!</p></body></html>");
 
     QWebEnginePage page;
-    page.mainFrame()->setHtml(html);
-    page.setViewportSize(page.mainFrame()->contentsSize());
+    page.setHtml(html);
+    page.setViewportSize(page.contentsSize());
 
     // We will call frame->render and trap the paint engine state changes
     // to ensure that GraphicsContext does not clobber the render hints.
@@ -894,91 +959,101 @@ void tst_QWebEngineFrame::renderHints()
     QPainter painter(&buffer);
 
     painter.setRenderHint(QPainter::TextAntialiasing, false);
-    page.mainFrame()->render(&painter);
+    page.render(&painter);
     QVERIFY(!(buffer.renderHints() & QPainter::TextAntialiasing));
     QVERIFY(!(buffer.renderHints() & QPainter::SmoothPixmapTransform));
     QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
 
     painter.setRenderHint(QPainter::TextAntialiasing, true);
-    page.mainFrame()->render(&painter);
+    page.render(&painter);
     QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(!(buffer.renderHints() & QPainter::SmoothPixmapTransform));
     QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
 
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    page.mainFrame()->render(&painter);
+    page.render(&painter);
     QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(buffer.renderHints() & QPainter::SmoothPixmapTransform);
     QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
 
     painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-    page.mainFrame()->render(&painter);
+    page.render(&painter);
     QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
     QVERIFY(buffer.renderHints() & QPainter::SmoothPixmapTransform);
     QVERIFY(buffer.renderHints() & QPainter::HighQualityAntialiasing);
+#endif
 }
 
 void tst_QWebEngineFrame::scrollPosition()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     // enlarged image in a small viewport, to provoke the scrollbars to appear
     QString html("<html><body><img src='qrc:/image.png' height=500 width=500/></body></html>");
 
     QWebEnginePage page;
     page.setViewportSize(QSize(200, 200));
 
-    QWebEngineFrame* frame = page.mainFrame();
-    frame->setHtml(html);
-    frame->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
-    frame->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    page.setHtml(html);
+    page.setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
+    page.setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
 
     // try to set the scroll offset programmatically
-    frame->setScrollPosition(QPoint(23, 29));
-    QCOMPARE(frame->scrollPosition().x(), 23);
-    QCOMPARE(frame->scrollPosition().y(), 29);
+    page.setScrollPosition(QPoint(23, 29));
+    QCOMPARE(page.scrollPosition().x(), 23);
+    QCOMPARE(page.scrollPosition().y(), 29);
 
-    int x = frame->evaluateJavaScript("window.scrollX").toInt();
-    int y = frame->evaluateJavaScript("window.scrollY").toInt();
+    int x = page.evaluateJavaScript("window.scrollX").toInt();
+    int y = page.evaluateJavaScript("window.scrollY").toInt();
     QCOMPARE(x, 23);
     QCOMPARE(y, 29);
+#endif
 }
 
 void tst_QWebEngineFrame::scrollToAnchor()
 {
+#if !defined(QWEBENGINEELEMENT)
+    QSKIP("QWEBENGINEELEMENT");
+#else
     QWebEnginePage page;
     page.setViewportSize(QSize(480, 800));
-    QWebEngineFrame* frame = page.mainFrame();
 
     QString html("<html><body><p style=\"margin-bottom: 1500px;\">Hello.</p>"
                  "<p><a id=\"foo\">This</a> is an anchor</p>"
                  "<p style=\"margin-bottom: 1500px;\"><a id=\"bar\">This</a> is another anchor</p>"
                  "</body></html>");
-    frame->setHtml(html);
-    frame->setScrollPosition(QPoint(0, 0));
-    QCOMPARE(frame->scrollPosition().x(), 0);
-    QCOMPARE(frame->scrollPosition().y(), 0);
+    page.setHtml(html);
+    page.setScrollPosition(QPoint(0, 0));
+    QCOMPARE(page.scrollPosition().x(), 0);
+    QCOMPARE(page.scrollPosition().y(), 0);
 
-    QWebEngineElement fooAnchor = frame->findFirstElement("a[id=foo]");
+    QWebEngineElement fooAnchor = page.findFirstElement("a[id=foo]");
 
-    frame->scrollToAnchor("foo");
-    QCOMPARE(frame->scrollPosition().y(), fooAnchor.geometry().top());
+    page.scrollToAnchor("foo");
+    QCOMPARE(page.scrollPosition().y(), fooAnchor.geometry().top());
 
-    frame->scrollToAnchor("bar");
-    frame->scrollToAnchor("foo");
-    QCOMPARE(frame->scrollPosition().y(), fooAnchor.geometry().top());
+    page.scrollToAnchor("bar");
+    page.scrollToAnchor("foo");
+    QCOMPARE(page.scrollPosition().y(), fooAnchor.geometry().top());
 
-    frame->scrollToAnchor("top");
-    QCOMPARE(frame->scrollPosition().y(), 0);
+    page.scrollToAnchor("top");
+    QCOMPARE(page.scrollPosition().y(), 0);
 
-    frame->scrollToAnchor("bar");
-    frame->scrollToAnchor("notexist");
-    QVERIFY(frame->scrollPosition().y() != 0);
+    page.scrollToAnchor("bar");
+    page.scrollToAnchor("notexist");
+    QVERIFY(page.scrollPosition().y() != 0);
+#endif
 }
 
 
 void tst_QWebEngineFrame::scrollbarsOff()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     QWebEngineView view;
-    QWebEngineFrame* mainFrame = view.page()->mainFrame();
+    QWebEngineFrame* mainFrame = view.page();
 
     mainFrame->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
     mainFrame->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
@@ -1006,33 +1081,40 @@ void tst_QWebEngineFrame::scrollbarsOff()
 
     mainFrame->evaluateJavaScript("checkScrollbar();");
     QCOMPARE(mainFrame->documentElement().findAll("span").at(0).toPlainText(), QString("SUCCESS"));
+#endif
 }
 
 void tst_QWebEngineFrame::horizontalScrollAfterBack()
 {
+#if !defined(QWEBENGINESETTINGS)
+    QSKIP("QWEBENGINESETTINGS");
+#else
     QWebEngineView view;
-    QWebEngineFrame* frame = view.page()->mainFrame();
     QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
 
     view.page()->settings()->setMaximumPagesInCache(2);
-    frame->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
-    frame->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
+    view.page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
+    view.page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
 
     view.load(QUrl("qrc:/testiframe2.html"));
     view.resize(200, 200);
     QTRY_COMPARE(loadSpy.count(), 1);
-    QTRY_VERIFY((frame->scrollBarGeometry(Qt::Horizontal)).height());
+    QTRY_VERIFY((view.page()->scrollBarGeometry(Qt::Horizontal)).height());
 
     view.load(QUrl("qrc:/testiframe.html"));
     QTRY_COMPARE(loadSpy.count(), 2);
 
     view.page()->triggerAction(QWebEnginePage::Back);
     QTRY_COMPARE(loadSpy.count(), 3);
-    QTRY_VERIFY((frame->scrollBarGeometry(Qt::Horizontal)).height());
+    QTRY_VERIFY((view.page()->scrollBarGeometry(Qt::Horizontal)).height());
+#endif
 }
 
 void tst_QWebEngineFrame::evaluateWillCauseRepaint()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     QWebEngineView view;
     QString html("<html><body>top<div id=\"junk\" style=\"display: block;\">"
                     "junk</div>bottom</body></html>");
@@ -1040,10 +1122,11 @@ void tst_QWebEngineFrame::evaluateWillCauseRepaint()
     view.show();
 
     QTest::qWaitForWindowExposed(&view);
-    view.page()->mainFrame()->evaluateJavaScript(
+    view.page()->evaluateJavaScript(
         "document.getElementById('junk').style.display = 'none';");
 
     ::waitForSignal(view.page(), SIGNAL(repaintRequested(QRect)));
+#endif
 }
 
 void tst_QWebEngineFrame::setContent_data()
@@ -1067,12 +1150,15 @@ void tst_QWebEngineFrame::setContent_data()
 
 void tst_QWebEngineFrame::setContent()
 {
+#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
+    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
+#else
     QFETCH(QString, mimeType);
     QFETCH(QByteArray, testContents);
     QFETCH(QString, expected);
     m_view->setContent(testContents, mimeType);
-    QWebEngineFrame* mainFrame = m_view->page()->mainFrame();
-    QCOMPARE(expected , mainFrame->toPlainText());
+    QCOMPARE(expected , m_view->page()->toPlainText());
+#endif
 }
 
 class CacheNetworkAccessManager : public QNetworkAccessManager {
@@ -1104,35 +1190,42 @@ private:
 
 void tst_QWebEngineFrame::setCacheLoadControlAttribute()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     QWebEnginePage page;
     CacheNetworkAccessManager* manager = new CacheNetworkAccessManager(&page);
     page.setNetworkAccessManager(manager);
-    QWebEngineFrame* frame = page.mainFrame();
 
     QNetworkRequest request(QUrl("http://abcdef.abcdef/"));
 
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysCache);
-    frame->load(request);
+    page.load(request);
     QCOMPARE(manager->lastCacheLoad(), QNetworkRequest::AlwaysCache);
 
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
-    frame->load(request);
+    page.load(request);
     QCOMPARE(manager->lastCacheLoad(), QNetworkRequest::PreferCache);
 
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::AlwaysNetwork);
-    frame->load(request);
+    page.load(request);
     QCOMPARE(manager->lastCacheLoad(), QNetworkRequest::AlwaysNetwork);
 
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork);
-    frame->load(request);
+    page.load(request);
     QCOMPARE(manager->lastCacheLoad(), QNetworkRequest::PreferNetwork);
+#endif
 }
 
 void tst_QWebEngineFrame::setUrlWithPendingLoads()
 {
+#if !defined(QWEBENGINEPAGE_SETHTML)
+    QSKIP("QWEBENGINEPAGE_SETHTML");
+#else
     QWebEnginePage page;
-    page.mainFrame()->setHtml("<img src='dummy:'/>");
-    page.mainFrame()->setUrl(QUrl("about:blank"));
+    page.setHtml("<img src='dummy:'/>");
+    page.setUrl(QUrl("about:blank"));
+#endif
 }
 
 void tst_QWebEngineFrame::setUrlWithFragment_data()
@@ -1149,87 +1242,95 @@ void tst_QWebEngineFrame::setUrlWithFragment_data()
 // Based on bug report https://bugs.webengine.org/show_bug.cgi?id=32723
 void tst_QWebEngineFrame::setUrlWithFragment()
 {
+#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
+    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
+#else
     QFETCH(QUrl, previousUrl);
 
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
 
     if (!previousUrl.isEmpty()) {
-        frame->load(previousUrl);
-        ::waitForSignal(frame, SIGNAL(loadFinished(bool)));
-        QCOMPARE(frame->url(), previousUrl);
+        page.load(previousUrl);
+        ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+        QCOMPARE(page.url(), previousUrl);
     }
 
-    QSignalSpy spy(frame, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
     const QUrl url("qrc:/test1.html#");
     QVERIFY(!url.fragment().isNull());
 
-    frame->setUrl(url);
-    ::waitForSignal(frame, SIGNAL(loadFinished(bool)));
+    page.setUrl(url);
+    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(spy.count(), 1);
-    QVERIFY(!frame->toPlainText().isEmpty());
-    QCOMPARE(frame->requestedUrl(), url);
-    QCOMPARE(frame->url(), url);
+    QVERIFY(!page.toPlainText().isEmpty());
+    QCOMPARE(page.requestedUrl(), url);
+    QCOMPARE(page.url(), url);
+#endif
 }
 
 void tst_QWebEngineFrame::setUrlToEmpty()
 {
+#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
+    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
+#else
     int expectedLoadFinishedCount = 0;
     const QUrl aboutBlank("about:blank");
     const QUrl url("qrc:/test2.html");
 
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
-    QCOMPARE(frame->url(), QUrl());
-    QCOMPARE(frame->requestedUrl(), QUrl());
-    QCOMPARE(frame->baseUrl(), QUrl());
+    QCOMPARE(page.url(), QUrl());
+    QCOMPARE(page.requestedUrl(), QUrl());
+    QCOMPARE(page.baseUrl(), QUrl());
 
-    QSignalSpy spy(frame, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     // Set existing url
-    frame->setUrl(url);
+    page.setUrl(url);
     expectedLoadFinishedCount++;
-    ::waitForSignal(frame, SIGNAL(loadFinished(bool)));
+    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), url);
-    QCOMPARE(frame->baseUrl(), url);
+    QCOMPARE(page.url(), url);
+    QCOMPARE(page.requestedUrl(), url);
+    QCOMPARE(page.baseUrl(), url);
 
     // Set empty url
-    frame->setUrl(QUrl());
+    page.setUrl(QUrl());
     expectedLoadFinishedCount++;
 
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), aboutBlank);
-    QCOMPARE(frame->requestedUrl(), QUrl());
-    QCOMPARE(frame->baseUrl(), aboutBlank);
+    QCOMPARE(page.url(), aboutBlank);
+    QCOMPARE(page.requestedUrl(), QUrl());
+    QCOMPARE(page.baseUrl(), aboutBlank);
 
     // Set existing url
-    frame->setUrl(url);
+    page.setUrl(url);
     expectedLoadFinishedCount++;
-    ::waitForSignal(frame, SIGNAL(loadFinished(bool)));
+    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), url);
-    QCOMPARE(frame->baseUrl(), url);
+    QCOMPARE(page.url(), url);
+    QCOMPARE(page.requestedUrl(), url);
+    QCOMPARE(page.baseUrl(), url);
 
     // Load empty url
-    frame->load(QUrl());
+    page.load(QUrl());
     expectedLoadFinishedCount++;
 
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), aboutBlank);
-    QCOMPARE(frame->requestedUrl(), QUrl());
-    QCOMPARE(frame->baseUrl(), aboutBlank);
+    QCOMPARE(page.url(), aboutBlank);
+    QCOMPARE(page.requestedUrl(), QUrl());
+    QCOMPARE(page.baseUrl(), aboutBlank);
+#endif
 }
 
 void tst_QWebEngineFrame::setUrlToInvalid()
 {
+#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
+    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
+#else
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
 
     const QUrl invalidUrl("http:/example.com");
     QVERIFY(!invalidUrl.isEmpty());
@@ -1237,10 +1338,10 @@ void tst_QWebEngineFrame::setUrlToInvalid()
 
     // QWebEngineFrame will do its best to accept the URL, possible converting it to a valid equivalent URL.
     const QUrl validUrl("http://example.com/");
-    frame->setUrl(invalidUrl);
-    QCOMPARE(frame->url(), validUrl);
-    QCOMPARE(frame->requestedUrl(), validUrl);
-    QCOMPARE(frame->baseUrl(), validUrl);
+    page.setUrl(invalidUrl);
+    QCOMPARE(page.url(), validUrl);
+    QCOMPARE(page.requestedUrl(), validUrl);
+    QCOMPARE(page.baseUrl(), validUrl);
 
     // QUrls equivalent to QUrl() will be treated as such.
     const QUrl aboutBlank("about:blank");
@@ -1249,153 +1350,163 @@ void tst_QWebEngineFrame::setUrlToInvalid()
     QVERIFY(!anotherInvalidUrl.isValid());
     QCOMPARE(anotherInvalidUrl.toEncoded(), QUrl().toEncoded());
 
-    frame->setUrl(anotherInvalidUrl);
-    QCOMPARE(frame->url(), aboutBlank);
-    QCOMPARE(frame->requestedUrl().toEncoded(), anotherInvalidUrl.toEncoded());
-    QCOMPARE(frame->baseUrl(), aboutBlank);
+    page.setUrl(anotherInvalidUrl);
+    QCOMPARE(page.url(), aboutBlank);
+    QCOMPARE(page.requestedUrl().toEncoded(), anotherInvalidUrl.toEncoded());
+    QCOMPARE(page.baseUrl(), aboutBlank);
+#endif
 }
 
 void tst_QWebEngineFrame::setUrlHistory()
 {
+#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
+    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
+#else
     const QUrl aboutBlank("about:blank");
     QUrl url;
     int expectedLoadFinishedCount = 0;
-    QWebEngineFrame* frame = m_page->mainFrame();
-    QSignalSpy spy(frame, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(m_page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(m_page->history()->count(), 0);
 
-    frame->setUrl(QUrl());
+    m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), aboutBlank);
-    QCOMPARE(frame->requestedUrl(), QUrl());
+    QCOMPARE(m_page->url(), aboutBlank);
+    QCOMPARE(m_page->requestedUrl(), QUrl());
     QCOMPARE(m_page->history()->count(), 0);
 
     url = QUrl("http://non.existent/");
-    frame->setUrl(url);
+    m_page->setUrl(url);
     ::waitForSignal(m_page, SIGNAL(loadFinished(bool)));
     expectedLoadFinishedCount++;
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), url);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->requestedUrl(), url);
     QCOMPARE(m_page->history()->count(), 0);
 
     url = QUrl("qrc:/test1.html");
-    frame->setUrl(url);
+    m_page->setUrl(url);
     ::waitForSignal(m_page, SIGNAL(loadFinished(bool)));
     expectedLoadFinishedCount++;
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), url);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->requestedUrl(), url);
     QCOMPARE(m_page->history()->count(), 1);
 
-    frame->setUrl(QUrl());
+    m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), aboutBlank);
-    QCOMPARE(frame->requestedUrl(), QUrl());
+    QCOMPARE(m_page->url(), aboutBlank);
+    QCOMPARE(m_page->requestedUrl(), QUrl());
     QCOMPARE(m_page->history()->count(), 1);
 
     // Loading same page as current in history, so history count doesn't change.
     url = QUrl("qrc:/test1.html");
-    frame->setUrl(url);
+    m_page->setUrl(url);
     ::waitForSignal(m_page, SIGNAL(loadFinished(bool)));
     expectedLoadFinishedCount++;
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), url);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->requestedUrl(), url);
     QCOMPARE(m_page->history()->count(), 1);
 
     url = QUrl("qrc:/test2.html");
-    frame->setUrl(url);
+    m_page->setUrl(url);
     ::waitForSignal(m_page, SIGNAL(loadFinished(bool)));
     expectedLoadFinishedCount++;
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), url);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->requestedUrl(), url);
     QCOMPARE(m_page->history()->count(), 2);
+#endif
 }
 
 void tst_QWebEngineFrame::setUrlUsingStateObject()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     const QUrl aboutBlank("about:blank");
     QUrl url;
-    QWebEngineFrame* frame = m_page->mainFrame();
-    QSignalSpy urlChangedSpy(frame, SIGNAL(urlChanged(QUrl)));
+    QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
     int expectedUrlChangeCount = 0;
 
     QCOMPARE(m_page->history()->count(), 0);
 
     url = QUrl("qrc:/test1.html");
-    frame->setUrl(url);
+    m_page->setUrl(url);
     waitForSignal(m_page, SIGNAL(loadFinished(bool)));
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
-    QCOMPARE(frame->url(), url);
+    QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->history()->count(), 1);
 
-    frame->evaluateJavaScript("window.history.pushState(null,'push', 'navigate/to/here')");
+    m_page->evaluateJavaScript("window.history.pushState(null,'push', 'navigate/to/here')");
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
-    QCOMPARE(frame->url(), QUrl("qrc:/navigate/to/here"));
+    QCOMPARE(m_page->url(), QUrl("qrc:/navigate/to/here"));
     QCOMPARE(m_page->history()->count(), 2);
     QVERIFY(m_page->history()->canGoBack());
 
-    frame->evaluateJavaScript("window.history.replaceState(null,'replace', 'another/location')");
+    m_page->evaluateJavaScript("window.history.replaceState(null,'replace', 'another/location')");
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
-    QCOMPARE(frame->url(), QUrl("qrc:/navigate/to/another/location"));
+    QCOMPARE(m_page->url(), QUrl("qrc:/navigate/to/another/location"));
     QCOMPARE(m_page->history()->count(), 2);
     QVERIFY(!m_page->history()->canGoForward());
     QVERIFY(m_page->history()->canGoBack());
 
-    frame->evaluateJavaScript("window.history.back()");
+    m_page->evaluateJavaScript("window.history.back()");
     QTest::qWait(100);
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
-    QCOMPARE(frame->url(), QUrl("qrc:/test1.html"));
+    QCOMPARE(m_page->url(), QUrl("qrc:/test1.html"));
     QVERIFY(m_page->history()->canGoForward());
     QVERIFY(!m_page->history()->canGoBack());
+#endif
 }
 
 void tst_QWebEngineFrame::setUrlSameUrl()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     const QUrl url1("qrc:/test1.html");
     const QUrl url2("qrc:/test2.html");
 
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
     FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
     page.setNetworkAccessManager(networkManager);
 
-    QSignalSpy spy(frame, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
-    frame->setUrl(url1);
-    waitForSignal(frame, SIGNAL(loadFinished(bool)));
-    QVERIFY(frame->url() != url1); // Nota bene: our QNAM redirects url1 to url2
-    QCOMPARE(frame->url(), url2);
+    page.setUrl(url1);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(page.url() != url1); // Nota bene: our QNAM redirects url1 to url2
+    QCOMPARE(page.url(), url2);
     QCOMPARE(spy.count(), 1);
 
-    frame->setUrl(url1);
-    waitForSignal(frame, SIGNAL(loadFinished(bool)));
-    QVERIFY(frame->url() != url1);
-    QCOMPARE(frame->url(), url2);
+    page.setUrl(url1);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(page.url() != url1);
+    QCOMPARE(page.url(), url2);
     QCOMPARE(spy.count(), 2);
 
     // Now a case without redirect. The existing behavior we have for setUrl()
     // is more like a "clear(); load()", so the page will be loaded again, even
     // if urlToBeLoaded == url(). This test should be changed if we want to
     // make setUrl() early return in this case.
-    frame->setUrl(url2);
-    waitForSignal(frame, SIGNAL(loadFinished(bool)));
-    QCOMPARE(frame->url(), url2);
+    page.setUrl(url2);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), url2);
     QCOMPARE(spy.count(), 3);
 
-    frame->setUrl(url1);
-    waitForSignal(frame, SIGNAL(loadFinished(bool)));
-    QCOMPARE(frame->url(), url2);
+    page.setUrl(url1);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), url2);
     QCOMPARE(spy.count(), 4);
+#endif
 }
 
 static inline QUrl extractBaseUrl(const QUrl& url)
@@ -1414,69 +1525,75 @@ void tst_QWebEngineFrame::setUrlThenLoads_data()
 
 void tst_QWebEngineFrame::setUrlThenLoads()
 {
+#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
+    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
+#else
     QFETCH(QUrl, url);
     QFETCH(QUrl, baseUrl);
-    QWebEngineFrame* frame = m_page->mainFrame();
-    QSignalSpy urlChangedSpy(frame, SIGNAL(urlChanged(QUrl)));
-    QSignalSpy startedSpy(frame, SIGNAL(loadStarted()));
-    QSignalSpy finishedSpy(frame, SIGNAL(loadFinished(bool)));
+    QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
+    QSignalSpy startedSpy(m_page, SIGNAL(loadStarted()));
+    QSignalSpy finishedSpy(m_page, SIGNAL(loadFinished(bool)));
 
-    frame->setUrl(url);
+    m_page->setUrl(url);
     QCOMPARE(startedSpy.count(), 1);
-    ::waitForSignal(frame, SIGNAL(urlChanged(QUrl)));
+    ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
     QCOMPARE(urlChangedSpy.count(), 1);
     QVERIFY(finishedSpy.at(0).first().toBool());
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), url);
-    QCOMPARE(frame->baseUrl(), baseUrl);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->requestedUrl(), url);
+    QCOMPARE(m_page->baseUrl(), baseUrl);
 
     const QUrl urlToLoad1("qrc:/test2.html");
     const QUrl urlToLoad2("qrc:/test1.html");
 
     // Just after first load. URL didn't changed yet.
-    frame->load(urlToLoad1);
+    m_page->load(urlToLoad1);
     QCOMPARE(startedSpy.count(), 2);
-    QCOMPARE(frame->url(), url);
-    QCOMPARE(frame->requestedUrl(), urlToLoad1);
-    QCOMPARE(frame->baseUrl(), baseUrl);
+    QCOMPARE(m_page->url(), url);
+    QCOMPARE(m_page->requestedUrl(), urlToLoad1);
+    QCOMPARE(m_page->baseUrl(), baseUrl);
 
     // After first URL changed.
-    ::waitForSignal(frame, SIGNAL(urlChanged(QUrl)));
+    ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
     QCOMPARE(urlChangedSpy.count(), 2);
     QVERIFY(finishedSpy.at(1).first().toBool());
-    QCOMPARE(frame->url(), urlToLoad1);
-    QCOMPARE(frame->requestedUrl(), urlToLoad1);
-    QCOMPARE(frame->baseUrl(), extractBaseUrl(urlToLoad1));
+    QCOMPARE(m_page->url(), urlToLoad1);
+    QCOMPARE(m_page->requestedUrl(), urlToLoad1);
+    QCOMPARE(m_page->baseUrl(), extractBaseUrl(urlToLoad1));
 
     // Just after second load. URL didn't changed yet.
-    frame->load(urlToLoad2);
+    m_page->load(urlToLoad2);
     QCOMPARE(startedSpy.count(), 3);
-    QCOMPARE(frame->url(), urlToLoad1);
-    QCOMPARE(frame->requestedUrl(), urlToLoad2);
-    QCOMPARE(frame->baseUrl(), extractBaseUrl(urlToLoad1));
+    QCOMPARE(m_page->url(), urlToLoad1);
+    QCOMPARE(m_page->requestedUrl(), urlToLoad2);
+    QCOMPARE(m_page->baseUrl(), extractBaseUrl(urlToLoad1));
 
     // After second URL changed.
-    ::waitForSignal(frame, SIGNAL(urlChanged(QUrl)));
+    ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
     QCOMPARE(urlChangedSpy.count(), 3);
     QVERIFY(finishedSpy.at(2).first().toBool());
-    QCOMPARE(frame->url(), urlToLoad2);
-    QCOMPARE(frame->requestedUrl(), urlToLoad2);
-    QCOMPARE(frame->baseUrl(), extractBaseUrl(urlToLoad2));
+    QCOMPARE(m_page->url(), urlToLoad2);
+    QCOMPARE(m_page->requestedUrl(), urlToLoad2);
+    QCOMPARE(m_page->baseUrl(), extractBaseUrl(urlToLoad2));
+#endif
 }
 
 void tst_QWebEngineFrame::loadFinishedAfterNotFoundError()
 {
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
+#else
     QWebEnginePage page;
-    QWebEngineFrame* frame = page.mainFrame();
 
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
     FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
     page.setNetworkAccessManager(networkManager);
 
-    frame->setUrl(FakeReply::urlFor404ErrorWithoutContents);
+    page.setUrl(FakeReply::urlFor404ErrorWithoutContents);
     QTRY_COMPARE(spy.count(), 1);
     const bool wasLoadOk = spy.at(0).at(0).toBool();
     QVERIFY(!wasLoadOk);
+#endif
 }
 
 class URLSetter : public QObject {
@@ -1494,7 +1611,7 @@ public:
         UseSetUrl
     };
 
-    URLSetter(QWebEngineFrame*, Signal, Type, const QUrl&);
+    URLSetter(QWebEnginePage*, Signal, Type, const QUrl&);
 
 public Q_SLOTS:
     void execute();
@@ -1503,7 +1620,7 @@ Q_SIGNALS:
     void finished();
 
 private:
-    QWebEngineFrame* m_frame;
+    QWebEnginePage* m_page;
     QUrl m_url;
     Type m_type;
 };
@@ -1511,26 +1628,26 @@ private:
 Q_DECLARE_METATYPE(URLSetter::Signal)
 Q_DECLARE_METATYPE(URLSetter::Type)
 
-URLSetter::URLSetter(QWebEngineFrame* frame, Signal signal, URLSetter::Type type, const QUrl& url)
-    : m_frame(frame), m_url(url), m_type(type)
+URLSetter::URLSetter(QWebEnginePage* page, Signal signal, URLSetter::Type type, const QUrl& url)
+    : m_page(page), m_url(url), m_type(type)
 {
     if (signal == LoadStarted)
-        connect(m_frame, SIGNAL(loadStarted()), SLOT(execute()));
+        connect(m_page, SIGNAL(loadStarted()), SLOT(execute()));
     else if (signal == LoadFinished)
-        connect(m_frame, SIGNAL(loadFinished(bool)), SLOT(execute()));
+        connect(m_page, SIGNAL(loadFinished(bool)), SLOT(execute()));
     else
-        connect(m_frame, SIGNAL(provisionalLoad()), SLOT(execute()));
+        connect(m_page, SIGNAL(provisionalLoad()), SLOT(execute()));
 }
 
 void URLSetter::execute()
 {
     // We track only the first emission.
-    m_frame->disconnect(this);
+    m_page->disconnect(this);
     if (m_type == URLSetter::UseLoad)
-        m_frame->load(m_url);
+        m_page->load(m_url);
     else
-        m_frame->setUrl(m_url);
-    connect(m_frame, SIGNAL(loadFinished(bool)), SIGNAL(finished()));
+        m_page->setUrl(m_url);
+    connect(m_page, SIGNAL(loadFinished(bool)), SIGNAL(finished()));
 }
 
 void tst_QWebEngineFrame::loadInSignalHandlers_data()
@@ -1563,13 +1680,12 @@ void tst_QWebEngineFrame::loadInSignalHandlers()
     QFETCH(URLSetter::Signal, signal);
     QFETCH(QUrl, url);
 
-    QWebEngineFrame* frame = m_page->mainFrame();
     const QUrl urlForSetter("qrc:/test1.html");
-    URLSetter setter(frame, signal, type, urlForSetter);
+    URLSetter setter(m_page, signal, type, urlForSetter);
 
-    frame->load(url);
+    m_page->load(url);
     waitForSignal(&setter, SIGNAL(finished()), 200);
-    QCOMPARE(frame->url(), urlForSetter);
+    QCOMPARE(m_page->url(), urlForSetter);
 }
 
 QTEST_MAIN(tst_QWebEngineFrame)
