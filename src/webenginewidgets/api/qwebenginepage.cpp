@@ -207,6 +207,8 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 
 QWebEnginePage::~QWebEnginePage()
 {
+    Q_D(QWebEnginePage);
+    QWebEngineViewPrivate::bind(d->view, 0);
 }
 
 QWebEngineHistory *QWebEnginePage::history() const
