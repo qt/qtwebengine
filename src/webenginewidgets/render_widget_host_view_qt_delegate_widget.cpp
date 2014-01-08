@@ -64,9 +64,11 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
 {
     QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
-    // FIXME: What is going to trigger this if the page is attached later to the view?
-    if (pagePrivate->view)
+    if (pagePrivate->view) {
         pagePrivate->view->layout()->addWidget(this);
+        QWidget::show();
+    } else
+        setParent(0);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& rect)
@@ -94,7 +96,9 @@ bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
 
 void RenderWidgetHostViewQtDelegateWidget::show()
 {
-    QWidget::show();
+    // Check if we're attached to a QWebEngineView, we don't want to show as top-level.
+    if (parent())
+        QWidget::show();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::hide()

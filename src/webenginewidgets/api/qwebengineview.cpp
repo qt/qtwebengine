@@ -43,6 +43,7 @@
 #include "qwebengineview_p.h"
 
 #include "qwebenginepage_p.h"
+#include "web_contents_adapter.h"
 
 #include <QAction>
 #include <QMenu>
@@ -63,6 +64,7 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
             oldView->d_func()->page = 0;
         }
         page->d_func()->view = view;
+        page->d_func()->adapter->reattachRWHV();
     }
 
     if (view) {
@@ -98,6 +100,8 @@ QWebEngineView::QWebEngineView(QWidget *parent)
 
 QWebEngineView::~QWebEngineView()
 {
+    Q_D(QWebEngineView);
+    QWebEngineViewPrivate::bind(0, d->page);
 }
 
 QWebEnginePage* QWebEngineView::page() const

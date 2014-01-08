@@ -152,6 +152,7 @@ private Q_SLOTS:
     void userAgentApplicationName();
     void userAgentNewlineStripping();
     void undoActionHaveCustomText();
+    void renderWidgetHostViewNotShowTopLevel();
 
     void viewModes();
 
@@ -3532,6 +3533,28 @@ void tst_QWebEnginePage::undoActionHaveCustomText()
 
     QVERIFY(typingActionText != alignActionText);
 #endif
+}
+
+void tst_QWebEnginePage::renderWidgetHostViewNotShowTopLevel()
+{
+    QWebEnginePage page;
+    QSignalSpy spyLoadFinished(&page, SIGNAL(loadFinished(bool)));
+
+    page.load(QUrl("http://qt-project.org"));
+    if (!spyLoadFinished.wait(10000) || !spyLoadFinished.at(0).at(0).toBool())
+        QSKIP("Couldn't load page from network, skipping test.");
+    spyLoadFinished.clear();
+
+    // Loading a different domain will force the creation of a separate render
+    // process and should therefore create a new RenderWidgetHostViewQtDelegateWidget.
+    page.load(QUrl("http://www.wikipedia.org/"));
+    if (!spyLoadFinished.wait(10000) || !spyLoadFinished.at(0).at(0).toBool())
+        QSKIP("Couldn't load page from network, skipping test.");
+
+    // Make sure that RenderWidgetHostViewQtDelegateWidgets are not shown as top-level.
+    // They should only be made visible when parented to a QWebEngineView.
+    foreach (QWidget *widget, QApplication::topLevelWidgets())
+        QCOMPARE(widget->isVisible(), false);
 }
 
 void tst_QWebEnginePage::openWindowDefaultSize()
