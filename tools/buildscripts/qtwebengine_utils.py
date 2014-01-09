@@ -51,13 +51,16 @@ def getChromiumSrcDir():
   qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 
   os.chdir(qtwebengine_root)
-  chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir || true", shell=True).strip()
+  try:
+    chrome_src = subprocess.check_output("git config qtwebengine.chromiumsrcdir", shell=True).strip()
+  except subprocess.CalledProcessError:
+    chrome_src = None
   os.chdir(saved_cwd)
 
   if chrome_src:
     chrome_src = os.path.join(qtwebengine_root, chrome_src)
   if not chrome_src or not os.path.isdir(chrome_src):
-    chrome_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
+    chrome_src = os.path.normpath(os.path.join(qtwebengine_root, 'src/3rdparty/chromium'))
     print 'CHROMIUM_SRC_DIR not set, falling back to ' + chrome_src
   return chrome_src
 
