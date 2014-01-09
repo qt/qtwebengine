@@ -34,6 +34,7 @@
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
       '<(chromium_src_dir)/webkit/support/webkit_support.gyp:glue',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
+      '<(chromium_src_dir)/components/components.gyp:browser_context_keyed_service',
     ],
     'include_dirs': [
       '<(chromium_src_dir)',

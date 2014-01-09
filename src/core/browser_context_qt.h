@@ -67,6 +67,7 @@
 #include "resource_context_qt.h"
 #include "type_conversion.h"
 #include "url_request_context_getter_qt.h"
+//#include "customhandlers/protocol_handler_registry_factory_qt.h"
 
 class BrowserContextQt : public content::BrowserContext
 {
@@ -135,7 +136,7 @@ public:
 
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers)
     {
-        url_request_getter_ = new URLRequestContextGetterQt(GetPath());
+        url_request_getter_ = new URLRequestContextGetterQt(GetPath(), this);
         static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
         return url_request_getter_.get();
     }

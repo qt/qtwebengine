@@ -55,7 +55,10 @@ SOURCES = \
         web_event_factory.cpp \
         yuv_video_node.cpp \
         qrc_protocol_handler_qt.cpp \
-        url_request_qrc_job_qt.cpp
+        url_request_qrc_job_qt.cpp \
+        customhandlers/custom_protocol_handler_qt.cpp \
+        customhandlers/protocol_handler_registry_qt.cpp \
+        customhandlers/protocol_handler_registry_factory_qt.cpp
 
 HEADERS = \
         backing_store_qt.h \
@@ -83,7 +86,10 @@ HEADERS = \
         web_event_factory.h \
         yuv_video_node.h \
         qrc_protocol_handler_qt.h \
-        url_request_qrc_job_qt.h
+        url_request_qrc_job_qt.h \
+        customhandlers/custom_protocol_handler_qt.h \
+        customhandlers/protocol_handler_registry_qt.h \
+        customhandlers/protocol_handler_registry_factory_qt.h
 
 VERSION = $$MODULE_VERSION
 load(resolve_target)

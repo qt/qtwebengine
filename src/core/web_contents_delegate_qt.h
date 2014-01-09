@@ -73,6 +73,8 @@ public:
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
     virtual void DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
+    virtual void RegisterProtocolHandler(content::WebContents *web_contents,
+            const std::string &protocol, const GURL &url, const string16 &title, bool user_gesture) Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;

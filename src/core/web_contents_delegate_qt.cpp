@@ -50,6 +50,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/common/favicon_url.h"
+#include "content/public/browser/browser_context.h"
+
+#include "customhandlers/custom_protocol_handler_qt.h"
+#include "customhandlers/protocol_handler_registry_factory_qt.h"
+#include "customhandlers/protocol_handler_registry_qt.h"
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
@@ -129,4 +134,16 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector
 content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
 {
     return JavaScriptDialogManagerQt::GetInstance();
+}
+
+void WebContentsDelegateQt::RegisterProtocolHandler(content::WebContents *web_contents,
+    const std::string &protocol, const GURL &url, const string16 &title, bool user_gesture)
+{
+    content::BrowserContext *browser_context = web_contents->GetBrowserContext();
+    if (browser_context->IsOffTheRecord())
+        return;
+    CustomProtocolHandlerQt handler = CustomProtocolHandlerQt::CreateProtocolHandler(protocol, url, title);
+
+    ProtocolHandlerRegistryQt *registry = ProtocolHandlerRegistryFactoryQt::GetForProfile(browser_context);
+    registry->onAcceptRegisterProtocolHandler(handler);
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -38,48 +38,49 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef URL_REQUEST_CONTEXT_GETTER_QT_H
-#define URL_REQUEST_CONTEXT_GETTER_QT_H
 
-#include "net/url_request/url_request_context_getter.h"
+#ifndef PROTOCOL_HANDLER_REGISTRY_FACTORY_QT_H_
+#define PROTOCOL_HANDLER_REGISTRY_FACTORY_QT_H_
 
-#include "base/files/file_path.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/single_thread_task_runner.h"
-#include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_job_factory_impl.h"
-#include "content/public/common/url_constants.h"
-#include "content/public/browser/browser_context.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-#include "qglobal.h"
+class ProtocolHandlerRegistryQt;
 
-namespace net {
-class HostResolver;
-class MappedHostResolver;
-class NetworkDelegate;
-class ProxyConfigService;
-}
+template <typename T> struct DefaultSingletonTraits;
 
-class URLRequestContextGetterQt : public net::URLRequestContextGetter {
+// Singleton that owns all ProtocolHandlerRegistrys and associates them with
+// Profiles. Listens for the Profile's destruction notification and cleans up
+// the associated ProtocolHandlerRegistryQt.
+class ProtocolHandlerRegistryFactoryQt: public BrowserContextKeyedServiceFactory {
+
 public:
-    explicit URLRequestContextGetterQt(const base::FilePath&, content::BrowserContext *browserContext);
+    // Returns the singleton instance of the ProtocolHandlerRegistryFactoryQt.
+    static ProtocolHandlerRegistryFactoryQt *GetInstance();
 
-    virtual net::URLRequestContext* GetURLRequestContext() Q_DECL_OVERRIDE;
+    // Returns the ProtocolHandlerRegistryQt that provides intent registration for
+    // |profile|. Ownership stays with this factory object.
+    static ProtocolHandlerRegistryQt *GetForProfile(content::BrowserContext *context);
 
-    virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
+protected:
+    // BrowserContextKeyedServiceFactory implementation.
+    virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
+
+    virtual content::BrowserContext *GetBrowserContextToUse(content::BrowserContext *context) const OVERRIDE;
+    virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
 private:
-    virtual ~URLRequestContextGetterQt() {}
+    friend struct DefaultSingletonTraits<ProtocolHandlerRegistryFactoryQt>;
 
-    bool m_ignoreCertificateErrors;
-    base::FilePath m_basePath;
+    ProtocolHandlerRegistryFactoryQt();
+    virtual ~ProtocolHandlerRegistryFactoryQt();
 
-    scoped_ptr<net::ProxyConfigService> m_proxyConfigService;
-    scoped_ptr<net::URLRequestContext> m_urlRequestContext;
-    scoped_ptr<net::NetworkDelegate> m_networkDelegate;
-    scoped_ptr<net::URLRequestContextStorage> m_storage;
-    scoped_ptr<net::URLRequestJobFactory> m_interceptorJobFactory;
-    content::BrowserContext *m_browserContext;
+    // BrowserContextKeyedServiceFactory implementation.
+    virtual BrowserContextKeyedService *BuildServiceInstanceFor(
+            content::BrowserContext *context) const OVERRIDE;
+
+    DISALLOW_COPY_AND_ASSIGN (ProtocolHandlerRegistryFactoryQt);
 };
 
-#endif // URL_REQUEST_CONTEXT_GETTER_QT_H
+#endif  // PROTOCOL_HANDLER_REGISTRY_FACTORY_QT_H_

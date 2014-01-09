@@ -263,6 +263,7 @@ ContentBrowserClientQt::ContentBrowserClientQt()
     : m_browserMainParts(0)
 {
     Q_ASSERT(!gBrowserClient);
+    LOG(INFO) << "zhx ContentBrowserClientQt";
     gBrowserClient = this;
 }
 
