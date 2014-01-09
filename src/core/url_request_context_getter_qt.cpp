@@ -67,16 +67,19 @@
 
 #include "network_delegate_qt.h"
 #include "qrc_protocol_handler_qt.h"
+#include "customhandlers/protocol_handler_registry_factory_qt.h"
+#include "customhandlers/protocol_handler_registry_qt.h"
 
 static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &basePath)
+URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &basePath, content::BrowserContext *browserContext)
     : m_ignoreCertificateErrors(false)
     , m_basePath(basePath)
-{
+    , m_browserContext(browserContext)
 
+{
     // We must create the proxy config service on the UI loop on Linux because it
     // must synchronously run on the glib message loop. This will be passed to
     // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
@@ -162,15 +165,23 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 
         // FIXME: add protocol handling
 
-        m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
-        m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
-        m_jobFactory->SetProtocolHandler(
-            chrome::kFileScheme,
-            new net::FileProtocolHandler(content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
-        m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
-        m_jobFactory->SetProtocolHandler(chrome::kFtpScheme, new net::FtpProtocolHandler(
+        net::URLRequestJobFactoryImpl *jobFactory = new net::URLRequestJobFactoryImpl();
+        jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
+        jobFactory->SetProtocolHandler(
+                    chrome::kFileScheme,
+                    new net::FileProtocolHandler(content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+        jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
+        jobFactory->SetProtocolHandler(chrome::kFtpScheme, new net::FtpProtocolHandler(
                 new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
-        m_urlRequestContext->set_job_factory(m_jobFactory.get());
+        ProtocolHandlerRegistryQt* registry = ProtocolHandlerRegistryFactoryQt::GetForProfile(
+                m_browserContext);
+        scoped_ptr<ProtocolHandlerRegistryQt::JobInterceptorFactory> jobInterceptorFactory =
+                registry->createJobInterceptorFactory();
+        jobInterceptorFactory->chain(
+                scoped_ptr<net::URLRequestJobFactory>(
+                        static_cast<net::URLRequestJobFactory*>(jobFactory)));
+        m_interceptorJobFactory = jobInterceptorFactory.Pass();
+        m_urlRequestContext->set_job_factory(m_interceptorJobFactory.get());
     }
 
     return m_urlRequestContext.get();

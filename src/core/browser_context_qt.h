@@ -135,7 +135,7 @@ public:
 
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap* protocol_handlers)
     {
-        url_request_getter_ = new URLRequestContextGetterQt(GetPath());
+        url_request_getter_ = new URLRequestContextGetterQt(GetPath(), this);
         static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
         return url_request_getter_.get();
     }
