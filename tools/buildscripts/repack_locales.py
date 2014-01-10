@@ -162,6 +162,10 @@ def DoMain(argv):
                     help="Print the expected output file list, then exit.")
   parser.add_option("-x", action="store", dest="int_dir",
                     help="Intermediate build files output directory.")
+  parser.add_option("-g", action="store", dest="grit_dir",
+                    help="Placeholder for unneeded/unused grit_dir option.")
+  parser.add_option("-b", action="store", dest="branding",
+                    help="Placeholder for unneeded/unused branding option.")
   parser.add_option("-s", action="store", dest="share_int_dir",
                     help="Shared intermediate build files output directory.")
   parser.add_option("-e", action="append", dest="extra_input", default=[],
