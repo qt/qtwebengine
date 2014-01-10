@@ -119,7 +119,7 @@ bool DownloadTargetHelper::determineDownloadTarget(content::DownloadItem *item, 
 
     base::FilePath filePathForCallback(toFilePathString(suggestedFilePath));
     callback.Run(filePathForCallback, content::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                 content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, filePathForCallback.AddExtension("download"));
+                 content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT, filePathForCallback.AddExtension(toFilePathString("download")));
     return true;
 }
 
