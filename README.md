@@ -48,19 +48,7 @@ Use of shared libraries can be enforced by setting the GYP_DEFINES environment v
 
     export GYP_DEFINES=component=shared_library
 
-  Or by using the include.gypi mechanism described below:
-
-### Compiler Warnings treated as Errors (-Werror) ###
-On Linux you may get build errors due to -Werror. Create ~/.gyp/include.gypi with the following contents:
-
-    {
-        'variables': {
-            'werror%': '',
-            'component%': 'shared_library',
-        },
-    }
-
-So afterwards you have to re-create the ninja files by running "qmake -r"
+  Or by using the ~/.gyp/include.gypi mechanism.
 
 ### Use external Chromium sources ###
 If you want to use external chromium sources instead of the submodule provided in the QtWebEngine repository,
