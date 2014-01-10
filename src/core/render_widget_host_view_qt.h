@@ -199,6 +199,11 @@ public:
     virtual void HasTouchEventHandlers(bool) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+    virtual void SetClickthroughRegion(SkRegion *) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void WillWmDestroy(void) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+#endif // defined(OS_WIN)
+
 private:
     void sendDelegatedFrameAck();
     void Paint(const gfx::Rect& damage_rect);

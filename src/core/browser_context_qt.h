@@ -77,7 +77,7 @@ public:
         downloadManagerDelegate.reset(new DownloadManagerDelegateQt);
     }
 
-    virtual ~BrowserContextQt() Q_DECL_OVERRIDE
+    virtual ~BrowserContextQt()
     {
         if (resourceContext)
             content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, resourceContext.release());
