@@ -55,7 +55,11 @@
 
 inline QString toQt(const base::string16 &string)
 {
+#if defined(OS_POSIX)
     return QString::fromUtf16(string.data());
+#elif defined(OS_WIN)
+    return QString::fromStdWString(string.data());
+#endif
 }
 
 inline QString toQt(const std::string &string)
@@ -65,7 +69,11 @@ inline QString toQt(const std::string &string)
 
 inline base::string16 toString16(const QString &qString)
 {
+#if defined(OS_POSIX)
     return base::string16(qString.utf16());
+#elif defined(OS_WIN)
+    return base::string16(qString.toStdWString());
+#endif
 }
 
 inline QUrl toQt(const GURL &url)
