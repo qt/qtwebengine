@@ -55,7 +55,11 @@
 
 inline QString toQt(const base::string16 &string)
 {
+#if defined(OS_WIN)
+    return QString::fromStdWString(string.data());
+#else
     return QString::fromUtf16(string.data());
+#endif
 }
 
 inline QString toQt(const std::string &string)
@@ -65,7 +69,11 @@ inline QString toQt(const std::string &string)
 
 inline base::string16 toString16(const QString &qString)
 {
+#if defined(OS_WIN)
+    return base::string16(qString.toStdWString());
+#else
     return base::string16(qString.utf16());
+#endif
 }
 
 inline QUrl toQt(const GURL &url)
@@ -119,10 +127,10 @@ inline QMatrix4x4 toQt(const SkMatrix44 &m)
 
 inline base::FilePath::StringType toFilePathString(const QString &str)
 {
-#if defined(OS_POSIX)
-    return str.toStdString();
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
     return str.toStdWString();
+#else
+    return str.toStdString();
 #endif
 }
 
