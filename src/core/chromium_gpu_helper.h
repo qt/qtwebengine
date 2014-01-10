@@ -55,7 +55,7 @@ class SyncPointManager;
 namespace gpu {
 namespace gles2 {
 class MailboxManager;
-class MailboxName;
+struct MailboxName;
 class Texture;
 }
 }
