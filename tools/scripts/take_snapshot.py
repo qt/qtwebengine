@@ -83,7 +83,6 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('mock_chrome_application_mac.h'))
         or file_path.endswith('.java')
         or file_path.startswith('android_webview')
-        or file_path.startswith('android_webview')
         or file_path.startswith('apps/')
         or file_path.startswith('ash/')
         or file_path.startswith('base/android/java')
@@ -94,7 +93,6 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('version.py'))
         or file_path.startswith('chrome_frame')
         or file_path.startswith('chromeos')
-        or file_path.startswith('cloud_print')
         or file_path.startswith('cloud_print')
         or file_path.startswith('content/public/android/java')
         or file_path.startswith('content/shell/android/java')
@@ -112,7 +110,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('testing/android')
         or file_path.startswith('third_party/accessibility-developer-tools')
         or file_path.startswith('third_party/GTM')
-        or file_path.startswith('third_party/GTM')
         or file_path.startswith('third_party/WebKit/LayoutTests')
         or file_path.startswith('third_party/WebKit/ManualTests')
         or file_path.startswith('third_party/WebKit/PerformanceTests')
@@ -123,7 +120,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/apache-mime4j')
         or file_path.startswith('third_party/apple_sample_code')
         or file_path.startswith('third_party/cacheinvalidation')
-        or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
@@ -166,7 +162,6 @@ def isInChromiumBlacklist(file_path):
             return True
     return False
 
-
 def createHardLinkForFile(src, dst):
     src = os.path.abspath(src)
     dst = os.path.abspath(dst)
@@ -185,7 +180,6 @@ def createHardLinkForFile(src, dst):
             print 'file does not exist:' + src
         else:
             raise
-
 
 third_party_upstream = os.path.join(qtwebengine_root, 'src/3rdparty_upstream')
 third_party = os.path.join(qtwebengine_root, 'src/3rdparty')
