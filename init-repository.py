@@ -50,6 +50,22 @@ import argparse
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 
+def sanityCheckRepo():
+    os.chdir(qtwebengine_root)
+    if not '.git' in os.listdir('.'):
+        print ''
+        print 'This source tree cannot be initialized with init-repository.py.'
+        print ''
+        print 'If you downloaded an archive containing these sources,'
+        print 'you do not need to run the init-repository.py script.'
+        print ''
+        print 'If you want to use git for working with qtwebengine,'
+        print 'use git to clone: git@gitorious.org:qt-labs/qtwebengine.git'
+        print ''
+        sys.exit(0)
+
+sanityCheckRepo()
+
 sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 import git_submodule as GitSubmodule
 import version_resolver as resolver
