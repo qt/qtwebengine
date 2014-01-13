@@ -94,7 +94,8 @@ GYP_CONTENTS += "    ],"
 }
 GYP_CONTENTS += "    'link_settings': {" \
                 "      'libraries': ["
-for (library, LIBRARIES): GYP_CONTENTS += "        '$$library',"
+win32: for (library, LIBRARIES): GYP_CONTENTS += "        '$${library}.lib',"
+else:  for (library, LIBRARIES): GYP_CONTENTS += "        '$$library',"
 macx {
     FRAMEWORKS = $$find(LIBS, "Q*")
     FRAMEWORKS = $$unique(FRAMEWORKS)
