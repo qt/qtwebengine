@@ -43,12 +43,23 @@
 
 #include "content_main_delegate_qt.h"
 #include "content/public/app/content_main.h"
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox_types.h"
+#include "content/public/app/startup_helper_win.h"
+#endif // OS_WIN
 
 namespace QtWebEngine {
 
 int processMain(int argc, const char **argv)
 {
+#if defined(OS_WIN)
+    HINSTANCE instance_handle = NULL;
+    sandbox::SandboxInterfaceInfo sandbox_info = {0};
+    content::InitializeSandboxInfo(&sandbox_info);
+    return content::ContentMain(instance_handle, &sandbox_info, new ContentMainDelegateQt);
+#else
     return content::ContentMain(argc, argv, new ContentMainDelegateQt);
+#endif // OS_WIN
 }
 
 }
