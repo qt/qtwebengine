@@ -41,6 +41,8 @@
 
 #include "javascript_dialog_manager_qt.h"
 
+#include "javascript_dialog_controller.h"
+#include "javascript_dialog_controller_p.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 #include "type_conversion.h"
@@ -65,14 +67,31 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
         return;
     }
 
-    QString promptInput;
     WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(javascriptMessageType);
-    bool res = client->javascriptDialog(dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), &promptInput);
-    callback.Run(res, toString16(promptInput));
+    JavaScriptDialogControllerPrivate *dialogData = new JavaScriptDialogControllerPrivate(dialogType, toQt(messageText).toHtmlEscaped()
+                                                                                          , toQt(defaultPromptText).toHtmlEscaped(), callback, webContents);
+    QSharedPointer<JavaScriptDialogController> dialog(new JavaScriptDialogController(dialogData));
+
+    // We shouldn't get new dialogs for a given WebContents until we gave back a result.
+    Q_ASSERT(!m_activeDialogs.contains(webContents));
+    m_activeDialogs.insert(webContents, dialog);
+
+    client->javascriptDialog(dialog);
 }
 
-bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride)
+bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *contents, bool accept, const base::string16 *promptOverride)
 {
-    // FIXME: We might need to keep a queue of modal dialogs in there and unqueue them...
-    return false;
+    if (!m_activeDialogs.contains(contents))
+        return false;
+    QSharedPointer<JavaScriptDialogController> dialog = m_activeDialogs.value(contents);
+    Q_EMIT dialog->dialogCloseRequested();
+    dialog->d->dialogFinished(accept, promptOverride ? *promptOverride : base::string16());
+    return true;
+}
+
+
+void JavaScriptDialogManagerQt::removeDialogForContents(content::WebContents *contents)
+{
+    QSharedPointer<JavaScriptDialogController> dialog = m_activeDialogs.take(contents);
+    Q_EMIT dialog->dialogCloseRequested();
 }
