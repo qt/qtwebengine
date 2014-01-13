@@ -23,6 +23,7 @@
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
+#include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
 #include "qwebengineview.h"
@@ -326,20 +327,31 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     return true;
 }
 
-bool QWebEnginePagePrivate::javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue, QString *result)
+void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> controller)
 {
     Q_Q(QWebEnginePage);
-    switch (type) {
+    bool accepted = false;
+    QString promptResult;
+    switch (controller->type()) {
     case AlertDialog:
-        q->javaScriptAlert(0, message);
-        return true;
+        q->javaScriptAlert(0, controller->message());
+        accepted = true;
+        break;
     case ConfirmDialog:
-        return q->javaScriptConfirm(0, message);
+        accepted = q->javaScriptConfirm(0, controller->message());
+        break;
     case PromptDialog:
-        return q->javaScriptPrompt(0, message, defaultValue, result);
+        accepted = q->javaScriptPrompt(0, controller->message(), controller->defaultPrompt(), &promptResult);
+        if (accepted)
+            controller->textProvided(promptResult);
+        break;
+    default:
+        Q_UNREACHABLE();
     }
-    Q_UNREACHABLE();
-    return false;
+    if (accepted)
+        controller->accept();
+    else
+        controller->reject();
 }
 
 namespace {

@@ -38,42 +38,67 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef JAVASCRIPT_DIALOG_MANAGER_QT_H
-#define JAVASCRIPT_DIALOG_MANAGER_QT_H
 
-#include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/common/javascript_message_type.h"
+#include "javascript_dialog_controller.h"
+#include "javascript_dialog_controller_p.h"
 
-#include "qglobal.h"
-#include <QMap>
-#include <QSharedPointer>
+#include"javascript_dialog_manager_qt.h"
+#include "type_conversion.h"
 
-class JavaScriptDialogController;
-namespace content {
-class WebContents;
+void JavaScriptDialogControllerPrivate::dialogFinished(bool accepted, const base::string16 &promptValue)
+{
+    // Clear the queue first as this could result in the engine asking us to run another dialog.
+    JavaScriptDialogManagerQt::GetInstance()->removeDialogForContents(contents);
+
+    callback.Run(accepted, promptValue);
 }
 
-class JavaScriptDialogManagerQt : public content::JavaScriptDialogManager
+JavaScriptDialogControllerPrivate::JavaScriptDialogControllerPrivate(WebContentsAdapterClient::JavascriptDialogType t, const QString &msg, const QString &prompt
+                                                                     , const content::JavaScriptDialogManager::DialogClosedCallback &cb, content::WebContents *c)
+    : type(t)
+    , message(msg)
+    , defaultPrompt(prompt)
+    , callback(cb)
+    , contents(c)
 {
-public:
-    // For use with the Singleton helper class from chromium
-    static JavaScriptDialogManagerQt *GetInstance();
+}
 
-    virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType,
-                                       const base::string16 &messageText, const base::string16 &defaultPromptText,
-                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) Q_DECL_OVERRIDE;
-    virtual void RunBeforeUnloadDialog(content::WebContents *, const base::string16 &messageText, bool isReload,
-                                         const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
-    virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) Q_DECL_OVERRIDE;
-    virtual void CancelActiveAndPendingDialogs(content::WebContents *contents) Q_DECL_OVERRIDE { removeDialogForContents(contents); }
-    virtual void WebContentsDestroyed(content::WebContents *contents) Q_DECL_OVERRIDE { removeDialogForContents(contents); }
+JavaScriptDialogController::~JavaScriptDialogController()
+{
+}
 
-    void removeDialogForContents(content::WebContents *);
+QString JavaScriptDialogController::message() const
+{
+    return d->message;
+}
 
-private:
-    QMap<content::WebContents *, QSharedPointer<JavaScriptDialogController> > m_activeDialogs;
+QString JavaScriptDialogController::defaultPrompt() const
+{
+    return d->defaultPrompt;
+}
 
-};
+WebContentsAdapterClient::JavascriptDialogType JavaScriptDialogController::type() const
+{
+    return d->type;
+}
 
-#endif // JAVASCRIPT_DIALOG_MANAGER_QT_H
+void JavaScriptDialogController::textProvided(const QString &text)
+{
+    d->userInput = text;
+}
 
+void JavaScriptDialogController::accept()
+{
+    d->dialogFinished(true, toString16(d->userInput));
+}
+
+void JavaScriptDialogController::reject()
+{
+    d->dialogFinished(false, toString16(d->defaultPrompt));
+}
+
+JavaScriptDialogController::JavaScriptDialogController(JavaScriptDialogControllerPrivate *dd)
+{
+    Q_ASSERT(dd);
+    d.reset(dd);
+}
