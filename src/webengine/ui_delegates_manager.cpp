@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include "ui_delegates_manager.h"
+
 #include "api/qquickwebengineview_p.h"
+#include "javascript_dialog_controller.h"
 
 #include <QAbstractListModel>
 #include <QClipboard>
@@ -158,9 +160,9 @@ QQmlContext *UIDelegatesManager::creationContextForComponent(QQmlComponent *comp
     return baseContext;
 }
 
-#define CHECK_QML_SIGNAL_PROPERTY(prop, type, location) \
+#define CHECK_QML_SIGNAL_PROPERTY(prop, location) \
     if (!prop.isSignalProperty()) \
-        qWarning(#type "component (Loaded from %s) is missing %s signal property.\n", qPrintable(location.toString()), qPrintable(prop.name()));
+        qWarning("%s is missing %s signal property.\n", qPrintable(location.toString()), qPrintable(prop.name()));
 
 void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName, bool enabled)
 {
@@ -231,3 +233,74 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
     return menu;
 }
 
+#define ASSIGN_DIALOG_COMPONENT_DATA_CASE_STATEMENT(TYPE, COMPONENT) \
+    case TYPE:\
+        dialogComponent = COMPONENT##Component.data(); \
+        break;
+
+
+void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> dialogController)
+{
+    Q_ASSERT(!dialogController.isNull());
+    ComponentType dialogComponentType = Invalid;
+    QString title;
+    switch (dialogController->type()) {
+    case WebContentsAdapterClient::AlertDialog:
+        dialogComponentType = AlertDialog;
+        title = QObject::tr("Javascript Alert - %1");
+        break;
+    case WebContentsAdapterClient::ConfirmDialog:
+        dialogComponentType = ConfirmDialog;
+        title = QObject::tr("Javascript Confirm - %1");
+        break;
+    case WebContentsAdapterClient::PromptDialog:
+        dialogComponentType = PromptDialog;
+        title = QObject::tr("Javascript Prompt - %1");
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
+
+    if (!ensureComponentLoaded(dialogComponentType))
+        return;
+
+    QQmlComponent *dialogComponent = Q_NULLPTR;
+    switch (dialogComponentType) {
+    FOR_EACH_COMPONENT_TYPE(ASSIGN_DIALOG_COMPONENT_DATA_CASE_STATEMENT, NO_SEPARATOR)
+    default:
+        Q_UNREACHABLE();
+    }
+
+    QQmlContext *context(creationContextForComponent(dialogComponent));
+    QObject *dialog = dialogComponent->beginCreate(context);
+    dialog->setParent(m_view);
+    QQmlProperty textProp(dialog, QStringLiteral("text"));
+    textProp.write(dialogController->message());
+
+    QQmlProperty titleProp(dialog, QStringLiteral("title"));
+    titleProp.write(title.arg(m_view->url().toString()));
+
+    if (dialogComponentType == PromptDialog) {
+        QQmlProperty promptProp(dialog, QStringLiteral("prompt"));
+        promptProp.write(dialogController->defaultPrompt());
+        QQmlProperty inputSignal(dialog, QStringLiteral("onInput"));
+        CHECK_QML_SIGNAL_PROPERTY(inputSignal, dialogComponent->url());
+        static int setTextIndex = dialogController->metaObject()->indexOfSlot("textProvided(QString)");
+        QObject::connect(dialog, inputSignal.method(), dialogController.data(), dialogController->metaObject()->method(setTextIndex));
+    }
+
+    QQmlProperty acceptSignal(dialog, QStringLiteral("onAccepted"));
+    QQmlProperty rejectSignal(dialog, QStringLiteral("onRejected"));
+    CHECK_QML_SIGNAL_PROPERTY(acceptSignal, dialogComponent->url());
+    CHECK_QML_SIGNAL_PROPERTY(rejectSignal, dialogComponent->url());
+
+    static int acceptIndex = dialogController->metaObject()->indexOfSlot("accept()");
+    QObject::connect(dialog, acceptSignal.method(), dialogController.data(), dialogController->metaObject()->method(acceptIndex));
+    static int rejectIndex = dialogController->metaObject()->indexOfSlot("reject()");
+    QObject::connect(dialog, rejectSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));
+    dialogComponent->completeCreate();
+
+    QObject::connect(dialogController.data(), &JavaScriptDialogController::dialogCloseRequested, dialog, &QObject::deleteLater);
+
+    QMetaObject::invokeMethod(dialog, "open");
+}

@@ -136,7 +136,7 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
-    virtual bool javascriptDialog(JavascriptDialogType, const QString &message, const QString &defaultValue = QString(), QString *result = 0) Q_DECL_OVERRIDE { Q_UNUSED(message); Q_UNUSED(defaultValue); Q_UNUSED(result); return false; }
+    virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) { Q_UNUSED(defaultFileName); Q_UNUSED(acceptedMimeTypes);}
 
     void setDevicePixelRatio(qreal);

@@ -47,14 +47,18 @@
 
 #include <QExplicitlySharedDataPointer>
 #include <QPoint>
-#include <QPointer>
 #include <QQmlComponent>
+#include <QScopedPointer>
+#include <QSharedPointer>
 #include <QUrl>
 
 #define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR) \
     F(Menu, menu) SEPARATOR \
     F(MenuItem, menuItem) SEPARATOR \
-    F(MenuSeparator, menuSeparator) SEPARATOR
+    F(MenuSeparator, menuSeparator) SEPARATOR \
+    F(AlertDialog, alertDialog) SEPARATOR \
+    F(ConfirmDialog, confirmDialog) SEPARATOR \
+    F(PromptDialog, promptDialog) SEPARATOR
 
 #define COMMA_SEPARATOR ,
 #define SEMICOLON_SEPARATOR ;
@@ -63,6 +67,7 @@
 #define MEMBER_DECLARATION(TYPE, COMPONENT) \
     QScopedPointer<QQmlComponent> COMPONENT##Component
 
+class JavaScriptDialogController;
 QT_BEGIN_NAMESPACE
 class QObject;
 class QQmlContext;
@@ -106,7 +111,9 @@ class UIDelegatesManager {
 
 public:
     enum ComponentType {
+        Invalid = -1,
         FOR_EACH_COMPONENT_TYPE(ENUM_DECLARATION, COMMA_SEPARATOR)
+        ComponentTypeCount
     };
 
     UIDelegatesManager(QQuickWebEngineView *);
@@ -115,6 +122,7 @@ public:
     void addMenuSeparator(QObject *menu);
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
+    void showDialog(QSharedPointer<JavaScriptDialogController>);
 
 private:
     bool ensureComponentLoaded(ComponentType);
