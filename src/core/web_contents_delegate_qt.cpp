@@ -86,6 +86,7 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 {
     m_viewClient->close();
+    GetJavaScriptDialogManager()->CancelActiveAndPendingDialogs(source);
 }
 
 void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)

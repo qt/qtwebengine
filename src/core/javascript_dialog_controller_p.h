@@ -38,42 +38,31 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef JAVASCRIPT_DIALOG_MANAGER_QT_H
-#define JAVASCRIPT_DIALOG_MANAGER_QT_H
+
+#ifndef JAVASCRIPT_DIALOG_CONTROLLER_P_H
+#define JAVASCRIPT_DIALOG_CONTROLLER_P_H
 
 #include "content/public/browser/javascript_dialog_manager.h"
-#include "content/public/common/javascript_message_type.h"
+#include "web_contents_adapter_client.h"
+#include <QString>
 
-#include "qglobal.h"
-#include <QMap>
-#include <QSharedPointer>
-
-class JavaScriptDialogController;
 namespace content {
 class WebContents;
 }
 
-class JavaScriptDialogManagerQt : public content::JavaScriptDialogManager
-{
+class JavaScriptDialogControllerPrivate {
+
 public:
-    // For use with the Singleton helper class from chromium
-    static JavaScriptDialogManagerQt *GetInstance();
+    void dialogFinished(bool accepted, const base::string16 &promptValue);
+    JavaScriptDialogControllerPrivate(WebContentsAdapterClient::JavascriptDialogType, const QString &message, const QString &prompt
+                                      , const content::JavaScriptDialogManager::DialogClosedCallback &, content::WebContents *);
 
-    virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType,
-                                       const base::string16 &messageText, const base::string16 &defaultPromptText,
-                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) Q_DECL_OVERRIDE;
-    virtual void RunBeforeUnloadDialog(content::WebContents *, const base::string16 &messageText, bool isReload,
-                                         const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
-    virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) Q_DECL_OVERRIDE;
-    virtual void CancelActiveAndPendingDialogs(content::WebContents *contents) Q_DECL_OVERRIDE { removeDialogForContents(contents); }
-    virtual void WebContentsDestroyed(content::WebContents *contents) Q_DECL_OVERRIDE { removeDialogForContents(contents); }
-
-    void removeDialogForContents(content::WebContents *);
-
-private:
-    QMap<content::WebContents *, QSharedPointer<JavaScriptDialogController> > m_activeDialogs;
-
+    WebContentsAdapterClient::JavascriptDialogType type;
+    QString message;
+    QString defaultPrompt;
+    QString userInput;
+    content::JavaScriptDialogManager::DialogClosedCallback callback;
+    content::WebContents *contents;
 };
 
-#endif // JAVASCRIPT_DIALOG_MANAGER_QT_H
-
+#endif // JAVASCRIPT_DIALOG_CONTROLLER_P_H

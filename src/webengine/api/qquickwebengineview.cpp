@@ -42,6 +42,7 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
+#include "javascript_dialog_controller.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
@@ -167,10 +168,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     return true;
 }
 
-bool QQuickWebEngineViewPrivate::javascriptDialog(JavascriptDialogType type, const QString &message, const QString &defaultValue, QString *result)
+void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)
 {
-    Q_UNUSED(message); Q_UNUSED(defaultValue); Q_UNUSED(result);
-    return false;
+    ui()->showDialog(dialog);
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
