@@ -612,7 +612,11 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
 {
     gfx::NativeViewId nativeViewId = GetNativeViewId();
+#if defined(OS_WIN)
+    return nativeViewId ? gfx::GLSurfaceHandle(reinterpret_cast<gfx::PluginWindowHandle>(nativeViewId), gfx::NATIVE_TRANSPORT) : gfx::GLSurfaceHandle();
+#else
     return nativeViewId ? gfx::GLSurfaceHandle(nativeViewId, gfx::NATIVE_TRANSPORT) : gfx::GLSurfaceHandle();
+#endif
 }
 
 void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
