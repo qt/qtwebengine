@@ -131,7 +131,11 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
+#if defined(OS_WIN)
+    parsedCommandLine->AppendSwitchNative(switches::kBrowserSubprocessPath,WebEngineLibraryInfo::subProcessPath().value().c_str());
+#else
     parsedCommandLine->AppendSwitchASCII(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::subProcessPath().value().c_str());
+#endif
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 
