@@ -52,9 +52,9 @@
 
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ui/shell_dialogs/selected_file_info.h"
@@ -220,6 +220,12 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // Let the WebContent's view know about the WebContentsAdapterClient.
     WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContents->GetView());
     contentsView->initialize(adapterClient);
+
+    // Create a RenderView with the initial empty document
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    Q_ASSERT(rvh);
+    static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE);
+
 }
 
 void WebContentsAdapter::reattachRWHV()
