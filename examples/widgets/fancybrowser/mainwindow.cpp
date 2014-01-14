@@ -80,6 +80,9 @@ MainWindow::MainWindow(const QUrl& url)
     connect(viewSourceAction, SIGNAL(triggered()), SLOT(viewSource()));
     viewMenu->addAction(viewSourceAction);
 
+    // FIXME: This should be enabled again as soon as we have a toHtml() function implemented.
+    viewSourceAction->setEnabled(false);
+
 //! [3]
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
     effectMenu->addAction("Highlight all links", this, SLOT(highlightAllLinks()));
