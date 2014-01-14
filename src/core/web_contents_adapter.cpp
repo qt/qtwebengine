@@ -266,10 +266,19 @@ void WebContentsAdapter::reload()
     d->webContents->GetView()->Focus();
 }
 
+static void clearInitialAboutBlankEntryIfNeeded(content::WebContents *webContents, content::NavigationController::LoadURLParams &params)
+{
+    if (!webContents->GetController().GetEntryCount() == 1
+            && LowerCaseEqualsASCII(webContents->GetVisibleURL().spec(), content::kAboutBlankURL))
+        params.should_clear_history_list = true;
+}
+
 void WebContentsAdapter::load(const QUrl &url)
 {
     Q_D(WebContentsAdapter);
     content::NavigationController::LoadURLParams params(toGurl(url));
+    clearInitialAboutBlankEntryIfNeeded(d->webContents.get(), params);
+
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->GetView()->Focus();
@@ -285,6 +294,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     urlString.append(encodedData.constData(), encodedData.length());
 
     content::NavigationController::LoadURLParams params((GURL(urlString)));
+    clearInitialAboutBlankEntryIfNeeded(d->webContents.get(), params);
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
     params.can_load_local_resources = true;
