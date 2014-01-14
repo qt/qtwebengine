@@ -75,10 +75,12 @@ MainWindow::MainWindow(const QUrl& url)
     toolBar->addWidget(locationEdit);
 //! [1]
 
+#ifdef QWEBENGINEPAGE_TOHTML
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
     QAction* viewSourceAction = new QAction("Page Source", this);
     connect(viewSourceAction, SIGNAL(triggered()), SLOT(viewSource()));
     viewMenu->addAction(viewSourceAction);
+#endif
 
 //! [3]
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
