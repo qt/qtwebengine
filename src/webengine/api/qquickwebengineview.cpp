@@ -90,8 +90,6 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
         // 1x, 2x, 3x etc assets that fit an integral number of pixels.
         setDevicePixelRatio(qMax(1, qRound(webPixelRatio)));
     }
-
-    adapter->initialize(this);
 }
 
 QQuickWebEngineViewExperimental *QQuickWebEngineViewPrivate::experimental() const
@@ -325,8 +323,9 @@ void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     : QQuickItem(*(new QQuickWebEngineViewPrivate), parent)
 {
-    Q_D(const QQuickWebEngineView);
+    Q_D(QQuickWebEngineView);
     d->e->q_ptr = this;
+    d->adapter->initialize(d);
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()
