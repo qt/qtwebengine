@@ -218,6 +218,11 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(*new QWebEnginePagePrivate, parent)
 {
+    Q_D(const QWebEnginePage);
+    // This is used to preserve QWebPage's behavior from QtWebKit (mostly for tests)
+    // Upon page creation, we load "about:blank" in order to be able to do things such as running
+    // JavaScript on the render process side on a freshly create QWebEnginePage
+    load(QUrl::fromEncoded(QByteArrayLiteral("about:blank")));
 }
 
 QWebEnginePage::~QWebEnginePage()
