@@ -30,7 +30,7 @@ index 734c57a..33848b2 100755
          return value
      return ''
  
-@@ -427,6 +427,10 @@ class GritNode(base.Node):
+@@ -427,6 +427,11 @@ class GritNode(base.Node):
          abs_filename = os.path.abspath(filename_or_stream)
          if abs_filename[:len(src_root_dir)] != src_root_dir:
            filename = os.path.basename(filename_or_stream)
@@ -38,6 +38,7 @@ index 734c57a..33848b2 100755
 +          # found as a key, fall back to using the absolute file name.
 +          if not filename in first_ids:
 +            filename = abs_filename
++            filename = filename.replace('\\', '/')
          else:
            filename = abs_filename[len(src_root_dir) + 1:]
            filename = filename.replace('\\', '/')
