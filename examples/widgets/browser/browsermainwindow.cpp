@@ -263,19 +263,25 @@ void BrowserMainWindow::setupMenu()
     fileMenu->addSeparator();
     fileMenu->addAction(m_tabWidget->closeTabAction());
     fileMenu->addSeparator();
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     fileMenu->addAction(tr("&Save As..."), this,
                 SLOT(slotFileSaveAs()), QKeySequence(QKeySequence::Save));
     fileMenu->addSeparator();
+#endif
     BookmarksManager *bookmarksManager = BrowserApplication::bookmarksManager();
     fileMenu->addAction(tr("&Import Bookmarks..."), bookmarksManager, SLOT(importBookmarks()));
     fileMenu->addAction(tr("&Export Bookmarks..."), bookmarksManager, SLOT(exportBookmarks()));
     fileMenu->addSeparator();
+#if defined(QWEBENGINEPAGE_PRINT)
     fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
     fileMenu->addSeparator();
+#endif
+#if defined(QWEBENGINESETTINGS)
     QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
     action->setCheckable(true);
     fileMenu->addSeparator();
+#endif
 
 #if defined(Q_WS_MAC)
     fileMenu->addAction(tr("&Quit"), BrowserApplication::instance(), SLOT(quitBrowser()), QKeySequence(Qt::CTRL | Qt::Key_Q));
@@ -303,6 +309,7 @@ void BrowserMainWindow::setupMenu()
     m_tabWidget->addWebAction(m_paste, QWebEnginePage::Paste);
     editMenu->addSeparator();
 
+#if defined(QWEBENGINEPAGE_FINDTEXT)
     QAction *m_find = editMenu->addAction(tr("&Find"));
     m_find->setShortcuts(QKeySequence::Find);
     connect(m_find, SIGNAL(triggered()), this, SLOT(slotEditFind()));
@@ -315,6 +322,7 @@ void BrowserMainWindow::setupMenu()
     QAction *m_findPrevious = editMenu->addAction(tr("&Find Previous"));
     m_findPrevious->setShortcuts(QKeySequence::FindPrevious);
     connect(m_findPrevious, SIGNAL(triggered()), this, SLOT(slotEditFindPrevious()));
+#endif
 
     editMenu->addSeparator();
     editMenu->addAction(tr("&Preferences"), this, SLOT(slotPreferences()), tr("Ctrl+,"));
@@ -356,13 +364,17 @@ void BrowserMainWindow::setupMenu()
     viewMenu->addAction(tr("Zoom &In"), this, SLOT(slotViewZoomIn()), QKeySequence(Qt::CTRL | Qt::Key_Plus));
     viewMenu->addAction(tr("Zoom &Out"), this, SLOT(slotViewZoomOut()), QKeySequence(Qt::CTRL | Qt::Key_Minus));
     viewMenu->addAction(tr("Reset &Zoom"), this, SLOT(slotViewResetZoom()), QKeySequence(Qt::CTRL | Qt::Key_0));
+#if defined(QWEBENGINESETTINGS)
     QAction *zoomTextOnlyAction = viewMenu->addAction(tr("Zoom &Text Only"));
     connect(zoomTextOnlyAction, SIGNAL(toggled(bool)), this, SLOT(slotViewZoomTextOnly(bool)));
     zoomTextOnlyAction->setCheckable(true);
     zoomTextOnlyAction->setChecked(false);
+#endif
 
     viewMenu->addSeparator();
+#if defined(QWEBENGINEPAGE_TOHTML)
     viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
+#endif
     QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)),  Qt::Key_F11);
     a->setCheckable(true);
 
@@ -380,25 +392,27 @@ void BrowserMainWindow::setupMenu()
     m_tabWidget->addWebAction(m_historyBack, QWebEnginePage::Back);
     m_historyBack->setShortcuts(QKeySequence::Back);
     m_historyBack->setIconVisibleInMenu(false);
+    historyActions.append(m_historyBack);
 
     m_historyForward = new QAction(tr("Forward"), this);
     m_tabWidget->addWebAction(m_historyForward, QWebEnginePage::Forward);
     m_historyForward->setShortcuts(QKeySequence::Forward);
     m_historyForward->setIconVisibleInMenu(false);
+    historyActions.append(m_historyForward);
 
     QAction *m_historyHome = new QAction(tr("Home"), this);
     connect(m_historyHome, SIGNAL(triggered()), this, SLOT(slotHome()));
     m_historyHome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
+    historyActions.append(m_historyHome);
 
+#if defined(QWEBENGINEHISTORY_RESTORESESSION)
     m_restoreLastSession = new QAction(tr("Restore Last Session"), this);
     connect(m_restoreLastSession, SIGNAL(triggered()), BrowserApplication::instance(), SLOT(restoreLastSession()));
     m_restoreLastSession->setEnabled(BrowserApplication::instance()->canRestoreSession());
-
-    historyActions.append(m_historyBack);
-    historyActions.append(m_historyForward);
-    historyActions.append(m_historyHome);
     historyActions.append(m_tabWidget->recentlyClosedTabsAction());
     historyActions.append(m_restoreLastSession);
+#endif
+
     historyMenu->setInitialActions(historyActions);
 
     // Bookmarks
@@ -432,8 +446,10 @@ void BrowserMainWindow::setupMenu()
 
     QMenu *toolsMenu = menuBar()->addMenu(tr("&Tools"));
     toolsMenu->addAction(tr("Web &Search"), this, SLOT(slotWebSearch()), QKeySequence(tr("Ctrl+K", "Web Search")));
+#if defined(QWEBENGINEINSPECTOR)
     a = toolsMenu->addAction(tr("Enable Web &Inspector"), this, SLOT(slotToggleInspector(bool)));
     a->setCheckable(true);
+#endif
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
@@ -922,9 +938,11 @@ void BrowserMainWindow::slotAboutToShowWindowMenu()
     m_windowMenu->addAction(m_tabWidget->nextTabAction());
     m_windowMenu->addAction(m_tabWidget->previousTabAction());
     m_windowMenu->addSeparator();
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     m_windowMenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
-
     m_windowMenu->addSeparator();
+#endif
+
     QList<BrowserMainWindow*> windows = BrowserApplication::instance()->mainWindows();
     for (int i = 0; i < windows.count(); ++i) {
         BrowserMainWindow *window = windows.at(i);
