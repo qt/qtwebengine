@@ -76,20 +76,20 @@ use_external_chromium = False
 
 parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
 group = parser.add_mutually_exclusive_group()
-group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule (default)')
-group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule')
+group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule')
+group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule (default)')
 args = parser.parse_args()
 
 if chromium_src:
     chromium_src = os.path.abspath(chromium_src)
     use_external_chromium = True
 if not chromium_src or not os.path.isdir(chromium_src):
-    if args.snapshot:
+    if args.upstream:
+        chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/chromium')
+    if args.snapshot or not chromium_src:
         chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty/chromium')
         ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty/ninja')
-    if args.upstream or not chromium_src:
-        chromium_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/chromium')
-        args.upstream = True
+        args.snapshot = True
     print 'CHROMIUM_SRC_DIR not set, using Chromium in' + chromium_src
 
 # Write our chromium sources directory into git config.
