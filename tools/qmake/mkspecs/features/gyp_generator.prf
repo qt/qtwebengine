@@ -82,6 +82,12 @@ for (lib, LIBS): GYP_CONTENTS += "      '$$lib',"
 for (rpath, QMAKE_RPATHDIR): GYP_CONTENTS += "      '$$QMAKE_RPATH$$rpath',"
 GYP_CONTENTS += "    ],"
 
+macx {
+    GYP_CONTENTS += "    'mac_framework_dirs': ["
+    GYP_CONTENTS += "      '$$QMAKE_FRAMEWORKPATH',"
+    GYP_CONTENTS += "    ],"
+}
+
 !isEmpty(QMAKE_CFLAGS) {
     GYP_CONTENTS += "    'cflags': ["
     for(flag, QMAKE_CFLAGS): GYP_CONTENTS += "      '$$flag',"
