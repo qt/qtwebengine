@@ -51,10 +51,24 @@ QtRenderViewObserverHost::QtRenderViewObserverHost(content::WebContents *webCont
 {
 }
 
+void QtRenderViewObserverHost::fetchDocumentMarkup(quint64 requestId)
+{
+    Send(new QtRenderViewObserver_FetchDocumentMarkup(routing_id(), requestId));
+}
+
+void QtRenderViewObserverHost::fetchDocumentInnerText(quint64 requestId)
+{
+    Send(new QtRenderViewObserver_FetchDocumentInnerText(routing_id(), requestId));
+}
+
 bool QtRenderViewObserverHost::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(QtRenderViewObserverHost, message)
+        IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFetchDocumentMarkup,
+                            onDidFetchDocumentMarkup)
+        IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFetchDocumentInnerText,
+                            onDidFetchDocumentInnerText)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
