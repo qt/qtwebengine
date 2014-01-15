@@ -10,12 +10,12 @@ QMAKE_RPATHDIR += $$LIBPATH
 
 qnx: QMAKE_RPATHLINKDIR += $${QNX_DIR}/$${QNX_CPUDIR}/usr/lib/qt5/lib
 
-DESTDIR = $$getOutDir()/$$getConfigDir()
+load(qt_build_paths)
+DESTDIR = $$MODULE_BASE_OUTDIR/libexec
 
 INCLUDEPATH += ../core
 
 SOURCES = main.cpp
 
-target.files = $$DESTDIR/$$QTWEBENGINEPROCESS_NAME
 target.path = $$[QT_INSTALL_LIBEXECS]
 INSTALLS += target
