@@ -127,9 +127,6 @@ void tst_QWebEngineFrame::cleanup()
 
 void tst_QWebEngineFrame::symmetricUrl()
 {
-#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
-    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
-#else
     QVERIFY(m_view->url().isEmpty());
 
     QCOMPARE(m_view->history()->count(), 0);
@@ -141,12 +138,12 @@ void tst_QWebEngineFrame::symmetricUrl()
     QCOMPARE(m_view->history()->count(), 0);
 
     // loading is _not_ immediate, so the text isn't set just yet.
-    QVERIFY(m_view->page()->toPlainText().isEmpty());
+    QVERIFY(toPlainText(m_view->page()).isEmpty());
 
     ::waitForSignal(m_view, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(m_view->history()->count(), 1);
-    QCOMPARE(m_view->page()->toPlainText(), QString("Test"));
+    QCOMPARE(toPlainText(m_view->page()), QString("Test"));
 
     QUrl dataUrl2("data:text/html,<h1>Test2");
     QUrl dataUrl3("data:text/html,<h1>Test3");
@@ -160,8 +157,7 @@ void tst_QWebEngineFrame::symmetricUrl()
 
     QCOMPARE(m_view->history()->count(), 2);
 
-    QCOMPARE(m_view->page()->toPlainText(), QString("Test3"));
-#endif
+    QCOMPARE(toPlainText(m_view->page()), QString("Test3"));
 }
 
 void tst_QWebEngineFrame::progressSignal()
@@ -374,8 +370,8 @@ void tst_QWebEngineFrame::javaScriptWindowObjectCleared_data()
 
 void tst_QWebEngineFrame::javaScriptWindowObjectCleared()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
+#if !defined(QWEBENGINEPAGE_JAVASCRIPTWINDOWOBJECTCLEARED)
+    QSKIP("QWEBENGINEPAGE_JAVASCRIPTWINDOWOBJECTCLEARED");
 #else
     QWebEnginePage page;
     QSignalSpy spy(&page, SIGNAL(javaScriptWindowObjectCleared()));
@@ -412,15 +408,11 @@ void tst_QWebEngineFrame::earlyToHtml()
 
 void tst_QWebEngineFrame::setHtml()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
-#else
     QString html("<html><head></head><body><p>hello world</p></body></html>");
     QSignalSpy spy(m_view->page(), SIGNAL(loadFinished(bool)));
     m_view->page()->setHtml(html);
-    QCOMPARE(m_view->page()->toHtml(), html);
-    QCOMPARE(spy.count(), 1);
-#endif
+    QVERIFY(spy.wait());
+    QCOMPARE(toHtml(m_view->page()), html);
 }
 
 void tst_QWebEngineFrame::setHtmlWithImageResource()
@@ -541,17 +533,13 @@ protected:
 
 void tst_QWebEngineFrame::setHtmlWithJSAlert()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
-#else
     QString html("<html><head></head><body><script>alert('foo');</script><p>hello world</p></body></html>");
     MyPage page;
     m_view->setPage(&page);
     page.setHtml(html);
     QCOMPARE(page.alerts, 1);
     QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118663", Continue);
-    QCOMPARE(m_view->page()->toHtml(), html);
-#endif
+    QCOMPARE(toHtml(m_view->page()), html);
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -592,8 +580,8 @@ void tst_QWebEngineFrame::ipv6HostEncoding()
 
 void tst_QWebEngineFrame::metaData()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
+#if !defined(QWEBENGINEPAGE_METADATA)
+    QSKIP("QWEBENGINEPAGE_METADATA");
 #else
     m_view->setHtml("<html>"
                     "    <head>"
@@ -747,8 +735,8 @@ void tst_QWebEngineFrame::baseUrl_data()
 
 void tst_QWebEngineFrame::baseUrl()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
+#if !defined(QWEBENGINEPAGE_BASEURL)
+    QSKIP("QWEBENGINEPAGE_BASEURL");
 #else
     QFETCH(QString, html);
     QFETCH(QUrl, loadUrl);
@@ -944,8 +932,8 @@ int DummyPaintDevice::metric(PaintDeviceMetric metric) const
 
 void tst_QWebEngineFrame::renderHints()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
+#if !defined(QWEBENGINEPAGE_RENDER)
+    QSKIP("QWEBENGINEPAGE_RENDER");
 #else
     QString html("<html><body><p>Hello, world!</p></body></html>");
 
@@ -1150,15 +1138,13 @@ void tst_QWebEngineFrame::setContent_data()
 
 void tst_QWebEngineFrame::setContent()
 {
-#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
-    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
-#else
     QFETCH(QString, mimeType);
     QFETCH(QByteArray, testContents);
     QFETCH(QString, expected);
+    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
     m_view->setContent(testContents, mimeType);
-    QCOMPARE(expected , m_view->page()->toPlainText());
-#endif
+    QVERIFY(loadSpy.wait());
+    QCOMPARE(toPlainText(m_view->page()), expected);
 }
 
 class CacheNetworkAccessManager : public QNetworkAccessManager {
@@ -1219,13 +1205,9 @@ void tst_QWebEngineFrame::setCacheLoadControlAttribute()
 
 void tst_QWebEngineFrame::setUrlWithPendingLoads()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
-#else
     QWebEnginePage page;
     page.setHtml("<img src='dummy:'/>");
     page.setUrl(QUrl("about:blank"));
-#endif
 }
 
 void tst_QWebEngineFrame::setUrlWithFragment_data()
@@ -1242,8 +1224,8 @@ void tst_QWebEngineFrame::setUrlWithFragment_data()
 // Based on bug report https://bugs.webengine.org/show_bug.cgi?id=32723
 void tst_QWebEngineFrame::setUrlWithFragment()
 {
-#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
-    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
+#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
+    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
 #else
     QFETCH(QUrl, previousUrl);
 
@@ -1676,6 +1658,7 @@ void tst_QWebEngineFrame::loadInSignalHandlers_data()
 
 void tst_QWebEngineFrame::loadInSignalHandlers()
 {
+    QSKIP("This crashes in content::WebContentsImpl::NavigateToEntry because of reentrancy. Should we require QueuedConnections or do it ourselves to support this?");
     QFETCH(URLSetter::Type, type);
     QFETCH(URLSetter::Signal, signal);
     QFETCH(QUrl, url);

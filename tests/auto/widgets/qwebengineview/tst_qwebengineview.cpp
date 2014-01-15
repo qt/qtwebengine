@@ -138,9 +138,6 @@ void tst_QWebEngineView::reusePage_data()
 
 void tst_QWebEngineView::reusePage()
 {
-#if !defined(QWEBENGINEPAGE_SETHTML)
-    QSKIP("QWEBENGINEPAGE_SETHTML");
-#else
     if (!QDir(TESTS_SOURCE_DIR).exists())
         W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
 
@@ -150,7 +147,9 @@ void tst_QWebEngineView::reusePage()
     QWebEngineView* view1 = new QWebEngineView;
     QPointer<QWebEnginePage> page = new QWebEnginePage;
     view1->setPage(page.data());
+#if defined(QWEBENGINESETTINGS)
     page.data()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+#endif
     page->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
     if (html.contains("</embed>")) {
         // some reasonable time for the PluginStream to feed test.swf to flash and start painting
@@ -171,7 +170,6 @@ void tst_QWebEngineView::reusePage()
     delete page.data(); // must not crash
 
     QDir::setCurrent(QApplication::applicationDirPath());
-#endif
 }
 
 // Class used in crashTests

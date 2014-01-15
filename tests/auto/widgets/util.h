@@ -25,6 +25,15 @@
 #include <QEventLoop>
 #include <QSignalSpy>
 #include <QTimer>
+#include <qwebenginepage.h>
+
+#if __cplusplus >= 201103L
+#include <functional>
+using std::ref;
+#else
+#include <tr1/functional>
+using std::tr1::ref;
+#endif
 
 #if !defined(TESTS_SOURCE_DIR)
 #define TESTS_SOURCE_DIR ""
@@ -77,5 +86,48 @@ public:
         return result;
     }
 };
+
+template<typename T>
+class CallbackSpy {
+public:
+    // Tells tr1::ref the result of void operator()(const T &result) when decltype isn't available.
+    typedef void result_type;
+
+    CallbackSpy() {
+        timeoutTimer.setSingleShot(true);
+        QObject::connect(&timeoutTimer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
+    }
+
+    T waitForResult() {
+        timeoutTimer.start(10000);
+        eventLoop.exec();
+        return result;
+    }
+
+    void operator()(const T &result) {
+        this->result = result;
+        eventLoop.quit();
+    }
+
+private:
+    Q_DISABLE_COPY(CallbackSpy)
+    QTimer timeoutTimer;
+    QEventLoop eventLoop;
+    T result;
+};
+
+static inline QString toPlainText(QWebEnginePage *page)
+{
+    CallbackSpy<QString> spy;
+    page->toPlainText(ref(spy));
+    return spy.waitForResult();
+}
+
+static inline QString toHtml(QWebEnginePage *page)
+{
+    CallbackSpy<QString> spy;
+    page->toHtml(ref(spy));
+    return spy.waitForResult();
+}
 
 #define W_QSKIP(a, b) QSKIP(a)
