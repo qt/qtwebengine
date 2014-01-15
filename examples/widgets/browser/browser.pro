@@ -99,5 +99,5 @@ wince*: {
 EXAMPLE_FILES = Info_mac.plist browser.icns browser.ico browser.rc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/webkitwidgets/browser
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/browser
 INSTALLS += target

@@ -9,3 +9,5 @@ SOURCES = widgetwindow.cpp main.cpp
 RESOURCES += ../../common/common_resources.qrc
 
 QT += webenginewidgets
+
+CONFIG -= qt_example_installs
