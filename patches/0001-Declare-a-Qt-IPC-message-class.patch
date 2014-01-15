@@ -1,0 +1,28 @@
+From de3f8ee976ac7e438616bc28dac2cb418781b103 Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Wed, 15 Jan 2014 17:22:44 +0100
+Subject: [PATCH] Declare a Qt IPC message class
+
+This allows Qt-specific IPC messages to be declared in QtWebEngine.
+
+Change-Id: Id6af79becf14c8c621df6752c6183ff550524859
+Reviewed-by: Pierre Rossi <pierre.rossi@gmail.com>
+---
+ ipc/ipc_message_start.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/ipc/ipc_message_start.h b/ipc/ipc_message_start.h
+index a8cca53..314ed0e 100644
+--- a/ipc/ipc_message_start.h
++++ b/ipc/ipc_message_start.h
+@@ -10,6 +10,7 @@
+ // code to figure out the message class from its ID.
+ enum IPCMessageStart {
+   AutomationMsgStart = 0,
++  QtMsgStart,
+   ViewMsgStart,
+   InputMsgStart,
+   PluginMsgStart,
+-- 
+1.8.4.2
+
