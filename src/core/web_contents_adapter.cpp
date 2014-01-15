@@ -394,6 +394,20 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
     return d->lastRequestId;
 }
 
+quint64 WebContentsAdapter::fetchDocumentMarkup()
+{
+    Q_D(WebContentsAdapter);
+    d->renderViewObserverHost->fetchDocumentMarkup(++d->lastRequestId);
+    return d->lastRequestId;
+}
+
+quint64 WebContentsAdapter::fetchDocumentInnerText()
+{
+    Q_D(WebContentsAdapter);
+    d->renderViewObserverHost->fetchDocumentInnerText(++d->lastRequestId);
+    return d->lastRequestId;
+}
+
 void WebContentsAdapter::dpiScaleChanged()
 {
     Q_D(WebContentsAdapter);
