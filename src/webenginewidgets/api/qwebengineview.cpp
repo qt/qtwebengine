@@ -124,6 +124,16 @@ void QWebEngineView::load(const QUrl& url)
     page()->load(url);
 }
 
+void QWebEngineView::setHtml(const QString& html, const QUrl& baseUrl)
+{
+    page()->setHtml(html, baseUrl);
+}
+
+void QWebEngineView::setContent(const QByteArray& data, const QString& mimeType, const QUrl& baseUrl)
+{
+    page()->setContent(data, mimeType, baseUrl);
+}
+
 QWebEngineHistory* QWebEngineView::history() const
 {
     return page()->history();
