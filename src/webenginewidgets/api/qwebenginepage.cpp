@@ -443,6 +443,18 @@ void QWebEnginePage::load(const QUrl& url)
     d->adapter->load(url);
 }
 
+void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->setContent(html.toUtf8(), QStringLiteral("text/html"), baseUrl);
+}
+
+void QWebEnginePage::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->setContent(data, mimeType, baseUrl);
+}
+
 QString QWebEnginePage::title() const
 {
     Q_D(const QWebEnginePage);
