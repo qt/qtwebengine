@@ -42,6 +42,16 @@
 #include <QtWebEngineWidgets>
 #include "mainwindow.h"
 
+#if __cplusplus >= 201103L
+#include <functional>
+using std::bind;
+namespace placeholders = std::placeholders;
+#else
+#include <tr1/functional>
+using std::tr1::bind;
+namespace placeholders = std::tr1::placeholders;
+#endif
+
 //! [1]
 
 MainWindow::MainWindow(const QUrl& url)
@@ -75,12 +85,10 @@ MainWindow::MainWindow(const QUrl& url)
     toolBar->addWidget(locationEdit);
 //! [1]
 
-#ifdef QWEBENGINEPAGE_TOHTML
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
     QAction* viewSourceAction = new QAction("Page Source", this);
     connect(viewSourceAction, SIGNAL(triggered()), SLOT(viewSource()));
     viewMenu->addAction(viewSourceAction);
-#endif
 
 //! [3]
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
@@ -106,16 +114,13 @@ MainWindow::MainWindow(const QUrl& url)
 
 void MainWindow::viewSource()
 {
-#ifdef QWEBENGINEPAGE_TOHTML
-    QWebEnginePage *mainFrame = view->page();
     QTextEdit* textEdit = new QTextEdit(NULL);
     textEdit->setAttribute(Qt::WA_DeleteOnClose);
     textEdit->adjustSize();
     textEdit->move(this->geometry().center() - textEdit->rect().center());
-
-    textEdit->setPlainText(mainFrame->toHtml());
     textEdit->show();
-#endif
+
+    view->page()->toHtml(bind(&QTextEdit::setPlainText, textEdit, placeholders::_1));
 }
 
 //! [4]

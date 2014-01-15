@@ -60,6 +60,7 @@ private Q_SLOTS:
     void javaScriptWindowObjectCleared_data();
     void javaScriptWindowObjectCleared();
     void javaScriptWindowObjectClearedOnEvaluate();
+    void earlyToHtml();
     void setHtml();
     void setHtmlWithImageResource();
     void setHtmlWithStylesheetResource();
@@ -387,6 +388,12 @@ void tst_QWebEngineFrame::javaScriptWindowObjectClearedOnEvaluate()
     // no new clear for a new script:
     frame->evaluateJavaScript("var a = 1;");
     QCOMPARE(spy.count(), 1);
+}
+
+void tst_QWebEngineFrame::earlyToHtml()
+{
+    QString html("<html><head></head><body></body></html>");
+    QCOMPARE(toHtml(m_view->page()), html);
 }
 
 void tst_QWebEngineFrame::setHtml()

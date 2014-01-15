@@ -151,6 +151,16 @@ void QWebEnginePagePrivate::didRunJavaScript(const QVariant& result, quint64 req
     (*m_variantCallbacks.take(requestId))(result);
 }
 
+void QWebEnginePagePrivate::didFetchDocumentMarkup(const QString& result, quint64 requestId)
+{
+    (*m_stringCallbacks.take(requestId))(result);
+}
+
+void QWebEnginePagePrivate::didFetchDocumentInnerText(const QString& result, quint64 requestId)
+{
+    (*m_stringCallbacks.take(requestId))(result);
+}
+
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
@@ -446,6 +456,18 @@ void QWebEnginePage::load(const QUrl& url)
 {
     Q_D(QWebEnginePage);
     d->adapter->load(url);
+}
+
+void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
+{
+    Q_D(const QWebEnginePage);
+    d->m_stringCallbacks[d->adapter->fetchDocumentMarkup()] = resultCallback.d;
+}
+
+void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
+{
+    Q_D(const QWebEnginePage);
+    d->m_stringCallbacks[d->adapter->fetchDocumentInnerText()] = resultCallback.d;
 }
 
 void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)

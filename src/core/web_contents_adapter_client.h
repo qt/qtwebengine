@@ -131,6 +131,8 @@ public:
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) = 0;
     virtual void didRunJavaScript(const QVariant& result, quint64 requestId) = 0;
+    virtual void didFetchDocumentMarkup(const QString& result, quint64 requestId) = 0;
+    virtual void didFetchDocumentInnerText(const QString& result, quint64 requestId) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H
