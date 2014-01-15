@@ -49,16 +49,10 @@
 #include <QString>
 #include <QUrl>
 
-QT_FORWARD_DECLARE_CLASS(QVariant)
 namespace content {
 class WebContents;
 }
 class WebContentsAdapterPrivate;
-
-struct JSCallbackBase {
-    virtual ~JSCallbackBase() {}
-    virtual void call(const QVariant&) = 0;
-};
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
@@ -89,8 +83,9 @@ public:
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
     void enableInspector(bool);
-    void runJavaScript(const QString &javaScript, const QString &xPath = QString(), JSCallbackBase * = 0);
     void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
+    void runJavaScript(const QString &javaScript, const QString &xPath);
+    quint64 runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath);
 
     void dpiScaleChanged();
 
