@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,32 +39,27 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_MAIN_DELEGATE_QT_H
-#define CONTENT_MAIN_DELEGATE_QT_H
+#ifndef QT_RENDER_VIEW_OBSERVER_HOST_H
+#define QT_RENDER_VIEW_OBSERVER_HOST_H
 
-#include "content/public/app/content_main_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 
-#include "base/memory/scoped_ptr.h"
-#include <QtCore/qcompilerdetection.h>
+#include <QtGlobal>
 
-#include "content_browser_client_qt.h"
+namespace content {
+    class WebContents;
+}
+class WebContentsAdapterClient;
 
-
-class ContentMainDelegateQt : public content::ContentMainDelegate
+class QtRenderViewObserverHost : public content::WebContentsObserver
 {
 public:
-
-    // This is where the embedder puts all of its startup code that needs to run
-    // before the sandbox is engaged.
-    void PreSandboxStartup() Q_DECL_OVERRIDE;
-
-    content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE;
-    content::ContentRendererClient* CreateContentRendererClient() Q_DECL_OVERRIDE;
-
-    bool BasicStartupComplete(int* /*exit_code*/) Q_DECL_OVERRIDE;
+    QtRenderViewObserverHost(content::WebContents*, WebContentsAdapterClient *adapterClient);
 
 private:
-    scoped_ptr<ContentBrowserClientQt> m_browserClient;
+    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+
+    WebContentsAdapterClient *m_adapterClient;
 };
 
-#endif // CONTENT_MAIN_DELEGATE_QT_H
+#endif // QT_RENDER_VIEW_OBSERVER_HOST_H

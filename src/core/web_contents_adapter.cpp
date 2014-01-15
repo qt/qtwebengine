@@ -43,6 +43,7 @@
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "javascript_dialog_manager_qt.h"
+#include "qt_render_view_observer_host.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_delegate_qt.h"
@@ -167,6 +168,7 @@ public:
     scoped_refptr<WebEngineContext> engineContext;
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
+    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
     WebContentsAdapterClient *adapterClient;
     quint64 lastRequestId;
 };
@@ -211,8 +213,9 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
     d->webContents->GetRenderViewHost()->SyncRendererPrefs();
 
-    // Create and attach a WebContentsDelegateQt to the WebContents.
+    // Create and attach observers to the WebContents.
     d->webContentsDelegate.reset(new WebContentsDelegateQt(d->webContents.get(), adapterClient));
+    d->renderViewObserverHost.reset(new QtRenderViewObserverHost(d->webContents.get(), adapterClient));
 
     // Let the WebContent's view know about the WebContentsAdapterClient.
     WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContents->GetView());
