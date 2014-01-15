@@ -71,6 +71,16 @@
 
 #include <QtCore/QDebug>
 
+#if __cplusplus >= 201103L
+#include <functional>
+using std::bind;
+namespace placeholders = std::placeholders;
+#else
+#include <tr1/functional>
+using std::tr1::bind;
+namespace placeholders = std::tr1::placeholders;
+#endif
+
 BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
     , m_tabWidget(new TabWidget(this))
@@ -372,9 +382,7 @@ void BrowserMainWindow::setupMenu()
 #endif
 
     viewMenu->addSeparator();
-#if defined(QWEBENGINEPAGE_TOHTML)
     viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
-#endif
     QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)),  Qt::Key_F11);
     a->setCheckable(true);
 
@@ -810,17 +818,16 @@ void BrowserMainWindow::slotViewFullScreen(bool makeFullScreen)
 
 void BrowserMainWindow::slotViewPageSource()
 {
-#if defined(QWEBENGINEPAGE_TOHTML)
     if (!currentTab())
         return;
 
-    QString markup = currentTab()->page()->toHtml();
-    QPlainTextEdit *view = new QPlainTextEdit(markup);
+    QPlainTextEdit *view = new QPlainTextEdit;
     view->setWindowTitle(tr("Page Source of %1").arg(currentTab()->title()));
     view->setMinimumWidth(640);
     view->setAttribute(Qt::WA_DeleteOnClose);
     view->show();
-#endif
+
+    currentTab()->page()->toHtml(bind(&QPlainTextEdit::setPlainText, view, placeholders::_1));
 }
 
 void BrowserMainWindow::slotHome()

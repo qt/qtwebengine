@@ -86,6 +86,8 @@ public:
     void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
     void runJavaScript(const QString &javaScript, const QString &xPath);
     quint64 runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath);
+    quint64 fetchDocumentMarkup();
+    quint64 fetchDocumentInnerText();
 
     void dpiScaleChanged();
 
