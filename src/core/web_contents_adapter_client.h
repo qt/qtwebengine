@@ -49,7 +49,10 @@
 #include <QStringList>
 #include <QUrl>
 
+QT_FORWARD_DECLARE_CLASS(QVariant)
+
 class JavaScriptDialogController;
+
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
@@ -127,6 +130,7 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) = 0;
+    virtual void didRunJavaScript(const QVariant& result, quint64 requestId) = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H
