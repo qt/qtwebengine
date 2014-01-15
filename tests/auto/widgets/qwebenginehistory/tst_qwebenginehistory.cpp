@@ -124,18 +124,14 @@ void tst_QWebEngineHistory::count()
   */
 void tst_QWebEngineHistory::back()
 {
-#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
-    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
-#else
     for (int i = histsize;i > 1;i--) {
-        QCOMPARE(page->toPlainText(), QString("page") + QString::number(i));
+        QCOMPARE(toPlainText(page), QString("page") + QString::number(i));
         hist->back();
         loadFinishedBarrier->ensureSignalEmitted();
     }
     //try one more time (too many). crash test
     hist->back();
-    QCOMPARE(page->toPlainText(), QString("page1"));
-#endif
+    QCOMPARE(toPlainText(page), QString("page1"));
 }
 
 /**
@@ -143,9 +139,6 @@ void tst_QWebEngineHistory::back()
   */
 void tst_QWebEngineHistory::forward()
 {
-#if !defined(QWEBENGINEPAGE_TOPLAINTEXT)
-    QSKIP("QWEBENGINEPAGE_TOPLAINTEXT");
-#else
     //rewind history :-)
     while (hist->canGoBack()) {
         hist->back();
@@ -153,14 +146,13 @@ void tst_QWebEngineHistory::forward()
     }
 
     for (int i = 1;i < histsize;i++) {
-        QCOMPARE(page->toPlainText(), QString("page") + QString::number(i));
+        QCOMPARE(toPlainText(page), QString("page") + QString::number(i));
         hist->forward();
         loadFinishedBarrier->ensureSignalEmitted();
     }
     //try one more time (too many). crash test
     hist->forward();
-    QCOMPARE(page->toPlainText(), QString("page") + QString::number(histsize));
-#endif
+    QCOMPARE(toPlainText(page), QString("page") + QString::number(histsize));
 }
 
 /**
