@@ -44,6 +44,7 @@ class QWebEngineElementCollection;
 
 class QWebEngineHistory;
 class QWebEngineHistoryItem;
+class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEnginePluginFactory;
 class QWebEngineSecurityOrigin;
@@ -52,19 +53,33 @@ class QWebEngineHitTestResultPrivate;
 
 namespace QtWebEnginePrivate {
 
-struct FunctorBase {
-    virtual ~FunctorBase() {}
-    virtual void operator()(const QVariant &) = 0;
+template <typename T>
+class QWebEngineCallbackPrivateBase : public QSharedData {
+public:
+    virtual ~QWebEngineCallbackPrivateBase() {}
+    virtual void operator()(T) = 0;
 };
 
-template <typename F>
-struct FunctorCallback : public FunctorBase {
-    FunctorCallback(F callback) : m_callback(callback) {}
-    virtual void operator()(const QVariant &value) Q_DECL_OVERRIDE { m_callback(value); }
+template <typename T, typename F>
+class QWebEngineCallbackPrivate : public QWebEngineCallbackPrivateBase<T> {
+public:
+    QWebEngineCallbackPrivate(F callable) : m_callable(callable) {}
+    virtual void operator()(T value) Q_DECL_OVERRIDE { m_callable(value); }
 private:
-    F m_callback;
+    F m_callable;
 };
-}
+
+} // namespace QtWebEnginePrivate
+
+template <typename T>
+class QWebEngineCallback {
+public:
+    template <typename F>
+    QWebEngineCallback(F f) : d(new QtWebEnginePrivate::QWebEngineCallbackPrivate<T, F>(f)) { }
+private:
+    QExplicitlySharedDataPointer<QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> > d;
+    friend class QWebEnginePage;
+};
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHitTestResult {
 public:
@@ -484,9 +499,7 @@ public:
     QWebEngineSecurityOrigin securityOrigin() const;
 
     void runJavaScript(const QString& scriptSource, const QString &xPath = QString());
-
-    template <typename F>
-    void runJavaScript(const QString& scriptSource, F func, const QString &xPath = QString());
+    void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback, const QString &xPath = QString());
 
 public Q_SLOTS:
     // Ex-QWebFrame slot
@@ -564,7 +577,6 @@ private:
 #ifndef QT_NO_ACTION
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
-    void runJavaScriptHelper(const QString &source, QtWebEnginePrivate::FunctorBase *, const QString &xPath);
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
@@ -572,13 +584,6 @@ private:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::RenderLayers);
-
-
-template <typename F>
-inline void QWebEnginePage::runJavaScript(const QString &scriptSource, F func, const QString &xPath)
-{
-    runJavaScriptHelper(scriptSource, new QtWebEnginePrivate::FunctorCallback<F>(func), xPath);
-}
 
 QT_END_NAMESPACE
 

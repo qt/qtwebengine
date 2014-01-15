@@ -80,6 +80,7 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
+    virtual void didRunJavaScript(const QVariant& result, quint64 requestId) Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
@@ -91,6 +92,8 @@ public:
     mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
     WebEngineContextMenuData m_menuData;
+    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> > VariantCallback;
+    mutable QHash<quint64, QExplicitlySharedDataPointer<VariantCallback> m_variantCallbacks;
 };
 
 QT_END_NAMESPACE
