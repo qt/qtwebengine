@@ -18,3 +18,25 @@ namespace IPC {
 #endif  // RENDER_VIEW_MESSAGES_H
 
 #define IPC_MESSAGE_START QtMsgStart
+
+//-----------------------------------------------------------------------------
+// RenderView messages
+// These are messages sent from the browser to the renderer process.
+
+IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentMarkup,
+                    uint64 /* requestId */)
+
+IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentInnerText,
+                    uint64 /* requestId */)
+
+//-----------------------------------------------------------------------------
+// WebContents messages
+// These are messages sent from the renderer back to the browser process.
+
+IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentMarkup,
+                    base::string16 /* markup */,
+                    uint64 /* requestId */)
+
+IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentInnerText,
+                    base::string16 /* innerText */,
+                    uint64 /* requestId */)

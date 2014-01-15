@@ -54,10 +54,28 @@ QtRenderViewObserver::QtRenderViewObserver(content::RenderView* render_view)
 {
 }
 
+void QtRenderViewObserver::onFetchDocumentMarkup(quint64 requestId)
+{
+    Send(new QtRenderViewObserverHost_DidFetchDocumentMarkup(
+        routing_id(),
+        render_view()->GetWebView()->mainFrame()->document().createMarkup(),
+        requestId));
+}
+
+void QtRenderViewObserver::onFetchDocumentInnerText(quint64 requestId)
+{
+    Send(new QtRenderViewObserverHost_DidFetchDocumentInnerText(
+        routing_id(),
+        render_view()->GetWebView()->mainFrame()->document().documentElement().innerText(),
+        requestId));
+}
+
 bool QtRenderViewObserver::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(QtRenderViewObserver, message)
+        IPC_MESSAGE_HANDLER(QtRenderViewObserver_FetchDocumentMarkup, onFetchDocumentMarkup)
+        IPC_MESSAGE_HANDLER(QtRenderViewObserver_FetchDocumentInnerText, onFetchDocumentInnerText)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
