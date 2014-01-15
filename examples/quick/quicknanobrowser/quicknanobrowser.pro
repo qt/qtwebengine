@@ -17,3 +17,6 @@ QT_PRIVATE += quick-private gui-private core-private
 qtHaveModule(widgets) {
     QT += widgets # QApplication is required to get native styling with QtQuickControls
 }
+
+target.path = $$[QT_INSTALL_EXAMPLES]/quick/quicknanobrowser
+INSTALLS += target
