@@ -48,6 +48,9 @@ public:
     QtRenderViewObserver(content::RenderView* render_view);
 
 private:
+    void onFetchDocumentMarkup(quint64 requestId);
+    void onFetchDocumentInnerText(quint64 requestId);
+
     virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(QtRenderViewObserver);
