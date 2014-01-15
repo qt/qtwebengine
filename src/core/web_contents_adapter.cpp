@@ -271,6 +271,22 @@ void WebContentsAdapter::load(const QUrl &url)
     d->webContents->GetView()->Focus();
 }
 
+void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
+{
+    Q_D(WebContentsAdapter);
+    QByteArray encodedData = data.toPercentEncoding();
+    std::string urlString("data:");
+    urlString.append(mimeType.toStdString());
+    urlString.append(",");
+    urlString.append(encodedData.constData(), encodedData.length());
+
+    content::NavigationController::LoadURLParams params((GURL(urlString)));
+    params.load_type = content::NavigationController::LOAD_TYPE_DATA;
+    params.base_url_for_data_url = toGurl(baseUrl);
+    params.can_load_local_resources = true;
+    d->webContents->GetController().LoadURLWithParams(params);
+}
+
 QUrl WebContentsAdapter::activeUrl() const
 {
     Q_D(const WebContentsAdapter);
