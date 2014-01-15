@@ -434,8 +434,8 @@ public:
     void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
 
     void addToJavaScriptWindowObject(const QString &name, QObject *object, ValueOwnership ownership = QtOwnership);
-    QString toHtml() const;
-    QString toPlainText() const;
+    void toHtml(const QWebEngineCallback<const QString &> &resultCallback) const;
+    void toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const;
 
     QString title() const;
     void setUrl(const QUrl &url);

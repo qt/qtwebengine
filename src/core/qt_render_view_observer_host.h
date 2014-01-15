@@ -55,9 +55,13 @@ class QtRenderViewObserverHost : public content::WebContentsObserver
 {
 public:
     QtRenderViewObserverHost(content::WebContents*, WebContentsAdapterClient *adapterClient);
+    void fetchDocumentMarkup(quint64 requestId);
+    void fetchDocumentInnerText(quint64 requestId);
 
 private:
     bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    void onDidFetchDocumentMarkup(const base::string16& markup, quint64 requestId);
+    void onDidFetchDocumentInnerText(const base::string16& innerText, quint64 requestId);
 
     WebContentsAdapterClient *m_adapterClient;
 };

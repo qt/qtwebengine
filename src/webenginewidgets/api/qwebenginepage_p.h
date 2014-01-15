@@ -81,6 +81,8 @@ public:
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(const QVariant& result, quint64 requestId) Q_DECL_OVERRIDE;
+    virtual void didFetchDocumentMarkup(const QString& result, quint64 requestId) Q_DECL_OVERRIDE;
+    virtual void didFetchDocumentInnerText(const QString& result, quint64 requestId) Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
@@ -94,7 +96,9 @@ public:
     WebEngineContextMenuData m_menuData;
 
     typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;
+    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QString&> StringCallback;
     mutable QHash<quint64, QExplicitlySharedDataPointer<VariantCallback> > m_variantCallbacks;
+    mutable QHash<quint64, QExplicitlySharedDataPointer<StringCallback> > m_stringCallbacks;
 };
 
 QT_END_NAMESPACE
