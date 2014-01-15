@@ -49,6 +49,7 @@
 #include "net/base/net_module.h"
 
 #include "content_client_qt.h"
+#include "renderer/content_renderer_client_qt.h"
 #include "web_engine_library_info.h"
 
 static base::StringPiece PlatformResourceProvider(int key) {
@@ -72,6 +73,11 @@ content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient
 {
     m_browserClient.reset(new ContentBrowserClientQt);
     return m_browserClient.get();
+}
+
+content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClient()
+{
+    return new ContentRendererClientQt;
 }
 
 bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
