@@ -143,10 +143,9 @@ static QVariant fromJSValue(const base::Value *result)
     return ret;
 }
 
-static void callbackOnEvaluateJS(JSCallbackBase *callback, const base::Value *result)
+static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, const base::Value *result)
 {
-    callback->call(fromJSValue(result));
-    delete callback;
+    adapterClient->didRunJavaScript(fromJSValue(result), requestId);
 }
 
 static QStringList listRecursively(const QDir& dir) {
@@ -169,11 +168,13 @@ public:
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
     WebContentsAdapterClient *adapterClient;
+    quint64 lastRequestId;
 };
 
 WebContentsAdapterPrivate::WebContentsAdapterPrivate(WebContentsAdapterClient::RenderingMode renderingMode)
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::currentOrCreate(renderingMode))
+    , lastRequestId(0)
 {
 }
 
@@ -372,17 +373,22 @@ void WebContentsAdapter::enableInspector(bool enable)
     ContentBrowserClientQt::Get()->enableInspector(enable);
 }
 
-void WebContentsAdapter::runJavaScript(const QString &javaScript, const QString &xPath, JSCallbackBase *func)
+void WebContentsAdapter::runJavaScript(const QString &javaScript, const QString &xPath)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    if (!func)
-        rvh->ExecuteJavascriptInWebFrame(toString16(xPath), toString16(javaScript));
-    else {
-        content::RenderViewHost::JavascriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, func);
-        rvh->ExecuteJavascriptInWebFrameCallbackResult(toString16(xPath), toString16(javaScript), callback);
-    }
+    rvh->ExecuteJavascriptInWebFrame(toString16(xPath), toString16(javaScript));
+}
+
+quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath)
+{
+    Q_D(WebContentsAdapter);
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    Q_ASSERT(rvh);
+    content::RenderViewHost::JavascriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, ++d->lastRequestId);
+    rvh->ExecuteJavascriptInWebFrameCallbackResult(toString16(xPath), toString16(javaScript), callback);
+    return d->lastRequestId;
 }
 
 void WebContentsAdapter::dpiScaleChanged()

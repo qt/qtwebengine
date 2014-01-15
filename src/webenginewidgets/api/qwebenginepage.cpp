@@ -146,6 +146,11 @@ void QWebEnginePagePrivate::close()
     Q_EMIT q->windowCloseRequested();
 }
 
+void QWebEnginePagePrivate::didRunJavaScript(const QVariant& result, quint64 requestId)
+{
+    (*m_variantCallbacks.take(requestId))(result);
+}
+
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
@@ -490,20 +495,11 @@ void QWebEnginePage::runJavaScript(const QString &scriptSource, const QString &x
     d->adapter->runJavaScript(scriptSource, xPath);
 }
 
-namespace {
-struct JSCallbackFunctor : public JSCallbackBase {
-    JSCallbackFunctor(QtWebEnginePrivate::FunctorBase *functor) : m_func(functor) { }
-    ~JSCallbackFunctor() { delete m_func; }
-    void call(const QVariant &value) { (*m_func)(value); }
-private:
-    QtWebEnginePrivate::FunctorBase *m_func;
-};
-}
-
-void QWebEnginePage::runJavaScriptHelper(const QString &source, QtWebEnginePrivate::FunctorBase *functor, const QString &xPath)
+void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback, const QString &xPath)
 {
     Q_D(QWebEnginePage);
-    d->adapter->runJavaScript(source, xPath, new JSCallbackFunctor(functor));
+    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, xPath);
+    d->m_variantCallbacks.insert(requestId, resultCallback.d);
 }
 
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
