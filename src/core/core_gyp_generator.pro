@@ -29,11 +29,12 @@ CONFIG(release, debug|release): DEFINES += NDEBUG
 RESOURCES += devtools.qrc
 
 # something fishy with qmake in 5.2 ?
-INCLUDEPATH += $$[QT_INSTALL_HEADERS]
+INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
 
 SOURCES = \
         backing_store_qt.cpp \
         chromium_overrides.cpp \
+        common/qt_messages.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
@@ -44,7 +45,10 @@ SOURCES = \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         process_main.cpp \
+        qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
+        renderer/content_renderer_client_qt.cpp \
+        renderer/qt_render_view_observer.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
         url_request_context_getter_qt.cpp \
@@ -63,6 +67,7 @@ HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
         chromium_overrides.h \
+        common/qt_messages.h \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
@@ -74,8 +79,11 @@ HEADERS = \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
         process_main.h \
+        qt_render_view_observer_host.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
+        renderer/content_renderer_client_qt.h \
+        renderer/qt_render_view_observer.h \
         resource_context_qt.h \
         url_request_context_getter_qt.h \
         web_contents_adapter.h \

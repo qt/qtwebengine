@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,32 +39,34 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_MAIN_DELEGATE_QT_H
-#define CONTENT_MAIN_DELEGATE_QT_H
+#include "qt_render_view_observer_host.h"
 
-#include "content/public/app/content_main_delegate.h"
+#include "common/qt_messages.h"
+#include "type_conversion.h"
+#include "web_contents_adapter_client.h"
 
-#include "base/memory/scoped_ptr.h"
-#include <QtCore/qcompilerdetection.h>
-
-#include "content_browser_client_qt.h"
-
-
-class ContentMainDelegateQt : public content::ContentMainDelegate
+QtRenderViewObserverHost::QtRenderViewObserverHost(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
+    : content::WebContentsObserver(webContents)
+    , m_adapterClient(adapterClient)
 {
-public:
+}
 
-    // This is where the embedder puts all of its startup code that needs to run
-    // before the sandbox is engaged.
-    void PreSandboxStartup() Q_DECL_OVERRIDE;
+bool QtRenderViewObserverHost::OnMessageReceived(const IPC::Message& message)
+{
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(QtRenderViewObserverHost, message)
+        IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
 
-    content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE;
-    content::ContentRendererClient* CreateContentRendererClient() Q_DECL_OVERRIDE;
+}
 
-    bool BasicStartupComplete(int* /*exit_code*/) Q_DECL_OVERRIDE;
+void QtRenderViewObserverHost::onDidFetchDocumentMarkup(const base::string16& markup, quint64 requestId)
+{
+    m_adapterClient->didFetchDocumentMarkup(toQt(markup), requestId);
+}
 
-private:
-    scoped_ptr<ContentBrowserClientQt> m_browserClient;
-};
-
-#endif // CONTENT_MAIN_DELEGATE_QT_H
+void QtRenderViewObserverHost::onDidFetchDocumentInnerText(const base::string16& innerText, quint64 requestId)
+{
+    m_adapterClient->didFetchDocumentInnerText(toQt(innerText), requestId);
+}

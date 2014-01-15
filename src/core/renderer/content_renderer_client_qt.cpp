@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,32 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef CONTENT_MAIN_DELEGATE_QT_H
-#define CONTENT_MAIN_DELEGATE_QT_H
+#include "renderer/content_renderer_client_qt.h"
 
-#include "content/public/app/content_main_delegate.h"
+#include "renderer/qt_render_view_observer.h"
 
-#include "base/memory/scoped_ptr.h"
-#include <QtCore/qcompilerdetection.h>
-
-#include "content_browser_client_qt.h"
-
-
-class ContentMainDelegateQt : public content::ContentMainDelegate
+void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view) Q_DECL_OVERRIDE
 {
-public:
-
-    // This is where the embedder puts all of its startup code that needs to run
-    // before the sandbox is engaged.
-    void PreSandboxStartup() Q_DECL_OVERRIDE;
-
-    content::ContentBrowserClient* CreateContentBrowserClient() Q_DECL_OVERRIDE;
-    content::ContentRendererClient* CreateContentRendererClient() Q_DECL_OVERRIDE;
-
-    bool BasicStartupComplete(int* /*exit_code*/) Q_DECL_OVERRIDE;
-
-private:
-    scoped_ptr<ContentBrowserClientQt> m_browserClient;
-};
-
-#endif // CONTENT_MAIN_DELEGATE_QT_H
+    // RenderViewObserver destroys itself with its RenderView.
+    new QtRenderViewObserver(render_view);
+}
