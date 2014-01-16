@@ -45,10 +45,6 @@
 #include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
-#if defined(Q_OS_WIN)
-#define __func__ __FUNCTION__
-#endif
-
 QT_BEGIN_NAMESPACE
 
 QWebEngineHistoryItemPrivate::QWebEngineHistoryItemPrivate(QWebEnginePagePrivate *page, int index)
@@ -99,23 +95,6 @@ QDateTime QWebEngineHistoryItem::lastVisited() const
 {
     Q_D(const QWebEngineHistoryItem);
     return d->page ? d->page->webContents()->getNavigationEntryTimestamp(d->index) : QDateTime();
-}
-
-QIcon QWebEngineHistoryItem::icon() const
-{
-    qWarning("Not implemented: %s", __func__);
-    return QIcon();
-}
-
-QVariant QWebEngineHistoryItem::userData() const
-{
-    return QVariant();
-}
-
-void QWebEngineHistoryItem::setUserData(const QVariant& userData)
-{
-    Q_UNUSED(userData);
-    qWarning("Not implemented: %s", __func__);
 }
 
 bool QWebEngineHistoryItem::isValid() const
@@ -267,17 +246,6 @@ int QWebEngineHistory::count() const
 {
     Q_D(const QWebEngineHistory);
     return d->page->webContents()->navigationEntryCount();
-}
-
-int QWebEngineHistory::maximumItemCount() const
-{
-    return 100;
-}
-
-void QWebEngineHistory::setMaximumItemCount(int count)
-{
-    Q_UNUSED(count);
-    qWarning("Not implemented: %s", __func__);
 }
 
 QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)

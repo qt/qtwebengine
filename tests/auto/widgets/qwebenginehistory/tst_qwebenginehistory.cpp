@@ -318,14 +318,12 @@ void tst_QWebEngineHistory::serialize_3()
 
     //prepare two different history items
     QWebEngineHistoryItem a = hist->currentItem();
-    a.setUserData("A - user data");
 
     //check properties BEFORE serialization
     QString title(a.title());
     QDateTime lastVisited(a.lastVisited());
     QUrl originalUrl(a.originalUrl());
     QUrl url(a.url());
-    QVariant userData(a.userData());
 
     save << *hist;
     QVERIFY(save.status() == QDataStream::Ok);
@@ -341,7 +339,6 @@ void tst_QWebEngineHistory::serialize_3()
     QCOMPARE(b.lastVisited(), lastVisited);
     QCOMPARE(b.originalUrl(), originalUrl);
     QCOMPARE(b.url(), url);
-    QCOMPARE(b.userData(), userData);
 
     //Check if all data was read
     QVERIFY(load.atEnd());
@@ -483,9 +480,6 @@ void tst_QWebEngineHistory::historyItemFromDeletedPage()
         QCOMPARE(item.url(), QUrl());
         QCOMPARE(item.title(), QString());
         QCOMPARE(item.lastVisited(), QDateTime());
-        QCOMPARE(item.icon(), QIcon());
-        item.setUserData(42);
-        QCOMPARE(item.userData(), QVariant());
     }
 }
 

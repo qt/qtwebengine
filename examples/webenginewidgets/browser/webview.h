@@ -64,14 +64,18 @@ public:
     BrowserMainWindow *mainWindow();
 
 protected:
+#if defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
     bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type);
+#endif
     QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type);
 #if !defined(QT_NO_UITOOLS)
     QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 #endif
 
 private slots:
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     void handleUnsupportedContent(QNetworkReply *reply);
+#endif
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
 

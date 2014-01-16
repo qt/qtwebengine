@@ -59,8 +59,12 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QStyle>
 
+#if defined(QWEBENGINEHISTORYINTERFACE)
 #include <QWebEngineHistoryInterface>
+#endif
+#if defined(QWEBENGINESETTINGS)
 #include <QWebEngineSettings>
+#endif
 
 #include <QtCore/QDebug>
 

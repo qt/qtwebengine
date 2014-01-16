@@ -22,7 +22,9 @@
 
 #include <qwebenginepage.h>
 #include <qwebengineview.h>
+#if defined(QWEBENGINEHISTORYINTERFACE)
 #include <qwebenginehistoryinterface.h>
+#endif
 #include <QDebug>
 
 class tst_QWebEngineHistoryInterface : public QObject
@@ -73,6 +75,7 @@ void tst_QWebEngineHistoryInterface::cleanup()
     delete m_view;
 }
 
+#if defined(QWEBENGINEHISTORYINTERFACE)
 class FakeHistoryImplementation : public QWebEngineHistoryInterface {
 public:
     void addHistoryEntry(const QString&) {}
@@ -80,7 +83,7 @@ public:
         return url == QLatin1String("http://www.trolltech.com/");
     }
 };
-
+#endif
 
 /*
  * Test that visited links are properly colored. http://www.trolltech.com is marked
