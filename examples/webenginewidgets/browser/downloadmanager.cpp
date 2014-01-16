@@ -57,7 +57,9 @@
 
 #include <QtCore/QDebug>
 
+#if defined(QWEBENGINESETTINGS)
 #include <QWebEngineSettings>
+#endif
 
 /*!
     DownloadItem is a widget that is displayed in the download manager list.

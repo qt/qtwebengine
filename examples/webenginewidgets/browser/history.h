@@ -52,7 +52,9 @@
 
 #include <QtCore/QSortFilterProxyModel>
 
+#if defined(QWEBENGINEHISTORYINTERFACE)
 #include <QWebEngineHistoryInterface>
+#endif
 
 class HistoryItem
 {

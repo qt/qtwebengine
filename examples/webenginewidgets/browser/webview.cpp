@@ -55,7 +55,9 @@
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
 
+#if defined(QWEBENGINEPAGE_HITTESTCONTENT)
 #include <QWebEngineHitTestResult>
+#endif
 
 #ifndef QT_NO_UITOOLS
 #include <QtUiTools/QUiLoader>
@@ -73,8 +75,10 @@ WebPage::WebPage(QObject *parent)
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     setNetworkAccessManager(BrowserApplication::networkAccessManager());
 #endif
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     connect(this, SIGNAL(unsupportedContent(QNetworkReply*)),
             this, SLOT(handleUnsupportedContent(QNetworkReply*)));
+#endif
     connect(this, SIGNAL(authenticationRequired(const QUrl &, QAuthenticator*)),
             SLOT(authenticationRequired(const QUrl &, QAuthenticator*)));
     connect(this, SIGNAL(proxyAuthenticationRequired(const QUrl &, QAuthenticator *, const QString &)),
@@ -92,9 +96,9 @@ BrowserMainWindow *WebPage::mainWindow()
     return BrowserApplication::instance()->mainWindow();
 }
 
+#if defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
 bool WebPage::acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type)
 {
-#if defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
     // ctrl open in new tab
     // ctrl-shift open in new tab and select
     // ctrl-alt open in new window
@@ -121,9 +125,8 @@ bool WebPage::acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequ
     }
     m_loadingUrl = request.url();
     emit loadingUrl(m_loadingUrl);
-#endif
-    return QWebEnginePage::acceptNavigationRequest(frame, request, type);
 }
+#endif
 
 class PopupWindow : public QWidget {
     Q_OBJECT
@@ -201,9 +204,9 @@ QObject *WebPage::createPlugin(const QString &classId, const QUrl &url, const QS
 }
 #endif // !defined(QT_NO_UITOOLS)
 
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
 void WebPage::handleUnsupportedContent(QNetworkReply *reply)
 {
-#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     QString errorString = reply->errorString();
 
     if (m_loadingUrl != reply->url()) {
@@ -252,8 +255,8 @@ void WebPage::handleUnsupportedContent(QNetworkReply *reply)
     if (m_loadingUrl == reply->url()) {
         mainFrame()->setHtml(html, reply->url());
     }
-#endif
 }
+#endif
 
 void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
 {
@@ -309,16 +312,20 @@ WebView::WebView(QWidget* parent)
     , m_page(new WebPage(this))
 {
     setPage(m_page);
+#if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
     connect(page(), SIGNAL(statusBarMessage(QString)),
             SLOT(setStatusBarText(QString)));
+#endif
     connect(this, SIGNAL(loadProgress(int)),
             this, SLOT(setProgress(int)));
     connect(this, SIGNAL(loadFinished(bool)),
             this, SLOT(loadFinished()));
     connect(page(), SIGNAL(loadingUrl(QUrl)),
             this, SIGNAL(urlChanged(QUrl)));
+#if defined(QWEBENGINEPAGE_DOWNLOADREQUESTED)
     connect(page(), SIGNAL(downloadRequested(QNetworkRequest)),
             this, SLOT(downloadRequested(QNetworkRequest)));
+#endif
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     page()->setForwardUnsupportedContent(true);
 #endif
@@ -363,8 +370,10 @@ void WebView::wheelEvent(QWheelEvent *event)
 
 void WebView::openLinkInNewTab()
 {
+#if defined(QWEBENGINEPAGE_WEBACTION_OPENLINKINNEWWINDOW)
     m_page->m_openInNewTab = true;
     pageAction(QWebEnginePage::OpenLinkInNewWindow)->trigger();
+#endif
 }
 
 void WebView::setProgress(int progress)

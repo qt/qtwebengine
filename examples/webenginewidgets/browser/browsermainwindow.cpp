@@ -138,8 +138,10 @@ BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
             m_autoSaver, SLOT(changeOccurred()));
     connect(m_tabWidget, SIGNAL(geometryChangeRequested(QRect)),
             this, SLOT(geometryChangeRequested(QRect)));
+#if defined(QWEBENGINEPAGE_PRINTREQUESTED)
     connect(m_tabWidget, SIGNAL(printRequested(QWebEngineFrame*)),
             this, SLOT(printRequested(QWebEngineFrame*)));
+#endif
     connect(m_tabWidget, SIGNAL(menuBarVisibilityChangeRequested(bool)),
             menuBar(), SLOT(setVisible(bool)));
     connect(m_tabWidget, SIGNAL(statusBarVisibilityChangeRequested(bool)),
@@ -682,9 +684,9 @@ void BrowserMainWindow::slotFilePrint()
 #endif
 }
 
+#if defined(QWEBENGINEPAGE_PRINT)
 void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
 {
-#if defined(QWEBENGINEPAGE_PRINT)
 #ifndef QT_NO_PRINTDIALOG
     QPrinter printer;
     QPrintDialog *dialog = new QPrintDialog(&printer, this);
@@ -693,8 +695,8 @@ void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
         return;
     frame->print(&printer);
 #endif
-#endif
 }
+#endif
 
 void BrowserMainWindow::slotPrivateBrowsing()
 {

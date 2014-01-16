@@ -237,6 +237,7 @@ void tst_QWebEnginePage::cleanupTestCase()
     cleanupFiles(); // Be nice
 }
 
+#if defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
 class NavigationRequestOverride : public QWebEnginePage
 {
 public:
@@ -252,6 +253,7 @@ protected:
         return m_acceptNavigationRequest;
     }
 };
+#endif
 
 void tst_QWebEnginePage::acceptNavigationRequest()
 {
@@ -434,15 +436,13 @@ public:
         connect(this, SIGNAL(geometryChangeRequested(QRect)), this, SLOT(slotGeometryChangeRequested(QRect)));
     }
 
+#if defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
     struct Navigation {
         QWebEngineFrame *frame;
         QNetworkRequest request;
         NavigationType type;
     };
-
     QList<Navigation> navigations;
-    QList<TestPage*> createdWindows;
-    QRect requestedGeometry;
 
     virtual bool acceptNavigationRequest(QWebEngineFrame* frame, const QNetworkRequest &request, NavigationType type) {
         Navigation n;
@@ -452,13 +452,16 @@ public:
         navigations.append(n);
         return true;
     }
+#endif
 
+    QList<TestPage*> createdWindows;
     virtual QWebEnginePage* createWindow(WebWindowType) {
         TestPage* page = new TestPage(this);
         createdWindows.append(page);
         return page;
     }
 
+    QRect requestedGeometry;
 private Q_SLOTS:
     void slotGeometryChangeRequested(const QRect& geom) {
         requestedGeometry = geom;

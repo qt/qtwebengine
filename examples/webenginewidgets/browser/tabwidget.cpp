@@ -306,18 +306,26 @@ void TabWidget::currentChanged(int index)
 
     WebView *oldWebView = this->webView(m_lineEdits->currentIndex());
     if (oldWebView) {
+#if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
         disconnect(oldWebView, SIGNAL(statusBarMessage(QString)),
                 this, SIGNAL(showStatusBarMessage(QString)));
+#endif
+#if defined(QWEBENGINEVIEW_LINKHOVERED)
         disconnect(oldWebView->page(), SIGNAL(linkHovered(QString,QString,QString)),
                 this, SIGNAL(linkHovered(QString)));
+#endif
         disconnect(oldWebView, SIGNAL(loadProgress(int)),
                 this, SIGNAL(loadProgress(int)));
     }
 
+#if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
     connect(webView, SIGNAL(statusBarMessage(QString)),
             this, SIGNAL(showStatusBarMessage(QString)));
+#endif
+#if defined(QWEBENGINEVIEW_LINKHOVERED)
     connect(webView->page(), SIGNAL(linkHovered(QString,QString,QString)),
             this, SIGNAL(linkHovered(QString)));
+#endif
     connect(webView, SIGNAL(loadProgress(int)),
             this, SIGNAL(loadProgress(int)));
 
@@ -450,8 +458,10 @@ WebView *TabWidget::newTab(bool makeCurrent)
             this, SLOT(webViewLoadStarted()));
     connect(webView, SIGNAL(loadFinished(bool)),
             this, SLOT(webViewIconChanged()));
+#if defined(QWEBENGINEVIEW_ICONCHANGED)
     connect(webView, SIGNAL(iconChanged()),
             this, SLOT(webViewIconChanged()));
+#endif
     connect(webView, SIGNAL(titleChanged(QString)),
             this, SLOT(webViewTitleChanged(QString)));
     connect(webView, SIGNAL(urlChanged(QUrl)),
@@ -460,14 +470,22 @@ WebView *TabWidget::newTab(bool makeCurrent)
             this, SLOT(windowCloseRequested()));
     connect(webView->page(), SIGNAL(geometryChangeRequested(QRect)),
             this, SIGNAL(geometryChangeRequested(QRect)));
+#if defined(QWEBENGINEPAGE_PRINTREQUESTED)
     connect(webView->page(), SIGNAL(printRequested(QWebEngineFrame*)),
             this, SIGNAL(printRequested(QWebEngineFrame*)));
+#endif
+#if defined(QWEBENGINEPAGE_MENUBARVISIBILITYCHANGEREQUESTED)
     connect(webView->page(), SIGNAL(menuBarVisibilityChangeRequested(bool)),
             this, SIGNAL(menuBarVisibilityChangeRequested(bool)));
+#endif
+#if defined(QWEBENGINEPAGE_STATUSBARVISIBILITYCHANGEREQUESTED)
     connect(webView->page(), SIGNAL(statusBarVisibilityChangeRequested(bool)),
             this, SIGNAL(statusBarVisibilityChangeRequested(bool)));
+#endif
+#if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
     connect(webView->page(), SIGNAL(toolBarVisibilityChangeRequested(bool)),
             this, SIGNAL(toolBarVisibilityChangeRequested(bool)));
+#endif
     addTab(webView, tr("(Untitled)"));
     if (makeCurrent)
         setCurrentWidget(webView);
