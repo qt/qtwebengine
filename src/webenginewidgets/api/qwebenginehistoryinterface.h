@@ -30,15 +30,6 @@ QT_BEGIN_NAMESPACE
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistoryInterface : public QObject {
     Q_OBJECT
-public:
-    QWebEngineHistoryInterface(QObject *parent = 0);
-    ~QWebEngineHistoryInterface();
-
-    static void setDefaultInterface(QWebEngineHistoryInterface *defaultInterface);
-    static QWebEngineHistoryInterface *defaultInterface();
-
-    virtual bool historyContains(const QString &url) const = 0;
-    virtual void addHistoryEntry(const QString &url) = 0;
 };
 
 QT_END_NAMESPACE

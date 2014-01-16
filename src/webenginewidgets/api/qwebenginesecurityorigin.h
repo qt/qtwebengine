@@ -24,27 +24,8 @@
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
 QT_BEGIN_NAMESPACE
-class QWebEngineDatabase;
-class QWebEngineSecurityOriginPrivate;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineSecurityOrigin {
-public:
-    static QList<QWebEngineSecurityOrigin> allOrigins();
-    static void addLocalScheme(const QString& scheme);
-    static void removeLocalScheme(const QString& scheme);
-    static QStringList localSchemes();
-
-    ~QWebEngineSecurityOrigin();
-
-    QString scheme() const;
-    QString host() const;
-    int port() const;
-
-    qint64 databaseUsage() const;
-    qint64 databaseQuota() const;
-    void setDatabaseQuota(qint64 quota);
-    void setApplicationCacheQuota(qint64 quota);
-    QList<QWebEngineDatabase> databases() const;
 };
 
 QT_END_NAMESPACE
