@@ -291,6 +291,7 @@ void BrowserMainWindow::setupMenu()
 
     // Edit
     QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
+#if defined(QWEBENGINEPAGE_WEBACTION_UNDO)
     QAction *m_undo = editMenu->addAction(tr("&Undo"));
     m_undo->setShortcuts(QKeySequence::Undo);
     m_tabWidget->addWebAction(m_undo, QWebEnginePage::Undo);
@@ -308,6 +309,7 @@ void BrowserMainWindow::setupMenu()
     m_paste->setShortcuts(QKeySequence::Paste);
     m_tabWidget->addWebAction(m_paste, QWebEnginePage::Paste);
     editMenu->addSeparator();
+#endif
 
 #if defined(QWEBENGINEPAGE_FINDTEXT)
     QAction *m_find = editMenu->addAction(tr("&Find"));

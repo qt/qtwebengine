@@ -25,17 +25,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWebEnginePage;
-class QWebEngineInspectorPrivate;
-
 class QWEBENGINEWIDGETS_EXPORT QWebEngineInspector : public QWidget {
     Q_OBJECT
-public:
-    QWebEngineInspector(QWidget* parent = 0);
-    ~QWebEngineInspector();
-
-    void setPage(QWebEnginePage* page);
-    QWebEnginePage* page() const;
 };
 
 QT_END_NAMESPACE

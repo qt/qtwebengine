@@ -2726,6 +2726,7 @@ void tst_QWebEnginePage::defaultTextEncoding()
 #endif
 }
 
+#ifdef QWEBENGINESETTINGS_ERRORPAGEEXTENSION
 class ErrorPage : public QWebEnginePage
 {
 public:
@@ -2748,9 +2749,13 @@ public:
         return true;
     }
 };
+#endif
 
 void tst_QWebEnginePage::errorPageExtension()
 {
+#if !defined(QWEBENGINESETTINGS_ERRORPAGEEXTENSION)
+    QSKIP("QWEBENGINESETTINGS_ERRORPAGEEXTENSION");
+#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2783,6 +2788,7 @@ void tst_QWebEnginePage::errorPageExtension()
     QTRY_COMPARE(page.history()->currentItem().url(), QUrl("data:text/html,foo"));
 
     m_view->setPage(0);
+#endif
 }
 
 void tst_QWebEnginePage::errorPageExtensionInIFrames()
@@ -2828,6 +2834,9 @@ void tst_QWebEnginePage::errorPageExtensionInFrameset()
 
 void tst_QWebEnginePage::errorPageExtensionLoadFinished()
 {
+#if !defined(QWEBENGINESETTINGS_ERRORPAGEEXTENSION)
+    QSKIP("QWEBENGINESETTINGS_ERRORPAGEEXTENSION");
+#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2853,6 +2862,7 @@ void tst_QWebEnginePage::errorPageExtensionLoadFinished()
     QVERIFY(nonExistantFrameLoadSucceded);
 
     m_view->setPage(0);
+#endif
 }
 
 class FriendlyWebPage : public QWebEnginePage

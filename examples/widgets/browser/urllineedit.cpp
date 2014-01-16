@@ -276,8 +276,10 @@ void UrlLineEdit::setWebView(WebView *webView)
         this, SLOT(webViewUrlChanged(QUrl)));
     connect(webView, SIGNAL(loadFinished(bool)),
         this, SLOT(webViewIconChanged()));
+#if defined(QWEBENGINEVIEW_ICONCHANGED)
     connect(webView, SIGNAL(iconChanged()),
         this, SLOT(webViewIconChanged()));
+#endif
     connect(webView, SIGNAL(loadProgress(int)),
         this, SLOT(update()));
 }
