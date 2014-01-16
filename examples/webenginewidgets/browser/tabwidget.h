@@ -152,7 +152,9 @@ signals:
     void menuBarVisibilityChangeRequested(bool visible);
     void statusBarVisibilityChangeRequested(bool visible);
     void toolBarVisibilityChangeRequested(bool visible);
+#if defined(QWEBENGINEPAGE_PRINTREQUESTED)
     void printRequested(QWebEngineFrame *frame);
+#endif
 
 public:
     TabWidget(QWidget *parent = 0);

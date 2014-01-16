@@ -50,7 +50,9 @@
 #include <QtWidgets/QMenu>
 #include <QtCore/QStringListModel>
 
+#if defined(QWEBENGINESETTINGS)
 #include <QWebEngineSettings>
+#endif
 
 /*
     ToolbarSearch is a very basic search widget that also contains a small history.

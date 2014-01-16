@@ -139,20 +139,6 @@
 */
 
 /*!
-    \fn void QWebEngineView::load(const QNetworkRequest &request, QNetworkAccessManager::Operation operation, const QByteArray &body)
-    \fn void QWebEngineView::load(const QNetworkRequest &request, QNetworkAccessManager::Operation operation, const QByteArray &body)
-
-    Loads a network request, \a request, using the method specified in \a operation.
-
-    \a body is optional and is only used for POST operations.
-
-    \note The view remains the same until enough data has arrived to display the new url.
-
-    \sa url(), urlChanged()
-*/
-
-
-/*!
     \fn void QWebEngineView::setHtml(const QString &html, const QUrl &baseUrl)
     Sets the content of the web view to the specified \a html.
 
@@ -198,17 +184,6 @@
 */
 
 /*!
-    \fn QWebEngineSettings *QWebEngineView::settings() const
-    Returns a pointer to the view/page specific settings object.
-
-    It is equivalent to
-
-    \snippet snippets/qtwebengine_qwebengineview_snippet.cpp 1
-
-    \sa QWebEngineSettings::globalSettings()
-*/
-
-/*!
     \property QWebEngineView::title
     \brief the title of the web page currently viewed
 
@@ -228,16 +203,6 @@
     \sa load(), urlChanged()
 */
 
-
-/*!
-    \property QWebEngineView::icon
-    \brief the icon associated with the web page currently viewed
-
-    By default, this property contains a null icon.
-
-    \sa iconChanged(), QWebEngineSettings::iconForUrl()
-*/
-
 /*!
     \property QWebEngineView::hasSelection
     \brief whether this page contains selected content or not.
@@ -253,17 +218,7 @@
 
     By default, this property contains an empty string.
 
-    \sa findText(), selectionChanged(), selectedHtml()
-*/
-
-/*!
-    \since 4.8
-    \property QWebEngineView::selectedHtml
-    \brief the HTML currently selected
-
-    By default, this property contains an empty string.
-
-    \sa findText(), selectionChanged(), selectedText()
+    \sa findText(), selectionChanged()
 */
 
 /*!
@@ -284,16 +239,6 @@
     \sa pageAction()
 */
 
-/*!
-    \property QWebEngineView::modified
-    \brief whether the document was modified by the user
-
-    Parts of HTML documents can be editable for example through the
-    \c{contenteditable} attribute on HTML elements.
-
-    By default, this property is false.
-*/
-
 /*
     \property QWebEngineView::textInteractionFlags
     \brief how the view should handle user input
@@ -308,32 +253,6 @@
     \brief the zoom factor for the view
 */
 
-
-/*!
-    \property QWebEngineView::textSizeMultiplier
-    \brief the scaling factor for all text in the frame
-    \obsolete
-
-    Use setZoomFactor instead, in combination with the
-    ZoomTextOnly attribute in QWebEngineSettings.
-
-    \note Setting this property also enables the
-    ZoomTextOnly attribute in QWebEngineSettings.
-
-    By default, this property contains a value of 1.0.
-*/
-
-/*!
-    \fn void QWebEngineView::setTextSizeMultiplier(qreal factor)
-    Sets the value of the multiplier used to scale the text in a Web page to
-    the \a factor specified.
-*/
-
-/*!
-    \fn qreal QWebEngineView::textSizeMultiplier() const
-    Returns the value of the multiplier used to scale the text in a Web page.
-*/
-
 /*!
     \property QWebEngineView::renderHints
     \since 4.6
@@ -344,31 +263,6 @@
     QPainter::TextAntialiasing and QPainter::SmoothPixmapTransform are enabled by default.
 
     \sa QPainter::renderHints()
-*/
-
-/*!
-    \fn QPainter::RenderHints QWebEngineView::renderHints() const
-    \since 4.6
-    Returns the render hints used by the view to render content.
-
-    \sa QPainter::renderHints()
-*/
-
-/*!
-    \fn void QWebEngineView::setRenderHints(QPainter::RenderHints hints)
-    \since 4.6
-    Sets the render hints used by the view to the specified \a hints.
-
-    \sa QPainter::setRenderHints()
-*/
-
-/*!
-    \fn void QWebEngineView::setRenderHint(QPainter::RenderHint hint, bool enabled)
-    \since 4.6
-    If \a enabled is true, enables the specified render \a hint; otherwise
-    disables it.
-
-    \sa renderHints, QPainter::renderHints()
 */
 
 /*!
@@ -387,13 +281,6 @@
     Returns true if \a subString was found; otherwise returns false.
 
     \sa selectedText(), selectionChanged()
-*/
-
-/*!
-    \fn void QWebEngineView::print(QPrinter *printer) const
-    Prints the main frame to the given \a printer.
-
-    \sa QWebEnginePage::print(), QPrintPreviewDialog
 */
 
 /*!
@@ -451,7 +338,7 @@
     reimplementing this method application must also set the JavaScriptCanOpenWindows attribute
     of QWebEngineSettings to true in order for it to get called.
 
-    \sa QWebEnginePage::createWindow(), QWebEnginePage::acceptNavigationRequest()
+    \sa QWebEnginePage::createWindow()
 */
 
 /*!
@@ -477,24 +364,12 @@
 */
 
 /*!
-    \fn void QWebEngineView::iconChanged()
-
-    This signal is emitted whenever the icon of the page is loaded or changes.
-
-    In order for icons to be loaded, you will need to set an icon database path
-    using QWebEngineSettings::setIconDatabasePath().
-
-    \sa icon(), QWebEngineSettings::setIconDatabasePath()
-*/
-
-/*!
     \fn void QWebEngineView::loadStarted()
 
     This signal is emitted when a new load of the page is started.
 
     \sa loadProgress(), loadFinished()
 */
-
 
 /*!
     \fn void QWebEngineView::loadFinished(bool ok)
@@ -525,13 +400,4 @@
     which is the default range of QProgressBar.
 
     \sa loadStarted(), loadFinished()
-*/
-
-/*!
-    \fn void QWebEngineView::linkClicked(const QUrl &url)
-
-    This signal is emitted whenever the user clicks on a link and the page's linkDelegationPolicy
-    property is set to delegate the link handling for the specified \a url.
-
-    \sa QWebEnginePage::linkDelegationPolicy()
 */

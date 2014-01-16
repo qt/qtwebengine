@@ -127,7 +127,9 @@ private slots:
     void slotShowWindow();
     void slotSwapFocus();
 
+#if defined(QWEBENGINEPAGE_PRINT)
     void printRequested(QWebEngineFrame *frame);
+#endif
     void geometryChangeRequested(const QRect &geometry);
     void updateToolbarActionText(bool visible);
     void updateBookmarksToolbarActionText(bool visible);

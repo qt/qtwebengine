@@ -58,8 +58,6 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QToolButton>
 
-#include <QWebEngineSettings>
-
 #include <QtCore/QDebug>
 
 #define BOOKMARKBAR "Bookmarks Bar"

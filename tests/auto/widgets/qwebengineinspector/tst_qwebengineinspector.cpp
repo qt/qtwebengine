@@ -20,9 +20,13 @@
 #include <QtTest/QtTest>
 
 #include <qdir.h>
+#if defined(QWEBENGINEINSPECTOR)
 #include <qwebengineinspector.h>
+#endif
 #include <qwebenginepage.h>
+#if defined(QWEBENGINESETTINGS)
 #include <qwebenginesettings.h>
+#endif
 
 class tst_QWebEngineInspector : public QObject {
     Q_OBJECT

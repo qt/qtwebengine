@@ -115,15 +115,6 @@
  */
 
 /*!
-    \property QWebEnginePage::palette
-    \brief the page's palette
-
-    The base brush of the palette is used to draw the background of the main frame.
-
-    By default, this property contains the application's default palette.
-*/
-
-/*!
     \fn QVariant QWebEnginePage::inputMethodQuery(Qt::InputMethodQuery property) const
     This method is used by the input method to query a set of properties of the page
     to be able to support complex input method operations as support for surrounding
@@ -143,47 +134,6 @@
    \value FindBackward Searches backwards instead of forwards.
    \value FindCaseSensitively By default findText() works case insensitive. Specifying this option
    changes the behavior to a case sensitive find operation.
-   \value FindWrapsAroundDocument Makes findText() restart from the beginning of the document if the end
-   was reached and the text was not found.
-   \value HighlightAllOccurrences Highlights all existing occurrences of a specific string.
-       (This value was introduced in 4.6.)
-   \value FindAtWordBeginningsOnly Searches for the sub-string only at the beginnings of words.
-       (This value was introduced in 5.2.)
-   \value TreatMedialCapitalAsWordBeginning Treats a capital letter occurring anywhere in the middle of a word
-   as the beginning of a new word.
-       (This value was introduced in 5.2.)
-   \value FindBeginsInSelection Begin searching inside the text selection first.
-       (This value was introduced in 5.2.)
-*/
-
-/*!
-    \enum QWebEnginePage::LinkDelegationPolicy
-
-    This enum defines the delegation policies a webpage can have when activating links and emitting
-    the linkClicked() signal.
-
-    \value DontDelegateLinks No links are delegated. Instead, QWebEnginePage tries to handle them all.
-    \value DelegateExternalLinks When activating links that point to documents not stored on the
-    local filesystem or an equivalent - such as the Qt resource system - then linkClicked() is emitted.
-    \value DelegateAllLinks Whenever a link is activated the linkClicked() signal is emitted.
-
-    \sa QWebEnginePage::linkDelegationPolicy
-*/
-
-/*!
-    \enum QWebEnginePage::NavigationType
-
-    This enum describes the types of navigation available when browsing through hyperlinked
-    documents.
-
-    \value NavigationTypeLinkClicked The user clicked on a link or pressed return on a focused link.
-    \value NavigationTypeFormSubmitted The user activated a submit button for an HTML form.
-    \value NavigationTypeBackOrForward Navigation to a previously shown document in the back or forward history is requested.
-    \value NavigationTypeReload The user activated the reload action.
-    \value NavigationTypeFormResubmitted An HTML form was submitted a second time.
-    \value NavigationTypeOther A navigation to another document using a method not listed above.
-
-    \sa acceptNavigationRequest()
 */
 
 /*!
@@ -195,24 +145,10 @@
     actions can be be determined by checking \l{QAction::}{isEnabled()} on the
     action returned by action().
 
-    One method of enabling the text editing, cursor movement, and text selection actions
-    is by setting \l contentEditable to true.
-
     \value NoWebAction No action is triggered.
-    \value OpenLink Open the current link.
-    \value OpenLinkInNewWindow Open the current link in a new window.
-    \value OpenLinkInThisWindow Open the current link without opening a new window. Used on links that would default to opening in another frame or a new window. (Added in Qt 5.0)
-    \value OpenFrameInNewWindow Replicate the current frame in a new window.
-    \value DownloadLinkToDisk Download the current link to the disk.
-    \value CopyLinkToClipboard Copy the current link to the clipboard.
-    \value OpenImageInNewWindow Open the highlighted image in a new window.
-    \value DownloadImageToDisk Download the highlighted image to the disk.
-    \value CopyImageToClipboard Copy the highlighted image to the clipboard.  (Added in Qt 4.8)
-    \value CopyImageUrlToClipboard Copy the highlighted image's URL to the clipboard.
     \value Back Navigate back in the history of navigated links.
     \value Forward Navigate forward in the history of navigated links.
     \value Stop Stop loading the current page.
-    \value StopScheduledPageRefresh Stop all pending page refresh/redirect requests.  (Added in Qt 4.7)
     \value Reload Reload the current page.
     \value ReloadAndBypassCache Reload the current page, but do not use any local cache. (Added in Qt 4.6)
     \value Cut Cut the content currently selected into the clipboard.
@@ -220,55 +156,8 @@
     \value Paste Paste content from the clipboard.
     \value Undo Undo the last editing action.
     \value Redo Redo the last editing action.
-    \value MoveToNextChar Move the cursor to the next character.
-    \value MoveToPreviousChar Move the cursor to the previous character.
-    \value MoveToNextWord Move the cursor to the next word.
-    \value MoveToPreviousWord Move the cursor to the previous word.
-    \value MoveToNextLine Move the cursor to the next line.
-    \value MoveToPreviousLine Move the cursor to the previous line.
-    \value MoveToStartOfLine Move the cursor to the start of the line.
-    \value MoveToEndOfLine Move the cursor to the end of the line.
-    \value MoveToStartOfBlock Move the cursor to the start of the block.
-    \value MoveToEndOfBlock Move the cursor to the end of the block.
-    \value MoveToStartOfDocument Move the cursor to the start of the document.
-    \value MoveToEndOfDocument Move the cursor to the end of the document.
-    \value SelectNextChar Select to the next character.
-    \value SelectPreviousChar Select to the previous character.
-    \value SelectNextWord Select to the next word.
-    \value SelectPreviousWord Select to the previous word.
-    \value SelectNextLine Select to the next line.
-    \value SelectPreviousLine Select to the previous line.
-    \value SelectStartOfLine Select to the start of the line.
-    \value SelectEndOfLine Select to the end of the line.
-    \value SelectStartOfBlock Select to the start of the block.
-    \value SelectEndOfBlock Select to the end of the block.
-    \value SelectStartOfDocument Select to the start of the document.
-    \value SelectEndOfDocument Select to the end of the document.
-    \value DeleteStartOfWord Delete to the start of the word.
-    \value DeleteEndOfWord Delete to the end of the word.
-    \value SetTextDirectionDefault Set the text direction to the default direction.
-    \value SetTextDirectionLeftToRight Set the text direction to left-to-right.
-    \value SetTextDirectionRightToLeft Set the text direction to right-to-left.
-    \value ToggleBold Toggle the formatting between bold and normal weight.
-    \value ToggleItalic Toggle the formatting between italic and normal style.
-    \value ToggleUnderline Toggle underlining.
-    \value InspectElement Show the Web Inspector with the currently highlighted HTML element.
-    \value InsertParagraphSeparator Insert a new paragraph.
-    \value InsertLineSeparator Insert a new line.
     \value SelectAll Selects all content.
     \value PasteAndMatchStyle Paste content from the clipboard with current style. (Added in Qt 4.6)
-    \value RemoveFormat Removes formatting and style. (Added in Qt 4.6)
-    \value ToggleStrikethrough Toggle the formatting between strikethrough and normal style. (Added in Qt 4.6)
-    \value ToggleSubscript Toggle the formatting between subscript and baseline. (Added in Qt 4.6)
-    \value ToggleSuperscript Toggle the formatting between supercript and baseline. (Added in Qt 4.6)
-    \value InsertUnorderedList Toggles the selection between an ordered list and a normal block. (Added in Qt 4.6)
-    \value InsertOrderedList Toggles the selection between an ordered list and a normal block. (Added in Qt 4.6)
-    \value Indent Increases the indentation of the currently selected format block by one increment. (Added in Qt 4.6)
-    \value Outdent Decreases the indentation of the currently selected format block by one increment. (Added in Qt 4.6)
-    \value AlignCenter Applies center alignment to content. (Added in Qt 4.6)
-    \value AlignJustified Applies full justification to content. (Added in Qt 4.6)
-    \value AlignLeft Applies left justification to content. (Added in Qt 4.6)
-    \value AlignRight Applies right justification to content. (Added in Qt 4.6)
 
     \omitvalue WebActionCount
 
@@ -285,72 +174,6 @@
 */
 
 /*!
-    \class QWebEnginePage::ViewportAttributes
-    \since 4.7
-    \brief The QWebEnginePage::ViewportAttributes class describes hints that can be applied to a viewport.
-
-    QWebEnginePage::ViewportAttributes provides a description of a viewport, such as viewport geometry,
-    initial scale factor with limits, plus information about whether a user should be able
-    to scale the contents in the viewport or not, ie. by zooming.
-
-    ViewportAttributes can be set by a web author using the viewport meta tag extension, documented
-    at \l{http://developer.apple.com/safari/library/documentation/appleapplications/reference/safariwebcontent/usingtheviewport/usingtheviewport.html}{Safari Reference Library: Using the Viewport Meta Tag}.
-
-    All values might not be set, as such when dealing with the hints, the developer needs to
-    check whether the values are valid. Negative values denote an invalid qreal value.
-
-    \inmodule QtWebEngine
-*/
-
-/*!
-    \fn QWebEnginePage::ViewportAttributes::ViewportAttributes()
-    Constructs an empty QWebEnginePage::ViewportAttributes.
-*/
-
-/*!
-    \fn QWebEnginePage::ViewportAttributes::ViewportAttributes(const QWebEnginePage::ViewportAttributes& other)
-    Constructs a QWebEnginePage::ViewportAttributes which is a copy from \a other .
-*/
-
-/*!
-    \fn QWebEnginePage::ViewportAttributes::~ViewportAttributes()
-    Destroys the QWebEnginePage::ViewportAttributes.
-*/
-
-/*!
-    \fn QWebEnginePage::ViewportAttributes& QWebEnginePage::ViewportAttributes::operator=(const QWebEnginePage::ViewportAttributes& other)
-    Assigns the given QWebEnginePage::ViewportAttributes to this viewport hints and returns a
-    reference to this.
-*/
-
-/*! \fn inline bool QWebEnginePage::ViewportAttributes::isValid() const
-    Returns whether this is a valid ViewportAttributes or not.
-
-    An invalid ViewportAttributes will have an empty QSize, negative values for scale factors and
-    true for the boolean isUserScalable.
-*/
-
-/*! \fn inline QSize QWebEnginePage::ViewportAttributes::size() const
-    Returns the size of the viewport.
-*/
-
-/*! \fn inline qreal QWebEnginePage::ViewportAttributes::initialScaleFactor() const
-    Returns the initial scale of the viewport as a multiplier.
-*/
-
-/*! \fn inline qreal QWebEnginePage::ViewportAttributes::minimumScaleFactor() const
-    Returns the minimum scale value of the viewport as a multiplier.
-*/
-
-/*! \fn inline qreal QWebEnginePage::ViewportAttributes::maximumScaleFactor() const
-    Returns the maximum scale value of the viewport as a multiplier.
-*/
-
-/*! \fn inline bool QWebEnginePage::ViewportAttributes::isUserScalable() const
-    Determines whether or not the scale can be modified by the user.
-*/
-
-/*!
     \fn QWebEnginePage::QWebEnginePage(QObject *parent)
     Constructs an empty QWebEnginePage with parent \a parent.
 */
@@ -358,33 +181,6 @@
 /*!
     \fn QWebEnginePage::~QWebEnginePage()
     Destroys the web page.
-*/
-
-/*!
-    \fn QWebEngineFrame *QWebEnginePage::mainFrame() const
-    Returns the main frame of the page.
-
-    The main frame provides access to the hierarchy of sub-frames and is also needed if you
-    want to explicitly render a web page into a given painter.
-
-    \sa currentFrame()
-*/
-
-/*!
-    \fn QWebEngineFrame *QWebEnginePage::currentFrame() const
-    Returns the frame currently active.
-
-    \sa mainFrame(), frameCreated()
-*/
-
-/*!
-    \fn QWebEngineFrame* QWebEnginePage::frameAt(const QPoint& pos) const
-    \since 4.6
-
-    Returns the frame at the given point \a pos, or 0 if there is no frame at
-    that position.
-
-    \sa mainFrame(), currentFrame()
 */
 
 /*!
@@ -444,16 +240,6 @@
 */
 
 /*!
-    \fn bool QWebEnginePage::shouldInterruptJavaScript()
-    \since 4.6
-    This function is called when a JavaScript program is running for a long period of time.
-
-    If the user wanted to stop the JavaScript the implementation should return true; otherwise false.
-
-    The default implementation executes the query using QMessageBox::information with QMessageBox::Yes and QMessageBox::No buttons.
-*/
-
-/*!
     \fn QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
     This function is called whenever WebKit wants to create a new window of the given \a type, for
     example when a JavaScript program requests to open a document in a new window.
@@ -469,24 +255,7 @@
     reimplementing this method application must also set the JavaScriptCanOpenWindows attribute
     of QWebEngineSettings to true in order for it to get called.
 
-    \sa acceptNavigationRequest(), QWebEngineView::createWindow()
-*/
-
-/*!
-    \fn QObject *QWebEnginePage::createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
-    This function is called whenever WebKit encounters a HTML object element with type "application/x-qt-plugin". It is
-    called regardless of the value of QWebEngineSettings::PluginsEnabled. The \a classid, \a url, \a paramNames and \a paramValues
-    correspond to the HTML object element attributes and child elements to configure the embeddable object.
-*/
-
-/*!
-    \fn QStringList QWebEnginePage::supportedContentTypes() const
-    Returns the list of all content types supported by QWebEnginePage.
-*/
-
-/*!
-    \fn bool QWebEnginePage::supportsContentType(const QString& mimeType) const
-    Returns true if QWebEnginePage can handle the given \a mimeType; otherwise, returns false.
+    \sa QWebEngineView::createWindow()
 */
 
 /*!
@@ -502,97 +271,6 @@
 */
 
 /*!
-    \property QWebEnginePage::viewportSize
-    \brief the size of the viewport
-
-    The size affects for example the visibility of scrollbars
-    if the document is larger than the viewport.
-
-    By default, for a newly-created Web page, this property contains a size with
-    zero width and height.
-
-    \sa render(), preferredContentsSize
-*/
-
-/*!
-    \fn QWebEnginePage::ViewportAttributes QWebEnginePage::viewportAttributesForSize(const QSize& availableSize) const
-    Computes the optimal viewport configuration given the \a availableSize, when
-    user interface components are disregarded.
-
-    The configuration is also dependent on the device screen size which is obtained
-    automatically. For testing purposes the size can be overridden by setting two
-    environment variables QTWEBKIT_DEVICE_WIDTH and QTWEBKIT_DEVICE_HEIGHT, which
-    both needs to be set.
-
-    The ViewportAttributes includes a pixel density ratio, which will also be exposed to
-    the web author though the -webkit-pixel-ratio media feature. This is the ratio
-    between 1 density-independent pixel (DPI) and physical pixels.
-
-    A density-independent pixel is equivalent to one physical pixel on a 160 DPI screen,
-    so on our platform assumes that as the baseline density.
-
-    The conversion of DIP units to screen pixels is quite simple:
-
-    pixels = DIPs * (density / 160).
-
-    Thus, on a 240 DPI screen, 1 DIPs would equal 1.5 physical pixels.
-
-    An invalid instance will be returned in the case an empty size is passed to the
-    method.
-
-    \note The density is automatically obtained from the DPI of the screen where the page
-    is being shown, but as many X11 servers are reporting wrong DPI, it is possible to
-    override it using QX11Info::setAppDpiY().
-*/
-
-/*!
-    \property QWebEnginePage::preferredContentsSize
-    \since 4.6
-    \brief a custom size used for laying out the page contents.
-
-    By default all pages are laid out using the viewport of the page as the base.
-
-    As pages mostly are designed for desktop usage, they often do not layout properly
-    on small devices as the contents require a certain view width. For this reason
-    it is common to use a different layout size and then scale the contents to fit
-    within the actual view.
-
-    If this property is set to a valid size, this size is used for all layout needs
-    instead of the size of the viewport.
-
-    Setting an invalid size, makes the page fall back to using the viewport size for layout.
-
-    \sa viewportSize
-*/
-
-/*
-    \fn void QWebEnginePage::setActualVisibleContentRect(const QRect& rect) const
-    This function is to be called after any (animated) scroll/pan has ended, in the case the application handles the
-    scrolling/panning of the web contents. This is commonly used in combination with tiling where is it common for
-    the application to pan the actual view, which then resizes itself to the size of the contents.
-
-    \note Calling this function makes WebKit stop trying to calculate the visibleContentRect. To turn that on
-    again, call this method with an empty rect.
-
-    \sa QWebEngineSettings::TiledBackingStoreEnabled
-*/
-
-/*!
-    \fn bool QWebEnginePage::acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, QWebEnginePage::NavigationType type)
-
-    This function is called whenever WebKit requests to navigate \a frame to the resource specified by \a request by means of
-    the specified navigation type \a type.
-
-    If \a frame is a null pointer then navigation to a new window is requested. If the request is
-    accepted createWindow() will be called.
-
-    The default implementation interprets the page's linkDelegationPolicy and emits linkClicked accordingly or returns true
-    to let QWebEnginePage handle the navigation itself.
-
-    \sa createWindow()
-*/
-
-/*!
     \property QWebEnginePage::hasSelection
     \brief whether this page contains selected content or not.
 
@@ -605,17 +283,7 @@
 
     By default, this property contains an empty string.
 
-    \sa selectionChanged(), selectedHtml()
-*/
-
-/*!
-    \since 4.8
-    \property QWebEnginePage::selectedHtml
-    \brief the HTML currently selected
-
-    By default, this property contains an empty string.
-
-    \sa selectionChanged(), selectedText()
+    \sa selectionChanged()
 */
 
 /*!
@@ -629,285 +297,6 @@
     triggering the corresponding action is performed on the page.
 
     \sa triggerAction()
-*/
-
-/*!
-    \property QWebEnginePage::modified
-    \brief whether the page contains unsubmitted form data, or the contents have been changed.
-
-    By default, this property is false.
-
-    \sa contentsChanged(), contentEditable, undoStack()
-*/
-
-/*!
-    \fn QUndoStack *QWebEnginePage::undoStack() const
-    Returns a pointer to the undo stack used for editable content.
-
-    \sa modified
-*/
-
-/*!
-    \fn bool QWebEnginePage::focusNextPrevChild(bool next)
-    Similar to QWidget::focusNextPrevChild() it focuses the next focusable web element
-    if \a next is true; otherwise the previous element is focused.
-
-    Returns true if it can find a new focusable element, or false if it can't.
-*/
-
-/*!
-    \property QWebEnginePage::contentEditable
-    \brief whether the content in this QWebEnginePage is editable or not
-    \since 4.5
-
-    If this property is enabled the contents of the page can be edited by the user through a visible
-    cursor. If disabled (the default) only HTML elements in the web page with their
-    \c{contenteditable} attribute set are editable.
-
-    \sa modified, contentsChanged(), WebAction
-*/
-
-/*!
-    \property QWebEnginePage::forwardUnsupportedContent
-    \brief whether QWebEnginePage should forward unsupported content
-
-    If enabled, the unsupportedContent() signal is emitted with a network reply that
-    can be used to read the content.
-
-    If disabled, the download of such content is aborted immediately.
-
-    By default unsupported content is not forwarded.
-*/
-
-/*!
-    \property QWebEnginePage::linkDelegationPolicy
-    \brief how QWebEnginePage should delegate the handling of links through the
-    linkClicked() signal
-
-    The default is to delegate no links.
-*/
-
-/*!
-    \fn bool QWebEnginePage::swallowContextMenuEvent(QContextMenuEvent *event)
-    Filters the context menu event, \a event, through handlers for scrollbars and
-    custom event handlers in the web page. Returns true if the event was handled;
-    otherwise false.
-
-    A web page may swallow a context menu event through a custom event handler, allowing for context
-    menus to be implemented in HTML/JavaScript. This is used by \l{http://maps.google.com/}{Google
-    Maps}, for example.
-*/
-
-/*!
-    \fn void QWebEnginePage::updatePositionDependentActions(const QPoint &pos)
-    Updates the page's actions depending on the position \a pos. For example if \a pos is over an image
-    element the CopyImageToClipboard action is enabled.
-*/
-
-/*!
-    \enum QWebEnginePage::Extension
-
-    This enum describes the types of extensions that the page can support. Before using these extensions, you
-    should verify that the extension is supported by calling supportsExtension().
-
-    \value ChooseMultipleFilesExtension Whether the web page supports multiple file selection.
-    This extension is invoked when the web content requests one or more file names, for example
-    as a result of the user clicking on a "file upload" button in a HTML form where multiple
-    file selection is allowed.
-
-    \value ErrorPageExtension Whether the web page can provide an error page when loading fails.
-    (introduced in Qt 4.6)
-
-    \sa ChooseMultipleFilesExtensionOption, ChooseMultipleFilesExtensionReturn, ErrorPageExtensionOption, ErrorPageExtensionReturn
-*/
-
-/*!
-    \enum QWebEnginePage::ErrorDomain
-    \since 4.6
-
-    This enum describes the domain of an ErrorPageExtensionOption object (i.e. the layer in which the error occurred).
-
-    \value QtNetwork The error occurred in the QtNetwork layer; the error code is of type QNetworkReply::NetworkError.
-    \value Http The error occurred in the HTTP layer; the error code is a HTTP status code (see QNetworkRequest::HttpStatusCodeAttribute).
-    \value WebKit The error is an internal WebKit error.
-*/
-
-/*!
-    \class QWebEnginePage::ExtensionOption
-    \since 4.4
-    \brief The ExtensionOption class provides an extended input argument to QWebEnginePage's extension support.
-
-    \inmodule QtWebEngine
-
-    \sa QWebEnginePage::extension(), QWebEnginePage::ExtensionReturn
-*/
-
-/*!
-    \class QWebEnginePage::ExtensionReturn
-    \since 4.4
-    \brief The ExtensionReturn class provides an output result from a QWebEnginePage's extension.
-
-    \inmodule QtWebEngine
-
-    \sa QWebEnginePage::extension(), QWebEnginePage::ExtensionOption
-*/
-
-/*!
-    \class QWebEnginePage::ErrorPageExtensionOption
-    \since 4.6
-    \brief The ErrorPageExtensionOption class describes the option
-    for the error page extension.
-
-    \inmodule QtWebEngine
-
-    The ErrorPageExtensionOption class holds the \a url for which an error occurred as well as
-    the associated \a frame.
-
-    The error itself is reported by an error \a domain, the \a error code as well as \a errorString.
-
-    \sa QWebEnginePage::extension(), QWebEnginePage::ErrorPageExtensionReturn
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionOption::url
-    \brief the url for which an error occurred
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionOption::frame
-    \brief the frame associated with the error
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionOption::domain
-    \brief the domain that reported the error
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionOption::error
-    \brief the error code. Interpretation of the value depends on the \a domain
-    \sa QWebEnginePage::ErrorDomain
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionOption::errorString
-    \brief a string that describes the error
-*/
-
-/*!
-    \class QWebEnginePage::ErrorPageExtensionReturn
-    \since 4.6
-    \brief The ErrorPageExtensionReturn describes the error page, which will be shown for the
-    frame for which the error occurred.
-
-    \inmodule QtWebEngine
-
-    The ErrorPageExtensionReturn class holds the data needed for creating an error page. Some are
-    optional such as \a contentType, which defaults to "text/html", as well as the \a encoding, which
-    is assumed to be UTF-8 if not indicated otherwise.
-
-    The error page is stored in the \a content byte array, as HTML content. In order to convert a
-    QString to a byte array, the QString::toUtf8() method can be used.
-
-    External objects such as stylesheets or images referenced in the HTML are located relative to
-    \a baseUrl.
-
-    \sa QWebEnginePage::extension(), QWebEnginePage::ErrorPageExtensionOption, QString::toUtf8()
-*/
-
-/*!
-    \fn QWebEnginePage::ErrorPageExtensionReturn::ErrorPageExtensionReturn()
-
-    Constructs a new error page object.
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionReturn::contentType
-    \brief the error page's content type
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionReturn::encoding
-    \brief the error page encoding
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionReturn::baseUrl
-    \brief the base url
-
-    External objects such as stylesheets or images referenced in the HTML are located relative to this url.
-*/
-
-/*!
-    \variable QWebEnginePage::ErrorPageExtensionReturn::content
-    \brief the HTML content of the error page
-*/
-
-/*!
-    \class QWebEnginePage::ChooseMultipleFilesExtensionOption
-    \since 4.5
-    \brief The ChooseMultipleFilesExtensionOption class describes the option
-    for the multiple files selection extension.
-
-    \inmodule QtWebEngine
-
-    The ChooseMultipleFilesExtensionOption class holds the frame originating the request
-    and the suggested filenames which might be provided.
-
-    \sa QWebEnginePage::extension(), QWebEnginePage::chooseFile(), QWebEnginePage::ChooseMultipleFilesExtensionReturn
-*/
-
-/*!
-    \variable QWebEnginePage::ChooseMultipleFilesExtensionOption::parentFrame
-    \brief The frame in which the request originated
-*/
-
-/*!
-    \variable QWebEnginePage::ChooseMultipleFilesExtensionOption::suggestedFileNames
-    \brief The suggested filenames
-*/
-
-/*!
-    \variable QWebEnginePage::ChooseMultipleFilesExtensionReturn::fileNames
-    \brief The selected filenames
-*/
-
-/*!
-    \class QWebEnginePage::ChooseMultipleFilesExtensionReturn
-    \since 4.5
-    \brief The ChooseMultipleFilesExtensionReturn describes the return value
-    for the multiple files selection extension.
-
-    \inmodule QtWebEngine
-
-    The ChooseMultipleFilesExtensionReturn class holds the filenames selected by the user
-    when the extension is invoked.
-
-    \sa QWebEnginePage::extension(), QWebEnginePage::ChooseMultipleFilesExtensionOption
-*/
-
-/*!
-    \fn bool QWebEnginePage::extension(Extension extension, const ExtensionOption *option, ExtensionReturn *output)
-    This virtual function can be reimplemented in a QWebEnginePage subclass to provide support for extensions. The \a option
-    argument is provided as input to the extension; the output results can be stored in \a output.
-
-    The behavior of this function is determined by \a extension. The \a option
-    and \a output values are typically casted to the corresponding types (for
-    example, ChooseMultipleFilesExtensionOption and
-    ChooseMultipleFilesExtensionReturn for ChooseMultipleFilesExtension).
-
-    You can call supportsExtension() to check if an extension is supported by the page.
-
-    Returns true if the extension was called successfully; otherwise returns false.
-
-    \sa supportsExtension(), Extension
-*/
-
-/*!
-    \fn bool QWebEnginePage::supportsExtension(Extension extension) const
-    This virtual function returns true if the web page supports \a extension; otherwise false is returned.
-
-    \sa extension()
 */
 
 /*!
@@ -927,13 +316,6 @@
 */
 
 /*!
-    \fn QWebEngineSettings *QWebEnginePage::settings() const
-    Returns a pointer to the page's settings object.
-
-    \sa QWebEngineSettings::globalSettings()
-*/
-
-/*!
     \fn QString QWebEnginePage::chooseFile(QWebEngineFrame *parentFrame, const QString& suggestedFile)
     This function is called when the web content requests a file name, for example
     as a result of the user clicking on a "file upload" button in a HTML form.
@@ -942,87 +324,6 @@
     request is provided as \a parentFrame.
 
     \sa ChooseMultipleFilesExtension
-*/
-
-/*!
-    \fn void QWebEnginePage::setNetworkAccessManager(QNetworkAccessManager *manager)
-    Sets the QNetworkAccessManager \a manager responsible for serving network requests for this
-    QWebEnginePage.
-
-    \note It is currently not supported to change the network access manager after the
-    QWebEnginePage has used it. The results of doing this are undefined.
-
-    \sa networkAccessManager()
-*/
-
-/*!
-    \fn QNetworkAccessManager *QWebEnginePage::networkAccessManager() const
-    Returns the QNetworkAccessManager that is responsible for serving network
-    requests for this QWebEnginePage.
-
-    \sa setNetworkAccessManager()
-*/
-
-/*!
-    \fn void QWebEnginePage::setPluginFactory(QWebEnginePluginFactory *factory)
-    Sets the QWebEnginePluginFactory \a factory responsible for creating plugins embedded into this
-    QWebEnginePage.
-
-    Note: The plugin factory is only used if the QWebEngineSettings::PluginsEnabled attribute is enabled.
-
-    \sa pluginFactory()
-*/
-
-/*!
-    \fn QWebEnginePluginFactory *QWebEnginePage::pluginFactory() const
-    Returns the QWebEnginePluginFactory that is responsible for creating plugins embedded into
-    this QWebEnginePage. If no plugin factory is installed a null pointer is returned.
-
-    \sa setPluginFactory()
-*/
-
-/*!
-    \fn QString QWebEnginePage::userAgentForUrl(const QUrl&) const
-    This function is called when a user agent for HTTP requests is needed. You can reimplement this
-    function to dynamically return different user agents for different URLs, based on the \a url parameter.
-
-    The default implementation returns the following value:
-
-    "Mozilla/5.0 (%Platform%%Security%%Subplatform%) AppleWebKit/%WebKitVersion% (KHTML, like Gecko) %AppVersion Safari/%WebKitVersion%"
-
-    In this string the following values are replaced at run-time:
-    \list
-    \li %Platform% expands to the windowing system followed by "; " if it is not Windows (e.g. "X11; ").
-    \li %Security% expands to "N; " if SSL is disabled.
-    \li %Subplatform% expands to the operating system version (e.g. "Windows NT 6.1" or "Intel Mac OS X 10.5").
-    \li %WebKitVersion% is the version of WebKit the application was compiled against.
-    \li %AppVersion% expands to QCoreApplication::applicationName()/QCoreApplication::applicationVersion() if they're set; otherwise defaulting to Qt and the current Qt version.
-    \endlist
-*/
-
-/*!
-    \fn quint64 QWebEnginePage::totalBytes() const
-    Returns the total number of bytes that were received from the network to render the current page,
-    including extra content such as embedded images.
-
-    \sa bytesReceived()
-*/
-
-/*!
-    \fn quint64 QWebEnginePage::bytesReceived() const
-    Returns the number of bytes that were received from the network to render the current page.
-
-    \sa totalBytes(), loadProgress()
-*/
-
-/*!
-    \since 4.8
-    \fn void QWebEnginePage::viewportChangeRequested()
-
-    Page authors can provide the supplied values by using the viewport meta tag. More information
-    about this can be found at \l{http://developer.apple.com/safari/library/documentation/appleapplications/reference/safariwebcontent/usingtheviewport/usingtheviewport.html}{Safari Reference Library: Using the Viewport Meta Tag}.
-
-    \sa QWebEnginePage::ViewportAttributes, setPreferredContentsSize()
 */
 
 /*!
@@ -1055,50 +356,12 @@
 */
 
 /*!
-    \fn void QWebEnginePage::linkHovered(const QString &link, const QString &title, const QString &textContent)
-
-    This signal is emitted when the mouse hovers over a link.
-
-    \a link contains the link url.
-    \a title is the link element's title, if it is specified in the markup.
-    \a textContent provides text within the link element, e.g., text inside an HTML anchor tag.
-
-    When the mouse leaves the link element the signal is emitted with empty parameters.
-
-    \sa linkClicked()
-*/
-
-/*!
-    \fn void QWebEnginePage::statusBarMessage(const QString& text)
-
-    This signal is emitted when the statusbar \a text is changed by the page.
-*/
-
-/*!
-    \fn void QWebEnginePage::frameCreated(QWebEngineFrame *frame)
-
-    This signal is emitted whenever the page creates a new \a frame.
-
-    \sa currentFrame()
-*/
-
-/*!
     \fn void QWebEnginePage::selectionChanged()
 
     This signal is emitted whenever the selection changes, either interactively
     or programmatically (e.g. by calling triggerAction() with a selection action).
 
     \sa selectedText()
-*/
-
-/*!
-    \fn void QWebEnginePage::contentsChanged()
-    \since 4.5
-
-    This signal is emitted whenever the text in form elements changes
-    as well as other editable content.
-
-    \sa contentEditable, modified, toHtml(), toPlainText()
 */
 
 /*!
@@ -1109,183 +372,10 @@
 */
 
 /*!
-    \fn void QWebEnginePage::repaintRequested(const QRect& dirtyRect)
-
-    This signal is emitted whenever this QWebEnginePage should be updated. It's useful
-    when rendering a QWebEnginePage without a QWebEngineView.
-    \a dirtyRect contains the area that needs to be updated. To paint the QWebEnginePage get
-    the mainFrame() and call the render(QPainter*, const QRegion&) method with the
-    \a dirtyRect as the second parameter.
-
-    \sa mainFrame()
-    \sa view()
-*/
-
-/*!
-    \fn void QWebEnginePage::scrollRequested(int dx, int dy, const QRect& rectToScroll)
-
-    This signal is emitted whenever the content given by \a rectToScroll needs
-    to be scrolled \a dx and \a dy downwards and no view was set.
-
-    \sa view()
-*/
-
-/*!
     \fn void QWebEnginePage::windowCloseRequested()
 
     This signal is emitted whenever the page requests the web browser window to be closed,
     for example through the JavaScript \c{window.close()} call.
-*/
-
-/*!
-    \fn void QWebEnginePage::printRequested(QWebEngineFrame *frame)
-
-    This signal is emitted whenever the page requests the web browser to print \a frame,
-    for example through the JavaScript \c{window.print()} call.
-
-    \sa print(), QPrintPreviewDialog
-*/
-
-/*!
-    \fn void QWebEnginePage::unsupportedContent(QNetworkReply *reply)
-
-    This signal is emitted when WebKit cannot handle a link the user navigated to or a
-    web server's response includes a "Content-Disposition" header with the 'attachment'
-    directive. If "Content-Disposition" is present in \a reply, the web server is indicating
-    that the client should prompt the user to save the content regardless of content-type.
-    See RFC 2616 sections 19.5.1 for details about Content-Disposition.
-
-    At signal emission time the meta-data of the QNetworkReply \a reply is available.
-
-    \note The receiving slot is responsible for deleting the QNetworkReply \a reply.
-
-    \note This signal is only emitted if the forwardUnsupportedContent property is set to true.
-
-    \sa downloadRequested()
-*/
-
-/*!
-    \fn void QWebEnginePage::downloadRequested(const QNetworkRequest &request)
-
-    This signal is emitted when the user decides to download a link. The url of
-    the link as well as additional meta-information is contained in \a request.
-
-    \sa unsupportedContent()
-*/
-
-/*!
-    \fn void QWebEnginePage::microFocusChanged()
-
-    This signal is emitted when for example the position of the cursor in an editable form
-    element changes. It is used to inform input methods about the new on-screen position where
-    the user is able to enter text. This signal is usually connected to the
-    QWidget::updateMicroFocus() slot.
-*/
-
-/*!
-    \fn void QWebEnginePage::linkClicked(const QUrl &url)
-
-    This signal is emitted whenever the user clicks on a link and the page's linkDelegationPolicy
-    property is set to delegate the link handling for the specified \a url.
-
-    By default no links are delegated and are handled by QWebEnginePage instead.
-
-    \note This signal possibly won't be emitted for clicked links which use
-    JavaScript to trigger navigation.
-
-    \sa linkHovered()
-*/
-
-/*!
-    \fn void QWebEnginePage::toolBarVisibilityChangeRequested(bool visible)
-
-    This signal is emitted whenever the visibility of the toolbar in a web browser
-    window that hosts QWebEnginePage should be changed to \a visible.
-*/
-
-/*!
-    \fn void QWebEnginePage::statusBarVisibilityChangeRequested(bool visible)
-
-    This signal is emitted whenever the visibility of the statusbar in a web browser
-    window that hosts QWebEnginePage should be changed to \a visible.
-*/
-
-/*!
-    \fn void QWebEnginePage::menuBarVisibilityChangeRequested(bool visible)
-
-    This signal is emitted whenever the visibility of the menubar in a web browser
-    window that hosts QWebEnginePage should be changed to \a visible.
-*/
-
-/*!
-    \fn void QWebEnginePage::databaseQuotaExceeded(QWebEngineFrame* frame, QString databaseName);
-    \since 4.5
-
-    This signal is emitted whenever the web site shown in \a frame is asking to store data
-    to the database \a databaseName and the quota allocated to that web site is exceeded.
-
-    \sa QWebEngineDatabase
-*/
-/*!
-    \fn void QWebEnginePage::applicationCacheQuotaExceeded(QWebEngineSecurityOrigin* origin, quint64 defaultOriginQuota, quint64 totalSpaceNeeded);
-
-    This signal is emitted whenever the web site is asking to store data to the application cache
-    database databaseName and the quota allocated to that web site is exceeded.
-
-*/
-
-/*!
-    \since 4.5
-    \fn void QWebEnginePage::saveFrameStateRequested(QWebEngineFrame* frame, QWebEngineHistoryItem* item);
-
-    This signal is emitted shortly before the history of navigated pages
-    in \a frame is changed, for example when navigating back in the history.
-
-    The provided QWebEngineHistoryItem, \a item, holds the history entry of the frame before
-    the change.
-
-    A potential use-case for this signal is to store custom data in
-    the QWebEngineHistoryItem associated to the frame, using QWebEngineHistoryItem::setUserData().
-*/
-
-/*!
-    \since 4.5
-    \fn void QWebEnginePage::restoreFrameStateRequested(QWebEngineFrame* frame);
-
-    This signal is emitted when the load of \a frame is finished and the application may now update its state accordingly.
-*/
-
-/*!
-    \enum QWebEnginePage::RenderLayer
-
-    This enum describes the layers available for rendering using \l{QWebEnginePage::}{render()}.
-    The layers can be OR-ed together from the following list:
-
-    \value ContentsLayer The web content of the frame
-    \value ScrollBarLayer The scrollbars of the frame
-    \value PanIconLayer The icon used when panning the frame
-
-    \value AllLayers Includes all the above layers
-*/
-
-/*!
-    \fn void QWebEnginePage::addToJavaScriptWindowObject(const QString &name, QObject *object, ValueOwnership own)
-
-    Make \a object available under \a name from within the frame's JavaScript
-    context. The \a object will be inserted as a child of the frame's window
-    object.
-
-    Qt properties will be exposed as JavaScript properties and slots as
-    JavaScript methods.
-    The interaction between C++ and JavaScript is explained in the documentation of the \l{The Qt WebKit Bridge}{Qt WebKit bridge}.
-
-    If you want to ensure that your QObjects remain accessible after loading a
-    new URL, you should add them in a slot connected to the
-    javaScriptWindowObjectCleared() signal.
-
-    If Javascript is not enabled for this page, then this method does nothing.
-
-    The ownership of \a object is specified using \a own.
 */
 
 /*!
@@ -1311,39 +401,6 @@
 */
 
 /*!
-    \fn QMultiMap<QString, QString> QWebEnginePage::metaData() const
-    \since 4.5
-    \brief Returns the meta data in this frame as a QMultiMap
-
-    The meta data consists of the name and content attributes of the
-    of the \c{<meta>} tags in the HTML document.
-
-    For example:
-
-    \code
-    <html>
-        <head>
-            <meta name="description" content="This document is a tutorial about Qt development">
-            <meta name="keywords" content="Qt, WebKit, Programming">
-        </head>
-        ...
-    </html>
-    \endcode
-
-    Given the above HTML code the metaData() function will return a map with two entries:
-    \table
-    \header \li Key
-            \li Value
-    \row    \li "description"
-            \li "This document is a tutorial about Qt development"
-    \row    \li "keywords"
-            \li "Qt, WebKit, Programming"
-    \endtable
-
-    This function returns a multi map to support multiple meta tags with the same attribute name.
-*/
-
-/*!
     \property QWebEnginePage::url
     \brief the url of the frame currently viewed
 
@@ -1365,43 +422,12 @@
 */
 
 /*!
-    \since 4.6
-    \property QWebEnginePage::baseUrl
-    \brief the base URL of the frame, can be used to resolve relative URLs
-    \since 4.6
-*/
-
-/*!
-    \property QWebEnginePage::icon
-    \brief the icon associated with this frame
-
-    \sa iconChanged(), QWebEngineSettings::iconForUrl()
-*/
-
-/*!
-    \fn QString QWebEnginePage::frameName() const
-      The name of this frame as defined by the parent frame.
-*/
-
-/*!
     \fn void QWebEnginePage::load(const QUrl &url)
     Loads \a url into this frame.
 
     \note The view remains the same until enough data has arrived to display the new \a url.
 
     \sa setUrl(), setHtml(), setContent()
-*/
-
-/*!
-    \fn void QWebEnginePage::load(const QNetworkRequest &req, QNetworkAccessManager::Operation operation, const QByteArray &body)
-    Loads a network request, \a req, into this frame, using the method specified in \a
-    operation.
-
-    \a body is optional and is only used for POST operations.
-
-    \note The view remains the same until enough data has arrived to display the new content.
-
-    \sa setUrl()
 */
 
 /*!
@@ -1446,215 +472,9 @@
 */
 
 /*!
-    \fn QWebEnginePage *QWebEnginePage::parentFrame() const
-    Returns the parent frame of this frame, or 0 if the frame is the web pages
-    main frame.
-
-    This is equivalent to qobject_cast<QWebEnginePage*>(frame->parent()).
-
-    \sa childFrames()
-*/
-
-/*!
-    \fn QList<QWebEnginePage*> QWebEnginePage::childFrames() const
-    Returns a list of all frames that are direct children of this frame.
-
-    \sa parentFrame()
-*/
-
-/*!
-    \fn Qt::ScrollBarPolicy QWebEnginePage::scrollBarPolicy(Qt::Orientation orientation) const
-    Returns the scrollbar policy for the scrollbar defined by \a orientation.
-*/
-
-/*!
-    \fn void QWebEnginePage::setScrollBarPolicy(Qt::Orientation orientation, Qt::ScrollBarPolicy policy)
-    Sets the scrollbar policy for the scrollbar defined by \a orientation to \a policy.
-*/
-
-/*!
-    \fn void QWebEnginePage::setScrollBarValue(Qt::Orientation orientation, int value)
-    Sets the current \a value for the scrollbar with orientation \a orientation.
-
-    The scrollbar forces the \a value to be within the legal range: minimum <= value <= maximum.
-
-    Changing the value also updates the thumb position.
-
-    \sa scrollBarMinimum(), scrollBarMaximum()
-*/
-
-/*!
-    \fn int QWebEnginePage::scrollBarValue(Qt::Orientation orientation) const
-    Returns the current value for the scrollbar with orientation \a orientation, or 0
-    if no scrollbar is found for \a orientation.
-
-    \sa scrollBarMinimum(), scrollBarMaximum()
-*/
-
-/*!
-    \fn int QWebEnginePage::scrollBarMaximum(Qt::Orientation orientation) const
-    Returns the maximum value for the scrollbar with orientation \a orientation, or 0
-    if no scrollbar is found for \a orientation.
-
-    \sa scrollBarMinimum()
-*/
-
-/*!
-    \fn int QWebEnginePage::scrollBarMinimum(Qt::Orientation orientation) const
-    Returns the minimum value for the scrollbar with orientation \a orientation.
-
-    The minimum value is always 0.
-
-    \sa scrollBarMaximum()
-*/
-
-/*!
-    \fn QRect QWebEnginePage::scrollBarGeometry(Qt::Orientation orientation) const
-    \since 4.6
-    Returns the geometry for the scrollbar with orientation \a orientation.
-
-    If the scrollbar does not exist an empty rect is returned.
-*/
-
-/*!
-    \fn void QWebEnginePage::scroll(int dx, int dy)
-    \since 4.5
-    Scrolls the frame \a dx pixels to the right and \a dy pixels downward. Both
-    \a dx and \a dy may be negative.
-
-    \sa QWebEnginePage::scrollPosition
-*/
-
-/*!
-    \property QWebEnginePage::scrollPosition
-    \since 4.5
-    \brief the position the frame is currently scrolled to.
-*/
-
-/*!
-    \fn void QWebEnginePage::scrollToAnchor(const QString& anchor)
-    \since 4.7
-    Scrolls the frame to the given \a anchor name.
-*/
-
-/*!
-    \fn void QWebEnginePage::render(QPainter* painter, RenderLayers layer, const QRegion& clip)
-    \since 4.6
-    Render the \a layer of the frame using \a painter clipping to \a clip.
-
-    \sa print()
-*/
-
-/*!
-    \fn void QWebEnginePage::render(QPainter* painter, const QRegion& clip)
-    Render the frame into \a painter clipping to \a clip.
-*/
-
-/*!
-    \property QWebEnginePage::textSizeMultiplier
-    \brief the scaling factor for all text in the frame
-    \obsolete
-
-    Use setZoomFactor instead, in combination with the ZoomTextOnly attribute in
-    QWebEngineSettings.
-
-    \note Setting this property also enables the ZoomTextOnly attribute in
-    QWebEngineSettings.
-*/
-
-/*!
-    \fn void QWebEnginePage::setTextSizeMultiplier(qreal factor)
-    Sets the value of the multiplier used to scale the text in a Web frame to
-    the \a factor specified.
-*/
-
-/*!
-    \fn qreal QWebEnginePage::textSizeMultiplier() const
-    Returns the value of the multiplier used to scale the text in a Web frame.
-*/
-
-/*!
     \property QWebEnginePage::zoomFactor
     \since 4.5
     \brief the zoom factor for the frame
-*/
-
-/*!
-    \property QWebEnginePage::focus
-    \since 4.6
-
-    Returns true if this frame has keyboard input focus; otherwise, returns false.
-*/
-
-/*!
-    \fn void QWebEnginePage::setFocus()
-    \since 4.6
-
-    Gives keyboard input focus to this frame.
-*/
-
-/*!
-    \fn QPoint QWebEnginePage::pos() const
-    Returns the position of the frame relative to it's parent frame.
-*/
-
-/*!
-    \fn QRect QWebEnginePage::geometry() const
-    Return the geometry of the frame relative to it's parent frame.
-*/
-
-/*!
-    \property QWebEnginePage::contentsSize
-    \brief the size of the contents in this frame
-
-    \sa contentsSizeChanged()
-*/
-
-/*!
-    \fn QWebEngineElement QWebEnginePage::documentElement() const
-    \since 4.6
-
-    Returns the document element of this frame.
-
-    The document element provides access to the entire structured
-    content of the frame.
-*/
-
-/*!
-    \fn QWebElementCollection QWebEnginePage::findAllElements(const QString &selectorQuery) const
-    \since 4.6
-    Returns a new list of elements matching the given CSS selector \a selectorQuery.
-    If there are no matching elements, an empty list is returned.
-
-    \l{http://www.w3.org/TR/REC-CSS2/selector.html#q1}{Standard CSS2 selector} syntax is
-    used for the query.
-
-    \sa QWebEngineElement::findAll()
-*/
-
-/*!
-    \fn QWebEngineElement QWebEnginePage::findFirstElement(const QString &selectorQuery) const
-    \since 4.6
-    Returns the first element in the frame's document that matches the
-    given CSS selector \a selectorQuery. If there is no matching element, a
-    null element is returned.
-
-    \l{http://www.w3.org/TR/REC-CSS2/selector.html#q1}{Standard CSS2 selector} syntax is
-    used for the query.
-
-    \sa QWebEngineElement::findFirst()
-*/
-
-/*!
-    \fn QWebEngineHitTestResult QWebEnginePage::hitTestContent(const QPoint &pos) const
-    Performs a hit test on the frame contents at the given position \a pos and returns the hit test result.
-*/
-
-/*!
-    \fn void QWebEnginePage::print(QPrinter *printer) const
-    Prints the frame to the given \a printer.
-
-    \sa render()
 */
 
 /*!
@@ -1663,30 +483,6 @@
     and returns the result of the last executed statement.
 
     \sa addToJavaScriptWindowObject(), javaScriptWindowObjectCleared()
-*/
-
-/*!
-    \fn QWebEngineSecurityOrigin QWebEnginePage::securityOrigin() const
-    \since 4.5
-
-    Returns the frame's security origin.
-*/
-
-/*!
-    \fn void QWebEnginePage::javaScriptWindowObjectCleared()
-
-    This signal is emitted whenever the global window object of the JavaScript
-    environment is cleared, e.g., before starting a new load.
-
-    If you intend to add QObjects to a QWebEnginePage using
-    addToJavaScriptWindowObject(), you should add them in a slot connected
-    to this signal. This ensures that your objects remain accessible when
-    loading new URLs.
-*/
-
-/*!
-    \fn void QWebEnginePage::provisionalLoad()
-    \internal
 */
 
 /*!
@@ -1705,164 +501,4 @@
     received. The new URL is specified by \a url.
 
     \sa url()
-*/
-
-/*!
-    \fn void QWebEnginePage::initialLayoutCompleted()
-
-    This signal is emitted when the frame is laid out the first time.
-    This is the first time you will see contents displayed on the frame.
-
-    \note A frame can be laid out multiple times.
-*/
-
-/*!
-    \fn void QWebEnginePage::iconChanged()
-
-    This signal is emitted when the icon ("favicon") associated with the frame
-    has been loaded.
-
-    \sa icon()
-*/
-
-/*!
-    \fn void QWebEnginePage::contentsSizeChanged(const QSize &size)
-    \since 4.6
-
-    This signal is emitted when the frame's contents size changes
-    to \a size.
-
-    \sa contentsSize()
-*/
-
-/*!
-    \class QWebEngineHitTestResult
-    \since 4.4
-    \brief The QWebEngineHitTestResult class provides information about the web
-    page content after a hit test.
-
-    \inmodule QtWebEngine
-
-    QWebEngineHitTestResult is returned by QWebEnginePage::hitTestContent() to provide
-    information about the content of the web page at the specified position.
-*/
-
-/*!
-    \fn QWebEngineHitTestResult::QWebEngineHitTestResult()
-    Constructs a null hit test result.
-*/
-
-/*!
-    \fn QWebEngineHitTestResult::QWebEngineHitTestResult(const QWebEngineHitTestResult &other)
-    Constructs a hit test result from \a other.
-*/
-
-/*!
-    \fn QWebEngineHitTestResult &QWebEngineHitTestResult::operator=(const QWebEngineHitTestResult &other)
-    Assigns the \a other hit test result to this.
-*/
-
-/*!
-    \fn QWebEngineHitTestResult::~QWebEngineHitTestResult()
-    Destructor.
-*/
-
-/*!
-    \fn bool QWebEngineHitTestResult::isNull() const
-    Returns true if the hit test result is null; otherwise returns false.
-*/
-
-/*!
-    \fn QPoint QWebEngineHitTestResult::pos() const
-    Returns the position where the hit test occurred in the coordinates of frame containing the element hit.
-
-    \sa frame()
-*/
-
-/*!
-    \fn QRect QWebEngineHitTestResult::boundingRect() const
-    \since 4.5
-    Returns the bounding rect of the element.
-*/
-
-/*!
-    \fn QWebEngineElement QWebEngineHitTestResult::enclosingBlockElement() const
-    \since 4.6
-    Returns the block element that encloses the element hit.
-
-    A block element is an element that is rendered using the
-    CSS "block" style. This includes for example text
-    paragraphs.
-*/
-
-/*!
-    \fn QString QWebEngineHitTestResult::title() const
-    Returns the title of the nearest enclosing HTML element.
-*/
-
-/*!
-    \fn QString QWebEngineHitTestResult::linkText() const
-    Returns the text of the link.
-*/
-
-/*!
-    \fn QUrl QWebEngineHitTestResult::linkUrl() const
-    Returns the url to which the link points to.
-*/
-
-/*!
-    \fn QUrl QWebEngineHitTestResult::linkTitle() const
-    Returns the title of the link.
-*/
-
-/*!
-    \fn QWebEngineElement QWebEngineHitTestResult::linkElement() const
-    \since 4.6
-    Returns the element that represents the link.
-
-    \sa linkTargetFrame()
-*/
-
-/*!
-    \fn QWebEnginePage *QWebEngineHitTestResult::linkTargetFrame() const
-    Returns the frame that will load the link if it is activated.
-
-    \sa linkElement()
-*/
-
-/*!
-    \fn QString QWebEngineHitTestResult::alternateText() const
-    Returns the alternate text of the element. This corresponds to the HTML alt attribute.
-*/
-
-/*!
-    \fn QUrl QWebEngineHitTestResult::imageUrl() const
-    Returns the url of the image.
-*/
-
-/*!
-    \fn QPixmap QWebEngineHitTestResult::pixmap() const
-    Returns a QPixmap containing the image. A null pixmap is returned if the
-    element being tested is not an image.
-*/
-
-/*!
-    \fn bool QWebEngineHitTestResult::isContentEditable() const
-    Returns true if the content is editable by the user; otherwise returns false.
-*/
-
-/*!
-    \fn bool QWebEngineHitTestResult::isContentSelected() const
-    Returns true if the content tested is part of the selection; otherwise returns false.
-*/
-
-/*!
-    \fn QWebEngineElement QWebEngineHitTestResult::element() const
-    \since 4.6
-    Returns the underlying DOM element as QWebEngineElement.
-*/
-
-/*!
-    \fn QWebEnginePage *QWebEngineHitTestResult::frame() const
-    Returns the frame of the element hit.
 */

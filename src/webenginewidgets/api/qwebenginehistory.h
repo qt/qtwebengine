@@ -47,11 +47,6 @@ public:
     QString title() const;
     QDateTime lastVisited() const;
 
-    QIcon icon() const;
-
-    QVariant userData() const;
-    void setUserData(const QVariant& userData);
-
     bool isValid() const;
 private:
     QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *priv);
@@ -86,9 +81,6 @@ public:
     int currentItemIndex() const;
 
     int count() const;
-
-    int maximumItemCount() const;
-    void setMaximumItemCount(int count);
 
 private:
     QWebEngineHistory(QWebEngineHistoryPrivate *d);
