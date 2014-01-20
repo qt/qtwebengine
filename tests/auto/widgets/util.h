@@ -93,24 +93,32 @@ public:
     // Tells tr1::ref the result of void operator()(const T &result) when decltype isn't available.
     typedef void result_type;
 
-    CallbackSpy() {
+    CallbackSpy() : called(false) {
         timeoutTimer.setSingleShot(true);
         QObject::connect(&timeoutTimer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
     }
 
     T waitForResult() {
-        timeoutTimer.start(10000);
-        eventLoop.exec();
+        if (!called) {
+            timeoutTimer.start(10000);
+            eventLoop.exec();
+        }
         return result;
+    }
+
+    bool wasCalled() const {
+        return called;
     }
 
     void operator()(const T &result) {
         this->result = result;
+        called = true;
         eventLoop.quit();
     }
 
 private:
     Q_DISABLE_COPY(CallbackSpy)
+    bool called;
     QTimer timeoutTimer;
     QEventLoop eventLoop;
     T result;
