@@ -58,6 +58,15 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
+    // "Cancel" pending callbacks by calling them with an invalid value.
+    // This guarantees that each callback is called exactly once.
+    Q_FOREACH (QExplicitlySharedDataPointer<VariantCallback> callback, m_variantCallbacks)
+        (*callback)(QVariant());
+    m_variantCallbacks.clear();
+    Q_FOREACH (QExplicitlySharedDataPointer<StringCallback> callback, m_stringCallbacks)
+        (*callback)(QString());
+    m_stringCallbacks.clear();
+
     delete history;
 }
 
@@ -148,17 +157,20 @@ void QWebEnginePagePrivate::close()
 
 void QWebEnginePagePrivate::didRunJavaScript(const QVariant& result, quint64 requestId)
 {
-    (*m_variantCallbacks.take(requestId))(result);
+    if (QExplicitlySharedDataPointer<VariantCallback> callback = m_variantCallbacks.take(requestId))
+        (*callback)(result);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentMarkup(const QString& result, quint64 requestId)
 {
-    (*m_stringCallbacks.take(requestId))(result);
+    if (QExplicitlySharedDataPointer<StringCallback> callback = m_stringCallbacks.take(requestId))
+        (*callback)(result);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentInnerText(const QString& result, quint64 requestId)
 {
-    (*m_stringCallbacks.take(requestId))(result);
+    if (QExplicitlySharedDataPointer<StringCallback> callback = m_stringCallbacks.take(requestId))
+        (*callback)(result);
 }
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
