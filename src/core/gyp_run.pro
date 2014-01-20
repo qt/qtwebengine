@@ -72,6 +72,8 @@ cross_compile {
     GYP_ARGS += "-D CXX=\"$$which($$QMAKE_CXX)\""
 }
 
+contains(WEBENGINE_CONFIG, proprietary_codecs): GYP_ARGS += "-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome -Duse_system_ffmpeg=0"
+
 !build_pass {
     message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
     !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
