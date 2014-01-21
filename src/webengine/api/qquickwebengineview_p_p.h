@@ -149,7 +149,7 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
-    virtual void didRunJavaScript(const QVariant&, quint64) Q_DECL_OVERRIDE { }
+    virtual void didRunJavaScript(const QVariant&, quint64) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(const QString&, quint64) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(const QString&, quint64) Q_DECL_OVERRIDE { }
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
@@ -167,6 +167,7 @@ public:
     bool m_isLoading;
     bool m_isFullScreen;
     qreal devicePixelRatio;
+    QMap<quint64, QJSValue> m_variantCallbacks;
 
 private:
     QScopedPointer<UIDelegatesManager> m_uIDelegatesManager;

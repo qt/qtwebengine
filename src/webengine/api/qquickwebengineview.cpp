@@ -427,6 +427,24 @@ void QQuickWebEngineView::stop()
     d->adapter->stop();
 }
 
+void QQuickWebEngineViewPrivate::didRunJavaScript(const QVariant &result, quint64 requestId)
+{
+    QJSValue callback = m_variantCallbacks.take(requestId);
+    QJSValueList args;
+    args.append(callback.engine()->toScriptValue(result));
+    callback.call(args);
+}
+
+void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &callback)
+{
+    Q_D(QQuickWebEngineView);
+    if (callback.isCallable()) {
+        quint64 requestId = d->adapter->runJavaScriptCallbackResult(script, /*xPath=*/QString());
+        d->m_variantCallbacks.insert(requestId, callback);
+    } else
+        d->adapter->runJavaScript(script, /*xPath=*/QString());
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
