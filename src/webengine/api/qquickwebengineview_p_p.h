@@ -87,11 +87,12 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
 public:
     void setIsFullScreen(bool fullscreen);
     bool isFullScreen() const;
-
-public Q_SLOTS:
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
+
+public Q_SLOTS:
+    void runJavaScript(const QString&, const QJSValue & = QJSValue());
 
 Q_SIGNALS:
     void newViewRequested(QQuickWebEngineNewViewRequest *request);
@@ -138,7 +139,7 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
-    virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE { }
+    virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFindText(quint64, int) Q_DECL_OVERRIDE { }
@@ -158,6 +159,7 @@ public:
     bool m_isLoading;
     bool m_isFullScreen;
     qreal devicePixelRatio;
+    QMap<quint64, QJSValue> m_callbacks;
 
 private:
     QScopedPointer<UIDelegatesManager> m_uIDelegatesManager;

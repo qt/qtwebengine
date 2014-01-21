@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the Qt Quick Controls module of the Qt Toolkit.
@@ -42,52 +42,38 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.0
-import QtWebEngine.experimental 1.0
 
-WebEngineView {
-    property var loadStatus: null
-    property var viewportReady: false
+TestWebEngineView {
+    id: webEngineView
+    width: 400
+    height: 300
 
-    function waitForLoadSucceeded() {
-        var success = _waitFor(function() { return loadStatus == WebEngineView.LoadSucceededStatus })
-        loadStatus = null
-        return success
+    SignalSpy {
+        id: spy
+        target: webEngineView
+        signalName: "titleChanged"
     }
-    function waitForViewportReady() {
-        // Note: You need to have "when: windowShown" in your TestCase for this to work.
-        // The viewport is locked until the first frame is rendered, and the rendering isn't
-        // activated until the WebView is visible in a mapped QQuickView.
-        return _waitFor(function() { return viewportReady })
-    }
-    function waitForLoadFailed() {
-        var failure = _waitFor(function() { return loadStatus == WebEngineView.LoadFailedStatus })
-        loadStatus = null
-        return failure
-    }
-    function waitForLoadStopped() {
-        var stop = _waitFor(function() { return loadStatus == WebEngineView.LoadStoppedStatus })
-        loadStatus = null
-        return stop
-    }
-    function _waitFor(predicate) {
-        var timeout = 5000
-        var i = 0
-        while (i < timeout && !predicate()) {
-            testResult.wait(50)
-            i += 50
+
+    TestCase {
+        name: "WebEngineViewRunJavaScript"
+        function test_runJavaScript() {
+            var testTitle = "Title to test runJavaScript";
+            runJavaScript("document.title = \"" + testTitle +"\"");
+            _waitFor(function() { spy.count > 0; });
+            compare(spy.count, 1);
+            compare(webEngineView.title, testTitle);
+
+            var testTitle2 = "Foobar"
+            var testHtml = "<html><head><title>" + testTitle2 + "</title></head><body></body></html>";
+            loadHtml(testHtml);
+            waitForLoadSucceeded();
+            var callbackCalled = false;
+            runJavaScript("document.title", function(result) {
+                    compare(result, testTitle2);
+                    callbackCalled = true;
+                });
+            wait(100);
+            verify(callbackCalled);
         }
-        return predicate()
     }
-
-    function runJavaScript(script, callback) { experimental.runJavaScript(script, callback); }
-
-    TestResult { id: testResult }
-
-    onLoadingStateChanged: {
-        loadStatus = loadRequest.status
-        if (loadRequest.status == WebEngineView.LoadStartedStatus)
-            viewportReady = false
-    }
-
 }
-
