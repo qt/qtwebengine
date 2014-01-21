@@ -15,9 +15,10 @@ moc_*.cpp
 *nanobrowser
 examples/widgets/browser/browser
 examples/widgets/fancybrowser/fancybrowser
-tests/widgets/qwebenginehistoryinterface/tst_qwebenginehistoryinterface
-tests/widgets/qwebenginehistory/tst_qwebenginehistory
-tests/widgets/qwebengineinspector/tst_qwebengineinspector
-tests/widgets/qwebenginepage/tst_qwebenginepage
-tests/widgets/qwebengineview/tst_qwebengineview
+tests/auto/widgets/qwebenginehistoryinterface/tst_qwebenginehistoryinterface
+tests/auto/widgets/qwebenginehistory/tst_qwebenginehistory
+tests/auto/widgets/qwebengineinspector/tst_qwebengineinspector
+tests/auto/widgets/qwebenginepage/tst_qwebenginepage
+tests/auto/widgets/qwebengineframe/tst_qwebengineframe
+tests/auto/widgets/qwebengineview/tst_qwebengineview
 tools/**/*.pyc
