@@ -8,7 +8,9 @@ INCLUDEPATH += $$PWD/../shared
 
 OTHER_FILES += \
     $$PWD/data/TestWebEngineView.qml \
+    $$PWD/data/test1.html \
     $$PWD/data/test3.html \
+    $$PWD/data/tst_loadProgress.qml \
     $$PWD/data/tst_titleChanged.qml
 
 load(qt_build_paths)
