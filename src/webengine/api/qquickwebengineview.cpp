@@ -427,6 +427,14 @@ void QQuickWebEngineView::stop()
     d->adapter->stop();
 }
 
+void QQuickWebEngineViewPrivate::didRunJavaScript(const QVariant &result, quint64 requestId)
+{
+    QJSValue callback = m_callbacks.take(requestId);
+    QJSValueList args;
+    args.append(callback.engine()->toScriptValue(result));
+    callback.call(args);
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
@@ -492,6 +500,15 @@ void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlCo
 QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent() const
 {
     return d_ptr->contextMenuExtraItems;
+}
+
+void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const QJSValue &callback)
+{
+    if (!callback.isUndefined()) {
+        quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script, /*xPath=*/QString());
+        d_ptr->m_callbacks.insert(requestId, callback);
+    } else
+        d_ptr->adapter->runJavaScript(script, /*xPath=*/QString());
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)

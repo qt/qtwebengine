@@ -1,6 +1,6 @@
 include(../tests.pri)
 
-QT += webengine qmltest
+QT += qml qmltest quick
 QT_PRIVATE += quick-private
 
 IMPORTPATH += $$PWD/data
@@ -16,6 +16,7 @@ OTHER_FILES += \
     $$PWD/data/tst_loadProgressSignal.qml \
     $$PWD/data/tst_loadUrl.qml \
     $$PWD/data/tst_properties.qml \
+    $$PWD/data/tst_runJavaScript.qml \
     $$PWD/data/tst_titleChanged.qml
 
 load(qt_build_paths)
