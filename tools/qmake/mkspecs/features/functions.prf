@@ -29,7 +29,7 @@ defineReplace(findMocables) {
   for (file, input): \
       infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
   mocables = $$system("python $$QTWEBENGINE_ROOT/tools/buildscripts/find-mocables $$infiles")
-  mocables = $$replace(mocables, $$_PRO_FILE_PWD_$${QMAKE_DIR_SEP}, '')
+  mocables = $$replace(mocables, $$_PRO_FILE_PWD_/, '')
   return($$mocables)
 }
 
