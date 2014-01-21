@@ -75,6 +75,7 @@ cd $CHROMIUM_SRC_DIR/third_party/WebKit
 echo "Entering $PWD"
 
 git am $PATCH_DIR/0001-Remove-leftovers-from-WebKitSystemInterface.patch
+git am $PATCH_DIR/0001-Remove-the-infamous-RELEASE_ASSERT_WITH_SECURITY_IMP.patch
 
 cd $CHROMIUM_SRC_DIR/third_party/libjingle/source/talk
 echo "Entering $PWD"
