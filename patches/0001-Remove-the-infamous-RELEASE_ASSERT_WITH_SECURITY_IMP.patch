@@ -1,0 +1,35 @@
+From 3e834e97bf8c6f20ca7d9c7d0cc79094108e8965 Mon Sep 17 00:00:00 2001
+From: Pierre Rossi <pierre.rossi@digia.com>
+Date: Mon, 20 Jan 2014 15:14:41 +0100
+Subject: Remove the infamous RELEASE_ASSERT_WITH_SECURITY_IMPLICATION
+
+The security implication doesn't matter that much for us at this point
+(tech preview material, not production quality). But having the render
+process apparently crashing does not look good.
+
+Change-Id: I72d494cfa8b7d5babb30572cedd6520f3dc44d16
+Reviewed-by: Zeno Albisser <zeno.albisser@digia.com>
+---
+ .../third_party/WebKit/Source/bindings/scripts/code_generator_v8.pm | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/chromium/third_party/WebKit/Source/bindings/scripts/code_generator_v8.pm b/chromium/third_party/WebKit/Source/bindings/scripts/code_generator_v8.pm
+index 4fe56e5..280a73e 100644
+--- a/chromium/third_party/WebKit/Source/bindings/scripts/code_generator_v8.pm
++++ b/chromium/third_party/WebKit/Source/bindings/scripts/code_generator_v8.pm
+@@ -4766,12 +4766,6 @@ v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType
+ {
+     ASSERT(impl.get());
+     ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl.get(), isolate));
+-    if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
+-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
+-        // Might be a XXXConstructor::info instead of an XXX::info. These will both have
+-        // the same object de-ref functions, though, so use that as the basis of the check.
+-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == info.derefObjectFunction);
+-    }
+ 
+ END
+ 
+-- 
+1.8.5.2
+
