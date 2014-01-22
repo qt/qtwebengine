@@ -42,6 +42,7 @@
 #include "content_main_delegate_qt.h"
 
 #include "base/path_service.h"
+#include "content/public/common/content_paths.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -62,6 +63,7 @@ static base::StringPiece PlatformResourceProvider(int key) {
 void ContentMainDelegateQt::PreSandboxStartup()
 {
     PathService::Override(base::FILE_EXE, WebEngineLibraryInfo::subProcessPath());
+    PathService::Override(content::DIR_MEDIA_LIBS, WebEngineLibraryInfo::pluginsPath());
     PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::localesPath());
 
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
