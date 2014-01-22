@@ -86,6 +86,12 @@ static QString location(QLibraryInfo::LibraryLocation path)
     return QLibraryInfo::location(path);
 }
 
+base::FilePath WebEngineLibraryInfo::pluginsPath()
+{
+    QString path = location(QLibraryInfo::PluginsPath) % QDir::separator() % QStringLiteral("qtwebengine");
+    return base::FilePath(toFilePathString(path));
+}
+
 base::FilePath WebEngineLibraryInfo::subProcessPath()
 {
     static bool initialized = false;
