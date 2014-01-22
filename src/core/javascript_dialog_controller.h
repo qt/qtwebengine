@@ -46,7 +46,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QString)
 
-struct JavaScriptDialogControllerPrivate;
+class JavaScriptDialogControllerPrivate;
 
 class QWEBENGINE_EXPORT JavaScriptDialogController : public QObject {
     Q_OBJECT
