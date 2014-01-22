@@ -47,6 +47,7 @@
 class WebEngineLibraryInfo {
 public:
     static base::FilePath subProcessPath();
+    static base::FilePath pluginsPath();
     static base::FilePath localesPath();
     static base::FilePath repackedResourcesPath();
 };
