@@ -28,5 +28,17 @@ resources.files = $$REPACK_DIR/qtwebengine_resources.pak
 resources.CONFIG += no_check_exist
 resources.path = $$[QT_INSTALL_DATA]
 
-INSTALLS += locales resources
+PLUGIN_EXTENSION = .so
+PLUGIN_PREFIX = lib
+macx: PLUGIN_PREFIX =
+win32 {
+    PLUGIN_EXTENSION = .dll
+    PLUGIN_PREFIX =
+}
+
+plugins.files = $$getOutDir()/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION}
+plugins.CONFIG += no_check_exist
+plugins.path = $$[QT_INSTALL_PLUGINS]/qtwebengine
+
+INSTALLS += locales resources plugins
 
