@@ -1,0 +1,8 @@
+Sanity-Review+1: Qt Sanity Bot <qt_sanitybot@qt-project.org>
+Code-Review+2: Pierre Rossi <pierre.rossi@gmail.com>
+Code-Review+2: Zeno Albisser <zeno.albisser@digia.com>
+Submitted-by: Pierre Rossi <pierre.rossi@gmail.com>
+Submitted-at: Thu, 23 Jan 2014 11:58:59 +0100
+Reviewed-on: https://codereview.qt-project.org/76351
+Project: qt-labs/qtwebengine
+Branch: refs/heads/release
