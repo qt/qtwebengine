@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #############################################################################
 #
@@ -40,7 +40,7 @@
 # $QT_END_LICENSE$
 #
 #############################################################################
-
+set -e
 
 if [ $# -ne 2 ]; then
     echo "Usage: $0 git-ref release-name"
@@ -60,6 +60,13 @@ git archive $THIRD_PARTY_REF --format tar --prefix=$RELEASE_NAME/src/3rdparty/ -
 
 tar --concatenate --file=$OUTDIR/$RELEASE_NAME.tar $OUTDIR/$RELEASE_NAME.src.3rdparty.tar
 rm $OUTDIR/$RELEASE_NAME.src.3rdparty.tar
+
+mkdir $RELEASE_NAME
+trap "{ rm -rf $RELEASE_NAME ; exit 255}" EXIT
+echo `git rev-parse $QTWEBENGINE_REF` > $RELEASE_NAME/.tag
+tar -r --file=$OUTDIR/$RELEASE_NAME.tar $RELEASE_NAME/.tag
+trap - EXIT
+rm -r $RELEASE_NAME
 
 gzip $OUTDIR/$RELEASE_NAME.tar
 
