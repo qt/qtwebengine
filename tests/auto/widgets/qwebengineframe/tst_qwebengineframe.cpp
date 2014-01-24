@@ -754,9 +754,6 @@ void tst_QWebEngineFrame::baseUrl_data()
 
 void tst_QWebEngineFrame::baseUrl()
 {
-#if !defined(QWEBENGINEPAGE_BASEURL)
-    QSKIP("QWEBENGINEPAGE_BASEURL");
-#else
     QFETCH(QString, html);
     QFETCH(QUrl, loadUrl);
     QFETCH(QUrl, url);
@@ -764,8 +761,7 @@ void tst_QWebEngineFrame::baseUrl()
 
     m_page->setHtml(html, loadUrl);
     QCOMPARE(m_page->url(), url);
-    QCOMPARE(m_page->baseUrl(), baseUrl);
-#endif
+    QCOMPARE(baseUrlSync(m_page), baseUrl);
 }
 
 void tst_QWebEngineFrame::hasSetFocus()
@@ -1282,7 +1278,7 @@ void tst_QWebEngineFrame::setUrlToEmpty()
     QWebEnginePage page;
     QCOMPARE(page.url(), QUrl());
     QCOMPARE(page.requestedUrl(), QUrl());
-    QCOMPARE(page.baseUrl(), QUrl());
+    QCOMPARE(baseUrlSync(&page), QUrl());
 
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
@@ -1294,7 +1290,7 @@ void tst_QWebEngineFrame::setUrlToEmpty()
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), url);
     QCOMPARE(page.requestedUrl(), url);
-    QCOMPARE(page.baseUrl(), url);
+    QCOMPARE(baseUrlSync(&page), url);
 
     // Set empty url
     page.setUrl(QUrl());
@@ -1303,7 +1299,7 @@ void tst_QWebEngineFrame::setUrlToEmpty()
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), aboutBlank);
     QCOMPARE(page.requestedUrl(), QUrl());
-    QCOMPARE(page.baseUrl(), aboutBlank);
+    QCOMPARE(baseUrlSync(&page), aboutBlank);
 
     // Set existing url
     page.setUrl(url);
@@ -1313,7 +1309,7 @@ void tst_QWebEngineFrame::setUrlToEmpty()
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), url);
     QCOMPARE(page.requestedUrl(), url);
-    QCOMPARE(page.baseUrl(), url);
+    QCOMPARE(baseUrlSync(&page), url);
 
     // Load empty url
     page.load(QUrl());
@@ -1322,7 +1318,7 @@ void tst_QWebEngineFrame::setUrlToEmpty()
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), aboutBlank);
     QCOMPARE(page.requestedUrl(), QUrl());
-    QCOMPARE(page.baseUrl(), aboutBlank);
+    QCOMPARE(baseUrlSync(&page), aboutBlank);
 #endif
 }
 
@@ -1342,7 +1338,7 @@ void tst_QWebEngineFrame::setUrlToInvalid()
     page.setUrl(invalidUrl);
     QCOMPARE(page.url(), validUrl);
     QCOMPARE(page.requestedUrl(), validUrl);
-    QCOMPARE(page.baseUrl(), validUrl);
+    QCOMPARE(baseUrlSync(&page), validUrl);
 
     // QUrls equivalent to QUrl() will be treated as such.
     const QUrl aboutBlank("about:blank");
@@ -1354,7 +1350,7 @@ void tst_QWebEngineFrame::setUrlToInvalid()
     page.setUrl(anotherInvalidUrl);
     QCOMPARE(page.url(), aboutBlank);
     QCOMPARE(page.requestedUrl().toEncoded(), anotherInvalidUrl.toEncoded());
-    QCOMPARE(page.baseUrl(), aboutBlank);
+    QCOMPARE(baseUrlSync(&page), aboutBlank);
 #endif
 }
 
@@ -1542,7 +1538,7 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     QVERIFY(finishedSpy.at(0).first().toBool());
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), url);
-    QCOMPARE(m_page->baseUrl(), baseUrl);
+    QCOMPARE(baseUrlSync(m_page), baseUrl);
 
     const QUrl urlToLoad1("qrc:/test2.html");
     const QUrl urlToLoad2("qrc:/test1.html");
@@ -1552,7 +1548,8 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     QCOMPARE(startedSpy.count(), 2);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
-    QCOMPARE(m_page->baseUrl(), baseUrl);
+    // baseUrlSync spins an event loop and this sometimes return the next result.
+    // QCOMPARE(baseUrlSync(m_page), baseUrl);
 
     // After first URL changed.
     ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
@@ -1560,14 +1557,14 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     QVERIFY(finishedSpy.at(1).first().toBool());
     QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
-    QCOMPARE(m_page->baseUrl(), extractBaseUrl(urlToLoad1));
+    QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
     // Just after second load. URL didn't changed yet.
     m_page->load(urlToLoad2);
     QCOMPARE(startedSpy.count(), 3);
     QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
-    QCOMPARE(m_page->baseUrl(), extractBaseUrl(urlToLoad1));
+    QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
 
     // After second URL changed.
     ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
@@ -1575,7 +1572,7 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     QVERIFY(finishedSpy.at(2).first().toBool());
     QCOMPARE(m_page->url(), urlToLoad2);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
-    QCOMPARE(m_page->baseUrl(), extractBaseUrl(urlToLoad2));
+    QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad2));
 #endif
 }
 

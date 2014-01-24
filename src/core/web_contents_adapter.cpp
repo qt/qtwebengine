@@ -293,7 +293,8 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 
     content::NavigationController::LoadURLParams params((GURL(urlString)));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
-    params.base_url_for_data_url = toGurl(baseUrl);
+    params.base_url_for_data_url = baseUrl.isEmpty() ? GURL(content::kAboutBlankURL) : toGurl(baseUrl);
+    params.virtual_url_for_data_url = params.base_url_for_data_url;
     params.can_load_local_resources = true;
     d->webContents->GetController().LoadURLWithParams(params);
 }
