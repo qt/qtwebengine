@@ -149,4 +149,11 @@ static inline QVariant evaluateJavaScriptSync(QWebEnginePage *page, const QStrin
     return spy.waitForResult();
 }
 
+static inline QUrl baseUrlSync(QWebEnginePage *page)
+{
+    CallbackSpy<QVariant> spy;
+    page->runJavaScript("document.baseURI", spy.ref());
+    return spy.waitForResult().toUrl();
+}
+
 #define W_QSKIP(a, b) QSKIP(a)

@@ -133,7 +133,6 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     // Ex-QWebFrame properties
     Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
     Q_PROPERTY(QUrl requestedUrl READ requestedUrl)
-    Q_PROPERTY(QUrl baseUrl READ baseUrl)
     Q_PROPERTY(QIcon icon READ icon)
     Q_PROPERTY(QSize contentsSize READ contentsSize)
     Q_PROPERTY(QPoint scrollPosition READ scrollPosition WRITE setScrollPosition)
@@ -442,7 +441,6 @@ public:
     void setUrl(const QUrl &url);
     QUrl url() const;
     QUrl requestedUrl() const;
-    QUrl baseUrl() const;
     QIcon icon() const;
     QMultiMap<QString, QString> metaData() const;
 

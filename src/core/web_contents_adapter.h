@@ -67,7 +67,7 @@ public:
     void stop();
     void reload();
     void load(const QUrl&);
-    void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl, const QUrl &unreachableUrl = QUrl());
+    void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl, const QUrl &unreachableUrl);
     QUrl activeUrl() const;
     QString pageTitle() const;
 
