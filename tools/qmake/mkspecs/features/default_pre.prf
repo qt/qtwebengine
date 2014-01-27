@@ -8,7 +8,7 @@ git_chromium_src_dir = $$system("git config qtwebengine.chromiumsrcdir")
 # Fall back to the snapshot path if git does not know about chromium sources (i.e. init-repository.py has not been used)
 isEmpty(git_chromium_src_dir): git_chromium_src_dir = "src/3rdparty/chromium"
 
-CHROMIUM_SRC_DIR = $$absolute_path("$$QTWEBENGINE_ROOT/$$git_chromium_src_dir")
+CHROMIUM_SRC_DIR = $$absolute_path("$$git_chromium_src_dir", "$$QTWEBENGINE_ROOT")
 
 INCLUDEPATH += $$CHROMIUM_SRC_DIR
 
