@@ -341,6 +341,9 @@ QUrl QQuickWebEngineView::url() const
 
 void QQuickWebEngineView::setUrl(const QUrl& url)
 {
+    if (url.isEmpty())
+        return;
+
     Q_D(QQuickWebEngineView);
     d->adapter->load(url);
 }
