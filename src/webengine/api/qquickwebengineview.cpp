@@ -42,7 +42,6 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
-#include "net/base/net_errors.h"
 #include "javascript_dialog_controller.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
@@ -236,7 +235,7 @@ qreal QQuickWebEngineViewPrivate::dpiScale() const
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);
-    if (error_code == net::ERR_ABORTED) {
+    if (error_code == WebEngineError::UserAbortedError) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
         Q_EMIT q->loadingStateChanged(&loadRequest);
         return;

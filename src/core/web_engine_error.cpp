@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "web_engine_error.h"
+#include "net/base/net_errors.h"
+
+const int WebEngineError::UserAbortedError = net::ERR_ABORTED;
 
 namespace {
 const int noError = 0;
@@ -55,7 +58,7 @@ const int dnsResolverErrors = -800;
 const int endErrors = -900;
 }
 
-WebEngineError::ErrorDomain WebEngineError::toQtErrorDomain(int error_code)
+int WebEngineError::toQtErrorDomain(int error_code)
 {
     // Chromium's ranges from net/base/net_error_list.h:
     //         0 No error

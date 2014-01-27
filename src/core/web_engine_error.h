@@ -46,8 +46,6 @@
 
 class QWEBENGINE_EXPORT WebEngineError
 {
-
-public:
     enum ErrorDomain {
          NoErrorDomain,
          InternalErrorDomain,
@@ -57,8 +55,10 @@ public:
          FtpErrorDomain,
          DnsErrorDomain
     };
+public:
+    static const int UserAbortedError;
 
-    static ErrorDomain toQtErrorDomain(int error_code);
+    static int toQtErrorDomain(int error_code);
 
 };
 
