@@ -48,8 +48,58 @@ TestWebEngineView {
     width: 400
     height: 300
 
+    property bool watchProgress: false
+    property int numLoadStarted: 0
+    property int numLoadSucceeded: 0
+
+    onLoadProgressChanged: {
+        if (watchProgress && webEngineView.loadProgress != 100) {
+            watchProgress = false
+            url = ''
+        }
+    }
+
+    onLoadingStateChanged: {
+        if (loadRequest.status == WebEngineView.LoadStartedStatus)
+            ++numLoadStarted
+        if (loadRequest.status == WebEngineView.LoadSucceededStatus)
+            ++numLoadSucceeded
+    }
+
     TestCase {
         name: "WebEngineViewLoadUrl"
+
+        function test_loadIgnoreEmptyUrl() {
+            var url = Qt.resolvedUrl("test1.html")
+
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(numLoadStarted, 1)
+            compare(numLoadSucceeded, 1)
+            compare(webEngineView.url, url)
+
+            var lastUrl = webEngineView.url
+            webEngineView.url = ''
+            wait(1000)
+            compare(numLoadStarted, 1)
+            compare(numLoadSucceeded, 1)
+            compare(webEngineView.url, lastUrl)
+
+            webEngineView.url = 'about:blank'
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(numLoadStarted, 2)
+            compare(numLoadSucceeded, 2)
+            compare(webEngineView.url, 'about:blank')
+
+            // It shouldn't interrupt any ongoing load when an empty url is used.
+            watchProgress = true
+            webEngineView.url = url
+            webEngineView.waitForLoadSucceeded()
+            compare(numLoadStarted, 3)
+            compare(numLoadSucceeded, 3)
+            verify(!watchProgress)
+            compare(webEngineView.url, url)
+        }
 
         function test_stopStatus() {
             var url = Qt.resolvedUrl("test1.html")
