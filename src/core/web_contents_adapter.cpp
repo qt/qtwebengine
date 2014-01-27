@@ -256,6 +256,7 @@ void WebContentsAdapter::stop()
     if (index != -1)
         controller.RemoveEntryAtIndex(index);
 
+    d->webContents->Stop();
     d->webContents->GetView()->Focus();
 }
 
