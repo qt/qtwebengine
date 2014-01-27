@@ -58,6 +58,8 @@ public:
          DnsErrorDomain
     };
 
+    static const int UserAbortedError;
+
     static ErrorDomain toQtErrorDomain(int error_code);
 
 };
