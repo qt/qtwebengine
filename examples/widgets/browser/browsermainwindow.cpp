@@ -71,15 +71,21 @@
 
 #include <QtCore/QDebug>
 
-#if __cplusplus >= 201103L
-#include <functional>
-using std::bind;
-namespace placeholders = std::placeholders;
-#else
-#include <tr1/functional>
-using std::tr1::bind;
-namespace placeholders = std::tr1::placeholders;
-#endif
+template<typename Arg, typename R, typename C>
+struct InvokeWrapper {
+    R *receiver;
+    void (C::*memberFun)(const Arg&);
+    void operator()(const Arg &result) {
+        (receiver->*memberFun)(result);
+    }
+};
+
+template<typename Arg, typename R, typename C>
+InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(const Arg&))
+{
+    InvokeWrapper<Arg, R, C> wrapper = {receiver, memberFun};
+    return wrapper;
+}
 
 BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
@@ -827,7 +833,7 @@ void BrowserMainWindow::slotViewPageSource()
     view->setAttribute(Qt::WA_DeleteOnClose);
     view->show();
 
-    currentTab()->page()->toHtml(bind(&QPlainTextEdit::setPlainText, view, placeholders::_1));
+    currentTab()->page()->toHtml(invoke(view, &QPlainTextEdit::setPlainText));
 }
 
 void BrowserMainWindow::slotHome()

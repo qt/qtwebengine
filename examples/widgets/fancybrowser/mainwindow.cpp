@@ -42,15 +42,21 @@
 #include <QtWebEngineWidgets>
 #include "mainwindow.h"
 
-#if __cplusplus >= 201103L
-#include <functional>
-using std::bind;
-namespace placeholders = std::placeholders;
-#else
-#include <tr1/functional>
-using std::tr1::bind;
-namespace placeholders = std::tr1::placeholders;
-#endif
+template<typename Arg, typename R, typename C>
+struct InvokeWrapper {
+    R *receiver;
+    void (C::*memberFun)(const Arg&);
+    void operator()(const Arg &result) {
+        (receiver->*memberFun)(result);
+    }
+};
+
+template<typename Arg, typename R, typename C>
+InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(const Arg&))
+{
+    InvokeWrapper<Arg, R, C> wrapper = {receiver, memberFun};
+    return wrapper;
+}
 
 //! [1]
 
@@ -120,7 +126,7 @@ void MainWindow::viewSource()
     textEdit->move(this->geometry().center() - textEdit->rect().center());
     textEdit->show();
 
-    view->page()->toHtml(bind(&QTextEdit::setPlainText, textEdit, placeholders::_1));
+    view->page()->toHtml(invoke(textEdit, &QTextEdit::setPlainText));
 }
 
 //! [4]
