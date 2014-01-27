@@ -96,6 +96,9 @@ wince*: {
     DEPLOYMENT_PLUGIN += qjpeg qgif
 }
 
+# This is needed when std::tr1:bind is being used
+QMAKE_CXXFLAGS -= -fno-rtti
+
 EXAMPLE_FILES = Info_mac.plist browser.icns browser.ico browser.rc
 
 # install

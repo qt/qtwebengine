@@ -2,6 +2,9 @@ QT      +=  webenginewidgets
 
 macx: CONFIG -= app_bundle
 
+# This is needed when std::tr1:bind is being used
+QMAKE_CXXFLAGS -= -fno-rtti
+
 HEADERS =   mainwindow.h
 SOURCES =   main.cpp \
             mainwindow.cpp
