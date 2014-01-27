@@ -40,6 +40,9 @@
 ****************************************************************************/
 
 #include "web_engine_error.h"
+#include "net/base/net_errors.h"
+
+const int WebEngineError::UserAbortedError = net::ERR_ABORTED;
 
 namespace {
 const int noError = 0;
