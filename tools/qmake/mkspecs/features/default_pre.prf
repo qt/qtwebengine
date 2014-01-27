@@ -10,8 +10,6 @@ isEmpty(git_chromium_src_dir): git_chromium_src_dir = "src/3rdparty/chromium"
 
 CHROMIUM_SRC_DIR = $$absolute_path("$$QTWEBENGINE_ROOT/$$git_chromium_src_dir")
 
-INCLUDEPATH += $$CHROMIUM_SRC_DIR
-
 # Tweaks that shouldn't affect our examples
 !contains(_PRO_FILE_PWD_, $$QTWEBENGINE_ROOT/examples) {
     # Used for our export macros
