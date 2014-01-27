@@ -27,14 +27,6 @@
 #include <QTimer>
 #include <qwebenginepage.h>
 
-#if __cplusplus >= 201103L
-#include <functional>
-using std::ref;
-#else
-#include <tr1/functional>
-using std::tr1::ref;
-#endif
-
 #if !defined(TESTS_SOURCE_DIR)
 #define TESTS_SOURCE_DIR ""
 #endif
@@ -87,12 +79,17 @@ public:
     }
 };
 
+template<typename T, typename R>
+struct RefWrapper {
+    R &ref;
+    void operator()(const T& result) {
+        ref(result);
+    }
+};
+
 template<typename T>
 class CallbackSpy {
 public:
-    // Tells tr1::ref the result of void operator()(const T &result) when decltype isn't available.
-    typedef void result_type;
-
     CallbackSpy() : called(false) {
         timeoutTimer.setSingleShot(true);
         QObject::connect(&timeoutTimer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
@@ -116,6 +113,13 @@ public:
         eventLoop.quit();
     }
 
+    // Cheap rip-off of boost/std::ref
+    RefWrapper<T, CallbackSpy<T> > ref()
+    {
+        RefWrapper<T, CallbackSpy<T> > wrapper = {*this};
+        return wrapper;
+    }
+
 private:
     Q_DISABLE_COPY(CallbackSpy)
     bool called;
@@ -127,14 +131,14 @@ private:
 static inline QString toPlainText(QWebEnginePage *page)
 {
     CallbackSpy<QString> spy;
-    page->toPlainText(ref(spy));
+    page->toPlainText(spy.ref());
     return spy.waitForResult();
 }
 
 static inline QString toHtml(QWebEnginePage *page)
 {
     CallbackSpy<QString> spy;
-    page->toHtml(ref(spy));
+    page->toHtml(spy.ref());
     return spy.waitForResult();
 }
 

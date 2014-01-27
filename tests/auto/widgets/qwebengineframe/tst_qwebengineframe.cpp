@@ -406,8 +406,8 @@ void tst_QWebEngineFrame::asyncAndDelete()
     QWebEnginePage *page = new QWebEnginePage;
     CallbackSpy<QString> plainTextSpy;
     CallbackSpy<QString> htmlSpy;
-    page->toPlainText(ref(plainTextSpy));
-    page->toHtml(ref(htmlSpy));
+    page->toPlainText(plainTextSpy.ref());
+    page->toHtml(htmlSpy.ref());
 
     delete page;
     // Pending callbacks should be called with an empty value in the page's destructor.
