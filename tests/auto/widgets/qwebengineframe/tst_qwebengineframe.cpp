@@ -128,37 +128,39 @@ void tst_QWebEngineFrame::cleanup()
 
 void tst_QWebEngineFrame::symmetricUrl()
 {
-    QVERIFY(m_view->url().isEmpty());
+    QWebEngineView view;
+    QVERIFY(view.url().isEmpty());
 
-    QCOMPARE(m_view->history()->count(), 0);
+    QCOMPARE(view.history()->count(), 0);
 
     QUrl dataUrl("data:text/html,<h1>Test");
 
-    m_view->setUrl(dataUrl);
-    QCOMPARE(m_view->url(), dataUrl);
-    QCOMPARE(m_view->history()->count(), 0);
+    view.setUrl(dataUrl);
+    QCOMPARE(view.url(), dataUrl);
+    QCOMPARE(view.history()->count(), 0);
 
     // loading is _not_ immediate, so the text isn't set just yet.
-    QVERIFY(toPlainText(m_view->page()).isEmpty());
+    QVERIFY(toPlainText(view.page()).isEmpty());
 
     ::waitForSignal(m_view, SIGNAL(loadFinished(bool)));
 
-    QCOMPARE(m_view->history()->count(), 1);
-    QCOMPARE(toPlainText(m_view->page()), QString("Test"));
+    QCOMPARE(view.history()->count(), 1);
+    QCOMPARE(toPlainText(view.page()), QString("Test"));
 
     QUrl dataUrl2("data:text/html,<h1>Test2");
     QUrl dataUrl3("data:text/html,<h1>Test3");
 
-    m_view->setUrl(dataUrl2);
-    m_view->setUrl(dataUrl3);
+    view.setUrl(dataUrl2);
+    view.setUrl(dataUrl3);
 
-    QCOMPARE(m_view->url(), dataUrl3);
+    QCOMPARE(view.url(), dataUrl3);
 
-    ::waitForSignal(m_view, SIGNAL(loadFinished(bool)));
+    ::waitForSignal(&view, SIGNAL(loadFinished(bool)));
+    QVERIFY(::waitForSignal(&view, SIGNAL(loadFinished(bool))));
 
-    QCOMPARE(m_view->history()->count(), 2);
+    QCOMPARE(view.history()->count(), 2);
 
-    QCOMPARE(toPlainText(m_view->page()), QString("Test3"));
+    QCOMPARE(toPlainText(view.page()), QString("Test3"));
 }
 
 void tst_QWebEngineFrame::progressSignal()
@@ -171,9 +173,12 @@ void tst_QWebEngineFrame::progressSignal()
     ::waitForSignal(m_view, SIGNAL(loadFinished(bool)));
 
     QVERIFY(progressSpy.size() >= 2);
-
-    // WebKit defines initialProgressValue as 10%, not 0%
-    QCOMPARE(progressSpy.first().first().toInt(), 10);
+    int previousValue = -1;
+    for (QSignalSpy::ConstIterator it = progressSpy.begin(); it < progressSpy.end(); ++it) {
+        int current = (*it).first().toInt();
+        QVERIFY(current > previousValue);
+        previousValue = current;
+    }
 
     // But we always end at 100%
     QCOMPARE(progressSpy.last().first().toInt(), 100);
@@ -542,9 +547,6 @@ protected:
     {
         alerts++;
         QCOMPARE(msg, QString("foo"));
-        // Should not be enough to trigger deferred loading, since we've upped the HTML
-        // tokenizer delay in the Qt frameloader. See HTMLTokenizer::continueProcessing()
-        QTest::qWait(1000);
     }
 };
 
@@ -552,10 +554,10 @@ void tst_QWebEngineFrame::setHtmlWithJSAlert()
 {
     QString html("<html><head></head><body><script>alert('foo');</script><p>hello world</p></body></html>");
     MyPage page;
-    m_view->setPage(&page);
     page.setHtml(html);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(page.alerts, 1);
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118663", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118663", Continue);
     QCOMPARE(toHtml(m_view->page()), html);
 }
 
