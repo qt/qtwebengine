@@ -100,7 +100,7 @@ ApplicationWindow {
                 ToolButton {
                     id: reloadButton
                     iconSource: tabs.currentView && tabs.currentView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
-                    onClicked: tabs.currentView.reload()
+                    onClicked: tabs.currentView && tabs.currentView.loading ? tabs.currentView.stop() : tabs.currentView.reload()
                 }
                 TextField {
                     id: addressBar
