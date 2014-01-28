@@ -122,6 +122,7 @@ public:
     virtual void loadProgressChanged(int progress) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
+    virtual void loadStarted() = 0;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) = 0;
     virtual void focusContainer() = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect & initialGeometry) = 0;

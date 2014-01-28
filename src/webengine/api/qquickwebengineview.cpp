@@ -69,7 +69,6 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , contextMenuExtraItems(0)
     , loadProgress(0)
     , inspectable(false)
-    , m_isLoading(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -203,13 +202,6 @@ void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 
 void QQuickWebEngineViewPrivate::loadingStateChanged()
 {
-    Q_Q(QQuickWebEngineView);
-    const bool wasLoading = m_isLoading;
-    m_isLoading = adapter->isLoading();
-    if (m_isLoading && !wasLoading) {
-        QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStartedStatus);
-        Q_EMIT q->loadingStateChanged(&loadRequest);
-    }
 }
 
 void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
@@ -228,6 +220,13 @@ QRectF QQuickWebEngineViewPrivate::viewportRect() const
 qreal QQuickWebEngineViewPrivate::dpiScale() const
 {
     return m_dpiScale;
+}
+
+void QQuickWebEngineViewPrivate::loadStarted()
+{
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStartedStatus);
+    Q_EMIT q->loadingStateChanged(&loadRequest);
 }
 
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)

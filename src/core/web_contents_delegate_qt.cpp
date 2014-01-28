@@ -54,6 +54,8 @@
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
+    , m_isLoading(false)
+    , m_initialRenderViewReady(false)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -101,20 +103,31 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, do
 
 void WebContentsDelegateQt::DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host)
 {
-    if (is_main_frame)
-        m_viewClient->loadFinished(false, error_code, toQt(error_description));
-}
-
-void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host)
-{
-    if (is_main_frame)
-        m_viewClient->loadFinished(true);
+    if (!is_main_frame || !m_isLoading || !m_initialRenderViewReady)
+        return;
+    m_viewClient->loadFinished(false, error_code, toQt(error_description));
+    m_isLoading = false;
 }
 
 void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host)
 {
-    if (is_main_frame)
         DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);
+}
+
+void WebContentsDelegateQt::DidStartLoading(content::RenderViewHost *render_view_host)
+{
+    if (m_isLoading || !m_initialRenderViewReady)
+        return;
+    m_isLoading = true;
+    m_viewClient->loadStarted();
+}
+
+void WebContentsDelegateQt::DidStopLoading(content::RenderViewHost *render_view_host)
+{
+    if (!m_isLoading || !m_initialRenderViewReady)
+        return;
+    m_viewClient->loadFinished(true);
+    m_isLoading = false;
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
@@ -152,4 +165,9 @@ bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, in
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(static_cast<int>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
     return false;
+}
+
+void WebContentsDelegateQt::RenderViewReady()
+{
+    m_initialRenderViewReady = true;
 }

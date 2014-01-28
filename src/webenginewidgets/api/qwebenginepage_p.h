@@ -73,6 +73,7 @@ public:
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
+    virtual void loadStarted() Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success, int error_code, const QString &error_description = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &initialGeometry) Q_DECL_OVERRIDE;
@@ -93,7 +94,6 @@ public:
     QWebEngineHistory *history;
     QWebEngineView *view;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
-    bool m_isLoading;
     WebEngineContextMenuData m_menuData;
 
     typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;
