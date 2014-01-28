@@ -70,15 +70,19 @@ public:
     // FIXME: with the next chromium update LoadProgressChanged with progress becomes available. Q_DECL_OVERRIDE must then be activated.
     virtual void LoadProgressChanged(content::WebContents* source, double progress) /*Q_DECL_OVERRIDE*/;
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
-    virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
     virtual void DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidStartLoading(content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidStopLoading(content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
     virtual void RunFileChooser(content::WebContents *, const content::FileChooserParams &params) Q_DECL_OVERRIDE;
     virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const string16& message, int32 line_no, const string16& source_id) Q_DECL_OVERRIDE;
+    virtual void RenderViewReady() Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;
+    bool m_isLoading;
+    bool m_initialRenderViewReady;
 };
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H

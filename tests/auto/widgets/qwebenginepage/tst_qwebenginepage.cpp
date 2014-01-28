@@ -361,11 +361,11 @@ void tst_QWebEnginePage::geolocationRequestJS()
 
 void tst_QWebEnginePage::loadFinished()
 {
-    qRegisterMetaType<QNetworkRequest*>("QNetworkRequest*");
-    QSignalSpy spyLoadStarted(m_view, SIGNAL(loadStarted()));
-    QSignalSpy spyLoadFinished(m_view, SIGNAL(loadFinished(bool)));
+    QWebEnginePage page;
+    QSignalSpy spyLoadStarted(&page, SIGNAL(loadStarted()));
+    QSignalSpy spyLoadFinished(&page, SIGNAL(loadFinished(bool)));
 
-    m_view->page()->load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
+    page.load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
                                            "<head><meta http-equiv='refresh' content='1'></head>foo \">"
                                            "<frame src=\"data:text/html,bar\"></frameset>"));
     QTRY_COMPARE(spyLoadFinished.count(), 1);
@@ -375,7 +375,7 @@ void tst_QWebEnginePage::loadFinished()
 
     spyLoadFinished.clear();
 
-    m_view->page()->load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
+    page.load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
                                            "foo \"><frame src=\"data:text/html,bar\"></frameset>"));
     QTRY_COMPARE(spyLoadFinished.count(), 1);
     QCOMPARE(spyLoadFinished.count(), 1);
@@ -1603,6 +1603,9 @@ void tst_QWebEnginePage::textEditing()
 
 void tst_QWebEnginePage::requestCache()
 {
+#if !defined(ACCEPTNAVIGATIONREQUEST)
+    QSKIP("ACCEPTNAVIGATIONREQUEST");
+#else
     TestPage page;
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
 
@@ -1626,6 +1629,7 @@ void tst_QWebEnginePage::requestCache()
              (int)QNetworkRequest::PreferNetwork);
     QCOMPARE(page.navigations.at(2).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
              (int)QNetworkRequest::PreferCache);
+#endif
 }
 
 void tst_QWebEnginePage::loadCachedPage()
