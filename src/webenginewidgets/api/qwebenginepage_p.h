@@ -45,6 +45,7 @@
 #include "qwebenginepage.h"
 
 #include "web_contents_adapter_client.h"
+#include "render_widget_host_view_qt_delegate_webpage.h"
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qcompilerdetection.h>
 #include <QSharedData>
@@ -66,6 +67,7 @@ public:
     ~QWebEnginePagePrivate();
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) Q_DECL_OVERRIDE;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, RenderingMode) Q_DECL_OVERRIDE;
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
@@ -95,6 +97,7 @@ public:
     mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
     WebEngineContextMenuData m_menuData;
+    QPointer<RenderWidgetHostViewQtDelegateWebPage> m_rwhvDelegate;
 
     typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;
     typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QString&> StringCallback;

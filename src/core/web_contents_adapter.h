@@ -60,7 +60,6 @@ public:
     WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents = 0);
     ~WebContentsAdapter();
     void initialize(WebContentsAdapterClient *adapterClient);
-    void reattachRWHV();
 
     bool canGoBack() const;
     bool canGoForward() const;

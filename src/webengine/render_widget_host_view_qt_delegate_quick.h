@@ -131,6 +131,8 @@ public:
         return false;
     }
 
+    virtual void move(const QPoint&) Q_DECL_OVERRIDE {}
+
     void focusInEvent(QFocusEvent *event)
     {
         m_client->forwardEvent(event);
