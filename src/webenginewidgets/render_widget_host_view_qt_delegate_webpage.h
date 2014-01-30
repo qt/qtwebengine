@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -38,64 +38,54 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef WEB_CONTENTS_ADAPTER_H
-#define WEB_CONTENTS_ADAPTER_H
 
-#include "qtwebenginecoreglobal.h"
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WEBPAGE_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WEBPAGE_H
+
+#include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter_client.h"
 
-#include <QScopedPointer>
-#include <QSharedData>
-#include <QString>
-#include <QUrl>
+#include <QObject>
 
-namespace content {
-class WebContents;
-}
-class WebContentsAdapterPrivate;
+class BackingStoreQt;
 
-class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
+QT_BEGIN_NAMESPACE
+class QWindow;
+class QWebEnginePage;
+QT_END_NAMESPACE
+
+class RenderWidgetHostViewQtDelegateWebPage : public QObject, public RenderWidgetHostViewQtDelegate
+{
 public:
-    // Takes ownership of the WebContents.
-    WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents = 0);
-    ~WebContentsAdapter();
-    void initialize(WebContentsAdapterClient *adapterClient);
+    RenderWidgetHostViewQtDelegateWebPage(RenderWidgetHostViewQtDelegateClient *client);
 
-    bool canGoBack() const;
-    bool canGoForward() const;
-    bool isLoading() const;
-    void stop();
-    void reload();
-    void load(const QUrl&);
-    void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl);
-    QUrl activeUrl() const;
-    QString pageTitle() const;
+    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
+    virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual QRectF screenRect() const Q_DECL_OVERRIDE;
+    virtual void setKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual void show() Q_DECL_OVERRIDE {}
+    virtual void hide() Q_DECL_OVERRIDE {}
+    virtual bool isVisible() const Q_DECL_OVERRIDE;
+    virtual QWindow* window() const Q_DECL_OVERRIDE;
+    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
+    virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
+    virtual void resize(int width, int height) Q_DECL_OVERRIDE;
+    virtual void move(const QPoint&) Q_DECL_OVERRIDE {}
+    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
+    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
 
-    void navigateToIndex(int);
-    void navigateToOffset(int);
-    int navigationEntryCount();
-    int currentNavigationEntryIndex();
-    QUrl getNavigationEntryOriginalUrl(int index);
-    QUrl getNavigationEntryUrl(int index);
-    QString getNavigationEntryTitle(int index);
-    void clearNavigationHistory();
-    void setZoomFactor(qreal);
-    qreal currentZoomFactor() const;
-    void enableInspector(bool);
-    void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
-    void runJavaScript(const QString &javaScript, const QString &xPath);
-    quint64 runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath);
-    quint64 fetchDocumentMarkup();
-    quint64 fetchDocumentInnerText();
+    void paint(QPainter *painter, const QRectF &boundingRect);
+    void notifyResize();
+    bool forwardEvent(QEvent *event);
 
-    void wasShown();
-    void wasHidden();
+protected:
 
-    void dpiScaleChanged();
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
 private:
-    Q_DISABLE_COPY(WebContentsAdapter);
-    Q_DECLARE_PRIVATE(WebContentsAdapter);
-    QScopedPointer<WebContentsAdapterPrivate> d_ptr;
+    RenderWidgetHostViewQtDelegateClient *m_client;
+    QWebEnginePage *m_page;
 };
-#endif // WEB_CONTENTS_ADAPTER_H
+
+#endif

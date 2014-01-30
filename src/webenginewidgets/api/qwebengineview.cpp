@@ -48,7 +48,6 @@
 #include <QAction>
 #include <QMenu>
 #include <QContextMenuEvent>
-#include <QStackedLayout>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,7 +63,6 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
             oldView->d_func()->page = 0;
         }
         page->d_func()->view = view;
-        page->d_func()->adapter->reattachRWHV();
     }
 
     if (view) {
@@ -94,8 +92,10 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
 QWebEngineView::QWebEngineView(QWidget *parent)
     : QWidget(*(new QWebEngineViewPrivate), parent, 0)
 {
-    // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
-    setLayout(new QStackedLayout);
+    setFocusPolicy(Qt::ClickFocus);
+    setMouseTracking(true);
+    setAttribute(Qt::WA_AcceptTouchEvents);
+    setAttribute(Qt::WA_OpaquePaintEvent);
 }
 
 QWebEngineView::~QWebEngineView()
@@ -205,13 +205,36 @@ void QWebEngineView::setZoomFactor(qreal factor)
 
 bool QWebEngineView::event(QEvent *ev)
 {
+    Q_D(QWebEngineView);
     // We swallow spontaneous contextMenu events and synthethize those back later on when we get the
     // HandleContextMenu callback from chromium
     if (ev->type() == QEvent::ContextMenu) {
         ev->accept();
         return true;
-    }
+    } else if (ev->type() == QEvent::MetaCall)
+        // Meta calls are not safe to forward to the page, as they could be widget specific (e.g. QWidgetPrivate::_q_showIfNotHidden)
+        return QWidget::event(ev);
+    if (d->page && d->page->event(ev))
+            return true;
+
     return QWidget::event(ev);
+}
+
+void QWebEngineView::paintEvent(QPaintEvent *ev)
+{
+    Q_D(QWebEngineView);
+    if (!d->page)
+        return;
+    QPainter painter(this);
+    d->page->render(&painter, QRegion(ev->rect()));
+}
+
+void QWebEngineView::resizeEvent(QResizeEvent *ev)
+{
+    Q_D(QWebEngineView);
+    if (!d->page)
+        return;
+    d->page->setViewportSize(ev->size());
 }
 
 void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)

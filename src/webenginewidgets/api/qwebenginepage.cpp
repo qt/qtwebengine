@@ -28,7 +28,8 @@
 #include "qwebenginehistory_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
-#include "render_widget_host_view_qt_delegate_widget.h"
+#include "render_widget_host_view_qt_delegate_popup.h"
+#include "render_widget_host_view_qt_delegate_webpage.h"
 #include "web_contents_adapter.h"
 
 #include <QAction>
@@ -37,7 +38,6 @@
 #include <QFileDialog>
 #include <QIcon>
 #include <QInputDialog>
-#include <QLayout>
 #include <QMenu>
 #include <QMessageBox>
 #include <QStandardPaths>
@@ -52,7 +52,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , view(0)
     , m_isLoading(false)
 {
-    adapter->initialize(this);
     memset(actions, 0, sizeof(actions));
 }
 
@@ -73,7 +72,13 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
     Q_UNUSED(mode);
-    return new RenderWidgetHostViewQtDelegateWidget(client);
+    return new RenderWidgetHostViewQtDelegateWebPage(client);
+}
+
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::RenderingMode)
+{
+    Q_ASSERT(m_rwhvDelegate);
+    return new RenderWidgetHostViewQtDelegatePopup(client, view);
 }
 
 void QWebEnginePagePrivate::titleChanged(const QString &title)
@@ -230,6 +235,8 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(*new QWebEnginePagePrivate, parent)
 {
+    Q_D(QWebEnginePage);
+    d->adapter->initialize(d);
 }
 
 QWebEnginePage::~QWebEnginePage()
@@ -321,6 +328,28 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     default:
         Q_UNREACHABLE();
     }
+}
+
+void QWebEnginePage::setViewportSize(const QSize &size) const
+{
+    Q_UNUSED(size)
+    Q_D(const QWebEnginePage);
+    if (d->m_rwhvDelegate)
+        d->m_rwhvDelegate->notifyResize();
+}
+
+bool QWebEnginePage::event(QEvent *e)
+{
+    Q_D(QWebEnginePage);
+    if (!d->m_rwhvDelegate) {
+        // FIXME: implement a signal when the render process crashes and keep track of it at this level
+        // Ideally, this should be Q_ASSERT(!d->m_renderProcessLive) or something along those lines
+        qWarning("%s: no render process running?\n", Q_FUNC_INFO);
+        return false;
+    }
+    if (!d->m_rwhvDelegate->forwardEvent(e))
+        return QObject::event(e);
+    return true;
 }
 
 bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
@@ -519,6 +548,22 @@ QUrl QWebEnginePage::url() const
     return d->adapter->activeUrl();
 }
 
+void QWebEnginePage::render(QPainter *p, const QRegion &clip)
+{
+    Q_D(const QWebEnginePage);
+    if (!d->m_rwhvDelegate) {
+        // Most likely the render process crashed. See QWebEnginePage::event
+        return;
+    }
+    if (!clip.isNull()) {
+        p->save();
+        p->setClipRegion(clip);
+    }
+    d->m_rwhvDelegate->paint(p, QRectF(clip.boundingRect()));
+    if (!clip.isNull())
+        p->restore();
+}
+
 qreal QWebEnginePage::zoomFactor() const
 {
     Q_D(const QWebEnginePage);
@@ -529,6 +574,21 @@ void QWebEnginePage::setZoomFactor(qreal factor)
 {
     Q_D(QWebEnginePage);
     d->adapter->setZoomFactor(factor);
+}
+
+bool QWebEnginePage::hasFocus() const
+{
+    Q_D(const QWebEnginePage);
+    if (d->view)
+        return d->view->hasFocus();
+    return false;
+}
+
+void QWebEnginePage::setFocus()
+{
+    Q_D(QWebEnginePage);
+    if (d->view)
+        d->view->setFocus();
 }
 
 void QWebEnginePage::runJavaScript(const QString &scriptSource, const QString &xPath)
