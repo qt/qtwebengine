@@ -132,6 +132,8 @@ protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
     virtual void contextMenuEvent(QContextMenuEvent*) Q_DECL_OVERRIDE;
     virtual bool event(QEvent*) Q_DECL_OVERRIDE;
+    virtual void paintEvent(QPaintEvent *) Q_DECL_OVERRIDE;
+    virtual void resizeEvent(QResizeEvent *) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);

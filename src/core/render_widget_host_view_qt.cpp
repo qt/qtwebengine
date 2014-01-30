@@ -216,8 +216,8 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
 void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 {
     // This is called when webkit has sent us a Move message.
-    // if (IsPopup())
-        // m_delegate->setGeometry(rect.x(), rect.y(), rect.width(), rect.height());
+     if (IsPopup())
+         m_delegate->move(QPoint(rect.x(), rect.y()));
     SetSize(rect.size());
 }
 
@@ -259,7 +259,8 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 void RenderWidgetHostViewQt::Focus()
 {
     m_host->SetInputMethodActive(true);
-    m_delegate->setKeyboardFocus();
+    if (!IsPopup())
+        m_delegate->setKeyboardFocus();
     m_host->Focus();
 }
 
@@ -906,8 +907,8 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         m_host->SetActive(true);
         ev->accept();
     } else if (ev->lostFocus()) {
-        m_host->SetActive(false);
         m_host->Blur();
+        m_host->SetActive(false);
         ev->accept();
     }
 }

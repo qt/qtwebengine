@@ -115,6 +115,7 @@ public:
     virtual ~WebContentsAdapterClient() { }
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
     virtual void iconChanged(const QUrl&) = 0;

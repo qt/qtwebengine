@@ -70,11 +70,12 @@ BackingStoreQt::~BackingStoreQt()
 {
 }
 
-void BackingStoreQt::paintToTarget(QPainter* painter, const QRectF& rect)
+void BackingStoreQt::paintToTarget(QPainter* painter, const QRectF& clipRect)
 {
     if (m_pixelBuffer.isNull())
         return;
 
+    QRectF rect = clipRect.isNull() ? m_pixelBuffer.rect() : clipRect;
     qreal x = rect.x() * m_deviceScaleFactor;
     qreal y = rect.y() * m_deviceScaleFactor;
     qreal w = rect.width() * m_deviceScaleFactor;
