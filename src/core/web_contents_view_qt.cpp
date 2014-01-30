@@ -61,16 +61,6 @@ void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
 
 content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
 {
-    content::RenderWidgetHostView* view = CreateViewForPopupWidget(render_widget_host);
-
-    // Tell the RWHV delegate to attach itself to the native view container.
-    view->InitAsChild(0);
-
-    return view;
-}
-
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host)
-{
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
     Q_ASSERT(m_factoryClient);
@@ -78,6 +68,14 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(conte
     if (m_client)
         view->setAdapterClient(m_client);
 
+    return view;
+}
+
+content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host)
+{
+    RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
+    Q_ASSERT(m_client);
+    view->setDelegate(m_client->CreateRenderWidgetHostViewQtDelegateForPopup(view, WebEngineContext::current()->renderingMode()));
     return view;
 }
 

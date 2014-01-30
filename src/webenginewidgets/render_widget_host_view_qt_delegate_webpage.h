@@ -39,56 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WEBPAGE_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WEBPAGE_H
 
-#include "qtwebenginecoreglobal.h"
+#include "render_widget_host_view_qt_delegate.h"
+#include "web_contents_adapter_client.h"
 
-#include <QRect>
-#include <QtGui/qwindowdefs.h>
+#include <QObject>
+
+class BackingStoreQt;
 
 QT_BEGIN_NAMESPACE
-class QCursor;
-class QEvent;
-class QPainter;
-class QQuickWindow;
-class QSGNode;
-class QVariant;
 class QWindow;
+class QWebEnginePage;
 QT_END_NAMESPACE
 
-class WebContentsAdapterClient;
-
-class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegateClient {
+class RenderWidgetHostViewQtDelegateWebPage : public QObject, public RenderWidgetHostViewQtDelegate
+{
 public:
-    virtual ~RenderWidgetHostViewQtDelegateClient() { }
-    virtual void paint(QPainter *, const QRectF& boundingRect) = 0;
-    virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) = 0;
-    virtual void fetchBackingStore() = 0;
-    virtual void notifyResize() = 0;
-    virtual bool forwardEvent(QEvent *) = 0;
-    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;
-    virtual void windowChanged() = 0;
+    RenderWidgetHostViewQtDelegateWebPage(RenderWidgetHostViewQtDelegateClient *client);
+
+    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
+    virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual QRectF screenRect() const Q_DECL_OVERRIDE;
+    virtual void setKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual void show() Q_DECL_OVERRIDE {}
+    virtual void hide() Q_DECL_OVERRIDE {}
+    virtual bool isVisible() const Q_DECL_OVERRIDE;
+    virtual QWindow* window() const Q_DECL_OVERRIDE;
+    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
+    virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
+    virtual void resize(int width, int height) Q_DECL_OVERRIDE;
+    virtual void move(const QPoint&) Q_DECL_OVERRIDE {}
+    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
+    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
+
+    void paint(QPainter *painter, const QRectF &boundingRect);
+    void notifyResize();
+    bool forwardEvent(QEvent *event);
+    void setPage(QWebEnginePage *);
+
+protected:
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
+private:
+    RenderWidgetHostViewQtDelegateClient *m_client;
+    QWebEnginePage *m_page;
+
 };
 
-class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
-public:
-    virtual ~RenderWidgetHostViewQtDelegate() { }
-    virtual void initAsChild(WebContentsAdapterClient*) = 0;
-    virtual void initAsPopup(const QRect&) = 0;
-    virtual QRectF screenRect() const = 0;
-    virtual void setKeyboardFocus() = 0;
-    virtual bool hasKeyboardFocus() = 0;
-    virtual void show() = 0;
-    virtual void hide() = 0;
-    virtual bool isVisible() const = 0;
-    virtual QWindow* window() const = 0;
-    virtual void update(const QRect& rect = QRect()) = 0;
-    virtual void updateCursor(const QCursor &) = 0;
-    virtual void resize(int width, int height) = 0;
-    virtual void move(const QPoint &) = 0;
-    virtual void inputMethodStateChanged(bool editorVisible) = 0;
-    virtual bool supportsHardwareAcceleration() const = 0;
-};
-
-#endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
+#endif

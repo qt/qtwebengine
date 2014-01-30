@@ -39,12 +39,13 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_POPUP_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_POPUP_H
 
 #include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter_client.h"
 
+#include <QBasicTimer>
 #include <QWidget>
 
 class BackingStoreQt;
@@ -53,10 +54,10 @@ QT_BEGIN_NAMESPACE
 class QWindow;
 QT_END_NAMESPACE
 
-class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
+class RenderWidgetHostViewQtDelegatePopup : public QWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
+    RenderWidgetHostViewQtDelegatePopup(RenderWidgetHostViewQtDelegateClient *client, QWidget *);
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
     virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
@@ -70,18 +71,18 @@ public:
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
     virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
-    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
-    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
+    virtual void move(const QPoint &) Q_DECL_OVERRIDE;
+    virtual void inputMethodStateChanged(bool) Q_DECL_OVERRIDE {}
+    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE { return false; }
 
 protected:
     void paintEvent(QPaintEvent * event);
     bool event(QEvent *event);
     void resizeEvent(QResizeEvent *resizeEvent);
 
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
-
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
+    QWidget *m_parentView;
 };
 
 #endif
