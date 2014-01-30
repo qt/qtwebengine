@@ -87,6 +87,7 @@ public:
     virtual void update(const QRect& rect = QRect()) = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
+    virtual void move(const QPoint &) = 0;
     virtual void inputMethodStateChanged(bool editorVisible) = 0;
     virtual bool supportsHardwareAcceleration() const = 0;
 };
