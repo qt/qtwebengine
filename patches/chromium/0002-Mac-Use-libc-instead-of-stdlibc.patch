@@ -1,7 +1,7 @@
-From ef6535b235613885abc20eb61879c4f97874cb5b Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 15:51:43 +0200
-Subject: [PATCH] Mac: Use libc++ instead of stdlibc++.
+Subject: Mac: Use libc++ instead of stdlibc++.
 
 - Add a missing include file to process_iterator_mac.cc.
 - Disable Chromium clang plugins.
@@ -158,5 +158,5 @@ index dcc0041..affcf55 100644
  
  /* Define to 1 if you have the <dlfcn.h> header file. */
 -- 
-1.8.4.2
+1.8.5.3
 

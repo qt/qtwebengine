@@ -1,7 +1,7 @@
-From 3920838a47cac775bb9f1eebc2c144bd1bde9848 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 19:21:34 +0200
-Subject: [PATCH] Remove leftovers from WebKitSystemInterface
+Subject: Remove leftovers from WebKitSystemInterface
 
 ---
  Source/core/platform/graphics/mac/ComplexTextControllerCoreText.mm | 5 -----
@@ -27,5 +27,5 @@ index c5be0bb..5882bcd 100644
          line.adoptCF(CTTypesetterCreateLine(typesetter.get(), CFRangeMake(0, 0)));
      } else {
 -- 
-1.8.4.2
+1.8.5.3
 
