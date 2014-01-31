@@ -1,7 +1,7 @@
-From 22f77b7305fa13a3d3987a1c4609a7fe51a603b4 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Wed, 16 Oct 2013 10:17:11 +0200
-Subject: [PATCH] Do not forward declare WebRtcVoiceChannelInfo.
+Subject: Do not forward declare WebRtcVoiceChannelInfo.
 
 Clang / libc++ does not support incomplete types in
 templates. See:
@@ -62,5 +62,5 @@ index 6cb0b30..62d3bc1 100644
  
    void SetNack(int channel, bool nack_enabled);
 -- 
-1.8.4.2
+1.8.5.3
 
