@@ -1,6 +1,8 @@
 TEMPLATE = app
 
-CONFIG += testcase
+# FIXME: Re-enable once we want to run tests on the CI
+# CONFIG += testcase
+
 VPATH += $$_PRO_FILE_PWD_
 TARGET = tst_$$TARGET
 
