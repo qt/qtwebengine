@@ -1,7 +1,7 @@
-From 5f3a19c6f12690d882f1136af4338531c04149b3 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Wed, 3 Jul 2013 11:16:56 +0200
-Subject: [PATCH] Do not warn for header-hygiene.
+Subject: Do not warn for header-hygiene.
 
 QtDeclarative is consciously leaking the namespace QtQml.
 Therefore clang would warn about header hygiene.
@@ -25,5 +25,5 @@ index 9961053..ab759282 100644
              }],
              ['clang==1 and clang_use_chrome_plugins==1', {
 -- 
-1.8.4.2
+1.8.5.3
 

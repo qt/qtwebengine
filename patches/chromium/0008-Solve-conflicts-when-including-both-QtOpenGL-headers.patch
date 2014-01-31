@@ -1,7 +1,7 @@
-From 08012c5c84dc6f63c1c91d8035ec11b497e6e11c Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
 Date: Fri, 6 Sep 2013 17:08:45 +0200
-Subject: [PATCH] Solve conflicts when including both QtOpenGL headers and
+Subject: Solve conflicts when including both QtOpenGL headers and
  resource_provider.h
 
 If resource_provider.h is going to be used to integrate delegated frame
@@ -73,5 +73,5 @@ index fb1e5f0..928d4f9 100644
  
  namespace gfx {
 -- 
-1.8.4.2
+1.8.5.3
 

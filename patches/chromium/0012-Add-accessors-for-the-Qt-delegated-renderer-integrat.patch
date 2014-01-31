@@ -1,7 +1,7 @@
-From e40d3482d46ff88755aa2bd76048de698ae03915 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
 Date: Fri, 20 Sep 2013 15:00:47 +0200
-Subject: [PATCH] Add accessors for the Qt delegated renderer integration.
+Subject: Add accessors for the Qt delegated renderer integration.
 
 This is needed to fetch the MessageLoop, the MailboxManager and the
 SyncPointManager of the GPU in-process host.
@@ -80,5 +80,5 @@ index ff0c925..82bb32a 100644
  };
  
 -- 
-1.8.4.2
+1.8.5.3
 
