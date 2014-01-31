@@ -112,6 +112,8 @@ public:
 
     virtual void ShowContextMenu(const content::ContextMenuParams &params) Q_DECL_OVERRIDE;
 
+    virtual void TakeFocus(bool reverse) Q_DECL_OVERRIDE;
+
 #if defined(OS_MACOSX)
     virtual void SetAllowOverlappingViews(bool overlapping) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual void CloseTabAfterEventTracking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }

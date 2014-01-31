@@ -129,3 +129,8 @@ void WebContentsViewQt::ShowContextMenu(const content::ContextMenuParams &params
     WebEngineContextMenuData contextMenuData(fromParams(params));
     m_client->contextMenuRequested(contextMenuData);
 }
+
+void WebContentsViewQt::TakeFocus(bool reverse)
+{
+    m_client->passOnFocus(reverse);
+}
