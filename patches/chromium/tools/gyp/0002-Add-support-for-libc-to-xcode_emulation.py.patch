@@ -1,7 +1,7 @@
-From 43673a67cdcced912cad207ee0fbca7321f72ecf Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 20:04:51 +0200
-Subject: [PATCH] Add support for libc++ to xcode_emulation.py
+Subject: Add support for libc++ to xcode_emulation.py
 
 ---
  pylib/gyp/xcode_emulation.py | 3 +++
@@ -21,6 +21,3 @@ index b4af0fd..fb40048 100644
      if self._Test('DEAD_CODE_STRIPPING', 'YES', default='NO'):
        ldflags.append('-Wl,-dead_strip')
  
--- 
-1.8.4.2
-

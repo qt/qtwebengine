@@ -40,16 +40,9 @@
 ##
 #############################################################################
 
+THIRDPARTY_UPSTREAM_CHROMIUM_DIR="$( cd "$( dirname "$0" )"/../src/3rdparty_upstream/chromium && pwd )"
+SCRIPTS_DIR="$( cd "$( dirname "$0" )"/../tools/scripts && pwd )"
 PATCH_DIR="$( cd "$( dirname "$0" )"/chromium && pwd )"
-
-if [ -z "$CHROMIUM_SRC_DIR" ]; then
-    CHROMIUM_SRC_DIR="$( cd `git config qtwebengine.chromiumsrcdir` && pwd )"
-fi
-
-if [ ! -d "$CHROMIUM_SRC_DIR" ]; then
-    echo "CHROMIUM_SRC_DIR pointing to a non existing directory. $CHROMIUM_SRC_DIR"
-    exit 1;
-fi
 
 for MODULE in \
     / \
@@ -58,8 +51,18 @@ for MODULE in \
     /tools/gyp \
     /tools/grit
 do
-    cd $CHROMIUM_SRC_DIR$MODULE
+    cd $THIRDPARTY_UPSTREAM_CHROMIUM_DIR$MODULE
     echo "Entering $PWD"
-    git tag -f first-parent
-    git am $PATCH_DIR$MODULE/0*
+    git rev-parse first-parent > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Can't find the 'first-parent' git tag pointing where to start, you might have to re-run init-repository.py and re-apply your modifications."
+        exit 1
+    fi
+
+    rm $PATCH_DIR$MODULE/0*
+    git format-patch --no-signature -k -o $PATCH_DIR$MODULE first-parent
+    $SCRIPTS_DIR/clean_gitformatpatch_patchid.py $PATCH_DIR$MODULE/0*
+    cd $PATCH_DIR
+    git add --all $PATCH_DIR$MODULE
 done
+

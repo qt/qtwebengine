@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/usr/bin/env python
 #############################################################################
 ##
-## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is part of the QtWebEngine of the Qt Toolkit.
@@ -40,26 +40,14 @@
 ##
 #############################################################################
 
-PATCH_DIR="$( cd "$( dirname "$0" )"/chromium && pwd )"
+import re
+import sys
 
-if [ -z "$CHROMIUM_SRC_DIR" ]; then
-    CHROMIUM_SRC_DIR="$( cd `git config qtwebengine.chromiumsrcdir` && pwd )"
-fi
-
-if [ ! -d "$CHROMIUM_SRC_DIR" ]; then
-    echo "CHROMIUM_SRC_DIR pointing to a non existing directory. $CHROMIUM_SRC_DIR"
-    exit 1;
-fi
-
-for MODULE in \
-    / \
-    /third_party/WebKit \
-    /third_party/libjingle/source/talk \
-    /tools/gyp \
-    /tools/grit
-do
-    cd $CHROMIUM_SRC_DIR$MODULE
-    echo "Entering $PWD"
-    git tag -f first-parent
-    git am $PATCH_DIR$MODULE/0*
-done
+for fileName in sys.argv[1:]:
+    input = open(fileName)
+    # Replace the SHA1 in the from-line of the mbox with a dummy SHA1 to prevent unneeded changes to the patch file.
+    lines = [re.sub('^From \w*', 'From 0000000000000000000000000000000000000000', l) for l in input]
+    input.close()
+    output = open(fileName, 'w')
+    output.writelines(lines)
+    output.close()

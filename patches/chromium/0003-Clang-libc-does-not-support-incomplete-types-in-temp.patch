@@ -1,8 +1,7 @@
-From f888ffe0c6d43b1fda162a4a33a84377c583f2d3 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 27 Jun 2013 15:58:32 +0200
-Subject: [PATCH] Clang / libc++ does not support incomplete types in
- templates. See:
+Subject: Clang / libc++ does not support incomplete types in templates. See:
  http://clang.llvm.org/compatibility.html#undep_incomplete
 
 Therefore forward declarations must be removed in several places:
@@ -33,6 +32,8 @@ Therefore forward declarations must be removed in several places:
  content/common/gpu/gpu_messages.h                  |  4 ++-
  content/renderer/media/media_stream_dispatcher.cc  | 31 ---------------------
  content/renderer/media/media_stream_dispatcher.h   | 31 +++++++++++++++++++--
+ content/renderer/pepper/message_channel.cc         | 12 --------
+ content/renderer/pepper/message_channel.h          | 18 ++++++++----
  gpu/config/dx_diag_node.cc                         |  4 +++
  gpu/config/dx_diag_node.h                          |  4 +++
  media/filters/ffmpeg_audio_decoder.cc              |  6 ----
@@ -41,7 +42,7 @@ Therefore forward declarations must be removed in several places:
  net/cert/mock_cert_verifier.h                      | 20 +++++++++++++-
  net/dns/mock_host_resolver.cc                      | 31 ---------------------
  net/dns/mock_host_resolver.h                       | 32 +++++++++++++++++++++-
- 18 files changed, 155 insertions(+), 162 deletions(-)
+ 20 files changed, 168 insertions(+), 179 deletions(-)
 
 diff --git a/base/callback_forward.h b/base/callback_forward.h
 index 7983248..8538bb2 100644
@@ -365,6 +366,70 @@ index aa8f345..af25963 100644
  
    // An enumeration request is identified by pair (request_id, handler).
    // It allows multiple clients to make requests and each client could have
+diff --git a/content/renderer/pepper/message_channel.cc b/content/renderer/pepper/message_channel.cc
+index f06b787..c41be2f 100644
+--- a/content/renderer/pepper/message_channel.cc
++++ b/content/renderer/pepper/message_channel.cc
+@@ -279,18 +279,6 @@ NPClass message_channel_class = {
+ }  // namespace
+ 
+ // MessageChannel --------------------------------------------------------------
+-struct MessageChannel::VarConversionResult {
+-  VarConversionResult(const ppapi::ScopedPPVar& r, bool s)
+-      : result(r),
+-        success(s),
+-        conversion_completed(true) {}
+-  VarConversionResult()
+-      : success(false),
+-        conversion_completed(false) {}
+-  ppapi::ScopedPPVar result;
+-  bool success;
+-  bool conversion_completed;
+-};
+ 
+ MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
+ }
+diff --git a/content/renderer/pepper/message_channel.h b/content/renderer/pepper/message_channel.h
+index 9c8c28d..e4e1423 100644
+--- a/content/renderer/pepper/message_channel.h
++++ b/content/renderer/pepper/message_channel.h
+@@ -10,15 +10,12 @@
+ 
+ #include "base/memory/weak_ptr.h"
+ #include "ppapi/shared_impl/resource.h"
++#include "ppapi/shared_impl/scoped_pp_var.h"
+ #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
+ #include "third_party/npapi/bindings/npruntime.h"
+ 
+ struct PP_Var;
+ 
+-namespace ppapi {
+-class ScopedPPVar;
+-}
+-
+ namespace content {
+ 
+ class PepperPluginInstanceImpl;
+@@ -86,7 +83,18 @@ class MessageChannel {
+ 
+  private:
+   // Struct for storing the result of a NPVariant being converted to a PP_Var.
+-  struct VarConversionResult;
++  struct VarConversionResult {
++    VarConversionResult(const ppapi::ScopedPPVar& r, bool s)
++        : result(r),
++          success(s),
++          conversion_completed(true) {}
++    VarConversionResult()
++        : success(false),
++          conversion_completed(false) {}
++    ppapi::ScopedPPVar result;
++    bool success;
++    bool conversion_completed;
++  };
+ 
+   // This is called when an NPVariant is finished being converted.
+   // |result_iteartor| is an iterator into |converted_var_queue_| where the
 diff --git a/gpu/config/dx_diag_node.cc b/gpu/config/dx_diag_node.cc
 index e0902ca..c1e84ae 100644
 --- a/gpu/config/dx_diag_node.cc
@@ -586,67 +651,3 @@ index 3593fbd..f8a4240 100644
    typedef std::list<Rule> RuleList;
  
    virtual ~RuleBasedHostResolverProc();
-diff --git a/content/renderer/pepper/message_channel.cc b/content/renderer/pepper/message_channel.cc
-index f06b787..c41be2f 100644
---- a/content/renderer/pepper/message_channel.cc
-+++ b/content/renderer/pepper/message_channel.cc
-@@ -279,18 +279,6 @@ NPClass message_channel_class = {
- }  // namespace
- 
- // MessageChannel --------------------------------------------------------------
--struct MessageChannel::VarConversionResult {
--  VarConversionResult(const ppapi::ScopedPPVar& r, bool s)
--      : result(r),
--        success(s),
--        conversion_completed(true) {}
--  VarConversionResult()
--      : success(false),
--        conversion_completed(false) {}
--  ppapi::ScopedPPVar result;
--  bool success;
--  bool conversion_completed;
--};
- 
- MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
- }
-diff --git a/content/renderer/pepper/message_channel.h b/content/renderer/pepper/message_channel.h
-index 9c8c28d..1a74513 100644
---- a/content/renderer/pepper/message_channel.h
-+++ b/content/renderer/pepper/message_channel.h
-@@ -10,15 +10,12 @@
- 
- #include "base/memory/weak_ptr.h"
- #include "ppapi/shared_impl/resource.h"
-+#include "ppapi/shared_impl/scoped_pp_var.h"
- #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
- #include "third_party/npapi/bindings/npruntime.h"
- 
- struct PP_Var;
- 
--namespace ppapi {
--class ScopedPPVar;
--}
--
- namespace content {
- 
- class PepperPluginInstanceImpl;
-@@ -86,7 +86,18 @@ class MessageChannel {
- 
-  private:
-   // Struct for storing the result of a NPVariant being converted to a PP_Var.
--  struct VarConversionResult;
-+  struct VarConversionResult {
-+    VarConversionResult(const ppapi::ScopedPPVar& r, bool s)
-+        : result(r),
-+          success(s),
-+          conversion_completed(true) {}
-+    VarConversionResult()
-+        : success(false),
-+          conversion_completed(false) {}
-+    ppapi::ScopedPPVar result;
-+    bool success;
-+    bool conversion_completed;
-+  };
- 
-   // This is called when an NPVariant is finished being converted.
-   // |result_iteartor| is an iterator into |converted_var_queue_| where the
