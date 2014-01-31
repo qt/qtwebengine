@@ -44,6 +44,7 @@ import QtWebEngine.experimental 1.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
+import QtQuick.Controls.Private 1.0
 
 ApplicationWindow {
     id: browserWindow
@@ -54,6 +55,12 @@ ApplicationWindow {
     width: 800
     visible: true
     title: tabs.currentView && tabs.currentView.title
+
+    // Create a styleItem to determine the platform.
+    // When using style "mac", ToolButtons are not supposed to accept focus.
+    StyleItem { id: styleItem }
+    property bool platformIsMac: styleItem.style == "mac"
+
 
     Action {
         id: focus
@@ -90,17 +97,20 @@ ApplicationWindow {
                     iconSource: "icons/go-previous.png"
                     onClicked: tabs.currentView.goBack()
                     enabled: tabs.currentView && tabs.currentView.canGoBack
+                    activeFocusOnTab: !browserWindow.platformIsMac
                 }
                 ToolButton {
                     id: forwardButton
                     iconSource: "icons/go-next.png"
                     onClicked: tabs.currentView.goForward()
                     enabled: tabs.currentView && tabs.currentView.canGoForward
+                    activeFocusOnTab: !browserWindow.platformIsMac
                 }
                 ToolButton {
                     id: reloadButton
                     iconSource: tabs.currentView && tabs.currentView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
-                    onClicked: tabs.currentView && tabs.currentView.loading ? tabs.currentView.stop() : tabs.currentView.reload()
+                    onClicked: tabs.currentView.reload()
+                    activeFocusOnTab: !browserWindow.platformIsMac
                 }
                 TextField {
                     id: addressBar

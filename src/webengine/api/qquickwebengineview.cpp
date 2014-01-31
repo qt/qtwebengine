@@ -180,6 +180,18 @@ void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QStr
     ui()->showFilePicker(mode, defaultFileName, acceptedMimeTypes, adapter);
 }
 
+void QQuickWebEngineViewPrivate::passOnFocus(bool reverse)
+{
+    Q_Q(QQuickWebEngineView);
+    // In one direction we would pass forward the focus to RenderWidgetHostViewQtDelegateQuick,
+    // which in return would forward the tab key event and therefore the focus back to the QQuickWebEngineView.
+    // This is why we skip RenderWidgetHostViewQtDelegateQuick in the focus chain.
+    QQuickItem* current = QQuickItemPrivate::nextPrevItemInTabFocusChain(q, !reverse);
+    if (!qobject_cast<RenderWidgetHostViewQtDelegateQuick*>(current))
+        current = q;
+    focusNextPrev(current, !reverse);
+}
+
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
 {
     Q_Q(QQuickWebEngineView);
