@@ -1,7 +1,7 @@
-From 559c011aabd6fc9f064d2913e4fae06db2c8495b Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
 Date: Thu, 24 Oct 2013 18:26:59 +0200
-Subject: [PATCH] Add seams to setup GL contexts sharing with QtQuick.
+Subject: Add seams to setup GL contexts sharing with QtQuick.
 
 This will allow us to know right before the first GL context is
 instantiated by Chromium so that we can install those contexts to
@@ -104,6 +104,3 @@ index 1deed63..f1b0369 100644
  
    // References to GLContext are by raw pointer to avoid a reference count
    // cycle.
--- 
-1.8.4.2
-

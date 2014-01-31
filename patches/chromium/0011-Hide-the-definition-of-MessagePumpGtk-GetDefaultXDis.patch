@@ -1,7 +1,7 @@
-From 717b027460dbda87c965ea0069fd11bbe7aad59f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
 Date: Fri, 20 Sep 2013 15:01:41 +0200
-Subject: [PATCH] Hide the definition of MessagePumpGtk::GetDefaultXDisplay.
+Subject: Hide the definition of MessagePumpGtk::GetDefaultXDisplay.
 
 ---
  base/message_loop/message_pump_gtk.cc | 4 ++++
@@ -29,6 +29,3 @@ index 86d2415..6023c11 100644
  
  void MessagePumpGtk::AddObserver(MessagePumpGdkObserver* observer) {
    observers_.AddObserver(observer);
--- 
-1.8.4.2
-

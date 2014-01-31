@@ -1,7 +1,7 @@
-From d170ae2a713d6f69dbecbf31c566f5c092896344 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Wed, 24 Jul 2013 15:54:50 +0200
-Subject: [PATCH] GRIT: Allow grd files outside of chromium source dir.
+Subject: GRIT: Allow grd files outside of chromium source dir.
 
 When replacing substrings with values from a dictionary,
 the replacements should not be truncated to the length of src_root_dir.
@@ -41,6 +41,3 @@ index 734c57a..33848b2 100755
          else:
            filename = abs_filename[len(src_root_dir) + 1:]
            filename = filename.replace('\\', '/')
--- 
-1.8.4.2
-

@@ -1,8 +1,7 @@
-From 7126d1d1fdb7b64b6bd46908154a7c8fa582ed8b Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Tue, 29 Oct 2013 11:30:28 +0100
-Subject: [PATCH] Do not forward declare UIResourceRequest, Identity and
- IdentityKey.
+Subject: Do not forward declare UIResourceRequest, Identity and IdentityKey.
 
 Clang / libc++ does not support incomplete types in templates.
 See: http://clang.llvm.org/compatibility.html#undep_incomplete
@@ -132,6 +131,3 @@ index ab4e1ed..e660c73 100644
    typedef std::map<IdentityKey, Identity> IdentityMap;
  
    ~WebRTCIdentityStoreBackend();
--- 
-1.8.4.2
-

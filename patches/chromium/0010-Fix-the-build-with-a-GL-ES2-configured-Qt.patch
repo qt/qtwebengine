@@ -1,7 +1,7 @@
-From 65f72f14be2902840e0a478be640aba168d0f15e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
 Date: Wed, 30 Oct 2013 14:27:28 +0100
-Subject: [PATCH] Fix the build with a GL ES2 configured Qt.
+Subject: Fix the build with a GL ES2 configured Qt.
 
 GLES/gl2.h is included through Qt public headers and the copy of
 Chromium is used since its include path comes before /usr/include.
@@ -159,6 +159,3 @@ index 2831446..be79c22 100644
            'sources': [
              # This list contains all .h and .cc in gpu except for test code.
              'context_provider_in_process.cc',
--- 
-1.8.4.2
-

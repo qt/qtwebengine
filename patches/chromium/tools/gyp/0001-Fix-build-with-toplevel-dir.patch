@@ -1,17 +1,17 @@
-From 5f2e25825375c613c3cd249f874d7a295de2fefd Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Pierre Rossi <pierre.rossi@digia.com>
 Date: Mon, 13 May 2013 16:25:46 +0200
-Subject: [GYP] Fix build with toplevel-dir
+Subject: Fix build with toplevel-dir
 
 ---
  pylib/gyp/generator/ninja.py | 8 ++++++--
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/pylib/gyp/generator/ninja.py b/pylib/gyp/generator/ninja.py
-index 619ac39..e10038a 100644
+index 9011807..6fe07c5 100644
 --- a/pylib/gyp/generator/ninja.py
 +++ b/pylib/gyp/generator/ninja.py
-@@ -1309,9 +1309,13 @@ def CalculateVariables(default_variables, params):
+@@ -1476,9 +1476,13 @@ def CalculateVariables(default_variables, params):
      default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
      default_variables.setdefault('SHARED_LIB_DIR',
                                   os.path.join('$!PRODUCT_DIR', 'lib'))
@@ -27,6 +27,3 @@ index 619ac39..e10038a 100644
  
  def OpenOutput(path, mode='w'):
    """Open |path| for writing, creating directories if necessary."""
--- 
-1.8.2.1
-

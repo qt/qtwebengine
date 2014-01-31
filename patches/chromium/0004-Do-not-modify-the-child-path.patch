@@ -1,7 +1,7 @@
-From 19d0958dc151847b994c352fdffd2844bec20b43 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Sat, 29 Jun 2013 22:39:29 +0200
-Subject: [PATCH] [Mac] Do not modify the child path.
+Subject: Do not modify the child path.
 
 We currently only have a single process binary for Qt.
 Therefore we should not choose a different binary based on required privileges.
@@ -12,7 +12,7 @@ May be we should instead implement our own ChildProcessHost.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index 2dfab2f..3f53266 100644
+index fb058d3..2208376 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
 @@ -106,7 +106,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
@@ -24,6 +24,3 @@ index 2dfab2f..3f53266 100644
    DCHECK(!(flags & CHILD_NO_PIE && flags & CHILD_ALLOW_HEAP_EXECUTION));
  
    // If needed, choose an executable with special flags set that inform the
--- 
-1.7.12.4 (Apple Git-37)
-

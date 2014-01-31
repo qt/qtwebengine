@@ -1,7 +1,7 @@
-From 06b7d7b85c53a6c5b39eff247dd5ce869956f411 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zeno Albisser <zeno.albisser@digia.com>
 Date: Thu, 1 Aug 2013 14:03:14 +0200
-Subject: [PATCH] remove -Wno-deprecated-register from common.gypi.
+Subject: remove -Wno-deprecated-register from common.gypi.
 
 This warning is not supported by recent clang versions
 shipping with XCode. Therefore replacing it with -Wno-deprecated.
@@ -33,6 +33,3 @@ index ab759282..cf5b196 100644
                ],
              }],
              ['use_libcpp==1', {
--- 
-1.8.4.2
-
