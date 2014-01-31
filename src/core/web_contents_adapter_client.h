@@ -132,6 +132,7 @@ public:
     virtual void didRunJavaScript(const QVariant& result, quint64 requestId) = 0;
     virtual void didFetchDocumentMarkup(const QString& result, quint64 requestId) = 0;
     virtual void didFetchDocumentInnerText(const QString& result, quint64 requestId) = 0;
+    virtual void passOnFocus(bool reverse) = 0;
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) = 0;
 };
 

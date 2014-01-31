@@ -60,6 +60,10 @@ public:
         : ItemBaseT(parent)
         , m_client(client)
     {
+        this->setFocus(true);
+        this->setActiveFocusOnTab(true);
+        this->setFlag(QQuickItem::ItemIsFocusScope);
+
         this->setAcceptedMouseButtons(Qt::AllButtons);
         this->setAcceptHoverEvents(true);
     }
@@ -143,7 +147,7 @@ public:
 
     void mousePressEvent(QMouseEvent *event)
     {
-        this->setFocus(true);
+        this->forceActiveFocus();
         m_client->forwardEvent(event);
     }
 
