@@ -1,0 +1,272 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "jered@chromium.org" <jered@chromium.org>
+Date: Tue, 1 Oct 2013 01:33:30 +0000
+Subject: InstantExtended: Send search URLs to renderers.
+
+Previously, navigations initiated by an instant renderer were bounced to
+the browser to be rebucketed into an instant or non-instant renderer.
+But navigations from non-instant renderers to instant URLs (i.e.
+privileged search page URLs) were not rebucketed, because the renderer
+had no knowledge of which URLs were instant URLs, and it would be too
+expensive to bounce ALL URLs. As a result, non-instant pages like
+google.com/setprefs could not redirect to instant pages like
+google.com/search.
+
+This change has InstantService tell renderers about URLs associated with
+the default search engine, and uses this knowledge to bounce
+renderer-initiated navigations to likely instant URLs from non-instant
+processes back into the browser for rebucketing. So now link clicks from
+non-instant pages to instant pages will put the destination pages into
+an instant process. Unfortunately, though, redirects are still broken.
+For example,
+
+0. User clicks "Set preferences" button on an instant page.
+1. Instant renderer bounces google.com/setprefs to the browser.
+2. Browser says google.com/setprefs is not an instant URL,
+   and assigns it to a non-instant renderer.
+3. After rebucketing to the non-instant renderer, google.com/setprefs
+   is marked as a browser initiated request(!)
+4. /setprefs redirects to /search, which _is_ an instant URL, but
+   because /setprefs is marked as browser initiated the non-instant
+   renderer does not get a chance to bounce it back to the browser.
+
+I tried working around this by giving redirects a chance to bounce back
+to the browser in step #4, but this broke the signin process model in a
+scary way that I don't fully understand. It seems like the right fix
+here is going to need to EITHER follow the redirect chain in step #2
+when determining if an URL is an instant URL, OR somehow flag the
+bounced redirect request for further inspection in step #3.
+
+This change also includes a small side benefit. Since renderers now know
+about instant URLs, we can suppress a flash of a baked-in error page in
+the event of an error while loading the InstantExtended new tab page.
+
+TEST=manual,unit,browsertest
+BUG=271088,223754
+
+Review URL: https://codereview.chromium.org/23455047
+
+git-svn-id: svn://svn.chromium.org/chrome/trunk/src@226103 0039d316-1c4b-4281-b951-d872f2087c98
+---
+ chrome/chrome_common.gypi                          |  2 +
+ chrome/chrome_renderer.gypi                        |  2 +
+ chrome/chrome_tests.gypi                           |  1 +
+ chrome/chrome_tests_unit.gypi                      |  2 +
+ content/public/renderer/content_renderer_client.cc |  4 ++
+ content/public/renderer/content_renderer_client.h  |  4 ++
+ content/renderer/render_view_browsertest.cc        | 76 ++++++++++++++++++++++
+ content/renderer/render_view_impl.cc               | 10 ++-
+ content/renderer/render_view_impl.h                |  2 +
+ 9 files changed, 102 insertions(+), 1 deletion(-)
+
+diff --git a/chrome/chrome_common.gypi b/chrome/chrome_common.gypi
+index 3157836..f3dfc27 100644
+--- a/chrome/chrome_common.gypi
++++ b/chrome/chrome_common.gypi
+@@ -441,6 +441,8 @@
+         'common/safe_browsing/zip_analyzer.h',
+         'common/search_provider.h',
+         'common/search_types.h',
++        'common/search_urls.cc',
++        'common/search_urls.h',
+         'common/service_messages.h',
+         'common/service_process_util.cc',
+         'common/service_process_util.h',
+diff --git a/chrome/chrome_renderer.gypi b/chrome/chrome_renderer.gypi
+index 7b8b758..2e9ef9b 100644
+--- a/chrome/chrome_renderer.gypi
++++ b/chrome/chrome_renderer.gypi
+@@ -310,6 +310,8 @@
+         'renderer/safe_browsing/phishing_url_feature_extractor.h',
+         'renderer/safe_browsing/scorer.cc',
+         'renderer/safe_browsing/scorer.h',
++        'renderer/searchbox/search_bouncer.cc',
++        'renderer/searchbox/search_bouncer.h',
+         'renderer/searchbox/searchbox.cc',
+         'renderer/searchbox/searchbox.h',
+         'renderer/searchbox/searchbox_extension.cc',
+diff --git a/chrome/chrome_tests.gypi b/chrome/chrome_tests.gypi
+index 6e362a6..581d52d 100644
+--- a/chrome/chrome_tests.gypi
++++ b/chrome/chrome_tests.gypi
+@@ -1419,6 +1419,7 @@
+         'common/mac/mock_launchd.cc',
+         'common/mac/mock_launchd.h',
+         'common/time_format_browsertest.cc',
++        'renderer/chrome_content_renderer_client_browsertest.cc',
+         'renderer/autofill/autofill_renderer_browsertest.cc',
+         'renderer/autofill/form_autocomplete_browsertest.cc',
+         'renderer/autofill/form_autofill_browsertest.cc',
+diff --git a/chrome/chrome_tests_unit.gypi b/chrome/chrome_tests_unit.gypi
+index 1b77d80..666e8bc 100644
+--- a/chrome/chrome_tests_unit.gypi
++++ b/chrome/chrome_tests_unit.gypi
+@@ -1806,6 +1806,7 @@
+         'common/net/x509_certificate_model_unittest.cc',
+         'common/partial_circular_buffer_unittest.cc',
+         'common/pref_names_util_unittest.cc',
++        'common/search_urls_unittest.cc',
+         'common/service_process_util_unittest.cc',
+         'common/switch_utils_unittest.cc',
+         'common/thumbnail_score_unittest.cc',
+@@ -1835,6 +1836,7 @@
+         'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',
+         'renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc',
+         'renderer/safe_browsing/scorer_unittest.cc',
++        'renderer/searchbox/search_bouncer_unittest.cc',
+         'renderer/searchbox/searchbox_extension_unittest.cc',
+         'renderer/searchbox/searchbox_unittest.cc',
+         'renderer/spellchecker/custom_dictionary_engine_unittest.cc',
+diff --git a/content/public/renderer/content_renderer_client.cc b/content/public/renderer/content_renderer_client.cc
+index 2621de3..76c80b4 100644
+--- a/content/public/renderer/content_renderer_client.cc
++++ b/content/public/renderer/content_renderer_client.cc
+@@ -37,6 +37,10 @@ bool ContentRendererClient::HasErrorPage(int http_status_code,
+   return false;
+ }
+ 
++bool ContentRendererClient::ShouldSuppressErrorPage(const GURL& url) {
++  return false;
++}
++
+ void ContentRendererClient::DeferMediaLoad(RenderView* render_view,
+                                            const base::Closure& closure) {
+   closure.Run();
+diff --git a/content/public/renderer/content_renderer_client.h b/content/public/renderer/content_renderer_client.h
+index fcb8e56..4434a0f 100644
+--- a/content/public/renderer/content_renderer_client.h
++++ b/content/public/renderer/content_renderer_client.h
+@@ -101,6 +101,10 @@ class CONTENT_EXPORT ContentRendererClient {
+   virtual bool HasErrorPage(int http_status_code,
+                             std::string* error_domain);
+ 
++  // Returns true if the embedder prefers not to show an error page for a failed
++  // navigation to |url|.
++  virtual bool ShouldSuppressErrorPage(const GURL& url);
++
+   // Returns the information to display when a navigation error occurs.
+   // If |error_html| is not null then it may be set to a HTML page containing
+   // the details of the error and maybe links to more info.
+diff --git a/content/renderer/render_view_browsertest.cc b/content/renderer/render_view_browsertest.cc
+index fc13ec0..a66e041 100644
+--- a/content/renderer/render_view_browsertest.cc
++++ b/content/renderer/render_view_browsertest.cc
+@@ -1950,4 +1950,80 @@ TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
+   EXPECT_TRUE(net::IsCertStatusError(ssl_status.cert_status));
+ }
+ 
++class SuppressErrorPageTest : public RenderViewTest {
++ public:
++  virtual void SetUp() OVERRIDE {
++    SetRendererClientForTesting(&client_);
++    RenderViewTest::SetUp();
++  }
++
++  RenderViewImpl* view() {
++    return static_cast<RenderViewImpl*>(view_);
++  }
++
++ private:
++  class TestContentRendererClient : public ContentRendererClient {
++   public:
++    virtual bool ShouldSuppressErrorPage(const GURL& url) OVERRIDE {
++      return url == GURL("http://example.com/suppress");
++    }
++
++    virtual void GetNavigationErrorStrings(
++        WebKit::WebFrame* frame,
++        const WebKit::WebURLRequest& failed_request,
++        const WebKit::WebURLError& error,
++        std::string* error_html,
++        string16* error_description) OVERRIDE {
++      if (error_html)
++        *error_html = "A suffusion of yellow.";
++    }
++  };
++
++  TestContentRendererClient client_;
++};
++
++TEST_F(SuppressErrorPageTest, Suppresses) {
++  WebURLError error;
++  error.domain = WebString::fromUTF8(net::kErrorDomain);
++  error.reason = net::ERR_FILE_NOT_FOUND;
++  error.unreachableURL = GURL("http://example.com/suppress");
++  WebFrame* web_frame = GetMainFrame();
++
++  // Start a load that will reach provisional state synchronously,
++  // but won't complete synchronously.
++  ViewMsg_Navigate_Params params;
++  params.page_id = -1;
++  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
++  params.url = GURL("data:text/html,test data");
++  view()->OnNavigate(params);
++
++  // An error occurred.
++  view()->didFailProvisionalLoad(web_frame, error);
++  const int kMaxOutputCharacters = 22;
++  EXPECT_EQ("", UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
++}
++
++TEST_F(SuppressErrorPageTest, DoesNotSuppress) {
++  WebURLError error;
++  error.domain = WebString::fromUTF8(net::kErrorDomain);
++  error.reason = net::ERR_FILE_NOT_FOUND;
++  error.unreachableURL = GURL("http://example.com/dont-suppress");
++  WebFrame* web_frame = GetMainFrame();
++
++  // Start a load that will reach provisional state synchronously,
++  // but won't complete synchronously.
++  ViewMsg_Navigate_Params params;
++  params.page_id = -1;
++  params.navigation_type = ViewMsg_Navigate_Type::NORMAL;
++  params.url = GURL("data:text/html,test data");
++  view()->OnNavigate(params);
++
++  // An error occurred.
++  view()->didFailProvisionalLoad(web_frame, error);
++  ProcessPendingMessages();
++  const int kMaxOutputCharacters = 22;
++  EXPECT_EQ("A suffusion of yellow.",
++            UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
++}
++
+ }  // namespace content
+diff --git a/content/renderer/render_view_impl.cc b/content/renderer/render_view_impl.cc
+index f52080e..6efebff 100644
+--- a/content/renderer/render_view_impl.cc
++++ b/content/renderer/render_view_impl.cc
+@@ -3646,8 +3646,16 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
+     return;
+   }
+ 
+-  if (RenderThreadImpl::current()->layout_test_mode())
++  // Allow the embedder to suppress an error page.
++  if (GetContentClient()->renderer()->ShouldSuppressErrorPage(
++          error.unreachableURL)) {
+     return;
++  }
++
++  if (RenderThreadImpl::current() &&
++      RenderThreadImpl::current()->layout_test_mode()) {
++    return;
++  }
+ 
+   // Make sure we never show errors in view source mode.
+   frame->enableViewSourceMode(false);
+diff --git a/content/renderer/render_view_impl.h b/content/renderer/render_view_impl.h
+index 2b18b3c..2634ce1 100644
+--- a/content/renderer/render_view_impl.h
++++ b/content/renderer/render_view_impl.h
+@@ -832,6 +832,8 @@ class CONTENT_EXPORT RenderViewImpl
+                            ShouldUpdateSelectionTextFromContextMenuParams);
+   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, BasicRenderFrame);
+   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, TextInputTypeWithPepper);
++  FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, Suppresses);
++  FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, DoesNotSuppress);
+ 
+   typedef std::map<GURL, double> HostZoomLevels;
+ 
+-- 
+1.8.5.3
+

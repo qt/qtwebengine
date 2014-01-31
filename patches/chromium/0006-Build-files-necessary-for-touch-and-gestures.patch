@@ -1,7 +1,7 @@
-From f6f4790eba13beb53ee0a1e169fd75e04ec9eefa Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
 Date: Thu, 25 Jul 2013 17:25:47 +0200
-Subject: [PATCH] Build files necessary for touch and gestures.
+Subject: Build files necessary for touch and gestures.
 
 Also guard the use of MessagePumpAuraX11 in events_x.cc. We need to
 build it to get symbols depending on base::NativeEvent.
@@ -46,5 +46,5 @@ index 09c011c..4716f6c 100644
              'base/x/events_x.cc',
              'events/event.cc',
 -- 
-1.8.4.2
+1.8.5.3
 
