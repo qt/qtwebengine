@@ -295,8 +295,8 @@ protected:
 
 void tst_QWebEngineFrame::requestedUrl()
 {
-#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
-    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
+#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
 #else
     QWebEnginePage page;
 
@@ -339,9 +339,6 @@ void tst_QWebEngineFrame::requestedUrl()
 
 void tst_QWebEngineFrame::requestedUrlAfterSetAndLoadFailures()
 {
-#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
-    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
-#else
     QWebEnginePage page;
 
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
@@ -361,7 +358,6 @@ void tst_QWebEngineFrame::requestedUrlAfterSetAndLoadFailures()
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
-#endif
 }
 
 void tst_QWebEngineFrame::javaScriptWindowObjectCleared_data()
@@ -1239,9 +1235,6 @@ void tst_QWebEngineFrame::setUrlWithFragment_data()
 // Based on bug report https://bugs.webengine.org/show_bug.cgi?id=32723
 void tst_QWebEngineFrame::setUrlWithFragment()
 {
-#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
-    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
-#else
     QFETCH(QUrl, previousUrl);
 
     QWebEnginePage page;
@@ -1263,14 +1256,10 @@ void tst_QWebEngineFrame::setUrlWithFragment()
     QVERIFY(!page.toPlainText().isEmpty());
     QCOMPARE(page.requestedUrl(), url);
     QCOMPARE(page.url(), url);
-#endif
 }
 
 void tst_QWebEngineFrame::setUrlToEmpty()
 {
-#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
-    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
-#else
     int expectedLoadFinishedCount = 0;
     const QUrl aboutBlank("about:blank");
     const QUrl url("qrc:/test2.html");
@@ -1319,14 +1308,10 @@ void tst_QWebEngineFrame::setUrlToEmpty()
     QCOMPARE(page.url(), aboutBlank);
     QCOMPARE(page.requestedUrl(), QUrl());
     QCOMPARE(baseUrlSync(&page), aboutBlank);
-#endif
 }
 
 void tst_QWebEngineFrame::setUrlToInvalid()
 {
-#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
-    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
-#else
     QWebEnginePage page;
 
     const QUrl invalidUrl("http:/example.com");
@@ -1351,14 +1336,10 @@ void tst_QWebEngineFrame::setUrlToInvalid()
     QCOMPARE(page.url(), aboutBlank);
     QCOMPARE(page.requestedUrl().toEncoded(), anotherInvalidUrl.toEncoded());
     QCOMPARE(baseUrlSync(&page), aboutBlank);
-#endif
 }
 
 void tst_QWebEngineFrame::setUrlHistory()
 {
-#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
-    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
-#else
     const QUrl aboutBlank("about:blank");
     QUrl url;
     int expectedLoadFinishedCount = 0;
@@ -1416,7 +1397,6 @@ void tst_QWebEngineFrame::setUrlHistory()
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), url);
     QCOMPARE(m_page->history()->count(), 2);
-#endif
 }
 
 void tst_QWebEngineFrame::setUrlUsingStateObject()
@@ -1522,9 +1502,6 @@ void tst_QWebEngineFrame::setUrlThenLoads_data()
 
 void tst_QWebEngineFrame::setUrlThenLoads()
 {
-#if !defined(QWEBENGINEPAGE_REQUESTEDURL)
-    QSKIP("QWEBENGINEPAGE_REQUESTEDURL");
-#else
     QFETCH(QUrl, url);
     QFETCH(QUrl, baseUrl);
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
@@ -1573,7 +1550,6 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     QCOMPARE(m_page->url(), urlToLoad2);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad2));
-#endif
 }
 
 void tst_QWebEngineFrame::loadFinishedAfterNotFoundError()

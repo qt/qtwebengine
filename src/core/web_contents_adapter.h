@@ -69,6 +69,7 @@ public:
     void load(const QUrl&);
     void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl, const QUrl &unreachableUrl = QUrl());
     QUrl activeUrl() const;
+    QUrl requestedUrl() const;
     QString pageTitle() const;
 
     void navigateToIndex(int);

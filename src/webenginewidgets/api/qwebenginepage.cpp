@@ -548,6 +548,12 @@ QUrl QWebEnginePage::url() const
     return d->adapter->activeUrl();
 }
 
+QUrl QWebEnginePage::requestedUrl() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->requestedUrl();
+}
+
 void QWebEnginePage::render(QPainter *p, const QRegion &clip)
 {
     Q_D(const QWebEnginePage);
