@@ -41,6 +41,8 @@
 
 #include "url_request_qrc_job_qt.h"
 
+#include "type_conversion.h"
+
 #include "net/base/net_errors.h"
 #include "net/base/io_buffer.h"
 
@@ -114,7 +116,7 @@ bool URLRequestQrcJobQt::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead)
 void URLRequestQrcJobQt::startGetHead()
 {
     // Get qrc file path.
-    QString qrcFilePath = ':' + QString::fromStdString(request_->url().path());
+    QString qrcFilePath = ':' + toQt(request_->url()).path(QUrl::RemovePath | QUrl::RemoveQuery);
     m_file.setFileName(qrcFilePath);
     QFileInfo qrcFileInfo(m_file);
     // Get qrc file mime type.
