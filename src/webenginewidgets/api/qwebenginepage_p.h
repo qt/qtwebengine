@@ -94,6 +94,7 @@ public:
     QWebEngineView *view;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
     bool m_isLoading;
+    QUrl m_explicitUrl;
     WebEngineContextMenuData m_menuData;
 
     typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;

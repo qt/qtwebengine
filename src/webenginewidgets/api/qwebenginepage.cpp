@@ -85,6 +85,7 @@ void QWebEnginePagePrivate::titleChanged(const QString &title)
 void QWebEnginePagePrivate::urlChanged(const QUrl &url)
 {
     Q_Q(QWebEnginePage);
+    m_explicitUrl = QUrl();
     Q_EMIT q->urlChanged(url);
 }
 
@@ -127,6 +128,8 @@ void QWebEnginePagePrivate::loadFinished(bool success, int error_code, const QSt
     Q_UNUSED(error_code);
     Q_UNUSED(error_description);
     m_isLoading = adapter->isLoading();
+    if (success)
+        m_explicitUrl = QUrl();
     Q_EMIT q->loadFinished(success);
 }
 
@@ -510,13 +513,15 @@ QString QWebEnginePage::title() const
 
 void QWebEnginePage::setUrl(const QUrl &url)
 {
+    Q_D(QWebEnginePage);
+    d->m_explicitUrl = url;
     load(url);
 }
 
 QUrl QWebEnginePage::url() const
 {
     Q_D(const QWebEnginePage);
-    return d->adapter->activeUrl();
+    return d->m_explicitUrl.isValid() ? d->m_explicitUrl : d->adapter->activeUrl();
 }
 
 QUrl QWebEnginePage::requestedUrl() const
