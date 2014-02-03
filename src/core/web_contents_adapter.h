@@ -70,6 +70,7 @@ public:
     void load(const QUrl&);
     void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl);
     QUrl activeUrl() const;
+    QUrl requestedUrl() const;
     QString pageTitle() const;
 
     void navigateToIndex(int);

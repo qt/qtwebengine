@@ -519,6 +519,12 @@ QUrl QWebEnginePage::url() const
     return d->adapter->activeUrl();
 }
 
+QUrl QWebEnginePage::requestedUrl() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->requestedUrl();
+}
+
 qreal QWebEnginePage::zoomFactor() const
 {
     Q_D(const QWebEnginePage);

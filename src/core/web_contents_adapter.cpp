@@ -305,6 +305,17 @@ QUrl WebContentsAdapter::activeUrl() const
     return toQt(d->webContents->GetVisibleURL());
 }
 
+QUrl WebContentsAdapter::requestedUrl() const
+{
+    Q_D(const WebContentsAdapter);
+    if (content::NavigationEntry* entry = d->webContents->GetController().GetVisibleEntry()) {
+        if (!entry->GetOriginalRequestURL().is_empty())
+            return toQt(entry->GetOriginalRequestURL());
+        return toQt(entry->GetURL());
+    }
+    return QUrl();
+}
+
 QString WebContentsAdapter::pageTitle() const
 {
     Q_D(const WebContentsAdapter);
