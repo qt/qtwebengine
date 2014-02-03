@@ -45,5 +45,8 @@
 
 class ContentRendererClientQt : public content::ContentRendererClient {
 public:
-    virtual void RenderViewCreated(content::RenderView* render_view) Q_DECL_OVERRIDE;
+    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
+
+    // Update this when we want to allow overriding error pages.
+    virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return true; }
 };
