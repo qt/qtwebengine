@@ -33,6 +33,8 @@ INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
 
 SOURCES = \
         backing_store_qt.cpp \
+        browser_context_qt.cpp \
+        chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         common/qt_messages.cpp \
         content_client_qt.cpp \
@@ -41,7 +43,6 @@ SOURCES = \
         delegated_frame_node.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
-        chromium_gpu_helper.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         process_main.cpp \

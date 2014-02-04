@@ -59,6 +59,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
+#include <QDir>
 #include <QGuiApplication>
 #include <QStringList>
 #include <QStyleHints>
