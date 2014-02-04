@@ -140,12 +140,12 @@ void tst_QWebEngineFrame::symmetricUrl()
     QCOMPARE(view.history()->count(), 0);
 
     // loading is _not_ immediate, so the text isn't set just yet.
-    QVERIFY(toPlainText(view.page()).isEmpty());
+    QVERIFY(toPlainTextSync(view.page()).isEmpty());
 
     ::waitForSignal(m_view, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(view.history()->count(), 1);
-    QCOMPARE(toPlainText(view.page()), QString("Test"));
+    QCOMPARE(toPlainTextSync(view.page()), QString("Test"));
 
     QUrl dataUrl2("data:text/html,<h1>Test2");
     QUrl dataUrl3("data:text/html,<h1>Test3");
@@ -160,7 +160,7 @@ void tst_QWebEngineFrame::symmetricUrl()
 
     QCOMPARE(view.history()->count(), 2);
 
-    QCOMPARE(toPlainText(view.page()), QString("Test3"));
+    QCOMPARE(toPlainTextSync(view.page()), QString("Test3"));
 }
 
 void tst_QWebEngineFrame::progressSignal()
@@ -430,7 +430,7 @@ void tst_QWebEngineFrame::setHtml()
     QSignalSpy spy(m_view->page(), SIGNAL(loadFinished(bool)));
     m_view->page()->setHtml(html);
     QVERIFY(spy.wait());
-    QCOMPARE(toHtml(m_view->page()), html);
+    QCOMPARE(toHtmlSync(m_view->page()), html);
 }
 
 void tst_QWebEngineFrame::setHtmlWithImageResource()
@@ -554,7 +554,7 @@ void tst_QWebEngineFrame::setHtmlWithJSAlert()
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(page.alerts, 1);
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118663", Continue);
-    QCOMPARE(toHtml(m_view->page()), html);
+    QCOMPARE(toHtmlSync(m_view->page()), html);
 }
 
 class TestNetworkManager : public QNetworkAccessManager
@@ -1155,7 +1155,7 @@ void tst_QWebEngineFrame::setContent()
     QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
     m_view->setContent(testContents, mimeType);
     QVERIFY(loadSpy.wait());
-    QCOMPARE(toPlainText(m_view->page()), expected);
+    QCOMPARE(toPlainTextSync(m_view->page()), expected);
 }
 
 class CacheNetworkAccessManager : public QNetworkAccessManager {
@@ -1253,7 +1253,7 @@ void tst_QWebEngineFrame::setUrlWithFragment()
     ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(spy.count(), 1);
-    QVERIFY(!page.toPlainText().isEmpty());
+    QVERIFY(!toPlainTextSync(&page).isEmpty());
     QCOMPARE(page.requestedUrl(), url);
     QCOMPARE(page.url(), url);
 }
