@@ -2757,7 +2757,7 @@ void tst_QWebEnginePage::errorPageExtension()
 
     page.setUrl(QUrl("http://non.existent/url"));
     QTRY_COMPARE(spyLoadFinished.count(), 2);
-    QCOMPARE(toPlainText(&page), QString("error"));
+    QCOMPARE(toPlainTextSync(&page), QString("error"));
     QCOMPARE(page.history()->count(), 2);
     QCOMPARE(page.history()->currentItem().url(), QUrl("http://non.existent/url"));
     QCOMPARE(page.history()->canGoBack(), true);

@@ -125,13 +125,13 @@ void tst_QWebEngineHistory::count()
 void tst_QWebEngineHistory::back()
 {
     for (int i = histsize;i > 1;i--) {
-        QCOMPARE(toPlainText(page), QString("page") + QString::number(i));
+        QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->back();
         loadFinishedBarrier->ensureSignalEmitted();
     }
     //try one more time (too many). crash test
     hist->back();
-    QCOMPARE(toPlainText(page), QString("page1"));
+    QCOMPARE(toPlainTextSync(page), QString("page1"));
 }
 
 /**
@@ -146,13 +146,13 @@ void tst_QWebEngineHistory::forward()
     }
 
     for (int i = 1;i < histsize;i++) {
-        QCOMPARE(toPlainText(page), QString("page") + QString::number(i));
+        QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->forward();
         loadFinishedBarrier->ensureSignalEmitted();
     }
     //try one more time (too many). crash test
     hist->forward();
-    QCOMPARE(toPlainText(page), QString("page") + QString::number(histsize));
+    QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(histsize));
 }
 
 /**
