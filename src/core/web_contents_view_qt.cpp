@@ -44,6 +44,7 @@
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
+#include "type_conversion.h"
 #include "web_engine_context.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
