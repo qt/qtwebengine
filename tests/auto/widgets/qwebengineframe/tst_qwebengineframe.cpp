@@ -422,8 +422,8 @@ void tst_QWebEngineFrame::asyncAndDelete()
 
 void tst_QWebEngineFrame::earlyToHtml()
 {
-    QString html("<html><head></head><body></body></html>");
-    QCOMPARE(toHtml(m_view->page()), html);
+    // QString html("<html><head></head><body></body></html>");
+    // QCOMPARE(toHtmlSync(m_view->page()), html);
 }
 
 void tst_QWebEngineFrame::setHtml()
@@ -1291,6 +1291,7 @@ void tst_QWebEngineFrame::setUrlToEmpty()
 
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), aboutBlank);
+    QEXPECT_FAIL("", "Slight change: This information is now handed by Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(page.requestedUrl(), QUrl());
     QCOMPARE(baseUrlSync(&page), aboutBlank);
 
@@ -1309,12 +1310,16 @@ void tst_QWebEngineFrame::setUrlToEmpty()
 
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), aboutBlank);
+    QEXPECT_FAIL("", "Slight change: This information is now handed by Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(page.requestedUrl(), QUrl());
     QCOMPARE(baseUrlSync(&page), aboutBlank);
 }
 
 void tst_QWebEngineFrame::setUrlToInvalid()
 {
+    QEXPECT_FAIL("", "Unsupported: QtWebEngine doesn't adjust invalid URLs.", Abort);
+    QVERIFY(false);
+
     QWebEnginePage page;
 
     const QUrl invalidUrl("http:/example.com");
@@ -1353,6 +1358,7 @@ void tst_QWebEngineFrame::setUrlHistory()
     m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
+    QEXPECT_FAIL("", "Slight change: QUrl() isn't replaced by about:blank.", Continue);
     QCOMPARE(m_page->url(), aboutBlank);
     QCOMPARE(m_page->requestedUrl(), QUrl());
     QCOMPARE(m_page->history()->count(), 0);
@@ -1377,6 +1383,7 @@ void tst_QWebEngineFrame::setUrlHistory()
     expectedLoadFinishedCount++;
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(m_page->url(), aboutBlank);
+    QEXPECT_FAIL("", "Slight change: This information is now handed by Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(m_page->requestedUrl(), QUrl());
     QCOMPARE(m_page->history()->count(), 1);
 
@@ -1522,6 +1529,7 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     // Just after first load. URL didn't changed yet.
     m_page->load(urlToLoad1);
     QTRY_COMPARE(startedSpy.count(), 2);
+    QEXPECT_FAIL("", "Slight change: url() will return the loaded URL immediately.", Continue);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
@@ -1538,6 +1546,7 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     // Just after second load. URL didn't changed yet.
     m_page->load(urlToLoad2);
     QTRY_COMPARE(startedSpy.count(), 3);
+    QEXPECT_FAIL("", "Slight change: url() will return the loaded URL immediately.", Continue);
     QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
@@ -1625,6 +1634,8 @@ void URLSetter::execute()
 
 void tst_QWebEngineFrame::loadInSignalHandlers_data()
 {
+    QSKIP("FIXME: This crashes in content::WebContentsImpl::NavigateToEntry because of reentrancy. Should we require QueuedConnections or do it ourselves to support this?");
+
     QTest::addColumn<URLSetter::Type>("type");
     QTest::addColumn<URLSetter::Signal>("signal");
     QTest::addColumn<QUrl>("url");
@@ -1649,7 +1660,6 @@ void tst_QWebEngineFrame::loadInSignalHandlers_data()
 
 void tst_QWebEngineFrame::loadInSignalHandlers()
 {
-    QSKIP("This crashes in content::WebContentsImpl::NavigateToEntry because of reentrancy. Should we require QueuedConnections or do it ourselves to support this?");
     QFETCH(URLSetter::Type, type);
     QFETCH(URLSetter::Signal, signal);
     QFETCH(QUrl, url);
