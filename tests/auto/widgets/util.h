@@ -128,14 +128,14 @@ private:
     T result;
 };
 
-static inline QString toPlainText(QWebEnginePage *page)
+static inline QString toPlainTextSync(QWebEnginePage *page)
 {
     CallbackSpy<QString> spy;
     page->toPlainText(spy.ref());
     return spy.waitForResult();
 }
 
-static inline QString toHtml(QWebEnginePage *page)
+static inline QString toHtmlSync(QWebEnginePage *page)
 {
     CallbackSpy<QString> spy;
     page->toHtml(spy.ref());
