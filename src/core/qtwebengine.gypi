@@ -55,6 +55,34 @@
           '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
         ],
       }],
+      ['_toolset=="target" and qt_os=="android"', {
+        'configurations': {
+          'Debug_Base': {
+            # Reduce the binary size.
+            'variables': {
+              'debug_optimize%': 's',
+            },
+            'ldflags': [
+              # Only link with needed input sections.
+              '-Wl,--gc-sections',
+              # Warn in case of text relocations.
+              '-Wl,--warn-shared-textrel',
+              '-Wl,-O1',
+              '-Wl,--as-needed',
+            ],
+            'cflags': [
+              '-fomit-frame-pointer',
+              '-fdata-sections',
+              '-ffunction-sections',
+            ],
+          },
+        },
+        'dependencies': [
+          '<(chromium_src_dir)/third_party/ashmem/ashmem.gyp:ashmem',
+          '<(chromium_src_dir)/third_party/freetype/freetype.gyp:ft2',
+          '<(chromium_src_dir)/third_party/android_tools/ndk/android_tools_ndk.gyp:cpu_features',
+        ],
+      }],
     ['OS=="win"', {
       'resource_include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/webkit',

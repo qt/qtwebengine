@@ -213,9 +213,13 @@ public:
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
         else if (platform == QStringLiteral("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else
+        else if (platform == QStringLiteral("eglfs"))
+            m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
+        else {
+            qFatal("%s platform not yet supported", platform.toLatin1().constData());
             // Add missing platforms once they work.
             Q_UNREACHABLE();
+        }
     }
 
     virtual void* GetHandle() Q_DECL_OVERRIDE { return m_handle; }

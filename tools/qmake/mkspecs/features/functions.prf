@@ -19,7 +19,9 @@ defineReplace(getConfigDir) {
 }
 
 defineReplace(extractCFlag) {
-    OPTION = $$find(QMAKE_CFLAGS, $$1)
+    CFLAGS = $$QMAKE_CFLAGS
+    !isEmpty(ANDROID_TARGET_CFLAGS): CFLAGS = $$ANDROID_TARGET_CFLAGS
+    OPTION = $$find(CFLAGS, $$1)
     OPTION = $$split(OPTION, =)
     return ($$member(OPTION, 1))
 }
