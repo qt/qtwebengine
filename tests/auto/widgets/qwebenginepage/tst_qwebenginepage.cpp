@@ -2747,6 +2747,9 @@ public:
 
 void tst_QWebEnginePage::errorPageExtension()
 {
+#if !defined(QWEBENGINEPAGE_ERRORPAGEEXTENSION)
+    QSKIP("QWEBENGINEPAGE_ERRORPAGEEXTENSION");
+#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2777,6 +2780,7 @@ void tst_QWebEnginePage::errorPageExtension()
     QTRY_COMPARE(page.history()->currentItem().url(), QUrl("data:text/html,foo"));
 
     m_view->setPage(0);
+#endif
 }
 
 void tst_QWebEnginePage::errorPageExtensionInIFrames()
