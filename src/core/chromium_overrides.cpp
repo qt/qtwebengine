@@ -41,7 +41,6 @@
 
 #include "chromium_overrides.h"
 
-#include "base/message_loop/message_pump_gtk.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 
 #include <QGuiApplication>
@@ -49,7 +48,12 @@
 #include <QWindow>
 #include <qpa/qplatformnativeinterface.h>
 
+#if defined(OS_ANDROID)
+#include "media/video/capture/fake_video_capture_device.h"
+#endif
+
 #if defined(USE_X11)
+#include "base/message_loop/message_pump_gtk.h"
 #include <X11/Xlib.h>
 #endif
 
@@ -113,3 +117,20 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebKit::WebScreenInfo* resul
 }
 
 }
+
+#if defined(OS_ANDROID)
+namespace ui {
+bool GrabViewSnapshot(gfx::NativeView /*view*/, std::vector<unsigned char>* /*png_representation*/, const gfx::Rect& /*snapshot_bounds*/)
+{
+    NOTIMPLEMENTED();
+    return false;
+}
+}
+
+namespace media {
+const std::string FakeVideoCaptureDevice::Name::GetModel() const
+{
+    return "";
+}
+}
+#endif
