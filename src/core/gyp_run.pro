@@ -28,12 +28,6 @@ cross_compile {
         MARCH = $$extractCFlag("-march=.*")
         !isEmpty(MARCH): GYP_ARGS += "-D arm_arch=\"$$MARCH\""
 
-        MFPU = $$extractCFlag("-mfpu=.*")
-        !isEmpty(MFPU) {
-            GYP_ARGS += "-D arm_fpu=\"$$MFPU\""
-            contains(MFPU, "neon"): GYP_ARGS += "-D arm_neon=1"
-        }
-
         MTUNE = $$extractCFlag("-mtune=.*")
         !isEmpty(MTUNE): GYP_ARGS += "-D arm_tune=\"$$MTUNE\""
 
@@ -45,6 +39,13 @@ cross_compile {
             MARMV = $$split(MARMV,)
             MARMV = $$member(MARMV, 0)
             GYP_ARGS += "-D arm_version=\"$$MARMV\""
+        }
+
+        MFPU = $$extractCFlag("-mfpu=.*")
+        !isEmpty(MFPU) {
+            contains(MFPU, "neon"): GYP_ARGS += "-D arm_fpu=\"$$MFPU\" -D arm_neon=1"
+            else:!lessThan(MARMV, 7): GYP_ARGS += "-D arm_neon=0 -D arm_neon_optional=1"
+            else: GYP_ARGS += "-D arm_fpu=\"$$MFPU\""
         }
 
         contains(QMAKE_CFLAGS, "-mthumb"): GYP_ARGS += "-D arm_thumb=1"
