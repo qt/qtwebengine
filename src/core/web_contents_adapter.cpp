@@ -282,7 +282,7 @@ void WebContentsAdapter::load(const QUrl &url)
     d->webContents->GetView()->Focus();
 }
 
-void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
+void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl, const QUrl &unreachableUrl)
 {
     Q_D(WebContentsAdapter);
     QByteArray encodedData = data.toPercentEncoding();
@@ -294,6 +294,8 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     content::NavigationController::LoadURLParams params((GURL(urlString)));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
+    if (unreachableUrl.isValid())
+        params.virtual_url_for_data_url = toGurl(unreachableUrl);
     params.can_load_local_resources = true;
     d->webContents->GetController().LoadURLWithParams(params);
 }
