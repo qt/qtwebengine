@@ -49,8 +49,8 @@ import QtQuick.Controls.Private 1.0
 
 ApplicationWindow {
     id: browserWindow
-    function load(url) { tabs.currentView.url = url }
-    function adoptHandle(viewHandle) { tabs.currentView.adoptHandle(viewHandle) }
+    function load(url) { currentWebView.url = url }
+    property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
 
     property bool isFullScreen: visibility == Window.FullScreen
     onIsFullScreenChanged: {
@@ -62,7 +62,7 @@ ApplicationWindow {
     height: 600
     width: 800
     visible: true
-    title: tabs.currentView && tabs.currentView.title
+    title: currentWebView && currentWebView.title
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
     Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
@@ -118,21 +118,21 @@ ApplicationWindow {
                 ToolButton {
                     id: backButton
                     iconSource: "icons/go-previous.png"
-                    onClicked: tabs.currentView.goBack()
-                    enabled: tabs.currentView && tabs.currentView.canGoBack
+                    onClicked: currentWebView.goBack()
+                    enabled: currentWebView && currentWebView.canGoBack
                     activeFocusOnTab: !browserWindow.platformIsMac
                 }
                 ToolButton {
                     id: forwardButton
                     iconSource: "icons/go-next.png"
-                    onClicked: tabs.currentView.goForward()
-                    enabled: tabs.currentView && tabs.currentView.canGoForward
+                    onClicked: currentWebView.goForward()
+                    enabled: currentWebView && currentWebView.canGoForward
                     activeFocusOnTab: !browserWindow.platformIsMac
                 }
                 ToolButton {
                     id: reloadButton
-                    iconSource: tabs.currentView && tabs.currentView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
-                    onClicked: tabs.currentView && tabs.currentView.loading ? tabs.currentView.stop() : tabs.currentView.reload()
+                    iconSource: currentWebView && currentWebView.loading ? "icons/process-stop.png" : "icons/view-refresh.png"
+                    onClicked: currentWebView && currentWebView.loading ? currentWebView.stop() : currentWebView.reload()
                     activeFocusOnTab: !browserWindow.platformIsMac
                 }
                 TextField {
@@ -143,7 +143,7 @@ ApplicationWindow {
                         z: 2
                         id: faviconImage
                         width: 16; height: 16
-                        source: tabs.currentView && tabs.currentView.icon
+                        source: currentWebView && currentWebView.icon
                     }
                     style: TextFieldStyle {
                         padding {
@@ -152,8 +152,8 @@ ApplicationWindow {
                     }
                     focus: true
                     Layout.fillWidth: true
-                    text: tabs.currentView && tabs.currentView.url
-                    onAccepted: tabs.currentView.url = utils.fromUserInput(text)
+                    text: currentWebView && currentWebView.url
+                    onAccepted: currentWebView.url = utils.fromUserInput(text)
                 }
             }
             ProgressBar {
@@ -172,13 +172,12 @@ ApplicationWindow {
                 z: -2;
                 minimumValue: 0
                 maximumValue: 100
-                value: (tabs.currentView && tabs.currentView.loadProgress < 100) ? tabs.currentView.loadProgress : 0
+                value: (currentWebView && currentWebView.loadProgress < 100) ? currentWebView.loadProgress : 0
             }
     }
 
     TabView {
         id: tabs
-        property Item currentView: currentIndex < count ? getTab(currentIndex).item : null
         function createEmptyTab() {
             var tab = addTab("", tabComponent)
             // We must do this first to make sure that tab.active gets set so that tab.item gets instantiated immediately.
@@ -225,16 +224,16 @@ ApplicationWindow {
                         }
                     }
 
-                    onCreateWindow: {
-                        if (newViewDisposition == "popup")
+                    onNewViewRequested: {
+                        if (request.disposition == WebEngineView.NewPopup)
                             print("Warning: Ignored a popup window.")
-                        else if (newViewDisposition == "tab") {
+                        else if (request.disposition == WebEngineView.NewTab) {
                             var tab = tabs.createEmptyTab()
-                            tab.item.adoptHandle(newViewHandle)
+                            request.openIn(tab.item)
                         } else {
                             var component = Qt.createComponent("quickwindow.qml")
                             var window = component.createObject()
-                            window.adoptHandle(newViewHandle)
+                            request.openIn(window.currentWebView)
                         }
                     }
                     extraContextMenuEntriesComponent: ContextMenuExtras {}
