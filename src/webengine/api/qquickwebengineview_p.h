@@ -62,6 +62,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_ENUMS(LoadStatus);
     Q_ENUMS(ErrorDomain);
+    Q_ENUMS(NewViewDestination);
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -95,6 +96,11 @@ public:
          DnsErrorDomain
     };
 
+    enum NewViewDestination {
+        NewViewInWindow,
+        NewViewInTab
+    };
+
 public Q_SLOTS:
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl(), const QUrl &unreachableUrl = QUrl());
     void goBack();
@@ -118,6 +124,7 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
+    friend class QQuickWebEngineNewViewRequest;
 };
 
 QT_END_NAMESPACE
