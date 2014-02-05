@@ -533,7 +533,7 @@ void QQuickWebEngineViewExperimental::adoptHandle(QQuickWebEngineViewHandle *vie
     emit q->iconChanged();
     // FIXME: The current loading state should be stored in the WebContentAdapter
     // and it should be checked here if the signal emission is really necessary.
-    QQuickWebEngineLoadRequest loadRequest(viewHandle->adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
+    QQuickWebEngineLoadRequest loadRequest(d->adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
     emit q->loadingStateChanged(&loadRequest);
     emit q->loadProgressChanged();
 }
