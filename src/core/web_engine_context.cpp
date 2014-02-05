@@ -94,7 +94,7 @@ scoped_refptr<WebEngineContext> WebEngineContext::currentOrCreate(WebContentsAda
     if (!sContext) {
         sContext = new WebEngineContext(renderingMode);
         // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
-        QObject::connect(qApp, &QCoreApplication::aboutToQuit, destroyContext);
+        qAddPostRoutine(destroyContext);
     } else if (renderingMode != sContext->renderingMode())
         qFatal("Switching the QtWebEngine rendering mode once initialized in an application is not supported."
             " If you're using both a QQuickWebView and a QtQuick WebEngineView, make sure that the"
