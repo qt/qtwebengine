@@ -96,6 +96,7 @@ public:
     };
 
 public Q_SLOTS:
+    void loadHtml(const QString& html, const QUrl& baseUrl = QUrl(), const QUrl& unreachableUrl = QUrl());
     void goBack();
     void goForward();
     void reload();
