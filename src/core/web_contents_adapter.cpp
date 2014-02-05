@@ -226,7 +226,8 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE);
+    if (!rvh->IsRenderViewLive())
+        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE);
 
 }
 
