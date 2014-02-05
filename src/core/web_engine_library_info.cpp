@@ -41,19 +41,29 @@
 
 #include "web_engine_library_info.h"
 
+#include "base/base_paths.h"
+#include "base/file_util.h"
+#include "content/public/common/content_paths.h"
+#include "ui/base/ui_base_paths.h"
 #include "type_conversion.h"
 
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QLibraryInfo>
+#include <QStandardPaths>
+#include <QString>
 #include <QStringBuilder>
 
 #ifndef QTWEBENGINEPROCESS_NAME
 #error "No name defined for QtWebEngine's process"
 #endif
 
-static QString location(QLibraryInfo::LibraryLocation path)
+
+namespace {
+
+QString location(QLibraryInfo::LibraryLocation path)
 {
 #if defined(Q_OS_BLACKBERRY)
     // On BlackBerry, the qtwebengine may live in /usr/lib/qtwebengine.
@@ -86,13 +96,7 @@ static QString location(QLibraryInfo::LibraryLocation path)
     return QLibraryInfo::location(path);
 }
 
-base::FilePath WebEngineLibraryInfo::pluginsPath()
-{
-    QString path = location(QLibraryInfo::PluginsPath) % QDir::separator() % QStringLiteral("qtwebengine");
-    return base::FilePath(toFilePathString(path));
-}
-
-base::FilePath WebEngineLibraryInfo::subProcessPath()
+QString subProcessPath()
 {
     static bool initialized = false;
     static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
@@ -107,17 +111,81 @@ base::FilePath WebEngineLibraryInfo::subProcessPath()
         initialized = true;
     }
 
-    return base::FilePath(toFilePathString(processPath));
+    return processPath;
 }
 
-base::FilePath WebEngineLibraryInfo::localesPath()
+QString pluginsPath()
 {
-    QString path = location(QLibraryInfo::TranslationsPath) % QStringLiteral("/qtwebengine_locales");
-    return base::FilePath(toFilePathString(path));
+    return location(QLibraryInfo::PluginsPath) % QDir::separator() % QStringLiteral("qtwebengine");
 }
+
+QString localesPath()
+{
+    return location(QLibraryInfo::TranslationsPath) % QStringLiteral("/qtwebengine_locales");
+}
+
+QString fallbackDir() {
+    static QString directory = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
+    return directory;
+}
+
+} // namespace
+
+#if defined(OS_ANDROID)
+namespace base {
+// Replace the Android base path provider that depends on jni.
+// With this we avoid patching chromium which we would need since
+// PathService registers PathProviderAndroid by default on Android.
+bool PathProviderAndroid(int key, FilePath* result)
+{
+    return WebEngineLibraryInfo::pathProviderQt(key, result);
+}
+
+}
+#endif // defined(OS_ANDROID)
 
 base::FilePath WebEngineLibraryInfo::repackedResourcesPath()
 {
-    QString path = location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak");
-    return base::FilePath(toFilePathString(path));
+    return toFilePath(location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak"));
+}
+
+bool WebEngineLibraryInfo::pathProviderQt(int key, base::FilePath* result)
+{
+    QString directory;
+    switch (key) {
+    case base::FILE_EXE:
+    case content::CHILD_PROCESS_EXE:
+        *result = toFilePath(subProcessPath());
+        return true;
+    case base::DIR_CACHE:
+        directory = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+        break;
+    case base::DIR_HOME:
+        directory = QDir::homePath();
+        break;
+    case base::DIR_USER_DESKTOP:
+        directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        break;
+#if defined(OS_ANDROID)
+    case base::DIR_SOURCE_ROOT:
+    case base::DIR_ANDROID_EXTERNAL_STORAGE:
+    case base::DIR_ANDROID_APP_DATA:
+        directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+        break;
+#endif
+    case content::DIR_MEDIA_LIBS:
+        *result = toFilePath(pluginsPath());
+        return true;
+    case ui::DIR_LOCALES:
+        *result = toFilePath(localesPath());
+        return true;
+    default:
+        // Note: the path system expects this function to override the default
+        // behavior. So no need to log an error if we don't support a given
+        // path. The system will just use the default.
+        return false;
+    }
+
+    *result = toFilePath(directory.isEmpty() ? fallbackDir() : directory);
+    return true;
 }

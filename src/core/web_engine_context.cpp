@@ -45,6 +45,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/app/content_main_runner.h"
@@ -52,7 +53,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -131,11 +131,11 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
-#if defined(OS_WIN)
-    parsedCommandLine->AppendSwitchNative(switches::kBrowserSubprocessPath,WebEngineLibraryInfo::subProcessPath().value().c_str());
-#else
-    parsedCommandLine->AppendSwitchASCII(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::subProcessPath().value().c_str());
-#endif
+
+    base::FilePath subprocessPath;
+    PathService::Get(content::CHILD_PROCESS_EXE, &subprocessPath);
+    parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, subprocessPath);
+
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 

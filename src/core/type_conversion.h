@@ -135,6 +135,11 @@ inline base::FilePath::StringType toFilePathString(const QString &str)
 #endif
 }
 
+inline base::FilePath toFilePath(const QString &str)
+{
+    return base::FilePath(toFilePathString(str));
+}
+
 template <typename T>
 inline T fileListingHelper(const QString &) {qFatal("Specialization missing for %s.", Q_FUNC_INFO);}
 
