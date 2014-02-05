@@ -50,6 +50,8 @@ public:
     static base::FilePath pluginsPath();
     static base::FilePath localesPath();
     static base::FilePath repackedResourcesPath();
+
+    static bool pathProviderQt(int key, base::FilePath* result);
 };
 
 

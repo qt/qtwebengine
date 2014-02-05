@@ -41,19 +41,34 @@
 
 #include "web_engine_library_info.h"
 
+#include "base/base_paths.h"
+#include "base/file_util.h"
+#include "content/public/common/content_paths.h"
+#include "ui/base/ui_base_paths.h"
 #include "type_conversion.h"
 
 #include <QByteArray>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
 #include <QLibraryInfo>
+#include <QStandardPaths>
+#include <QString>
 #include <QStringBuilder>
 
 #ifndef QTWEBENGINEPROCESS_NAME
 #error "No name defined for QtWebEngine's process"
 #endif
 
-static QString location(QLibraryInfo::LibraryLocation path)
+
+namespace {
+
+base::FilePath fallbackDir() {
+    static const base::FilePath directory = fileListingHelper<base::FilePath>(QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName());
+    return directory;
+}
+
+QString location(QLibraryInfo::LibraryLocation path)
 {
 #if defined(Q_OS_BLACKBERRY)
     // On BlackBerry, the qtwebengine may live in /usr/lib/qtwebengine.
@@ -85,6 +100,19 @@ static QString location(QLibraryInfo::LibraryLocation path)
 
     return QLibraryInfo::location(path);
 }
+
+}
+
+#if defined(OS_ANDROID)
+namespace base {
+// Replace the Android base path provider.
+bool PathProviderAndroid(int key, FilePath* result)
+{
+    return WebEngineLibraryInfo::pathProviderQt(key, result);
+}
+
+}
+#endif // defined(OS_ANDROID)
 
 base::FilePath WebEngineLibraryInfo::pluginsPath()
 {
@@ -120,4 +148,44 @@ base::FilePath WebEngineLibraryInfo::repackedResourcesPath()
 {
     QString path = location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak");
     return base::FilePath(toFilePathString(path));
+}
+
+bool WebEngineLibraryInfo::pathProviderQt(int key, base::FilePath* result)
+{
+    QString directory;
+    switch (key) {
+    case base::FILE_EXE:
+        *result = subProcessPath();
+        return true;
+    case base::DIR_CACHE:
+        directory = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+        break;
+    case base::DIR_HOME:
+        directory = QDir::homePath();
+        break;
+    case base::DIR_USER_DESKTOP:
+        directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        break;
+#if defined(OS_ANDROID)
+    case base::DIR_SOURCE_ROOT:
+    case base::DIR_ANDROID_EXTERNAL_STORAGE:
+    case base::DIR_ANDROID_APP_DATA:
+        directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+        break;
+#endif
+    case content::DIR_MEDIA_LIBS:
+        *result = pluginsPath();
+        return true;
+    case ui::DIR_LOCALES:
+        *result = localesPath();
+        return true;
+    default:
+        // Note: the path system expects this function to override the default
+        // behavior. So no need to log an error if we don't support a given
+        // path. The system will just use the default.
+        return false;
+    }
+
+    *result = directory.isEmpty() ?  fallbackDir() : fileListingHelper<base::FilePath>(directory);
+    return true;
 }
