@@ -55,6 +55,7 @@ class WebContentsAdapter;
 class UIDelegatesManager;
 
 QT_BEGIN_NAMESPACE
+class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
@@ -77,18 +78,6 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewHandle : public QObject {
-    Q_OBJECT
-public:
-    QQuickWebEngineViewHandle();
-    ~QQuickWebEngineViewHandle();
-
-private:
-    QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
-    friend class QQuickWebEngineViewExperimental;
-    friend class QQuickWebEngineViewPrivate;
-};
-
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
@@ -96,12 +85,11 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
 
 public:
     QQuickWebEngineViewport *viewport() const;
-    Q_INVOKABLE void adoptHandle(QQuickWebEngineViewHandle *viewHandle);
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
 
 Q_SIGNALS:
-    void createWindow(const QJSValue &newViewHandle, const QString &newViewDisposition);
+    void newViewRequested(QQuickWebEngineNewViewRequest *request);
     void extraContextMenuEntriesComponentChanged();
 
 private:
@@ -144,6 +132,7 @@ public:
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
+    void adoptWebContents(WebContentsAdapter *webContents);
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineViewExperimental> e;

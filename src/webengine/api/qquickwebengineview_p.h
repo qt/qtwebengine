@@ -62,6 +62,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_ENUMS(LoadStatus);
     Q_ENUMS(ErrorDomain);
+    Q_ENUMS(NewViewDisposition);
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -95,6 +96,12 @@ public:
          DnsErrorDomain
     };
 
+    enum NewViewDisposition {
+        NewWindow,
+        NewTab,
+        NewPopup
+    };
+
 public Q_SLOTS:
     void goBack();
     void goForward();
@@ -117,6 +124,7 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
+    friend class QQuickWebEngineNewViewRequest;
 };
 
 QT_END_NAMESPACE

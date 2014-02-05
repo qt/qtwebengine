@@ -44,6 +44,7 @@
 
 #include "javascript_dialog_controller.h"
 #include "qquickwebengineloadrequest_p.h"
+#include "qquickwebenginenewviewrequest_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
@@ -263,48 +264,27 @@ void QQuickWebEngineViewPrivate::focusContainer()
 
 void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &)
 {
-    Q_Q(QQuickWebEngineView);
-    QQmlEngine *engine = QtQml::qmlEngine(q);
-    // This is currently only supported for QML instantiated WebEngineViews.
-    // We could emit a QObject* and set JavaScriptOwnership explicitly on it
-    // but this would make the signal cumbersome to use in C++ where one, and
-    // only one, of the connected slots would have to destroy the given handle.
-    // A virtual method instead of a signal would work better in this case.
-    if (!engine)
-        return;
-    static const QMetaMethod createWindowSignal = QMetaMethod::fromSignal(&QQuickWebEngineViewExperimental::createWindow);
-    if (!e->isSignalConnected(createWindowSignal))
-        return;
-
-    QQuickWebEngineViewHandle *handle = new QQuickWebEngineViewHandle;
+    QQuickWebEngineNewViewRequest request;
     // This increases the ref-count of newWebContents and will tell Chromium
     // to start loading it and possibly return it to its parent page window.open().
-    handle->adapter = newWebContents;
-    // Clearly mark our wrapper as owned by JavaScript, we then depend on it
-    // being adopted or else eventually cleaned up by the GC.
-    QJSValue jsHandle = engine->newQObject(handle);
+    request.m_adapter = newWebContents;
 
-    QString dispositionString;
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
     case WebContentsAdapterClient::NewBackgroundTabDisposition:
-        dispositionString = QStringLiteral("tab");
+        request.m_disposition = QQuickWebEngineView::NewTab;
         break;
     case WebContentsAdapterClient::NewPopupDisposition:
-        dispositionString = QStringLiteral("popup");
+        request.m_disposition = QQuickWebEngineView::NewPopup;
         break;
     case WebContentsAdapterClient::NewWindowDisposition:
-        dispositionString = QStringLiteral("window");
+        request.m_disposition = QQuickWebEngineView::NewWindow;
         break;
     default:
         Q_UNREACHABLE();
     }
 
-    emit e->createWindow(jsHandle, dispositionString);
-
-    // We currently require the adoption to happen within the signal handler to avoid having
-    // to support a null WebContentsAdapterClient for too long after having returned.
-    handle->adapter.reset();
+    emit e->newViewRequested(&request);
 }
 
 void QQuickWebEngineViewPrivate::close()
@@ -324,6 +304,32 @@ void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
     this->devicePixelRatio = devicePixelRatio;
     QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
     m_dpiScale = devicePixelRatio / screen->devicePixelRatio();
+}
+
+void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContents)
+{
+    if (!webContents) {
+        qWarning("Trying to adopt with an empty request, it was either already used or was invalidated."
+            "\nYou must do the adoption synchronously within the newViewRequested signal handler."
+            " If a view hasn't been adopted before returning, the request will be invalidated.");
+        return;
+    }
+
+    Q_Q(QQuickWebEngineView);
+    // This throws away the WebContentsAdapter that has been used until now.
+    // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
+    adapter = webContents;
+    adapter->initialize(this);
+
+    // Emit signals for values that might be different from the previous WebContentsAdapter.
+    emit q->titleChanged();
+    emit q->urlChanged();
+    emit q->iconChanged();
+    // FIXME: The current loading state should be stored in the WebContentAdapter
+    // and it should be checked here if the signal emission is really necessary.
+    QQuickWebEngineLoadRequest loadRequest(adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
+    emit q->loadingStateChanged(&loadRequest);
+    emit q->loadProgressChanged();
 }
 
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
@@ -465,14 +471,6 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
     QQuickItem::itemChange(change, value);
 }
 
-QQuickWebEngineViewHandle::QQuickWebEngineViewHandle()
-{
-}
-
-QQuickWebEngineViewHandle::~QQuickWebEngineViewHandle()
-{
-}
-
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
     : q_ptr(0)
     , d_ptr(viewPrivate)
@@ -506,36 +504,6 @@ void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
     d->setDevicePixelRatio(devicePixelRatio);
     d->adapter->dpiScaleChanged();
     Q_EMIT devicePixelRatioChanged();
-}
-
-void QQuickWebEngineViewExperimental::adoptHandle(QQuickWebEngineViewHandle *viewHandle)
-{
-    if (!viewHandle || !viewHandle->adapter) {
-        qWarning("Trying to adopt an empty handle, it was either already adopted or was invalidated."
-            "\nYou must do the adoption synchronously within the createWindow signal handler."
-            " If the handle hasn't been adopted before returning, it will be invalidated.");
-        return;
-    }
-
-    Q_Q(QQuickWebEngineView);
-    Q_D(QQuickWebEngineView);
-
-    // This throws away the WebContentsAdapter that has been used until now.
-    // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
-    d->adapter = viewHandle->adapter;
-    viewHandle->adapter.reset();
-
-    d->adapter->initialize(d);
-
-    // Emit signals for values that might be different from the previous WebContentsAdapter.
-    emit q->titleChanged();
-    emit q->urlChanged();
-    emit q->iconChanged();
-    // FIXME: The current loading state should be stored in the WebContentAdapter
-    // and it should be checked here if the signal emission is really necessary.
-    QQuickWebEngineLoadRequest loadRequest(d->adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
-    emit q->loadingStateChanged(&loadRequest);
-    emit q->loadProgressChanged();
 }
 
 QT_END_NAMESPACE

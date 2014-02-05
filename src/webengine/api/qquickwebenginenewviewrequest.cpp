@@ -39,29 +39,28 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
-
-#include "qquickwebengineview_p.h"
-#include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 
-QT_BEGIN_NAMESPACE
+#include "qquickwebengineview_p_p.h"
+#include "web_contents_adapter.h"
 
-class QtWebEnginePlugin : public QQmlExtensionPlugin
+QQuickWebEngineNewViewRequest::QQuickWebEngineNewViewRequest()
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
-public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+}
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 0, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
+QQuickWebEngineNewViewRequest::~QQuickWebEngineNewViewRequest()
+{
+}
+
+QQuickWebEngineView::NewViewDisposition QQuickWebEngineNewViewRequest::disposition() const
+{
+    return m_disposition;
+}
+
+void QQuickWebEngineNewViewRequest::attachTo(QQuickWebEngineView *view)
+{
+    if (view) {
+        view->d_func()->adoptWebContents(m_adapter.data());
+        m_adapter.reset();
     }
-};
-
-QT_END_NAMESPACE
-
-#include "plugin.moc"
+}
