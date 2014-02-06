@@ -58,9 +58,15 @@
 //#define UI_DELEGATES_DEBUG
 
 #define NO_SEPARATOR
+#if defined(Q_OS_WIN)
+#define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
+    case UIDelegatesManager::TYPE:\
+        return QStringLiteral(#TYPE L ##".qml");
+#else
 #define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
     case UIDelegatesManager::TYPE:\
         return QStringLiteral(#TYPE".qml");
+#endif
 
 static QString fileNameForComponent(UIDelegatesManager::ComponentType type)
 {
