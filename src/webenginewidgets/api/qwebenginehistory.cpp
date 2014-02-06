@@ -45,6 +45,10 @@
 #include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
+#if defined(Q_OS_WIN)
+#define __func__ __FUNCTION__
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QWebEngineHistoryItemPrivate::QWebEngineHistoryItemPrivate(WebContentsAdapter *adapter, int index)
@@ -110,6 +114,7 @@ QVariant QWebEngineHistoryItem::userData() const
 
 void QWebEngineHistoryItem::setUserData(const QVariant& userData)
 {
+    Q_UNUSED(userData);
     qWarning("Not implemented: %s", __func__);
 }
 
@@ -270,17 +275,20 @@ int QWebEngineHistory::maximumItemCount() const
 
 void QWebEngineHistory::setMaximumItemCount(int count)
 {
+    Q_UNUSED(count);
     qWarning("Not implemented: %s", __func__);
 }
 
 QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)
 {
+    Q_UNUSED(history);
     qWarning("Not implemented: %s", __func__);
     return stream;
 }
 
 QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history)
 {
+    Q_UNUSED(history);
     qWarning("Not implemented: %s", __func__);
     return stream;
 }
