@@ -64,6 +64,10 @@ ApplicationWindow {
         }
     }
     Action {
+        shortcut: "Ctrl+R"
+        onTriggered: tabs.currentView.reload()
+    }
+    Action {
         shortcut: "Ctrl+T"
         onTriggered: {
             tabs.createEmptyTab()
