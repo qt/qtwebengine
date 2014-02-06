@@ -9,7 +9,7 @@ MODULE = webenginewidgets
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 
-QT += widgets
+QT += widgets network
 QT_PRIVATE += widgets-private gui-private core-private
 
 # FIXME: all this should eventually be turned into QT += webenginecore

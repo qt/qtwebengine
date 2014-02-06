@@ -29,6 +29,7 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtNetwork/qnetworkrequest.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
