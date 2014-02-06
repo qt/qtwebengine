@@ -1,4 +1,11 @@
+# Use Qt5 module system
+load(qt_build_config)
+
+TEMPLATE = lib
+
 TARGET = QtWebEngine
+
+MODULE = webengine
 
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINE_LIB
