@@ -5,8 +5,6 @@ QTWEBENGINEPROCESS_NAME = QtWebEngineProcess
 
 # Tweaks that shouldn't affect our examples
 !contains(_PRO_FILE_PWD_, $$QTWEBENGINE_ROOT/examples) {
-    # Used for our export macros
-    DEFINES += BUILDING_CHROMIUM
     # We have to disable RTTI for now since that's how chromium builds on linux
     unix:QMAKE_CXXFLAGS += -fno-rtti
 }
