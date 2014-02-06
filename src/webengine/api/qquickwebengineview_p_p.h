@@ -125,6 +125,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QQuickItemP
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineView)
     QQuickWebEngineViewPrivate();
+    ~QQuickWebEngineViewPrivate();
 
     QQuickWebEngineViewExperimental *experimental() const;
     QQuickWebEngineViewport *viewport() const;
