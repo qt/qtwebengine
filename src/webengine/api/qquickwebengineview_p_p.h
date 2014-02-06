@@ -51,8 +51,13 @@
 #include <QtCore/qcompilerdetection.h>
 #include <QtQuick/private/qquickitem_p.h>
 
+#if defined(Q_OS_WIN)
+#include "web_contents_adapter.h"
+#include "ui_delegates_manager.h"
+#else
 class WebContentsAdapter;
 class UIDelegatesManager;
+#endif
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
