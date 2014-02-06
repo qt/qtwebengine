@@ -45,6 +45,8 @@
 #include"javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
 
+QT_BEGIN_NAMESPACE
+
 void JavaScriptDialogControllerPrivate::dialogFinished(bool accepted, const base::string16 &promptValue)
 {
     // Clear the queue first as this could result in the engine asking us to run another dialog.
@@ -102,3 +104,7 @@ JavaScriptDialogController::JavaScriptDialogController(JavaScriptDialogControlle
     Q_ASSERT(dd);
     d.reset(dd);
 }
+
+QT_END_NAMESPACE
+
+#include "moc_javascript_dialog_controller.cpp"
