@@ -91,6 +91,10 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     }
 }
 
+QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
+{
+}
+
 QQuickWebEngineViewExperimental *QQuickWebEngineViewPrivate::experimental() const
 {
     return e.data();
