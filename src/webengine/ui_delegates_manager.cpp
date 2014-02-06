@@ -60,7 +60,7 @@
 #define NO_SEPARATOR
 #define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
     case UIDelegatesManager::TYPE:\
-        return QStringLiteral(#TYPE".qml");
+        return QStringLiteral(#TYPE) % QStringLiteral(".qml");
 
 static QString fileNameForComponent(UIDelegatesManager::ComponentType type)
 {
