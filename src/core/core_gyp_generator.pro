@@ -21,7 +21,8 @@ qtHaveModule(v8): QT_PRIVATE += v8-private
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
            Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS \
-           QTWEBENGINEPROCESS_NAME=\\\"$$QTWEBENGINEPROCESS_NAME\\\"
+           QTWEBENGINEPROCESS_NAME=\\\"$$QTWEBENGINEPROCESS_NAME\\\" \
+           BUILDING_CHROMIUM
 
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
