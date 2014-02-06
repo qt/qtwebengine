@@ -9,12 +9,15 @@ QT_PRIVATE += qml-private quick-private gui-private core-private
 # Remove this as soon as we have a hard-dependency on Qt 5.2
 qtHaveModule(v8): QT_PRIVATE += v8-private
 
-INCLUDEPATH += api ../core
+INCLUDEPATH += $$PWD api ../core
 
 # FIXME: all this should eventually be turned into QT += webenginecore
-macx:LIBPATH = $$getOutDir()/$$getConfigDir()
+macx|win32:LIBPATH = $$getOutDir()/$$getConfigDir()
 else:LIBPATH = $$getOutDir()/$$getConfigDir()/lib
-LIBS_PRIVATE += -lQt5WebEngineCore -L$$LIBPATH
+
+win32:LIBS_PRIVATE += -L$$LIBPATH -lQt5WebEngineCore.dll
+else:LIBS_PRIVATE += -L$$LIBPATH -lQt5WebEngineCore
+
 QMAKE_RPATHDIR += $$LIBPATH
 
 #DESTDIR = $$LIBPATH

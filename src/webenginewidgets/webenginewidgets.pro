@@ -13,14 +13,17 @@ QT += widgets
 QT_PRIVATE += widgets-private gui-private core-private
 
 # FIXME: all this should eventually be turned into QT += webenginecore
-macx:LIBPATH = $$getOutDir()/$$getConfigDir()
+macx|win32:LIBPATH = $$getOutDir()/$$getConfigDir()
 else:LIBPATH = $$getOutDir()/$$getConfigDir()/lib
-LIBS_PRIVATE += -L$$LIBPATH -lQt5WebEngineCore
+
+win32:LIBS_PRIVATE += -L$$LIBPATH -lQt5WebEngineCore.dll
+else:LIBS_PRIVATE += -L$$LIBPATH -lQt5WebEngineCore
+
 QMAKE_RPATHDIR += $$LIBPATH
 
 DESTDIR = $$LIBPATH
 
-INCLUDEPATH += api ../core
+INCLUDEPATH += $$PWD api ../core
 
 SOURCES = \
         api/qwebenginehistory.cpp \
