@@ -250,7 +250,7 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     Q_Q(QWebEnginePage);
     QWebEnginePage *newPage = q->createWindow(disposition == WebContentsAdapterClient::NewPopupDisposition ? QWebEnginePage::WebModalDialog : QWebEnginePage::WebBrowserWindow);
     // Overwrite the new page's WebContents with ours.
-    if (newPage) {
+    if (newPage && newpage->d_func() != this) {
         newPage->d_func()->adapter = newWebContents;
         newPage->history()->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
