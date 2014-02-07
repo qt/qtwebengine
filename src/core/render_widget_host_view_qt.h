@@ -180,6 +180,7 @@ public:
     void handleTouchEvent(QTouchEvent*);
     void handleHoverEvent(QHoverEvent*);
     void handleFocusEvent(QFocusEvent*);
+    void handleInputMethodEvent(QInputMethodEvent*);
 
 #if defined(OS_MACOSX)
     virtual void SetTakesFocusOnlyOnMouseDown(bool flag) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
