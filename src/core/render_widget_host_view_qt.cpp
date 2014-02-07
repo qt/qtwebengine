@@ -62,6 +62,7 @@
 #include <QEvent>
 #include <QFocusEvent>
 #include <QGuiApplication>
+#include <QInputMethodEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QScreen>
@@ -703,6 +704,9 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
     case QEvent::FocusOut:
         handleFocusEvent(static_cast<QFocusEvent*>(event));
         break;
+    case QEvent::InputMethod:
+        handleInputMethodEvent(static_cast<QInputMethodEvent*>(event));
+        break;
     default:
         return false;
     }
@@ -848,6 +852,22 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 {
     m_host->ForwardKeyboardEvent(WebEventFactory::toWebKeyboardEvent(ev));
+}
+
+void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
+{
+    if (!m_host)
+        return;
+
+    if (ev->commitString().length())
+        m_host->ImeConfirmComposition(toString16(ev->commitString()), gfx::Range::InvalidRange(), false);
+
+    if (ev->preeditString().length()) {
+        // FIXME: Implement translation from QInputMethodEvent::Attribute list to WebKit::WebCompositionUnderlines.
+        std::vector<WebKit::WebCompositionUnderline> underlines;
+        int start = ev->replacementStart();
+        m_host->ImeSetComposition(toString16(ev->preeditString()), underlines, start, start + ev->replacementLength());
+    }
 }
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
