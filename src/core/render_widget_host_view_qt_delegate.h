@@ -55,6 +55,7 @@ class QQuickWindow;
 class QSGNode;
 class QVariant;
 class QWindow;
+class QInputMethodEvent;
 QT_END_NAMESPACE
 
 class WebContentsAdapterClient;
