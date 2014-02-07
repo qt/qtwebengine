@@ -202,6 +202,11 @@ public:
         return m_client->inputMethodQuery(query);
     }
 
+    virtual void inputMethodEvent(QInputMethodEvent *event) Q_DECL_OVERRIDE
+    {
+        m_client->forwardEvent(event);
+    }
+
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
     {
