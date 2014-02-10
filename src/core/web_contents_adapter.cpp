@@ -59,6 +59,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "ui/shell_dialogs/selected_file_info.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #include <QDir>
 #include <QGuiApplication>
@@ -173,6 +174,7 @@ public:
     scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
     WebContentsAdapterClient *adapterClient;
     quint64 lastRequestId;
+    QString lastSearchedString;
 };
 
 WebContentsAdapterPrivate::WebContentsAdapterPrivate(WebContentsAdapterClient::RenderingMode renderingMode)
@@ -427,6 +429,29 @@ quint64 WebContentsAdapter::fetchDocumentInnerText()
     Q_D(WebContentsAdapter);
     d->renderViewObserverHost->fetchDocumentInnerText(++d->lastRequestId);
     return d->lastRequestId;
+}
+
+quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitively, bool findBackward)
+{
+    Q_D(WebContentsAdapter);
+    WebKit::WebFindOptions options;
+    options.forward = !findBackward;
+    options.matchCase = caseSensitively;
+    options.findNext = subString == d->lastSearchedString;
+    d->lastSearchedString = subString;
+
+    // Find already allows a request ID as input, but only as an int.
+    // Use the same counter but mod it to MAX_INT, this keeps the same likeliness of request ID clashing.
+    int shrunkRequestId = ++d->lastRequestId & 0x7fffffff;
+    d->webContents->GetRenderViewHost()->Find(shrunkRequestId, toString16(subString), options);
+    return shrunkRequestId;
+}
+
+void WebContentsAdapter::stopFinding()
+{
+    Q_D(WebContentsAdapter);
+    d->lastSearchedString = QString();
+    d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_CLEAR_SELECTION);
 }
 
 void WebContentsAdapter::wasShown()

@@ -77,6 +77,7 @@ public:
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
     virtual void RunFileChooser(content::WebContents *, const content::FileChooserParams &params) Q_DECL_OVERRIDE;
     virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const string16& message, int32 line_no, const string16& source_id) Q_DECL_OVERRIDE;
+    virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;

@@ -105,7 +105,7 @@ public:
     void setRenderHints(QPainter::RenderHints hints);
     void setRenderHint(QPainter::RenderHint hint, bool enabled = true);
 
-    bool findText(const QString& subString, QWebEnginePage::FindFlags options = 0);
+    void findText(const QString &subString, QWebEnginePage::FindFlags options = 0, const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 
     virtual QSize sizeHint() const { return QSize(800, 600); }
 

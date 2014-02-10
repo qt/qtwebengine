@@ -57,6 +57,9 @@ CallbackDirectory::~CallbackDirectory()
         case CallbackSharedDataPointer::String:
             (*sharedPtr.stringCallback)(QString());
             break;
+        case CallbackSharedDataPointer::Bool:
+            (*sharedPtr.boolCallback)(false);
+            break;
         default:
             Q_UNREACHABLE();
         }
@@ -69,6 +72,11 @@ void CallbackDirectory::registerCallback(quint64 requestId, const QExplicitlySha
 }
 
 void CallbackDirectory::registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<StringCallback> &callback)
+{
+    m_callbackMap.insert(requestId, CallbackSharedDataPointer(callback.data()));
+}
+
+void CallbackDirectory::registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<BoolCallback> &callback)
 {
     m_callbackMap.insert(requestId, CallbackSharedDataPointer(callback.data()));
 }
@@ -91,6 +99,15 @@ void CallbackDirectory::invoke(quint64 requestId, const QString &result)
     }
 }
 
+void CallbackDirectory::invoke(quint64 requestId, bool result)
+{
+    CallbackSharedDataPointer sharedPtr = m_callbackMap.take(requestId);
+    if (sharedPtr) {
+        Q_ASSERT(sharedPtr.type == CallbackSharedDataPointer::Bool);
+        (*sharedPtr.boolCallback)(result);
+    }
+}
+
 void CallbackDirectory::CallbackSharedDataPointer::doRef()
 {
     switch (type) {
@@ -101,6 +118,9 @@ void CallbackDirectory::CallbackSharedDataPointer::doRef()
         break;
     case String:
         stringCallback->ref.ref();
+        break;
+    case Bool:
+        boolCallback->ref.ref();
         break;
     }
 }
@@ -117,6 +137,10 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
     case String:
         if (!stringCallback->ref.deref())
             delete stringCallback;
+        break;
+    case Bool:
+        if (!boolCallback->ref.deref())
+            delete boolCallback;
         break;
     }
 }
@@ -249,6 +273,11 @@ void QWebEnginePagePrivate::didFetchDocumentMarkup(quint64 requestId, const QStr
 void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const QString& result)
 {
     m_callbacks.invoke(requestId, result);
+}
+
+void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
+{
+    m_callbacks.invoke(requestId, matchCount > 0);
 }
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
@@ -411,6 +440,20 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     default:
         Q_UNREACHABLE();
+    }
+}
+
+void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
+{
+    Q_D(QWebEnginePage);
+    if (subString.isEmpty()) {
+        d->adapter->stopFinding();
+        if (resultCallback.d)
+            (*resultCallback.d)(false);
+    } else {
+        quint64 requestId = d->adapter->findText(subString, options & FindCaseSensitively, options & FindBackward);
+        if (resultCallback.d)
+            d->m_callbacks.registerCallback(requestId, resultCallback.d);
     }
 }
 
