@@ -184,6 +184,12 @@ void QWebEnginePagePrivate::loadProgressChanged(int progress)
     Q_EMIT q->loadProgress(progress);
 }
 
+void QWebEnginePagePrivate::selectionChanged()
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->selectionChanged();
+}
+
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
     return view ? view->geometry() : QRectF();
@@ -327,6 +333,17 @@ QWidget *QWebEnginePage::view() const
 {
     Q_D(const QWebEnginePage);
     return d->view;
+}
+
+bool QWebEnginePage::hasSelection() const
+{
+    return !selectedText().isEmpty();
+}
+
+QString QWebEnginePage::selectedText() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->selectedText();
 }
 
 #ifndef QT_NO_ACTION
