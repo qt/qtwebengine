@@ -62,27 +62,33 @@ class CallbackDirectory {
 public:
     typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;
     typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QString&> StringCallback;
+    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<bool> BoolCallback;
 
     ~CallbackDirectory();
     void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<VariantCallback> &callback);
     void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<StringCallback> &callback);
+    void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<BoolCallback> &callback);
     void invoke(quint64 requestId, const QVariant &result);
     void invoke(quint64 requestId, const QString &result);
+    void invoke(quint64 requestId, bool result);
 
 private:
     struct CallbackSharedDataPointer {
         enum {
             None,
             Variant,
-            String
+            String,
+            Bool
         } type;
         union {
             VariantCallback *variantCallback;
             StringCallback *stringCallback;
+            BoolCallback *boolCallback;
         };
         CallbackSharedDataPointer() : type(None) { }
         CallbackSharedDataPointer(VariantCallback *callback) : type(Variant), variantCallback(callback) { callback->ref.ref(); }
         CallbackSharedDataPointer(StringCallback *callback) : type(String), stringCallback(callback) { callback->ref.ref(); }
+        CallbackSharedDataPointer(BoolCallback *callback) : type(Bool), boolCallback(callback) { callback->ref.ref(); }
         CallbackSharedDataPointer(const CallbackSharedDataPointer &other) : type(other.type), variantCallback(other.variantCallback) { doRef(); }
         ~CallbackSharedDataPointer() { doDeref(); }
         operator bool () const { return type != None; }
@@ -125,8 +131,8 @@ public:
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
+    virtual void didFindText(quint64 requestId, int matchCount) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE { };
-
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;

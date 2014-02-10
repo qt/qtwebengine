@@ -89,6 +89,8 @@ public:
     quint64 runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath);
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
+    quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
+    void stopFinding();
 
     void wasShown();
     void wasHidden();

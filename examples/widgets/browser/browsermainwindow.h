@@ -137,6 +137,7 @@ private:
     void setupMenu();
     void setupToolBar();
     void updateStatusbarActionText(bool visible);
+    void handleFindTextResult(bool found);
 
 private:
     QToolBar *m_navigationBar;
