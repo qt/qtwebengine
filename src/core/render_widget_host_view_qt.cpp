@@ -624,6 +624,12 @@ void RenderWidgetHostViewQt::OnAccessibilityEvents(const std::vector<Accessibili
     QT_NOT_USED
 }
 
+void RenderWidgetHostViewQt::SelectionChanged(const string16 &text, size_t offset, const gfx::Range &range)
+{
+    content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
+    m_adapterClient->selectionChanged();
+}
+
 bool RenderWidgetHostViewQt::DispatchLongPressGestureEvent(ui::GestureEvent *)
 {
     return false;

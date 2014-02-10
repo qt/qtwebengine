@@ -71,6 +71,7 @@ public:
     QUrl activeUrl() const;
     QUrl requestedUrl() const;
     QString pageTitle() const;
+    QString selectedText() const;
 
     void navigateToIndex(int);
     void navigateToOffset(int);
