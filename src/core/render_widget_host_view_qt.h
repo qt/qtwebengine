@@ -161,6 +161,9 @@ public:
     virtual void OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams>&) Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
 
+    // Overridden from RenderWidgetHostViewBase.
+    virtual void SelectionChanged(const string16 &text, size_t offset, const gfx::Range &range) OVERRIDE;
+
     // Overridden from ui::GestureEventHelper.
     virtual bool DispatchLongPressGestureEvent(ui::GestureEvent *event) Q_DECL_OVERRIDE;
     virtual bool DispatchCancelTouchEvent(ui::TouchEvent *event) Q_DECL_OVERRIDE;

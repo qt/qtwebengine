@@ -80,6 +80,7 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
         QObject::connect(page, &QWebEnginePage::loadStarted, view, &QWebEngineView::loadStarted);
         QObject::connect(page, &QWebEnginePage::loadProgress, view, &QWebEngineView::loadProgress);
         QObject::connect(page, &QWebEnginePage::loadFinished, view, &QWebEngineView::loadFinished);
+        QObject::connect(page, &QWebEnginePage::selectionChanged, view, &QWebEngineView::selectionChanged);
     }
 }
 
@@ -152,6 +153,16 @@ void QWebEngineView::setUrl(const QUrl &url)
 QUrl QWebEngineView::url() const
 {
     return page()->url();
+}
+
+bool QWebEngineView::hasSelection() const
+{
+    return page()->hasSelection();
+}
+
+QString QWebEngineView::selectedText() const
+{
+    return page()->selectedText();
 }
 
 #ifndef QT_NO_ACTION

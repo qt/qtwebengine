@@ -319,6 +319,12 @@ QString WebContentsAdapter::pageTitle() const
     return entry ? toQt(entry->GetTitle()) : QString();
 }
 
+QString WebContentsAdapter::selectedText() const
+{
+    Q_D(const WebContentsAdapter);
+    return toQt(d->webContents->GetRenderViewHost()->GetView()->GetSelectedText());
+}
+
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     Q_D(WebContentsAdapter);

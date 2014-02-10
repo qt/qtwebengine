@@ -2900,9 +2900,6 @@ void tst_QWebEnginePage::userAgentNewlineStripping()
 
 void tst_QWebEnginePage::crashTests_LazyInitializationOfMainFrame()
 {
-#if !defined(QWEBENGINEPAGE_SELECTEDTEXT)
-    QSKIP("QWEBENGINEPAGE_SELECTEDTEXT");
-#else
     {
         QWebEnginePage webPage;
     }
@@ -2911,19 +2908,22 @@ void tst_QWebEnginePage::crashTests_LazyInitializationOfMainFrame()
         webPage.selectedText();
     }
     {
+#if defined(QWEBENGINEPAGE_SELECTEDHTML)
         QWebEnginePage webPage;
         webPage.selectedHtml();
+#endif
     }
     {
         QWebEnginePage webPage;
         webPage.triggerAction(QWebEnginePage::Back, true);
     }
     {
+#if defined(QWEBENGINEPAGE_UPDATEPOSITIONDEPENDENTACTIONS)
         QWebEnginePage webPage;
         QPoint pos(10,10);
         webPage.updatePositionDependentActions(pos);
-    }
 #endif
+    }
 }
 
 #if defined(QWEBENGINEPAGE_RENDER)

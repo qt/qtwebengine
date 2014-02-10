@@ -121,6 +121,7 @@ public:
     virtual void iconChanged(const QUrl&) = 0;
     virtual void loadingStateChanged() = 0;
     virtual void loadProgressChanged(int progress) = 0;
+    virtual void selectionChanged() = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) = 0;
