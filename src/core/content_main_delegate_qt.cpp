@@ -44,7 +44,6 @@
 #include "base/path_service.h"
 #include "content/public/common/content_paths.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "grit/net_resources.h"
 #include "net/base/net_module.h"
@@ -64,7 +63,11 @@ static base::StringPiece PlatformResourceProvider(int key) {
 void ContentMainDelegateQt::PreSandboxStartup()
 {
     // Register the Qt path provider which handles necessary paths for base, ui and content.
-    PathService::RegisterProvider(WebEngineLibraryInfo::pathProviderQt, base::PATH_START, content::PATH_END);
+    // The key range is only used in debug builds where chromium asserts that the range does
+    // not collide with already registered path providers.
+    // To be able to use the mechanism to override paths and not to assert in debug we specify
+    // an unused range of [-1, 0).
+    PathService::RegisterProvider(WebEngineLibraryInfo::pathProviderQt, -1, 0);
 
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);
