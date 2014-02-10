@@ -325,7 +325,6 @@ void BrowserMainWindow::setupMenu()
     m_tabWidget->addWebAction(m_paste, QWebEnginePage::Paste);
     editMenu->addSeparator();
 
-#if defined(QWEBENGINEPAGE_FINDTEXT)
     QAction *m_find = editMenu->addAction(tr("&Find"));
     m_find->setShortcuts(QKeySequence::Find);
     connect(m_find, SIGNAL(triggered()), this, SLOT(slotEditFind()));
@@ -339,7 +338,6 @@ void BrowserMainWindow::setupMenu()
     m_findPrevious->setShortcuts(QKeySequence::FindPrevious);
     connect(m_findPrevious, SIGNAL(triggered()), this, SLOT(slotEditFindPrevious()));
     editMenu->addSeparator();
-#endif
 
     editMenu->addAction(tr("&Preferences"), this, SLOT(slotPreferences()), tr("Ctrl+,"));
 
@@ -557,6 +555,12 @@ void BrowserMainWindow::updateStatusbarActionText(bool visible)
     m_viewStatusbar->setText(!visible ? tr("Show Status Bar") : tr("Hide Status Bar"));
 }
 
+void BrowserMainWindow::handleFindTextResult(bool found)
+{
+    if (!found)
+        slotUpdateStatusbar(tr("\"%1\" not found.").arg(m_lastSearch));
+}
+
 void BrowserMainWindow::updateToolbarActionText(bool visible)
 {
     m_viewToolbar->setText(!visible ? tr("Show Toolbar") : tr("Hide Toolbar"));
@@ -746,7 +750,6 @@ void BrowserMainWindow::closeEvent(QCloseEvent *event)
 
 void BrowserMainWindow::slotEditFind()
 {
-#if defined(QWEBENGINEPAGE_FINDTEXT)
     if (!currentTab())
         return;
     bool ok;
@@ -755,28 +758,22 @@ void BrowserMainWindow::slotEditFind()
                                           m_lastSearch, &ok);
     if (ok && !search.isEmpty()) {
         m_lastSearch = search;
-        if (!currentTab()->findText(m_lastSearch))
-            slotUpdateStatusbar(tr("\"%1\" not found.").arg(m_lastSearch));
+        currentTab()->findText(m_lastSearch, 0, invoke(this, &BrowserMainWindow::handleFindTextResult));
     }
-#endif
 }
 
 void BrowserMainWindow::slotEditFindNext()
 {
-#if defined(QWEBENGINEPAGE_FINDTEXT)
     if (!currentTab() && !m_lastSearch.isEmpty())
         return;
     currentTab()->findText(m_lastSearch);
-#endif
 }
 
 void BrowserMainWindow::slotEditFindPrevious()
 {
-#if defined(QWEBENGINEPAGE_FINDTEXT)
     if (!currentTab() && !m_lastSearch.isEmpty())
         return;
     currentTab()->findText(m_lastSearch, QWebEnginePage::FindBackward);
-#endif
 }
 
 void BrowserMainWindow::slotViewZoomIn()

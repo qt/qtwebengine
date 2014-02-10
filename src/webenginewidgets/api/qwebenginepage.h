@@ -76,6 +76,7 @@ class QWebEngineCallback {
 public:
     template <typename F>
     QWebEngineCallback(F f) : d(new QtWebEnginePrivate::QWebEngineCallbackPrivate<T, F>(f)) { }
+    QWebEngineCallback() { }
 private:
     QExplicitlySharedDataPointer<QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> > d;
     friend class QWebEnginePage;
@@ -249,8 +250,6 @@ public:
     enum FindFlag {
         FindBackward = 1,
         FindCaseSensitively = 2,
-        FindWrapsAroundDocument = 4,
-        HighlightAllOccurrences = 8
     };
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
@@ -368,7 +367,7 @@ public:
 
     QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
 
-    bool findText(const QString &subString, FindFlags options = 0);
+    void findText(const QString &subString, FindFlags options = 0, const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 
     void setForwardUnsupportedContent(bool forward);
     bool forwardUnsupportedContent() const;

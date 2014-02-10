@@ -166,3 +166,12 @@ bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, in
     m_viewClient->javaScriptConsoleMessage(static_cast<int>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
     return false;
 }
+
+void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update)
+{
+    Q_UNUSED(source)
+    Q_UNUSED(selection_rect)
+    Q_UNUSED(active_match_ordinal)
+    if (final_update)
+        m_viewClient->didFindText(request_id, number_of_matches);
+}
