@@ -37,7 +37,7 @@
       'target_defaults': {
         'target_conditions': [
           ['_toolset=="target"', {
-            'ldflags!': ['-L/usr/lib'], # garbage added by icu-config
+            'ldflags!': ['<!@(icu-config --ldflags)'], # remove garbage added by icu.gyp
             'defines': [
               'GL_GLEXT_PROTOTYPES',
               'EGL_EGLEXT_PROTOTYPES',
