@@ -58,6 +58,43 @@ class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEngineView;
 
+class CallbackDirectory {
+public:
+    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;
+    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QString&> StringCallback;
+
+    ~CallbackDirectory();
+    void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<VariantCallback> &callback);
+    void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<StringCallback> &callback);
+    void call(quint64 requestId, const QVariant &result);
+    void call(quint64 requestId, const QString &result);
+
+private:
+    struct CallbackSharedDataPointer {
+        enum {
+            None,
+            Variant,
+            String
+        } type;
+        union {
+            VariantCallback *variantCallback;
+            StringCallback *stringCallback;
+        };
+        CallbackSharedDataPointer() : type(None) { }
+        CallbackSharedDataPointer(VariantCallback *callback) : type(Variant), variantCallback(callback) { callback->ref.ref(); }
+        CallbackSharedDataPointer(StringCallback *callback) : type(String), stringCallback(callback) { callback->ref.ref(); }
+        CallbackSharedDataPointer(const CallbackSharedDataPointer &other) : type(other.type), variantCallback(other.variantCallback) { doRef(); }
+        ~CallbackSharedDataPointer() { doDeref(); }
+        operator bool () const { return type != None; }
+
+    private:
+        void doRef();
+        void doDeref();
+    };
+
+    QHash<quint64, CallbackSharedDataPointer> m_callbackMap;
+};
+
 class QWebEnginePagePrivate : public QObjectPrivate, public WebContentsAdapterClient
 {
 public:
@@ -104,10 +141,7 @@ public:
     WebEngineContextMenuData m_menuData;
     QPointer<RenderWidgetHostViewQtDelegateWebPage> m_rwhvDelegate;
 
-    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;
-    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QString&> StringCallback;
-    mutable QHash<quint64, QExplicitlySharedDataPointer<VariantCallback> > m_variantCallbacks;
-    mutable QHash<quint64, QExplicitlySharedDataPointer<StringCallback> > m_stringCallbacks;
+    mutable CallbackDirectory m_callbacks;
 };
 
 QT_END_NAMESPACE
