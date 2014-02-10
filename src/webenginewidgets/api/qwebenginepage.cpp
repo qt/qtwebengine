@@ -45,6 +45,82 @@
 
 QT_BEGIN_NAMESPACE
 
+CallbackDirectory::~CallbackDirectory()
+{
+    // "Cancel" pending callbacks by calling them with an invalid value.
+    // This guarantees that each callback is called exactly once.
+    Q_FOREACH (const CallbackSharedDataPointer &sharedPtr, m_callbackMap) {
+        switch (sharedPtr.type) {
+        case CallbackSharedDataPointer::Variant:
+            (*sharedPtr.variantCallback)(QVariant());
+            break;
+        case CallbackSharedDataPointer::String:
+            (*sharedPtr.stringCallback)(QString());
+            break;
+        default:
+            Q_UNREACHABLE();
+        }
+    }
+}
+
+void CallbackDirectory::registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<VariantCallback> &callback)
+{
+    m_callbackMap.insert(requestId, CallbackSharedDataPointer(callback.data()));
+}
+
+void CallbackDirectory::registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<StringCallback> &callback)
+{
+    m_callbackMap.insert(requestId, CallbackSharedDataPointer(callback.data()));
+}
+
+void CallbackDirectory::invoke(quint64 requestId, const QVariant &result)
+{
+    CallbackSharedDataPointer sharedPtr = m_callbackMap.take(requestId);
+    if (sharedPtr) {
+        Q_ASSERT(sharedPtr.type == CallbackSharedDataPointer::Variant);
+        (*sharedPtr.variantCallback)(result);
+    }
+}
+
+void CallbackDirectory::invoke(quint64 requestId, const QString &result)
+{
+    CallbackSharedDataPointer sharedPtr = m_callbackMap.take(requestId);
+    if (sharedPtr) {
+        Q_ASSERT(sharedPtr.type == CallbackSharedDataPointer::String);
+        (*sharedPtr.stringCallback)(result);
+    }
+}
+
+void CallbackDirectory::CallbackSharedDataPointer::doRef()
+{
+    switch (type) {
+    case None:
+        break;
+    case Variant:
+        variantCallback->ref.ref();
+        break;
+    case String:
+        stringCallback->ref.ref();
+        break;
+    }
+}
+
+void CallbackDirectory::CallbackSharedDataPointer::doDeref()
+{
+    switch (type) {
+    case None:
+        break;
+    case Variant:
+        if (!variantCallback->ref.deref())
+            delete variantCallback;
+        break;
+    case String:
+        if (!stringCallback->ref.deref())
+            delete stringCallback;
+        break;
+    }
+}
+
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
     , adapter(new WebContentsAdapter(SoftwareRenderingMode))
@@ -57,15 +133,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
 
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
-    // "Cancel" pending callbacks by calling them with an invalid value.
-    // This guarantees that each callback is called exactly once.
-    Q_FOREACH (QExplicitlySharedDataPointer<VariantCallback> callback, m_variantCallbacks)
-        (*callback)(QVariant());
-    m_variantCallbacks.clear();
-    Q_FOREACH (QExplicitlySharedDataPointer<StringCallback> callback, m_stringCallbacks)
-        (*callback)(QString());
-    m_stringCallbacks.clear();
-
     delete history;
 }
 
@@ -165,20 +232,17 @@ void QWebEnginePagePrivate::close()
 
 void QWebEnginePagePrivate::didRunJavaScript(quint64 requestId, const QVariant& result)
 {
-    if (QExplicitlySharedDataPointer<VariantCallback> callback = m_variantCallbacks.take(requestId))
-        (*callback)(result);
+    m_callbacks.invoke(requestId, result);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentMarkup(quint64 requestId, const QString& result)
 {
-    if (QExplicitlySharedDataPointer<StringCallback> callback = m_stringCallbacks.take(requestId))
-        (*callback)(result);
+    m_callbacks.invoke(requestId, result);
 }
 
 void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const QString& result)
 {
-    if (QExplicitlySharedDataPointer<StringCallback> callback = m_stringCallbacks.take(requestId))
-        (*callback)(result);
+    m_callbacks.invoke(requestId, result);
 }
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
@@ -512,14 +576,14 @@ void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCal
 {
     Q_D(const QWebEnginePage);
     quint64 requestId = d->adapter->fetchDocumentMarkup();
-    d->m_stringCallbacks.insert(requestId, resultCallback.d);
+    d->m_callbacks.registerCallback(requestId, resultCallback.d);
 }
 
 void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
 {
     Q_D(const QWebEnginePage);
     quint64 requestId = d->adapter->fetchDocumentInnerText();
-    d->m_stringCallbacks.insert(requestId, resultCallback.d);
+    d->m_callbacks.registerCallback(requestId, resultCallback.d);
 }
 
 void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)
@@ -611,7 +675,7 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngine
 {
     Q_D(QWebEnginePage);
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, xPath);
-    d->m_variantCallbacks.insert(requestId, resultCallback.d);
+    d->m_callbacks.registerCallback(requestId, resultCallback.d);
 }
 
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
