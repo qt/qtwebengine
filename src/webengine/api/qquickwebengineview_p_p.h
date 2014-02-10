@@ -141,6 +141,7 @@ public:
     virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentMarkup(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
+    virtual void didFindText(quint64, int) Q_DECL_OVERRIDE { }
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
 

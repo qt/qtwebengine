@@ -173,6 +173,7 @@ private Q_SLOTS:
     void showModalDialog();
     void testStopScheduledPageRefresh();
     void findText();
+    void findTextResult();
     void supportedContentType();
     // [Qt] tst_QWebEnginePage::infiniteLoopJS() timeouts with DFG JIT
     // https://bugs.webkit.org/show_bug.cgi?id=79040
@@ -3187,26 +3188,53 @@ void tst_QWebEnginePage::testStopScheduledPageRefresh()
 
 void tst_QWebEnginePage::findText()
 {
-#if !defined(QWEBENGINEPAGE_FINDTEXT)
-    QSKIP("QWEBENGINEPAGE_FINDTEXT");
-#else
     m_view->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
+#if defined(QWEBENGINEPAGE_TRIGGERACTION_SELECTALL)
     m_page->triggerAction(QWebEnginePage::SelectAll);
     QVERIFY(!m_page->selectedText().isEmpty());
     QVERIFY(!m_page->selectedHtml().isEmpty());
+#endif
     m_page->findText("");
     QVERIFY(m_page->selectedText().isEmpty());
+#if defined(QWEBENGINEPAGE_SELECTEDHTML)
     QVERIFY(m_page->selectedHtml().isEmpty());
+#endif
     QStringList words = (QStringList() << "foo" << "bar");
     foreach (QString subString, words) {
-        m_page->findText(subString, QWebEnginePage::FindWrapsAroundDocument);
+        m_page->findText(subString);
+        QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
         QCOMPARE(m_page->selectedText(), subString);
+#if defined(QWEBENGINEPAGE_SELECTEDHTML)
         QVERIFY(m_page->selectedHtml().contains(subString));
+#endif
         m_page->findText("");
         QVERIFY(m_page->selectedText().isEmpty());
+#if defined(QWEBENGINEPAGE_SELECTEDHTML)
         QVERIFY(m_page->selectedHtml().isEmpty());
-    }
 #endif
+    }
+}
+
+void tst_QWebEnginePage::findTextResult()
+{
+    // findText will abort in blink if the view has an empty size.
+    m_view->resize(800, 600);
+    m_view->show();
+
+    QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
+    m_view->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QCOMPARE(findTextSync(m_page, ""), false);
+
+    QStringList words = (QStringList() << "foo" << "bar");
+    foreach (QString subString, words) {
+        QCOMPARE(findTextSync(m_page, subString), true);
+        QCOMPARE(findTextSync(m_page, ""), false);
+    }
+
+    QCOMPARE(findTextSync(m_page, "blahhh"), false);
+    QCOMPARE(findTextSync(m_page, ""), false);
 }
 
 static QString getMimeTypeForExtension(const QString &ext)

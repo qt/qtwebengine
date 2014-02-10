@@ -142,6 +142,13 @@ static inline QString toHtmlSync(QWebEnginePage *page)
     return spy.waitForResult();
 }
 
+static inline bool findTextSync(QWebEnginePage *page, const QString &subString)
+{
+    CallbackSpy<bool> spy;
+    page->findText(subString, 0, spy.ref());
+    return spy.waitForResult();
+}
+
 static inline QVariant evaluateJavaScriptSync(QWebEnginePage *page, const QString &script)
 {
     CallbackSpy<QVariant> spy;
