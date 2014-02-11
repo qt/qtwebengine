@@ -1,6 +1,7 @@
 include(../tests.pri)
 
 QT += webengine qmltest
+QT_PRIVATE += quick-private
 
 IMPORTPATH += $$PWD/data
 

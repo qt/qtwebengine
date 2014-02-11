@@ -50,6 +50,9 @@
 #include <QtGui/QGuiApplication>
 #endif
 
+#include "qopenglcontext.h"
+#include <QtQuick/private/qsgcontext_p.h>
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QUICK_TEST_SOURCE_DIR
@@ -69,6 +72,9 @@ QT_BEGIN_NAMESPACE
         qputenv("QTWEBENGINEPROCESS_PATH", QWP_PATH); \
         if (!QCoreApplication::instance()) \
             app = new Application(argc, argv); \
+        QOpenGLContext shareContext; \
+        shareContext.create(); \
+        QSGContext::setSharedOpenGLContext(&shareContext); \
         int i = quick_test_main(argc, argv, #name, QUICK_TEST_SOURCE_DIR); \
         delete app; \
         return i; \
