@@ -50,6 +50,11 @@
 #include <QtGui/QGuiApplication>
 #endif
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+#include "qopenglcontext.h"
+#include <QtQuick/private/qsgcontext_p.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QUICK_TEST_SOURCE_DIR
@@ -62,6 +67,18 @@ QT_BEGIN_NAMESPACE
 #define Application QGuiApplication
 #endif
 
+void initSceneGraphContextTrick()
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
+    // This is currently needed by all QtWebEngine application using the HW accelerated QQuickWebView.
+    // It enables sharing between the QOpenGLContext of all QQuickWindows of the application.
+    // We have to do so until we expose a public API for it, or chose enable it by default in Qt 5.3.0.
+    static QOpenGLContext *shareContext = new QOpenGLContext;
+    shareContext->create();
+    QSGContext::setSharedOpenGLContext(shareContext);
+#endif
+}
+
 #define QT_WEBENGINE_TEST_MAIN(name) \
     int main(int argc, char **argv) \
     { \
@@ -69,6 +86,7 @@ QT_BEGIN_NAMESPACE
         qputenv("QTWEBENGINEPROCESS_PATH", QWP_PATH); \
         if (!QCoreApplication::instance()) \
             app = new Application(argc, argv); \
+        initSceneGraphContextTrick(); \
         int i = quick_test_main(argc, argv, #name, QUICK_TEST_SOURCE_DIR); \
         delete app; \
         return i; \
