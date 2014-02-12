@@ -132,9 +132,9 @@ public:
     virtual bool isFullScreen() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) = 0;
-    virtual void didRunJavaScript(const QVariant& result, quint64 requestId) = 0;
-    virtual void didFetchDocumentMarkup(const QString& result, quint64 requestId) = 0;
-    virtual void didFetchDocumentInnerText(const QString& result, quint64 requestId) = 0;
+    virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;
+    virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
+    virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
     virtual void passOnFocus(bool reverse) = 0;
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) = 0;
 };

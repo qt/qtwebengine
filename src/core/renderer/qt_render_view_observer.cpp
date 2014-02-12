@@ -58,16 +58,16 @@ void QtRenderViewObserver::onFetchDocumentMarkup(quint64 requestId)
 {
     Send(new QtRenderViewObserverHost_DidFetchDocumentMarkup(
         routing_id(),
-        render_view()->GetWebView()->mainFrame()->document().createMarkup(),
-        requestId));
+        requestId,
+        render_view()->GetWebView()->mainFrame()->document().createMarkup()));
 }
 
 void QtRenderViewObserver::onFetchDocumentInnerText(quint64 requestId)
 {
     Send(new QtRenderViewObserverHost_DidFetchDocumentInnerText(
         routing_id(),
-        render_view()->GetWebView()->mainFrame()->document().documentElement().innerText(),
-        requestId));
+        requestId,
+        render_view()->GetWebView()->mainFrame()->document().documentElement().innerText()));
 }
 
 bool QtRenderViewObserver::OnMessageReceived(const IPC::Message& message)
