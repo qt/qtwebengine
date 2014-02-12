@@ -56,12 +56,18 @@ template<typename ItemBaseT>
 class RenderWidgetHostViewQtDelegateQuickBase : public ItemBaseT, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegateQuickBase(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0)
-        : ItemBaseT(parent)
-        , m_client(client)
+    RenderWidgetHostViewQtDelegateQuickBase(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
+        : m_client(client)
+        , m_isPopup(isPopup)
+        , m_initialized(false)
     {
         this->setAcceptedMouseButtons(Qt::AllButtons);
         this->setAcceptHoverEvents(true);
+        if (isPopup)
+            return;
+        this->setFocus(true);
+        this->setActiveFocusOnTab(true);
+        this->setFlag(QQuickItem::ItemIsFocusScope);
     }
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE
@@ -69,15 +75,19 @@ public:
         QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
         this->setParentItem(viewPrivate->q_func());
         this->setSize(viewPrivate->q_func()->boundingRect().size());
+        m_initialized = true;
     }
 
-    virtual void initAsPopup(const QRect& rect) Q_DECL_OVERRIDE
+    virtual void initAsPopup(const QRect &r) Q_DECL_OVERRIDE
     {
+        Q_ASSERT(m_isPopup && this->parentItem());
+        QRectF rect(this->parentItem()->mapRectFromScene(r));
         this->setX(rect.x());
         this->setY(rect.y());
         this->setWidth(rect.width());
         this->setHeight(rect.height());
         this->setVisible(true);
+        m_initialized = true;
     }
 
     virtual QRectF screenRect() const Q_DECL_OVERRIDE
@@ -145,7 +155,8 @@ public:
 
     void mousePressEvent(QMouseEvent *event)
     {
-        this->forceActiveFocus();
+        if (!m_isPopup)
+            this->forceActiveFocus();
         m_client->forwardEvent(event);
     }
 
@@ -219,13 +230,15 @@ protected:
     }
 
     RenderWidgetHostViewQtDelegateClient *m_client;
+    bool m_isPopup;
+    bool m_initialized;
 };
 
 class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
 
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
     virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
@@ -238,7 +251,7 @@ class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQt
 {
     Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0);
+    RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
 
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
 

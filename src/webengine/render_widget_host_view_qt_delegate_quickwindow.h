@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,56 +39,46 @@
 **
 ****************************************************************************/
 
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
+
+#include "render_widget_host_view_qt_delegate.h"
+
 #include "render_widget_host_view_qt_delegate_quick.h"
 
-RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
-    : RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>(client, isPopup)
-{
-    setFlag(ItemHasContents);
-}
+#include <QQuickWindow>
+#include <QScopedPointer>
 
-void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
-{
-    QQuickItem::update();
-}
+class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public RenderWidgetHostViewQtDelegate {
 
-bool RenderWidgetHostViewQtDelegateQuick::supportsHardwareAcceleration() const
-{
-    return true;
-}
+public:
+    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate, QQuickItem *parent);
+    ~RenderWidgetHostViewQtDelegateQuickWindow();
 
-void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
-{
-    QQuickItem::itemChange(change, value);
-    if (m_initialized  && change == QQuickItem::ItemSceneChange)
-        m_client->windowChanged();
-}
+    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
+    virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
+    virtual QRectF screenRect() const Q_DECL_OVERRIDE;
+    virtual void setKeyboardFocus() Q_DECL_OVERRIDE {}
+    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE { return false; }
+    virtual void show() Q_DECL_OVERRIDE;
+    virtual void hide() Q_DECL_OVERRIDE;
+    virtual bool isVisible() const Q_DECL_OVERRIDE;
+    virtual QWindow* window() const Q_DECL_OVERRIDE;
+    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
+    virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
+    virtual void resize(int width, int height) Q_DECL_OVERRIDE;
+    virtual void move(const QPoint &) Q_DECL_OVERRIDE;
+    virtual void inputMethodStateChanged(bool) Q_DECL_OVERRIDE {}
+    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE
+    {
+        return m_realDelegate->supportsHardwareAcceleration();
+    }
+    virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
 
-QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
-{
-    return m_client->updatePaintNode(oldNode, QQuickItem::window());
-}
 
-RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
-    : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(client, isPopup)
-{
-}
+private:
+    QScopedPointer<RenderWidgetHostViewQtDelegate> m_realDelegate;
+    QQuickItem *m_parentView;
+};
 
-void RenderWidgetHostViewQtDelegateQuickPainted::update(const QRect& rect)
-{
-    polish();
-    QQuickPaintedItem::update(rect);
-}
-
-void RenderWidgetHostViewQtDelegateQuickPainted::paint(QPainter *painter)
-{
-    m_client->paint(painter, boundingRect());
-}
-
-void RenderWidgetHostViewQtDelegateQuickPainted::updatePolish()
-{
-    // paint will be called from the scene graph thread and this doesn't play well
-    // with chromium's use of TLS while getting the backing store.
-    // updatePolish() should be called from the GUI thread right before the rendering thread starts.
-    m_client->fetchBackingStore();
-}
+#endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H
