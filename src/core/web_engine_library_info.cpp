@@ -157,12 +157,14 @@ bool WebEngineLibraryInfo::pathProviderQt(int key, base::FilePath* result)
     case content::CHILD_PROCESS_EXE:
         *result = toFilePath(subProcessPath());
         return true;
+#if defined(OS_POSIX)
     case base::DIR_CACHE:
         directory = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
         break;
     case base::DIR_HOME:
         directory = QDir::homePath();
         break;
+#endif
     case base::DIR_USER_DESKTOP:
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
