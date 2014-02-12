@@ -564,7 +564,7 @@ protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);
     virtual QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues) { Q_UNUSED(classid); Q_UNUSED(url); Q_UNUSED(paramNames); Q_UNUSED(paramValues); Q_UNREACHABLE(); return 0; }
 
-    virtual bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type) { Q_UNUSED(frame); Q_UNUSED(request); Q_UNUSED(type); Q_UNREACHABLE(); return false; }
+    virtual bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type) { Q_UNUSED(frame); Q_UNUSED(&request); Q_UNUSED(type); Q_UNREACHABLE(); return false; }
     virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes);
     virtual void javaScriptAlert(QWebEngineFrame *originatingFrame, const QString& msg);
     virtual bool javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString& msg);
