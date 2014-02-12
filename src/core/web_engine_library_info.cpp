@@ -138,31 +138,30 @@ namespace base {
 // PathService registers PathProviderAndroid by default on Android.
 bool PathProviderAndroid(int key, FilePath* result)
 {
-    return WebEngineLibraryInfo::pathProviderQt(key, result);
+    *result = WebEngineLibraryInfo::getPath(key);
+    return !(result->empty());
 }
 
 }
 #endif // defined(OS_ANDROID)
 
-base::FilePath WebEngineLibraryInfo::repackedResourcesPath()
-{
-    return toFilePath(location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak"));
-}
-
-bool WebEngineLibraryInfo::pathProviderQt(int key, base::FilePath* result)
+base::FilePath WebEngineLibraryInfo::getPath(int key)
 {
     QString directory;
     switch (key) {
+    case QT_RESOURCE_PAK:
+        return toFilePath(location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak"));
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
-        *result = toFilePath(subProcessPath());
-        return true;
+        return toFilePath(subProcessPath());
+#if defined(OS_POSIX)
     case base::DIR_CACHE:
         directory = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
         break;
     case base::DIR_HOME:
         directory = QDir::homePath();
         break;
+#endif
     case base::DIR_USER_DESKTOP:
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
@@ -174,18 +173,15 @@ bool WebEngineLibraryInfo::pathProviderQt(int key, base::FilePath* result)
         break;
 #endif
     case content::DIR_MEDIA_LIBS:
-        *result = toFilePath(pluginsPath());
-        return true;
+        return toFilePath(pluginsPath());
     case ui::DIR_LOCALES:
-        *result = toFilePath(localesPath());
-        return true;
+        return toFilePath(localesPath());
     default:
         // Note: the path system expects this function to override the default
         // behavior. So no need to log an error if we don't support a given
         // path. The system will just use the default.
-        return false;
+        return base::FilePath();
     }
 
-    *result = toFilePath(directory.isEmpty() ? fallbackDir() : directory);
-    return true;
+    return toFilePath(directory.isEmpty() ? fallbackDir() : directory);
 }

@@ -63,8 +63,9 @@ static base::StringPiece PlatformResourceProvider(int key) {
 
 void ContentMainDelegateQt::PreSandboxStartup()
 {
-    // Register the Qt path provider which handles necessary paths for base, ui and content.
-    PathService::RegisterProvider(WebEngineLibraryInfo::pathProviderQt, base::PATH_START, content::PATH_END);
+    PathService::Override(base::FILE_EXE, WebEngineLibraryInfo::getPath(base::FILE_EXE));
+    PathService::Override(content::DIR_MEDIA_LIBS, WebEngineLibraryInfo::getPath(content::DIR_MEDIA_LIBS));
+    PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
 
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);

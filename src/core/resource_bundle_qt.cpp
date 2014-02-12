@@ -49,7 +49,7 @@ namespace ui {
 void ResourceBundle::LoadCommonResources()
 {
     // We repacked the resources we need and installed them. now let chromium mmap that file.
-    AddDataPackFromPath(WebEngineLibraryInfo::repackedResourcesPath(), SCALE_FACTOR_100P);
+    AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCE_PAK), SCALE_FACTOR_100P);
 }
 
 // As GetLocaleFilePath is excluded for Mac in resource_bundle.cc,
