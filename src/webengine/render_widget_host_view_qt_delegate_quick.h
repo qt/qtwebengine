@@ -59,6 +59,7 @@ public:
     RenderWidgetHostViewQtDelegateQuickBase(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent = 0)
         : ItemBaseT(parent)
         , m_client(client)
+        , m_isPopup(false)
     {
         this->setFocus(true);
         this->setActiveFocusOnTab(true);
@@ -75,13 +76,15 @@ public:
         this->setSize(viewPrivate->q_func()->boundingRect().size());
     }
 
-    virtual void initAsPopup(const QRect& rect) Q_DECL_OVERRIDE
+    virtual void initAsPopup(const QRect &r) Q_DECL_OVERRIDE
     {
+        QRectF rect(this->parentItem()->mapRectFromScene(r));
         this->setX(rect.x());
         this->setY(rect.y());
         this->setWidth(rect.width());
         this->setHeight(rect.height());
         this->setVisible(true);
+        m_isPopup = true;
     }
 
     virtual QRectF screenRect() const Q_DECL_OVERRIDE
@@ -149,7 +152,8 @@ public:
 
     void mousePressEvent(QMouseEvent *event)
     {
-        this->forceActiveFocus();
+        if (!m_isPopup)
+            this->forceActiveFocus();
         m_client->forwardEvent(event);
     }
 
@@ -221,6 +225,7 @@ protected:
     }
 
     RenderWidgetHostViewQtDelegateClient *m_client;
+    bool m_isPopup;
 };
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))

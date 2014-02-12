@@ -123,6 +123,17 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
     return new RenderWidgetHostViewQtDelegateQuickPainted(client);
 }
 
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::RenderingMode mode)
+{
+    Q_Q(QQuickWebEngineView);
+    RenderWidgetHostViewQtDelegateQuickPainted *ret = new RenderWidgetHostViewQtDelegateQuickPainted(client);
+    ret->setFocus(false);
+    ret->setParentItem(q);
+    ret->setFlag(QQuickItem::ItemIsFocusScope, false);
+    ret->setActiveFocusOnTab(false);
+    return ret;
+}
+
 bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
     Q_Q(QQuickWebEngineView);
