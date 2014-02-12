@@ -60,8 +60,8 @@ public:
 
 private:
     bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
-    void onDidFetchDocumentMarkup(const base::string16& markup, quint64 requestId);
-    void onDidFetchDocumentInnerText(const base::string16& innerText, quint64 requestId);
+    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
+    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
 
     WebContentsAdapterClient *m_adapterClient;
 };

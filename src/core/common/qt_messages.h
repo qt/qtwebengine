@@ -34,9 +34,9 @@ IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentInnerText,
 // These are messages sent from the renderer back to the browser process.
 
 IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentMarkup,
-                    base::string16 /* markup */,
-                    uint64 /* requestId */)
+                    uint64 /* requestId */,
+                    base::string16 /* markup */)
 
 IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentInnerText,
-                    base::string16 /* innerText */,
-                    uint64 /* requestId */)
+                    uint64 /* requestId */,
+                    base::string16 /* innerText */)

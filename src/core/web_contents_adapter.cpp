@@ -148,7 +148,7 @@ static QVariant fromJSValue(const base::Value *result)
 
 static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, const base::Value *result)
 {
-    adapterClient->didRunJavaScript(fromJSValue(result), requestId);
+    adapterClient->didRunJavaScript(requestId, fromJSValue(result));
 }
 
 static QStringList listRecursively(const QDir& dir) {

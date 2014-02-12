@@ -75,12 +75,12 @@ bool QtRenderViewObserverHost::OnMessageReceived(const IPC::Message& message)
 
 }
 
-void QtRenderViewObserverHost::onDidFetchDocumentMarkup(const base::string16& markup, quint64 requestId)
+void QtRenderViewObserverHost::onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup)
 {
-    m_adapterClient->didFetchDocumentMarkup(toQt(markup), requestId);
+    m_adapterClient->didFetchDocumentMarkup(requestId, toQt(markup));
 }
 
-void QtRenderViewObserverHost::onDidFetchDocumentInnerText(const base::string16& innerText, quint64 requestId)
+void QtRenderViewObserverHost::onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText)
 {
-    m_adapterClient->didFetchDocumentInnerText(toQt(innerText), requestId);
+    m_adapterClient->didFetchDocumentInnerText(requestId, toQt(innerText));
 }
