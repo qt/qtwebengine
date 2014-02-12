@@ -39,35 +39,76 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEHISTORY_P_H
-#define QWEBENGINEHISTORY_P_H
+#ifndef WEB_ENGINE_HISTORY_H
+#define WEB_ENGINE_HISTORY_H
+
+#include "qtwebenginecoreglobal.h"
 
 #include <QtCore/qshareddata.h>
+#include <QList>
+#include <QString>
+#include <QUrl>
 
 class WebContentsAdapter;
+class WebEngineHistory;
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineHistoryItemPrivate : public QSharedData
+class QWEBENGINE_EXPORT WebEngineHistoryItem
 {
 public:
-    QWebEngineHistoryItemPrivate(WebContentsAdapter *adapter = 0, int index = 0);
+    WebEngineHistoryItem(WebContentsAdapter *adapter = 0, int index = 0);
+    ~WebEngineHistoryItem();
+    bool isValid() const;
 
-    WebContentsAdapter *adapter;
-    int index;
+    QUrl originalUrl() const;
+    QUrl url() const;
+
+    QString title() const;
+
+private:
+    WebContentsAdapter *m_adapter;
+    int m_index;
+
+    friend WebEngineHistory;
 };
 
-class QWebEngineHistoryPrivate
+class QWEBENGINE_EXPORT WebEngineHistory : public QSharedData
 {
 public:
-    QWebEngineHistoryPrivate(WebContentsAdapter *adapter);
-    ~QWebEngineHistoryPrivate();
+    WebEngineHistory(WebContentsAdapter*);
+    ~WebEngineHistory();
+
+    void invalidateItems();
+    void clear();
+
+    QList<WebEngineHistoryItem> items() const;
+    QList<WebEngineHistoryItem> backItems(int maxItems) const;
+    QList<WebEngineHistoryItem> forwardItems(int maxItems) const;
+
+    bool canGoBack() const;
+    bool canGoForward() const;
+
+    void back();
+    void forward();
+    void goToItem(const WebEngineHistoryItem*);
+
+    WebEngineHistoryItem *backItem() const;
+    WebEngineHistoryItem *currentItem() const;
+    WebEngineHistoryItem *forwardItem() const;
+    WebEngineHistoryItem *itemAt(int i) const;
+
+    int currentItemIndex() const;
+
+    int count() const;
+
+private:
     void updateItems() const;
 
-    WebContentsAdapter *adapter;
-    mutable QList<QWebEngineHistoryItem> items;
+    WebContentsAdapter *m_adapter;
+    mutable QList<WebEngineHistoryItem> m_items;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEHISTORY_P_H
+#endif // WEB_ENGINE_HISTORY_H

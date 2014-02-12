@@ -31,9 +31,10 @@
 QT_BEGIN_NAMESPACE
 
 class QWebEngineHistory;
-class QWebEngineHistoryItemPrivate;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
+class WebEngineHistory;
+class WebEngineHistoryItem;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistoryItem {
 public:
@@ -54,15 +55,16 @@ public:
 
     bool isValid() const;
 private:
-    QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *priv);
-    Q_DECLARE_PRIVATE_D(d.data(), QWebEngineHistoryItem);
-    QExplicitlySharedDataPointer<QWebEngineHistoryItemPrivate> d;
+    QWebEngineHistoryItem();
+    QWebEngineHistoryItem(const WebEngineHistoryItem*, const QExplicitlySharedDataPointer<WebEngineHistory>&);
+
+    const WebEngineHistoryItem *m_item;
+    QExplicitlySharedDataPointer<WebEngineHistory> m_history;
+
     friend class QWebEngineHistory;
-    friend class QWebEngineHistoryPrivate;
 };
 
 
-class QWebEngineHistoryPrivate;
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistory {
 public:
     void clear();
@@ -76,7 +78,7 @@ public:
 
     void back();
     void forward();
-    void goToItem(const QWebEngineHistoryItem &item);
+    void goToItem(const QWebEngineHistoryItem item);
 
     QWebEngineHistoryItem backItem() const;
     QWebEngineHistoryItem currentItem() const;
@@ -91,12 +93,11 @@ public:
     void setMaximumItemCount(int count);
 
 private:
-    QWebEngineHistory(QWebEngineHistoryPrivate *d);
+    QWebEngineHistory(WebEngineHistory*);
     ~QWebEngineHistory();
 
     Q_DISABLE_COPY(QWebEngineHistory)
-    Q_DECLARE_PRIVATE(QWebEngineHistory);
-    QScopedPointer<QWebEngineHistoryPrivate> d_ptr;
+    QExplicitlySharedDataPointer<WebEngineHistory> m_history;
 
     friend QWEBENGINEWIDGETS_EXPORT QDataStream& operator>>(QDataStream&, QWebEngineHistory&);
     friend QWEBENGINEWIDGETS_EXPORT QDataStream& operator<<(QDataStream&, const QWebEngineHistory&);
