@@ -1,0 +1,129 @@
+/****************************************************************************
+**
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Contact: http://www.qt-project.org/legal
+**
+** This file is part of the QtWebEngine module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Digia.  For licensing terms and
+** conditions see http://qt.digia.com/licensing.  For further information
+** use the contact form at http://qt.digia.com/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Digia gives you certain additional
+** rights.  These rights are described in the Digia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "render_widget_host_view_qt_delegate_quickwindow.h"
+
+#include <QQuickItem>
+
+
+RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate, QQuickItem *parent)
+    : m_realDelegate(realDelegate)
+    , m_parentView(parent)
+{
+    setFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+}
+
+RenderWidgetHostViewQtDelegateQuickWindow::~RenderWidgetHostViewQtDelegateQuickWindow()
+{
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::initAsChild(WebContentsAdapterClient *container)
+{
+    Q_UNUSED(container);
+    // We should only use this wrapper class for webUI popups.
+    Q_UNREACHABLE();
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &rect)
+{
+    Q_ASSERT(m_parentView);
+    QPoint pos = m_parentView->window()->mapToGlobal(rect.topLeft());
+    QRect geometry = QRect(pos, rect.size());
+    m_realDelegate->initAsPopup(QRect(QPoint(0, 0), rect.size()));
+    setGeometry(geometry);
+    raise();
+    show();
+}
+
+QRectF RenderWidgetHostViewQtDelegateQuickWindow::screenRect() const
+{
+    return QRectF(x(), y(), width(), height());
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::show()
+{
+    QQuickWindow::show();
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::hide()
+{
+    QQuickWindow::hide();
+}
+
+bool RenderWidgetHostViewQtDelegateQuickWindow::isVisible() const
+{
+    return QQuickWindow::isVisible();
+}
+
+QWindow *RenderWidgetHostViewQtDelegateQuickWindow::window() const
+{
+    return m_parentView->window();
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::update(const QRect &rect)
+{
+    Q_UNUSED(rect);
+    QQuickWindow::update();
+    m_realDelegate->update();
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::updateCursor(const QCursor &cursor)
+{
+    setCursor(cursor);
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::resize(int width, int height)
+{
+    QQuickWindow::resize(width, height);
+    m_realDelegate->resize(width, height);
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::move(const QPoint &pos)
+{
+    Q_ASSERT(m_parentView);
+    QPoint mapped = m_parentView->window()->mapToGlobal(pos);
+    QQuickWindow::setPosition(mapped.x(), mapped.y());
+}
+
+void RenderWidgetHostViewQtDelegateQuickWindow::setTooltip(const QString &tooltip)
+{
+    Q_UNUSED(tooltip);
+}
