@@ -163,19 +163,19 @@ void QWebEnginePagePrivate::close()
     Q_EMIT q->windowCloseRequested();
 }
 
-void QWebEnginePagePrivate::didRunJavaScript(const QVariant& result, quint64 requestId)
+void QWebEnginePagePrivate::didRunJavaScript(quint64 requestId, const QVariant& result)
 {
     if (QExplicitlySharedDataPointer<VariantCallback> callback = m_variantCallbacks.take(requestId))
         (*callback)(result);
 }
 
-void QWebEnginePagePrivate::didFetchDocumentMarkup(const QString& result, quint64 requestId)
+void QWebEnginePagePrivate::didFetchDocumentMarkup(quint64 requestId, const QString& result)
 {
     if (QExplicitlySharedDataPointer<StringCallback> callback = m_stringCallbacks.take(requestId))
         (*callback)(result);
 }
 
-void QWebEnginePagePrivate::didFetchDocumentInnerText(const QString& result, quint64 requestId)
+void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const QString& result)
 {
     if (QExplicitlySharedDataPointer<StringCallback> callback = m_stringCallbacks.take(requestId))
         (*callback)(result);

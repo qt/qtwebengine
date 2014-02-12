@@ -84,9 +84,9 @@ public:
     virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; };
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
-    virtual void didRunJavaScript(const QVariant& result, quint64 requestId) Q_DECL_OVERRIDE;
-    virtual void didFetchDocumentMarkup(const QString& result, quint64 requestId) Q_DECL_OVERRIDE;
-    virtual void didFetchDocumentInnerText(const QString& result, quint64 requestId) Q_DECL_OVERRIDE;
+    virtual void didRunJavaScript(quint64 requestId, const QVariant& result) Q_DECL_OVERRIDE;
+    virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
+    virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE { Q_UNUSED(reverse); };
 
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
