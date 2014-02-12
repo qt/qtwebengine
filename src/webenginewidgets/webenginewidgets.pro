@@ -1,10 +1,4 @@
-# Use Qt5 module system
-load(qt_build_config)
-
-TEMPLATE = lib
 TARGET = QtWebEngineWidgets
-
-MODULE = webenginewidgets
 
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
