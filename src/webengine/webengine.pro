@@ -14,6 +14,7 @@ SOURCES = \
         api/qquickwebenginenewviewrequest.cpp \
         api/qquickwebengineview.cpp \
         render_widget_host_view_qt_delegate_quick.cpp \
+        render_widget_host_view_qt_delegate_quickwindow.cpp \
         ui_delegates_manager.cpp
 
 HEADERS = \
@@ -25,6 +26,7 @@ HEADERS = \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h \
+        render_widget_host_view_qt_delegate_quickwindow.h \
         ui_delegates_manager.h
 
 load(qt_module)
