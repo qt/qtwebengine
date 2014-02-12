@@ -524,7 +524,6 @@ void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resu
 
 void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)
 {
-    Q_D(QWebEnginePage);
     setContent(html.toUtf8(), QStringLiteral("text/html;charset=UTF-8"), baseUrl);
 }
 
