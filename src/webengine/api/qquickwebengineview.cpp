@@ -47,6 +47,7 @@
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
+#include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
@@ -61,6 +62,8 @@
 #include <QQmlEngine>
 
 #include <private/qqmlmetatype_p.h>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -121,6 +124,30 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
     if (mode == HardwareAccelerationMode)
         return new RenderWidgetHostViewQtDelegateQuick(client);
     return new RenderWidgetHostViewQtDelegateQuickPainted(client);
+}
+
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::RenderingMode mode)
+{
+    Q_Q(QQuickWebEngineView);
+    const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
+    if (mode == HardwareAccelerationMode) {
+        RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */true);
+        if (hasWindowCapability) {
+            RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate, q);
+            quickDelegate->setParentItem(wrapperWindow->contentItem());
+            return wrapperWindow;
+        }
+        quickDelegate->setParentItem(q);
+        return quickDelegate;
+    }
+    RenderWidgetHostViewQtDelegateQuickPainted *paintedDelegate = new RenderWidgetHostViewQtDelegateQuickPainted(client, /*isPopup = */true);
+    if (hasWindowCapability) {
+        RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(paintedDelegate, q);
+        paintedDelegate->setParentItem(wrapperWindow->contentItem());
+        return wrapperWindow;
+    }
+    paintedDelegate->setParentItem(q);
+    return paintedDelegate;
 }
 
 bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
