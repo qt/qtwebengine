@@ -54,6 +54,8 @@
 #include "chromium_gpu_helper.h"
 #include "type_conversion.h"
 #include "yuv_video_node.h"
+#include "stream_video_node.h"
+#include "mailbox_texture.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/bind.h"
@@ -64,6 +66,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "cc/quads/stream_video_draw_quad.h"
 #include <QOpenGLFramebufferObject>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
@@ -105,28 +108,6 @@ private:
     QScopedPointer<QOpenGLFramebufferObject> m_fbo;
 
     QSGRenderContext *m_context;
-};
-
-class MailboxTexture : public QSGTexture {
-public:
-    MailboxTexture(const cc::TransferableResource &resource);
-    virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
-    void setTextureSize(const QSize& size) { m_textureSize = size; }
-    virtual QSize textureSize() const Q_DECL_OVERRIDE { return m_textureSize; }
-    virtual bool hasAlphaChannel() const Q_DECL_OVERRIDE { return m_hasAlpha; }
-    void setHasAlphaChannel(bool hasAlpha) { m_hasAlpha = hasAlpha; }
-    virtual bool hasMipmaps() const Q_DECL_OVERRIDE { return false; }
-    virtual void bind() Q_DECL_OVERRIDE;
-
-    bool needsToFetch() const { return !m_textureId; }
-    cc::TransferableResource &resource() { return m_resource; }
-    void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
-
-private:
-    cc::TransferableResource m_resource;
-    int m_textureId;
-    QSize m_textureSize;
-    bool m_hasAlpha;
 };
 
 static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::RenderPass::Id &id, const QList<QSharedPointer<RenderPassTexture> > &list)
@@ -267,9 +248,18 @@ void MailboxTexture::bind()
     glBindTexture(GL_TEXTURE_2D, m_textureId);
 }
 
+void MailboxTexture::bindExternal()
+{
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, m_textureId);
+}
+
 void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
 {
     gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, GL_TEXTURE_2D, *reinterpret_cast<const gpu::gles2::MailboxName*>(m_resource.mailbox.name));
+
+    // If it is not a 2D texture, check if it is an external texture
+    if (!tex)
+        tex = ConsumeTexture(mailboxManager, GL_TEXTURE_EXTERNAL_OES, *reinterpret_cast<const gpu::gles2::MailboxName*>(m_resource.mailbox.name));
 
     // The texture might already have been deleted (e.g. when navigating away from a page).
     if (tex)
@@ -470,6 +460,17 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 YUVVideoNode *videoNode = new YUVVideoNode(yTexture.data(), uTexture.data(), vTexture.data(), aTexture.data(), toQt(vquad->tex_scale));
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
+                break;
+            } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
+                const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
+                QSharedPointer<MailboxTexture> &texture = m_mailboxTextures[squad->resource_id] = mailboxTextureCandidates.take(squad->resource_id);
+                Q_ASSERT(texture);
+
+                StreamVideoNode *svideoNode = new StreamVideoNode(texture.data());
+                svideoNode->setRect(toQt(squad->rect));
+                // TODO: Check if we need to set filtering type
+                // svideoNode->setFiltering(texture->resource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
+                currentLayerChain->appendChildNode(svideoNode);
                 break;
             } default:
                 qWarning("Unimplemented quad material: %d", quad->material);
