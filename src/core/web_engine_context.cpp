@@ -45,7 +45,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/app/content_main_runner.h"
@@ -131,11 +130,7 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
-
-    base::FilePath subprocessPath;
-    PathService::Get(content::CHILD_PROCESS_EXE, &subprocessPath);
-    parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, subprocessPath);
-
+    parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
 
