@@ -52,6 +52,7 @@
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 #include "chromium_gpu_helper.h"
+#include "stream_video_node.h"
 #include "type_conversion.h"
 #include "yuv_video_node.h"
 
@@ -61,6 +62,7 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
+#include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
@@ -121,12 +123,14 @@ public:
     bool needsToFetch() const { return !m_textureId; }
     cc::TransferableResource &resource() { return m_resource; }
     void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
+    void setTarget(GLenum target);
 
 private:
     cc::TransferableResource m_resource;
     int m_textureId;
     QSize m_textureSize;
     bool m_hasAlpha;
+    GLenum m_target;
 };
 
 static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::RenderPass::Id &id, const QList<QSharedPointer<RenderPassTexture> > &list)
@@ -259,17 +263,23 @@ MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
     , m_textureId(0)
     , m_textureSize(toQt(resource.size))
     , m_hasAlpha(false)
+    , m_target(GL_TEXTURE_2D)
 {
 }
 
 void MailboxTexture::bind()
 {
-    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glBindTexture(m_target, m_textureId);
+}
+
+void MailboxTexture::setTarget(GLenum target)
+{
+    m_target = target;
 }
 
 void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
 {
-    gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, GL_TEXTURE_2D, *reinterpret_cast<const gpu::gles2::MailboxName*>(m_resource.mailbox.name));
+    gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, m_target, *reinterpret_cast<const gpu::gles2::MailboxName*>(m_resource.mailbox.name));
 
     // The texture might already have been deleted (e.g. when navigating away from a page).
     if (tex)
@@ -471,6 +481,18 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;
+#ifdef GL_OES_EGL_image_external
+            } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
+                const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
+                QSharedPointer<MailboxTexture> &texture = m_data->mailboxTextures[squad->resource_id] = mailboxTextureCandidates.take(squad->resource_id);
+                texture->setTarget(GL_TEXTURE_EXTERNAL_OES); // since this is not default TEXTURE_2D type
+                Q_ASSERT(texture);
+
+                StreamVideoNode *svideoNode = new StreamVideoNode(texture.data());
+                svideoNode->setRect(toQt(squad->rect));
+                currentLayerChain->appendChildNode(svideoNode);
+                break;
+#endif
             } default:
                 qWarning("Unimplemented quad material: %d", quad->material);
             }
