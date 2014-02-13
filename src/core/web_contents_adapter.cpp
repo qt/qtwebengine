@@ -317,8 +317,7 @@ QUrl WebContentsAdapter::requestedUrl() const
 QString WebContentsAdapter::pageTitle() const
 {
     Q_D(const WebContentsAdapter);
-    content::NavigationEntry* entry = d->webContents->GetController().GetVisibleEntry();
-    return entry ? toQt(entry->GetTitle()) : QString();
+    return toQt(d->webContents->GetTitle());
 }
 
 QString WebContentsAdapter::selectedText() const
