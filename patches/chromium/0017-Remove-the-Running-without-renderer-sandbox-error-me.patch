@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Thu, 30 Jan 2014 18:09:32 +0100
+Subject: Remove the Running without renderer sandbox error message
+
+We are currently not planing to enable the sandbox and the error
+pollutes the auto tests output.
+
+Change-Id: Idd2e7eeea8f890f55dd6b6d513a7a43890e7d5b4
+Reviewed-by: Andras Becsi <andras.becsi@digia.com>
+---
+ content/renderer/renderer_main.cc | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/content/renderer/renderer_main.cc b/content/renderer/renderer_main.cc
+index 2d298a6..1c33cf3 100644
+--- a/content/renderer/renderer_main.cc
++++ b/content/renderer/renderer_main.cc
+@@ -224,7 +224,6 @@ int RendererMain(const MainFunctionParams& parameters) {
+     if (!no_sandbox) {
+       run_loop = platform.EnableSandbox();
+     } else {
+-      LOG(ERROR) << "Running without renderer sandbox";
+ #ifndef NDEBUG
+       // For convenience, we print the stack trace for crashes. We can't get
+       // symbols when the sandbox is enabled, so only try when the sandbox is
