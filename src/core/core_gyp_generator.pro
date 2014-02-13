@@ -53,6 +53,7 @@ SOURCES = \
         renderer/qt_render_view_observer.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
+        stream_video_node.cpp \
         url_request_context_getter_qt.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
@@ -80,6 +81,7 @@ HEADERS = \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
+        mailbox_texture.h \
         process_main.h \
         qt_render_view_observer_host.h \
         render_widget_host_view_qt.h \
@@ -87,6 +89,7 @@ HEADERS = \
         renderer/content_renderer_client_qt.h \
         renderer/qt_render_view_observer.h \
         resource_context_qt.h \
+        stream_video_node.h \
         url_request_context_getter_qt.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \

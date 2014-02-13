@@ -40,6 +40,8 @@
 ****************************************************************************/
 #include "yuv_video_node.h"
 
+#include "mailbox_texture.h"
+
 #include <QtQuick/qsgtexture.h>
 
 class YUVVideoMaterialShader : public QSGMaterialShader
