@@ -43,11 +43,13 @@
 #define WEB_ENGINE_LIBRARY_INFO_H
 
 #include "base/files/file_path.h"
+enum {
+    QT_RESOURCES_PAK = 5000
+};
 
 class WebEngineLibraryInfo {
 public:
-    static base::FilePath repackedResourcesPath();
-    static bool pathProviderQt(int key, base::FilePath* result);
+    static base::FilePath getPath(int key);
 };
 
 
