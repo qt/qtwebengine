@@ -50,8 +50,6 @@
 #include <QSharedPointer>
 #include <QWaitCondition>
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-
 QT_BEGIN_NAMESPACE
 class QQuickWindow;
 QT_END_NAMESPACE
@@ -91,7 +89,5 @@ private:
     static void fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
     static void syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
 };
-
-#endif // QT_VERSION
 
 #endif // DELEGATED_FRAME_NODE_H

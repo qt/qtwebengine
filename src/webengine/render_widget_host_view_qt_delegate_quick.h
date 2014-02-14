@@ -228,7 +228,6 @@ protected:
     bool m_isPopup;
 };
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>
 {
     Q_OBJECT
@@ -241,7 +240,6 @@ public:
     virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
 };
-#endif // QT_VERSION
 
 class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>
 {

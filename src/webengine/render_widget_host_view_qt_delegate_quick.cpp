@@ -41,7 +41,6 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent)
     : RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>(client, parent)
 {
@@ -69,7 +68,6 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
 {
     return m_client->updatePaintNode(oldNode, QQuickItem::window());
 }
-#endif // QT_VERSION
 
 RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, QQuickItem *parent)
     : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(client, parent)

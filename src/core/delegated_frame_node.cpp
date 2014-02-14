@@ -50,7 +50,6 @@
 
 #include "delegated_frame_node.h"
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 #include "chromium_gpu_helper.h"
 #include "type_conversion.h"
 #include "yuv_video_node.h"
@@ -523,4 +522,3 @@ void DelegatedFrameNode::syncPointRetired(DelegatedFrameNode *frameNode, QList<M
         base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fetchTexturesAndUnlockQt, frameNode, mailboxesToFetch));
 }
 
-#endif // QT_VERSION

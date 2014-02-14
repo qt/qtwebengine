@@ -116,10 +116,8 @@ UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
     if (mode == HardwareAccelerationMode)
         return new RenderWidgetHostViewQtDelegateQuick(client);
-#endif
     return new RenderWidgetHostViewQtDelegateQuickPainted(client);
 }
 
@@ -499,11 +497,8 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
 
     Q_FOREACH(QQuickItem *child, childItems()) {
-        Q_ASSERT(
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
-            qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child) ||
-#endif
-            qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted *>(child));
+        Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child)
+                 || qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted *>(child));
         child->setSize(newGeometry.size());
     }
 }

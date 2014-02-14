@@ -642,7 +642,6 @@ void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
     DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
     if (!frameNode)
         frameNode = new DelegatedFrameNode(window);
@@ -658,9 +657,6 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow 
     }
 
     return frameNode;
-#else
-    return 0;
-#endif // QT_VERSION
 }
 
 void RenderWidgetHostViewQt::fetchBackingStore()
