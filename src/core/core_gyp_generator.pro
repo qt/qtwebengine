@@ -16,7 +16,6 @@ macx: GYP_DYLIB_INSTALL_NAME_BASE = $$getOutDir()/$$getConfigDir()
 
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
-qtHaveModule(v8): QT_PRIVATE += v8-private
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \

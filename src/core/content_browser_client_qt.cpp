@@ -56,9 +56,7 @@
 #include "web_contents_view_qt.h"
 
 #include <QGuiApplication>
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
 #include <QtQuick/private/qsgcontext_p.h>
-#endif
 #include <qpa/qplatformnativeinterface.h>
 
 namespace {
@@ -247,12 +245,10 @@ private:
 
 void ShareGroupQtQuick::AboutToAddFirstContext()
 {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 2, 0))
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
     QOpenGLContext *shareContext = QSGContext::sharedOpenGLContext();
     Q_ASSERT(shareContext);
     m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
-#endif
 }
 
 content::WebContentsViewPort* ContentBrowserClientQt::OverrideCreateWebContentsView(content::WebContents* web_contents,
