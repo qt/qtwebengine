@@ -46,7 +46,17 @@
           '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
         ],
       }],
-      ['_toolset=="target" and qt_os=="android"', {
+      # android and embedded_linux need some special flags.
+      ['qt_os=="embedded_linux" or qt_os=="android"', {
+        'conditions': [
+          ['qt_os=="android"', {
+            'dependencies': [
+              '<(chromium_src_dir)/third_party/ashmem/ashmem.gyp:ashmem',
+              '<(chromium_src_dir)/third_party/freetype/freetype.gyp:ft2',
+              '<(chromium_src_dir)/third_party/android_tools/ndk/android_tools_ndk.gyp:cpu_features',
+            ],
+          }],
+        ],
         'configurations': {
           'Debug_Base': {
             # Reduce the binary size.
@@ -68,11 +78,6 @@
             ],
           },
         },
-        'dependencies': [
-          '<(chromium_src_dir)/third_party/ashmem/ashmem.gyp:ashmem',
-          '<(chromium_src_dir)/third_party/freetype/freetype.gyp:ft2',
-          '<(chromium_src_dir)/third_party/android_tools/ndk/android_tools_ndk.gyp:cpu_features',
-        ],
       }],
       ['OS=="win"', {
         'resource_include_dirs': [

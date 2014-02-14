@@ -35,6 +35,10 @@ cross_compile {
                     "-D android_ndk_root=\"$${TOOLCHAIN_SYSROOT}\" -D android_product_out=\"$${ANDROID_PRODUCT_OUT}\""
     }
 
+    linux {
+        GYP_ARGS += "-D qt_os=\"embedded_linux\""
+    }
+
     !isEmpty(TOOLCHAIN_SYSROOT): GYP_ARGS += "-D sysroot=\"$${TOOLCHAIN_SYSROOT}\""
 
     contains(QT_ARCH, "arm") {
