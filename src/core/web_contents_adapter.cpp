@@ -326,6 +326,48 @@ QString WebContentsAdapter::selectedText() const
     return toQt(d->webContents->GetRenderViewHost()->GetView()->GetSelectedText());
 }
 
+void WebContentsAdapter::undo()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->Undo();
+}
+
+void WebContentsAdapter::redo()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->Redo();
+}
+
+void WebContentsAdapter::cut()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->Cut();
+}
+
+void WebContentsAdapter::copy()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->Copy();
+}
+
+void WebContentsAdapter::paste()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->Paste();
+}
+
+void WebContentsAdapter::pasteAndMatchStyle()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->PasteAndMatchStyle();
+}
+
+void WebContentsAdapter::selectAll()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->SelectAll();
+}
+
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     Q_D(WebContentsAdapter);
