@@ -45,8 +45,8 @@
 #include <QMetaProperty>
 #include <QMetaType>
 #include <QtTest/QtTest>
-#include <qquickwebengineview_p.h>
-#include <qquickwebengineloadrequest_p.h>
+#include <private/qquickwebengineview_p.h>
+#include <private/qquickwebengineloadrequest_p.h>
 // FIXME: Implement!
 // #include <qquickwebenginenavigationrequest_p.h>
 
