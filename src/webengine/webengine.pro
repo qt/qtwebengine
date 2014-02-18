@@ -6,7 +6,7 @@ DEFINES += QT_BUILD_WEBENGINE_LIB
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
 
-INCLUDEPATH += api ../core
+INCLUDEPATH += $$PWD api ../core
 
 # FIXME: all this should eventually be turned into QT += webenginecore
 macx:LIBPATH = $$getOutDir()/$$getConfigDir()
