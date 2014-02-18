@@ -36,6 +36,7 @@ SOURCES = \
         browser_context_qt.cpp \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
+        clipboard_qt.cpp \
         common/qt_messages.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
@@ -68,6 +69,7 @@ HEADERS = \
         backing_store_qt.h \
         browser_context_qt.h \
         chromium_overrides.h \
+        clipboard_qt.h \
         common/qt_messages.h \
         content_client_qt.h \
         content_browser_client_qt.h \

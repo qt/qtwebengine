@@ -6,6 +6,9 @@
   'target_defaults': {
     # patterns used to exclude chromium files from the build when we have a drop-in replacement
     'sources/': [
+      ['exclude', 'base/clipboard/clipboard_gtk.cc$'],
+      ['exclude', 'base/clipboard/clipboard_mac.mm$'],
+      ['exclude', 'base/clipboard/clipboard_win.cc$'],
       ['exclude', 'base/resource/resource_bundle_gtk.cc$'],
       ['exclude', 'base/resource/resource_bundle_mac.mm$'],
       ['exclude', 'base/resource/resource_bundle_win.cc$'],
