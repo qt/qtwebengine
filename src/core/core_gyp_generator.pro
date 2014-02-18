@@ -2,6 +2,7 @@
 # We want the gyp generation step to happen after all the other config steps. For that we need to prepend
 # our gyp_generator.prf feature to the CONFIG variable since it is processed backwards
 CONFIG = gyp_generator $$CONFIG
+win32:CONFIG += skip_target_version_ext
 GYPFILE = $$PWD/core_generated.gyp
 GYPINCLUDES += qtwebengine.gypi
 
