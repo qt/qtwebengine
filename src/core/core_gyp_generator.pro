@@ -100,6 +100,7 @@ HEADERS = \
         url_request_qrc_job_qt.h
 
 VERSION = $$MODULE_VERSION
+win32:CONFIG += skip_target_version_ext
 load(resolve_target)
 TARGET_NAME = $$basename(QMAKE_RESOLVED_TARGET)
 TARGET_NAME = $$replace(TARGET_NAME, .$${VERSION},)
