@@ -14,7 +14,7 @@ QMAKE_RPATHDIR += $$LIBPATH
 
 DESTDIR = $$LIBPATH
 
-INCLUDEPATH += api ../core
+INCLUDEPATH += $$PWD api ../core
 
 SOURCES = \
         api/qwebenginehistory.cpp \
