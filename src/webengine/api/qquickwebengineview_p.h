@@ -42,7 +42,7 @@
 #ifndef QQUICKWEBENGINEVIEW_P_H
 #define QQUICKWEBENGINEVIEW_P_H
 
-#include <qtwebengineglobal_p.h>
+#include <private/qtwebengineglobal_p.h>
 #include <QQuickItem>
 
 QT_BEGIN_NAMESPACE
