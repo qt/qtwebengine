@@ -73,6 +73,14 @@ public:
     QString pageTitle() const;
     QString selectedText() const;
 
+    void undo();
+    void redo();
+    void cut();
+    void copy();
+    void paste();
+    void pasteAndMatchStyle();
+    void selectAll();
+
     void navigateToIndex(int);
     void navigateToOffset(int);
     int navigationEntryCount();

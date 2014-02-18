@@ -289,7 +289,7 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
     if (!a)
         return;
 
-    bool enabled = false;
+    bool enabled = true;
 
     switch (action) {
     case QWebEnginePage::Back:
@@ -405,6 +405,27 @@ QAction *QWebEnginePage::action(WebAction action) const
         text = tr("Reload");
         icon = style->standardIcon(QStyle::SP_BrowserReload);
         break;
+    case Cut:
+        text = tr("Cut");
+        break;
+    case Copy:
+        text = tr("Copy");
+        break;
+    case Paste:
+        text = tr("Paste");
+        break;
+    case Undo:
+        text = tr("Undo");
+        break;
+    case Redo:
+        text = tr("Redo");
+        break;
+    case SelectAll:
+        text = tr("Select All");
+        break;
+    case PasteAndMatchStyle:
+        text = tr("Paste and Match Style");
+        break;
     default:
         break;
     }
@@ -437,6 +458,27 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case Reload:
         d->adapter->reload();
+        break;
+    case Cut:
+        d->adapter->cut();
+        break;
+    case Copy:
+        d->adapter->copy();
+        break;
+    case Paste:
+        d->adapter->paste();
+        break;
+    case Undo:
+        d->adapter->undo();
+        break;
+    case Redo:
+        d->adapter->redo();
+        break;
+    case SelectAll:
+        d->adapter->selectAll();
+        break;
+    case PasteAndMatchStyle:
+        d->adapter->pasteAndMatchStyle();
         break;
     default:
         Q_UNREACHABLE();
