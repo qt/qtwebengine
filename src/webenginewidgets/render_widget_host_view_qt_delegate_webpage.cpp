@@ -73,6 +73,11 @@ QRectF RenderWidgetHostViewQtDelegateWebPage::screenRect() const
     return QRectF(0, 0, 800, 600);
 }
 
+void RenderWidgetHostViewQtDelegateWebPage::inputMethodCancelComposition()
+{
+    qApp->inputMethod()->reset();
+}
+
 void RenderWidgetHostViewQtDelegateWebPage::setKeyboardFocus()
 {
     if (m_page)
