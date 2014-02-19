@@ -90,6 +90,11 @@ public:
         return QRectF(pos.x(), pos.y(), this->width(), this->height());
     }
 
+    virtual void inputMethodCancelComposition() Q_DECL_OVERRIDE
+    {
+        qApp->inputMethod()->reset();
+    }
+
     virtual void setKeyboardFocus() Q_DECL_OVERRIDE
     {
         this->setFocus(true);

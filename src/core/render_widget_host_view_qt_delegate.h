@@ -89,6 +89,7 @@ public:
     virtual void resize(int width, int height) = 0;
     virtual void move(const QPoint &) = 0;
     virtual void inputMethodStateChanged(bool editorVisible) = 0;
+    virtual void inputMethodCancelComposition() = 0;
     virtual bool supportsHardwareAcceleration() const = 0;
 };
 
