@@ -248,6 +248,7 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     // Overwrite the new page's WebContents with ours.
     if (newPage) {
         newPage->d_func()->adapter = newWebContents;
+        newPage->history()->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
         if (!initialGeometry.isEmpty())
             emit newPage->geometryChangeRequested(initialGeometry);
