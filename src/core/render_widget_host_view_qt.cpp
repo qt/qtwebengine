@@ -54,6 +54,9 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/events/event.h"
 #include "ui/gfx/size_conversions.h"
@@ -63,6 +66,7 @@
 #include <QFocusEvent>
 #include <QGuiApplication>
 #include <QInputMethodEvent>
+#include <QTextFormat>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QScreen>
@@ -473,7 +477,7 @@ void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, ui::Te
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
 {
-    QT_NOT_YET_IMPLEMENTED
+    qApp->inputMethod()->reset();
 }
 
 void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&)
@@ -878,14 +882,57 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     if (!m_host)
         return;
 
-    if (ev->commitString().length())
-        m_host->ImeConfirmComposition(toString16(ev->commitString()), gfx::Range::InvalidRange(), false);
+    QString commitString = ev->commitString();
+    QString preeditString = ev->preeditString();
 
-    if (ev->preeditString().length()) {
-        // FIXME: Implement translation from QInputMethodEvent::Attribute list to WebKit::WebCompositionUnderlines.
-        std::vector<WebKit::WebCompositionUnderline> underlines;
-        int start = ev->replacementStart();
-        m_host->ImeSetComposition(toString16(ev->preeditString()), underlines, start, start + ev->replacementLength());
+    int replacementStart = ev->replacementStart();
+    int replacementLength = ev->replacementLength();
+
+    int cursorPositionInPreeditString = -1;
+    gfx::Range selectionRange = gfx::Range::InvalidRange();
+
+    const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
+    std::vector<WebKit::WebCompositionUnderline> underlines;
+
+    Q_FOREACH (const QInputMethodEvent::Attribute &attribute, attributes) {
+        switch (attribute.type) {
+        case QInputMethodEvent::TextFormat: {
+            if (preeditString.isEmpty())
+                break;
+
+            QTextCharFormat textCharFormat = attribute.value.value<QTextFormat>().toCharFormat();
+            QColor qcolor = textCharFormat.underlineColor();
+            WebKit::WebColor color = SkColorSetARGB(qcolor.alpha(), qcolor.red(), qcolor.green(), qcolor.blue());
+            int start = qMin(attribute.start, (attribute.start + attribute.length));
+            int end = qMax(attribute.start, (attribute.start + attribute.length));
+            underlines.push_back(WebKit::WebCompositionUnderline(start, end, color, false));
+            break;
+        }
+        case QInputMethodEvent::Cursor:
+            if (attribute.length)
+                cursorPositionInPreeditString = attribute.start;
+            break;
+        case QInputMethodEvent::Selection:
+            selectionRange.set_start(qMin(attribute.start, (attribute.start + attribute.length)));
+            selectionRange.set_end(qMax(attribute.start, (attribute.start + attribute.length)));
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (preeditString.isEmpty()) {
+        gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
+                                                              : gfx::Range::InvalidRange();
+        m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
+    } else {
+        if (!selectionRange.IsValid()) {
+            // We did not receive a valid selection range, hence the range is going to mark the cursor position.
+            int newCursorPosition = (cursorPositionInPreeditString < 0) ? preeditString.length() : cursorPositionInPreeditString;
+            selectionRange.set_start(newCursorPosition);
+            selectionRange.set_end(newCursorPosition);
+        }
+        m_host->ImeSetComposition(toString16(preeditString), underlines, selectionRange.start(), selectionRange.end());
     }
 }
 
