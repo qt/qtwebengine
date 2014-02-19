@@ -73,6 +73,7 @@ public:
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
     virtual void move(const QPoint &) Q_DECL_OVERRIDE;
     virtual void inputMethodStateChanged(bool) Q_DECL_OVERRIDE {}
+    virtual void inputMethodCancelComposition() Q_DECL_OVERRIDE {}
     virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE { return false; }
 
 protected:
