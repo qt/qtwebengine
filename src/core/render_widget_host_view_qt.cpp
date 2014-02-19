@@ -142,6 +142,15 @@ static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKi
     }
 }
 
+static WebKit::WebGestureEvent createFlingCancelEvent(double time_stamp)
+{
+    WebKit::WebGestureEvent gesture_event;
+    gesture_event.timeStampSeconds = time_stamp;
+    gesture_event.type = WebKit::WebGestureEvent::GestureFlingCancel;
+    gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
+    return gesture_event;
+}
+
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
@@ -788,11 +797,18 @@ void RenderWidgetHostViewQt::ProcessGestures(ui::GestureRecognizer::Gestures *ge
     for (ui::GestureRecognizer::Gestures::iterator g_it = gestures->begin(); g_it != gestures->end(); ++g_it) {
         const ui::GestureEvent &uiGestureEvent = **g_it;
         WebKit::WebGestureEvent webGestureEvent = content::MakeWebGestureEventFromUIEvent(uiGestureEvent);
-        if (webGestureEvent.type != WebKit::WebInputEvent::Undefined) {
-            webGestureEvent.x = uiGestureEvent.x();
-            webGestureEvent.y = uiGestureEvent.y();
-            m_host->ForwardGestureEvent(webGestureEvent);
+        if (webGestureEvent.type == WebKit::WebInputEvent::Undefined)
+            continue;
+
+        if (webGestureEvent.type == WebKit::WebGestureEvent::GestureTapDown) {
+            // Chromium does not stop a fling-scroll on tap-down.
+            // So explicitly send an event to stop any in-progress flings.
+            m_host->ForwardGestureEvent(createFlingCancelEvent(uiGestureEvent.time_stamp().InSecondsF()));
         }
+
+        webGestureEvent.x = uiGestureEvent.x();
+        webGestureEvent.y = uiGestureEvent.y();
+        m_host->ForwardGestureEvent(webGestureEvent);
     }
 }
 
