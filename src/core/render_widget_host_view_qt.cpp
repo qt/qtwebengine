@@ -54,6 +54,9 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/events/event.h"
 #include "ui/gfx/size_conversions.h"
@@ -63,6 +66,7 @@
 #include <QFocusEvent>
 #include <QGuiApplication>
 #include <QInputMethodEvent>
+#include <QTextFormat>
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QScreen>
@@ -464,7 +468,7 @@ void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, ui::Te
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
 {
-    QT_NOT_YET_IMPLEMENTED
+    m_delegate->inputMethodCancelComposition();
 }
 
 void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&)
@@ -862,15 +866,56 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     if (!m_host)
         return;
 
-    if (ev->commitString().length())
-        m_host->ImeConfirmComposition(toString16(ev->commitString()), gfx::Range::InvalidRange(), false);
+    QString commitString = ev->commitString();
+    QString preeditString = ev->preeditString();
 
-    if (ev->preeditString().length()) {
-        // FIXME: Implement translation from QInputMethodEvent::Attribute list to WebKit::WebCompositionUnderlines.
-        std::vector<WebKit::WebCompositionUnderline> underlines;
-        int start = ev->replacementStart();
-        m_host->ImeSetComposition(toString16(ev->preeditString()), underlines, start, start + ev->replacementLength());
+    int replacementStart = ev->replacementStart();
+    int cursorPositionInPreeditString = -1;
+    gfx::Range selectionRange = gfx::Range::InvalidRange();
+
+    const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
+    std::vector<WebKit::WebCompositionUnderline> underlines;
+
+    for (int i = 0; i < attributes.size(); ++i) {
+        const QInputMethodEvent::Attribute &attribute = attributes[i];
+        switch (attribute.type) {
+        case QInputMethodEvent::TextFormat: {
+            if (preeditString.isEmpty())
+                break;
+
+            QTextCharFormat textCharFormat = attribute.value.value<QTextFormat>().toCharFormat();
+            QColor qcolor = textCharFormat.underlineColor();
+            WebKit::WebColor color = SkColorSetARGB(qcolor.alpha(), qcolor.red(), qcolor.green(), qcolor.blue());
+            int start = qMin(attribute.start, (attribute.start + attribute.length));
+            int end = qMax(attribute.start, (attribute.start + attribute.length));
+            underlines.push_back(WebKit::WebCompositionUnderline(start, end, color, false));
+            break;
+        }
+        case QInputMethodEvent::Cursor:
+            if (!attribute.length)
+                break;
+            cursorPositionInPreeditString = attribute.start;
+            break;
+        case QInputMethodEvent::Selection:
+            selectionRange.set_start(attribute.start);
+            selectionRange.set_end(selectionRange.start() + attribute.length);
+            break;
+        default:
+            break;
+        }
     }
+
+    if (preeditString.isEmpty())
+        m_host->ImeConfirmComposition(toString16(commitString), selectionRange, false);
+    else {
+        // In chromium replacementEnd will be the cursor position, so if the QInputMethodEvent
+        // does not specify the cursor position we put it at the end of the preedit string.
+        int replacementEnd = (cursorPositionInPreeditString < 0) ? replacementStart + preeditString.length()
+                                                                 : replacementStart + cursorPositionInPreeditString;
+        m_host->ImeSetComposition(toString16(preeditString), underlines, replacementStart, replacementEnd);
+    }
+
+    ev->accept();
 }
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
