@@ -133,11 +133,11 @@ void WebContentsViewQt::ShowContextMenu(const content::ContextMenuParams &params
 
 void WebContentsViewQt::StartDragging(const content::DropData& drop_data, WebKit::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info)
 {
-    Q_UNUSED(drop_data);
+    Q_UNUSED(&drop_data);
     Q_UNUSED(allowed_ops);
-    Q_UNUSED(image);
-    Q_UNUSED(image_offset);
-    Q_UNUSED(event_info);
+    Q_UNUSED(&image);
+    Q_UNUSED(&image_offset);
+    Q_UNUSED(&event_info);
     // Tell the renderer to cancel the drag, see StartDragging's declaration in render_view_host_delegate_view.h for info.
     m_webContents->SystemDragEnded();
 }
