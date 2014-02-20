@@ -5,10 +5,13 @@ Subject: Build files necessary for touch and gestures.
 
 Also guard the use of MessagePumpAuraX11 in events_x.cc. We need to
 build it to get symbols depending on base::NativeEvent.
+
+Change-Id: Ib7bb4fb1fc8692df1b8151c3d159de3d0f73c76f
 ---
- content/content_browser.gypi | 2 +-
- ui/ui.gyp                    | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ content/content_browser.gypi |  2 +-
+ ui/events/event.cc           | 14 ++++++++++++--
+ ui/ui.gyp                    |  4 ++--
+ 3 files changed, 15 insertions(+), 5 deletions(-)
 
 diff --git a/content/content_browser.gypi b/content/content_browser.gypi
 index 1e3485c..c2e5f18 100644
@@ -23,6 +26,45 @@ index 1e3485c..c2e5f18 100644
        'sources!': [
          'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
          'browser/renderer_host/ui_events_helper.cc',
+diff --git a/ui/events/event.cc b/ui/events/event.cc
+index 7c3e6d5..7153607 100644
+--- a/ui/events/event.cc
++++ b/ui/events/event.cc
+@@ -294,7 +294,13 @@ void LocatedEvent::UpdateForRootTransform(
+ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
+     : LocatedEvent(native_event),
+       changed_button_flags_(
+-          GetChangedMouseButtonFlagsFromNative(native_event)) {
++// GetChangedMouseButtonFlagsFromNative isn't implemented on Mac. MouseEvent shouldn't be used.
++#if !defined(OS_MACOSX)
++          GetChangedMouseButtonFlagsFromNative(native_event)
++#else
++          0
++#endif
++      ) {
+   if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED)
+     SetClickCount(GetRepeatCount(*this));
+ }
+@@ -698,6 +704,8 @@ DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
+ 
+ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
+     : MouseEvent(native_event) {
++// GetScrollOffsets and GetFlingData aren't implemented on Mac. ScrollEvent shouldn't be used.
++#if !defined(OS_MACOSX)
+   if (type() == ET_SCROLL) {
+     GetScrollOffsets(native_event,
+                      &x_offset_, &y_offset_,
+@@ -709,7 +717,9 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
+                  &x_offset_, &y_offset_,
+                  &x_offset_ordinal_, &y_offset_ordinal_,
+                  NULL);
+-  } else {
++  } else
++#endif
++  {
+     NOTREACHED() << "Unexpected event type " << type()
+         << " when constructing a ScrollEvent.";
+   }
 diff --git a/ui/ui.gyp b/ui/ui.gyp
 index 09c011c..4716f6c 100644
 --- a/ui/ui.gyp
