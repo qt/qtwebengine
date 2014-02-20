@@ -492,7 +492,7 @@ void WebContentsAdapter::stopFinding()
 {
     Q_D(WebContentsAdapter);
     d->lastSearchedString = QString();
-    d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_CLEAR_SELECTION);
+    d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
 void WebContentsAdapter::wasShown()
