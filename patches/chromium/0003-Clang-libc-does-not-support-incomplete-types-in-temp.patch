@@ -434,21 +434,25 @@ diff --git a/gpu/config/dx_diag_node.cc b/gpu/config/dx_diag_node.cc
 index e0902ca..c1e84ae 100644
 --- a/gpu/config/dx_diag_node.cc
 +++ b/gpu/config/dx_diag_node.cc
-@@ -4,6 +4,8 @@
- 
+@@ -2,8 +2,11 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+
++#include "build/build_config.h"
  #include "gpu/config/dx_diag_node.h"
- 
+
 +#if defined(OS_WIN)
 +
  namespace gpu {
- 
+
  DxDiagNode::DxDiagNode() {}
-@@ -11,3 +13,5 @@ DxDiagNode::DxDiagNode() {}
+@@ -11,3 +14,5 @@ DxDiagNode::DxDiagNode() {}
  DxDiagNode::~DxDiagNode() {}
- 
+
  }  // namespace gpu
 +
 +#endif // defined(OS_WIN)
+
 diff --git a/gpu/config/dx_diag_node.h b/gpu/config/dx_diag_node.h
 index 33d29b3..45ffa65 100644
 --- a/gpu/config/dx_diag_node.h
