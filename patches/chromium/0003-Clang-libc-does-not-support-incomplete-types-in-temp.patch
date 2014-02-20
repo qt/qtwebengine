@@ -453,10 +453,12 @@ diff --git a/gpu/config/dx_diag_node.h b/gpu/config/dx_diag_node.h
 index 33d29b3..45ffa65 100644
 --- a/gpu/config/dx_diag_node.h
 +++ b/gpu/config/dx_diag_node.h
-@@ -8,6 +8,8 @@
+@@ -8,6 +8,10 @@
  #ifndef GPU_CONFIG_DX_DIAG_NODE_H_
  #define GPU_CONFIG_DX_DIAG_NODE_H_
- 
+
++#include "build/build_config.h"
++
 +#if defined(OS_WIN)
 +
  #include <map>
