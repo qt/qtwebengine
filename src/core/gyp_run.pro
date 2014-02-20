@@ -58,6 +58,12 @@ cross_compile {
     GYP_ARGS += "-D CXX=\"$$which($$QMAKE_CXX)\""
 }
 
+win32 {
+# Libvpx build needs additional search path on Windows.
+git_chromium_src_dir = $$system("git config qtwebengine.chromiumsrcdir")
+GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$getOutDir()/$$getConfigDir()/obj/$$git_chromium_src_dir\""
+}
+
 !build_pass {
   message(Running gyp_qtwebengine $${GYP_ARGS}...)
   !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
