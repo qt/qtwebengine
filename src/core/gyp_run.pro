@@ -67,8 +67,25 @@ ninja.target = invoke_ninja
 ninja.commands = $$findOrBuildNinja() \$\(NINJAFLAGS\) -C $$getOutDir()/$$getConfigDir()
 QMAKE_EXTRA_TARGETS += ninja
 
+handle_lib.target = handle_core_library
+TARGETLIB = Qt5WebEngineCore
+win32 {
+# Gyp-Ninja creates Qt5WebEngineCore.dll and Qt5WebEngineCore.dll.lib in out\{Release|Debug}\ directory.
+handle_lib.commands = "if exist $$system_path($$getOutDir()/$$getConfigDir()/lib/$${TARGETLIB}.*) del  $$system_path($$getOutDir()/$$getConfigDir()/lib/$${TARGETLIB}.*)$$escape_expand(\\n\\t)" \
+                      "mklink /H $$system_path($$getOutDir()/$$getConfigDir()/lib/$${TARGETLIB}.dll) $$system_path($$getOutDir()/$$getConfigDir()/$${TARGETLIB}.dll)$$escape_expand(\\n\\t)" \
+                      "mklink /H $$system_path($$getOutDir()/$$getConfigDir()/lib/$${TARGETLIB}.lib) $$system_path($$getOutDir()/$$getConfigDir()/$${TARGETLIB}.dll.lib)"
+
+} else: macx {
+# Gyp-Ninja creates Qt5WebEngineCore.so in in out/{Release|Debug}/ directory.
+handle_lib.commands = ln -f $$getOutDir()/$$getConfigDir()/$${TARGETLIB}.so $$getOutDir()/$$getConfigDir()/lib/$${TARGETLIB}.so
+} else {
+# Nothing to do on Linux
+}
+handle_lib.depends = ninja
+QMAKE_EXTRA_TARGETS += handle_lib
+
 build_pass:build_all:default_target.target = all
 else: default_target.target = first
-default_target.depends = ninja
+default_target.depends = handle_lib
 
 QMAKE_EXTRA_TARGETS += default_target
