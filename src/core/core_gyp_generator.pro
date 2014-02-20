@@ -7,7 +7,7 @@ GYPINCLUDES += qtwebengine.gypi
 
 TEMPLATE = lib
 
-TARGET = Qt5WebEngineCore
+TARGET = $$QTWEBENGINECORE_LIB_NAME
 
 # gyp sets the default install name to /usr/local/lib and we need the module libraries to
 # know its install_name so that they can let the dynamic linker load the core library.

@@ -1,10 +1,9 @@
 TARGET = $$QTWEBENGINEPROCESS_NAME
 TEMPLATE = app
 
-macx {
-    LIBPATH = $$getOutDir()/$$getConfigDir()
-    CONFIG -= app_bundle
-} else:LIBPATH = $$getOutDir()/$$getConfigDir()/lib
+macx: CONFIG -= app_bundle
+
+LIBPATH = $$getOutDir()/$$getConfigDir()/lib
 LIBS_PRIVATE += -L$$LIBPATH -lQt5WebEngineCore
 QMAKE_RPATHDIR += $$LIBPATH
 
