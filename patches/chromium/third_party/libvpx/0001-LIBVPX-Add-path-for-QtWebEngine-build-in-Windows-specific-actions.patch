@@ -1,0 +1,33 @@
+From 8f880cd80b88b0660aa1975ab765183e47dbcef2 Mon Sep 17 00:00:00 2001
+From: Zoltan Arvai <zarvai@inf.u-szeged.hu>
+Date: Mon, 20 Jan 2014 01:53:32 -0800
+Subject: [PATCH] LIBVPX: Add path for QtWebEngine build in Windows specific
+ actions
+
+---
+ libvpx.gyp |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/libvpx.gyp b/libvpx.gyp
+index 392ccde..0621663 100644
+--- a/libvpx.gyp
++++ b/libvpx.gyp
+@@ -402,6 +402,7 @@
+                 '-s', '<(PRODUCT_DIR)/obj/libvpx_asm_offsets_vp8/vp8_asm_enc_offsets.obj',
+                 '-s', '<(ninja_obj_dir)/encoder/libvpx_asm_offsets_vp8.vp8_asm_enc_offsets.obj',
+                 '-s', '<(PRODUCT_DIR)/obj/Source/WebKit/chromium/third_party/libvpx/<(libvpx_source)/vp8/encoder/libvpx_asm_offsets_vp8.vp8_asm_enc_offsets.obj',
++                '-s', '<(PRODUCT_DIR)/obj/src/3rdparty_upstream/chromium/third_party/libvpx/<(libvpx_source)/vp8/encoder/libvpx_asm_offsets_vp8.vp8_asm_enc_offsets.obj',
+               ],
+               'process_output_as_sources': 1,
+               'msvs_cygwin_shell': 1,
+@@ -500,6 +501,7 @@
+                 '-s', '<(PRODUCT_DIR)/obj/libvpx_asm_offsets_vpx_scale/vpx_scale_asm_offsets.obj',
+                 '-s', '<(ninja_obj_dir)/encoder/libvpx_asm_offsets_vpx_scale.vpx_scale_asm_offsets.obj',
+                 '-s', '<(PRODUCT_DIR)/obj/Source/WebKit/chromium/third_party/libvpx/<(libvpx_source)/vpx_scale/libvpx_asm_offsets_vpx_scale.vpx_scale_asm_offsets.obj',
++                '-s', '<(PRODUCT_DIR)/obj/src/3rdparty_upstream/chromium/third_party/libvpx/<(libvpx_source)/vpx_scale/encoder/libvpx_asm_offsets_vpx_scale.vpx_scale_asm_offsets.obj',
+               ],
+               'process_output_as_sources': 1,
+               'msvs_cygwin_shell': 1,
+-- 
+1.7.9
+
