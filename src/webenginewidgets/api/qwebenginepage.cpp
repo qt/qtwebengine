@@ -216,7 +216,10 @@ void QWebEnginePagePrivate::selectionChanged()
 
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
-    return view ? view->geometry() : QRectF();
+    QRectF rect(QPointF(), viewportSize);
+    if (view)
+        rect.setTopLeft(view->rect().topLeft());
+    return rect;
 }
 
 qreal QWebEnginePagePrivate::dpiScale() const
@@ -500,10 +503,16 @@ void QWebEnginePage::findText(const QString &subString, FindFlags options, const
     }
 }
 
-void QWebEnginePage::setViewportSize(const QSize &size) const
+QSize QWebEnginePage::viewportSize() const
 {
-    Q_UNUSED(size)
     Q_D(const QWebEnginePage);
+    return d->viewportSize;
+}
+
+void QWebEnginePage::setViewportSize(const QSize &size)
+{
+    Q_D(QWebEnginePage);
+    d->viewportSize = size;
     if (d->m_rwhvDelegate)
         d->m_rwhvDelegate->notifyResize();
 }

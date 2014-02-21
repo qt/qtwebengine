@@ -142,13 +142,14 @@ public:
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineView *view;
-    mutable QAction *actions[QWebEnginePage::WebActionCount];
+    QSize viewportSize;
     bool m_isLoading;
     QUrl m_explicitUrl;
     WebEngineContextMenuData m_menuData;
     QPointer<RenderWidgetHostViewQtDelegateWebPage> m_rwhvDelegate;
 
     mutable CallbackDirectory m_callbacks;
+    mutable QAction *actions[QWebEnginePage::WebActionCount];
 };
 
 QT_END_NAMESPACE

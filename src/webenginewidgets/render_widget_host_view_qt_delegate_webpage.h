@@ -52,6 +52,7 @@ class BackingStoreQt;
 QT_BEGIN_NAMESPACE
 class QWindow;
 class QWebEnginePage;
+class QWebEnginePagePrivate;
 QT_END_NAMESPACE
 
 class RenderWidgetHostViewQtDelegateWebPage : public QObject, public RenderWidgetHostViewQtDelegate
@@ -86,6 +87,7 @@ protected:
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
     QWebEnginePage *m_page;
+    QWebEnginePagePrivate *m_pagePrivate;
 };
 
 #endif
