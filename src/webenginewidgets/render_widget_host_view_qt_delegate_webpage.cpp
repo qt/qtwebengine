@@ -67,8 +67,8 @@ void RenderWidgetHostViewQtDelegateWebPage::initAsChild(WebContentsAdapterClient
 
 QRectF RenderWidgetHostViewQtDelegateWebPage::screenRect() const
 {
-    if (m_page && m_page->view())
-        return m_page->view()->rect();
+    if (m_page)
+        return m_page->d_func()->viewportRect();
     // FIXME: figure out what to do with QWebFrame::contentsSize vs. preferedContentsSize
     return QRectF(0, 0, 800, 600);
 }

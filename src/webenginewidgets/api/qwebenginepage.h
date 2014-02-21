@@ -355,7 +355,7 @@ public:
     virtual void triggerAction(WebAction action, bool checked = false);
 
     QSize viewportSize() const;
-    void setViewportSize(const QSize &size) const;
+    void setViewportSize(const QSize &size);
     ViewportAttributes viewportAttributesForSize(const QSize& availableSize) const;
 
     QSize preferredContentsSize() const;
@@ -578,6 +578,7 @@ private:
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
+    friend class RenderWidgetHostViewQtDelegateWebPage;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebEnginePage::FindFlags);
