@@ -54,21 +54,22 @@
 RenderWidgetHostViewQtDelegateWebPage::RenderWidgetHostViewQtDelegateWebPage(RenderWidgetHostViewQtDelegateClient *client)
     : m_client(client)
     , m_page(0)
+    , m_pagePrivate(0)
 {
 }
 
 void RenderWidgetHostViewQtDelegateWebPage::initAsChild(WebContentsAdapterClient* container)
 {
-    QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
-    pagePrivate->m_rwhvDelegate = this;
-    m_page = pagePrivate->q_func();
+    m_pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
+    m_pagePrivate->m_rwhvDelegate = this;
+    m_page = m_pagePrivate->q_func();
     Q_ASSERT(m_page);
 }
 
 QRectF RenderWidgetHostViewQtDelegateWebPage::screenRect() const
 {
-    if (m_page && m_page->view())
-        return m_page->view()->rect();
+    if (m_pagePrivate)
+        return m_pagePrivate->viewportRect();
     // FIXME: figure out what to do with QWebFrame::contentsSize vs. preferedContentsSize
     return QRectF(0, 0, 800, 600);
 }
