@@ -54,11 +54,11 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(QUrl icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged)
     Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingStateChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingStateChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingChanged)
     Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_ENUMS(LoadStatus);
     Q_ENUMS(ErrorDomain);
@@ -112,7 +112,7 @@ Q_SIGNALS:
     void titleChanged();
     void urlChanged();
     void iconChanged();
-    void loadingStateChanged(QQuickWebEngineLoadRequest *loadRequest);
+    void loadingChanged(QQuickWebEngineLoadRequest *loadRequest);
     void loadProgressChanged();
     void javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID);
 
