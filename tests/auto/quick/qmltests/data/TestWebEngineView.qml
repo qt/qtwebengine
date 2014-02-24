@@ -83,7 +83,7 @@ WebEngineView {
 
     TestResult { id: testResult }
 
-    onLoadingStateChanged: {
+    onLoadingChanged: {
         loadStatus = loadRequest.status
         if (loadRequest.status == WebEngineView.LoadStartedStatus)
             viewportReady = false
