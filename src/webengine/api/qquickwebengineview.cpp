@@ -224,7 +224,7 @@ void QQuickWebEngineViewPrivate::loadingStateChanged()
     m_isLoading = adapter->isLoading();
     if (m_isLoading && !wasLoading) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStartedStatus);
-        Q_EMIT q->loadingStateChanged(&loadRequest);
+        Q_EMIT q->loadingChanged(&loadRequest);
     }
 }
 
@@ -251,12 +251,12 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, cons
     Q_Q(QQuickWebEngineView);
     if (error_code == WebEngineError::UserAbortedError) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
-        Q_EMIT q->loadingStateChanged(&loadRequest);
+        Q_EMIT q->loadingChanged(&loadRequest);
         return;
     }
     if (success) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadSucceededStatus);
-        Q_EMIT q->loadingStateChanged(&loadRequest);
+        Q_EMIT q->loadingChanged(&loadRequest);
         return;
     }
 
@@ -267,7 +267,7 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, cons
         error_description,
         error_code,
         static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(error_code)));
-    Q_EMIT q->loadingStateChanged(&loadRequest);
+    Q_EMIT q->loadingChanged(&loadRequest);
     return;
 }
 
@@ -354,7 +354,7 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     // FIXME: The current loading state should be stored in the WebContentAdapter
     // and it should be checked here if the signal emission is really necessary.
     QQuickWebEngineLoadRequest loadRequest(adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
-    emit q->loadingStateChanged(&loadRequest);
+    emit q->loadingChanged(&loadRequest);
     emit q->loadProgressChanged();
 }
 

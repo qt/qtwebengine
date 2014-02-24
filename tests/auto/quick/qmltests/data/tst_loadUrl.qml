@@ -59,7 +59,7 @@ TestWebEngineView {
         }
     }
 
-    onLoadingStateChanged: {
+    onLoadingChanged: {
         if (loadRequest.status == WebEngineView.LoadStartedStatus)
             ++numLoadStarted
         if (loadRequest.status == WebEngineView.LoadSucceededStatus)
@@ -104,7 +104,7 @@ TestWebEngineView {
         function test_stopStatus() {
             var url = Qt.resolvedUrl("test1.html")
 
-            webEngineView.loadingStateChanged.connect(function(loadRequest) {
+            webEngineView.loadingChanged.connect(function(loadRequest) {
                 if (loadRequest.status == WebEngineView.LoadStoppedStatus) {
                     compare(webEngineView.url, url)
                     compare(loadRequest.url, url)

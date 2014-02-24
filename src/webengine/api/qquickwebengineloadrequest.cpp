@@ -46,7 +46,7 @@
     \instantiates QQuickWebEngineLoadRequest
     \inqmlmodule QtWebEngine 1.0
 
-    \brief A utility class for the WebEngineView::loadingStateChanged signal.
+    \brief A utility class for the WebEngineView::loadingChanged signal.
 
     This class contains information about a requested load of a web page, like the URL and
     current loading status (started, finished, failed).
