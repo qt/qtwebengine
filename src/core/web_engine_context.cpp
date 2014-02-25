@@ -43,10 +43,12 @@
 
 #include <math.h>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/base/switches.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
@@ -60,6 +62,7 @@
 #include "content/gpu/in_process_gpu_thread.h"
 
 #include "ui/gl/gl_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #include "content_browser_client_qt.h"
@@ -141,10 +144,25 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
     }
 
 #if defined(OS_ANDROID)
-    // Force single-process mode for now.
-    parsedCommandLine->AppendSwitch(switches::kSingleProcess);
-    // This is needed so that we do not assert in single process mode.
-    parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
+    // Required on Android
+    parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbars);
+    parsedCommandLine->AppendSwitch(switches::kEnableGestureTapHighlight);
+    parsedCommandLine->AppendSwitch(switches::kEnablePinch);
+    parsedCommandLine->AppendSwitch(switches::kEnableFixedLayout);
+    parsedCommandLine->AppendSwitch(switches::kEnableViewport);
+    parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideo);
+    parsedCommandLine->AppendSwitch(switches::kDisableAudio);
+    parsedCommandLine->AppendSwitch(switches::kEnableAcceleratedOverflowScroll);
+    parsedCommandLine->AppendSwitch(switches::kEnableCompositingForFixedPosition);
+    parsedCommandLine->AppendSwitch(switches::kEnableAcceleratedScrollableFrames);
+    parsedCommandLine->AppendSwitch(switches::kEnableCompositedScrollingForFrames);
+    parsedCommandLine->AppendSwitch(switches::kForceCompositingMode);
+    parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
+    parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
+    parsedCommandLine->AppendSwitch(switches::kEnableDeadlineScheduling);
+    parsedCommandLine->AppendSwitch(cc::switches::kDisableImplSidePainting);
+    parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
+    parsedCommandLine->AppendSwitch(cc::switches::kDisable4444Textures);
 #endif
 
     // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
