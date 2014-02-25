@@ -43,8 +43,6 @@
 
 #include "browserapplication.h"
 #include "browsermainwindow.h"
-#include "ui_passworddialog.h"
-#include "ui_proxy.h"
 
 #include <QtCore/QSettings>
 
@@ -66,10 +64,6 @@ NetworkAccessManager::NetworkAccessManager(QObject *parent)
     requestFinishedCount(0), requestFinishedFromCacheCount(0), requestFinishedPipelinedCount(0),
     requestFinishedSecureCount(0), requestFinishedDownloadBufferCount(0)
 {
-    connect(this, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
-            SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
-    connect(this, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-            SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     connect(this, SIGNAL(finished(QNetworkReply*)),
             SLOT(requestFinished(QNetworkReply*)));
 #ifndef QT_NO_OPENSSL
@@ -138,54 +132,6 @@ void NetworkAccessManager::loadSettings()
         proxy.setPassword(settings.value(QLatin1String("password")).toString());
     }
     setProxy(proxy);
-}
-
-void NetworkAccessManager::authenticationRequired(QNetworkReply *reply, QAuthenticator *auth)
-{
-    BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
-
-    QDialog dialog(mainWindow);
-    dialog.setWindowFlags(Qt::Sheet);
-
-    Ui::PasswordDialog passwordDialog;
-    passwordDialog.setupUi(&dialog);
-
-    passwordDialog.iconLabel->setText(QString());
-    passwordDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
-
-    QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
-    introMessage = introMessage.arg(reply->url().toString().toHtmlEscaped()).arg(reply->url().toString().toHtmlEscaped());
-    passwordDialog.introLabel->setText(introMessage);
-    passwordDialog.introLabel->setWordWrap(true);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        auth->setUser(passwordDialog.userNameLineEdit->text());
-        auth->setPassword(passwordDialog.passwordLineEdit->text());
-    }
-}
-
-void NetworkAccessManager::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth)
-{
-    BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
-
-    QDialog dialog(mainWindow);
-    dialog.setWindowFlags(Qt::Sheet);
-
-    Ui::ProxyDialog proxyDialog;
-    proxyDialog.setupUi(&dialog);
-
-    proxyDialog.iconLabel->setText(QString());
-    proxyDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
-
-    QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
-    introMessage = introMessage.arg(proxy.hostName().toHtmlEscaped());
-    proxyDialog.introLabel->setText(introMessage);
-    proxyDialog.introLabel->setWordWrap(true);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        auth->setUser(proxyDialog.userNameLineEdit->text());
-        auth->setPassword(proxyDialog.passwordLineEdit->text());
-    }
 }
 
 #ifndef QT_NO_OPENSSL

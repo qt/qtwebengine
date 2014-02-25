@@ -44,8 +44,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_main_parts.h"
-#include "content/public/common/main_function_params.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -53,6 +54,7 @@
 
 #include "browser_context_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
+#include "resource_dispatcher_host_delegate_qt.h"
 #include "web_contents_view_qt.h"
 
 #include <QGuiApplication>
@@ -286,6 +288,12 @@ void ContentBrowserClientQt::RenderProcessHostCreated(content::RenderProcessHost
 {
     // FIXME: Add a settings variable to enable/disable the file scheme.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), chrome::kFileScheme);
+}
+
+void ContentBrowserClientQt::ResourceDispatcherHostCreated()
+{
+    m_resourceDispatcherHostDelegate.reset(new ResourceDispatcherHostDelegateQt);
+    content::ResourceDispatcherHost::Get()->SetDelegate(m_resourceDispatcherHostDelegate.get());
 }
 
 gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
