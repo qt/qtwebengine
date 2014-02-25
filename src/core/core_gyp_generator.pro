@@ -52,6 +52,7 @@ SOURCES = \
         renderer/qt_render_view_observer.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
+        resource_dispatcher_host_delegate_qt.cpp \
         stream_video_node.cpp \
         url_request_context_getter_qt.cpp \
         web_contents_adapter.cpp \
@@ -87,6 +88,7 @@ HEADERS = \
         renderer/content_renderer_client_qt.h \
         renderer/qt_render_view_observer.h \
         resource_context_qt.h \
+        resource_dispatcher_host_delegate_qt.h \
         stream_video_node.h \
         url_request_context_getter_qt.h \
         web_contents_adapter.h \
