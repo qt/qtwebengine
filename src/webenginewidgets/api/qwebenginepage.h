@@ -542,6 +542,9 @@ Q_SIGNALS:
     void featurePermissionRequested(QWebEngineFrame* frame, QWebEnginePage::Feature feature);
     void featurePermissionRequestCanceled(QWebEngineFrame* frame, QWebEnginePage::Feature feature);
 
+    void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
+    void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
+
     // Ex-QWebFrame signals
     void javaScriptWindowObjectCleared();
 
