@@ -58,6 +58,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/bind.h"
 #include "cc/output/delegated_frame_data.h"
+#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -394,7 +395,17 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
             }
 
             switch (quad->material) {
-            case cc::DrawQuad::RENDER_PASS: {
+            case cc::DrawQuad::CHECKERBOARD: {
+                const cc::CheckerboardDrawQuad *cbquad = cc::CheckerboardDrawQuad::MaterialCast(quad);
+                QSGRenderContext *sgrc = QQuickWindowPrivate::get(m_window)->context;
+                QSGRectangleNode *rectangleNode = sgrc->sceneGraphContext()->createRectangleNode();
+
+                rectangleNode->setRect(toQt(quad->rect));
+                rectangleNode->setColor(toQt(cbquad->color));
+                rectangleNode->update();
+                currentLayerChain->appendChildNode(rectangleNode);
+                break;
+            } case cc::DrawQuad::RENDER_PASS: {
                 const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
                 QSGTexture *texture = findRenderPassTexture(renderPassQuad->render_pass_id, m_renderPassTextures).data();
                 // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes.
