@@ -72,6 +72,8 @@ protected:
 
 private slots:
     void handleUnsupportedContent(QNetworkReply *reply);
+    void authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
+    void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
 
 private:
     friend class WebView;

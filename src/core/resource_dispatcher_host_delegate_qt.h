@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the demonstration applications of the Qt Toolkit.
+** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -39,37 +39,43 @@
 **
 ****************************************************************************/
 
-#ifndef NETWORKACCESSMANAGER_H
-#define NETWORKACCESSMANAGER_H
+#ifndef RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#define RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
 
-#include <QtNetwork/QNetworkAccessManager>
-#include <QtNetwork/QNetworkRequest>
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
 
-class NetworkAccessManager : public QNetworkAccessManager
-{
-    Q_OBJECT
+#include "web_contents_adapter_client.h"
 
+class ResourceDispatcherHostLoginDelegateQt : public content::ResourceDispatcherHostLoginDelegate {
 public:
-    NetworkAccessManager(QObject *parent = 0);
+    ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request);
+    ~ResourceDispatcherHostLoginDelegateQt();
 
-    virtual QNetworkReply* createRequest ( Operation op, const QNetworkRequest & req, QIODevice * outgoingData = 0 );
+    // ResourceDispatcherHostLoginDelegate implementation
+    virtual void OnRequestCancelled();
 
 private:
-    QList<QString> sslTrustedHostList;
-    qint64 requestFinishedCount;
-    qint64 requestFinishedFromCacheCount;
-    qint64 requestFinishedPipelinedCount;
-    qint64 requestFinishedSecureCount;
-    qint64 requestFinishedDownloadBufferCount;
+    void triggerDialog();
+    void sendAuthToRequester(bool success, const QString &user, const QString &password);
 
-public slots:
-    void loadSettings();
-    void requestFinished(QNetworkReply *reply);
+    QUrl m_url;
+    QString m_realm;
+    bool m_isProxy;
+    QString m_host;
 
-private slots:
-#ifndef QT_NO_OPENSSL
-    void sslErrors(QNetworkReply *reply, const QList<QSslError> &error);
-#endif
+    int m_renderProcessId;
+    int m_renderViewId;
+
+    // The request that wants login data.
+    // Must only be accessed on the IO thread.
+    net::URLRequest *m_request;
 };
 
-#endif // NETWORKACCESSMANAGER_H
+class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate {
+public:
+    virtual bool AcceptAuthRequest(net::URLRequest *request, net::AuthChallengeInfo *authInfo) Q_DECL_OVERRIDE;
+    virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) Q_DECL_OVERRIDE;
+};
+
+#endif // RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H

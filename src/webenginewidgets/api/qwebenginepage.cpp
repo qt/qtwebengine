@@ -42,6 +42,7 @@
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QUrl>
+#include <private/qauthenticator_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -279,6 +280,22 @@ void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const Q
 void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
 {
     m_callbacks.invoke(requestId, matchCount > 0);
+}
+
+void QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword)
+{
+    Q_Q(QWebEnginePage);
+    QAuthenticator networkAuth;
+    // Detach to trigger the creation of its QAuthenticatorPrivate.
+    networkAuth.detach();
+    QAuthenticatorPrivate::getPrivate(networkAuth)->realm = realm;
+
+    if (isProxy)
+        Q_EMIT q->proxyAuthenticationRequired(requestUrl, &networkAuth, challengingHost);
+    else
+        Q_EMIT q->authenticationRequired(requestUrl, &networkAuth);
+    *outUser = networkAuth.user();
+    *outPassword = networkAuth.password();
 }
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const

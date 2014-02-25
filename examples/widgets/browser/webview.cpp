@@ -44,10 +44,13 @@
 #include "cookiejar.h"
 #include "downloadmanager.h"
 #include "networkaccessmanager.h"
+#include "ui_passworddialog.h"
+#include "ui_proxy.h"
 #include "tabwidget.h"
 #include "webview.h"
 
 #include <QtGui/QClipboard>
+#include <QtNetwork/QAuthenticator>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
@@ -72,6 +75,10 @@ WebPage::WebPage(QObject *parent)
 #endif
     connect(this, SIGNAL(unsupportedContent(QNetworkReply*)),
             this, SLOT(handleUnsupportedContent(QNetworkReply*)));
+    connect(this, SIGNAL(authenticationRequired(const QUrl &, QAuthenticator*)),
+            SLOT(authenticationRequired(const QUrl &, QAuthenticator*)));
+    connect(this, SIGNAL(proxyAuthenticationRequired(const QUrl &, QAuthenticator *, const QString &)),
+            SLOT(proxyAuthenticationRequired(const QUrl &, QAuthenticator *, const QString &)));
 }
 
 BrowserMainWindow *WebPage::mainWindow()
@@ -249,6 +256,53 @@ void WebPage::handleUnsupportedContent(QNetworkReply *reply)
 #endif
 }
 
+void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
+{
+    BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
+
+    QDialog dialog(mainWindow);
+    dialog.setWindowFlags(Qt::Sheet);
+
+    Ui::PasswordDialog passwordDialog;
+    passwordDialog.setupUi(&dialog);
+
+    passwordDialog.iconLabel->setText(QString());
+    passwordDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+
+    QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
+    introMessage = introMessage.arg(auth->realm()).arg(requestUrl.toString().toHtmlEscaped());
+    passwordDialog.introLabel->setText(introMessage);
+    passwordDialog.introLabel->setWordWrap(true);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        auth->setUser(passwordDialog.userNameLineEdit->text());
+        auth->setPassword(passwordDialog.passwordLineEdit->text());
+    }
+}
+
+void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost)
+{
+    BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
+
+    QDialog dialog(mainWindow);
+    dialog.setWindowFlags(Qt::Sheet);
+
+    Ui::ProxyDialog proxyDialog;
+    proxyDialog.setupUi(&dialog);
+
+    proxyDialog.iconLabel->setText(QString());
+    proxyDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+
+    QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
+    introMessage = introMessage.arg(proxyHost.toHtmlEscaped());
+    proxyDialog.introLabel->setText(introMessage);
+    proxyDialog.introLabel->setWordWrap(true);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        auth->setUser(proxyDialog.userNameLineEdit->text());
+        auth->setPassword(proxyDialog.passwordLineEdit->text());
+    }
+}
 
 WebView::WebView(QWidget* parent)
     : QWebEngineView(parent)
