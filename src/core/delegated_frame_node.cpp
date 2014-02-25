@@ -58,6 +58,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/bind.h"
 #include "cc/output/delegated_frame_data.h"
+#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -405,6 +406,16 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setTexture(texture);
                 currentLayerChain->appendChildNode(textureNode);
+                break;
+            } case cc::DrawQuad::CHECKERBOARD: {
+                const cc::CheckerboardDrawQuad *cbquad = cc::CheckerboardDrawQuad::MaterialCast(quad);
+                QSGRenderContext *sgrc = QQuickWindowPrivate::get(m_window)->context;
+                QSGRectangleNode *rectangleNode = sgrc->sceneGraphContext()->createRectangleNode();
+
+                rectangleNode->setRect(toQt(quad->rect));
+                rectangleNode->setColor(toQt(cbquad->color));
+                rectangleNode->update();
+                currentLayerChain->appendChildNode(rectangleNode);
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
