@@ -7,12 +7,8 @@ GYPINCLUDES += qtwebengine.gypi
 
 TEMPLATE = lib
 
-TARGET = Qt5WebEngineCore
-
-# gyp sets the default install name to /usr/local/lib and we need the module libraries to
-# know its install_name so that they can let the dynamic linker load the core library.
-# FIXME: Remove this and put it in qtwebengine.gypi once we can use a relative path to @loader_path.
-macx: GYP_DYLIB_INSTALL_NAME_BASE = $$getOutDir()/$$getConfigDir()
+# This must match the target name in core_module.pro to allow it to do the linking part.
+TARGET = QtWebEngineCore
 
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
@@ -104,14 +100,3 @@ HEADERS = \
         yuv_video_node.h \
         qrc_protocol_handler_qt.h \
         url_request_qrc_job_qt.h
-
-VERSION = $$MODULE_VERSION
-win32:CONFIG += skip_target_version_ext
-load(resolve_target)
-TARGET_NAME = $$basename(QMAKE_RESOLVED_TARGET)
-TARGET_NAME = $$replace(TARGET_NAME, .$${VERSION},)
-
-target.files = $$getOutDir()/$$getConfigDir()/lib/$$TARGET_NAME
-target.CONFIG += no_check_exist # Trust us, qmake...
-target.path = $$[QT_INSTALL_LIBS]
-INSTALLS += target

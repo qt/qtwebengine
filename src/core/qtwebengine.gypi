@@ -1,4 +1,7 @@
 {
+    # This asks gyp to generate a .pri file with linking
+    # information so that qmake can take care of the deployment.
+    'let_qmake_do_the_linking': 1,
     'dependencies': [
       '<(chromium_src_dir)/content/content.gyp:content',
       '<(chromium_src_dir)/content/content.gyp:content_app_browser',

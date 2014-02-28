@@ -1,15 +1,9 @@
 TARGET = $$QTWEBENGINEPROCESS_NAME
 TEMPLATE = app
 
-macx {
-    LIBPATH = $$getOutDir()/$$getConfigDir()
-    CONFIG -= app_bundle
-} else:LIBPATH = $$getOutDir()/$$getConfigDir()/lib
-LIBS_PRIVATE += -L$$LIBPATH -lQt5WebEngineCore
-QMAKE_RPATHDIR += $$LIBPATH
+QT_PRIVATE += webenginecore
 
-qnx: QMAKE_RPATHLINKDIR += $${QNX_DIR}/$${QNX_CPUDIR}/usr/lib/qt5/lib
-else: cross_compile: QMAKE_RPATHLINKDIR += $$[QT_INSTALL_LIBS]
+CONFIG -= app_bundle
 
 load(qt_build_paths)
 DESTDIR = $$MODULE_BASE_OUTDIR/libexec
