@@ -12,13 +12,17 @@ gyp_configure_target.depends = gyp_configure_host
 
 # gyp_run.pro calls gyp through gyp_qtwebengine on the qmake step, and ninja on the make step.
 gyp_run.file = gyp_run.pro
-
 gyp_run.depends = core_gyp_generator gyp_configure_host gyp_configure_target
+
+# This will take the compile output of ninja, and link+deploy the final binary.
+core_module.file = core_module.pro
+core_module.depends = gyp_run
 
 SUBDIRS += core_gyp_generator \
            gyp_configure_host \
            gyp_configure_target \
-           gyp_run
+           gyp_run \
+           core_module
 
 REPACK_DIR = $$getOutDir()/$$getConfigDir()/gen/repack
 locales.files = $$REPACK_DIR/qtwebengine_locales
