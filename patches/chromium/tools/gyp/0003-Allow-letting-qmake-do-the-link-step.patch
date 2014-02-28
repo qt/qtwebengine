@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Thu, 27 Feb 2014 17:42:48 +0100
+Subject: Allow letting qmake do the link step
+
+This adds a let_qmake_do_the_linking target variable to tell ninja
+not to link but rather dump the linking information from gyp in a
+file that we'll parse with qmake.
+
+Change-Id: Icfaadae7ce4e9895f76b5fe06e05124e9b980e8b
+Reviewed-by: Zoltan Arvai <zarvai@inf.u-szeged.hu>
+Reviewed-by: Andras Becsi <andras.becsi@digia.com>
+---
+ pylib/gyp/generator/ninja.py | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+
+diff --git a/pylib/gyp/generator/ninja.py b/pylib/gyp/generator/ninja.py
+index 6fe07c5..c61f180 100644
+--- a/pylib/gyp/generator/ninja.py
++++ b/pylib/gyp/generator/ninja.py
+@@ -1090,6 +1090,49 @@ class NinjaWriter:
+       else:
+         command = command + '_notoc'
+ 
++      if config.get('let_qmake_do_the_linking', 0):
++        def toAbsPaths(paths):
++          return [os.path.relpath(path, self.toplevel_build) if os.path.isabs(path) else path
++                  for path in paths]
++        def qmakeLiteral(s):
++          return s.replace('"', '\\"')
++
++        # Generate this file for all solink targets, this assumes that
++        # a .pro file will pick up this pri file and do the rest of the work.
++        pri_file = open(os.path.join(self.toplevel_build, self.name + "_linking.pri"), 'w')
++
++        if self.flavor == 'win':
++          # qmake will take care of the manifest
++          ldflags = filter(lambda x: not x.lower().startswith('/manifest'), ldflags)
++
++        # Replace "$!PRODUCT_DIR" with "$$PWD" in link flags (which might contain some -L directives).
++        prefixed_lflags = [self.ExpandSpecial(f, '$$PWD') for f in ldflags]
++        prefixed_library_dirs = ['-L' + self.ExpandSpecial(f, '$$PWD') for f in config.get('library_dirs', [])]
++        prefixed_libraries = gyp.common.uniquer([self.ExpandSpecial(f, '$$PWD') for f in spec.get('libraries', [])])
++        if self.flavor == 'mac':
++          prefixed_libraries = self.xcode_settings.AdjustLibraries(prefixed_libraries)
++        elif self.flavor == 'win':
++          prefixed_libraries = self.msvs_settings.AdjustLibraries(prefixed_libraries)
++
++        # Make sure that we have relative paths to our out/(Release|Debug), where we generate our .pri file, and then prepend $$PWD to them.
++        prefixed_object_and_archives = ['$$PWD/' + o for o in toAbsPaths(link_deps)]
++
++        pri_file.write("QMAKE_LFLAGS += %s\n" % qmakeLiteral(' '.join(prefixed_lflags)))
++        # Follow the logic of the solink rule.
++        if self.flavor != 'mac' and self.flavor != 'win':
++          pri_file.write("LIBS_PRIVATE += -Wl,--whole-archive %s -Wl,--no-whole-archive\n" % qmakeLiteral(' '.join(prefixed_object_and_archives)))
++        else:
++          pri_file.write("LIBS_PRIVATE += %s\n" % qmakeLiteral(' '.join(prefixed_object_and_archives)))
++        # External libs have to come after objects/archives, the linker resolve them in order.
++        pri_file.write("LIBS_PRIVATE += %s\n" % qmakeLiteral(' '.join(prefixed_library_dirs + prefixed_libraries)))
++        # Make sure that if ninja modifies one of the inputs, qmake/make will link again.
++        pri_file.write("POST_TARGETDEPS += %s\n" % qmakeLiteral(' '.join(prefixed_object_and_archives)))
++        pri_file.close()
++
++        # In this mode we prevent letting ninja link at all.
++        command = 'phony'
++        command_suffix = ''
++
+     if len(solibs):
+       extra_bindings.append(('solibs', gyp.common.EncodePOSIXShellList(solibs)))
+ 
