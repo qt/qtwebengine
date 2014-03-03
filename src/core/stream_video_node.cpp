@@ -77,9 +77,10 @@ protected:
         "#extension GL_OES_EGL_image_external : require\n"
         "varying mediump vec2 v_texCoord;\n"
         "uniform samplerExternalOES s_texture;\n"
+        "uniform lowp float alpha;\n"
         "void main() {\n"
         "  vec4 texColor = texture2D(s_texture, v_texCoord);\n"
-        "  gl_FragColor = texColor;\n"
+        "  gl_FragColor = texColor * alpha;\n"
         "}";
         return shader;
     }
@@ -87,10 +88,12 @@ protected:
     virtual void initialize() {
         m_id_matrix = program()->uniformLocation("matrix");
         m_id_sTexture = program()->uniformLocation("s_texture");
+        m_id_opacity = program()->uniformLocation("alpha");
     }
 
     int m_id_matrix;
     int m_id_sTexture;
+    int m_id_opacity;
 };
 
 void StreamVideoMaterialShader::updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial)
@@ -102,7 +105,9 @@ void StreamVideoMaterialShader::updateState(const RenderState &state, QSGMateria
 
     mat->m_texture->bind();
 
-    // TODO(mchishtie): handle state.opacity() when shader implements it
+    if (state.isOpacityDirty())
+        program()->setUniformValue(m_id_opacity, state.opacity());
+
     if (state.isMatrixDirty())
         program()->setUniformValue(m_id_matrix, state.combinedMatrix());
 }
