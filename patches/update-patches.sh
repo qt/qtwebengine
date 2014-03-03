@@ -48,6 +48,7 @@ for MODULE in \
     / \
     /third_party/WebKit \
     /third_party/libjingle/source/talk \
+    /third_party/libvpx \
     /tools/gyp \
     /tools/grit
 do
