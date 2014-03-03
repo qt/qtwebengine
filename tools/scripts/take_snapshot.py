@@ -80,17 +80,29 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('isolate') and
             not '/webrtc/test/testsupport/' in file_path and
             not file_path.startswith('net/test/') and
-            not file_path.endswith('mock_chrome_application_mac.h'))
+            not file_path.endswith('mock_chrome_application_mac.h') and
+            not file_path.endswith('perftimer.h') and
+            not 'ozone' in file_path)
         or file_path.endswith('.java')
         or file_path.startswith('android_webview')
         or file_path.startswith('apps/')
-        or file_path.startswith('ash/')
         or file_path.startswith('base/android/java')
         or file_path.startswith('breakpad')
         or file_path.startswith('build/android/')
         or (file_path.startswith('chrome/') and
+            not file_path.startswith('chrome/VERSION') and
+            not '/app/theme/' in file_path and
+            not '/app/resources/' in file_path and
+            not '/browser/resources/' in file_path and
+            not '/renderer/resources/' in file_path and
             not 'repack_locales' in file_path and
-            not file_path.endswith('version.py'))
+            not 'third_party/chromevox' in file_path and
+            not file_path.endswith('.isolate') and
+            not file_path.endswith('cf_resources.rc') and
+            not file_path.endswith('version.py') and
+            not file_path.endswith('.grd') and
+            not file_path.endswith('.grdp') and
+            not file_path.endswith('.json'))
         or file_path.startswith('chrome_frame')
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
@@ -119,14 +131,18 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/aosp')
         or file_path.startswith('third_party/apache-mime4j')
         or file_path.startswith('third_party/apple_sample_code')
-        or file_path.startswith('third_party/cacheinvalidation')
+        or file_path.startswith('third_party/bison')
+        or file_path.startswith('third_party/brotli')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
         or file_path.startswith('third_party/cros_dbus_cplusplus')
+        or file_path.startswith('third_party/cygwin')
         or file_path.startswith('third_party/cros_system_api')
         or file_path.startswith('third_party/eyesfree')
         or file_path.startswith('third_party/findbugs')
+        or file_path.startswith('third_party/gperf')
+        or file_path.startswith('third_party/gnu_binutils')
         or file_path.startswith('third_party/gtk+')
         or file_path.startswith('third_party/guava/src')
         or file_path.startswith('third_party/httpcomponents-client')
@@ -136,10 +152,20 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/jarjar')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/libphonenumber')
+        or file_path.startswith('third_party/libaddressinput')
+        or file_path.startswith('third_party/liblouis')
         or file_path.startswith('third_party/lighttpd')
+        or file_path.startswith('third_party/mingw-w64')
+        or file_path.startswith('third_party/nacl_sdk_binaries')
         or file_path.startswith('third_party/pdfsqueeze')
+        or file_path.startswith('third_party/pefile')
+        or file_path.startswith('third_party/perl')
+        or file_path.startswith('third_party/psyco_win32')
+        or file_path.startswith('third_party/python_26')
         or file_path.startswith('third_party/scons-2.0.1')
+        or file_path.startswith('third_party/syzygy')
         or file_path.startswith('third_party/swig')
+        or file_path.startswith('third_party/webgl')
         or (file_path.startswith('third_party/trace-viewer') and
             not file_path.endswith('.template') and
             not file_path.endswith('.html') and
@@ -147,17 +173,19 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('.css') and
             not file_path.endswith('.png') and
             not '/build/' in file_path)
-        or file_path.startswith('third_party/webgl_conformance')
+        or file_path.startswith('third_party/xulrunner-sdk')
         or file_path.startswith('tools/android')
         or file_path.startswith('tools/deep_memory_profiler')
         or file_path.startswith('tools/gn')
         or file_path.startswith('tools/page_cycler')
         or file_path.startswith('tools/perf')
+        or file_path.startswith('tools/swarming_client')
         or file_path.startswith('tools/swarm_client')
         or file_path.startswith('tools/telemetry')
-        or file_path.startswith('tools/win')
+        or (file_path.startswith('tools/win') and
+           not 'toolchain' in file_path)
         or file_path.startswith('ui/android/java')
-        or file_path.startswith('win8')
+
         ):
             return True
     return False
