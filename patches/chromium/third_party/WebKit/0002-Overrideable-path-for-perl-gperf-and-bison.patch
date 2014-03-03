@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zoltan Arvai <zarvai@inf.u-szeged.hu>
+Date: Mon, 3 Mar 2014 14:18:12 +0100
+Subject: [PATCH] Overrideable path for perl, gperf and bison.
+
+---
+ Source/core/core.gypi |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Source/core/core.gypi b/Source/core/core.gypi
+index 3cd07aa..77879bb 100644
+--- a/Source/core/core.gypi
++++ b/Source/core/core.gypi
+@@ -3879,9 +3879,9 @@
+             ['OS=="win"', {
+                 # Using native perl rather than cygwin perl cuts execution time
+                 # of idl preprocessing rules by a bit more than 50%.
+-                'perl_exe': '<(DEPTH)/third_party/perl/perl/bin/perl.exe',
+-                'gperf_exe': '<(DEPTH)/third_party/gperf/bin/gperf.exe',
+-                'bison_exe': '<(DEPTH)/third_party/bison/bin/bison.exe',
++                'perl_exe%': '<(DEPTH)/third_party/perl/perl/bin/perl.exe',
++                'gperf_exe%': '<(DEPTH)/third_party/gperf/bin/gperf.exe',
++                'bison_exe%': '<(DEPTH)/third_party/bison/bin/bison.exe',
+                 # Using cl instead of cygwin gcc cuts the processing time from
+                 # 1m58s to 0m52s.
+                 'preprocessor': '--preprocessor "cl.exe -nologo -EP -TP"',
+-- 
+1.7.9.5
+
