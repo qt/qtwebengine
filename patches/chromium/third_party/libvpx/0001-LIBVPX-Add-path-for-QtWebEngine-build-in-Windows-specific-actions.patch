@@ -1,4 +1,4 @@
-From b7fe7f56307823e3d028bcca94c3f1cb6981dc5f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zoltan Arvai <zarvai@inf.u-szeged.hu>
 Date: Mon, 24 Feb 2014 07:29:32 -0800
 Subject: LIBVPX: Add path for QtWebEngine build in Windows specific actions
@@ -27,7 +27,3 @@ index 392ccde..7f1a18d 100644
                ],
                'process_output_as_sources': 1,
                'msvs_cygwin_shell': 1,
--- 
-1.7.9
-
-
