@@ -55,8 +55,8 @@ ApplicationWindow {
     property bool isFullScreen: visibility == Window.FullScreen
     onIsFullScreenChanged: {
         // This is for the case where the system forces us to leave fullscreen.
-        if (!isFullScreen && tabs.currentView.state == "FullScreen")
-            tabs.currentView.state = ""
+        if (currentWebView)
+            currentWebView.state = isFullScreen ? "FullScreen" : ""
     }
 
     height: 600
@@ -83,7 +83,10 @@ ApplicationWindow {
     }
     Action {
         shortcut: "Ctrl+R"
-        onTriggered: tabs.currentView.reload()
+        onTriggered: {
+            if (currentWebView)
+                currentWebView.reload()
+        }
     }
     Action {
         shortcut: "Ctrl+T"
