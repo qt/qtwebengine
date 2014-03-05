@@ -39,28 +39,43 @@
 **
 ****************************************************************************/
 
-#include "content/public/renderer/content_renderer_client.h"
+#ifndef WEB_ENGINE_VISITED_LINKS_MANAGER_H
+#define WEB_ENGINE_VISITED_LINKS_MANAGER_H
 
-namespace visitedlink {
-class VisitedLinkSlave;
-}
-
-#include <QtGlobal>
+#include "qtwebenginecoreglobal.h"
+#include <QList>
 #include <QScopedPointer>
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+QT_BEGIN_NAMESPACE
+class QUrl;
+QT_END_NAMESPACE
+
+namespace visitedlink {
+class VisitedLinkMaster;
+}
+
+class GURL;
+
+class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
+
 public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
+    virtual~WebEngineVisitedLinksManager();
 
-    // Update this when we want to allow overriding error pages.
-    virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return true; }
+    static WebEngineVisitedLinksManager *instance();
 
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
+    void ensureInitialized();
+    void deleteAllVisitedLinkData();
+    void deleteVisitedLinkDataForUrls(const QList<QUrl> &);
 
 private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
+    WebEngineVisitedLinksManager();
+    void addUrl(const GURL &);
+    friend class WebContentsDelegateQt;
+
+    QScopedPointer<visitedlink::VisitedLinkMaster> m_visitedLinkMaster;
+
+    QList<QUrl> m_pendingUrlsToDelete;
+    bool m_pendingDeleteAll;
 };
+
+#endif // WEB_ENGINE_VISITED_LINKS_MANAGER_H

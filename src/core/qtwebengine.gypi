@@ -28,6 +28,8 @@
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
       '<(chromium_src_dir)/webkit/glue/webkit_glue.gyp:*',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
+      '<(chromium_src_dir)/components/components.gyp:visitedlink_browser',
+      '<(chromium_src_dir)/components/components.gyp:visitedlink_renderer',
       'chrome_qt.gyp:*',
     ],
     'include_dirs': [
