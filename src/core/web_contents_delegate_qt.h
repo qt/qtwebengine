@@ -84,6 +84,7 @@ public:
     virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
     virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
     virtual void UpdateTargetURL(content::WebContents *source, int32 page_id, const GURL &url) Q_DECL_OVERRIDE;
+    virtual void DidNavigateAnyFrame(const content::LoadCommittedDetails&, const content::FrameNavigateParams& params) Q_DECL_OVERRIDE;
 
 private:
     WebContentsAdapterClient *m_viewClient;
