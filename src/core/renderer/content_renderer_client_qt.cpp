@@ -43,6 +43,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/localized_error.h"
+#include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -55,6 +56,20 @@
 #include "grit/renderer_resources.h"
 
 static const char kHttpErrorDomain[] = "http";
+
+ContentRendererClientQt::ContentRendererClientQt()
+{
+}
+
+ContentRendererClientQt::~ContentRendererClientQt()
+{
+}
+
+void ContentRendererClientQt::RenderThreadStarted()
+{
+    m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
+    content::RenderThread::Get()->AddObserver(m_visitedLinkSlave.data());
+}
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
 {
@@ -92,4 +107,14 @@ void ContentRendererClientQt::GetNavigationErrorStrings(blink::WebFrame *frame, 
     if (error_description) {
         *error_description = LocalizedError::GetErrorDetails(error, isPost);
     }
+}
+
+unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)
+{
+    return m_visitedLinkSlave->ComputeURLFingerprint(canonicalUrl, length);
+}
+
+bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
+{
+    return m_visitedLinkSlave->IsVisited(linkHash);
 }

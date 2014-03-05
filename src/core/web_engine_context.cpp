@@ -77,6 +77,7 @@
 #include "type_conversion.h"
 #include "surface_factory_qt.h"
 #include "web_engine_library_info.h"
+#include "web_engine_visited_links_manager.h"
 #include <QGuiApplication>
 #include <QStringList>
 #include <QVector>
@@ -107,6 +108,11 @@ scoped_refptr<WebEngineContext> WebEngineContext::current()
         qAddPostRoutine(destroyContext);
     }
     return sContext;
+}
+
+WebEngineVisitedLinksManager *WebEngineContext::visitedLinksManager()
+{
+    return m_visitedLinksManager.get();
 }
 
 #ifndef CHROMIUM_VERSION
@@ -204,4 +210,7 @@ WebEngineContext::WebEngineContext()
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
+
+    // Ensure we have a VisitedLinksMaster instance up and running
+    m_visitedLinksManager.reset(new WebEngineVisitedLinksManager);
 }

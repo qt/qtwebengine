@@ -39,29 +39,40 @@
 **
 ****************************************************************************/
 
-#include "content/public/renderer/content_renderer_client.h"
+#ifndef WEB_ENGINE_VISITED_LINKS_MANAGER_H
+#define WEB_ENGINE_VISITED_LINKS_MANAGER_H
 
-#include <QtGlobal>
+#include "qtwebenginecoreglobal.h"
+#include <QList>
 #include <QScopedPointer>
 
+QT_BEGIN_NAMESPACE
+class QUrl;
+QT_END_NAMESPACE
+
 namespace visitedlink {
-class VisitedLinkSlave;
+class VisitedLinkMaster;
 }
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+class VisitedLinkDelegateQt;
+
+class GURL;
+
+class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
+
 public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
+    virtual~WebEngineVisitedLinksManager();
+    WebEngineVisitedLinksManager();
 
-    virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return false; }
-    virtual void GetNavigationErrorStrings(blink::WebFrame* frame, const blink::WebURLRequest& failed_request, const blink::WebURLError& error
-            , const std::string& accept_languages, std::string* error_html, base::string16* error_description) Q_DECL_OVERRIDE;
-
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
+    void deleteAllVisitedLinkData();
+    void deleteVisitedLinkDataForUrls(const QList<QUrl> &);
 
 private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
+    void addUrl(const GURL &);
+    friend class WebContentsDelegateQt;
+
+    QScopedPointer<visitedlink::VisitedLinkMaster> m_visitedLinkMaster;
+    QScopedPointer<VisitedLinkDelegateQt> m_delegate;
 };
+
+#endif // WEB_ENGINE_VISITED_LINKS_MANAGER_H

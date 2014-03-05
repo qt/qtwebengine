@@ -56,10 +56,13 @@ class ContentMainRunner;
 
 class ContentMainDelegateQt;
 class SurfaceFactoryQt;
+class WebEngineVisitedLinksManager;
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static scoped_refptr<WebEngineContext> current();
+
+    WebEngineVisitedLinksManager *visitedLinksManager();
 
 private:
     friend class base::RefCounted<WebEngineContext>;
@@ -73,6 +76,7 @@ private:
 #if defined(OS_ANDROID)
     scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
 #endif
+    scoped_ptr<WebEngineVisitedLinksManager> m_visitedLinksManager;
 };
 
 #endif // WEB_ENGINE_CONTEXT_H

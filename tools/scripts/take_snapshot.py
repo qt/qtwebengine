@@ -138,6 +138,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/apple_sample_code')
         or file_path.startswith('third_party/bison')
         or file_path.startswith('third_party/brotli')
+        or (file_path.startswith('third_party/cacheinvalidation') and
+            not file_path.endswith('isolate'))
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
