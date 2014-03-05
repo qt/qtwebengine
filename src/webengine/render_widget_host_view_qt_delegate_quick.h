@@ -60,10 +60,6 @@ public:
         : ItemBaseT(parent)
         , m_client(client)
     {
-        this->setFocus(true);
-        this->setActiveFocusOnTab(true);
-        this->setFlag(QQuickItem::ItemIsFocusScope);
-
         this->setAcceptedMouseButtons(Qt::AllButtons);
         this->setAcceptHoverEvents(true);
     }

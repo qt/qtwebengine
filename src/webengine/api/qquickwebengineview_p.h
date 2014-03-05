@@ -78,6 +78,7 @@ public:
     bool canGoForward() const;
     bool inspectable() const;
     void setInspectable(bool);
+    void forceActiveFocus();
 
     enum LoadStatus {
         LoadStartedStatus,

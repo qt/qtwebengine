@@ -187,13 +187,7 @@ void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QStr
 void QQuickWebEngineViewPrivate::passOnFocus(bool reverse)
 {
     Q_Q(QQuickWebEngineView);
-    // In one direction we would pass forward the focus to RenderWidgetHostViewQtDelegateQuick(Painted),
-    // which in return would forward the tab key event and therefore the focus back to the QQuickWebEngineView.
-    // This is why we skip RenderWidgetHostViewQtDelegateQuick in the focus chain.
-    QQuickItem* current = QQuickItemPrivate::nextPrevItemInTabFocusChain(q, !reverse);
-    if (!qobject_cast<RenderWidgetHostViewQtDelegateQuick*>(current) && !qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted*>(current))
-        current = q;
-    focusNextPrev(current, !reverse);
+    focusNextPrev(q, !reverse);
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
@@ -364,6 +358,10 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     Q_D(QQuickWebEngineView);
     d->e->q_ptr = this;
     d->adapter->initialize(d);
+
+    this->setFocus(true);
+    this->setActiveFocusOnTab(true);
+    this->setFlag(QQuickItem::ItemIsFocusScope);
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()
@@ -470,6 +468,17 @@ void QQuickWebEngineView::setInspectable(bool enable)
     Q_D(QQuickWebEngineView);
     d->inspectable = enable;
     d->adapter->enableInspector(enable);
+}
+
+void QQuickWebEngineView::forceActiveFocus()
+{
+    Q_FOREACH (QQuickItem *child, childItems()) {
+        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child)
+            || qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted *>(child)) {
+            child->forceActiveFocus();
+            break;
+        }
+    }
 }
 
 void QQuickWebEngineViewExperimental::setIsFullScreen(bool fullscreen)
