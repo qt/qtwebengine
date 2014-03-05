@@ -119,7 +119,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/aosp')
         or file_path.startswith('third_party/apache-mime4j')
         or file_path.startswith('third_party/apple_sample_code')
-        or file_path.startswith('third_party/cacheinvalidation')
+        or (file_path.startswith('third_party/cacheinvalidation') and
+            not file_path.endswith('isolate'))
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')

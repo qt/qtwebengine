@@ -39,38 +39,55 @@
 **
 ****************************************************************************/
 
-#include "renderer/content_renderer_client_qt.h"
+#ifndef WEB_ENGINE_VISITED_LINKS_MANAGER_H
+#define WEB_ENGINE_VISITED_LINKS_MANAGER_H
 
-#include "components/visitedlink/renderer/visitedlink_slave.h"
-#include "content/public/renderer/render_thread.h"
-#include "renderer/qt_render_view_observer.h"
+#include "qtwebenginecoreglobal.h"
+#include <QList>
+#include <QScopedPointer>
 
-ContentRendererClientQt::ContentRendererClientQt()
-{
+QT_BEGIN_NAMESPACE
+class QUrl;
+QT_END_NAMESPACE
+
+namespace visitedlink {
+class VisitedLinkMaster;
 }
 
-ContentRendererClientQt::~ContentRendererClientQt()
-{
-}
+class GURL;
 
-void ContentRendererClientQt::RenderThreadStarted()
-{
-    m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
-    content::RenderThread::Get()->AddObserver(m_visitedLinkSlave.data());
-}
+class QWEBENGINE_EXPORT WebEngineVisitedLinksDelegate {
+public:
+    virtual ~WebEngineVisitedLinksDelegate() {}
+    // Delegation to the API layer.
+    virtual void addVisitedUrl(const QUrl&) = 0;
+    virtual QList<QUrl> visitedUrlsFromHistoryBackend() const = 0;
+};
 
-void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
-{
-    // RenderViewObserver destroys itself with its RenderView.
-    new QtRenderViewObserver(render_view);
-}
 
-unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonical_url, size_t length)
-{
-    return m_visitedLinkSlave->ComputeURLFingerprint(canonical_url, length);
-}
+class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
 
-bool ContentRendererClientQt::IsLinkVisited(unsigned long long link_hash)
-{
-    return m_visitedLinkSlave->IsVisited(link_hash);
-}
+public:
+    virtual~WebEngineVisitedLinksManager();
+
+    static WebEngineVisitedLinksManager *instance();
+
+    void setDelegate(WebEngineVisitedLinksDelegate *);
+    void ensureInitialized();
+    void deleteAllVisitedLinkData();
+    void deleteVisitedLinkDataForUrls(const QList<QUrl> &);
+    QList<QUrl> visitedUrlsFromHistoryBackend() const;
+
+private:
+    WebEngineVisitedLinksManager();
+    void addUrl(const GURL &);
+    friend class WebContentsDelegateQt;
+
+    QScopedPointer<visitedlink::VisitedLinkMaster> m_visitedLinkMaster;
+    QScopedPointer<WebEngineVisitedLinksDelegate> m_visitedLinksDelegate;
+
+    QList<QUrl> m_pendingUrlsToDelete;
+    bool m_pendingDeleteAll;
+};
+
+#endif // WEB_ENGINE_VISITED_LINKS_MANAGER_H

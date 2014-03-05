@@ -41,12 +41,26 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
+namespace visitedlink {
+class VisitedLinkSlave;
+}
+
 #include <QtGlobal>
+#include <QScopedPointer>
 
 class ContentRendererClientQt : public content::ContentRendererClient {
 public:
+    ContentRendererClientQt();
+    ~ContentRendererClientQt();
+    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
     virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
 
     // Update this when we want to allow overriding error pages.
     virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return true; }
+
+    virtual unsigned long long VisitedLinkHash(const char *canonical_url, size_t length) Q_DECL_OVERRIDE;
+    virtual bool IsLinkVisited(unsigned long long link_hash) Q_DECL_OVERRIDE;
+
+private:
+    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
 };
