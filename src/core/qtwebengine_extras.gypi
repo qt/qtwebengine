@@ -49,22 +49,24 @@
     ],
   },
   'conditions': [
-    [ 'OS=="linux" and qt_cross_compile==1', {
+    [ 'qt_os=="embedded_linux"', {
       'target_defaults': {
+        'defines': [
+            'GL_GLEXT_PROTOTYPES',
+            'EGL_EGLEXT_PROTOTYPES',
+            # At runtime the env variable SSL_CERT_DIR can be used to override this
+            'OPENSSLDIR="/usr/lib/ssl"',
+            'OPENSSL_LOAD_CONF',
+        ],
+        'defines!': [
+            'OPENSSLDIR="/etc/ssl"',
+        ],
+        'ldflags!': ['<!@(icu-config --ldflags)'], # remove garbage added by icu.gyp
         'target_conditions': [
-          ['_toolset=="target"', {
-            'ldflags!': ['<!@(icu-config --ldflags)'], # remove garbage added by icu.gyp
-            'defines': [
-              'GL_GLEXT_PROTOTYPES',
-              'EGL_EGLEXT_PROTOTYPES',
-            ],
-            'target_conditions': [
-              ['_type=="shared_library"', {
-                'ldflags': [
-                  # Tell the linker to prefer symbols within the library before looking outside
-                  '-Wl,-shared,-Bsymbolic',
-                ],
-              }],
+          ['_type=="shared_library"', {
+            'ldflags': [
+              # Tell the linker to prefer symbols within the library before looking outside
+              '-Wl,-shared,-Bsymbolic',
             ],
           }],
         ],
