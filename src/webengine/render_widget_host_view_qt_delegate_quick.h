@@ -140,6 +140,7 @@ public:
     void focusInEvent(QFocusEvent *event)
     {
         m_client->forwardEvent(event);
+        m_client->forwardEvent(new QKeyEvent(QEvent::KeyPress, Qt::Key_Tab, Qt::NoModifier));
     }
 
     void focusOutEvent(QFocusEvent *event)
