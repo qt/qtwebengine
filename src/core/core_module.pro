@@ -2,7 +2,7 @@ TARGET = QtWebEngineCore
 MODULE = webenginecore
 
 # Look for linking information produced by gyp for our target according to core_generated.gyp
-!include($$getOutDir()/$$getConfigDir()/$${TARGET}_linking.pri) {
+!include($$OUT_PWD/$$getConfigDir()/$${TARGET}_linking.pri) {
     error("Could not find the linking information that gyp should have generated.")
 }
 

@@ -8,11 +8,6 @@ defineReplace(toGypTargetType) {
   return("none")
 }
 
-defineReplace(getOutDir) {
-  # FIXME: rely on env variable in here and in the gyp_qtwebengine script, à la WEBKITOUTPUTDIR
-  return("$$QTWEBENGINE_ROOT/out")
-}
-
 defineReplace(getConfigDir) {
   CONFIG(release, debug|release):return("Release")
   return("Debug")
