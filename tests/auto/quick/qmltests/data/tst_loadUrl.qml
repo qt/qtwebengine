@@ -52,6 +52,8 @@ TestWebEngineView {
     property int numLoadStarted: 0
     property int numLoadSucceeded: 0
 
+    focus: true
+
     onLoadProgressChanged: {
         if (watchProgress && webEngineView.loadProgress != 100) {
             watchProgress = false
@@ -68,6 +70,7 @@ TestWebEngineView {
 
     TestCase {
         name: "WebEngineViewLoadUrl"
+        when: windowShown
 
         function test_loadIgnoreEmptyUrl() {
             var url = Qt.resolvedUrl("test1.html")
@@ -101,21 +104,84 @@ TestWebEngineView {
             compare(webEngineView.url, url)
         }
 
-        function test_stopStatus() {
+        function test_urlProperty() {
             var url = Qt.resolvedUrl("test1.html")
 
-            webEngineView.loadingChanged.connect(function(loadRequest) {
-                if (loadRequest.status == WebEngineView.LoadStoppedStatus) {
+            webEngineView.url = url
+            compare(webEngineView.url, url)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, url)
+
+            var bogusSite = "http://www.somesitethatdoesnotexist.abc/"
+            webEngineView.url = bogusSite
+            compare(webEngineView.url, bogusSite)
+            verify(webEngineView.waitForLoadFailed())
+            compare(webEngineView.url, bogusSite)
+
+            webEngineView.url = "about:blank" // Reset from previous test
+            verify(webEngineView.waitForLoadSucceeded())
+
+            var handleLoadFailed = function(loadRequest) {
+                if (loadRequest.status == WebEngineView.LoadFailedStatus) {
+                    compare(webEngineView.url, bogusSite)
+                    compare(loadRequest.url, bogusSite)
+                    webEngineView.loadHtml("load failed", bogusSite, bogusSite)
+                }
+            }
+            webEngineView.loadingChanged.connect(handleLoadFailed)
+            webEngineView.url = bogusSite
+            compare(webEngineView.url, bogusSite)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, bogusSite)
+            webEngineView.loadingChanged.disconnect(handleLoadFailed)
+
+            var dataUrl = "data:text/html,foo"
+            webEngineView.url = dataUrl
+            compare(webEngineView.url, dataUrl)
+
+            var redirectUrl = Qt.resolvedUrl("redirect.html")
+            webEngineView.url = redirectUrl
+            compare(webEngineView.url, redirectUrl)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, redirectUrl)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, url)
+
+            var linkUrl = Qt.resolvedUrl("link.html")
+            webEngineView.url = linkUrl
+            compare(webEngineView.url, linkUrl)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, linkUrl)
+
+            var compareUrls = function(loadRequest) {
+                compare(webEngineView.url, url)
+                compare(loadRequest.url, url)
+            }
+
+            webEngineView.loadingChanged.connect(compareUrls)
+            webEngineView.forceActiveFocus()
+            keyPress(Qt.Key_Return) // Link is focused
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, url)
+            webEngineView.loadingChanged.disconnect(compareUrls)
+        }
+
+        function test_stopStatus() {
+            var url = Qt.resolvedUrl("test1.html")
+            var compareUrls = function(loadRequest) {
+                if (loadRequest.status == WebEngineView.LoadStopStatus) {
                     compare(webEngineView.url, url)
                     compare(loadRequest.url, url)
                 }
-            })
+            }
 
+            webEngineView.loadingChanged.connect(compareUrls)
             webEngineView.url = url
             compare(webEngineView.url, url)
             webEngineView.stop()
             verify(webEngineView.waitForLoadStopped())
             compare(webEngineView.url, url)
+            webEngineView.loadingChanged.disconnect(compareUrls)
         }
     }
 }
