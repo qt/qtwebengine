@@ -49,6 +49,7 @@
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
+#include "web_engine_visited_links_manager.h"
 
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -197,6 +198,9 @@ WebContentsAdapter::~WebContentsAdapter()
 
 void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 {
+    // Used for resolving visited links
+    WebEngineVisitedLinksManager::instance()->ensureInitialized();
+
     Q_D(WebContentsAdapter);
     d->adapterClient = adapterClient;
 

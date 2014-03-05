@@ -41,10 +41,36 @@
 
 #include "renderer/content_renderer_client_qt.h"
 
+#include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "content/public/renderer/render_thread.h"
 #include "renderer/qt_render_view_observer.h"
+
+ContentRendererClientQt::ContentRendererClientQt()
+{
+}
+
+ContentRendererClientQt::~ContentRendererClientQt()
+{
+}
+
+void ContentRendererClientQt::RenderThreadStarted()
+{
+    m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave());
+    content::RenderThread::Get()->AddObserver(m_visitedLinkSlave.data());
+}
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
 {
     // RenderViewObserver destroys itself with its RenderView.
     new QtRenderViewObserver(render_view);
+}
+
+unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonical_url, size_t length)
+{
+    return m_visitedLinkSlave->ComputeURLFingerprint(canonical_url, length);
+}
+
+bool ContentRendererClientQt::IsLinkVisited(unsigned long long link_hash)
+{
+    return m_visitedLinkSlave->IsVisited(link_hash);
 }
