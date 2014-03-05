@@ -68,16 +68,12 @@ def additional_include_files(args=[]):
 
   return result
 
-# TODO: later we probably want to hook that up with qmake to allow shadow builds. (Might not play nice with the rest of chromium though)
-def get_output_dir():
-  outdir = os.path.join(root_dir, "out") # Hardcode for now
-  if not os.path.isdir(outdir):
-    os.mkdir(outdir)
-
-  return outdir
-
 if __name__ == '__main__':
-  args = sys.argv[1:]
+  output_dir = sys.argv[1]
+  if not os.path.isdir(output_dir):
+    os.mkdir(output_dir)
+
+  args = sys.argv[2:]
 
   # On Mac we want to override CXX and CC that is provided with
   # the Chromium GYP environment.
@@ -139,8 +135,8 @@ if __name__ == '__main__':
   # Trigger Qt-specific build conditions.
   args.extend(['-D', 'use_qt=1'])
   # Tweak the output location and format (hardcode ninja for now if not set)
-  args.extend(['--generator-output', os.path.abspath(get_output_dir())])
-  args.extend(['-Goutput_dir='+ os.path.abspath(get_output_dir())])
+  args.extend(['--generator-output', os.path.abspath(output_dir)])
+  args.extend(['-Goutput_dir='+ os.path.abspath(output_dir)])
   if not os.environ.get('GYP_GENERATORS'):
     args.extend(['--format=ninja'])
   if "QTWEBENGINE_GYP_DEBUG" in os.environ:

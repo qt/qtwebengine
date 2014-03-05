@@ -24,7 +24,7 @@ SUBDIRS += core_gyp_generator \
            gyp_run \
            core_module
 
-REPACK_DIR = $$getOutDir()/$$getConfigDir()/gen/repack
+REPACK_DIR = $$OUT_PWD/$$getConfigDir()/gen/repack
 locales.files = $$REPACK_DIR/qtwebengine_locales
 locales.CONFIG += no_check_exist
 locales.path = $$[QT_INSTALL_TRANSLATIONS]
@@ -40,7 +40,7 @@ win32 {
     PLUGIN_PREFIX =
 }
 
-plugins.files = $$getOutDir()/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION}
+plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION}
 plugins.CONFIG += no_check_exist
 plugins.path = $$[QT_INSTALL_PLUGINS]/qtwebengine
 

@@ -68,12 +68,12 @@ GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"
 }
 
 !build_pass {
-  message(Running gyp_qtwebengine $${GYP_ARGS}...)
-  !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
+  message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
+  !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
 }
 
 ninja.target = invoke_ninja
-ninja.commands = $$findOrBuildNinja() \$\(NINJAFLAGS\) -C $$getOutDir()/$$getConfigDir()
+ninja.commands = $$findOrBuildNinja() \$\(NINJAFLAGS\) -C "$$OUT_PWD/$$getConfigDir()"
 QMAKE_EXTRA_TARGETS += ninja
 
 build_pass:build_all:default_target.target = all
