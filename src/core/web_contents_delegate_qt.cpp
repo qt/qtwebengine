@@ -45,12 +45,14 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_engine_context.h"
+#include "web_engine_visited_links_manager.h"
 
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/frame_navigate_params.h"
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
@@ -174,4 +176,9 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     Q_UNUSED(active_match_ordinal)
     if (final_update)
         m_viewClient->didFindText(request_id, number_of_matches);
+}
+
+void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDetails &, const content::FrameNavigateParams &params)
+{
+    WebEngineVisitedLinksManager::instance()->addUrl(params.url);
 }

@@ -39,28 +39,52 @@
 **
 ****************************************************************************/
 
-#include "content/public/renderer/content_renderer_client.h"
+#ifndef WEB_ENGINE_VISITED_LINKS_MANAGER_H
+#define WEB_ENGINE_VISITED_LINKS_MANAGER_H
 
-namespace visitedlink {
-class VisitedLinkSlave;
-}
-
-#include <QtGlobal>
+#include "qtwebenginecoreglobal.h"
+#include <QList>
 #include <QScopedPointer>
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+QT_BEGIN_NAMESPACE
+class QUrl;
+QT_END_NAMESPACE
+
+namespace visitedlink {
+class VisitedLinkMaster;
+}
+
+class GURL;
+
+class QWEBENGINE_EXPORT WebEngineVisitedLinksDelegate {
 public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
+    virtual ~WebEngineVisitedLinksDelegate() {}
+    // Delegation to the API layer.
+    virtual void addVisitedUrl(const QUrl&) = 0;
+    virtual QList<QUrl> visitedUrlsFromHistoryBackend() const = 0;
+};
 
-    // Update this when we want to allow overriding error pages.
-    virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return true; }
 
-    virtual unsigned long long VisitedLinkHash(const char *canonical_url, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long link_hash) Q_DECL_OVERRIDE;
+class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
+
+public:
+    virtual~WebEngineVisitedLinksManager();
+
+    static WebEngineVisitedLinksManager *instance();
+
+    void setDelegate(WebEngineVisitedLinksDelegate *);
+    void ensureInitialized();
+    void deleteAllVisitedLinkData();
+    void deleteVisitedLinkDataForUrls(const QList<QUrl> &);
+    QList<QUrl> visitedUrlsFromHistoryBackend() const;
 
 private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
+    WebEngineVisitedLinksManager();
+    void addUrl(const GURL &);
+    friend class WebContentsDelegateQt;
+
+    QScopedPointer<visitedlink::VisitedLinkMaster> m_visitedLinkMaster;
+    QScopedPointer<WebEngineVisitedLinksDelegate> m_visitedLinksDelegate;
 };
+
+#endif // WEB_ENGINE_VISITED_LINKS_MANAGER_H
