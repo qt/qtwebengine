@@ -58,6 +58,7 @@ SOURCES = \
         web_engine_context.cpp \
         web_engine_error.cpp \
         web_engine_library_info.cpp \
+        web_engine_visited_links_manager.cpp \
         web_event_factory.cpp \
         yuv_video_node.cpp \
         qrc_protocol_handler_qt.cpp \
@@ -96,6 +97,7 @@ HEADERS = \
         web_engine_context.h \
         web_engine_error.h \
         web_engine_library_info.h \
+        web_engine_visited_links_manager.h \
         web_event_factory.h \
         yuv_video_node.h \
         qrc_protocol_handler_qt.h \

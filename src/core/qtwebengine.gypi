@@ -25,6 +25,8 @@
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
       '<(chromium_src_dir)/webkit/support/webkit_support.gyp:glue',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
+      '<(chromium_src_dir)/components/components.gyp:visitedlink_browser',
+      '<(chromium_src_dir)/components/components.gyp:visitedlink_renderer',
     ],
     'include_dirs': [
       '<(chromium_src_dir)',
