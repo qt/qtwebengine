@@ -321,7 +321,9 @@ ApplicationWindow {
                             permBar.requestedFeature = feature;
                             permBar.visible = true;
                         }
-                        extraContextMenuEntriesComponent: ContextMenuExtras {}
+                        extraContextMenuEntriesComponent: ContextMenuExtras {
+                            onNavigationDataClearingRequest: WebEngine.clearVisitedLinksHistory();
+                        }
                     }
                 }
             }

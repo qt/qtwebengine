@@ -42,18 +42,20 @@ import QtQuick 2.1
 import QtWebEngine.UIDelegates 1.0
 
 VisualItemModel {
+    signal navigationDataClearingRequest()
+
     MenuItem {
-        text: "An application specific entry"
+        text: "example entry"
         onTriggered: console.log("Application specific action triggered")
     }
     Menu {
-        title: "Extras Submenu"
+        title: "Experimental features"
         MenuItem {
-            text: "something"
-            onTriggered: console.log("something triggered")
+            text: "clear visited links history"
+            onTriggered: navigationDataClearingRequest();
         }
         MenuItem {
-            text: "something else"
+            text: "Placeholder [disabled]"
             enabled: false
         }
     }
