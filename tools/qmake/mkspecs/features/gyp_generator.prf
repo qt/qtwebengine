@@ -71,17 +71,6 @@ for (incl, GYPINCLUDES): GYP_CONTENTS += "      '$$incl',"
 GYP_CONTENTS += "    ],"
 }
 
-# Split LIBS into linker flags and actual libraries, and add them to the
-# appropriate section (ldflags vs link_settings: libraries) in the gyp file.
-LIBRARIES = $$find(LIBS, "-l")
-LIBRARIES = $$unique(LIBRARIES)
-for (library, LIBRARIES): LIBS -= "$$library"
-
-GYP_CONTENTS += "    'ldflags': ["
-for (lib, LIBS): GYP_CONTENTS += "      '$$lib',"
-for (rpath, QMAKE_RPATHDIR): GYP_CONTENTS += "      '$$QMAKE_RPATH$$rpath',"
-GYP_CONTENTS += "    ],"
-
 !isEmpty(QMAKE_FRAMEWORKPATH) {
     GYP_CONTENTS += "    'mac_framework_dirs': ["
     GYP_CONTENTS += "      '$$QMAKE_FRAMEWORKPATH',"
@@ -98,28 +87,6 @@ GYP_CONTENTS += "    ],"
     for(flag, QMAKE_CXXFLAGS): GYP_CONTENTS += "      '$$flag',"
     GYP_CONTENTS += "    ],"
 }
-GYP_CONTENTS += "    'link_settings': {" \
-                "      'libraries': ["
-win32: for (library, LIBRARIES): GYP_CONTENTS += "        '$${library}.lib',"
-else:  for (library, LIBRARIES): GYP_CONTENTS += "        '$$library',"
-macx {
-    FRAMEWORKS = $$find(LIBS, "Q*")
-    FRAMEWORKS = $$unique(FRAMEWORKS)
-    FRAMEWORKS ~= s/-.*/
-    FRAMEWORKS -= "-framework"
-    for (framework, FRAMEWORKS): {
-        framework_name = $$join(framework, "", "", ".framework")
-        GYP_CONTENTS += "        '$$framework_name',"
-    }
-
-    FRAMEWORK_PATHS = $$find(LIBS, "-F*")
-    FRAMEWORK_PATHS = $$unique(FRAMEWORK_PATHS)
-    FRAMEWORK_PATHS -= "-framework"
-    for (framework_path, FRAMEWORK_PATHS): GYP_CONTENTS += "        '$$framework_path',"
-    !isEmpty(QMAKE_FRAMEWORKPATH): GYP_CONTENTS += "        '-F$$QMAKE_FRAMEWORKPATH',"
-}
-GYP_CONTENTS += "      ]," \
-             "    },"
 
 !isEmpty(DEFINES) {
   GYP_CONTENTS += "    'defines': ["

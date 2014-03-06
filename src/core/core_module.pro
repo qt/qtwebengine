@@ -1,5 +1,8 @@
-TARGET = QtWebEngineCore
 MODULE = webenginecore
+TARGET = QtWebEngineCore
+
+QT += qml quick
+QT_PRIVATE += qml-private quick-private gui-private core-private
 
 # Look for linking information produced by gyp for our target according to core_generated.gyp
 !include($$getOutDir()/$$getConfigDir()/$${TARGET}_linking.pri) {
