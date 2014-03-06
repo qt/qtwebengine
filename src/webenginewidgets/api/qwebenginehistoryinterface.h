@@ -22,11 +22,12 @@
 
 #ifndef QWEBENGINEHISTORYINTERFACE_H
 #define QWEBENGINEHISTORYINTERFACE_H
-
 #include <QtCore/qobject.h>
+#include <QtCore/qlist.h>
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
 QT_BEGIN_NAMESPACE
+class QWebEngineHistoryInterfacePrivate;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistoryInterface : public QObject {
     Q_OBJECT
@@ -34,11 +35,18 @@ public:
     QWebEngineHistoryInterface(QObject *parent = 0);
     ~QWebEngineHistoryInterface();
 
-    static void setDefaultInterface(QWebEngineHistoryInterface *defaultInterface);
+    static void setDefaultInterface(QWebEngineHistoryInterface *interface);
     static QWebEngineHistoryInterface *defaultInterface();
 
-    virtual bool historyContains(const QString &url) const = 0;
-    virtual void addHistoryEntry(const QString &url) = 0;
+    virtual QList<QUrl> historyContents() const = 0;
+    virtual void addHistoryEntry(const QUrl &url) = 0;
+
+    void deleteAll();
+    void deleteUrls(const QList<QUrl> &urls);
+
+private:
+    QScopedPointer<QWebEngineHistoryInterfacePrivate> d;
+    friend class QWebEngineHistoryInterfacePrivate;
 };
 
 QT_END_NAMESPACE
