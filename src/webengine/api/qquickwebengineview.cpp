@@ -43,6 +43,8 @@
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebenginesettings_p.h"
+#include "qquickwebenginesettings_p_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "ui_delegates_manager.h"
@@ -75,6 +77,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , e(new QQuickWebEngineViewExperimental(this))
     , v(new QQuickWebEngineViewport(this))
     , m_history(new QQuickWebEngineHistory(this))
+    , m_settings(new QQuickWebEngineSettings)
     , contextMenuExtraItems(0)
     , loadProgress(0)
     , inspectable(false)
@@ -393,28 +396,9 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
     return q;
 }
 
-namespace {
-class DummySettingsDelegate : public WebEngineSettingsDelegate {
-public:
-    DummySettingsDelegate()
-        : settings(0) {}
-    void apply() { }
-    WebEngineSettings* fallbackSettings() const { return settings; }
-    WebEngineSettings *settings;
-};
-
-}// anonymous namespace
-
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
 {
-    static WebEngineSettings *dummySettings = 0;
-    if (!dummySettings) {
-        DummySettingsDelegate *dummyDelegate = new DummySettingsDelegate;
-        dummySettings = new WebEngineSettings(dummyDelegate);
-        dummyDelegate->settings = dummySettings;
-        dummySettings->initDefaults();
-    }
-    return dummySettings;
+    return m_settings->d_func()->coreSettings.data();
 }
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
@@ -665,6 +649,11 @@ void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlCo
 QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent() const
 {
     return d_ptr->contextMenuExtraItems;
+}
+
+QQuickWebEngineSettings *QQuickWebEngineViewExperimental::settings() const
+{
+    return d_ptr->m_settings.data();
 }
 
 void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFlags options, const QJSValue &callback)

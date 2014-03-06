@@ -36,11 +36,11 @@
 
 #include <QtQml/qqmlextensionplugin.h>
 
-#include "qtwebengineversion.h"
-#include "qquickwebengineview_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebengineview_p.h"
+#include "qtwebengineversion.h"
 
 QT_BEGIN_NAMESPACE
 

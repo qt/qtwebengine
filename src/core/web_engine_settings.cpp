@@ -185,7 +185,6 @@ QString WebEngineSettings::defaultTextEncoding() const
 void WebEngineSettings::initDefaults()
 {
     // Initialize the default settings.
-
     m_attributes.insert(AutoLoadImages, true);
     m_attributes.insert(JavascriptEnabled, true);
     m_attributes.insert(JavascriptCanOpenWindows, false);
@@ -236,7 +235,6 @@ void WebEngineSettings::doApply()
     if (webPreferences.isNull())
         return;
     // Override with our settings when applicable
-    // FIXME: batch sequential calls to apply?
     applySettingsToWebPreferences(webPreferences.data());
 
     Q_ASSERT(m_adapter);
