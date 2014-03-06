@@ -72,9 +72,9 @@ QT_BEGIN_NAMESPACE
         qputenv("QTWEBENGINEPROCESS_PATH", QWP_PATH); \
         if (!QCoreApplication::instance()) \
             app = new Application(argc, argv); \
-        QOpenGLContext shareContext; \
-        shareContext.create(); \
-        QSGContext::setSharedOpenGLContext(&shareContext); \
+        QOpenGLContext *shareContext = new QOpenGLContext(); \
+        shareContext->create(); \
+        QSGContext::setSharedOpenGLContext(shareContext); \
         int i = quick_test_main(argc, argv, #name, QUICK_TEST_SOURCE_DIR); \
         delete app; \
         return i; \
