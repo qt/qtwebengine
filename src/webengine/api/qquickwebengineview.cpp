@@ -49,6 +49,7 @@
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
+#include "web_engine_visited_links_manager.h"
 
 #include <QQmlEngine>
 #include <QQmlComponent>
@@ -503,6 +504,11 @@ void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const
         d_ptr->m_callbacks.insert(requestId, callback);
     } else
         d_ptr->adapter->runJavaScript(script, /*xPath=*/QString());
+}
+
+void QQuickWebEngineViewExperimental::clearBrowsingHistory()
+{
+    WebEngineVisitedLinksManager::instance()->deleteAllVisitedLinkData();
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
