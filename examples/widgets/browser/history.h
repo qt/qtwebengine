@@ -58,7 +58,7 @@ class HistoryItem
 {
 public:
     HistoryItem() {}
-    HistoryItem(const QString &u,
+    HistoryItem(const QUrl &u,
                 const QDateTime &d = QDateTime(), const QString &t = QString())
         : title(t), url(u), dateTime(d) {}
 
@@ -71,7 +71,7 @@ public:
         { return dateTime > other.dateTime; }
 
     QString title;
-    QString url;
+    QUrl url;
     QDateTime dateTime;
 };
 
@@ -79,12 +79,7 @@ class AutoSaver;
 class HistoryModel;
 class HistoryFilterModel;
 class HistoryTreeModel;
-class HistoryManager
-#if defined(QWEBENGINEHISTORYINTERFACE)
- : public QWebEngineHistoryInterface
-#else
- : public QObject
-#endif
+class HistoryManager : public QWebEngineHistoryInterface
 {
     Q_OBJECT
     Q_PROPERTY(int historyLimit READ historyLimit WRITE setHistoryLimit)
@@ -99,8 +94,8 @@ public:
     HistoryManager(QObject *parent = 0);
     ~HistoryManager();
 
-    bool historyContains(const QString &url) const;
-    void addHistoryEntry(const QString &url);
+    QList<QUrl> historyContents() const;
+    void addHistoryEntry(const QUrl &url);
 
     void updateHistoryItem(const QUrl &url, const QString &title);
 
@@ -133,7 +128,7 @@ private:
     int m_historyLimit;
     QTimer m_expiredTimer;
     QList<HistoryItem> m_history;
-    QString m_lastSavedUrl;
+    QUrl m_lastSavedUrl;
 
     HistoryModel *m_historyModel;
     HistoryFilterModel *m_historyFilterModel;
@@ -180,9 +175,9 @@ class HistoryFilterModel : public QAbstractProxyModel
 public:
     HistoryFilterModel(QAbstractItemModel *sourceModel, QObject *parent = 0);
 
-    inline bool historyContains(const QString &url) const
-        { load(); return m_historyHash.contains(url); }
-    int historyLocation(const QString &url) const;
+    inline QList<QUrl> historyContents() const
+        { load(); return m_historyHash.keys(); }
+    int historyLocation(const QUrl &url) const;
 
     QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
     QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
@@ -205,7 +200,7 @@ private:
     void load() const;
 
     mutable QList<int> m_sourceRow;
-    mutable QHash<QString, int> m_historyHash;
+    mutable QHash<QUrl, int> m_historyHash;
     mutable bool m_loaded;
 };
 
