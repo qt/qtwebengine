@@ -51,6 +51,7 @@
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
+#include "web_engine_visited_links_manager.h"
 
 #include <QGuiApplication>
 #include <QQmlComponent>

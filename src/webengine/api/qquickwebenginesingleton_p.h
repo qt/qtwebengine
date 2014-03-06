@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,49 +39,24 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef QQUICKWEBENGINESINGLETON_P_H
+#define QQUICKWEBENGINESINGLETON_P_H
 
-#include "qquickwebengineloadrequest_p.h"
-#include "qquickwebenginenewviewrequest_p.h"
-#include "qquickwebenginesingleton_p.h"
-#include "qquickwebengineview_p.h"
-#include "qtwebengineversion.h"
+#include <QList>
+#include <QObject>
+#include <QUrl>
+#include <private/qtwebengineglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
-static QObject *webEngineSingletonProvider(QQmlEngine*, QJSEngine *)
-{
-    return new QQuickWebEngineSingleton;
-}
-
-class QQuickWebEngineVersionBumper : public QObject {
-    Q_OBJECT
-};
-
-class QtWebEnginePlugin : public QQmlExtensionPlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
+Q_OBJECT
 public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+    Q_INVOKABLE void clearVisitedLinksHistory();
+    Q_INVOKABLE void clearVisitedLinks(const QList<QUrl> &urls);
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 0, 9, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 0, 9, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 0, 9, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
-        qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 0, 9, "WebEngine", webEngineSingletonProvider);
-
-        // The QML type loader relies on the minimum and maximum minor version of registered types
-        // to validate imports. We want to tie our import version to the module version, so register
-        // a dummy type in order to allow importing the latest version even if it didn't include
-        // an API update that would appear here in a registered type.
-        int major = QTWEBENGINE_VERSION >> 16;
-        int minor = QTWEBENGINE_VERSION >> 8;
-        qmlRegisterUncreatableType<QQuickWebEngineVersionBumper>(uri, major, minor, "WebEngineVersionBumper", QObject::tr("This is a dummy type and cannot be created."));
-    }
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+#endif // QQUICKWEBENGINESINGLETON_P_H

@@ -14,6 +14,7 @@ SOURCES = \
         api/qquickwebenginehistory.cpp \
         api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
+        api/qquickwebenginesingleton.cpp \
         api/qquickwebengineview.cpp \
         api/qtwebengineglobal.cpp \
         render_widget_host_view_qt_delegate_quick.cpp \
@@ -26,6 +27,7 @@ HEADERS = \
         api/qquickwebenginehistory_p.h \
         api/qquickwebengineloadrequest_p.h \
         api/qquickwebenginenewviewrequest_p.h \
+        api/qquickwebenginesingleton_p.h \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h \
