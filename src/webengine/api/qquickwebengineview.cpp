@@ -207,11 +207,15 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
     Q_UNUSED(url);
+    iconChanged(QUrl(""));
     Q_EMIT q->urlChanged();
 }
 
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 {
+    if (icon == url)
+        return;
+
     Q_Q(QQuickWebEngineView);
     icon = url;
     Q_EMIT q->iconChanged();
