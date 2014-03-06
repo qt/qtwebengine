@@ -18,6 +18,7 @@ INCLUDEPATH += $$PWD api ../core
 
 SOURCES = \
         api/qwebenginehistory.cpp \
+        api/qwebenginehistoryinterface.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineview.cpp\
         render_widget_host_view_qt_delegate_popup.cpp \
@@ -26,6 +27,7 @@ SOURCES = \
 HEADERS = \
         api/qtwebenginewidgetsglobal.h \
         api/qwebenginehistory.h \
+        api/qwebenginehistoryinterface.h \
         api/qwebenginepage.h \
         api/qwebengineview.h \
         api/qwebengineview_p.h \
