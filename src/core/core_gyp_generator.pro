@@ -7,9 +7,9 @@ GYPINCLUDES += qtwebengine.gypi
 
 TEMPLATE = lib
 
-# This must match the target name in core_module.pro to allow it to do the linking part.
+# NOTE: The TARGET, QT, QT_PRIVATE variables must match those in core_module.pro.
+# gyp/ninja will take care of the compilation, qmake/make will finish with linking and install.
 TARGET = QtWebEngineCore
-
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
 
