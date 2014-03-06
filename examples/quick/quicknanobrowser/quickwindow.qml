@@ -239,7 +239,9 @@ ApplicationWindow {
                             request.openIn(window.currentWebView)
                         }
                     }
-                    extraContextMenuEntriesComponent: ContextMenuExtras {}
+                    extraContextMenuEntriesComponent: ContextMenuExtras {
+                        onNavigationDataClearingRequest: webEngineView.experimental.clearBrowsingHistory();
+                    }
                 }
             }
         }

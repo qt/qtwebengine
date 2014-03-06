@@ -93,6 +93,7 @@ public:
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
+    void clearBrowsingHistory();
 
 Q_SIGNALS:
     void newViewRequested(QQuickWebEngineNewViewRequest *request);
