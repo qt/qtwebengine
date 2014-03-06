@@ -6,6 +6,9 @@ MODULE = webenginecore
     error("Could not find the linking information that gyp should have generated.")
 }
 
+QT += qml quick
+QT_PRIVATE += qml-private quick-private gui-private core-private
+
 # We distribute the module binary but headers are only available in-tree.
 CONFIG += no_module_headers
 load(qt_module)
