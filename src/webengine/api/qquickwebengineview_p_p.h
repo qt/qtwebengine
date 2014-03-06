@@ -109,6 +109,7 @@ public Q_SLOTS:
     void goForwardTo(int index);
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
+    void clearBrowsingHistory();
 
 Q_SIGNALS:
     void newViewRequested(QQuickWebEngineNewViewRequest *request);

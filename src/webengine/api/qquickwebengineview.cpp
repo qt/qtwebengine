@@ -51,6 +51,7 @@
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
+#include "web_engine_visited_links_manager.h"
 
 #include <QGuiApplication>
 #include <QQmlComponent>
@@ -598,6 +599,11 @@ void QQuickWebEngineViewExperimental::goForwardTo(int index)
         return;
 
     d_ptr->adapter->navigateToIndex(d_ptr->adapter->currentNavigationEntryIndex() + 1 + index);
+}
+
+void QQuickWebEngineViewExperimental::clearBrowsingHistory()
+{
+    WebEngineVisitedLinksManager::instance()->deleteAllVisitedLinkData();
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
