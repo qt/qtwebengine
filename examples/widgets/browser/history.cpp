@@ -67,10 +67,7 @@
 static const unsigned int HISTORY_VERSION = 23;
 
 HistoryManager::HistoryManager(QObject *parent)
-    :
-#if defined(QWEBENGINEHISTORYINTERFACE)
-      QWebEngineHistoryInterface(parent),
-#endif
+    : QWebEngineHistoryInterface(parent),
       m_saveTimer(new AutoSaver(this))
     , m_historyLimit(30)
     , m_historyModel(0)
@@ -90,10 +87,8 @@ HistoryManager::HistoryManager(QObject *parent)
     m_historyFilterModel = new HistoryFilterModel(m_historyModel, this);
     m_historyTreeModel = new HistoryTreeModel(m_historyFilterModel, this);
 
-#if defined(QWEBENGINEHISTORYINTERFACE)
     // QWebEngineHistoryInterface will delete the history manager
     QWebEngineHistoryInterface::setDefaultInterface(this);
-#endif
 }
 
 HistoryManager::~HistoryManager()
@@ -101,17 +96,18 @@ HistoryManager::~HistoryManager()
     m_saveTimer->saveIfNeccessary();
 }
 
+QList<QUrl> HistoryManager::historyContents() const
+{
+    return m_historyFilterModel->historyContents();
+}
+
 QList<HistoryItem> HistoryManager::history() const
 {
     return m_history;
 }
 
-bool HistoryManager::historyContains(const QString &url) const
-{
-    return m_historyFilterModel->historyContains(url);
-}
 
-void HistoryManager::addHistoryEntry(const QString &url)
+void HistoryManager::addHistoryEntry(const QUrl &url)
 {
     QUrl cleanUrl(url);
     cleanUrl.setPassword(QString());
@@ -162,6 +158,7 @@ void HistoryManager::checkForExpired()
     QDateTime now = QDateTime::currentDateTime();
     int nextTimeout = 0;
 
+    QList<QUrl> removedUrls;
     while (!m_history.isEmpty()) {
         QDateTime checkForExpired = m_history.last().dateTime;
         checkForExpired.setDate(checkForExpired.date().addDays(m_historyLimit));
@@ -177,7 +174,9 @@ void HistoryManager::checkForExpired()
         // remove from saved file also
         m_lastSavedUrl = QString();
         emit entryRemoved(item);
+        removedUrls.append(item.url);
     }
+    deleteUrls(removedUrls);
 
     if (nextTimeout > 0)
         m_expiredTimer.start(nextTimeout * 1000);
@@ -227,6 +226,7 @@ void HistoryManager::setHistoryLimit(int limit)
 
 void HistoryManager::clear()
 {
+    deleteAll();
     m_history.clear();
     m_lastSavedUrl = QString();
     m_saveTimer->changeOccurred();
@@ -472,8 +472,12 @@ bool HistoryModel::removeRows(int row, int count, const QModelIndex &parent)
     int lastRow = row + count - 1;
     beginRemoveRows(parent, row, lastRow);
     QList<HistoryItem> lst = m_history->history();
-    for (int i = lastRow; i >= row; --i)
+    QList<QUrl> urlsToRemove;
+    for (int i = lastRow; i >= row; --i) {
+        urlsToRemove.append(lst.at(i).url);
         lst.removeAt(i);
+    }
+    m_history->deleteUrls(urlsToRemove);
     disconnect(m_history, SIGNAL(historyReset()), this, SLOT(historyReset()));
     m_history->setHistory(lst);
     connect(m_history, SIGNAL(historyReset()), this, SLOT(historyReset()));
@@ -695,7 +699,7 @@ HistoryDialog::HistoryDialog(QWidget *parent, HistoryManager *setHistory) : QDia
     int header = fm.width(QLatin1Char('m')) * 40;
     tree->header()->resizeSection(0, header);
     tree->header()->setStretchLastSection(true);
-    connect(tree, SIGNAL(activated(QModelIndex)),
+    connect(tree, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(open()));
     tree->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(tree, SIGNAL(customContextMenuRequested(QPoint)),
@@ -729,10 +733,10 @@ void HistoryDialog::copy()
     QModelIndex index = tree->currentIndex();
     if (!index.parent().isValid())
         return;
-    QString url = index.data(HistoryModel::UrlStringRole).toString();
+    QUrl url = index.data(HistoryModel::UrlStringRole).toUrl();
 
     QClipboard *clipboard = QApplication::clipboard();
-    clipboard->setText(url);
+    clipboard->setText(url.toString());
 }
 
 HistoryFilterModel::HistoryFilterModel(QAbstractItemModel *sourceModel, QObject *parent)
@@ -742,7 +746,7 @@ HistoryFilterModel::HistoryFilterModel(QAbstractItemModel *sourceModel, QObject 
     setSourceModel(sourceModel);
 }
 
-int HistoryFilterModel::historyLocation(const QString &url) const
+int HistoryFilterModel::historyLocation(const QUrl &url) const
 {
     load();
     if (!m_historyHash.contains(url))
@@ -821,7 +825,7 @@ QModelIndex HistoryFilterModel::mapToSource(const QModelIndex &proxyIndex) const
 QModelIndex HistoryFilterModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
     load();
-    QString url = sourceIndex.data(HistoryModel::UrlStringRole).toString();
+    QUrl url = sourceIndex.data(HistoryModel::UrlStringRole).toUrl();
     if (!m_historyHash.contains(url))
         return QModelIndex();
 
@@ -868,7 +872,7 @@ void HistoryFilterModel::load() const
     m_historyHash.reserve(sourceModel()->rowCount());
     for (int i = 0; i < sourceModel()->rowCount(); ++i) {
         QModelIndex idx = sourceModel()->index(i, 0);
-        QString url = idx.data(HistoryModel::UrlStringRole).toString();
+        QUrl url = idx.data(HistoryModel::UrlStringRole).toUrl();
         if (!m_historyHash.contains(url)) {
             m_sourceRow.append(sourceModel()->rowCount() - i);
             m_historyHash[url] = sourceModel()->rowCount() - i;
@@ -884,7 +888,7 @@ void HistoryFilterModel::sourceRowsInserted(const QModelIndex &parent, int start
     if (!m_loaded)
         return;
     QModelIndex idx = sourceModel()->index(start, 0, parent);
-    QString url = idx.data(HistoryModel::UrlStringRole).toString();
+    QUrl url = idx.data(HistoryModel::UrlStringRole).toUrl();
     if (m_historyHash.contains(url)) {
         int sourceRow = sourceModel()->rowCount() - m_historyHash[url];
         int realRow = mapFromSource(sourceModel()->index(sourceRow, 0)).row();
@@ -945,15 +949,14 @@ QVariant HistoryCompletionModel::data(const QModelIndex &index, int role) const
         && index.isValid()) {
         QModelIndex idx = mapToSource(index);
         idx = idx.sibling(idx.row(), 1);
-        QString urlString = idx.data(HistoryModel::UrlStringRole).toString();
+        QUrl url = idx.data(HistoryModel::UrlStringRole).toUrl();
         if (index.row() % 2) {
-            QUrl url = urlString;
             QString s = url.toString(QUrl::RemoveScheme
                                      | QUrl::RemoveUserInfo
                                      | QUrl::StripTrailingSlash);
             return s.mid(2);  // strip // from the front
         }
-        return urlString;
+        return url;
     }
     return QAbstractProxyModel::data(index, role);
 }
