@@ -201,14 +201,17 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
     Q_UNUSED(url);
+    iconChanged(QUrl(""));
     Q_EMIT q->urlChanged();
 }
 
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 {
+    if (icon == url)
+        return;
+
     Q_Q(QQuickWebEngineView);
     icon = url;
-    Q_EMIT q->iconChanged();
 }
 
 void QQuickWebEngineViewPrivate::loadingStateChanged()
@@ -243,6 +246,9 @@ qreal QQuickWebEngineViewPrivate::dpiScale() const
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);
+
+    Q_EMIT q->iconChanged();
+
     if (error_code == WebEngineError::UserAbortedError) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
