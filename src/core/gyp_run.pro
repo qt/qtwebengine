@@ -4,6 +4,13 @@
 
 TEMPLATE = aux
 
+# Copy this logic from qt_module.prf so that ninja can run according
+# to the same rules as the final module linking in core_module.pro.
+!host_build:if(win32|mac):!macx-xcode {
+    contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
+    contains(QT_CONFIG, build_all):CONFIG += build_all
+}
+
 GYP_ARGS = "-D qt_cross_compile=0"
 cross_compile {
     GYP_ARGS = "-D qt_cross_compile=1 -D os_posix=1"
@@ -59,25 +66,31 @@ cross_compile {
 }
 
 win32 {
-# Libvpx build needs additional search path on Windows.
-git_chromium_src_dir = $$system("git config qtwebengine.chromiumsrcdir")
-GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$OUT_PWD/$$getConfigDir()/obj/$$git_chromium_src_dir\""
+    # Libvpx build needs additional search path on Windows.
+    git_chromium_src_dir = $$system("git config qtwebengine.chromiumsrcdir")
+    GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$OUT_PWD/$$getConfigDir()/obj/$$git_chromium_src_dir\""
 
-# Use path from environment for perl, bison and gperf instead of values set in WebKit's core.gypi.
-GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"gperf.exe\""
+    # Use path from environment for perl, bison and gperf instead of values set in WebKit's core.gypi.
+    GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"gperf.exe\""
 }
 
 !build_pass {
-  message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
-  !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
+    message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
+    !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
 }
 
-ninja.target = invoke_ninja
-ninja.commands = $$findOrBuildNinja() \$\(NINJAFLAGS\) -C "$$OUT_PWD/$$getConfigDir()"
-QMAKE_EXTRA_TARGETS += ninja
+build_pass|!debug_and_release {
+    ninja.target = invoke_ninja
+    ninja.commands = $$findOrBuildNinja() \$\(NINJAFLAGS\) -C "$$OUT_PWD/$$getConfigDir()"
+    QMAKE_EXTRA_TARGETS += ninja
 
-build_pass:build_all:default_target.target = all
-else: default_target.target = first
-default_target.depends = ninja
+    build_pass:build_all: default_target.target = all
+    else: default_target.target = first
+    default_target.depends = ninja
 
-QMAKE_EXTRA_TARGETS += default_target
+    QMAKE_EXTRA_TARGETS += default_target
+} else {
+    # Special GNU make target for the meta Makefile that ensures that our debug and release Makefiles won't both run ninja in parallel.
+    notParallel.target = .NOTPARALLEL
+    QMAKE_EXTRA_TARGETS += notParallel
+}
