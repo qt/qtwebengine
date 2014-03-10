@@ -8,5 +8,5 @@ SOURCES =   main.cpp \
 RESOURCES = jquery.qrc
 
 # install
-#target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/fancybrowser
-#INSTALLS += target
+target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/fancybrowser
+INSTALLS += target
