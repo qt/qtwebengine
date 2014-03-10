@@ -3,7 +3,8 @@ TARGET = quicknanobrowser
 
 macx: CONFIG -= app_bundle
 
-HEADERS = quickwindow.h
+HEADERS = quickwindow.h \
+          util.h
 SOURCES = quickwindow.cpp \
           main.cpp
 
@@ -11,7 +12,6 @@ OTHER_FILES += ContextMenuExtras.qml \
                quickwindow.qml
 
 RESOURCES += resources.qrc
-RESOURCES += ../../common/common_resources.qrc
 
 QT += qml quick
 QT_PRIVATE += quick-private gui-private core-private

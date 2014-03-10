@@ -41,7 +41,7 @@
 
 #include "quickwindow.h"
 
-#include "../../common/util.h"
+#include "util.h"
 
 #include <QFileInfo>
 #include <QObject>
