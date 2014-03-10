@@ -1,8 +1,8 @@
 TEMPLATE=subdirs
 
-SUBDIRS += quick/quicknanobrowser
+SUBDIRS += webengine/quicknanobrowser
 qtHaveModule(widgets) {
     SUBDIRS += \
-        widgets/browser \
-        widgets/fancybrowser
+        webenginewidgets/browser \
+        webenginewidgets/fancybrowser
 }
