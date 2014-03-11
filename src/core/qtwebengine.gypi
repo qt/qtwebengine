@@ -95,12 +95,6 @@
           '<(chromium_src_dir)/build/linux/system.gyp:fontconfig',
         ],
       }],
-      ['os_posix==1 and linux_use_tcmalloc==1', {
-        'dependencies': [
-          # This is needed by content/app/content_main_runner.cc
-          '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
-        ],
-      }],
       ['use_aura==1', {
         'dependencies': [
           '<(chromium_src_dir)/ui/aura/aura.gyp:aura',
