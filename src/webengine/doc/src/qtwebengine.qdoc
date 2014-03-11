@@ -1,0 +1,25 @@
+
+/*!
+    \qmlmodule QtWebKit 3.0
+    \title Qt WebKit QML Types
+    \brief Provides QML types for rendering web content within a QML application
+
+    The QML types can be imported into your applciation using the following
+    import statement in your .qml file:
+
+    \code
+    import QtQuick 2.0
+    import QtWebKit 3.0
+    \endcode
+*/
+
+/*!
+    \group webengine-xamples
+    \title Qt WebEngine Examples
+    \brief Examples demonstrating the Qt WebEngine usage
+    \ingroup all-examples
+
+    These examples and demonstrations show a range of different uses for Qt WebEngine,
+    from displaying Web pages within a QML user interface to an implementation of
+    a basic function Web browser.
+*/
