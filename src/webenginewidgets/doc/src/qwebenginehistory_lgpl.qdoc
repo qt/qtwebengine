@@ -1,0 +1,301 @@
+/*
+    Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+*/
+
+// The documentation in this file was imported from QtWebKit and is thus constrained
+// by its LGPL license. Documentation written from scratch for new methods should be
+// placed inline in the code as usual.
+
+/*!
+    \class QWebHistoryItem
+    \since 4.4
+    \brief The QWebHistoryItem class represents one item in the history of a QWebPage
+
+    \inmodule QtWebKit
+
+    Each QWebHistoryItem instance represents an entry in the history stack of a Web page,
+    containing information about the page, its location, and when it was last visited.
+
+    The following table shows the properties of the page held by the history item, and
+    the functions used to access them.
+
+    \table
+    \header \li Function      \li Description
+    \row    \li title()       \li The page title.
+    \row    \li url()         \li The location of the page.
+    \row    \li originalUrl() \li The URL used to access the page.
+    \row    \li lastVisited() \li The date and time of the user's last visit to the page.
+    \row    \li icon()        \li The icon associated with the page that was provided by the server.
+    \row    \li userData()    \li The user specific data that was stored with the history item.
+    \endtable
+
+    \note QWebHistoryItem objects are value based, but \e{explicitly shared}. Changing
+    a QWebHistoryItem instance by calling setUserData() will change all copies of that
+    instance.
+
+    \sa QWebHistory, QWebPage::history(), QWebHistoryInterface
+*/
+
+/*!
+    \fn QWebHistoryItem::QWebHistoryItem(const QWebHistoryItem &other)
+    Constructs a history item from \a other. The new item and \a other
+    will share their data, and modifying either this item or \a other will
+    modify both instances.
+*/
+
+/*!
+    \fn QWebHistoryItem &QWebHistoryItem::operator=(const QWebHistoryItem &other)
+    Assigns the \a other history item to this. This item and \a other
+    will share their data, and modifying either this item or \a other will
+    modify both instances.
+*/
+
+/*!
+    \fn QWebHistoryItem::~QWebHistoryItem()
+    Destroys the history item.
+*/
+
+/*!
+    \fn QUrl QWebHistoryItem::originalUrl() const
+    Returns the original URL associated with the history item.
+
+    \sa url()
+*/
+
+/*!
+    \fn QUrl QWebHistoryItem::url() const
+    Returns the URL associated with the history item.
+
+    \sa originalUrl(), title(), lastVisited()
+*/
+
+/*!
+    \fn QString QWebHistoryItem::title() const
+    Returns the title of the page associated with the history item.
+
+    \sa icon(), url(), lastVisited()
+*/
+
+/*!
+    \fn QDateTime QWebHistoryItem::lastVisited() const
+    Returns the date and time that the page associated with the item was last visited.
+
+    \sa title(), icon(), url()
+*/
+
+/*!
+    \fn QIcon QWebHistoryItem::icon() const
+    Returns the icon associated with the history item.
+
+    \sa title(), url(), lastVisited()
+*/
+
+/*!
+    \fn QVariant QWebHistoryItem::userData() const
+    \since 4.5
+    Returns the user specific data that was stored with the history item.
+
+    \sa setUserData()
+*/
+
+/*!
+    \fn void QWebHistoryItem::setUserData(const QVariant& userData)
+    \since 4.5
+
+    Stores user specific data \a userData with the history item.
+
+    \note All copies of this item will be modified.
+
+    \sa userData()
+*/
+
+/*!
+    \fn bool QWebHistoryItem::isValid() const
+    \since 4.5
+    Returns whether this is a valid history item.
+*/
+
+/*!
+    \class QWebHistory
+    \since 4.4
+    \brief The QWebHistory class represents the history of a QWebPage
+
+    \inmodule QtWebKit
+
+    Each QWebPage instance contains a history of visited pages that can be accessed
+    by QWebPage::history(). QWebHistory represents this history and makes it possible
+    to navigate it.
+
+    The history uses the concept of a \e{current item}, dividing the pages visited
+    into those that can be visited by navigating \e back and \e forward using the
+    back() and forward() functions. The current item can be obtained by calling
+    currentItem(), and an arbitrary item in the history can be made the current
+    item by passing it to goToItem().
+
+    A list of items describing the pages that can be visited by going back can be
+    obtained by calling the backItems() function; similarly, items describing the
+    pages ahead of the current page can be obtained with the forwardItems() function.
+    The total list of items is obtained with the items() function.
+
+    Just as with containers, functions are available to examine the history in terms
+    of a list. Arbitrary items in the history can be obtained with itemAt(), the total
+    number of items is given by count(), and the history can be cleared with the
+    clear() function.
+
+    QWebHistory's state can be saved to a QDataStream using the >> operator and loaded
+    by using the << operator.
+
+    \sa QWebHistoryItem, QWebHistoryInterface, QWebPage
+*/
+
+/*!
+    \fn void QWebHistory::clear()
+    Clears the history.
+
+    \sa count(), items()
+*/
+
+/*!
+    \fn QList<QWebHistoryItem> QWebHistory::items() const
+    Returns a list of all items currently in the history.
+
+    \sa count(), clear()
+*/
+
+/*!
+    \fn QList<QWebHistoryItem> QWebHistory::backItems(int maxItems) const
+    Returns the list of items in the backwards history list.
+    At most \a maxItems entries are returned.
+
+    \sa forwardItems()
+*/
+
+/*!
+    \fn QList<QWebHistoryItem> QWebHistory::forwardItems(int maxItems) const
+    Returns the list of items in the forward history list.
+    At most \a maxItems entries are returned.
+
+    \sa backItems()
+*/
+
+/*!
+    \fn bool QWebHistory::canGoBack() const
+    Returns true if there is an item preceding the current item in the history;
+    otherwise returns false.
+
+    \sa canGoForward()
+*/
+
+/*!
+    \fn bool QWebHistory::canGoForward() const
+    Returns true if we have an item to go forward to; otherwise returns false.
+
+    \sa canGoBack()
+*/
+
+/*!
+    \fn void QWebHistory::back()
+    Set the current item to be the previous item in the history and goes to the
+    corresponding page; i.e., goes back one history item.
+
+    \sa forward(), goToItem()
+*/
+
+/*!
+    \fn void QWebHistory::forward()
+    Sets the current item to be the next item in the history and goes to the
+    corresponding page; i.e., goes forward one history item.
+
+    \sa back(), goToItem()
+*/
+
+/*!
+    \fn void QWebHistory::goToItem(const QWebHistoryItem &item)
+    Sets the current item to be the specified \a item in the history and goes to the page.
+
+    \sa back(), forward()
+*/
+
+/*!
+    \fn QWebHistoryItem QWebHistory::backItem() const
+    Returns the item before the current item in the history.
+*/
+
+/*!
+    \fn QWebHistoryItem QWebHistory::currentItem() const
+    Returns the current item in the history.
+*/
+
+/*!
+    \fn QWebHistoryItem QWebHistory::forwardItem() const
+    Returns the item after the current item in the history.
+*/
+
+/*!
+    \fn int QWebHistory::currentItemIndex() const
+    \since 4.5
+    Returns the index of the current item in history.
+*/
+
+/*!
+    \fn QWebHistoryItem QWebHistory::itemAt(int i) const
+    Returns the item at index \a i in the history.
+*/
+
+/*!
+    \fn int QWebHistory::count() const
+    Returns the total number of items in the history.
+*/
+
+/*!
+    \fn int QWebHistory::maximumItemCount() const
+    \since 4.5
+    Returns the maximum number of items in the history.
+
+    \sa setMaximumItemCount()
+*/
+
+/*!
+    \fn void QWebHistory::setMaximumItemCount(int count)
+    \since 4.5
+    Sets the maximum number of items in the history to \a count.
+
+    \sa maximumItemCount()
+*/
+
+/*!
+    \fn QDataStream& operator<<(QDataStream& target, const QWebHistory& history)
+    \since 4.6
+    \relates QWebHistory
+
+    \brief The operator<< function streams a history into a data stream.
+
+    It saves the \a history into the specified \a stream.
+*/
+
+
+/*!
+    \fn QDataStream& operator>>(QDataStream& source, QWebHistory& history)
+    \relates QWebHistory
+    \since 4.6
+
+    \brief The operator>> function loads a history from a data stream.
+
+    Loads a QWebHistory from the specified \a stream into the given \a history.
+*/
+
