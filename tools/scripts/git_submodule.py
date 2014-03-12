@@ -85,6 +85,9 @@ class DEPSParser:
                 submodule = Submodule(subdir, repo)
                 submodule.os = os
                 submodule.shasum = shasum
+                if not submodule.matchesOS():
+                    print '-- skipping ' + submodule.path + ' for this operating system. --'
+                    continue
                 if not submodule.shasum:
                     # We need to parse the svn branch and revision number.
                     ref = repo
@@ -116,24 +119,6 @@ class DEPSParser:
                 submodules.append(submodule)
         return submodules
 
-    def sanityCheckModules(self, submodules):
-        submodule_dict = {}
-        for submodule in submodules:
-            if not submodule.matchesOS():
-                print '-- skipping ' + submodule.path + ' for this operating system. --'
-                continue
-            if submodule.path in submodule_dict:
-                prev_module = submodule_dict[submodule.path]
-                # We might have to create our own DEPS file if different platforms use different branches,
-                # but for now it should be safe to select the latest revision from the requirements.
-                if submodule.shasum or prev_module.revision >= submodule.revision:
-                    continue
-                if prev_module.ref != submodule.ref:
-                    sys.exit('ERROR: branch mismatch for ' + submodule.path + '(' + prev_module.ref + ' vs ' + submodule.ref + ')')
-                print('Duplicate submodule ' + submodule.path + '. Using latest revison ' + str(submodule.revision) + '.')
-            submodule_dict[submodule.path] = submodule
-        return list(submodule_dict.values())
-
     def parse(self, deps_content):
         exec(deps_content, self.global_scope, self.local_scope)
 
@@ -141,19 +126,7 @@ class DEPSParser:
         submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps'], 'all'))
         for os_dep in self.local_scope['deps_os']:
             submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps_os'][os_dep], os_dep))
-
-        return self.sanityCheckModules(submodules)
-
-    def parseFile(self, deps_file_name):
-        currentDir = os.getcwd()
-        if not os.path.isfile(deps_file_name):
-            return []
-        deps_file = open(deps_file_name)
-        deps_content = deps_file.read().decode('utf-8')
-        deps_file.close()
-        return self.parse(deps_content)
-
-
+        return submodules
 
 class Submodule:
     def __init__(self, path='', url='', shasum='', os=[], ref=''):
@@ -186,9 +159,11 @@ class Submodule:
         error = 0
         if self.ref:
             # Fetch the ref we parsed from the DEPS file.
-            val = subprocessCall(['git', 'fetch', 'origin', self.ref])
-            if val != 0:
-                sys.exit("Could not fetch branch from upstream " + self.ref)
+            error = subprocessCall(['git', 'fetch', 'origin', self.ref])
+            if error != 0:
+                print('ERROR: Could not fetch from upstream branch ' + self.ref)
+                return error
+
             error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
 
             search_string = ''
