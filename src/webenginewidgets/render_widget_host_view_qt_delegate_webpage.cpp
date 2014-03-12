@@ -139,6 +139,12 @@ bool RenderWidgetHostViewQtDelegateWebPage::supportsHardwareAcceleration() const
     return false;
 }
 
+void RenderWidgetHostViewQtDelegateWebPage::setTooltip(const QString &tooltip)
+{
+    if (m_page && m_page->view())
+        m_page->view()->setToolTip(tooltip);
+}
+
 void RenderWidgetHostViewQtDelegateWebPage::paint(QPainter *painter, const QRectF &boundingRect)
 {
     m_client->fetchBackingStore();

@@ -228,8 +228,11 @@ bool QWebEngineView::event(QEvent *ev)
     if (ev->type() == QEvent::ContextMenu) {
         ev->accept();
         return true;
-    } else if (ev->type() == QEvent::MetaCall)
-        // Meta calls are not safe to forward to the page, as they could be widget specific (e.g. QWidgetPrivate::_q_showIfNotHidden)
+
+    // Meta calls are not safe to forward to the page, as they could be widget specific (e.g. QWidgetPrivate::_q_showIfNotHidden)
+    // ToolTip events need to be processed at the widget level for the tooltip to show.
+    } else if (ev->type() == QEvent::MetaCall
+               || ev->type() == QEvent::ToolTip)
         return QWidget::event(ev);
     if (d->page && d->page->event(ev))
             return true;

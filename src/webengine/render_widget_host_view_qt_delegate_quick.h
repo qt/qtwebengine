@@ -199,6 +199,8 @@ public:
         qApp->inputMethod()->setVisible(editorVisible);
     }
 
+    void setTooltip(const QString &) Q_DECL_OVERRIDE {}
+
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const
     {
         return m_client->inputMethodQuery(query);

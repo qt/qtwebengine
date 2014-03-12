@@ -140,7 +140,7 @@ public:
     virtual void DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
-    virtual void SetTooltipText(const string16&) Q_DECL_OVERRIDE;
+    virtual void SetTooltipText(const string16 &tooltip_text) Q_DECL_OVERRIDE;
     virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&) Q_DECL_OVERRIDE;
     virtual void ScrollOffsetChanged() Q_DECL_OVERRIDE;
     virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback) Q_DECL_OVERRIDE;
@@ -162,7 +162,7 @@ public:
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewBase.
-    virtual void SelectionChanged(const string16 &text, size_t offset, const gfx::Range &range) OVERRIDE;
+    virtual void SelectionChanged(const string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
 
     // Overridden from ui::GestureEventHelper.
     virtual bool DispatchLongPressGestureEvent(ui::GestureEvent *event) Q_DECL_OVERRIDE;
