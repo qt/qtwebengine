@@ -1,7 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/">
         <file>quickwindow.qml</file>
-        <file>ContextMenuExtras.qml</file>
     </qresource>
     <qresource prefix="icons">
         <file alias="go-next.png">icons/go-next.png</file>
