@@ -90,6 +90,7 @@ public:
     virtual void move(const QPoint &) = 0;
     virtual void inputMethodStateChanged(bool editorVisible) = 0;
     virtual bool supportsHardwareAcceleration() const = 0;
+    virtual void setTooltip(const QString &) = 0;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H
