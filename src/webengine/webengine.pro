@@ -6,6 +6,8 @@ DEFINES += QT_BUILD_WEBENGINE_LIB
 QT += qml quick
 QT_PRIVATE += webenginecore qml-private quick-private gui-private core-private
 
+QMAKE_DOCS = $$PWD/doc/qtwebengine.qdocconf
+
 INCLUDEPATH += $$PWD api ../core
 
 SOURCES = \

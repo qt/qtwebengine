@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
 
     This library is free software; you can redistribute it and/or
@@ -22,36 +23,36 @@
 // placed inline in the code as usual.
 
 /*!
-    \class QWebSettings
+    \class QWebEngineSettings
     \since 4.4
-    \brief The QWebSettings class provides an object to store the settings used
-    by QWebPage and QWebFrame.
+    \brief The QWebEngineSettings class provides an object to store the settings used
+    by QWebEnginePage.
 
-    \inmodule QtWebKit
+    \inmodule QtWebEngine
 
-    Each QWebPage object has its own QWebSettings object, which configures the
+    Each QWebEnginePage object has its own QWebEngineSettings object, which configures the
     settings for that page. If a setting is not configured, then it is looked
     up in the global settings object, which can be accessed using
     globalSettings().
 
-    QWebSettings allows configuration of browser properties, such as font sizes and
+    QWebEngineSettings allows configuration of browser properties, such as font sizes and
     families, the location of a custom style sheet, and generic attributes like
     JavaScript and plugins. Individual attributes are set using the setAttribute()
-    function. The \l{QWebSettings::WebAttribute}{WebAttribute} enum further describes
+    function. The \l{QWebEngineSettings::WebAttribute}{WebAttribute} enum further describes
     each attribute.
 
-    QWebSettings also configures global properties such as the web page memory
+    QWebEngineSettings also configures global properties such as the web page memory
     cache, icon database, local database storage and offline
     applications storage.
 
     \section1 Enabling Plugins
 
     Support for browser plugins can enabled by setting the
-    \l{QWebSettings::PluginsEnabled}{PluginsEnabled} attribute. For many applications,
+    \l{QWebEngineSettings::PluginsEnabled}{PluginsEnabled} attribute. For many applications,
     this attribute is enabled for all pages by setting it on the
     \l{globalSettings()}{global settings object}. Qt WebKit will always ignore this setting
     when processing Qt plugins. The decision to allow a Qt plugin is made by the client
-    in its reimplementation of QWebPage::createPlugin().
+    in its reimplementation of QWebEnginePage::createPlugin().
 
     \section1 Web Application Support
 
@@ -65,19 +66,19 @@
     setOfflineStoragePath() with an appropriate file path, and can limit the quota
     for each application by calling setOfflineStorageDefaultQuota().
 
-    \sa QWebPage::settings(), QWebView::settings(), {Web Browser}
+    \sa QWebEnginePage::settings(), QWebEngineView::settings(), {WebEngine Tab Browser Example}
 */
 
 /*!
-    \fn QWebSettings* QWebSettings::globalSettings()
+    \fn QWebEngineSettings* QWebEngineSettings::globalSettings()
     Returns the global settings object.
 
     Any setting changed on the default object is automatically applied to all
-    QWebPage instances where the particular setting is not overridden already.
+    QWebEnginePage instances where the particular setting is not overridden already.
 */
 
 /*!
-    \enum QWebSettings::FontFamily
+    \enum QWebEngineSettings::FontFamily
 
     This enum describes the generic font families defined by CSS 2.
     For more information see the
@@ -92,19 +93,19 @@
 */
 
 /*!
-    \enum QWebSettings::FontSize
+    \enum QWebEngineSettings::FontSize
 
-    This enum describes the font sizes configurable through QWebSettings.
+    This enum describes the font sizes configurable through QWebEngineSettings.
 
     \value MinimumFontSize The hard minimum font size.
     \value MinimumLogicalFontSize The minimum logical font size that is applied
-        when zooming out with QWebFrame::setTextSizeMultiplier().
+        when zooming out with QWebEnginePage::setTextSizeMultiplier().
     \value DefaultFontSize The default font size for regular text.
     \value DefaultFixedFontSize The default font size for fixed-pitch text.
 */
 
 /*!
-    \enum QWebSettings::ThirdPartyCookiePolicy
+    \enum QWebEngineSettings::ThirdPartyCookiePolicy
 
     This enum describes the policies configurable for accepting and sending
     third-party cookies. These are cookies that are set or retrieved when fetching
@@ -119,13 +120,13 @@
 */
 
 /*!
-    \enum QWebSettings::WebGraphic
+    \enum QWebEngineSettings::WebGraphic
 
     This enums describes the standard graphical elements used in webpages.
 
     \value MissingImageGraphic The replacement graphic shown when an image could not be loaded.
     \value MissingPluginGraphic The replacement graphic shown when a plugin could not be loaded.
-    \value DefaultFrameIconGraphic The default icon for QWebFrame::icon().
+    \value DefaultFrameIconGraphic The default icon for QWebEnginePage::icon().
     \value TextAreaSizeGripCornerGraphic The graphic shown for the size grip of text areas.
     \value DeleteButtonGraphic The graphic shown for the WebKit-Editing-Delete-Button in Deletion UI.
     \value InputSpeechButtonGraphic The graphic shown in input fields that support speech recognition.
@@ -134,9 +135,9 @@
 */
 
 /*!
-    \enum QWebSettings::WebAttribute
+    \enum QWebEngineSettings::WebAttribute
 
-    This enum describes various attributes that are configurable through QWebSettings.
+    This enum describes various attributes that are configurable through QWebEngineSettings.
 
     \value AutoLoadImages Specifies whether images are automatically loaded in
         web pages. This is enabled by default.
@@ -158,7 +159,7 @@
         can read or write to the clipboard. This is disabled by default.
     \value DeveloperExtrasEnabled Enables extra tools for Web developers.
         Currently this enables the "Inspect" element in the context menu as
-        well as the use of QWebInspector which controls the web inspector
+        well as the use of QWebEngineInspector which controls the web inspector
         for web site debugging. This is disabled by default.
     \value SpatialNavigationEnabled Enables or disables the Spatial Navigation
         feature, which consists in the ability to navigate between focusable
@@ -181,14 +182,14 @@
         local storage feature is enabled or not. This is disabled by default.
         (This value was introduced in 4.6.)
     \value LocalStorageDatabaseEnabled \e{This enum value is deprecated.} Use
-        QWebSettings::LocalStorageEnabled instead.
+        QWebEngineSettings::LocalStorageEnabled instead.
     \value LocalContentCanAccessRemoteUrls Specifies whether locally loaded documents are
         allowed to access remote urls. This is disabled by default. For more information
-        about security origins and local vs. remote content see QWebSecurityOrigin.
+        about security origins and local vs. remote content see QWebEngineSecurityOrigin.
         (This value was introduced in 4.6.)
     \value LocalContentCanAccessFileUrls Specifies whether locally loaded documents are
         allowed to access other local urls. This is enabled by default. For more information
-        about security origins and local vs. remote content see QWebSecurityOrigin.
+        about security origins and local vs. remote content see QWebEngineSecurityOrigin.
     \value XSSAuditingEnabled Specifies whether load requests should be monitored for cross-site
         scripting attempts. Suspicious scripts will be blocked and reported in the inspector's
         JavaScript console. Enabling this feature might have an impact on performance
@@ -222,25 +223,25 @@
 */
 
 /*!
-    \fn void QWebSettings::setFontSize(FontSize type, int size)
+    \fn void QWebEngineSettings::setFontSize(FontSize type, int size)
     Sets the font size for \a type to \a size.
 */
 
 /*!
-    \fn int QWebSettings::fontSize(FontSize type) const
+    \fn int QWebEngineSettings::fontSize(FontSize type) const
     Returns the default font size for \a type.
 */
 
 /*!
-    \fn void QWebSettings::resetFontSize(FontSize type)
+    \fn void QWebEngineSettings::resetFontSize(FontSize type)
     Resets the font size for \a type to the size specified in the global
     settings object.
 
-    This function has no effect on the global QWebSettings instance.
+    This function has no effect on the global QWebEngineSettings instance.
 */
 
 /*!
-    \fn void QWebSettings::setUserStyleSheetUrl(const QUrl& location)
+    \fn void QWebEngineSettings::setUserStyleSheetUrl(const QUrl& location)
     Specifies the location of a user stylesheet to load with every web page.
 
     The \a location must be either a path on the local filesystem, or a data URL
@@ -254,14 +255,14 @@
 */
 
 /*!
-    \fn QUrl QWebSettings::userStyleSheetUrl() const
+    \fn QUrl QWebEngineSettings::userStyleSheetUrl() const
     Returns the location of the user stylesheet.
 
     \sa setUserStyleSheetUrl()
 */
 
 /*!
-    \fn void QWebSettings::setDefaultTextEncoding(const QString& encoding)
+    \fn void QWebEngineSettings::setDefaultTextEncoding(const QString& encoding)
     \since 4.6
     Specifies the default text encoding system.
 
@@ -273,7 +274,7 @@
 */
 
 /*!
-    \fn QString QWebSettings::defaultTextEncoding() const
+    \fn QString QWebEngineSettings::defaultTextEncoding() const
     \since 4.6
     Returns the default text encoding.
 
@@ -281,7 +282,7 @@
 */
 
 /*!
-    \fn void QWebSettings::setIconDatabasePath(const QString& path)
+    \fn void QWebEngineSettings::setIconDatabasePath(const QString& path)
     Sets the path of the icon database to \a path. The icon database is used
     to store "favicons" associated with web sites.
 
@@ -293,7 +294,7 @@
 */
 
 /*!
-    \fn QString QWebSettings::iconDatabasePath()
+    \fn QString QWebEngineSettings::iconDatabasePath()
     Returns the path of the icon database or an empty string if the icon
     database is disabled.
 
@@ -301,12 +302,12 @@
 */
 
 /*!
-    \fn void QWebSettings::clearIconDatabase()
+    \fn void QWebEngineSettings::clearIconDatabase()
     Clears the icon database.
 */
 
 /*!
-    \fn QIcon QWebSettings::iconForUrl(const QUrl& url)
+    \fn QIcon QWebEngineSettings::iconForUrl(const QUrl& url)
     Returns the web site's icon for \a url.
 
     If the web site does not specify an icon \b OR if the icon is not in the
@@ -318,18 +319,18 @@
 */
 
 /*!
-    \fn void QWebSettings::setWebGraphic(WebGraphic type, const QPixmap& graphic)
+    \fn void QWebEngineSettings::setWebGraphic(WebGraphic type, const QPixmap& graphic)
     Sets \a graphic to be drawn when Qt WebKit needs to draw an image of the
     given \a type.
 
     For example, when an image cannot be loaded, the pixmap specified by
-    \l{QWebSettings::WebGraphic}{MissingImageGraphic} is drawn instead.
+    \l{QWebEngineSettings::WebGraphic}{MissingImageGraphic} is drawn instead.
 
     \sa webGraphic()
 */
 
 /*!
-    \fn QPixmap QWebSettings::webGraphic(WebGraphic type)
+    \fn QPixmap QWebEngineSettings::webGraphic(WebGraphic type)
     Returns a previously set pixmap used to draw replacement graphics of the
     specified \a type.
 
@@ -337,7 +338,7 @@
 */
 
 /*!
-    \fn void QWebSettings::clearMemoryCaches()
+    \fn void QWebEngineSettings::clearMemoryCaches()
     Frees up as much memory as possible by calling the JavaScript garbage collector and cleaning all memory caches such
     as page, object and font cache.
 
@@ -345,7 +346,7 @@
  */
 
 /*!
-    \fn void QWebSettings::setMaximumPagesInCache(int pages)
+    \fn void QWebEngineSettings::setMaximumPagesInCache(int pages)
     Sets the maximum number of pages to hold in the memory page cache to \a pages.
 
     The Page Cache allows for a nicer user experience when navigating forth or back
@@ -357,12 +358,12 @@
 */
 
 /*!
-    \fn int QWebSettings::maximumPagesInCache()
+    \fn int QWebEngineSettings::maximumPagesInCache()
     Returns the maximum number of web pages that are kept in the memory cache.
 */
 
 /*!
-    \fn void QWebSettings::setObjectCacheCapacities(int cacheMinDeadCapacity, int cacheMaxDead, int totalCapacity)
+    \fn void QWebEngineSettings::setObjectCacheCapacities(int cacheMinDeadCapacity, int cacheMaxDead, int totalCapacity)
    Specifies the capacities for the memory cache for dead objects such as
    stylesheets or scripts.
 
@@ -380,17 +381,17 @@
 */
 
 /*!
-    \fn void QWebSettings::setThirdPartyCookiePolicy(ThirdPartyCookiePolicy policy)
+    \fn void QWebEngineSettings::setThirdPartyCookiePolicy(ThirdPartyCookiePolicy policy)
     Sets the third-party cookie policy, the default is AlwaysAllowThirdPartyCookies.
 */
 
 /*!
-    \fn QWebSettings::ThirdPartyCookiePolicy QWebSettings::thirdPartyCookiePolicy() const
+    \fn QWebEngineSettings::ThirdPartyCookiePolicy QWebEngineSettings::thirdPartyCookiePolicy() const
     Returns the third-party cookie policy.
 */
 
 /*!
-    \fn void QWebSettings::setCSSMediaType(const QString& type)
+    \fn void QWebEngineSettings::setCSSMediaType(const QString& type)
     Sets the CSS media type to \a type.
 
     Setting this will override the normal value of the CSS media property.
@@ -399,58 +400,58 @@
 */
 
 /*!
-    \fn QString QWebSettings::cssMediaType() const
+    \fn QString QWebEngineSettings::cssMediaType() const
     Returns the current CSS media type.
 
     \note It will only return the value set through setCSSMediaType and not the one used internally.
 */
 
 /*!
-    \fn void QWebSettings::setFontFamily(FontFamily which, const QString& family)
+    \fn void QWebEngineSettings::setFontFamily(FontFamily which, const QString& family)
     Sets the actual font family to \a family for the specified generic family,
     \a which.
 */
 
 /*!
-    \fn QString QWebSettings::fontFamily(FontFamily which) const
+    \fn QString QWebEngineSettings::fontFamily(FontFamily which) const
     Returns the actual font family for the specified generic font family,
     \a which.
 */
 
 /*!
-    \fn void QWebSettings::resetFontFamily(FontFamily which)
+    \fn void QWebEngineSettings::resetFontFamily(FontFamily which)
     Resets the actual font family specified by \a which to the one set
-    in the global QWebSettings instance.
+    in the global QWebEngineSettings instance.
 
-    This function has no effect on the global QWebSettings instance.
+    This function has no effect on the global QWebEngineSettings instance.
 */
 
 /*!
-    \fn void QWebSettings::setAttribute(WebAttribute attribute, bool on)
+    \fn void QWebEngineSettings::setAttribute(WebAttribute attribute, bool on)
 
     Enables or disables the specified \a attribute feature depending on the
     value of \a on.
 */
 
 /*!
-    \fn bool QWebSettings::testAttribute(WebAttribute attribute) const
+    \fn bool QWebEngineSettings::testAttribute(WebAttribute attribute) const
 
     Returns true if \a attribute is enabled; otherwise returns false.
 */
 
 /*!
-    \fn void QWebSettings::resetAttribute(WebAttribute attribute)
+    \fn void QWebEngineSettings::resetAttribute(WebAttribute attribute)
 
     Resets the setting of \a attribute to the value specified in the
-    global QWebSettings instance.
+    global QWebEngineSettings instance.
 
-    This function has no effect on the global QWebSettings instance.
+    This function has no effect on the global QWebEngineSettings instance.
 
     \sa globalSettings()
 */
 
 /*!
-    \fn void QWebSettings::setOfflineStoragePath(const QString& path)
+    \fn void QWebEngineSettings::setOfflineStoragePath(const QString& path)
     \since 4.5
 
     Sets \a path as the save location for HTML5 client-side database storage data.
@@ -460,13 +461,13 @@
     Setting an empty path disables the feature.
 
     Support for client-side databases can enabled by setting the
-    \l{QWebSettings::OfflineStorageDatabaseEnabled}{OfflineStorageDatabaseEnabled} attribute.
+    \l{QWebEngineSettings::OfflineStorageDatabaseEnabled}{OfflineStorageDatabaseEnabled} attribute.
 
     \sa offlineStoragePath()
 */
 
 /*!
-    \fn QString QWebSettings::offlineStoragePath()
+    \fn QString QWebEngineSettings::offlineStoragePath()
     \since 4.5
 
     Returns the path of the HTML5 client-side database storage or an empty string if the
@@ -476,7 +477,7 @@
 */
 
 /*!
-    \fn void QWebSettings::setOfflineStorageDefaultQuota(qint64 maximumSize)
+    \fn void QWebEngineSettings::setOfflineStorageDefaultQuota(qint64 maximumSize)
     \since 4.5
 
     Sets the value of the default quota for new offline storage databases
@@ -484,14 +485,14 @@
 */
 
 /*!
-    \fn qint64 QWebSettings::offlineStorageDefaultQuota()
+    \fn qint64 QWebEngineSettings::offlineStorageDefaultQuota()
     \since 4.5
 
     Returns the value of the default quota for new offline storage databases.
 */
 
 /*!
-    \fn void QWebSettings::setOfflineWebApplicationCachePath(const QString& path)
+    \fn void QWebEngineSettings::setOfflineWebApplicationCachePath(const QString& path)
     \since 4.6
 
     Sets the path for HTML5 offline web application cache storage to \a path.
@@ -509,13 +510,13 @@
     Setting an empty path disables the feature.
 
     Support for offline web application cache storage can enabled by setting the
-    \l{QWebSettings::OfflineWebApplicationCacheEnabled}{OfflineWebApplicationCacheEnabled} attribute.
+    \l{QWebEngineSettings::OfflineWebApplicationCacheEnabled}{OfflineWebApplicationCacheEnabled} attribute.
 
     \sa offlineWebApplicationCachePath()
 */
 
 /*!
-    \fn QString QWebSettings::offlineWebApplicationCachePath()
+    \fn QString QWebEngineSettings::offlineWebApplicationCachePath()
     \since 4.6
 
     Returns the path of the HTML5 offline web application cache storage
@@ -525,7 +526,7 @@
 */
 
 /*!
-    \fn void QWebSettings::setOfflineWebApplicationCacheQuota(qint64 maximumSize)
+    \fn void QWebEngineSettings::setOfflineWebApplicationCacheQuota(qint64 maximumSize)
     \since 4.6
 
     Sets the value of the quota for the offline web application cache
@@ -533,14 +534,14 @@
 */
 
 /*!
-    \fn qint64 QWebSettings::offlineWebApplicationCacheQuota()
+    \fn qint64 QWebEngineSettings::offlineWebApplicationCacheQuota()
     \since 4.6
 
     Returns the value of the quota for the offline web application cache.
 */
 
 /*!
-    \fn void QWebSettings::setLocalStoragePath(const QString& path)
+    \fn void QWebEngineSettings::setLocalStoragePath(const QString& path)
     \since 4.6
 
     Sets the path for HTML5 local storage to \a path.
@@ -549,13 +550,13 @@
     \l{http://www.w3.org/TR/webstorage/#the-localstorage-attribute}{Web Storage standard}.
 
     Support for local storage can enabled by setting the
-    \l{QWebSettings::LocalStorageEnabled}{LocalStorageEnabled} attribute.
+    \l{QWebEngineSettings::LocalStorageEnabled}{LocalStorageEnabled} attribute.
 
     \sa localStoragePath()
 */
 
 /*!
-    \fn QString QWebSettings::localStoragePath() const
+    \fn QString QWebEngineSettings::localStoragePath() const
     \since 4.6
 
     Returns the path for HTML5 local storage.
@@ -564,7 +565,7 @@
 */
 
 /*!
-    \fn void QWebSettings::enablePersistentStorage(const QString& path)
+    \fn void QWebEngineSettings::enablePersistentStorage(const QString& path)
     \since 4.6
 
     Enables WebKit data persistence and sets the path to \a path.
