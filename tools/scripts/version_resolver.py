@@ -42,6 +42,7 @@
 #############################################################################
 
 import os
+import subprocess
 import sys
 import json
 import urllib2
@@ -73,6 +74,36 @@ def readReleaseChannels():
             channels[os].append({ 'channel': ver['channel'], 'version': ver['version'], 'branch': ver['true_branch'] })
     return channels
 
+def sanityCheckModules(submodules):
+    submodule_dict = {}
+    sys.stdout.write('\nverifying submodule refs.')
+    for submodule in submodules:
+        sys.stdout.flush()
+        if submodule.path in submodule_dict:
+            prev_module = submodule_dict[submodule.path]
+            # We might have to create our own DEPS file if different platforms use different branches,
+            # but for now it should be safe to select the latest revision from the requirements.
+            if submodule.shasum or prev_module.revision >= submodule.revision:
+                continue
+            if prev_module.ref != submodule.ref:
+                # Ignore for Android which might lag behind.
+                if submodule.os == 'android':
+                    continue
+                sys.exit('ERROR: branch mismatch for ' + submodule.path + '(' + prev_module.ref + ' vs ' + submodule.ref + ')')
+            print('Duplicate submodule ' + submodule.path + '. Using latest revison ' + str(submodule.revision) + '.')
+        if submodule.ref:
+            sys.stdout.write('.')
+            result = subprocess.check_output(['git', 'ls-remote', submodule.url, submodule.ref])
+            # Fallback to git shasum if the parsed remote ref does not exist in the git repository.
+            if submodule.ref not in result:
+                submodule.ref = submodule.revision = ''
+                if not submodule.shasum:
+                    sys.exit('\nERROR: No valid remote found!')
+            sys.stdout.flush()
+        submodule_dict[submodule.path] = submodule
+    print('done.\n')
+    return list(submodule_dict.values())
+
 def readSubmodules():
     response = urllib2.urlopen(base_deps_url + chromium_version + '/DEPS')
     svn_deps = response.read().strip()
@@ -103,4 +134,4 @@ def readSubmodules():
                 # We use the git shasum as fallback.
                 module.shasum = git.shasum
 
-    return list(submodule_dict.values())
+    return sanityCheckModules(submodule_dict.values())
