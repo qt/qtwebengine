@@ -40,6 +40,7 @@
 
 import QtQuick 2.1
 import QtWebEngine 1.0
+import QtWebEngine.experimental 1.0
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
@@ -51,15 +52,26 @@ ApplicationWindow {
     function load(url) { currentWebView.url = url }
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
 
+    property bool isFullScreen: visibility == Window.FullScreen
+    onIsFullScreenChanged: {
+        // This is for the case where the system forces us to leave fullscreen.
+        if (currentWebView)
+            currentWebView.state = isFullScreen ? "FullScreen" : ""
+    }
+
     height: 600
     width: 800
     visible: true
     title: currentWebView && currentWebView.title
 
+    // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
+    Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
+
     // Create a styleItem to determine the platform.
     // When using style "mac", ToolButtons are not supposed to accept focus.
     StyleItem { id: styleItem }
     property bool platformIsMac: styleItem.style == "mac"
+
 
     Action {
         id: focus
@@ -91,6 +103,14 @@ ApplicationWindow {
                 browserWindow.close()
             else
                 tabs.removeTab(tabs.currentIndex)
+        }
+    }
+
+    Action {
+        shortcut: "Escape"
+        onTriggered: {
+            if (browserWindow.isFullScreen)
+                browserWindow.showNormal()
         }
     }
 
@@ -176,7 +196,51 @@ ApplicationWindow {
             id: tabComponent
             WebEngineView {
                 id: webEngineView
+                function adoptHandle(viewHandle) { experimental.adoptHandle(viewHandle) }
+
                 focus: true
+
+                states: [
+                    State {
+                        name: "FullScreen"
+                        PropertyChanges {
+                            target: tabs
+                            frameVisible: false
+                            tabsVisible: false
+                        }
+                        PropertyChanges {
+                            target: navigationBar
+                            visible: false
+                        }
+                    }
+                ]
+
+                experimental {
+                    isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
+                    onFullScreenRequested: {
+                        if (fullScreen) {
+                            webEngineView.state = "FullScreen"
+                            browserWindow.showFullScreen();
+                        } else {
+                            webEngineView.state = ""
+                            browserWindow.showNormal();
+                        }
+                    }
+
+                    onNewViewRequested: {
+                        if (request.popup)
+                            print("Warning: Blocked a popup window.")
+                        else if (request.destination == WebEngineView.NewViewInTab) {
+                            var tab = tabs.createEmptyTab()
+                            request.openIn(tab.item)
+                        } else {
+                            var component = Qt.createComponent("quickwindow.qml")
+                            var window = component.createObject()
+                            request.openIn(window.currentWebView)
+                        }
+                    }
+                    extraContextMenuEntriesComponent: ContextMenuExtras {}
+                }
             }
         }
     }

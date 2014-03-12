@@ -38,36 +38,29 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef UTIL_H
-#define UTIL_H
 
-#include <QtCore/QCoreApplication>
-#include <QtCore/QFileInfo>
-#include <QtCore/QUrl>
-#include <QtCore/QStringList>
+#include "quickwindow.h"
+#ifndef QT_NO_WIDGETS
+#include <QtWidgets/QApplication>
+typedef QApplication Application;
+#else
+#include <QtGui/QGuiApplication>
+typedef QGuiApplication Application;
+#endif
+#include <QtQuick/private/qsgcontext_p.h>
 
-QUrl urlFromUserInput(const QString& userInput)
+int main(int argc, char **argv)
 {
-    QFileInfo fileInfo(userInput);
-    if (fileInfo.exists())
-        return QUrl(fileInfo.absoluteFilePath());
-    return QUrl::fromUserInput(userInput);
+    Application app(argc, argv);
+
+    // This is currently needed by all QtWebEngine application using the HW accelerated QQuickWebView.
+    // It enables sharing between the QOpenGLContext of all QQuickWindows of the application.
+    // We have to do so until we expose a public API for it, or chose enable it by default in Qt 5.3.0.
+    QOpenGLContext shareContext;
+    shareContext.create();
+    QSGContext::setSharedOpenGLContext(&shareContext);
+
+    ApplicationEngine appEngine;
+
+    return app.exec();
 }
-
-QUrl startupUrl()
-{
-    QUrl ret;
-    QStringList args(qApp->arguments());
-    args.takeFirst();
-    Q_FOREACH (const QString& arg, args) {
-        if (arg.startsWith(QLatin1Char('-')))
-             continue;
-        ret = urlFromUserInput(arg);
-        if (ret.isValid())
-            return ret;
-    }
-    return QUrl(QStringLiteral("http://qt-project.org/"));
-}
-
-
-#endif // UTIL_H
