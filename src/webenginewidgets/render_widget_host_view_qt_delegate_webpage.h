@@ -75,6 +75,7 @@ public:
     virtual void move(const QPoint&) Q_DECL_OVERRIDE {}
     virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
     virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
+    virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
 
     void paint(QPainter *painter, const QRectF &boundingRect);
     void notifyResize();

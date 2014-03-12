@@ -62,6 +62,7 @@ RenderWidgetHostViewQtDelegatePopup::RenderWidgetHostViewQtDelegatePopup(RenderW
     // loses focus, WebKit will cause its associated popups (including this one)
     // to be destroyed.
     setAttribute(Qt::WA_ShowWithoutActivating);
+    setAttribute(Qt::WA_AlwaysShowToolTips);
     setFocusPolicy(Qt::NoFocus);
     setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
 }
@@ -135,6 +136,11 @@ void RenderWidgetHostViewQtDelegatePopup::move(const QPoint &pos)
 {
     QPoint mapped = m_parentView ? m_parentView->mapToGlobal(pos) : pos;
     QWidget::move(mapped);
+}
+
+void RenderWidgetHostViewQtDelegatePopup::setTooltip(const QString &tooltip)
+{
+    setToolTip(tooltip);
 }
 
 void RenderWidgetHostViewQtDelegatePopup::paintEvent(QPaintEvent *event)

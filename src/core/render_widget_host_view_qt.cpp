@@ -511,9 +511,9 @@ void RenderWidgetHostViewQt::Destroy()
     delete this;
 }
 
-void RenderWidgetHostViewQt::SetTooltipText(const string16&)
+void RenderWidgetHostViewQt::SetTooltipText(const string16 &tooltip_text)
 {
-    // QT_NOT_YET_IMPLEMENTED
+    m_delegate->setTooltip(toQt(tooltip_text));
 }
 
 void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params &params)
