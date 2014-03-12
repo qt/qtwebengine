@@ -4,7 +4,7 @@ TARGET = QtWebEngine
 DEFINES += QT_BUILD_WEBENGINE_LIB
 
 QT += qml quick
-QT_PRIVATE += webenginecore qml-private quick-private gui-private core-private
+QT_PRIVATE += webengine-private webenginecore qml-private quick-private gui-private core-private
 
 INCLUDEPATH += $$PWD api ../core
 
