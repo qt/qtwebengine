@@ -39,35 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEHISTORY_P_H
-#define QWEBENGINEHISTORY_P_H
+#ifndef WEB_ENGINE_HISTORY_H
+#define WEB_ENGINE_HISTORY_H
+
+#include "qtwebenginecoreglobal.h"
 
 #include <QtCore/qshareddata.h>
+#include <QList>
 
 class WebContentsAdapter;
+class WebEngineHistory;
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineHistoryItemPrivate : public QSharedData
+class QWEBENGINE_EXPORT WebEngineHistoryItem
 {
 public:
-    QWebEngineHistoryItemPrivate(WebContentsAdapter *adapter = 0, int index = 0);
+    WebEngineHistoryItem(WebContentsAdapter *adapter = 0, int index = 0);
+    ~WebEngineHistoryItem();
 
-    WebContentsAdapter *adapter;
-    int index;
+    int index() const;
+    WebContentsAdapter *adapter() const;
+
+    bool isValid() const;
+
+private:
+    WebContentsAdapter *m_adapter;
+    int m_index;
+
+    friend WebEngineHistory;
 };
 
-class QWebEngineHistoryPrivate
+class QWEBENGINE_EXPORT WebEngineHistory : public QSharedData
 {
 public:
-    QWebEngineHistoryPrivate(WebContentsAdapter *adapter);
-    ~QWebEngineHistoryPrivate();
+    WebEngineHistory(WebContentsAdapter*);
+    ~WebEngineHistory();
+
+    void invalidateItems();
+    void clear();
+
+    QList<WebEngineHistoryItem> items() const;
+    QList<WebEngineHistoryItem> backItems() const;
+    QList<WebEngineHistoryItem> forwardItems() const;
+
+    WebEngineHistoryItem *itemAt(int i) const;
+
+    int currentItemIndex() const;
+    int count() const;
+
+    WebContentsAdapter *adapter() const;
+    void setAdapter(WebContentsAdapter*);
+
+private:
     void updateItems() const;
 
-    WebContentsAdapter *adapter;
-    mutable QList<QWebEngineHistoryItem> items;
+    WebContentsAdapter *m_adapter;
+    mutable QList<WebEngineHistoryItem> m_items;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEHISTORY_P_H
+#endif // WEB_ENGINE_HISTORY_H
