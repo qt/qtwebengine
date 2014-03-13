@@ -57,7 +57,8 @@ defineReplace(rccAction) {
 isEmpty(GYPFILE): GYPFILE = $$replace(_PRO_FILE_, .pro$, .gyp)
 
 TARGET_TYPE = $$toGypTargetType()
-MOCABLE_HEADERS = $$findMocables($$HEADERS)
+MOCABLES = $$findMocables($$HEADERS)
+MOCABLES += $$findMocables($$SOURCES)
 INCLUDED_MOC_FILES = $$findIncludedMocFiles($$SOURCES)
 
 GYP_CONTENTS =  "{" \
@@ -115,9 +116,9 @@ for (resourcefile, RESOURCES) {
 
 # Add moc output files to compile that aren't included at the end of any other source
 MOC_OUT_PATH = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}
-for (mocable_header, MOCABLE_HEADERS) {
-    !contains(INCLUDED_MOC_FILES, $$mocOutput($$mocable_header)) {
-        GYP_CONTENTS += "      '$$MOC_OUT_PATH$$mocOutput($$mocable_header)',"
+for (mocable, MOCABLES) {
+    !contains(INCLUDED_MOC_FILES, $$mocOutput($$mocable)) {
+        GYP_CONTENTS += "      '$$MOC_OUT_PATH$$mocOutput($$mocable)',"
     }
 }
 
@@ -131,7 +132,7 @@ GYP_CONTENTS += "    ],"
 # Generate the actions for moc and rcc
 GYP_CONTENTS += "    'actions': ["
 for(resourcefile, RESOURCES): GYP_CONTENTS += $$rccAction($$resourcefile)
-for(header, MOCABLE_HEADERS): GYP_CONTENTS += $$mocAction($$header)
+for(mocable, MOCABLES): GYP_CONTENTS += $$mocAction($$mocable)
 GYP_CONTENTS += "    ]," \
                 "  },"
 
