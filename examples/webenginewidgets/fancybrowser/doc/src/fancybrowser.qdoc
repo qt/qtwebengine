@@ -26,10 +26,9 @@
 ****************************************************************************/
 
 /*!
-    \example webengine/fancybrowser
-    \title Fancy Browser Example
+    \example fancybrowser
+    \title WebEngine Fancy Browser Example
     \brief Demonstrates how to use browse web and manipulate content
-    \ingroup webengine-widgetexamples
 
     \brief The Fancy Browser example shows how to use JQuery with QtWebEngine to
     create a web browser with special effects and content
@@ -46,7 +45,7 @@
     The \c MainWindow class inherits QMainWindow. It implements a number of
     slots to perform actions on both the application and on the web content.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.h 1
+    \snippet fancybrowser/mainwindow.h 1
 
     We also declare a QString that contains the jQuery, a QWebView
     that displays the web content, and a QLineEdit that acts as the
@@ -56,7 +55,7 @@
 
     We start by implementing the constructor.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 1
+    \snippet fancybrowser/mainwindow.cpp 1
 
     The first part of the constructor sets the value of \c progress to
     0. This value will be used later in the code to visualize the
@@ -66,7 +65,7 @@
     content. The jQuery library is a JavaScript library that provides different
     functions for manipulating HTML.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 2
+    \snippet fancybrowser/mainwindow.cpp 2
 
     The second part of the constructor creates a QWebView and connects
     slots to the views signals. Furthermore, we create a QLineEdit as
@@ -75,13 +74,13 @@
     QLineEdit to a QToolbar together with a set of navigation actions
     from QWebView::pageAction.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 3
+    \snippet fancybrowser/mainwindow.cpp 3
 
     The third and last part of the constructor implements two QMenus and assigns
     a set of actions to them. The last line sets the QWebView as the central
     widget in the QMainWindow.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 4
+    \snippet fancybrowser/mainwindow.cpp 4
 
     When the page is loaded, \c adjustLocation() updates the address
     bar; \c adjustLocation() is triggered by the \c loadFinished()
@@ -90,13 +89,13 @@
     the new web page has finished loading, \c adjustLocation() will be
     run once more to update the address bar.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 5
+    \snippet fancybrowser/mainwindow.cpp 5
 
     \c adjustTitle() sets the window title and displays the loading
     progress. This slot is triggered by the \c titleChanged() signal
     in QWebView.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 6
+    \snippet fancybrowser/mainwindow.cpp 6
 
     When a web page has loaded, \c finishLoading() is triggered by the
     \c loadFinished() signal in QWebView. \c finishLoading() then updates the
@@ -111,7 +110,7 @@
     that the images of the newly loaded page respect the state of the toggle
     action.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 7
+    \snippet fancybrowser/mainwindow.cpp 7
 
     The first jQuery-based function, \c highlightAllLinks(), is designed to
     highlight all links in the current webpage. The JavaScript code looks
@@ -119,14 +118,14 @@
     For each such element, the background color is set to be yellow by
     using CSS.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 8
+    \snippet fancybrowser/mainwindow.cpp 8
 
     The \c rotateImages() function rotates the images on the current
     web page. This JavaScript code relies on CSS transforms and
     looks up all \e {img} elements and rotates the images 180 degrees
     and then back again.
 
-    \snippet webenginewidgets/fancybrowser/mainwindow.cpp 9
+    \snippet fancybrowser/mainwindow.cpp 9
 
     The remaining four methods remove different elements from the current web
     page. \c removeGifImages() removes all GIF images on the page by looking up
