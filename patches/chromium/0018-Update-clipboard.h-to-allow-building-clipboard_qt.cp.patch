@@ -7,11 +7,11 @@ Subject: Update clipboard.h to allow building clipboard_qt.cpp on all
 Change-Id: Ife754b2fcb1c1a535565facdbab615c07b8c4935
 Reviewed-by: Simon Hausmann <simon.hausmann@digia.com>
 ---
- ui/base/clipboard/clipboard.h | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ ui/base/clipboard/clipboard.h |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 diff --git a/ui/base/clipboard/clipboard.h b/ui/base/clipboard/clipboard.h
-index 94cd664..4e4791d 100644
+index 94cd664..87a5f01 100644
 --- a/ui/base/clipboard/clipboard.h
 +++ b/ui/base/clipboard/clipboard.h
 @@ -87,6 +87,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
@@ -42,3 +42,12 @@ index 94cd664..4e4791d 100644
      explicit FormatType(UINT native_format);
      FormatType(UINT native_format, LONG index);
      UINT ToUINT() const { return data_.cfFormat; }
+@@ -351,7 +356,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+   void WriteData(const FormatType& format,
+                  const char* data_data,
+                  size_t data_len);
+-#if defined(OS_WIN)
++#if !defined(TOOLKIT_QT) && defined(OS_WIN)
+   void WriteBitmapFromHandle(HBITMAP source_hbitmap,
+                              const gfx::Size& size);
+ 
