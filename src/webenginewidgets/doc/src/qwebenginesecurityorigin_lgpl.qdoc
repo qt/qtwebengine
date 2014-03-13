@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
 
     This library is free software; you can redistribute it and/or
@@ -22,13 +23,13 @@
 // placed inline in the code as usual.
 
 /*!
-    \class QWebSecurityOrigin
+    \class QWebEngineSecurityOrigin
     \since 4.5
-    \brief The QWebSecurityOrigin class defines a security boundary for web sites.
+    \brief The QWebEngineSecurityOrigin class defines a security boundary for web sites.
 
-    \inmodule QtWebKit
+    \inmodule QtWebEngine
 
-    QWebSecurityOrigin provides access to the security domains defined by web sites.
+    QWebEngineSecurityOrigin provides access to the security domains defined by web sites.
     An origin consists of a host name, a scheme, and a port number. Web sites
     with the same security origin can access each other's resources for client-side
     scripting or databases.
@@ -41,15 +42,15 @@
 
     By default local schemes like \c{file://} and \c{qrc://} are concidered to be in the same
     security origin, and can access each other's resources. You can add additional local schemes
-    by using QWebSecurityOrigin::addLocalScheme(), or override the default same-origin behavior
-    by setting QWebSettings::LocalContentCanAccessFileUrls to \c{false}.
+    by using QWebEngineSecurityOrigin::addLocalScheme(), or override the default same-origin behavior
+    by setting QWebEngineSettings::LocalContentCanAccessFileUrls to \c{false}.
 
     \note Local resources are by default restricted from accessing remote content, which
     means your \c{file://} will not be able to access \c{http://domain.com/foo.html}. You
-    can relax this restriction by setting QWebSettings::LocalContentCanAccessRemoteUrls to
+    can relax this restriction by setting QWebEngineSettings::LocalContentCanAccessRemoteUrls to
     \c{true}.
 
-    Call QWebFrame::securityOrigin() to get the QWebSecurityOrigin for a frame in a
+    Call QWebEnginePage::securityOrigin() to get the QWebEngineSecurityOrigin for a frame in a
     web page, and use host(), scheme() and port() to identify the security origin.
 
     Use databases() to access the databases defined within a security origin. The
@@ -60,37 +61,37 @@
     For more information refer to the
     \l{http://en.wikipedia.org/wiki/Same_origin_policy}{"Same origin policy" Wikipedia Article}.
 
-    \sa QWebFrame::securityOrigin()
+    \sa QWebEnginePage::securityOrigin()
 */
 
 /*!
-    \fn QString QWebSecurityOrigin::scheme() const
+    \fn QString QWebEngineSecurityOrigin::scheme() const
     Returns the scheme defining the security origin.
 */
 
 /*!
-    \fn QString QWebSecurityOrigin::host() const
+    \fn QString QWebEngineSecurityOrigin::host() const
     Returns the host name defining the security origin.
 */
 
 /*!
-    \fn int QWebSecurityOrigin::port() const
+    \fn int QWebEngineSecurityOrigin::port() const
     Returns the port number defining the security origin.
 */
 
 /*!
-    \fn qint64 QWebSecurityOrigin::databaseUsage() const
+    \fn qint64 QWebEngineSecurityOrigin::databaseUsage() const
     Returns the number of bytes all databases in the security origin
     use on the disk.
 */
 
 /*!
-    \fn qint64 QWebSecurityOrigin::databaseQuota() const
+    \fn qint64 QWebEngineSecurityOrigin::databaseQuota() const
     Returns the quota for the databases in the security origin.
 */
 
 /*!
-    \fn void QWebSecurityOrigin::setDatabaseQuota(qint64 quota)
+    \fn void QWebEngineSecurityOrigin::setDatabaseQuota(qint64 quota)
     Sets the quota for the databases in the security origin to \a quota bytes.
 
     If the quota is set to a value less than the current usage, the quota will remain
@@ -99,34 +100,34 @@
 */
 
 /*!
-    \fn QWebSecurityOrigin::~QWebSecurityOrigin()
+    \fn QWebEngineSecurityOrigin::~QWebEngineSecurityOrigin()
     Destroys the security origin.
 */
 
 /*!
-    \fn QList<QWebSecurityOrigin> QWebSecurityOrigin::allOrigins()
+    \fn QList<QWebEngineSecurityOrigin> QWebEngineSecurityOrigin::allOrigins()
     Returns a list of all security origins with a database quota defined.
 */
 
 /*!
-    \fn QList<QWebDatabase> QWebSecurityOrigin::databases() const
+    \fn QList<QWebEngineDatabase> QWebEngineSecurityOrigin::databases() const
     Returns a list of all databases defined in the security origin.
 */
 
 /*!
-    \fn void QWebSecurityOrigin::addLocalScheme(const QString& scheme)
+    \fn void QWebEngineSecurityOrigin::addLocalScheme(const QString& scheme)
     \since 4.6
 
     Adds the given \a scheme to the list of schemes that are considered equivalent
     to the \c file: scheme.
 
-    Cross domain restrictions depend on the two web settings QWebSettings::LocalContentCanAccessFileUrls
-    and QWebSettings::LocalContentCanAccessFileUrls. By default all local schemes are concidered to be
+    Cross domain restrictions depend on the two web settings QWebEngineSettings::LocalContentCanAccessFileUrls
+    and QWebEngineSettings::LocalContentCanAccessFileUrls. By default all local schemes are concidered to be
     in the same security origin, and local schemes can not access remote content.
 */
 
 /*!
-    \fn void QWebSecurityOrigin::removeLocalScheme(const QString& scheme)
+    \fn void QWebEngineSecurityOrigin::removeLocalScheme(const QString& scheme)
     \since 4.6
 
     Removes the given \a scheme from the list of local schemes.
@@ -138,7 +139,7 @@
 */
 
 /*!
-    \fn QStringList QWebSecurityOrigin::localSchemes()
+    \fn QStringList QWebEngineSecurityOrigin::localSchemes()
     \since 4.6
     Returns a list of all the schemes concidered to be local.
 

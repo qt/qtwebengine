@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
  * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (c) 2012 Hewlett-Packard Development Company, L.P.
  * Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
@@ -25,19 +26,18 @@
 // placed inline in the code as usual.
 
 /*!
-    \page qtwebkit-index.html
-    \title Qt WebKit
+    \page qtwebengine-index.html
+    \title Qt WebEngine
 
-    The Qt WebKit module provides the WebView API which allows QML applications
-    to render regions of dynamic web content. A \e{WebView} component may share
+    The Qt WebEngine module provides the WebEngineView API which allows QML applications
+    to render regions of dynamic web content. A \e{WebEngineView} component may share
     the screen with other QML components or encompass the full screen as
     specified within the QML application.
 
-    QML WebView version 3.0 is incompatible with previous QML \l
-    {QtWebKit1::WebView} {WebView} API versions.  It allows an
-    application to load pages into the WebView, either by URL or with
+    It allows an
+    application to load pages into the WebEngineView, either by URL or with
     an HTML string, and navigate within session history.  By default,
-    links to different pages load within the same WebView, but applications
+    links to different pages load within the same WebEngineView, but applications
     may intercept requests to delegate links to other functions.
 
     The following sample QML application loads a web page, responds to session
@@ -48,12 +48,12 @@
     \code
     import QtQuick 2.0
     import QtQuick.Controls 1.0
-    import QtWebKit 3.0
+    import QtWebEngine 1.0
 
     ScrollView {
         width: 1280
         height: 720
-        WebView {
+        WebEngineView {
             id: webview
             url: "http://qt-project.org"
             anchors.fill: parent
@@ -61,9 +61,9 @@
                 // detect URL scheme prefix, most likely an external link
                 var schemaRE = /^\w+:/;
                 if (schemaRE.test(request.url)) {
-                    request.action = WebView.AcceptRequest;
+                    request.action = WebEngineView.AcceptRequest;
                 } else {
-                    request.action = WebView.IgnoreRequest;
+                    request.action = WebEngineView.IgnoreRequest;
                     // delegate request.url here
                 }
             }
@@ -73,60 +73,60 @@
 
     \section1 Examples
 
-    There are several Qt WebKit examples located in the
-    \l{Qt WebKit Examples} page.
+    There are several Qt WebEngine examples located in the
+    \l{Qt WebEngine Examples} page.
 
 */
 
 
 /*!
-    \qmltype WebView
-    \instantiates QQuickWebView
-    \inqmlmodule QtWebKit 3.0
-    \brief A WebView renders web content within a QML application
+    \qmltype WebEngineView
+    \instantiates QQuickWebEngineView
+    \inqmlmodule QtWebEngine 1.0
+    \brief A WebEngineView renders web content within a QML application
 */
 
 /*!
-    \qmlmethod void WebView::goBack()
+    \qmlmethod void WebEngineView::goBack()
 
     Go backward within the browser's session history, if possible.
     (Equivalent to the \c{window.history.back()} DOM method.)
 
-    \sa WebView::canGoBack
+    \sa WebEngineView::canGoBack
 */
 
 /*!
-    \qmlmethod void WebView::goForward()
+    \qmlmethod void WebEngineView::goForward()
 
     Go forward within the browser's session history, if possible.
     (Equivalent to the \c{window.history.forward()} DOM method.)
 */
 
 /*!
-    \qmlmethod void WebView::stop()
+    \qmlmethod void WebEngineView::stop()
 
     Stop loading the current page.
 */
 
 /*!
-    \qmlmethod void WebView::reload()
+    \qmlmethod void WebEngineView::reload()
 
     Reload the current page. (Equivalent to the
     \c{window.location.reload()} DOM method.)
 */
 
 /*!
-    \qmlproperty url WebView::url
+    \qmlproperty url WebEngineView::url
 
     The location of the currently displaying HTML page. This writable
     property offers the main interface to load a page into a web view.
     It functions the same as the \c{window.location} DOM property.
 
-    \sa WebView::loadHtml()
+    \sa WebEngineView::loadHtml()
 */
 
 /*!
-    \qmlproperty url WebView::icon
+    \qmlproperty url WebEngineView::icon
 
     The location of the currently displaying Web site icon, also known as favicon
     or shortcut icon. This read-only URL corresponds to the image used within a
@@ -145,41 +145,41 @@
 */
 
 /*!
-    \qmlproperty int WebView::loadProgress
+    \qmlproperty int WebEngineView::loadProgress
 
     The amount of the page that has been loaded, expressed as an integer
     percentage in the range from \c{0} to \c{100}.
 */
 
 /*!
-    \qmlproperty bool WebView::canGoBack
+    \qmlproperty bool WebEngineView::canGoBack
 
     Returns \c{true} if there are prior session history entries, \c{false}
     otherwise.
 */
 
 /*!
-    \qmlproperty bool WebView::canGoForward
+    \qmlproperty bool WebEngineView::canGoForward
 
     Returns \c{true} if there are subsequent session history entries,
     \c{false} otherwise.
 */
 
 /*!
-    \qmlproperty bool WebView::loading
+    \qmlproperty bool WebEngineView::loading
 
     Returns \c{true} if the HTML page is currently loading, \c{false} otherwise.
 */
 
 /*!
-    \qmlproperty string WebView::title
+    \qmlproperty string WebEngineView::title
 
     The title of the currently displaying HTML page, a read-only value
     that reflects the contents of the \c{<title>} tag.
 */
 
 /*!
-    \qmlmethod void WebView::loadHtml(string html, url baseUrl, url unreachableUrl)
+    \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl, url unreachableUrl)
     \brief Loads the specified \a html as the content of the web view.
 
     (This method offers a lower-level alternative to the \c{url} property,
@@ -195,11 +195,11 @@
     content. This is typically used to display error pages for a failed
     load.
 
-    \sa WebView::url
+    \sa WebEngineView::url
 */
 
 /*!
-    \qmlsignal WebView::onLoadingChanged(loadRequest)
+    \qmlsignal WebEngineView::onLoadingChanged(loadRequest)
 
     Occurs when any page load begins, ends, or fails. Various read-only
     parameters are available on the \a loadRequest:
@@ -210,7 +210,7 @@
 
     \li \c{status}: Reflects one of three load states:
        \c{LoadStartedStatus}, \c{LoadSucceededStatus}, or
-       \c{LoadFailedStatus}. See \c{WebView::LoadStatus}.
+       \c{LoadFailedStatus}. See \c{WebEngineView::LoadStatus}.
 
     \li \c{errorString}: description of load error.
 
@@ -219,15 +219,15 @@
     \li \c{errorDomain}: high-level error types, one of
     \c{NetworkErrorDomain}, \c{HttpErrorDomain}, \c{InternalErrorDomain},
     \c{DownloadErrorDomain}, or \c{NoErrorDomain}.  See
-    \l{WebView::ErrorDomain}.
+    \l{WebEngineView::ErrorDomain}.
 
     \endlist
 
-    \sa WebView::loading
+    \sa WebEngineView::loading
 */
 
 /*!
-    \qmlsignal WebView::onLinkHovered(hoveredUrl, hoveredTitle)
+    \qmlsignal WebEngineView::onLinkHovered(hoveredUrl, hoveredTitle)
 
     Within a mouse-driven interface, this signal is emitted when a mouse
     pointer passes over a link, corresponding to the \c{mouseover} DOM
@@ -238,11 +238,11 @@
 */
 
 /*!
-    \qmlsignal WebView::onNavigationRequested(request)
+    \qmlsignal WebEngineView::onNavigationRequested(request)
 
     Occurs for various kinds of navigation.  If the application listens
     for this signal, it must set the \c{request.action} to either of the
-    following \l{WebView::NavigationRequestAction} enum values:
+    following \l{WebEngineView::NavigationRequestAction} enum values:
 
     \list
 
@@ -266,7 +266,7 @@
     \c{LinkClickedNavigation}, \c{BackForwardNavigation},
     \c{ReloadNavigation}, \c{FormSubmittedNavigation},
     \c{FormResubmittedNavigation}, or \c{OtherNavigation} enum values.
-    See \l{WebView::NavigationType}.
+    See \l{WebEngineView::NavigationType}.
 
     \li \c{keyboardModifiers}: potential states for \l{Qt::KeyboardModifier}.
 
@@ -276,7 +276,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebView::ErrorDomain
+    \qmlproperty enumeration WebEngineView::ErrorDomain
 
     Details various high-level error types.
 
@@ -288,7 +288,7 @@
 
     \row
     \li InternalErrorDomain
-    \li Content fails to be interpreted by Qt WebKit.
+    \li Content fails to be interpreted by Qt WebEngine.
 
     \row
     \li NetworkErrorDomain
@@ -310,7 +310,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebView::NavigationType
+    \qmlproperty enumeration WebEngineView::NavigationType
 
     Distinguishes context for various navigation actions.
 
@@ -348,7 +348,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebView::LoadStatus
+    \qmlproperty enumeration WebEngineView::LoadStatus
 
     Reflects a page's load status.
 
@@ -374,7 +374,7 @@
 */
 
 /*!
-    \qmlproperty enumeration WebView::NavigationRequestAction
+    \qmlproperty enumeration WebEngineView::NavigationRequestAction
 
     Specifies a policy when navigating a link to an external page.
 
