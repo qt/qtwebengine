@@ -7,14 +7,28 @@ Subject: Update clipboard.h to allow building clipboard_qt.cpp on all
 Change-Id: Ife754b2fcb1c1a535565facdbab615c07b8c4935
 Reviewed-by: Simon Hausmann <simon.hausmann@digia.com>
 ---
- ui/base/clipboard/clipboard.h | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ ui/base/clipboard/clipboard.h                     |   11 +++++++++--
+ ui/base/clipboard/clipboard_util_win.cc           |    3 +++
+ ui/base/dragdrop/os_exchange_data_provider_win.cc |    3 +++
+ 3 files changed, 15 insertions(+), 2 deletions(-)
 
 diff --git a/ui/base/clipboard/clipboard.h b/ui/base/clipboard/clipboard.h
-index 94cd664..4e4791d 100644
+index 94cd664..3e34f52 100644
 --- a/ui/base/clipboard/clipboard.h
 +++ b/ui/base/clipboard/clipboard.h
-@@ -87,6 +87,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+@@ -39,9 +39,11 @@
+ namespace base {
+ class FilePath;
+ 
++#if !defined(TOOLKIT_QT)
+ namespace win {
+ class MessageWindow;
+ }  // namespace win
++#endif
+ }  // namespace base
+ 
+ namespace gfx {
+@@ -87,6 +89,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
      bool operator<(const FormatType& other) const;
  #endif
  
@@ -22,7 +36,7 @@ index 94cd664..4e4791d 100644
  #if defined(OS_WIN)
      const FORMATETC& ToFormatEtc() const { return data_; }
  #elif defined(OS_MACOSX)
-@@ -96,6 +97,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+@@ -96,6 +99,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
  #elif defined(USE_AURA)
      const std::string& ToString() const { return data_; }
  #endif
@@ -30,7 +44,7 @@ index 94cd664..4e4791d 100644
  
     private:
      friend class Clipboard;
-@@ -110,7 +112,10 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+@@ -110,7 +114,10 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
      //
      // Note that in some cases, the accessor for the wrapped descriptor may be
      // public, as these format types can be used by drag and drop code as well.
@@ -42,3 +56,50 @@ index 94cd664..4e4791d 100644
      explicit FormatType(UINT native_format);
      FormatType(UINT native_format, LONG index);
      UINT ToUINT() const { return data_.cfFormat; }
+@@ -351,7 +358,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+   void WriteData(const FormatType& format,
+                  const char* data_data,
+                  size_t data_len);
+-#if defined(OS_WIN)
++#if !defined(TOOLKIT_QT) && defined(OS_WIN)
+   void WriteBitmapFromHandle(HBITMAP source_hbitmap,
+                              const gfx::Size& size);
+ 
+diff --git a/ui/base/clipboard/clipboard_util_win.cc b/ui/base/clipboard/clipboard_util_win.cc
+index b1bf562..f2f691a 100644
+--- a/ui/base/clipboard/clipboard_util_win.cc
++++ b/ui/base/clipboard/clipboard_util_win.cc
+@@ -2,6 +2,8 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#if !defined(TOOLKIT_QT)
++
+ #include "ui/base/clipboard/clipboard_util_win.h"
+ 
+ #include <shellapi.h>
+@@ -507,3 +509,4 @@ void ClipboardUtil::CFHtmlExtractMetadata(const std::string& cf_html,
+ }
+ 
+ }  // namespace ui
++#endif //!defined(TOOLKIT_QT)
+\ No newline at end of file
+diff --git a/ui/base/dragdrop/os_exchange_data_provider_win.cc b/ui/base/dragdrop/os_exchange_data_provider_win.cc
+index 69203f0..56f2f68 100644
+--- a/ui/base/dragdrop/os_exchange_data_provider_win.cc
++++ b/ui/base/dragdrop/os_exchange_data_provider_win.cc
+@@ -2,6 +2,8 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++#if !defined(TOOLKIT_QT)
++
+ #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
+ 
+ #include <algorithm>
+@@ -1040,3 +1042,4 @@ OSExchangeData::Provider* OSExchangeData::CreateProvider() {
+ }
+ 
+ }  // namespace ui
++#endif //!defined(TOOLKIT_QT)
+\ No newline at end of file
