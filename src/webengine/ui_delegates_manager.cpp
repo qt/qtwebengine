@@ -121,7 +121,7 @@ UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
 
 bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 {
-    QScopedPointer<QQmlComponent> *component;
+    QPointer<QQmlComponent> *component;
     switch (type) {
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_CASE_STATEMENT, NO_SEPARATOR)
     default:
@@ -145,7 +145,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
             absolutePath = fi.absoluteFilePath();
     }
     // FIXME: handle async loading
-    (*component).reset(new QQmlComponent(engine, QUrl(absolutePath), QQmlComponent::PreferSynchronous, m_view));
+    (*component) = (new QQmlComponent(engine, QUrl(absolutePath), QQmlComponent::PreferSynchronous, m_view));
 
     if ((*component)->status() != QQmlComponent::Ready) {
 #ifdef UI_DELEGATES_DEBUG
