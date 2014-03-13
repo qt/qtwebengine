@@ -109,8 +109,12 @@ void NavigateMenuItem::onTriggered()
     m_adapter->load(m_targetUrl);
 }
 
+#define COMPONENT_MEMBER_INIT(TYPE, COMPONENT) \
+    , COMPONENT##Component(0)
+
 UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
     : m_view(view)
+    FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
 {
 }
 
@@ -121,7 +125,7 @@ UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
 
 bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 {
-    QScopedPointer<QQmlComponent> *component;
+    QQmlComponent **component;
     switch (type) {
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_CASE_STATEMENT, NO_SEPARATOR)
     default:
@@ -130,7 +134,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     }
     QString fileName(fileNameForComponent(type));
 #ifndef UI_DELEGATES_DEBUG
-    if (!(*component).isNull())
+    if (*component)
         return true;
 #else // Unconditionally reload the components each time.
     fprintf(stderr, "%s: %s\n", Q_FUNC_INFO, qPrintable(fileName));
@@ -145,7 +149,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
             absolutePath = fi.absoluteFilePath();
     }
     // FIXME: handle async loading
-    (*component).reset(new QQmlComponent(engine, QUrl(absolutePath), QQmlComponent::PreferSynchronous, m_view));
+    *component = (new QQmlComponent(engine, QUrl(absolutePath), QQmlComponent::PreferSynchronous, m_view));
 
     if ((*component)->status() != QQmlComponent::Ready) {
 #ifdef UI_DELEGATES_DEBUG
@@ -175,7 +179,7 @@ void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QSt
     Q_ASSERT(menuItemHandler);
     if (!ensureComponentLoaded(MenuItem))
         return;
-    QObject *it = menuItemComponent->beginCreate(creationContextForComponent(menuItemComponent.data()));
+    QObject *it = menuItemComponent->beginCreate(creationContextForComponent(menuItemComponent));
 
     QQmlProperty(it, QStringLiteral("text")).write(text);
     QQmlProperty(it, QStringLiteral("iconName")).write(iconName);
@@ -199,7 +203,7 @@ void UIDelegatesManager::addMenuSeparator(QObject *menu)
     if (!ensureComponentLoaded(MenuSeparator))
         return;
 
-    QQmlContext *itemContext = creationContextForComponent(menuSeparatorComponent.data());
+    QQmlContext *itemContext = creationContextForComponent(menuSeparatorComponent);
     QObject *sep = menuSeparatorComponent->create(itemContext);
     sep->setParent(menu);
 
@@ -213,7 +217,7 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
 
     if (!ensureComponentLoaded(Menu))
         return 0;
-    QQmlContext *context(creationContextForComponent(menuComponent.data()));
+    QQmlContext *context(creationContextForComponent(menuComponent));
     QObject *menu = menuComponent->beginCreate(context);
     // Useful when not using Qt Quick Controls' Menu
     if (QQuickItem* item = qobject_cast<QQuickItem*>(menu))
@@ -241,7 +245,7 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
 
 #define ASSIGN_DIALOG_COMPONENT_DATA_CASE_STATEMENT(TYPE, COMPONENT) \
     case TYPE:\
-        dialogComponent = COMPONENT##Component.data(); \
+        dialogComponent = COMPONENT##Component; \
         break;
 
 
@@ -360,7 +364,7 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
 
     if (!ensureComponentLoaded(FilePicker))
         return;
-    QQmlContext *context(creationContextForComponent(filePickerComponent.data()));
+    QQmlContext *context(creationContextForComponent(filePickerComponent));
     QObject *filePicker = filePickerComponent->beginCreate(context);
     if (QQuickItem* item = qobject_cast<QQuickItem*>(filePicker))
         item->setParentItem(m_view);

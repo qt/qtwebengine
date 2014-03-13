@@ -49,7 +49,6 @@
 #include <QExplicitlySharedDataPointer>
 #include <QPoint>
 #include <QQmlComponent>
-#include <QScopedPointer>
 #include <QSharedPointer>
 #include <QUrl>
 
@@ -67,7 +66,7 @@
 #define ENUM_DECLARATION(TYPE, COMPONENT) \
     TYPE
 #define MEMBER_DECLARATION(TYPE, COMPONENT) \
-    QScopedPointer<QQmlComponent> COMPONENT##Component
+    QQmlComponent *COMPONENT##Component
 
 class JavaScriptDialogController;
 QT_BEGIN_NAMESPACE
