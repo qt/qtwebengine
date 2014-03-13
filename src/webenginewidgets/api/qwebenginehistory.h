@@ -34,12 +34,16 @@ class QWebEngineHistory;
 class QWebEngineHistoryItemPrivate;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
+class WebEngineHistory;
+class WebEngineHistoryItem;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistoryItem {
 public:
     QWebEngineHistoryItem(const QWebEngineHistoryItem &other);
     QWebEngineHistoryItem &operator=(const QWebEngineHistoryItem &other);
     ~QWebEngineHistoryItem();
+
+    bool isValid() const;
 
     QUrl originalUrl() const;
     QUrl url() const;
@@ -52,17 +56,17 @@ public:
     QVariant userData() const;
     void setUserData(const QVariant& userData);
 
-    bool isValid() const;
 private:
-    QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *priv);
+    QWebEngineHistoryItem();
+    QWebEngineHistoryItem(QWebEngineHistoryItemPrivate*);
+
     Q_DECLARE_PRIVATE_D(d.data(), QWebEngineHistoryItem);
     QExplicitlySharedDataPointer<QWebEngineHistoryItemPrivate> d;
+
     friend class QWebEngineHistory;
-    friend class QWebEngineHistoryPrivate;
 };
 
 
-class QWebEngineHistoryPrivate;
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistory {
 public:
     void clear();
@@ -76,7 +80,7 @@ public:
 
     void back();
     void forward();
-    void goToItem(const QWebEngineHistoryItem &item);
+    void goToItem(const QWebEngineHistoryItem item);
 
     QWebEngineHistoryItem backItem() const;
     QWebEngineHistoryItem currentItem() const;
@@ -91,12 +95,11 @@ public:
     void setMaximumItemCount(int count);
 
 private:
-    QWebEngineHistory(QWebEngineHistoryPrivate *d);
+    QWebEngineHistory(WebEngineHistory*);
     ~QWebEngineHistory();
 
     Q_DISABLE_COPY(QWebEngineHistory)
-    Q_DECLARE_PRIVATE(QWebEngineHistory);
-    QScopedPointer<QWebEngineHistoryPrivate> d_ptr;
+    QExplicitlySharedDataPointer<WebEngineHistory> m_history;
 
     friend QWEBENGINEWIDGETS_EXPORT QDataStream& operator>>(QDataStream&, QWebEngineHistory&);
     friend QWEBENGINEWIDGETS_EXPORT QDataStream& operator<<(QDataStream&, const QWebEngineHistory&);

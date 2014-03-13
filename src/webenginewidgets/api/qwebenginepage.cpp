@@ -25,12 +25,12 @@
 
 #include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
-#include "qwebenginehistory_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
 #include "render_widget_host_view_qt_delegate_popup.h"
 #include "render_widget_host_view_qt_delegate_webpage.h"
 #include "web_contents_adapter.h"
+#include "web_engine_history.h"
 
 #include <QAction>
 #include <QApplication>
@@ -149,7 +149,7 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
     , adapter(new WebContentsAdapter(SoftwareRenderingMode))
-    , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
+    , history(new QWebEngineHistory(new WebEngineHistory(adapter.data())))
     , view(0)
     , m_isLoading(false)
 {
@@ -252,7 +252,7 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     // Overwrite the new page's WebContents with ours.
     if (newPage) {
         newPage->d_func()->adapter = newWebContents;
-        newPage->history()->d_func()->adapter = newWebContents;
+        newPage->history()->m_history->setAdapter(newWebContents);
         newWebContents->initialize(newPage->d_func());
         if (!initialGeometry.isEmpty())
             emit newPage->geometryChangeRequested(initialGeometry);
