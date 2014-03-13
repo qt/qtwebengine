@@ -43,12 +43,14 @@
 #include "qquickwebengineview_p_p.h"
 
 #include "javascript_dialog_controller.h"
+#include "qquickwebenginehistory_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
+#include "web_engine_history.h"
 
 #include <QQmlEngine>
 #include <QQmlComponent>
@@ -67,6 +69,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
     , e(new QQuickWebEngineViewExperimental(this))
     , v(new QQuickWebEngineViewport(this))
+    , m_history(new QQuickWebEngineHistory(new WebEngineHistory(adapter.data())))
     , contextMenuExtraItems(0)
     , loadProgress(0)
     , inspectable(false)
@@ -364,6 +367,8 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     Q_D(QQuickWebEngineView);
     d->e->q_ptr = this;
     d->adapter->initialize(d);
+
+    QObject::connect(this, &QQuickWebEngineView::loadingChanged, d->m_history.data(), &QQuickWebEngineHistory::onLoadingChanged);
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()
@@ -400,13 +405,13 @@ void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl, con
 void QQuickWebEngineView::goBack()
 {
     Q_D(QQuickWebEngineView);
-    d->adapter->navigateToOffset(-1);
+    d->m_history->goBack();
 }
 
 void QQuickWebEngineView::goForward()
 {
     Q_D(QQuickWebEngineView);
-    d->adapter->navigateToOffset(1);
+    d->m_history->goForward();
 }
 
 void QQuickWebEngineView::reload()
@@ -450,13 +455,13 @@ QString QQuickWebEngineView::title() const
 bool QQuickWebEngineView::canGoBack() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->adapter->canGoBack();
+    return d->m_history->canGoBack();
 }
 
 bool QQuickWebEngineView::canGoForward() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->adapter->canGoForward();
+    return d->m_history->canGoForward();
 }
 
 bool QQuickWebEngineView::inspectable() const
@@ -483,6 +488,11 @@ bool QQuickWebEngineViewExperimental::isFullScreen() const
     return d_ptr->m_isFullScreen;
 }
 
+QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const
+{
+    return d_ptr->m_history.data();
+}
+
 void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlComponent *contextMenuExtras)
 {
     if (d_ptr->contextMenuExtraItems == contextMenuExtras)
@@ -503,6 +513,16 @@ void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const
         d_ptr->m_callbacks.insert(requestId, callback);
     } else
         d_ptr->adapter->runJavaScript(script, /*xPath=*/QString());
+}
+
+void QQuickWebEngineViewExperimental::goBackTo(int index)
+{
+    d_ptr->m_history->goBackTo(index);
+}
+
+void QQuickWebEngineViewExperimental::goForwardTo(int index)
+{
+    d_ptr->m_history->goForwardTo(index);
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
