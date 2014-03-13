@@ -43,6 +43,7 @@
 
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
+#include "qquickwebenginehistory_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -71,6 +72,10 @@ public:
             QObject::tr("Cannot create a separate instance of WebEngineViewExperimental"));
         qmlRegisterUncreatableType<QQuickWebEngineViewport>(uri, 1, 0, "WebEngineViewport",
             QObject::tr("Cannot create a separate instance of WebEngineViewport"));
+        qmlRegisterUncreatableType<QQuickWebEngineHistory>(uri, 1, 0, "NavigationHistory",
+            QObject::tr("Cannot create a separate instance of NavigationHistory"));
+        qmlRegisterUncreatableType<QQuickWebEngineHistoryListModel>(uri, 1, 0, "NavigationHistoryListModel",
+            QObject::tr("Cannot create a separate instance of NavigationHistory"));
     }
 };
 
