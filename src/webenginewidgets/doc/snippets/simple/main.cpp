@@ -19,16 +19,16 @@
 
 #include <QApplication>
 #include <QUrl>
-#include <QWebView>
+#include <QWebEngineView>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     QWidget *parent = 0;
-//! [Using QWebView]
-    QWebView *view = new QWebView(parent);
-    view->load(QUrl("http://qt.nokia.com/"));
+//! [Using QWebEngineView]
+    QWebEngineView *view = new QWebEngineView(parent);
+    view->load(QUrl("http://qt-project.org/"));
     view->show();
-//! [Using QWebView]
+//! [Using QWebEngineView]
     return app.exec();
 }

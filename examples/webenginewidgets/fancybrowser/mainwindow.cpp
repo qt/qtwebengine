@@ -70,8 +70,9 @@ MainWindow::MainWindow(const QUrl& url)
     jQuery = file.readAll();
     jQuery.append("\nvar qt = { 'jQuery': jQuery.noConflict(true) };");
     file.close();
-
 //! [1]
+
+//! [2]
     view = new QWebEngineView(this);
     view->load(url);
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
@@ -89,7 +90,7 @@ MainWindow::MainWindow(const QUrl& url)
     toolBar->addAction(view->pageAction(QWebEnginePage::Reload));
     toolBar->addAction(view->pageAction(QWebEnginePage::Stop));
     toolBar->addWidget(locationEdit);
-//! [1]
+//! [2]
 
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
     QAction* viewSourceAction = new QAction("Page Source", this);

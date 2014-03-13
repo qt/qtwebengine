@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
 
     This library is free software; you can redistribute it and/or
@@ -22,13 +23,13 @@
 // placed inline in the code as usual.
 
 /*!
-    \class QWebHistoryItem
+    \class QWebEngineHistoryItem
     \since 4.4
-    \brief The QWebHistoryItem class represents one item in the history of a QWebPage
+    \brief The QWebEngineHistoryItem class represents one item in the history of a QWebEnginePage
 
-    \inmodule QtWebKit
+    \inmodule QtWebEngine
 
-    Each QWebHistoryItem instance represents an entry in the history stack of a Web page,
+    Each QWebEngineHistoryItem instance represents an entry in the history stack of a Web page,
     containing information about the page, its location, and when it was last visited.
 
     The following table shows the properties of the page held by the history item, and
@@ -44,69 +45,69 @@
     \row    \li userData()    \li The user specific data that was stored with the history item.
     \endtable
 
-    \note QWebHistoryItem objects are value based, but \e{explicitly shared}. Changing
-    a QWebHistoryItem instance by calling setUserData() will change all copies of that
+    \note QWebEngineHistoryItem objects are value based, but \e{explicitly shared}. Changing
+    a QWebEngineHistoryItem instance by calling setUserData() will change all copies of that
     instance.
 
-    \sa QWebHistory, QWebPage::history(), QWebHistoryInterface
+    \sa QWebEngineHistory, QWebEnginePage::history(), QWebEngineHistoryInterface
 */
 
 /*!
-    \fn QWebHistoryItem::QWebHistoryItem(const QWebHistoryItem &other)
+    \fn QWebEngineHistoryItem::QWebEngineHistoryItem(const QWebEngineHistoryItem &other)
     Constructs a history item from \a other. The new item and \a other
     will share their data, and modifying either this item or \a other will
     modify both instances.
 */
 
 /*!
-    \fn QWebHistoryItem &QWebHistoryItem::operator=(const QWebHistoryItem &other)
+    \fn QWebEngineHistoryItem &QWebEngineHistoryItem::operator=(const QWebEngineHistoryItem &other)
     Assigns the \a other history item to this. This item and \a other
     will share their data, and modifying either this item or \a other will
     modify both instances.
 */
 
 /*!
-    \fn QWebHistoryItem::~QWebHistoryItem()
+    \fn QWebEngineHistoryItem::~QWebEngineHistoryItem()
     Destroys the history item.
 */
 
 /*!
-    \fn QUrl QWebHistoryItem::originalUrl() const
+    \fn QUrl QWebEngineHistoryItem::originalUrl() const
     Returns the original URL associated with the history item.
 
     \sa url()
 */
 
 /*!
-    \fn QUrl QWebHistoryItem::url() const
+    \fn QUrl QWebEngineHistoryItem::url() const
     Returns the URL associated with the history item.
 
     \sa originalUrl(), title(), lastVisited()
 */
 
 /*!
-    \fn QString QWebHistoryItem::title() const
+    \fn QString QWebEngineHistoryItem::title() const
     Returns the title of the page associated with the history item.
 
     \sa icon(), url(), lastVisited()
 */
 
 /*!
-    \fn QDateTime QWebHistoryItem::lastVisited() const
+    \fn QDateTime QWebEngineHistoryItem::lastVisited() const
     Returns the date and time that the page associated with the item was last visited.
 
     \sa title(), icon(), url()
 */
 
 /*!
-    \fn QIcon QWebHistoryItem::icon() const
+    \fn QIcon QWebEngineHistoryItem::icon() const
     Returns the icon associated with the history item.
 
     \sa title(), url(), lastVisited()
 */
 
 /*!
-    \fn QVariant QWebHistoryItem::userData() const
+    \fn QVariant QWebEngineHistoryItem::userData() const
     \since 4.5
     Returns the user specific data that was stored with the history item.
 
@@ -114,7 +115,7 @@
 */
 
 /*!
-    \fn void QWebHistoryItem::setUserData(const QVariant& userData)
+    \fn void QWebEngineHistoryItem::setUserData(const QVariant& userData)
     \since 4.5
 
     Stores user specific data \a userData with the history item.
@@ -125,20 +126,20 @@
 */
 
 /*!
-    \fn bool QWebHistoryItem::isValid() const
+    \fn bool QWebEngineHistoryItem::isValid() const
     \since 4.5
     Returns whether this is a valid history item.
 */
 
 /*!
-    \class QWebHistory
+    \class QWebEngineHistory
     \since 4.4
-    \brief The QWebHistory class represents the history of a QWebPage
+    \brief The QWebEngineHistory class represents the history of a QWebEnginePage
 
-    \inmodule QtWebKit
+    \inmodule QtWebEngine
 
-    Each QWebPage instance contains a history of visited pages that can be accessed
-    by QWebPage::history(). QWebHistory represents this history and makes it possible
+    Each QWebEnginePage instance contains a history of visited pages that can be accessed
+    by QWebEnginePage::history(). QWebEngineHistory represents this history and makes it possible
     to navigate it.
 
     The history uses the concept of a \e{current item}, dividing the pages visited
@@ -157,28 +158,28 @@
     number of items is given by count(), and the history can be cleared with the
     clear() function.
 
-    QWebHistory's state can be saved to a QDataStream using the >> operator and loaded
+    QWebEngineHistory's state can be saved to a QDataStream using the >> operator and loaded
     by using the << operator.
 
-    \sa QWebHistoryItem, QWebHistoryInterface, QWebPage
+    \sa QWebEngineHistoryItem, QWebEngineHistoryInterface, QWebEnginePage
 */
 
 /*!
-    \fn void QWebHistory::clear()
+    \fn void QWebEngineHistory::clear()
     Clears the history.
 
     \sa count(), items()
 */
 
 /*!
-    \fn QList<QWebHistoryItem> QWebHistory::items() const
+    \fn QList<QWebEngineHistoryItem> QWebEngineHistory::items() const
     Returns a list of all items currently in the history.
 
     \sa count(), clear()
 */
 
 /*!
-    \fn QList<QWebHistoryItem> QWebHistory::backItems(int maxItems) const
+    \fn QList<QWebEngineHistoryItem> QWebEngineHistory::backItems(int maxItems) const
     Returns the list of items in the backwards history list.
     At most \a maxItems entries are returned.
 
@@ -186,7 +187,7 @@
 */
 
 /*!
-    \fn QList<QWebHistoryItem> QWebHistory::forwardItems(int maxItems) const
+    \fn QList<QWebEngineHistoryItem> QWebEngineHistory::forwardItems(int maxItems) const
     Returns the list of items in the forward history list.
     At most \a maxItems entries are returned.
 
@@ -194,7 +195,7 @@
 */
 
 /*!
-    \fn bool QWebHistory::canGoBack() const
+    \fn bool QWebEngineHistory::canGoBack() const
     Returns true if there is an item preceding the current item in the history;
     otherwise returns false.
 
@@ -202,14 +203,14 @@
 */
 
 /*!
-    \fn bool QWebHistory::canGoForward() const
+    \fn bool QWebEngineHistory::canGoForward() const
     Returns true if we have an item to go forward to; otherwise returns false.
 
     \sa canGoBack()
 */
 
 /*!
-    \fn void QWebHistory::back()
+    \fn void QWebEngineHistory::back()
     Set the current item to be the previous item in the history and goes to the
     corresponding page; i.e., goes back one history item.
 
@@ -217,7 +218,7 @@
 */
 
 /*!
-    \fn void QWebHistory::forward()
+    \fn void QWebEngineHistory::forward()
     Sets the current item to be the next item in the history and goes to the
     corresponding page; i.e., goes forward one history item.
 
@@ -225,45 +226,45 @@
 */
 
 /*!
-    \fn void QWebHistory::goToItem(const QWebHistoryItem &item)
+    \fn void QWebEngineHistory::goToItem(const QWebEngineHistoryItem &item)
     Sets the current item to be the specified \a item in the history and goes to the page.
 
     \sa back(), forward()
 */
 
 /*!
-    \fn QWebHistoryItem QWebHistory::backItem() const
+    \fn QWebEngineHistoryItem QWebEngineHistory::backItem() const
     Returns the item before the current item in the history.
 */
 
 /*!
-    \fn QWebHistoryItem QWebHistory::currentItem() const
+    \fn QWebEngineHistoryItem QWebEngineHistory::currentItem() const
     Returns the current item in the history.
 */
 
 /*!
-    \fn QWebHistoryItem QWebHistory::forwardItem() const
+    \fn QWebEngineHistoryItem QWebEngineHistory::forwardItem() const
     Returns the item after the current item in the history.
 */
 
 /*!
-    \fn int QWebHistory::currentItemIndex() const
+    \fn int QWebEngineHistory::currentItemIndex() const
     \since 4.5
     Returns the index of the current item in history.
 */
 
 /*!
-    \fn QWebHistoryItem QWebHistory::itemAt(int i) const
+    \fn QWebEngineHistoryItem QWebEngineHistory::itemAt(int i) const
     Returns the item at index \a i in the history.
 */
 
 /*!
-    \fn int QWebHistory::count() const
+    \fn int QWebEngineHistory::count() const
     Returns the total number of items in the history.
 */
 
 /*!
-    \fn int QWebHistory::maximumItemCount() const
+    \fn int QWebEngineHistory::maximumItemCount() const
     \since 4.5
     Returns the maximum number of items in the history.
 
@@ -271,7 +272,7 @@
 */
 
 /*!
-    \fn void QWebHistory::setMaximumItemCount(int count)
+    \fn void QWebEngineHistory::setMaximumItemCount(int count)
     \since 4.5
     Sets the maximum number of items in the history to \a count.
 
@@ -279,9 +280,9 @@
 */
 
 /*!
-    \fn QDataStream& operator<<(QDataStream& target, const QWebHistory& history)
+    \fn QDataStream& operator<<(QDataStream& target, const QWebEngineHistory& history)
     \since 4.6
-    \relates QWebHistory
+    \relates QWebEngineHistory
 
     \brief The operator<< function streams a history into a data stream.
 
@@ -290,12 +291,12 @@
 
 
 /*!
-    \fn QDataStream& operator>>(QDataStream& source, QWebHistory& history)
-    \relates QWebHistory
+    \fn QDataStream& operator>>(QDataStream& source, QWebEngineHistory& history)
+    \relates QWebEngineHistory
     \since 4.6
 
     \brief The operator>> function loads a history from a data stream.
 
-    Loads a QWebHistory from the specified \a stream into the given \a history.
+    Loads a QWebEngineHistory from the specified \a stream into the given \a history.
 */
 
