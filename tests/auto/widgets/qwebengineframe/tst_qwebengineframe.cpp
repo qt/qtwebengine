@@ -1516,7 +1516,7 @@ void tst_QWebEngineFrame::setUrlThenLoads()
     QSignalSpy finishedSpy(m_page, SIGNAL(loadFinished(bool)));
 
     m_page->setUrl(url);
-    QCOMPARE(startedSpy.count(), 1);
+    QTRY_COMPARE(startedSpy.count(), 1);
     QTRY_COMPARE(urlChangedSpy.count(), 1);
     QTRY_COMPARE(finishedSpy.count(), 1);
     QVERIFY(finishedSpy.at(0).first().toBool());
@@ -1529,12 +1529,12 @@ void tst_QWebEngineFrame::setUrlThenLoads()
 
     // Just after first load. URL didn't changed yet.
     m_page->load(urlToLoad1);
-    QTRY_COMPARE(startedSpy.count(), 2);
     QEXPECT_FAIL("", "Slight change: url() will return the loaded URL immediately.", Continue);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
     // QCOMPARE(baseUrlSync(m_page), baseUrl);
+    QTRY_COMPARE(startedSpy.count(), 2);
 
     // After first URL changed.
     QTRY_COMPARE(urlChangedSpy.count(), 2);
@@ -1546,11 +1546,11 @@ void tst_QWebEngineFrame::setUrlThenLoads()
 
     // Just after second load. URL didn't changed yet.
     m_page->load(urlToLoad2);
-    QTRY_COMPARE(startedSpy.count(), 3);
     QEXPECT_FAIL("", "Slight change: url() will return the loaded URL immediately.", Continue);
     QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));
+    QTRY_COMPARE(startedSpy.count(), 3);
 
     // After second URL changed.
     QTRY_COMPARE(urlChangedSpy.count(), 3);

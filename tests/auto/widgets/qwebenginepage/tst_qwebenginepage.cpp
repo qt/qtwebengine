@@ -362,21 +362,23 @@ void tst_QWebEnginePage::geolocationRequestJS()
 
 void tst_QWebEnginePage::loadFinished()
 {
-    qRegisterMetaType<QNetworkRequest*>("QNetworkRequest*");
-    QSignalSpy spyLoadStarted(m_view, SIGNAL(loadStarted()));
-    QSignalSpy spyLoadFinished(m_view, SIGNAL(loadFinished(bool)));
+    QWebEnginePage page;
+    QSignalSpy spyLoadStarted(&page, SIGNAL(loadStarted()));
+    QSignalSpy spyLoadFinished(&page, SIGNAL(loadFinished(bool)));
 
-    m_view->page()->load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
+    page.load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
                                            "<head><meta http-equiv='refresh' content='1'></head>foo \">"
                                            "<frame src=\"data:text/html,bar\"></frameset>"));
     QTRY_COMPARE(spyLoadFinished.count(), 1);
 
-    QTRY_VERIFY(spyLoadStarted.count() > 1);
-    QTRY_VERIFY(spyLoadFinished.count() > 1);
+    QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
+    QTRY_VERIFY_WITH_TIMEOUT(spyLoadStarted.count() > 1, 100);
+    QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
+    QTRY_VERIFY_WITH_TIMEOUT(spyLoadFinished.count() > 1, 100);
 
     spyLoadFinished.clear();
 
-    m_view->page()->load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
+    page.load(QUrl("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
                                            "foo \"><frame src=\"data:text/html,bar\"></frameset>"));
     QTRY_COMPARE(spyLoadFinished.count(), 1);
     QCOMPARE(spyLoadFinished.count(), 1);
@@ -1604,6 +1606,9 @@ void tst_QWebEnginePage::textEditing()
 
 void tst_QWebEnginePage::requestCache()
 {
+#if !defined(ACCEPTNAVIGATIONREQUEST)
+    QSKIP("ACCEPTNAVIGATIONREQUEST");
+#else
     TestPage page;
     QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
 
@@ -1627,6 +1632,7 @@ void tst_QWebEnginePage::requestCache()
              (int)QNetworkRequest::PreferNetwork);
     QCOMPARE(page.navigations.at(2).request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt(),
              (int)QNetworkRequest::PreferCache);
+#endif
 }
 
 void tst_QWebEnginePage::loadCachedPage()
@@ -1676,7 +1682,8 @@ void tst_QWebEnginePage::backActionUpdate()
     QTRY_COMPARE(loadSpy.count(), 1);
     QVERIFY(!action->isEnabled());
     QTest::mouseClick(&view, Qt::LeftButton, 0, QPoint(10, 10));
-    QTRY_COMPARE(loadSpy.count(), 2);
+    QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
+    QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 100);
 
     QVERIFY(action->isEnabled());
 }
@@ -2723,6 +2730,7 @@ void tst_QWebEnginePage::defaultTextEncoding()
 #endif
 }
 
+#if defined(QWEBENGINEPAGE_ERRORPAGEEXTENSION)
 class ErrorPage : public QWebEnginePage
 {
 public:
@@ -2745,6 +2753,7 @@ public:
         return true;
     }
 };
+#endif
 
 void tst_QWebEnginePage::errorPageExtension()
 {
@@ -2827,6 +2836,9 @@ void tst_QWebEnginePage::errorPageExtensionInFrameset()
 
 void tst_QWebEnginePage::errorPageExtensionLoadFinished()
 {
+#if !defined(QWEBENGINEPAGE_ERRORPAGEEXTENSION)
+    QSKIP("QWEBENGINEPAGE_ERRORPAGEEXTENSION");
+#else
     ErrorPage page;
     m_view->setPage(&page);
 
@@ -2852,6 +2864,7 @@ void tst_QWebEnginePage::errorPageExtensionLoadFinished()
     QVERIFY(nonExistantFrameLoadSucceded);
 
     m_view->setPage(0);
+#endif
 }
 
 class FriendlyWebPage : public QWebEnginePage

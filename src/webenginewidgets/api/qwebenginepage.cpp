@@ -151,7 +151,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , adapter(new WebContentsAdapter(SoftwareRenderingMode))
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
     , view(0)
-    , m_isLoading(false)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -191,18 +190,6 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
     Q_UNUSED(url)
 }
 
-void QWebEnginePagePrivate::loadingStateChanged()
-{
-    Q_Q(QWebEnginePage);
-    const bool wasLoading = m_isLoading;
-    m_isLoading = adapter->isLoading();
-    if (m_isLoading != wasLoading) {
-        if (m_isLoading)
-            Q_EMIT q->loadStarted();
-    }
-    updateNavigationActions();
-}
-
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
 {
     Q_Q(QWebEnginePage);
@@ -228,15 +215,28 @@ qreal QWebEnginePagePrivate::dpiScale() const
     return 1.0;
 }
 
+void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl)
+{
+    Q_UNUSED(provisionalUrl)
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->loadStarted();
+    updateNavigationActions();
+}
+
+void QWebEnginePagePrivate::loadCommitted()
+{
+    updateNavigationActions();
+}
+
 void QWebEnginePagePrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(error_code);
     Q_UNUSED(error_description);
-    m_isLoading = adapter->isLoading();
     if (success)
         m_explicitUrl = QUrl();
     Q_EMIT q->loadFinished(success);
+    updateNavigationActions();
 }
 
 void QWebEnginePagePrivate::focusContainer()
