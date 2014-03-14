@@ -220,6 +220,7 @@ class Submodule:
 
             if self.url:
                 subprocessCall(['git', 'submodule', 'add', '-f', self.url, self.path])
+            subprocessCall(['git', 'submodule', 'sync', '--', self.path])
             subprocessCall(['git', 'submodule', 'init', self.path])
             subprocessCall(['git', 'submodule', 'update', self.path])
 

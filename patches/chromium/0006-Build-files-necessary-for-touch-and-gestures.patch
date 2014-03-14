@@ -10,27 +10,27 @@ Change-Id: Ib7bb4fb1fc8692df1b8151c3d159de3d0f73c76f
 ---
  content/content_browser.gypi |  2 +-
  ui/events/event.cc           | 14 ++++++++++++--
- ui/ui.gyp                    |  4 ++--
- 3 files changed, 15 insertions(+), 5 deletions(-)
+ ui/ui.gyp                    |  2 +-
+ 3 files changed, 14 insertions(+), 4 deletions(-)
 
 diff --git a/content/content_browser.gypi b/content/content_browser.gypi
-index 1e3485c..c2e5f18 100644
+index 99cc728..b0f963c 100644
 --- a/content/content_browser.gypi
 +++ b/content/content_browser.gypi
-@@ -1479,7 +1479,7 @@
-         ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
+@@ -1547,7 +1547,7 @@
+         ['exclude', '^browser/gamepad/gamepad_platform_data_fetcher_linux\\.cc$'],
        ],
      }],
 -    ['use_aura!=1 and OS!="win"', {
 +    ['use_aura!=1 and use_qt!=1 and OS!="win"', {
        'sources!': [
-         'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
          'browser/renderer_host/ui_events_helper.cc',
+         'browser/renderer_host/ui_events_helper.h',
 diff --git a/ui/events/event.cc b/ui/events/event.cc
-index 7c3e6d5..7153607 100644
+index 246e397..39d2b9a 100644
 --- a/ui/events/event.cc
 +++ b/ui/events/event.cc
-@@ -294,7 +294,13 @@ void LocatedEvent::UpdateForRootTransform(
+@@ -273,7 +273,13 @@ void LocatedEvent::UpdateForRootTransform(
  MouseEvent::MouseEvent(const base::NativeEvent& native_event)
      : LocatedEvent(native_event),
        changed_button_flags_(
@@ -45,7 +45,7 @@ index 7c3e6d5..7153607 100644
    if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED)
      SetClickCount(GetRepeatCount(*this));
  }
-@@ -698,6 +704,8 @@ DropTargetEvent::DropTargetEvent(const OSExchangeData& data,
+@@ -638,6 +644,8 @@ void TranslatedKeyEvent::ConvertToKeyEvent() {
  
  ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
      : MouseEvent(native_event) {
@@ -54,7 +54,7 @@ index 7c3e6d5..7153607 100644
    if (type() == ET_SCROLL) {
      GetScrollOffsets(native_event,
                       &x_offset_, &y_offset_,
-@@ -709,7 +717,9 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
+@@ -649,7 +657,9 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
                   &x_offset_, &y_offset_,
                   &x_offset_ordinal_, &y_offset_ordinal_,
                   NULL);
@@ -66,24 +66,15 @@ index 7c3e6d5..7153607 100644
          << " when constructing a ScrollEvent.";
    }
 diff --git a/ui/ui.gyp b/ui/ui.gyp
-index 09c011c..4716f6c 100644
+index 5d61dc4..aa0f3be 100644
 --- a/ui/ui.gyp
 +++ b/ui/ui.gyp
-@@ -708,7 +708,7 @@
-             ['exclude', 'base/dragdrop/drag_utils_aura.cc'],
-           ],
+@@ -350,7 +350,7 @@
+             ],
+           },
          }],
--        ['use_aura==0 and toolkit_views==0', {
-+        ['use_aura==0 and use_qt==0 and toolkit_views==0', {
-           'sources/': [
-             ['exclude', '^base/gestures/*'],
-           ]
-@@ -886,7 +886,7 @@
-             'base/cursor/cursor_loader_null.h',
+-        ['toolkit_views==1', {
++        ['toolkit_views==1 or use_qt==1', {
+           'dependencies': [
+             'events/events.gyp:events',
            ],
-         }],
--        ['toolkit_views==0', {
-+        ['use_qt==0 and toolkit_views==0', {
-           'sources!': [
-             'base/x/events_x.cc',
-             'events/event.cc',
