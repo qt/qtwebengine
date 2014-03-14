@@ -89,32 +89,38 @@ void WebContentsDelegateQt::CloseContents(content::WebContents *source)
     GetJavaScriptDialogManager()->CancelActiveAndPendingDialogs(source);
 }
 
-void WebContentsDelegateQt::LoadingStateChanged(content::WebContents* source)
-{
-    m_viewClient->loadingStateChanged();
-}
-
 void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
 {
     m_viewClient->loadProgressChanged(qRound(progress * 100));
 }
 
-void WebContentsDelegateQt::DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host)
+void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(int64, int64, bool is_main_frame, const GURL &validated_url, bool, bool, content::RenderViewHost*)
+{
+    if (is_main_frame)
+        m_viewClient->loadStarted(toQt(validated_url));
+}
+
+void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(int64, bool is_main_frame, const GURL& url, content::PageTransition transition_type, content::RenderViewHost *render_view_host)
+{
+    // This is currently used for canGoBack/Forward values, which is flattened across frames. For other purposes we might have to pass is_main_frame.
+    m_viewClient->loadCommitted();
+}
+
+void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost *render_view_host)
+{
+    DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);
+}
+
+void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost*)
 {
     if (is_main_frame)
         m_viewClient->loadFinished(false, error_code, toQt(error_description));
 }
 
-void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host)
+void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame, content::RenderViewHost*)
 {
     if (is_main_frame)
         m_viewClient->loadFinished(true);
-}
-
-void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host)
-{
-    if (is_main_frame)
-        DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)

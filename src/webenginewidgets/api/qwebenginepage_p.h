@@ -114,11 +114,12 @@ public:
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
-    virtual void loadingStateChanged() Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
+    virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
+    virtual void loadCommitted() Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success, int error_code, const QString &error_description = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &initialGeometry) Q_DECL_OVERRIDE;
@@ -144,7 +145,6 @@ public:
     QWebEngineHistory *history;
     QWebEngineView *view;
     QSize viewportSize;
-    bool m_isLoading;
     QUrl m_explicitUrl;
     WebEngineContextMenuData m_menuData;
     QPointer<RenderWidgetHostViewQtDelegateWebPage> m_rwhvDelegate;

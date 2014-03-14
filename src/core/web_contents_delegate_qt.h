@@ -66,12 +66,13 @@ public:
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags) Q_DECL_OVERRIDE;
     virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked) Q_DECL_OVERRIDE;
     virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
-    virtual void LoadingStateChanged(content::WebContents* source) Q_DECL_OVERRIDE;
     virtual void LoadProgressChanged(content::WebContents* source, double progress) Q_DECL_OVERRIDE;
+    virtual void DidStartProvisionalLoadForFrame(int64 frame_id, int64 parent_frame_id, bool is_main_frame, const GURL &validated_url, bool is_error_page, bool is_iframe_srcdoc, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidCommitProvisionalLoadForFrame(int64 frame_id, bool is_main_frame, const GURL &url, content::PageTransition transition_type, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL &validated_url, int error_code, const string16& error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
-    virtual void DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
     virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen) Q_DECL_OVERRIDE;
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
