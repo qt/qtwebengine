@@ -14,23 +14,22 @@ file in chromium > file basename > absolute file name.
 
 THIS SHOULD BE UPSTREAMABLE.
 ---
- grit/node/misc.py | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ grit/node/misc.py | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/grit/node/misc.py b/grit/node/misc.py
-index 734c57a..33848b2 100755
+index 345081f..3daf89c 100755
 --- a/grit/node/misc.py
 +++ b/grit/node/misc.py
-@@ -49,7 +49,7 @@ def _ReadFirstIdsFromFile(filename, defines):
+@@ -49,6 +49,7 @@ def _ReadFirstIdsFromFile(filename, defines):
    def ReplaceVariable(matchobj):
      for key, value in defines.iteritems():
        if matchobj.group(1) == key:
--        value = os.path.abspath(value)[len(src_root_dir) + 1:]
 +        value = os.path.abspath(value)
          return value
      return ''
  
-@@ -427,6 +427,11 @@ class GritNode(base.Node):
+@@ -431,6 +432,11 @@ class GritNode(base.Node):
          abs_filename = os.path.abspath(filename_or_stream)
          if abs_filename[:len(src_root_dir)] != src_root_dir:
            filename = os.path.basename(filename_or_stream)

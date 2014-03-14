@@ -1,17 +1,17 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Zoltan Arvai <zarvai@inf.u-szeged.hu>
 Date: Mon, 3 Mar 2014 14:18:12 +0100
-Subject: [PATCH] Overrideable path for perl, gperf and bison.
+Subject: Overrideable path for perl, gperf and bison.
 
 ---
- Source/core/core.gypi |    6 +++---
+ Source/build/scripts/scripts.gypi | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/Source/core/core.gypi b/Source/core/core.gypi
-index 3cd07aa..77879bb 100644
---- a/Source/core/core.gypi
-+++ b/Source/core/core.gypi
-@@ -3879,9 +3879,9 @@
+diff --git a/Source/build/scripts/scripts.gypi b/Source/build/scripts/scripts.gypi
+index 2cf0a34..c7bdc4f 100644
+--- a/Source/build/scripts/scripts.gypi
++++ b/Source/build/scripts/scripts.gypi
+@@ -43,9 +43,9 @@
              ['OS=="win"', {
                  # Using native perl rather than cygwin perl cuts execution time
                  # of idl preprocessing rules by a bit more than 50%.

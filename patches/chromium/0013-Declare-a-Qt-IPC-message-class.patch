@@ -12,7 +12,7 @@ Reviewed-by: Pierre Rossi <pierre.rossi@gmail.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/ipc/ipc_message_start.h b/ipc/ipc_message_start.h
-index a8cca53..314ed0e 100644
+index 7ce2bdd..3016f5d 100644
 --- a/ipc/ipc_message_start.h
 +++ b/ipc/ipc_message_start.h
 @@ -10,6 +10,7 @@
@@ -20,6 +20,6 @@ index a8cca53..314ed0e 100644
  enum IPCMessageStart {
    AutomationMsgStart = 0,
 +  QtMsgStart,
+   FrameMsgStart,
    ViewMsgStart,
    InputMsgStart,
-   PluginMsgStart,

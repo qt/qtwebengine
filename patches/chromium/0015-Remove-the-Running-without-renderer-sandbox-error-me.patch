@@ -13,10 +13,10 @@ Reviewed-by: Andras Becsi <andras.becsi@digia.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/content/renderer/renderer_main.cc b/content/renderer/renderer_main.cc
-index 2d298a6..1c33cf3 100644
+index 63c72ae..f0c16d2 100644
 --- a/content/renderer/renderer_main.cc
 +++ b/content/renderer/renderer_main.cc
-@@ -224,7 +224,6 @@ int RendererMain(const MainFunctionParams& parameters) {
+@@ -223,7 +223,6 @@ int RendererMain(const MainFunctionParams& parameters) {
      if (!no_sandbox) {
        run_loop = platform.EnableSandbox();
      } else {

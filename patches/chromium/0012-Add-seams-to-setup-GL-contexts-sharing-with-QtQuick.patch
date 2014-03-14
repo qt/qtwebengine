@@ -40,10 +40,10 @@ index 8b466bd..fe3f7b3 100644
    }
  
 diff --git a/content/public/browser/content_browser_client.h b/content/public/browser/content_browser_client.h
-index cc664c6..f817cb2 100644
+index 8633105..639998f 100644
 --- a/content/public/browser/content_browser_client.h
 +++ b/content/public/browser/content_browser_client.h
-@@ -48,6 +48,7 @@ class CryptoModuleBlockingPasswordDelegate;
+@@ -45,6 +45,7 @@ class FilePath;
  }
  
  namespace gfx {
@@ -51,9 +51,9 @@ index cc664c6..f817cb2 100644
  class ImageSkia;
  }
  
-@@ -570,6 +571,10 @@ class CONTENT_EXPORT ContentBrowserClient {
-   // Return NULL to use the default one for the platform to be created.
-   virtual LocationProvider* OverrideSystemLocationProvider();
+@@ -582,6 +583,10 @@ class CONTENT_EXPORT ContentBrowserClient {
+   // information.
+   virtual VibrationProvider* OverrideVibrationProvider();
  
 +  // Allow an embedder to provide a share group reimplementation to connect renderer
 +  // GL contexts with the root compositor.

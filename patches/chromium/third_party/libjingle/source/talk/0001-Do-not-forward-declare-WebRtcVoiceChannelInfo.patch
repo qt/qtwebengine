@@ -14,11 +14,11 @@ This fixes the fixes the "error: field has incomplete type" compiler error.
  2 files changed, 12 insertions(+), 14 deletions(-)
 
 diff --git a/media/webrtc/webrtcvoiceengine.cc b/media/webrtc/webrtcvoiceengine.cc
-index 2a6ccd7..8686038 100644
+index 51da9ac..3bdc403 100644
 --- a/media/webrtc/webrtcvoiceengine.cc
 +++ b/media/webrtc/webrtcvoiceengine.cc
-@@ -1475,19 +1475,6 @@ void WebRtcVoiceEngine::StopAecDump() {
-   }
+@@ -1620,19 +1620,6 @@ int WebRtcVoiceEngine::CreateSoundclipVoiceChannel() {
+   return CreateVoiceChannel(voe_wrapper_sc_.get());
  }
  
 -// This struct relies on the generated copy constructor and assignment operator
@@ -38,10 +38,10 @@ index 2a6ccd7..8686038 100644
  WebRtcVoiceMediaChannel::WebRtcVoiceMediaChannel(WebRtcVoiceEngine *engine)
      : WebRtcMediaChannel<VoiceMediaChannel, WebRtcVoiceEngine>(
 diff --git a/media/webrtc/webrtcvoiceengine.h b/media/webrtc/webrtcvoiceengine.h
-index 6cb0b30..62d3bc1 100644
+index 23d97f5..6a2c6d8 100644
 --- a/media/webrtc/webrtcvoiceengine.h
 +++ b/media/webrtc/webrtcvoiceengine.h
-@@ -374,7 +374,18 @@ class WebRtcVoiceMediaChannel
+@@ -388,7 +388,18 @@ class WebRtcVoiceMediaChannel
    static Error WebRtcErrorToChannelError(int err_code);
  
   private:

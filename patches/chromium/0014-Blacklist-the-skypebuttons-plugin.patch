@@ -19,7 +19,7 @@ Reviewed-by: Andras Becsi <andras.becsi@digia.com>
  1 file changed, 1 insertion(+)
 
 diff --git a/content/common/plugin_list_posix.cc b/content/common/plugin_list_posix.cc
-index 3e1353be..7c04485 100644
+index acd7830..0e82276 100644
 --- a/content/common/plugin_list_posix.cc
 +++ b/content/common/plugin_list_posix.cc
 @@ -151,6 +151,7 @@ bool IsUndesirablePlugin(const WebPluginInfo& info) {

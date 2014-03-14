@@ -4,14 +4,14 @@ Date: Mon, 13 May 2013 16:25:46 +0200
 Subject: Fix build with toplevel-dir
 
 ---
- pylib/gyp/generator/ninja.py | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ pylib/gyp/generator/ninja.py | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff --git a/pylib/gyp/generator/ninja.py b/pylib/gyp/generator/ninja.py
-index 9011807..6fe07c5 100644
+index a40c7fe..a169234 100644
 --- a/pylib/gyp/generator/ninja.py
 +++ b/pylib/gyp/generator/ninja.py
-@@ -1476,9 +1476,13 @@ def CalculateVariables(default_variables, params):
+@@ -1473,8 +1473,13 @@ def CalculateVariables(default_variables, params):
      default_variables.setdefault('SHARED_LIB_SUFFIX', '.so')
      default_variables.setdefault('SHARED_LIB_DIR',
                                   os.path.join('$!PRODUCT_DIR', 'lib'))
@@ -22,8 +22,7 @@ index 9011807..6fe07c5 100644
 +      toplevel_offset = os.path.relpath(options.depth, options.toplevel_dir)
      default_variables.setdefault('LIB_DIR',
 -                                 os.path.join('$!PRODUCT_DIR', 'obj'))
--
 +                                 os.path.join('$!PRODUCT_DIR', 'obj', toplevel_offset))
  
- def OpenOutput(path, mode='w'):
-   """Open |path| for writing, creating directories if necessary."""
+ def ComputeOutputDir(params):
+   """Returns the path from the toplevel_dir to the build output directory."""
