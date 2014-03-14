@@ -12,10 +12,10 @@ May be we should instead implement our own ChildProcessHost.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/content/common/child_process_host_impl.cc b/content/common/child_process_host_impl.cc
-index fb058d3..2208376 100644
+index 1467536..2607496 100644
 --- a/content/common/child_process_host_impl.cc
 +++ b/content/common/child_process_host_impl.cc
-@@ -106,7 +106,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
+@@ -107,7 +107,7 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
    if (child_path.empty())
      PathService::Get(CHILD_PROCESS_EXE, &child_path);
  
