@@ -272,7 +272,10 @@ public:
 
     enum Feature {
         Notifications,
-        Geolocation
+        Geolocation,
+        MediaAudioDevices,
+        MediaVideoDevices,
+        MediaAudioVideoDevices
     };
 
     // Ex-QWebFrame enum
@@ -388,7 +391,7 @@ public:
 
     QMenu *createStandardContextMenu();
 
-    void setFeaturePermission(QWebEngineFrame* frame, Feature feature, PermissionPolicy policy);
+    void setFeaturePermission(Feature feature, PermissionPolicy policy);
 
     QStringList supportedContentTypes() const;
     bool supportsContentType(const QString& mimeType) const;
@@ -539,8 +542,8 @@ Q_SIGNALS:
 
     void viewportChangeRequested();
 
-    void featurePermissionRequested(QWebEngineFrame* frame, QWebEnginePage::Feature feature);
-    void featurePermissionRequestCanceled(QWebEngineFrame* frame, QWebEnginePage::Feature feature);
+    void featurePermissionRequested(QWebEnginePage::Feature feature, const QUrl &securityOrigin);
+    void featurePermissionRequestCanceled(QWebEnginePage::Feature feature);
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
