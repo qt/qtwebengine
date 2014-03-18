@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andras Becsi <andras.becsi@digia.com>
+Date: Thu, 20 Mar 2014 11:27:56 +0100
+Subject: Disable "rubber-banding" on Mac
+
+Rubber-banding is the scrolling effect on Mac when overscrolling
+which does not work with Qt and also causes a crash with branch 1750.
+Disable the feature for now.
+---
+ Source/config.h | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Source/config.h b/Source/config.h
+index e556d5b..d7501db 100644
+--- a/Source/config.h
++++ b/Source/config.h
+@@ -97,7 +97,6 @@
+ 
+ #if OS(MACOSX)
+ #define WTF_USE_CF 1
+-#define WTF_USE_RUBBER_BANDING 1
+ 
+ /* We can't override the global operator new and delete on OS(MACOSX) because
+  * some object are allocated by WebKit and deallocated by the embedder. */

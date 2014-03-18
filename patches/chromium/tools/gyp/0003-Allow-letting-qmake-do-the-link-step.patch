@@ -15,10 +15,10 @@ Reviewed-by: Andras Becsi <andras.becsi@digia.com>
  1 file changed, 43 insertions(+)
 
 diff --git a/pylib/gyp/generator/ninja.py b/pylib/gyp/generator/ninja.py
-index 6fe07c5..c61f180 100644
+index a169234..909c8d8 100644
 --- a/pylib/gyp/generator/ninja.py
 +++ b/pylib/gyp/generator/ninja.py
-@@ -1090,6 +1090,49 @@ class NinjaWriter:
+@@ -1101,6 +1101,49 @@ class NinjaWriter:
        else:
          command = command + '_notoc'
  

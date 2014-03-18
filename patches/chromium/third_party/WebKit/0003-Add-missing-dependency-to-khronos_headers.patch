@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andras Becsi <andras.becsi@digia.com>
+Date: Thu, 13 Mar 2014 16:11:59 +0100
+Subject: Add missing dependency to khronos_headers
+
+This is needed since https://codereview.chromium.org/106503003
+and because of our chromium patch that fixes the build with a
+GL ES2 configured Qt.
+---
+ Source/core/core.gyp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Source/core/core.gyp b/Source/core/core.gyp
+index 882565d..8b8a8b5 100644
+--- a/Source/core/core.gyp
++++ b/Source/core/core.gyp
+@@ -821,6 +821,7 @@
+         'webcore_derived',
+         '../wtf/wtf.gyp:wtf',
+         '<(DEPTH)/skia/skia.gyp:skia',
++        '<(DEPTH)/third_party/khronos/khronos.gyp:khronos_headers',
+         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+         '<(DEPTH)/url/url.gyp:url_lib',
+@@ -830,6 +831,7 @@
+         '../wtf/wtf.gyp:wtf',
+         'webcore_derived',
+         '<(DEPTH)/skia/skia.gyp:skia',
++        '<(DEPTH)/third_party/khronos/khronos.gyp:khronos_headers',
+         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+         '<(DEPTH)/url/url.gyp:url_lib',

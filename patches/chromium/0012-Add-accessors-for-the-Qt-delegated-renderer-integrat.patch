@@ -12,10 +12,10 @@ SyncPointManager of the GPU in-process host.
  3 files changed, 14 insertions(+)
 
 diff --git a/content/common/gpu/gpu_channel_manager.h b/content/common/gpu/gpu_channel_manager.h
-index f01a1c5..e41a548 100644
+index eb4d224..1ab04d9 100644
 --- a/content/common/gpu/gpu_channel_manager.h
 +++ b/content/common/gpu/gpu_channel_manager.h
-@@ -89,6 +89,8 @@ class GpuChannelManager : public IPC::Listener,
+@@ -90,6 +90,8 @@ class GpuChannelManager : public IPC::Listener,
  
    gpu::gles2::ProgramCache* program_cache();
  
@@ -23,7 +23,7 @@ index f01a1c5..e41a548 100644
 +
    GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
  
-   GpuChannel* LookupChannel(int32 client_id);
+   GpuEventsDispatcher* gpu_devtools_events_dispatcher() {
 diff --git a/content/gpu/gpu_child_thread.cc b/content/gpu/gpu_child_thread.cc
 index 170b364..a84a9e0 100644
 --- a/content/gpu/gpu_child_thread.cc
