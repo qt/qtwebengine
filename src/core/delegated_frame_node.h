@@ -65,11 +65,13 @@ class RenderPassTexture;
 // and render pass information.
 class DelegatedFrameNodeData : public QSharedData {
 public:
+    DelegatedFrameNodeData() : frameDevicePixelRatio(1) { }
     QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextures;
     scoped_ptr<cc::DelegatedFrameData> frameData;
+    qreal frameDevicePixelRatio;
 };
 
-class DelegatedFrameNode : public QSGNode {
+class DelegatedFrameNode : public QSGTransformNode {
 public:
     DelegatedFrameNode(QQuickWindow *window);
     ~DelegatedFrameNode();
