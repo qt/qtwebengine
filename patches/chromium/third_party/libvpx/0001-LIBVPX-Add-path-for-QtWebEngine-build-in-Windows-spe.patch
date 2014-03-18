@@ -4,14 +4,14 @@ Date: Mon, 24 Feb 2014 07:29:32 -0800
 Subject: LIBVPX: Add path for QtWebEngine build in Windows specific actions
 
 ---
- libvpx.gyp |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ libvpx.gyp | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/libvpx.gyp b/libvpx.gyp
-index 392ccde..7f1a18d 100644
+index 3f668df..32a4bb1 100644
 --- a/libvpx.gyp
 +++ b/libvpx.gyp
-@@ -402,6 +402,7 @@
+@@ -404,6 +404,7 @@
                  '-s', '<(PRODUCT_DIR)/obj/libvpx_asm_offsets_vp8/vp8_asm_enc_offsets.obj',
                  '-s', '<(ninja_obj_dir)/encoder/libvpx_asm_offsets_vp8.vp8_asm_enc_offsets.obj',
                  '-s', '<(PRODUCT_DIR)/obj/Source/WebKit/chromium/third_party/libvpx/<(libvpx_source)/vp8/encoder/libvpx_asm_offsets_vp8.vp8_asm_enc_offsets.obj',
@@ -19,7 +19,7 @@ index 392ccde..7f1a18d 100644
                ],
                'process_output_as_sources': 1,
                'msvs_cygwin_shell': 1,
-@@ -500,6 +501,7 @@
+@@ -502,6 +503,7 @@
                  '-s', '<(PRODUCT_DIR)/obj/libvpx_asm_offsets_vpx_scale/vpx_scale_asm_offsets.obj',
                  '-s', '<(ninja_obj_dir)/encoder/libvpx_asm_offsets_vpx_scale.vpx_scale_asm_offsets.obj',
                  '-s', '<(PRODUCT_DIR)/obj/Source/WebKit/chromium/third_party/libvpx/<(libvpx_source)/vpx_scale/libvpx_asm_offsets_vpx_scale.vpx_scale_asm_offsets.obj',

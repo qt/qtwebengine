@@ -8,38 +8,104 @@ If resource_provider.h is going to be used to integrate delegated frame
 to external compositors, it should avoid conflicting with the system's gl.h.
 
 Change-Id: Ie37d6cde263157e6717cc006a9896f0b9ebdaa5d
-Reviewed-by: Zeno Albisser <zeno.albisser@digia.com>
 ---
- cc/layers/texture_layer.cc        | 1 +
- cc/output/delegating_renderer.cc  | 1 +
- cc/quads/content_draw_quad_base.h | 1 -
- cc/resources/resource_provider.h  | 5 ++++-
- 4 files changed, 6 insertions(+), 2 deletions(-)
+ cc/base/util.h                                 | 33 ++++++++++++++++++++++++
+ cc/layers/texture_layer.cc                     |  2 ++
+ cc/output/delegating_renderer.cc               |  1 +
+ cc/output/gl_renderer.cc                       |  1 +
+ cc/quads/content_draw_quad_base.h              |  1 -
+ cc/resources/resource_provider.h               | 35 +++-----------------------
+ content/renderer/gpu/mailbox_output_surface.cc |  1 +
+ 7 files changed, 41 insertions(+), 33 deletions(-)
 
+diff --git a/cc/base/util.h b/cc/base/util.h
+index 1d716ae..bd51178 100644
+--- a/cc/base/util.h
++++ b/cc/base/util.h
+@@ -8,6 +8,9 @@
+ #include <limits>
+ 
+ #include "base/basictypes.h"
++#include "cc/resources/resource_provider.h"
++#include "third_party/khronos/GLES2/gl2.h"
++#include "third_party/khronos/GLES2/gl2ext.h"
+ 
+ namespace cc {
+ 
+@@ -24,6 +27,36 @@ template <typename T> T RoundDown(T n, T mul) {
+                  : ((n - mul + 1) / mul) * mul;
+ }
+ 
++inline GLenum GLDataType(ResourceFormat format) {
++  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
++  static const unsigned format_gl_data_type[RESOURCE_FORMAT_MAX + 1] = {
++    GL_UNSIGNED_BYTE,           // RGBA_8888
++    GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
++    GL_UNSIGNED_BYTE,           // BGRA_8888
++    GL_UNSIGNED_BYTE,           // LUMINANCE_8
++    GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
++    GL_UNSIGNED_BYTE            // ETC1
++  };
++  return format_gl_data_type[format];
++}
++
++inline GLenum GLDataFormat(ResourceFormat format) {
++  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
++  static const unsigned format_gl_data_format[RESOURCE_FORMAT_MAX + 1] = {
++    GL_RGBA,           // RGBA_8888
++    GL_RGBA,           // RGBA_4444
++    GL_BGRA_EXT,       // BGRA_8888
++    GL_LUMINANCE,      // LUMINANCE_8
++    GL_RGB,            // RGB_565
++    GL_ETC1_RGB8_OES   // ETC1
++  };
++  return format_gl_data_format[format];
++}
++
++inline GLenum GLInternalFormat(ResourceFormat format) {
++  return GLDataFormat(format);
++}
++
+ }  // namespace cc
+ 
+ #endif  // CC_BASE_UTIL_H_
 diff --git a/cc/layers/texture_layer.cc b/cc/layers/texture_layer.cc
-index 21c5e93..a845709 100644
+index 195d05d..5c954c1 100644
 --- a/cc/layers/texture_layer.cc
 +++ b/cc/layers/texture_layer.cc
-@@ -13,6 +13,7 @@
+@@ -13,6 +13,8 @@
  #include "cc/resources/single_release_callback.h"
  #include "cc/trees/blocking_task_runner.h"
  #include "cc/trees/layer_tree_host.h"
 +#include "third_party/khronos/GLES2/gl2.h"
- #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
++#include "third_party/khronos/GLES2/gl2ext.h"
  
  namespace cc {
+ 
 diff --git a/cc/output/delegating_renderer.cc b/cc/output/delegating_renderer.cc
-index e3413a5..1b4021f 100644
+index c76f250..1b57161 100644
 --- a/cc/output/delegating_renderer.cc
 +++ b/cc/output/delegating_renderer.cc
-@@ -23,6 +23,7 @@
- #include "cc/quads/yuv_video_draw_quad.h"
- #include "cc/resources/resource_provider.h"
+@@ -25,6 +25,7 @@
+ #include "gpu/command_buffer/client/context_support.h"
+ #include "gpu/command_buffer/common/gpu_memory_allocation.h"
  #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 +#include "third_party/khronos/GLES2/gl2.h"
  #include "third_party/khronos/GLES2/gl2ext.h"
  
- using WebKit::WebGraphicsContext3D;
+ using blink::WebGraphicsContext3D;
+diff --git a/cc/output/gl_renderer.cc b/cc/output/gl_renderer.cc
+index 04db7b0..f0e32f4 100644
+--- a/cc/output/gl_renderer.cc
++++ b/cc/output/gl_renderer.cc
+@@ -16,6 +16,7 @@
+ #include "base/strings/string_util.h"
+ #include "base/strings/stringprintf.h"
+ #include "build/build_config.h"
++#include "cc/base/util.h"
+ #include "cc/base/math_util.h"
+ #include "cc/layers/video_layer_impl.h"
+ #include "cc/output/compositor_frame.h"
 diff --git a/cc/quads/content_draw_quad_base.h b/cc/quads/content_draw_quad_base.h
 index cbf18ca..6229d61 100644
 --- a/cc/quads/content_draw_quad_base.h
@@ -53,22 +119,74 @@ index cbf18ca..6229d61 100644
  #include "ui/gfx/size.h"
  
 diff --git a/cc/resources/resource_provider.h b/cc/resources/resource_provider.h
-index fb1e5f0..928d4f9 100644
+index 6e5c61a..2478661 100644
 --- a/cc/resources/resource_provider.h
 +++ b/cc/resources/resource_provider.h
-@@ -25,11 +25,14 @@
+@@ -25,8 +25,6 @@
  #include "cc/resources/single_release_callback.h"
  #include "cc/resources/texture_mailbox.h"
  #include "cc/resources/transferable_resource.h"
 -#include "third_party/khronos/GLES2/gl2.h"
+-#include "third_party/khronos/GLES2/gl2ext.h"
  #include "third_party/skia/include/core/SkBitmap.h"
  #include "third_party/skia/include/core/SkCanvas.h"
  #include "ui/gfx/size.h"
- 
+@@ -36,6 +34,9 @@ namespace gles {
+ class GLES2Interface;
+ }
+ }
 +// A correct fix would be not to use GL types in this interal API file.
 +typedef unsigned int     GLenum;
 +typedef int              GLint;
-+
- namespace WebKit { class WebGraphicsContext3D; }
  
  namespace gfx {
+ class Rect;
+@@ -525,36 +526,6 @@ inline unsigned BitsPerPixel(ResourceFormat format) {
+   return format_bits_per_pixel[format];
+ }
+ 
+-inline GLenum GLDataType(ResourceFormat format) {
+-  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
+-  static const unsigned format_gl_data_type[RESOURCE_FORMAT_MAX + 1] = {
+-    GL_UNSIGNED_BYTE,           // RGBA_8888
+-    GL_UNSIGNED_SHORT_4_4_4_4,  // RGBA_4444
+-    GL_UNSIGNED_BYTE,           // BGRA_8888
+-    GL_UNSIGNED_BYTE,           // LUMINANCE_8
+-    GL_UNSIGNED_SHORT_5_6_5,    // RGB_565,
+-    GL_UNSIGNED_BYTE            // ETC1
+-  };
+-  return format_gl_data_type[format];
+-}
+-
+-inline GLenum GLDataFormat(ResourceFormat format) {
+-  DCHECK_LE(format, RESOURCE_FORMAT_MAX);
+-  static const unsigned format_gl_data_format[RESOURCE_FORMAT_MAX + 1] = {
+-    GL_RGBA,           // RGBA_8888
+-    GL_RGBA,           // RGBA_4444
+-    GL_BGRA_EXT,       // BGRA_8888
+-    GL_LUMINANCE,      // LUMINANCE_8
+-    GL_RGB,            // RGB_565
+-    GL_ETC1_RGB8_OES   // ETC1
+-  };
+-  return format_gl_data_format[format];
+-}
+-
+-inline GLenum GLInternalFormat(ResourceFormat format) {
+-  return GLDataFormat(format);
+-}
+-
+ }  // namespace cc
+ 
+ #endif  // CC_RESOURCES_RESOURCE_PROVIDER_H_
+diff --git a/content/renderer/gpu/mailbox_output_surface.cc b/content/renderer/gpu/mailbox_output_surface.cc
+index 09e1ec0..b23575d 100644
+--- a/content/renderer/gpu/mailbox_output_surface.cc
++++ b/content/renderer/gpu/mailbox_output_surface.cc
+@@ -5,6 +5,7 @@
+ #include "content/renderer/gpu/mailbox_output_surface.h"
+ 
+ #include "base/logging.h"
++#include "cc/base/util.h"
+ #include "cc/output/compositor_frame.h"
+ #include "cc/output/compositor_frame_ack.h"
+ #include "cc/output/gl_frame_data.h"
