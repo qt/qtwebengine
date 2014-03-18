@@ -312,6 +312,21 @@ void QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const
     *outPassword = networkAuth.password();
 }
 
+void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
+{
+    Q_Q(QWebEnginePage);
+    QWebEnginePage::Feature requestedFeature;
+    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+        requestedFeature = QWebEnginePage::MediaAudioVideoDevices;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
+        requestedFeature = QWebEnginePage::MediaAudioDevices;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+        requestedFeature = QWebEnginePage::MediaVideoDevices;
+    else
+        return;
+    Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
+}
+
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
@@ -678,6 +693,33 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         menu->addAction(action);
     }
     return menu;
+}
+
+void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature, QWebEnginePage::PermissionPolicy policy)
+{
+    Q_D(QWebEnginePage);
+    WebContentsAdapterClient::MediaRequestFlags flags =  WebContentsAdapterClient::MediaNone;
+    switch (feature) {
+    case MediaAudioVideoDevices:
+    case MediaAudioDevices:
+    case MediaVideoDevices:
+        if (policy != PermissionUnknown) {
+            if (policy == PermissionDeniedByUser)
+                flags = WebContentsAdapterClient::MediaNone;
+            else {
+                if (feature == MediaAudioDevices)
+                    flags = WebContentsAdapterClient::MediaAudioCapture;
+                else if (feature == MediaVideoDevices)
+                    flags = WebContentsAdapterClient::MediaVideoCapture;
+                else
+                    flags = WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaVideoCapture | WebContentsAdapterClient::MediaAudioCapture);
+            }
+            d->adapter->grantMediaAccessPermission(securityOrigin, flags);
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 static inline QWebEnginePage::FileSelectionMode toPublic(WebContentsAdapterClient::FileChooserMode mode)
