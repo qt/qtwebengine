@@ -153,6 +153,7 @@ private Q_SLOTS:
     void userAgentNewlineStripping();
     void undoActionHaveCustomText();
     void renderWidgetHostViewNotShowTopLevel();
+    void getUserMediaRequest();
 
     void viewModes();
 
@@ -3587,6 +3588,70 @@ void tst_QWebEnginePage::renderWidgetHostViewNotShowTopLevel()
     // They should only be made visible when parented to a QWebEngineView.
     foreach (QWidget *widget, QApplication::topLevelWidgets())
         QCOMPARE(widget->isVisible(), false);
+}
+
+class GetUserMediaTestPage : public QWebEnginePage {
+Q_OBJECT
+
+public:
+    GetUserMediaTestPage()
+        : m_gotRequest(false)
+    {
+        connect(this, &QWebEnginePage::featurePermissionRequested, this, &GetUserMediaTestPage::onFeaturePermissionRequested);
+    }
+
+    void rejectPendingRequest()
+    {
+        setFeaturePermission(m_requestSecurityOrigin, m_requestedFeature, QWebEnginePage::PermissionDeniedByUser);
+        m_gotRequest = false;
+    }
+    void acceptPendingRequest()
+    {
+        setFeaturePermission(m_requestSecurityOrigin, m_requestedFeature, QWebEnginePage::PermissionGrantedByUser);
+        m_gotRequest = false;
+    }
+
+    bool gotFeatureRequest(QWebEnginePage::Feature feature)
+    {
+        return m_gotRequest && m_requestedFeature == feature;
+    }
+
+private Q_SLOTS:
+    void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)
+    {
+        m_requestedFeature = feature;
+        m_requestSecurityOrigin = securityOrigin;
+        m_gotRequest = true;
+    }
+
+private:
+    bool m_gotRequest;
+    QWebEnginePage::Feature m_requestedFeature;
+    QUrl m_requestSecurityOrigin;
+
+};
+
+
+void tst_QWebEnginePage::getUserMediaRequest()
+{
+    GetUserMediaTestPage *page = new GetUserMediaTestPage();
+
+    // We need to load content from a resource in order for the securityOrigin to be valid.
+    page->load(QUrl("qrc:///resources/content.html"));
+
+    QVERIFY(evaluateJavaScriptSync(page, QStringLiteral("!!navigator.webkitGetUserMedia")).toBool());
+    evaluateJavaScriptSync(page, QStringLiteral("navigator.webkitGetUserMedia({audio: true}, function() {}, function(){})"));
+    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioDevices), 100);
+    // Might end up failing due to the lack of physical media devices deeper in the content layer, so the JS callback is not guaranteed to be called,
+    // but at least we go through that code path, potentially uncovering failing assertions.
+    page->acceptPendingRequest();
+
+    page->runJavaScript(QStringLiteral("errorCallbackCalled = false;"));
+    evaluateJavaScriptSync(page, QStringLiteral("navigator.webkitGetUserMedia({audio: true, video: true}, function() {}, function(){errorCallbackCalled = true;})"));
+    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioVideoDevices), 100);
+    page->rejectPendingRequest(); // Should always end up calling the error callback in JS.
+    QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(page, QStringLiteral("errorCallbackCalled;")).toBool(), 100);
+    delete page;
 }
 
 void tst_QWebEnginePage::openWindowDefaultSize()
