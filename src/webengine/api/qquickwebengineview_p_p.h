@@ -55,6 +55,7 @@ class WebContentsAdapter;
 class UIDelegatesManager;
 
 QT_BEGIN_NAMESPACE
+class QQuickWebEngineHistory;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineView;
 class QQmlComponent;
@@ -83,6 +84,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
+    Q_PROPERTY(int currentNavigationEntryIndex READ currentNavigationEntryIndex CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
 
 public:
     void setIsFullScreen(bool fullscreen);
@@ -90,8 +93,12 @@ public:
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
+    int currentNavigationEntryIndex() const;
+    QQuickWebEngineHistory *navigationHistory() const;
 
 public Q_SLOTS:
+    void goBackTo(int index);
+    void goForwardTo(int index);
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
 
 Q_SIGNALS:
@@ -153,6 +160,7 @@ public:
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineViewExperimental> e;
     QScopedPointer<QQuickWebEngineViewport> v;
+    QScopedPointer<QQuickWebEngineHistory> m_history;
     QQmlComponent *contextMenuExtraItems;
     QUrl icon;
     int loadProgress;
