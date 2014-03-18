@@ -110,6 +110,7 @@ private slots:
     void setStatusBarText(const QString &string);
     void downloadRequested(const QNetworkRequest &request);
     void openLinkInNewTab();
+    void onFeaturePermissionRequested(QWebEnginePage::Feature, const QUrl &securityOrigin);
 
 private:
     QString m_statusBarText;

@@ -28,6 +28,7 @@ HEADERS += \
     downloadmanager.h \
     edittableview.h \
     edittreeview.h \
+    featurepermissionbar.h\
     history.h \
     modelmenu.h \
     searchlineedit.h \
@@ -48,6 +49,7 @@ SOURCES += \
     downloadmanager.cpp \
     edittableview.cpp \
     edittreeview.cpp \
+    featurepermissionbar.cpp\
     history.cpp \
     modelmenu.cpp \
     searchlineedit.cpp \
