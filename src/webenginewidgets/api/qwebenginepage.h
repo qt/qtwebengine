@@ -109,6 +109,21 @@ public:
         WebBrowserWindow,
         WebBrowserTab,
         WebDialog
+        WebModalDialog
+    };
+
+    enum PermissionPolicy {
+        PermissionUnknown,
+        PermissionGrantedByUser,
+        PermissionDeniedByUser
+    };
+
+    enum Feature {
+        Notifications,
+        Geolocation,
+        MediaAudioDevices,
+        MediaVideoDevices,
+        MediaAudioVideoDevices
     };
 
     // Ex-QWebFrame enum
@@ -144,6 +159,8 @@ public:
     void findText(const QString &subString, FindFlags options = 0, const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
     QMenu *createStandardContextMenu();
 
+    void setFeaturePermission(Feature feature, PermissionPolicy policy);
+
     // Ex-QWebFrame methods
     void load(const QUrl &url);
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
@@ -171,6 +188,8 @@ Q_SIGNALS:
     void selectionChanged();
     void geometryChangeRequested(const QRect& geom);
     void windowCloseRequested();
+    void featurePermissionRequested(QWebEnginePage::Feature feature, const QUrl &securityOrigin);
+    void featurePermissionRequestCanceled(QWebEnginePage::Feature feature);
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
