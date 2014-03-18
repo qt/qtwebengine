@@ -332,6 +332,13 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
     if (!frameData)
         return;
 
+    // DelegatedFrameNode is a transform node only for the purpose of
+    // countering the scale of devicePixel-scaled tiles when rendering them
+    // to the final surface.
+    QMatrix4x4 matrix;
+    matrix.scale(1 / m_data->frameDevicePixelRatio, 1 / m_data->frameDevicePixelRatio);
+    setMatrix(matrix);
+
     // Keep the old texture lists around to find the ones we can re-use.
     QList<QSharedPointer<RenderPassTexture> > oldRenderPassTextures;
     m_renderPassTextures.swap(oldRenderPassTextures);
@@ -368,7 +375,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id, sgrc));
             }
             m_renderPassTextures.append(rpTexture);
-            rpTexture->setDevicePixelRatio(m_window->devicePixelRatio());
+            rpTexture->setDevicePixelRatio(m_data->frameDevicePixelRatio);
             rpTexture->setRect(toQt(pass->output_rect));
             rpTexture->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
             renderPassParent = rpTexture->rootNode();
