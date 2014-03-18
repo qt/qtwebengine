@@ -43,6 +43,7 @@
 #include "qquickwebengineview_p_p.h"
 
 #include "javascript_dialog_controller.h"
+#include "qquickwebenginehistory_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
@@ -67,6 +68,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
     , e(new QQuickWebEngineViewExperimental(this))
     , v(new QQuickWebEngineViewport(this))
+    , m_history(new QQuickWebEngineHistory(this))
     , contextMenuExtraItems(0)
     , loadProgress(0)
     , inspectable(false)
@@ -359,6 +361,8 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     d->e->q_ptr = this;
     d->adapter->initialize(d);
 
+    QObject::connect(this, &QQuickWebEngineView::loadingChanged, d->m_history.data(), &QQuickWebEngineHistory::reset);
+
     this->setFocus(true);
     this->setActiveFocusOnTab(true);
     this->setFlag(QQuickItem::ItemIsFocusScope);
@@ -512,6 +516,29 @@ void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const
         d_ptr->m_callbacks.insert(requestId, callback);
     } else
         d_ptr->adapter->runJavaScript(script, /*xPath=*/QString());
+}
+
+QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const
+{
+    return d_ptr->m_history.data();
+}
+
+void QQuickWebEngineViewExperimental::goBackTo(int index)
+{
+    int count = d_ptr->adapter->currentNavigationEntryIndex();
+    if (index < 0 || index >= count)
+        return;
+
+    d_ptr->adapter->navigateToIndex(count - 1 - index);
+}
+
+void QQuickWebEngineViewExperimental::goForwardTo(int index)
+{
+    int count = d_ptr->adapter->navigationEntryCount() - d_ptr->adapter->currentNavigationEntryIndex() - 1;
+    if (index < 0 || index >= count)
+        return;
+
+    d_ptr->adapter->navigateToIndex(d_ptr->adapter->currentNavigationEntryIndex() + 1 + index);
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)

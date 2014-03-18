@@ -9,6 +9,7 @@ QT_PRIVATE += webenginecore qml-private quick-private gui-private core-private
 INCLUDEPATH += $$PWD api ../core
 
 SOURCES = \
+        api/qquickwebenginehistory.cpp \
         api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
         api/qquickwebengineview.cpp \
@@ -18,6 +19,7 @@ SOURCES = \
 HEADERS = \
         api/qtwebengineglobal.h \
         api/qtwebengineglobal_p.h \
+        api/qquickwebenginehistory_p.h \
         api/qquickwebengineloadrequest_p.h \
         api/qquickwebenginenewviewrequest_p.h \
         api/qquickwebengineview_p.h \
