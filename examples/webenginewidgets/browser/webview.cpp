@@ -43,6 +43,7 @@
 #include "browsermainwindow.h"
 #include "cookiejar.h"
 #include "downloadmanager.h"
+#include "featurepermissionbar.h"
 #include "networkaccessmanager.h"
 #include "ui_passworddialog.h"
 #include "ui_proxy.h"
@@ -326,6 +327,7 @@ WebView::WebView(QWidget* parent)
     connect(page(), SIGNAL(downloadRequested(QNetworkRequest)),
             this, SLOT(downloadRequested(QNetworkRequest)));
 #endif
+    connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     page()->setForwardUnsupportedContent(true);
 #endif
@@ -374,6 +376,17 @@ void WebView::openLinkInNewTab()
     m_page->m_openInNewTab = true;
     pageAction(QWebEnginePage::OpenLinkInNewWindow)->trigger();
 #endif
+}
+
+void WebView::onFeaturePermissionRequested(QWebEnginePage::Feature feature, const QUrl &securityOrigin)
+{
+    FeaturePermissionBar *permissionBar = new FeaturePermissionBar(this);
+    connect(permissionBar, &FeaturePermissionBar::featurePermissionProvided, page(), &QWebEnginePage::setFeaturePermission);
+
+    // Discard the bar on new loads (if we navigate away or reload).
+    connect(page(), &QWebEnginePage::loadStarted, permissionBar, &QObject::deleteLater);
+
+    permissionBar->requestPermission(securityOrigin, feature);
 }
 
 void WebView::setProgress(int progress)
