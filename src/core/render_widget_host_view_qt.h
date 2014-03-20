@@ -203,8 +203,13 @@ public:
 #endif // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
+#if defined(USE_AURA)
+    virtual void SetParentNativeViewAccessible(gfx::NativeViewAccessible accessible_parent) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual gfx::NativeViewId GetParentForWindowlessPlugin() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return gfx::NativeViewId(); }
+#else
     virtual void SetClickthroughRegion(SkRegion *) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual void WillWmDestroy(void) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+#endif // defined(USE_AURA)
 #endif // defined(OS_WIN)
 
 private:
