@@ -49,8 +49,8 @@
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "delegated_frame_node.h"
-#include "ui/base/gestures/gesture_recognizer.h"
-#include "ui/base/gestures/gesture_types.h"
+#include "ui/events/gestures/gesture_recognizer.h"
+#include "ui/events/gestures/gesture_types.h"
 #include <QMap>
 #include <QPoint>
 #include <QRect>
@@ -147,13 +147,14 @@ public:
     virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback) Q_DECL_OVERRIDE;
     virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
     virtual void OnAcceleratedCompositingStateChange() Q_DECL_OVERRIDE;
+    virtual void AcceleratedSurfaceInitialized(int host_id, int route_id) Q_DECL_OVERRIDE;
     virtual void AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
     virtual void AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
     virtual void AcceleratedSurfaceSuspend() Q_DECL_OVERRIDE;
     virtual void AcceleratedSurfaceRelease() Q_DECL_OVERRIDE;
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
     virtual void OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
-    virtual void GetScreenInfo(WebKit::WebScreenInfo* results) Q_DECL_OVERRIDE;
+    virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
     virtual gfx::GLSurfaceHandle GetCompositingSurface() Q_DECL_OVERRIDE;
     virtual void SetHasHorizontalScrollbar(bool) Q_DECL_OVERRIDE;
@@ -165,8 +166,9 @@ public:
     virtual void SelectionChanged(const string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
 
     // Overridden from ui::GestureEventHelper.
-    virtual bool DispatchLongPressGestureEvent(ui::GestureEvent *event) Q_DECL_OVERRIDE;
-    virtual bool DispatchCancelTouchEvent(ui::TouchEvent *event) Q_DECL_OVERRIDE;
+    virtual bool CanDispatchToConsumer(ui::GestureConsumer*) Q_DECL_OVERRIDE;
+    virtual void DispatchPostponedGestureEvent(ui::GestureEvent*) Q_DECL_OVERRIDE;
+    virtual void DispatchCancelTouchEvent(ui::TouchEvent*) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     virtual void paint(QPainter *, const QRectF& boundingRect) Q_DECL_OVERRIDE;
@@ -213,6 +215,7 @@ private:
     void sendDelegatedFrameAck();
     void Paint(const gfx::Rect& damage_rect);
     void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
+    void ForwardGestureEventToRenderer(ui::GestureEvent* gesture);
     int GetMappedTouch(int qtTouchId);
     void RemoveExpiredMappings(QTouchEvent *ev);
     float dpiScale() const;
@@ -222,7 +225,7 @@ private:
     content::RenderWidgetHostImpl *m_host;
     scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
     QMap<int, int> m_touchIdMapping;
-    WebKit::WebTouchEvent m_accumTouchEvent;
+    blink::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     BackingStoreQt *m_backingStore;
