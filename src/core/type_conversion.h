@@ -43,11 +43,13 @@
 #define TYPE_CONVERSION_H
 
 #include <QColor>
+#include <QDateTime>
 #include <QMatrix4x4>
 #include <QRect>
 #include <QString>
 #include <QUrl>
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
@@ -124,6 +126,11 @@ inline QMatrix4x4 toQt(const SkMatrix44 &m)
         m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
         m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
         m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
+}
+
+inline QDateTime toQt(base::Time time)
+{
+    return QDateTime::fromMSecsSinceEpoch(time.ToJavaTime());
 }
 
 inline base::FilePath::StringType toFilePathString(const QString &str)
