@@ -49,6 +49,6 @@ QT_BEGIN_NAMESPACE
 class QWindow;
 QT_END_NAMESPACE
 
-void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results);
+void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* results);
 
 #endif

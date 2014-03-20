@@ -57,20 +57,20 @@
 #include <X11/Xlib.h>
 #endif
 
-void GetScreenInfoFromNativeWindow(QWindow* window, WebKit::WebScreenInfo* results)
+void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* results)
 {
     QScreen* screen = window->screen();
 
-    WebKit::WebScreenInfo r;
+    blink::WebScreenInfo r;
     r.deviceScaleFactor = screen->devicePixelRatio();
     r.depthPerComponent = 8;
     r.depth = screen->depth();
     r.isMonochrome = (r.depth == 1);
 
     QRect screenGeometry = screen->geometry();
-    r.rect = WebKit::WebRect(screenGeometry.x(), screenGeometry.y(), screenGeometry.width(), screenGeometry.height());
+    r.rect = blink::WebRect(screenGeometry.x(), screenGeometry.y(), screenGeometry.width(), screenGeometry.height());
     QRect available = screen->availableGeometry();
-    r.availableRect = WebKit::WebRect(available.x(), available.y(), available.width(), available.height());
+    r.availableRect = blink::WebRect(available.x(), available.y(), available.width(), available.height());
     *results = r;
 }
 
@@ -111,7 +111,7 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost
 }
 
 // static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(WebKit::WebScreenInfo* results) {
+void RenderWidgetHostViewPort::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
     QWindow dummy;
     GetScreenInfoFromNativeWindow(&dummy, results);
 }
