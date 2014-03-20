@@ -102,13 +102,13 @@ void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(int64, int64, bool i
         m_viewClient->loadStarted(toQt(validated_url));
 }
 
-void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(int64, bool is_main_frame, const GURL& url, content::PageTransition transition_type, content::RenderViewHost *render_view_host)
+void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& url, content::PageTransition transition_type, content::RenderViewHost* render_view_host)
 {
     // This is currently used for canGoBack/Forward values, which is flattened across frames. For other purposes we might have to pass is_main_frame.
     m_viewClient->loadCommitted();
 }
 
-void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost *render_view_host)
+void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host)
 {
     DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);
 }
