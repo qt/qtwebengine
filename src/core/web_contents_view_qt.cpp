@@ -126,7 +126,7 @@ void WebContentsViewQt::ShowContextMenu(const content::ContextMenuParams &params
     m_client->contextMenuRequested(contextMenuData);
 }
 
-void WebContentsViewQt::StartDragging(const content::DropData& drop_data, WebKit::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info)
+void WebContentsViewQt::StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info)
 {
     Q_UNUSED(&drop_data);
     Q_UNUSED(allowed_ops);

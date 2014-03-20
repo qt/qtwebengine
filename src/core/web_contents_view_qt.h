@@ -110,7 +110,7 @@ public:
     virtual void ShowPopupMenu(const gfx::Rect& bounds, int item_height, double item_font_size, int selected_item,
                                 const std::vector<content::MenuItem>& items, bool right_aligned, bool allow_multiple_selection) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
-    virtual void StartDragging(const content::DropData& drop_data, WebKit::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info) Q_DECL_OVERRIDE;
+    virtual void StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info) Q_DECL_OVERRIDE;
 
     virtual void ShowContextMenu(const content::ContextMenuParams &params) Q_DECL_OVERRIDE;
 
@@ -121,6 +121,8 @@ public:
     virtual void CloseTabAfterEventTracking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual bool GetAllowOverlappingViews() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
     virtual bool IsEventTracking() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
+    virtual void SetOverlayView(WebContentsView* overlay, const gfx::Point& offset) { QT_NOT_YET_IMPLEMENTED }
+    virtual void RemoveOverlayView() { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
 private:
