@@ -57,9 +57,9 @@ QT_END_NAMESPACE
 class WebEventFactory {
 
 public:
-    static WebKit::WebMouseEvent toWebMouseEvent(QMouseEvent*, double dpiScale);
-    static WebKit::WebMouseEvent toWebMouseEvent(QHoverEvent*, double dpiScale);
-    static WebKit::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*, double dpiScale);
+    static blink::WebMouseEvent toWebMouseEvent(QMouseEvent*, double dpiScale);
+    static blink::WebMouseEvent toWebMouseEvent(QHoverEvent*, double dpiScale);
+    static blink::WebMouseWheelEvent toWebWheelEvent(QWheelEvent*, double dpiScale);
     static content::NativeWebKeyboardEvent toWebKeyboardEvent(QKeyEvent*);
 };
 

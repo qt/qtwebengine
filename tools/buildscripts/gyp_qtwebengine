@@ -29,13 +29,7 @@ import gyp
 # Add paths so that pymod_do_main(...) can import files.
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
-
-sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
-    'Source', 'core', 'core.gyp', 'scripts'))
-# Remove the above and keep the line below once we require a newer specific
-# Chromium revision.
-sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit',
-    'Source', 'core', 'scripts'))
+sys.path.insert(1, os.path.join(chrome_src, 'third_party', 'WebKit', 'Source', 'build', 'scripts'))
 
 def additional_include_files(args=[]):
   """
