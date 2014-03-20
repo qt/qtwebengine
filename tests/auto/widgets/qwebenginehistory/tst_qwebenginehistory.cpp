@@ -423,20 +423,17 @@ void tst_QWebEngineHistory::popPushState_data()
     QTest::newRow("replaceState") << "history.replaceState(\"a\", \"b\");";
     QTest::newRow("back") << "history.back();";
     QTest::newRow("forward") << "history.forward();";
-    QTest::newRow("clearState") << "history.clearState();";
 }
 
 /** Crash test, WebKit bug 38840 (https://bugs.webengine.org/show_bug.cgi?id=38840) */
 void tst_QWebEngineHistory::popPushState()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     QFETCH(QString, script);
     QWebEnginePage page;
-    page.setHtml("<html><body>long live Qt!</body></html>");
-    page.evaluateJavaScript(script);
-#endif
+    QSignalSpy spyLoadFinished(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml("<html><body>long live Qt!</body></html>", QUrl::fromEncoded("file://"));
+    QTRY_COMPARE(spyLoadFinished.count(), 1);
+    evaluateJavaScriptSync(&page, script);
 }
 
 /** ::clear */
