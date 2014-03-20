@@ -167,6 +167,7 @@ void QWebEngineHistory::clear()
 {
     Q_D(const QWebEngineHistory);
     d->page->webContents()->clearNavigationHistory();
+    d->page->updateNavigationActions();
 }
 
 QList<QWebEngineHistoryItem> QWebEngineHistory::items() const
