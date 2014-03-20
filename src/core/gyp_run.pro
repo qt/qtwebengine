@@ -69,6 +69,8 @@ cross_compile {
     GYP_ARGS += "-D CXX=\"$$which($$QMAKE_CXX)\""
 }
 
+mac: GYP_ARGS += "-D mac_sdk_path=\"$${QMAKE_MAC_SDK_PATH}\""
+
 win32 {
     # Libvpx build needs additional search path on Windows.
     git_chromium_src_dir = $$system("git config qtwebengine.chromiumsrcdir")
