@@ -68,8 +68,8 @@ public:
     virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
     virtual void LoadProgressChanged(content::WebContents* source, double progress) Q_DECL_OVERRIDE;
     virtual void DidStartProvisionalLoadForFrame(int64 frame_id, int64 parent_frame_id, bool is_main_frame, const GURL &validated_url, bool is_error_page, bool is_iframe_srcdoc, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
-    virtual void DidCommitProvisionalLoadForFrame(int64 frame_id, bool is_main_frame, const GURL &url, content::PageTransition transition_type, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
-    virtual void DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL &validated_url, int error_code, const string16& error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidCommitProvisionalLoadForFrame(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& url, content::PageTransition transition_type, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;

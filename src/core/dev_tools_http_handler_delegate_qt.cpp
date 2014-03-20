@@ -47,12 +47,17 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_http_handler.h"
+#include "content/public/browser/devtools_target.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "net/socket/stream_listen_socket.h"
 #include "net/socket/tcp_listen_socket.h"
 
-DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(content::BrowserContext* browser_context)
+using namespace content;
+
+DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(BrowserContext* browser_context)
     : m_browserContext(browser_context)
 {
     const int defaultPort = 1337;
@@ -65,7 +70,7 @@ DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(content::BrowserCon
         if (base::StringToInt(portString, &portInt) && portInt > 0 && portInt < 65535)
             listeningPort = portInt;
     }
-    m_devtoolsHttpHandler = content::DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", listeningPort), std::string(), this);
+    m_devtoolsHttpHandler = DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", listeningPort), std::string(), this);
 }
 
 DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()
@@ -100,19 +105,14 @@ std::string DevToolsHttpHandlerDelegateQt::GetPageThumbnailData(const GURL& url)
     return std::string();
 }
 
-content::RenderViewHost* DevToolsHttpHandlerDelegateQt::CreateNewTarget()
+scoped_ptr<DevToolsTarget> DevToolsHttpHandlerDelegateQt::CreateNewTarget(const GURL&)
 {
-    return NULL;
+    return scoped_ptr<DevToolsTarget>();
 }
 
-content::DevToolsHttpHandlerDelegate::TargetType DevToolsHttpHandlerDelegateQt::GetTargetType(content::RenderViewHost*)
+void DevToolsHttpHandlerDelegateQt::EnumerateTargets(TargetCallback callback)
 {
-    return kTargetTypeTab;
-}
-
-std::string DevToolsHttpHandlerDelegateQt::GetViewDescription(content::RenderViewHost*)
-{
-    return std::string();
+    callback.Run(TargetList());
 }
 
 scoped_ptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)
