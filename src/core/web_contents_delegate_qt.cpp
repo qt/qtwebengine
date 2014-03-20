@@ -111,7 +111,7 @@ void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &validated_
         m_viewClient->loadFinished(true);
 }
 
-void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, bool is_main_frame, const GURL& validated_url, int error_code, const string16& error_description, content::RenderViewHost* render_view_host)
+void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host)
 {
     if (is_main_frame)
         DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);

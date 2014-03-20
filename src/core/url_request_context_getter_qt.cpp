@@ -45,6 +45,7 @@
 #include "base/threading/worker_pool.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
@@ -96,7 +97,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
         base::FilePath cookiesPath = m_basePath.Append(FILE_PATH_LITERAL("Cookies"));
-        scoped_refptr<net::CookieStore> cookieStore = content::CreatePersistentCookieStore(cookiesPath, true, NULL, NULL, scoped_refptr<base::SequencedTaskRunner>());
+        scoped_refptr<net::CookieStore> cookieStore = content::CreatePersistentCookieStore(cookiesPath, true, NULL, NULL, scoped_ptr<content::CookieCryptoDelegate>());
         cookieStore->GetCookieMonster()->SetPersistSessionCookies(true);
 
         m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
@@ -105,7 +106,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
             new net::DefaultServerBoundCertStore(NULL),
             base::WorkerPool::GetTaskRunner(true)));
         m_storage->set_http_user_agent_settings(
-            new net::StaticHttpUserAgentSettings("en-us,en", EmptyString()));
+            new net::StaticHttpUserAgentSettings("en-us,en", base::EmptyString()));
 
         scoped_ptr<net::HostResolver> host_resolver(
             net::HostResolver::CreateDefaultResolver(NULL));
@@ -168,7 +169,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
             chrome::kFileScheme,
             new net::FileProtocolHandler(content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
         m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
-        m_jobFactory->SetProtocolHandler(chrome::kFtpScheme, new net::FtpProtocolHandler(
+        m_jobFactory->SetProtocolHandler(content::kFtpScheme, new net::FtpProtocolHandler(
                 new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
         m_urlRequestContext->set_job_factory(m_jobFactory.get());
     }
