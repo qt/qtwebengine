@@ -204,10 +204,15 @@ public:
     virtual void HasTouchEventHandlers(bool) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_ANDROID)
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     virtual void SetClickthroughRegion(SkRegion *) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual void WillWmDestroy(void) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-#endif // defined(OS_WIN)
+#endif // defined(OS_WIN) && !defined(USE_AURA)
+
+#if defined(OS_WIN) && defined(USE_AURA)
+    virtual void SetParentNativeViewAccessible(gfx::NativeViewAccessible accessible_parent) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual gfx::NativeViewId GetParentForWindowlessPlugin() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return gfx::NativeViewId(); }
+#endif // defined(OS_WIN) && defined(USE_AURA)
 
 private:
     void sendDelegatedFrameAck();
