@@ -41,7 +41,7 @@
 ****************************************************************************/
 
 #include "web_event_factory.h"
-#include "third_party/WebKit/Source/core/platform/WindowsKeyboardCodes.h"
+#include "third_party/WebKit/Source/platform/WindowsKeyboardCodes.h"
 
 #include <QElapsedTimer>
 #include <QKeyEvent>
@@ -50,7 +50,7 @@
 
 static const int wheelScrollLines = 3; // FIXME: Still not available in QStyleHints in 5.1
 
-using namespace WebKit;
+using namespace blink;
 
 static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
 {
@@ -558,7 +558,7 @@ WebMouseEvent WebEventFactory::toWebMouseEvent(QHoverEvent *ev, double dpiScale)
     return webKitEvent;
 }
 
-WebKit::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
+blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, double dpiScale)
 {
     WebMouseWheelEvent webEvent;
     webEvent.type = webEventTypeForEvent(ev);
