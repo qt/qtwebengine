@@ -418,15 +418,14 @@ QString WebContentsAdapter::getNavigationEntryTitle(int index)
 void WebContentsAdapter::clearNavigationHistory()
 {
     Q_D(WebContentsAdapter);
-    if (d->webContents->GetController().CanPruneAllButVisible())
-        d->webContents->GetController().PruneAllButVisible();
+    if (d->webContents->GetController().CanPruneAllButLastCommitted())
+        d->webContents->GetController().PruneAllButLastCommitted();
 }
 
 void WebContentsAdapter::setZoomFactor(qreal factor)
 {
     Q_D(WebContentsAdapter);
-    if (content::RenderViewHost *rvh = d->webContents->GetRenderViewHost())
-        rvh->SetZoomLevel(content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
+    d->webContents->SetZoomLevel(content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
 }
 
 qreal WebContentsAdapter::currentZoomFactor() const
@@ -475,7 +474,7 @@ quint64 WebContentsAdapter::fetchDocumentInnerText()
 quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitively, bool findBackward)
 {
     Q_D(WebContentsAdapter);
-    WebKit::WebFindOptions options;
+    blink::WebFindOptions options;
     options.forward = !findBackward;
     options.matchCase = caseSensitively;
     options.findNext = subString == d->lastSearchedString;
