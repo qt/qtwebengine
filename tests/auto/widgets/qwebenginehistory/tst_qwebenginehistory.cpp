@@ -47,6 +47,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void title();
+    void lastVisited();
     void count();
     void back();
     void forward();
@@ -109,6 +110,12 @@ void tst_QWebEngineHistory::cleanup()
 void tst_QWebEngineHistory::title()
 {
     QCOMPARE(hist->currentItem().title(), QString("page5"));
+}
+
+void tst_QWebEngineHistory::lastVisited()
+{
+    // Check that the conversion from Chromium's internal time format went well.
+    QVERIFY(qAbs(hist->itemAt(0).lastVisited().secsTo(QDateTime::currentDateTime())) < 60);
 }
 
 /**
