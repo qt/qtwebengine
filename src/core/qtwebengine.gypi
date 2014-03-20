@@ -23,7 +23,7 @@
       '<(chromium_src_dir)/ui/ui.gyp:ui',
       '<(chromium_src_dir)/url/url.gyp:url_lib',
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-      '<(chromium_src_dir)/webkit/support/webkit_support.gyp:glue',
+      '<(chromium_src_dir)/webkit/glue/webkit_glue.gyp:*',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
     ],
     'include_dirs': [
@@ -99,9 +99,8 @@
         'dependencies': [
           '<(chromium_src_dir)/ui/aura/aura.gyp:aura',
           '<(chromium_src_dir)/ui/base/strings/ui_strings.gyp:ui_strings',
-          '<(chromium_src_dir)/ui/views/controls/webview/webview.gyp:webview',
           '<(chromium_src_dir)/ui/views/views.gyp:views',
-          '<(chromium_src_dir)/ui/ui.gyp:ui_resources',
+          '<(chromium_src_dir)/ui/ui.gyp:ui',
         ],
       }],  # use_aura==1
     ],

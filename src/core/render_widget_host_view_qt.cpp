@@ -49,15 +49,17 @@
 #include "web_contents_adapter_client.h"
 #include "web_event_factory.h"
 
+#include "base/command_line.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "content/public/common/content_switches.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
-#include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/events/event.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
@@ -132,9 +134,9 @@ static inline gfx::Point toGfxPoint(const QPoint& point)
     return gfx::Point(point.x(), point.y());
 }
 
-static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKit::WebTouchPoint* point) {
-    if (point->state != WebKit::WebTouchPoint::StateReleased &&
-        point->state != WebKit::WebTouchPoint::StateCancelled)
+static void UpdateWebTouchEventAfterDispatch(blink::WebTouchEvent* event, blink::WebTouchPoint* point) {
+    if (point->state != blink::WebTouchPoint::StateReleased &&
+        point->state != blink::WebTouchPoint::StateCancelled)
         return;
     --event->touchesLength;
     for (unsigned i = point - event->touches; i < event->touchesLength; ++i) {
@@ -142,18 +144,24 @@ static void UpdateWebTouchEventAfterDispatch(WebKit::WebTouchEvent* event, WebKi
     }
 }
 
-static WebKit::WebGestureEvent createFlingCancelEvent(double time_stamp)
+static blink::WebGestureEvent createFlingCancelEvent(double time_stamp)
 {
-    WebKit::WebGestureEvent gesture_event;
+    blink::WebGestureEvent gesture_event;
     gesture_event.timeStampSeconds = time_stamp;
-    gesture_event.type = WebKit::WebGestureEvent::GestureFlingCancel;
-    gesture_event.sourceDevice = WebKit::WebGestureEvent::Touchscreen;
+    gesture_event.type = blink::WebGestureEvent::GestureFlingCancel;
+    gesture_event.sourceDevice = blink::WebGestureEvent::Touchscreen;
     return gesture_event;
+}
+
+static bool shouldSendPinchGesture()
+{
+    static bool pinchAllowed = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
+    return pinchAllowed;
 }
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
-    , m_gestureRecognizer(ui::GestureRecognizer::Create(this))
+    , m_gestureRecognizer(ui::GestureRecognizer::Create())
     , m_backingStore(0)
     , m_frameNodeData(new DelegatedFrameNodeData)
     , m_needsDelegatedFrameAck(false)
@@ -163,10 +171,12 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
 {
     m_host->SetView(this);
+    m_gestureRecognizer->AddGestureEventHelper(this);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    m_gestureRecognizer->RemoveGestureEventHelper(this);
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -373,87 +383,87 @@ void RenderWidgetHostViewQt::UpdateCursor(const WebCursor &webCursor)
     webCursor.GetCursorInfo(&cursorInfo);
     Qt::CursorShape shape;
     switch (cursorInfo.type) {
-    case WebKit::WebCursorInfo::TypePointer:
+    case blink::WebCursorInfo::TypePointer:
         shape = Qt::ArrowCursor;
         break;
-    case WebKit::WebCursorInfo::TypeCross:
+    case blink::WebCursorInfo::TypeCross:
         shape = Qt::CrossCursor;
         break;
-    case WebKit::WebCursorInfo::TypeHand:
+    case blink::WebCursorInfo::TypeHand:
         shape = Qt::PointingHandCursor;
         break;
-    case WebKit::WebCursorInfo::TypeIBeam:
+    case blink::WebCursorInfo::TypeIBeam:
         shape = Qt::IBeamCursor;
         break;
-    case WebKit::WebCursorInfo::TypeWait:
+    case blink::WebCursorInfo::TypeWait:
         shape = Qt::WaitCursor;
         break;
-    case WebKit::WebCursorInfo::TypeHelp:
+    case blink::WebCursorInfo::TypeHelp:
         shape = Qt::WhatsThisCursor;
         break;
-    case WebKit::WebCursorInfo::TypeEastResize:
-    case WebKit::WebCursorInfo::TypeWestResize:
-    case WebKit::WebCursorInfo::TypeEastWestResize:
-    case WebKit::WebCursorInfo::TypeEastPanning:
-    case WebKit::WebCursorInfo::TypeWestPanning:
+    case blink::WebCursorInfo::TypeEastResize:
+    case blink::WebCursorInfo::TypeWestResize:
+    case blink::WebCursorInfo::TypeEastWestResize:
+    case blink::WebCursorInfo::TypeEastPanning:
+    case blink::WebCursorInfo::TypeWestPanning:
         shape = Qt::SizeHorCursor;
         break;
-    case WebKit::WebCursorInfo::TypeNorthResize:
-    case WebKit::WebCursorInfo::TypeSouthResize:
-    case WebKit::WebCursorInfo::TypeNorthSouthResize:
-    case WebKit::WebCursorInfo::TypeNorthPanning:
-    case WebKit::WebCursorInfo::TypeSouthPanning:
+    case blink::WebCursorInfo::TypeNorthResize:
+    case blink::WebCursorInfo::TypeSouthResize:
+    case blink::WebCursorInfo::TypeNorthSouthResize:
+    case blink::WebCursorInfo::TypeNorthPanning:
+    case blink::WebCursorInfo::TypeSouthPanning:
         shape = Qt::SizeVerCursor;
         break;
-    case WebKit::WebCursorInfo::TypeNorthEastResize:
-    case WebKit::WebCursorInfo::TypeSouthWestResize:
-    case WebKit::WebCursorInfo::TypeNorthEastSouthWestResize:
-    case WebKit::WebCursorInfo::TypeNorthEastPanning:
-    case WebKit::WebCursorInfo::TypeSouthWestPanning:
+    case blink::WebCursorInfo::TypeNorthEastResize:
+    case blink::WebCursorInfo::TypeSouthWestResize:
+    case blink::WebCursorInfo::TypeNorthEastSouthWestResize:
+    case blink::WebCursorInfo::TypeNorthEastPanning:
+    case blink::WebCursorInfo::TypeSouthWestPanning:
         shape = Qt::SizeBDiagCursor;
         break;
-    case WebKit::WebCursorInfo::TypeNorthWestResize:
-    case WebKit::WebCursorInfo::TypeSouthEastResize:
-    case WebKit::WebCursorInfo::TypeNorthWestSouthEastResize:
-    case WebKit::WebCursorInfo::TypeNorthWestPanning:
-    case WebKit::WebCursorInfo::TypeSouthEastPanning:
+    case blink::WebCursorInfo::TypeNorthWestResize:
+    case blink::WebCursorInfo::TypeSouthEastResize:
+    case blink::WebCursorInfo::TypeNorthWestSouthEastResize:
+    case blink::WebCursorInfo::TypeNorthWestPanning:
+    case blink::WebCursorInfo::TypeSouthEastPanning:
         shape = Qt::SizeFDiagCursor;
         break;
-    case WebKit::WebCursorInfo::TypeColumnResize:
+    case blink::WebCursorInfo::TypeColumnResize:
         shape = Qt::SplitHCursor;
         break;
-    case WebKit::WebCursorInfo::TypeRowResize:
+    case blink::WebCursorInfo::TypeRowResize:
         shape = Qt::SplitVCursor;
         break;
-    case WebKit::WebCursorInfo::TypeMiddlePanning:
-    case WebKit::WebCursorInfo::TypeMove:
+    case blink::WebCursorInfo::TypeMiddlePanning:
+    case blink::WebCursorInfo::TypeMove:
         shape = Qt::SizeAllCursor;
         break;
-    case WebKit::WebCursorInfo::TypeVerticalText:
-    case WebKit::WebCursorInfo::TypeCell:
-    case WebKit::WebCursorInfo::TypeContextMenu:
-    case WebKit::WebCursorInfo::TypeAlias:
-    case WebKit::WebCursorInfo::TypeProgress:
-    case WebKit::WebCursorInfo::TypeCopy:
-    case WebKit::WebCursorInfo::TypeZoomIn:
-    case WebKit::WebCursorInfo::TypeZoomOut:
+    case blink::WebCursorInfo::TypeVerticalText:
+    case blink::WebCursorInfo::TypeCell:
+    case blink::WebCursorInfo::TypeContextMenu:
+    case blink::WebCursorInfo::TypeAlias:
+    case blink::WebCursorInfo::TypeProgress:
+    case blink::WebCursorInfo::TypeCopy:
+    case blink::WebCursorInfo::TypeZoomIn:
+    case blink::WebCursorInfo::TypeZoomOut:
         // FIXME: Load from the resource bundle.
         shape = Qt::ArrowCursor;
         break;
-    case WebKit::WebCursorInfo::TypeNoDrop:
-    case WebKit::WebCursorInfo::TypeNotAllowed:
+    case blink::WebCursorInfo::TypeNoDrop:
+    case blink::WebCursorInfo::TypeNotAllowed:
         shape = Qt::ForbiddenCursor;
         break;
-    case WebKit::WebCursorInfo::TypeNone:
+    case blink::WebCursorInfo::TypeNone:
         shape = Qt::BlankCursor;
         break;
-    case WebKit::WebCursorInfo::TypeGrab:
+    case blink::WebCursorInfo::TypeGrab:
         shape = Qt::OpenHandCursor;
         break;
-    case WebKit::WebCursorInfo::TypeGrabbing:
+    case blink::WebCursorInfo::TypeGrabbing:
         shape = Qt::ClosedHandCursor;
         break;
-    case WebKit::WebCursorInfo::TypeCustom:
+    case blink::WebCursorInfo::TypeCustom:
         // FIXME: Extract from the CursorInfo.
         shape = Qt::ArrowCursor;
         break;
@@ -562,11 +572,16 @@ void RenderWidgetHostViewQt::OnAcceleratedCompositingStateChange()
     QT_NOT_YET_IMPLEMENTED
 }
 
+void RenderWidgetHostViewQt::AcceleratedSurfaceInitialized(int host_id, int route_id)
+{
+}
+
 void RenderWidgetHostViewQt::AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id)
 {
     AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
     ack_params.sync_point = 0;
     content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
+    content::RenderWidgetHostImpl::CompositorFrameDrawn(params.latency_info);
 }
 
 void RenderWidgetHostViewQt::AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id)
@@ -574,6 +589,7 @@ void RenderWidgetHostViewQt::AcceleratedSurfacePostSubBuffer(const GpuHostMsg_Ac
     AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
     ack_params.sync_point = 0;
     content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
+    content::RenderWidgetHostImpl::CompositorFrameDrawn(params.latency_info);
 }
 
 void RenderWidgetHostViewQt::AcceleratedSurfaceSuspend()
@@ -603,7 +619,7 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, sco
     m_delegate->update();
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(WebKit::WebScreenInfo* results)
+void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)
 {
     QWindow* window = m_delegate->window();
     if (!window)
@@ -644,14 +660,26 @@ void RenderWidgetHostViewQt::SelectionChanged(const string16 &text, size_t offse
     m_adapterClient->selectionChanged();
 }
 
-bool RenderWidgetHostViewQt::DispatchLongPressGestureEvent(ui::GestureEvent *)
+bool RenderWidgetHostViewQt::CanDispatchToConsumer(ui::GestureConsumer *consumer)
 {
-    return false;
+    Q_ASSERT(static_cast<RenderWidgetHostViewQt*>(consumer) == this);
+    return true;
 }
 
-bool RenderWidgetHostViewQt::DispatchCancelTouchEvent(ui::TouchEvent *)
+void RenderWidgetHostViewQt::DispatchPostponedGestureEvent(ui::GestureEvent* event)
 {
-    return false;
+    ForwardGestureEventToRenderer(event);
+}
+
+void RenderWidgetHostViewQt::DispatchCancelTouchEvent(ui::TouchEvent *event)
+{
+    if (!m_host)
+        return;
+
+    blink::WebTouchEvent cancelEvent;
+    cancelEvent.type = blink::WebInputEvent::TouchCancel;
+    cancelEvent.timeStampSeconds = event->time_stamp().InSecondsF();
+    m_host->ForwardTouchEventWithLatencyInfo(cancelEvent, *event->latency());
 }
 
 void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect)
@@ -769,7 +797,7 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
 
     ui::EventResult result = (ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
     for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(), end = events.end(); iter != end; ++iter)  {
-        (*iter)->latency()->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACKED_COMPONENT, static_cast<int64>(ack_result), 0);
+        (*iter)->latency()->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT, static_cast<int64>(ack_result), 0);
         scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
         gestures.reset(m_gestureRecognizer->ProcessTouchEventForGesture(*(*iter), result, this));
         ProcessGestures(gestures.get());
@@ -791,25 +819,40 @@ void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
     m_delegate->update(r);
 }
 
+void RenderWidgetHostViewQt::ForwardGestureEventToRenderer(ui::GestureEvent* gesture)
+{
+    if ((gesture->type() == ui::ET_GESTURE_PINCH_BEGIN
+       || gesture->type() == ui::ET_GESTURE_PINCH_UPDATE
+       || gesture->type() == ui::ET_GESTURE_PINCH_END)
+       && !shouldSendPinchGesture()
+       ) {
+        return;
+    }
+
+    blink::WebGestureEvent webGestureEvent = content::MakeWebGestureEventFromUIEvent(*gesture);
+
+    if (webGestureEvent.type == blink::WebInputEvent::Undefined)
+        return;
+
+    if (webGestureEvent.type == blink::WebGestureEvent::GestureTapDown) {
+        // Chromium does not stop a fling-scroll on tap-down.
+        // So explicitly send an event to stop any in-progress flings.
+        m_host->ForwardGestureEvent(createFlingCancelEvent(gesture->time_stamp().InSecondsF()));
+    }
+
+    webGestureEvent.x = gesture->x();
+    webGestureEvent.y = gesture->y();
+    m_host->ForwardGestureEvent(webGestureEvent);
+
+    return;
+}
+
 void RenderWidgetHostViewQt::ProcessGestures(ui::GestureRecognizer::Gestures *gestures)
 {
     if (!gestures || gestures->empty())
         return;
     for (ui::GestureRecognizer::Gestures::iterator g_it = gestures->begin(); g_it != gestures->end(); ++g_it) {
-        const ui::GestureEvent &uiGestureEvent = **g_it;
-        WebKit::WebGestureEvent webGestureEvent = content::MakeWebGestureEventFromUIEvent(uiGestureEvent);
-        if (webGestureEvent.type == WebKit::WebInputEvent::Undefined)
-            continue;
-
-        if (webGestureEvent.type == WebKit::WebGestureEvent::GestureTapDown) {
-            // Chromium does not stop a fling-scroll on tap-down.
-            // So explicitly send an event to stop any in-progress flings.
-            m_host->ForwardGestureEvent(createFlingCancelEvent(uiGestureEvent.time_stamp().InSecondsF()));
-        }
-
-        webGestureEvent.x = uiGestureEvent.x();
-        webGestureEvent.y = uiGestureEvent.y();
-        m_host->ForwardGestureEvent(webGestureEvent);
+        ForwardGestureEventToRenderer(*g_it);
     }
 }
 
@@ -848,7 +891,7 @@ float RenderWidgetHostViewQt::dpiScale() const
 
 bool RenderWidgetHostViewQt::IsPopup() const
 {
-    return popup_type_ != WebKit::WebPopupTypeNone;
+    return popup_type_ != blink::WebPopupTypeNone;
 }
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
@@ -857,7 +900,7 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
     if (eventType == QEvent::MouseButtonDblClick)
         return;
 
-    WebKit::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
+    blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
     if (eventType == QMouseEvent::MouseButtonPress) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
@@ -893,7 +936,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     gfx::Range selectionRange = gfx::Range::InvalidRange();
 
     const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
-    std::vector<WebKit::WebCompositionUnderline> underlines;
+    std::vector<blink::WebCompositionUnderline> underlines;
 
     Q_FOREACH (const QInputMethodEvent::Attribute &attribute, attributes) {
         switch (attribute.type) {
@@ -903,10 +946,10 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
             QTextCharFormat textCharFormat = attribute.value.value<QTextFormat>().toCharFormat();
             QColor qcolor = textCharFormat.underlineColor();
-            WebKit::WebColor color = SkColorSetARGB(qcolor.alpha(), qcolor.red(), qcolor.green(), qcolor.blue());
+            blink::WebColor color = SkColorSetARGB(qcolor.alpha(), qcolor.red(), qcolor.green(), qcolor.blue());
             int start = qMin(attribute.start, (attribute.start + attribute.length));
             int end = qMax(attribute.start, (attribute.start + attribute.length));
-            underlines.push_back(WebKit::WebCompositionUnderline(start, end, color, false));
+            underlines.push_back(blink::WebCompositionUnderline(start, end, color, false));
             break;
         }
         case QInputMethodEvent::Cursor:
@@ -946,7 +989,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 {
     // Convert each of our QTouchEvent::TouchPoint to the simpler ui::TouchEvent to
     // be able to use the same code path for both gesture recognition and WebTouchEvents.
-    // It's a waste to do a double QTouchEvent -> ui::TouchEvent -> WebKit::WebTouchEvent
+    // It's a waste to do a double QTouchEvent -> ui::TouchEvent -> blink::WebTouchEvent
     // conversion but this should hopefully avoid a few bugs in the future.
     // FIXME: Carry Qt::TouchCancel from the event to each TouchPoint.
     base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(ev->timestamp());
@@ -965,7 +1008,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             0, // angle
             touchPoint.pressure());
 
-        WebKit::WebTouchPoint *point = content::UpdateWebTouchEventFromUIEvent(uiEvent, &m_accumTouchEvent);
+        blink::WebTouchPoint *point = content::UpdateWebTouchEventFromUIEvent(uiEvent, &m_accumTouchEvent);
         if (point) {
             if (m_host->ShouldForwardTouchEvent())
                 // This will come back through ProcessAckedTouchEvent if the page didn't want it.
