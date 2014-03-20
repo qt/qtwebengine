@@ -565,6 +565,13 @@ QString WebContentsAdapter::getNavigationEntryTitle(int index)
     return entry ? toQt(entry->GetTitle()) : QString();
 }
 
+QDateTime WebContentsAdapter::getNavigationEntryTimestamp(int index)
+{
+    Q_D(WebContentsAdapter);
+    content::NavigationEntry *entry = d->webContents->GetController().GetEntryAtIndex(index);
+    return entry ? toQt(entry->GetTimestamp()) : QDateTime();
+}
+
 void WebContentsAdapter::clearNavigationHistory()
 {
     Q_D(WebContentsAdapter);

@@ -97,8 +97,8 @@ QString QWebEngineHistoryItem::title() const
 
 QDateTime QWebEngineHistoryItem::lastVisited() const
 {
-    qWarning("Not implemented: %s", __func__);
-    return QDateTime();
+    Q_D(const QWebEngineHistoryItem);
+    return d->page ? d->page->webContents()->getNavigationEntryTimestamp(d->index) : QDateTime();
 }
 
 QIcon QWebEngineHistoryItem::icon() const
