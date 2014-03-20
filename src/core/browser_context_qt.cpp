@@ -111,10 +111,14 @@ net::URLRequestContextGetter *BrowserContextQt::GetMediaRequestContextForStorage
     return GetRequestContext();
 }
 
-void BrowserContextQt::RequestMIDISysExPermission(int render_process_id, int render_view_id, const GURL &requesting_frame, const MIDISysExPermissionCallback &callback)
+void BrowserContextQt::RequestMIDISysExPermission(int , int , int , const GURL &, const MIDISysExPermissionCallback &callback)
 {
-    // Always reject requests for testing.
     callback.Run(false);
+}
+
+void BrowserContextQt::CancelMIDISysExPermissionRequest(int , int , int , const GURL &)
+{
+
 }
 
 content::ResourceContext *BrowserContextQt::GetResourceContext()
