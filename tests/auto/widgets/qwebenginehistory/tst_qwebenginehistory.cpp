@@ -131,10 +131,13 @@ void tst_QWebEngineHistory::count()
   */
 void tst_QWebEngineHistory::back()
 {
+    SignalBarrier titleChangedBarrier(page, SIGNAL(titleChanged(const QString&)));
+
     for (int i = histsize;i > 1;i--) {
         QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->back();
         loadFinishedBarrier->ensureSignalEmitted();
+        QVERIFY(titleChangedBarrier.ensureSignalEmitted());
     }
     //try one more time (too many). crash test
     hist->back();
@@ -152,10 +155,12 @@ void tst_QWebEngineHistory::forward()
         loadFinishedBarrier->ensureSignalEmitted();
     }
 
+    SignalBarrier titleChangedBarrier(page, SIGNAL(titleChanged(const QString&)));
     for (int i = 1;i < histsize;i++) {
         QCOMPARE(toPlainTextSync(page), QString("page") + QString::number(i));
         hist->forward();
         loadFinishedBarrier->ensureSignalEmitted();
+        QVERIFY(titleChangedBarrier.ensureSignalEmitted());
     }
     //try one more time (too many). crash test
     hist->forward();
