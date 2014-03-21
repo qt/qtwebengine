@@ -142,6 +142,7 @@ public:
     void _q_webActionTriggered(bool checked);
 
     WebContentsAdapter *webContents() { return adapter.data(); }
+    void recreateFromSerializedHistory(QDataStream &input);
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
