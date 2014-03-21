@@ -354,6 +354,15 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 }
 #endif // QT_NO_ACTION
 
+void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
+{
+    QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this, WebContentsAdapterClient::SoftwareRenderingMode);
+    if (newWebContents) {
+        adapter = newWebContents.data();
+        adapter->initialize(this);
+    }
+}
+
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(*new QWebEnginePagePrivate, parent)
 {

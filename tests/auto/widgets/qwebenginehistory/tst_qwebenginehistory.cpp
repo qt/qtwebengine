@@ -259,6 +259,7 @@ void tst_QWebEngineHistory::serialize_2()
 
     // Force a "same document" navigation.
     page->load(page->url().toString() + QLatin1String("#dummyAnchor"));
+    loadFinishedBarrier->ensureSignalEmitted();
 
     int initialCurrentIndex = hist->currentItemIndex();
 
@@ -277,6 +278,8 @@ void tst_QWebEngineHistory::serialize_2()
     QVERIFY(save.status() == QDataStream::Ok);
     load >> *hist;
     QVERIFY(load.status() == QDataStream::Ok);
+    // Restoring the history will trigger a load.
+    loadFinishedBarrier->ensureSignalEmitted();
 
     //check current index
     QCOMPARE(hist->currentItemIndex(), oldCurrentIndex);
@@ -562,6 +565,7 @@ void tst_QWebEngineHistory::restoreIncompatibleVersion1()
 
     // This should fail to load, the history should be cleared and the stream should be broken.
     stream >> *hist;
+    QEXPECT_FAIL("", "Behavior change: A broken stream won't clear the history in QtWebEngine.", Continue);
     QVERIFY(!hist->canGoBack());
     QVERIFY(!hist->canGoForward());
     QVERIFY(stream.status() == QDataStream::ReadCorruptData);
