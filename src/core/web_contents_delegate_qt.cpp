@@ -63,6 +63,8 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL)
         m_viewClient->urlChanged(toQt(source->GetVisibleURL()));
+    if (changed_flags & content::INVALIDATE_TYPE_TITLE)
+        m_viewClient->titleChanged(toQt(source->GetTitle()));
 }
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
