@@ -56,6 +56,7 @@ class WebContentsAdapterPrivate;
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
+    static QExplicitlySharedDataPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient, WebContentsAdapterClient::RenderingMode renderingMode);
     // Takes ownership of the WebContents.
     WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents = 0);
     ~WebContentsAdapter();
@@ -89,6 +90,7 @@ public:
     QUrl getNavigationEntryUrl(int index);
     QString getNavigationEntryTitle(int index);
     void clearNavigationHistory();
+    void serializeNavigationHistory(QDataStream &output);
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
     void enableInspector(bool);
