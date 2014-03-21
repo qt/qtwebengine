@@ -281,15 +281,13 @@ void QWebEngineHistory::setMaximumItemCount(int count)
 
 QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)
 {
-    Q_UNUSED(history);
-    qWarning("Not implemented: %s", __func__);
+    history.d_func()->page->webContents()->serializeNavigationHistory(stream);
     return stream;
 }
 
 QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history)
 {
-    Q_UNUSED(history);
-    qWarning("Not implemented: %s", __func__);
+    history.d_func()->page->recreateFromSerializedHistory(stream);
     return stream;
 }
 
