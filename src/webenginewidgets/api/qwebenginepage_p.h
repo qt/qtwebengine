@@ -141,6 +141,8 @@ public:
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
 
+    WebContentsAdapter *webContents() { return adapter.data(); }
+
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineView *view;

@@ -44,27 +44,27 @@
 
 #include <QtCore/qshareddata.h>
 
-class WebContentsAdapter;
+class QWebEnginePagePrivate;
 
 QT_BEGIN_NAMESPACE
 
 class QWebEngineHistoryItemPrivate : public QSharedData
 {
 public:
-    QWebEngineHistoryItemPrivate(WebContentsAdapter *adapter = 0, int index = 0);
+    QWebEngineHistoryItemPrivate(QWebEnginePagePrivate *page = 0, int index = 0);
 
-    WebContentsAdapter *adapter;
+    QWebEnginePagePrivate *page;
     int index;
 };
 
 class QWebEngineHistoryPrivate
 {
 public:
-    QWebEngineHistoryPrivate(WebContentsAdapter *adapter);
+    QWebEngineHistoryPrivate(QWebEnginePagePrivate *page);
     ~QWebEngineHistoryPrivate();
     void updateItems() const;
 
-    WebContentsAdapter *adapter;
+    QWebEnginePagePrivate *page;
     mutable QList<QWebEngineHistoryItem> items;
 };
 
