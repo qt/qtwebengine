@@ -149,7 +149,7 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
     , adapter(new WebContentsAdapter(SoftwareRenderingMode))
-    , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(adapter.data())))
+    , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , view(0)
 {
     memset(actions, 0, sizeof(actions));
@@ -252,7 +252,6 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     // Overwrite the new page's WebContents with ours.
     if (newPage) {
         newPage->d_func()->adapter = newWebContents;
-        newPage->history()->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
         if (!initialGeometry.isEmpty())
             emit newPage->geometryChangeRequested(initialGeometry);
