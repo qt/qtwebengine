@@ -38,6 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "web_contents_adapter.h"
 
 #include "browser_context_qt.h"
@@ -53,8 +58,10 @@
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
@@ -69,6 +76,7 @@
 
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
+static const int kHistoryStreamVersion = 3;
 
 static QVariant fromJSValue(const base::Value *result)
 {
@@ -165,6 +173,123 @@ static QStringList listRecursively(const QDir& dir) {
     return ret;
 }
 
+static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient)
+{
+    content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
+    content::WebContents::CreateParams create_params(browserContext, NULL);
+    create_params.routing_id = MSG_ROUTING_NONE;
+    create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
+    create_params.context = reinterpret_cast<gfx::NativeView>(adapterClient);
+    return content::WebContents::Create(create_params);
+}
+
+static void serializeNavigationHistory(const content::NavigationController &controller, QDataStream &ouput)
+{
+    const int currentIndex = controller.GetCurrentEntryIndex();
+    const int count = controller.GetEntryCount();
+    const int pendingIndex = controller.GetPendingEntryIndex();
+
+    ouput << kHistoryStreamVersion;
+    ouput << count;
+    ouput << currentIndex;
+
+    // Logic taken from SerializedNavigationEntry::WriteToPickle.
+    for (int i = 0; i < count; ++i) {
+        const content::NavigationEntry* entry = (i == pendingIndex)
+            ? controller.GetPendingEntry()
+            : controller.GetEntryAtIndex(i);
+        if (entry->GetVirtualURL().is_valid()) {
+            if (entry->GetHasPostData())
+                entry->GetPageState().RemovePasswordData();
+            std::string encodedPageState = entry->GetPageState().ToEncodedData();
+            ouput << toQt(entry->GetVirtualURL());
+            ouput << toQt(entry->GetTitle());
+            ouput << QByteArray(encodedPageState.data(), encodedPageState.size());
+            ouput << static_cast<qint32>(entry->GetTransitionType());
+            ouput << entry->GetHasPostData();
+            ouput << toQt(entry->GetReferrer().url);
+            ouput << static_cast<qint32>(entry->GetReferrer().policy);
+            ouput << toQt(entry->GetOriginalRequestURL());
+            ouput << entry->GetIsOverridingUserAgent();
+            ouput << static_cast<qint64>(entry->GetTimestamp().ToInternalValue());
+            ouput << entry->GetHttpStatusCode();
+            // If you want to navigate a named frame in Chrome, you will first need to
+            // add support for persisting it. It is currently only used for layout tests.
+            CHECK(entry->GetFrameToNavigate().empty());
+        }
+    }
+}
+
+void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<content::NavigationEntry*> *entries)
+{
+    int version;
+    input >> version;
+    if (version != kHistoryStreamVersion) {
+        // We do not try to decode previous history stream versions.
+        // Make sure that our history is cleared and mark the rest of the stream as invalid.
+        input.setStatus(QDataStream::ReadCorruptData);
+        *currentIndex = -1;
+        return;
+    }
+
+    int count;
+    input >> count >> *currentIndex;
+
+    int pageId = 0;
+    entries->reserve(count);
+    // Logic taken from SerializedNavigationEntry::ReadFromPickle and ToNavigationEntries.
+    for (int i = 0; i < count; ++i) {
+        QUrl virtualUrl, referrerUrl, originalRequestUrl;
+        QString title;
+        QByteArray pageState;
+        qint32 transitionType, referrerPolicy;
+        bool hasPostData, isOverridingUserAgent;
+        qint64 timestamp;
+        int httpStatusCode;
+        input >> virtualUrl;
+        input >> title;
+        input >> pageState;
+        input >> transitionType;
+        input >> hasPostData;
+        input >> referrerUrl;
+        input >> referrerPolicy;
+        input >> originalRequestUrl;
+        input >> isOverridingUserAgent;
+        input >> timestamp;
+        input >> httpStatusCode;
+
+        // If we couldn't unpack the entry successfully, abort everything.
+        if (input.status() != QDataStream::Ok) {
+            *currentIndex = -1;
+            Q_FOREACH (content::NavigationEntry *entry, *entries)
+                delete entry;
+            entries->clear();
+            return;
+        }
+
+        content::NavigationEntry *entry = content::NavigationController::CreateNavigationEntry(
+            toGurl(virtualUrl),
+            content::Referrer(toGurl(referrerUrl), static_cast<WebKit::WebReferrerPolicy>(referrerPolicy)),
+            // Use a transition type of reload so that we don't incorrectly
+            // increase the typed count.
+            content::PAGE_TRANSITION_RELOAD,
+            false,
+            // The extra headers are not sync'ed across sessions.
+            std::string(),
+            ContentBrowserClientQt::Get()->browser_context());
+
+        entry->SetTitle(toString16(title));
+        entry->SetPageState(content::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
+        entry->SetPageID(pageId++);
+        entry->SetHasPostData(hasPostData);
+        entry->SetOriginalRequestURL(toGurl(originalRequestUrl));
+        entry->SetIsOverridingUserAgent(isOverridingUserAgent);
+        entry->SetTimestamp(base::Time::FromInternalValue(timestamp));
+        entry->SetHttpStatusCode(httpStatusCode);
+        entries->push_back(entry);
+    }
+}
+
 class WebContentsAdapterPrivate {
 public:
     WebContentsAdapterPrivate(WebContentsAdapterClient::RenderingMode renderingMode);
@@ -184,6 +309,34 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate(WebContentsAdapterClient::R
 {
 }
 
+QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient, WebContentsAdapterClient::RenderingMode renderingMode)
+{
+    int currentIndex;
+    std::vector<content::NavigationEntry*> entries;
+    deserializeNavigationHistory(input, &currentIndex, &entries);
+
+    if (currentIndex == -1)
+        return QExplicitlySharedDataPointer<WebContentsAdapter>();
+
+    // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
+    content::WebContents* newWebContents = createBlankWebContents(adapterClient);
+    content::NavigationController &controller = newWebContents->GetController();
+    controller.Restore(currentIndex, content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
+
+    if (controller.GetActiveEntry()) {
+        // Set up the file access rights for the selected navigation entry.
+        // TODO(joth): This is duplicated from chrome/.../session_restore.cc and
+        // should be shared e.g. in  NavigationController. http://crbug.com/68222
+        const int id = newWebContents->GetRenderProcessHost()->GetID();
+        const content::PageState& pageState = controller.GetActiveEntry()->GetPageState();
+        const std::vector<base::FilePath>& filePaths = pageState.GetReferencedFiles();
+        for (std::vector<base::FilePath>::const_iterator file = filePaths.begin(); file != filePaths.end(); ++file)
+            content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id, *file);
+    }
+
+    return QExplicitlySharedDataPointer<WebContentsAdapter>(new WebContentsAdapter(renderingMode, newWebContents));
+}
+
 WebContentsAdapter::WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents)
     : d_ptr(new WebContentsAdapterPrivate(renderingMode))
 {
@@ -201,14 +354,8 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     d->adapterClient = adapterClient;
 
     // Create our own if a WebContents wasn't provided at construction.
-    if (!d->webContents) {
-        content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
-        content::WebContents::CreateParams create_params(browserContext, NULL);
-        create_params.routing_id = MSG_ROUTING_NONE;
-        create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
-        create_params.context = reinterpret_cast<gfx::NativeView>(adapterClient);
-        d->webContents.reset(content::WebContents::Create(create_params));
-    }
+    if (!d->webContents)
+        d->webContents.reset(createBlankWebContents(adapterClient));
 
     content::RendererPreferences* rendererPrefs = d->webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
@@ -224,6 +371,9 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // Let the WebContent's view know about the WebContentsAdapterClient.
     WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContents->GetView());
     contentsView->initialize(adapterClient);
+
+    // This should only be necessary after having restored the history to a new WebContentsAdapter.
+    d->webContents->GetController().LoadIfNecessary();
 
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
@@ -420,6 +570,12 @@ void WebContentsAdapter::clearNavigationHistory()
     Q_D(WebContentsAdapter);
     if (d->webContents->GetController().CanPruneAllButVisible())
         d->webContents->GetController().PruneAllButVisible();
+}
+
+void WebContentsAdapter::serializeNavigationHistory(QDataStream &output)
+{
+    Q_D(WebContentsAdapter);
+    ::serializeNavigationHistory(d->webContents->GetController(), output);
 }
 
 void WebContentsAdapter::setZoomFactor(qreal factor)
