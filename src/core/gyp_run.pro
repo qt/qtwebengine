@@ -74,6 +74,9 @@ win32 {
     GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"gperf.exe\""
 }
 
+# Append additional platform options defined in mkspecs default_pre.prf
+for (define, GYP_DEFINES): GYP_ARGS += "-D $$define"
+
 !build_pass {
     message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
     !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
