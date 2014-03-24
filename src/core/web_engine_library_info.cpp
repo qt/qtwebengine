@@ -99,8 +99,13 @@ QString location(QLibraryInfo::LibraryLocation path)
 QString subProcessPath()
 {
     static bool initialized = false;
+#if defined(OS_WIN)
+    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
+                                % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME) % QStringLiteral(".exe"));
+#else
     static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
                                 % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME));
+#endif
     if (!initialized) {
         // Allow overriding at runtime for the time being.
         const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
