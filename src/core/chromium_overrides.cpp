@@ -41,7 +41,12 @@
 
 #include "chromium_overrides.h"
 
+#include "qtwebenginecoreglobal.h"
+#include "base/values.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+
+#include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
+#include "content/common/font_list.h"
 
 #include <QGuiApplication>
 #include <QScreen>
@@ -53,8 +58,15 @@
 #endif
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_gtk.h"
+#include "base/message_loop/message_pump_x11.h"
 #include <X11/Xlib.h>
+#endif
+
+#if defined(USE_AURA) && !defined(USE_OZONE)
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
+#include "ui/gfx/render_text.h"
+#include "ui/gfx/platform_font.h"
 #endif
 
 void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* results)
@@ -77,7 +89,7 @@ void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* result
 namespace base {
 
 #if defined(USE_X11)
-Display* MessagePumpGtk::GetDefaultXDisplay() {
+Display* MessagePumpForUI::GetDefaultXDisplay() {
   static void *display = qApp->platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
   if (!display) {
     // XLib isn't available or has not been initialized, which is a decision we wish to
@@ -117,6 +129,74 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(blink::WebScreenInfo* result
 }
 
 }
+
+#if defined(USE_AURA) && !defined(USE_OZONE)
+namespace content {
+
+// content/common/font_list.h
+scoped_ptr<base::ListValue> GetFontList_SlowBlocking()
+{
+    QT_NOT_USED
+    return scoped_ptr<base::ListValue>(new base::ListValue);
+}
+
+#if defined(ENABLE_PLUGINS)
+// content/browser/renderer_host/pepper/pepper_truetype_font_list.h
+void GetFontFamilies_SlowBlocking(std::vector<std::string> *)
+{
+    QT_NOT_USED
+}
+
+void GetFontsInFamily_SlowBlocking(const std::string &, std::vector<ppapi::proxy::SerializedTrueTypeFontDesc> *)
+{
+    QT_NOT_USED
+}
+#endif //defined(ENABLE_PLUGINS)
+
+} // namespace content
+
+namespace ui {
+
+OSExchangeData::Provider* OSExchangeData::CreateProvider()
+{
+    QT_NOT_USED
+    return 0;
+}
+
+}
+
+namespace gfx {
+
+// Stubs for these unused functions that are stripped in case
+// of a release aura build but a debug build needs the symbols.
+
+RenderText* RenderText::CreateInstance()
+{
+    QT_NOT_USED;
+    return 0;
+}
+
+PlatformFont* PlatformFont::CreateDefault()
+{
+    QT_NOT_USED;
+    return 0;
+}
+
+PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont)
+{
+    QT_NOT_USED;
+    return 0;
+}
+
+PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string&, int)
+{
+    QT_NOT_USED;
+    return 0;
+}
+
+} // namespace gfx
+
+#endif // defined(USE_AURA) && !defined(USE_OZONE)
 
 #if defined(OS_ANDROID)
 namespace ui {
