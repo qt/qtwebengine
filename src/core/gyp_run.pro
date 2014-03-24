@@ -4,6 +4,18 @@
 
 TEMPLATE = aux
 
+cross_compile {
+    GYP_ARGS = "-D qt_cross_compile=1"
+    posix: GYP_ARGS += "-D os_posix=1"
+} else {
+    # !cross_compile
+    GYP_ARGS = "-D qt_cross_compile=0"
+    linux: include(config/desktop_linux.pri)
+}
+
+# Append additional platform options defined in GYP_CONFIG
+for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
+
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
@@ -11,9 +23,7 @@ TEMPLATE = aux
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
-GYP_ARGS = "-D qt_cross_compile=0"
 cross_compile {
-    GYP_ARGS = "-D qt_cross_compile=1 -D os_posix=1"
     TOOLCHAIN_SYSROOT = $$[QT_SYSROOT]
 
     android {
