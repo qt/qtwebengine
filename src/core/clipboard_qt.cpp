@@ -356,18 +356,10 @@ const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType()
     return type;
 }
 
-#if defined(TOOLKIT_GTK)
-void Clipboard::SetGtkClipboard(ClipboardType type)
+#if defined(OS_WIN) || defined(USE_AURA)
+bool Clipboard::FormatType::operator<(const FormatType& other) const
 {
-}
-
-void Clipboard::InsertMapping(const char* key, char* data, size_t data_len)
-{
-}
-
-GtkClipboard* Clipboard::LookupBackingClipboard(ClipboardType type) const
-{
-    return NULL;
+    return data_.compare(other.data_) < 0;
 }
 #endif
 
