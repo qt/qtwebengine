@@ -100,13 +100,5 @@
           '<(chromium_src_dir)/build/linux/system.gyp:fontconfig',
         ],
       }],
-      ['use_aura==1', {
-        'dependencies': [
-          '<(chromium_src_dir)/ui/aura/aura.gyp:aura',
-          '<(chromium_src_dir)/ui/base/strings/ui_strings.gyp:ui_strings',
-          '<(chromium_src_dir)/ui/views/views.gyp:views',
-          '<(chromium_src_dir)/ui/ui.gyp:ui',
-        ],
-      }],  # use_aura==1
     ],
 }
