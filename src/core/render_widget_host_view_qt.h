@@ -124,10 +124,6 @@ public:
     virtual void SetBackground(const SkBitmap& background) Q_DECL_OVERRIDE;
     virtual bool LockMouse() Q_DECL_OVERRIDE;
     virtual void UnlockMouse() Q_DECL_OVERRIDE;
-#if defined(TOOLKIT_GTK)
-    virtual GdkEventButton* GetLastMouseDown() Q_DECL_OVERRIDE;
-    virtual gfx::NativeView BuildInputMethodsGtkMenu() Q_DECL_OVERRIDE;
-#endif  // defined(TOOLKIT_GTK)
     virtual void WasShown() Q_DECL_OVERRIDE;
     virtual void WasHidden() Q_DECL_OVERRIDE;
     virtual void MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&) Q_DECL_OVERRIDE;
