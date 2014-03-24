@@ -1,7 +1,8 @@
 # Resolve root directories for sources
 QTWEBENGINE_ROOT = $$replace(PWD, /tools/qmake/mkspecs/features$,)
 
-QTWEBENGINEPROCESS_NAME = QtWebEngineProcess
+win32: QTWEBENGINEPROCESS_NAME = "QtWebEngineProcess.exe"
+else: QTWEBENGINEPROCESS_NAME = QtWebEngineProcess
 
 # Location of sync.profile
 MODULE_BASE_DIR = $$QTWEBENGINE_ROOT
