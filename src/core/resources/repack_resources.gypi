@@ -15,6 +15,16 @@
       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
     ],
   },
+  'conditions': [
+    ['use_aura==1', {
+      'variables': {
+        'pak_inputs+': [
+          # Scrollbars, etc.
+          '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak'
+        ],
+      },
+    }],
+  ],
   'inputs': [
     '<(repack_path)',
     '<@(pak_inputs)',
