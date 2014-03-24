@@ -342,20 +342,6 @@ void RenderWidgetHostViewQt::UnlockMouse()
     QT_NOT_USED
 }
 
-// FIXME: remove TOOLKIT_GTK related things.
-#if defined(TOOLKIT_GTK)
-// Gets the event for the last mouse down.
-GdkEventButton* RenderWidgetHostViewQt::GetLastMouseDown()
-{
-    return 0;
-}
-
-gfx::NativeView RenderWidgetHostViewQt::BuildInputMethodsGtkMenu()
-{
-    return 0;
-}
-#endif  // defined(TOOLKIT_GTK)
-
 void RenderWidgetHostViewQt::WasShown()
 {
     m_host->WasShown();
