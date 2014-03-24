@@ -356,19 +356,4 @@ const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType()
     return type;
 }
 
-#if defined(TOOLKIT_GTK)
-void Clipboard::SetGtkClipboard(ClipboardType type)
-{
-}
-
-void Clipboard::InsertMapping(const char* key, char* data, size_t data_len)
-{
-}
-
-GtkClipboard* Clipboard::LookupBackingClipboard(ClipboardType type) const
-{
-    return NULL;
-}
-#endif
-
 }  // namespace ui
