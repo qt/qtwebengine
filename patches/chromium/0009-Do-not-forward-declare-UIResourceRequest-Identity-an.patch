@@ -12,19 +12,19 @@ See: http://clang.llvm.org/compatibility.html#undep_incomplete
  3 files changed, 40 insertions(+), 40 deletions(-)
 
 diff --git a/cc/trees/layer_tree_impl.h b/cc/trees/layer_tree_impl.h
-index eb6a015..2ae33df 100644
+index 2f27460..85a71f5c 100644
 --- a/cc/trees/layer_tree_impl.h
 +++ b/cc/trees/layer_tree_impl.h
-@@ -12,6 +12,7 @@
- #include "base/containers/hash_tables.h"
- #include "base/values.h"
+@@ -14,6 +14,7 @@
+ #include "cc/base/scoped_ptr_vector.h"
+ #include "cc/base/swap_promise.h"
  #include "cc/layers/layer_impl.h"
 +#include "cc/trees/layer_tree_host.h"
  #include "cc/resources/ui_resource_client.h"
- #include "ui/events/latency_info.h"
  
+ #if defined(COMPILER_GCC)
 diff --git a/content/browser/media/webrtc_identity_store_backend.cc b/content/browser/media/webrtc_identity_store_backend.cc
-index 9ec73e9..4188116 100644
+index d599dcd..697de93 100644
 --- a/content/browser/media/webrtc_identity_store_backend.cc
 +++ b/content/browser/media/webrtc_identity_store_backend.cc
 @@ -46,43 +46,6 @@ static bool InitDB(sql::Connection* db) {
@@ -72,7 +72,7 @@ index 9ec73e9..4188116 100644
    PendingFindRequest(const GURL& origin,
                       const std::string& identity_name,
 diff --git a/content/browser/media/webrtc_identity_store_backend.h b/content/browser/media/webrtc_identity_store_backend.h
-index ab4e1ed..e660c73 100644
+index 92b68b6..9be3fc2 100644
 --- a/content/browser/media/webrtc_identity_store_backend.h
 +++ b/content/browser/media/webrtc_identity_store_backend.h
 @@ -11,8 +11,7 @@
@@ -85,7 +85,7 @@ index ab4e1ed..e660c73 100644
  
  namespace base {
  class FilePath;
-@@ -88,7 +87,44 @@ class WebRTCIdentityStoreBackend
+@@ -94,7 +93,44 @@ class WebRTCIdentityStoreBackend
    };
    struct PendingFindRequest;
    struct IdentityKey;

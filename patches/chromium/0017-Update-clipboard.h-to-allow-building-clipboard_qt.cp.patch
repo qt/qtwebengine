@@ -7,14 +7,14 @@ Subject: Update clipboard.h to allow building clipboard_qt.cpp on all
 Change-Id: Ife754b2fcb1c1a535565facdbab615c07b8c4935
 Reviewed-by: Simon Hausmann <simon.hausmann@digia.com>
 ---
- ui/base/clipboard/clipboard.h |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ ui/base/clipboard/clipboard.h | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/ui/base/clipboard/clipboard.h b/ui/base/clipboard/clipboard.h
-index 94cd664..87a5f01 100644
+index f41ac7a..5cf936c 100644
 --- a/ui/base/clipboard/clipboard.h
 +++ b/ui/base/clipboard/clipboard.h
-@@ -87,6 +87,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+@@ -88,6 +88,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
      bool operator<(const FormatType& other) const;
  #endif
  
@@ -22,15 +22,17 @@ index 94cd664..87a5f01 100644
  #if defined(OS_WIN)
      const FORMATETC& ToFormatEtc() const { return data_; }
  #elif defined(OS_MACOSX)
-@@ -96,6 +97,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+@@ -97,6 +98,9 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
  #elif defined(USE_AURA)
      const std::string& ToString() const { return data_; }
  #endif
-+#endif // TOOLKIT_QT
++#else
++    const std::string& ToString() const { return data_; }
++#endif // !defined(TOOLKIT_QT)
  
     private:
      friend class Clipboard;
-@@ -110,7 +112,10 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+@@ -111,7 +115,10 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
      //
      // Note that in some cases, the accessor for the wrapped descriptor may be
      // public, as these format types can be used by drag and drop code as well.
@@ -42,7 +44,7 @@ index 94cd664..87a5f01 100644
      explicit FormatType(UINT native_format);
      FormatType(UINT native_format, LONG index);
      UINT ToUINT() const { return data_.cfFormat; }
-@@ -351,7 +356,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+@@ -339,7 +346,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
    void WriteData(const FormatType& format,
                   const char* data_data,
                   size_t data_len);

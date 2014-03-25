@@ -29,19 +29,19 @@ Change-Id: Id4d98fe22ef8b778b5ba8da300dad28e69507732
  6 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/content/content_browser.gypi b/content/content_browser.gypi
-index c2e5f18..f820ad0 100644
+index b0f963c..28878f7 100644
 --- a/content/content_browser.gypi
 +++ b/content/content_browser.gypi
-@@ -1270,6 +1270,7 @@
+@@ -1323,6 +1323,7 @@
        'dependencies': [
          'browser/devtools/devtools_resources.gyp:devtools_resources',
          '../cc/cc.gyp:cc',
 +        '../gpu/gpu.gyp:gpu_ipc',
          '../net/net.gyp:http_server',
-         '../printing/printing.gyp:printing',
          '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
+         '../ui/surface/surface.gyp:surface',
 diff --git a/gpu/command_buffer_client.gypi b/gpu/command_buffer_client.gypi
-index b4d5b78..75bea79 100644
+index cb52ee7..827474c 100644
 --- a/gpu/command_buffer_client.gypi
 +++ b/gpu/command_buffer_client.gypi
 @@ -14,6 +14,9 @@
@@ -52,10 +52,10 @@ index b4d5b78..75bea79 100644
 +    '../third_party/khronos/khronos.gyp:khronos_headers',
 +  ],
    'sources': [
-     'command_buffer/client/atomicops.cc',
-     'command_buffer/client/atomicops.h',
+     'command_buffer/client/cmd_buffer_helper.cc',
+     'command_buffer/client/cmd_buffer_helper.h',
 diff --git a/gpu/command_buffer_common.gypi b/gpu/command_buffer_common.gypi
-index 55e825e..4c1044a 100644
+index 87eeb5b..ab9a635 100644
 --- a/gpu/command_buffer_common.gypi
 +++ b/gpu/command_buffer_common.gypi
 @@ -6,6 +6,9 @@
@@ -69,7 +69,7 @@ index 55e825e..4c1044a 100644
      'command_buffer/common/bitfield_helpers.h',
      'command_buffer/common/buffer.h',
 diff --git a/gpu/gpu.gyp b/gpu/gpu.gyp
-index 316aa91..1599623 100644
+index 46831ee..c3c9502 100644
 --- a/gpu/gpu.gyp
 +++ b/gpu/gpu.gyp
 @@ -23,6 +23,9 @@
@@ -82,7 +82,7 @@ index 316aa91..1599623 100644
        'defines': [
          'GLES2_IMPL_IMPLEMENTATION',
        ],
-@@ -88,6 +91,9 @@
+@@ -90,6 +93,9 @@
          'command_buffer_client',
          'gles2_implementation',
        ],
@@ -92,7 +92,7 @@ index 316aa91..1599623 100644
        'defines': [
          'GLES2_C_LIB_IMPLEMENTATION',
        ],
-@@ -113,6 +119,9 @@
+@@ -115,6 +121,9 @@
          'command_buffer_client',
          'gles2_implementation_client_side_arrays_no_check',
        ],
@@ -102,7 +102,7 @@ index 316aa91..1599623 100644
        'sources': [
          '<@(gles2_c_lib_source_files)',
        ],
-@@ -348,6 +357,9 @@
+@@ -378,6 +387,9 @@
              'gpu_config',
              'gpu_ipc',
            ],
@@ -112,7 +112,7 @@ index 316aa91..1599623 100644
            'sources': [
              'gpu_export.h',
            ],
-@@ -390,6 +402,9 @@
+@@ -420,6 +432,9 @@
            'dependencies': [
              'command_buffer_common',
            ],
@@ -122,7 +122,7 @@ index 316aa91..1599623 100644
            # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
            'msvs_disabled_warnings': [4267, ],
          },
-@@ -415,6 +430,9 @@
+@@ -445,6 +460,9 @@
            'dependencies': [
              'command_buffer_common',
            ],
@@ -146,12 +146,12 @@ index 8a85572..88130d2 100644
            '.',
            '../../gpu',  # Contains GLES2/gl2chromium.h
 diff --git a/webkit/common/gpu/webkit_gpu.gyp b/webkit/common/gpu/webkit_gpu.gyp
-index 2831446..be79c22 100644
+index a28e4e8..1a0190c 100644
 --- a/webkit/common/gpu/webkit_gpu.gyp
 +++ b/webkit/common/gpu/webkit_gpu.gyp
-@@ -27,6 +27,9 @@
+@@ -28,6 +28,9 @@
              '<(DEPTH)/ui/gl/gl.gyp:gl',
-             '<(DEPTH)/ui/ui.gyp:ui',
+             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
            ],
 +          'export_dependent_settings': [
 +            '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',

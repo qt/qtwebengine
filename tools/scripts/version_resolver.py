@@ -48,8 +48,8 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '31.0.1650.63'
-chromium_branch = '1650'
+chromium_version = '33.0.1750.149'
+chromium_branch = '1750'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 git_deps_url = 'http://src.chromium.org/chrome/branches/' + chromium_branch + '/src/.DEPS.git'
@@ -74,6 +74,14 @@ def readReleaseChannels():
             channels[os].append({ 'channel': ver['channel'], 'version': ver['version'], 'branch': ver['true_branch'] })
     return channels
 
+def repositoryUrlFix(submodule):
+    # The git repository info for webrtc is outdated in the 1750
+    # branch's .DEPS.git file, so we have to update the url.
+    # We should be able to remove this with a branch post 1750.
+    repository_url = submodule.url
+    if 'external/webrtc/stable' in repository_url:
+        submodule.url = repository_url.replace('external/webrtc/stable', 'external/webrtc/trunk')
+
 def sanityCheckModules(submodules):
     submodule_dict = {}
     sys.stdout.write('\nverifying submodule refs.')
@@ -92,13 +100,13 @@ def sanityCheckModules(submodules):
                 sys.exit('ERROR: branch mismatch for ' + submodule.path + '(' + prev_module.ref + ' vs ' + submodule.ref + ')')
             print('Duplicate submodule ' + submodule.path + '. Using latest revison ' + str(submodule.revision) + '.')
         if submodule.ref:
+            repositoryUrlFix(submodule)
             sys.stdout.write('.')
             result = subprocess.check_output(['git', 'ls-remote', submodule.url, submodule.ref])
-            # Fallback to git shasum if the parsed remote ref does not exist in the git repository.
             if submodule.ref not in result:
-                submodule.ref = submodule.revision = ''
-                if not submodule.shasum:
-                    sys.exit('\nERROR: No valid remote found!')
+                # We could fall back to the git shasum if the parsed remote ref does not exist in
+                # the git repository but that would most certainly be outdated, so bail out here.
+                sys.exit('\nERROR: No valid remote found!')
             sys.stdout.flush()
         submodule_dict[submodule.path] = submodule
     print('done.\n')
