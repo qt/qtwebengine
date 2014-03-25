@@ -46,9 +46,11 @@
 #include "web_contents_adapter_client.h"
 #include "web_engine_context.h"
 
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/invalidate_type.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/invalidate_type.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 
@@ -121,8 +123,18 @@ void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, 
 
 void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame, content::RenderViewHost*)
 {
-    if (is_main_frame)
+    if (is_main_frame) {
         m_viewClient->loadFinished(true);
+
+        content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
+        if (!entry)
+            return;
+        content::FaviconStatus &favicon = entry->GetFavicon();
+        if (favicon.valid)
+            m_viewClient->iconChanged(toQt(favicon.url));
+        else
+            m_viewClient->iconChanged(QUrl());
+    }
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
@@ -130,7 +142,12 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector
     Q_UNUSED(page_id)
     Q_FOREACH (content::FaviconURL candidate, candidates) {
         if (candidate.icon_type == content::FaviconURL::FAVICON && !candidate.icon_url.is_empty()) {
-            m_viewClient->iconChanged(toQt(candidate.icon_url));
+            content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
+            if (!entry)
+                continue;
+            content::FaviconStatus &favicon = entry->GetFavicon();
+            favicon.url = candidate.icon_url;
+            favicon.valid = toQt(candidate.icon_url).isValid();
             break;
         }
     }
