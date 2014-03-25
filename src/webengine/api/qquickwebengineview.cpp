@@ -343,6 +343,20 @@ void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessa
     Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
 }
 
+void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
+{
+   if (!requestFlags)
+       return;
+   QQuickWebEngineViewExperimental::Feature feature;
+   if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
+       feature = QQuickWebEngineViewExperimental::MediaAudioVideoDevices;
+   else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
+       feature = QQuickWebEngineViewExperimental::MediaAudioDevices;
+   else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+       feature = QQuickWebEngineViewExperimental::MediaVideoDevices;
+   Q_EMIT e->featurePermissionRequested(securityOrigin, feature);
+}
+
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
 {
     this->devicePixelRatio = devicePixelRatio;
@@ -539,6 +553,27 @@ void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const
 QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const
 {
     return d_ptr->m_history.data();
+}
+
+void QQuickWebEngineViewExperimental::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineViewExperimental::Feature feature, bool granted)
+{
+    if (!granted && feature >= MediaAudioDevices && feature <= MediaAudioVideoDevices) {
+         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaNone);
+         return;
+    }
+
+    switch (feature) {
+    case MediaAudioDevices:
+        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaAudioCapture);
+        break;
+    case MediaVideoDevices:
+        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaVideoCapture);
+        break;
+    case MediaAudioVideoDevices:
+        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaAudioCapture
+                                                                                                               | WebContentsAdapterClient::MediaVideoCapture));
+        break;
+    }
 }
 
 void QQuickWebEngineViewExperimental::goBackTo(int index)
