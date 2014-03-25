@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andras Becsi <andras.becsi@digia.com>
+Date: Mon, 24 Mar 2014 18:41:20 +0100
+Subject: Get rid of the gtk/pango/cairo dependency
+
+This also removes the aura dependency to chrome resources
+since we repack the needed resources ourselves.
+
+Change-Id: I8180d5668334540cfd88ade449f3f0c966b989ce
+Reviewed-by: Zeno Albisser <zeno.albisser@digia.com>
+---
+ build/linux/system.gyp                                     | 6 +++++-
+ content/browser/renderer_host/render_sandbox_host_linux.cc | 2 +-
+ content/renderer/npapi/webplugin_delegate_proxy.cc         | 2 +-
+ ui/aura/aura.gyp                                           | 1 -
+ 4 files changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/build/linux/system.gyp b/build/linux/system.gyp
+index 4a7e857..1451afb 100644
+--- a/build/linux/system.gyp
++++ b/build/linux/system.gyp
+@@ -29,7 +29,7 @@
+         'use_system_ssl%': 1,
+       },
+     }],
+-    [ 'chromeos==0', {
++    [ 'chromeos==0 and use_qt==0', {
+       # Hide GTK and related dependencies for Chrome OS, so they won't get
+       # added back to Chrome OS. Don't try to use GTK on Chrome OS.
+       'targets': [
+@@ -660,6 +660,8 @@
+       'type': 'none',
+       'toolsets': ['host', 'target'],
+       'conditions': [
++      ['use_pango==1', {
++      'conditions': [
+         ['_toolset=="target"', {
+           'direct_dependent_settings': {
+             'cflags': [
+@@ -690,6 +692,8 @@
+           },
+         }],
+       ],
++      }],
++      ],
+     },
+     {
+       'target_name': 'ssl',
+diff --git a/content/browser/renderer_host/render_sandbox_host_linux.cc b/content/browser/renderer_host/render_sandbox_host_linux.cc
+index 19cbc5b..f4e1cfc 100644
+--- a/content/browser/renderer_host/render_sandbox_host_linux.cc
++++ b/content/browser/renderer_host/render_sandbox_host_linux.cc
+@@ -709,7 +709,7 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
+   childs_lifeline_fd_ = pipefds[1];
+ 
+   // We need to be monothreaded before we fork().
+-#if !defined(TOOLKIT_GTK)
++#if !defined(TOOLKIT_GTK) && !defined(TOOLKIT_QT)
+   // Exclude gtk port as TestSuite in base/tests/test_suite.cc is calling
+   // gtk_init.
+   // TODO(oshima): Remove ifdef when above issues are resolved.
+diff --git a/content/renderer/npapi/webplugin_delegate_proxy.cc b/content/renderer/npapi/webplugin_delegate_proxy.cc
+index d7f8472..a6418fb 100644
+--- a/content/renderer/npapi/webplugin_delegate_proxy.cc
++++ b/content/renderer/npapi/webplugin_delegate_proxy.cc
+@@ -6,7 +6,7 @@
+ 
+ #if defined(TOOLKIT_GTK)
+ #include <gtk/gtk.h>
+-#elif defined(USE_X11)
++#elif defined(USE_CAIRO)
+ #include <cairo/cairo.h>
+ #endif
+ 
+diff --git a/ui/aura/aura.gyp b/ui/aura/aura.gyp
+index 68164d4..139e046 100644
+--- a/ui/aura/aura.gyp
++++ b/ui/aura/aura.gyp
+@@ -243,7 +243,6 @@
+       'type': 'executable',
+       'dependencies': [
+         '../../base/base.gyp:test_support_base',
+-        '../../chrome/chrome_resources.gyp:packed_resources',
+         '../../skia/skia.gyp:skia',
+         '../../testing/gtest.gyp:gtest',
+         '../compositor/compositor.gyp:compositor',

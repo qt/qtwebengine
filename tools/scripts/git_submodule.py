@@ -185,6 +185,7 @@ class Submodule:
         current_shasum = subprocessCheckOutput(['git', 'show', '-s', '--oneline']).split(' ')[0]
         if not self.shasum.startswith(current_shasum):
             # In case HEAD differs check out the actual shasum we require.
+            subprocessCall(['git', 'fetch'])
             error = subprocessCall(['git', 'checkout', self.shasum])
         os.chdir(oldCwd)
         return error
@@ -220,6 +221,7 @@ class Submodule:
 
             if self.url:
                 subprocessCall(['git', 'submodule', 'add', '-f', self.url, self.path])
+            subprocessCall(['git', 'submodule', 'sync', '--', self.path])
             subprocessCall(['git', 'submodule', 'init', self.path])
             subprocessCall(['git', 'submodule', 'update', self.path])
 

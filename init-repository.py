@@ -134,7 +134,7 @@ def applyPatches():
 def initUpstreamSubmodules():
     ninja_url = 'https://github.com/martine/ninja.git'
     chromium_url = 'https://chromium.googlesource.com/chromium/src.git'
-    ninja_shasum = '40b51a0b986b8675e15b0cd1b10c272bf51fdb84'
+    ninja_shasum = '84986af6fdeae3f649f2bf884b20f644bc370e48'
     chromium_ref = 'refs/branch-heads/' + resolver.currentBranch()
     os.chdir(qtwebengine_root)
 

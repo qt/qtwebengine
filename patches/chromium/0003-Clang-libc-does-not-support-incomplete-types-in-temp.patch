@@ -23,26 +23,24 @@ Therefore forward declarations must be removed in several places:
 - WorkerDevToolsManager::TerminatedInspectedWorker
 ---
  base/callback_forward.h                            |  9 +-----
- .../browser/devtools/worker_devtools_manager.cc    | 24 ----------------
+ .../browser/devtools/worker_devtools_manager.cc    | 26 ------------------
  content/browser/devtools/worker_devtools_manager.h | 26 ++++++++++++++++--
- .../media/media_stream_dispatcher_host.cc          | 11 --------
- .../media/media_stream_dispatcher_host.h           | 12 +++++++-
- .../browser/worker_host/message_port_service.cc    | 22 ---------------
- content/browser/worker_host/message_port_service.h | 23 +++++++++++++++-
+ content/browser/message_port_service.cc            | 22 ---------------
+ content/browser/message_port_service.h             | 23 +++++++++++++++-
  content/common/gpu/gpu_messages.h                  |  4 ++-
  content/renderer/media/media_stream_dispatcher.cc  | 31 ---------------------
  content/renderer/media/media_stream_dispatcher.h   | 31 +++++++++++++++++++--
  content/renderer/pepper/message_channel.cc         | 12 --------
  content/renderer/pepper/message_channel.h          | 18 ++++++++----
  gpu/config/dx_diag_node.cc                         |  4 +++
- gpu/config/dx_diag_node.h                          |  4 +++
+ gpu/config/dx_diag_node.h                          |  6 ++++
  media/filters/ffmpeg_audio_decoder.cc              |  6 ----
- media/filters/ffmpeg_audio_decoder.h               |  8 +++++-
+ media/filters/ffmpeg_audio_decoder.h               |  7 ++++-
  net/cert/mock_cert_verifier.cc                     | 19 -------------
  net/cert/mock_cert_verifier.h                      | 20 +++++++++++++-
  net/dns/mock_host_resolver.cc                      | 31 ---------------------
  net/dns/mock_host_resolver.h                       | 32 +++++++++++++++++++++-
- 20 files changed, 168 insertions(+), 179 deletions(-)
+ 18 files changed, 158 insertions(+), 169 deletions(-)
 
 diff --git a/base/callback_forward.h b/base/callback_forward.h
 index 7983248..8538bb2 100644
@@ -64,34 +62,36 @@ index 7983248..8538bb2 100644
  
  #endif  // BASE_CALLBACK_FORWARD_H
 diff --git a/content/browser/devtools/worker_devtools_manager.cc b/content/browser/devtools/worker_devtools_manager.cc
-index f08523b..983c55c 100644
+index f060881..983c55c 100644
 --- a/content/browser/devtools/worker_devtools_manager.cc
 +++ b/content/browser/devtools/worker_devtools_manager.cc
-@@ -51,17 +51,6 @@ base::LazyInstance<AgentHosts>::Leaky g_orphan_map = LAZY_INSTANCE_INITIALIZER;
+@@ -51,19 +51,6 @@ base::LazyInstance<AgentHosts>::Leaky g_orphan_map = LAZY_INSTANCE_INITIALIZER;
  
  }  // namespace
  
 -struct WorkerDevToolsManager::TerminatedInspectedWorker {
--  TerminatedInspectedWorker(WorkerId id, const GURL& url, const string16& name)
+-  TerminatedInspectedWorker(WorkerId id,
+-                            const GURL& url,
+-                            const base::string16& name)
 -      : old_worker_id(id),
 -        worker_url(url),
 -        worker_name(name) {}
 -  WorkerId old_worker_id;
 -  GURL worker_url;
--  string16 worker_name;
+-  base::string16 worker_name;
 -};
 -
 -
  class WorkerDevToolsManager::WorkerDevToolsAgentHost
      : public IPCDevToolsAgentHost {
   public:
-@@ -200,19 +189,6 @@ class WorkerDevToolsManager::DetachedClientHosts {
+@@ -202,19 +189,6 @@ class WorkerDevToolsManager::DetachedClientHosts {
    }
  };
  
 -struct WorkerDevToolsManager::InspectedWorker {
 -  InspectedWorker(WorkerProcessHost* host, int route_id, const GURL& url,
--                  const string16& name)
+-                  const base::string16& name)
 -      : host(host),
 -        route_id(route_id),
 -        worker_url(url),
@@ -99,14 +99,14 @@ index f08523b..983c55c 100644
 -  WorkerProcessHost* const host;
 -  int const route_id;
 -  GURL worker_url;
--  string16 worker_name;
+-  base::string16 worker_name;
 -};
 -
  // static
  WorkerDevToolsManager* WorkerDevToolsManager::GetInstance() {
    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 diff --git a/content/browser/devtools/worker_devtools_manager.h b/content/browser/devtools/worker_devtools_manager.h
-index 8a9a708..e6d090c 100644
+index 8a9a708..955b1db 100644
 --- a/content/browser/devtools/worker_devtools_manager.h
 +++ b/content/browser/devtools/worker_devtools_manager.h
 @@ -54,7 +54,20 @@ class WorkerDevToolsManager {
@@ -117,7 +117,7 @@ index 8a9a708..e6d090c 100644
 +
 +  struct InspectedWorker {
 +    InspectedWorker(WorkerProcessHost* host, int route_id, const GURL& url,
-+                    const string16& name)
++                    const base::string16& name)
 +        : host(host),
 +          route_id(route_id),
 +          worker_url(url),
@@ -125,7 +125,7 @@ index 8a9a708..e6d090c 100644
 +    WorkerProcessHost* const host;
 +    int const route_id;
 +    GURL worker_url;
-+    string16 worker_name;
++    base::string16 worker_name;
 +  };
 +
    typedef std::list<InspectedWorker> InspectedWorkersList;
@@ -137,67 +137,22 @@ index 8a9a708..e6d090c 100644
  
 -  struct TerminatedInspectedWorker;
 +  struct TerminatedInspectedWorker {
-+    TerminatedInspectedWorker(WorkerId id, const GURL& url, const string16& name)
++    TerminatedInspectedWorker(WorkerId id, const GURL& url, const base::string16& name)
 +        : old_worker_id(id),
 +          worker_url(url),
 +          worker_name(name) {}
 +    WorkerId old_worker_id;
 +    GURL worker_url;
-+    string16 worker_name;
++    base::string16 worker_name;
 +  };
 +
    typedef std::list<TerminatedInspectedWorker> TerminatedInspectedWorkers;
    // List of terminated workers for which there may be a devtools client on
    // the UI thread. Worker entry is added into this list when inspected worker
-diff --git a/content/browser/renderer_host/media/media_stream_dispatcher_host.cc b/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
-index ebc4d89..9135b71 100644
---- a/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
-+++ b/content/browser/renderer_host/media/media_stream_dispatcher_host.cc
-@@ -12,17 +12,6 @@
- 
- namespace content {
- 
--struct MediaStreamDispatcherHost::StreamRequest {
--  StreamRequest() : render_view_id(0), page_request_id(0) {}
--  StreamRequest(int render_view_id, int page_request_id)
--      : render_view_id(render_view_id),
--        page_request_id(page_request_id ) {
--  }
--  int render_view_id;
--  // Id of the request generated by MediaStreamDispatcher.
--  int page_request_id;
--};
--
- MediaStreamDispatcherHost::MediaStreamDispatcherHost(
-     int render_process_id,
-     MediaStreamManager* media_stream_manager)
-diff --git a/content/browser/renderer_host/media/media_stream_dispatcher_host.h b/content/browser/renderer_host/media/media_stream_dispatcher_host.h
-index ec1dd15..cfc6913 100644
---- a/content/browser/renderer_host/media/media_stream_dispatcher_host.h
-+++ b/content/browser/renderer_host/media/media_stream_dispatcher_host.h
-@@ -72,7 +72,17 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
-   int render_process_id_;
-   MediaStreamManager* media_stream_manager_;
- 
--  struct StreamRequest;
-+  struct StreamRequest {
-+    StreamRequest() : render_view_id(0), page_request_id(0) {}
-+    StreamRequest(int render_view_id, int page_request_id)
-+        : render_view_id(render_view_id),
-+          page_request_id(page_request_id ) {
-+    }
-+    int render_view_id;
-+    // Id of the request generated by MediaStreamDispatcher.
-+    int page_request_id;
-+  };
-+
-   typedef std::map<std::string, StreamRequest> StreamMap;
-   // Streams generated for this host.
-   StreamMap streams_;
-diff --git a/content/browser/worker_host/message_port_service.cc b/content/browser/worker_host/message_port_service.cc
-index 3bc8f5a..b413c1f 100644
---- a/content/browser/worker_host/message_port_service.cc
-+++ b/content/browser/worker_host/message_port_service.cc
+diff --git a/content/browser/message_port_service.cc b/content/browser/message_port_service.cc
+index 0d9f608..25c2b44 100644
+--- a/content/browser/message_port_service.cc
++++ b/content/browser/message_port_service.cc
 @@ -9,28 +9,6 @@
  
  namespace content {
@@ -206,7 +161,7 @@ index 3bc8f5a..b413c1f 100644
 -  // |filter| and |route_id| are what we need to send messages to the port.
 -  // |filter| is just a weak pointer since we get notified when its process has
 -  // gone away and remove it.
--  WorkerMessageFilter* filter;
+-  MessagePortMessageFilter* filter;
 -  int route_id;
 -  // A globally unique id for this message port.
 -  int message_port_id;
@@ -219,7 +174,7 @@ index 3bc8f5a..b413c1f 100644
 -  // in-flight. This flag ensures that the latter type get flushed through the
 -  // system.
 -  // This flag should only be set to true in response to
--  // WorkerProcessHostMsg_QueueMessages.
+-  // MessagePortHostMsg_QueueMessages.
 -  bool queue_messages;
 -  QueuedMessages queued_messages;
 -};
@@ -227,11 +182,11 @@ index 3bc8f5a..b413c1f 100644
  MessagePortService* MessagePortService::GetInstance() {
    return Singleton<MessagePortService>::get();
  }
-diff --git a/content/browser/worker_host/message_port_service.h b/content/browser/worker_host/message_port_service.h
-index b85e76b..30645c7 100644
---- a/content/browser/worker_host/message_port_service.h
-+++ b/content/browser/worker_host/message_port_service.h
-@@ -61,7 +61,28 @@ class MessagePortService {
+diff --git a/content/browser/message_port_service.h b/content/browser/message_port_service.h
+index 6689591..3e197a4 100644
+--- a/content/browser/message_port_service.h
++++ b/content/browser/message_port_service.h
+@@ -64,7 +64,28 @@ class MessagePortService {
    // verify that the message port id exists.
    void Erase(int message_port_id);
  
@@ -240,7 +195,7 @@ index b85e76b..30645c7 100644
 +    // |filter| and |route_id| are what we need to send messages to the port.
 +    // |filter| is just a weak pointer since we get notified when its process has
 +    // gone away and remove it.
-+    WorkerMessageFilter* filter;
++    MessagePortMessageFilter* filter;
 +    int route_id;
 +    // A globally unique id for this message port.
 +    int message_port_id;
@@ -253,7 +208,7 @@ index b85e76b..30645c7 100644
 +    // in-flight. This flag ensures that the latter type get flushed through the
 +    // system.
 +    // This flag should only be set to true in response to
-+    // WorkerProcessHostMsg_QueueMessages.
++    // MessagePortHostMsg_QueueMessages.
 +    bool queue_messages;
 +    QueuedMessages queued_messages;
 +  };
@@ -262,7 +217,7 @@ index b85e76b..30645c7 100644
    MessagePorts message_ports_;
  
 diff --git a/content/common/gpu/gpu_messages.h b/content/common/gpu/gpu_messages.h
-index b4e5be5..3952d79 100644
+index 936a8a0..084b2d8 100644
 --- a/content/common/gpu/gpu_messages.h
 +++ b/content/common/gpu/gpu_messages.h
 @@ -116,10 +116,12 @@ IPC_STRUCT_BEGIN(GpuStreamTextureMsg_MatrixChanged_Params)
@@ -280,12 +235,12 @@ index b4e5be5..3952d79 100644
  IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPerformanceStats)
    IPC_STRUCT_TRAITS_MEMBER(graphics)
 diff --git a/content/renderer/media/media_stream_dispatcher.cc b/content/renderer/media/media_stream_dispatcher.cc
-index cc241fa..57d65b6 100644
+index 6890ffc..96f92fb 100644
 --- a/content/renderer/media/media_stream_dispatcher.cc
 +++ b/content/renderer/media/media_stream_dispatcher.cc
-@@ -14,37 +14,6 @@
+@@ -30,37 +30,6 @@ bool RemoveStreamDeviceFromArray(const StreamDeviceInfo device_info,
  
- namespace content {
+ }  // namespace
  
 -// A request is identified by pair (request_id, handler), or ipc_request.
 -// There could be multiple clients making requests and each has its own
@@ -318,14 +273,14 @@ index cc241fa..57d65b6 100644
 -  StreamDeviceInfoArray video_array;
 -};
 -
- MediaStreamDispatcher::EnumerationRequest::EnumerationRequest(
-     const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
-     int request_id)
+ MediaStreamDispatcher::MediaStreamDispatcher(RenderViewImpl* render_view)
+     : RenderViewObserver(render_view),
+       main_loop_(base::MessageLoopProxy::current()),
 diff --git a/content/renderer/media/media_stream_dispatcher.h b/content/renderer/media/media_stream_dispatcher.h
-index aa8f345..af25963 100644
+index 89d7c0d..4c08958 100644
 --- a/content/renderer/media/media_stream_dispatcher.h
 +++ b/content/renderer/media/media_stream_dispatcher.h
-@@ -98,11 +98,38 @@ class CONTENT_EXPORT MediaStreamDispatcher
+@@ -99,11 +99,38 @@ class CONTENT_EXPORT MediaStreamDispatcher
    FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, TestFailure);
    FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, CancelGenerateStream);
  
@@ -364,13 +319,13 @@ index aa8f345..af25963 100644
 +    StreamDeviceInfoArray video_array;
 +  };
  
-   // An enumeration request is identified by pair (request_id, handler).
-   // It allows multiple clients to make requests and each client could have
+   // RenderViewObserver OVERRIDE.
+   virtual bool Send(IPC::Message* message) OVERRIDE;
 diff --git a/content/renderer/pepper/message_channel.cc b/content/renderer/pepper/message_channel.cc
-index f06b787..c41be2f 100644
+index 51132a6..7c5961c 100644
 --- a/content/renderer/pepper/message_channel.cc
 +++ b/content/renderer/pepper/message_channel.cc
-@@ -279,18 +279,6 @@ NPClass message_channel_class = {
+@@ -292,18 +292,6 @@ NPClass message_channel_class = {
  }  // namespace
  
  // MessageChannel --------------------------------------------------------------
@@ -390,10 +345,10 @@ index f06b787..c41be2f 100644
  MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
  }
 diff --git a/content/renderer/pepper/message_channel.h b/content/renderer/pepper/message_channel.h
-index 9c8c28d..e4e1423 100644
+index e0020e6..43aa0f9 100644
 --- a/content/renderer/pepper/message_channel.h
 +++ b/content/renderer/pepper/message_channel.h
-@@ -10,15 +10,12 @@
+@@ -11,15 +11,12 @@
  
  #include "base/memory/weak_ptr.h"
  #include "ppapi/shared_impl/resource.h"
@@ -410,7 +365,7 @@ index 9c8c28d..e4e1423 100644
  namespace content {
  
  class PepperPluginInstanceImpl;
-@@ -86,7 +83,18 @@ class MessageChannel {
+@@ -90,7 +87,18 @@ class MessageChannel {
  
   private:
    // Struct for storing the result of a NPVariant being converted to a PP_Var.
@@ -450,13 +405,13 @@ index e0902ca..c1e84ae 100644
 +
 +#endif // defined(OS_WIN)
 diff --git a/gpu/config/dx_diag_node.h b/gpu/config/dx_diag_node.h
-index 33d29b3..45ffa65 100644
+index 33d29b3..7f77362 100644
 --- a/gpu/config/dx_diag_node.h
 +++ b/gpu/config/dx_diag_node.h
 @@ -8,6 +8,10 @@
  #ifndef GPU_CONFIG_DX_DIAG_NODE_H_
  #define GPU_CONFIG_DX_DIAG_NODE_H_
-
+ 
 +#include "build/build_config.h"
 +
 +#if defined(OS_WIN)
@@ -464,7 +419,7 @@ index 33d29b3..45ffa65 100644
  #include <map>
  #include <string>
  
-@@ -24,4 +26,6 @@ struct GPU_EXPORT DxDiagNode {
+@@ -24,4 +28,6 @@ struct GPU_EXPORT DxDiagNode {
  
  }  // namespace gpu
  
@@ -472,10 +427,10 @@ index 33d29b3..45ffa65 100644
 +
  #endif  // GPU_CONFIG_DX_DIAG_NODE_H_
 diff --git a/media/filters/ffmpeg_audio_decoder.cc b/media/filters/ffmpeg_audio_decoder.cc
-index f922e98..f41c893 100644
+index 00f7566..bb64c36 100644
 --- a/media/filters/ffmpeg_audio_decoder.cc
 +++ b/media/filters/ffmpeg_audio_decoder.cc
-@@ -22,12 +22,6 @@
+@@ -23,12 +23,6 @@
  
  namespace media {
  
@@ -489,24 +444,26 @@ index f922e98..f41c893 100644
  static inline bool IsEndOfStream(int result,
                                   int decoded_size,
 diff --git a/media/filters/ffmpeg_audio_decoder.h b/media/filters/ffmpeg_audio_decoder.h
-index 7ea8615..44c9830 100644
+index 40103b8..2963847 100644
 --- a/media/filters/ffmpeg_audio_decoder.h
 +++ b/media/filters/ffmpeg_audio_decoder.h
-@@ -25,7 +25,13 @@ namespace media {
+@@ -26,10 +26,15 @@ namespace media {
  
  class AudioTimestampHelper;
  class DecoderBuffer;
 -struct QueuedAudioBuffer;
-+
+ class ScopedPtrAVFreeContext;
+ class ScopedPtrAVFreeFrame;
+ 
 +// Helper structure for managing multiple decoded audio frames per packet.
 +struct QueuedAudioBuffer {
 +  AudioDecoder::Status status;
 +  scoped_refptr<AudioBuffer> buffer;
 +};
 +
- 
  class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   public:
+   explicit FFmpegAudioDecoder(
 diff --git a/net/cert/mock_cert_verifier.cc b/net/cert/mock_cert_verifier.cc
 index ea5538e..a30e3d5 100644
 --- a/net/cert/mock_cert_verifier.cc

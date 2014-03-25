@@ -13,9 +13,9 @@ Subject: Mac: Use libc++ instead of stdlibc++.
   Use unordered containers as a replacement.
 ---
  base/process/process_iterator_mac.cc |  1 +
- build/common.gypi                    | 30 +++++++++++++++++++++++++++---
+ build/common.gypi                    | 32 +++++++++++++++++++++++++++++---
  third_party/protobuf/config.h        | 27 ++++++++++++++-------------
- 3 files changed, 42 insertions(+), 16 deletions(-)
+ 3 files changed, 44 insertions(+), 16 deletions(-)
 
 diff --git a/base/process/process_iterator_mac.cc b/base/process/process_iterator_mac.cc
 index 29daa2d..e35c2ae 100644
@@ -30,10 +30,10 @@ index 29daa2d..e35c2ae 100644
  #include "base/logging.h"
  #include "base/strings/string_util.h"
 diff --git a/build/common.gypi b/build/common.gypi
-index e13aba4..9961053 100644
+index d7b385c..89f86bb 100644
 --- a/build/common.gypi
 +++ b/build/common.gypi
-@@ -287,7 +287,7 @@
+@@ -343,7 +343,7 @@
        # Run tools/clang/scripts/update.sh to make sure they are compiled.
        # This causes 'clang_chrome_plugins_flags' to be set.
        # Has no effect if 'clang' is not set as well.
@@ -42,7 +42,7 @@ index e13aba4..9961053 100644
  
        # Enable building with ASAN (Clang's -fsanitize=address option).
        # -fsanitize=address only works with clang, but asan=1 implies clang=1
-@@ -1144,6 +1144,9 @@
+@@ -1232,6 +1232,9 @@
      # rlz codes for searches but do not use the library.
      'enable_rlz%': 0,
  
@@ -52,7 +52,7 @@ index e13aba4..9961053 100644
      # Turns on the i18n support in V8.
      'v8_enable_i18n_support': 1,
  
-@@ -1414,10 +1417,10 @@
+@@ -1512,10 +1515,10 @@
            # someplace that Xcode doesn't know about, set mac_sdk_path to the
            # path to the SDK; when set to a non-empty string, SDK detection
            # based on mac_sdk_min will be bypassed entirely.
@@ -65,7 +65,7 @@ index e13aba4..9961053 100644
          },
  
          'mac_sdk_min': '<(mac_sdk_min)',
-@@ -1427,6 +1430,7 @@
+@@ -1525,6 +1528,7 @@
          # Compile in Breakpad support by default so that it can be
          # tested, even if it is not enabled by default at runtime.
          'mac_breakpad_compiled_in%': 1,
@@ -73,9 +73,9 @@ index e13aba4..9961053 100644
          'conditions': [
            # mac_product_name is set to the name of the .app bundle as it should
            # appear on disk.  This duplicates data from
-@@ -1997,6 +2001,16 @@
-       ['use_x11==1', {
-         'defines': ['USE_X11=1'],
+@@ -2134,6 +2138,17 @@
+       ['use_clipboard_aurax11==1', {
+         'defines': ['USE_CLIPBOARD_AURAX11=1'],
        }],
 +      ['use_libcpp==1', {
 +        'defines': ['USE_UNORDERED_CONTAINERS=1'],
@@ -84,13 +84,14 @@ index e13aba4..9961053 100644
 +          '-Wno-newline-eof',
 +          '-Wno-unused-value',
 +          '-Wno-unused-variable',
++          '-Wno-unused-function',
 +          '-stdlib=libc++'
 +        ],
 +      }],
        ['enable_one_click_signin==1', {
          'defines': ['ENABLE_ONE_CLICK_SIGNIN'],
        }],
-@@ -3914,6 +3928,16 @@
+@@ -4046,6 +4061,17 @@
                  '-Wno-deprecated-register',
                ],
              }],
@@ -102,6 +103,7 @@ index e13aba4..9961053 100644
 +                '-Wno-newline-eof',
 +                '-Wno-unused-value',
 +                '-Wno-unused-variable',
++                '-Wno-unused-function',
 +              ],
 +            }],
              ['clang==1 and clang_use_chrome_plugins==1', {
