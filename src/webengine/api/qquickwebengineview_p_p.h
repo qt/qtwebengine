@@ -85,8 +85,15 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
+    Q_ENUMS(Feature)
 
 public:
+    enum Feature {
+        MediaAudioDevices,
+        MediaVideoDevices,
+        MediaAudioVideoDevices
+    };
+
     void setIsFullScreen(bool fullscreen);
     bool isFullScreen() const;
     QQuickWebEngineViewport *viewport() const;
@@ -99,12 +106,14 @@ public Q_SLOTS:
     void goBackTo(int index);
     void goForwardTo(int index);
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
+    void grantFeaturePermission(Feature, bool granted);
 
 Q_SIGNALS:
     void newViewRequested(QQuickWebEngineNewViewRequest *request);
     void fullScreenRequested(bool fullScreen);
     void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();
+    void featurePermissionRequested(Feature feature, const QUrl &securityOrigin);
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -153,7 +162,7 @@ public:
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
-    virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE { }
+    virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);

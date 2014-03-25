@@ -316,6 +316,20 @@ void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(int level, const QStri
     Q_EMIT q->javaScriptConsoleMessage(level, message, lineNumber, sourceID);
 }
 
+void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
+{
+   if (!requestFlags)
+       return;
+   QQuickWebEngineViewExperimental::Feature feature;
+   if (requestFlags & (WebContentsAdapterClient::MediaAudioCapture | WebContentsAdapterClient::MediaAudioCapture))
+       feature = QQuickWebEngineViewExperimental::MediaAudioVideoDevices;
+   else if (requestFlags & WebContentsAdapterClient::MediaAudioCapture)
+       feature = QQuickWebEngineViewExperimental::MediaAudioDevices;
+   else if (requestFlags & WebContentsAdapterClient::MediaVideoCapture)
+       feature = QQuickWebEngineViewExperimental::MediaVideoDevices;
+   Q_EMIT e->featurePermissionRequested(feature, securityOrigin);
+}
+
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
 {
     this->devicePixelRatio = devicePixelRatio;
@@ -516,6 +530,26 @@ void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const
 QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const
 {
     return d_ptr->m_history.data();
+}
+
+void QQuickWebEngineViewExperimental::grantFeaturePermission(QQuickWebEngineViewExperimental::Feature feature, bool granted)
+{
+    if (!granted && feature >= MediaAudioDevices && feature <= MediaAudioVideoDevices) {
+         d_ptr->adapter->grantMediaAccessPermission(WebContentsAdapterClient::MediaNone);
+         return;
+    }
+
+    switch (feature) {
+    case MediaAudioDevices:
+        d_ptr->adapter->grantMediaAccessPermission(WebContentsAdapterClient::MediaAudioCapture);
+        break;
+    case MediaVideoDevices:
+        d_ptr->adapter->grantMediaAccessPermission(WebContentsAdapterClient::MediaVideoCapture);
+        break;
+    case MediaAudioVideoDevices:
+        d_ptr->adapter->grantMediaAccessPermission(WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaAudioCapture | WebContentsAdapterClient::MediaVideoCapture));
+        break;
+    }
 }
 
 void QQuickWebEngineViewExperimental::goBackTo(int index)
