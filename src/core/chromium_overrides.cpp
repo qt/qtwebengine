@@ -128,12 +128,14 @@ void RenderWidgetHostViewPort::GetDefaultScreenInfo(blink::WebScreenInfo* result
     GetScreenInfoFromNativeWindow(&dummy, results);
 }
 
+#if defined(USE_AURA) && !defined(USE_OZONE)
 // content/common/font_list.h
 scoped_ptr<base::ListValue> GetFontList_SlowBlocking()
 {
     QT_NOT_USED
     return scoped_ptr<base::ListValue>(new base::ListValue);
 }
+#endif
 }
 
 #if defined(USE_AURA) && !defined(USE_OZONE)
