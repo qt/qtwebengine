@@ -13,6 +13,7 @@ SOURCES = \
         api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
         api/qquickwebengineview.cpp \
+        api/qtwebengineglobal.cpp \
         render_widget_host_view_qt_delegate_quick.cpp \
         ui_delegates_manager.cpp
 

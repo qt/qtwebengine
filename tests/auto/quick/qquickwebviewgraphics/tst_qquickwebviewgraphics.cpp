@@ -43,7 +43,8 @@
 #include <QQmlContext>
 #include <QQuickView>
 #include <QQuickItem>
-#include <QtQuick/private/qsgcontext_p.h>
+#include <QPainter>
+#include <qtwebengineglobal.h>
 
 class TestView : public QQuickView {
     Q_OBJECT
@@ -111,12 +112,7 @@ void tst_QQuickWebViewGraphics::initTestCase()
 #if defined(TST_QQUICKWEBVIEWGRAPHICS_SOFTWARE)
     qApp->setProperty("QQuickWebEngineView_DisableHardwareAcceleration", QVariant(true));
 #else
-    // This is currently needed by all QtWebEngine application using the HW accelerated QQuickWebView.
-    // It enables sharing between the QOpenGLContext of all QQuickWindows of the application.
-    // We have to do so until we expose a public API for it, or chose enable it by default in Qt 5.3.0.
-    QOpenGLContext *shareContext = new QOpenGLContext;
-    shareContext->create();
-    QSGContext::setSharedOpenGLContext(shareContext);
+    QWebEngine::initialize();
 #endif
 }
 

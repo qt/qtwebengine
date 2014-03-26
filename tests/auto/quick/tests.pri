@@ -9,8 +9,7 @@ TARGET = tst_$$TARGET
 SOURCES += $${TARGET}.cpp
 INCLUDEPATH += $$PWD
 
-QT += testlib network quick
-QT_PRIVATE += quick-private gui-private core-private
+QT += testlib network quick webengine
 
 macx: CONFIG -= app_bundle
 

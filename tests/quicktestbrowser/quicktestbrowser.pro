@@ -13,8 +13,7 @@ OTHER_FILES += ContextMenuExtras.qml \
 
 RESOURCES += resources.qrc
 
-QT += qml quick
-QT_PRIVATE += quick-private gui-private core-private
+QT += qml quick webengine
 
 qtHaveModule(widgets) {
     QT += widgets # QApplication is required to get native styling with QtQuickControls
