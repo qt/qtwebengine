@@ -51,7 +51,7 @@
 #endif
 
 #include "qopenglcontext.h"
-#include <QtQuick/private/qsgcontext_p.h>
+#include <qtwebengineglobal.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,11 +72,8 @@ QT_BEGIN_NAMESPACE
         qputenv("QTWEBENGINEPROCESS_PATH", QWP_PATH); \
         if (!QCoreApplication::instance()) \
             app = new Application(argc, argv); \
-        QOpenGLContext *shareContext = new QOpenGLContext(); \
-        shareContext->create(); \
-        QSGContext::setSharedOpenGLContext(shareContext); \
+        QWebEngine::initialize(); \
         int i = quick_test_main(argc, argv, #name, QUICK_TEST_SOURCE_DIR); \
-        delete shareContext; \
         delete app; \
         return i; \
     }

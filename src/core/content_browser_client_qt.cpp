@@ -249,7 +249,9 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
 {
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
     QOpenGLContext *shareContext = QSGContext::sharedOpenGLContext();
-    Q_ASSERT(shareContext);
+    if (!shareContext) {
+        qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QWebEngine::initialize() in your main() function.");
+    }
     m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
 }
 
