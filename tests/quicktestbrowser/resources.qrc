@@ -1,10 +1,10 @@
-<!DOCTYPE RCC><RCC version="1.0">
+<RCC>
     <qresource prefix="/">
         <file>quickwindow.qml</file>
         <file>ContextMenuExtras.qml</file>
+        <file>FeaturePermissionBar.qml</file>
     </qresource>
-    <qresource prefix="icons">
-        <!-- To the risk of this breaking more often, do not duplicate the resources since this application won't be deployed -->
+    <qresource prefix="/icons">
         <file alias="go-next.png">../../examples/webengine/quicknanobrowser/icons/go-next.png</file>
         <file alias="go-previous.png">../../examples/webengine/quicknanobrowser/icons/go-previous.png</file>
         <file alias="process-stop.png">../../examples/webengine/quicknanobrowser/icons/process-stop.png</file>
