@@ -114,6 +114,22 @@ ApplicationWindow {
         }
     }
 
+    Menu {
+        id: historyMenu
+
+        Instantiator {
+            model: currentWebView && currentWebView.experimental.navigationHistory.items
+            MenuItem {
+                text: model.title
+                enabled: currentWebView && index != currentWebView.experimental.currentNavigationEntryIndex
+                onTriggered: currentWebView.experimental.navigateToIndex(index)
+            }
+
+            onObjectAdded: historyMenu.insertItem(index, object)
+            onObjectRemoved: historyMenu.removeItem(object)
+        }
+    }
+
     toolBar: ToolBar {
         id: navigationBar
             RowLayout {
@@ -124,6 +140,12 @@ ApplicationWindow {
                     onClicked: currentWebView.goBack()
                     enabled: currentWebView && currentWebView.canGoBack
                     activeFocusOnTab: !browserWindow.platformIsMac
+
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton
+                        onClicked: historyMenu.popup()
+                    }
                 }
                 ToolButton {
                     id: forwardButton
@@ -131,6 +153,12 @@ ApplicationWindow {
                     onClicked: currentWebView.goForward()
                     enabled: currentWebView && currentWebView.canGoForward
                     activeFocusOnTab: !browserWindow.platformIsMac
+
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton
+                        onClicked: historyMenu.popup()
+                    }
                 }
                 ToolButton {
                     id: reloadButton
