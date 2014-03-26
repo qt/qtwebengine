@@ -50,7 +50,7 @@ import QtQuick.Controls.Private 1.0
 ApplicationWindow {
     id: browserWindow
     function load(url) { currentWebView.url = url }
-    property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
+    property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item.webView : null
 
     property bool isFullScreen: visibility == Window.FullScreen
     onIsFullScreenChanged: {
@@ -250,53 +250,79 @@ ApplicationWindow {
 
         Component {
             id: tabComponent
-            WebEngineView {
-                id: webEngineView
-                focus: true
-
-                states: [
-                    State {
-                        name: "FullScreen"
-                        PropertyChanges {
-                            target: tabs
-                            frameVisible: false
-                            tabsVisible: false
-                        }
-                        PropertyChanges {
-                            target: navigationBar
-                            visible: false
-                        }
+            Item {
+                property alias webView: webEngineView
+                property alias title: webEngineView.title
+                FeaturePermissionBar {
+                    id: permBar
+                    view: webEngineView
+                    anchors {
+                        left: parent.left
+                        right: parent.right
+                        top: parent.top
                     }
-                ]
+                    z: 3
+                }
 
-                experimental {
-                    isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
-                    onFullScreenRequested: {
-                        if (fullScreen) {
-                            webEngineView.state = "FullScreen"
-                            browserWindow.showFullScreen();
-                        } else {
-                            webEngineView.state = ""
-                            browserWindow.showNormal();
-                        }
+                WebEngineView {
+                    id: webEngineView
+
+                    anchors {
+                        fill: parent
+                        top: permBar.bottom
                     }
 
-                    onNewViewRequested: {
-                        if (!request.userInitiated)
-                            print("Warning: Blocked a popup window.")
-                        else if (request.destination == WebEngineView.NewViewInTab) {
-                            var tab = tabs.createEmptyTab()
-                            request.openIn(tab.item)
-                        } else if (request.destination == WebEngineView.NewViewInDialog) {
-                            var dialog = dialogComponent.createObject()
-                            request.openIn(dialog.webView)
-                        } else {
-                            var component = Qt.createComponent("quickwindow.qml")
-                            var window = component.createObject()
-                            request.openIn(window.currentWebView)
+                    focus: true
+
+                    states: [
+                        State {
+                            name: "FullScreen"
+                            PropertyChanges {
+                                target: tabs
+                                frameVisible: false
+                                tabsVisible: false
+                            }
+                            PropertyChanges {
+                                target: navigationBar
+                                visible: false
+                            }
                         }
+                    ]
+
+                    experimental {
+                        isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
+                        onFullScreenRequested: {
+                            if (fullScreen) {
+                                webEngineView.state = "FullScreen"
+                                browserWindow.showFullScreen();
+                            } else {
+                                webEngineView.state = ""
+                                browserWindow.showNormal();
+                            }
+                        }
+
+                        onNewViewRequested: {
+                            if (!request.userInitiated)
+                                print("Warning: Blocked a popup window.")
+                            else if (request.destination == WebEngineView.NewViewInTab) {
+                                var tab = tabs.createEmptyTab()
+                                request.openIn(tab.item.webView)
+                            } else if (request.destination == WebEngineView.NewViewInDialog) {
+                                var dialog = dialogComponent.createObject()
+                                request.openIn(dialog.webView)
+                            } else {
+                                var component = Qt.createComponent("quickwindow.qml")
+                                var window = component.createObject()
+                                request.openIn(window.currentWebView)
+                            }
+                        }
+                        onFeaturePermissionRequested: {
+                            permBar.securityOrigin = securityOrigin;
+                            permBar.requestedFeature = feature;
+                            permBar.visible = true;
+                        }
+                        extraContextMenuEntriesComponent: ContextMenuExtras {}
                     }
-                    extraContextMenuEntriesComponent: ContextMenuExtras {}
                 }
             }
         }
