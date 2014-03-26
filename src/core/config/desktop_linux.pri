@@ -1,3 +1,5 @@
+GYP_ARGS += "-D qt_os=\"desktop_linux\""
+
 GYP_CONFIG += \
     desktop_linux=1 \
     toolkit_uses_gtk=0 \

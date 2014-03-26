@@ -46,7 +46,7 @@
           '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
         ],
       }],
-      ['_toolset=="target" and qt_os=="android"', {
+      ['_toolset=="target" and qt_os=="embedded_android"', {
         'configurations': {
           'Debug_Base': {
             # Reduce the binary size.
