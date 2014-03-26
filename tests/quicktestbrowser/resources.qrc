@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>quickwindow.qml</file>
         <file>ContextMenuExtras.qml</file>
+        <file>FeaturePermissionBar.qml</file>
     </qresource>
     <qresource prefix="icons">
         <!-- To the risk of this breaking more often, do not duplicate the resources since this application won't be deployed -->
