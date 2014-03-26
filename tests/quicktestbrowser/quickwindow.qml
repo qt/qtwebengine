@@ -114,6 +114,36 @@ ApplicationWindow {
         }
     }
 
+    Menu {
+        id: backHistoryMenu
+
+        Instantiator {
+            model: currentWebView && currentWebView.experimental.navigationHistory.backItems
+            MenuItem {
+                text: model.title
+                onTriggered: currentWebView.experimental.goBackTo(index)
+            }
+
+            onObjectAdded: backHistoryMenu.insertItem(index, object)
+            onObjectRemoved: backHistoryMenu.removeItem(object)
+        }
+    }
+
+    Menu {
+        id: forwardHistoryMenu
+
+        Instantiator {
+            model: currentWebView && currentWebView.experimental.navigationHistory.forwardItems
+            MenuItem {
+                text: model.title
+                onTriggered: currentWebView.experimental.goForwardTo(index)
+            }
+
+            onObjectAdded: forwardHistoryMenu.insertItem(index, object)
+            onObjectRemoved: forwardHistoryMenu.removeItem(object)
+        }
+    }
+
     toolBar: ToolBar {
         id: navigationBar
             RowLayout {
@@ -124,6 +154,12 @@ ApplicationWindow {
                     onClicked: currentWebView.goBack()
                     enabled: currentWebView && currentWebView.canGoBack
                     activeFocusOnTab: !browserWindow.platformIsMac
+
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton
+                        onClicked: backHistoryMenu.popup()
+                    }
                 }
                 ToolButton {
                     id: forwardButton
@@ -131,6 +167,12 @@ ApplicationWindow {
                     onClicked: currentWebView.goForward()
                     enabled: currentWebView && currentWebView.canGoForward
                     activeFocusOnTab: !browserWindow.platformIsMac
+
+                    MouseArea {
+                        anchors.fill: parent
+                        acceptedButtons: Qt.RightButton
+                        onClicked: forwardHistoryMenu.popup()
+                    }
                 }
                 ToolButton {
                     id: reloadButton
