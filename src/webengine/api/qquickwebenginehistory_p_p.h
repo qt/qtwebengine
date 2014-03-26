@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEHISOTRY_P_P_H
+#ifndef QQUICKWEBENGINEHISTORY_P_P_H
 #define QQUICKWEBENGINEHISTORY_P_P_H
 
 class WebContentsAdapter;
