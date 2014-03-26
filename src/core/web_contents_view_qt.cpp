@@ -88,11 +88,6 @@ void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeVie
     m_factoryClient = reinterpret_cast<WebContentsAdapterClient *>(context);
 }
 
-void WebContentsViewQt::SetPageTitle(const string16& title)
-{
-    m_client->titleChanged(toQt(title));
-}
-
 gfx::NativeView WebContentsViewQt::GetNativeView() const
 {
     // Hack to provide the client to WebContentsImpl::CreateNewWindow.
