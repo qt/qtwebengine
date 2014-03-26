@@ -46,10 +46,10 @@
           '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
         ],
       }],
-      # android and embedded_linux need some special flags.
-      ['qt_os=="embedded_linux" or qt_os=="android"', {
+      # embedded_android and embedded_linux need some additional options.
+      ['qt_os=="embedded_linux" or qt_os=="embedded_android"', {
         'conditions': [
-          ['qt_os=="android"', {
+          ['qt_os=="embedded_android"', {
             'dependencies': [
               '<(chromium_src_dir)/third_party/ashmem/ashmem.gyp:ashmem',
               '<(chromium_src_dir)/third_party/freetype/freetype.gyp:ft2',
