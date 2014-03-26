@@ -88,11 +88,12 @@ GYP_CONTENTS += "    ],"
     GYP_CONTENTS += "    ],"
 }
 
-!isEmpty(DEFINES) {
-  GYP_CONTENTS += "    'defines': ["
-  for (define, DEFINES): GYP_CONTENTS += "      '$$define',"
-  GYP_CONTENTS += "    ],"
-}
+GYP_CONTENTS += "    'defines': ["
+for (define, DEFINES): GYP_CONTENTS += "      '$$define',"
+!isEmpty(QMAKE_LIBDIR_EGL): GYP_CONTENTS += "      'QT_LIBDIR_EGL=\"$${QMAKE_DIR_SEP}$$relative_path($$QMAKE_LIBDIR_EGL, $$[QT_SYSROOT])\"',"
+!isEmpty(QMAKE_LIBDIR_OPENGL_ES2): GYP_CONTENTS += "      'QT_LIBDIR_GLES2=\"$${QMAKE_DIR_SEP}$$relative_path($$QMAKE_LIBDIR_OPENGL_ES2, $$[QT_SYSROOT])\"',"
+GYP_CONTENTS += "    ],"
+
 !isEmpty(GYP_DYLIB_INSTALL_NAME_BASE) {
   GYP_CONTENTS += "    'xcode_settings': {" \
                   "      'DYLIB_INSTALL_NAME_BASE': '$$GYP_DYLIB_INSTALL_NAME_BASE'," \
