@@ -39,23 +39,37 @@
 **
 ****************************************************************************/
 
-#include "quickwindow.h"
-#ifndef QT_NO_WIDGETS
-#include <QtWidgets/QApplication>
-typedef QApplication Application;
-#else
-#include <QtGui/QGuiApplication>
-typedef QGuiApplication Application;
-#endif
-#include <qtwebengineglobal.h>
+#include "qtwebengineglobal.h"
 
-int main(int argc, char **argv)
+#include <private/qsgcontext_p.h>
+#include <QGuiApplication>
+
+static QOpenGLContext *shareContext;
+
+static void deleteShareContext()
 {
-    Application app(argc, argv);
-
-    QWebEngine::initialize();
-
-    ApplicationEngine appEngine;
-
-    return app.exec();
+    delete shareContext;
+    shareContext = 0;
 }
+
+void QWebEngine::initialize()
+{
+    QCoreApplication *app = QCoreApplication::instance();
+    if (!app) {
+        qFatal("QWebEngine::initialize() must be called after the construction of the application object.");
+        return;
+    }
+    if (app->thread() != QThread::currentThread()) {
+        qFatal("QWebEngine::initialize() must be called from the Qt gui thread.");
+        return;
+    }
+
+    if (shareContext)
+        return;
+
+    shareContext = new QOpenGLContext;
+    shareContext->create();
+    qAddPostRoutine(deleteShareContext);
+    QSGContext::setSharedOpenGLContext(shareContext);
+}
+
