@@ -7,10 +7,14 @@ TEMPLATE = aux
 cross_compile {
     GYP_ARGS = "-D qt_cross_compile=1"
     posix: GYP_ARGS += "-D os_posix=1"
+    linux: include(config/embedded_linux.pri)
+    android: include(config/android.pri)
 } else {
     # !cross_compile
     GYP_ARGS = "-D qt_cross_compile=0"
     linux: include(config/desktop_linux.pri)
+    mac: include(config/mac_osx.pri)
+    win32: include(config/windows.pri)
 }
 
 # Append additional platform options defined in GYP_CONFIG
@@ -25,19 +29,6 @@ for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
 cross_compile {
     TOOLCHAIN_SYSROOT = $$[QT_SYSROOT]
-
-    android {
-        CC = $$which($$QMAKE_CC)
-        ANDROID_TOOLCHAIN = $$dirname(CC)
-        TOOLCHAIN_SYSROOT = $$ANDROID_BUILD_TOP
-
-        GYP_ARGS += "-D qt_os=\"android\" -D android_src=\"$${TOOLCHAIN_SYSROOT}\" -D android_toolchain=\"$${ANDROID_TOOLCHAIN}\"" \
-                    "-D android_ndk_root=\"$${TOOLCHAIN_SYSROOT}\" -D android_product_out=\"$${ANDROID_PRODUCT_OUT}\""
-    }
-
-    linux {
-        GYP_ARGS += "-D qt_os=\"embedded_linux\""
-    }
 
     !isEmpty(TOOLCHAIN_SYSROOT): GYP_ARGS += "-D sysroot=\"$${TOOLCHAIN_SYSROOT}\""
 
@@ -77,15 +68,6 @@ cross_compile {
 
     # Needed for v8, see chromium/v8/build/toolchain.gypi
     GYP_ARGS += "-D CXX=\"$$which($$QMAKE_CXX)\""
-}
-
-win32 {
-    # Libvpx build needs additional search path on Windows.
-    git_chromium_src_dir = $$system("git config qtwebengine.chromiumsrcdir")
-    GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$OUT_PWD/$$getConfigDir()/obj/$$git_chromium_src_dir\""
-
-    # Use path from environment for perl, bison and gperf instead of values set in WebKit's core.gypi.
-    GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"gperf.exe\""
 }
 
 !build_pass {
