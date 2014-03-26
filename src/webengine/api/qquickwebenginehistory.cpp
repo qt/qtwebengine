@@ -92,6 +92,21 @@ int QQuickWebEngineForwardHistoryListModelPrivate::index(int i) const
     return adapter()->currentNavigationEntryIndex() + i;
 }
 
+QQuickWebEngineBackForwardHistoryListModelPrivate::QQuickWebEngineBackForwardHistoryListModelPrivate(QQuickWebEngineViewPrivate *view)
+    : QQuickWebEngineHistoryListModelPrivate(view)
+{
+}
+
+int QQuickWebEngineBackForwardHistoryListModelPrivate::count() const
+{
+    return adapter()->navigationEntryCount();
+}
+
+int QQuickWebEngineBackForwardHistoryListModelPrivate::index(int i) const
+{
+    return i;
+}
+
 QQuickWebEngineHistoryListModel::QQuickWebEngineHistoryListModel()
     : QAbstractListModel()
 {
@@ -150,6 +165,7 @@ void QQuickWebEngineHistoryListModel::reset()
 QQuickWebEngineHistoryPrivate::QQuickWebEngineHistoryPrivate(QQuickWebEngineViewPrivate *view)
     : m_backNavigationModel(new QQuickWebEngineHistoryListModel(new QQuickWebEngineBackHistoryListModelPrivate(view)))
     , m_forwardNavigationModel(new QQuickWebEngineHistoryListModel(new QQuickWebEngineForwardHistoryListModelPrivate(view)))
+    , m_backForwardNavigationModel(new QQuickWebEngineHistoryListModel(new QQuickWebEngineBackForwardHistoryListModelPrivate(view)))
 {
 }
 
@@ -178,6 +194,12 @@ QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::forwardItems() const
     return d->m_forwardNavigationModel.data();
 }
 
+QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::backForwardItems() const
+{
+    Q_D(const QQuickWebEngineHistory);
+    return d->m_backForwardNavigationModel.data();
+}
+
 void QQuickWebEngineHistory::reset(QQuickWebEngineLoadRequest *loadRequest)
 {
     Q_D(QQuickWebEngineHistory);
@@ -187,6 +209,7 @@ void QQuickWebEngineHistory::reset(QQuickWebEngineLoadRequest *loadRequest)
 
     d->m_backNavigationModel->reset();
     d->m_forwardNavigationModel->reset();
+    d->m_backForwardNavigationModel->reset();
 }
 
 

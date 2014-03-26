@@ -77,6 +77,14 @@ public:
     int index(int) const;
 };
 
+class QQuickWebEngineBackForwardHistoryListModelPrivate : public QQuickWebEngineHistoryListModelPrivate {
+public:
+    QQuickWebEngineBackForwardHistoryListModelPrivate(QQuickWebEngineViewPrivate*);
+
+    int count() const;
+    int index(int) const;
+};
+
 class QQuickWebEngineHistoryPrivate {
 public:
     QQuickWebEngineHistoryPrivate(QQuickWebEngineViewPrivate*);
@@ -84,6 +92,7 @@ public:
 
     QScopedPointer<QQuickWebEngineHistoryListModel> m_backNavigationModel;
     QScopedPointer<QQuickWebEngineHistoryListModel> m_forwardNavigationModel;
+    QScopedPointer<QQuickWebEngineHistoryListModel> m_backForwardNavigationModel;
 };
 
 QT_END_NAMESPACE

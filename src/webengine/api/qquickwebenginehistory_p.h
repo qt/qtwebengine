@@ -84,6 +84,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineHistory : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineHistoryListModel *backItems READ backItems CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineHistoryListModel *forwardItems READ forwardItems CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineHistoryListModel *items READ backForwardItems CONSTANT FINAL)
 
 public:
     QQuickWebEngineHistory(QQuickWebEngineViewPrivate*);
@@ -96,6 +97,7 @@ public:
 
     QQuickWebEngineHistoryListModel *backItems() const;
     QQuickWebEngineHistoryListModel *forwardItems() const;
+    QQuickWebEngineHistoryListModel *backForwardItems() const;
 
 public Q_SLOTS:
     void reset(QQuickWebEngineLoadRequest*);

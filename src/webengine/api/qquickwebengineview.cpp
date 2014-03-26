@@ -536,6 +536,21 @@ void QQuickWebEngineViewExperimental::goForwardTo(int index)
     d_ptr->adapter->navigateToIndex(d_ptr->adapter->currentNavigationEntryIndex() + 1 + index);
 }
 
+void QQuickWebEngineViewExperimental::navigateToIndex(int index)
+{
+    int count = d_ptr->adapter->navigationEntryCount();
+
+    if (index < 0 || index >= count)
+        return;
+
+    d_ptr->adapter->navigateToIndex(index);
+}
+
+int QQuickWebEngineViewExperimental::currentNavigationEntryIndex() const
+{
+    return d_ptr->adapter->currentNavigationEntryIndex();
+}
+
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);

@@ -71,8 +71,19 @@ TestWebEngineView {
             }
     }
 
+    ListView {
+        id: backForwardItemsList
+        anchors.fill: parent
+        model: webEngineView.experimental.navigationHistory.items
+        delegate:
+            Text {
+                color:"black"
+                text: "title : " + title
+            }
+    }
+
     TestCase {
-        name: "WebViewNavigationHistory"
+        name: "WebEngineViewNavigationHistory"
 
         function test_navigationHistory() {
             compare(webEngineView.loadProgress, 0)
@@ -83,6 +94,8 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 0)
             compare(forwardItemsList.count, 0)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 0)
+            compare(backForwardItemsList.count, 1)
 
             webEngineView.url = Qt.resolvedUrl("test2.html")
             verify(webEngineView.waitForLoadSucceeded())
@@ -90,6 +103,8 @@ TestWebEngineView {
             compare(webEngineView.canGoBack, true)
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 1)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 1)
+            compare(backForwardItemsList.count, 2)
 
             webEngineView.experimental.goBackTo(0)
             verify(webEngineView.waitForLoadSucceeded())
@@ -98,6 +113,8 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, true)
             compare(backItemsList.count, 0)
             compare(forwardItemsList.count, 1)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 0)
+            compare(backForwardItemsList.count, 2)
 
             webEngineView.goForward()
             verify(webEngineView.waitForLoadSucceeded())
@@ -106,6 +123,8 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 1)
             compare(forwardItemsList.count, 0)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 1)
+            compare(backForwardItemsList.count, 2)
 
             webEngineView.url = Qt.resolvedUrl("javascript.html")
             verify(webEngineView.waitForLoadSucceeded())
@@ -114,6 +133,8 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 2)
             compare(forwardItemsList.count, 0)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 2)
+            compare(backForwardItemsList.count, 3)
 
             webEngineView.experimental.goBackTo(1)
             verify(webEngineView.waitForLoadSucceeded())
@@ -122,6 +143,8 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, true)
             compare(backItemsList.count, 0)
             compare(forwardItemsList.count, 2)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 0)
+            compare(backForwardItemsList.count, 3)
 
             webEngineView.experimental.goForwardTo(1)
             verify(webEngineView.waitForLoadSucceeded())
@@ -130,6 +153,8 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 2)
             compare(forwardItemsList.count, 0)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 2)
+            compare(backForwardItemsList.count, 3)
 
             webEngineView.goBack()
             verify(webEngineView.waitForLoadSucceeded())
@@ -138,6 +163,28 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, true)
             compare(backItemsList.count, 1)
             compare(forwardItemsList.count, 1)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 1)
+            compare(backForwardItemsList.count, 3)
+
+            webEngineView.experimental.navigateToIndex(0)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, Qt.resolvedUrl("test1.html"))
+            compare(webEngineView.canGoBack, false)
+            compare(webEngineView.canGoForward, true)
+            compare(backItemsList.count, 0)
+            compare(forwardItemsList.count, 2)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 0)
+            compare(backForwardItemsList.count, 3)
+
+            webEngineView.experimental.navigateToIndex(2)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, Qt.resolvedUrl("javascript.html"))
+            compare(webEngineView.canGoBack, true)
+            compare(webEngineView.canGoForward, false)
+            compare(backItemsList.count, 2)
+            compare(forwardItemsList.count, 0)
+            compare(webEngineView.experimental.currentNavigationEntryIndex, 2)
+            compare(backForwardItemsList.count, 3)
         }
     }
 }

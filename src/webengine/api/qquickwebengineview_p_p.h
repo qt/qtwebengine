@@ -84,6 +84,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
+    Q_PROPERTY(int currentNavigationEntryIndex READ currentNavigationEntryIndex CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
 
 public:
@@ -98,6 +99,7 @@ public:
 public Q_SLOTS:
     void goBackTo(int index);
     void goForwardTo(int index);
+    void navigateToIndex(int index);
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
 
 Q_SIGNALS:
