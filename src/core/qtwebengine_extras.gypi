@@ -69,6 +69,9 @@
   },
   'conditions': [
     [ 'qt_os=="embedded_linux"', {
+      'variables': {
+        'external_ozone_platforms': [ 'eglfs', ],
+      },
       'target_defaults': {
         'sources/': [
           # This should get excluded when disabling printing.
