@@ -215,6 +215,17 @@ ApplicationWindow {
                     }
                 ]
 
+                FeaturePermissionBar {
+                    id: permBar
+                    view: parent
+                    anchors {
+                        top: parent.top
+                        left: parent.left
+                        right: parent.right
+                    }
+
+                }
+
                 experimental {
                     isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
                     onFullScreenRequested: {
@@ -238,6 +249,11 @@ ApplicationWindow {
                             var window = component.createObject()
                             request.openIn(window.currentWebView)
                         }
+                    }
+                    onFeaturePermissionRequested: {
+                        permBar.securityOrigin = securityOrigin;
+                        permBar.requestedFeature = feature;
+                        permBar.visible = true;
                     }
                     extraContextMenuEntriesComponent: ContextMenuExtras {}
                 }
