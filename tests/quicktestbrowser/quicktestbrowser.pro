@@ -9,6 +9,7 @@ SOURCES = quickwindow.cpp \
           main.cpp
 
 OTHER_FILES += ContextMenuExtras.qml \
+               FeaturePermissionBar.qml \
                quickwindow.qml
 
 RESOURCES += resources.qrc
