@@ -92,7 +92,6 @@ public:
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
-    int currentNavigationEntryIndex() const;
     QQuickWebEngineHistory *navigationHistory() const;
 
 public Q_SLOTS:
