@@ -53,10 +53,11 @@ TestWebEngineView {
         id: backItemsList
         anchors.fill: parent
         model: webEngineView.experimental.navigationHistory.backItems
+        currentIndex: count - 1
         delegate:
             Text {
                 color:"black"
-                text: "title : " + title
+                text: url
             }
     }
 
@@ -64,10 +65,11 @@ TestWebEngineView {
         id: forwardItemsList
         anchors.fill: parent
         model: webEngineView.experimental.navigationHistory.forwardItems
+        currentIndex: 0
         delegate:
             Text {
                 color:"black"
-                text: "title : " + title
+                text: url
             }
     }
 
@@ -90,6 +92,7 @@ TestWebEngineView {
             compare(webEngineView.canGoBack, true)
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 1)
+            compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
 
             webEngineView.experimental.goBackTo(0)
             verify(webEngineView.waitForLoadSucceeded())
@@ -98,6 +101,7 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, true)
             compare(backItemsList.count, 0)
             compare(forwardItemsList.count, 1)
+            compare(forwardItemsList.currentItem.text, Qt.resolvedUrl("test2.html"))
 
             webEngineView.goForward()
             verify(webEngineView.waitForLoadSucceeded())
@@ -106,6 +110,7 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 1)
             compare(forwardItemsList.count, 0)
+            compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
 
             webEngineView.url = Qt.resolvedUrl("javascript.html")
             verify(webEngineView.waitForLoadSucceeded())
@@ -114,6 +119,7 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 2)
             compare(forwardItemsList.count, 0)
+            compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
 
             webEngineView.experimental.goBackTo(1)
             verify(webEngineView.waitForLoadSucceeded())
@@ -122,6 +128,7 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, true)
             compare(backItemsList.count, 0)
             compare(forwardItemsList.count, 2)
+            compare(forwardItemsList.currentItem.text, Qt.resolvedUrl("test2.html"))
 
             webEngineView.experimental.goForwardTo(1)
             verify(webEngineView.waitForLoadSucceeded())
@@ -130,6 +137,7 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, false)
             compare(backItemsList.count, 2)
             compare(forwardItemsList.count, 0)
+            compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
 
             webEngineView.goBack()
             verify(webEngineView.waitForLoadSucceeded())
@@ -138,6 +146,8 @@ TestWebEngineView {
             compare(webEngineView.canGoForward, true)
             compare(backItemsList.count, 1)
             compare(forwardItemsList.count, 1)
+            compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
+            compare(forwardItemsList.currentItem.text, Qt.resolvedUrl("javascript.html"))
         }
     }
 }
