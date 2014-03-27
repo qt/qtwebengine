@@ -3,8 +3,13 @@
 import glob
 import os
 import sys
+import subprocess
 
 print 'using python: ' + sys.executable + ' version: ' + sys.version
+
+if sys.platform == "darwin":
+  print 'xcode version: ' + subprocess.check_output(['xcodebuild', '-version']).replace('\n', ' ')
+  print 'clang++ version: ' + subprocess.check_output(['clang++', '--version']).replace('\n', ' ')
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 import qtwebengine_utils as utils
