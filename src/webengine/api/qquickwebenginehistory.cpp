@@ -89,7 +89,7 @@ int QQuickWebEngineForwardHistoryListModelPrivate::count() const
 
 int QQuickWebEngineForwardHistoryListModelPrivate::index(int i) const
 {
-    return adapter()->currentNavigationEntryIndex() + i;
+    return adapter()->currentNavigationEntryIndex() + i + 1;
 }
 
 QQuickWebEngineHistoryListModel::QQuickWebEngineHistoryListModel()
