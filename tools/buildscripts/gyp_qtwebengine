@@ -2,6 +2,7 @@
 
 import glob
 import os
+import subprocess
 import sys
 
 print 'using python: ' + sys.executable + ' version: ' + sys.version
@@ -74,6 +75,13 @@ if __name__ == '__main__':
     os.mkdir(output_dir)
 
   args = sys.argv[2:]
+
+  # On Windows we have to update the path of Chromium's Cygwin in registry to ensure current build uses
+  # Cygwin from the current source directory.
+  if sys.platform.startswith('win32'):
+    print 'Updating Cygwin\'s path in registry...'
+    setup_mount = os.path.abspath(os.path.join(chrome_src,'third_party','cygwin','setup_mount.bat'))
+    ret = subprocess.call(setup_mount)
 
   # On Mac we want to override CXX and CC that is provided with
   # the Chromium GYP environment.
