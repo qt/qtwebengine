@@ -70,7 +70,6 @@
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
 #include <QtQuick/private/qquickclipnode_p.h>
-#include <QtQuick/private/qquickwindow_p.h>
 #include <QtQuick/private/qsgadaptationlayer_p.h>
 #include <QtQuick/private/qsgcontext_p.h>
 #include <QtQuick/private/qsgrenderer_p.h>
@@ -286,8 +285,8 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
         m_textureId = service_id(tex);
 }
 
-DelegatedFrameNode::DelegatedFrameNode(QQuickWindow *window)
-    : m_window(window)
+DelegatedFrameNode::DelegatedFrameNode(QSGRenderContext *sgRenderContext)
+    : m_sgRenderContext(sgRenderContext)
     , m_numPendingSyncPoints(0)
 {
     setFlag(UsePreprocess);
@@ -370,10 +369,8 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
         QSGNode *renderPassParent = 0;
         if (pass != rootRenderPass) {
             QSharedPointer<RenderPassTexture> rpTexture = findRenderPassTexture(pass->id, oldRenderPassTextures);
-            if (!rpTexture) {
-                QSGRenderContext *sgrc = QQuickWindowPrivate::get(m_window)->context;
-                rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id, sgrc));
-            }
+            if (!rpTexture)
+                rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id, m_sgRenderContext));
             m_renderPassTextures.append(rpTexture);
             rpTexture->setDevicePixelRatio(m_data->frameDevicePixelRatio);
             rpTexture->setRect(toQt(pass->output_rect));
@@ -404,8 +401,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
             switch (quad->material) {
             case cc::DrawQuad::CHECKERBOARD: {
                 const cc::CheckerboardDrawQuad *cbquad = cc::CheckerboardDrawQuad::MaterialCast(quad);
-                QSGRenderContext *sgrc = QQuickWindowPrivate::get(m_window)->context;
-                QSGRectangleNode *rectangleNode = sgrc->sceneGraphContext()->createRectangleNode();
+                QSGRectangleNode *rectangleNode = m_sgRenderContext->sceneGraphContext()->createRectangleNode();
 
                 rectangleNode->setRect(toQt(quad->rect));
                 rectangleNode->setColor(toQt(cbquad->color));
@@ -450,8 +446,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 break;
             } case cc::DrawQuad::SOLID_COLOR: {
                 const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
-                QSGRenderContext *sgrc = QQuickWindowPrivate::get(m_window)->context;
-                QSGRectangleNode *rectangleNode = sgrc->sceneGraphContext()->createRectangleNode();
+                QSGRectangleNode *rectangleNode = m_sgRenderContext->sceneGraphContext()->createRectangleNode();
 
                 // Qt only supports MSAA and this flag shouldn't be needed.
                 // If we ever want to use QSGRectangleNode::setAntialiasing for this we should

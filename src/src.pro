@@ -2,7 +2,7 @@ TEMPLATE = subdirs
 
 process.depends = core
 webengine.depends = core
-webenginewidgets.depends = core
+webenginewidgets.depends = core webengine
 webengine_plugin.subdir = webengine/plugin
 webengine_plugin.target = sub-webengine-plugin
 webengine_plugin.depends = webengine
@@ -21,6 +21,6 @@ SUBDIRS += core \
 # Another example of where this could be necessary is to make it easy to build proprietery codecs support.
 !contains(WEBENGINE_CONFIG, no_ui_delegates): SUBDIRS += webengine/ui
 
-qtHaveModule(widgets) {
+qtHaveModule(widgets):equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 2) {
     SUBDIRS += webenginewidgets
 }

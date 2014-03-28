@@ -41,19 +41,21 @@
 
 #include "render_widget_host_view_qt_delegate_widget.h"
 
-#include "qwebengineview.h"
 #include "qwebenginepage_p.h"
-#include <QtGlobal>
+#include "qwebengineview.h"
 #include <QLayout>
-#include <QResizeEvent>
-#include <QPainter>
-#include <QPaintEvent>
-#include <QWindow>
-#include <QtWidgets/QApplication>
+#include <QSGNode>
+#include <private/qsgadaptationlayer_p.h>
+#include <private/qsgcontext_p.h>
+#include <private/qsgrenderer_p.h>
+#include <private/qwidget_p.h>
 
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
-    : QWidget(parent)
+    : QOpenGLWidget(parent)
     , m_client(client)
+    , sgContext(QSGContext::createDefaultContext())
+    , sgRenderContext(new QSGRenderContext(sgContext.data()))
+    , rootNode(new QSGRootNode)
     , m_isPopup(false)
 {
     setFocusPolicy(Qt::ClickFocus);
@@ -68,7 +70,7 @@ void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient*
     QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
     if (pagePrivate->view) {
         pagePrivate->view->layout()->addWidget(this);
-        QWidget::show();
+        QOpenGLWidget::show();
     } else
         setParent(0);
 }
@@ -108,38 +110,38 @@ void RenderWidgetHostViewQtDelegateWidget::show()
     // Check if we're attached to a QWebEngineView, we don't
     // want to show anything else than popups as top-level.
     if (parent() || m_isPopup)
-        QWidget::show();
+        QOpenGLWidget::show();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::hide()
 {
-    QWidget::hide();
+    QOpenGLWidget::hide();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
 {
-    return QWidget::isVisible();
+    return QOpenGLWidget::isVisible();
 }
 
 QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 {
-    const QWidget* root = QWidget::window();
+    const QWidget* root = QOpenGLWidget::window();
     return root ? root->windowHandle() : 0;
 }
 
-void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
+void RenderWidgetHostViewQtDelegateWidget::update(const QRect&)
 {
-    QWidget::update(rect);
+    updateGL();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
 {
-    QWidget::setCursor(cursor);
+    QOpenGLWidget::setCursor(cursor);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::resize(int width, int height)
 {
-    QWidget::resize(width, height);
+    QOpenGLWidget::resize(width, height);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::move(const QPoint &screenPos)
@@ -153,7 +155,7 @@ void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVi
     if (qApp->inputMethod()->isVisible() == editorVisible)
         return;
 
-    QWidget::setAttribute(Qt::WA_InputMethodEnabled, editorVisible);
+    QOpenGLWidget::setAttribute(Qt::WA_InputMethodEnabled, editorVisible);
     qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
     qApp->inputMethod()->setVisible(editorVisible);
 }
@@ -170,25 +172,44 @@ QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQ
 
 bool RenderWidgetHostViewQtDelegateWidget::supportsHardwareAcceleration() const
 {
-    return false;
-}
-
-void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
-{
-    QPainter painter(this);
-    m_client->fetchBackingStore();
-    m_client->paint(&painter, event->rect());
+    return true;
 }
 
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
-    Q_UNUSED(resizeEvent);
+    QOpenGLWidget::resizeEvent(resizeEvent);
     m_client->notifyResize();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     if (!m_client->forwardEvent(event))
-        return QWidget::event(event);
+        return QOpenGLWidget::event(event);
     return true;
+}
+
+void RenderWidgetHostViewQtDelegateWidget::initializeGL()
+{
+    sgRenderContext->initialize(QOpenGLContext::currentContext());
+    sgRenderer.reset(sgRenderContext->createRenderer());
+    sgRenderer->setRootNode(rootNode.data());
+}
+
+void RenderWidgetHostViewQtDelegateWidget::paintGL()
+{
+    QSGNode *paintNode = m_client->updatePaintNode(rootNode->firstChild(), sgRenderContext.data());
+    if (paintNode != rootNode->firstChild()) {
+        delete rootNode->firstChild();
+        rootNode->appendChildNode(paintNode);
+    }
+
+    rootNode->markDirty(QSGNode::DirtyForceUpdate); // Force matrix, clip and opacity update.
+    sgRenderer->nodeChanged(rootNode.data(), QSGNode::DirtyForceUpdate); // Force render list update.
+
+    sgRenderer->setDeviceRect(size());
+    sgRenderer->setViewportRect(size());
+    sgRenderer->setProjectionMatrixToRect(QRectF(QPointF(), size()));
+    sgRenderer->setClearColor(Qt::transparent);
+
+    sgRenderContext->renderNextFrame(sgRenderer.data(), defaultFramebufferObject());
 }

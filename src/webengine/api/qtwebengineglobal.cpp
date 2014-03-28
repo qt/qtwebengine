@@ -41,8 +41,10 @@
 
 #include "qtwebengineglobal.h"
 
-#include <private/qsgcontext_p.h>
 #include <QGuiApplication>
+#include <QThread>
+#include <private/qopenglcontext_p.h>
+#include <private/qsgcontext_p.h>
 
 static QOpenGLContext *shareContext;
 
@@ -56,11 +58,11 @@ void QWebEngine::initialize()
 {
     QCoreApplication *app = QCoreApplication::instance();
     if (!app) {
-        qFatal("QWebEngine::initialize() must be called after the construction of the application object.");
+        qFatal("QWebEngine(Widgets)::initialize() must be called after the construction of the application object.");
         return;
     }
     if (app->thread() != QThread::currentThread()) {
-        qFatal("QWebEngine::initialize() must be called from the Qt gui thread.");
+        qFatal("QWebEngine(Widgets)::initialize() must be called from the Qt gui thread.");
         return;
     }
 
@@ -70,6 +72,10 @@ void QWebEngine::initialize()
     shareContext = new QOpenGLContext;
     shareContext->create();
     qAddPostRoutine(deleteShareContext);
+#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 0))
     QSGContext::setSharedOpenGLContext(shareContext);
+#else
+    QOpenGLContextPrivate::setGlobalShareContext(shareContext);
+#endif
 }
 

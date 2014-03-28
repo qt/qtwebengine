@@ -45,6 +45,7 @@ public:
     bool eventFilter(QObject* watched, QEvent* event);
 
 public Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -113,6 +114,11 @@ bool tst_QWebEngineFrame::eventFilter(QObject* watched, QEvent* event)
             m_inputFieldTestPaintCount++;
     }
     return QObject::eventFilter(watched, event);
+}
+
+void tst_QWebEngineFrame::initTestCase()
+{
+    QWebEngineWidgets::initialize();
 }
 
 void tst_QWebEngineFrame::init()

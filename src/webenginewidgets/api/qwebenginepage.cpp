@@ -148,7 +148,7 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
-    , adapter(new WebContentsAdapter(SoftwareRenderingMode))
+    , adapter(new WebContentsAdapter(HardwareAccelerationMode))
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , view(0)
 {
@@ -353,7 +353,7 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 
 void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
-    QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this, WebContentsAdapterClient::SoftwareRenderingMode);
+    QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this, WebContentsAdapterClient::HardwareAccelerationMode);
     if (newWebContents) {
         adapter = newWebContents.data();
         adapter->initialize(this);
