@@ -66,7 +66,7 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
 
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    return m_client->updatePaintNode(oldNode, QQuickItem::window());
+    return m_client->updatePaintNode(oldNode, QQuickWindowPrivate::get(QQuickItem::window())->context);
 }
 
 RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)

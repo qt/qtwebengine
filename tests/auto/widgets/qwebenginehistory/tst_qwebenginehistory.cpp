@@ -42,6 +42,7 @@ protected :
     }
 
 public Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -84,6 +85,11 @@ tst_QWebEngineHistory::tst_QWebEngineHistory()
 
 tst_QWebEngineHistory::~tst_QWebEngineHistory()
 {
+}
+
+void tst_QWebEngineHistory::initTestCase()
+{
+    QWebEngineWidgets::initialize();
 }
 
 void tst_QWebEngineHistory::init()

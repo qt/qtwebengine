@@ -51,8 +51,8 @@ QT_BEGIN_NAMESPACE
 class QCursor;
 class QEvent;
 class QPainter;
-class QQuickWindow;
 class QSGNode;
+class QSGRenderContext;
 class QVariant;
 class QWindow;
 class QInputMethodEvent;
@@ -64,7 +64,7 @@ class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegateClient {
 public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
     virtual void paint(QPainter *, const QRectF& boundingRect) = 0;
-    virtual QSGNode *updatePaintNode(QSGNode *, QQuickWindow *) = 0;
+    virtual QSGNode *updatePaintNode(QSGNode *, QSGRenderContext *) = 0;
     virtual void fetchBackingStore() = 0;
     virtual void notifyResize() = 0;
     virtual bool forwardEvent(QEvent *) = 0;

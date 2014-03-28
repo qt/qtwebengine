@@ -45,15 +45,17 @@
 #include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter_client.h"
 
-#include <QWidget>
-
-class BackingStoreQt;
+#include <private/qopenglwidget_p.h>
 
 QT_BEGIN_NAMESPACE
+class QSGContext;
+class QSGRenderContext;
+class QSGRenderer;
+class QSGRootNode;
 class QWindow;
 QT_END_NAMESPACE
 
-class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
+class RenderWidgetHostViewQtDelegateWidget : public QOpenGLWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
     RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
@@ -75,14 +77,19 @@ public:
     virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
 
 protected:
-    void paintEvent(QPaintEvent * event);
     bool event(QEvent *event);
     void resizeEvent(QResizeEvent *resizeEvent);
+    void initializeGL() Q_DECL_OVERRIDE;
+    void paintGL() Q_DECL_OVERRIDE;
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
 
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
+    QScopedPointer<QSGContext> sgContext;
+    QScopedPointer<QSGRenderContext> sgRenderContext;
+    QScopedPointer<QSGRootNode> rootNode;
+    QScopedPointer<QSGRenderer> sgRenderer;
     bool m_isPopup;
 };
 

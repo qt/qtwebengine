@@ -684,11 +684,11 @@ void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect
         m_backingStore->paintToTarget(painter, boundingRect);
 }
 
-QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QQuickWindow *window)
+QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QSGRenderContext *sgRenderContext)
 {
     DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
     if (!frameNode)
-        frameNode = new DelegatedFrameNode(window);
+        frameNode = new DelegatedFrameNode(sgRenderContext);
 
     frameNode->commit(m_frameNodeData.data(), &m_resourcesToRelease);
 

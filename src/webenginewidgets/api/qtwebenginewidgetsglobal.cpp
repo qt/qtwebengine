@@ -38,29 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QTWEBENGINEWIDGETSGLOBAL_H
-#define QTWEBENGINEWIDGETSGLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include "qtwebenginewidgetsglobal.h"
 
-QT_BEGIN_NAMESPACE
+#include "qtwebengineglobal.h"
 
-#ifndef QT_STATIC
-#  if defined(QT_BUILD_WEBENGINEWIDGETS_LIB)
-#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_EXPORT
-#  else
-#      define QWEBENGINEWIDGETS_EXPORT Q_DECL_IMPORT
-#  endif
-#else
-#  define QWEBENGINEWIDGETS_EXPORT
-#endif
-
-class QWEBENGINEWIDGETS_EXPORT QWebEngineWidgets
+void QWebEngineWidgets::initialize()
 {
-public:
-    static void initialize();
-};
-
-QT_END_NAMESPACE
-
-#endif // QTWEBENGINEWIDGETSGLOBAL_H
+    QWebEngine::initialize();
+}
