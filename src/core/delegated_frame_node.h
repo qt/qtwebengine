@@ -51,7 +51,7 @@
 #include <QWaitCondition>
 
 QT_BEGIN_NAMESPACE
-class QQuickWindow;
+class QSGRenderContext;
 QT_END_NAMESPACE
 
 namespace cc {
@@ -73,14 +73,14 @@ public:
 
 class DelegatedFrameNode : public QSGTransformNode {
 public:
-    DelegatedFrameNode(QQuickWindow *window);
+    DelegatedFrameNode(QSGRenderContext *sgRenderContext);
     ~DelegatedFrameNode();
     void preprocess();
     void commit(DelegatedFrameNodeData* data, cc::ReturnedResourceArray *resourcesToRelease);
 
 private:
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_data;
-    QQuickWindow *m_window;
+    QSGRenderContext *m_sgRenderContext;
     QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
     int m_numPendingSyncPoints;
     QWaitCondition m_mailboxesFetchedWaitCond;

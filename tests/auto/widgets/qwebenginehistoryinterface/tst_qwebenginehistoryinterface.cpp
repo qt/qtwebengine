@@ -34,6 +34,7 @@ public:
     virtual ~tst_QWebEngineHistoryInterface();
 
 public Q_SLOTS:
+    void initTestCase();
     void init();
     void cleanup();
 
@@ -54,6 +55,11 @@ tst_QWebEngineHistoryInterface::tst_QWebEngineHistoryInterface()
 
 tst_QWebEngineHistoryInterface::~tst_QWebEngineHistoryInterface()
 {
+}
+
+void tst_QWebEngineHistoryInterface::initTestCase()
+{
+    QWebEngineWidgets::initialize();
 }
 
 void tst_QWebEngineHistoryInterface::init()
