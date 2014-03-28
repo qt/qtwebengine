@@ -17,6 +17,8 @@ cross_compile {
     win32: include(config/windows.pri)
 }
 
+GYP_CONFIG +="disable_glibcxx_debug=1"
+
 # Append additional platform options defined in GYP_CONFIG
 for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
