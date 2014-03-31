@@ -113,7 +113,7 @@ if __name__ == '__main__':
   # option.  http://crbug.com/35878.
   # TODO(tc): Fix circular dependencies in ChromiumOS then add linux2 to the
   # list.
-  if sys.platform not in ('darwin',):
+  if sys.platform not in ('darwin',) or 'GYP_CROSSCOMPILE' in os.environ:
     args.append('--no-circular-check')
 
   args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
