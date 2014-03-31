@@ -60,6 +60,7 @@
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/size_conversions.h"
 #include "webkit/common/cursors/webcursor.h"
@@ -644,6 +645,14 @@ void RenderWidgetHostViewQt::SelectionChanged(const string16 &text, size_t offse
 {
     content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
     m_adapterClient->selectionChanged();
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+    // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
+    ui::ScopedClipboardWriter clipboard_writer(
+                ui::Clipboard::GetForCurrentThread(),
+                ui::CLIPBOARD_TYPE_SELECTION);
+    clipboard_writer.WriteText(text);
+#endif
 }
 
 bool RenderWidgetHostViewQt::CanDispatchToConsumer(ui::GestureConsumer *consumer)
