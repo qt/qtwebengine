@@ -74,6 +74,9 @@ if __name__ == '__main__':
 
   args = sys.argv[2:]
 
+  if 'qt_cross_compile=1' in sys.argv:
+    os.environ['GYP_CROSSCOMPILE'] = '1'
+
   # On Mac we want to override CXX and CC that is provided with
   # the Chromium GYP environment.
   if sys.platform.startswith('darwin') and not 'GYP_CROSSCOMPILE' in os.environ:
@@ -113,7 +116,7 @@ if __name__ == '__main__':
   # option.  http://crbug.com/35878.
   # TODO(tc): Fix circular dependencies in ChromiumOS then add linux2 to the
   # list.
-  if sys.platform not in ('darwin',):
+  if sys.platform not in ('darwin',) or 'GYP_CROSSCOMPILE' in os.environ:
     args.append('--no-circular-check')
 
   args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
@@ -127,9 +130,6 @@ if __name__ == '__main__':
   args.extend(["--depth=" + chrome_src])
   args.extend(['-D', 'qtwebengine_root=' + qtwebengine_root])
   args.extend(['-D', 'chromium_src_dir=' + chrome_src])
-
-  if 'qt_cross_compile=1' in sys.argv:
-    os.environ['GYP_CROSSCOMPILE'] = '1'
 
   # linux_use_gold_binary currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
   # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
