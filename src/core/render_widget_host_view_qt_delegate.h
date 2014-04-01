@@ -63,9 +63,7 @@ class WebContentsAdapterClient;
 class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegateClient {
 public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
-    virtual void paint(QPainter *, const QRectF& boundingRect) = 0;
     virtual QSGNode *updatePaintNode(QSGNode *, QSGRenderContext *) = 0;
-    virtual void fetchBackingStore() = 0;
     virtual void notifyResize() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;
@@ -84,7 +82,7 @@ public:
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
-    virtual void update(const QRect& rect = QRect()) = 0;
+    virtual void update() = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
     virtual void inputMethodStateChanged(bool editorVisible) = 0;

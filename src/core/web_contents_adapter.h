@@ -56,9 +56,9 @@ class WebContentsAdapterPrivate;
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
-    static QExplicitlySharedDataPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient, WebContentsAdapterClient::RenderingMode renderingMode);
+    static QExplicitlySharedDataPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
     // Takes ownership of the WebContents.
-    WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents = 0);
+    WebContentsAdapter(content::WebContents *webContents = 0);
     ~WebContentsAdapter();
     void initialize(WebContentsAdapterClient *adapterClient);
     void reattachRWHV();

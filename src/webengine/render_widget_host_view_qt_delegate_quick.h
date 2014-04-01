@@ -238,25 +238,10 @@ class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegat
 public:
     RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
 
-    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
+    virtual void update() Q_DECL_OVERRIDE;
     virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
 
     virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
 };
-
-class RenderWidgetHostViewQtDelegateQuickPainted : public RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>
-{
-    Q_OBJECT
-public:
-    RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
-
-    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
-
-    void paint(QPainter *painter);
-
-protected:
-    void updatePolish();
-};
-
 #endif

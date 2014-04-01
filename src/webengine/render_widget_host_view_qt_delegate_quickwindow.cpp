@@ -97,9 +97,8 @@ QWindow *RenderWidgetHostViewQtDelegateQuickWindow::window() const
     return const_cast<RenderWidgetHostViewQtDelegateQuickWindow*>(this);
 }
 
-void RenderWidgetHostViewQtDelegateQuickWindow::update(const QRect &rect)
+void RenderWidgetHostViewQtDelegateQuickWindow::update()
 {
-    Q_UNUSED(rect);
     QQuickWindow::update();
     m_realDelegate->update();
 }

@@ -148,7 +148,7 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
-    , adapter(new WebContentsAdapter(HardwareAccelerationMode))
+    , adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , view(0)
 {
@@ -161,9 +161,8 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
     delete history;
 }
 
-RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
+RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
-    Q_UNUSED(mode);
     return new RenderWidgetHostViewQtDelegateWidget(client);
 }
 
@@ -348,7 +347,7 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 
 void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
-    QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this, WebContentsAdapterClient::HardwareAccelerationMode);
+    QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
     if (newWebContents) {
         adapter = newWebContents.data();
         adapter->initialize(this);
