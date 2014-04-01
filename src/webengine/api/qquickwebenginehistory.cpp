@@ -178,13 +178,9 @@ QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::forwardItems() const
     return d->m_forwardNavigationModel.data();
 }
 
-void QQuickWebEngineHistory::reset(QQuickWebEngineLoadRequest *loadRequest)
+void QQuickWebEngineHistory::reset()
 {
     Q_D(QQuickWebEngineHistory);
-
-    if (loadRequest->status() != QQuickWebEngineView::LoadSucceededStatus)
-        return;
-
     d->m_backNavigationModel->reset();
     d->m_forwardNavigationModel->reset();
 }

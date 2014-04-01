@@ -233,13 +233,20 @@ qreal QQuickWebEngineViewPrivate::dpiScale() const
 void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl)
 {
     Q_Q(QQuickWebEngineView);
+    m_history->reset();
     QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
     Q_EMIT q->loadingChanged(&loadRequest);
+}
+
+void QQuickWebEngineViewPrivate::loadCommitted()
+{
+    m_history->reset();
 }
 
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);
+    m_history->reset();
     if (error_code == WebEngineError::UserAbortedError) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
@@ -355,9 +362,6 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     Q_D(QQuickWebEngineView);
     d->e->q_ptr = this;
     d->adapter->initialize(d);
-
-    QObject::connect(this, &QQuickWebEngineView::loadingChanged, d->m_history.data(), &QQuickWebEngineHistory::reset);
-
     this->setFocus(true);
     this->setActiveFocusOnTab(true);
     this->setFlag(QQuickItem::ItemIsFocusScope);

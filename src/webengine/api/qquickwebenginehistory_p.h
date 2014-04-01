@@ -97,8 +97,7 @@ public:
     QQuickWebEngineHistoryListModel *backItems() const;
     QQuickWebEngineHistoryListModel *forwardItems() const;
 
-public Q_SLOTS:
-    void reset(QQuickWebEngineLoadRequest*);
+    void reset();
 
 private:
     QQuickWebEngineHistory();
