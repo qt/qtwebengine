@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "render_widget_host_view_qt_delegate_popup.h"
+#include "render_widget_host_view_qt_delegate_widget.h"
 
 #include "qwebengineview.h"
 #include "qwebenginepage_p.h"
@@ -51,112 +51,139 @@
 #include <QWindow>
 #include <QtWidgets/QApplication>
 
-RenderWidgetHostViewQtDelegatePopup::RenderWidgetHostViewQtDelegatePopup(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
-    : m_client(client)
-    , m_parentView(parent)
+RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
+    : QWidget(parent)
+    , m_client(client)
+    , m_isPopup(false)
 {
+    setFocusPolicy(Qt::ClickFocus);
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    setAttribute(Qt::WA_AlwaysShowToolTips);
+}
+
+void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
+{
+    QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
+    if (pagePrivate->view) {
+        pagePrivate->view->layout()->addWidget(this);
+        QWidget::show();
+    } else
+        setParent(0);
+}
+
+void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& rect, WebContentsAdapterClient *attachedContainer)
+{
+    m_isPopup = true;
     // The keyboard events are supposed to go to the parent RenderHostView
     // so the WebUI popups should never have focus. Besides, if the parent view
     // loses focus, WebKit will cause its associated popups (including this one)
     // to be destroyed.
     setAttribute(Qt::WA_ShowWithoutActivating);
-    setAttribute(Qt::WA_AlwaysShowToolTips);
     setFocusPolicy(Qt::NoFocus);
     setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
-}
 
-void RenderWidgetHostViewQtDelegatePopup::initAsChild(WebContentsAdapterClient*)
-{
-    Q_UNREACHABLE();
-}
-
-void RenderWidgetHostViewQtDelegatePopup::initAsPopup(const QRect& rect)
-{
-    QPoint pos = m_parentView ? m_parentView->mapToGlobal(rect.topLeft()) : QPoint(0,0);
+    QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(attachedContainer);
+    QPoint pos = pagePrivate && pagePrivate->view ? pagePrivate->view->mapToGlobal(rect.topLeft()) : QPoint(0,0);
     QRect qrect = QRect(pos, rect.size());
     setGeometry(qrect);
-    raise();
     show();
 }
 
-QRectF RenderWidgetHostViewQtDelegatePopup::screenRect() const
+QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
 {
     return QRectF(x(), y(), width(), height());
 }
 
-void RenderWidgetHostViewQtDelegatePopup::setKeyboardFocus()
+void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
 {
-    Q_UNREACHABLE();
+    setFocus();
 }
 
-bool RenderWidgetHostViewQtDelegatePopup::hasKeyboardFocus()
+bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
 {
-    return false;
+    return hasFocus();
 }
 
-void RenderWidgetHostViewQtDelegatePopup::show()
+void RenderWidgetHostViewQtDelegateWidget::show()
 {
-    QWidget::show();
+    // Check if we're attached to a QWebEngineView, we don't
+    // want to show anything else than popups as top-level.
+    if (parent() || m_isPopup)
+        QWidget::show();
 }
 
-void RenderWidgetHostViewQtDelegatePopup::hide()
+void RenderWidgetHostViewQtDelegateWidget::hide()
 {
     QWidget::hide();
 }
 
-bool RenderWidgetHostViewQtDelegatePopup::isVisible() const
+bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
 {
     return QWidget::isVisible();
 }
 
-QWindow* RenderWidgetHostViewQtDelegatePopup::window() const
+QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 {
     const QWidget* root = QWidget::window();
-    return root ? root->windowHandle() : Q_NULLPTR;
+    return root ? root->windowHandle() : 0;
 }
 
-void RenderWidgetHostViewQtDelegatePopup::update(const QRect& rect)
+void RenderWidgetHostViewQtDelegateWidget::update(const QRect& rect)
 {
     QWidget::update(rect);
 }
 
-void RenderWidgetHostViewQtDelegatePopup::updateCursor(const QCursor &cursor)
+void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
 {
     QWidget::setCursor(cursor);
 }
 
-void RenderWidgetHostViewQtDelegatePopup::resize(int width, int height)
+void RenderWidgetHostViewQtDelegateWidget::resize(int width, int height)
 {
     QWidget::resize(width, height);
 }
 
-void RenderWidgetHostViewQtDelegatePopup::move(const QPoint &pos)
+void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVisible)
 {
-    QPoint mapped = m_parentView ? m_parentView->mapToGlobal(pos) : pos;
-    QWidget::move(mapped);
+    if (qApp->inputMethod()->isVisible() == editorVisible)
+        return;
+
+    QWidget::setAttribute(Qt::WA_InputMethodEnabled, editorVisible);
+    qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
+    qApp->inputMethod()->setVisible(editorVisible);
 }
 
-void RenderWidgetHostViewQtDelegatePopup::setTooltip(const QString &tooltip)
+void RenderWidgetHostViewQtDelegateWidget::setTooltip(const QString &tooltip)
 {
     setToolTip(tooltip);
 }
 
-void RenderWidgetHostViewQtDelegatePopup::paintEvent(QPaintEvent *event)
+QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    return m_client->inputMethodQuery(query);
+}
+
+bool RenderWidgetHostViewQtDelegateWidget::supportsHardwareAcceleration() const
+{
+    return false;
+}
+
+void RenderWidgetHostViewQtDelegateWidget::paintEvent(QPaintEvent * event)
 {
     QPainter painter(this);
     m_client->fetchBackingStore();
     m_client->paint(&painter, event->rect());
 }
 
-void RenderWidgetHostViewQtDelegatePopup::resizeEvent(QResizeEvent *resizeEvent)
+void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
     Q_UNUSED(resizeEvent);
     m_client->notifyResize();
 }
 
-bool RenderWidgetHostViewQtDelegatePopup::event(QEvent *event)
+bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     if (!m_client->forwardEvent(event))
         return QWidget::event(event);

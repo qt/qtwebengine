@@ -78,7 +78,7 @@ public:
         m_initialized = true;
     }
 
-    virtual void initAsPopup(const QRect &r) Q_DECL_OVERRIDE
+    virtual void initAsPopup(const QRect &r, WebContentsAdapterClient *) Q_DECL_OVERRIDE
     {
         Q_ASSERT(m_isPopup && this->parentItem());
         QRectF rect(this->parentItem()->mapRectFromScene(r));
@@ -140,8 +140,6 @@ public:
     {
         return false;
     }
-
-    virtual void move(const QPoint&) Q_DECL_OVERRIDE {}
 
     void focusInEvent(QFocusEvent *event)
     {

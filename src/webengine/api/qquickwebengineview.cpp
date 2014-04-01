@@ -133,7 +133,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
     if (mode == HardwareAccelerationMode) {
         RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */true);
         if (hasWindowCapability) {
-            RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate, q);
+            RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
             quickDelegate->setParentItem(wrapperWindow->contentItem());
             return wrapperWindow;
         }
@@ -142,7 +142,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
     }
     RenderWidgetHostViewQtDelegateQuickPainted *paintedDelegate = new RenderWidgetHostViewQtDelegateQuickPainted(client, /*isPopup = */true);
     if (hasWindowCapability) {
-        RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(paintedDelegate, q);
+        RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(paintedDelegate);
         paintedDelegate->setParentItem(wrapperWindow->contentItem());
         return wrapperWindow;
     }

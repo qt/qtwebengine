@@ -1159,7 +1159,6 @@ class CursorTrackedPage : public QWebEnginePage
 public:
 
     CursorTrackedPage(QWidget *parent = 0): QWebEnginePage(parent) {
-        setViewportSize(QSize(1024, 768)); // big space
     }
 
     QString selectedText() {

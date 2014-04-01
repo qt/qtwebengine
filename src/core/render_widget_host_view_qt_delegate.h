@@ -76,7 +76,7 @@ class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {
 public:
     virtual ~RenderWidgetHostViewQtDelegate() { }
     virtual void initAsChild(WebContentsAdapterClient*) = 0;
-    virtual void initAsPopup(const QRect&) = 0;
+    virtual void initAsPopup(const QRect&, WebContentsAdapterClient*) = 0;
     virtual QRectF screenRect() const = 0;
     virtual void setKeyboardFocus() = 0;
     virtual bool hasKeyboardFocus() = 0;
@@ -87,7 +87,6 @@ public:
     virtual void update(const QRect& rect = QRect()) = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;
-    virtual void move(const QPoint &) = 0;
     virtual void inputMethodStateChanged(bool editorVisible) = 0;
     virtual bool supportsHardwareAcceleration() const = 0;
     virtual void setTooltip(const QString &) = 0;

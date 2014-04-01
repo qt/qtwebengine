@@ -44,9 +44,8 @@
 #include <QQuickItem>
 
 
-RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate, QQuickItem *parent)
+RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate)
     : m_realDelegate(realDelegate)
-    , m_parentView(parent)
 {
     setFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
 }
@@ -62,12 +61,12 @@ void RenderWidgetHostViewQtDelegateQuickWindow::initAsChild(WebContentsAdapterCl
     Q_UNREACHABLE();
 }
 
-void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &rect)
+void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &rect, WebContentsAdapterClient *attachedContainer)
 {
-    Q_ASSERT(m_parentView);
-    QPoint pos = m_parentView->window()->mapToGlobal(rect.topLeft());
+    QQuickWebEngineViewPrivate *attachedViewPrivate = static_cast<QQuickWebEngineViewPrivate *>(attachedContainer);
+    QPoint pos = attachedViewPrivate ? attachedViewPrivate->q_func()->window()->mapToGlobal(rect.topLeft()) : QPoint();
     QRect geometry = QRect(pos, rect.size());
-    m_realDelegate->initAsPopup(QRect(QPoint(0, 0), rect.size()));
+    m_realDelegate->initAsPopup(QRect(QPoint(0, 0), rect.size()), attachedContainer);
     setGeometry(geometry);
     raise();
     show();
@@ -95,7 +94,7 @@ bool RenderWidgetHostViewQtDelegateQuickWindow::isVisible() const
 
 QWindow *RenderWidgetHostViewQtDelegateQuickWindow::window() const
 {
-    return m_parentView->window();
+    return const_cast<RenderWidgetHostViewQtDelegateQuickWindow*>(this);
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::update(const QRect &rect)
@@ -114,13 +113,6 @@ void RenderWidgetHostViewQtDelegateQuickWindow::resize(int width, int height)
 {
     QQuickWindow::resize(width, height);
     m_realDelegate->resize(width, height);
-}
-
-void RenderWidgetHostViewQtDelegateQuickWindow::move(const QPoint &pos)
-{
-    Q_ASSERT(m_parentView);
-    QPoint mapped = m_parentView->window()->mapToGlobal(pos);
-    QQuickWindow::setPosition(mapped.x(), mapped.y());
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::setTooltip(const QString &tooltip)

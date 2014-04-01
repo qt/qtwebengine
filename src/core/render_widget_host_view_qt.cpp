@@ -218,7 +218,7 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect)
 {
-    m_delegate->initAsPopup(toQt(rect));
+    m_delegate->initAsPopup(toQt(rect), m_adapterClient);
 }
 
 void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
@@ -241,8 +241,9 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
 void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
 {
     // This is called when webkit has sent us a Move message.
-     if (IsPopup())
-         m_delegate->move(QPoint(rect.x(), rect.y()));
+    if (IsPopup())
+        // If we run into this, we need a bit more work in the delegates.
+        Q_UNREACHABLE();
     SetSize(rect.size());
 }
 
