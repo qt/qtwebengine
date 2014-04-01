@@ -52,7 +52,7 @@
 class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public RenderWidgetHostViewQtDelegate {
 
 public:
-    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate, QQuickItem *parent);
+    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate);
     ~RenderWidgetHostViewQtDelegateQuickWindow();
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
@@ -67,7 +67,7 @@ public:
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
     virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
-    virtual void move(const QPoint &) Q_DECL_OVERRIDE;
+    virtual void move(const QPoint &screenPos) Q_DECL_OVERRIDE;
     virtual void inputMethodStateChanged(bool) Q_DECL_OVERRIDE {}
     virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE
     {
@@ -78,7 +78,6 @@ public:
 
 private:
     QScopedPointer<RenderWidgetHostViewQtDelegate> m_realDelegate;
-    QQuickItem *m_parentView;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H

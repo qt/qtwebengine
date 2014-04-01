@@ -122,6 +122,7 @@ public:
     virtual void loadProgressChanged(int progress) = 0;
     virtual void selectionChanged() = 0;
     virtual QRectF viewportRect() const = 0;
+    virtual QPoint mapToGlobal(const QPoint &posInView) const = 0;
     virtual qreal dpiScale() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl) = 0;
     virtual void loadCommitted() = 0;

@@ -76,8 +76,11 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
 content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
+
     Q_ASSERT(m_client);
     view->setDelegate(m_client->CreateRenderWidgetHostViewQtDelegateForPopup(view, WebEngineContext::current()->renderingMode()));
+    view->setAdapterClient(m_client);
+
     return view;
 }
 

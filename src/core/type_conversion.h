@@ -89,6 +89,11 @@ inline GURL toGurl(const QUrl& url)
     return GURL(url.toString().toStdString());
 }
 
+inline QPoint toQt(const gfx::Point &point)
+{
+    return QPoint(point.x(), point.y());
+}
+
 inline QRect toQt(const gfx::Rect &rect)
 {
     return QRect(rect.x(), rect.y(), rect.width(), rect.height());
