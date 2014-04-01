@@ -28,8 +28,7 @@
 #include "qwebenginehistory_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
-#include "render_widget_host_view_qt_delegate_popup.h"
-#include "render_widget_host_view_qt_delegate_webpage.h"
+#include "render_widget_host_view_qt_delegate_widget.h"
 #include "web_contents_adapter.h"
 
 #include <QAction>
@@ -38,6 +37,7 @@
 #include <QFileDialog>
 #include <QIcon>
 #include <QInputDialog>
+#include <QLayout>
 #include <QMenu>
 #include <QMessageBox>
 #include <QStandardPaths>
@@ -152,6 +152,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , view(0)
 {
+    adapter->initialize(this);
     memset(actions, 0, sizeof(actions));
 }
 
@@ -163,13 +164,7 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
 {
     Q_UNUSED(mode);
-    return new RenderWidgetHostViewQtDelegateWebPage(client);
-}
-
-RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::RenderingMode)
-{
-    Q_ASSERT(m_rwhvDelegate);
-    return new RenderWidgetHostViewQtDelegatePopup(client, view);
+    return new RenderWidgetHostViewQtDelegateWidget(client);
 }
 
 void QWebEnginePagePrivate::titleChanged(const QString &title)
@@ -204,10 +199,12 @@ void QWebEnginePagePrivate::selectionChanged()
 
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
-    QRectF rect(QPointF(), viewportSize);
-    if (view)
-        rect.setTopLeft(view->rect().topLeft());
-    return rect;
+    return view ? view->rect() : QRectF();
+}
+
+QPoint QWebEnginePagePrivate::mapToGlobal(const QPoint &posInView) const
+{
+    return view ? view->mapToGlobal(posInView) : QPoint();
 }
 
 qreal QWebEnginePagePrivate::dpiScale() const
@@ -366,8 +363,6 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(*new QWebEnginePagePrivate, parent)
 {
-    Q_D(QWebEnginePage);
-    d->adapter->initialize(d);
 }
 
 QWebEnginePage::~QWebEnginePage()
@@ -528,32 +523,9 @@ void QWebEnginePage::findText(const QString &subString, FindFlags options, const
     }
 }
 
-QSize QWebEnginePage::viewportSize() const
-{
-    Q_D(const QWebEnginePage);
-    return d->viewportSize;
-}
-
-void QWebEnginePage::setViewportSize(const QSize &size)
-{
-    Q_D(QWebEnginePage);
-    d->viewportSize = size;
-    if (d->m_rwhvDelegate)
-        d->m_rwhvDelegate->notifyResize();
-}
-
 bool QWebEnginePage::event(QEvent *e)
 {
-    Q_D(QWebEnginePage);
-    if (!d->m_rwhvDelegate) {
-        // FIXME: implement a signal when the render process crashes and keep track of it at this level
-        // Ideally, this should be Q_ASSERT(!d->m_renderProcessLive) or something along those lines
-        qWarning("%s: no render process running?\n", Q_FUNC_INFO);
-        return false;
-    }
-    if (!d->m_rwhvDelegate->forwardEvent(e))
-        return QObject::event(e);
-    return true;
+    return QObject::event(e);
 }
 
 bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
@@ -759,22 +731,6 @@ QUrl QWebEnginePage::requestedUrl() const
     return d->adapter->requestedUrl();
 }
 
-void QWebEnginePage::render(QPainter *p, const QRegion &clip)
-{
-    Q_D(const QWebEnginePage);
-    if (!d->m_rwhvDelegate) {
-        // Most likely the render process crashed. See QWebEnginePage::event
-        return;
-    }
-    if (!clip.isNull()) {
-        p->save();
-        p->setClipRegion(clip);
-    }
-    d->m_rwhvDelegate->paint(p, QRectF(clip.boundingRect()));
-    if (!clip.isNull())
-        p->restore();
-}
-
 qreal QWebEnginePage::zoomFactor() const
 {
     Q_D(const QWebEnginePage);
@@ -785,21 +741,6 @@ void QWebEnginePage::setZoomFactor(qreal factor)
 {
     Q_D(QWebEnginePage);
     d->adapter->setZoomFactor(factor);
-}
-
-bool QWebEnginePage::hasFocus() const
-{
-    Q_D(const QWebEnginePage);
-    if (d->view)
-        return d->view->hasFocus();
-    return false;
-}
-
-void QWebEnginePage::setFocus()
-{
-    Q_D(QWebEnginePage);
-    if (d->view)
-        d->view->setFocus();
 }
 
 void QWebEnginePage::runJavaScript(const QString &scriptSource, const QString &xPath)

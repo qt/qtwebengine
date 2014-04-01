@@ -39,13 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_POPUP_H
-#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_POPUP_H
+#ifndef RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
+#define RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_WIDGET_H
 
 #include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter_client.h"
 
-#include <QBasicTimer>
 #include <QWidget>
 
 class BackingStoreQt;
@@ -54,10 +53,10 @@ QT_BEGIN_NAMESPACE
 class QWindow;
 QT_END_NAMESPACE
 
-class RenderWidgetHostViewQtDelegatePopup : public QWidget, public RenderWidgetHostViewQtDelegate
+class RenderWidgetHostViewQtDelegateWidget : public QWidget, public RenderWidgetHostViewQtDelegate
 {
 public:
-    RenderWidgetHostViewQtDelegatePopup(RenderWidgetHostViewQtDelegateClient *client, QWidget *);
+    RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
     virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
@@ -71,9 +70,9 @@ public:
     virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
     virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
-    virtual void move(const QPoint &) Q_DECL_OVERRIDE;
-    virtual void inputMethodStateChanged(bool) Q_DECL_OVERRIDE {}
-    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE { return false; }
+    virtual void move(const QPoint &screenPos) Q_DECL_OVERRIDE;
+    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
+    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
     virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
 
 protected:
@@ -81,9 +80,11 @@ protected:
     bool event(QEvent *event);
     void resizeEvent(QResizeEvent *resizeEvent);
 
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
-    QWidget *m_parentView;
+    bool m_isPopup;
 };
 
 #endif

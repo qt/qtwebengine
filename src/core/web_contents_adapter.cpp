@@ -383,6 +383,13 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 
 }
 
+void WebContentsAdapter::reattachRWHV()
+{
+    Q_D(WebContentsAdapter);
+    if (content::RenderWidgetHostView *rwhv = d->webContents->GetRenderWidgetHostView())
+        rwhv->InitAsChild(0);
+}
+
 bool WebContentsAdapter::canGoBack() const
 {
     Q_D(const WebContentsAdapter);

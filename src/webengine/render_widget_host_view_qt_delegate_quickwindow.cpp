@@ -44,9 +44,8 @@
 #include <QQuickItem>
 
 
-RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate, QQuickItem *parent)
+RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate)
     : m_realDelegate(realDelegate)
-    , m_parentView(parent)
 {
     setFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
 }
@@ -62,13 +61,10 @@ void RenderWidgetHostViewQtDelegateQuickWindow::initAsChild(WebContentsAdapterCl
     Q_UNREACHABLE();
 }
 
-void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &rect)
+void RenderWidgetHostViewQtDelegateQuickWindow::initAsPopup(const QRect &screenRect)
 {
-    Q_ASSERT(m_parentView);
-    QPoint pos = m_parentView->window()->mapToGlobal(rect.topLeft());
-    QRect geometry = QRect(pos, rect.size());
-    m_realDelegate->initAsPopup(QRect(QPoint(0, 0), rect.size()));
-    setGeometry(geometry);
+    m_realDelegate->initAsPopup(QRect(QPoint(0, 0), screenRect.size()));
+    setGeometry(screenRect);
     raise();
     show();
 }
@@ -95,7 +91,7 @@ bool RenderWidgetHostViewQtDelegateQuickWindow::isVisible() const
 
 QWindow *RenderWidgetHostViewQtDelegateQuickWindow::window() const
 {
-    return m_parentView->window();
+    return const_cast<RenderWidgetHostViewQtDelegateQuickWindow*>(this);
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::update(const QRect &rect)
@@ -116,11 +112,9 @@ void RenderWidgetHostViewQtDelegateQuickWindow::resize(int width, int height)
     m_realDelegate->resize(width, height);
 }
 
-void RenderWidgetHostViewQtDelegateQuickWindow::move(const QPoint &pos)
+void RenderWidgetHostViewQtDelegateQuickWindow::move(const QPoint &screenPos)
 {
-    Q_ASSERT(m_parentView);
-    QPoint mapped = m_parentView->window()->mapToGlobal(pos);
-    QQuickWindow::setPosition(mapped.x(), mapped.y());
+    QQuickWindow::setPosition(screenPos);
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::setTooltip(const QString &tooltip)

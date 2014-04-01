@@ -45,7 +45,6 @@
 #include "qwebenginepage.h"
 
 #include "web_contents_adapter_client.h"
-#include "render_widget_host_view_qt_delegate_webpage.h"
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/qcompilerdetection.h>
 #include <QSharedData>
@@ -110,13 +109,14 @@ public:
     ~QWebEnginePagePrivate();
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) Q_DECL_OVERRIDE;
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, RenderingMode) Q_DECL_OVERRIDE;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) Q_DECL_OVERRIDE { return CreateRenderWidgetHostViewQtDelegate(client, mode); }
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
+    virtual QPoint mapToGlobal(const QPoint &posInView) const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;
@@ -150,7 +150,6 @@ public:
     QSize viewportSize;
     QUrl m_explicitUrl;
     WebEngineContextMenuData m_menuData;
-    QPointer<RenderWidgetHostViewQtDelegateWebPage> m_rwhvDelegate;
 
     mutable CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
