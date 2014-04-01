@@ -56,8 +56,6 @@
 #include <QRect>
 #include <QtGlobal>
 
-class BackingStoreQt;
-
 QT_BEGIN_NAMESPACE
 class QEvent;
 class QFocusEvent;
@@ -100,7 +98,6 @@ public:
 
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
-    BackingStoreQt* GetBackingStore();
 
     virtual content::BackingStore *AllocBackingStore(const gfx::Size &size) Q_DECL_OVERRIDE;
 
@@ -167,9 +164,7 @@ public:
     virtual void DispatchCancelTouchEvent(ui::TouchEvent*) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewQtDelegateClient.
-    virtual void paint(QPainter *, const QRectF& boundingRect) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, QSGRenderContext *) Q_DECL_OVERRIDE;
-    virtual void fetchBackingStore() Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
@@ -229,7 +224,6 @@ private:
     blink::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
-    BackingStoreQt *m_backingStore;
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
     cc::ReturnedResourceArray m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;

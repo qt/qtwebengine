@@ -42,8 +42,6 @@
 #ifndef WEB_ENGINE_CONTEXT_H
 #define WEB_ENGINE_CONTEXT_H
 
-#include "web_contents_adapter_client.h"
-
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -60,13 +58,11 @@ class ContentMainDelegateQt;
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
-    static scoped_refptr<WebEngineContext> currentOrCreate(WebContentsAdapterClient::RenderingMode renderingMode);
     static scoped_refptr<WebEngineContext> current();
-    WebContentsAdapterClient::RenderingMode renderingMode();
 
 private:
     friend class base::RefCounted<WebEngineContext>;
-    WebEngineContext(WebContentsAdapterClient::RenderingMode renderingMode);
+    WebEngineContext();
     ~WebEngineContext();
 
     scoped_ptr<base::RunLoop> m_runLoop;

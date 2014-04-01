@@ -41,7 +41,6 @@
 
 #include "render_widget_host_view_qt.h"
 
-#include "backing_store_qt.h"
 #include "chromium_overrides.h"
 #include "delegated_frame_node.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -163,7 +162,6 @@ static bool shouldSendPinchGesture()
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureRecognizer(ui::GestureRecognizer::Create())
-    , m_backingStore(0)
     , m_frameNodeData(new DelegatedFrameNodeData)
     , m_needsDelegatedFrameAck(false)
     , m_adapterClient(0)
@@ -194,16 +192,9 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
         InitAsChild(0);
 }
 
-BackingStoreQt* RenderWidgetHostViewQt::GetBackingStore()
-{
-    bool force_create = !m_host->empty();
-    return static_cast<BackingStoreQt*>(m_host->GetBackingStore(force_create));
-}
-
 content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size &size)
 {
-    Q_ASSERT(m_delegate);
-    return new BackingStoreQt(m_host, size, m_delegate->window());
+    Q_UNREACHABLE();
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
@@ -679,12 +670,6 @@ void RenderWidgetHostViewQt::DispatchCancelTouchEvent(ui::TouchEvent *event)
     m_host->ForwardTouchEventWithLatencyInfo(cancelEvent, *event->latency());
 }
 
-void RenderWidgetHostViewQt::paint(QPainter *painter, const QRectF& boundingRect)
-{
-    if (m_backingStore)
-        m_backingStore->paintToTarget(painter, boundingRect);
-}
-
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QSGRenderContext *sgRenderContext)
 {
     DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
@@ -702,11 +687,6 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QSGRenderCont
     }
 
     return frameNode;
-}
-
-void RenderWidgetHostViewQt::fetchBackingStore()
-{
-    m_backingStore = GetBackingStore();
 }
 
 void RenderWidgetHostViewQt::notifyResize()
@@ -812,8 +792,7 @@ void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 
 void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
 {
-    QRect r(damage_rect.x(), damage_rect.y(), damage_rect.width(), damage_rect.height());
-    m_delegate->update(r);
+    Q_UNREACHABLE();
 }
 
 void RenderWidgetHostViewQt::ForwardGestureEventToRenderer(ui::GestureEvent* gesture)

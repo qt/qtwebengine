@@ -108,8 +108,8 @@ public:
     QWebEnginePagePrivate();
     ~QWebEnginePagePrivate();
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) Q_DECL_OVERRIDE;
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) Q_DECL_OVERRIDE { return CreateRenderWidgetHostViewQtDelegate(client, mode); }
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE { return CreateRenderWidgetHostViewQtDelegate(client); }
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;

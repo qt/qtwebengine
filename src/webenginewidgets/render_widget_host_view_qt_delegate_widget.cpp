@@ -129,7 +129,7 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
     return root ? root->windowHandle() : 0;
 }
 
-void RenderWidgetHostViewQtDelegateWidget::update(const QRect&)
+void RenderWidgetHostViewQtDelegateWidget::update()
 {
     updateGL();
 }
