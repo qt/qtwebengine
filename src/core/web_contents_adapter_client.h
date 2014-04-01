@@ -77,11 +77,6 @@ public:
 
 class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
-    enum RenderingMode {
-        SoftwareRenderingMode,
-        HardwareAccelerationMode
-    };
-
     // This must match window_open_disposition_list.h.
     enum WindowOpenDisposition {
         UnknownDisposition = 0,
@@ -114,8 +109,8 @@ public:
 
     virtual ~WebContentsAdapterClient() { }
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) = 0;
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode) = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client) = 0;
+    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
     virtual void iconChanged(const QUrl&) = 0;

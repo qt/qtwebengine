@@ -69,12 +69,11 @@ public:
     virtual void hide() Q_DECL_OVERRIDE;
     virtual bool isVisible() const Q_DECL_OVERRIDE;
     virtual QWindow* window() const Q_DECL_OVERRIDE;
-    virtual void update(const QRect& rect = QRect()) Q_DECL_OVERRIDE;
+    virtual void update() Q_DECL_OVERRIDE;
     virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
     virtual void move(const QPoint &screenPos) Q_DECL_OVERRIDE;
     virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
-    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
     virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
 
 protected:
