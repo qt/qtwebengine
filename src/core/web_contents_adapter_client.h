@@ -120,6 +120,7 @@ public:
     virtual void urlChanged(const QUrl&) = 0;
     virtual void iconChanged(const QUrl&) = 0;
     virtual void loadProgressChanged(int progress) = 0;
+    virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;

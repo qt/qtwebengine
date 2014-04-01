@@ -131,6 +131,7 @@ public:
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
+    virtual void didUpdateTargetURL(const QUrl&) Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE { }
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
@@ -155,6 +156,7 @@ public:
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);
+    void setToolTip(const QString&);
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineViewExperimental> e;
@@ -162,6 +164,8 @@ public:
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QQmlComponent *contextMenuExtraItems;
     QUrl icon;
+    QUrl lastHoveredUrl;
+    bool linkHovered;
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;

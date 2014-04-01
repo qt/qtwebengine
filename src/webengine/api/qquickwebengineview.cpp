@@ -246,6 +246,12 @@ void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
     Q_EMIT q->loadProgressChanged();
 }
 
+void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
+{
+    linkHovered = true;
+    lastHoveredUrl = hoveredUrl;
+}
+
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
     Q_Q(const QQuickWebEngineView);
@@ -381,6 +387,16 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     QQuickWebEngineLoadRequest loadRequest(adapter->activeUrl(), QQuickWebEngineView::LoadSucceededStatus);
     emit q->loadingChanged(&loadRequest);
     emit q->loadProgressChanged();
+}
+
+void QQuickWebEngineViewPrivate::setToolTip(const QString &tooltip)
+{
+    // TODO: Implement tooltip for the Quick API
+    Q_Q(QQuickWebEngineView);
+    if (linkHovered) {
+        Q_EMIT q->linkHovered(lastHoveredUrl, tooltip);
+        linkHovered = false;
+    }
 }
 
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)

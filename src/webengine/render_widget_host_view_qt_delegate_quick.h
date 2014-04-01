@@ -72,9 +72,9 @@ public:
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE
     {
-        QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
-        this->setParentItem(viewPrivate->q_func());
-        this->setSize(viewPrivate->q_func()->boundingRect().size());
+        m_viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
+        this->setParentItem(m_viewPrivate->q_func());
+        this->setSize(m_viewPrivate->q_func()->boundingRect().size());
         m_initialized = true;
     }
 
@@ -210,7 +210,11 @@ public:
         qApp->inputMethod()->setVisible(editorVisible);
     }
 
-    void setTooltip(const QString &) Q_DECL_OVERRIDE {}
+    void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE
+    {
+        if (m_viewPrivate)
+            m_viewPrivate->setToolTip(tooltip);
+    }
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const
     {
@@ -230,6 +234,7 @@ protected:
     }
 
     RenderWidgetHostViewQtDelegateClient *m_client;
+    QQuickWebEngineViewPrivate *m_viewPrivate;
     bool m_isPopup;
     bool m_initialized;
 };
