@@ -202,6 +202,8 @@ public:
         : gfx::GLContext(0)
         , m_handle(0)
     {
+        if (!qtContext)
+            return;
         QString platform = qApp->platformName().toLower();
         QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
         if (platform == QStringLiteral("xcb")) {
