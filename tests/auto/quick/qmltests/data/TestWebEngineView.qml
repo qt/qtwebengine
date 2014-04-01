@@ -53,6 +53,11 @@ WebEngineView {
         loadStatus = null
         return success
     }
+    function waitForLoadStarted() {
+        var success = _waitFor(function() { return loadStatus == WebEngineView.LoadStartedStatus })
+        loadStatus = null
+        return start
+    }
     function waitForViewportReady() {
         // Note: You need to have "when: windowShown" in your TestCase for this to work.
         // The viewport is locked until the first frame is rendered, and the rendering isn't
