@@ -70,14 +70,14 @@ public:
     virtual void DidStartProvisionalLoadForFrame(int64 frame_id, int64 parent_frame_id, bool is_main_frame, const GURL &validated_url, bool is_error_page, bool is_iframe_srcdoc, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidCommitProvisionalLoadForFrame(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& url, content::PageTransition transition_type, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
-    virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const base::string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
     virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen) Q_DECL_OVERRIDE;
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
     virtual void RunFileChooser(content::WebContents *, const content::FileChooserParams &params) Q_DECL_OVERRIDE;
-    virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const string16& message, int32 line_no, const string16& source_id) Q_DECL_OVERRIDE;
+    virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const base::string16& message, int32 line_no, const base::string16& source_id) Q_DECL_OVERRIDE;
     virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
 
 private:
