@@ -28,7 +28,6 @@ RESOURCES += devtools.qrc
 INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
 
 SOURCES = \
-        backing_store_qt.cpp \
         browser_context_qt.cpp \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
@@ -67,7 +66,6 @@ SOURCES = \
 
 
 HEADERS = \
-        backing_store_qt.h \
         browser_context_qt.h \
         chromium_overrides.h \
         clipboard_qt.h \

@@ -91,30 +91,14 @@ WebEngineContext::~WebEngineContext()
     m_runLoop->AfterRun();
 }
 
-scoped_refptr<WebEngineContext> WebEngineContext::currentOrCreate(WebContentsAdapterClient::RenderingMode renderingMode)
-{
-    if (!sContext) {
-        sContext = new WebEngineContext(renderingMode);
-        // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
-        qAddPostRoutine(destroyContext);
-    } else if (renderingMode != sContext->renderingMode())
-        qFatal("Switching the QtWebEngine rendering mode once initialized in an application is not supported."
-            " If you're using both a QQuickWebView and a QtQuick WebEngineView, make sure that the"
-            " later is configured to use software rendering by setting:"
-            "\nqApp->setProperty(\"QQuickWebEngineView_DisableHardwareAcceleration\", QVariant(true));");
-    return sContext;
-}
-
 scoped_refptr<WebEngineContext> WebEngineContext::current()
 {
+    if (!sContext) {
+        sContext = new WebEngineContext();
+        // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
+        qAddPostRoutine(destroyContext);
+    }
     return sContext;
-}
-
-WebContentsAdapterClient::RenderingMode WebEngineContext::renderingMode()
-{
-    return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableDelegatedRenderer)
-        ? WebContentsAdapterClient::HardwareAccelerationMode
-        : WebContentsAdapterClient::SoftwareRenderingMode;
 }
 
 #ifndef CHROMIUM_VERSION
@@ -122,7 +106,7 @@ WebContentsAdapterClient::RenderingMode WebEngineContext::renderingMode()
 #define CHROMIUM_VERSION // This is solely to keep Qt Creator happy.
 #endif
 
-WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode renderingMode)
+WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_contentRunner(content::ContentMainRunner::Create())
     , m_browserRunner(content::BrowserMainRunner::Create())
@@ -142,12 +126,9 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
-
-    if (renderingMode == WebContentsAdapterClient::HardwareAccelerationMode && !parsedCommandLine->HasSwitch(switches::kDisableDelegatedRenderer)) {
-        parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
-        parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
-        parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
-    }
+    parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
+    parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
+    parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
 #if defined(OS_ANDROID)
     // Required on Android

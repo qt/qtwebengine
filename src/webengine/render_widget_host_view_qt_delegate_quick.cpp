@@ -47,14 +47,9 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
     setFlag(ItemHasContents);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::update(const QRect&)
+void RenderWidgetHostViewQtDelegateQuick::update()
 {
     QQuickItem::update();
-}
-
-bool RenderWidgetHostViewQtDelegateQuick::supportsHardwareAcceleration() const
-{
-    return true;
 }
 
 void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
@@ -67,28 +62,4 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     return m_client->updatePaintNode(oldNode, QQuickWindowPrivate::get(QQuickItem::window())->context);
-}
-
-RenderWidgetHostViewQtDelegateQuickPainted::RenderWidgetHostViewQtDelegateQuickPainted(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
-    : RenderWidgetHostViewQtDelegateQuickBase<QQuickPaintedItem>(client, isPopup)
-{
-}
-
-void RenderWidgetHostViewQtDelegateQuickPainted::update(const QRect& rect)
-{
-    polish();
-    QQuickPaintedItem::update(rect);
-}
-
-void RenderWidgetHostViewQtDelegateQuickPainted::paint(QPainter *painter)
-{
-    m_client->paint(painter, boundingRect());
-}
-
-void RenderWidgetHostViewQtDelegateQuickPainted::updatePolish()
-{
-    // paint will be called from the scene graph thread and this doesn't play well
-    // with chromium's use of TLS while getting the backing store.
-    // updatePolish() should be called from the GUI thread right before the rendering thread starts.
-    m_client->fetchBackingStore();
 }

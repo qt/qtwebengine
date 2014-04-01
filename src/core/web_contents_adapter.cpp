@@ -292,7 +292,7 @@ void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::ve
 
 class WebContentsAdapterPrivate {
 public:
-    WebContentsAdapterPrivate(WebContentsAdapterClient::RenderingMode renderingMode);
+    WebContentsAdapterPrivate();
     scoped_refptr<WebEngineContext> engineContext;
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
@@ -302,14 +302,14 @@ public:
     QString lastSearchedString;
 };
 
-WebContentsAdapterPrivate::WebContentsAdapterPrivate(WebContentsAdapterClient::RenderingMode renderingMode)
+WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
-    : engineContext(WebEngineContext::currentOrCreate(renderingMode))
+    : engineContext(WebEngineContext::current())
     , lastRequestId(0)
 {
 }
 
-QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient, WebContentsAdapterClient::RenderingMode renderingMode)
+QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
     std::vector<content::NavigationEntry*> entries;
@@ -334,11 +334,11 @@ QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromS
             content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id, *file);
     }
 
-    return QExplicitlySharedDataPointer<WebContentsAdapter>(new WebContentsAdapter(renderingMode, newWebContents));
+    return QExplicitlySharedDataPointer<WebContentsAdapter>(new WebContentsAdapter(newWebContents));
 }
 
-WebContentsAdapter::WebContentsAdapter(WebContentsAdapterClient::RenderingMode renderingMode, content::WebContents *webContents)
-    : d_ptr(new WebContentsAdapterPrivate(renderingMode))
+WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
+    : d_ptr(new WebContentsAdapterPrivate)
 {
     Q_D(WebContentsAdapter);
     d->webContents.reset(webContents);

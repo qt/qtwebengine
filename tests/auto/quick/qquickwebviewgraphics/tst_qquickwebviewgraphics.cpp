@@ -109,11 +109,7 @@ tst_QQuickWebViewGraphics::~tst_QQuickWebViewGraphics()
 // It is only called once.
 void tst_QQuickWebViewGraphics::initTestCase()
 {
-#if defined(TST_QQUICKWEBVIEWGRAPHICS_SOFTWARE)
-    qApp->setProperty("QQuickWebEngineView_DisableHardwareAcceleration", QVariant(true));
-#else
     QWebEngine::initialize();
-#endif
 }
 
 void tst_QQuickWebViewGraphics::init()

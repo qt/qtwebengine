@@ -68,7 +68,7 @@
 QT_BEGIN_NAMESPACE
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
-    : adapter(new WebContentsAdapter(qApp->property("QQuickWebEngineView_DisableHardwareAcceleration").toBool() ? SoftwareRenderingMode : HardwareAccelerationMode))
+    : adapter(new WebContentsAdapter)
     , e(new QQuickWebEngineViewExperimental(this))
     , v(new QQuickWebEngineViewport(this))
     , m_history(new QQuickWebEngineHistory(this))
@@ -119,35 +119,23 @@ UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
     return m_uIDelegatesManager.data();
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client, RenderingMode mode)
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
-    if (mode == HardwareAccelerationMode)
-        return new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ false);
-    return new RenderWidgetHostViewQtDelegateQuickPainted(client, false);
+    return new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ false);
 }
 
-RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client, WebContentsAdapterClient::RenderingMode mode)
+RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
     const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
-    if (mode == HardwareAccelerationMode) {
-        RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */true);
-        if (hasWindowCapability) {
-            RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
-            quickDelegate->setParentItem(wrapperWindow->contentItem());
-            return wrapperWindow;
-        }
-        quickDelegate->setParentItem(q);
-        return quickDelegate;
-    }
-    RenderWidgetHostViewQtDelegateQuickPainted *paintedDelegate = new RenderWidgetHostViewQtDelegateQuickPainted(client, /*isPopup = */true);
+    RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
     if (hasWindowCapability) {
-        RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(paintedDelegate);
-        paintedDelegate->setParentItem(wrapperWindow->contentItem());
+        RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
+        quickDelegate->setParentItem(wrapperWindow->contentItem());
         return wrapperWindow;
     }
-    paintedDelegate->setParentItem(q);
-    return paintedDelegate;
+    quickDelegate->setParentItem(q);
+    return quickDelegate;
 }
 
 bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
@@ -509,8 +497,7 @@ void QQuickWebEngineView::setInspectable(bool enable)
 void QQuickWebEngineView::forceActiveFocus()
 {
     Q_FOREACH (QQuickItem *child, childItems()) {
-        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child)
-            || qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted *>(child)) {
+        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child)) {
             child->forceActiveFocus();
             break;
         }
@@ -578,8 +565,7 @@ void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRect
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
 
     Q_FOREACH(QQuickItem *child, childItems()) {
-        Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child)
-                 || qobject_cast<RenderWidgetHostViewQtDelegateQuickPainted *>(child));
+        Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child));
         child->setSize(newGeometry.size());
     }
 }

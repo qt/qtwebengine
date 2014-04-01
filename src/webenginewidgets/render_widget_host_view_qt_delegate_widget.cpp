@@ -129,7 +129,7 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
     return root ? root->windowHandle() : 0;
 }
 
-void RenderWidgetHostViewQtDelegateWidget::update(const QRect&)
+void RenderWidgetHostViewQtDelegateWidget::update()
 {
     updateGL();
 }
@@ -168,11 +168,6 @@ void RenderWidgetHostViewQtDelegateWidget::setTooltip(const QString &tooltip)
 QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     return m_client->inputMethodQuery(query);
-}
-
-bool RenderWidgetHostViewQtDelegateWidget::supportsHardwareAcceleration() const
-{
-    return true;
 }
 
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
