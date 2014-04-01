@@ -41,6 +41,7 @@
 
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 
+#include "qquickwebengineview_p_p.h"
 #include <QQuickItem>
 
 

@@ -52,15 +52,14 @@
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
 
-#include <QQmlEngine>
+#include <QGuiApplication>
 #include <QQmlComponent>
 #include <QQmlContext>
+#include <QQmlEngine>
 #include <QQmlProperty>
 #include <QScreen>
 #include <QStringBuilder>
 #include <QUrl>
-#include <QQmlEngine>
-
 #include <private/qqmlmetatype_p.h>
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
