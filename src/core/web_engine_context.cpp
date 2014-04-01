@@ -117,6 +117,11 @@ WebContentsAdapterClient::RenderingMode WebEngineContext::renderingMode()
         : WebContentsAdapterClient::SoftwareRenderingMode;
 }
 
+#ifndef CHROMIUM_VERSION
+#error Chromium version should be defined at gyp-time. Something must have gone wrong
+#define CHROMIUM_VERSION // This is solely to keep Qt Creator happy.
+#endif
+
 WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode renderingMode)
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_contentRunner(content::ContentMainRunner::Create())
@@ -132,7 +137,8 @@ WebEngineContext::WebEngineContext(WebContentsAdapterClient::RenderingMode rende
     CommandLine::Init(argv.size(), argv.constData());
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
-    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1"));
+    // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
+    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1 Chrome/" CHROMIUM_VERSION));
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
