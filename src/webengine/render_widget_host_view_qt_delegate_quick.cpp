@@ -41,10 +41,83 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 
+#include "qquickwebengineview_p.h"
+#include "qquickwebengineview_p_p.h"
+#include <QGuiApplication>
+#include <QQuickPaintedItem>
+#include <QQuickWindow>
+#include <QVariant>
+#include <QWindow>
+
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
-    : RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>(client, isPopup)
+    : m_client(client)
+    , m_isPopup(isPopup)
+    , m_initialized(false)
 {
     setFlag(ItemHasContents);
+    setAcceptedMouseButtons(Qt::AllButtons);
+    setAcceptHoverEvents(true);
+    if (isPopup)
+        return;
+    setFocus(true);
+    setActiveFocusOnTab(true);
+    setFlag(QQuickItem::ItemIsFocusScope);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
+{
+    QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
+    setParentItem(viewPrivate->q_func());
+    setSize(viewPrivate->q_func()->boundingRect().size());
+    m_initialized = true;
+}
+
+void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
+{
+    Q_ASSERT(m_isPopup && parentItem());
+    QRectF rect(parentItem()->mapRectFromScene(r));
+    setX(rect.x());
+    setY(rect.y());
+    setWidth(rect.width());
+    setHeight(rect.height());
+    setVisible(true);
+    m_initialized = true;
+}
+
+QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
+{
+    QPointF pos = mapToScene(QPointF(0,0));
+    return QRectF(pos.x(), pos.y(), width(), height());
+}
+
+void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
+{
+    setFocus(true);
+}
+
+bool RenderWidgetHostViewQtDelegateQuick::hasKeyboardFocus()
+{
+    return hasFocus();
+}
+
+void RenderWidgetHostViewQtDelegateQuick::show()
+{
+    setVisible(true);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::hide()
+{
+    setVisible(false);
+}
+
+bool RenderWidgetHostViewQtDelegateQuick::isVisible() const
+{
+    return QQuickItem::isVisible();
+}
+
+QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
+{
+    return QQuickItem::window();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::update()
@@ -52,9 +125,102 @@ void RenderWidgetHostViewQtDelegateQuick::update()
     QQuickItem::update();
 }
 
+void RenderWidgetHostViewQtDelegateQuick::updateCursor(const QCursor &cursor)
+{
+    setCursor(cursor);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::resize(int width, int height)
+{
+    setSize(QSizeF(width, height));
+}
+
+void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVisible)
+{
+    if (qApp->inputMethod()->isVisible() == editorVisible)
+        return;
+
+    setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
+    qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
+    qApp->inputMethod()->setVisible(editorVisible);
+}
+
 bool RenderWidgetHostViewQtDelegateQuick::supportsHardwareAcceleration() const
 {
     return true;
+}
+
+void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::focusOutEvent(QFocusEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::mousePressEvent(QMouseEvent *event)
+{
+    if (!m_isPopup)
+        forceActiveFocus();
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::mouseMoveEvent(QMouseEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::mouseReleaseEvent(QMouseEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::keyPressEvent(QKeyEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::keyReleaseEvent(QKeyEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+QVariant RenderWidgetHostViewQtDelegateQuick::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    return m_client->inputMethodQuery(query);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::inputMethodEvent(QInputMethodEvent *event)
+{
+    m_client->forwardEvent(event);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+{
+    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+    m_client->notifyResize();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)

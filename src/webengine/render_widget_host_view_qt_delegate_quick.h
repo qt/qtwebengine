@@ -44,206 +44,52 @@
 
 #include "render_widget_host_view_qt_delegate.h"
 
-#include "qquickwebengineview_p.h"
-#include "qquickwebengineview_p_p.h"
-#include <QGuiApplication>
-#include <QQuickPaintedItem>
-#include <QQuickWindow>
-#include <QVariant>
-#include <QWindow>
+#include <QQuickItem>
 
-template<typename ItemBaseT>
-class RenderWidgetHostViewQtDelegateQuickBase : public ItemBaseT, public RenderWidgetHostViewQtDelegate
-{
-public:
-    RenderWidgetHostViewQtDelegateQuickBase(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
-        : m_client(client)
-        , m_isPopup(isPopup)
-        , m_initialized(false)
-    {
-        this->setAcceptedMouseButtons(Qt::AllButtons);
-        this->setAcceptHoverEvents(true);
-        if (isPopup)
-            return;
-        this->setFocus(true);
-        this->setActiveFocusOnTab(true);
-        this->setFlag(QQuickItem::ItemIsFocusScope);
-    }
-
-    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE
-    {
-        QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
-        this->setParentItem(viewPrivate->q_func());
-        this->setSize(viewPrivate->q_func()->boundingRect().size());
-        m_initialized = true;
-    }
-
-    virtual void initAsPopup(const QRect &r) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(m_isPopup && this->parentItem());
-        QRectF rect(this->parentItem()->mapRectFromScene(r));
-        this->setX(rect.x());
-        this->setY(rect.y());
-        this->setWidth(rect.width());
-        this->setHeight(rect.height());
-        this->setVisible(true);
-        m_initialized = true;
-    }
-
-    virtual QRectF screenRect() const Q_DECL_OVERRIDE
-    {
-        QPointF pos = this->mapToScene(QPointF(0,0));
-        return QRectF(pos.x(), pos.y(), this->width(), this->height());
-    }
-
-    virtual void setKeyboardFocus() Q_DECL_OVERRIDE
-    {
-        this->setFocus(true);
-    }
-
-    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE
-    {
-        return this->hasFocus();
-    }
-
-    virtual void show() Q_DECL_OVERRIDE
-    {
-        this->setVisible(true);
-    }
-
-    virtual void hide() Q_DECL_OVERRIDE
-    {
-        this->setVisible(false);
-    }
-
-    virtual bool isVisible() const Q_DECL_OVERRIDE
-    {
-        return ItemBaseT::isVisible();
-    }
-
-    virtual QWindow* window() const Q_DECL_OVERRIDE
-    {
-        return ItemBaseT::window();
-    }
-
-    virtual void updateCursor(const QCursor &cursor) Q_DECL_OVERRIDE
-    {
-        this->setCursor(cursor);
-    }
-
-    virtual void resize(int width, int height) Q_DECL_OVERRIDE
-    {
-        this->setSize(QSizeF(width, height));
-    }
-
-    virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE
-    {
-        return false;
-    }
-
-    virtual void move(const QPoint&) Q_DECL_OVERRIDE {}
-
-    void focusInEvent(QFocusEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void focusOutEvent(QFocusEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void mousePressEvent(QMouseEvent *event)
-    {
-        if (!m_isPopup)
-            this->forceActiveFocus();
-        m_client->forwardEvent(event);
-    }
-
-    void mouseMoveEvent(QMouseEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void mouseReleaseEvent(QMouseEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void mouseDoubleClickEvent(QMouseEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void keyPressEvent(QKeyEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void keyReleaseEvent(QKeyEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void wheelEvent(QWheelEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void touchEvent(QTouchEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void hoverMoveEvent(QHoverEvent *event)
-    {
-        m_client->forwardEvent(event);
-    }
-
-    void inputMethodStateChanged(bool editorVisible)
-    {
-        if (qApp->inputMethod()->isVisible() == editorVisible)
-            return;
-
-        this->setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
-        qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
-        qApp->inputMethod()->setVisible(editorVisible);
-    }
-
-    void setTooltip(const QString &) Q_DECL_OVERRIDE {}
-
-    QVariant inputMethodQuery(Qt::InputMethodQuery query) const
-    {
-        return m_client->inputMethodQuery(query);
-    }
-
-    virtual void inputMethodEvent(QInputMethodEvent *event) Q_DECL_OVERRIDE
-    {
-        m_client->forwardEvent(event);
-    }
-
-protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
-    {
-        ItemBaseT::geometryChanged(newGeometry, oldGeometry);
-        m_client->notifyResize();
-    }
-
-    RenderWidgetHostViewQtDelegateClient *m_client;
-    bool m_isPopup;
-    bool m_initialized;
-};
-
-class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegateQuickBase<QQuickItem>
+class RenderWidgetHostViewQtDelegateQuick : public QQuickItem, public RenderWidgetHostViewQtDelegate
 {
     Q_OBJECT
 public:
     RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
 
+    virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
+    virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
+    virtual QRectF screenRect() const Q_DECL_OVERRIDE;
+    virtual void setKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE;
+    virtual void show() Q_DECL_OVERRIDE;
+    virtual void hide() Q_DECL_OVERRIDE;
+    virtual bool isVisible() const Q_DECL_OVERRIDE;
+    virtual QWindow* window() const Q_DECL_OVERRIDE;
     virtual void update() Q_DECL_OVERRIDE;
+    virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
+    virtual void resize(int width, int height) Q_DECL_OVERRIDE;
+    virtual void move(const QPoint&) Q_DECL_OVERRIDE { }
+    virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
     virtual bool supportsHardwareAcceleration() const Q_DECL_OVERRIDE;
+    virtual void setTooltip(const QString&) Q_DECL_OVERRIDE { }
 
+protected:
+    virtual void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
+    virtual void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
+    virtual void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    virtual void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    virtual void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    virtual void mouseDoubleClickEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+    virtual void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    virtual void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
+    virtual void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
+    virtual void touchEvent(QTouchEvent *event) Q_DECL_OVERRIDE;
+    virtual void hoverMoveEvent(QHoverEvent *event) Q_DECL_OVERRIDE;
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
+    virtual void inputMethodEvent(QInputMethodEvent *event) Q_DECL_OVERRIDE;
+    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;
     virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
+
+private:
+    RenderWidgetHostViewQtDelegateClient *m_client;
+    bool m_isPopup;
+    bool m_initialized;
 };
 #endif
