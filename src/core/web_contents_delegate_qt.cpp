@@ -113,7 +113,7 @@ void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, const base::s
     DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);
 }
 
-void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, int error_code, const string16 &error_description, content::RenderViewHost*)
+void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, int error_code, const base::string16 &error_description, content::RenderViewHost*)
 {
     if (is_main_frame)
         m_viewClient->loadFinished(false, error_code, toQt(error_description));
@@ -168,7 +168,7 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
     m_viewClient->runFileChooser(static_cast<WebContentsAdapterClient::FileChooserMode>(params.mode), toQt(params.default_file_name.value()), acceptedMimeTypes);
 }
 
-bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const string16 &message, int32 line_no, const string16 &source_id)
+bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const base::string16 &message, int32 line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(static_cast<int>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));

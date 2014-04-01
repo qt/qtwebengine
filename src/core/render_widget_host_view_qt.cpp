@@ -507,7 +507,7 @@ void RenderWidgetHostViewQt::Destroy()
     delete this;
 }
 
-void RenderWidgetHostViewQt::SetTooltipText(const string16 &tooltip_text)
+void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
 {
     m_delegate->setTooltip(toQt(tooltip_text));
 }
@@ -640,7 +640,7 @@ void RenderWidgetHostViewQt::OnAccessibilityEvents(const std::vector<Accessibili
     QT_NOT_USED
 }
 
-void RenderWidgetHostViewQt::SelectionChanged(const string16 &text, size_t offset, const gfx::Range &range)
+void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range)
 {
     content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
     m_adapterClient->selectionChanged();

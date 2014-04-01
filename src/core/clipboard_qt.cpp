@@ -202,7 +202,7 @@ void Clipboard::Clear(ClipboardType type)
     QGuiApplication::clipboard()->clear(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
 }
 
-void Clipboard::ReadAvailableTypes(ui::ClipboardType type, std::vector<string16>* types, bool* contains_filenames) const
+void Clipboard::ReadAvailableTypes(ui::ClipboardType type, std::vector<base::string16>* types, bool* contains_filenames) const
 {
     if (!types || !contains_filenames) {
         NOTREACHED();
@@ -220,7 +220,7 @@ void Clipboard::ReadAvailableTypes(ui::ClipboardType type, std::vector<string16>
 }
 
 
-void Clipboard::ReadText(ClipboardType type, string16* result) const
+void Clipboard::ReadText(ClipboardType type, base::string16* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     *result = toString16(mimeData->text());
@@ -232,7 +232,7 @@ void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const
     *result = mimeData->text().toStdString();
 }
 
-void Clipboard::ReadHTML(ClipboardType type, string16* markup, std::string* src_url, uint32* fragment_start, uint32* fragment_end) const
+void Clipboard::ReadHTML(ClipboardType type, base::string16* markup, std::string* src_url, uint32* fragment_start, uint32* fragment_end) const
 {
     markup->clear();
     if (src_url)
@@ -270,14 +270,14 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const
     return copy;
 }
 
-void Clipboard::ReadCustomData(ClipboardType clipboard_type, const string16& type, string16* result) const
+void Clipboard::ReadCustomData(ClipboardType clipboard_type, const base::string16& type, base::string16* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(clipboard_type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
     ReadCustomDataForType(customData.constData(), customData.size(), type, result);
 }
 
-void Clipboard::ReadBookmark(string16* title, std::string* url) const
+void Clipboard::ReadBookmark(base::string16* title, std::string* url) const
 {
     NOTIMPLEMENTED();
 }

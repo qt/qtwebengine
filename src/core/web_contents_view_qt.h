@@ -75,7 +75,7 @@ public:
 
     virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
 
-    virtual void SetPageTitle(const string16& title) Q_DECL_OVERRIDE { }
+    virtual void SetPageTitle(const base::string16& title) Q_DECL_OVERRIDE { }
 
     virtual void RenderViewCreated(content::RenderViewHost* host) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
