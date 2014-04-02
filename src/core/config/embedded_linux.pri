@@ -1,4 +1,4 @@
-GYP_ARGS += "-D qt_os=\"embedded_linux\""
+GYP_ARGS += "-D qt_os=\"embedded_linux\" -I config/embedded_linux.gypi"
 
 GYP_CONFIG += \
     embedded=1 \
@@ -7,6 +7,7 @@ GYP_CONFIG += \
     use_openssl=1 \
     disable_nacl=1 \
     use_system_icu=1 \
+    use_clipboard_aurax11=0 \
     build_ffmpegsumo=0 \
     configuration_policy=0 \
     enable_autofill_dialog=0 \

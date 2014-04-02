@@ -43,6 +43,7 @@
 
 #include "chromium_overrides.h"
 #include "delegated_frame_node.h"
+#include "gl_context_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
@@ -171,6 +172,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 {
     m_host->SetView(this);
     m_gestureRecognizer->AddGestureEventHelper(this);
+    GLContextHelper::initialize();
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
