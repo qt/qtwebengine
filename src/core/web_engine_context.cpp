@@ -68,6 +68,7 @@
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
+#include "gl_context_qt.h"
 #include "type_conversion.h"
 #include "web_engine_library_info.h"
 #include <QGuiApplication>
@@ -151,6 +152,8 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
     parsedCommandLine->AppendSwitch(cc::switches::kDisable4444Textures);
 #endif
+
+    GLContextHelper::initialize();
 
     // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
     if (qApp->platformName() == QStringLiteral("xcb") && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
