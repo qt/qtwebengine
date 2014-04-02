@@ -1,4 +1,4 @@
-GYP_ARGS += "-D qt_os=\"embedded_linux\""
+GYP_ARGS += "-D qt_os=\"embedded_linux\" -I config/embedded_linux.gypi"
 
 GYP_CONFIG += \
     embedded=1 \

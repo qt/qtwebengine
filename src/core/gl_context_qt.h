@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,39 +39,33 @@
 **
 ****************************************************************************/
 
-#include "qtwebengineglobal.h"
+#ifndef GL_GL_CONTEXT_QT_H_
+#define GL_GL_CONTEXT_QT_H_
 
-#include "gl_context_qt.h"
-#include <private/qsgcontext_p.h>
-#include <QGuiApplication>
+#include "qtwebenginecoreglobal.h"
+#include <QObject>
 
-static QOpenGLContext *shareContext;
+QT_BEGIN_NAMESPACE
 
-static void deleteShareContext()
-{
-    delete shareContext;
-    shareContext = 0;
-}
+typedef void* EGLContext;
+typedef void* EGLDisplay;
+typedef void* EGLConfig;
 
-void QWebEngine::initialize()
-{
-    QCoreApplication *app = QCoreApplication::instance();
-    if (!app) {
-        qFatal("QWebEngine::initialize() must be called after the construction of the application object.");
-        return;
-    }
-    if (app->thread() != QThread::currentThread()) {
-        qFatal("QWebEngine::initialize() must be called from the Qt gui thread.");
-        return;
-    }
+class QOpenGLContext;
 
-    if (shareContext)
-        return;
+class QWEBENGINE_EXPORT GLContextHelper : public QObject {
+    Q_OBJECT
+public:
+    static void initialize(QOpenGLContext*);
+    static void createEGLContext(EGLDisplay *egldisplay, EGLConfig *eglconfig, EGLContext *eglcontext);
+    GLContextHelper(QOpenGLContext* share);
+private:
+    Q_INVOKABLE void createEGLContextOnBrowserThread(EGLDisplay *egldisplay, EGLConfig *eglconfig, EGLContext *eglcontext);
+    static GLContextHelper* contextHelper;
+    QOpenGLContext* shareContext;
+};
 
-    shareContext = new QOpenGLContext;
-    shareContext->create();
-    qAddPostRoutine(deleteShareContext);
-    QSGContext::setSharedOpenGLContext(shareContext);
-    GLContextHelper::initialize(shareContext);
-}
+QT_END_NAMESPACE
+
+#endif
 

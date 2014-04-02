@@ -63,7 +63,8 @@ SOURCES = \
         qrc_protocol_handler_qt.cpp \
         url_request_qrc_job_qt.cpp \
         surface_factory_qt.cpp \
-        ozone_platform_eglfs.cpp
+        ozone_platform_eglfs.cpp \
+        gl_context_qt.cpp
 
 
 HEADERS = \
@@ -104,4 +105,6 @@ HEADERS = \
         qrc_protocol_handler_qt.h \
         url_request_qrc_job_qt.h \
         surface_factory_qt.h \
-        ozone_platform_eglfs.h
+        ozone_platform_eglfs.h \
+        gl_context_qt.h
+
