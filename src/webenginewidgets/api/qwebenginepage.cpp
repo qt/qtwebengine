@@ -46,6 +46,21 @@
 
 QT_BEGIN_NAMESPACE
 
+static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
+{
+    switch (disposition) {
+    case WebContentsAdapterClient::NewForegroundTabDisposition:
+    case WebContentsAdapterClient::NewBackgroundTabDisposition:
+        return QWebEnginePage::WebBrowserTab;
+    case WebContentsAdapterClient::NewPopupDisposition:
+        return QWebEnginePage::WebDialog;
+    case WebContentsAdapterClient::NewWindowDisposition:
+        return QWebEnginePage::WebBrowserWindow;
+    default:
+        Q_UNREACHABLE();
+    }
+}
+
 CallbackDirectory::~CallbackDirectory()
 {
     // "Cancel" pending callbacks by calling them with an invalid value.
@@ -245,7 +260,7 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(userGesture);
-    QWebEnginePage *newPage = q->createWindow(disposition == WebContentsAdapterClient::NewPopupDisposition ? QWebEnginePage::WebModalDialog : QWebEnginePage::WebBrowserWindow);
+    QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
     // Overwrite the new page's WebContents with ours.
     if (newPage && newPage->d_func() != this) {
         newPage->d_func()->adapter = newWebContents;

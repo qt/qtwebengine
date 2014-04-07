@@ -279,8 +279,9 @@
 
     This enum describes the types of window that can be created by the createWindow() function.
 
-    \value WebBrowserWindow The window is a regular web browser window.
-    \value WebModalDialog The window acts as modal dialog.
+    \value WebBrowserWindow The page should be opened in a complete web browser window.
+    \value WebBrowserTab The page should be opened as a web browser tab.
+    \value WebDialog The page should be opened in a window without decoration.
 */
 
 /*!
