@@ -11,6 +11,8 @@ OTHER_FILES += \
     $$PWD/data/favicon.html \
     $$PWD/data/favicon.png \
     $$PWD/data/favicon2.html \
+    $$PWD/data/link.html \
+    $$PWD/data/redirect.html \
     $$PWD/data/small-favicon.png \
     $$PWD/data/test1.html \
     $$PWD/data/test3.html \
