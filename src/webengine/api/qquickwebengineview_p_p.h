@@ -136,6 +136,7 @@ public:
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;
+    virtual void loadStopped() Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &) Q_DECL_OVERRIDE;
@@ -165,6 +166,7 @@ public:
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;
+    bool m_isLoadingStopped;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
 

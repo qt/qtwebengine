@@ -76,6 +76,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , loadProgress(0)
     , inspectable(false)
     , m_isFullScreen(false)
+    , m_isLoadingStopped(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -263,6 +264,12 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl)
     m_history->reset();
     QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
     Q_EMIT q->loadingChanged(&loadRequest);
+    m_isLoadingStopped = false;
+}
+
+void QQuickWebEngineViewPrivate::loadStopped()
+{
+    m_isLoadingStopped = true;
 }
 
 void QQuickWebEngineViewPrivate::loadCommitted()
@@ -273,8 +280,9 @@ void QQuickWebEngineViewPrivate::loadCommitted()
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);
+
     m_history->reset();
-    if (error_code == WebEngineError::UserAbortedError) {
+    if (m_isLoadingStopped) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
         return;

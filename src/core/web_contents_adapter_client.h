@@ -124,6 +124,7 @@ public:
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl) = 0;
+    virtual void loadStopped() = 0;
     virtual void loadCommitted() = 0;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) = 0;
     virtual void focusContainer() = 0;

@@ -69,6 +69,11 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
         m_viewClient->titleChanged(toQt(source->GetTitle()));
 }
 
+void WebContentsDelegateQt::NavigationStopped()
+{
+    m_viewClient->loadStopped();
+}
+
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
     WebContentsAdapter *newAdapter = new WebContentsAdapter(WebEngineContext::current()->renderingMode(), new_contents);
