@@ -583,14 +583,14 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
     QString promptResult;
     switch (controller->type()) {
     case AlertDialog:
-        q->javaScriptAlert(0, controller->message());
+        q->javaScriptAlert(controller->securityOrigin(), controller->message());
         accepted = true;
         break;
     case ConfirmDialog:
-        accepted = q->javaScriptConfirm(0, controller->message());
+        accepted = q->javaScriptConfirm(controller->securityOrigin(), controller->message());
         break;
     case PromptDialog:
-        accepted = q->javaScriptPrompt(0, controller->message(), controller->defaultPrompt(), &promptResult);
+        accepted = q->javaScriptPrompt(controller->securityOrigin(), controller->message(), controller->defaultPrompt(), &promptResult);
         if (accepted)
             controller->textProvided(promptResult);
         break;
@@ -810,21 +810,21 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
     return ret;
 }
 
-void QWebEnginePage::javaScriptAlert(QWebEngineFrame *originatingFrame, const QString &msg)
+void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString &msg)
 {
-    Q_UNUSED(originatingFrame);
+    Q_UNUSED(securityOrigin);
     QMessageBox::information(view(), QStringLiteral("Javascript Alert - %1").arg(url().toString()), msg);
 }
 
-bool QWebEnginePage::javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString &msg)
+bool QWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString &msg)
 {
-    Q_UNUSED(originatingFrame);
+    Q_UNUSED(securityOrigin);
     return (QMessageBox::information(view(), QStringLiteral("Javascript Confirm - %1").arg(url().toString()), msg, QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok);
 }
 
-bool QWebEnginePage::javaScriptPrompt(QWebEngineFrame *originatingFrame, const QString &msg, const QString &defaultValue, QString *result)
+bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString &msg, const QString &defaultValue, QString *result)
 {
-    Q_UNUSED(originatingFrame);
+    Q_UNUSED(securityOrigin);
     bool ret = false;
     if (result)
         *result = QInputDialog::getText(view(), QStringLiteral("Javascript Prompt - %1").arg(url().toString()), msg, QLineEdit::Normal, defaultValue, &ret);
