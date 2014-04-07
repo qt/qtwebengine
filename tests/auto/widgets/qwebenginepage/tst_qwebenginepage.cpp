@@ -3092,7 +3092,7 @@ public:
     JSPromptPage()
     {}
 
-    bool javaScriptPrompt(QWebEngineFrame* frame, const QString& msg, const QString& defaultValue, QString* result)
+    bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result)
     {
         if (msg == QLatin1String("test1")) {
             *result = QString();
@@ -3109,7 +3109,7 @@ public:
         }
 
         qFatal("Unknown msg.");
-        return QWebEnginePage::javaScriptPrompt(frame, msg, defaultValue, result);
+        return QWebEnginePage::javaScriptPrompt(securityOrigin, msg, defaultValue, result);
     }
 };
 

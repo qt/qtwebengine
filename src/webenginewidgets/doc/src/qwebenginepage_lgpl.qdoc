@@ -416,24 +416,24 @@
 */
 
 /*!
-    \fn void QWebEnginePage::javaScriptAlert(QWebEngineFrame *frame, const QString& msg)
-    This function is called whenever a JavaScript program running inside \a frame calls the alert() function with
+    \fn void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString& msg)
+    This function is called whenever a JavaScript program running in a frame affiliated with \a securityOrigin calls the alert() function with
     the message \a msg.
 
     The default implementation shows the message, \a msg, with QMessageBox::information.
 */
 
 /*!
-    \fn bool QWebEnginePage::javaScriptConfirm(QWebEngineFrame *frame, const QString& msg)
-    This function is called whenever a JavaScript program running inside \a frame calls the confirm() function
+    \fn bool QWebEnginePage::javaScriptConfirm(const QUrl &securityOrigin, const QString& msg)
+    This function is called whenever a JavaScript program running in a frame affiliated with \a securityOrigin calls the confirm() function
     with the message, \a msg. Returns true if the user confirms the message; otherwise returns false.
 
     The default implementation executes the query using QMessageBox::information with QMessageBox::Ok and QMessageBox::Cancel buttons.
 */
 
 /*!
-    \fn bool QWebEnginePage::javaScriptPrompt(QWebEngineFrame *frame, const QString& msg, const QString& defaultValue, QString* result)
-    This function is called whenever a JavaScript program running inside \a frame tries to prompt the user for input.
+    \fn bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result)
+    This function is called whenever a JavaScript program running in a frame affiliated with \a securityOrigin tries to prompt the user for input.
     The program may provide an optional message, \a msg, as well as a default value for the input in \a defaultValue.
 
     If the prompt was cancelled by the user the implementation should return false; otherwise the

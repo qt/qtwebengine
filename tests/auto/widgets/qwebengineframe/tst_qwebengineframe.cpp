@@ -547,9 +547,10 @@ public:
     int alerts;
 
 protected:
-    virtual void javaScriptAlert(QWebEngineFrame*, const QString& msg)
+    virtual void javaScriptAlert(const QUrl &securityOrigin, const QString &msg)
     {
         alerts++;
+        QCOMPARE(securityOrigin, QUrl(QStringLiteral("http://test.origin.com/")));
         QCOMPARE(msg, QString("foo"));
     }
 };
@@ -558,7 +559,7 @@ void tst_QWebEngineFrame::setHtmlWithJSAlert()
 {
     QString html("<html><head></head><body><script>alert('foo');</script><p>hello world</p></body></html>");
     MyPage page;
-    page.setHtml(html);
+    page.setHtml(html, QUrl(QStringLiteral("http://test.origin.com/path#fragment")));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(page.alerts, 1);
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118663", Continue);

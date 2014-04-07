@@ -567,9 +567,9 @@ protected:
 
     virtual bool acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type) { Q_UNUSED(frame); Q_UNUSED(&request); Q_UNUSED(type); Q_UNREACHABLE(); return false; }
     virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes);
-    virtual void javaScriptAlert(QWebEngineFrame *originatingFrame, const QString& msg);
-    virtual bool javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString& msg);
-    virtual bool javaScriptPrompt(QWebEngineFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result);
+    virtual void javaScriptAlert(const QUrl &securityOrigin, const QString& msg);
+    virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
+    virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
     virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID);
 
     virtual QString userAgentForUrl(const QUrl& url) const { Q_UNUSED(url); Q_UNREACHABLE(); return QString(); }
