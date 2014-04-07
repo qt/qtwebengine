@@ -58,7 +58,6 @@ JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
 
 void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)
 {
-    Q_UNUSED(originUrl);
     Q_UNUSED(acceptLang);
 
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
@@ -69,7 +68,7 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
 
     WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(javascriptMessageType);
     JavaScriptDialogControllerPrivate *dialogData = new JavaScriptDialogControllerPrivate(dialogType, toQt(messageText).toHtmlEscaped()
-                                                                                          , toQt(defaultPromptText).toHtmlEscaped(), callback, webContents);
+                                                                                          , toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl), callback, webContents);
     QSharedPointer<JavaScriptDialogController> dialog(new JavaScriptDialogController(dialogData));
 
     // We shouldn't get new dialogs for a given WebContents until we gave back a result.

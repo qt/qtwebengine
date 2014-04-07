@@ -54,10 +54,12 @@ void JavaScriptDialogControllerPrivate::dialogFinished(bool accepted, const base
 }
 
 JavaScriptDialogControllerPrivate::JavaScriptDialogControllerPrivate(WebContentsAdapterClient::JavascriptDialogType t, const QString &msg, const QString &prompt
-                                                                     , const content::JavaScriptDialogManager::DialogClosedCallback &cb, content::WebContents *c)
+                                                                     , const QUrl &securityOrigin, const content::JavaScriptDialogManager::DialogClosedCallback &cb
+                                                                     , content::WebContents *c)
     : type(t)
     , message(msg)
     , defaultPrompt(prompt)
+    , securityOrigin(securityOrigin)
     , callback(cb)
     , contents(c)
 {
@@ -80,6 +82,11 @@ QString JavaScriptDialogController::defaultPrompt() const
 WebContentsAdapterClient::JavascriptDialogType JavaScriptDialogController::type() const
 {
     return d->type;
+}
+
+QUrl JavaScriptDialogController::securityOrigin() const
+{
+    return d->securityOrigin;
 }
 
 void JavaScriptDialogController::textProvided(const QString &text)

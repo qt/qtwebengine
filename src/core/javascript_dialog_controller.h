@@ -55,6 +55,7 @@ public:
     QString message() const;
     QString defaultPrompt() const;
     WebContentsAdapterClient::JavascriptDialogType type() const;
+    QUrl securityOrigin() const;
 
 public Q_SLOTS:
     void textProvided(const QString &text);
