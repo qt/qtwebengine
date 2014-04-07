@@ -261,7 +261,8 @@ public:
 
     enum WebWindowType {
         WebBrowserWindow,
-        WebModalDialog
+        WebBrowserTab,
+        WebPopup
     };
 
     enum PermissionPolicy {
