@@ -86,9 +86,10 @@ protected:
 
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
+    // Put the root node first to make sure it gets destroyed after the SG renderer.
+    QScopedPointer<QSGRootNode> rootNode;
     QScopedPointer<QSGContext> sgContext;
     QScopedPointer<QSGRenderContext> sgRenderContext;
-    QScopedPointer<QSGRootNode> rootNode;
     QScopedPointer<QSGRenderer> sgRenderer;
     bool m_isPopup;
 };
