@@ -65,6 +65,14 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     setAttribute(Qt::WA_AlwaysShowToolTips);
 }
 
+RenderWidgetHostViewQtDelegateWidget::~RenderWidgetHostViewQtDelegateWidget()
+{
+    // Clean the scene graph before our QOpenGLWidget gets rid of our GL context.
+    sgRenderer.reset();
+    sgRenderContext.reset();
+    sgContext.reset();
+}
+
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
 {
     QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);

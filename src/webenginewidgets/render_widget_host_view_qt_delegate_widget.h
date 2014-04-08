@@ -59,6 +59,7 @@ class RenderWidgetHostViewQtDelegateWidget : public QOpenGLWidget, public Render
 {
 public:
     RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
+    ~RenderWidgetHostViewQtDelegateWidget();
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
     virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
