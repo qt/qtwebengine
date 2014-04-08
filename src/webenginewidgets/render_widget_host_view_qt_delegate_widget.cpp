@@ -53,9 +53,9 @@
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
     : QOpenGLWidget(parent)
     , m_client(client)
+    , rootNode(new QSGRootNode)
     , sgContext(QSGContext::createDefaultContext())
     , sgRenderContext(new QSGRenderContext(sgContext.data()))
-    , rootNode(new QSGRootNode)
     , m_isPopup(false)
 {
     setFocusPolicy(Qt::ClickFocus);
