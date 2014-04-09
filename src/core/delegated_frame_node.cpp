@@ -334,9 +334,14 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
     // DelegatedFrameNode is a transform node only for the purpose of
     // countering the scale of devicePixel-scaled tiles when rendering them
     // to the final surface.
+    // Only Mac OS X and iOS emulate device-pixel-ratio independent pixels at
+    // a windowing system or GUI framework level. On other platforms, we should
+    // apply rather than counter the devicePixelRatio scale factor.
+#ifdef Q_OS_DARWIN
     QMatrix4x4 matrix;
     matrix.scale(1 / m_data->frameDevicePixelRatio, 1 / m_data->frameDevicePixelRatio);
     setMatrix(matrix);
+#endif
 
     // Keep the old texture lists around to find the ones we can re-use.
     QList<QSharedPointer<RenderPassTexture> > oldRenderPassTextures;
