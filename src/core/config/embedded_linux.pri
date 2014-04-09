@@ -32,6 +32,7 @@ GYP_CONFIG += \
     safe_browsing=0 \
     toolkit_uses_gtk=0 \
     use_ash=0 \
+    use_clipboard_aurax11=0 \
     use_cups=0 \
     use_custom_freetype=0 \
     use_gconf=0 \
