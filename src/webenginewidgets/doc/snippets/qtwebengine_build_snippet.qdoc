@@ -1,8 +1,8 @@
 //! [0]
-QT += webkit
+QT += webengine
 //! [0]
 
 
 //! [1]
-#include <QtWebKit>
+#include <QtWebEngine>
 //! [1]
