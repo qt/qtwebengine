@@ -50,6 +50,8 @@
 #include <QSharedPointer>
 #include <QWaitCondition>
 
+#include "chromium_gpu_helper.h"
+
 QT_BEGIN_NAMESPACE
 class QSGRenderContext;
 QT_END_NAMESPACE
@@ -83,6 +85,7 @@ private:
     QSGRenderContext *m_sgRenderContext;
     QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
     int m_numPendingSyncPoints;
+    FenceSync m_mailboxesGLFence;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
 
