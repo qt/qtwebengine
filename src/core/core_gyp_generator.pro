@@ -22,6 +22,9 @@ DEFINES += QT_NO_KEYWORDS \
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
+contains(QT_CONFIG, egl): CONFIG += egl
+else: DEFINES += QT_NO_EGL
+
 RESOURCES += devtools.qrc
 
 # something fishy with qmake in 5.2 ?

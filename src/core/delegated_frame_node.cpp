@@ -75,6 +75,11 @@
 #include <QtQuick/private/qsgrenderer_p.h>
 #include <QtQuick/private/qsgtexture_p.h>
 
+#if !defined(QT_NO_EGL)
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#endif
+
 class RenderPassTexture : public QSGTexture
 {
 public:
@@ -205,6 +210,45 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
+static void waitAndDeleteChromiumSync(FenceSync *sync)
+{
+    // Chromium uses its own GL bindings and stores in in thread local storage.
+    // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
+    // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
+    switch (sync->type) {
+    case FenceSync::NoSync:
+        break;
+    case FenceSync::EglSync:
+#ifdef EGL_KHR_reusable_sync
+        static bool resolved = false;
+        static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
+        static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
+
+        if (!resolved) {
+            QOpenGLContext *context = QOpenGLContext::currentContext();
+            eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
+            eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
+            resolved = true;
+        }
+
+        // FIXME: Use the less wasteful eglWaitSyncKHR once we have a device that supports EGL_KHR_wait_sync.
+        eglClientWaitSyncKHR(sync->egl.display, sync->egl.sync, 0, EGL_FOREVER_KHR);
+        eglDestroySyncKHR(sync->egl.display, sync->egl.sync);
+        sync->reset();
+#endif
+        break;
+    case FenceSync::ArbSync:
+#ifdef GL_ARB_sync
+        glWaitSync(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
+        glDeleteSync(sync->arb.sync);
+        sync->reset();
+#endif
+        break;
+    }
+    // If Chromium was able to create a sync, we should have been able to handle its type here too.
+    Q_ASSERT(!*sync);
+}
+
 RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id, QSGRenderContext *context)
     : QSGTexture()
     , m_id(id)
@@ -317,6 +361,10 @@ void DelegatedFrameNode::preprocess()
         }
 
         m_mailboxesFetchedWaitCond.wait(&m_mutex);
+
+        // Tell GL to wait until Chromium is done generating resource textures on the GPU thread.
+        // We can safely start referencing those textures onto geometries afterward.
+        waitAndDeleteChromiumSync(&m_mailboxesGLFence);
     }
 
     // Then render any intermediate RenderPass in order.
@@ -533,12 +581,14 @@ void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode,
     Q_FOREACH (MailboxTexture *mailboxTexture, *mailboxesToFetch)
         mailboxTexture->fetchTexture(mailboxManager);
 
-    // glFlush before yielding to the SG thread, whose context might already start using
-    // some shared resources provided by the unflushed context here, on the Chromium GPU thread.
-    glFlush();
+    // Set a fence at this point in Chromium's GL command stream
+    // and transfer the handle to the Qt scene graph thread.
+    FenceSync fence = createFence();
 
     // Chromium provided everything we were waiting for, let Qt start rendering.
     QMutexLocker lock(&frameNode->m_mutex);
+    Q_ASSERT(!frameNode->m_mailboxesGLFence);
+    frameNode->m_mailboxesGLFence = fence;
     frameNode->m_mailboxesFetchedWaitCond.wakeOne();
 }
 

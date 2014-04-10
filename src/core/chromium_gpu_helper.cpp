@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "chromium_gpu_helper.h"
 
 #include "content/common/gpu/gpu_channel_manager.h"
@@ -50,6 +54,30 @@
 static void addSyncPointCallbackDelegate(content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
 {
     syncPointManager->AddSyncPointCallback(sync_point, callback);
+}
+
+FenceSync createFence()
+{
+    FenceSync ret;
+    // Logic taken from chromium/ui/gl/gl_fence.cc
+#if !defined(OS_MACOSX)
+    if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+        ret.type = FenceSync::EglSync;
+        ret.egl.display = eglGetCurrentDisplay();
+        ret.egl.sync = eglCreateSyncKHR(ret.egl.display, EGL_SYNC_FENCE_KHR, NULL);
+    } else
+#endif
+    if (gfx::g_driver_gl.ext.b_GL_ARB_sync) {
+        ret.type = FenceSync::ArbSync;
+        ret.arb.sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    }
+
+    // glFlush is necessary to make sure that our fence creation reaches the GL server
+    // before we try waiting on it from a different context, which could deadlock.
+    // In cases where no fence extension is available, this also serves as flushing
+    // Chromium's GL context command stream before yielding to the SG thread.
+    glFlush();
+    return ret;
 }
 
 base::MessageLoop *gpu_message_loop()
