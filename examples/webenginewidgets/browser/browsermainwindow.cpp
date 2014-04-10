@@ -103,8 +103,8 @@ BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     setupToolBar();
 
     QWidget *centralWidget = new QWidget(this);
-    BookmarksModel *boomarksModel = BrowserApplication::bookmarksManager()->bookmarksModel();
-    m_bookmarksToolbar = new BookmarksToolBar(boomarksModel, this);
+    BookmarksModel *bookmarksModel = BrowserApplication::bookmarksManager()->bookmarksModel();
+    m_bookmarksToolbar = new BookmarksToolBar(bookmarksModel, this);
     connect(m_bookmarksToolbar, SIGNAL(openUrl(QUrl)),
             m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
     connect(m_bookmarksToolbar->toggleViewAction(), SIGNAL(toggled(bool)),
