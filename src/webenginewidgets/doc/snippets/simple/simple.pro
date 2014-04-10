@@ -1,2 +1,2 @@
-QT       += webkitwidgets
+QT       += webenginewidgets
 SOURCES   = main.cpp
