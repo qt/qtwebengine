@@ -241,3 +241,10 @@ void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *w
 {
     MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, callback);
 }
+
+void WebContentsDelegateQt::UpdateTargetURL(content::WebContents *source, int32 page_id, const GURL &url)
+{
+    Q_UNUSED(source)
+    Q_UNUSED(page_id)
+    m_viewClient->didUpdateTargetURL(toQt(url));
+}
