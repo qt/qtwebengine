@@ -233,6 +233,15 @@ void QQuickWebEngineViewPrivate::loadProgressChanged(int progress)
     Q_EMIT q->loadProgressChanged();
 }
 
+void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
+{
+    Q_Q(QQuickWebEngineView);
+    if (hoveredUrl != lastTargetUrl) {
+        Q_EMIT q->linkHovered(hoveredUrl);
+        lastTargetUrl = hoveredUrl;
+    }
+}
+
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
     Q_Q(const QQuickWebEngineView);

@@ -131,6 +131,7 @@ public:
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
+    virtual void didUpdateTargetURL(const QUrl&) Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE { }
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual QPoint mapToGlobal(const QPoint &posInView) const Q_DECL_OVERRIDE;
@@ -163,6 +164,7 @@ public:
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QQmlComponent *contextMenuExtraItems;
     QUrl icon;
+    QUrl lastTargetUrl;
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;
