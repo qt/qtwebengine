@@ -235,3 +235,10 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     if (final_update)
         m_viewClient->didFindText(request_id, number_of_matches);
 }
+
+void WebContentsDelegateQt::UpdateTargetURL(content::WebContents *source, int32 page_id, const GURL &url)
+{
+    Q_UNUSED(source)
+    Q_UNUSED(page_id)
+    m_viewClient->didUpdateTargetURL(toQt(url));
+}

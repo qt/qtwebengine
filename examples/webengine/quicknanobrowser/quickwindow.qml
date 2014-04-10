@@ -177,6 +177,38 @@ ApplicationWindow {
             WebEngineView {
                 id: webEngineView
                 focus: true
+
+                onLinkHovered: {
+                    if (hoveredUrl == "")
+                        resetStatusText.start()
+                    else {
+                        resetStatusText.stop()
+                        statusText.text = hoveredUrl
+                    }
+                }
+            }
+        }
+    }
+
+    Rectangle {
+        id: statusBubble
+        color: "oldlace"
+        property int padding: 6
+
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        width: statusText.paintedWidth + padding
+        height: statusText.paintedHeight + padding
+
+        Text {
+            id: statusText
+            anchors.centerIn: statusBubble
+            anchors.margins: 6
+
+            Timer {
+                id: resetStatusText
+                interval: 750
+                onTriggered: statusText.text = ""
             }
         }
     }
