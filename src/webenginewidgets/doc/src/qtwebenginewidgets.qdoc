@@ -43,7 +43,7 @@
 */
 
 /*!
-    \page qtwebkitwidgets-index.html
+    \page qtwebenginewidgets-index.html
     \title Qt WebEngine Widgets
     \ingroup modules
 
@@ -85,6 +85,11 @@
     on Windows. We plan to address this in a future release.
 
     \section1 Architecture
+
+    Before an application can use the Qt WebEngine Widgets classes, it must call
+    the static initialization method for the module.
+
+    \snippet snippets/simple/main.cpp Initializing QWebEngineWidgets
 
     The easiest way to render content is through the QWebEngineView class. As a
     widget it can be embedded into your forms or a graphics view, and it
@@ -172,8 +177,8 @@
     \l{Qt WebEngine Widgets Examples} page.
 
     \section1 License Information
-
-    This is a snapshot of the Qt port of WebEngine. The exact version information
+    //FIXME: check if we are allowed to use the name chromium here or if it is considered promotional use.
+    This is a snapshot of the integration of Chromium into Qt. The exact version information
     can be found in the \c{VERSION} file supplied with Qt.
 
     Qt Commercial Edition licensees that wish to distribute applications that
@@ -184,24 +189,7 @@
     the module under the appropriate version of the GNU LGPL.
 
     \legalese
-    WebEngine is licensed under the GNU Library General Public License.
-    Individual contributor names and copyright dates can be found
-    inline in the code.
-
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
-
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
-
-    You should have received a copy of the GNU Library General Public License
-    along with this library; see the file COPYING.LIB.  If not, write to
-    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-    Boston, MA 02110-1301, USA.
+    // FIXME: add correct licensing terms for chromium / blink. The one copied from QtWebKit does not apply.
     \endlegalese
 */
 
@@ -210,8 +198,9 @@
     \title Qt WebEngine Widgets Examples
     \brief Examples demonstrating the Qt WebEngine Widgets usage
     \ingroup all-examples
-
-    Qt provides an integrated Web browser component based on WebEngine, the popular
+     
+    // FIXME: same as above - can we use Chromium / Blink?
+    Qt provides an integrated Web browser component based on Chromium, the popular
     open source browser engine.
 
     These examples and demonstrations show a range of different uses for Qt WebEngine,

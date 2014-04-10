@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2014 Nokia Corporation and/or its subsidiary(-ies)
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -24,11 +24,17 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QWidget *parent = 0;
+    QWidget parent = 0;
+
+//! [Initializing QWebEngineWidgets]
+    QWebEngineWidgets::initialize();
+//! [Initializing QWebEngineWidgets]    
+
 //! [Using QWebEngineView]
-    QWebEngineView *view = new QWebEngineView(parent);
+    QWebEngineView* view = new QWebEngineView(parent);
     view->load(QUrl("http://qt-project.org/"));
     view->show();
 //! [Using QWebEngineView]
+
     return app.exec();
 }
