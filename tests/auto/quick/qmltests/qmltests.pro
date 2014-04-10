@@ -17,6 +17,7 @@ OTHER_FILES += \
     $$PWD/data/test1.html \
     $$PWD/data/test3.html \
     $$PWD/data/tst_favIconLoad.qml \
+    $$PWD/data/tst_linkHovered.qml \
     $$PWD/data/tst_loadFail.qml \
     $$PWD/data/tst_loadHtml.qml \
     $$PWD/data/tst_loadProgress.qml \

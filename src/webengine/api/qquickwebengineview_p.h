@@ -124,6 +124,7 @@ Q_SIGNALS:
     void iconChanged();
     void loadingChanged(QQuickWebEngineLoadRequest *loadRequest);
     void loadProgressChanged();
+    void linkHovered(const QUrl &hoveredUrl);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
 
 protected:
