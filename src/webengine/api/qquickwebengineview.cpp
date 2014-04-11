@@ -295,21 +295,21 @@ void QQuickWebEngineViewPrivate::focusContainer()
     q->forceActiveFocus();
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect &)
+void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
 {
     QQuickWebEngineNewViewRequest request;
     // This increases the ref-count of newWebContents and will tell Chromium
     // to start loading it and possibly return it to its parent page window.open().
     request.m_adapter = newWebContents;
-    request.m_isPopup = false;
+    request.m_isUserInitiated = userGesture;
 
     switch (disposition) {
-    case WebContentsAdapterClient::NewPopupDisposition:
-        request.m_isPopup = true;
-        // fall through
     case WebContentsAdapterClient::NewForegroundTabDisposition:
     case WebContentsAdapterClient::NewBackgroundTabDisposition:
         request.m_destination = QQuickWebEngineView::NewViewInTab;
+        break;
+    case WebContentsAdapterClient::NewPopupDisposition:
+        request.m_destination = QQuickWebEngineView::NewViewInDialog;
         break;
     case WebContentsAdapterClient::NewWindowDisposition:
         request.m_destination = QQuickWebEngineView::NewViewInWindow;

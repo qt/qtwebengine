@@ -129,7 +129,7 @@ public:
     virtual void loadCommitted() = 0;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) = 0;
     virtual void focusContainer() = 0;
-    virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, const QRect & initialGeometry) = 0;
+    virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual void requestFullScreen(bool) = 0;
