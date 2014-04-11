@@ -55,14 +55,15 @@ class JavaScriptDialogControllerPrivate {
 public:
     void dialogFinished(bool accepted, const base::string16 &promptValue);
     JavaScriptDialogControllerPrivate(WebContentsAdapterClient::JavascriptDialogType, const QString &message, const QString &prompt
-                                      , const QUrl &securityOrigin, const content::JavaScriptDialogManager::DialogClosedCallback &
-                                      , content::WebContents *);
+                                      , const QString& title, const QUrl &securityOrigin
+                                      , const content::JavaScriptDialogManager::DialogClosedCallback &, content::WebContents *);
 
     WebContentsAdapterClient::JavascriptDialogType type;
     QString message;
     QString defaultPrompt;
     QUrl securityOrigin;
     QString userInput;
+    QString title;
     content::JavaScriptDialogManager::DialogClosedCallback callback;
     content::WebContents *contents;
 };

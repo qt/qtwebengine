@@ -44,6 +44,8 @@
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/common/javascript_message_type.h"
 
+#include "web_contents_adapter_client.h"
+
 #include "qglobal.h"
 #include <QMap>
 #include <QSharedPointer>
@@ -62,12 +64,16 @@ public:
     virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType,
                                        const base::string16 &messageText, const base::string16 &defaultPromptText,
                                        const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) Q_DECL_OVERRIDE;
+
     virtual void RunBeforeUnloadDialog(content::WebContents *, const base::string16 &messageText, bool isReload,
                                          const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
     virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) Q_DECL_OVERRIDE;
     virtual void CancelActiveAndPendingDialogs(content::WebContents *contents) Q_DECL_OVERRIDE { removeDialogForContents(contents); }
     virtual void WebContentsDestroyed(content::WebContents *contents) Q_DECL_OVERRIDE { removeDialogForContents(contents); }
 
+
+    void runDialogForContents(content::WebContents *, WebContentsAdapterClient::JavascriptDialogType, const QString &messageText, const QString &defaultPrompt
+                              , const QUrl &,const content::JavaScriptDialogManager::DialogClosedCallback &callback, const QString &title = QString());
     void removeDialogForContents(content::WebContents *);
 
 private:

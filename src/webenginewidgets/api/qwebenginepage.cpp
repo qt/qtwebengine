@@ -594,6 +594,9 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         if (accepted)
             controller->textProvided(promptResult);
         break;
+    case InternalAuthorizationDialog:
+        accepted = (QMessageBox::question(view, controller->title(), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);
+        break;
     default:
         Q_UNREACHABLE();
     }

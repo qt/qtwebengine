@@ -257,15 +257,19 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     switch (dialogController->type()) {
     case WebContentsAdapterClient::AlertDialog:
         dialogComponentType = AlertDialog;
-        title = QObject::tr("Javascript Alert - %1");
+        title = QObject::tr("Javascript Alert - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::ConfirmDialog:
         dialogComponentType = ConfirmDialog;
-        title = QObject::tr("Javascript Confirm - %1");
+        title = QObject::tr("Javascript Confirm - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::PromptDialog:
         dialogComponentType = PromptDialog;
-        title = QObject::tr("Javascript Prompt - %1");
+        title = QObject::tr("Javascript Prompt - %1").arg(m_view->url().toString());
+        break;
+    case WebContentsAdapterClient::InternalAuthorizationDialog:
+        dialogComponentType = ConfirmDialog;
+        title = dialogController->title();
         break;
     default:
         Q_UNREACHABLE();
@@ -288,7 +292,7 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     textProp.write(dialogController->message());
 
     QQmlProperty titleProp(dialog, QStringLiteral("title"));
-    titleProp.write(title.arg(m_view->url().toString()));
+    titleProp.write(title);
 
     if (dialogComponentType == PromptDialog) {
         QQmlProperty promptProp(dialog, QStringLiteral("prompt"));
