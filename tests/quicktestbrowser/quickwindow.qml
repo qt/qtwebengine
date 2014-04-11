@@ -238,8 +238,6 @@ ApplicationWindow {
             id: tabComponent
             WebEngineView {
                 id: webEngineView
-                function adoptHandle(viewHandle) { experimental.adoptHandle(viewHandle) }
-
                 focus: true
 
                 states: [
