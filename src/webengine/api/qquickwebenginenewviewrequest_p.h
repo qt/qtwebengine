@@ -52,18 +52,18 @@ QT_BEGIN_NAMESPACE
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineNewViewRequest : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineView::NewViewDestination destination READ destination CONSTANT FINAL)
-    Q_PROPERTY(bool popup READ isPopup CONSTANT FINAL)
+    Q_PROPERTY(bool userInitiated READ isUserInitiated CONSTANT FINAL)
 public:
     ~QQuickWebEngineNewViewRequest();
 
     QQuickWebEngineView::NewViewDestination destination() const;
-    bool isPopup() const;
+    bool isUserInitiated() const;
     Q_INVOKABLE void openIn(QQuickWebEngineView *view);
 
 private:
     QQuickWebEngineNewViewRequest();
     QQuickWebEngineView::NewViewDestination m_destination;
-    bool m_isPopup;
+    bool m_isUserInitiated;
     QExplicitlySharedDataPointer<WebContentsAdapter> m_adapter;
     friend class QQuickWebEngineViewPrivate;
 };

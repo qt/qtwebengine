@@ -57,9 +57,9 @@ QQuickWebEngineView::NewViewDestination QQuickWebEngineNewViewRequest::destinati
     return m_destination;
 }
 
-bool QQuickWebEngineNewViewRequest::isPopup() const
+bool QQuickWebEngineNewViewRequest::isUserInitiated() const
 {
-    return m_isPopup;
+    return m_isUserInitiated;
 }
 
 void QQuickWebEngineNewViewRequest::openIn(QQuickWebEngineView *view)

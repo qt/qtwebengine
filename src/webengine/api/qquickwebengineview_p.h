@@ -99,7 +99,8 @@ public:
 
     enum NewViewDestination {
         NewViewInWindow,
-        NewViewInTab
+        NewViewInTab,
+        NewViewInDialog
     };
 
 public Q_SLOTS:

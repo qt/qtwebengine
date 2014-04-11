@@ -267,12 +267,29 @@ ApplicationWindow {
                         }
                     }
 
+                    Component {
+                        id: dialogComponent
+                        Window {
+                            property Item webView: _webView
+                            width: 800
+                            height: 600
+                            visible: true
+                            WebEngineView {
+                                id: _webView
+                                anchors.fill: parent
+                            }
+                        }
+                    }
+
                     onNewViewRequested: {
-                        if (request.popup)
+                        if (!request.userInitiated)
                             print("Warning: Blocked a popup window.")
                         else if (request.destination == WebEngineView.NewViewInTab) {
                             var tab = tabs.createEmptyTab()
                             request.openIn(tab.item)
+                        } else if (request.destination == WebEngineView.NewViewInDialog) {
+                            var dialog = dialogComponent.createObject()
+                            request.openIn(dialog.webView)
                         } else {
                             var component = Qt.createComponent("quickwindow.qml")
                             var window = component.createObject()
