@@ -220,6 +220,7 @@ static void waitAndDeleteChromiumSync(FenceSync *sync)
         break;
     case FenceSync::EglSync:
 #ifdef EGL_KHR_reusable_sync
+    {
         static bool resolved = false;
         static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
         static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
@@ -235,6 +236,7 @@ static void waitAndDeleteChromiumSync(FenceSync *sync)
         eglClientWaitSyncKHR(sync->egl.display, sync->egl.sync, 0, EGL_FOREVER_KHR);
         eglDestroySyncKHR(sync->egl.display, sync->egl.sync);
         sync->reset();
+    }
 #endif
         break;
     case FenceSync::ArbSync:
