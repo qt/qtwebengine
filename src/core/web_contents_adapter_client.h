@@ -96,7 +96,9 @@ public:
     enum JavascriptDialogType {
         AlertDialog,
         ConfirmDialog,
-        PromptDialog
+        PromptDialog,
+        // Leave room for potential new specs
+        InternalAuthorizationDialog = 0x10,
     };
 
     // Must match the ones in file_chooser_params.h

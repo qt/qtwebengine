@@ -54,6 +54,7 @@ public:
     ~JavaScriptDialogController();
     QString message() const;
     QString defaultPrompt() const;
+    QString title() const;
     WebContentsAdapterClient::JavascriptDialogType type() const;
     QUrl securityOrigin() const;
 
