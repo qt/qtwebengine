@@ -121,8 +121,10 @@ public:
 
     bool needsToFetch() const { return !m_textureId; }
     cc::TransferableResource &resource() { return m_resource; }
+    cc::ReturnedResource returnResource();
     void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
     void setTarget(GLenum target);
+    void incImportCount() { ++m_importCount; }
 
 private:
     cc::TransferableResource m_resource;
@@ -130,6 +132,7 @@ private:
     QSize m_textureSize;
     bool m_hasAlpha;
     GLenum m_target;
+    int m_importCount;
 };
 
 static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::RenderPass::Id &id, const QList<QSharedPointer<RenderPassTexture> > &list)
@@ -263,6 +266,7 @@ MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
     , m_textureSize(toQt(resource.size))
     , m_hasAlpha(false)
     , m_target(GL_TEXTURE_2D)
+    , m_importCount(1)
 {
 }
 
@@ -274,6 +278,22 @@ void MailboxTexture::bind()
 void MailboxTexture::setTarget(GLenum target)
 {
     m_target = target;
+}
+
+cc::ReturnedResource MailboxTexture::returnResource()
+{
+    cc::ReturnedResource returned;
+    // The ResourceProvider ensures that the resource isn't used by the parent compositor's GL
+    // context in the GPU process by inserting a sync point to be waited for by the child
+    // compositor's GL context. We don't need this since we are triggering the delegated frame
+    // ack directly from our rendering thread. At this point (in updatePaintNode) we know that
+    // a frame that was compositing any of those resources has already been swapped and we thus
+    // don't need to use this mechanism.
+    returned.sync_point = 0;
+    returned.id = m_resource.id;
+    returned.count = m_importCount;
+    m_importCount = 0;
+    return returned;
 }
 
 void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
@@ -350,7 +370,10 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
     // to the producing child compositor.
     for (unsigned i = 0; i < frameData->resource_list.size(); ++i) {
         const cc::TransferableResource &res = frameData->resource_list.at(i);
-        mailboxTextureCandidates[res.id] = QSharedPointer<MailboxTexture>(new MailboxTexture(res));
+        if (QSharedPointer<MailboxTexture> texture = mailboxTextureCandidates.value(res.id))
+            texture->incImportCount();
+        else
+            mailboxTextureCandidates[res.id] = QSharedPointer<MailboxTexture>(new MailboxTexture(res));
     }
 
     frameData->resource_list.clear();
@@ -512,18 +535,8 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
     }
 
     // Send resources of remaining candidates back to the child compositors so that they can be freed or reused.
-    Q_FOREACH (const QSharedPointer<MailboxTexture> &mailboxTexture, mailboxTextureCandidates.values()) {
-        // The ResourceProvider ensures that the resource isn't used by the parent compositor's GL
-        // context in the GPU process by inserting a sync point to be waited for by the child
-        // compositor's GL context. We don't need this since we are triggering the delegated frame
-        // ack directly from our rendering thread. At this point (in updatePaintNode) we know that
-        // a frame that was compositing any of those resources has already been swapped.
-        // Save a bit of overhead by resetting the sync point that has initially been put there
-        // for us (mainly to clean the output of --enable-gpu-service-logging).
-        mailboxTexture->resource().sync_point = 0;
-
-        resourcesToRelease->push_back(mailboxTexture->resource().ToReturnedResource());
-    }
+    Q_FOREACH (const QSharedPointer<MailboxTexture> &mailboxTexture, mailboxTextureCandidates.values())
+        resourcesToRelease->push_back(mailboxTexture->returnResource());
 }
 
 void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)
