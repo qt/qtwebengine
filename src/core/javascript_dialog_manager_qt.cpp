@@ -43,7 +43,6 @@
 
 #include "javascript_dialog_controller.h"
 #include "javascript_dialog_controller_p.h"
-#include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 #include "type_conversion.h"
 
@@ -62,20 +61,13 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
 
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
     if (!client) {
-        *didSuppressMessage = true;
+        if (didSuppressMessage)
+            *didSuppressMessage = true;
         return;
     }
 
     WebContentsAdapterClient::JavascriptDialogType dialogType = static_cast<WebContentsAdapterClient::JavascriptDialogType>(javascriptMessageType);
-    JavaScriptDialogControllerPrivate *dialogData = new JavaScriptDialogControllerPrivate(dialogType, toQt(messageText).toHtmlEscaped()
-                                                                                          , toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl), callback, webContents);
-    QSharedPointer<JavaScriptDialogController> dialog(new JavaScriptDialogController(dialogData));
-
-    // We shouldn't get new dialogs for a given WebContents until we gave back a result.
-    Q_ASSERT(!m_activeDialogs.contains(webContents));
-    m_activeDialogs.insert(webContents, dialog);
-
-    client->javascriptDialog(dialog);
+    runDialogForContents(webContents, dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl), callback);
 }
 
 bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *contents, bool accept, const base::string16 *promptOverride)
@@ -86,6 +78,25 @@ bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *con
     dialog->d->dialogFinished(accept, promptOverride ? *promptOverride : base::string16());
     removeDialogForContents(contents);
     return true;
+}
+
+void JavaScriptDialogManagerQt::runDialogForContents(content::WebContents *webContents, WebContentsAdapterClient::JavascriptDialogType type
+                                                     , const QString &messageText, const QString &defaultPrompt, const QUrl &origin
+                                                     , const content::JavaScriptDialogManager::DialogClosedCallback &callback, const QString &title)
+{
+    WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
+    if (!client)
+        return;
+
+    JavaScriptDialogControllerPrivate *dialogData = new JavaScriptDialogControllerPrivate(type, messageText, defaultPrompt, title, origin, callback, webContents);
+    QSharedPointer<JavaScriptDialogController> dialog(new JavaScriptDialogController(dialogData));
+
+    // We shouldn't get new dialogs for a given WebContents until we gave back a result.
+    Q_ASSERT(!m_activeDialogs.contains(webContents));
+    m_activeDialogs.insert(webContents, dialog);
+
+    client->javascriptDialog(dialog);
+
 }
 
 
