@@ -151,7 +151,7 @@ public:
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFindText(quint64, int) Q_DECL_OVERRIDE { }
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
-    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
+    virtual void javaScriptConsoleMessage(JavascriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
 
     void setDevicePixelRatio(qreal);

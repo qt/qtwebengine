@@ -63,6 +63,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_ENUMS(LoadStatus);
     Q_ENUMS(ErrorDomain);
     Q_ENUMS(NewViewDestination);
+    Q_ENUMS(JavascriptConsoleMessageLevel);
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -102,6 +103,13 @@ public:
         NewViewInTab
     };
 
+    // must match WebContentsAdapterClient::JavascriptConsoleMessageLevel
+    enum JavascriptConsoleMessageLevel {
+        Info = 0,
+        Warning,
+        Error
+    };
+
 public Q_SLOTS:
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl(), const QUrl &unreachableUrl = QUrl());
     void goBack();
@@ -115,7 +123,7 @@ Q_SIGNALS:
     void iconChanged();
     void loadingChanged(QQuickWebEngineLoadRequest *loadRequest);
     void loadProgressChanged();
-    void javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID);
+    void javaScriptConsoleMessage(JavascriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

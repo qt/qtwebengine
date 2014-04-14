@@ -287,6 +287,13 @@ public:
         FileSelectOpenMultiple,
     };
 
+    // must match WebContentsAdapterClient::JavascriptConsoleMessageLevel
+    enum JavascriptConsoleMessageLevel {
+        Info = 0,
+        Warning,
+        Error
+    };
+
     class QWEBENGINEWIDGETS_EXPORT ViewportAttributes {
     public:
         ViewportAttributes();
@@ -569,7 +576,7 @@ protected:
     virtual void javaScriptAlert(QWebEngineFrame *originatingFrame, const QString& msg);
     virtual bool javaScriptConfirm(QWebEngineFrame *originatingFrame, const QString& msg);
     virtual bool javaScriptPrompt(QWebEngineFrame *originatingFrame, const QString& msg, const QString& defaultValue, QString* result);
-    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID);
+    virtual void javaScriptConsoleMessage(JavascriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
 
     virtual QString userAgentForUrl(const QUrl& url) const { Q_UNUSED(url); Q_UNREACHABLE(); return QString(); }
 

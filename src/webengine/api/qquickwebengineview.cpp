@@ -336,11 +336,11 @@ bool QQuickWebEngineViewPrivate::isFullScreen() const
     return e->isFullScreen();
 }
 
-void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID)
+void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavascriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
 {
     Q_Q(QQuickWebEngineView);
     Q_UNUSED(level);
-    Q_EMIT q->javaScriptConsoleMessage(level, message, lineNumber, sourceID);
+    Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavascriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
 }
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
