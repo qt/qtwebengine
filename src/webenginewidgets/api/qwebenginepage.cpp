@@ -587,10 +587,10 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         controller->reject();
 }
 
-void QWebEnginePagePrivate::javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID)
+void QWebEnginePagePrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {
     Q_Q(QWebEnginePage);
-    q->javaScriptConsoleMessage(level, message, lineNumber, sourceID);
+    q->javaScriptConsoleMessage(static_cast<QWebEnginePage::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
 }
 
 namespace {
@@ -815,7 +815,7 @@ bool QWebEnginePage::javaScriptPrompt(QWebEngineFrame *originatingFrame, const Q
     return ret;
 }
 
-void QWebEnginePage::javaScriptConsoleMessage(int level, const QString &message, int lineNumber, const QString &sourceID)
+void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {
     Q_UNUSED(level);
     Q_UNUSED(message);
