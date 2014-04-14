@@ -561,8 +561,7 @@ void tst_QWebEngineFrame::setHtmlWithJSAlert()
     page.setHtml(html);
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(page.alerts, 1);
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118663", Continue);
-    QCOMPARE(toHtmlSync(m_view->page()), html);
+    QCOMPARE(toHtmlSync(&page), html);
 }
 
 class TestNetworkManager : public QNetworkAccessManager
