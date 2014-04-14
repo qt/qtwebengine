@@ -107,6 +107,16 @@ public:
         Save
     };
 
+    // Must match log severities in base/logging.h
+    enum JavascriptConsoleMessageLevel {
+        Verbose = -1,
+        Info,
+        Warning,
+        Error,
+        ErrorReport,
+        Fatal
+    };
+
     virtual ~WebContentsAdapterClient() { }
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client) = 0;
@@ -135,7 +145,7 @@ public:
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
     virtual void didFindText(quint64 requestId, int matchCount) = 0;
     virtual void passOnFocus(bool reverse) = 0;
-    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) = 0;
+    virtual void javaScriptConsoleMessage(JavascriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
 };
 

@@ -188,7 +188,7 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
 bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const base::string16 &message, int32 line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
-    m_viewClient->javaScriptConsoleMessage(static_cast<int>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
+    m_viewClient->javaScriptConsoleMessage(static_cast<WebContentsAdapterClient::JavascriptConsoleMessageLevel>(level), toQt(message), static_cast<int>(line_no), toQt(source_id));
     return false;
 }
 

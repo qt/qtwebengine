@@ -134,7 +134,7 @@ public:
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
     virtual void didFindText(quint64 requestId, int matchCount) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE { Q_UNUSED(reverse); };
-    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
+    virtual void javaScriptConsoleMessage(JavascriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
