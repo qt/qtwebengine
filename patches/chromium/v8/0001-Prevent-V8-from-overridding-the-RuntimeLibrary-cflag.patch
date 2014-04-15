@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+Date: Tue, 15 Apr 2014 14:22:52 +0200
+Subject: Prevent V8 from overridding the RuntimeLibrary cflags
+
+Since we're never going to statically link to the runtime library on
+Windows (unlink Chromium when built as a monolitic chrome.exe), make
+sure that our /M flag setting is also properly set for V8.
+
+Change-Id: Ia17073f6811f43aa264d08c270b1ab841a09408f
+Reviewed-by: Michael Bruning <michael.bruning@digia.com>
+---
+ build/toolchain.gypi | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/build/toolchain.gypi b/build/toolchain.gypi
+index 99f357a..2dc3c04 100644
+--- a/build/toolchain.gypi
++++ b/build/toolchain.gypi
+@@ -444,7 +444,7 @@
+               ['v8_optimized_debug==0', {
+                 'Optimization': '0',
+                 'conditions': [
+-                  ['component=="shared_library"', {
++                  ['component=="shared_library" or use_qt==1', {
+                     'RuntimeLibrary': '3',  # /MDd
+                   }, {
+                     'RuntimeLibrary': '1',  # /MTd
+@@ -459,7 +459,7 @@
+                 'StringPooling': 'true',
+                 'BasicRuntimeChecks': '0',
+                 'conditions': [
+-                  ['component=="shared_library"', {
++                  ['component=="shared_library" or use_qt==1', {
+                     'RuntimeLibrary': '3',  # /MDd
+                   }, {
+                     'RuntimeLibrary': '1',  # /MTd
+@@ -474,7 +474,7 @@
+                 'StringPooling': 'true',
+                 'BasicRuntimeChecks': '0',
+                 'conditions': [
+-                  ['component=="shared_library"', {
++                  ['component=="shared_library" or use_qt==1', {
+                     'RuntimeLibrary': '3',  #/MDd
+                   }, {
+                     'RuntimeLibrary': '1',  #/MTd
+@@ -666,7 +666,7 @@
+                 'FavorSizeOrSpeed': '0',
+                 'StringPooling': 'true',
+                 'conditions': [
+-                  ['component=="shared_library"', {
++                  ['component=="shared_library" or use_qt==1', {
+                     'RuntimeLibrary': '2',  #/MD
+                   }, {
+                     'RuntimeLibrary': '0',  #/MT

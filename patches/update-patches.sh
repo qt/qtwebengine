@@ -50,7 +50,8 @@ for MODULE in \
     /third_party/libjingle/source/talk \
     /third_party/libvpx \
     /tools/gyp \
-    /tools/grit
+    /tools/grit \
+    /v8
 do
     cd $THIRDPARTY_UPSTREAM_CHROMIUM_DIR$MODULE
     echo "Entering $PWD"
