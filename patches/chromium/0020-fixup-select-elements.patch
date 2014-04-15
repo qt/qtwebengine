@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Pierre Rossi <pierre.rossi@digia.com>
+Date: Thu, 3 Apr 2014 12:18:16 +0200
+Subject: fixup select elements.
+
+We use RenderWidgetHostViewQt, not RWHVMac, even on Mac.
+Since some platform decisions seem to have transpired all the way to
+the content layer, we should simply use the web ui for select elements
+on mac for the time being.
+
+Change-Id: Iefe1dd3b246fc210ac18ff9eb0e7ad498c061eac
+Reviewed-by: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+---
+ content/browser/web_contents/web_contents_impl.cc | 4 ++--
+ content/renderer/render_thread_impl.cc            | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
+index 6b6cf00..ee5b901d 100644
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -1464,7 +1464,7 @@ void WebContentsImpl::CreateNewWidget(int render_process_id,
+   // Save the created widget associated with the route so we can show it later.
+   pending_widget_views_[route_id] = widget_view;
+ 
+-#if defined(OS_MACOSX)
++#if defined(OS_MACOSX) && !defined(TOOLKIT_QT)
+   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
+   // to allow it to survive the trip without being hosted.
+   base::mac::NSObjectRetain(widget_view->GetNativeView());
+@@ -1529,7 +1529,7 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
+   // used to implement Pepper Flash fullscreen.
+   render_widget_host_impl->set_allow_privileged_mouse_lock(is_fullscreen);
+ 
+-#if defined(OS_MACOSX)
++#if defined(OS_MACOSX) && !defined(TOOLKIT_QT)
+   // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's
+   // properly embedded (or purposefully ignored) we can release the retain we
+   // took in CreateNewWidget().
+diff --git a/content/renderer/render_thread_impl.cc b/content/renderer/render_thread_impl.cc
+index e910b8b..609b965 100644
+--- a/content/renderer/render_thread_impl.cc
++++ b/content/renderer/render_thread_impl.cc
+@@ -314,7 +314,7 @@ void RenderThreadImpl::Init() {
+   v8::V8::SetCreateHistogramFunction(CreateHistogram);
+   v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
+ 
+-#if defined(OS_MACOSX) || defined(OS_ANDROID)
++#if (defined(OS_MACOSX) || defined(OS_ANDROID)) && !defined(TOOLKIT_QT)
+   // On Mac and Android, the select popups are rendered by the browser.
+   blink::WebView::setUseExternalPopupMenus(true);
+ #endif
