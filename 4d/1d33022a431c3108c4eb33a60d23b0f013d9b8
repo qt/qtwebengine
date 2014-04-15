@@ -1,0 +1,5 @@
+Sanity-Review+1: Qt Sanity Bot <qt_sanitybot@qt-project.org>
+Code-Review+2: Michael Bruning <michael.bruning@digia.com>
+Reviewed-on: https://codereview.qt-project.org/83364
+Project: qt-labs/qtwebengine
+Branch: refs/heads/master
