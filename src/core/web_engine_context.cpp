@@ -60,9 +60,9 @@
 #include "content/utility/in_process_utility_thread.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/gpu/in_process_gpu_thread.h"
-
 #include "ui/gl/gl_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "sandbox/win/src/sandbox_types.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
 #include "content_browser_client_qt.h"
@@ -163,7 +163,12 @@ WebEngineContext::WebEngineContext()
     content::RenderProcessHost::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
     content::GpuProcessHost::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 
+#if defined(OS_WIN)
+    sandbox::SandboxInterfaceInfo sandbox_info = {0};
+    m_contentRunner->Initialize(0, &sandbox_info, m_mainDelegate.get());
+#else
     m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
+#endif
     m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
