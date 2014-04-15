@@ -2,6 +2,9 @@
   'variables': {
     'werror%': '',
     'qt_os%': '',
+    'win_use_allocator_shim': 0,
+    'win_release_RuntimeLibrary': 2,
+    'win_debug_RuntimeLibrary': 3,
   },
   'target_defaults': {
     # patterns used to exclude chromium files from the build when we have a drop-in replacement
