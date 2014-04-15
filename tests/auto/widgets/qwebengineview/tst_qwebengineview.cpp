@@ -191,7 +191,7 @@ public:
 private Q_SLOTS:
     void loading(int progress)
     {
-        if (progress >= 20 && progress < 90) {
+        if (progress > 1 && progress < 100) {
             QVERIFY(!m_executed);
             m_view->stop();
             m_executed = true;
