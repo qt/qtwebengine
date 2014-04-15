@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "web_contents_delegate_qt.h"
 
 #include "type_conversion.h"
@@ -70,6 +74,29 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
 {
     webContents->SetDelegate(this);
     Observe(webContents);
+}
+
+content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
+{
+    // We already carry the disposition to the application through AddNewContents.
+    Q_UNUSED(params.disposition);
+
+    content::NavigationController::LoadURLParams load_url_params(params.url);
+    load_url_params.referrer = params.referrer;
+    load_url_params.frame_tree_node_id = params.frame_tree_node_id;
+    load_url_params.transition_type = params.transition;
+    load_url_params.extra_headers = params.extra_headers;
+    load_url_params.should_replace_current_entry = params.should_replace_current_entry;
+
+    if (params.transferred_global_request_id != content::GlobalRequestID()) {
+        load_url_params.is_renderer_initiated = params.is_renderer_initiated;
+        load_url_params.transferred_global_request_id = params.transferred_global_request_id;
+    } else if (params.is_renderer_initiated) {
+        load_url_params.is_renderer_initiated = true;
+    }
+
+    source->GetController().LoadURLWithParams(load_url_params);
+    return source;
 }
 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
