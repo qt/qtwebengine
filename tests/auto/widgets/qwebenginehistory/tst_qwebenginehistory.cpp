@@ -433,7 +433,7 @@ void tst_QWebEngineHistory::popPushState_data()
     QTest::newRow("forward") << "history.forward();";
 }
 
-/** Crash test, WebKit bug 38840 (https://bugs.webengine.org/show_bug.cgi?id=38840) */
+/** Crash test, WebKit bug 38840 (https://bugs.webkit.org/show_bug.cgi?id=38840) */
 void tst_QWebEngineHistory::popPushState()
 {
     QFETCH(QString, script);
