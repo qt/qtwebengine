@@ -464,9 +464,9 @@ void tst_QWebEngineFrame::setHtmlWithImageResource()
     page.setHtml(html);
     waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(page.evaluateJavaScript("document.images.length").toInt(), 1);
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118659", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(page.evaluateJavaScript("document.images[0].width").toInt(), 0);
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118659", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(page.evaluateJavaScript("document.images[0].height").toInt(), 0);
 #endif
 }
@@ -502,7 +502,7 @@ void tst_QWebEngineFrame::setHtmlWithStylesheetResource()
     page.setHtml(html, QUrl(QLatin1String("http://www.example.com/")));
     waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     webElement = page.documentElement().findFirst("p");
-    QEXPECT_FAIL("", "https://bugs.webengine.org/show_bug.cgi?id=118659", Continue);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(webElement.styleProperty("color", QWebEngineElement::CascadedStyle), QString());
 #endif
 }
@@ -1243,7 +1243,7 @@ void tst_QWebEngineFrame::setUrlWithFragment_data()
     QTest::newRow("another URL") << QUrl("qrc:/test2.html");
 }
 
-// Based on bug report https://bugs.webengine.org/show_bug.cgi?id=32723
+// Based on bug report https://bugs.webkit.org/show_bug.cgi?id=32723
 void tst_QWebEngineFrame::setUrlWithFragment()
 {
     QFETCH(QUrl, previousUrl);
@@ -1342,7 +1342,7 @@ void tst_QWebEngineFrame::setUrlToInvalid()
 
     // QUrls equivalent to QUrl() will be treated as such.
     const QUrl aboutBlank("about:blank");
-    const QUrl anotherInvalidUrl("1http://bugs.webengine.org");
+    const QUrl anotherInvalidUrl("1http://bugs.webkit.org");
     QVERIFY(!anotherInvalidUrl.isEmpty()); // and they are not necessarily empty.
     QVERIFY(!anotherInvalidUrl.isValid());
     QCOMPARE(anotherInvalidUrl.toEncoded(), QUrl().toEncoded());
