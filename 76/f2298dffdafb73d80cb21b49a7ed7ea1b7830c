@@ -1,0 +1,8 @@
+Sanity-Review-1: Qt Sanity Bot <qt_sanitybot@qt-project.org>
+Code-Review+2: Pierre Rossi <pierre.rossi@gmail.com>
+Code-Review+1: Michael Bruning <michael.bruning@digia.com>
+Sanity-Review+1: Michael Bruning <michael.bruning@digia.com>
+Code-Review+2: Andras Becsi <andras.becsi@digia.com>
+Reviewed-on: https://codereview.qt-project.org/83549
+Project: qt-labs/qtwebengine
+Branch: refs/heads/master
