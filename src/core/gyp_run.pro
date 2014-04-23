@@ -7,8 +7,8 @@ TEMPLATE = aux
 cross_compile {
     GYP_ARGS = "-D qt_cross_compile=1"
     posix: GYP_ARGS += "-D os_posix=1"
-    linux: include(config/embedded_linux.pri)
     android: include(config/embedded_android.pri)
+    else:linux: include(config/embedded_linux.pri)
 } else {
     # !cross_compile
     GYP_ARGS = "-D qt_cross_compile=0"

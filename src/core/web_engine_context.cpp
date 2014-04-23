@@ -60,6 +60,7 @@
 #include "content/utility/in_process_utility_thread.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/gpu/in_process_gpu_thread.h"
+#include "ui/events/event_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "sandbox/win/src/sandbox_types.h"
@@ -136,8 +137,10 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbars);
     parsedCommandLine->AppendSwitch(switches::kEnableGestureTapHighlight);
     parsedCommandLine->AppendSwitch(switches::kEnablePinch);
-    parsedCommandLine->AppendSwitch(switches::kEnableFixedLayout);
     parsedCommandLine->AppendSwitch(switches::kEnableViewport);
+    parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
+    parsedCommandLine->AppendSwitch(switches::kEnableScrollPrediction);
+    parsedCommandLine->AppendSwitch(switches::kEnableSmoothScrolling);
     parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideo);
     parsedCommandLine->AppendSwitch(switches::kDisableAudio);
     parsedCommandLine->AppendSwitch(switches::kEnableAcceleratedOverflowScroll);
@@ -150,7 +153,8 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnableDeadlineScheduling);
     parsedCommandLine->AppendSwitch(cc::switches::kDisableImplSidePainting);
     parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
-    parsedCommandLine->AppendSwitch(cc::switches::kDisable4444Textures);
+
+    parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
 #endif
 
     GLContextHelper::initialize();
