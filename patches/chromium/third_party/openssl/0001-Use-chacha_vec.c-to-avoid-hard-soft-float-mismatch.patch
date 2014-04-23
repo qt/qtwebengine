@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno.albisser@digia.com>
+Date: Wed, 23 Apr 2014 17:03:10 +0200
+Subject: Use chacha_vec.c to avoid hard/soft float mismatch.
+
+Change-Id: I8dd21c480922f32ac7111ea5582d82c249414caa
+Reviewed-by: Pierre Rossi <pierre.rossi@gmail.com>
+---
+ openssl.gypi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/openssl.gypi b/openssl.gypi
+index 856b72e..6a2ca70 100644
+--- a/openssl.gypi
++++ b/openssl.gypi
+@@ -566,7 +566,7 @@
+       'openssl/crypto/aes/asm/aes-armv4.S',
+       'openssl/crypto/bn/asm/armv4-gf2m.S',
+       'openssl/crypto/bn/asm/armv4-mont.S',
+-      'openssl/crypto/chacha/chacha_vec_arm.S',
++      'openssl/crypto/chacha/chacha_vec.c',
+       'openssl/crypto/modes/asm/ghash-armv4.S',
+       'openssl/crypto/poly1305/poly1305_arm.c',
+       'openssl/crypto/poly1305/poly1305_arm_asm.S',

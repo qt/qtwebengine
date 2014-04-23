@@ -1,0 +1,129 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno.albisser@digia.com>
+Date: Wed, 23 Apr 2014 16:54:47 +0200
+Subject: Do not directly override libc symbols from the library.
+
+Instead we export _override symbols and add the symbol
+renaming directly into the QtWebEngineProcess source.
+
+Change-Id: I209a7dcf42772bb993e966f253dd2d1c7013dceb
+Reviewed-by: Andras Becsi <andras.becsi@digia.com>
+---
+ content/zygote/zygote_main_linux.cc             | 14 --------------
+ sandbox/linux/services/libc_urandom_override.cc | 22 +---------------------
+ 2 files changed, 1 insertion(+), 35 deletions(-)
+
+diff --git a/content/zygote/zygote_main_linux.cc b/content/zygote/zygote_main_linux.cc
+index 8e91c2f..2e5cc7e 100644
+--- a/content/zygote/zygote_main_linux.cc
++++ b/content/zygote/zygote_main_linux.cc
+@@ -181,8 +181,6 @@ static void InitLibcLocaltimeFunctions() {
+ // references to localtime() will resolve to this function. Notice that we need
+ // to set visibility attribute to "default" to export the symbol, as it is set
+ // to "hidden" by default in chrome per build/common.gypi.
+-__attribute__ ((__visibility__("default")))
+-struct tm* localtime_override(const time_t* timep) __asm__ ("localtime");
+ 
+ __attribute__ ((__visibility__("default")))
+ struct tm* localtime_override(const time_t* timep) {
+@@ -199,10 +197,6 @@ struct tm* localtime_override(const time_t* timep) {
+   }
+ }
+ 
+-// Use same trick to override localtime64(), localtime_r() and localtime64_r().
+-__attribute__ ((__visibility__("default")))
+-struct tm* localtime64_override(const time_t* timep) __asm__ ("localtime64");
+-
+ __attribute__ ((__visibility__("default")))
+ struct tm* localtime64_override(const time_t* timep) {
+   if (g_am_zygote_or_renderer) {
+@@ -219,10 +213,6 @@ struct tm* localtime64_override(const time_t* timep) {
+ }
+ 
+ __attribute__ ((__visibility__("default")))
+-struct tm* localtime_r_override(const time_t* timep,
+-                                struct tm* result) __asm__ ("localtime_r");
+-
+-__attribute__ ((__visibility__("default")))
+ struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
+   if (g_am_zygote_or_renderer) {
+     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
+@@ -235,10 +225,6 @@ struct tm* localtime_r_override(const time_t* timep, struct tm* result) {
+ }
+ 
+ __attribute__ ((__visibility__("default")))
+-struct tm* localtime64_r_override(const time_t* timep,
+-                                  struct tm* result) __asm__ ("localtime64_r");
+-
+-__attribute__ ((__visibility__("default")))
+ struct tm* localtime64_r_override(const time_t* timep, struct tm* result) {
+   if (g_am_zygote_or_renderer) {
+     ProxyLocaltimeCallToBrowser(*timep, result, NULL, 0);
+diff --git a/sandbox/linux/services/libc_urandom_override.cc b/sandbox/linux/services/libc_urandom_override.cc
+index c5c49ba..6e8e129 100644
+--- a/sandbox/linux/services/libc_urandom_override.cc
++++ b/sandbox/linux/services/libc_urandom_override.cc
+@@ -121,8 +121,6 @@ static void InitLibcFileIOFunctions() {
+ // the code below defines fopen_override() function with asm name
+ // "fopen", so that all references to fopen() will resolve to this
+ // function.
+-__attribute__ ((__visibility__("default")))
+-FILE* fopen_override(const char* path, const char* mode)  __asm__ ("fopen");
+ 
+ __attribute__ ((__visibility__("default")))
+ FILE* fopen_override(const char* path, const char* mode) {
+@@ -141,7 +139,7 @@ FILE* fopen_override(const char* path, const char* mode) {
+ }
+ 
+ __attribute__ ((__visibility__("default")))
+-FILE* fopen64(const char* path, const char* mode) {
++FILE* fopen64_override(const char* path, const char* mode) {
+   if (g_override_urandom && strcmp(path, kUrandomDevPath) == 0) {
+     int fd = HANDLE_EINTR(dup(base::GetUrandomFD()));
+     if (fd < 0) {
+@@ -162,11 +160,6 @@ FILE* fopen64(const char* path, const char* mode) {
+ #if HAVE_XSTAT
+ 
+ __attribute__ ((__visibility__("default")))
+-int xstat_override(int version,
+-                   const char *path,
+-                   struct stat *buf)  __asm__ ("__xstat");
+-
+-__attribute__ ((__visibility__("default")))
+ int xstat_override(int version, const char *path, struct stat *buf) {
+   if (g_override_urandom && strcmp(path, kUrandomDevPath) == 0) {
+     int result = __fxstat(version, base::GetUrandomFD(), buf);
+@@ -179,11 +172,6 @@ int xstat_override(int version, const char *path, struct stat *buf) {
+ }
+ 
+ __attribute__ ((__visibility__("default")))
+-int xstat64_override(int version,
+-                     const char *path,
+-                     struct stat64 *buf)  __asm__ ("__xstat64");
+-
+-__attribute__ ((__visibility__("default")))
+ int xstat64_override(int version, const char *path, struct stat64 *buf) {
+   if (g_override_urandom && strcmp(path, kUrandomDevPath) == 0) {
+     int result = __fxstat64(version, base::GetUrandomFD(), buf);
+@@ -198,10 +186,6 @@ int xstat64_override(int version, const char *path, struct stat64 *buf) {
+ #else
+ 
+ __attribute__ ((__visibility__("default")))
+-int stat_override(const char *path,
+-                  struct stat *buf)  __asm__ ("stat");
+-
+-__attribute__ ((__visibility__("default")))
+ int stat_override(const char *path, struct stat *buf) {
+   if (g_override_urandom && strcmp(path, kUrandomDevPath) == 0) {
+     int result = fstat(base::GetUrandomFD(), buf);
+@@ -214,10 +198,6 @@ int stat_override(const char *path, struct stat *buf) {
+ }
+ 
+ __attribute__ ((__visibility__("default")))
+-int stat64_override(const char *path,
+-                    struct stat64 *buf)  __asm__ ("stat64");
+-
+-__attribute__ ((__visibility__("default")))
+ int stat64_override(const char *path, struct stat64 *buf) {
+   if (g_override_urandom && strcmp(path, kUrandomDevPath) == 0) {
+     int result = fstat64(base::GetUrandomFD(), buf);
