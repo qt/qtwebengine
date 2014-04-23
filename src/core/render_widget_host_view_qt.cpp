@@ -144,15 +144,6 @@ static void UpdateWebTouchEventAfterDispatch(blink::WebTouchEvent* event, blink:
     }
 }
 
-static blink::WebGestureEvent createFlingCancelEvent(double time_stamp)
-{
-    blink::WebGestureEvent gesture_event;
-    gesture_event.timeStampSeconds = time_stamp;
-    gesture_event.type = blink::WebGestureEvent::GestureFlingCancel;
-    gesture_event.sourceDevice = blink::WebGestureEvent::Touchscreen;
-    return gesture_event;
-}
-
 static bool shouldSendPinchGesture()
 {
     static bool pinchAllowed = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
@@ -780,7 +771,6 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
 
     ui::EventResult result = (ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
     for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(), end = events.end(); iter != end; ++iter)  {
-        (*iter)->latency()->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACKED_TOUCH_COMPONENT, static_cast<int64>(ack_result), 0);
         scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
         gestures.reset(m_gestureRecognizer->ProcessTouchEventForGesture(*(*iter), result, this));
         ProcessGestures(gestures.get());
@@ -819,14 +809,15 @@ void RenderWidgetHostViewQt::ForwardGestureEventToRenderer(ui::GestureEvent* ges
     if (webGestureEvent.type == blink::WebGestureEvent::GestureTapDown) {
         // Chromium does not stop a fling-scroll on tap-down.
         // So explicitly send an event to stop any in-progress flings.
-        m_host->ForwardGestureEvent(createFlingCancelEvent(gesture->time_stamp().InSecondsF()));
+        blink::WebGestureEvent flingCancel = webGestureEvent;
+        flingCancel.type = blink::WebInputEvent::GestureFlingCancel;
+        flingCancel.sourceDevice = blink::WebGestureEvent::Touchscreen;
+        m_host->ForwardGestureEvent(flingCancel);
     }
 
     webGestureEvent.x = gesture->x();
     webGestureEvent.y = gesture->y();
-    m_host->ForwardGestureEvent(webGestureEvent);
-
-    return;
+    m_host->ForwardGestureEventWithLatencyInfo(webGestureEvent, *gesture->latency());
 }
 
 void RenderWidgetHostViewQt::ProcessGestures(ui::GestureRecognizer::Gestures *gestures)
