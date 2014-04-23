@@ -56,6 +56,7 @@ for MODULE in \
     /third_party/WebKit \
     /third_party/libjingle/source/talk \
     /third_party/libvpx \
+    /third_party/openssl \
     /tools/gyp \
     /tools/grit \
     /v8
