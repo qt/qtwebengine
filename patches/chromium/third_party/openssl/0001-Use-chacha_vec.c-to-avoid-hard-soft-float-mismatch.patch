@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Zeno Albisser <zeno.albisser@digia.com>
+Date: Wed, 23 Apr 2014 17:03:10 +0200
+Subject: Use chacha_vec.c to avoid hard/soft float mismatch.
+
+But fall back to chacha_vec_arm.S when arm_neon_optional
+is used.
+
+Change-Id: I8dd21c480922f32ac7111ea5582d82c249414caa
+Reviewed-by: Pierre Rossi <pierre.rossi@gmail.com>
+---
+ openssl.gypi | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/openssl.gypi b/openssl.gypi
+index 856b72e..d9cf5d8 100644
+--- a/openssl.gypi
++++ b/openssl.gypi
+@@ -566,7 +566,6 @@
+       'openssl/crypto/aes/asm/aes-armv4.S',
+       'openssl/crypto/bn/asm/armv4-gf2m.S',
+       'openssl/crypto/bn/asm/armv4-mont.S',
+-      'openssl/crypto/chacha/chacha_vec_arm.S',
+       'openssl/crypto/modes/asm/ghash-armv4.S',
+       'openssl/crypto/poly1305/poly1305_arm.c',
+       'openssl/crypto/poly1305/poly1305_arm_asm.S',
+@@ -574,6 +573,18 @@
+       'openssl/crypto/sha/asm/sha256-armv4.S',
+       'openssl/crypto/sha/asm/sha512-armv4.S',
+     ],
++    'conditions': [
++      ['arm_neon_optional==1 and arm_tune=="cortex-a8"', {
++        'openssl_arm_sources+': [
++          'openssl/crypto/chacha/chacha_vec_arm.S',
++        ],
++      },
++      {
++        'openssl_arm_sources+': [
++          'openssl/crypto/chacha/chacha_vec.c',
++        ],
++      }],
++    ],
+     'openssl_arm_defines': [
+       'OPENSSL_BN_ASM_GF2m',
+       'OPENSSL_BN_ASM_MONT',
