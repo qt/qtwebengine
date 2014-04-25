@@ -63,7 +63,7 @@ cross_compile {
             # about the mfpu option.
             contains(MFPU, "neon"): GYP_ARGS += "-D arm_fpu=\"$$MFPU\" -D arm_neon=1"
             else:!lessThan(MARMV, 7): GYP_ARGS += "-D arm_neon=0 -D arm_neon_optional=1"
-            else: GYP_ARGS += "-D arm_fpu=\"$$MFPU\""
+            else: GYP_ARGS += "-D arm_fpu=\"$$MFPU\" -D arm_neon=0 -D arm_neon_optional=0"
         }
 
         contains(QMAKE_CFLAGS, "-mthumb"): GYP_ARGS += "-D arm_thumb=1"
