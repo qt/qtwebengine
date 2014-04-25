@@ -562,10 +562,9 @@ void QQuickWebEngineViewExperimental::goForwardTo(int index)
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
-
     Q_FOREACH(QQuickItem *child, childItems()) {
-        Q_ASSERT(qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child));
-        child->setSize(newGeometry.size());
+        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child))
+            child->setSize(newGeometry.size());
     }
 }
 
