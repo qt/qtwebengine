@@ -48,11 +48,11 @@ index 407d49d..b5af9d7 100644
            'conditions': [
              ['chromeos==1', {
                'sources/': [ ['include', '_chromeos\\.cc$'] ]
-diff --git a/base/base.gypi b/base/base.gypi
-index 11edab0..26aacaf 100644
---- a/base/base.gypi
-+++ b/base/base.gypi
-@@ -722,6 +722,13 @@
+diff --git a/chromium/base/base.gypi b/chromium/base/base.gypi
+index 11edab0..45d7180 100644
+--- a/chromium/base/base.gypi
++++ b/chromium/base/base.gypi
+@@ -722,6 +722,18 @@
                  'atomicops_internals_x86_gcc.cc',
                ],
            }],
@@ -61,6 +61,11 @@ index 11edab0..26aacaf 100644
 +          ['qt_os == "embedded_linux"', {
 +              'sources/': [
 +                ['include', '^nix/'],
++              ],
++          }],
++          ['use_qt==1 and target_arch=="ia32"', {
++              'sources/': [
++                ['include', 'atomicops_internals_x86_gcc.cc'],
 +              ],
 +          }],
            ['<(use_glib)==0 or >(nacl_untrusted_build)==1', {
