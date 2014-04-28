@@ -69,6 +69,9 @@ cross_compile {
         contains(QMAKE_CFLAGS, "-mthumb"): GYP_ARGS += "-D arm_thumb=1"
     }
 
+    contains(QT_ARCH, "x86_64"): GYP_ARGS += "-D target_arch=x64"
+    contains(QT_ARCH, "i386"): GYP_ARGS += "-D target_arch=ia32"
+
     # Needed for v8, see chromium/v8/build/toolchain.gypi
     GYP_ARGS += "-D CXX=\"$$which($$QMAKE_CXX)\""
 }
