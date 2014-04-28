@@ -73,6 +73,9 @@ cross_compile {
     GYP_ARGS += "-D CXX=\"$$which($$QMAKE_CXX)\""
 }
 
+contains(QT_ARCH, "x86_64"): GYP_ARGS += "-D target_arch=x64"
+contains(QT_ARCH, "i386"): GYP_ARGS += "-D target_arch=ia32"
+
 contains(WEBENGINE_CONFIG, proprietary_codecs): GYP_ARGS += "-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome -Duse_system_ffmpeg=0"
 
 !build_pass {
