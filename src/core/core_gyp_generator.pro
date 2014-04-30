@@ -22,8 +22,7 @@ DEFINES += QT_NO_KEYWORDS \
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
-contains(QT_CONFIG, egl): CONFIG += egl
-else: DEFINES += QT_NO_EGL
+!contains(QT_CONFIG, egl): DEFINES += QT_NO_EGL
 
 RESOURCES += devtools.qrc
 
