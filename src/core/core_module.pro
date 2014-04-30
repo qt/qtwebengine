@@ -19,3 +19,5 @@ load(qt_module)
 # Using -Wl,-Bsymbolic-functions seems to confuse the dynamic linker
 # and doesn't let Chromium get access to libc symbols through dlsym.
 CONFIG -= bsymbolic_functions
+
+contains(QT_CONFIG, egl): CONFIG += egl

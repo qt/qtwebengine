@@ -213,6 +213,15 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
+#if !defined(QT_NO_EGL)
+static bool hasEGLExtension(EGLDisplay display, const char *name)
+{
+    QList<QByteArray> extensions = QByteArray(reinterpret_cast<const char *>(
+                                                  eglQueryString(display, EGL_EXTENSIONS))).split(' ');
+    return extensions.contains(name);
+}
+#endif
+
 static void waitAndDeleteChromiumSync(FenceSync *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
@@ -229,16 +238,20 @@ static void waitAndDeleteChromiumSync(FenceSync *sync)
         static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
 
         if (!resolved) {
-            QOpenGLContext *context = QOpenGLContext::currentContext();
-            eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
-            eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
+            if (hasEGLExtension(sync->egl.display, "EGL_KHR_reusable_sync")) {
+                QOpenGLContext *context = QOpenGLContext::currentContext();
+                eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
+                eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
+            }
             resolved = true;
         }
 
-        // FIXME: Use the less wasteful eglWaitSyncKHR once we have a device that supports EGL_KHR_wait_sync.
-        eglClientWaitSyncKHR(sync->egl.display, sync->egl.sync, 0, EGL_FOREVER_KHR);
-        eglDestroySyncKHR(sync->egl.display, sync->egl.sync);
-        sync->reset();
+        if (eglClientWaitSyncKHR && eglDestroySyncKHR) {
+            // FIXME: Use the less wasteful eglWaitSyncKHR once we have a device that supports EGL_KHR_wait_sync.
+            eglClientWaitSyncKHR(sync->egl.display, sync->egl.sync, 0, EGL_FOREVER_KHR);
+            eglDestroySyncKHR(sync->egl.display, sync->egl.sync);
+            sync->reset();
+        }
     }
 #endif
         break;
