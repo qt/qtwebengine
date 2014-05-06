@@ -99,7 +99,6 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.iconChanged() --> void"
     << "QQuickWebEngineView.linkHovered(QUrl) --> void"
     << "QQuickWebEngineView.navigationRequested(QQuickWebEngineNavigationRequest*) --> void"
-    << "QQuickWebEngineView.loadHtml(QString,QUrl,QUrl) --> void"
     << "QQuickWebEngineView.loadHtml(QString,QUrl) --> void"
     << "QQuickWebEngineView.loadHtml(QString) --> void"
     << "QQuickWebEngineView.goBack() --> void"

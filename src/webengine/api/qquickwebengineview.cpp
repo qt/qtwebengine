@@ -432,10 +432,10 @@ QUrl QQuickWebEngineView::icon() const
     return d->icon;
 }
 
-void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl, const QUrl &unreachableUrl)
+void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QQuickWebEngineView);
-    d->adapter->setContent(html.toUtf8(), QStringLiteral("text/html;charset=UTF-8"), baseUrl, unreachableUrl);
+    d->adapter->setContent(html.toUtf8(), QStringLiteral("text/html;charset=UTF-8"), baseUrl);
 }
 
 void QQuickWebEngineView::goBack()

@@ -126,7 +126,7 @@ TestWebEngineView {
                 if (loadRequest.status == WebEngineView.LoadFailedStatus) {
                     compare(webEngineView.url, bogusSite)
                     compare(loadRequest.url, bogusSite)
-                    webEngineView.loadHtml("load failed", bogusSite, bogusSite)
+                    webEngineView.loadHtml("load failed", bogusSite)
                 }
             }
             webEngineView.loadingChanged.connect(handleLoadFailed)
