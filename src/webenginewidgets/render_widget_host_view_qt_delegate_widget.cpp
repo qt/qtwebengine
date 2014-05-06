@@ -192,6 +192,11 @@ void RenderWidgetHostViewQtDelegateWidget::initializeGL()
 
 void RenderWidgetHostViewQtDelegateWidget::paintGL()
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 1))
+    // A workaround for a missing check in 5.3.0 when updating an unparented delegate.
+    if (!QOpenGLContext::currentContext())
+        return;
+#endif
     QSGNode *paintNode = m_client->updatePaintNode(rootNode->firstChild(), sgRenderContext.data());
     if (paintNode != rootNode->firstChild()) {
         delete rootNode->firstChild();

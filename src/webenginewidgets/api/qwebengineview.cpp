@@ -72,6 +72,9 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
         if (QWebEnginePage *oldPage = view->d_func()->page) {
             oldPage->disconnect(view);
             oldPage->d_func()->view = 0;
+            oldPage->d_func()->adapter->reattachRWHV();
+            if (oldPage->parent() == view)
+                delete oldPage;
         }
         view->d_func()->page = page;
     }
