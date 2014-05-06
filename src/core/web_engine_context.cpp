@@ -73,6 +73,7 @@
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
 #include "gl_context_qt.h"
+#include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
 #include "web_engine_library_info.h"
 #include <QGuiApplication>
@@ -183,4 +184,9 @@ WebEngineContext::WebEngineContext()
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
+
+    // Force the initialization of MediaCaptureDevicesDispatcher on the UI
+    // thread to avoid a thread check assertion in its constructor when it
+    // first gets referenced on the IO thread.
+    MediaCaptureDevicesDispatcher::GetInstance();
 }
