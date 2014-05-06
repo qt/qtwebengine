@@ -160,7 +160,8 @@ WebEngineContext::WebEngineContext()
     GLContextHelper::initialize();
 
     // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
-    if (qApp->platformName() == QStringLiteral("xcb") && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
+    if ((qApp->platformName() == QStringLiteral("xcb") || qApp->platformName() == QStringLiteral("eglfs"))
+        && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
 
     content::UtilityProcessHost::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
