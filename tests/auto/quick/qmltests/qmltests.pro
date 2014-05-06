@@ -16,6 +16,7 @@ OTHER_FILES += \
     $$PWD/data/small-favicon.png \
     $$PWD/data/test1.html \
     $$PWD/data/test3.html \
+    $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_favIconLoad.qml \
     $$PWD/data/tst_linkHovered.qml \
     $$PWD/data/tst_loadFail.qml \

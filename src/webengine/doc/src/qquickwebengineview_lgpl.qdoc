@@ -179,7 +179,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl, url unreachableUrl)
+    \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl)
     \brief Loads the specified \a html as the content of the web view.
 
     (This method offers a lower-level alternative to the \c{url} property,
@@ -190,10 +190,6 @@
     was originally retrieved from \c http://www.example.com/documents/overview.html
     and that was the base url, then an image referenced with the relative url \c diagram.png
     would be looked for at \c{http://www.example.com/documents/diagram.png}.
-
-    If an \a unreachableUrl is passed it is used as the url for the loaded
-    content. This is typically used to display error pages for a failed
-    load.
 
     \sa WebEngineView::url
 */
