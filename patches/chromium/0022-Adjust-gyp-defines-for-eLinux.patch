@@ -13,14 +13,14 @@ Subject: Adjust gyp defines for eLinux.
 Change-Id: I8dd21c480922f32ac7111ea5582d82c249414caa
 Reviewed-by: Pierre Rossi <pierre.rossi@gmail.com>
 ---
- base/atomicops_internals_arm_gcc.h | 2 +-
- base/base.gyp                      | 2 +-
- base/base.gypi                     | 7 +++++++
- build/linux/system.gyp             | 2 +-
- net/net.gyp                        | 2 +-
- skia/skia_chrome.gypi              | 2 +-
- skia/skia_library.gypi             | 2 +-
- 7 files changed, 13 insertions(+), 6 deletions(-)
+ base/atomicops_internals_arm_gcc.h |  2 +-
+ base/base.gyp                      |  2 +-
+ base/base.gypi                     | 12 ++++++++++++
+ build/linux/system.gyp             |  2 +-
+ net/net.gyp                        |  2 +-
+ skia/skia_chrome.gypi              |  2 +-
+ skia/skia_library.gypi             |  2 +-
+ 7 files changed, 18 insertions(+), 6 deletions(-)
 
 diff --git a/base/atomicops_internals_arm_gcc.h b/base/atomicops_internals_arm_gcc.h
 index 9f4fe2e..1964041 100644
@@ -48,10 +48,10 @@ index 407d49d..b5af9d7 100644
            'conditions': [
              ['chromeos==1', {
                'sources/': [ ['include', '_chromeos\\.cc$'] ]
-diff --git a/chromium/base/base.gypi b/chromium/base/base.gypi
+diff --git a/base/base.gypi b/base/base.gypi
 index 11edab0..45d7180 100644
---- a/chromium/base/base.gypi
-+++ b/chromium/base/base.gypi
+--- a/base/base.gypi
++++ b/base/base.gypi
 @@ -722,6 +722,18 @@
                  'atomicops_internals_x86_gcc.cc',
                ],
