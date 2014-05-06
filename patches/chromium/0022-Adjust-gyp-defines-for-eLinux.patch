@@ -16,11 +16,11 @@ Reviewed-by: Pierre Rossi <pierre.rossi@gmail.com>
  base/atomicops_internals_arm_gcc.h |  2 +-
  base/base.gyp                      |  2 +-
  base/base.gypi                     | 12 ++++++++++++
- build/linux/system.gyp             |  2 +-
+ build/linux/system.gyp             |  6 +++++-
  net/net.gyp                        |  2 +-
  skia/skia_chrome.gypi              |  2 +-
  skia/skia_library.gypi             |  2 +-
- 7 files changed, 18 insertions(+), 6 deletions(-)
+ 7 files changed, 22 insertions(+), 6 deletions(-)
 
 diff --git a/base/atomicops_internals_arm_gcc.h b/base/atomicops_internals_arm_gcc.h
 index 9f4fe2e..1964041 100644
@@ -72,7 +72,7 @@ index 11edab0..45d7180 100644
                'sources!': [
                  'message_loop/message_pump_glib.cc',
 diff --git a/build/linux/system.gyp b/build/linux/system.gyp
-index 1451afb..92c74805b 100644
+index 1451afb..2a2c8bd 100644
 --- a/build/linux/system.gyp
 +++ b/build/linux/system.gyp
 @@ -5,7 +5,7 @@
@@ -84,6 +84,24 @@ index 1451afb..92c74805b 100644
          'pkg-config': './pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
        }, {
          'pkg-config': 'pkg-config'
+@@ -506,6 +506,8 @@
+     {
+       'target_name': 'libpci',
+       'type': 'static_library',
++      'conditions': [
++      ['use_x11==1', {
+       'cflags': [
+         '<!@(<(pkg-config) --cflags libpci)',
+       ],
+@@ -566,6 +568,8 @@
+           'process_outputs_as_sources': 1,
+         },
+       ],
++      }],
++      ],
+     },
+     {
+       'target_name': 'libresolv',
 diff --git a/net/net.gyp b/net/net.gyp
 index c2d618e..69f4827 100644
 --- a/net/net.gyp
