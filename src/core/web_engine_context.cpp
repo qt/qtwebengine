@@ -63,8 +63,11 @@
 #include "ui/events/event_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "sandbox/win/src/sandbox_types.h"
 #include "webkit/common/user_agent/user_agent_util.h"
+#if defined(OS_WIN)
+#include "sandbox/win/src/sandbox_types.h"
+#include "content/public/app/startup_helper_win.h"
+#endif // OS_WIN
 
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
@@ -170,6 +173,7 @@ WebEngineContext::WebEngineContext()
 
 #if defined(OS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
+    content::InitializeSandboxInfo(&sandbox_info);
     m_contentRunner->Initialize(0, &sandbox_info, m_mainDelegate.get());
 #else
     m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
