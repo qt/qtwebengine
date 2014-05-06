@@ -50,6 +50,7 @@ for MODULE in \
     /third_party/libjingle/source/talk \
     /third_party/libvpx \
     /third_party/openssl \
+    /third_party/icu \
     /tools/gyp \
     /tools/grit \
     /v8

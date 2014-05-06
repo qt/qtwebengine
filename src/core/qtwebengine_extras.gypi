@@ -63,12 +63,18 @@
         'defines!': [
             'OPENSSLDIR="/etc/ssl"',
         ],
-        'ldflags!': ['<!@(icu-config --ldflags)'], # remove garbage added by icu.gyp
         'target_conditions': [
           ['_type=="shared_library"', {
             'ldflags': [
               # Tell the linker to prefer symbols within the library before looking outside
               '-Wl,-shared,-Bsymbolic',
+            ],
+          }],
+          ['_toolset=="target"', {
+            'libraries': [
+              '-licui18n',
+              '-licuuc',
+              '-licudata',
             ],
           }],
         ],
