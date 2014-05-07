@@ -172,11 +172,6 @@ void RenderWidgetHostViewQtDelegateQuick::mouseReleaseEvent(QMouseEvent *event)
     m_client->forwardEvent(event);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::mouseDoubleClickEvent(QMouseEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
 void RenderWidgetHostViewQtDelegateQuick::keyPressEvent(QKeyEvent *event)
 {
     m_client->forwardEvent(event);

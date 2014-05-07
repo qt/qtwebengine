@@ -178,7 +178,20 @@ void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent
 
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
-    if (!m_client->forwardEvent(event))
+    bool handled = false;
+    if (event->type() == QEvent::MouseButtonDblClick) {
+        // QWidget keeps the Qt4 behavior where the DblClick event would replace the Press event.
+        // QtQuick is different by sending both the Press and DblClick events for the second press
+        // where we can simply ignore the DblClick event.
+        QMouseEvent *dblClick = static_cast<QMouseEvent *>(event);
+        QMouseEvent press(QEvent::MouseButtonPress, dblClick->localPos(), dblClick->windowPos(), dblClick->screenPos(),
+            dblClick->button(), dblClick->buttons(), dblClick->modifiers());
+        press.setTimestamp(dblClick->timestamp());
+        handled = m_client->forwardEvent(&press);
+    } else
+        handled = m_client->forwardEvent(event);
+
+    if (!handled)
         return QOpenGLWidget::event(event);
     return true;
 }
