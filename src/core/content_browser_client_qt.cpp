@@ -49,11 +49,13 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
+#include "ui/gfx/screen.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 
 #include "browser_context_qt.h"
+#include "desktop_screen_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
@@ -186,6 +188,8 @@ public:
     int PreCreateThreads() Q_DECL_OVERRIDE
     {
         base::ThreadRestrictions::SetIOAllowed(true);
+        // Like ChromeBrowserMainExtraPartsAura::PreCreateThreads does.
+        gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, new DesktopScreenQt);
         return 0;
     }
 
