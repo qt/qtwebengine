@@ -694,7 +694,6 @@ void RenderWidgetHostViewQt::notifyResize()
 bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
 {
     switch (event->type()) {
-    case QEvent::MouseButtonDblClick:
     case QEvent::MouseButtonPress:
         Focus(); // Fall through.
     case QEvent::MouseButtonRelease:
@@ -869,12 +868,8 @@ bool RenderWidgetHostViewQt::IsPopup() const
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 {
-    int eventType = event->type();
-    if (eventType == QEvent::MouseButtonDblClick)
-        return;
-
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
-    if (eventType == QMouseEvent::MouseButtonPress) {
+    if (event->type() == QMouseEvent::MouseButtonPress) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
             || (event->pos() - m_clickHelper.lastPressPosition).manhattanLength() > qGuiApp->styleHints()->startDragDistance())
