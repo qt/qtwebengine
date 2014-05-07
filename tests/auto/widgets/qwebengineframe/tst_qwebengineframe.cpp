@@ -88,6 +88,8 @@ private Q_SLOTS:
     void setUrlWithPendingLoads();
     void setUrlWithFragment_data();
     void setUrlWithFragment();
+    void loadUrlWithFragment_data();
+    void loadUrlWithFragment();
     void setUrlToEmpty();
     void setUrlToInvalid();
     void setUrlHistory();
@@ -1232,19 +1234,15 @@ void tst_QWebEngineFrame::setUrlWithPendingLoads()
     page.setUrl(QUrl("about:blank"));
 }
 
-void tst_QWebEngineFrame::setUrlWithFragment_data()
+void tst_QWebEngineFrame::loadUrlWithFragment_data()
 {
     QTest::addColumn<QUrl>("previousUrl");
     QTest::newRow("empty") << QUrl();
-    QTest::newRow("same URL no fragment") << QUrl("qrc:/test1.html");
-    // See comments in setUrlSameUrl about using setUrl() with the same url().
-    QTest::newRow("same URL with same fragment") << QUrl("qrc:/test1.html#");
-    QTest::newRow("same URL with different fragment") << QUrl("qrc:/test1.html#anotherFragment");
     QTest::newRow("another URL") << QUrl("qrc:/test2.html");
 }
 
 // Based on bug report https://bugs.webkit.org/show_bug.cgi?id=32723
-void tst_QWebEngineFrame::setUrlWithFragment()
+void tst_QWebEngineFrame::loadUrlWithFragment()
 {
     QFETCH(QUrl, previousUrl);
 
@@ -1260,11 +1258,45 @@ void tst_QWebEngineFrame::setUrlWithFragment()
     const QUrl url("qrc:/test1.html#");
     QVERIFY(!url.fragment().isNull());
 
-    page.setUrl(url);
+    page.load(url);
     ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(spy.count(), 1);
     QVERIFY(!toPlainTextSync(&page).isEmpty());
+    QCOMPARE(page.requestedUrl(), url);
+    QCOMPARE(page.url(), url);
+}
+
+void tst_QWebEngineFrame::setUrlWithFragment_data()
+{
+    QTest::addColumn<QUrl>("previousUrl");
+    QTest::newRow("same URL no fragment") << QUrl("qrc:/test1.html");
+    // See comments in setUrlSameUrl about using setUrl() with the same url().
+    QTest::newRow("same URL with same fragment") << QUrl("qrc:/test1.html#");
+    QTest::newRow("same URL with different fragment") << QUrl("qrc:/test1.html#anotherFragment");
+}
+
+// Based on bug report https://bugs.webkit.org/show_bug.cgi?id=32723
+void tst_QWebEngineFrame::setUrlWithFragment()
+{
+    QFETCH(QUrl, previousUrl);
+
+    QWebEnginePage page;
+
+    if (!previousUrl.isEmpty()) {
+        page.load(previousUrl);
+        ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+        QCOMPARE(page.url(), previousUrl);
+    }
+
+    const QUrl url("qrc:/test1.html#");
+    QVERIFY(!url.fragment().isNull());
+
+    page.setUrl(url);
+    QTest::qWait(300);
+
+    QVERIFY(!toPlainTextSync(&page).isEmpty());
+    QEXPECT_FAIL("", "Slight change: This information now comes from Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(page.requestedUrl(), url);
     QCOMPARE(page.url(), url);
 }
