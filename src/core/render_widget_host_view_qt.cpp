@@ -246,9 +246,8 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
     // pointer (HWND, NSView*, GtkWidget*) and other ports use
     // this function in the renderer_host layer when setting up
     // the view hierarchy and for generating snapshots in tests.
-    // Since we manage the view hierarchy in Qt we can possibly
-    // avoid calls to this.
-    QT_NOT_USED
+    // Since we manage the view hierarchy in Qt its value hasn't
+    // been meaningful.
     return gfx::NativeView();
 }
 
