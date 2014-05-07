@@ -40,6 +40,7 @@ SOURCES = \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
         delegated_frame_node.cpp \
+        desktop_screen_qt.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         gl_context_qt.cpp \
@@ -79,6 +80,7 @@ HEADERS = \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
         delegated_frame_node.h \
+        desktop_screen_qt.h \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
