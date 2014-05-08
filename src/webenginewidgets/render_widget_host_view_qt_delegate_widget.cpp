@@ -162,7 +162,10 @@ void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVi
 
 void RenderWidgetHostViewQtDelegateWidget::setTooltip(const QString &tooltip)
 {
-    setToolTip(tooltip);
+    QString wrappedTip;
+    if (!tooltip.isEmpty())
+         wrappedTip = QStringLiteral("<p>") % tooltip % QStringLiteral("</p>");
+    setToolTip(wrappedTip);
 }
 
 QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQuery query) const
