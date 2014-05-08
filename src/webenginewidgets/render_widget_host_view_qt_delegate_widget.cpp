@@ -50,6 +50,8 @@
 #include <private/qsgrenderer_p.h>
 #include <private/qwidget_p.h>
 
+static const int MaxTooltipLength = 1024;
+
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
     : QOpenGLWidget(parent)
     , m_client(client)
@@ -162,7 +164,10 @@ void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVi
 
 void RenderWidgetHostViewQtDelegateWidget::setTooltip(const QString &tooltip)
 {
-    setToolTip(tooltip);
+    QString wrappedTip;
+    if (!tooltip.isEmpty())
+         wrappedTip = QStringLiteral("<p>") % tooltip.toHtmlEscaped().left(MaxTooltipLength) % QStringLiteral("</p>");
+    setToolTip(wrappedTip);
 }
 
 QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQuery query) const
