@@ -62,6 +62,8 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     // << &QQuickWebEngineNavigationRequest::staticMetaObject
     ;
 
+static QList<const char *> knownEnumNames = QList<const char *>();
+
 static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.AcceptRequest --> NavigationRequestAction"
     << "QQuickWebEngineView.IgnoreRequest --> NavigationRequestAction"
@@ -82,6 +84,12 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.ReloadNavigation --> NavigationType"
     << "QQuickWebEngineView.FormResubmittedNavigation --> NavigationType"
     << "QQuickWebEngineView.OtherNavigation --> NavigationType"
+    << "QQuickWebEngineView.NewViewInWindow --> NewViewDestination"
+    << "QQuickWebEngineView.NewViewInTab --> NewViewDestination"
+    << "QQuickWebEngineView.NewViewInDialog --> NewViewDestination"
+    << "QQuickWebEngineView.Info --> JavaScriptConsoleMessageLevel"
+    << "QQuickWebEngineView.Warning --> JavaScriptConsoleMessageLevel"
+    << "QQuickWebEngineView.Error --> JavaScriptConsoleMessageLevel"
     << "QQuickWebEngineView.title --> QString"
     << "QQuickWebEngineView.url --> QUrl"
     << "QQuickWebEngineView.icon --> QUrl"
@@ -94,7 +102,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.navigationHistoryChanged() --> void"
     << "QQuickWebEngineView.loadingChanged(QQuickWebEngineLoadRequest*) --> void"
     << "QQuickWebEngineView.loadProgressChanged() --> void"
-    << "QQuickWebEngineView.javaScriptConsoleMessage(int,QString,int,QString) --> void"
+    << "QQuickWebEngineView.javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
     << "QQuickWebEngineView.urlChanged() --> void"
     << "QQuickWebEngineView.iconChanged() --> void"
     << "QQuickWebEngineView.linkHovered(QUrl) --> void"
@@ -130,6 +138,12 @@ static bool isCheckedEnum(const QByteArray &typeName)
             for (int i = mo->enumeratorOffset(); i < mo->enumeratorCount(); ++i)
                 if (mo->enumerator(i).name() == enumName)
                     return true;
+        }
+    } else if (tokens.size() == 1) {
+        QByteArray &enumName = tokens[0];
+        foreach (const char *knownEnumName, knownEnumNames) {
+            if (enumName == knownEnumName)
+                return true;
         }
     }
     return false;
@@ -181,8 +195,10 @@ static void gatherAPI(const QString &prefix, const QMetaMethod &method, QStringL
 static void gatherAPI(const QString &prefix, const QMetaObject *meta, QStringList *output)
 {
     // *Offset points us only at the leaf class members, we don't have inheritance in our API yet anyway.
-    for (int i = meta->enumeratorOffset(); i < meta->enumeratorCount(); ++i)
+    for (int i = meta->enumeratorOffset(); i < meta->enumeratorCount(); ++i) {
+        knownEnumNames << meta->enumerator(i).name();
         gatherAPI(prefix, meta->enumerator(i), output);
+    }
     for (int i = meta->propertyOffset(); i < meta->propertyCount(); ++i)
         gatherAPI(prefix, meta->property(i), output);
     for (int i = meta->methodOffset(); i < meta->methodCount(); ++i)
