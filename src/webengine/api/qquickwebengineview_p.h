@@ -59,7 +59,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingChanged)
-    Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_ENUMS(LoadStatus);
     Q_ENUMS(ErrorDomain);
     Q_ENUMS(NewViewDestination);
@@ -77,8 +76,6 @@ public:
     QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
-    bool inspectable() const;
-    void setInspectable(bool);
     void forceActiveFocus();
 
     enum LoadStatus {

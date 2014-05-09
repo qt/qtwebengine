@@ -500,19 +500,6 @@ bool QQuickWebEngineView::canGoForward() const
     return d->adapter->canGoForward();
 }
 
-bool QQuickWebEngineView::inspectable() const
-{
-    Q_D(const QQuickWebEngineView);
-    return d->inspectable;
-}
-
-void QQuickWebEngineView::setInspectable(bool enable)
-{
-    Q_D(QQuickWebEngineView);
-    d->inspectable = enable;
-    d->adapter->enableInspector(enable);
-}
-
 void QQuickWebEngineView::forceActiveFocus()
 {
     Q_FOREACH (QQuickItem *child, childItems()) {
@@ -521,6 +508,19 @@ void QQuickWebEngineView::forceActiveFocus()
             break;
         }
     }
+}
+
+bool QQuickWebEngineViewExperimental::inspectable() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->inspectable;
+}
+
+void QQuickWebEngineViewExperimental::setInspectable(bool enable)
+{
+    Q_D(QQuickWebEngineView);
+    d->inspectable = enable;
+    d->adapter->enableInspector(enable);
 }
 
 void QQuickWebEngineViewExperimental::setIsFullScreen(bool fullscreen)
