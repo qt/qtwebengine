@@ -73,10 +73,11 @@ static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &basePath)
+URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &basePath, content::ProtocolHandlerMap *protocolHandlers)
     : m_ignoreCertificateErrors(false)
     , m_basePath(basePath)
 {
+    std::swap(m_protocolHandlers, *protocolHandlers);
 
     // We must create the proxy config service on the UI loop on Linux because it
     // must synchronously run on the glib message loop. This will be passed to
@@ -161,16 +162,21 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
             network_session_params, main_backend);
         m_storage->set_http_transaction_factory(main_cache);
 
-        // FIXME: add protocol handling
 
         m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
+
+        // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
+        content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(chrome::kBlobScheme);
+        Q_ASSERT(it != m_protocolHandlers.end());
+        m_jobFactory->SetProtocolHandler(it->first, it->second.release());
+        m_protocolHandlers.clear();
+
         m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
-        m_jobFactory->SetProtocolHandler(
-            chrome::kFileScheme,
-            new net::FileProtocolHandler(content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+        m_jobFactory->SetProtocolHandler(chrome::kFileScheme, new net::FileProtocolHandler(
+            content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
         m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
         m_jobFactory->SetProtocolHandler(content::kFtpScheme, new net::FtpProtocolHandler(
-                new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
+            new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
         m_urlRequestContext->set_job_factory(m_jobFactory.get());
     }
 

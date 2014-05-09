@@ -145,7 +145,7 @@ quota::SpecialStoragePolicy *BrowserContextQt::GetSpecialStoragePolicy()
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(GetPath());
+    url_request_getter_ = new URLRequestContextGetterQt(GetPath(), protocol_handlers);
     static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
     return url_request_getter_.get();
 }
