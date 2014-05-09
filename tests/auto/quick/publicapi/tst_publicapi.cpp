@@ -87,7 +87,6 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.icon --> QUrl"
     << "QQuickWebEngineView.canGoBack --> bool"
     << "QQuickWebEngineView.canGoForward --> bool"
-    << "QQuickWebEngineView.inspectable --> bool"
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadProgress --> int"
     << "QQuickWebEngineView.titleChanged() --> void"

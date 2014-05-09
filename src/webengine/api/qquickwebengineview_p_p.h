@@ -83,6 +83,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
+    Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
     Q_ENUMS(Feature)
@@ -94,6 +95,8 @@ public:
         MediaAudioVideoDevices
     };
 
+    bool inspectable() const;
+    void setInspectable(bool);
     void setIsFullScreen(bool fullscreen);
     bool isFullScreen() const;
     QQuickWebEngineViewport *viewport() const;
