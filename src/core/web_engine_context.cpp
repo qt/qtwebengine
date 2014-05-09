@@ -128,7 +128,7 @@ WebEngineContext::WebEngineContext()
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
     // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
-    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/0.1 Chrome/" CHROMIUM_VERSION));
+    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION));
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
