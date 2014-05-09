@@ -26,7 +26,6 @@
 
 /*!
     \class QWebEnginePage
-    \since 4.4
     \brief The QWebEnginePage class provides an object to view and edit web documents.
 
     \inmodule QtWebEngine
@@ -39,7 +38,6 @@
     common functions like action() (known as
     \l{QWebEngineView::pageAction()}{pageAction}() in QWebEngineView), triggerAction(),
     findText() and settings().
-
 
     A page can be loaded using load() or setUrl(). Alternatively, if you have
     the HTML content readily available, you can use setHtml() instead.
@@ -63,11 +61,6 @@
     For access to the underlying DOM tree, there is documentElement(),
     findAllElements() and findFirstElement().
 
-    A QWebEnginePage can be printed onto a QPrinter using the print() function.
-    This function is marked as a slot and can be conveniently connected to
-    \l{QPrintPreviewDialog}'s \l{QPrintPreviewDialog::}{paintRequested()}
-    signal.
-
     The loadStarted() signal is emitted when the page begins to load.The
     loadProgress() signal, on the other hand, is emitted whenever an element
     of the web page completes loading, such as an embedded image, a script,
@@ -75,55 +68,37 @@
     are loaded completely, independent of script execution or page rendering.
     Its argument, either true or false, indicates whether or not the load
     operation succeeded.
-
-    \section1 Using QWebEnginePage in a Widget-less Environment
-
-    Before you begin painting a QWebEnginePage object, you need to set the size of
-    the viewport by calling setViewportSize(). Then, you invoke the main
-    frame's render function (QWebEnginePage::render()). An example of this
-    is shown in the code snippet below.
-
-    Suppose we have a \c Thumbnail class as follows:
-
-    \snippet snippets/webpage/main.cpp 0
-
-    The \c Thumbnail's constructor takes in a \a url. We connect our QWebEnginePage
-    object's \l{QWebEnginePage::}{loadFinished()} signal to our private slot,
-    \c render().
-
-    \snippet snippets/webpage/main.cpp 1
-
-    The \c render() function shows how we can paint a thumbnail using a
-    QWebEnginePage object.
-
-    \snippet snippets/webpage/main.cpp 2
-
-    We begin by setting the \l{QWebEnginePage::viewportSize()}{viewportSize} and
-    then we instantiate a QImage object, \c image, with the same size as our
-    \l{QWebEnginePage::viewportSize()}{viewportSize}. This image is then sent
-    as a parameter to \c painter. Next, we render the contents of the main
-    frame and its subframes into \c painter. Finally, we save the scaled image.
 */
-
-/*!
-    \fn QMenu *QWebEnginePage::createStandardContextMenu()
-    \since 4.5
-    This function creates the standard context menu which is shown when
-    the user clicks on the web page with the right mouse button. It is
-    called from the default contextMenuEvent() handler. The popup menu's
-    ownership is transferred to the caller.
- */
-
-/*!
-    \fn QVariant QWebEnginePage::inputMethodQuery(Qt::InputMethodQuery property) const
-    This method is used by the input method to query a set of properties of the page
-    to be able to support complex input method operations as support for surrounding
-    text and reconversions.
-
-    \a property specifies which property is queried.
-
-    \sa QWidget::inputMethodEvent(), QInputMethodEvent, QInputContext
-*/
+//  FIXME: This part is commented out for the time being until we decide if and how
+//  the functionality to render a page onto a painter will be reintroduced or not.
+// 
+//  \section1 Using QWebEnginePage in a Widget-less Environment
+//
+//  Before you begin painting a QWebEnginePage object, you need to set the size of
+//  the viewport by calling setViewportSize(). Then, you invoke the main
+//  frame's render function (QWebEnginePage::render()). An example of this
+//  is shown in the code snippet below.
+//
+//  Suppose we have a \c Thumbnail class as follows:
+//
+//  \snippet snippets/webpage/main.cpp 0
+//
+//  The \c Thumbnail's constructor takes in a \a url. We connect our QWebEnginePage
+//  object's \l{QWebEnginePage::}{loadFinished()} signal to our private slot,
+//  \c render().
+//
+//  \snippet snippets/webpage/main.cpp 1
+//
+//  The \c render() function shows how we can paint a thumbnail using a
+//  QWebEnginePage object.
+//
+//  \snippet snippets/webpage/main.cpp 2
+//
+//  We begin by setting the \l{QWebEnginePage::viewportSize()}{viewportSize} and
+//  then we instantiate a QImage object, \c image, with the same size as our
+//  \l{QWebEnginePage::viewportSize()}{viewportSize}. This image is then sent
+//  as a parameter to \c painter. Next, we render the contents of the main
+//  frame and its subframes into \c painter. Finally, we save the scaled image.
 
 /*!
    \enum QWebEnginePage::FindFlag
@@ -150,14 +125,14 @@
     \value Forward Navigate forward in the history of navigated links.
     \value Stop Stop loading the current page.
     \value Reload Reload the current page.
-    \value ReloadAndBypassCache Reload the current page, but do not use any local cache. (Added in Qt 4.6)
+    \value ReloadAndBypassCache Reload the current page, but do not use any local cache.
     \value Cut Cut the content currently selected into the clipboard.
     \value Copy Copy the content currently selected into the clipboard.
     \value Paste Paste content from the clipboard.
     \value Undo Undo the last editing action.
     \value Redo Redo the last editing action.
     \value SelectAll Selects all content.
-    \value PasteAndMatchStyle Paste content from the clipboard with current style. (Added in Qt 4.6)
+    \value PasteAndMatchStyle Paste content from the clipboard with current style.
 
     \omitvalue WebActionCount
 
@@ -171,6 +146,28 @@
     \value WebBrowserWindow The page should be opened in a complete web browser window.
     \value WebBrowserTab The page should be opened as a web browser tab.
     \value WebDialog The page should be opened in a window without decoration.
+*/
+
+/*!
+    \enum QWebEnginePage::JavaScriptConsoleMessageLevel
+
+    This enum describes the different severity levels a JavaScript console message can have.
+
+    \value Info The message is purely informative and can safely be ignored.
+    \value Warning The message informs about unexpected behaviors or errors that may need attention.
+    \value Error The message indicates there has been an error.
+*/
+
+/*!
+    \enum QWebEnginePage::FileSelectionMode
+
+    This enum indicates whether the implementation of the chooseFiles function should
+    return only one file or may return multiple files.
+
+    \value FileSelectOpen The implementation should return only one file name.
+    \value FileSelectOpenMultiple The implementation may return multiple file names.
+
+    \sa chooseFiles()
 */
 
 /*!
@@ -203,10 +200,21 @@
 */
 
 /*!
-    \fn void QWebEnginePage::javaScriptConsoleMessage(const QString& message, int lineNumber, const QString& sourceID)
+    \fn QMenu *QWebEnginePage::createStandardContextMenu()
+    This function creates the standard context menu which is shown when
+    the user clicks on the web page with the right mouse button. It is
+    called from the default contextMenuEvent() handler. The popup menu's
+    ownership is transferred to the caller.
+ */
+
+/*!
+    \fn void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
     This function is called whenever a JavaScript program tries to print a \a message to the web browser's console.
 
     For example in case of evaluation errors the source URL may be provided in \a sourceID as well as the \a lineNumber.
+
+    \a level indicates the severity of the event that triggered the message, i.e. if it
+    was triggered by an error or a less severe event.
 
     The default implementation prints nothing.
 */
@@ -241,15 +249,12 @@
 
 /*!
     \fn QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
-    This function is called whenever WebKit wants to create a new window of the given \a type, for
-    example when a JavaScript program requests to open a document in a new window.
+    This function is called whenever the WebEngine wants to create a new window of the given \a type, for example when a JavaScript program requests to open a document in a new window.
 
     If the new window can be created, the new window's QWebEnginePage is returned; otherwise a null pointer is returned.
 
     If the view associated with the web page is a QWebEngineView object, then the default implementation forwards
     the request to QWebEngineView's createWindow() function; otherwise it returns a null pointer.
-
-    If \a type is WebModalDialog, the application must call setWindowModality(Qt::ApplicationModal) on the new window.
 
     \note In the cases when the window creation is being triggered by JavaScript, apart from
     reimplementing this method application must also set the JavaScriptCanOpenWindows attribute
@@ -261,7 +266,7 @@
 /*!
     \fn void QWebEnginePage::triggerAction(WebAction action, bool)
     This function can be called to trigger the specified \a action.
-    It is also called by Qt WebKit if the user triggers the action, for example
+    It is also called by Qt WebEngine if the user triggers the action, for example
     through a context menu item.
 
     If \a action is a checkable action then \a checked specified whether the action
@@ -300,30 +305,23 @@
 */
 
 /*!
-    \fn bool QWebEnginePage::findText(const QString &subString, FindFlags options)
+    \fn void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
     Finds the specified string, \a subString, in the page, using the given \a options.
-
-    If the HighlightAllOccurrences flag is passed, the function will highlight all occurrences
-    that exist in the page. All subsequent calls will extend the highlight, rather than
-    replace it, with occurrences of the new string.
-
-    If the HighlightAllOccurrences flag is not passed, the function will select an occurrence
-    and all subsequent calls will replace the current occurrence with the next one.
 
     To clear the selection, just pass an empty string.
 
-    Returns true if \a subString was found; otherwise returns false.
+    The \a resultCallback will be called with a value of true \a subString was found; otherwise the callback value will be false.
 */
 
 /*!
-    \fn QString QWebEnginePage::chooseFile(QWebEngineFrame *parentFrame, const QString& suggestedFile)
+    \fn QString QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList& oldFiles, const QStringList& acceptedMimeTypes)
     This function is called when the web content requests a file name, for example
     as a result of the user clicking on a "file upload" button in a HTML form.
 
-    A suggested filename may be provided in \a suggestedFile. The frame originating the
-    request is provided as \a parentFrame.
+    \a mode indicates whether only one file or multiples files are expected to be returned.
 
-    \sa ChooseMultipleFilesExtension
+    A suggested filename may be provided as the first entry of \a oldFiles.
+    \a acceptedMimeTypes is currently ignored.
 */
 
 /*!
@@ -412,7 +410,6 @@
 */
 
 /*!
-    \since 4.6
     \property QWebEnginePage::requestedUrl
 
     The URL requested to loaded by the frame currently viewed. The URL may differ from
@@ -432,7 +429,7 @@
 
 /*!
     \fn void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)
-    Sets the content of this frame to \a html. \a baseUrl is optional and used to resolve relative
+    Sets the content of this page's main frame to \a html. \a baseUrl is optional and used to resolve relative
     URLs in the document, such as referenced images or stylesheets.
 
     The \a html is loaded immediately; external objects are loaded asynchronously.
@@ -441,7 +438,7 @@
     for example due to being blocked by a modal JavaScript alert dialog, this method will return
     as soon as possible after the timeout and any subsequent \a html will be loaded asynchronously.
 
-    When using this method WebKit assumes that external resources such as JavaScript programs or style
+    When using this method WebEngie assumes that external resources such as JavaScript programs or style
     sheets are encoded in UTF-8 unless otherwise specified. For example, the encoding of an external
     script can be specified through the charset attribute of the HTML script tag. It is also possible
     for the encoding to be specified by web server.
@@ -458,7 +455,7 @@
 
 /*!
     \fn void QWebEnginePage::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
-    Sets the content of this frame to the specified content \a data. If the \a mimeType argument
+    Sets the content of this page's main frame to the specified content \a data. If the \a mimeType argument
     is empty it is currently assumed that the content is HTML but in future versions we may introduce
     auto-detection.
 
@@ -473,22 +470,24 @@
 
 /*!
     \property QWebEnginePage::zoomFactor
-    \since 4.5
-    \brief the zoom factor for the frame
+    \brief the zoom factor for the main frame
 */
 
 /*!
-    \fn QVariant QWebEnginePage::evaluateJavaScript(const QString& scriptSource)
-    Evaluates the JavaScript defined by \a scriptSource using this frame as context
-    and returns the result of the last executed statement.
+    \fn void runJavaScript(const QString& scriptSource, const QString &xPath
+    Runs the JavaScript code contained in \a scriptSource in the frame identified by \a xPath.
+*/
 
-    \sa addToJavaScriptWindowObject(), javaScriptWindowObjectCleared()
+/*!
+    \fn void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback, const QString &xPath);
+    Runs the JavaScript code contained in \a scriptSource in the frame identified by \a xPath.
+    When the script has been executed, \a resultCallback is called.
 */
 
 /*!
     \fn void QWebEnginePage::titleChanged(const QString &title)
 
-    This signal is emitted whenever the title of the frame changes.
+    This signal is emitted whenever the title of the main frame changes.
     The \a title string specifies the new title.
 
     \sa title()
@@ -497,7 +496,7 @@
 /*!
     \fn void QWebEnginePage::urlChanged(const QUrl &url)
 
-    This signal is emitted with the URL of the frame when the frame's title is
+    This signal is emitted with the URL of the main frame when the main frame's title is
     received. The new URL is specified by \a url.
 
     \sa url()
