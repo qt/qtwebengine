@@ -17,6 +17,7 @@ QT_PRIVATE += qml-private quick-private gui-private core-private
 DEFINES += QT_NO_KEYWORDS \
            Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS \
            QTWEBENGINEPROCESS_NAME=\\\"$$QTWEBENGINEPROCESS_NAME\\\" \
+           QTWEBENGINECORE_VERSION_STR=\\\"$$MODULE_VERSION\\\" \
            BUILDING_CHROMIUM
 
 # Keep Skia happy
