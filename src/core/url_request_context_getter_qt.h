@@ -46,9 +46,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/url_constants.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "content/public/common/url_constants.h"
 
 #include "qglobal.h"
 
@@ -61,10 +62,9 @@ class ProxyConfigService;
 
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
-    explicit URLRequestContextGetterQt(const base::FilePath&);
+    explicit URLRequestContextGetterQt(const base::FilePath &, content::ProtocolHandlerMap *protocolHandlers);
 
-    virtual net::URLRequestContext* GetURLRequestContext() Q_DECL_OVERRIDE;
-
+    virtual net::URLRequestContext *GetURLRequestContext() Q_DECL_OVERRIDE;
     virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
 
 private:
@@ -72,6 +72,7 @@ private:
 
     bool m_ignoreCertificateErrors;
     base::FilePath m_basePath;
+    content::ProtocolHandlerMap m_protocolHandlers;
 
     scoped_ptr<net::ProxyConfigService> m_proxyConfigService;
     scoped_ptr<net::URLRequestContext> m_urlRequestContext;
