@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -51,8 +51,7 @@
     C++ classes to render and interact with web content.
 
     Qt WebEngine Widgets provides a Web browser engine that makes it easy to embed
-    content from the World Wide Web into your Qt application. At the same time
-    Web content can be enhanced with native controls.
+    content from the World Wide Web into your Qt application.
 
     Qt WebEngine Widgets provides facilities for rendering of HyperText Markup
     Language (HTML), Extensible HyperText Markup Language (XHTML) and Scalable
@@ -199,7 +198,6 @@
     \brief Examples demonstrating the Qt WebEngine Widgets usage
     \ingroup all-examples
 
-    // FIXME: same as above - can we use Chromium / Blink?
     Qt provides an integrated Web browser component based on Chromium, the popular
     open source browser engine.
 
