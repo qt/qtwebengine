@@ -142,12 +142,16 @@ class Submodule:
             return True
         if 'all' in self.os:
             return True
-        if (sys.platform.startswith('win32') or sys.platform.startswith('cygwin')) and 'win' in self.os:
-            return True
         if sys.platform.startswith('linux') and 'unix' in self.os:
             return True
         if sys.platform.startswith('darwin') and ('unix' in self.os or 'mac' in self.os):
             return True
+        if sys.platform.startswith('win32') or sys.platform.startswith('cygwin'):
+            if 'win' in self.os:
+                return True
+            else:
+                # Skipping all dependecies of the extra_os on Windows platform, because it caused confict.
+                return False
         for os in extra_os:
             if os in self.os:
                 return True
