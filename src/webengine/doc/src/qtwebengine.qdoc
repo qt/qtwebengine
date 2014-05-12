@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
     Copyright (C) 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -27,7 +28,7 @@
     \title Qt WebEngine QML Types
     \brief Provides QML types for rendering web content within a QML application
 
-    The QML types can be imported into your applciation using the following
+    The QML types can be imported into your application using the following
     import statement in your .qml file:
 
     \code

@@ -24,7 +24,6 @@
 
 /*!
     \class QWebEngineHistoryItem
-    \since 4.4
     \brief The QWebEngineHistoryItem class represents one item in the history of a QWebEnginePage
 
     \inmodule QtWebEngine
@@ -95,13 +94,11 @@
 
 /*!
     \fn bool QWebEngineHistoryItem::isValid() const
-    \since 4.5
     Returns whether this is a valid history item.
 */
 
 /*!
     \class QWebEngineHistory
-    \since 4.4
     \brief The QWebEngineHistory class represents the history of a QWebEnginePage
 
     \inmodule QtWebEngine
@@ -217,7 +214,6 @@
 
 /*!
     \fn int QWebEngineHistory::currentItemIndex() const
-    \since 4.5
     Returns the index of the current item in history.
 */
 
@@ -232,24 +228,7 @@
 */
 
 /*!
-    \fn int QWebEngineHistory::maximumItemCount() const
-    \since 4.5
-    Returns the maximum number of items in the history.
-
-    \sa setMaximumItemCount()
-*/
-
-/*!
-    \fn void QWebEngineHistory::setMaximumItemCount(int count)
-    \since 4.5
-    Sets the maximum number of items in the history to \a count.
-
-    \sa maximumItemCount()
-*/
-
-/*!
     \fn QDataStream& operator<<(QDataStream& target, const QWebEngineHistory& history)
-    \since 4.6
     \relates QWebEngineHistory
 
     \brief The operator<< function streams a history into a data stream.
@@ -261,10 +240,8 @@
 /*!
     \fn QDataStream& operator>>(QDataStream& source, QWebEngineHistory& history)
     \relates QWebEngineHistory
-    \since 4.6
 
     \brief The operator>> function loads a history from a data stream.
 
     Loads a QWebEngineHistory from the specified \a stream into the given \a history.
 */
-
