@@ -133,9 +133,9 @@ public:
 
     // must match WebContentsAdapterClient::JavaScriptConsoleMessageLevel
     enum JavaScriptConsoleMessageLevel {
-        Info = 0,
-        Warning,
-        Error
+        InfoMessageLevel = 0,
+        WarningMessageLevel,
+        ErrorMessageLevel
     };
 
     explicit QWebEnginePage(QObject *parent = 0);
