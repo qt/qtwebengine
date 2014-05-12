@@ -610,21 +610,23 @@ void WebContentsAdapter::enableInspector(bool enable)
     ContentBrowserClientQt::Get()->enableInspector(enable);
 }
 
-void WebContentsAdapter::runJavaScript(const QString &javaScript, const QString &xPath)
+void WebContentsAdapter::runJavaScript(const QString &javaScript)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    rvh->ExecuteJavascriptInWebFrame(toString16(xPath), toString16(javaScript));
+    base::string16 mainFrameXPath;
+    rvh->ExecuteJavascriptInWebFrame(mainFrameXPath, toString16(javaScript));
 }
 
-quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath)
+quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     content::RenderViewHost::JavascriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, ++d->lastRequestId);
-    rvh->ExecuteJavascriptInWebFrameCallbackResult(toString16(xPath), toString16(javaScript), callback);
+    base::string16 mainFrameXPath;
+    rvh->ExecuteJavascriptInWebFrameCallbackResult(mainFrameXPath, toString16(javaScript), callback);
     return d->lastRequestId;
 }
 

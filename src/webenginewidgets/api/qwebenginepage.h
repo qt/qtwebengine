@@ -175,8 +175,8 @@ public:
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);
 
-    void runJavaScript(const QString& scriptSource, const QString &xPath = QString());
-    void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback, const QString &xPath = QString());
+    void runJavaScript(const QString& scriptSource);
+    void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
 
 Q_SIGNALS:
     void loadStarted();

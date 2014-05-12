@@ -803,16 +803,16 @@ void QWebEnginePage::setZoomFactor(qreal factor)
     d->adapter->setZoomFactor(factor);
 }
 
-void QWebEnginePage::runJavaScript(const QString &scriptSource, const QString &xPath)
+void QWebEnginePage::runJavaScript(const QString &scriptSource)
 {
     Q_D(QWebEnginePage);
-    d->adapter->runJavaScript(scriptSource, xPath);
+    d->adapter->runJavaScript(scriptSource);
 }
 
-void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback, const QString &xPath)
+void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
 {
     Q_D(QWebEnginePage);
-    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, xPath);
+    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource);
     d->m_callbacks.registerCallback(requestId, resultCallback.d);
 }
 

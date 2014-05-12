@@ -550,10 +550,10 @@ QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent
 void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const QJSValue &callback)
 {
     if (!callback.isUndefined()) {
-        quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script, /*xPath=*/QString());
+        quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script);
         d_ptr->m_callbacks.insert(requestId, callback);
     } else
-        d_ptr->adapter->runJavaScript(script, /*xPath=*/QString());
+        d_ptr->adapter->runJavaScript(script);
 }
 
 QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const
