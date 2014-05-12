@@ -26,14 +26,13 @@
 
 /*!
     \class QWebEngineView
-    \since 4.4
     \brief The QWebEngineView class provides a widget that is used to view and edit
     web documents.
     \ingroup advanced
 
     \inmodule QtWebEngine
 
-    QWebEngineView is the main widget component of the Qt WebKit web browsing module.
+    QWebEngineView is the main widget component of the Qt WebEngine web browsing module.
     It can be used in various applications to display web content live from the
     Internet.
 
@@ -55,10 +54,7 @@
 
     The page() function returns a pointer to the web page object. See
     \l{Elements of QWebEngineView} for an explanation of how the web page
-    is related to the view. To modify your web view's settings, you can access
-    the QWebEngineSettings object with the settings() function. With QWebEngineSettings,
-    you can change the default fonts, enable or disable features such as
-    JavaScript and plugins.
+    is related to the view.
 
     The title of an HTML document can be accessed with the title() property.
     Additionally, a web site may also specify an icon, which can be accessed
@@ -78,25 +74,18 @@
     modification of action properties such as \l{QAction::}{text} or
     \l{QAction::}{icon}.
 
-    A QWebEngineView can be printed onto a QPrinter using the print() function.
-    This function is marked as a slot and can be conveniently connected to
-    \l{QPrintPreviewDialog}'s \l{QPrintPreviewDialog::}{paintRequested()}
-    signal.
-
     If you want to provide support for web sites that allow the user to open
     new windows, such as pop-up windows, you can subclass QWebEngineView and
     reimplement the createWindow() function.
 
     \section1 Elements of QWebEngineView
 
-    QWebEngineView also consists of a QWebEnginePage.
-    It is possible to use QWebEnginePage without using QWebEngineView,
-    if you do not require QWidget attributes. Nevertheless, Qt WebKit depends
-    on QtGui, so you should use a QApplication instead of QCoreApplication.
+    QWebEngineView contains a QWebEnginePage, which in turn allows acess to the
+    QWebEngineHistory in the page's context.
 
-    \sa {Previewer Example}, {WebEngine Tab Browser Example}, {Form Extractor Example},
-    {Google Chat Example}, {WebEngine Fancy Browser Example}
 */
+//    FIXME: reintroduce the following when we have proper names for the examples.
+//    \sa {WebEngine Tab Browser Example}, {WebEngine Fancy Browser Example}
 
 
 /*!
@@ -147,7 +136,7 @@
 
     The \a html is loaded immediately; external objects are loaded asynchronously.
 
-    When using this method, WebKit assumes that external resources such as
+    When using this method, Qt WebEngine assumes that external resources such as
     JavaScript programs or style sheets are encoded in UTF-8 unless otherwise
     specified. For example, the encoding of an external script can be specified
     through the charset attribute of the HTML script tag. Alternatively, the
@@ -239,30 +228,9 @@
     \sa pageAction()
 */
 
-/*
-    \property QWebEngineView::textInteractionFlags
-    \brief how the view should handle user input
-
-    Specifies how the user can interact with the text on the page.
-*/
-
-
 /*!
     \property QWebEngineView::zoomFactor
-    \since 4.5
     \brief the zoom factor for the view
-*/
-
-/*!
-    \property QWebEngineView::renderHints
-    \since 4.6
-    \brief the default render hints for the view
-
-    These hints are used to initialize QPainter before painting the Web page.
-
-    QPainter::TextAntialiasing and QPainter::SmoothPixmapTransform are enabled by default.
-
-    \sa QPainter::renderHints()
 */
 
 /*!
@@ -333,10 +301,6 @@
 
     \note If the createWindow() method of the associated page is reimplemented, this
     method is not called, unless explicitly done so in the reimplementation.
-
-    \note In the cases when the window creation is being triggered by JavaScript, apart from
-    reimplementing this method application must also set the JavaScriptCanOpenWindows attribute
-    of QWebEngineSettings to true in order for it to get called.
 
     \sa QWebEnginePage::createWindow()
 */
