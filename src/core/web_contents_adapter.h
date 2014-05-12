@@ -97,8 +97,8 @@ public:
     qreal currentZoomFactor() const;
     void enableInspector(bool);
     void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
-    void runJavaScript(const QString &javaScript, const QString &xPath);
-    quint64 runJavaScriptCallbackResult(const QString &javaScript, const QString &xPath);
+    void runJavaScript(const QString &javaScript);
+    quint64 runJavaScriptCallbackResult(const QString &javaScript);
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
     quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
