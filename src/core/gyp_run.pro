@@ -8,6 +8,7 @@ cross_compile {
     GYP_ARGS = "-D qt_cross_compile=1"
     posix: GYP_ARGS += "-D os_posix=1"
     android: include(config/embedded_android.pri)
+    qnx: include(config/embedded_qnx.pri)
     else:linux: include(config/embedded_linux.pri)
 } else {
     # !cross_compile
