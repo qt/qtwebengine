@@ -78,6 +78,7 @@ parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule')
 group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule (default)')
+group.add_argument('--no-gerrit', action='store_true', help='skip adding the upstream Gerrit remote and commit hook')
 args = parser.parse_args()
 
 if chromium_src:
@@ -167,8 +168,10 @@ def initSnapshot():
     snapshot.initialize()
 
 os.chdir(qtwebengine_root)
-addGerritRemote()
-installGitHooks()
+
+if not args.no_gerrit:
+    addGerritRemote()
+    installGitHooks()
 
 print 'Configuring git to ignore all submodules. Submodule changes will not show up in "git diff"!'
 subprocess.call(['git', 'config', 'diff.ignoreSubmodules', 'all'])
