@@ -36,12 +36,6 @@
       ['exclude', 'browser/renderer_host/render_widget_host_view_mac\\.(mm|h)$'],
       ['exclude', 'browser/renderer_host/render_widget_host_view_win\\.(cc|h)$'],
       ['exclude', 'common/font_list_pango\\.cc$'],
-
-      # QNX-specific excludes
-      ['exclude', 'base/resource/resource_bundle_qnx.cc$'],
-      ['exclude', 'browser/qnx/'],
-      ['exclude', 'browser/renderer_host/render_widget_host_view_qnx\\.(cc|h)$'],
-      ['exclude', 'browser/web_contents/web_contents_view_qnx\\.(cc|h)$'],
     ],
     'defines': [
       'TOOLKIT_QT',
