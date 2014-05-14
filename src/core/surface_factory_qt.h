@@ -42,7 +42,7 @@
 #ifndef SURFACE_FACTORY_QT
 #define SURFACE_FACTORY_QT
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_ANDROID)
 
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 

@@ -75,6 +75,7 @@
 #include "gl_context_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
+#include "surface_factory_qt.h"
 #include "web_engine_library_info.h"
 #include <QGuiApplication>
 #include <QStringList>
@@ -94,6 +95,7 @@ void destroyContext()
 
 WebEngineContext::~WebEngineContext()
 {
+    GLContextHelper::destroy();
     m_runLoop->AfterRun();
 }
 
@@ -159,6 +161,11 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
 
     parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
+
+    // On eAndroid we use this to get the native display
+    // from Qt in GLSurfaceEGL::InitializeOneOff.
+    m_surfaceFactory.reset(new SurfaceFactoryQt());
+    gfx::SurfaceFactoryOzone::SetInstance(m_surfaceFactory.get());
 #endif
 
     GLContextHelper::initialize();
