@@ -43,24 +43,32 @@
 #define GL_GL_CONTEXT_QT_H_
 
 #include <QObject>
-
-QT_BEGIN_NAMESPACE
+#include "base/memory/scoped_ptr.h"
+#include "surface_factory_qt.h"
 
 namespace gfx {
 class GLContext;
 class GLSurface;
 }
 
+QT_BEGIN_NAMESPACE
+
 class GLContextHelper : public QObject {
     Q_OBJECT
+    GLContextHelper();
 public:
     static void initialize();
+    static void destroy();
     static bool initializeContext(gfx::GLContext* context, gfx::GLSurface* surface);
 
 private:
     Q_INVOKABLE bool initializeContextOnBrowserThread(gfx::GLContext* context, gfx::GLSurface* surface);
 
     static GLContextHelper* contextHelper;
+
+#if defined(OS_ANDROID)
+    scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
+#endif
 };
 
 QT_END_NAMESPACE

@@ -41,16 +41,36 @@
 
 #include "gl_context_qt.h"
 
+#include <QGuiApplication>
+#include <QThread>
 #include "ui/gl/gl_context_egl.h"
 
 QT_BEGIN_NAMESPACE
 
 GLContextHelper* GLContextHelper::contextHelper = 0;
 
+GLContextHelper::GLContextHelper()
+    : QObject()
+{
+#if defined(OS_ANDROID)
+    // On eAndroid we only need this for getting the native display from Qt.
+    m_surfaceFactory.reset(new SurfaceFactoryQt());
+    gfx::SurfaceFactoryOzone::SetInstance(m_surfaceFactory.get());
+#endif
+}
+
 void GLContextHelper::initialize()
 {
     if (!contextHelper)
         contextHelper = new GLContextHelper;
+}
+
+void GLContextHelper::destroy()
+{
+    if (!contextHelper)
+        return;
+    contextHelper->deleteLater();
+    contextHelper = 0;
 }
 
 bool GLContextHelper::initializeContextOnBrowserThread(gfx::GLContext* context, gfx::GLSurface* surface)
@@ -61,7 +81,8 @@ bool GLContextHelper::initializeContextOnBrowserThread(gfx::GLContext* context, 
 bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface* surface)
 {
     bool ret = false;
-    QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", Qt::BlockingQueuedConnection,
+    Qt::ConnectionType connType = (QThread::currentThread() == qApp->thread()) ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
+    QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", connType,
             Q_RETURN_ARG(bool, ret),
             Q_ARG(gfx::GLContext*, context),
             Q_ARG(gfx::GLSurface*, surface));
@@ -70,7 +91,7 @@ bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface*
 
 QT_END_NAMESPACE
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_ANDROID)
 
 namespace gfx {
 
