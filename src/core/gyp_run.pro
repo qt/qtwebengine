@@ -20,6 +20,8 @@ cross_compile {
 GYP_CONFIG += disable_glibcxx_debug=1
 !webcore_debug: GYP_CONFIG += remove_webcore_debug_symbols=1
 
+linux:contains(QT_CONFIG, separate_debug_info): GYP_CONFIG += linux_dump_symbols=1
+
 # Append additional platform options defined in GYP_CONFIG
 for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
