@@ -75,15 +75,6 @@ diff --git a/build/linux/system.gyp b/build/linux/system.gyp
 index 1451afb..2a2c8bd 100644
 --- a/build/linux/system.gyp
 +++ b/build/linux/system.gyp
-@@ -5,7 +5,7 @@
- {
-   'variables': {
-     'conditions': [
--      ['sysroot!=""', {
-+      ['sysroot!="" and qt_os!="embedded_linux"', {
-         'pkg-config': './pkg-config-wrapper "<(sysroot)" "<(target_arch)"',
-       }, {
-         'pkg-config': 'pkg-config'
 @@ -506,6 +506,8 @@
      {
        'target_name': 'libpci',
