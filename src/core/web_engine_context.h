@@ -55,6 +55,7 @@ class ContentMainRunner;
 }
 
 class ContentMainDelegateQt;
+class SurfaceFactoryQt;
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
@@ -69,6 +70,9 @@ private:
     scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
     scoped_ptr<content::ContentMainRunner> m_contentRunner;
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
+#if defined(OS_ANDROID)
+    scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
+#endif
 };
 
 #endif // WEB_ENGINE_CONTEXT_H
