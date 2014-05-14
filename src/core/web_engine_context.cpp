@@ -87,6 +87,7 @@ scoped_refptr<WebEngineContext> sContext;
 
 void destroyContext()
 {
+    GLContextHelper::destroy();
     sContext = 0;
 }
 
