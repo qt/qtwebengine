@@ -41,16 +41,30 @@
 
 #include "gl_context_qt.h"
 
+#include <QGuiApplication>
+#include <QThread>
 #include "ui/gl/gl_context_egl.h"
 
 QT_BEGIN_NAMESPACE
 
 GLContextHelper* GLContextHelper::contextHelper = 0;
 
+GLContextHelper::GLContextHelper()
+    : QObject()
+{}
+
 void GLContextHelper::initialize()
 {
     if (!contextHelper)
         contextHelper = new GLContextHelper;
+}
+
+void GLContextHelper::destroy()
+{
+    if (!contextHelper)
+        return;
+    delete contextHelper;
+    contextHelper = 0;
 }
 
 bool GLContextHelper::initializeContextOnBrowserThread(gfx::GLContext* context, gfx::GLSurface* surface)
@@ -61,7 +75,8 @@ bool GLContextHelper::initializeContextOnBrowserThread(gfx::GLContext* context, 
 bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface* surface)
 {
     bool ret = false;
-    QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", Qt::BlockingQueuedConnection,
+    Qt::ConnectionType connType = (QThread::currentThread() == qApp->thread()) ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
+    QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", connType,
             Q_RETURN_ARG(bool, ret),
             Q_ARG(gfx::GLContext*, context),
             Q_ARG(gfx::GLSurface*, surface));
@@ -70,7 +85,7 @@ bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface*
 
 QT_END_NAMESPACE
 
-#if defined(USE_OZONE)
+#if defined(USE_OZONE) || defined(OS_ANDROID)
 
 namespace gfx {
 

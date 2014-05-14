@@ -44,17 +44,19 @@
 
 #include <QObject>
 
-QT_BEGIN_NAMESPACE
-
 namespace gfx {
 class GLContext;
 class GLSurface;
 }
 
+QT_BEGIN_NAMESPACE
+
 class GLContextHelper : public QObject {
     Q_OBJECT
+    GLContextHelper();
 public:
     static void initialize();
+    static void destroy();
     static bool initializeContext(gfx::GLContext* context, gfx::GLSurface* surface);
 
 private:
