@@ -21,3 +21,5 @@ load(qt_module)
 CONFIG -= bsymbolic_functions
 
 contains(QT_CONFIG, egl): CONFIG += egl
+
+unix:contains(QT_CONFIG, separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
