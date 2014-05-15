@@ -58,6 +58,7 @@
 #include <QtWidgets/QStackedWidget>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QToolButton>
+#include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
 
@@ -436,6 +437,8 @@ WebView *TabWidget::newTab(bool makeCurrent)
     m_lineEdits->addWidget(urlLineEdit);
     m_lineEdits->setSizePolicy(lineEdit->sizePolicy());
 
+
+    int tabIndex = -1;
     // optimization to delay creating the more expensive WebView, history, etc
     if (count() == 0) {
         QWidget *emptyWidget = new QWidget;
@@ -445,7 +448,7 @@ WebView *TabWidget::newTab(bool makeCurrent)
         emptyWidget->setAutoFillBackground(true);
         disconnect(this, SIGNAL(currentChanged(int)),
             this, SLOT(currentChanged(int)));
-        addTab(emptyWidget, tr("(Untitled)"));
+        tabIndex = addTab(emptyWidget, tr("(Untitled)"));
         connect(this, SIGNAL(currentChanged(int)),
             this, SLOT(currentChanged(int)));
         return 0;
@@ -486,7 +489,10 @@ WebView *TabWidget::newTab(bool makeCurrent)
     connect(webView->page(), SIGNAL(toolBarVisibilityChangeRequested(bool)),
             this, SIGNAL(toolBarVisibilityChangeRequested(bool)));
 #endif
-    addTab(webView, tr("(Untitled)"));
+    tabIndex = addTab(webView, tr("(Untitled)"));
+
+    if (tabIndex > 0 && webView->page()->settings()->isOffTheRecord())
+        tabBar()->setTabTextColor(tabIndex, Qt::darkGray);
     if (makeCurrent)
         setCurrentWidget(webView);
 
@@ -582,11 +588,7 @@ void TabWidget::closeTab(int index)
 #endif
         hasFocus = tab->hasFocus();
 
-#if defined(QWEBENGINESETTINGS)
-        QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-        if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
-#endif
-        {
+        if (!tab->page()->settings()->isOffTheRecord()) {
             m_recentlyClosedTabsAction->setEnabled(true);
             m_recentlyClosedTabs.prepend(tab->url());
             if (m_recentlyClosedTabs.size() >= TabWidget::m_recentlyClosedTabsSize)

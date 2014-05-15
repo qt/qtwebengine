@@ -68,6 +68,7 @@
 #include <QtWidgets/QInputDialog>
 
 #include <QWebEngineHistory>
+#include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
 
@@ -295,11 +296,9 @@ void BrowserMainWindow::setupMenu()
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
     fileMenu->addSeparator();
 #endif
-#if defined(QWEBENGINESETTINGS)
     QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
     action->setCheckable(true);
     fileMenu->addSeparator();
-#endif
 
 #if defined(Q_WS_MAC)
     fileMenu->addAction(tr("&Quit"), BrowserApplication::instance(), SLOT(quitBrowser()), QKeySequence(Qt::CTRL | Qt::Key_Q));
@@ -700,10 +699,7 @@ void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
 
 void BrowserMainWindow::slotPrivateBrowsing()
 {
-#if defined(QWEBENGINESETTINGS)
-    QWebEngineSettings *settings = QWebEngineSettings::globalSettings();
-    bool pb = settings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled);
-    if (!pb) {
+    if (!QWebEngineSettings::offTheRecordEnabled()) {
         QString title = tr("Are you sure you want to turn on private browsing?");
         QString text = tr("<b>%1</b><br><br>When private browsing in turned on,"
             " webpages are not added to the history,"
@@ -718,10 +714,10 @@ void BrowserMainWindow::slotPrivateBrowsing()
                                QMessageBox::Ok | QMessageBox::Cancel,
                                QMessageBox::Ok);
         if (button == QMessageBox::Ok) {
-            settings->setAttribute(QWebEngineSettings::PrivateBrowsingEnabled, true);
+            QWebEngineSettings::setOffTheRecordEnabled(true);
         }
     } else {
-        settings->setAttribute(QWebEngineSettings::PrivateBrowsingEnabled, false);
+        QWebEngineSettings::setOffTheRecordEnabled(false);
 
         QList<BrowserMainWindow*> windows = BrowserApplication::instance()->mainWindows();
         for (int i = 0; i < windows.count(); ++i) {
@@ -730,7 +726,6 @@ void BrowserMainWindow::slotPrivateBrowsing()
             window->tabWidget()->clear();
         }
     }
-#endif
 }
 
 void BrowserMainWindow::closeEvent(QCloseEvent *event)

@@ -66,9 +66,7 @@
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QSslSocket>
 
-#if defined(QWEBENGINESETTINGS)
 #include <QWebEngineSettings>
-#endif
 
 #include <QtCore/QDebug>
 
@@ -228,7 +226,6 @@ void BrowserApplication::postLaunch()
 
 void BrowserApplication::loadSettings()
 {
-#if defined(QWEBENGINESETTINGS)
     QSettings settings;
     settings.beginGroup(QLatin1String("websettings"));
 
@@ -251,12 +248,10 @@ void BrowserApplication::loadSettings()
     defaultSettings->setAttribute(QWebEngineSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
 
     QUrl url = settings.value(QLatin1String("userStyleSheet")).toUrl();
-    defaultSettings->setUserStyleSheetUrl(url);
 
     defaultSettings->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
 
     settings.endGroup();
-#endif
 }
 
 QList<BrowserMainWindow*> BrowserApplication::mainWindows()
@@ -278,11 +273,9 @@ void BrowserApplication::clean()
 
 void BrowserApplication::saveSession()
 {
-#if defined(QWEBENGINESETTINGS)
-    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-    if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
+    // FIXME: technically not quite correct, we could save the state of tabs that are not OTR.
+    if (QWebEngineSettings::offTheRecordEnabled())
         return;
-#endif
 
     clean();
 

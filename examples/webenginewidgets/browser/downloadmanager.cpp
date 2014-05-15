@@ -57,9 +57,7 @@
 
 #include <QtCore/QDebug>
 
-#if defined(QWEBENGINESETTINGS)
 #include <QWebEngineSettings>
-#endif
 
 /*!
     DownloadItem is a widget that is displayed in the download manager list.
@@ -431,12 +429,9 @@ void DownloadManager::updateRow()
     downloadsView->setRowHeight(row, item->minimumSizeHint().height());
 
     bool remove = false;
-#if defined(QWEBENGINESETTINGS)
-    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
     if (!item->downloading()
-        && globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
+        && QWebEngineSettings::offTheRecordEnabled())
         remove = true;
-#endif
 
     if (item->downloadedSuccessfully()
         && removePolicy() == DownloadManager::SuccessFullDownload) {

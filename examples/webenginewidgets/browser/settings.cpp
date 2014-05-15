@@ -68,7 +68,6 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
 void SettingsDialog::loadDefaults()
 {
-#if defined(QWEBENGINESETTINGS)
     QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
     QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
     int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
@@ -84,12 +83,10 @@ void SettingsDialog::loadDefaults()
 
     enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
     enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
-#endif
 }
 
 void SettingsDialog::loadFromSettings()
 {
-#if defined(QWEBENGINESETTINGS)
     QSettings settings;
     settings.beginGroup(QLatin1String("MainWindow"));
     QString defaultHome = QLatin1String("http://qt-project.org/");
@@ -135,6 +132,7 @@ void SettingsDialog::loadFromSettings()
     userStyleSheet->setText(settings.value(QLatin1String("userStyleSheet")).toUrl().toString());
     settings.endGroup();
 
+#if defined(QTWEBENGINE_COOKIEJAR_SUPPORT)
     // Privacy
     settings.beginGroup(QLatin1String("cookies"));
 
@@ -172,8 +170,8 @@ void SettingsDialog::loadFromSettings()
         break;
     }
     settings.endGroup();
-
-
+#endif // Cookies
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     // Proxy
     settings.beginGroup(QLatin1String("proxy"));
     proxySupport->setChecked(settings.value(QLatin1String("enabled"), false).toBool());
@@ -183,12 +181,11 @@ void SettingsDialog::loadFromSettings()
     proxyUserName->setText(settings.value(QLatin1String("userName")).toString());
     proxyPassword->setText(settings.value(QLatin1String("password")).toString());
     settings.endGroup();
-#endif
+#endif // QNAM/Proxy
 }
 
 void SettingsDialog::saveToSettings()
 {
-#if defined(QWEBENGINESETTINGS)
     QSettings settings;
     settings.beginGroup(QLatin1String("MainWindow"));
     settings.setValue(QLatin1String("home"), homeLineEdit->text());
@@ -225,6 +222,7 @@ void SettingsDialog::saveToSettings()
         settings.setValue(QLatin1String("userStyleSheet"), QUrl(userStyleSheetString));
     settings.endGroup();
 
+#if defined(QTWEBENGINE_COOKIEJAR_SUPPORT)
     //Privacy
     settings.beginGroup(QLatin1String("cookies"));
 
@@ -262,7 +260,9 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("keepCookiesUntil"), QLatin1String(keepPolicyEnum.valueToKey(keepPolicy)));
 
     settings.endGroup();
+#endif // Cookies
 
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     // proxy
     settings.beginGroup(QLatin1String("proxy"));
     settings.setValue(QLatin1String("enabled"), proxySupport->isChecked());
@@ -272,12 +272,16 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("userName"), proxyUserName->text());
     settings.setValue(QLatin1String("password"), proxyPassword->text());
     settings.endGroup();
+#endif // QNAM
 
     BrowserApplication::instance()->loadSettings();
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     BrowserApplication::networkAccessManager()->loadSettings();
-    BrowserApplication::cookieJar()->loadSettings();
-    BrowserApplication::historyManager()->loadSettings();
 #endif
+#if defined(QTWEBENGINE_COOKIEJAR_SUPPORT)
+    BrowserApplication::cookieJar()->loadSettings();
+#endif
+    BrowserApplication::historyManager()->loadSettings();
 }
 
 void SettingsDialog::accept()
