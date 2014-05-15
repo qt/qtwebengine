@@ -55,6 +55,8 @@
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
+#include "web_engine_settings.h"
+#include "web_engine_visited_links_manager.h"
 
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -69,6 +71,7 @@
 #include "content/public/common/url_constants.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
+#include "webkit/common/webpreferences.h"
 
 #include <QDir>
 #include <QGuiApplication>
@@ -684,6 +687,12 @@ void WebContentsAdapter::stopFinding()
     Q_D(WebContentsAdapter);
     d->webContentsDelegate->setLastSearchedString(QString());
     d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
+}
+
+void WebContentsAdapter::updateWebPreferences(const WebPreferences & webPreferences)
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
 }
 
 void WebContentsAdapter::wasShown()

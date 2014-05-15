@@ -84,6 +84,7 @@ public:
     virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
     virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
     virtual content::MediaObserver* GetMediaObserver();
+    virtual void OverrideWebkitPrefs(content::RenderViewHost *, const GURL &, WebPreferences *) Q_DECL_OVERRIDE;
 
     BrowserContextQt* browser_context();
 

@@ -55,6 +55,7 @@ namespace content {
     class JavaScriptDialogManager;
     class WebContents;
 }
+struct WebPreferences;
 class WebContentsAdapterClient;
 
 class WebContentsDelegateQt : public content::WebContentsDelegate
@@ -85,6 +86,8 @@ public:
     virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
     virtual void UpdateTargetURL(content::WebContents *source, int32 page_id, const GURL &url) Q_DECL_OVERRIDE;
     virtual void DidNavigateAnyFrame(const content::LoadCommittedDetails&, const content::FrameNavigateParams& params) Q_DECL_OVERRIDE;
+
+    void overrideWebPreferences(content::WebContents *, WebPreferences*);
 
 private:
     WebContentsAdapterClient *m_viewClient;

@@ -58,6 +58,7 @@ class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
 class WebContentsAdapter;
 class WebContentsDelegateQt;
+class WebEngineSettings;
 
 // FIXME: make this ref-counted and implicitely shared and expose as public API maybe ?
 class WebEngineContextMenuData {
@@ -175,6 +176,7 @@ public:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
+    virtual WebEngineSettings *webEngineSettings() const = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

@@ -179,6 +179,7 @@ public:
     virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
+    virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);

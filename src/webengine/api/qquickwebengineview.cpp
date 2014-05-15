@@ -52,6 +52,8 @@
 #include "ui_delegates_manager.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
+#include "web_engine_settings.h"
+#include "web_engine_visited_links_manager.h"
 
 #include <QGuiApplication>
 #include <QQmlComponent>
@@ -394,6 +396,30 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 {
     Q_Q(QQuickWebEngineView);
     return q;
+}
+
+namespace {
+class DummySettingsDelegate : public WebEngineSettingsDelegate {
+public:
+    DummySettingsDelegate()
+        : settings(0) {}
+    void apply() { }
+    WebEngineSettings* fallbackSettings() const { return settings; }
+    WebEngineSettings *settings;
+};
+
+}// anonymous namespace
+
+WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
+{
+    static WebEngineSettings *dummySettings = 0;
+    if (!dummySettings) {
+        DummySettingsDelegate *dummyDelegate = new DummySettingsDelegate;
+        dummySettings = new WebEngineSettings(dummyDelegate);
+        dummyDelegate->settings = dummySettings;
+        dummySettings->initDefaults();
+    }
+    return dummySettings;
 }
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)

@@ -50,6 +50,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
 #include "web_engine_context.h"
+#include "web_engine_settings.h"
 #include "web_engine_visited_links_manager.h"
 
 #include "content/public/browser/favicon_status.h"
@@ -60,6 +61,7 @@
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "webkit/common/webpreferences.h"
 
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
@@ -258,4 +260,9 @@ void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDeta
     if (!params.should_update_history)
         return;
     WebEngineContext::current()->visitedLinksManager()->addUrl(params.url);
+}
+
+void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, WebPreferences *webPreferences)
+{
+    m_viewClient->webEngineSettings()->overrideWebPreferences(webPreferences);
 }

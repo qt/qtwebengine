@@ -327,6 +327,13 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
+void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, const GURL &url, WebPreferences *web_prefs)
+{
+    Q_UNUSED(url);
+    if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
+        static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
+}
+
 BrowserContextQt* ContentBrowserClientQt::browser_context() {
     Q_ASSERT(m_browserMainParts);
     return static_cast<BrowserMainPartsQt*>(m_browserMainParts)->browser_context();
