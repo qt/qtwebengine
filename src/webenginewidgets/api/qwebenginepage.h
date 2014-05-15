@@ -183,6 +183,7 @@ Q_SIGNALS:
     void loadProgress(int progress);
     void loadFinished(bool ok);
 
+    void linkHovered(const QString &url);
     void selectionChanged();
     void geometryChangeRequested(const QRect& geom);
     void windowCloseRequested();
