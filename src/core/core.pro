@@ -38,6 +38,11 @@ macx: PLUGIN_PREFIX =
 win32 {
     PLUGIN_EXTENSION = .dll
     PLUGIN_PREFIX =
+
+    icu.files = $$OUT_PWD/$$getConfigDir()/icu*
+    icu.CONFIG += no_check_exist
+    icu.path = $$[QT_INSTALL_BINS]
+    INSTALLS += icu
 }
 
 plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION}
