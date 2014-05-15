@@ -61,38 +61,19 @@ public:
         AcceleratedCompositingEnabled,
         SpatialNavigationEnabled,
         LocalContentCanAccessFileUrls,
-//        TiledBackingStoreEnabled, KILL
-//        FrameFlatteningEnabled, KILL
         SiteSpecificQuirksEnabled,
         JavascriptCanCloseWindows,
         WebGLEnabled,
-//        CSSRegionsEnabled, Not sure what's gonna happen to those...
         HyperlinkAuditingEnabled,
-//        CSSGridLayoutEnabled, Gone?
         ScrollAnimatorEnabled,
         CaretBrowsingEnabled,
-//        NotificationsEnabled -> wire with WebRuntimeFeatures ?
     };
-    enum WebGraphic {
-        MissingImageGraphic,
-        MissingPluginGraphic,
-        DefaultFrameIconGraphic,
-        TextAreaSizeGripCornerGraphic,
-        DeleteButtonGraphic,
-        InputSpeechButtonGraphic,
-        SearchCancelButtonGraphic,
-        SearchCancelButtonPressedGraphic
-    };
+
     enum FontSize {
         MinimumFontSize,
         MinimumLogicalFontSize,
         DefaultFontSize,
         DefaultFixedFontSize
-    };
-    enum ThirdPartyCookiePolicy {
-        AlwaysAllowThirdPartyCookies,
-        AlwaysBlockThirdPartyCookies,
-        AllowThirdPartyWithExistingCookies
     };
 
     static QWebEngineSettings *globalSettings();
@@ -111,43 +92,6 @@ public:
 
     void setDefaultTextEncoding(const QString &encoding);
     QString defaultTextEncoding() const;
-
-    static void setIconDatabasePath(const QString &location);
-    static QString iconDatabasePath();
-    static void clearIconDatabase();
-    static QIcon iconForUrl(const QUrl &url);
-
-    //static QWebEnginePluginDatabase *pluginDatabase();
-
-    static void setWebGraphic(WebGraphic type, const QPixmap &graphic);
-    static QPixmap webGraphic(WebGraphic type);
-
-    static void setMaximumPagesInCache(int pages);
-    static int maximumPagesInCache();
-    static void setObjectCacheCapacities(int cacheMinDeadCapacity, int cacheMaxDead, int totalCapacity);
-
-    static void setOfflineStoragePath(const QString& path);
-    static QString offlineStoragePath();
-    static void setOfflineStorageDefaultQuota(qint64 maximumSize);
-    static qint64 offlineStorageDefaultQuota();
-
-    static void setOfflineWebApplicationCachePath(const QString& path);
-    static QString offlineWebApplicationCachePath();
-    static void setOfflineWebApplicationCacheQuota(qint64 maximumSize);
-    static qint64 offlineWebApplicationCacheQuota();
-
-    void setLocalStoragePath(const QString& path);
-    QString localStoragePath() const;
-
-    static void clearMemoryCaches();
-
-    static void enablePersistentStorage(const QString& path = QString());
-
-    void setThirdPartyCookiePolicy(ThirdPartyCookiePolicy);
-    QWebEngineSettings::ThirdPartyCookiePolicy thirdPartyCookiePolicy() const;
-
-    void setCSSMediaType(const QString&);
-    QString cssMediaType() const;
 
     // API tweaks in QtWebEngine
     static void setOffTheRecordEnabled(bool); // Only affects newly created QWebPages instances
