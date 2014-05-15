@@ -53,6 +53,7 @@ namespace content {
 class WebContents;
 }
 class WebContentsAdapterPrivate;
+struct WebPreferences;
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
@@ -103,12 +104,15 @@ public:
     quint64 fetchDocumentInnerText();
     quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
     void stopFinding();
+    void updateWebPreferences(const WebPreferences &webPreferences);
 
     void wasShown();
     void wasHidden();
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
 
     void dpiScaleChanged();
+
+    bool isOffTheRecord() const;
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);

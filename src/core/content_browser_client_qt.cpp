@@ -178,11 +178,13 @@ public:
     void PreMainMessageLoopRun() Q_DECL_OVERRIDE
     {
         m_browserContext.reset(new BrowserContextQt());
+        m_offTheRecordContext.reset(new BrowserContextQt(true));
     }
 
     void PostMainMessageLoopRun()
     {
         m_browserContext.reset();
+        m_offTheRecordContext.reset();
     }
 
     int PreCreateThreads() Q_DECL_OVERRIDE
@@ -193,12 +195,15 @@ public:
         return 0;
     }
 
-    BrowserContextQt* browser_context() const {
+    BrowserContextQt* browser_context(bool offTheRecord = false) const {
+        if (offTheRecord)
+            return m_offTheRecordContext.get();
         return m_browserContext.get();
     }
 
 private:
     scoped_ptr<BrowserContextQt> m_browserContext;
+    scoped_ptr<BrowserContextQt> m_offTheRecordContext;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
 };
@@ -321,22 +326,35 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-BrowserContextQt* ContentBrowserClientQt::browser_context() {
+void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, const GURL &url, WebPreferences *web_prefs)
+{
+    Q_UNUSED(url);
+    if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
+        static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
+}
+
+BrowserContextQt* ContentBrowserClientQt::browserContext(bool offTheRecord)
+{
     Q_ASSERT(m_browserMainParts);
-    return static_cast<BrowserMainPartsQt*>(m_browserMainParts)->browser_context();
+    return static_cast<BrowserMainPartsQt*>(m_browserMainParts)->browser_context(offTheRecord);
+}
+
+BrowserContextQt *ContentBrowserClientQt::toBrowserContextQt(content::BrowserContext *contentBrowserContext)
+{
+    if (contentBrowserContext == browserContext())
+        return browserContext();
+    return browserContext(true);
 }
 
 net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* content_browser_context, content::ProtocolHandlerMap* protocol_handlers)
 {
-    if (content_browser_context != browser_context())
-        fprintf(stderr, "Warning: off the record browser context not implemented !\n");
-    return static_cast<BrowserContextQt*>(browser_context())->CreateRequestContext(protocol_handlers);
+    return toBrowserContextQt(content_browser_context)->CreateRequestContext(protocol_handlers);
 }
 
-void ContentBrowserClientQt::enableInspector(bool enable)
+void ContentBrowserClientQt::enableInspector(bool enable, content::BrowserContext *context)
 {
     if (enable && !m_devtools) {
-        m_devtools.reset(new DevToolsHttpHandlerDelegateQt(browser_context()));
+        m_devtools.reset(new DevToolsHttpHandlerDelegateQt(toBrowserContextQt(context)));
     } else if (!enable && m_devtools) {
         m_devtools.reset();
     }

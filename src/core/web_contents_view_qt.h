@@ -50,6 +50,7 @@
 
 #include "web_contents_adapter_client.h"
 #include "render_widget_host_view_qt.h"
+#include "type_conversion.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 

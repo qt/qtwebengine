@@ -55,6 +55,7 @@
 #include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
+#include "web_engine_settings.h"
 #include "web_engine_visited_links_manager.h"
 
 #include "base/values.h"
@@ -69,6 +70,7 @@
 #include "content/public/common/url_constants.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
+#include "webkit/common/webpreferences.h"
 
 #include <QDir>
 #include <QGuiApplication>
@@ -177,7 +179,8 @@ static QStringList listRecursively(const QDir& dir) {
 
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient)
 {
-    content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
+    const bool offTheRecord = WebEngineSettings::useOffTheRecordBrowserContextForNewWebContents();
+    content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browserContext(offTheRecord);
     content::WebContents::CreateParams create_params(browserContext, NULL);
     create_params.routing_id = MSG_ROUTING_NONE;
     create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
@@ -278,7 +281,7 @@ void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::ve
             false,
             // The extra headers are not sync'ed across sessions.
             std::string(),
-            ContentBrowserClientQt::Get()->browser_context());
+            ContentBrowserClientQt::Get()->browserContext());
 
         entry->SetTitle(toString16(title));
         entry->SetPageState(content::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
@@ -611,7 +614,8 @@ qreal WebContentsAdapter::currentZoomFactor() const
 
 void WebContentsAdapter::enableInspector(bool enable)
 {
-    ContentBrowserClientQt::Get()->enableInspector(enable);
+    Q_D(const WebContentsAdapter);
+    ContentBrowserClientQt::Get()->enableInspector(enable, d->webContents->GetBrowserContext());
 }
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript)
@@ -671,6 +675,12 @@ void WebContentsAdapter::stopFinding()
     d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
+void WebContentsAdapter::updateWebPreferences(const WebPreferences & webPreferences)
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
+}
+
 void WebContentsAdapter::wasShown()
 {
     Q_D(WebContentsAdapter);
@@ -697,6 +707,12 @@ void WebContentsAdapter::dpiScaleChanged()
         impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost());
     if (impl)
         impl->NotifyScreenInfoChanged();
+}
+
+bool WebContentsAdapter::isOffTheRecord() const
+{
+    Q_D(const WebContentsAdapter);
+    return d->webContents->GetBrowserContext()->IsOffTheRecord();
 }
 
 void WebContentsAdapter::filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode mode)

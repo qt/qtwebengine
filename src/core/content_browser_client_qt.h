@@ -83,12 +83,14 @@ public:
     virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
     virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
     virtual content::MediaObserver* GetMediaObserver();
+    virtual void OverrideWebkitPrefs(content::RenderViewHost *, const GURL &, WebPreferences *) Q_DECL_OVERRIDE;
 
-    BrowserContextQt* browser_context();
+    BrowserContextQt *browserContext(bool offTheRecord = false);
+    BrowserContextQt *toBrowserContextQt(content::BrowserContext *);
 
     net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
 
-    void enableInspector(bool);
+    void enableInspector(bool, content::BrowserContext *);
 
 private:
     BrowserMainPartsQt* m_browserMainParts;

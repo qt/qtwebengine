@@ -59,7 +59,8 @@
 #include <QString>
 #include <QStringBuilder>
 
-BrowserContextQt::BrowserContextQt()
+BrowserContextQt::BrowserContextQt(bool offTheRecord)
+    : m_offTheRecord(offTheRecord)
 {
     resourceContext.reset(new ResourceContextQt(this));
     downloadManagerDelegate.reset(new DownloadManagerDelegateQt);
@@ -83,7 +84,7 @@ base::FilePath BrowserContextQt::GetPath() const
 
 bool BrowserContextQt::IsOffTheRecord() const
 {
-    return false;
+    return m_offTheRecord;
 }
 
 net::URLRequestContextGetter *BrowserContextQt::GetRequestContext()

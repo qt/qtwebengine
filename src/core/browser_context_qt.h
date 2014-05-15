@@ -46,13 +46,17 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
+#include "net/proxy/proxy_config_service.h"
+
 #include "download_manager_delegate_qt.h"
+#include "qtwebenginecoreglobal.h"
+#include "resource_context_qt.h"
+#include "url_request_context_getter_qt.h"
 
 class BrowserContextQt : public content::BrowserContext
 {
 public:
-    explicit BrowserContextQt();
-
+    explicit BrowserContextQt(bool offTheRecord = false);
     virtual ~BrowserContextQt();
 
     virtual base::FilePath GetPath() const Q_DECL_OVERRIDE;
@@ -75,6 +79,7 @@ private:
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
     scoped_ptr<DownloadManagerDelegateQt> downloadManagerDelegate;
+    bool m_offTheRecord;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
 };

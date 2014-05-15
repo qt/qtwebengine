@@ -100,10 +100,10 @@ WebEngineVisitedLinksManager::~WebEngineVisitedLinksManager()
 
 void WebEngineVisitedLinksManager::ensureInitialized()
 {
-    Q_ASSERT(ContentBrowserClientQt::Get() && ContentBrowserClientQt::Get()->browser_context());
+    Q_ASSERT(ContentBrowserClientQt::Get() && ContentBrowserClientQt::Get()->browserContext());
     if (!m_visitedLinkMaster.isNull())
         return;
-    BrowserContextQt *browserContext = ContentBrowserClientQt::Get()->browser_context();
+    BrowserContextQt *browserContext = ContentBrowserClientQt::Get()->browserContext();
     m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(browserContext, 0, /* persist to disk = */true));
     m_visitedLinkMaster->Init();
 
