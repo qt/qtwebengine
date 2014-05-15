@@ -148,6 +148,17 @@ static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::
     return QSharedPointer<RenderPassTexture>();
 }
 
+static inline QSharedPointer<MailboxTexture> &findMailboxTexture(unsigned resourceId
+    , QHash<unsigned, QSharedPointer<MailboxTexture> > &usedTextures
+    , QHash<unsigned, QSharedPointer<MailboxTexture> > &candidateTextures)
+{
+    QSharedPointer<MailboxTexture> &texture = usedTextures[resourceId];
+    if (!texture)
+        texture = candidateTextures.take(resourceId);
+    Q_ASSERT(texture);
+    return texture;
+}
+
 static QSGNode *buildRenderPassChain(QSGNode *chainParent, const cc::RenderPass *renderPass)
 {
     // Chromium already ordered the quads from back to front for us, however the
@@ -508,8 +519,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = m_data->mailboxTextures[tquad->resource_id] = mailboxTextureCandidates.take(tquad->resource_id);
-                Q_ASSERT(texture);
+                QSharedPointer<MailboxTexture> &texture = findMailboxTexture(tquad->resource_id, m_data->mailboxTextures, mailboxTextureCandidates);
 
                 // FIXME: TransferableResource::size isn't always set properly for TextureDrawQuads, use the size of its DrawQuad::rect instead.
                 texture->setTextureSize(toQt(quad->rect.size()));
@@ -546,8 +556,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = m_data->mailboxTextures[tquad->resource_id] = mailboxTextureCandidates.take(tquad->resource_id);
-                Q_ASSERT(texture);
+                QSharedPointer<MailboxTexture> &texture = findMailboxTexture(tquad->resource_id, m_data->mailboxTextures, mailboxTextureCandidates);
 
                 if (!quad->visible_rect.IsEmpty() && !quad->opaque_rect.Contains(quad->visible_rect))
                     texture->setHasAlphaChannel(true);
@@ -564,16 +573,15 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 break;
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
                 const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &yTexture = m_data->mailboxTextures[vquad->y_plane_resource_id] = mailboxTextureCandidates.take(vquad->y_plane_resource_id);
-                QSharedPointer<MailboxTexture> &uTexture = m_data->mailboxTextures[vquad->u_plane_resource_id] = mailboxTextureCandidates.take(vquad->u_plane_resource_id);
-                QSharedPointer<MailboxTexture> &vTexture = m_data->mailboxTextures[vquad->v_plane_resource_id] = mailboxTextureCandidates.take(vquad->v_plane_resource_id);
-                Q_ASSERT(yTexture && uTexture && vTexture);
+                QSharedPointer<MailboxTexture> &yTexture = findMailboxTexture(vquad->y_plane_resource_id, m_data->mailboxTextures, mailboxTextureCandidates);
+                QSharedPointer<MailboxTexture> &uTexture = findMailboxTexture(vquad->u_plane_resource_id, m_data->mailboxTextures, mailboxTextureCandidates);
+                QSharedPointer<MailboxTexture> &vTexture = findMailboxTexture(vquad->v_plane_resource_id, m_data->mailboxTextures, mailboxTextureCandidates);
 
                 // Do not use a reference for this one, it might be null.
                 QSharedPointer<MailboxTexture> aTexture;
                 // This currently requires --enable-vp8-alpha-playback and needs a video with alpha data to be triggered.
                 if (vquad->a_plane_resource_id)
-                    aTexture = m_data->mailboxTextures[vquad->a_plane_resource_id] = mailboxTextureCandidates.take(vquad->a_plane_resource_id);
+                    aTexture = findMailboxTexture(vquad->a_plane_resource_id, m_data->mailboxTextures, mailboxTextureCandidates);
 
                 YUVVideoNode *videoNode = new YUVVideoNode(yTexture.data(), uTexture.data(), vTexture.data(), aTexture.data(), toQt(vquad->tex_scale));
                 videoNode->setRect(toQt(quad->rect));
@@ -582,9 +590,8 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
 #ifdef GL_OES_EGL_image_external
             } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = m_data->mailboxTextures[squad->resource_id] = mailboxTextureCandidates.take(squad->resource_id);
+                QSharedPointer<MailboxTexture> &texture = findMailboxTexture(squad->resource_id, m_data->mailboxTextures, mailboxTextureCandidates);
                 texture->setTarget(GL_TEXTURE_EXTERNAL_OES); // since this is not default TEXTURE_2D type
-                Q_ASSERT(texture);
 
                 StreamVideoNode *svideoNode = new StreamVideoNode(texture.data());
                 svideoNode->setRect(toQt(squad->rect));
