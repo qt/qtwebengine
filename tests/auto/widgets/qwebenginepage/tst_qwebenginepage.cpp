@@ -111,9 +111,6 @@ private Q_SLOTS:
     void actionStates();
     void popupFormSubmission();
     void acceptNavigationRequestWithNewWindow();
-    void userStyleSheet();
-    void userStyleSheetFromLocalFileUrl();
-    void userStyleSheetFromQrcUrl();
     void loadHtml5Video();
     void modified();
     void contextMenuCrash();
@@ -540,59 +537,6 @@ protected:
         return QNetworkAccessManager::createRequest(op, request, outgoingData);
     }
 };
-
-void tst_QWebEnginePage::userStyleSheet()
-{
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
-    TestNetworkManager* networkManager = new TestNetworkManager(m_page);
-    m_page->setNetworkAccessManager(networkManager);
-
-    m_page->settings()->setUserStyleSheetUrl(QUrl("data:text/css;charset=utf-8;base64,"
-            + QByteArray("p { background-image: url('http://does.not/exist.png');}").toBase64()));
-    m_view->setHtml("<p>hello world</p>");
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
-
-    QVERIFY(networkManager->requestedUrls.count() >= 1);
-    QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
-#endif
-}
-
-void tst_QWebEnginePage::userStyleSheetFromLocalFileUrl()
-{
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
-    TestNetworkManager* networkManager = new TestNetworkManager(m_page);
-    m_page->setNetworkAccessManager(networkManager);
-
-    QUrl styleSheetUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginepage/resources/user.css"));
-    m_page->settings()->setUserStyleSheetUrl(styleSheetUrl);
-    m_view->setHtml("<p>hello world</p>");
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
-
-    QVERIFY(networkManager->requestedUrls.count() >= 1);
-    QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
-#endif
-}
-
-void tst_QWebEnginePage::userStyleSheetFromQrcUrl()
-{
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
-    TestNetworkManager* networkManager = new TestNetworkManager(m_page);
-    m_page->setNetworkAccessManager(networkManager);
-
-    m_page->settings()->setUserStyleSheetUrl(QUrl("qrc:///resources/user.css"));
-    m_view->setHtml("<p>hello world</p>");
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
-
-    QVERIFY(networkManager->requestedUrls.count() >= 1);
-    QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
-#endif
-}
 
 void tst_QWebEnginePage::loadHtml5Video()
 {
