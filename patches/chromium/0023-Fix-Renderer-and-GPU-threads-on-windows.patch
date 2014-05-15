@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peter Varga <pvarga@inf.u-szeged.hu>
+Date: Fri, 16 May 2014 13:34:31 +0200
+Subject: Fix Renderer and GPU threads on windows
+
+These threads are using the UI message loop on Windows per default. This
+won't work since the UI message loop is handled by Qt and the Renderer
+and GPU threads won't work with it properly.
+Force these threads for using the default message loop as they use it on
+Linux platform.
+
+Change-Id: Ie3582583e5d1644faa2875e015a0908ba148d91f
+Reviewed-by: Andras Becsi <andras.becsi@digia.com>
+Reviewed-by: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+---
+ content/browser/browser_main_loop.cc                      | 2 +-
+ content/browser/gpu/gpu_process_host.cc                   | 6 ++++++
+ content/browser/renderer_host/render_process_host_impl.cc | 2 +-
+ content/renderer/renderer_main.cc                         | 2 ++
+ 4 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/content/browser/browser_main_loop.cc b/content/browser/browser_main_loop.cc
+index 1930bc0..c2787e0 100644
+--- a/content/browser/browser_main_loop.cc
++++ b/content/browser/browser_main_loop.cc
+@@ -654,7 +654,7 @@ int BrowserMainLoop::CreateThreads() {
+             "BrowserMainLoop::CreateThreads:start",
+             "Thread", "BrowserThread::FILE");
+         thread_to_start = &file_thread_;
+-#if defined(OS_WIN)
++#if defined(OS_WIN) && !defined(TOOLKIT_QT)
+         // On Windows, the FILE thread needs to be have a UI message loop
+         // which pumps messages in such a way that Google Update can
+         // communicate back to us.
+diff --git a/content/browser/gpu/gpu_process_host.cc b/content/browser/gpu/gpu_process_host.cc
+index 1b7da1c..c28ba8b 100644
+--- a/content/browser/gpu/gpu_process_host.cc
++++ b/content/browser/gpu/gpu_process_host.cc
+@@ -577,7 +577,13 @@ bool GpuProcessHost::Init() {
+         switches::kDisableGpuWatchdog);
+ 
+     in_process_gpu_thread_.reset(g_gpu_main_thread_factory(channel_id));
++#if defined(OS_WIN) && defined(TOOLKIT_QT)
++    base::Thread::Options options;
++    options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
++    in_process_gpu_thread_->StartWithOptions(options);
++#else
+     in_process_gpu_thread_->Start();
++#endif
+ 
+     OnProcessLaunched();  // Fake a callback that the process is ready.
+   } else if (!LaunchGpuProcess(channel_id)) {
+diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
+index 5d975e9..b5a5c49 100644
+--- a/content/browser/renderer_host/render_process_host_impl.cc
++++ b/content/browser/renderer_host/render_process_host_impl.cc
+@@ -512,7 +512,7 @@ bool RenderProcessHostImpl::Init() {
+     in_process_renderer_.reset(g_renderer_main_thread_factory(channel_id));
+ 
+     base::Thread::Options options;
+-#if defined(OS_WIN) && !defined(OS_MACOSX)
++#if defined(OS_WIN) && !defined(OS_MACOSX) && !defined(TOOLKIT_QT)
+     // In-process plugins require this to be a UI message loop.
+     options.message_loop_type = base::MessageLoop::TYPE_UI;
+ #else
+diff --git a/content/renderer/renderer_main.cc b/content/renderer/renderer_main.cc
+index f0c16d2..5330d21 100644
+--- a/content/renderer/renderer_main.cc
++++ b/content/renderer/renderer_main.cc
+@@ -161,6 +161,8 @@ int RendererMain(const MainFunctionParams& parameters) {
+   // As long as we use Cocoa in the renderer (for the forseeable future as of
+   // now; see http://crbug.com/306348 for info) we need to have a UI loop.
+   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
++#elif defined(OS_WIN) && defined(TOOLKIT_QT)
++  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
+ #else
+   // The main message loop of the renderer services doesn't have IO or UI tasks,
+   // unless in-process-plugins is used.
