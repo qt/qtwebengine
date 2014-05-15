@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peter Varga <pvarga@inf.u-szeged.hu>
+Date: Wed, 14 May 2014 10:26:15 +0200
+Subject: Fix chrome_FileThread crash on windows
+
+The file thread won't do anyting if it uses the Qt event loop therefore
+it won't quit properly and this behavior leads to a crash.
+Thus the chromium's IO message loop should be used on Windows too.
+
+Change-Id: Ieea0ceb8bd732ed6c9ca172620511d78b0a5d95c
+Reviewed-by: Andras Becsi <andras.becsi@digia.com>
+---
+ content/browser/browser_main_loop.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/content/browser/browser_main_loop.cc b/content/browser/browser_main_loop.cc
+index 1930bc0..c2787e0 100644
+--- a/content/browser/browser_main_loop.cc
++++ b/content/browser/browser_main_loop.cc
+@@ -654,7 +654,7 @@ int BrowserMainLoop::CreateThreads() {
+             "BrowserMainLoop::CreateThreads:start",
+             "Thread", "BrowserThread::FILE");
+         thread_to_start = &file_thread_;
+-#if defined(OS_WIN)
++#if defined(OS_WIN) && !defined(TOOLKIT_QT)
+         // On Windows, the FILE thread needs to be have a UI message loop
+         // which pumps messages in such a way that Google Update can
+         // communicate back to us.
