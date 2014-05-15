@@ -55,6 +55,7 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QWebEngineHistory;
 class QWebEnginePage;
+class QWebEngineSettings;
 class QWebEngineView;
 
 class CallbackDirectory {
@@ -149,6 +150,7 @@ public:
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
+    QWebEngineSettings *settings;
     QWebEngineView *view;
     QSize viewportSize;
     QUrl m_explicitUrl;

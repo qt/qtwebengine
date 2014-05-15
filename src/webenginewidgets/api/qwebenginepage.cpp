@@ -26,6 +26,8 @@
 #include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebenginesettings.h"
+#include "qwebenginesettings_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
@@ -166,6 +168,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     : QObjectPrivate(QObjectPrivateVersion)
     , adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
+    , settings(new QWebEngineSettings(new QWebEngineSettingsPrivate(adapter.data())))
     , view(0)
 {
     adapter->initialize(this);
@@ -175,6 +178,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
     delete history;
+    delete settings;
 }
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
@@ -328,30 +332,6 @@ void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &security
     Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
 }
 
-namespace {
-class DummySettingsDelegate : public WebEngineSettingsDelegate {
-public:
-    DummySettingsDelegate()
-        : settings(0) {}
-    void apply() { }
-    WebEngineSettings* fallbackSettings() const { return settings; }
-    WebEngineSettings *settings;
-};
-
-}// anonymous namespace
-
-WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
-{
-    static WebEngineSettings *dummySettings = 0;
-    if (!dummySettings) {
-        DummySettingsDelegate *dummyDelegate = new DummySettingsDelegate;
-        dummySettings = new WebEngineSettings(dummyDelegate);
-        dummyDelegate->settings = dummySettings;
-        dummySettings->initDefaults();
-    }
-    return dummySettings;
-}
-
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
@@ -430,6 +410,12 @@ QWebEngineHistory *QWebEnginePage::history() const
 {
     Q_D(const QWebEnginePage);
     return d->history;
+}
+
+QWebEngineSettings *QWebEnginePage::settings() const
+{
+    Q_D(const QWebEnginePage);
+    return d->settings;
 }
 
 void QWebEnginePage::setView(QWidget *view)
@@ -758,6 +744,11 @@ void QWebEnginePagePrivate::runFileChooser(WebContentsAdapterClient::FileChooser
     Q_Q(QWebEnginePage);
     QStringList selectedFileNames = q->chooseFiles(toPublic(mode), (QStringList() << defaultFileName), acceptedMimeTypes);
     adapter->filesSelectedInChooser(selectedFileNames, mode);
+}
+
+WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
+{
+    return settings->d->coreSettings.data();
 }
 
 void QWebEnginePage::load(const QUrl& url)
