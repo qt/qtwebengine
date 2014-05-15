@@ -16,6 +16,7 @@ SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
         api/qwebenginehistory.cpp \
         api/qwebenginepage.cpp \
+        api/qwebenginesettings.cpp \
         api/qwebengineview.cpp\
         render_widget_host_view_qt_delegate_widget.cpp
 
@@ -24,6 +25,8 @@ HEADERS = \
         api/qwebenginehistory.h \
         api/qwebenginepage.h \
         api/qwebenginepage_p.h \
+        api/qwebenginesettings.h \
+        api/qwebenginesettings_p.h \
         api/qwebengineview.h \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h

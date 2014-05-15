@@ -34,6 +34,7 @@ QT_BEGIN_NAMESPACE
 class QMenu;
 class QWebEngineHistory;
 class QWebEnginePage;
+class QWebEngineSettings;
 class QWebEnginePagePrivate;
 
 namespace QtWebEnginePrivate {
@@ -179,6 +180,8 @@ public:
 
     void runJavaScript(const QString& scriptSource);
     void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
+
+    QWebEngineSettings *settings() const;
 
 Q_SIGNALS:
     void loadStarted();
