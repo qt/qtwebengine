@@ -205,6 +205,12 @@ void QWebEnginePagePrivate::loadProgressChanged(int progress)
     Q_EMIT q->loadProgress(progress);
 }
 
+void QWebEnginePagePrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->linkHovered(hoveredUrl.toString());
+}
+
 void QWebEnginePagePrivate::selectionChanged()
 {
     Q_Q(QWebEnginePage);
