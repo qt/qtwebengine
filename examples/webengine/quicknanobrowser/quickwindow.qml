@@ -203,7 +203,7 @@ ApplicationWindow {
         Text {
             id: statusText
             anchors.centerIn: statusBubble
-            elide: ElideMiddle
+            elide: Qt.ElideMiddle
 
             Timer {
                 id: resetStatusText
