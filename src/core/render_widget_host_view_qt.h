@@ -220,6 +220,7 @@ private:
 
     content::RenderWidgetHostImpl *m_host;
     scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
+    base::TimeDelta m_eventsToNowDelta;
     QMap<int, int> m_touchIdMapping;
     blink::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
