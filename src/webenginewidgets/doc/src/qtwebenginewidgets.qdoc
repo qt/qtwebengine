@@ -97,78 +97,10 @@
     \snippet snippets/simple/main.cpp Using QWebEngineView
 
     QWebEngineView is used to view Web pages. An instance of QWebEngineView has one
-    QWebEnginePage. QWebEnginePage provides access to the document structure in a page,
-    describing features such as frames, the navigation history, and the
-    undo/redo stack for editable content.
-
-    Common web browser features, defaults and other settings can be configured
-    through the QWebEngineSettings class. It is possible to provide defaults for all
-    QWebEnginePage instances through the default settings. Individual attributes
-    can be overridden by the page specific settings object.
-
-    \section1 Netscape Plugin Support
-
-    \note Netscape plugin support is only available on desktop platforms.
-
-    Since WebEngine supports the Netscape Plugin API, Qt applications can display
-    Web pages that embed common plugins on platforms for which those plugins
-    are available. To enable plugin support, the user must have the appropriate
-    binary files for those plugins installed and the \l{QWebEngineSettings::PluginsEnabled}
-    attribute must be enabled for the application.
-
-    The following locations are searched for plugins:
-
-    \table
-    \header \li Linux/Unix (X11)
-    \row \li
-    \list
-    \li \c{.mozilla/plugins} in the user's home directory
-    \li \c{.netscape/plugins} in the user's home directory
-    \li System locations, such as
-    \list
-    \li \c{/usr/lib/browser/plugins}
-    \li \c{/usr/local/lib/mozilla/plugins}
-    \li \c{/usr/lib/firefox/plugins}
-    \li \c{/usr/lib64/browser-plugins}
-    \li \c{/usr/lib/browser-plugins}
-    \li \c{/usr/lib/mozilla/plugins}
-    \li \c{/usr/local/netscape/plugins}
-    \li \c{/opt/mozilla/plugins}
-    \li \c{/opt/mozilla/lib/plugins}
-    \li \c{/opt/netscape/plugins}
-    \li \c{/opt/netscape/communicator/plugins}
-    \li \c{/usr/lib/netscape/plugins}
-    \li \c{/usr/lib/netscape/plugins-libc5}
-    \li \c{/usr/lib/netscape/plugins-libc6}
-    \li \c{/usr/lib64/netscape/plugins}
-    \li \c{/usr/lib64/mozilla/plugins}
-    \endlist
-    \li Locations specified by environment variables:
-    \list
-    \li \c{$MOZILLA_HOME/plugins}
-    \li \c{$MOZ_PLUGIN_PATH}
-    \li \c{$QTWEBKIT_PLUGIN_PATH}
-    \endlist
-    \endlist
-    \endtable
-
-    \table
-    \header  \li Windows
-    \row \li
-    \list
-    \li The user's \c{Application Data\Mozilla\plugins} directory
-    \li Standard system locations of plugins for Quicktime, Flash, etc.
-    \endlist
-    \endtable
-
-    \table
-    \header \li Mac OS X
-    \row \li
-    \list
-    \li \c{Library/Internet Plug-Ins} in the user's home directory
-    \li The system \c{/Library/Internet Plug-Ins} directory
-    \endlist
-    \endtable
+    QWebEnginePage. QWebEnginePage provides access to the page's navigation history,
+    allows to run JavaScript code in the context of the page's main frame and enables
+    customization of handlers for specific events such as showing custom authentication
+    dialogs.
 
     \section1 Examples
 
@@ -176,7 +108,6 @@
     \l{Qt WebEngine Widgets Examples} page.
 
     \section1 License Information
-    //FIXME: check if we are allowed to use the name chromium here or if it is considered promotional use.
     This is a snapshot of the integration of Chromium into Qt. The exact version information
     can be found in the \c{VERSION} file supplied with Qt.
 
@@ -188,7 +119,37 @@
     the module under the appropriate version of the GNU LGPL.
 
     \legalese
-    // FIXME: add correct licensing terms for chromium / blink. The one copied from QtWebKit does not apply.
+
+    Chromium is licensed under the following license:
+
+    Copyright (c) 2013 The Chromium Authors. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following disclaimer
+      in the documentation and/or other materials provided with the
+      distribution.
+    * Neither the name of Google Inc. nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
     \endlegalese
 */
 

@@ -30,14 +30,13 @@
 
     \inmodule QtWebEngine
 
-    QWebEnginePage holds a main frame responsible for web content, settings, the history
-    of navigated links and actions. This class can be used to provide functionality like
-    QWebEngineView in a widget-less environment.
+    QWebEnginePage holds a main frame responsible for web content, the history
+    of navigated links and actions.
 
     QWebEnginePage's API is very similar to QWebEngineView, as you are still provided with
     common functions like action() (known as
     \l{QWebEngineView::pageAction()}{pageAction}() in QWebEngineView), triggerAction(),
-    findText() and settings().
+    and findText().
 
     A page can be loaded using load() or setUrl(). Alternatively, if you have
     the HTML content readily available, you can use setHtml() instead.
@@ -55,11 +54,6 @@
     corresponding titleChanged() and iconChanged() signals will be emitted.
     The zoomFactor() property can be used to change the overall size
     of the content displayed in the page.
-
-    There are multiple ways to programmatically examine the contents of a page.
-    The hitTestContent() function can be used to find elements by coordinate.
-    For access to the underlying DOM tree, there is documentElement(),
-    findAllElements() and findFirstElement().
 
     The loadStarted() signal is emitted when the page begins to load.The
     loadProgress() signal, on the other hand, is emitted whenever an element
@@ -138,6 +132,33 @@
     \value FileSelectOpenMultiple The implementation may return multiple file names.
 
     \sa chooseFiles()
+*/
+
+/*!
+    \enum QWebEnginePage::PermissionPolicy
+
+    This enum describes the permission policies that the user may set for data or device access.
+
+    \value PermissionUnknown It is unknown whether the user grants or denies permission.
+    \value PermissionGrantedByUser The user has granted permission.
+    \value PermissionDeniedByUser The user has denied permission.
+
+    \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), Feature
+*/
+
+/*!
+    \enum QWebEnginePage::Feature
+
+    This enum describes the platform feature access categories that the user may be asked to grant or deny access to.
+
+    \value Notifications Grants access to display notifications to the user.
+    \value Geolocation The geographic location devices that may be available.
+    \value MediaAudioDevices Audio devices such as speakers or microphones
+    \value MediaVideoDevices Video devices, e.g. cameras
+    \value MediaAudioVideoDevices Both Audio and Video devices.
+
+    \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), PermissionPolicy
+
 */
 
 /*!
@@ -290,7 +311,8 @@
 
     \a mode indicates whether only one file or multiples files are expected to be returned.
 
-    A suggested filename may be provided as the first entry of \a oldFiles.
+    A suggested filename may be provided as the first entry of \a oldFiles. \a acceptedMimeTypes is ignored by the default implementation,
+    but might be used by overrides.
 */
 
 /*!
@@ -309,7 +331,6 @@
     which is the default range of QProgressBar.
     It accumulates changes from all the child frames.
 
-    \sa bytesReceived()
 */
 
 /*!
@@ -319,7 +340,7 @@
     is independent of script execution or page rendering.
     \a ok will indicate whether the load was successful or any error occurred.
 
-    \sa loadStarted(), ErrorPageExtension
+    \sa loadStarted()
 */
 
 /*!
@@ -329,6 +350,29 @@
     or programmatically (e.g. by calling triggerAction() with a selection action).
 
     \sa selectedText()
+*/
+
+/*!
+    \fn void QWebEnginePage::linkHovered(const QString &url)
+
+    This signal is emitted when the mouse hovers over a link.
+    \a url contains the target URL of the link.
+*/
+
+/*!
+
+    \fn void QWebEnginePage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator)
+
+    This signal is emitted when access to \a requestUrl requires authentication.
+    \a authenticator should be used to pass the user name and password for the connection.
+*/
+
+/*!
+    \fn void QWebEnginePage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost)
+
+    This signal is emitted when access to \a requestUrl via \a proxyHost requires authentication for the proxy.
+    \a authenticator should be used to pass the user name and password for the connection.
+
 */
 
 /*!
@@ -346,16 +390,18 @@
 */
 
 /*!
-    \fn QString QWebEnginePage::toHtml() const
-    Returns the frame's content as HTML, enclosed in HTML and BODY tags.
+    \fn void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
+    Asynchronous method to retrieve the page's content as HTML, enclosed in HTML and BODY tags.
+    Upon successful completion, \a resultCallback is called with the page's content.
 
     \sa setHtml(), toPlainText()
 */
 
 /*!
-    \fn QString QWebEnginePage::toPlainText() const
-    Returns the content of this frame converted to plain text, completely
-    stripped of all HTML formatting.
+    \fn void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
+    Asynchronous method to retrieve the page's content converted to plain text, completely stripped of all
+    HTML formatting.
+    Upon successful completion, \a resultCallback is called with the page's content.
 
     \sa toHtml()
 */
@@ -443,14 +489,42 @@
 */
 
 /*!
-    \fn void runJavaScript(const QString& scriptSource)
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
     Runs the JavaScript code contained in \a scriptSource.
 */
 
 /*!
-    \fn void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
     Runs the JavaScript code contained in \a scriptSource.
+
     When the script has been executed, \a resultCallback is called with the result of the last executed statement.
+*/
+
+/*!
+    \fn void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy)
+
+    Sets the permission for the web site identified by \a securityOrigin to use \a feature to \a policy.
+
+    \sa featurePermissionRequested(), featurePermissionRequestCanceled()
+*/
+
+/*!
+    \fn void QWebEnginePage::featurePermissionRequested(const QUrl &securityOrigin, Feature feature)
+
+    This is signal is emitted when the web site identified by \a securityOrigin requests to make use of
+    the resource or device identified by \a feature.
+
+    \sa featurePermissionRequestCanceled(), setFeaturePermission()
+*/
+
+/*!
+    \fn void QWebEnginePage::featurePermissionRequestCanceled(const QUrl &securityOrigin, Feature feature)
+
+    This is signal is emitted when the web site identified by \a securityOrigin cancels a previously issued
+    request to make use of \a feature.
+
+    \sa featurePermissionRequested(), setFeaturePermission()
+
 */
 
 /*!
