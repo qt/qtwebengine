@@ -954,12 +954,21 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 
 void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 {
+    // Chromium expects the touch event timestamps to be comparable to base::TimeTicks::Now().
+    // Most importantly we also have to preserve the relative time distance between events.
+    // Calculate a delta between event timestamps and Now() on the first received event, and
+    // apply this delta to all successive events. This delta is most likely smaller than it
+    // should by calculating it here but this will hopefully cause less than one frame of delay.
+    base::TimeDelta eventTimestamp = base::TimeDelta::FromMilliseconds(ev->timestamp());
+    if (m_eventsToNowDelta == base::TimeDelta())
+        m_eventsToNowDelta = base::TimeTicks::Now() - base::TimeTicks() - eventTimestamp;
+    eventTimestamp += m_eventsToNowDelta;
+
     // Convert each of our QTouchEvent::TouchPoint to the simpler ui::TouchEvent to
     // be able to use the same code path for both gesture recognition and WebTouchEvents.
     // It's a waste to do a double QTouchEvent -> ui::TouchEvent -> blink::WebTouchEvent
     // conversion but this should hopefully avoid a few bugs in the future.
     // FIXME: Carry Qt::TouchCancel from the event to each TouchPoint.
-    base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(ev->timestamp());
     Q_FOREACH (const QTouchEvent::TouchPoint& touchPoint, ev->touchPoints()) {
         // Stationary touch points are already in our accumulator.
         if (touchPoint.state() == Qt::TouchPointStationary)
@@ -970,7 +979,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             toGfxPoint((touchPoint.pos() / dpiScale()).toPoint()),
             0, // flags
             GetMappedTouch(touchPoint.id()),
-            timestamp,
+            eventTimestamp,
             0, 0, // radius
             0, // angle
             touchPoint.pressure());
