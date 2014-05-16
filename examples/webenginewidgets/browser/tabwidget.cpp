@@ -310,8 +310,8 @@ void TabWidget::currentChanged(int index)
         disconnect(oldWebView, SIGNAL(statusBarMessage(QString)),
                 this, SIGNAL(showStatusBarMessage(QString)));
 #endif
-        disconnect(oldWebView->page(), SIGNAL(linkHovered(QString)),
-                this, SIGNAL(linkHovered(QString)));
+        disconnect(oldWebView->page(), SIGNAL(linkHovered(const QString&)),
+                this, SIGNAL(linkHovered(const QString&)));
         disconnect(oldWebView, SIGNAL(loadProgress(int)),
                 this, SIGNAL(loadProgress(int)));
     }
@@ -320,8 +320,8 @@ void TabWidget::currentChanged(int index)
     connect(webView, SIGNAL(statusBarMessage(QString)),
             this, SIGNAL(showStatusBarMessage(QString)));
 #endif
-    connect(webView->page(), SIGNAL(linkHovered(QString)),
-            this, SIGNAL(linkHovered(QString)));
+    connect(webView->page(), SIGNAL(linkHovered(const QString&)),
+            this, SIGNAL(linkHovered(const QString&)));
     connect(webView, SIGNAL(loadProgress(int)),
             this, SIGNAL(loadProgress(int)));
 
