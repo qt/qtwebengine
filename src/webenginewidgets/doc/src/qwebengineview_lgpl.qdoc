@@ -234,19 +234,12 @@
 */
 
 /*!
-    \fn bool QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options)
+    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options, const QWebEngineCallback<bool> &resultCallback)
     Finds the specified string, \a subString, in the page, using the given \a options.
-
-    If the HighlightAllOccurrences flag is passed, the function will highlight all occurrences
-    that exist in the page. All subsequent calls will extend the highlight, rather than
-    replace it, with occurrences of the new string.
-
-    If the HighlightAllOccurrences flag is not passed, the function will select an occurrence
-    and all subsequent calls will replace the current occurrence with the next one.
 
     To clear the selection, just pass an empty string.
 
-    Returns true if \a subString was found; otherwise returns false.
+    The \a resultCallback will be called with a value of true if the \a subString was found; otherwise the callback value will be false.
 
     \sa selectedText(), selectionChanged()
 */
@@ -319,12 +312,6 @@
     This signal is emitted when the \a url of the view changes.
 
     \sa url(), load()
-*/
-
-/*!
-    \fn void QWebEngineView::statusBarMessage(const QString& text)
-
-    This signal is emitted when the status bar \a text is changed by the page.
 */
 
 /*!
