@@ -138,6 +138,11 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
+#if defined(OS_WIN)
+    // FIXME: The renderer process should be fixed on windows.
+    parsedCommandLine->AppendSwitch(switches::kSingleProcess);
+#endif
+
 #if defined(OS_ANDROID)
     // Required on Android
     parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbars);

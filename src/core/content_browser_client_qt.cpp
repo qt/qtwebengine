@@ -222,7 +222,11 @@ public:
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else if (platform == QStringLiteral("eglfs"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else {
+        else if (platform == QStringLiteral("windows")) {
+            // FIXME: Only the EGLGLES2 implementation is supported on windows for now.
+            Q_ASSERT(gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+            m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
+        } else {
             qFatal("%s platform not yet supported", platform.toLatin1().constData());
             // Add missing platforms once they work.
             Q_UNREACHABLE();
