@@ -638,10 +638,11 @@ void BrowserMainWindow::slotAboutApplication()
 {
     QMessageBox::about(this, tr("About"), tr(
         "Version %1"
-        "<p>This demo demonstrates Qt's "
-        "webkit facilities in action, providing an example "
+        "<p>This demo demonstrates the facilities "
+        "of Qt WebEngine in action, providing an example "
         "browser for you to experiment with.<p>"
-        "<p>QtWebKit is based on the Open Source WebKit Project developed at <a href=\"http://webkit.org/\">http://webkit.org/</a>."
+        "<p>Qt WebEngine is based on the Chromium open source project "
+        "developed at <a href=\"http://www.chromium.org/\">http://www.chromium.org/</a>."
         ).arg(QCoreApplication::applicationVersion()));
 }
 
