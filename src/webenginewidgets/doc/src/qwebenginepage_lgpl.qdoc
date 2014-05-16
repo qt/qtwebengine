@@ -69,36 +69,6 @@
     Its argument, either true or false, indicates whether or not the load
     operation succeeded.
 */
-//  FIXME: This part is commented out for the time being until we decide if and how
-//  the functionality to render a page onto a painter will be reintroduced or not.
-//
-//  \section1 Using QWebEnginePage in a Widget-less Environment
-//
-//  Before you begin painting a QWebEnginePage object, you need to set the size of
-//  the viewport by calling setViewportSize(). Then, you invoke the main
-//  frame's render function (QWebEnginePage::render()). An example of this
-//  is shown in the code snippet below.
-//
-//  Suppose we have a \c Thumbnail class as follows:
-//
-//  \snippet snippets/webpage/main.cpp 0
-//
-//  The \c Thumbnail's constructor takes in a \a url. We connect our QWebEnginePage
-//  object's \l{QWebEnginePage::}{loadFinished()} signal to our private slot,
-//  \c render().
-//
-//  \snippet snippets/webpage/main.cpp 1
-//
-//  The \c render() function shows how we can paint a thumbnail using a
-//  QWebEnginePage object.
-//
-//  \snippet snippets/webpage/main.cpp 2
-//
-//  We begin by setting the \l{QWebEnginePage::viewportSize()}{viewportSize} and
-//  then we instantiate a QImage object, \c image, with the same size as our
-//  \l{QWebEnginePage::viewportSize()}{viewportSize}. This image is then sent
-//  as a parameter to \c painter. Next, we render the contents of the main
-//  frame and its subframes into \c painter. Finally, we save the scaled image.
 
 /*!
    \enum QWebEnginePage::FindFlag
