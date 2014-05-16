@@ -228,7 +228,7 @@
 */
 
 /*!
-    \fn QDataStream& operator<<(QDataStream& target, const QWebEngineHistory& history)
+    \fn QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)
     \relates QWebEngineHistory
 
     \brief The operator<< function streams a history into a data stream.
@@ -238,7 +238,7 @@
 
 
 /*!
-    \fn QDataStream& operator>>(QDataStream& source, QWebEngineHistory& history)
+    \fn QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history)
     \relates QWebEngineHistory
 
     \brief The operator>> function loads a history from a data stream.
