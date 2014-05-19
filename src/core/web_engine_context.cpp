@@ -145,7 +145,6 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnablePinch);
     parsedCommandLine->AppendSwitch(switches::kEnableViewport);
     parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
-    parsedCommandLine->AppendSwitch(switches::kEnableScrollPrediction);
     parsedCommandLine->AppendSwitch(switches::kEnableSmoothScrolling);
     parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideo);
     parsedCommandLine->AppendSwitch(switches::kDisableAudio);
