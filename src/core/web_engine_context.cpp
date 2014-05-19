@@ -138,8 +138,8 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
-#if defined(OS_ANDROID)
-    // Required on Android
+#if defined(QTWEBENGINE_MOBILE_SWITCHES)
+    // Inspired from the Android port's default switches
     parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbars);
     parsedCommandLine->AppendSwitch(switches::kEnableGestureTapHighlight);
     parsedCommandLine->AppendSwitch(switches::kEnablePinch);
@@ -156,6 +156,7 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
     parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
     parsedCommandLine->AppendSwitch(switches::kEnableDeadlineScheduling);
+    parsedCommandLine->AppendSwitch(cc::switches::kEnableImplSidePainting);
     parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
 
     parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);

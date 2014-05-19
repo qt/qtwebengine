@@ -20,6 +20,10 @@ DEFINES += QT_NO_KEYWORDS \
            QTWEBENGINECORE_VERSION_STR=\\\"$$MODULE_VERSION\\\" \
            BUILDING_CHROMIUM
 
+# Assume that we want mobile touch and low-end hardware behaviors
+# whenever we are cross compiling.
+cross_compile: DEFINES += QTWEBENGINE_MOBILE_SWITCHES
+
 # Keep Skia happy
 CONFIG(release, debug|release): DEFINES += NDEBUG
 
