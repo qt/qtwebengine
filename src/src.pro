@@ -21,6 +21,6 @@ SUBDIRS += core \
 # Another example of where this could be necessary is to make it easy to build proprietery codecs support.
 !contains(WEBENGINE_CONFIG, no_ui_delegates): SUBDIRS += webengine/ui
 
-qtHaveModule(widgets):equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 2) {
-    SUBDIRS += webenginewidgets
-}
+#qtHaveModule(widgets):equals(QT_MAJOR_VERSION, 5):greaterThan(QT_MINOR_VERSION, 2) {
+#    SUBDIRS += webenginewidgets
+#}
