@@ -160,7 +160,9 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
 
     parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
+#endif
 
+#if defined(OS_ANDROID)
     // On eAndroid we use this to get the native display
     // from Qt in GLSurfaceEGL::InitializeOneOff.
     m_surfaceFactory.reset(new SurfaceFactoryQt());
