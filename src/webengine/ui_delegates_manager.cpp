@@ -78,6 +78,22 @@ static QString fileNameForComponent(UIDelegatesManager::ComponentType type)
     return QString();
 }
 
+static QString getUIDelegatesImportDir(QQmlEngine *engine) {
+    static QString importDir;
+    static bool initialized = false;
+    if (initialized)
+        return importDir;
+    Q_FOREACH (const QString &path, engine->importPathList()) {
+        QFileInfo fi(path % QStringLiteral("/QtWebEngine/UIDelegates/"));
+        if (fi.exists()) {
+            importDir = fi.absolutePath();
+            break;
+        }
+    }
+    initialized = true;
+    return importDir;
+}
+
 MenuItemHandler::MenuItemHandler(QObject *parent)
     : QObject(parent)
 {
@@ -125,6 +141,9 @@ UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
 
 bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 {
+    QQmlEngine* engine = qmlEngine(m_view);
+    if (getUIDelegatesImportDir(engine).isNull())
+        return false;
     QQmlComponent **component;
     switch (type) {
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_CASE_STATEMENT, NO_SEPARATOR)
@@ -139,17 +158,13 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 #else // Unconditionally reload the components each time.
     fprintf(stderr, "%s: %s\n", Q_FUNC_INFO, qPrintable(fileName));
 #endif
-    QQmlEngine* engine = qmlEngine(m_view);
     if (!engine)
         return false;
-    QString absolutePath;
-    Q_FOREACH (const QString &path, engine->importPathList()) {
-        QFileInfo fi(path % QStringLiteral("/QtWebEngine/UIDelegates/") % fileName);
-        if (fi.exists())
-            absolutePath = fi.absoluteFilePath();
-    }
+    QFileInfo fi(getUIDelegatesImportDir(engine) + fileName);
+    if (!fi.exists())
+        return false;
     // FIXME: handle async loading
-    *component = (new QQmlComponent(engine, QUrl(absolutePath), QQmlComponent::PreferSynchronous, m_view));
+    *component = (new QQmlComponent(engine, QUrl(fi.absoluteFilePath()), QQmlComponent::PreferSynchronous, m_view));
 
     if ((*component)->status() != QQmlComponent::Ready) {
 #ifdef UI_DELEGATES_DEBUG
