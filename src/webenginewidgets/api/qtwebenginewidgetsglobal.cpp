@@ -43,7 +43,19 @@
 
 #include "qtwebengineglobal.h"
 
+#include "web_engine_visited_links_manager.h"
+
 void QWebEngineWidgets::initialize()
 {
     QWebEngine::initialize();
+}
+
+void QWebEngineWidgets::clearAllVisitedLinks()
+{
+    WebEngineVisitedLinksManager::instance()->deleteAllVisitedLinkData();
+}
+
+void QWebEngineWidgets::clearVisitedLinks(const QList<QUrl> &urls)
+{
+    WebEngineVisitedLinksManager::instance()->deleteVisitedLinkDataForUrls(urls);
 }

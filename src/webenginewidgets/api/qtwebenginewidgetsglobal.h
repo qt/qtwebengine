@@ -44,6 +44,7 @@
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
+class QUrl;
 
 #ifndef QT_STATIC
 #  if defined(QT_BUILD_WEBENGINEWIDGETS_LIB)
@@ -59,6 +60,8 @@ class QWEBENGINEWIDGETS_EXPORT QWebEngineWidgets
 {
 public:
     static void initialize();
+    static void clearAllVisitedLinks();
+    static void clearVisitedLinks(const QList<QUrl> &urls);
 };
 
 QT_END_NAMESPACE
