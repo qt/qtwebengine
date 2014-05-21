@@ -224,7 +224,7 @@ public:
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else if (platform == QStringLiteral("windows")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
-                m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
+                m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglContext"), qtContext);
             else
                 qFatal("Only the EGLGLES2 implementation is supported on %s platform.", platform.toLatin1().constData());
         } else {
