@@ -46,6 +46,8 @@
 #include <private/qopenglcontext_p.h>
 #include <private/qsgcontext_p.h>
 
+#include "web_engine_visited_links_manager.h"
+
 static QOpenGLContext *shareContext;
 
 static void deleteShareContext()
@@ -77,5 +79,15 @@ void QWebEngine::initialize()
 #else
     QOpenGLContextPrivate::setGlobalShareContext(shareContext);
 #endif
+}
+
+void QWebEngine::clearAllVisitedLinks()
+{
+    WebEngineVisitedLinksManager::instance()->deleteAllVisitedLinkData();
+}
+
+void QWebEngine::clearVisitedLinks(const QList<QUrl> &urls)
+{
+    WebEngineVisitedLinksManager::instance()->deleteVisitedLinkDataForUrls(urls);
 }
 
