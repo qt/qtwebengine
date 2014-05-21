@@ -140,7 +140,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
         or file_path.startswith('third_party/cros_dbus_cplusplus')
-        or file_path.startswith('third_party/cygwin')
         or file_path.startswith('third_party/cros_system_api')
         or file_path.startswith('third_party/eyesfree')
         or file_path.startswith('third_party/findbugs')
