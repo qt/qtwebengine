@@ -75,10 +75,10 @@ ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/ninja')
 use_external_chromium = False
 
 parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
+parser.add_argument('--no-gerrit', action='store_true', help='skip adding the upstream Gerrit remote and commit hook')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule')
 group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule (default)')
-group.add_argument('--no-gerrit', action='store_true', help='skip adding the upstream Gerrit remote and commit hook')
 args = parser.parse_args()
 
 if chromium_src:
