@@ -76,10 +76,14 @@ use_external_chromium = False
 
 parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
 parser.add_argument('--no-gerrit', action='store_true', help='skip adding the upstream Gerrit remote and commit hook')
+parser.add_argument('--baseline-upstream', action='store_true', help='initialize using upstream Chromium submodule w/o applying patches (for maintenance purposes only)')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule')
 group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule (default)')
 args = parser.parse_args()
+
+if args.baseline_upstream:
+    args.upstream = True
 
 if chromium_src:
     chromium_src = os.path.abspath(chromium_src)
@@ -180,6 +184,7 @@ subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
 if args.upstream:
     initUpstreamSubmodules()
     updateLastChange()
-    applyPatches()
+    if not args.baseline_upstream:
+        applyPatches()
 if args.snapshot:
     initSnapshot()
