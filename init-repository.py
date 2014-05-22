@@ -43,12 +43,16 @@
 
 import glob
 import os
+import re
+import shutil
 import subprocess
 import sys
 import string
 import argparse
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+snapshot_src_dir = os.path.abspath(os.path.join(qtwebengine_root, 'src/3rdparty'))
+upstream_src_dir = os.path.abspath(snapshot_src_dir + '_upstream')
 
 def sanityCheckRepo():
     os.chdir(qtwebengine_root)
@@ -101,6 +105,48 @@ if not chromium_src or not os.path.isdir(chromium_src):
 relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_root)
 subprocess.call(['git', 'config', 'qtwebengine.chromiumsrcdir', relative_chromium_src])
 
+def findSnapshotBaselineSha1():
+    if not os.path.isdir(snapshot_src_dir):
+        return ''
+    oldCwd = os.getcwd()
+    os.chdir(snapshot_src_dir)
+    line = subprocess.check_output(['git', 'log', '-n1', '--pretty=oneline', '--grep=' + resolver.currentVersion()])
+    os.chdir(oldCwd)
+    return line.split(' ')[0]
+
+def preparePatchesFromSnapshot():
+    oldCwd = os.getcwd()
+    base_sha1 = findSnapshotBaselineSha1()
+    if not base_sha1:
+        sys.exit('-- base sha1 not found in ' + os.getcwd() + ' --')
+
+    patches_dir = os.path.join(upstream_src_dir, 'patches')
+    if os.path.isdir(patches_dir):
+        shutil.rmtree(patches_dir)
+    os.mkdir(patches_dir)
+
+    os.chdir(snapshot_src_dir)
+    subprocess.call(['git', 'format-patch', '-o', patches_dir, base_sha1])
+
+    os.chdir(patches_dir)
+    patches = glob.glob('00*.patch')
+
+    # We'll collect the patches for submodules in corresponding lists
+    patches_dict = {}
+    for patch in patches:
+        patch_path = os.path.abspath(patch)
+        with open(patch, 'r') as pfile:
+            for line in pfile:
+                if 'Subject:' in line:
+                    match = re.search('<(.+)>', line)
+                    if match:
+                        submodule = match.group(1)
+                        if submodule not in patches_dict:
+                            patches_dict[submodule] = []
+                        patches_dict[submodule].append(patch_path)
+
+    os.chdir(oldCwd)
+    return patches_dict
 
 def which(tool_name):
     path = os.environ.get('PATH')
@@ -133,13 +179,32 @@ def installGitHooks():
 def applyPatches():
     if use_external_chromium:
         return
-    os.chdir(qtwebengine_root)
-    subprocess.call(['sh', './patches/patch-chromium.sh'])
+    os.chdir(os.path.join(upstream_src_dir, 'chromium'))
+    patches = preparePatchesFromSnapshot()
+    for path in patches:
+        leading = path.count('/') + 2
+
+        if path.startswith('chromium'):
+            os.chdir(os.path.join(upstream_src_dir, path))
+        else:
+            os.chdir(os.path.join(upstream_src_dir, 'chromium', path))
+            leading += 1
+
+        print('\n-- entering '+ os.getcwd() + ' --')
+
+        # Sort the patches to be able to apply them in order
+        patch_list = sorted(patches[path])
+        for patch in patch_list:
+            error = subprocess.call(['git', 'am', '-p' + str(leading), patch])
+            if error != 0:
+                sys.exit('-- git am ' + patch + ' failed in ' + os.getcwd() + ' --')
+
+    print('\n-- done --')
 
 def initUpstreamSubmodules():
     ninja_url = 'https://github.com/martine/ninja.git'
     chromium_url = 'https://chromium.googlesource.com/chromium/src.git'
-    ninja_shasum = '84986af6fdeae3f649f2bf884b20f644bc370e48'
+    ninja_shasum = '7103c32646df958b0287c65b1c660bf528a191d6'
     chromium_ref = 'refs/branch-heads/' + resolver.currentBranch()
     os.chdir(qtwebengine_root)
 
@@ -182,6 +247,8 @@ subprocess.call(['git', 'config', 'diff.ignoreSubmodules', 'all'])
 subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
 
 if args.upstream:
+    if not len(findSnapshotBaselineSha1()) and not args.baseline_upstream:
+        sys.exit('\n-- missing chromium snapshot patches, try running ' + os.path.basename(__file__) + ' w/o options first --')
     initUpstreamSubmodules()
     updateLastChange()
     if not args.baseline_upstream:
