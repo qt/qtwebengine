@@ -130,16 +130,10 @@ def installGitHooks():
     os.chdir(qtwebengine_root)
     subprocess.call(['scp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
 
-def applyPatches():
-    if use_external_chromium:
-        return
-    os.chdir(qtwebengine_root)
-    subprocess.call(['sh', './patches/patch-chromium.sh'])
-
 def initUpstreamSubmodules():
     ninja_url = 'https://github.com/martine/ninja.git'
     chromium_url = 'https://chromium.googlesource.com/chromium/src.git'
-    ninja_shasum = '84986af6fdeae3f649f2bf884b20f644bc370e48'
+    ninja_shasum = '7103c32646df958b0287c65b1c660bf528a191d6'
     chromium_ref = 'refs/branch-heads/' + resolver.currentBranch()
     os.chdir(qtwebengine_root)
 
@@ -184,7 +178,7 @@ subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
 if args.upstream:
     initUpstreamSubmodules()
     updateLastChange()
-    if not args.baseline_upstream:
-        applyPatches()
+    if not args.baseline_upstream and not use_external_chromium:
+        subprocess.call([os.path.join(qtwebengine_root, 'tools', 'scripts', 'patch_upstream.py')])
 if args.snapshot:
     initSnapshot()
