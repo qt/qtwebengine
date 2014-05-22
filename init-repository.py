@@ -75,6 +75,7 @@ ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/ninja')
 use_external_chromium = False
 
 parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
+parser.add_argument('--baseline-upstream', action='store_true', help='initialize using upstream Chromium submodule w/o applying patches (for maintenance purposes only)')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule')
 group.add_argument('-s', '--snapshot', action='store_true', help='initialize using flat Chromium snapshot submodule (default)')
@@ -92,6 +93,9 @@ if not chromium_src or not os.path.isdir(chromium_src):
         ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty/ninja')
         args.snapshot = True
     print 'CHROMIUM_SRC_DIR not set, using Chromium in' + chromium_src
+
+if args.baseline_upstream:
+    args.upstream = True
 
 # Write our chromium sources directory into git config.
 relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_root)
@@ -180,6 +184,7 @@ subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
 if args.upstream:
     initUpstreamSubmodules()
     updateLastChange()
-    applyPatches()
+    if not args.baseline_upstream:
+        applyPatches()
 if args.snapshot:
     initSnapshot()
