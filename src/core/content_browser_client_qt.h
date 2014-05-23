@@ -42,6 +42,7 @@
 #ifndef CONTENT_BROWSER_CLIENT_QT_H
 #define CONTENT_BROWSER_CLIENT_QT_H
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
 
