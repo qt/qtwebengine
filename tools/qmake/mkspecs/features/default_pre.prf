@@ -1,6 +1,9 @@
 # Resolve root directories for sources
 QTWEBENGINE_ROOT = $$replace(PWD, /tools/qmake/mkspecs/features$,)
 
+# We depend on libc++ to build chromium so our macosx-version-min has to be 10.7
+QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
+
 QTWEBENGINEPROCESS_NAME = QtWebEngineProcess
 
 # Location of sync.profile
