@@ -227,7 +227,7 @@ void RenderWidgetHostViewQtDelegateWidget::paintGL()
     sgRenderer->setDeviceRect(size());
     sgRenderer->setViewportRect(size());
     sgRenderer->setProjectionMatrixToRect(QRectF(QPointF(), size()));
-    sgRenderer->setClearColor(Qt::transparent);
+    sgRenderer->setClearColor(Qt::white);
 
     sgRenderContext->renderNextFrame(sgRenderer.data(), defaultFramebufferObject());
 }
