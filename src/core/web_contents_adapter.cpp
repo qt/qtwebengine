@@ -300,7 +300,6 @@ public:
     scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
     WebContentsAdapterClient *adapterClient;
     quint64 lastRequestId;
-    QString lastSearchedString;
 };
 
 WebContentsAdapterPrivate::WebContentsAdapterPrivate()
@@ -650,8 +649,8 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
     blink::WebFindOptions options;
     options.forward = !findBackward;
     options.matchCase = caseSensitively;
-    options.findNext = subString == d->lastSearchedString;
-    d->lastSearchedString = subString;
+    options.findNext = subString == d->webContentsDelegate->lastSearchedString();
+    d->webContentsDelegate->setLastSearchedString(subString);
 
     // Find already allows a request ID as input, but only as an int.
     // Use the same counter but mod it to MAX_INT, this keeps the same likeliness of request ID clashing.
@@ -663,7 +662,7 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
 void WebContentsAdapter::stopFinding()
 {
     Q_D(WebContentsAdapter);
-    d->lastSearchedString = QString();
+    d->webContentsDelegate->setLastSearchedString(QString());
     d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
