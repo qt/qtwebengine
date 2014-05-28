@@ -63,9 +63,9 @@ public:
     }
 
     virtual QSGMaterialShader *createShader() const;
-    virtual int compare(const QSGMaterial *other) const;
 
     QSGTexture *m_texture;
+    QMatrix4x4 m_texMatrix;
 };
 
 class StreamVideoNode : public QSGGeometryNode
@@ -73,6 +73,7 @@ class StreamVideoNode : public QSGGeometryNode
 public:
     StreamVideoNode(QSGTexture *texture);
     void setRect(const QRectF &rect);
+    void setTextureMatrix(const QMatrix4x4 &matrix);
 
 private:
     QSGGeometry m_geometry;

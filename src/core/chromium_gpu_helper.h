@@ -42,6 +42,8 @@
 #ifndef CHROMIUM_GPU_HELPER_H
 #define CHROMIUM_GPU_HELPER_H
 
+#include <QtGlobal> // We need this for the Q_OS_QNX define.
+
 #include "base/callback.h"
 
 namespace base {
@@ -99,5 +101,19 @@ gpu::gles2::MailboxManager *mailbox_manager();
 void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback);
 gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::gles2::MailboxName& name);
 unsigned int service_id(gpu::gles2::Texture *tex);
+
+#ifdef Q_OS_QNX
+typedef void* EGLDisplay;
+typedef void* EGLStreamKHR;
+
+struct EGLStreamData {
+    EGLDisplay egl_display;
+    EGLStreamKHR egl_str_handle;
+
+    EGLStreamData(): egl_display(NULL), egl_str_handle(NULL) {}
+};
+
+EGLStreamData eglstream_connect_consumer(gpu::gles2::Texture *tex);
+#endif
 
 #endif // CHROMIUM_GPU_HELPER_H
