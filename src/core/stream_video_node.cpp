@@ -47,7 +47,7 @@ class StreamVideoMaterialShader : public QSGMaterialShader
 public:
     virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial);
 
-    virtual char const *const *attributeNames() const {
+    virtual char const *const *attributeNames() const Q_DECL_OVERRIDE {
         static const char *names[] = {
             "a_position",
             "a_texCoord",
@@ -57,21 +57,22 @@ public:
     }
 
 protected:
-    virtual const char *vertexShader() const {
+    virtual const char *vertexShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::VertexShaderVideoTransform
         const char *shader =
         "attribute highp vec4 a_position;\n"
         "attribute mediump vec2 a_texCoord;\n"
         "uniform highp mat4 matrix;\n"
+        "uniform highp mat4 texMatrix;\n"
         "varying mediump vec2 v_texCoord;\n"
         "void main() {\n"
         "  gl_Position = matrix * a_position;\n"
-        "  v_texCoord = a_texCoord;\n"
+        "  v_texCoord = vec4(texMatrix * vec4(a_texCoord.x, 1.0 - a_texCoord.y, 0.0, 1.0)).xy;\n"
         "}";
         return shader;
     }
 
-    virtual const char *fragmentShader() const {
+    virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::FragmentShaderRGBATexAlpha
         static const char *shader =
         "#extension GL_OES_EGL_image_external : require\n"
@@ -79,7 +80,7 @@ protected:
         "uniform samplerExternalOES s_texture;\n"
         "uniform lowp float alpha;\n"
         "void main() {\n"
-        "  vec4 texColor = texture2D(s_texture, v_texCoord);\n"
+        "  lowp vec4 texColor = texture2D(s_texture, v_texCoord);\n"
         "  gl_FragColor = texColor * alpha;\n"
         "}";
         return shader;
@@ -88,10 +89,12 @@ protected:
     virtual void initialize() {
         m_id_matrix = program()->uniformLocation("matrix");
         m_id_sTexture = program()->uniformLocation("s_texture");
+        m_id_texMatrix = program()->uniformLocation("texMatrix");
         m_id_opacity = program()->uniformLocation("alpha");
     }
 
     int m_id_matrix;
+    int m_id_texMatrix;
     int m_id_sTexture;
     int m_id_opacity;
 };
@@ -110,11 +113,14 @@ void StreamVideoMaterialShader::updateState(const RenderState &state, QSGMateria
 
     if (state.isMatrixDirty())
         program()->setUniformValue(m_id_matrix, state.combinedMatrix());
+
+    program()->setUniformValue(m_id_texMatrix, mat->m_texMatrix);
 }
 
 StreamVideoMaterial::StreamVideoMaterial(QSGTexture *texture)
     : m_texture(texture)
 {
+    m_texMatrix.setToIdentity();
 }
 
 QSGMaterialShader *StreamVideoMaterial::createShader() const
@@ -140,4 +146,9 @@ StreamVideoNode::StreamVideoNode(QSGTexture *texture)
 void StreamVideoNode::setRect(const QRectF &rect)
 {
     QSGGeometry::updateTexturedRectGeometry(geometry(), rect, QRectF(0, 0, 1, 1));
+}
+
+void StreamVideoNode::setTextureMatrix(QMatrix4x4 matrix)
+{
+    m_material->m_texMatrix = matrix;
 }
