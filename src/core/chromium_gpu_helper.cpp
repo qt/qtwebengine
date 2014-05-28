@@ -51,6 +51,12 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
+#include <QtGlobal> // We need this for the Q_OS_QNX define.
+
+#ifdef Q_OS_QNX
+#include "content/common/gpu/stream_texture_qnx.h"
+#endif
+
 static void addSyncPointCallbackDelegate(content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
 {
     syncPointManager->AddSyncPointCallback(sync_point, callback);
@@ -112,3 +118,15 @@ unsigned int service_id(gpu::gles2::Texture *tex)
 {
     return tex->service_id();
 }
+
+#ifdef Q_OS_QNX
+EGLStreamData eglstream_connect_consumer(gpu::gles2::Texture *tex)
+{
+    EGLStreamData egl_stream;
+    content::StreamTexture* image = static_cast<content::StreamTexture *>(tex->GetLevelImage(GL_TEXTURE_EXTERNAL_OES, 0));
+    if (image) {
+        image->ConnectConsumerIfNeeded(&egl_stream.egl_display, &egl_stream.egl_str_handle);
+    }
+    return egl_stream;
+}
+#endif

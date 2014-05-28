@@ -138,6 +138,9 @@ private:
     bool m_hasAlpha;
     GLenum m_target;
     int m_importCount;
+#ifdef Q_OS_QNX
+    EGLStreamData m_eglStreamData;
+#endif
 };
 
 static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::RenderPass::Id &id, const QList<QSharedPointer<RenderPassTexture> > &list)
@@ -343,6 +346,20 @@ MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
 void MailboxTexture::bind()
 {
     glBindTexture(m_target, m_textureId);
+#ifdef Q_OS_QNX
+    if (m_target == GL_TEXTURE_EXTERNAL_OES) {
+        static bool resolved = false;
+        static PFNEGLSTREAMCONSUMERACQUIREKHRPROC eglStreamConsumerAcquire = 0;
+
+        if (!resolved) {
+            QOpenGLContext *context = QOpenGLContext::currentContext();
+            eglStreamConsumerAcquire = (PFNEGLSTREAMCONSUMERACQUIREKHRPROC)context->getProcAddress("eglStreamConsumerAcquireKHR");
+            resolved = true;
+        }
+        if (eglStreamConsumerAcquire)
+            eglStreamConsumerAcquire(m_eglStreamData.egl_display, m_eglStreamData.egl_str_handle);
+    }
+#endif
 }
 
 void MailboxTexture::setTarget(GLenum target)
@@ -371,8 +388,14 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
     gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, m_target, *reinterpret_cast<const gpu::gles2::MailboxName*>(m_resource.mailbox.name));
 
     // The texture might already have been deleted (e.g. when navigating away from a page).
-    if (tex)
+    if (tex) {
         m_textureId = service_id(tex);
+#ifdef Q_OS_QNX
+        if (m_target == GL_TEXTURE_EXTERNAL_OES) {
+            m_eglStreamData = eglstream_connect_consumer(tex);
+        }
+#endif
+    }
 }
 
 DelegatedFrameNode::DelegatedFrameNode(QSGRenderContext *sgRenderContext)
@@ -595,6 +618,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
 
                 StreamVideoNode *svideoNode = new StreamVideoNode(texture.data());
                 svideoNode->setRect(toQt(squad->rect));
+                svideoNode->setTextureMatrix(toQt(squad->matrix.matrix()));
                 currentLayerChain->appendChildNode(svideoNode);
                 break;
 #endif
