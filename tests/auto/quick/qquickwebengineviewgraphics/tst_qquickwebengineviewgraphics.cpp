@@ -58,12 +58,12 @@ Q_SIGNALS:
     void exposeChanged();
 };
 
-class tst_QQuickWebViewGraphics : public QObject
+class tst_QQuickWebEngineViewGraphics : public QObject
 {
     Q_OBJECT
 public:
-    tst_QQuickWebViewGraphics();
-    virtual ~tst_QQuickWebViewGraphics();
+    tst_QQuickWebEngineViewGraphics();
+    virtual ~tst_QQuickWebEngineViewGraphics();
 
 public Q_SLOTS:
     void initTestCase();
@@ -97,37 +97,37 @@ static QImage get150x150GreenReferenceImage()
     return reference;
 }
 
-tst_QQuickWebViewGraphics::tst_QQuickWebViewGraphics()
+tst_QQuickWebEngineViewGraphics::tst_QQuickWebEngineViewGraphics()
 {
 }
 
-tst_QQuickWebViewGraphics::~tst_QQuickWebViewGraphics()
+tst_QQuickWebEngineViewGraphics::~tst_QQuickWebEngineViewGraphics()
 {
 }
 
 // This will be called before the first test function is executed.
 // It is only called once.
-void tst_QQuickWebViewGraphics::initTestCase()
+void tst_QQuickWebEngineViewGraphics::initTestCase()
 {
     QWebEngine::initialize();
 }
 
-void tst_QQuickWebViewGraphics::init()
+void tst_QQuickWebEngineViewGraphics::init()
 {
     m_view.reset(new TestView);
 }
 
-void tst_QQuickWebViewGraphics::cleanup()
+void tst_QQuickWebEngineViewGraphics::cleanup()
 {
 }
 
-void tst_QQuickWebViewGraphics::simpleGraphics()
+void tst_QQuickWebEngineViewGraphics::simpleGraphics()
 {
     setHtml(greenSquare);
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
 }
 
-void tst_QQuickWebViewGraphics::renderAfterNodeCleanup()
+void tst_QQuickWebEngineViewGraphics::renderAfterNodeCleanup()
 {
     setHtml(greenSquare);
 
@@ -137,7 +137,7 @@ void tst_QQuickWebViewGraphics::renderAfterNodeCleanup()
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
 }
 
-void tst_QQuickWebViewGraphics::showHideShow()
+void tst_QQuickWebEngineViewGraphics::showHideShow()
 {
     setHtml(greenSquare);
     QSignalSpy exposeSpy(m_view.data(), SIGNAL(exposeChanged()));
@@ -152,13 +152,13 @@ void tst_QQuickWebViewGraphics::showHideShow()
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
 }
 
-void tst_QQuickWebViewGraphics::simpleAcceleratedLayer()
+void tst_QQuickWebEngineViewGraphics::simpleAcceleratedLayer()
 {
     setHtml(acLayerGreenSquare);
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
 }
 
-void tst_QQuickWebViewGraphics::reparentToOtherWindow()
+void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
 {
     setHtml(greenSquare);
     QQuickWindow window;
@@ -169,7 +169,7 @@ void tst_QQuickWebViewGraphics::reparentToOtherWindow()
     QCOMPARE(window.grabWindow(), get150x150GreenReferenceImage());
 }
 
-void tst_QQuickWebViewGraphics::setHtml(const QString &html)
+void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
 {
     QString htmlData = QUrl::toPercentEncoding(html);
     QString qmlData = QUrl::toPercentEncoding(QStringLiteral("import QtQuick 2.0; import QtWebEngine 0.9; WebEngineView { width: 150; height: 150; url: loadUrl }"));
@@ -182,5 +182,5 @@ void tst_QQuickWebViewGraphics::setHtml(const QString &html)
     QCOMPARE(m_view->rootObject()->property("loading"), QVariant(false));
 }
 
-QTEST_MAIN(tst_QQuickWebViewGraphics)
-#include "tst_qquickwebviewgraphics.moc"
+QTEST_MAIN(tst_QQuickWebEngineViewGraphics)
+#include "tst_qquickwebengineviewgraphics.moc"

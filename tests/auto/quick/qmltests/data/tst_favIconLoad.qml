@@ -45,6 +45,8 @@ import QtWebEngine 0.9
 
 TestWebEngineView {
     id: webEngineView
+    width: 200
+    height: 400
 
     SignalSpy {
         id: spy
