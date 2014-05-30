@@ -74,7 +74,7 @@ TestWebEngineView {
     }
 
     TestCase {
-        name: "WebViewNavigationHistory"
+        name: "WebEngineViewNavigationHistory"
 
         function test_navigationHistory() {
             compare(webEngineView.loadProgress, 0)

@@ -11,10 +11,12 @@ OTHER_FILES += \
     $$PWD/data/favicon.html \
     $$PWD/data/favicon.png \
     $$PWD/data/favicon2.html \
+    $$PWD/data/javascript.html \
     $$PWD/data/link.html \
     $$PWD/data/redirect.html \
     $$PWD/data/small-favicon.png \
     $$PWD/data/test1.html \
+    $$PWD/data/test2.html \
     $$PWD/data/test3.html \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_favIconLoad.qml \
@@ -24,6 +26,7 @@ OTHER_FILES += \
     $$PWD/data/tst_loadProgress.qml \
     $$PWD/data/tst_loadProgressSignal.qml \
     $$PWD/data/tst_loadUrl.qml \
+    $$PWD/data/tst_navigationHistory.qml \
     $$PWD/data/tst_properties.qml \
     $$PWD/data/tst_runJavaScript.qml \
     $$PWD/data/tst_titleChanged.qml
