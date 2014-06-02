@@ -1,4 +1,4 @@
-GYP_ARGS += "-D qt_os=\"win32\""
+GYP_ARGS += "-D qt_os=\"win32\" -I config/windows.gypi"
 
 GYP_CONFIG += \
     disable_nacl=1 \
