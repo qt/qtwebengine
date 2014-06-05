@@ -1,10 +1,12 @@
 .qmake.cache
 .qmake.stash
+src/3rdparty_upstream/patches
 src/3rdparty_upstream/ninja
 src/3rdparty_upstream/chromium
 src/core/Debug
 src/core/Release
 src/core/core_generated.gyp
+src/core/gypfiles
 src/core/qmake_extras.gypi
 examples/webengine/quicknanobrowser/quicknanobrowser
 examples/webenginewidgets/browser/browser
