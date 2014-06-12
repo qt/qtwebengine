@@ -4,5 +4,6 @@
     'win_release_RuntimeLibrary': 2,
     'win_debug_RuntimeLibrary': 3,
     'chrome_multiple_dll': 0,
+    'icu_use_data_file_flag': 1,
   },
 }
