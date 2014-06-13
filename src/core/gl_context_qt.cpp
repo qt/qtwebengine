@@ -45,6 +45,10 @@
 #include <QThread>
 #include "ui/gl/gl_context_egl.h"
 
+#include <private/qopenglcontext_p.h>
+#include <private/qsgcontext_p.h>
+#include <qpa/qplatformnativeinterface.h>
+
 QT_BEGIN_NAMESPACE
 
 GLContextHelper* GLContextHelper::contextHelper = 0;
@@ -77,9 +81,29 @@ bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface*
     return ret;
 }
 
+void* GLContextHelper::getEglConfig()
+{
+#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 0))
+    QOpenGLContext *shareContext = QSGContext::sharedOpenGLContext();
+#else
+    QOpenGLContext *shareContext = QOpenGLContextPrivate::globalShareContext();
+#endif
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("eglconfig"), shareContext);
+}
+
+void* GLContextHelper::getEglDisplay()
+{
+    return qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("egldisplay"));
+}
+
+void* GLContextHelper::getNativeDisplay()
+{
+    return qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("nativedisplay"));
+}
+
 QT_END_NAMESPACE
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || defined(OS_ANDROID) || defined(OS_WIN)
 
 namespace gfx {
 
@@ -94,6 +118,6 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, G
 
 }  // namespace gfx
 
-#endif // defined(USE_OZONE)
+#endif // defined(USE_OZONE) || defined(OS_ANDROID) || defined(OS_WIN)
 
 
