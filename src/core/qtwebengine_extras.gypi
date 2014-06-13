@@ -42,6 +42,13 @@
       ['exclude', 'browser/accessibility/browser_accessibility_manager_gtk\\.(cc|h)$'],
       ['exclude', 'browser/accessibility/browser_accessibility_manager_mac\\.(cc|h)$'],
       ['exclude', 'browser/accessibility/browser_accessibility_manager_win\\.(cc|h)$'],
+      ['exclude', 'common/gpu/image_transport_surface_android\\.cc$'],
+      ['exclude', 'common/gpu/image_transport_surface_linux\\.cc$'],
+      ['exclude', 'common/gpu/image_transport_surface_win\\.cc$'],
+      ['exclude', 'gl_surface_egl\\.cc$'],
+      ['exclude', 'gl_surface_glx\\.cc$'],
+      ['exclude', 'gl_surface_x11\\.cc$'],
+      ['exclude', 'gl_surface_win\\.cc$'],
     ],
     'defines': [
       'TOOLKIT_QT',
