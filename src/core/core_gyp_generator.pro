@@ -49,6 +49,7 @@ SOURCES = \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         gl_context_qt.cpp \
+        gl_surface_qt.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         media_capture_devices_dispatcher.cpp \

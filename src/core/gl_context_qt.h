@@ -58,6 +58,10 @@ public:
     static void destroy();
     static bool initializeContext(gfx::GLContext* context, gfx::GLSurface* surface);
 
+    static void* getEglConfig();
+    static void* getEglDisplay();
+    static void* getNativeDisplay();
+
 private:
     Q_INVOKABLE bool initializeContextOnBrowserThread(gfx::GLContext* context, gfx::GLSurface* surface);
 
