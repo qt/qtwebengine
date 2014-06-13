@@ -39,38 +39,37 @@
 **
 ****************************************************************************/
 
-#ifndef GL_GL_CONTEXT_QT_H_
-#define GL_GL_CONTEXT_QT_H_
+#ifndef GL_SURFACE_QT_H_
+#define GL_SURFACE_QT_H_
 
-#include <QObject>
+#include "ui/gfx/size.h"
+#include "ui/gl/gl_surface.h"
+
+#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
 namespace gfx {
-class GLContext;
-class GLSurface;
-}
 
-QT_BEGIN_NAMESPACE
-
-class GLContextHelper : public QObject {
-    Q_OBJECT
+class GLSurfaceQt: public GLSurface {
 public:
-    static void initialize();
-    static void destroy();
-    static bool initializeContext(gfx::GLContext* context, gfx::GLSurface* surface);
+    explicit GLSurfaceQt(const gfx::Size& size);
 
-    static void* getEGLConfig();
-    static void* getXConfig();
-    static void* getEGLDisplay();
-    static void* getXDisplay();
-    static void* getNativeDisplay();
+    // Implement GLSurface.
+    virtual void* GetDisplay() Q_DECL_OVERRIDE;
+    virtual void* GetConfig() Q_DECL_OVERRIDE;
+    virtual bool IsOffscreen() Q_DECL_OVERRIDE;
+    virtual bool SwapBuffers() Q_DECL_OVERRIDE;
+    virtual gfx::Size GetSize() Q_DECL_OVERRIDE;
+
+protected:
+    GLSurfaceQt();
+    virtual ~GLSurfaceQt();
+
+    gfx::Size m_size;
 
 private:
-    Q_INVOKABLE bool initializeContextOnBrowserThread(gfx::GLContext* context, gfx::GLSurface* surface);
-
-    static GLContextHelper* contextHelper;
+    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQt);
 };
 
-QT_END_NAMESPACE
+}
 
 #endif
-

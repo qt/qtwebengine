@@ -45,9 +45,31 @@
 #include <QThread>
 #include "ui/gl/gl_context_egl.h"
 
+#include <private/qopenglcontext_p.h>
+#include <private/qsgcontext_p.h>
+#include <qpa/qplatformnativeinterface.h>
+
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 GLContextHelper* GLContextHelper::contextHelper = 0;
+
+namespace {
+
+inline void *resourceForContext(const QByteArray &resource)
+{
+    return qApp->platformNativeInterface()->nativeResourceForContext(resource, QOpenGLContextPrivate::globalShareContext());
+}
+
+inline void *resourceForIntegration(const QByteArray &resource)
+{
+    return qApp->platformNativeInterface()->nativeResourceForIntegration(resource);
+}
+
+}
 
 void GLContextHelper::initialize()
 {
@@ -77,9 +99,43 @@ bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface*
     return ret;
 }
 
+void* GLContextHelper::getEGLConfig()
+{
+    QByteArray resource = QByteArrayLiteral("eglconfig");
+    return resourceForContext(resource);
+}
+
+void* GLContextHelper::getXConfig()
+{
+    return resourceForContext(QByteArrayLiteral("glxconfig"));
+}
+
+void* GLContextHelper::getEGLDisplay()
+{
+    return resourceForContext(QByteArrayLiteral("egldisplay"));
+}
+
+void* GLContextHelper::getXDisplay()
+{
+    void *display = qApp->platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
+#if defined(USE_X11)
+    if (!display) {
+        // XLib isn't available or has not been initialized, which is a decision we wish to
+        // support, for example for the GPU process.
+        display = XOpenDisplay(NULL);
+    }
+#endif
+    return display;
+}
+
+void* GLContextHelper::getNativeDisplay()
+{
+    return resourceForIntegration(QByteArrayLiteral("nativedisplay"));
+}
+
 QT_END_NAMESPACE
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE) || defined(OS_ANDROID) || defined(OS_WIN)
 
 namespace gfx {
 
@@ -94,6 +150,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, G
 
 }  // namespace gfx
 
-#endif // defined(USE_OZONE)
-
-
+#endif // defined(USE_OZONE) || defined(OS_ANDROID) || defined(OS_WIN)
