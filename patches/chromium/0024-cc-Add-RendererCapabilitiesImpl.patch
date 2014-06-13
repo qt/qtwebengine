@@ -1,0 +1,378 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "boliu@chromium.org" <boliu@chromium.org>
+Date: Wed, 15 Jan 2014 12:54:58 +0000
+Subject: cc: Add RendererCapabilitiesImpl
+
+Separate RendererCapabilities and RendererCapabilitiesImpl classes to
+separate out capabilities that are not needed on main thread to be
+not copied to main thread. This is to prepare for the future when main
+and impl RendererCapabilities copies can temporarily get out of sync,
+and there are less values to worry about.
+
+BUG=332616
+
+Review URL: https://codereview.chromium.org/133063003
+
+git-svn-id: svn://svn.chromium.org/chrome/trunk/src@244870 0039d316-1c4b-4281-b951-d872f2087c98
+
+Conflicts:
+	cc/trees/layer_tree_impl.h
+---
+ cc/output/delegating_renderer.cc |  2 +-
+ cc/output/delegating_renderer.h  |  4 ++--
+ cc/output/gl_renderer.cc         |  2 +-
+ cc/output/gl_renderer.h          |  4 ++--
+ cc/output/renderer.cc            | 22 ++++++++++++++++++++++
+ cc/output/renderer.h             | 23 ++++++++++++++++++++++-
+ cc/output/software_renderer.cc   |  2 +-
+ cc/output/software_renderer.h    |  4 ++--
+ cc/trees/layer_tree_host.cc      | 18 ++++++++++++------
+ cc/trees/layer_tree_host.h       | 12 +++++++-----
+ cc/trees/layer_tree_host_impl.cc |  3 ++-
+ cc/trees/layer_tree_host_impl.h  |  4 ++--
+ cc/trees/layer_tree_impl.cc      |  2 +-
+ cc/trees/layer_tree_impl.h       |  3 ++-
+ cc/trees/single_thread_proxy.cc  |  3 ++-
+ cc/trees/thread_proxy.cc         |  3 ++-
+ 16 files changed, 83 insertions(+), 28 deletions(-)
+
+diff --git a/cc/output/delegating_renderer.cc b/cc/output/delegating_renderer.cc
+index 1b57161..e3a725d 100644
+--- a/cc/output/delegating_renderer.cc
++++ b/cc/output/delegating_renderer.cc
+@@ -81,7 +81,7 @@ bool DelegatingRenderer::Initialize() {
+ 
+ DelegatingRenderer::~DelegatingRenderer() {}
+ 
+-const RendererCapabilities& DelegatingRenderer::Capabilities() const {
++const RendererCapabilitiesImpl& DelegatingRenderer::Capabilities() const {
+   return capabilities_;
+ }
+ 
+diff --git a/cc/output/delegating_renderer.h b/cc/output/delegating_renderer.h
+index c18bfa7..beed12f 100644
+--- a/cc/output/delegating_renderer.h
++++ b/cc/output/delegating_renderer.h
+@@ -24,7 +24,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
+       ResourceProvider* resource_provider);
+   virtual ~DelegatingRenderer();
+ 
+-  virtual const RendererCapabilities& Capabilities() const OVERRIDE;
++  virtual const RendererCapabilitiesImpl& Capabilities() const OVERRIDE;
+ 
+   virtual bool CanReadPixels() const OVERRIDE;
+ 
+@@ -60,7 +60,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
+ 
+   OutputSurface* output_surface_;
+   ResourceProvider* resource_provider_;
+-  RendererCapabilities capabilities_;
++  RendererCapabilitiesImpl capabilities_;
+   scoped_ptr<DelegatedFrameData> delegated_frame_data_;
+   bool visible_;
+ 
+diff --git a/cc/output/gl_renderer.cc b/cc/output/gl_renderer.cc
+index f0e32f4..51ba996 100644
+--- a/cc/output/gl_renderer.cc
++++ b/cc/output/gl_renderer.cc
+@@ -223,7 +223,7 @@ GLRenderer::~GLRenderer() {
+   CleanupSharedObjects();
+ }
+ 
+-const RendererCapabilities& GLRenderer::Capabilities() const {
++const RendererCapabilitiesImpl& GLRenderer::Capabilities() const {
+   return capabilities_;
+ }
+ 
+diff --git a/cc/output/gl_renderer.h b/cc/output/gl_renderer.h
+index cf672f0..ab95931 100644
+--- a/cc/output/gl_renderer.h
++++ b/cc/output/gl_renderer.h
+@@ -56,7 +56,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
+ 
+   virtual ~GLRenderer();
+ 
+-  virtual const RendererCapabilities& Capabilities() const OVERRIDE;
++  virtual const RendererCapabilitiesImpl& Capabilities() const OVERRIDE;
+ 
+   blink::WebGraphicsContext3D* Context();
+ 
+@@ -223,7 +223,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
+   virtual void EnsureBackbuffer() OVERRIDE;
+   void EnforceMemoryPolicy();
+ 
+-  RendererCapabilities capabilities_;
++  RendererCapabilitiesImpl capabilities_;
+ 
+   unsigned offscreen_framebuffer_id_;
+ 
+diff --git a/cc/output/renderer.cc b/cc/output/renderer.cc
+index 2fe0ef7..488039a 100644
+--- a/cc/output/renderer.cc
++++ b/cc/output/renderer.cc
+@@ -14,4 +14,26 @@ bool Renderer::IsContextLost() {
+   return false;
+ }
+ 
++RendererCapabilitiesImpl::RendererCapabilitiesImpl()
++    : best_texture_format(RGBA_8888),
++      allow_partial_texture_updates(false),
++      using_offscreen_context3d(false),
++      max_texture_size(0),
++      using_shared_memory_resources(false),
++      using_partial_swap(false),
++      using_egl_image(false),
++      avoid_pow2_textures(false),
++      using_map_image(false),
++      using_discard_framebuffer(false) {}
++
++RendererCapabilitiesImpl::~RendererCapabilitiesImpl() {}
++
++RendererCapabilities RendererCapabilitiesImpl::MainThreadCapabilities() const {
++  return RendererCapabilities(best_texture_format,
++                              allow_partial_texture_updates,
++                              using_offscreen_context3d,
++                              max_texture_size,
++                              using_shared_memory_resources);
++}
++
+ }  // namespace cc
+diff --git a/cc/output/renderer.h b/cc/output/renderer.h
+index 147b535..a907cee 100644
+--- a/cc/output/renderer.h
++++ b/cc/output/renderer.h
+@@ -16,6 +16,27 @@ class CompositorFrameAck;
+ class CompositorFrameMetadata;
+ class ScopedResource;
+ 
++struct RendererCapabilitiesImpl {
++  RendererCapabilitiesImpl();
++  ~RendererCapabilitiesImpl();
++
++  // Capabilities copied to main thread.
++  ResourceFormat best_texture_format;
++  bool allow_partial_texture_updates;
++  bool using_offscreen_context3d;
++  int max_texture_size;
++  bool using_shared_memory_resources;
++
++  // Capabilities used on compositor thread only.
++  bool using_partial_swap;
++  bool using_egl_image;
++  bool avoid_pow2_textures;
++  bool using_map_image;
++  bool using_discard_framebuffer;
++
++  RendererCapabilities MainThreadCapabilities() const;
++};
++
+ class CC_EXPORT RendererClient {
+  public:
+   virtual void SetFullRootLayerDamage() = 0;
+@@ -25,7 +46,7 @@ class CC_EXPORT Renderer {
+  public:
+   virtual ~Renderer() {}
+ 
+-  virtual const RendererCapabilities& Capabilities() const = 0;
++  virtual const RendererCapabilitiesImpl& Capabilities() const = 0;
+ 
+   virtual bool CanReadPixels() const = 0;
+ 
+diff --git a/cc/output/software_renderer.cc b/cc/output/software_renderer.cc
+index 421e541..596f513 100644
+--- a/cc/output/software_renderer.cc
++++ b/cc/output/software_renderer.cc
+@@ -96,7 +96,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
+ 
+ SoftwareRenderer::~SoftwareRenderer() {}
+ 
+-const RendererCapabilities& SoftwareRenderer::Capabilities() const {
++const RendererCapabilitiesImpl& SoftwareRenderer::Capabilities() const {
+   return capabilities_;
+ }
+ 
+diff --git a/cc/output/software_renderer.h b/cc/output/software_renderer.h
+index 18fb2a3f..aa29274 100644
+--- a/cc/output/software_renderer.h
++++ b/cc/output/software_renderer.h
+@@ -34,7 +34,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
+       ResourceProvider* resource_provider);
+ 
+   virtual ~SoftwareRenderer();
+-  virtual const RendererCapabilities& Capabilities() const OVERRIDE;
++  virtual const RendererCapabilitiesImpl& Capabilities() const OVERRIDE;
+   virtual void Finish() OVERRIDE;
+   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
+   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
+@@ -97,7 +97,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
+   void DrawUnsupportedQuad(const DrawingFrame* frame,
+                            const DrawQuad* quad);
+ 
+-  RendererCapabilities capabilities_;
++  RendererCapabilitiesImpl capabilities_;
+   bool visible_;
+   bool is_scissor_enabled_;
+   bool is_backbuffer_discarded_;
+diff --git a/cc/trees/layer_tree_host.cc b/cc/trees/layer_tree_host.cc
+index 7432197..bc0029d 100644
+--- a/cc/trees/layer_tree_host.cc
++++ b/cc/trees/layer_tree_host.cc
+@@ -47,17 +47,23 @@ static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
+ 
+ namespace cc {
+ 
++RendererCapabilities::RendererCapabilities(ResourceFormat best_texture_format,
++                                           bool allow_partial_texture_updates,
++                                           bool using_offscreen_context3d,
++                                           int max_texture_size,
++                                           bool using_shared_memory_resources)
++    : best_texture_format(best_texture_format),
++      allow_partial_texture_updates(allow_partial_texture_updates),
++      using_offscreen_context3d(using_offscreen_context3d),
++      max_texture_size(max_texture_size),
++      using_shared_memory_resources(using_shared_memory_resources) {}
++
+ RendererCapabilities::RendererCapabilities()
+     : best_texture_format(RGBA_8888),
+-      using_partial_swap(false),
+-      using_egl_image(false),
+       allow_partial_texture_updates(false),
+       using_offscreen_context3d(false),
+       max_texture_size(0),
+-      avoid_pow2_textures(false),
+-      using_map_image(false),
+-      using_shared_memory_resources(false),
+-      using_discard_framebuffer(false) {}
++      using_shared_memory_resources(false) {}
+ 
+ RendererCapabilities::~RendererCapabilities() {}
+ 
+diff --git a/cc/trees/layer_tree_host.h b/cc/trees/layer_tree_host.h
+index 8b9c1cf..3f9e345 100644
+--- a/cc/trees/layer_tree_host.h
++++ b/cc/trees/layer_tree_host.h
+@@ -64,19 +64,21 @@ struct ScrollAndScaleSet;
+ // Provides information on an Impl's rendering capabilities back to the
+ // LayerTreeHost.
+ struct CC_EXPORT RendererCapabilities {
++  RendererCapabilities(ResourceFormat best_texture_format,
++                       bool allow_partial_texture_updates,
++                       bool using_offscreen_context3d,
++                       int max_texture_size,
++                       bool using_shared_memory_resources);
++
+   RendererCapabilities();
+   ~RendererCapabilities();
+ 
++  // Duplicate any modification to this list to RendererCapabilitiesImpl.
+   ResourceFormat best_texture_format;
+-  bool using_partial_swap;
+-  bool using_egl_image;
+   bool allow_partial_texture_updates;
+   bool using_offscreen_context3d;
+   int max_texture_size;
+-  bool avoid_pow2_textures;
+-  bool using_map_image;
+   bool using_shared_memory_resources;
+-  bool using_discard_framebuffer;
+ };
+ 
+ class CC_EXPORT LayerTreeHost {
+diff --git a/cc/trees/layer_tree_host_impl.cc b/cc/trees/layer_tree_host_impl.cc
+index e4d1b73..7fbb247 100644
+--- a/cc/trees/layer_tree_host_impl.cc
++++ b/cc/trees/layer_tree_host_impl.cc
+@@ -1448,7 +1448,8 @@ bool LayerTreeHostImpl::IsContextLost() {
+   return renderer_ && renderer_->IsContextLost();
+ }
+ 
+-const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
++const RendererCapabilitiesImpl&
++LayerTreeHostImpl::GetRendererCapabilities() const {
+   return renderer_->Capabilities();
+ }
+ 
+diff --git a/cc/trees/layer_tree_host_impl.h b/cc/trees/layer_tree_host_impl.h
+index 531384f..f705a66 100644
+--- a/cc/trees/layer_tree_host_impl.h
++++ b/cc/trees/layer_tree_host_impl.h
+@@ -53,7 +53,7 @@ class TextureMailboxDeleter;
+ class TopControlsManager;
+ class UIResourceBitmap;
+ class UIResourceRequest;
+-struct RendererCapabilities;
++struct RendererCapabilitiesImpl;
+ 
+ // LayerTreeHost->Proxy callback interface.
+ class LayerTreeHostImplClient {
+@@ -257,7 +257,7 @@ class CC_EXPORT LayerTreeHostImpl
+   bool IsContextLost();
+   TileManager* tile_manager() { return tile_manager_.get(); }
+   Renderer* renderer() { return renderer_.get(); }
+-  const RendererCapabilities& GetRendererCapabilities() const;
++  const RendererCapabilitiesImpl& GetRendererCapabilities() const;
+ 
+   virtual bool SwapBuffers(const FrameData& frame);
+   void SetNeedsBeginImplFrame(bool enable);
+diff --git a/cc/trees/layer_tree_impl.cc b/cc/trees/layer_tree_impl.cc
+index 9f181cd..3f7b4c6 100644
+--- a/cc/trees/layer_tree_impl.cc
++++ b/cc/trees/layer_tree_impl.cc
+@@ -517,7 +517,7 @@ const LayerTreeSettings& LayerTreeImpl::settings() const {
+   return layer_tree_host_impl_->settings();
+ }
+ 
+-const RendererCapabilities& LayerTreeImpl::GetRendererCapabilities() const {
++const RendererCapabilitiesImpl& LayerTreeImpl::GetRendererCapabilities() const {
+   return layer_tree_host_impl_->GetRendererCapabilities();
+ }
+ 
+diff --git a/cc/trees/layer_tree_impl.h b/cc/trees/layer_tree_impl.h
+index 85a71f5c..19c53cd 100644
+--- a/cc/trees/layer_tree_impl.h
++++ b/cc/trees/layer_tree_impl.h
+@@ -14,6 +14,7 @@
+ #include "cc/base/scoped_ptr_vector.h"
+ #include "cc/base/swap_promise.h"
+ #include "cc/layers/layer_impl.h"
++#include "cc/output/renderer.h"
+ #include "cc/trees/layer_tree_host.h"
+ #include "cc/resources/ui_resource_client.h"
+ 
+@@ -60,7 +61,7 @@ class CC_EXPORT LayerTreeImpl {
+   // Methods called by the layer tree that pass-through or access LTHI.
+   // ---------------------------------------------------------------------------
+   const LayerTreeSettings& settings() const;
+-  const RendererCapabilities& GetRendererCapabilities() const;
++  const RendererCapabilitiesImpl& GetRendererCapabilities() const;
+   ContextProvider* context_provider() const;
+   OutputSurface* output_surface() const;
+   ResourceProvider* resource_provider() const;
+diff --git a/cc/trees/single_thread_proxy.cc b/cc/trees/single_thread_proxy.cc
+index f1f8a4f..a313588 100644
+--- a/cc/trees/single_thread_proxy.cc
++++ b/cc/trees/single_thread_proxy.cc
+@@ -148,7 +148,8 @@ void SingleThreadProxy::CreateAndInitializeOutputSurface() {
+         output_surface.Pass());
+     if (initialized) {
+       renderer_capabilities_for_main_thread_ =
+-          layer_tree_host_impl_->GetRendererCapabilities();
++          layer_tree_host_impl_->GetRendererCapabilities()
++              .MainThreadCapabilities();
+     } else if (offscreen_context_provider.get()) {
+       offscreen_context_provider->VerifyContexts();
+       offscreen_context_provider = NULL;
+diff --git a/cc/trees/thread_proxy.cc b/cc/trees/thread_proxy.cc
+index 2823182..62e0ca2 100644
+--- a/cc/trees/thread_proxy.cc
++++ b/cc/trees/thread_proxy.cc
+@@ -1427,7 +1427,8 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
+   *success = layer_tree_host_impl_->InitializeRenderer(output_surface.Pass());
+ 
+   if (*success) {
+-    *capabilities = layer_tree_host_impl_->GetRendererCapabilities();
++    *capabilities = layer_tree_host_impl_->GetRendererCapabilities()
++                        .MainThreadCapabilities();
+     scheduler_on_impl_thread_->DidCreateAndInitializeOutputSurface();
+   } else if (offscreen_context_provider.get()) {
+     if (offscreen_context_provider->BindToCurrentThread())
