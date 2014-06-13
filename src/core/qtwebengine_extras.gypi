@@ -33,6 +33,10 @@
       ['exclude', 'browser/renderer_host/render_widget_host_view_mac\\.(mm|h)$'],
       ['exclude', 'browser/renderer_host/render_widget_host_view_win\\.(cc|h)$'],
       ['exclude', 'common/font_list_pango\\.cc$'],
+      ['exclude', 'gl_surface_egl\\.cc$'],
+      ['exclude', 'gl_surface_glx\\.cc$'],
+      ['exclude', 'gl_surface_x11\\.cc$'],
+      ['exclude', 'gl_surface_win\\.cc$'],
     ],
     'defines': [
       'TOOLKIT_QT',

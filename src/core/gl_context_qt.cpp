@@ -45,14 +45,32 @@
 #include <QThread>
 #include "ui/gl/gl_context_egl.h"
 
+#include <private/qopenglcontext_p.h>
+#include <private/qsgcontext_p.h>
+#include <qpa/qplatformnativeinterface.h>
+
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 GLContextHelper* GLContextHelper::contextHelper = 0;
+
+namespace {
+QOpenGLContext* g_shareContext = 0;
+}
 
 void GLContextHelper::initialize()
 {
     if (!contextHelper)
         contextHelper = new GLContextHelper;
+
+#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 0))
+    g_shareContext = QSGContext::sharedOpenGLContext();
+#else
+    g_shareContext = QOpenGLContextPrivate::globalShareContext();
+#endif
 }
 
 void GLContextHelper::destroy()
@@ -77,9 +95,50 @@ bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface*
     return ret;
 }
 
+void* GLContextHelper::getEGLConfig()
+{
+#if defined(OS_WIN)
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("eglConfig"), g_shareContext);
+#else
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("eglconfig"), g_shareContext);
+#endif
+}
+
+void* GLContextHelper::getXConfig()
+{
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("glxconfig"), g_shareContext);
+}
+
+void* GLContextHelper::getEGLDisplay()
+{
+#if defined(OS_WIN)
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("eglDisplay"), g_shareContext);
+#else
+    return qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("egldisplay"));
+#endif
+}
+
+void* GLContextHelper::getXDisplay()
+{
+    void *display = qApp->platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
+#if defined(USE_X11)
+    if (!display) {
+        // XLib isn't available or has not been initialized, which is a decision we wish to
+        // support, for example for the GPU process.
+        display = XOpenDisplay(NULL);
+    }
+#endif
+    return display;
+}
+
+void* GLContextHelper::getNativeDisplay()
+{
+    return qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("nativedisplay"));
+}
+
 QT_END_NAMESPACE
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if !defined(OS_MACOSX)
 
 namespace gfx {
 
@@ -94,6 +153,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, G
 
 }  // namespace gfx
 
-#endif // defined(USE_OZONE)
-
-
+#endif // !defined(OS_MACOSX)
