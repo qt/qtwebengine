@@ -259,7 +259,7 @@ gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 {
     // We are not using accessibility features at this point.
-    QT_NOT_USED
+    QT_NOT_YET_IMPLEMENTED
     return NULL;
 }
 
@@ -627,7 +627,7 @@ void RenderWidgetHostViewQt::SetScrollOffsetPinning(bool, bool) { }
 void RenderWidgetHostViewQt::OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams>&)
 {
     // We are not using accessibility features at this point.
-    QT_NOT_USED
+    QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range)
