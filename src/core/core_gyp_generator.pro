@@ -51,6 +51,7 @@ SOURCES = \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
         gl_context_qt.cpp \
+        gl_surface_qt.cpp \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         media_capture_devices_dispatcher.cpp \
@@ -94,6 +95,7 @@ HEADERS = \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
         gl_context_qt.h \
+        gl_surface_qt.h \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
