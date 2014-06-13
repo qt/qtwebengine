@@ -1,0 +1,389 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "reveman@chromium.org" <reveman@chromium.org>
+Date: Tue, 11 Feb 2014 01:56:37 +0000
+Subject: cc: Prevent usage of rasterize on-demand with delegating renderer.
+
+PictureDrawQuads are not yet supported by the delegating renderer.
+Generating this type of quads for on-demand raster of tiles cause
+invalid IPC to be sent to the parent compositor and the renderer
+to be killed.
+
+This makes us activate with low-res or checkerboard tiles until
+PictureDrawQuads are properly supported by the delegating renderer.
+
+BUG=340695
+TEST=cc_unittests --gtest_filter=*RasterizeOnDemand*
+
+Review URL: https://codereview.chromium.org/157743007
+
+git-svn-id: svn://svn.chromium.org/chrome/trunk/src@250273 0039d316-1c4b-4281-b951-d872f2087c98
+
+Conflicts:
+	cc/resources/tile_manager.cc
+---
+ cc/output/delegating_renderer.cc          |  2 ++
+ cc/output/gl_renderer.cc                  |  2 ++
+ cc/output/renderer.cc                     |  3 +-
+ cc/output/renderer.h                      |  1 +
+ cc/output/software_renderer.cc            |  2 ++
+ cc/resources/tile_manager.cc              | 15 +++++---
+ cc/resources/tile_manager.h               |  6 +++-
+ cc/resources/tile_manager_unittest.cc     | 57 +++++++++++++++++++++++++++----
+ cc/trees/layer_tree_host_impl.cc          | 15 +++++---
+ cc/trees/layer_tree_host_impl.h           |  3 +-
+ cc/trees/layer_tree_host_impl_unittest.cc |  8 +++++
+ 11 files changed, 95 insertions(+), 19 deletions(-)
+
+diff --git a/cc/output/delegating_renderer.cc b/cc/output/delegating_renderer.cc
+index e3a725d..54989e3 100644
+--- a/cc/output/delegating_renderer.cc
++++ b/cc/output/delegating_renderer.cc
+@@ -76,6 +76,8 @@ bool DelegatingRenderer::Initialize() {
+   capabilities_.using_egl_image = caps.egl_image_external;
+   capabilities_.using_map_image = settings_->use_map_image && caps.map_image;
+ 
++  capabilities_.allow_rasterize_on_demand = false;
++
+   return true;
+ }
+ 
+diff --git a/cc/output/gl_renderer.cc b/cc/output/gl_renderer.cc
+index 51ba996..9e1a9f2 100644
+--- a/cc/output/gl_renderer.cc
++++ b/cc/output/gl_renderer.cc
+@@ -210,6 +210,8 @@ GLRenderer::GLRenderer(RendererClient* client,
+ 
+   capabilities_.using_discard_framebuffer = context_caps.discard_framebuffer;
+ 
++  capabilities_.allow_rasterize_on_demand = true;
++
+   InitializeSharedObjects();
+ }
+ 
+diff --git a/cc/output/renderer.cc b/cc/output/renderer.cc
+index 488039a..b0c4a60 100644
+--- a/cc/output/renderer.cc
++++ b/cc/output/renderer.cc
+@@ -24,7 +24,8 @@ RendererCapabilitiesImpl::RendererCapabilitiesImpl()
+       using_egl_image(false),
+       avoid_pow2_textures(false),
+       using_map_image(false),
+-      using_discard_framebuffer(false) {}
++      using_discard_framebuffer(false),
++      allow_rasterize_on_demand(false) {}
+ 
+ RendererCapabilitiesImpl::~RendererCapabilitiesImpl() {}
+ 
+diff --git a/cc/output/renderer.h b/cc/output/renderer.h
+index a907cee..6e491b9 100644
+--- a/cc/output/renderer.h
++++ b/cc/output/renderer.h
+@@ -33,6 +33,7 @@ struct RendererCapabilitiesImpl {
+   bool avoid_pow2_textures;
+   bool using_map_image;
+   bool using_discard_framebuffer;
++  bool allow_rasterize_on_demand;
+ 
+   RendererCapabilities MainThreadCapabilities() const;
+ };
+diff --git a/cc/output/software_renderer.cc b/cc/output/software_renderer.cc
+index 596f513..781446b 100644
+--- a/cc/output/software_renderer.cc
++++ b/cc/output/software_renderer.cc
+@@ -92,6 +92,8 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
+ 
+   capabilities_.using_map_image = settings_->use_map_image;
+   capabilities_.using_shared_memory_resources = true;
++
++  capabilities_.allow_rasterize_on_demand = true;
+ }
+ 
+ SoftwareRenderer::~SoftwareRenderer() {}
+diff --git a/cc/resources/tile_manager.cc b/cc/resources/tile_manager.cc
+index 2fbb6d1..58a6973 100644
+--- a/cc/resources/tile_manager.cc
++++ b/cc/resources/tile_manager.cc
+@@ -170,6 +170,7 @@ scoped_ptr<TileManager> TileManager::Create(
+     size_t num_raster_threads,
+     RenderingStatsInstrumentation* rendering_stats_instrumentation,
+     bool use_map_image,
++    bool use_rasterize_on_demand,
+     size_t max_transfer_buffer_usage_bytes,
+     size_t max_raster_usage_bytes,
+     GLenum map_image_texture_target) {
+@@ -187,7 +188,8 @@ scoped_ptr<TileManager> TileManager::Create(
+                           max_transfer_buffer_usage_bytes),
+                       num_raster_threads,
+                       max_raster_usage_bytes,
+-                      rendering_stats_instrumentation));
++      rendering_stats_instrumentation,
++      use_rasterize_on_demand));
+ }
+ 
+ TileManager::TileManager(
+@@ -196,7 +198,8 @@ TileManager::TileManager(
+     scoped_ptr<RasterWorkerPool> raster_worker_pool,
+     size_t num_raster_threads,
+     size_t max_raster_usage_bytes,
+-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
++    RenderingStatsInstrumentation* rendering_stats_instrumentation,
++    bool use_rasterize_on_demand)
+     : client_(client),
+       resource_pool_(ResourcePool::Create(
+                          resource_provider,
+@@ -214,7 +217,8 @@ TileManager::TileManager(
+       ever_exceeded_memory_budget_(false),
+       rendering_stats_instrumentation_(rendering_stats_instrumentation),
+       did_initialize_visible_tile_(false),
+-      did_check_for_completed_tasks_since_last_schedule_tasks_(true) {
++      did_check_for_completed_tasks_since_last_schedule_tasks_(true),
++      use_rasterize_on_demand_(use_rasterize_on_demand) {
+   raster_worker_pool_->SetClient(this);
+ }
+ 
+@@ -328,7 +332,8 @@ void TileManager::DidFinishRunningTasks() {
+       // If we can't raster on demand, give up early (and don't activate).
+       if (!allow_rasterize_on_demand)
+         return;
+-      tile_version.set_rasterize_on_demand();
++      if (use_rasterize_on_demand_)
++        tile_version.set_rasterize_on_demand();
+     }
+   }
+ 
+@@ -706,7 +711,7 @@ void TileManager::AssignGpuMemoryToTiles(
+       // This tile was already on screen and now its resources have been
+       // released. In order to prevent checkerboarding, set this tile as
+       // rasterize on demand immediately.
+-      if (mts.visible_and_ready_to_draw)
++      if (mts.visible_and_ready_to_draw && use_rasterize_on_demand_)
+         tile_version.set_rasterize_on_demand();
+ 
+       oomed = true;
+diff --git a/cc/resources/tile_manager.h b/cc/resources/tile_manager.h
+index 78beb1b..9c7a98d 100644
+--- a/cc/resources/tile_manager.h
++++ b/cc/resources/tile_manager.h
+@@ -55,6 +55,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
+       size_t num_raster_threads,
+       RenderingStatsInstrumentation* rendering_stats_instrumentation,
+       bool use_map_image,
++      bool use_rasterize_on_demand,
+       size_t max_transfer_buffer_usage_bytes,
+       size_t max_raster_usage_bytes,
+       GLenum map_image_texture_target);
+@@ -122,7 +123,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
+               scoped_ptr<RasterWorkerPool> raster_worker_pool,
+               size_t num_raster_threads,
+               size_t max_raster_usage_bytes,
+-              RenderingStatsInstrumentation* rendering_stats_instrumentation);
++              RenderingStatsInstrumentation* rendering_stats_instrumentation,
++              bool use_rasterize_on_demand);
+ 
+   // Methods called by Tile
+   friend class Tile;
+@@ -217,6 +219,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
+ 
+   std::vector<Tile*> released_tiles_;
+ 
++  bool use_rasterize_on_demand_;
++
+   DISALLOW_COPY_AND_ASSIGN(TileManager);
+ };
+ 
+diff --git a/cc/resources/tile_manager_unittest.cc b/cc/resources/tile_manager_unittest.cc
+index 8339bd0..224e0a6 100644
+--- a/cc/resources/tile_manager_unittest.cc
++++ b/cc/resources/tile_manager_unittest.cc
+@@ -8,27 +8,33 @@
+ #include "cc/test/fake_output_surface_client.h"
+ #include "cc/test/fake_picture_pile_impl.h"
+ #include "cc/test/fake_tile_manager.h"
+-#include "cc/test/fake_tile_manager_client.h"
+ #include "cc/test/test_tile_priorities.h"
+ #include "testing/gtest/include/gtest/gtest.h"
+ 
+ namespace cc {
+ namespace {
+ 
+-class TileManagerTest : public testing::TestWithParam<bool> {
++class TileManagerTest : public testing::TestWithParam<bool>,
++                        public TileManagerClient {
+  public:
+   typedef std::vector<scoped_refptr<Tile> > TileVector;
+ 
++  TileManagerTest()
++      : memory_limit_policy_(ALLOW_ANYTHING),
++        max_memory_tiles_(0),
++        ready_to_activate_(false) {}
++
+   void Initialize(int max_tiles,
+                   TileMemoryLimitPolicy memory_limit_policy,
+-                  TreePriority tree_priority) {
++                  TreePriority tree_priority,
++                  bool allow_on_demand_raster = true) {
+     output_surface_ = FakeOutputSurface::Create3d();
+     CHECK(output_surface_->BindToClient(&output_surface_client_));
+ 
+     resource_provider_ =
+         ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
+-    tile_manager_ = make_scoped_ptr(
+-        new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
++    tile_manager_ = make_scoped_ptr(new FakeTileManager(
++        this, resource_provider_.get(), allow_on_demand_raster));
+ 
+     memory_limit_policy_ = memory_limit_policy;
+     max_memory_tiles_ = max_tiles;
+@@ -73,6 +79,9 @@ class TileManagerTest : public testing::TestWithParam<bool> {
+     testing::Test::TearDown();
+   }
+ 
++  // TileManagerClient implementation.
++  virtual void NotifyReadyToActivate() OVERRIDE { ready_to_activate_ = true; }
++
+   TileVector CreateTilesWithSize(int count,
+                                  TilePriority active_priority,
+                                  TilePriority pending_priority,
+@@ -129,11 +138,12 @@ class TileManagerTest : public testing::TestWithParam<bool> {
+     return has_lcd_count;
+   }
+ 
++  bool ready_to_activate() const { return ready_to_activate_; }
++
+  protected:
+   GlobalStateThatImpactsTilePriority global_state_;
+ 
+  private:
+-  FakeTileManagerClient tile_manager_client_;
+   LayerTreeSettings settings_;
+   scoped_ptr<FakeTileManager> tile_manager_;
+   scoped_refptr<FakePicturePileImpl> picture_pile_;
+@@ -142,6 +152,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
+   scoped_ptr<ResourceProvider> resource_provider_;
+   TileMemoryLimitPolicy memory_limit_policy_;
+   int max_memory_tiles_;
++  bool ready_to_activate_;
+ };
+ 
+ TEST_P(TileManagerTest, EnoughMemoryAllowAnything) {
+@@ -520,6 +531,40 @@ TEST_P(TileManagerTest, RespectMemoryLimit) {
+   EXPECT_LE(memory_allocated_bytes, global_state_.memory_limit_in_bytes);
+ }
+ 
++TEST_P(TileManagerTest, AllowRasterizeOnDemand) {
++  // Not enough memory to initialize tiles required for activation.
++  Initialize(0, ALLOW_ANYTHING, SAME_PRIORITY_FOR_BOTH_TREES);
++  TileVector tiles =
++      CreateTiles(2, TilePriority(), TilePriorityRequiredForActivation());
++
++  tile_manager()->AssignMemoryToTiles(global_state_);
++
++  // This should make required tiles ready to draw by marking them as
++  // required tiles for on-demand raster.
++  tile_manager()->DidFinishRunningTasksForTesting();
++
++  EXPECT_TRUE(ready_to_activate());
++  for (TileVector::iterator it = tiles.begin(); it != tiles.end(); ++it)
++    EXPECT_TRUE((*it)->IsReadyToDraw());
++}
++
++TEST_P(TileManagerTest, PreventRasterizeOnDemand) {
++  // Not enough memory to initialize tiles required for activation.
++  Initialize(0, ALLOW_ANYTHING, SAME_PRIORITY_FOR_BOTH_TREES, false);
++  TileVector tiles =
++      CreateTiles(2, TilePriority(), TilePriorityRequiredForActivation());
++
++  tile_manager()->AssignMemoryToTiles(global_state_);
++
++  // This should make required tiles ready to draw by marking them as
++  // required tiles for on-demand raster.
++  tile_manager()->DidFinishRunningTasksForTesting();
++
++  EXPECT_TRUE(ready_to_activate());
++  for (TileVector::iterator it = tiles.begin(); it != tiles.end(); ++it)
++    EXPECT_FALSE((*it)->IsReadyToDraw());
++}
++
+ // If true, the max tile limit should be applied as bytes; if false,
+ // as num_resources_limit.
+ INSTANTIATE_TEST_CASE_P(TileManagerTests,
+diff --git a/cc/trees/layer_tree_host_impl.cc b/cc/trees/layer_tree_host_impl.cc
+index 7fbb247..453ccb0 100644
+--- a/cc/trees/layer_tree_host_impl.cc
++++ b/cc/trees/layer_tree_host_impl.cc
+@@ -1716,7 +1716,8 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
+ void LayerTreeHostImpl::CreateAndSetTileManager(
+     ResourceProvider* resource_provider,
+     ContextProvider* context_provider,
+-    bool using_map_image) {
++    bool using_map_image,
++    bool allow_rasterize_on_demand) {
+   DCHECK(settings_.impl_side_painting);
+   DCHECK(resource_provider);
+   tile_manager_ =
+@@ -1725,6 +1726,7 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
+                           settings_.num_raster_threads,
+                           rendering_stats_instrumentation_,
+                           using_map_image,
++                          allow_rasterize_on_demand,
+                           GetMaxTransferBufferUsageBytes(context_provider),
+                           GetMaxRasterTasksUsageBytes(context_provider),
+                           GetMapImageTextureTarget(context_provider));
+@@ -1777,9 +1779,11 @@ bool LayerTreeHostImpl::InitializeRenderer(
+     return false;
+ 
+   if (settings_.impl_side_painting) {
+-    CreateAndSetTileManager(resource_provider.get(),
+-                            output_surface->context_provider().get(),
+-                            GetRendererCapabilities().using_map_image);
++    CreateAndSetTileManager(
++        resource_provider.get(),
++        output_surface->context_provider().get(),
++        GetRendererCapabilities().using_map_image,
++        GetRendererCapabilities().allow_rasterize_on_demand);
+   }
+ 
+   // Setup BeginImplFrameEmulation if it's not supported natively
+@@ -1884,7 +1888,8 @@ void LayerTreeHostImpl::ReleaseGL() {
+   EnforceZeroBudget(true);
+   CreateAndSetTileManager(resource_provider_.get(),
+                           NULL,
+-                          GetRendererCapabilities().using_map_image);
++                          GetRendererCapabilities().using_map_image,
++                          GetRendererCapabilities().allow_rasterize_on_demand);
+   DCHECK(tile_manager_);
+ 
+   SetOffscreenContextProvider(NULL);
+diff --git a/cc/trees/layer_tree_host_impl.h b/cc/trees/layer_tree_host_impl.h
+index f705a66..e7ea10b 100644
+--- a/cc/trees/layer_tree_host_impl.h
++++ b/cc/trees/layer_tree_host_impl.h
+@@ -459,7 +459,8 @@ class CC_EXPORT LayerTreeHostImpl
+       bool skip_gl_renderer);
+   void CreateAndSetTileManager(ResourceProvider* resource_provider,
+                                ContextProvider* context_provider,
+-                               bool using_map_image);
++                               bool using_map_image,
++                               bool allow_rasterize_on_demand);
+   void ReleaseTreeResources();
+   void EnforceZeroBudget(bool zero_budget);
+ 
+diff --git a/cc/trees/layer_tree_host_impl_unittest.cc b/cc/trees/layer_tree_host_impl_unittest.cc
+index 4630adc..cf45bfd 100644
+--- a/cc/trees/layer_tree_host_impl_unittest.cc
++++ b/cc/trees/layer_tree_host_impl_unittest.cc
+@@ -4032,6 +4032,14 @@ TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, FrameIncludesDamageRect) {
+   DrawFrameAndTestDamage(no_damage);
+ }
+ 
++// TODO(reveman): Remove this test and the ability to prevent on demand raster
++// when delegating renderer supports PictureDrawQuads. crbug.com/342121
++TEST_F(LayerTreeHostImplTestWithDelegatingRenderer, PreventRasterizeOnDemand) {
++  LayerTreeSettings settings;
++  CreateHostImpl(settings, CreateOutputSurface());
++  EXPECT_FALSE(host_impl_->GetRendererCapabilities().allow_rasterize_on_demand);
++}
++
+ class FakeMaskLayerImpl : public LayerImpl {
+  public:
+   static scoped_ptr<FakeMaskLayerImpl> Create(LayerTreeImpl* tree_impl,
