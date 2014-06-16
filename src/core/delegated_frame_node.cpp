@@ -162,42 +162,18 @@ static inline QSharedPointer<MailboxTexture> &findMailboxTexture(unsigned resour
     return texture;
 }
 
-static QSGNode *buildRenderPassChain(QSGNode *chainParent, const cc::RenderPass *renderPass)
+static QSGNode *buildRenderPassChain(QSGNode *chainParent)
 {
     // Chromium already ordered the quads from back to front for us, however the
     // Qt scene graph layers individual geometries in their own z-range and uses
     // the depth buffer to visually stack nodes according to their item tree order.
-    // This finds the z-span of all layers so that we can z-compress them to fit
-    // them between 0.0 and 1.0 on the z axis.
-    double minZ = 0;
-    double maxZ = 1;
-    double src2[8];
-    double dst4[16];
-    // topleft.x, topleft.y, topRight.y and bottomLeft.x
-    src2[0] = src2[1] = src2[3] = src2[4] = 0;
 
-    // Go through each layer in this pass and find out their transformed rect.
-    cc::SharedQuadStateList::const_iterator it = renderPass->shared_quad_state_list.begin();
-    cc::SharedQuadStateList::const_iterator sharedStateEnd = renderPass->shared_quad_state_list.end();
-    for (; it != sharedStateEnd; ++it) {
-        gfx::Size &layerSize = (*it)->content_bounds;
-        // topRight.x
-        src2[2] = layerSize.width();
-        // bottomLeft.y
-        src2[5] = layerSize.height();
-        // bottomRight
-        src2[6] = layerSize.width();
-        src2[7] = layerSize.height();
-        (*it)->content_to_target_transform.matrix().map2(src2, 4, dst4);
-        // Check the mapped corner's z value and track the boundaries.
-        minZ = std::min(std::min(std::min(std::min(minZ, dst4[2]), dst4[6]), dst4[10]), dst4[14]);
-        maxZ = std::max(std::max(std::max(std::max(maxZ, dst4[2]), dst4[6]), dst4[10]), dst4[14]);
-    }
-
+    // This gets rid of the z component of all quads, once any x and y perspective
+    // transformation has been applied to vertices not on the z=0 plane. Qt will
+    // use an orthographic projection to render them.
     QSGTransformNode *zCompressNode = new QSGTransformNode;
     QMatrix4x4 zCompressMatrix;
-    zCompressMatrix.scale(1, 1, 1 / (maxZ - minZ));
-    zCompressMatrix.translate(0, 0, -minZ);
+    zCompressMatrix.scale(1, 1, 0);
     zCompressNode->setMatrix(zCompressMatrix);
     chainParent->appendChildNode(zCompressNode);
     return zCompressNode;
@@ -504,7 +480,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
         while (QSGNode *oldChain = renderPassParent->firstChild())
             delete oldChain;
 
-        QSGNode *renderPassChain = buildRenderPassChain(renderPassParent, pass);
+        QSGNode *renderPassChain = buildRenderPassChain(renderPassParent);
         const cc::SharedQuadState *currentLayerState = 0;
         QSGNode *currentLayerChain = 0;
 
