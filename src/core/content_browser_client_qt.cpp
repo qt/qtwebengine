@@ -235,6 +235,8 @@ public:
     }
 
     virtual void* GetHandle() Q_DECL_OVERRIDE { return m_handle; }
+    // Qt currently never creates contexts using robustness attributes.
+    virtual bool WasAllocatedUsingRobustnessExtension() { return false; }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
     virtual bool Initialize(gfx::GLSurface *, gfx::GpuPreference) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
