@@ -33,6 +33,7 @@
     'include_dirs': [
       '<(chromium_src_dir)',
       '<(SHARED_INTERMEDIATE_DIR)/net', # Needed to include grit/net_resources.h
+      '<(SHARED_INTERMEDIATE_DIR)/chrome', # Needed to include grit/generated_resources.h
     ],
     # Chromium code defines those in common.gypi, do the same for our code that include Chromium headers.
     'defines': [
