@@ -46,6 +46,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#include <QCoreApplication>
+#include <QStringBuilder>
+
 base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFactor scale_factor) const {
     return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }
@@ -53,4 +56,10 @@ base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFac
 base::string16 ContentClientQt::GetLocalizedString(int message_id) const
 {
     return l10n_util::GetStringUTF16(message_id);
+}
+
+std::string ContentClientQt::GetProduct() const
+{
+    QString productName(qApp->applicationName() % '/' % qApp->applicationVersion());
+    return productName.toStdString();
 }

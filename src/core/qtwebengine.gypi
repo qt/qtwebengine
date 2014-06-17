@@ -28,11 +28,12 @@
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
       '<(chromium_src_dir)/webkit/glue/webkit_glue.gyp:*',
       '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
-      'chrome_qt.gyp:*',
+      'chrome_qt.gyp:chrome_qt',
     ],
     'include_dirs': [
       '<(chromium_src_dir)',
       '<(SHARED_INTERMEDIATE_DIR)/net', # Needed to include grit/net_resources.h
+      '<(SHARED_INTERMEDIATE_DIR)/chrome', # Needed to include grit/generated_resources.h
     ],
     # Chromium code defines those in common.gypi, do the same for our code that include Chromium headers.
     'defines': [
