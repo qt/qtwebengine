@@ -39,38 +39,27 @@
 **
 ****************************************************************************/
 
-#include "renderer/content_renderer_client_qt.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "content/public/renderer/render_thread.h"
-#include "net/base/net_errors.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#ifndef LOCALIZED_ERROR_H
+#define LOCALIZED_ERROR_H
 
-#include "common/localized_error.h"
+#include "qtwebenginecoreglobal.h"
 
-#include "renderer/qt_render_view_observer.h"
+#include <QString>
 
-static const char kHttpErrorDomain[] = "http";
-
-void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
+class QWEBENGINE_EXPORT LocalizedError
 {
-    // RenderViewObserver destroys itself with its RenderView.
-    new QtRenderViewObserver(render_view);
-}
+public:
+    LocalizedError(int errorCode, bool isHttpErrorDomain, bool isPost = false);
+    QString heading() const;
+    QString summary() const;
+    QString internalName() const;
+    // The details are fetched by the render process and passed along
+    std::string details() const;
+private:
+    int errorCode;
+    bool isHttpErrorDomain;
+    bool isPost;
+};
 
-// To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
-void ContentRendererClientQt::GetNavigationErrorStrings(blink::WebFrame *frame, const blink::WebURLRequest &failed_request, const blink::WebURLError &error, const std::string &accept_languages, std::string *error_html, base::string16 *error_description)
-{
-    Q_UNUSED(frame)
-    Q_UNUSED(error_html)
-    Q_UNUSED(accept_languages)
-
-    const bool isPost = EqualsASCII(failed_request.httpMethod(), "POST");
-    std::string errorDomain = error.domain.utf8();
-    const bool isHttpErrorDomain = (errorDomain == kHttpErrorDomain);
-    Q_ASSERT(isHttpErrorDomain || errorDomain == net::kErrorDomain);
-
-    LocalizedError localizedError(error.reason, isHttpErrorDomain, isPost);
-    *error_description = UTF8ToUTF16(localizedError.details());
-}
+#endif // LOCALIZED_ERROR_H

@@ -41,6 +41,8 @@
 
 #include <qquickwebengineloadrequest_p.h>
 
+#include "common/localized_error.h"
+
 /*!
     \qmltype WebEngineLoadRequest
     \instantiates QQuickWebEngineLoadRequest
@@ -94,7 +96,7 @@ QQuickWebEngineView::LoadStatus QQuickWebEngineLoadRequest::status() const
 /*!
     \qmlproperty string WebEngineLoadRequest::errorString
 */
-QString QQuickWebEngineLoadRequest::errorString() const
+QString QQuickWebEngineLoadRequest::errorDetails() const
 {
     return d->errorString;
 }
@@ -110,4 +112,16 @@ QQuickWebEngineView::ErrorDomain QQuickWebEngineLoadRequest::errorDomain() const
 int QQuickWebEngineLoadRequest::errorCode() const
 {
     return d->errorCode;
+}
+
+QString QQuickWebEngineLoadRequest::errorName() const
+{
+    LocalizedError error(d->errorCode, (d->errorDomain == QQuickWebEngineView::HttpErrorDomain));
+    return error.internalName();
+}
+
+QString QQuickWebEngineLoadRequest::errorHeading() const
+{
+    LocalizedError error(d->errorCode, (d->errorDomain == QQuickWebEngineView::HttpErrorDomain));
+    return error.heading();
 }

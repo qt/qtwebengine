@@ -49,4 +49,6 @@ public:
 
     // Update this when we want to allow overriding error pages.
     virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return true; }
+    virtual void GetNavigationErrorStrings(blink::WebFrame* frame, const blink::WebURLRequest& failed_request, const blink::WebURLError& error
+            , const std::string& accept_languages, std::string* error_html, base::string16* error_description) Q_DECL_OVERRIDE;
 };

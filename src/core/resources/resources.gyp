@@ -14,6 +14,7 @@
       '<(chromium_src_dir)/webkit/webkit_resources.gyp:webkit_strings',
       '<(chromium_src_dir)/webkit/webkit_resources.gyp:webkit_resources',
       '<(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
+      '<(chromium_src_dir)/chrome/chrome_resources.gyp:chrome_strings',
   ],
   'targets': [
   {

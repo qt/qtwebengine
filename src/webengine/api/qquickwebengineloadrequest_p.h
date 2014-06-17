@@ -53,18 +53,23 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineLoadRequest : public QObject {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url)
     Q_PROPERTY(QQuickWebEngineView::LoadStatus status READ status)
-    Q_PROPERTY(QString errorString READ errorString)
+    Q_PROPERTY(QString errorDetails READ errorDetails)
     Q_PROPERTY(QQuickWebEngineView::ErrorDomain errorDomain READ errorDomain)
     Q_PROPERTY(int errorCode READ errorCode)
+    Q_PROPERTY(QString errorName READ errorName)
+    Q_PROPERTY(QString errorHeading READ errorHeading)
 
 public:
-    QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString = QString(), int errorCode = 0, QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain, QObject* parent = 0);
+    QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorDetails = QString(), int errorCode = 0
+            , QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain, QObject* parent = 0);
     ~QQuickWebEngineLoadRequest();
     QUrl url() const;
     QQuickWebEngineView::LoadStatus status() const;
-    QString errorString() const;
+    QString errorDetails() const;
     QQuickWebEngineView::ErrorDomain errorDomain() const;
     int errorCode() const;
+    QString errorName() const;
+    QString errorHeading() const;
 
 private:
     QScopedPointer<QQuickWebEngineLoadRequestPrivate> d;
