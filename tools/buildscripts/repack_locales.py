@@ -105,6 +105,15 @@ def calc_inputs(locale):
     inputs.append(os.path.join(SHARE_INT_DIR, 'ui', 'app_locale_settings',
                   'app_locale_settings_%s.pak' % locale))
 
+    # Used for localized error messages and error pages
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_da.pak'
+    inputs.append(os.path.join(SHARE_INT_DIR, 'chrome',
+                  'generated_resources_%s.pak' % locale))
+
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/chrome/generated_resources_da.pak'
+    inputs.append(os.path.join(SHARE_INT_DIR, 'chrome',
+                  'chromium_strings_%s.pak' % locale))
+
   # Add any extra input files.
   for extra_file in EXTRA_INPUT_FILES:
     inputs.append('%s_%s.pak' % (extra_file, locale))
