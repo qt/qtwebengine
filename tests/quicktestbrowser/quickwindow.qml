@@ -264,8 +264,15 @@ ApplicationWindow {
                     z: 3
                 }
 
+                ErrorPage {
+                    id: errorPage
+                    anchors.fill: parent
+                    displayingError: false
+                }
+
                 WebEngineView {
                     id: webEngineView
+                    visible: !errorPage.displayingError
 
                     anchors {
                         fill: parent
@@ -288,6 +295,26 @@ ApplicationWindow {
                             }
                         }
                     ]
+
+                    onLoadingChanged: {
+                            var loadError = loadRequest.errorDomain
+                            if (loadError == WebEngineView.NoErrorDomain) {
+                                errorPage.displayingError = false
+                                return;
+                            }
+                            errorPage.errorName = loadRequest.errorName
+                            errorPage.displayingError = true
+                            if (loadError == WebEngineView.InternalErrorDomain)
+                                errorPage.mainMessage = "Internal error"
+                            else if (loadError == WebEngineView.ConnectionErrorDomain)
+                                errorPage.mainMessage = "Unable to connect to the Internet"
+                            else if (loadError == WebEngineView.CertificateErrorDomain)
+                                errorPage.mainMessage = "Certificate error"
+                            else if (loadError == WebEngineView.DnsErrorDomain)
+                                errorPage.mainMessage = "Unable to resolve the server's DNS address"
+                            else // HTTP and FTP
+                                errorPage.mainMessage = "Protocol error"
+                    }
 
                     experimental {
                         isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
