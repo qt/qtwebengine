@@ -39,15 +39,43 @@
 **
 ****************************************************************************/
 
-#include "content/public/renderer/content_renderer_client.h"
 
-#include <QtGlobal>
+#ifndef LOCALIZED_ERROR_H
+#define LOCALIZED_ERROR_H
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+#include "base/basictypes.h"
+#include "base/strings/string16.h"
+
+class GURL;
+
+namespace base {
+class DictionaryValue;
+}
+
+namespace extensions {
+class Extension;
+}
+
+namespace blink {
+struct WebURLError;
+}
+
+class LocalizedError
+{
 public:
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
+    // Fills |strings| with values to be used to build an error page used
+    // on HTTP errors, like 404 or connection reset.
+    static void GetStrings(int error_code, const std::string& error_domain, const GURL& failed_url,
+                           bool is_post, const std::string& locale, const std::string& accept_languages,
+                           base::DictionaryValue* strings);
 
-    virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return false; }
-    virtual void GetNavigationErrorStrings(blink::WebFrame* frame, const blink::WebURLRequest& failed_request, const blink::WebURLError& error
-            , const std::string& accept_languages, std::string* error_html, base::string16* error_description) Q_DECL_OVERRIDE;
+    // Returns a description of the encountered error.
+    static base::string16 GetErrorDetails(const blink::WebURLError& error, bool isPost);
+
+    static const char kHttpErrorDomain[];
+private:
+    DISALLOW_IMPLICIT_CONSTRUCTORS(LocalizedError);
+
 };
+
+#endif // LOCALIZED_ERROR_H

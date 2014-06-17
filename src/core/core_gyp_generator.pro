@@ -73,7 +73,8 @@ SOURCES = \
         qrc_protocol_handler_qt.cpp \
         url_request_qrc_job_qt.cpp \
         surface_factory_qt.cpp \
-        ozone_platform_eglfs.cpp
+        ozone_platform_eglfs.cpp \
+        common/localized_error.cpp
 
 
 HEADERS = \
@@ -116,4 +117,5 @@ HEADERS = \
         qrc_protocol_handler_qt.h \
         url_request_qrc_job_qt.h \
         surface_factory_qt.h \
-        ozone_platform_eglfs.h
+        ozone_platform_eglfs.h \
+        common/localized_error.h

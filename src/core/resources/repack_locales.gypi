@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 {
-  'action_name': 'repack_locales',
   'variables': {
     'repack_extra_flags%': [],
     'repack_output_dir%': '<(SHARED_INTERMEDIATE_DIR)',

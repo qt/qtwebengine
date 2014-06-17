@@ -269,6 +269,10 @@ void QQuickWebEngineViewPrivate::loadCommitted()
     m_history->reset();
 }
 
+Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<int>(QQuickWebEngineView::NoErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(WebEngineError::CertificateErrorDomain) == static_cast<int>(QQuickWebEngineView::CertificateErrorDomain));
+Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<int>(QQuickWebEngineView::DnsErrorDomain));
+
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);

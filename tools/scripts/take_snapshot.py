@@ -100,6 +100,7 @@ def isInChromiumBlacklist(file_path):
             not 'media/desktop_media_list.h' in file_path and
             not 'media/desktop_streams_registry.cc' in file_path and
             not 'media/desktop_streams_registry.h' in file_path and
+            not 'net/net_error_info' in file_path and
             not file_path.endswith('.isolate') and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
