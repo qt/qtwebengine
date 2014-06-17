@@ -106,21 +106,26 @@ if not len(findSnapshotBaselineSha1()):
 patches = preparePatchesFromSnapshot()
 for path in patches:
     leading = path.count('/') + 2
+    target_dir = ""
 
     if path.startswith('chromium'):
-        os.chdir(os.path.join(upstream_src_dir, path))
+        target_dir = os.path.join(upstream_src_dir, path)
     else:
-        os.chdir(os.path.join(upstream_src_dir, 'chromium', path))
+        target_dir = os.path.join(upstream_src_dir, 'chromium', path)
         leading += 1
 
-    print('\n-- entering '+ os.getcwd() + ' --')
+    if not os.path.isdir(target_dir):
+        print('\n-- missing '+ target_dir + ', skipping --')
+    else:
+        os.chdir(target_dir)
+        print('\n-- entering '+ os.getcwd() + ' --')
 
-    # Sort the patches to be able to apply them in order
-    patch_list = sorted(patches[path])
-    for patch in patch_list:
-        error = subprocess.call(['git', 'am', '-p' + str(leading), patch])
-        if error != 0:
-            sys.exit('-- git am ' + patch + ' failed in ' + os.getcwd() + ' --')
+        # Sort the patches to be able to apply them in order
+        patch_list = sorted(patches[path])
+        for patch in patch_list:
+            error = subprocess.call(['git', 'am', '-p' + str(leading), patch])
+            if error != 0:
+                sys.exit('-- git am ' + patch + ' failed in ' + os.getcwd() + ' --')
 
 print('\n-- done --')
 
