@@ -77,7 +77,6 @@ SOURCES = \
         web_event_factory.cpp \
         yuv_video_node.cpp
 
-
 HEADERS = \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
