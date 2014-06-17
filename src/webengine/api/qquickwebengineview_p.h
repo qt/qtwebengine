@@ -123,6 +123,7 @@ Q_SIGNALS:
     void loadProgressChanged();
     void linkHovered(const QUrl &hoveredUrl);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
+    void loadVisuallyCommitted();
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

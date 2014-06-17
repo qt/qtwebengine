@@ -137,7 +137,7 @@ public:
     virtual QPoint mapToGlobal(const QPoint &posInView) const = 0;
     virtual qreal dpiScale() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl) = 0;
-    virtual void loadCommitted() = 0;
+    virtual void loadCommitted(bool mainFrame) = 0;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) = 0;
     virtual void focusContainer() = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
@@ -155,6 +155,7 @@ public:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
+    virtual void onSwapCompositorFrame() = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

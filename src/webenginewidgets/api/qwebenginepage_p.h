@@ -120,7 +120,7 @@ public:
     virtual QPoint mapToGlobal(const QPoint &posInView) const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
-    virtual void loadCommitted() Q_DECL_OVERRIDE;
+    virtual void loadCommitted(bool mainFrame) Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success, int error_code, const QString &error_description = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
@@ -138,6 +138,7 @@ public:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
+    virtual void onSwapCompositorFrame() Q_DECL_OVERRIDE { };
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
