@@ -75,7 +75,6 @@ SOURCES = \
         web_event_factory.cpp \
         yuv_video_node.cpp
 
-
 HEADERS = \
         browser_context_qt.h \
         chromium_overrides.h \
