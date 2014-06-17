@@ -106,13 +106,20 @@ if not len(findSnapshotBaselineSha1()):
 patches = preparePatchesFromSnapshot()
 for path in patches:
     leading = path.count('/') + 2
+    target_dir = ""
 
     if path.startswith('chromium'):
-        os.chdir(os.path.join(upstream_src_dir, path))
+        target_dir = os.path.join(upstream_src_dir, path)
     else:
-        os.chdir(os.path.join(upstream_src_dir, 'chromium', path))
+        target_dir = os.path.join(upstream_src_dir, 'chromium', path)
         leading += 1
 
+    if not os.path.isdir(target_dir):
+        # Skip applying patches for non-existing submodules
+        print('\n-- missing '+ target_dir + ', skipping --')
+        continue
+
+    os.chdir(target_dir)
     print('\n-- entering '+ os.getcwd() + ' --')
 
     # Sort the patches to be able to apply them in order
