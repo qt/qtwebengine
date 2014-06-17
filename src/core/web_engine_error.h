@@ -44,6 +44,8 @@
 
 #include "qtwebenginecoreglobal.h"
 
+#include <QByteArray>
+
 class QWEBENGINE_EXPORT WebEngineError
 {
 
@@ -61,6 +63,8 @@ public:
     static const int UserAbortedError;
 
     static ErrorDomain toQtErrorDomain(int error_code);
+
+    static QByteArray errorName(int error_code);
 
 };
 

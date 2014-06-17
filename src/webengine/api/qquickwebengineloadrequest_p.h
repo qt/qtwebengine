@@ -56,15 +56,18 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineLoadRequest : public QObject {
     Q_PROPERTY(QString errorString READ errorString)
     Q_PROPERTY(QQuickWebEngineView::ErrorDomain errorDomain READ errorDomain)
     Q_PROPERTY(int errorCode READ errorCode)
+    Q_PROPERTY(QString errorName READ errorName)
 
 public:
-    QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString = QString(), int errorCode = 0, QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain, QObject* parent = 0);
+    QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString = QString(), int errorCode = 0, QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain
+            , const QString &errorName = QString(), QObject* parent = 0);
     ~QQuickWebEngineLoadRequest();
     QUrl url() const;
     QQuickWebEngineView::LoadStatus status() const;
     QString errorString() const;
     QQuickWebEngineView::ErrorDomain errorDomain() const;
     int errorCode() const;
+    QString errorName() const;
 
 private:
     QScopedPointer<QQuickWebEngineLoadRequestPrivate> d;
@@ -72,12 +75,13 @@ private:
 
 class QQuickWebEngineLoadRequestPrivate {
 public:
-    QQuickWebEngineLoadRequestPrivate(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain)
+    QQuickWebEngineLoadRequestPrivate(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain, const QString &errorName)
         : url(url)
         , status(status)
         , errorString(errorString)
         , errorCode(errorCode)
         , errorDomain(errorDomain)
+        , errorName(errorName)
     {
     }
 
@@ -86,6 +90,7 @@ public:
     QString errorString;
     int errorCode;
     QQuickWebEngineView::ErrorDomain errorDomain;
+    QString errorName;
 };
 
 QT_END_NAMESPACE

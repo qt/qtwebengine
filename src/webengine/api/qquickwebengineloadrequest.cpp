@@ -53,9 +53,9 @@
 
     \sa WebEngineView::onLoadingChanged
 */
-QQuickWebEngineLoadRequest::QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain, QObject* parent)
+QQuickWebEngineLoadRequest::QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain, const QString &errorName, QObject* parent)
     : QObject(parent)
-    , d(new QQuickWebEngineLoadRequestPrivate(url, status, errorString, errorCode, errorDomain))
+    , d(new QQuickWebEngineLoadRequestPrivate(url, status, errorString, errorCode, errorDomain, errorName))
 {
 }
 
@@ -110,4 +110,9 @@ QQuickWebEngineView::ErrorDomain QQuickWebEngineLoadRequest::errorDomain() const
 int QQuickWebEngineLoadRequest::errorCode() const
 {
     return d->errorCode;
+}
+
+QString QQuickWebEngineLoadRequest::errorName() const
+{
+    return d->errorName;
 }

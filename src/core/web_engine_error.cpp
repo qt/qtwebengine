@@ -88,3 +88,8 @@ WebEngineError::ErrorDomain WebEngineError::toQtErrorDomain(int error_code)
     else
         return WebEngineError::InternalErrorDomain;
 }
+
+QByteArray WebEngineError::errorName(int error_code)
+{
+    return QByteArray(net::ErrorToString(error_code));
+}
