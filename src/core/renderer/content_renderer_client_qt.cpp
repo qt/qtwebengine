@@ -41,10 +41,61 @@
 
 #include "renderer/content_renderer_client_qt.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "content/public/renderer/render_thread.h"
+#include "net/base/net_errors.h"
+#include "third_party/WebKit/public/platform/WebURLError.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/webui/jstemplate_builder.h"
+
+#include "common/localized_error.h"
 #include "renderer/qt_render_view_observer.h"
+
+#include "grit/renderer_resources.h"
+
+static const char kHttpErrorDomain[] = "http";
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
 {
     // RenderViewObserver destroys itself with its RenderView.
     new QtRenderViewObserver(render_view);
+}
+
+// To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
+void ContentRendererClientQt::GetNavigationErrorStrings(blink::WebFrame *frame, const blink::WebURLRequest &failed_request, const blink::WebURLError &error, const std::string &accept_languages, std::string *error_html, base::string16 *error_description)
+{
+    Q_UNUSED(frame)
+
+    const bool isPost = EqualsASCII(failed_request.httpMethod(), "POST");
+
+    if (error_html) {
+      // Use a local error page.
+      int resource_id;
+      base::DictionaryValue error_strings;
+
+      const std::string locale = content::RenderThread::Get()->GetLocale();
+      /* FIXME: rip that as well ?
+        if (!NetErrorHelper::GetErrorStringsForDnsProbe(
+                frame, error, is_post, locale, accept_languages,
+                &error_strings)) {
+          // In most cases, the NetErrorHelper won't provide DNS-probe-specific
+          // error pages, so fall back to LocalizedError.
+*/
+      LocalizedError::GetStrings(error.reason, error.domain.utf8(),
+                                 error.unreachableURL, isPost, locale,
+                                 accept_languages, &error_strings);
+      resource_id = IDR_NET_ERROR_HTML;
+
+
+      const base::StringPiece template_html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
+      if (template_html.empty())
+        NOTREACHED() << "unable to load template. ID: " << resource_id;
+      else // "t" is the id of the templates root node.
+        *error_html = webui::GetTemplatesHtml(template_html, &error_strings, "t");
+    }
+
+    if (error_description) {
+        *error_description = LocalizedError::GetErrorDetails(error, isPost);
+    }
 }
