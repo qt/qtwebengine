@@ -264,8 +264,15 @@ ApplicationWindow {
                     z: 3
                 }
 
+                ErrorPage {
+                    id: errorPage
+                    anchors.fill: parent
+                    displayingError: false
+                }
+
                 WebEngineView {
                     id: webEngineView
+                    enabled: !errorPage.displayingError
 
                     anchors {
                         fill: parent
@@ -288,6 +295,18 @@ ApplicationWindow {
                             }
                         }
                     ]
+
+                    onLoadingChanged: {
+                            var loadError = loadRequest.errorDomain
+                            if (loadError == WebEngineView.NoErrorDomain) {
+                                errorPage.displayingError = false;
+                                return;
+                            }
+                            errorPage.errorName = loadRequest.errorName;
+                            errorPage.heading = loadRequest.errorHeading;
+                            errorPage.details = loadRequest.errorDetails;
+                            errorPage.displayingError = true;
+                    }
 
                     experimental {
                         isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
