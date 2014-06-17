@@ -43,6 +43,7 @@
 #define WEB_ENGINE_LIBRARY_INFO_H
 
 #include "base/files/file_path.h"
+#include "base/strings/string16.h"
 enum {
     QT_RESOURCES_PAK = 5000
 };
@@ -50,6 +51,8 @@ enum {
 class WebEngineLibraryInfo {
 public:
     static base::FilePath getPath(int key);
+    // Called by localized_error in our custom chrome layer
+    static base::string16 getApplicationName();
 };
 
 
