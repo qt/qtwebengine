@@ -885,7 +885,12 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 
 void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 {
-    m_host->ForwardKeyboardEvent(WebEventFactory::toWebKeyboardEvent(ev));
+    content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
+    m_host->ForwardKeyboardEvent(webEvent);
+    if (webEvent.type == blink::WebInputEvent::RawKeyDown && !ev->text().isEmpty()) {
+        webEvent.type = blink::WebInputEvent::Char;
+        m_host->ForwardKeyboardEvent(webEvent);
+    }
 }
 
 void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
