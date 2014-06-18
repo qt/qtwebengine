@@ -508,7 +508,7 @@ static WebInputEvent::Type webEventTypeForEvent(const QEvent* event)
     case QEvent::Wheel:
         return WebInputEvent::MouseWheel;
     case QEvent::KeyPress:
-        return WebInputEvent::KeyDown;
+        return WebInputEvent::RawKeyDown;
     case QEvent::KeyRelease:
         return WebInputEvent::KeyUp;
     case QEvent::HoverMove:
@@ -600,6 +600,8 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     webKitEvent.windowsKeyCode = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
     webKitEvent.setKeyIdentifierFromWindowsKeyCode();
 
-    memcpy(&webKitEvent.text, ev->text().utf16(), qMin(sizeof(webKitEvent.text), sizeof(ev->text().utf16())));
+    const ushort* text = ev->text().utf16();
+    memcpy(&webKitEvent.text, text, std::min(sizeof(webKitEvent.text), size_t(ev->text().length() * 2)));
+    memcpy(&webKitEvent.unmodifiedText, text, std::min(sizeof(webKitEvent.unmodifiedText), size_t(ev->text().length() * 2)));
     return webKitEvent;
 }
