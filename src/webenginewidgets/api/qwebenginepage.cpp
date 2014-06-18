@@ -240,8 +240,9 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl)
     updateNavigationActions();
 }
 
-void QWebEnginePagePrivate::loadCommitted()
+void QWebEnginePagePrivate::loadCommitted(bool mainFrame)
 {
+    Q_UNUSED(mainFrame)
     updateNavigationActions();
 }
 

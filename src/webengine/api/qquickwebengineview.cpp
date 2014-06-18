@@ -75,6 +75,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , loadProgress(0)
     , inspectable(false)
     , m_isFullScreen(false)
+    , m_betweenLoadCommitAndRendering(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -264,9 +265,21 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl)
     Q_EMIT q->loadingChanged(&loadRequest);
 }
 
-void QQuickWebEngineViewPrivate::loadCommitted()
+void QQuickWebEngineViewPrivate::loadCommitted(bool mainFrame)
 {
+    if (mainFrame)
+        m_betweenLoadCommitAndRendering = true;
+
     m_history->reset();
+}
+
+void QQuickWebEngineViewPrivate::onSwapCompositorFrame()
+{
+    Q_Q(QQuickWebEngineView);
+    if (m_betweenLoadCommitAndRendering) {
+        Q_EMIT e->loadVisuallyCommitted();
+        m_betweenLoadCommitAndRendering = false;
+    }
 }
 
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
@@ -508,6 +521,12 @@ void QQuickWebEngineView::forceActiveFocus()
             break;
         }
     }
+}
+
+QQuickWebEngineViewExperimental *QQuickWebEngineView::experimental() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->e.data();
 }
 
 bool QQuickWebEngineViewExperimental::inspectable() const

@@ -116,6 +116,7 @@ Q_SIGNALS:
     void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();
     void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
+    void loadVisuallyCommitted();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -149,7 +150,7 @@ public:
     virtual QPoint mapToGlobal(const QPoint &posInView) const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
-    virtual void loadCommitted() Q_DECL_OVERRIDE;
+    virtual void loadCommitted(bool mainFrame) Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &) Q_DECL_OVERRIDE;
@@ -167,6 +168,7 @@ public:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
+    virtual void onSwapCompositorFrame() Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);
@@ -180,6 +182,7 @@ public:
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;
+    bool m_betweenLoadCommitAndRendering;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
 

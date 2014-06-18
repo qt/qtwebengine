@@ -145,8 +145,7 @@ void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(int64 frame_id, con
     // Make sure that we don't set the findNext WebFindOptions on a new frame.
     m_lastSearchedString = QString();
 
-    // This is currently used for canGoBack/Forward values, which is flattened across frames. For other purposes we might have to pass is_main_frame.
-    m_viewClient->loadCommitted();
+    m_viewClient->loadCommitted(is_main_frame);
 }
 
 void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host)
