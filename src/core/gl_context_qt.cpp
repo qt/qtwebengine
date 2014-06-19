@@ -88,17 +88,39 @@ void* GLContextHelper::getEglConfig()
 #else
     QOpenGLContext *shareContext = QOpenGLContextPrivate::globalShareContext();
 #endif
+#if defined(OS_WIN)
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("eglConfig"), shareContext);
+#else
     return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("eglconfig"), shareContext);
+#endif
 }
 
 void* GLContextHelper::getEglDisplay()
 {
+#if defined(OS_WIN)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 0))
+    QOpenGLContext *shareContext = QSGContext::sharedOpenGLContext();
+#else
+    QOpenGLContext *shareContext = QOpenGLContextPrivate::globalShareContext();
+#endif
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("eglDisplay"), shareContext);
+#else
     return qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("egldisplay"));
+#endif
 }
 
 void* GLContextHelper::getNativeDisplay()
 {
+#if defined(OS_WIN)
+#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 0))
+    QOpenGLContext *shareContext = QSGContext::sharedOpenGLContext();
+#else
+    QOpenGLContext *shareContext = QOpenGLContextPrivate::globalShareContext();
+#endif
+    return qApp->platformNativeInterface()->nativeResourceForContext(QByteArrayLiteral("nativeDisplay"), shareContext);
+#else
     return qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("nativedisplay"));
+#endif
 }
 
 QT_END_NAMESPACE
