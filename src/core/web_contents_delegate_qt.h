@@ -42,6 +42,7 @@
 #ifndef WEB_CONTENTS_DELEGATE_QT_H
 #define WEB_CONTENTS_DELEGATE_QT_H
 
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -75,6 +76,7 @@ public:
     virtual void DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const base::string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
+    virtual void DidNavigateMainFrame(const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
     virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen) Q_DECL_OVERRIDE;

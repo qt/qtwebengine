@@ -129,6 +129,7 @@ public:
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client) = 0;
     virtual void titleChanged(const QString&) = 0;
     virtual void urlChanged(const QUrl&) = 0;
+    virtual void didVisitUrlFragment() = 0;
     virtual void iconChanged(const QUrl&) = 0;
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;

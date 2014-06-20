@@ -176,6 +176,13 @@ void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame
     }
 }
 
+void WebContentsDelegateQt::DidNavigateMainFrame(const content::LoadCommittedDetails& details, const content::FrameNavigateParams& params)
+{
+    Q_UNUSED(params)
+    if (details.is_in_page)
+        m_viewClient->didVisitUrlFragment();
+}
+
 void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
 {
     Q_UNUSED(page_id)

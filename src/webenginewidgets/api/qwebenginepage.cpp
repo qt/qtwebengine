@@ -194,6 +194,12 @@ void QWebEnginePagePrivate::urlChanged(const QUrl &url)
     Q_EMIT q->urlChanged(url);
 }
 
+void QWebEnginePagePrivate::didVisitUrlFragment()
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->urlFragmentVisited();
+}
+
 void QWebEnginePagePrivate::iconChanged(const QUrl &url)
 {
     Q_UNUSED(url)
