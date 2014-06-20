@@ -76,7 +76,11 @@ FenceSync createFence()
     // before we try waiting on it from a different context, which could deadlock.
     // In cases where no fence extension is available, this also serves as flushing
     // Chromium's GL context command stream before yielding to the SG thread.
-    glFlush();
+    // glFlush();
+
+    // FIXME: Temporary workaround for non-standard-compiland drivers until
+    // we find out something that works reliably on all our devices.
+    glFinish();
     return ret;
 }
 
