@@ -45,11 +45,26 @@
 
 #include "chromium_gpu_helper.h"
 
+#include "base/strings/string_util.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/config/gpu_info_collector.h"
+
+namespace {
+
+bool isVivante()
+{
+    gpu::GPUInfo gpuInfo;
+    gpu::CollectBasicGraphicsInfo(&gpuInfo);
+
+    return LowerCaseEqualsASCII(gpuInfo.gpu.vendor_string, "vivante corporation")
+           && LowerCaseEqualsASCII(gpuInfo.gpu.device_string, "gc2000 core");
+}
+
+}
 
 static void addSyncPointCallbackDelegate(content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
 {
@@ -59,6 +74,17 @@ static void addSyncPointCallbackDelegate(content::SyncPointManager *syncPointMan
 FenceSync createFence()
 {
     FenceSync ret;
+
+    static bool hasVivanteGPU = isVivante();
+
+    // On the iMX6 the eglClientWaitSyncKHR call crashes with the fence_sync
+    // but the glFlush() call below seems to be enough to sync GL commands,
+    // thus skip creating a fence sync for the Vivante GPU.
+    if (hasVivanteGPU) {
+        glFlush();
+        return ret;
+    }
+
     // Logic taken from chromium/ui/gl/gl_fence.cc
 #if !defined(OS_MACOSX)
     if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
