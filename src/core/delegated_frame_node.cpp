@@ -242,14 +242,14 @@ static void waitAndDeleteChromiumSync(FenceSync *sync)
     case FenceSync::NoSync:
         break;
     case FenceSync::EglSync:
-#ifdef EGL_KHR_reusable_sync
+#ifdef EGL_KHR_fence_sync
     {
         static bool resolved = false;
         static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
         static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
 
         if (!resolved) {
-            if (hasEGLExtension(sync->egl.display, "EGL_KHR_reusable_sync")) {
+            if (hasEGLExtension(sync->egl.display, "EGL_KHR_fence_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
                 eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
