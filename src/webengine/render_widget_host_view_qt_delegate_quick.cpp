@@ -147,11 +147,13 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVis
 
 void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
 {
+    setFocus(true);
     m_client->forwardEvent(event);
 }
 
 void RenderWidgetHostViewQtDelegateQuick::focusOutEvent(QFocusEvent *event)
 {
+    setFocus(false);
     m_client->forwardEvent(event);
 }
 
@@ -189,6 +191,8 @@ void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
 
 void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
 {
+    if (event->type() == QEvent::TouchBegin && !hasActiveFocus())
+        forceActiveFocus();
     m_client->forwardEvent(event);
 }
 
