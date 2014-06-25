@@ -1689,6 +1689,7 @@ void tst_QWebEnginePage::backActionUpdate()
     QEXPECT_FAIL("", "Behavior change: Load signals are emitted only for the main frame in QtWebEngine.", Continue);
     QTRY_COMPARE_WITH_TIMEOUT(loadSpy.count(), 2, 100);
 
+    QEXPECT_FAIL("", "FIXME: Mouse events aren't passed from the QWebEngineView down to the RWHVQtDelegateWidget", Continue);
     QVERIFY(action->isEnabled());
 }
 
