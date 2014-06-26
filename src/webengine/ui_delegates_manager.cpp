@@ -164,7 +164,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!fi.exists())
         return false;
     // FIXME: handle async loading
-    *component = (new QQmlComponent(engine, QUrl(fi.absoluteFilePath()), QQmlComponent::PreferSynchronous, m_view));
+    *component = (new QQmlComponent(engine, QUrl::fromLocalFile(fi.absoluteFilePath()), QQmlComponent::PreferSynchronous, m_view));
 
     if ((*component)->status() != QQmlComponent::Ready) {
 #ifdef UI_DELEGATES_DEBUG
