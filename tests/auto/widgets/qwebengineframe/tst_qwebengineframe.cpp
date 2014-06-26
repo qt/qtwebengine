@@ -1353,6 +1353,14 @@ void tst_QWebEngineFrame::setUrlToInvalid()
     QCOMPARE(baseUrlSync(&page), aboutBlank);
 }
 
+static QStringList collectHistoryUrls(QWebEngineHistory *history)
+{
+    QStringList urls;
+    foreach (const QWebEngineHistoryItem &i, history->items())
+        urls << i.url().toString();
+    return urls;
+}
+
 void tst_QWebEngineFrame::setUrlHistory()
 {
     const QUrl aboutBlank("about:blank");
@@ -1368,7 +1376,7 @@ void tst_QWebEngineFrame::setUrlHistory()
     QEXPECT_FAIL("", "Slight change: QUrl() isn't replaced by about:blank.", Continue);
     QCOMPARE(m_page->url(), aboutBlank);
     QCOMPARE(m_page->requestedUrl(), QUrl());
-    QCOMPARE(m_page->history()->count(), 0);
+    QCOMPARE(collectHistoryUrls(m_page->history()), QStringList());
 
     url = QUrl("http://non.existent/");
     m_page->setUrl(url);
@@ -1376,7 +1384,7 @@ void tst_QWebEngineFrame::setUrlHistory()
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), url);
-    QCOMPARE(m_page->history()->count(), 0);
+    QCOMPARE(collectHistoryUrls(m_page->history()), QStringList());
 
     url = QUrl("qrc:/test1.html");
     m_page->setUrl(url);
@@ -1384,7 +1392,7 @@ void tst_QWebEngineFrame::setUrlHistory()
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), url);
-    QCOMPARE(m_page->history()->count(), 1);
+    QCOMPARE(collectHistoryUrls(m_page->history()), QStringList() << QStringLiteral("qrc:/test1.html"));
 
     m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
@@ -1392,7 +1400,8 @@ void tst_QWebEngineFrame::setUrlHistory()
     QCOMPARE(m_page->url(), aboutBlank);
     QEXPECT_FAIL("", "Slight change: This information now comes from Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(m_page->requestedUrl(), QUrl());
-    QCOMPARE(m_page->history()->count(), 1);
+    QEXPECT_FAIL("", "Slight change: load(QUrl()) currently loads about:blank and nothing prevents it from being added to the history.", Continue);
+    QCOMPARE(collectHistoryUrls(m_page->history()), QStringList() << QStringLiteral("qrc:/test1.html"));
 
     // Loading same page as current in history, so history count doesn't change.
     url = QUrl("qrc:/test1.html");
@@ -1401,7 +1410,8 @@ void tst_QWebEngineFrame::setUrlHistory()
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), url);
-    QCOMPARE(m_page->history()->count(), 1);
+    QEXPECT_FAIL("", "Slight change: load(QUrl()) currently loads about:blank and nothing prevents it from being added to the history.", Continue);
+    QCOMPARE(collectHistoryUrls(m_page->history()), QStringList() << QStringLiteral("qrc:/test1.html"));
 
     url = QUrl("qrc:/test2.html");
     m_page->setUrl(url);
@@ -1409,7 +1419,8 @@ void tst_QWebEngineFrame::setUrlHistory()
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), url);
-    QCOMPARE(m_page->history()->count(), 2);
+    QEXPECT_FAIL("", "Slight change: load(QUrl()) currently loads about:blank and nothing prevents it from being added to the history.", Continue);
+    QCOMPARE(collectHistoryUrls(m_page->history()), QStringList() << QStringLiteral("qrc:/test1.html") << QStringLiteral("qrc:/test2.html"));
 }
 
 void tst_QWebEngineFrame::setUrlUsingStateObject()
