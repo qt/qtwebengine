@@ -130,6 +130,7 @@ public:
     virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; };
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
+    virtual void didCommitLoadVisually() Q_DECL_OVERRIDE { qDebug() << "--- didCommitLoadVisually ---"; };
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;

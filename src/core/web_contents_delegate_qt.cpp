@@ -176,6 +176,13 @@ void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame
     }
 }
 
+void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint(int32 page_id)
+{
+    Q_UNUSED(page_id)
+    qDebug() << "--- DidFirstVisuallyNonEmptyPaint ---";
+    m_viewClient->didCommitLoadVisually();
+}
+
 void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
 {
     Q_UNUSED(page_id)

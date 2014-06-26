@@ -116,6 +116,7 @@ Q_SIGNALS:
     void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();
     void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
+    void loadVisuallyCommitted();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -159,6 +160,7 @@ public:
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
+    virtual void didCommitLoadVisually() Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
@@ -180,6 +182,7 @@ public:
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;
+    bool m_betweenLoadCommitAndRendering;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
 
