@@ -8,7 +8,7 @@ QT_PRIVATE += webenginecore widgets-private quick-private gui-private network-pr
 
 QMAKE_DOCS = $$PWD/doc/qtwebenginewidgets.qdocconf
 
-INCLUDEPATH += $$PWD api ../core
+INCLUDEPATH += $$PWD api ../core ../webengine/api
 
 SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
