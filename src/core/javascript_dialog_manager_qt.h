@@ -75,6 +75,7 @@ public:
     void runDialogForContents(content::WebContents *, WebContentsAdapterClient::JavascriptDialogType, const QString &messageText, const QString &defaultPrompt
                               , const QUrl &,const content::JavaScriptDialogManager::DialogClosedCallback &callback, const QString &title = QString());
     void removeDialogForContents(content::WebContents *);
+    QSharedPointer<JavaScriptDialogController> takeDialogForContents(content::WebContents *);
 
 private:
     QMap<content::WebContents *, QSharedPointer<JavaScriptDialogController> > m_activeDialogs;

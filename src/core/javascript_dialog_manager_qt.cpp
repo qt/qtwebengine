@@ -99,10 +99,15 @@ void JavaScriptDialogManagerQt::runDialogForContents(content::WebContents *webCo
 
 }
 
-
 void JavaScriptDialogManagerQt::removeDialogForContents(content::WebContents *contents)
+{
+    takeDialogForContents(contents);
+}
+
+QSharedPointer<JavaScriptDialogController> JavaScriptDialogManagerQt::takeDialogForContents(content::WebContents * contents)
 {
     QSharedPointer<JavaScriptDialogController> dialog = m_activeDialogs.take(contents);
     if (dialog)
         Q_EMIT dialog->dialogCloseRequested();
+    return dialog;
 }
