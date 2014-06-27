@@ -139,6 +139,8 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
 #if defined(QTWEBENGINE_MOBILE_SWITCHES)
+    parsedCommandLine->AppendSwitch(switches::kIgnoreGpuBlacklist);
+
     // Inspired from the Android port's default switches
     parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbars);
     parsedCommandLine->AppendSwitch(switches::kEnableGestureTapHighlight);
