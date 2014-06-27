@@ -76,7 +76,7 @@ bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *con
     if (!dialog)
         return false;
     dialog->d->dialogFinished(accept, promptOverride ? *promptOverride : base::string16());
-    removeDialogForContents(contents);
+    takeDialogForContents(contents);
     return true;
 }
 
@@ -99,10 +99,10 @@ void JavaScriptDialogManagerQt::runDialogForContents(content::WebContents *webCo
 
 }
 
-
-void JavaScriptDialogManagerQt::removeDialogForContents(content::WebContents *contents)
+QSharedPointer<JavaScriptDialogController> JavaScriptDialogManagerQt::takeDialogForContents(content::WebContents *contents)
 {
     QSharedPointer<JavaScriptDialogController> dialog = m_activeDialogs.take(contents);
     if (dialog)
         Q_EMIT dialog->dialogCloseRequested();
+    return dialog;
 }
