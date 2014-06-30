@@ -46,11 +46,12 @@
 
 #include <QQuickItem>
 
-class RenderWidgetHostViewQtDelegateQuick : public QQuickItem, public RenderWidgetHostViewQtDelegate
+class QQuickWebEngineView;
+
+class RenderWidgetHostViewQtDelegateQuick : public RenderWidgetHostViewQtDelegate
 {
-    Q_OBJECT
 public:
-    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup);
+    RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup, QQuickWebEngineView *view);
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
     virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
@@ -69,26 +70,20 @@ public:
     virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
     virtual void setTooltip(const QString&) Q_DECL_OVERRIDE { }
 
-protected:
-    virtual void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
-    virtual void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
-    virtual void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    virtual void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    virtual void mouseReleaseEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    virtual void keyPressEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    virtual void keyReleaseEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    virtual void wheelEvent(QWheelEvent *event) Q_DECL_OVERRIDE;
-    virtual void touchEvent(QTouchEvent *event) Q_DECL_OVERRIDE;
-    virtual void hoverMoveEvent(QHoverEvent *event) Q_DECL_OVERRIDE;
-    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
-    virtual void inputMethodEvent(QInputMethodEvent *event) Q_DECL_OVERRIDE;
-    virtual void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;
-    virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
-    virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
+    QSGNode *updatePaintNode(QSGNode *, QQuickItem::UpdatePaintNodeData *);
+    bool event(QEvent *event);
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
+    void windowChanged();
+
+    void setView(QQuickWebEngineView* view);
 
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
+    QQuickWebEngineView *m_view;
     bool m_isPopup;
     bool m_initialized;
+    bool m_isVisible;
 };
 #endif

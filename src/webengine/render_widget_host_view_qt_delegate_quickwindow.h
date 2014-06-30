@@ -52,7 +52,7 @@
 class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public RenderWidgetHostViewQtDelegate {
 
 public:
-    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate);
+    RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegateQuick *realDelegate);
     ~RenderWidgetHostViewQtDelegateQuickWindow();
 
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
@@ -73,7 +73,8 @@ public:
     virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
 
 private:
-    QScopedPointer<RenderWidgetHostViewQtDelegate> m_realDelegate;
+    QScopedPointer<RenderWidgetHostViewQtDelegateQuick> m_realDelegate;
+    QQuickWebEngineView *m_view;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H

@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineViewPrivate;
 class QQuickWebEngineLoadRequest;
+class RenderWidgetHostViewQtDelegateQuick;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -76,7 +77,6 @@ public:
     QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
-    void forceActiveFocus();
 
     enum LoadStatus {
         LoadStartedStatus,
@@ -108,6 +108,8 @@ public:
         ErrorMessageLevel
     };
 
+    void setDelegate(RenderWidgetHostViewQtDelegateQuick* delegate);
+
 public Q_SLOTS:
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void goBack();
@@ -127,8 +129,13 @@ Q_SIGNALS:
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
     void itemChange(ItemChange, const ItemChangeData &);
+    virtual QSGNode *updatePaintNode(QSGNode *, QQuickItem::UpdatePaintNodeData *) Q_DECL_OVERRIDE;
+
+    virtual bool event(QEvent *) Q_DECL_OVERRIDE;
+    virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
 
 private:
+    RenderWidgetHostViewQtDelegateQuick* m_delegate;
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;

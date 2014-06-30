@@ -120,20 +120,19 @@ UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
-    return new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ false);
+    Q_Q(QQuickWebEngineView);
+    return new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ false, q);
 }
 
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
     const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
-    RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
+    RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true, q);
     if (hasWindowCapability) {
         RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
-        quickDelegate->setParentItem(wrapperWindow->contentItem());
         return wrapperWindow;
     }
-    quickDelegate->setParentItem(q);
     return quickDelegate;
 }
 
@@ -409,8 +408,11 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     d->e->q_ptr = this;
     d->adapter->initialize(d);
     this->setFocus(true);
+    this->setVisible(true);
     this->setActiveFocusOnTab(true);
-    this->setFlag(QQuickItem::ItemIsFocusScope);
+    this->setAcceptHoverEvents(true);
+    this->setAcceptedMouseButtons(Qt::AllButtons);
+    this->setFlags(QQuickItem::ItemIsFocusScope | QQuickItem::ItemHasContents);
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()
@@ -506,16 +508,6 @@ bool QQuickWebEngineView::canGoForward() const
     return d->adapter->canGoForward();
 }
 
-void QQuickWebEngineView::forceActiveFocus()
-{
-    Q_FOREACH (QQuickItem *child, childItems()) {
-        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child)) {
-            child->forceActiveFocus();
-            break;
-        }
-    }
-}
-
 bool QQuickWebEngineViewExperimental::inspectable() const
 {
     Q_D(const QQuickWebEngineView);
@@ -609,10 +601,7 @@ void QQuickWebEngineViewExperimental::goForwardTo(int index)
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
-    Q_FOREACH(QQuickItem *child, childItems()) {
-        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child))
-            child->setSize(newGeometry.size());
-    }
+    m_delegate->geometryChanged(newGeometry, oldGeometry);
 }
 
 void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &value)
@@ -625,6 +614,19 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
             d->adapter->wasHidden();
     }
     QQuickItem::itemChange(change, value);
+    if (change == ItemSceneChange)
+        m_delegate->windowChanged();
+}
+
+QSGNode* QQuickWebEngineView::updatePaintNode(QSGNode *oldNode, QQuickItem::UpdatePaintNodeData *)
+{
+    return m_delegate->updatePaintNode(oldNode, 0);
+}
+
+void QQuickWebEngineView::setDelegate(RenderWidgetHostViewQtDelegateQuick* delegate)
+{
+    m_delegate = delegate;
+    m_delegate->setView(this);
 }
 
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
@@ -660,6 +662,42 @@ void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
     d->setDevicePixelRatio(devicePixelRatio);
     d->adapter->dpiScaleChanged();
     Q_EMIT devicePixelRatioChanged();
+}
+
+bool QQuickWebEngineView::event(QEvent *event)
+{
+    if (!m_delegate)
+        return QQuickItem::event(event);
+
+    switch (event->type()) {
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonRelease:
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+    case QEvent::Wheel:
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
+    case QEvent::HoverEnter:
+    case QEvent::HoverLeave:
+    case QEvent::HoverMove:
+    case QEvent::InputMethod:
+        m_delegate->event(event);
+        break;
+
+    default:
+        return QQuickItem::event(event);
+    }
+}
+
+QVariant QQuickWebEngineView::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    if (m_delegate)
+        return m_delegate->inputMethodQuery(query);
 }
 
 QT_END_NAMESPACE

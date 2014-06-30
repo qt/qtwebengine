@@ -49,97 +49,84 @@
 #include <QVariant>
 #include <QWindow>
 
-RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
+RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup, QQuickWebEngineView *view)
     : m_client(client)
+    , m_view(view)
     , m_isPopup(isPopup)
     , m_initialized(false)
+    , m_isVisible(true)
 {
-    setFlag(ItemHasContents);
-    setAcceptedMouseButtons(Qt::AllButtons);
-    setAcceptHoverEvents(true);
-    if (isPopup)
-        return;
-    setFocus(true);
-    setActiveFocusOnTab(true);
-    setFlag(QQuickItem::ItemIsFocusScope);
 }
 
 void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
 {
     QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
-    setParentItem(viewPrivate->q_func());
-    setSize(viewPrivate->q_func()->boundingRect().size());
+    viewPrivate->q_func()->setDelegate(this);
     m_initialized = true;
 }
 
 void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
 {
-    Q_ASSERT(m_isPopup && parentItem());
-    QRectF rect(parentItem()->mapRectFromScene(r));
-    setX(rect.x());
-    setY(rect.y());
-    setWidth(rect.width());
-    setHeight(rect.height());
-    setVisible(true);
     m_initialized = true;
 }
 
 QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
 {
-    QPointF pos = mapToScene(QPointF(0,0));
-    return QRectF(pos.x(), pos.y(), width(), height());
+    QPointF pos = m_view->mapToScene(QPointF(0,0));
+    return QRectF(pos.x(), pos.y(), m_view->width(), m_view->height());
 }
 
 QRectF RenderWidgetHostViewQtDelegateQuick::contentsRect() const
 {
-    QPointF scenePoint = mapToScene(QPointF(0, 0));
+    QPointF scenePoint = m_view->mapToScene(QPointF(0, 0));
     QPointF screenPos = window()->mapToGlobal(scenePoint.toPoint());
-    return QRectF(screenPos, QPointF(width(), height()));
+    return QRectF(screenPos.x(), screenPos.y(), m_view->width(), m_view->height());
 }
 
 void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
 {
-    setFocus(true);
+    m_view->setFocus(true);
 }
 
 bool RenderWidgetHostViewQtDelegateQuick::hasKeyboardFocus()
 {
-    return hasFocus();
+    return m_view->hasFocus();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::show()
 {
-    setVisible(true);
+    m_isVisible = true;
+    update();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::hide()
 {
-    setVisible(false);
+    m_isVisible = false;
+    update();
 }
 
 bool RenderWidgetHostViewQtDelegateQuick::isVisible() const
 {
-    return QQuickItem::isVisible();
+    return m_view->isVisible();
 }
 
 QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
 {
-    return QQuickItem::window();
+    return m_view->window();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::update()
 {
-    QQuickItem::update();
+    m_view->update();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::updateCursor(const QCursor &cursor)
 {
-    setCursor(cursor);
+    m_view->setCursor(cursor);
 }
 
 void RenderWidgetHostViewQtDelegateQuick::resize(int width, int height)
 {
-    setSize(QSizeF(width, height));
 }
 
 void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVisible)
@@ -147,87 +134,51 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVis
     if (qApp->inputMethod()->isVisible() == editorVisible)
         return;
 
-    setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
+    m_view->setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
     qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
     qApp->inputMethod()->setVisible(editorVisible);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
+bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
 {
-    m_client->forwardEvent(event);
+    switch (event->type()) {
+    case QEvent::FocusIn:
+        setKeyboardFocus();
+        break;
+    case QEvent::MouseButtonPress:
+        if (!m_isPopup) m_view->forceActiveFocus();
+        break;
+    default: break;
+    }
+    return m_client->forwardEvent(event);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::focusOutEvent(QFocusEvent *event)
-{
-    m_client->forwardEvent(event);
-}
 
-void RenderWidgetHostViewQtDelegateQuick::mousePressEvent(QMouseEvent *event)
-{
-    if (!m_isPopup)
-        forceActiveFocus();
-    m_client->forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::mouseMoveEvent(QMouseEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::mouseReleaseEvent(QMouseEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::keyPressEvent(QKeyEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::keyReleaseEvent(QKeyEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
-void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
-{
-    m_client->forwardEvent(event);
-}
 
 QVariant RenderWidgetHostViewQtDelegateQuick::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     return m_client->inputMethodQuery(query);
 }
 
-void RenderWidgetHostViewQtDelegateQuick::inputMethodEvent(QInputMethodEvent *event)
-{
-    m_client->forwardEvent(event);
-}
-
 void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
-    QQuickItem::geometryChanged(newGeometry, oldGeometry);
     m_client->notifyResize();
 }
 
-void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
+void RenderWidgetHostViewQtDelegateQuick::windowChanged()
 {
-    QQuickItem::itemChange(change, value);
-    if (m_initialized  && change == QQuickItem::ItemSceneChange)
+    if (m_client)
         m_client->windowChanged();
 }
 
-QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
+QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, QQuickItem::UpdatePaintNodeData *)
 {
-    return m_client->updatePaintNode(oldNode, QQuickWindowPrivate::get(QQuickItem::window())->context);
+    if (m_view)
+        return m_client->updatePaintNode(oldNode, QQuickWindowPrivate::get(m_view->window())->context);
+    return 0;
+}
+
+void RenderWidgetHostViewQtDelegateQuick::setView(QQuickWebEngineView* view)
+{
+    m_view = view;
 }

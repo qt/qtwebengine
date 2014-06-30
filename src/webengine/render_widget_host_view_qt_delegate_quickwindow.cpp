@@ -45,14 +45,19 @@
 #include <QQuickItem>
 
 
-RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate)
+RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegateQuick *realDelegate)
     : m_realDelegate(realDelegate)
+    , m_view(new QQuickWebEngineView)
 {
     setFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+    m_view->setParentItem(contentItem());
+    m_view->setDelegate(realDelegate);
 }
 
 RenderWidgetHostViewQtDelegateQuickWindow::~RenderWidgetHostViewQtDelegateQuickWindow()
 {
+    if (m_view)
+        delete m_view;
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::initAsChild(WebContentsAdapterClient *container)
