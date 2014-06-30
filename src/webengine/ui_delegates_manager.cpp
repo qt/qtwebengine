@@ -52,7 +52,6 @@
 #include <QQmlEngine>
 #include <QQmlProperty>
 #include <QStringBuilder>
-#include <private/qqmlmetatype_p.h>
 
 // Uncomment for QML debugging
 //#define UI_DELEGATES_DEBUG
@@ -92,6 +91,18 @@ static QString getUIDelegatesImportDir(QQmlEngine *engine) {
     }
     initialized = true;
     return importDir;
+}
+
+const char *defaultPropertyName(QObject *obj)
+{
+    const QMetaObject *metaObject = obj->metaObject();
+
+    int idx = metaObject->indexOfClassInfo("DefaultProperty");
+    if (-1 == idx)
+        return 0;
+
+    QMetaClassInfo info = metaObject->classInfo(idx);
+    return info.value();
 }
 
 MenuItemHandler::MenuItemHandler(QObject *parent)
@@ -208,7 +219,7 @@ void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QSt
     QObject *menu = menuItemHandler->parent();
     it->setParent(menu);
 
-    QQmlListReference entries(menu, QQmlMetaType::defaultProperty(menu).name(), qmlEngine(m_view));
+    QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
     if (entries.isValid())
         entries.append(it);
 }
@@ -222,7 +233,7 @@ void UIDelegatesManager::addMenuSeparator(QObject *menu)
     QObject *sep = menuSeparatorComponent->create(itemContext);
     sep->setParent(menu);
 
-    QQmlListReference entries(menu, QQmlMetaType::defaultProperty(menu).name(), qmlEngine(m_view));
+    QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
     if (entries.isValid())
         entries.append(sep);
 }
@@ -250,7 +261,7 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
     } else {
         menu->setParent(parentMenu);
 
-        QQmlListReference entries(parentMenu, QQmlMetaType::defaultProperty(parentMenu).name(), qmlEngine(m_view));
+        QQmlListReference entries(parentMenu, defaultPropertyName(parentMenu), qmlEngine(m_view));
         if (entries.isValid())
             entries.append(menu);
     }

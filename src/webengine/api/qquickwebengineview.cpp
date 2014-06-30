@@ -60,7 +60,6 @@
 #include <QScreen>
 #include <QStringBuilder>
 #include <QUrl>
-#include <private/qqmlmetatype_p.h>
 #include <private/qquickaccessibleattached_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -184,7 +183,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         ui()->addMenuSeparator(menu);
         if (QObject* menuExtras = contextMenuExtraItems->create(ui()->creationContextForComponent(contextMenuExtraItems))) {
             menuExtras->setParent(menu);
-            QQmlListReference entries(menu, QQmlMetaType::defaultProperty(menu).name(), qmlEngine(q));
+            QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(q));
             if (entries.isValid())
                 entries.append(menuExtras);
         }
