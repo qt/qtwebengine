@@ -75,6 +75,7 @@ class QQmlContext;
 class QQuickWebEngineView;
 QT_END_NAMESPACE
 
+const char *defaultPropertyName(QObject *obj);
 
 class MenuItemHandler : public QObject {
 Q_OBJECT
