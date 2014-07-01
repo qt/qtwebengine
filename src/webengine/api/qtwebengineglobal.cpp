@@ -44,7 +44,6 @@
 #include <QGuiApplication>
 #include <QThread>
 #include <private/qopenglcontext_p.h>
-#include <private/qsgcontext_p.h>
 
 static QOpenGLContext *shareContext;
 
@@ -72,10 +71,6 @@ void QWebEngine::initialize()
     shareContext = new QOpenGLContext;
     shareContext->create();
     qAddPostRoutine(deleteShareContext);
-#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 0))
-    QSGContext::setSharedOpenGLContext(shareContext);
-#else
     QOpenGLContextPrivate::setGlobalShareContext(shareContext);
-#endif
 }
 
