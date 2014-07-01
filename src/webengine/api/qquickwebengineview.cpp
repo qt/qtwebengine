@@ -209,7 +209,7 @@ void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QStr
 void QQuickWebEngineViewPrivate::passOnFocus(bool reverse)
 {
     Q_Q(QQuickWebEngineView);
-    focusNextPrev(q, !reverse);
+    q->setFocus(false, reverse ? Qt::BacktabFocusReason : Qt::TabFocusReason);
 }
 
 void QQuickWebEngineViewPrivate::titleChanged(const QString &title)
