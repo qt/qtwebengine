@@ -42,7 +42,6 @@
 #include <QMessageBox>
 #include <QStandardPaths>
 #include <QUrl>
-#include <private/qauthenticator_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -307,9 +306,7 @@ void QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const
 {
     Q_Q(QWebEnginePage);
     QAuthenticator networkAuth;
-    // Detach to trigger the creation of its QAuthenticatorPrivate.
-    networkAuth.detach();
-    QAuthenticatorPrivate::getPrivate(networkAuth)->realm = realm;
+    networkAuth.setRealm(realm);
 
     if (isProxy)
         Q_EMIT q->proxyAuthenticationRequired(requestUrl, &networkAuth, challengingHost);
