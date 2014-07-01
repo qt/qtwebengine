@@ -61,9 +61,7 @@
 #include <QStringBuilder>
 #include <QUrl>
 #include <private/qqmlmetatype_p.h>
-#include <private/qguiapplication_p.h>
 #include <private/qquickaccessibleattached_p.h>
-#include <qpa/qplatformintegration.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -135,7 +133,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
-    const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
+    const bool hasWindowCapability = qApp->platformName().toLower() != QStringLiteral("eglfs");
     RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
     if (hasWindowCapability) {
         RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
