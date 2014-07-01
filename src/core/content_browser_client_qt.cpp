@@ -63,7 +63,6 @@
 
 #include <QGuiApplication>
 #include <QtGui/private/qopenglcontext_p.h>
-#include <QtQuick/private/qsgcontext_p.h>
 #include <qpa/qplatformnativeinterface.h>
 
 namespace {
@@ -262,11 +261,7 @@ private:
 void ShareGroupQtQuick::AboutToAddFirstContext()
 {
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
-#if (QT_VERSION < QT_VERSION_CHECK(5, 3, 0))
-    QOpenGLContext *shareContext = QSGContext::sharedOpenGLContext();
-#else
     QOpenGLContext *shareContext = QOpenGLContextPrivate::globalShareContext();
-#endif
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QWebEngine::initialize() or QWebEngineWidgets::initialize() in your main() function.");
     }
