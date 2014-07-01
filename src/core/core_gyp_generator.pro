@@ -52,7 +52,9 @@ SOURCES = \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         media_capture_devices_dispatcher.cpp \
+        ozone_platform_eglfs.cpp \
         process_main.cpp \
+        qrc_protocol_handler_qt.cpp \
         qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
@@ -61,7 +63,9 @@ SOURCES = \
         resource_context_qt.cpp \
         resource_dispatcher_host_delegate_qt.cpp \
         stream_video_node.cpp \
+        surface_factory_qt.cpp \
         url_request_context_getter_qt.cpp \
+        url_request_qrc_job_qt.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
@@ -69,11 +73,7 @@ SOURCES = \
         web_engine_error.cpp \
         web_engine_library_info.cpp \
         web_event_factory.cpp \
-        yuv_video_node.cpp \
-        qrc_protocol_handler_qt.cpp \
-        url_request_qrc_job_qt.cpp \
-        surface_factory_qt.cpp \
-        ozone_platform_eglfs.cpp
+        yuv_video_node.cpp
 
 
 HEADERS = \
@@ -94,7 +94,9 @@ HEADERS = \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
         media_capture_devices_dispatcher.h \
+        ozone_platform_eglfs.h \
         process_main.h \
+        qrc_protocol_handler_qt.h \
         qt_render_view_observer_host.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
@@ -103,7 +105,9 @@ HEADERS = \
         resource_context_qt.h \
         resource_dispatcher_host_delegate_qt.h \
         stream_video_node.h \
+        surface_factory_qt.h \
         url_request_context_getter_qt.h \
+        url_request_qrc_job_qt.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \
         web_contents_delegate_qt.h \
@@ -112,8 +116,4 @@ HEADERS = \
         web_engine_error.h \
         web_engine_library_info.h \
         web_event_factory.h \
-        yuv_video_node.h \
-        qrc_protocol_handler_qt.h \
-        url_request_qrc_job_qt.h \
-        surface_factory_qt.h \
-        ozone_platform_eglfs.h
+        yuv_video_node.h
