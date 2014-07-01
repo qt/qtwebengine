@@ -62,8 +62,12 @@
 #include "web_contents_view_qt.h"
 
 #include <QGuiApplication>
-#include <QtGui/private/qopenglcontext_p.h>
+#include <QOpenGLContext>
 #include <qpa/qplatformnativeinterface.h>
+
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+QT_END_NAMESPACE
 
 namespace {
 
@@ -261,7 +265,7 @@ private:
 void ShareGroupQtQuick::AboutToAddFirstContext()
 {
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
-    QOpenGLContext *shareContext = QOpenGLContextPrivate::globalShareContext();
+    QOpenGLContext *shareContext = qt_gl_global_share_context();
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QtWebEngine::initialize() in your main() function.");
     }

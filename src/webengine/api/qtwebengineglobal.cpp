@@ -42,10 +42,12 @@
 #include "qtwebengineglobal.h"
 
 #include <QGuiApplication>
+#include <QOpenGLContext>
 #include <QThread>
-#include <private/qopenglcontext_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);
 
 namespace QtWebEngine {
 
@@ -75,7 +77,7 @@ void initialize()
     shareContext = new QOpenGLContext;
     shareContext->create();
     qAddPostRoutine(deleteShareContext);
-    QOpenGLContextPrivate::setGlobalShareContext(shareContext);
+    qt_gl_set_global_share_context(shareContext);
 }
 } // namespace QtWebEngine
 
