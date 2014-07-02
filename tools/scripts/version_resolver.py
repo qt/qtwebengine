@@ -41,7 +41,10 @@
 #
 #############################################################################
 
+import glob
 import os
+import re
+import shutil
 import subprocess
 import sys
 import json
@@ -54,6 +57,12 @@ chromium_branch = '1750'
 json_url = 'http://omahaproxy.appspot.com/all.json'
 git_deps_url = 'http://src.chromium.org/chrome/branches/' + chromium_branch + '/src/.DEPS.git'
 base_deps_url = 'http://src.chromium.org/chrome/releases/'
+
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+snapshot_src_dir = os.path.abspath(os.path.join(qtwebengine_root, 'src/3rdparty'))
+upstream_src_dir = os.path.abspath(snapshot_src_dir + '_upstream')
+
+sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 
 def currentVersion():
     return chromium_version
@@ -143,3 +152,48 @@ def readSubmodules():
                 module.shasum = git.shasum
 
     return sanityCheckModules(submodule_dict.values())
+
+def findSnapshotBaselineSha1():
+    if not os.path.isdir(snapshot_src_dir):
+        return ''
+    oldCwd = os.getcwd()
+    os.chdir(snapshot_src_dir)
+    line = subprocess.check_output(['git', 'log', '-n1', '--pretty=oneline', '--grep=' + currentVersion()])
+    os.chdir(oldCwd)
+    return line.split(' ')[0]
+
+def preparePatchesFromSnapshot():
+    oldCwd = os.getcwd()
+    base_sha1 = findSnapshotBaselineSha1()
+    if not base_sha1:
+        sys.exit('-- base sha1 not found in ' + os.getcwd() + ' --')
+
+    patches_dir = os.path.join(upstream_src_dir, 'patches')
+    if os.path.isdir(patches_dir):
+        shutil.rmtree(patches_dir)
+    os.mkdir(patches_dir)
+
+    os.chdir(snapshot_src_dir)
+    print('-- preparing patches to ' + patches_dir + ' --')
+    subprocess.call(['git', 'format-patch', '-q', '-o', patches_dir, base_sha1])
+
+    os.chdir(patches_dir)
+    patches = glob.glob('00*.patch')
+
+    # We'll collect the patches for submodules in corresponding lists
+    patches_dict = {}
+    for patch in patches:
+        patch_path = os.path.abspath(patch)
+        with open(patch, 'r') as pfile:
+            for line in pfile:
+                if 'Subject:' in line:
+                    match = re.search('<(.+)>', line)
+                    if match:
+                        submodule = match.group(1)
+                        if submodule not in patches_dict:
+                            patches_dict[submodule] = []
+                        patches_dict[submodule].append(patch_path)
+
+    os.chdir(oldCwd)
+    return patches_dict
+
