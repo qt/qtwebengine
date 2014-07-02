@@ -220,6 +220,7 @@ class Submodule:
     def initialize(self):
         if self.matchesOS():
             print '-- initializing ' + self.path + ' --'
+            oldCwd = os.getcwd()
             if os.path.isdir(self.path):
                 self.reset()
 
@@ -231,6 +232,11 @@ class Submodule:
 
             if self.findShaAndCheckout() != 0:
                 sys.exit("!!! initialization failed !!!")
+
+            os.chdir(self.path)
+            commit = subprocessCheckOutput(['git', 'rev-list', '--max-count=1', 'HEAD'])
+            subprocessCall(['git', 'commit', '-a', '--allow-empty', '-m', '-- QtWebEngine baseline --\n\ncommit ' + commit])
+            os.chdir(oldCwd)
         else:
             print '-- skipping ' + self.path + ' for this operating system. --'
 
@@ -291,5 +297,5 @@ class Submodule:
         for submodule in submodules:
             submodule.initialize()
         if self.ref:
-            subprocessCall(['git', 'commit', '-a', '-m', 'initialize submodules'])
+            subprocessCall(['git', 'commit', '-a', '--amend', '--no-edit'])
         os.chdir(oldCwd)
