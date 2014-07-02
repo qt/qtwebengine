@@ -55,6 +55,12 @@ import version_resolver as resolver
 
 os.chdir(os.path.join(resolver.upstream_src_dir, 'chromium'))
 
+if len(sys.argv) != 1:
+    if "--reset" in sys.argv:
+        resolver.resetUpstream()
+        sys.exit()
+    else:
+        sys.exit('unknown option, try --reset or w/o options\n')
 
 if not len(resolver.findSnapshotBaselineSha1()):
     sys.exit('\n-- missing chromium snapshot patches, try running init-repository.py w/o options first --')
