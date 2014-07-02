@@ -197,3 +197,31 @@ def preparePatchesFromSnapshot():
     os.chdir(oldCwd)
     return patches_dict
 
+def resetUpstream():
+    oldCwd = os.getcwd()
+    target_dir = os.path.join(upstream_src_dir, 'chromium')
+    os.chdir(target_dir)
+
+    chromium = GitSubmodule.Submodule()
+    chromium.path = "."
+    submodules = chromium.readSubmodules()
+    submodules.append(chromium)
+
+    print('-- resetting upstream submodules in ' + os.path.relpath(target_dir) + ' to baseline --')
+
+    for module in submodules:
+        oldCwd = os.getcwd()
+        module_path = os.path.abspath(os.path.join(target_dir, module.path))
+        if not os.path.isdir(module_path):
+            continue
+
+        cwd = os.getcwd()
+        os.chdir(module_path)
+        line = subprocess.check_output(['git', 'log', '-n1', '--pretty=oneline', '--grep=-- QtWebEngine baseline --'])
+        line = line.split(' ')[0]
+        if line:
+            subprocess.call(['git', 'reset', '-q', '--hard', line])
+        os.chdir(cwd)
+        module.reset()
+    os.chdir(oldCwd)
+    print('done.\n')
