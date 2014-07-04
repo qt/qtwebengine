@@ -358,7 +358,7 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
        feature = QQuickWebEngineViewExperimental::MediaAudioVideoDevices;
    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
        feature = QQuickWebEngineViewExperimental::MediaAudioDevices;
-   else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+   else // WebContentsAdapterClient::MediaVideoCapture
        feature = QQuickWebEngineViewExperimental::MediaVideoDevices;
    Q_EMIT e->featurePermissionRequested(securityOrigin, feature);
 }
