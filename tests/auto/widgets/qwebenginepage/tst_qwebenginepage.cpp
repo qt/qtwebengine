@@ -406,7 +406,7 @@ class ConsolePage : public QWebEnginePage
 public:
     ConsolePage(QObject* parent = 0) : QWebEnginePage(parent) {}
 
-    virtual void javaScriptConsoleMessage(int level, const QString& message, int lineNumber, const QString& sourceID)
+    virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
     {
         levels.append(level);
         messages.append(message);
