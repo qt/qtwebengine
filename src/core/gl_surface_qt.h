@@ -53,6 +53,8 @@ class GLSurfaceQt: public GLSurface {
 public:
     explicit GLSurfaceQt(const gfx::Size& size);
 
+    static bool HasEGLExtension(const char* name);
+
     // Implement GLSurface.
     virtual void* GetDisplay() Q_DECL_OVERRIDE;
     virtual void* GetConfig() Q_DECL_OVERRIDE;

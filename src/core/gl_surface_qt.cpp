@@ -316,6 +316,11 @@ GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
 {
 }
 
+bool GLSurfaceQt::HasEGLExtension(const char* name)
+{
+    return ExtensionsContain(g_extensions, name);
+}
+
 GLSurfaceQtEGL::GLSurfaceQtEGL(const gfx::Size& size)
     : GLSurfaceQt(size),
       m_surfaceBuffer(0)
