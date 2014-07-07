@@ -333,6 +333,11 @@ void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &security
     Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
 }
 
+QObject *QWebEnginePagePrivate::accessibilityParentObject()
+{
+    return view;
+}
+
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
