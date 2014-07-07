@@ -363,6 +363,12 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
    Q_EMIT e->featurePermissionRequested(securityOrigin, feature);
 }
 
+QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
+{
+    Q_Q(QQuickWebEngineView);
+    return q;
+}
+
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
 {
     this->devicePixelRatio = devicePixelRatio;
