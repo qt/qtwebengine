@@ -133,6 +133,7 @@ private:
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
     friend class QQuickWebEngineNewViewRequest;
+    friend class QQuickWebEngineViewAccessible;
 };
 
 QT_END_NAMESPACE
