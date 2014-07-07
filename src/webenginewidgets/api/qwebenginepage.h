@@ -213,6 +213,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QWebEnginePage);
+    QScopedPointer<QWebEnginePagePrivate> d_ptr;
 #ifndef QT_NO_ACTION
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif

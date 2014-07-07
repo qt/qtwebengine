@@ -377,8 +377,9 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
 {
+    Q_Q(QQuickWebEngineView);
     this->devicePixelRatio = devicePixelRatio;
-    QScreen *screen = window ? window->screen() : QGuiApplication::primaryScreen();
+    QScreen *screen = q->window() ? q->window()->screen() : QGuiApplication::primaryScreen();
     m_dpiScale = devicePixelRatio / screen->devicePixelRatio();
 }
 
@@ -456,10 +457,11 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 }
 
 QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
-    : QQuickItem(*(new QQuickWebEngineViewPrivate), parent)
+    : QQuickItem(parent)
+    , d_ptr(new QQuickWebEngineViewPrivate)
 {
     Q_D(QQuickWebEngineView);
-    d->e->q_ptr = this;
+    d->e->q_ptr = d->q_ptr = this;
     d->adapter->initialize(d);
     this->setFocus(true);
     this->setActiveFocusOnTab(true);

@@ -99,16 +99,19 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 }
 
 QWebEngineViewPrivate::QWebEngineViewPrivate()
-    : QWidgetPrivate(QObjectPrivateVersion)
-    , page(0)
+    : page(0)
     , m_pendingContextMenuEvent(false)
 {
     QAccessible::installFactory(&webAccessibleFactory);
 }
 
 QWebEngineView::QWebEngineView(QWidget *parent)
-    : QWidget(*(new QWebEngineViewPrivate), parent, 0)
+    : QWidget(parent)
+    , d_ptr(new QWebEngineViewPrivate)
 {
+    Q_D(QWebEngineView);
+    d->q_ptr = this;
+
     // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
     setLayout(new QStackedLayout);
 }

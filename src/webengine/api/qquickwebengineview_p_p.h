@@ -49,7 +49,6 @@
 #include <QSharedData>
 #include <QString>
 #include <QtCore/qcompilerdetection.h>
-#include <QtQuick/private/qquickitem_p.h>
 #include <QtGui/qaccessibleobject.h>
 
 class WebContentsAdapter;
@@ -127,10 +126,11 @@ private:
     Q_DECLARE_PUBLIC(QQuickWebEngineView)
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QQuickItemPrivate, public WebContentsAdapterClient
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineView)
+    QQuickWebEngineView *q_ptr;
     QQuickWebEngineViewPrivate();
     ~QQuickWebEngineViewPrivate();
 
