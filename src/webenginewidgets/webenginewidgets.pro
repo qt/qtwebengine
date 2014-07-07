@@ -21,6 +21,7 @@ HEADERS = \
         api/qtwebenginewidgetsglobal.h \
         api/qwebenginehistory.h \
         api/qwebenginepage.h \
+        api/qwebenginepage_p.h \
         api/qwebengineview.h \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h
