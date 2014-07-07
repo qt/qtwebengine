@@ -4,6 +4,8 @@ TARGET = QtWebEngineCore
 # We depend on libc++ to build chromium so our macosx-version-min has to be 10.7
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.7
 
+CMAKE_MODULE_TESTS = "-"
+
 QT += qml quick
 QT_PRIVATE += qml-private quick-private gui-private core-private
 
