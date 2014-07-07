@@ -45,6 +45,8 @@
 #include <QtWidgets/private/qwidget_p.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
 
+#include <QtWidgets/qaccessiblewidget.h>
+
 QT_BEGIN_NAMESPACE
 
 class QWebEngineView;
@@ -61,6 +63,20 @@ public:
     QWebEnginePage *page;
     bool m_pendingContextMenuEvent;
 };
+
+class QWebEngineViewAccessible : public QAccessibleWidget
+{
+public:
+    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o, QAccessible::Document)
+    {}
+
+    int childCount() const Q_DECL_OVERRIDE;
+    QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+
+private:
+    QWebEngineView *engineView() const { return static_cast<QWebEngineView*>(object()); }
+};
+
 
 QT_END_NAMESPACE
 

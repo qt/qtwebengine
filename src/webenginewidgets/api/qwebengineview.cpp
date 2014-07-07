@@ -89,11 +89,20 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
     }
 }
 
+
+static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
+{
+    if (QWebEngineView *v = qobject_cast<QWebEngineView*>(object))
+        return new QWebEngineViewAccessible(v);
+    return Q_NULLPTR;
+}
+
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : QWidgetPrivate(QObjectPrivateVersion)
     , page(0)
     , m_pendingContextMenuEvent(false)
 {
+    QAccessible::installFactory(&webAccessibleFactory);
 }
 
 QWebEngineView::QWebEngineView(QWidget *parent)
@@ -240,6 +249,20 @@ void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = page()->createStandardContextMenu();
     menu->popup(event->globalPos());
+}
+
+int QWebEngineViewAccessible::childCount() const
+{
+    if (engineView() && child(0))
+        return 1;
+    return 0;
+}
+
+QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
+{
+    if (index == 0 && engineView() && engineView()->page())
+        return engineView()->page()->d_func()->adapter->browserAccessible();
+    return Q_NULLPTR;
 }
 
 QT_END_NAMESPACE
