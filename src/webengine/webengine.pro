@@ -1,5 +1,7 @@
 TARGET = QtWebEngine
 
+CMAKE_MODULE_TESTS = "-"
+
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINE_LIB
 
