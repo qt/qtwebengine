@@ -54,6 +54,8 @@ class WebContents;
 }
 class WebContentsAdapterPrivate;
 
+QT_FORWARD_DECLARE_CLASS(QAccessibleInterface);
+
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
     static QExplicitlySharedDataPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
@@ -109,6 +111,7 @@ public:
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
 
     void dpiScaleChanged();
+    QAccessibleInterface *browserAccessible();
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);
