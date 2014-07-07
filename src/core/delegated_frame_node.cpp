@@ -67,10 +67,9 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include <QOpenGLFramebufferObject>
+#include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
-#include <QtQuick/private/qquickclipnode_p.h>
-#include <QtQuick/private/qsgadaptationlayer_p.h>
 #include <QtQuick/private/qsgcontext_p.h>
 #include <QtQuick/private/qsgrenderer_p.h>
 #include <QtQuick/private/qsgtexture_p.h>
@@ -143,6 +142,14 @@ private:
 #endif
 };
 
+class RectClipNode : public QSGClipNode
+{
+public:
+    RectClipNode(const QRectF &);
+private:
+    QSGGeometry m_geometry;
+};
+
 static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::RenderPass::Id &id, const QList<QSharedPointer<RenderPassTexture> > &list)
 {
     Q_FOREACH (const QSharedPointer<RenderPassTexture> &texture, list)
@@ -183,8 +190,7 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
 {
     QSGNode *layerChain = chainParent;
     if (layerState->is_clipped) {
-        QQuickDefaultClipNode *clipNode = new QQuickDefaultClipNode(toQt(layerState->clip_rect));
-        clipNode->update();
+        RectClipNode *clipNode = new RectClipNode(toQt(layerState->clip_rect));
         layerChain->appendChildNode(clipNode);
         layerChain = clipNode;
     }
@@ -374,6 +380,15 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
     }
 }
 
+RectClipNode::RectClipNode(const QRectF &rect)
+    : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
+{
+    QSGGeometry::updateRectGeometry(&m_geometry, rect);
+    setGeometry(&m_geometry);
+    setClipRect(rect);
+    setIsRectangular(true);
+}
+
 DelegatedFrameNode::DelegatedFrameNode(QSGRenderContext *sgRenderContext)
     : m_sgRenderContext(sgRenderContext)
     , m_numPendingSyncPoints(0)
@@ -497,11 +512,10 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
             switch (quad->material) {
             case cc::DrawQuad::CHECKERBOARD: {
                 const cc::CheckerboardDrawQuad *cbquad = cc::CheckerboardDrawQuad::MaterialCast(quad);
-                QSGRectangleNode *rectangleNode = m_sgRenderContext->sceneGraphContext()->createRectangleNode();
+                QSGSimpleRectNode *rectangleNode = new QSGSimpleRectNode;
 
                 rectangleNode->setRect(toQt(quad->rect));
                 rectangleNode->setColor(toQt(cbquad->color));
-                rectangleNode->update();
                 currentLayerChain->appendChildNode(rectangleNode);
                 break;
             } case cc::DrawQuad::RENDER_PASS: {
@@ -541,7 +555,7 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 break;
             } case cc::DrawQuad::SOLID_COLOR: {
                 const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
-                QSGRectangleNode *rectangleNode = m_sgRenderContext->sceneGraphContext()->createRectangleNode();
+                QSGSimpleRectNode *rectangleNode = new QSGSimpleRectNode;
 
                 // Qt only supports MSAA and this flag shouldn't be needed.
                 // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
@@ -550,7 +564,6 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
 
                 rectangleNode->setRect(toQt(quad->rect));
                 rectangleNode->setColor(toQt(scquad->color));
-                rectangleNode->update();
                 currentLayerChain->appendChildNode(rectangleNode);
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
