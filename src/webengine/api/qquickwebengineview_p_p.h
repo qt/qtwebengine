@@ -116,6 +116,7 @@ Q_SIGNALS:
     void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();
     void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
+    void loadVisuallyCommitted();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -144,6 +145,7 @@ public:
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual void didUpdateTargetURL(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void didFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE { }
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual QPoint mapToGlobal(const QPoint &posInView) const Q_DECL_OVERRIDE;
@@ -168,6 +170,7 @@ public:
     virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
+    virtual void onSwapCompositorFrame() Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);
@@ -181,6 +184,7 @@ public:
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;
+    bool m_didFirstVisuallyNonEmptyLayout;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
 

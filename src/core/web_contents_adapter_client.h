@@ -132,6 +132,7 @@ public:
     virtual void iconChanged(const QUrl&) = 0;
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;
+    virtual void didFirstVisuallyNonEmptyLayout() = 0;
     virtual void selectionChanged() = 0;
     virtual QRectF viewportRect() const = 0;
     virtual QPoint mapToGlobal(const QPoint &posInView) const = 0;
@@ -158,6 +159,7 @@ public:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
+    virtual void onSwapCompositorFrame() = 0;
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H
