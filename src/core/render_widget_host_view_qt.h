@@ -44,7 +44,6 @@
 
 #include "render_widget_host_view_qt_delegate.h"
 
-#include "browser_accessibility_delegate_qt.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/transferable_resource.h"
@@ -93,6 +92,7 @@ class RenderWidgetHostViewQt
     , public ui::GestureConsumer
     , public ui::GestureEventHelper
     , public RenderWidgetHostViewQtDelegateClient
+    , public content::BrowserAccessibilityDelegate
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
 {
 public:
@@ -210,6 +210,15 @@ public:
 #endif // defined(USE_AURA)
 #endif // defined(OS_WIN)
 
+    // Overridden from content::BrowserAccessibilityDelegate
+    virtual void SetAccessibilityFocus(int acc_obj_id) Q_DECL_OVERRIDE;
+    virtual void AccessibilityDoDefaultAction(int acc_obj_id) Q_DECL_OVERRIDE;
+    virtual void AccessibilityScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus) Q_DECL_OVERRIDE;
+    virtual void AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point) Q_DECL_OVERRIDE;
+    virtual void AccessibilitySetTextSelection(int acc_obj_id, int start_offset, int end_offset) Q_DECL_OVERRIDE;
+    virtual gfx::Point GetLastTouchEventLocation() const Q_DECL_OVERRIDE;
+    virtual void FatalAccessibilityTreeError() Q_DECL_OVERRIDE;
+
     QAccessibleInterface *GetQtAccessible();
 
 private:
@@ -230,7 +239,6 @@ private:
     QMap<int, int> m_touchIdMapping;
     blink::WebTouchEvent m_accumTouchEvent;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
-    scoped_ptr<BrowserAccessibilityDelegateQt> m_accessibilityDelegate;
 
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
     cc::ReturnedResourceArray m_resourcesToRelease;

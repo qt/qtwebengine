@@ -36,7 +36,6 @@ RESOURCES += devtools.qrc
 INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
 
 SOURCES = \
-        browser_accessibility_delegate_qt.cpp \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_qt.cpp \

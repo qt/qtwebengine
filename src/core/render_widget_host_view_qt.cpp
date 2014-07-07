@@ -273,11 +273,10 @@ void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
     if (GetBrowserAccessibilityManager())
         return;
 
-    m_accessibilityDelegate = scoped_ptr<BrowserAccessibilityDelegateQt>(new BrowserAccessibilityDelegateQt(this));
     SetBrowserAccessibilityManager(new content::BrowserAccessibilityManagerQt(
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
-        m_accessibilityDelegate.get()));
+        this));
 }
 
 // Set focus to the associated View component.
@@ -967,6 +966,55 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         }
         m_host->ImeSetComposition(toString16(preeditString), underlines, selectionRange.start(), selectionRange.end());
     }
+}
+
+void RenderWidgetHostViewQt::SetAccessibilityFocus(int acc_obj_id)
+{
+    if (!m_host)
+        return;
+    m_host->AccessibilitySetFocus(acc_obj_id);
+}
+
+void RenderWidgetHostViewQt::AccessibilityDoDefaultAction(int acc_obj_id)
+{
+    if (!m_host)
+      return;
+    m_host->AccessibilityDoDefaultAction(acc_obj_id);
+}
+
+void RenderWidgetHostViewQt::AccessibilityScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus)
+{
+    if (!m_host)
+        return;
+    m_host->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
+}
+
+void RenderWidgetHostViewQt::AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point)
+{
+    if (!m_host)
+      return;
+    m_host->AccessibilityScrollToPoint(acc_obj_id, point);
+}
+
+void RenderWidgetHostViewQt::AccessibilitySetTextSelection(int acc_obj_id, int start_offset, int end_offset)
+{
+    if (!m_host)
+        return;
+    m_host->AccessibilitySetTextSelection(acc_obj_id, start_offset, end_offset);
+}
+
+gfx::Point RenderWidgetHostViewQt::GetLastTouchEventLocation() const
+{
+    QT_NOT_YET_IMPLEMENTED
+    return gfx::Point();
+}
+
+void RenderWidgetHostViewQt::FatalAccessibilityTreeError()
+{
+    if (!m_host)
+        return;
+    m_host->FatalAccessibilityTreeError();
+    SetBrowserAccessibilityManager(NULL);
 }
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
