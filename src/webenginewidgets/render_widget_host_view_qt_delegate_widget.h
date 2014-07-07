@@ -52,9 +52,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-class QSGContext;
-class QSGRenderContext;
-class QSGRenderer;
+class QSGAbstractRenderer;
+class QSGEngine;
 class QSGRootNode;
 class QWindow;
 QT_END_NAMESPACE
@@ -92,10 +91,9 @@ protected:
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
     // Put the root node first to make sure it gets destroyed after the SG renderer.
-    QScopedPointer<QSGRootNode> rootNode;
-    QScopedPointer<QSGContext> sgContext;
-    QScopedPointer<QSGRenderContext> sgRenderContext;
-    QScopedPointer<QSGRenderer> sgRenderer;
+    QScopedPointer<QSGRootNode> m_rootNode;
+    QScopedPointer<QSGEngine> m_sgEngine;
+    QScopedPointer<QSGAbstractRenderer> m_sgRenderer;
     bool m_isPopup;
 };
 

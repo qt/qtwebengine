@@ -43,21 +43,22 @@
 
 #include "qwebenginepage_p.h"
 #include "qwebengineview.h"
+#include <QGuiApplication>
 #include <QLayout>
+#include <QMouseEvent>
+#include <QOpenGLContext>
+#include <QResizeEvent>
+#include <QSGAbstractRenderer>
+#include <QSGEngine>
 #include <QSGNode>
-#include <private/qsgadaptationlayer_p.h>
-#include <private/qsgcontext_p.h>
-#include <private/qsgrenderer_p.h>
-#include <private/qwidget_p.h>
 
 static const int MaxTooltipLength = 1024;
 
 RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent)
     : QOpenGLWidget(parent)
     , m_client(client)
-    , rootNode(new QSGRootNode)
-    , sgContext(QSGContext::createDefaultContext())
-    , sgRenderContext(new QSGRenderContext(sgContext.data()))
+    , m_rootNode(new QSGRootNode)
+    , m_sgEngine(new QSGEngine)
     , m_isPopup(false)
 {
     setFocusPolicy(Qt::StrongFocus);
@@ -222,9 +223,10 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 
 void RenderWidgetHostViewQtDelegateWidget::initializeGL()
 {
-    sgRenderContext->initialize(QOpenGLContext::currentContext());
-    sgRenderer.reset(sgRenderContext->createRenderer());
-    sgRenderer->setRootNode(rootNode.data());
+    m_sgEngine->initialize(QOpenGLContext::currentContext());
+    m_sgRenderer.reset(m_sgEngine->createRenderer());
+    m_sgRenderer->setRootNode(m_rootNode.data());
+    m_sgRenderer->setClearColor(Qt::white);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::paintGL()
@@ -234,19 +236,15 @@ void RenderWidgetHostViewQtDelegateWidget::paintGL()
     if (!QOpenGLContext::currentContext())
         return;
 #endif
-    QSGNode *paintNode = m_client->updatePaintNode(rootNode->firstChild(), sgRenderContext.data());
-    if (paintNode != rootNode->firstChild()) {
-        delete rootNode->firstChild();
-        rootNode->appendChildNode(paintNode);
+    QSGNode *paintNode = m_client->updatePaintNode(m_rootNode->firstChild());
+    if (paintNode != m_rootNode->firstChild()) {
+        delete m_rootNode->firstChild();
+        m_rootNode->appendChildNode(paintNode);
     }
 
-    rootNode->markDirty(QSGNode::DirtyForceUpdate); // Force matrix, clip and opacity update.
-    sgRenderer->nodeChanged(rootNode.data(), QSGNode::DirtyForceUpdate); // Force render list update.
+    m_sgRenderer->setDeviceRect(size());
+    m_sgRenderer->setViewportRect(size());
+    m_sgRenderer->setProjectionMatrixToRect(QRectF(QPointF(), size()));
 
-    sgRenderer->setDeviceRect(size());
-    sgRenderer->setViewportRect(size());
-    sgRenderer->setProjectionMatrixToRect(QRectF(QPointF(), size()));
-    sgRenderer->setClearColor(Qt::white);
-
-    sgRenderContext->renderNextFrame(sgRenderer.data(), defaultFramebufferObject());
+    m_sgRenderer->renderScene(defaultFramebufferObject());
 }

@@ -48,7 +48,6 @@
 #include <QQuickWindow>
 #include <QVariant>
 #include <QWindow>
-#include <QtQuick/private/qquickwindow_p.h>
 
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
     : m_client(client)
@@ -231,5 +230,5 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
 
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
-    return m_client->updatePaintNode(oldNode, QQuickWindowPrivate::get(QQuickItem::window())->context);
+    return m_client->updatePaintNode(oldNode);
 }

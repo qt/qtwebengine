@@ -52,10 +52,6 @@
 
 #include "chromium_gpu_helper.h"
 
-QT_BEGIN_NAMESPACE
-class QSGRenderContext;
-QT_END_NAMESPACE
-
 namespace cc {
 class DelegatedFrameData;
 }
@@ -75,14 +71,13 @@ public:
 
 class DelegatedFrameNode : public QSGTransformNode {
 public:
-    DelegatedFrameNode(QSGRenderContext *sgRenderContext);
+    DelegatedFrameNode();
     ~DelegatedFrameNode();
     void preprocess();
     void commit(DelegatedFrameNodeData* data, cc::ReturnedResourceArray *resourcesToRelease);
 
 private:
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_data;
-    QSGRenderContext *m_sgRenderContext;
     QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
     int m_numPendingSyncPoints;
     FenceSync m_mailboxesGLFence;

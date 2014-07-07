@@ -66,13 +66,13 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
+#include <QSGAbstractRenderer>
+#include <QSGEngine>
 #include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
-#include <QtQuick/private/qsgcontext_p.h>
-#include <QtQuick/private/qsgrenderer_p.h>
-#include <QtQuick/private/qsgtexture_p.h>
 
 #if !defined(QT_NO_EGL)
 #include <EGL/egl.h>
@@ -82,7 +82,7 @@
 class RenderPassTexture : public QSGTexture
 {
 public:
-    RenderPassTexture(const cc::RenderPass::Id &id, QSGRenderContext *context);
+    RenderPassTexture(const cc::RenderPass::Id &id);
 
     const cc::RenderPass::Id &id() const { return m_id; }
     void bind();
@@ -94,7 +94,6 @@ public:
 
     void setRect(const QRect &rect) { m_rect = rect; }
     void setFormat(GLenum format) { m_format = format; }
-    void setDevicePixelRatio(qreal ratio) { m_device_pixel_ratio = ratio; }
     QSGNode *rootNode() { return m_rootNode.data(); }
 
     void grab();
@@ -102,14 +101,12 @@ public:
 private:
     cc::RenderPass::Id m_id;
     QRect m_rect;
-    qreal m_device_pixel_ratio;
     GLenum m_format;
 
+    QScopedPointer<QSGEngine> m_sgEngine;
     QScopedPointer<QSGRootNode> m_rootNode;
-    QScopedPointer<QSGRenderer> m_renderer;
+    QScopedPointer<QSGAbstractRenderer> m_renderer;
     QScopedPointer<QOpenGLFramebufferObject> m_fbo;
-
-    QSGRenderContext *m_context;
 };
 
 class MailboxTexture : public QSGTexture {
@@ -263,13 +260,12 @@ static void waitAndDeleteChromiumSync(FenceSync *sync)
     Q_ASSERT(!*sync);
 }
 
-RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id, QSGRenderContext *context)
+RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id)
     : QSGTexture()
     , m_id(id)
-    , m_device_pixel_ratio(1)
     , m_format(GL_RGBA)
+    , m_sgEngine(new QSGEngine)
     , m_rootNode(new QSGRootNode)
-    , m_context(context)
 {
 }
 
@@ -281,16 +277,11 @@ void RenderPassTexture::bind()
 
 void RenderPassTexture::grab()
 {
-    if (!m_rootNode->firstChild()) {
-        m_renderer.reset();
-        m_fbo.reset();
-        return;
-    }
     if (!m_renderer) {
-        m_renderer.reset(m_context->createRenderer());
+        m_sgEngine->initialize(QOpenGLContext::currentContext());
+        m_renderer.reset(m_sgEngine->createRenderer());
         m_renderer->setRootNode(m_rootNode.data());
     }
-    m_renderer->setDevicePixelRatio(m_device_pixel_ratio);
 
     if (!m_fbo || m_fbo->size() != m_rect.size() || m_fbo->format().internalTextureFormat() != m_format)
     {
@@ -303,16 +294,13 @@ void RenderPassTexture::grab()
         updateBindOptions(true);
     }
 
-    m_rootNode->markDirty(QSGNode::DirtyForceUpdate); // Force matrix, clip and opacity update.
-    m_renderer->nodeChanged(m_rootNode.data(), QSGNode::DirtyForceUpdate); // Force render list update.
-
     m_renderer->setDeviceRect(m_rect.size());
     m_renderer->setViewportRect(m_rect.size());
     QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
     m_renderer->setProjectionMatrixToRect(mirrored);
     m_renderer->setClearColor(Qt::transparent);
 
-    m_context->renderNextFrame(m_renderer.data(), m_fbo->handle());
+    m_renderer->renderScene(m_fbo->handle());
 }
 
 MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
@@ -389,9 +377,8 @@ RectClipNode::RectClipNode(const QRectF &rect)
     setIsRectangular(true);
 }
 
-DelegatedFrameNode::DelegatedFrameNode(QSGRenderContext *sgRenderContext)
-    : m_sgRenderContext(sgRenderContext)
-    , m_numPendingSyncPoints(0)
+DelegatedFrameNode::DelegatedFrameNode()
+    : m_numPendingSyncPoints(0)
 {
     setFlag(UsePreprocess);
 }
@@ -481,9 +468,8 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
         if (pass != rootRenderPass) {
             QSharedPointer<RenderPassTexture> rpTexture = findRenderPassTexture(pass->id, oldRenderPassTextures);
             if (!rpTexture)
-                rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id, m_sgRenderContext));
+                rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id));
             m_renderPassTextures.append(rpTexture);
-            rpTexture->setDevicePixelRatio(m_data->frameDevicePixelRatio);
             rpTexture->setRect(toQt(pass->output_rect));
             rpTexture->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
             renderPassParent = rpTexture->rootNode();

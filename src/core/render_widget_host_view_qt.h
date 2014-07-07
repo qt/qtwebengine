@@ -167,7 +167,7 @@ public:
     virtual void DispatchCancelTouchEvent(ui::TouchEvent*) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewQtDelegateClient.
-    virtual QSGNode *updatePaintNode(QSGNode *, QSGRenderContext *) Q_DECL_OVERRIDE;
+    virtual QSGNode *updatePaintNode(QSGNode *) Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;

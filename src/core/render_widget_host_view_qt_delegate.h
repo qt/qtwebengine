@@ -52,7 +52,6 @@ class QCursor;
 class QEvent;
 class QPainter;
 class QSGNode;
-class QSGRenderContext;
 class QVariant;
 class QWindow;
 class QInputMethodEvent;
@@ -63,7 +62,7 @@ class WebContentsAdapterClient;
 class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegateClient {
 public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
-    virtual QSGNode *updatePaintNode(QSGNode *, QSGRenderContext *) = 0;
+    virtual QSGNode *updatePaintNode(QSGNode *) = 0;
     virtual void notifyResize() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;

@@ -687,11 +687,11 @@ void RenderWidgetHostViewQt::DispatchCancelTouchEvent(ui::TouchEvent *event)
     m_host->ForwardTouchEventWithLatencyInfo(cancelEvent, *event->latency());
 }
 
-QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode, QSGRenderContext *sgRenderContext)
+QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 {
     DelegatedFrameNode *frameNode = static_cast<DelegatedFrameNode *>(oldNode);
     if (!frameNode)
-        frameNode = new DelegatedFrameNode(sgRenderContext);
+        frameNode = new DelegatedFrameNode;
 
     frameNode->commit(m_frameNodeData.data(), &m_resourcesToRelease);
 
