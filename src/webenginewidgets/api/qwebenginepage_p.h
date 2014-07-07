@@ -45,7 +45,6 @@
 #include "qwebenginepage.h"
 
 #include "web_contents_adapter_client.h"
-#include <QtCore/private/qobject_p.h>
 #include <QtCore/qcompilerdetection.h>
 #include <QSharedData>
 
@@ -100,10 +99,11 @@ private:
     QHash<quint64, CallbackSharedDataPointer> m_callbackMap;
 };
 
-class QWebEnginePagePrivate : public QObjectPrivate, public WebContentsAdapterClient
+class QWebEnginePagePrivate : public WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QWebEnginePage)
+    QWebEnginePage *q_ptr;
 
     QWebEnginePagePrivate();
     ~QWebEnginePagePrivate();

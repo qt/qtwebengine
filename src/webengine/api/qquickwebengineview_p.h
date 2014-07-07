@@ -130,6 +130,8 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
+    QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
+
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
     friend class QQuickWebEngineNewViewRequest;
