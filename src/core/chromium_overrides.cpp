@@ -41,10 +41,10 @@
 
 #include "chromium_overrides.h"
 
+#include "gl_context_qt.h"
 #include "qtwebenginecoreglobal.h"
 #include "base/values.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
 #include "content/common/font_list.h"
 
@@ -59,7 +59,6 @@
 
 #if defined(USE_X11)
 #include "base/message_loop/message_pump_x11.h"
-#include <X11/Xlib.h>
 #endif
 
 #if defined(USE_AURA) && !defined(USE_OZONE)
@@ -90,14 +89,8 @@ namespace base {
 
 #if defined(USE_X11)
 Display* MessagePumpForUI::GetDefaultXDisplay() {
-  static void *display = qApp->platformNativeInterface()->nativeResourceForScreen(QByteArrayLiteral("display"), qApp->primaryScreen());
-  if (!display) {
-    // XLib isn't available or has not been initialized, which is a decision we wish to
-    // support, for example for the GPU process.
-    static Display* xdisplay = XOpenDisplay(NULL);
-    return xdisplay;
-  }
-  return static_cast<Display*>(display);
+    static void *display = GLContextHelper::getXDisplay();
+    return static_cast<Display*>(display);
 }
 #endif
 

@@ -51,6 +51,7 @@
 #include "delegated_frame_node.h"
 
 #include "chromium_gpu_helper.h"
+#include "gl_surface_qt.h"
 #include "stream_video_node.h"
 #include "type_conversion.h"
 #include "yuv_video_node.h"
@@ -206,15 +207,6 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
-#if !defined(QT_NO_EGL)
-static bool hasEGLExtension(EGLDisplay display, const char *name)
-{
-    QList<QByteArray> extensions = QByteArray(reinterpret_cast<const char *>(
-                                                  eglQueryString(display, EGL_EXTENSIONS))).split(' ');
-    return extensions.contains(name);
-}
-#endif
-
 static void waitAndDeleteChromiumSync(FenceSync *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
@@ -231,7 +223,7 @@ static void waitAndDeleteChromiumSync(FenceSync *sync)
         static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
 
         if (!resolved) {
-            if (hasEGLExtension(sync->egl.display, "EGL_KHR_reusable_sync")) {
+            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_reusable_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
                 eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
