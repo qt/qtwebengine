@@ -161,12 +161,10 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
 }
 
 QWebEnginePagePrivate::QWebEnginePagePrivate()
-    : QObjectPrivate(QObjectPrivateVersion)
-    , adapter(new WebContentsAdapter)
+    : adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , view(0)
 {
-    adapter->initialize(this);
     memset(actions, 0, sizeof(actions));
 }
 
@@ -406,8 +404,12 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)
-    : QObject(*new QWebEnginePagePrivate, parent)
+    : QObject(parent)
+    , d_ptr(new QWebEnginePagePrivate)
 {
+    Q_D(QWebEnginePage);
+    d->q_ptr = this;
+    d->adapter->initialize(d);
 }
 
 QWebEnginePage::~QWebEnginePage()

@@ -99,6 +99,7 @@ protected:
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineView);
+    QScopedPointer<QWebEngineViewPrivate> d_ptr;
 
     friend class QWebEnginePage;
     friend class QWebEnginePagePrivate;

@@ -48,6 +48,7 @@
 #include <QQuickWindow>
 #include <QVariant>
 #include <QWindow>
+#include <QtQuick/private/qquickwindow_p.h>
 
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
     : m_client(client)

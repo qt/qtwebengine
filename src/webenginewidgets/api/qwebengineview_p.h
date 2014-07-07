@@ -42,7 +42,6 @@
 #ifndef QWEBENGINEVIEW_P_H
 #define QWEBENGINEVIEW_P_H
 
-#include <QtWidgets/private/qwidget_p.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
 
 #include <QtWidgets/qaccessiblewidget.h>
@@ -51,10 +50,11 @@ QT_BEGIN_NAMESPACE
 
 class QWebEngineView;
 
-class QWebEngineViewPrivate : public QWidgetPrivate
+class QWebEngineViewPrivate
 {
 public:
     Q_DECLARE_PUBLIC(QWebEngineView)
+    QWebEngineView *q_ptr;
 
     static void bind(QWebEngineView *view, QWebEnginePage *page);
 
