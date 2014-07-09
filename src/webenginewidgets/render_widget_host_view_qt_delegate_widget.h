@@ -45,7 +45,7 @@
 #include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter_client.h"
 
-#include <private/qopenglwidget_p.h>
+#include <QtWidgets/QOpenGLWidget>
 
 QT_BEGIN_NAMESPACE
 class QSGContext;

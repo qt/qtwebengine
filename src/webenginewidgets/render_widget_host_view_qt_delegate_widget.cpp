@@ -60,6 +60,11 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     , sgRenderContext(new QSGRenderContext(sgContext.data()))
     , m_isPopup(false)
 {
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    setFormat(format);
+
     setFocusPolicy(Qt::ClickFocus);
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
@@ -133,7 +138,7 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 
 void RenderWidgetHostViewQtDelegateWidget::update()
 {
-    updateGL();
+    QOpenGLWidget::update();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
