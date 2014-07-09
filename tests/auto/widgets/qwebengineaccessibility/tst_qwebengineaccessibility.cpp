@@ -78,25 +78,31 @@ void tst_QWebEngineView::noPage()
     QCOMPARE(document->role(), QAccessible::Document);
     QCOMPARE(document->parent(), view);
     QCOMPARE(document->childCount(), 0);
+    QVERIFY(document->child(0) == 0);
 }
 
 void tst_QWebEngineView::hierarchy()
 {
     QWebEngineView webView;
+    webView.show();
+
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QVERIFY(view);
+    QCOMPARE(view->childCount(), 1);
+    QAccessibleInterface *originalDocument = view->child(0);
+    QCOMPARE(originalDocument->childCount(), 0);
+
     QWebEnginePage page;
     page.setHtml("<html><body>" \
         "Hello world" \
         "<input type='text'/><br>" \
         "</body></html>");
     webView.setPage(&page);
-    webView.show();
 
     // FIXME: don't use qWait but the loadFinished signal
     // I didn't get that to work for some reason
     QTest::qWait(2000);
-    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
-    QVERIFY(view);
-    QCOMPARE(view->childCount(), 1);
+
     QAccessibleInterface *document = view->child(0);
     QCOMPARE(document->role(), QAccessible::Document);
     QCOMPARE(document->parent(), view);
@@ -114,6 +120,8 @@ void tst_QWebEngineView::hierarchy()
     QCOMPARE(input->role(), QAccessible::EditableText);
     QCOMPARE(input->parent(), grouping);
     QCOMPARE(input->childCount(), 0);
+
+    QCOMPARE(originalDocument->isValid(), false);
 }
 
 QTEST_MAIN(tst_QWebEngineView)
