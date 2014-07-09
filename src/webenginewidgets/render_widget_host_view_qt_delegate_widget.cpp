@@ -133,7 +133,7 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 
 void RenderWidgetHostViewQtDelegateWidget::update()
 {
-    updateGL();
+    QOpenGLWidget::update();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
