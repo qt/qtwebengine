@@ -61,6 +61,14 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     , m_isPopup(false)
 {
     setFocusPolicy(Qt::StrongFocus);
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    setFormat(format);
+#endif
+
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
@@ -140,7 +148,11 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 
 void RenderWidgetHostViewQtDelegateWidget::update()
 {
+#if (QT_VERSION < QT_VERSION_CHECK(5, 4, 0))
     updateGL();
+#else
+    QOpenGLWidget::update();
+#endif
 }
 
 void RenderWidgetHostViewQtDelegateWidget::updateCursor(const QCursor &cursor)
