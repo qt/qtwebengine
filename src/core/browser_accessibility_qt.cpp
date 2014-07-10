@@ -97,8 +97,21 @@ int BrowserAccessibilityQt::indexOfChild(const QAccessibleInterface *iface) cons
 
 QString BrowserAccessibilityQt::text(QAccessible::Text t) const
 {
-    std::string name_str = name();
-    return toQt(name_str);
+    switch (t) {
+    case QAccessible::Name:
+        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_NAME));
+    case QAccessible::Description:
+        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION));
+    case QAccessible::Help:
+        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_HELP));
+    case QAccessible::Value:
+        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_VALUE));
+    case QAccessible::Accelerator:
+        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_SHORTCUT));
+    default:
+        break;
+    }
+    return QString();
 }
 
 void BrowserAccessibilityQt::setText(QAccessible::Text t, const QString &text)
