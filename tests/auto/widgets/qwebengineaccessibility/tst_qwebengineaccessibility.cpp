@@ -98,19 +98,23 @@ void tst_QWebEngineView::hierarchy()
     QAccessibleInterface *document = view->child(0);
     QCOMPARE(document->role(), QAccessible::Document);
     QCOMPARE(document->parent(), view);
+    QCOMPARE(view->indexOfChild(document), 0);
     QCOMPARE(document->childCount(), 1);
     QAccessibleInterface *grouping = document->child(0);
     QVERIFY(grouping);
     QCOMPARE(grouping->parent(), document);
+    QCOMPARE(document->indexOfChild(grouping), 0);
     QCOMPARE(grouping->childCount(), 2);
     QAccessibleInterface *text = grouping->child(0);
     QCOMPARE(text->role(), QAccessible::StaticText);
     QCOMPARE(text->parent(), grouping);
+    QCOMPARE(grouping->indexOfChild(text), 0);
     QEXPECT_FAIL("", "FIXME: static text should probably not have a child element", Continue);
     QCOMPARE(text->childCount(), 0);
     QAccessibleInterface *input = grouping->child(1);
     QCOMPARE(input->role(), QAccessible::EditableText);
     QCOMPARE(input->parent(), grouping);
+    QCOMPARE(grouping->indexOfChild(input), 1);
     QCOMPARE(input->childCount(), 0);
 }
 
