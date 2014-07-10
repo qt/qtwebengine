@@ -84,7 +84,7 @@ void tst_QWebEngineView::hierarchy()
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "Hello world" \
-        "<input type='text'/><br>" \
+        "<input type='text' value='some text'></input>" \
         "</body></html>");
     webView.show();
     ::waitForSignal(&webView, SIGNAL(loadFinished(bool)));
@@ -103,15 +103,23 @@ void tst_QWebEngineView::hierarchy()
     QVERIFY(grouping);
     QCOMPARE(grouping->parent(), document);
     QCOMPARE(grouping->childCount(), 2);
+
     QAccessibleInterface *text = grouping->child(0);
     QCOMPARE(text->role(), QAccessible::StaticText);
     QCOMPARE(text->parent(), grouping);
     QEXPECT_FAIL("", "FIXME: static text should probably not have a child element", Continue);
     QCOMPARE(text->childCount(), 0);
+    QCOMPARE(text->text(QAccessible::Name), QString());
+    QCOMPARE(text->text(QAccessible::Description), QString());
+    QCOMPARE(text->text(QAccessible::Value), QStringLiteral("Hello world"));
+
     QAccessibleInterface *input = grouping->child(1);
     QCOMPARE(input->role(), QAccessible::EditableText);
     QCOMPARE(input->parent(), grouping);
     QCOMPARE(input->childCount(), 0);
+    QCOMPARE(input->text(QAccessible::Name), QString());
+    QCOMPARE(input->text(QAccessible::Description), QString());
+    QCOMPARE(input->text(QAccessible::Value), QStringLiteral("some text"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)
