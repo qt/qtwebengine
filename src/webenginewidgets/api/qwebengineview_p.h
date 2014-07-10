@@ -67,7 +67,7 @@ public:
 class QWebEngineViewAccessible : public QAccessibleWidget
 {
 public:
-    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o, QAccessible::Document)
+    QWebEngineViewAccessible(QWebEngineView *o) : QAccessibleWidget(o)
     {}
 
     int childCount() const Q_DECL_OVERRIDE;
