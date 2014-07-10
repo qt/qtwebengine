@@ -71,6 +71,7 @@ void tst_QWebEngineView::noPage()
     QTest::qWait(1000);
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     QVERIFY(view);
+    QCOMPARE(view->role(), QAccessible::Client);
     QCOMPARE(view->childCount(), 1);
     QAccessibleInterface *document = view->child(0);
     QCOMPARE(document->role(), QAccessible::Document);
@@ -90,6 +91,7 @@ void tst_QWebEngineView::hierarchy()
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     QVERIFY(view);
+    QCOMPARE(view->role(), QAccessible::Client);
     QCOMPARE(view->childCount(), 1);
     // Wait for accessibility to be fully initialized
     QTRY_VERIFY(view->child(0)->childCount() == 1);
