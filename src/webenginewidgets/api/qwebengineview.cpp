@@ -265,6 +265,13 @@ QAccessibleInterface *QWebEngineViewAccessible::child(int index) const
     return Q_NULLPTR;
 }
 
+int QWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
+{
+    if (c == child(0))
+        return 0;
+    return -1;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwebengineview.cpp"

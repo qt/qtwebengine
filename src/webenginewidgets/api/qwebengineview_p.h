@@ -72,6 +72,7 @@ public:
 
     int childCount() const Q_DECL_OVERRIDE;
     QAccessibleInterface *child(int index) const Q_DECL_OVERRIDE;
+    int indexOfChild(const QAccessibleInterface *child) const Q_DECL_OVERRIDE;
 
 private:
     QWebEngineView *view() const { return static_cast<QWebEngineView*>(object()); }
