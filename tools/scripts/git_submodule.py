@@ -170,15 +170,15 @@ class Submodule:
 
             error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
 
-            search_string = ''
             if self.path.endswith('/chromium'):
-                search_string = resolver.currentVersion()
+                line = subprocessCheckOutput(['git', 'ls-remote', self.url, resolver.currentVersion()])
+                if line:
+                    self.shasum = line.split()[0]
             elif self.revision:
                 search_string = '@' + str(self.revision) + ' '
-            if search_string:
                 line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', '--grep=' + search_string])
                 if line:
-                    self.shasum = line.split(' ')[0]
+                    self.shasum = line.split()[0]
             else: # No revision set, use the submodule shasum
                 os.chdir(oldCwd)
                 line = subprocessCheckOutput(['git', 'submodule', 'status', self.path])
