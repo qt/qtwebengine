@@ -50,6 +50,7 @@ namespace content {
 class BrowserAccessibilityQt
     : public BrowserAccessibility
     , public QAccessibleInterface
+    , public QAccessibleTextInterface
 {
 public:
     BrowserAccessibilityQt();
@@ -58,6 +59,7 @@ public:
     virtual bool isValid() const Q_DECL_OVERRIDE;
     virtual QObject *object() const Q_DECL_OVERRIDE;
     virtual QAccessibleInterface *childAt(int x, int y) const Q_DECL_OVERRIDE;
+    virtual void *interface_cast(QAccessible::InterfaceType type) Q_DECL_OVERRIDE;
 
     // navigation, hierarchy
     virtual QAccessibleInterface *parent() const Q_DECL_OVERRIDE;
@@ -76,6 +78,21 @@ public:
     void NativeAddReference() Q_DECL_OVERRIDE;
     void NativeReleaseReference() Q_DECL_OVERRIDE;
     bool IsNative() const Q_DECL_OVERRIDE { return true; }
+
+    // QAccessibleTextInterface
+    void addSelection(int startOffset, int endOffset) Q_DECL_OVERRIDE;
+    QString attributes(int offset, int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
+    int cursorPosition() const Q_DECL_OVERRIDE;
+    QRect characterRect(int offset) const Q_DECL_OVERRIDE;
+    int selectionCount() const Q_DECL_OVERRIDE;
+    int offsetAtPoint(const QPoint &point) const Q_DECL_OVERRIDE;
+    void selection(int selectionIndex, int *startOffset, int *endOffset) const Q_DECL_OVERRIDE;
+    QString text(int startOffset, int endOffset) const Q_DECL_OVERRIDE;
+    void removeSelection(int selectionIndex) Q_DECL_OVERRIDE;
+    void setCursorPosition(int position) Q_DECL_OVERRIDE;
+    void setSelection(int selectionIndex, int startOffset, int endOffset) Q_DECL_OVERRIDE;
+    int characterCount() const Q_DECL_OVERRIDE;
+    void scrollToSubstring(int startIndex, int endIndex) Q_DECL_OVERRIDE;
 };
 
 }

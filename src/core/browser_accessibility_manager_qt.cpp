@@ -84,7 +84,6 @@ void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(blink::WebAXEvent e
         break;
     }
     case WebAXEventCheckedStateChanged: {
-        BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);
         QAccessible::State change;
         change.checked = true;
         QAccessibleStateChangeEvent event(iface, change);
@@ -105,12 +104,38 @@ void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(blink::WebAXEvent e
         break;
     case WebAXEventLoadComplete:
         break;
-    case WebAXEventTextChanged:
+
+    case WebAXEventTextChanged: {
+        QAccessibleTextUpdateEvent event(iface, -1, QString(), QString());
+        QAccessible::updateAccessibility(&event);
         break;
-    case WebAXEventTextInserted:
+    }
+    case WebAXEventTextInserted: {
+        QAccessibleTextInsertEvent event(iface, -1, QString());
+        QAccessible::updateAccessibility(&event);
         break;
-    case WebAXEventTextRemoved:
+    }
+    case WebAXEventTextRemoved: {
+        QAccessibleTextRemoveEvent event(iface, -1, QString());
+        QAccessible::updateAccessibility(&event);
         break;
+    }
+    case WebAXEventSelectedTextChanged: {
+        QAccessibleTextInterface *textIface = iface->textInterface();
+        if (textIface) {
+            int start = 0;
+            int end = 0;
+            textIface->selection(0, &start, &end);
+            if (start == end) {
+                QAccessibleTextCursorEvent event(iface, start);
+                QAccessible::updateAccessibility(&event);
+            } else {
+                QAccessibleTextSelectionEvent event(iface, start, end);
+                QAccessible::updateAccessibility(&event);
+            }
+        }
+        break;
+    }
     default:
         break;
     }
