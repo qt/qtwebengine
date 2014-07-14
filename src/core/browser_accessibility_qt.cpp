@@ -165,7 +165,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     // for this page, and a web area for a frame within this page.
     case WebAXRoleWebArea:
     case WebAXRoleRootWebArea: // not sure if we need to make a diff here, but this seems common
-        return QAccessible::Document;
+        return QAccessible::WebDocument;
 
     // These roles all directly correspond to blink accessibility roles,
     // keep these alphabetical.
@@ -210,7 +210,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case WebAXRoleDisclosureTriangle:
         return QAccessible::NoRole; // FIXME
     case WebAXRoleDiv:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Section;
     case WebAXRoleDocument:
         return QAccessible::Document;
     case WebAXRoleDrawer:
@@ -243,6 +243,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case WebAXRoleIncrementor:
         return QAccessible::NoRole; // FIXME
+    case WebAXRoleInlineTextBox:
+        return QAccessible::EditableText;
     case WebAXRoleLabel:
         return QAccessible::StaticText;
     case WebAXRoleLink:
@@ -282,9 +284,9 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case WebAXRoleOutline:
         return QAccessible::NoRole; // FIXME
     case WebAXRoleParagraph:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::Paragraph;
     case WebAXRolePopUpButton:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::ComboBox;
     case WebAXRolePresentational:
         return QAccessible::NoRole; // FIXME
     case WebAXRoleProgressIndicator:
