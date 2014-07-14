@@ -55,6 +55,7 @@ public:
     virtual void initAsChild(WebContentsAdapterClient* container) Q_DECL_OVERRIDE;
     virtual void initAsPopup(const QRect&) Q_DECL_OVERRIDE;
     virtual QRectF screenRect() const Q_DECL_OVERRIDE;
+    virtual QRectF contentsRect() const Q_DECL_OVERRIDE;
     virtual void setKeyboardFocus() Q_DECL_OVERRIDE;
     virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE;
     virtual void show() Q_DECL_OVERRIDE;
