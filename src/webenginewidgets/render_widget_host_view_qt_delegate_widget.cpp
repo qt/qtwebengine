@@ -97,6 +97,12 @@ QRectF RenderWidgetHostViewQtDelegateWidget::screenRect() const
     return QRectF(x(), y(), width(), height());
 }
 
+QRectF RenderWidgetHostViewQtDelegateWidget::contentsRect() const
+{
+    QPointF pos = mapToGlobal(QPoint(0, 0));
+    return QRectF(pos.x(), pos.y(), width(), height());
+}
+
 void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
 {
     setFocus();

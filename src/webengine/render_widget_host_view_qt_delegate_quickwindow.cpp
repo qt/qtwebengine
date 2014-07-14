@@ -75,6 +75,11 @@ QRectF RenderWidgetHostViewQtDelegateQuickWindow::screenRect() const
     return QRectF(x(), y(), width(), height());
 }
 
+QRectF RenderWidgetHostViewQtDelegateQuickWindow::contentsRect() const
+{
+    return geometry();
+}
+
 void RenderWidgetHostViewQtDelegateQuickWindow::show()
 {
     QQuickWindow::show();

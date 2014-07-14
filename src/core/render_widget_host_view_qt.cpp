@@ -316,7 +316,7 @@ bool RenderWidgetHostViewQt::IsShowing()
 // Retrieve the bounds of the View, in screen coordinates.
 gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 {
-    QRectF p = m_delegate->screenRect();
+    QRectF p = m_delegate->contentsRect();
     float s = dpiScale();
     gfx::Point p1(floor(p.x() / s), floor(p.y() / s));
     gfx::Point p2(ceil(p.right() /s), ceil(p.bottom() / s));
