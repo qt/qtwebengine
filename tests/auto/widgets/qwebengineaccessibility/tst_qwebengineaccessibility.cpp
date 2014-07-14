@@ -38,6 +38,7 @@ public Q_SLOTS:
 private Q_SLOTS:
     void noPage();
     void hierarchy();
+    void text();
 };
 
 // This will be called before the first test function is executed.
@@ -124,6 +125,40 @@ void tst_QWebEngineView::hierarchy()
     QCOMPARE(input->text(QAccessible::Name), QString());
     QCOMPARE(input->text(QAccessible::Description), QString());
     QCOMPARE(input->text(QAccessible::Value), QStringLiteral("some text"));
+}
+
+void tst_QWebEngineView::text()
+{
+    QWebEngineView webView;
+    webView.setHtml("<html><body>" \
+        "<input type='text' value='Good morning!'></input>" \
+        "</body></html>");
+    webView.show();
+    ::waitForSignal(&webView, SIGNAL(loadFinished(bool)));
+
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    // Wait for accessibility to be fully initialized
+    QTRY_VERIFY(view->child(0)->childCount() == 1);
+    QAccessibleInterface *document = view->child(0);
+    QAccessibleInterface *grouping = document->child(0);
+    QVERIFY(grouping);
+
+    QAccessibleInterface *input = grouping->child(0);
+    QCOMPARE(input->role(), QAccessible::EditableText);
+    QCOMPARE(input->text(QAccessible::Name), QString());
+    QCOMPARE(input->text(QAccessible::Description), QString());
+    QCOMPARE(input->text(QAccessible::Value), QStringLiteral("Good morning!"));
+
+    QAccessibleTextInterface *textInterface = input->textInterface();
+    QVERIFY(textInterface);
+    QCOMPARE(textInterface->characterCount(), 13);
+    QCOMPARE(textInterface->selectionCount(), 0);
+    QCOMPARE(textInterface->text(2, 9), QStringLiteral("od morn"));
+    int start = -1;
+    int end = -1;
+    QCOMPARE(textInterface->textAtOffset(8, QAccessible::WordBoundary, &start, &end), QStringLiteral("morning"));
+    textInterface->setCursorPosition(3);
+    QTRY_COMPARE(textInterface->cursorPosition(), 3);
 }
 
 QTEST_MAIN(tst_QWebEngineView)

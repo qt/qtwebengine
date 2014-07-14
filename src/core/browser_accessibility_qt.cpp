@@ -41,6 +41,7 @@
 
 #include "browser_accessibility_qt.h"
 
+#include "qtwebenginecoreglobal.h"
 #include "content/common/accessibility_node_data.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "type_conversion.h"
@@ -67,6 +68,19 @@ QObject *BrowserAccessibilityQt::object() const
 
 QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
 {
+    return 0;
+}
+
+void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
+{
+    switch (type) {
+    case QAccessible::TextInterface:
+        if (IsEditableText())
+            return static_cast<QAccessibleTextInterface*>(this);
+        break;
+    default:
+        break;
+    }
     return 0;
 }
 
@@ -384,6 +398,8 @@ QAccessible::State BrowserAccessibilityQt::state() const
     {} // FIXME
     if (s & (1 << WebAXStateVisited))
     {} // FIXME
+    if (IsEditableText())
+        state.editable = true;
     return state;
 }
 
@@ -401,6 +417,93 @@ void BrowserAccessibilityQt::NativeReleaseReference()
     // delete this
     QAccessible::Id interfaceId = QAccessible::uniqueId(this);
     QAccessible::deleteAccessibleInterface(interfaceId);
+}
+
+void BrowserAccessibilityQt::addSelection(int startOffset, int endOffset)
+{
+    manager()->SetTextSelection(*this, startOffset, endOffset);
+}
+
+QString BrowserAccessibilityQt::attributes(int offset, int *startOffset, int *endOffset) const
+{
+    *startOffset = offset;
+    *endOffset = offset;
+    return QString();
+}
+
+int BrowserAccessibilityQt::cursorPosition() const
+{
+    int pos = 0;
+    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START, &pos);
+    return pos;
+}
+
+QRect BrowserAccessibilityQt::characterRect(int /*offset*/) const
+{
+    QT_NOT_YET_IMPLEMENTED
+    return QRect();
+}
+
+int BrowserAccessibilityQt::selectionCount() const
+{
+    int start = 0;
+    int end = 0;
+    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START, &start);
+    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, &end);
+    if (start != end)
+        return 1;
+    return 0;
+}
+
+int BrowserAccessibilityQt::offsetAtPoint(const QPoint &/*point*/) const
+{
+    QT_NOT_YET_IMPLEMENTED
+    return 0;
+}
+
+void BrowserAccessibilityQt::selection(int selectionIndex, int *startOffset, int *endOffset) const
+{
+    Q_ASSERT(startOffset && endOffset);
+    *startOffset = 0;
+    *endOffset = 0;
+    if (selectionIndex != 0)
+        return;
+    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START, startOffset);
+    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, endOffset);
+}
+
+QString BrowserAccessibilityQt::text(int startOffset, int endOffset) const
+{
+    return text(QAccessible::Value).mid(startOffset, endOffset - startOffset);
+}
+
+void BrowserAccessibilityQt::removeSelection(int selectionIndex)
+{
+    manager()->SetTextSelection(*this, 0, 0);
+}
+
+void BrowserAccessibilityQt::setCursorPosition(int position)
+{
+    manager()->SetTextSelection(*this, position, position);
+}
+
+void BrowserAccessibilityQt::setSelection(int selectionIndex, int startOffset, int endOffset)
+{
+    if (selectionIndex != 0)
+        return;
+    manager()->SetTextSelection(*this, startOffset, endOffset);
+}
+
+int BrowserAccessibilityQt::characterCount() const
+{
+    return text(QAccessible::Value).length();
+}
+
+void BrowserAccessibilityQt::scrollToSubstring(int startIndex, int endIndex)
+{
+    int count = characterCount();
+    if (startIndex < endIndex && endIndex < count)
+        manager()->ScrollToMakeVisible(*this, GetLocalBoundsForRange(startIndex, endIndex - startIndex));
 }
 
 } // namespace content
