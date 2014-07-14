@@ -161,6 +161,7 @@ class Submodule:
         oldCwd = os.getcwd()
         os.chdir(self.path)
         error = 0
+        current_shasum = ''
         if self.ref:
             # Fetch the ref we parsed from the DEPS file.
             error = subprocessCall(['git', 'fetch', 'origin', self.ref])
@@ -169,24 +170,26 @@ class Submodule:
                 return error
 
             error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
+            current_shasum = subprocessCheckOutput(['git', 'rev-parse', 'HEAD']).strip()
+            current_tag = subprocessCheckOutput(['git', 'name-rev', '--tags', '--name-only', current_shasum]).strip()
 
-            search_string = ''
-            if self.path.endswith('/chromium'):
-                search_string = resolver.currentVersion()
+            if current_tag == resolver.currentVersion():
+                # We checked out a tagged version of chromium.
+                self.shasum = current_shasum
             elif self.revision:
-                search_string = '@' + str(self.revision) + ' '
-            if search_string:
+                search_string = '\"git-svn-id: .*@' + str(self.revision) + '\"'
                 line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', '--grep=' + search_string])
                 if line:
-                    self.shasum = line.split(' ')[0]
-            else: # No revision set, use the submodule shasum
-                os.chdir(oldCwd)
-                line = subprocessCheckOutput(['git', 'submodule', 'status', self.path])
-                os.chdir(self.path)
-                line = line.lstrip(' -')
-                self.shasum = line.split(' ')[0]
+                    self.shasum = line.split()[0]
 
-        current_shasum = subprocessCheckOutput(['git', 'show', '-s', '--oneline']).split(' ')[0]
+        if not self.shasum:
+            # No shasum could be deduceed, use the submodule shasum.
+            os.chdir(oldCwd)
+            line = subprocessCheckOutput(['git', 'submodule', 'status', self.path])
+            os.chdir(self.path)
+            line = line.lstrip(' -')
+            self.shasum = line.split(' ')[0]
+
         if not self.shasum.startswith(current_shasum):
             # In case HEAD differs check out the actual shasum we require.
             subprocessCall(['git', 'fetch'])
@@ -219,7 +222,7 @@ class Submodule:
 
     def initialize(self):
         if self.matchesOS():
-            print '-- initializing ' + self.path + ' --'
+            print '\n\n-- initializing ' + self.path + ' --'
             oldCwd = os.getcwd()
             if os.path.isdir(self.path):
                 self.reset()
@@ -233,9 +236,12 @@ class Submodule:
             if self.findShaAndCheckout() != 0:
                 sys.exit("!!! initialization failed !!!")
 
-            os.chdir(self.path)
-            commit = subprocessCheckOutput(['git', 'rev-list', '--max-count=1', 'HEAD'])
-            subprocessCall(['git', 'commit', '-a', '--allow-empty', '-m', '-- QtWebEngine baseline --\n\ncommit ' + commit])
+            if '3rdparty_upstream' in os.path.abspath(self.path):
+                # Add baseline commit for upstream repository to be able to reset.
+                os.chdir(self.path)
+                commit = subprocessCheckOutput(['git', 'rev-list', '--max-count=1', 'HEAD'])
+                subprocessCall(['git', 'commit', '-a', '--allow-empty', '-m', '-- QtWebEngine baseline --\n\ncommit ' + commit])
+
             os.chdir(oldCwd)
         else:
             print '-- skipping ' + self.path + ' for this operating system. --'
