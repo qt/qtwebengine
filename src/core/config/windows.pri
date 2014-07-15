@@ -15,6 +15,6 @@ GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"
 # Gyp's parallel processing is broken on Windows
 GYP_ARGS += "--no-parallel"
 
-CONFIG(release, debug|release): GYP_ARGS+= "qt_egl_library=\"libEGL.lib\" qt_glesv2_library=\"libGLESv2.lib\""
+CONFIG(release, debug|release): GYP_ARGS+= "-D qt_egl_library=\"libEGL.lib\" -D qt_glesv2_library=\"libGLESv2.lib\""
 else: GYP_ARGS+= "-D qt_egl_library=\"libEGLd.lib\" -D qt_glesv2_library=\"libGLESv2d.lib\""
 
