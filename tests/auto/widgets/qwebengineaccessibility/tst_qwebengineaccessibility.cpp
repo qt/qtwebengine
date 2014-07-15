@@ -126,6 +126,19 @@ void tst_QWebEngineView::hierarchy()
     QCOMPARE(input->text(QAccessible::Name), QString());
     QCOMPARE(input->text(QAccessible::Description), QString());
     QCOMPARE(input->text(QAccessible::Value), QStringLiteral("some text"));
+
+    QRect windowRect = webView.geometry();
+    QRect inputRect = input->rect();
+    QVERIFY(!inputRect.isEmpty());
+    QVERIFY(windowRect.contains(inputRect));
+    QPoint inputCenter = inputRect.center();
+    QAccessibleInterface *hitTest = view;
+    QAccessibleInterface *child = Q_NULLPTR;
+    while (hitTest) {
+        child = hitTest;
+        hitTest = hitTest->childAt(inputCenter.x(), inputCenter.y());
+    }
+    QCOMPARE(input, child);
 }
 
 void tst_QWebEngineView::text()
