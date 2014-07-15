@@ -39,6 +39,7 @@ private Q_SLOTS:
     void noPage();
     void hierarchy();
     void text();
+    void value();
 };
 
 // This will be called before the first test function is executed.
@@ -159,6 +160,44 @@ void tst_QWebEngineView::text()
     QCOMPARE(textInterface->textAtOffset(8, QAccessible::WordBoundary, &start, &end), QStringLiteral("morning"));
     textInterface->setCursorPosition(3);
     QTRY_COMPARE(textInterface->cursorPosition(), 3);
+}
+
+void tst_QWebEngineView::value()
+{
+    QWebEngineView webView;
+    webView.setHtml("<html><body>" \
+        "<div role='slider' aria-valuenow='4' aria-valuemin='1' aria-valuemax='10'></div>" \
+        "<div class='progress' role='progressbar' aria-valuenow='77' aria-valuemin='22' aria-valuemax='99'></div>" \
+        "</body></html>");
+    webView.show();
+    ::waitForSignal(&webView, SIGNAL(loadFinished(bool)));
+
+    QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
+    QTRY_COMPARE(view->child(0)->childCount(), 2);
+    QAccessibleInterface *document = view->child(0);
+    QCOMPARE(document->childCount(), 2);
+
+    QAccessibleInterface *slider = document->child(0);
+    QCOMPARE(slider->role(), QAccessible::Slider);
+    QCOMPARE(slider->text(QAccessible::Name), QString());
+    QCOMPARE(slider->text(QAccessible::Description), QString());
+    QCOMPARE(slider->text(QAccessible::Value), QString());
+    QAccessibleValueInterface *valueInterface = slider->valueInterface();
+    QVERIFY(valueInterface);
+    QCOMPARE(valueInterface->currentValue().toInt(), 4);
+    QCOMPARE(valueInterface->minimumValue().toInt(), 1);
+    QCOMPARE(valueInterface->maximumValue().toInt(), 10);
+
+    QAccessibleInterface *progressBar = document->child(1);
+    QCOMPARE(progressBar->role(), QAccessible::ProgressBar);
+    QCOMPARE(progressBar->text(QAccessible::Name), QString());
+    QCOMPARE(progressBar->text(QAccessible::Description), QString());
+    QCOMPARE(progressBar->text(QAccessible::Value), QString());
+    QAccessibleValueInterface *progressBarValueInterface = progressBar->valueInterface();
+    QVERIFY(progressBarValueInterface);
+    QCOMPARE(progressBarValueInterface->currentValue().toInt(), 77);
+    QCOMPARE(progressBarValueInterface->minimumValue().toInt(), 22);
+    QCOMPARE(progressBarValueInterface->maximumValue().toInt(), 99);
 }
 
 QTEST_MAIN(tst_QWebEngineView)
