@@ -128,7 +128,10 @@ def addGerritRemote():
 
 def installGitHooks():
     os.chdir(qtwebengine_root)
-    subprocess.call(['scp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
+    if os.name != 'nt':
+        subprocess.call(['scp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
+    else:
+        subprocess.call(['pscp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
 
 def initUpstreamSubmodules():
     ninja_url = 'https://github.com/martine/ninja.git'
@@ -179,6 +182,6 @@ if args.upstream:
     initUpstreamSubmodules()
     updateLastChange()
     if not args.baseline_upstream and not use_external_chromium:
-        subprocess.call([os.path.join(qtwebengine_root, 'tools', 'scripts', 'patch_upstream.py')])
+        subprocess.call(['python', os.path.join(qtwebengine_root, 'tools', 'scripts', 'patch_upstream.py')])
 if args.snapshot:
     initSnapshot()
