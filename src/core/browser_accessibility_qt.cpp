@@ -166,7 +166,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case WebAXRoleAnnotation:
         return QAccessible::NoRole; // FIXME
     case WebAXRoleApplication:
-        return QAccessible::Application;
+        return QAccessible::Document; // returning Application here makes Qt return the top level app object
     case WebAXRoleArticle:
         return QAccessible::Document; // FIXME
     case WebAXRoleBrowser:
