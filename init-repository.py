@@ -159,6 +159,10 @@ def initUpstreamSubmodules():
         chromiumSubmodule.initialize()
         chromiumSubmodule.initSubmodules()
 
+    # Unstage repositories so we do not accidentally commit them.
+    subprocess.call(['git', 'reset', '-q', 'HEAD', 'src/3rdparty_upstream/ninja'])
+    subprocess.call(['git', 'reset', '-q', 'HEAD', 'src/3rdparty_upstream/chromium'])
+
 def initSnapshot():
     snapshot = GitSubmodule.Submodule()
     snapshot.path = 'src/3rdparty'
