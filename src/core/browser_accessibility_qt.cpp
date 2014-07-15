@@ -68,6 +68,12 @@ QObject *BrowserAccessibilityQt::object() const
 
 QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
 {
+    for (int i = 0; i < childCount(); ++i) {
+        QAccessibleInterface *childIface = child(i);
+        Q_ASSERT(childIface);
+        if (childIface->rect().contains(x,y))
+            return childIface;
+    }
     return 0;
 }
 
