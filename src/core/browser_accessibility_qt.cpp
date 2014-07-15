@@ -143,6 +143,8 @@ void BrowserAccessibilityQt::setText(QAccessible::Text t, const QString &text)
 
 QRect BrowserAccessibilityQt::rect() const
 {
+    if (!manager()) // needed implicitly by GetGlobalBoundsRect()
+        return QRect();
     gfx::Rect bounds = GetGlobalBoundsRect();
     return QRect(bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
