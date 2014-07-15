@@ -63,7 +63,7 @@ bool BrowserAccessibilityQt::isValid() const
 
 QObject *BrowserAccessibilityQt::object() const
 {
-    return 0;
+    return Q_NULLPTR;
 }
 
 QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
@@ -74,7 +74,7 @@ QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
         if (childIface->rect().contains(x,y))
             return childIface;
     }
-    return 0;
+    return Q_NULLPTR;
 }
 
 void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
@@ -96,7 +96,7 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
     default:
         break;
     }
-    return 0;
+    return Q_NULLPTR;
 }
 
 QAccessibleInterface *BrowserAccessibilityQt::parent() const
