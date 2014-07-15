@@ -41,6 +41,7 @@
 
 #include "browser_accessibility_qt.h"
 
+#include "qtwebenginecoreglobal.h"
 #include "content/common/accessibility_node_data.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "type_conversion.h"
@@ -77,6 +78,15 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
         if (IsEditableText())
             return static_cast<QAccessibleTextInterface*>(this);
         break;
+    case QAccessible::ValueInterface: {
+        QAccessible::Role r = role();
+        if (r == QAccessible::ProgressBar ||
+                r == QAccessible::Slider ||
+                r == QAccessible::ScrollBar ||
+                r == QAccessible::SpinBox)
+            return static_cast<QAccessibleValueInterface*>(this);
+        break;
+    }
     default:
         break;
     }
@@ -270,7 +280,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case WebAXRolePresentational:
         return QAccessible::NoRole; // FIXME
     case WebAXRoleProgressIndicator:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::ProgressBar;
     case WebAXRoleRadioButton:
         return QAccessible::RadioButton;
     case WebAXRoleRadioGroup:
@@ -296,7 +306,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
     case WebAXRoleSliderThumb:
         return QAccessible::NoRole; // FIXME
     case WebAXRoleSpinButton:
-        return QAccessible::NoRole; // FIXME
+        return QAccessible::SpinBox;
     case WebAXRoleSpinButtonPart:
         return QAccessible::NoRole; // FIXME
     case WebAXRoleSplitter:
@@ -501,6 +511,47 @@ void BrowserAccessibilityQt::scrollToSubstring(int startIndex, int endIndex)
     int count = characterCount();
     if (startIndex < count && endIndex < count && startIndex < endIndex)
         manager()->ScrollToMakeVisible(*this, GetLocalBoundsForRange(startIndex, endIndex - startIndex));
+}
+
+QVariant BrowserAccessibilityQt::currentValue() const
+{
+    QVariant result;
+    float value;
+    if (GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &value)) {
+        result = (double) value;
+    }
+    return result;
+}
+
+void BrowserAccessibilityQt::setCurrentValue(const QVariant &value)
+{
+    // not yet implemented anywhere in blink
+    QT_NOT_YET_IMPLEMENTED
+}
+
+QVariant BrowserAccessibilityQt::maximumValue() const
+{
+    QVariant result;
+    float value;
+    if (GetFloatAttribute(AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE, &value)) {
+        result = (double) value;
+    }
+    return result;
+}
+
+QVariant BrowserAccessibilityQt::minimumValue() const
+{
+    QVariant result;
+    float value;
+    if (GetFloatAttribute(AccessibilityNodeData::ATTR_MIN_VALUE_FOR_RANGE, &value)) {
+        result = (double) value;
+    }
+    return result;
+}
+
+QVariant BrowserAccessibilityQt::minimumStepSize() const
+{
+    return QVariant();
 }
 
 } // namespace content
