@@ -51,6 +51,7 @@ class BrowserAccessibilityQt
     : public BrowserAccessibility
     , public QAccessibleInterface
     , public QAccessibleTextInterface
+    , public QAccessibleValueInterface
 {
 public:
     BrowserAccessibilityQt();
@@ -93,6 +94,13 @@ public:
     void setSelection(int selectionIndex, int startOffset, int endOffset) Q_DECL_OVERRIDE;
     int characterCount() const Q_DECL_OVERRIDE;
     void scrollToSubstring(int startIndex, int endIndex) Q_DECL_OVERRIDE;
+
+    // QAccessibleValueInterface
+    QVariant currentValue() const Q_DECL_OVERRIDE;
+    void setCurrentValue(const QVariant &value) Q_DECL_OVERRIDE;
+    QVariant maximumValue() const Q_DECL_OVERRIDE;
+    QVariant minimumValue() const Q_DECL_OVERRIDE;
+    QVariant minimumStepSize() const Q_DECL_OVERRIDE;
 };
 
 }
