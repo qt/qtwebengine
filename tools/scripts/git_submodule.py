@@ -161,7 +161,6 @@ class Submodule:
         oldCwd = os.getcwd()
         os.chdir(self.path)
         error = 0
-        current_shasum = ''
         if self.ref:
             # Fetch the ref we parsed from the DEPS file.
             error = subprocessCall(['git', 'fetch', 'origin', self.ref])
@@ -170,17 +169,19 @@ class Submodule:
                 return error
 
             error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
-            current_shasum = subprocessCheckOutput(['git', 'rev-parse', 'HEAD']).strip()
-            current_tag = subprocessCheckOutput(['git', 'name-rev', '--tags', '--name-only', current_shasum]).strip()
 
-            if current_tag == resolver.currentVersion():
-                # We checked out a tagged version of chromium.
-                self.shasum = current_shasum
-            elif self.revision:
+            if self.revision:
                 search_string = '\"git-svn-id: .*@' + str(self.revision) + '\"'
                 line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', '--grep=' + search_string])
                 if line:
                     self.shasum = line.split()[0]
+
+        current_shasum = subprocessCheckOutput(['git', 'rev-parse', 'HEAD']).strip()
+        current_tag = subprocessCheckOutput(['git', 'name-rev', '--tags', '--name-only', current_shasum]).strip()
+
+        if current_tag == resolver.currentVersion():
+            # We checked out a tagged version of chromium.
+            self.shasum = current_shasum
 
         if not self.shasum:
             # No shasum could be deduced, use the submodule shasum.
