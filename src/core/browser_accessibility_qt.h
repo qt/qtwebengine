@@ -50,6 +50,7 @@ namespace content {
 class BrowserAccessibilityQt
     : public BrowserAccessibility
     , public QAccessibleInterface
+    , public QAccessibleActionInterface
     , public QAccessibleTextInterface
     , public QAccessibleValueInterface
 {
@@ -79,6 +80,11 @@ public:
     void NativeAddReference() Q_DECL_OVERRIDE;
     void NativeReleaseReference() Q_DECL_OVERRIDE;
     bool IsNative() const Q_DECL_OVERRIDE { return true; }
+
+    // QAccessibleActionInterface
+    QStringList actionNames() const Q_DECL_OVERRIDE;
+    void doAction(const QString &actionName) Q_DECL_OVERRIDE;
+    QStringList keyBindingsForAction(const QString &actionName) const Q_DECL_OVERRIDE;
 
     // QAccessibleTextInterface
     void addSelection(int startOffset, int endOffset) Q_DECL_OVERRIDE;

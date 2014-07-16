@@ -80,6 +80,10 @@ QAccessibleInterface *BrowserAccessibilityQt::childAt(int x, int y) const
 void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
 {
     switch (type) {
+    case QAccessible::ActionInterface:
+        if (!actionNames().isEmpty())
+            return static_cast<QAccessibleActionInterface*>(this);
+        break;
     case QAccessible::TextInterface:
         if (IsEditableText())
             return static_cast<QAccessibleTextInterface*>(this);
@@ -434,6 +438,26 @@ void BrowserAccessibilityQt::NativeReleaseReference()
     // delete this
     QAccessible::Id interfaceId = QAccessible::uniqueId(this);
     QAccessible::deleteAccessibleInterface(interfaceId);
+}
+
+QStringList BrowserAccessibilityQt::actionNames() const
+{
+    QStringList actions;
+    if (HasState(blink::WebAXStateFocusable))
+        actions << QAccessibleActionInterface::setFocusAction();
+    return actions;
+}
+
+void BrowserAccessibilityQt::doAction(const QString &actionName)
+{
+    if (actionName == QAccessibleActionInterface::setFocusAction())
+        manager()->SetFocus(this, true);
+}
+
+QStringList BrowserAccessibilityQt::keyBindingsForAction(const QString &actionName) const
+{
+    QT_NOT_YET_IMPLEMENTED
+    return QStringList();
 }
 
 void BrowserAccessibilityQt::addSelection(int startOffset, int endOffset)
