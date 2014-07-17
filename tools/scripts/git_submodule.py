@@ -171,8 +171,8 @@ class Submodule:
             error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
 
             if self.revision:
-                search_string = '\"git-svn-id: .*@' + str(self.revision) + '\"'
-                line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', '--grep=' + search_string])
+                search_string = 'git-svn-id:.*@%d' % self.revision
+                line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', r'--grep=%s' % search_string])
                 if line:
                     self.shasum = line.split()[0]
 
