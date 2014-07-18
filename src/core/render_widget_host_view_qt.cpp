@@ -41,8 +41,13 @@
 
 #include "render_widget_host_view_qt.h"
 
+#ifdef OS_WIN
+#include "content/browser/accessibility/browser_accessibility_manager_win.h"
+#include "content/browser/accessibility/browser_accessibility_win.h"
+#else
 #include "browser_accessibility_manager_qt.h"
 #include "browser_accessibility_qt.h"
+#endif
 #include "chromium_overrides.h"
 #include "delegated_frame_node.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -264,8 +269,21 @@ gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 {
-    CreateBrowserAccessibilityManagerIfNeeded();
-    return GetBrowserAccessibilityManager()->GetRoot();
+#ifdef OS_WIN
+    // keep in sync with render_widget_host_view_win.cpp
+    if (render_widget_host_ &&
+          !BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
+        // Attempt to detect screen readers by sending an event with our custom id.
+        NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
+      }
+
+      CreateBrowserAccessibilityManagerIfNeeded();
+
+      return GetBrowserAccessibilityManager()->GetRoot()->
+          ToBrowserAccessibilityWin();
+#else
+    return 0;
+#endif
 }
 
 void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
@@ -273,10 +291,24 @@ void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
     if (GetBrowserAccessibilityManager())
         return;
 
+#ifdef OS_WIN
+    HRESULT hr = ::CreateStdAccessibleObject(
+        m_hWnd, OBJID_WINDOW, IID_IAccessible,
+        reinterpret_cast<void **>(&window_iaccessible_));
+    DCHECK(SUCCEEDED(hr));
+
+    SetBrowserAccessibilityManager(
+        new BrowserAccessibilityManagerWin(
+            m_hWnd,
+            window_iaccessible_.get(),
+            BrowserAccessibilityManagerWin::GetEmptyDocument(),
+            this));
+#else
     SetBrowserAccessibilityManager(new content::BrowserAccessibilityManagerQt(
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
         this));
+#endif
 }
 
 // Set focus to the associated View component.
