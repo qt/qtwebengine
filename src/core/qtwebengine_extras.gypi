@@ -37,11 +37,9 @@
       ['exclude', 'browser/accessibility/browser_accessibility_cocoa\\.(cc|h)$'],
       ['exclude', 'browser/accessibility/browser_accessibility_gtk\\.(cc|h)$'],
       ['exclude', 'browser/accessibility/browser_accessibility_mac\\.(cc|h)$'],
-      ['exclude', 'browser/accessibility/browser_accessibility_win\\.(cc|h)$'],
       ['exclude', 'browser/accessibility/browser_accessibility_manager_android\\.(cc|h)$'],
       ['exclude', 'browser/accessibility/browser_accessibility_manager_gtk\\.(cc|h)$'],
       ['exclude', 'browser/accessibility/browser_accessibility_manager_mac\\.(cc|h)$'],
-      ['exclude', 'browser/accessibility/browser_accessibility_manager_win\\.(cc|h)$'],
     ],
     'defines': [
       'TOOLKIT_QT',
