@@ -94,7 +94,7 @@ QRectF RenderWidgetHostViewQtDelegateQuick::contentsRect() const
 {
     QPointF scenePoint = mapToScene(QPointF(0, 0));
     QPointF screenPos = window()->mapToGlobal(scenePoint.toPoint());
-    return QRectF(screenPos, QPointF(width(), height()));
+    return QRectF(screenPos.x(), screenPos.y(), width(), height());
 }
 
 void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
