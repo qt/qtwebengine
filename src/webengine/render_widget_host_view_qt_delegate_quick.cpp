@@ -93,7 +93,9 @@ QRectF RenderWidgetHostViewQtDelegateQuick::screenRect() const
 QRectF RenderWidgetHostViewQtDelegateQuick::contentsRect() const
 {
     QPointF scenePoint = mapToScene(QPointF(0, 0));
-    QPointF screenPos = window()->mapToGlobal(scenePoint.toPoint());
+    QPointF screenPos;
+    if (window())
+        screenPos = window()->mapToGlobal(scenePoint.toPoint());
     return QRectF(screenPos.x(), screenPos.y(), width(), height());
 }
 
