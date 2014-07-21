@@ -52,6 +52,9 @@ class BrowserAccessibilityQt
 public:
     BrowserAccessibilityQt();
 
+    // BrowserAccessibility
+    virtual void OnDataChanged() Q_DECL_OVERRIDE;
+
     // QAccessibleInterface
     virtual bool isValid() const Q_DECL_OVERRIDE;
     virtual QObject *object() const Q_DECL_OVERRIDE;
