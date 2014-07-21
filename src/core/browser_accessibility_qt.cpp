@@ -56,6 +56,65 @@ BrowserAccessibilityQt::BrowserAccessibilityQt()
     QAccessible::registerAccessibleInterface(this);
 }
 
+// the code below is a partial copy of BrowserAccessibilityWin::PreInitialize
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+// see also http://www.w3.org/TR/html-aapi
+// NOTE: in chromium this function will be renamed to BrowserAccessibility::OnDataChanged
+void BrowserAccessibilityQt::PreInitialize()
+{
+    BrowserAccessibility::PreInitialize();
+
+    int title_elem_id = GetIntAttribute(
+        AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT);
+    std::string help = GetStringAttribute(AccessibilityNodeData::ATTR_HELP);
+    std::string description = GetStringAttribute(
+        AccessibilityNodeData::ATTR_DESCRIPTION);
+
+    // WebKit annoyingly puts the title in the description if there's no other
+    // description, which just confuses the rest of the logic. Put it back.
+    // Now "help" is always the value of the "title" attribute, if present.
+    std::string title_attr;
+    if (GetHtmlAttribute("title", &title_attr) &&
+        description == title_attr &&
+        help.empty()) {
+      help = description;
+      description.clear();
+    }
+
+    // Now implement the main logic: the descripion should become the name if
+    // it's nonempty, and the help should become the description if
+    // there's no description - or the name if there's no name or description.
+    if (!description.empty()) {
+      set_name(description);
+      description.clear();
+    }
+    if (!help.empty() && description.empty()) {
+      description = help;
+      help.clear();
+    }
+    if (!description.empty() && name().empty() && !title_elem_id) {
+      set_name(description);
+      description.clear();
+    }
+
+    // If it's a text field, also consider the placeholder.
+    std::string placeholder;
+    if (BrowserAccessibility::role() == blink::WebAXRoleTextField &&
+        HasState(blink::WebAXStateFocusable) &&
+        GetHtmlAttribute("placeholder", &placeholder)) {
+      if (name().empty() && !title_elem_id) {
+        set_name(placeholder);
+      } else if (description.empty()) {
+        description = placeholder;
+      }
+    }
+
+    SetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION, description);
+    SetStringAttribute(AccessibilityNodeData::ATTR_HELP, help);
+}
+
 bool BrowserAccessibilityQt::isValid() const
 {
     return true;
@@ -128,7 +187,7 @@ QString BrowserAccessibilityQt::text(QAccessible::Text t) const
 {
     switch (t) {
     case QAccessible::Name:
-        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_NAME));
+        return toQt(name());
     case QAccessible::Description:
         return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION));
     case QAccessible::Help:
@@ -243,6 +302,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case WebAXRoleIncrementor:
         return QAccessible::NoRole; // FIXME
+    case WebAXRoleInlineTextBox:
+        return QAccessible::EditableText;
     case WebAXRoleLabel:
         return QAccessible::StaticText;
     case WebAXRoleLink:
