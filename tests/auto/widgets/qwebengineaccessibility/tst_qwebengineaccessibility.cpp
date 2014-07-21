@@ -146,33 +146,67 @@ void tst_QWebEngineView::text()
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
         "<input type='text' value='Good morning!'></input>" \
+        "<p id='labelName'>Enter your name here:</p>" \
+        "<input type='text' value='my name' aria-labelledby='labelName' aria-describedby='explanation'></input>" \
+        "<p id='explanation'>Provide both first and last name.</p>" \
+        "<input type='text' value='Good day!' placeholder='day'></input>" \
         "</body></html>");
     webView.show();
     ::waitForSignal(&webView, SIGNAL(loadFinished(bool)));
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     // Wait for accessibility to be fully initialized
-    QTRY_VERIFY(view->child(0)->childCount() == 1);
+
+    QTRY_VERIFY(view->child(0)->childCount() == 5);
     QAccessibleInterface *document = view->child(0);
-    QAccessibleInterface *grouping = document->child(0);
-    QVERIFY(grouping);
+    QVERIFY(document);
 
-    QAccessibleInterface *input = grouping->child(0);
-    QCOMPARE(input->role(), QAccessible::EditableText);
-    QCOMPARE(input->text(QAccessible::Name), QString());
-    QCOMPARE(input->text(QAccessible::Description), QString());
-    QCOMPARE(input->text(QAccessible::Value), QStringLiteral("Good morning!"));
+    // Good morning! [edit]
+    QAccessibleInterface *grouping1 = document->child(0);
+    QAccessibleInterface *input1 = grouping1->child(0);
+    QCOMPARE(input1->role(), QAccessible::EditableText);
+    QCOMPARE(input1->text(QAccessible::Name), QString());
+    QCOMPARE(input1->text(QAccessible::Description), QString());
+    QCOMPARE(input1->text(QAccessible::Value), QStringLiteral("Good morning!"));
 
-    QAccessibleTextInterface *textInterface = input->textInterface();
-    QVERIFY(textInterface);
-    QCOMPARE(textInterface->characterCount(), 13);
-    QCOMPARE(textInterface->selectionCount(), 0);
-    QCOMPARE(textInterface->text(2, 9), QStringLiteral("od morn"));
+    QAccessibleTextInterface *textInterface1 = input1->textInterface();
+    QVERIFY(textInterface1);
+    QCOMPARE(textInterface1->characterCount(), 13);
+    QCOMPARE(textInterface1->selectionCount(), 0);
+    QCOMPARE(textInterface1->text(2, 9), QStringLiteral("od morn"));
     int start = -1;
     int end = -1;
-    QCOMPARE(textInterface->textAtOffset(8, QAccessible::WordBoundary, &start, &end), QStringLiteral("morning"));
-    textInterface->setCursorPosition(3);
-    QTRY_COMPARE(textInterface->cursorPosition(), 3);
+    QCOMPARE(textInterface1->textAtOffset(8, QAccessible::WordBoundary, &start, &end), QStringLiteral("morning"));
+
+    // Enter your name here:
+    // my name [edit]
+    // Provide both first and last name here.
+    QAccessibleInterface *grouping2 = document->child(1);
+    QAccessibleInterface *label1 = grouping2->child(0);
+    QCOMPARE(label1->role(), QAccessible::StaticText);
+    QCOMPARE(label1->text(QAccessible::Name), QString());
+    QCOMPARE(label1->text(QAccessible::Description), QString());
+    QCOMPARE(label1->text(QAccessible::Value), QStringLiteral("Enter your name here:"));
+    QAccessibleInterface *grouping3 = document->child(2);
+    QAccessibleInterface *input2 = grouping3->child(0);
+    QCOMPARE(input2->role(), QAccessible::EditableText);
+    QCOMPARE(input2->text(QAccessible::Name), QStringLiteral("Enter your name here:"));
+    QCOMPARE(input2->text(QAccessible::Description), QStringLiteral("Provide both first and last name."));
+    QCOMPARE(input2->text(QAccessible::Value), QStringLiteral("my name"));
+    QAccessibleInterface *grouping4 = document->child(3);
+    QAccessibleInterface *label2 = grouping4->child(0);
+    QCOMPARE(label2->role(), QAccessible::StaticText);
+    QCOMPARE(label2->text(QAccessible::Name), QString());
+    QCOMPARE(label2->text(QAccessible::Description), QString());
+    QCOMPARE(label2->text(QAccessible::Value), QStringLiteral("Provide both first and last name."));
+
+    // Good day! [edit]
+    QAccessibleInterface *grouping5 = document->child(4);
+    QAccessibleInterface *input3 = grouping5->child(0);
+    QCOMPARE(input3->role(), QAccessible::EditableText);
+    QCOMPARE(input3->text(QAccessible::Name), QStringLiteral("day"));
+    QCOMPARE(input3->text(QAccessible::Description), QString());
+    QCOMPARE(input3->text(QAccessible::Value), QStringLiteral("Good day!"));
 }
 
 void tst_QWebEngineView::value()
