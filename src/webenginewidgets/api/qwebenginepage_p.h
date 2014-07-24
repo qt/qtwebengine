@@ -115,6 +115,7 @@ public:
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual void didUpdateTargetURL(const QUrl&) Q_DECL_OVERRIDE;
+    virtual void didFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE { }
     virtual void selectionChanged() Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual QPoint mapToGlobal(const QPoint &posInView) const Q_DECL_OVERRIDE;
@@ -139,6 +140,7 @@ public:
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
+    virtual void onSwapCompositorFrame() Q_DECL_OVERRIDE { }
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();

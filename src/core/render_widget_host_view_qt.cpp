@@ -641,6 +641,9 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, sco
         m_frameNodeData->frameDevicePixelRatio /= dpiScale;
 
     m_delegate->update();
+
+    if (m_adapterClient)
+        m_adapterClient->onSwapCompositorFrame();
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)

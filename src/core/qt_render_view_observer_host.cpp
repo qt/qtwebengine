@@ -69,6 +69,8 @@ bool QtRenderViewObserverHost::OnMessageReceived(const IPC::Message& message)
                             onDidFetchDocumentMarkup)
         IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFetchDocumentInnerText,
                             onDidFetchDocumentInnerText)
+        IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout,
+                            onDidFirstVisuallyNonEmptyLayout)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
@@ -83,4 +85,9 @@ void QtRenderViewObserverHost::onDidFetchDocumentMarkup(quint64 requestId, const
 void QtRenderViewObserverHost::onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText)
 {
     m_adapterClient->didFetchDocumentInnerText(requestId, toQt(innerText));
+}
+
+void QtRenderViewObserverHost::onDidFirstVisuallyNonEmptyLayout()
+{
+    m_adapterClient->didFirstVisuallyNonEmptyLayout();
 }
