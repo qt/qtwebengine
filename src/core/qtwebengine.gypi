@@ -88,6 +88,12 @@
         'resource_include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
         ],
+         'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/third_party/iaccessible2',
+        ],
+         'dependencies': [
+          '<(chromium_src_dir)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+        ],
         'configurations': {
           'Debug_Base': {
             'msvs_settings': {

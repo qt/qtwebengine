@@ -41,7 +41,7 @@
 
 #include "render_widget_host_view_qt.h"
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #else
@@ -87,6 +87,14 @@
 #include <QWheelEvent>
 #include <QWindow>
 #include <QtGui/qaccessible.h>
+
+#if defined(OS_WIN)
+namespace {
+// A custom MSAA object id used to determine if a screen reader is actively
+// listening for MSAA events.
+const int kIdCustom = 1;
+} //namespace
+#endif
 
 static inline ui::EventType toUIEventType(Qt::TouchPointState state)
 {
@@ -269,12 +277,13 @@ gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
 
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 {
-#ifdef OS_WIN
+#if defined(OS_WIN)
     // keep in sync with render_widget_host_view_win.cpp
-    if (render_widget_host_ &&
-          !BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
+    if (m_host &&
+          !content::BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
         // Attempt to detect screen readers by sending an event with our custom id.
-        NotifyWinEvent(EVENT_SYSTEM_ALERT, m_hWnd, kIdCustom, CHILDID_SELF);
+        // FIXME: Use the appropriate hWnd instead of 0 as second parameter.
+        NotifyWinEvent(EVENT_SYSTEM_ALERT, 0, kIdCustom, CHILDID_SELF);
       }
 
       CreateBrowserAccessibilityManagerIfNeeded();
@@ -291,17 +300,19 @@ void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
     if (GetBrowserAccessibilityManager())
         return;
 
-#ifdef OS_WIN
+#if defined(OS_WIN)
+    //FIXME: Use the correct hWnd instead of 0 as first parameter.
     HRESULT hr = ::CreateStdAccessibleObject(
-        m_hWnd, OBJID_WINDOW, IID_IAccessible,
+        0, OBJID_WINDOW, IID_IAccessible,
         reinterpret_cast<void **>(&window_iaccessible_));
     DCHECK(SUCCEEDED(hr));
 
     SetBrowserAccessibilityManager(
-        new BrowserAccessibilityManagerWin(
-            m_hWnd,
+        //FIXME: Use the correct hWnd instead of 0 as second parameter.
+        new content::BrowserAccessibilityManagerWin(
+            0,
             window_iaccessible_.get(),
-            BrowserAccessibilityManagerWin::GetEmptyDocument(),
+            content::BrowserAccessibilityManagerWin::GetEmptyDocument(),
             this));
 #else
     SetBrowserAccessibilityManager(new content::BrowserAccessibilityManagerQt(
@@ -1129,6 +1140,11 @@ QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
                 AccessibilityModeComplete);
 
     content::BrowserAccessibility *acc = GetBrowserAccessibilityManager()->GetRoot();
+#if !defined(OS_WIN)
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
     return accQt;
+#else
+    // FIXME: return the appropriate QAccessibleInterface here.
+    return 0;
+#endif
 }

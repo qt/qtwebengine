@@ -46,6 +46,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#if defined(OS_WIN)
+#include "base/win/scoped_comptr.h"
+#endif
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -56,6 +59,10 @@
 #include <QPoint>
 #include <QRect>
 #include <QtGlobal>
+
+#if defined(OS_WIN)
+#include <oleacc.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QEvent;
@@ -254,6 +261,11 @@ private:
     size_t m_cursorPositionWithinSelection;
 
     bool m_initPending;
+
+#if defined(OS_WIN)
+    // The OS-provided default IAccessible instance for our hwnd.
+    base::win::ScopedComPtr<IAccessible> window_iaccessible_;
+#endif
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H
