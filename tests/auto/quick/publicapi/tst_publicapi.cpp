@@ -101,6 +101,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.navigationHistoryChanged() --> void"
     << "QQuickWebEngineView.loadingChanged(QQuickWebEngineLoadRequest*) --> void"
     << "QQuickWebEngineView.loadProgressChanged() --> void"
+    << "QQuickWebEngineView.loadVisuallyCommitted() --> void"
     << "QQuickWebEngineView.javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
     << "QQuickWebEngineView.urlChanged() --> void"
     << "QQuickWebEngineView.iconChanged() --> void"

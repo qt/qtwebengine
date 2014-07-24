@@ -75,6 +75,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , loadProgress(0)
     , inspectable(false)
     , m_isFullScreen(false)
+    , m_didFirstVisuallyNonEmptyLayout(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -239,6 +240,11 @@ void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
     Q_EMIT q->linkHovered(hoveredUrl);
 }
 
+void QQuickWebEngineViewPrivate::didFirstVisuallyNonEmptyLayout()
+{
+    m_didFirstVisuallyNonEmptyLayout = true;
+}
+
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
     Q_Q(const QQuickWebEngineView);
@@ -367,6 +373,15 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 {
     Q_Q(QQuickWebEngineView);
     return q;
+}
+
+void QQuickWebEngineViewPrivate::onSwapCompositorFrame()
+{
+    Q_Q(QQuickWebEngineView);
+    if (m_didFirstVisuallyNonEmptyLayout) {
+        Q_EMIT q->loadVisuallyCommitted();
+        m_didFirstVisuallyNonEmptyLayout = false;
+    }
 }
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
