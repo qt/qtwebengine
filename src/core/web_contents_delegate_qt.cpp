@@ -163,6 +163,7 @@ void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, 
 void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame, content::RenderViewHost*)
 {
     if (is_main_frame) {
+        qDebug() << "--- WebContentsDelegateQt::DidFinishLoad ---";
         m_viewClient->loadFinished(true);
 
         content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();

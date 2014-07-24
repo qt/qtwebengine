@@ -47,8 +47,25 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQuickWebEngineView;
 class QQuickWebEngineViewPrivate;
 class QQuickWebEngineLoadRequest;
+
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewAttached : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QQuickWebEngineView *view READ view NOTIFY viewChanged FINAL)
+
+public:
+    QQuickWebEngineViewAttached(QObject *object);
+    QQuickWebEngineView *view() const { return m_view; }
+    void setView(QQuickWebEngineView *);
+
+Q_SIGNALS:
+    void viewChanged();
+
+private:
+    QQuickWebEngineView *m_view;
+};
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -77,6 +94,9 @@ public:
     bool canGoBack() const;
     bool canGoForward() const;
     void forceActiveFocus();
+
+    void addAttachedPropertyTo(QObject *);
+    static QQuickWebEngineViewAttached *qmlAttachedProperties(QObject *);
 
     enum LoadStatus {
         LoadStartedStatus,
@@ -138,5 +158,6 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineView)
+QML_DECLARE_TYPEINFO(QQuickWebEngineView, QML_HAS_ATTACHED_PROPERTIES)
 
 #endif // QQUICKWEBENGINEVIEW_P_H

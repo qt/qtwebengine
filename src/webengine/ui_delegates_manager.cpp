@@ -264,7 +264,7 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
         break;
 
 
-void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> dialogController)
+void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> dialogController, QQmlComponent *qmlAPIComponent)
 {
     Q_ASSERT(!dialogController.isNull());
     ComponentType dialogComponentType = Invalid;
@@ -327,11 +327,40 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QObject::connect(dialog, acceptSignal.method(), dialogController.data(), dialogController->metaObject()->method(acceptIndex));
     static int rejectIndex = dialogController->metaObject()->indexOfSlot("reject()");
     QObject::connect(dialog, rejectSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));
+
     dialogComponent->completeCreate();
 
     QObject::connect(dialogController.data(), &JavaScriptDialogController::dialogCloseRequested, dialog, &QObject::deleteLater);
 
     QMetaObject::invokeMethod(dialog, "open");
+
+    if (qmlAPIComponent) {
+        QQmlContext *qmlAPIContext = new QQmlContext(creationContextForComponent(qmlAPIComponent));
+        DialogContextObject *model = new DialogContextObject(dialogController->message(), dialogController->defaultPrompt());
+
+        switch (dialogComponentType) {
+        case PromptDialog:
+            QObject::connect(model, SIGNAL(accepted(QString)), dialogController.data(), SLOT(textProvided(QString)));
+        case ConfirmDialog:
+            QObject::connect(model, SIGNAL(rejected()), dialogController.data(), SLOT(reject()));
+        case AlertDialog:
+            QObject::connect(model, SIGNAL(accepted()), dialogController.data(), SLOT(accept()));
+            break;
+        default:
+            Q_UNREACHABLE();
+        }
+
+        model->setParent(dialog);
+        qmlAPIContext->setContextProperty(QLatin1String("model"), model);
+        qmlAPIContext->setContextObject(model);
+
+        QObject *object = qmlAPIComponent->beginCreate(qmlAPIContext);
+        m_view->addAttachedPropertyTo(object);
+
+        qobject_cast<QQuickItem *>(object)->setParentItem(m_view);
+
+        qmlAPIComponent->completeCreate();
+    }
 }
 
 namespace {

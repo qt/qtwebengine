@@ -108,6 +108,45 @@ private:
     QUrl m_targetUrl;
 };
 
+class DialogContextObject : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QString message READ message CONSTANT)
+    Q_PROPERTY(QString defaultValue READ defaultValue CONSTANT)
+
+public:
+    DialogContextObject(const QString& message, const QString& defaultValue)
+        : QObject()
+        , m_message(message)
+        , m_defaultValue(defaultValue)
+    {
+    }
+
+    QString message() const { return m_message; }
+    QString defaultValue() const { return m_defaultValue; }
+
+public Q_SLOTS:
+    void dismiss() {
+        QMetaObject::invokeMethod(parent(), "close");
+        emit accepted();
+    }
+    void accept(const QString& result = QString()) {
+        QMetaObject::invokeMethod(parent(), "close");
+        emit accepted(result);
+    }
+    void reject() {
+        QMetaObject::invokeMethod(parent(), "close");
+        emit rejected();
+    }
+
+Q_SIGNALS:
+    void accepted(const QString& result = QString());
+    void rejected();
+
+private:
+    QString m_message;
+    QString m_defaultValue;
+};
+
 class UIDelegatesManager {
 
 public:
@@ -123,7 +162,7 @@ public:
     void addMenuSeparator(QObject *menu);
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
-    void showDialog(QSharedPointer<JavaScriptDialogController>);
+    void showDialog(QSharedPointer<JavaScriptDialogController>, QQmlComponent *);
     void showFilePicker(WebContentsAdapterClient::FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes
                         , const QExplicitlySharedDataPointer<WebContentsAdapter> &);
 

@@ -72,6 +72,9 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , v(new QQuickWebEngineViewport(this))
     , m_history(new QQuickWebEngineHistory(this))
     , contextMenuExtraItems(0)
+    , alertDialog(0)
+    , confirmDialog(0)
+    , promptDialog(0)
     , loadProgress(0)
     , inspectable(false)
     , m_isFullScreen(false)
@@ -190,7 +193,20 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
 
 void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)
 {
-    ui()->showDialog(dialog);
+    switch (dialog->type()) {
+    case AlertDialog:
+        ui()->showDialog(dialog, alertDialog);
+        break;
+    case ConfirmDialog:
+    case InternalAuthorizationDialog:
+        ui()->showDialog(dialog, confirmDialog);
+        break;
+    case PromptDialog:
+        ui()->showDialog(dialog, promptDialog);
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -514,6 +530,79 @@ void QQuickWebEngineView::forceActiveFocus()
             break;
         }
     }
+}
+
+void QQuickWebEngineView::addAttachedPropertyTo(QObject *object)
+{
+    QQuickWebEngineViewAttached *attached = static_cast<QQuickWebEngineViewAttached *>(qmlAttachedPropertiesObject<QQuickWebEngineView>(object));
+    attached->setView(this);
+}
+
+QQuickWebEngineViewAttached* QQuickWebEngineView::qmlAttachedProperties(QObject *object)
+{
+    return new QQuickWebEngineViewAttached(object);
+}
+
+/* The 'WebEngineView' attached property allows items spawned by the webEngineView to
+   refer back to the originating webEngineView through 'WebEngineView.view', similar
+   to how ListView.view and GridView.view is exposed to items. */
+QQuickWebEngineViewAttached::QQuickWebEngineViewAttached(QObject *object)
+    : QObject(object)
+    , m_view(0)
+{
+}
+
+void QQuickWebEngineViewAttached::setView(QQuickWebEngineView *view)
+{
+    if (m_view == view)
+        return;
+    m_view = view;
+    emit viewChanged();
+}
+
+QQmlComponent *QQuickWebEngineViewExperimental::alertDialog() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->alertDialog;
+}
+
+void QQuickWebEngineViewExperimental::setAlertDialog(QQmlComponent *alertDialog)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->alertDialog == alertDialog)
+        return;
+    d->alertDialog = alertDialog;
+    emit alertDialogChanged();
+}
+
+QQmlComponent *QQuickWebEngineViewExperimental::confirmDialog() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->confirmDialog;
+}
+
+void QQuickWebEngineViewExperimental::setConfirmDialog(QQmlComponent *confirmDialog)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->confirmDialog == confirmDialog)
+        return;
+    d->confirmDialog = confirmDialog;
+    emit confirmDialogChanged();
+}
+
+QQmlComponent *QQuickWebEngineViewExperimental::promptDialog() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->promptDialog;
+}
+
+void QQuickWebEngineViewExperimental::setPromptDialog(QQmlComponent *promptDialog)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->promptDialog == promptDialog)
+        return;
+    d->promptDialog = promptDialog;
+    emit promptDialogChanged();
 }
 
 bool QQuickWebEngineViewExperimental::inspectable() const

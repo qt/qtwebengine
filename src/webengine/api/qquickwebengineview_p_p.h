@@ -83,6 +83,9 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
+    Q_PROPERTY(QQmlComponent *alertDialog READ alertDialog WRITE setAlertDialog NOTIFY alertDialogChanged)
+    Q_PROPERTY(QQmlComponent *confirmDialog READ confirmDialog WRITE setConfirmDialog NOTIFY confirmDialogChanged)
+    Q_PROPERTY(QQmlComponent *promptDialog READ promptDialog WRITE setPromptDialog NOTIFY promptDialogChanged)
     Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
@@ -95,6 +98,12 @@ public:
         MediaAudioVideoDevices
     };
 
+    QQmlComponent *alertDialog() const;
+    void setAlertDialog(QQmlComponent *);
+    QQmlComponent *confirmDialog() const;
+    void setConfirmDialog(QQmlComponent *);
+    QQmlComponent *promptDialog() const;
+    void setPromptDialog(QQmlComponent *);
     bool inspectable() const;
     void setInspectable(bool);
     void setIsFullScreen(bool fullscreen);
@@ -111,6 +120,9 @@ public Q_SLOTS:
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 
 Q_SIGNALS:
+    void alertDialogChanged();
+    void confirmDialogChanged();
+    void promptDialogChanged();
     void newViewRequested(QQuickWebEngineNewViewRequest *request);
     void fullScreenRequested(bool fullScreen);
     void isFullScreenChanged();
@@ -177,6 +189,9 @@ public:
     QScopedPointer<QQuickWebEngineViewport> v;
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QQmlComponent *contextMenuExtraItems;
+    QQmlComponent *alertDialog;
+    QQmlComponent *confirmDialog;
+    QQmlComponent *promptDialog;
     QUrl icon;
     int loadProgress;
     bool inspectable;

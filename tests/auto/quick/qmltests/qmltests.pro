@@ -8,11 +8,14 @@ INCLUDEPATH += $$PWD/../shared
 
 OTHER_FILES += \
     $$PWD/data/TestWebEngineView.qml \
+    $$PWD/data/alert.html \
+    $$PWD/data/confirm.html \
     $$PWD/data/favicon.html \
     $$PWD/data/favicon.png \
     $$PWD/data/favicon2.html \
     $$PWD/data/javascript.html \
     $$PWD/data/link.html \
+    $$PWD/data/prompt.html \
     $$PWD/data/redirect.html \
     $$PWD/data/small-favicon.png \
     $$PWD/data/test1.html \
@@ -20,6 +23,7 @@ OTHER_FILES += \
     $$PWD/data/test3.html \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_favIconLoad.qml \
+    $$PWD/data/tst_javaScriptDialogs.qml \
     $$PWD/data/tst_linkHovered.qml \
     $$PWD/data/tst_loadFail.qml \
     $$PWD/data/tst_loadHtml.qml \
