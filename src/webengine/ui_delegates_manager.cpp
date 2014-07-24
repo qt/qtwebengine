@@ -160,7 +160,7 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 #endif
     if (!engine)
         return false;
-    QFileInfo fi(getUIDelegatesImportDir(engine) % '/' % fileName);
+    QFileInfo fi(getUIDelegatesImportDir(engine) % QLatin1Char('/') % fileName);
     if (!fi.exists())
         return false;
     // FIXME: handle async loading
