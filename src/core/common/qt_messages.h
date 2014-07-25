@@ -40,3 +40,5 @@ IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentMarkup,
 IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentInnerText,
                     uint64 /* requestId */,
                     base::string16 /* innerText */)
+
+IPC_MESSAGE_ROUTED0(QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout)

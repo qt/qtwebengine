@@ -138,6 +138,7 @@ public:
     virtual qreal dpiScale() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl) = 0;
     virtual void loadCommitted() = 0;
+    virtual void loadVisuallyCommitted() = 0;
     virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) = 0;
     virtual void focusContainer() = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
