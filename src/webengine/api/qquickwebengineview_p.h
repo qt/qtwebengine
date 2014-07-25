@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineViewPrivate;
 class QQuickWebEngineLoadRequest;
+class QQuickWebEngineNavigationRequest;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -59,6 +60,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingChanged)
+    Q_ENUMS(NavigationRequestAction);
+    Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
     Q_ENUMS(ErrorDomain);
     Q_ENUMS(NewViewDestination);
@@ -77,6 +80,26 @@ public:
     bool canGoBack() const;
     bool canGoForward() const;
     void forceActiveFocus();
+
+    // must match WebContentsAdapterClient::NavigationRequestAction
+    enum NavigationRequestAction {
+        AcceptRequest,
+        RedirectRequest,
+        // Make room in the valid range of the enum so
+        // we can expose extra actions in experimental.
+        IgnoreRequest = 0xFF
+    };
+
+    // must match WebContentsAdapterClient::NavigationType
+    enum NavigationType {
+        LinkClickedNavigation,
+        TypedNavigation,
+        FormSubmittedNavigation,
+        BackForwardNavigation,
+        ReloadNavigation,
+        UserRedirectedNavigation,
+        OtherNavigation
+    };
 
     enum LoadStatus {
         LoadStartedStatus,
@@ -122,6 +145,7 @@ Q_SIGNALS:
     void loadingChanged(QQuickWebEngineLoadRequest *loadRequest);
     void loadProgressChanged();
     void linkHovered(const QUrl &hoveredUrl);
+    void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
 
 protected:

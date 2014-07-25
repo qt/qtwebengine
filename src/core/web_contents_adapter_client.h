@@ -110,6 +110,23 @@ public:
         Save
     };
 
+    enum NavigationRequestAction {
+        AcceptRequest,
+        RedirectRequest,
+        // Make room in the valid range of the enum for extra actions exposed in Experimental.
+        IgnoreRequest = 0xFF
+    };
+
+    enum NavigationType {
+        LinkClickedNavigation,
+        TypedNavigation,
+        FormSubmittedNavigation,
+        BackForwardNavigation,
+        ReloadNavigation,
+        UserRedirectedNavigation,
+        OtherNavigation
+    };
+
     enum JavaScriptConsoleMessageLevel {
         Info = 0,
         Warning,
@@ -143,6 +160,7 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
+    virtual void navigationRequested(int navigationType, QUrl &url, int &navigationRequestAction) = 0;
     virtual void requestFullScreen(bool) = 0;
     virtual bool isFullScreen() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
