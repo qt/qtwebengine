@@ -1,6 +1,5 @@
 /****************************************************************************
-**
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,44 +38,74 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
-
-#include "qtwebengineversion.h"
-#include "qquickwebengineview_p.h"
-#include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
-#include "qquickwebenginenewviewrequest_p.h"
+
+#include "qquickwebengineview_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineVersionBumper : public QObject {
-    Q_OBJECT
-};
-
-class QtWebEnginePlugin : public QQmlExtensionPlugin
-{
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
+class QQuickWebEngineNavigationRequestPrivate {
 public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
+    QQuickWebEngineNavigationRequestPrivate(const QUrl& url, QQuickWebEngineView::NavigationType navigationType, bool mainFrame)
+        : url(url)
+        , action(QQuickWebEngineView::AcceptRequest)
+        , navigationType(navigationType)
+        , isMainFrame(mainFrame)
     {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
-
-        qmlRegisterType<QQuickWebEngineView>(uri, 0, 9, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 0, 9, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 0, 9, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 0, 9, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
-
-        // The QML type loader relies on the minimum and maximum minor version of registered types
-        // to validate imports. We want to tie our import version to the module version, so register
-        // a dummy type in order to allow importing the latest version even if it didn't include
-        // an API update that would appear here in a registered type.
-        int major = QTWEBENGINE_VERSION >> 16;
-        int minor = QTWEBENGINE_VERSION >> 8;
-        qmlRegisterUncreatableType<QQuickWebEngineVersionBumper>(uri, major, minor, "WebEngineVersionBumper", QObject::tr("This is a dummy type and cannot be created."));
     }
+
+    ~QQuickWebEngineNavigationRequestPrivate()
+    {
+    }
+
+    QUrl url;
+    QQuickWebEngineView::NavigationRequestAction action;
+    QQuickWebEngineView::NavigationType navigationType;
+    bool isMainFrame;
 };
+
+QQuickWebEngineNavigationRequest::QQuickWebEngineNavigationRequest(const QUrl& url, QQuickWebEngineView::NavigationType navigationType, bool mainFrame, QObject* parent)
+    : QObject(parent)
+    , d_ptr(new QQuickWebEngineNavigationRequestPrivate(url, navigationType, mainFrame))
+{
+}
+
+QQuickWebEngineNavigationRequest::~QQuickWebEngineNavigationRequest()
+{
+}
+
+void QQuickWebEngineNavigationRequest::setAction(QQuickWebEngineView::NavigationRequestAction action)
+{
+    Q_D(QQuickWebEngineNavigationRequest);
+    if (d->action == action)
+        return;
+
+    d->action = action;
+    emit actionChanged();
+}
+
+QUrl QQuickWebEngineNavigationRequest::url() const
+{
+    Q_D(const QQuickWebEngineNavigationRequest);
+    return d->url;
+}
+
+QQuickWebEngineView::NavigationRequestAction QQuickWebEngineNavigationRequest::action() const
+{
+    Q_D(const QQuickWebEngineNavigationRequest);
+    return d->action;
+}
+
+QQuickWebEngineView::NavigationType QQuickWebEngineNavigationRequest::navigationType() const
+{
+    Q_D(const QQuickWebEngineNavigationRequest);
+    return d->navigationType;
+}
+
+bool QQuickWebEngineNavigationRequest::isMainFrame() const
+{
+    Q_D(const QQuickWebEngineNavigationRequest);
+    return d->isMainFrame;
+}
 
 QT_END_NAMESPACE
-
-#include "plugin.moc"

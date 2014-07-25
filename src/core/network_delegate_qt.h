@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -42,22 +42,20 @@
 #define NETWORK_DELEGATE_QT_H
 
 #include "net/base/network_delegate.h"
+#include "net/base/net_errors.h"
 
-#include "qglobal.h"
+#include <QUrl>
+#include <QSet>
+#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
 class NetworkDelegateQt : public net::NetworkDelegate {
 public:
     NetworkDelegateQt() {}
     virtual ~NetworkDelegateQt() {}
 
-
-    private:
-    // net::NetworkDelegate implementation.
-    virtual int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* new_url) Q_DECL_OVERRIDE
-    {
-        return net::OK;
-    }
-
+private:
+    // net::NetworkDelegate implementation
+    virtual int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* new_url) Q_DECL_OVERRIDE;
     virtual int OnBeforeSendHeaders(net::URLRequest* request, const net::CompletionCallback& callback, net::HttpRequestHeaders* headers) Q_DECL_OVERRIDE
     {
         return net::OK;
@@ -72,7 +70,7 @@ public:
     virtual void OnResponseStarted(net::URLRequest* request) Q_DECL_OVERRIDE { }
     virtual void OnRawBytesRead(const net::URLRequest& request, int bytes_read) Q_DECL_OVERRIDE { }
     virtual void OnCompleted(net::URLRequest* request, bool started) Q_DECL_OVERRIDE { }
-    virtual void OnURLRequestDestroyed(net::URLRequest* request) Q_DECL_OVERRIDE { }
+    virtual void OnURLRequestDestroyed(net::URLRequest* request) Q_DECL_OVERRIDE;
 
     virtual void OnPACScriptError(int line_number, const base::string16& error) Q_DECL_OVERRIDE { }
     virtual AuthRequiredResponse OnAuthRequired(net::URLRequest* request, const net::AuthChallengeInfo& auth_info,
@@ -84,6 +82,24 @@ public:
     virtual bool OnCanThrottleRequest(const net::URLRequest& request) const Q_DECL_OVERRIDE { return false; }
     virtual int OnBeforeSocketStreamConnect(net::SocketStream* stream, const net::CompletionCallback& callback) Q_DECL_OVERRIDE { return net::OK; }
     virtual void OnRequestWaitStateChange(const net::URLRequest& request, RequestWaitState state) Q_DECL_OVERRIDE { }
+
+    struct RequestParams {
+        QUrl url;
+        bool isMainFrameRequest;
+        int navigationType;
+        int renderProcessId;
+        int renderViewId;
+    };
+
+    void NotifyNavigationRequestedOnUIThread(net::URLRequest *request,
+                                             RequestParams params,
+                                             const net::CompletionCallback &callback);
+
+    void CompleteURLRequestOnIOThread(net::URLRequest *request,
+                                      int navigationRequestAction,
+                                      const net::CompletionCallback &callback);
+
+    QSet<net::URLRequest *> m_activeRequests;
 };
 
 #endif // NETWORK_DELEGATE_QT_H

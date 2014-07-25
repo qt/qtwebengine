@@ -45,6 +45,7 @@
 #include "javascript_dialog_controller.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebengineloadrequest_p.h"
+#include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
@@ -192,6 +193,15 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     // Now fire the popup() method on the top level menu
     QMetaObject::invokeMethod(menu, "popup");
     return true;
+}
+
+void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
+{
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineNavigationRequest navigationRequest(url, static_cast<QQuickWebEngineView::NavigationType>(navigationType), isMainFrame);
+    Q_EMIT q->navigationRequested(&navigationRequest);
+
+    navigationRequestAction = navigationRequest.action();
 }
 
 void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)

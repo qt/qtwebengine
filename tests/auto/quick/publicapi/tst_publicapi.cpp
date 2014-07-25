@@ -47,8 +47,7 @@
 #include <QtTest/QtTest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineloadrequest_p.h>
-// FIXME: Implement!
-// #include <qquickwebenginenavigationrequest_p.h>
+#include <private/qquickwebenginenavigationrequest_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -59,7 +58,7 @@ private Q_SLOTS:
 static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
     << &QQuickWebEngineLoadRequest::staticMetaObject
-    // << &QQuickWebEngineNavigationRequest::staticMetaObject
+    << &QQuickWebEngineNavigationRequest::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
@@ -79,10 +78,10 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.FtpErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.DnsErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.LinkClickedNavigation --> NavigationType"
+    << "QQuickWebEngineView.TypedNavigation --> NavigationType"
     << "QQuickWebEngineView.FormSubmittedNavigation --> NavigationType"
     << "QQuickWebEngineView.BackForwardNavigation --> NavigationType"
     << "QQuickWebEngineView.ReloadNavigation --> NavigationType"
-    << "QQuickWebEngineView.FormResubmittedNavigation --> NavigationType"
     << "QQuickWebEngineView.OtherNavigation --> NavigationType"
     << "QQuickWebEngineView.NewViewInWindow --> NewViewDestination"
     << "QQuickWebEngineView.NewViewInTab --> NewViewDestination"
@@ -118,8 +117,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineLoadRequest.errorDomain --> QQuickWebEngineView::ErrorDomain"
     << "QQuickWebEngineLoadRequest.errorCode --> int"
     << "QQuickWebEngineNavigationRequest.url --> QUrl"
-    << "QQuickWebEngineNavigationRequest.mouseButton --> int"
-    << "QQuickWebEngineNavigationRequest.keyboardModifiers --> int"
+    << "QQuickWebEngineNavigationRequest.isMainFrame --> bool"
     << "QQuickWebEngineNavigationRequest.action --> QQuickWebEngineView::NavigationRequestAction"
     << "QQuickWebEngineNavigationRequest.navigationType --> QQuickWebEngineView::NavigationType"
     << "QQuickWebEngineNavigationRequest.actionChanged() --> void"

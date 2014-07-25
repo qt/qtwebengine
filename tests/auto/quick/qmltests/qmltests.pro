@@ -27,6 +27,7 @@ OTHER_FILES += \
     $$PWD/data/tst_loadProgressSignal.qml \
     $$PWD/data/tst_loadUrl.qml \
     $$PWD/data/tst_navigationHistory.qml \
+    $$PWD/data/tst_navigationRequested.qml \
     $$PWD/data/tst_properties.qml \
     $$PWD/data/tst_runJavaScript.qml \
     $$PWD/data/tst_titleChanged.qml

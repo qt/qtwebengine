@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -39,44 +39,47 @@
 **
 ****************************************************************************/
 
-#include <QtQml/qqmlextensionplugin.h>
+#ifndef QQUICKWEBENGINENAVIGATIONREQUEST_P_H
+#define QQUICKWEBENGINENAVIGATIONREQUEST_P_H
 
-#include "qtwebengineversion.h"
+#include "qtwebengineglobal_p.h"
 #include "qquickwebengineview_p.h"
-#include "qquickwebengineloadrequest_p.h"
-#include "qquickwebenginenavigationrequest_p.h"
-#include "qquickwebenginenewviewrequest_p.h"
+
+#include <QtCore/QObject>
+#include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineVersionBumper : public QObject {
-    Q_OBJECT
-};
+class QQuickWebEngineNavigationRequestPrivate;
 
-class QtWebEnginePlugin : public QQmlExtensionPlugin
-{
+class Q_WEBENGINE_EXPORT QQuickWebEngineNavigationRequest : public QObject {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
+    Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
+    Q_PROPERTY(bool isMainFrame READ isMainFrame CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineView::NavigationRequestAction action READ action WRITE setAction NOTIFY actionChanged FINAL)
+    Q_PROPERTY(QQuickWebEngineView::NavigationType navigationType READ navigationType CONSTANT FINAL)
+
 public:
-    virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
+    QQuickWebEngineNavigationRequest(const QUrl& url, QQuickWebEngineView::NavigationType navigationType, bool mainFrame, QObject* parent = 0);
+    ~QQuickWebEngineNavigationRequest();
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 0, 9, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 0, 9, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 0, 9, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 0, 9, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
+    QUrl url() const;
+    bool isMainFrame() const;
+    QQuickWebEngineView::NavigationRequestAction action() const;
 
-        // The QML type loader relies on the minimum and maximum minor version of registered types
-        // to validate imports. We want to tie our import version to the module version, so register
-        // a dummy type in order to allow importing the latest version even if it didn't include
-        // an API update that would appear here in a registered type.
-        int major = QTWEBENGINE_VERSION >> 16;
-        int minor = QTWEBENGINE_VERSION >> 8;
-        qmlRegisterUncreatableType<QQuickWebEngineVersionBumper>(uri, major, minor, "WebEngineVersionBumper", QObject::tr("This is a dummy type and cannot be created."));
-    }
+    void setAction(QQuickWebEngineView::NavigationRequestAction action);
+    QQuickWebEngineView::NavigationType navigationType() const;
+
+Q_SIGNALS:
+    void actionChanged();
+
+private:
+    Q_DECLARE_PRIVATE(QQuickWebEngineNavigationRequest)
+    QScopedPointer<QQuickWebEngineNavigationRequestPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#include "plugin.moc"
+QML_DECLARE_TYPE(QQuickWebEngineNavigationRequest)
+
+#endif // QQUICKWEBENGINENAVIGATIONREQUEST_P_H
