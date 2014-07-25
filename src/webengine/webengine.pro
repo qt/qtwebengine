@@ -15,6 +15,7 @@ INCLUDEPATH += $$PWD api ../core
 SOURCES = \
         api/qquickwebenginehistory.cpp \
         api/qquickwebengineloadrequest.cpp \
+        api/qquickwebenginenavigationrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
         api/qquickwebengineview.cpp \
         api/qtwebengineglobal.cpp \
@@ -27,6 +28,7 @@ HEADERS = \
         api/qtwebengineglobal_p.h \
         api/qquickwebenginehistory_p.h \
         api/qquickwebengineloadrequest_p.h \
+        api/qquickwebenginenavigationrequest_p.h \
         api/qquickwebenginenewviewrequest_p.h \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
