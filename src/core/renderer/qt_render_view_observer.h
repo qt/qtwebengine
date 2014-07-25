@@ -51,6 +51,8 @@ private:
     void onFetchDocumentMarkup(quint64 requestId);
     void onFetchDocumentInnerText(quint64 requestId);
 
+    void OnFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
+
     virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(QtRenderViewObserver);
