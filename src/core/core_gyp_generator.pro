@@ -54,6 +54,7 @@ SOURCES = \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         media_capture_devices_dispatcher.cpp \
+        network_delegate_qt.cpp \
         ozone_platform_eglfs.cpp \
         process_main.cpp \
         qrc_protocol_handler_qt.cpp \
@@ -98,6 +99,7 @@ HEADERS = \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \
         media_capture_devices_dispatcher.h \
+        network_delegate_qt.h \
         ozone_platform_eglfs.h \
         process_main.h \
         qrc_protocol_handler_qt.h \

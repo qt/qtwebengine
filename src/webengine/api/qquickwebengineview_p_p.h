@@ -157,6 +157,7 @@ public:
     virtual void requestFullScreen(bool) Q_DECL_OVERRIDE;
     virtual bool isFullScreen() const Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &) Q_DECL_OVERRIDE;
+    virtual void navigationRequested(int navigationType, QUrl &url, int &navigationRequestAction) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE;

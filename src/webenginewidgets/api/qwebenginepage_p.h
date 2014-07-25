@@ -126,6 +126,7 @@ public:
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
+    virtual void navigationRequested(int navigationType, QUrl &url, int &navigationRequestAction) Q_DECL_OVERRIDE { }
     virtual void requestFullScreen(bool) Q_DECL_OVERRIDE { }
     virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; }
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
