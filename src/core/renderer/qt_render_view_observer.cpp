@@ -70,6 +70,11 @@ void QtRenderViewObserver::onFetchDocumentInnerText(quint64 requestId)
         render_view()->GetWebView()->mainFrame()->document().documentElement().innerText()));
 }
 
+void QtRenderViewObserver::OnFirstVisuallyNonEmptyLayout()
+{
+    Send(new QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout(routing_id()));
+}
+
 bool QtRenderViewObserver::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;

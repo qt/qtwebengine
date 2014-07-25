@@ -278,6 +278,11 @@ void QQuickWebEngineViewPrivate::loadCommitted()
     m_history->reset();
 }
 
+void QQuickWebEngineViewPrivate::loadVisuallyCommitted()
+{
+    Q_EMIT e->loadVisuallyCommitted();
+}
+
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);
@@ -573,6 +578,12 @@ void QQuickWebEngineView::forceActiveFocus()
             break;
         }
     }
+}
+
+QQuickWebEngineViewExperimental *QQuickWebEngineView::experimental() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->e.data();
 }
 
 bool QQuickWebEngineViewExperimental::inspectable() const

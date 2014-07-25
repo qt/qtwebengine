@@ -45,6 +45,7 @@
 #include <QQuickItem>
 #include <QPainter>
 #include <qtwebengineglobal.h>
+#include <private/qquickwebengineview_p.h>
 
 class TestView : public QQuickView {
     Q_OBJECT
@@ -72,6 +73,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
     void simpleGraphics();
+    void renderMultipleTimes();
     void renderAfterNodeCleanup();
     void showHideShow();
     void simpleAcceleratedLayer();
@@ -95,6 +97,21 @@ static QImage get150x150GreenReferenceImage()
         painter.fillRect(50, 50, 50, 50, QColor("#00ff00"));
     }
     return reference;
+}
+
+static inline bool waitForSignal(QObject *obj, const char *signal, int timeout = 10000)
+{
+    QEventLoop loop;
+    QObject::connect(obj, signal, &loop, SLOT(quit()));
+    QTimer timer;
+    QSignalSpy timeoutSpy(&timer, SIGNAL(timeout()));
+    if (timeout > 0) {
+        QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+        timer.setSingleShot(true);
+        timer.start(timeout);
+    }
+    loop.exec();
+    return timeoutSpy.isEmpty();
 }
 
 tst_QQuickWebEngineViewGraphics::tst_QQuickWebEngineViewGraphics()
@@ -125,6 +142,14 @@ void tst_QQuickWebEngineViewGraphics::simpleGraphics()
 {
     setHtml(greenSquare);
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
+}
+
+void tst_QQuickWebEngineViewGraphics::renderMultipleTimes()
+{
+    // This test is for loadVisuallyCommitted signal.
+    // The setHtml() should not fail after multiple page load.
+    setHtml(greenSquare);
+    setHtml(greenSquare);
 }
 
 void tst_QQuickWebEngineViewGraphics::renderAfterNodeCleanup()
@@ -177,8 +202,8 @@ void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
     m_view->setSource(QUrl(QStringLiteral("data:text/plain,%1").arg(qmlData)));
     m_view->create();
 
-    // FIXME: Replace with a proper initialLayout signal.
-    QTest::qWait(200);
+    QQuickWebEngineView *webEngineView = static_cast<QQuickWebEngineView *>(m_view->rootObject());
+    QVERIFY(waitForSignal(reinterpret_cast<QObject *>(webEngineView->experimental()), SIGNAL(loadVisuallyCommitted())));
     QCOMPARE(m_view->rootObject()->property("loading"), QVariant(false));
 }
 

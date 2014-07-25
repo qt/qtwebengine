@@ -221,6 +221,8 @@ public:
 
     QAccessibleInterface *GetQtAccessible();
 
+    void didFirstVisuallyNonEmptyLayout();
+
 private:
     void sendDelegatedFrameAck();
     void Paint(const gfx::Rect& damage_rect);
@@ -243,6 +245,7 @@ private:
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
     cc::ReturnedResourceArray m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;
+    bool m_didFirstVisuallyNonEmptyLayout;
     uint32 m_pendingOutputSurfaceId;
 
     WebContentsAdapterClient *m_adapterClient;

@@ -161,6 +161,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_gestureRecognizer(ui::GestureRecognizer::Create())
     , m_frameNodeData(new DelegatedFrameNodeData)
     , m_needsDelegatedFrameAck(false)
+    , m_didFirstVisuallyNonEmptyLayout(false)
     , m_adapterClient(0)
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
@@ -608,6 +609,11 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, sco
         m_frameNodeData->frameDevicePixelRatio /= dpiScale;
 
     m_delegate->update();
+
+    if (m_didFirstVisuallyNonEmptyLayout) {
+        m_adapterClient->loadVisuallyCommitted();
+        m_didFirstVisuallyNonEmptyLayout = false;
+    }
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)
@@ -1098,4 +1104,9 @@ QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
     content::BrowserAccessibility *acc = GetBrowserAccessibilityManager()->GetRoot();
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
     return accQt;
+}
+
+void RenderWidgetHostViewQt::didFirstVisuallyNonEmptyLayout()
+{
+    m_didFirstVisuallyNonEmptyLayout = true;
 }
