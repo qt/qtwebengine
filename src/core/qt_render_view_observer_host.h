@@ -49,6 +49,7 @@
 namespace content {
     class WebContents;
 }
+
 class WebContentsAdapterClient;
 
 class QtRenderViewObserverHost : public content::WebContentsObserver
@@ -62,6 +63,7 @@ private:
     bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
     void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
     void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
+    void onDidFirstVisuallyNonEmptyLayout();
 
     WebContentsAdapterClient *m_adapterClient;
 };

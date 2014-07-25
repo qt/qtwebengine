@@ -47,6 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQuickWebEngineViewExperimental;
 class QQuickWebEngineViewPrivate;
 class QQuickWebEngineLoadRequest;
 
@@ -77,6 +78,8 @@ public:
     bool canGoBack() const;
     bool canGoForward() const;
     void forceActiveFocus();
+
+    QQuickWebEngineViewExperimental *experimental() const;
 
     enum LoadStatus {
         LoadStartedStatus,

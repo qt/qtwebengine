@@ -42,6 +42,8 @@
 #include "qt_render_view_observer_host.h"
 
 #include "common/qt_messages.h"
+#include "content/public/browser/web_contents.h"
+#include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 
@@ -69,6 +71,8 @@ bool QtRenderViewObserverHost::OnMessageReceived(const IPC::Message& message)
                             onDidFetchDocumentMarkup)
         IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFetchDocumentInnerText,
                             onDidFetchDocumentInnerText)
+        IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout,
+                            onDidFirstVisuallyNonEmptyLayout)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
@@ -83,4 +87,11 @@ void QtRenderViewObserverHost::onDidFetchDocumentMarkup(quint64 requestId, const
 void QtRenderViewObserverHost::onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText)
 {
     m_adapterClient->didFetchDocumentInnerText(requestId, toQt(innerText));
+}
+
+void QtRenderViewObserverHost::onDidFirstVisuallyNonEmptyLayout()
+{
+    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView());
+    if (rwhv)
+        rwhv->didFirstVisuallyNonEmptyLayout();
 }
