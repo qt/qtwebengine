@@ -452,12 +452,8 @@ WebView *TabWidget::newTab(bool makeCurrent)
     urlLineEdit->setWebView(webView);
     connect(webView, SIGNAL(loadStarted()),
             this, SLOT(webViewLoadStarted()));
-    connect(webView, SIGNAL(loadFinished(bool)),
-            this, SLOT(webViewIconChanged()));
-#if defined(QWEBENGINEVIEW_ICONCHANGED)
     connect(webView, SIGNAL(iconChanged()),
             this, SLOT(webViewIconChanged()));
-#endif
     connect(webView, SIGNAL(titleChanged(QString)),
             this, SLOT(webViewTitleChanged(QString)));
     connect(webView, SIGNAL(urlChanged(QUrl)),
@@ -617,7 +613,7 @@ void TabWidget::webViewIconChanged()
     WebView *webView = qobject_cast<WebView*>(sender());
     int index = webViewIndex(webView);
     if (-1 != index) {
-        QIcon icon = BrowserApplication::instance()->icon(webView->url());
+        QIcon icon = webView->icon();
         setTabIcon(index, icon);
     }
 }

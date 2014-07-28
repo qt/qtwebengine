@@ -425,6 +425,13 @@
 */
 
 /*!
+    \property QWebEnginePage::iconUrl
+    \brief the url of the icon associated with the frame currently viewed.
+
+    \sa iconUrlChanged()
+*/
+
+/*!
     \property QWebEnginePage::requestedUrl
 
     The URL requested to loaded by the frame currently viewed. The URL may differ from
@@ -543,4 +550,14 @@
     received. The new URL is specified by \a url.
 
     \sa url()
+*/
+
+/*!
+    \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
+
+    This signal is emitted when the icon ("favicon") associated with the main frame is
+    found or changed. The new URL is specified by \a url.
+
+
+    \sa iconUrl()
 */

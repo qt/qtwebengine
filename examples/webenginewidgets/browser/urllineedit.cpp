@@ -263,8 +263,6 @@ UrlLineEdit::UrlLineEdit(QWidget *parent)
     m_iconLabel->resize(16, 16);
     setLeftWidget(m_iconLabel);
     m_defaultBaseColor = palette().color(QPalette::Base);
-
-    webViewIconChanged();
 }
 
 void UrlLineEdit::setWebView(WebView *webView)
@@ -274,12 +272,8 @@ void UrlLineEdit::setWebView(WebView *webView)
     m_iconLabel->m_webView = webView;
     connect(webView, SIGNAL(urlChanged(QUrl)),
         this, SLOT(webViewUrlChanged(QUrl)));
-    connect(webView, SIGNAL(loadFinished(bool)),
-        this, SLOT(webViewIconChanged()));
-#if defined(QWEBENGINEVIEW_ICONCHANGED)
     connect(webView, SIGNAL(iconChanged()),
         this, SLOT(webViewIconChanged()));
-#endif
     connect(webView, SIGNAL(loadProgress(int)),
         this, SLOT(update()));
 }
@@ -292,9 +286,8 @@ void UrlLineEdit::webViewUrlChanged(const QUrl &url)
 
 void UrlLineEdit::webViewIconChanged()
 {
-    QUrl url = (m_webView)  ? m_webView->url() : QUrl();
-    QIcon icon = BrowserApplication::instance()->icon(url);
-    QPixmap pixmap(icon.pixmap(16, 16));
+    Q_ASSERT(m_webView);
+    QPixmap pixmap = m_webView->icon().pixmap(16, 16);
     m_iconLabel->setPixmap(pixmap);
 }
 

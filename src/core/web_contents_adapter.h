@@ -76,6 +76,7 @@ public:
     QUrl requestedUrl() const;
     QString pageTitle() const;
     QString selectedText() const;
+    QUrl iconUrl() const;
 
     void undo();
     void redo();
