@@ -162,18 +162,8 @@ void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, 
 
 void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame, content::RenderViewHost*)
 {
-    if (is_main_frame) {
+    if (is_main_frame)
         m_viewClient->loadFinished(true);
-
-        content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
-        if (!entry)
-            return;
-        content::FaviconStatus &favicon = entry->GetFavicon();
-        if (favicon.valid)
-            m_viewClient->iconChanged(toQt(favicon.url));
-        else
-            m_viewClient->iconChanged(QUrl());
-    }
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
@@ -187,6 +177,10 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector
             content::FaviconStatus &favicon = entry->GetFavicon();
             favicon.url = candidate.icon_url;
             favicon.valid = toQt(candidate.icon_url).isValid();
+            if (favicon.valid)
+                m_viewClient->iconChanged(toQt(favicon.url));
+            else
+                m_viewClient->iconChanged(QUrl());
             break;
         }
     }

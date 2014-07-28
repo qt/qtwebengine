@@ -62,6 +62,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/favicon_status.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
@@ -468,6 +469,17 @@ QUrl WebContentsAdapter::requestedUrl() const
         if (!entry->GetOriginalRequestURL().is_empty())
             return toQt(entry->GetOriginalRequestURL());
         return toQt(entry->GetURL());
+    }
+    return QUrl();
+}
+
+QUrl WebContentsAdapter::iconUrl() const
+{
+    Q_D(const WebContentsAdapter);
+    if (content::NavigationEntry* entry = d->webContents->GetController().GetVisibleEntry()) {
+        content::FaviconStatus favicon = entry->GetFavicon();
+        if (favicon.valid)
+            return toQt(favicon.url);
     }
     return QUrl();
 }
