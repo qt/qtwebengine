@@ -193,6 +193,13 @@
 */
 
 /*!
+    \property QWebEngineView::iconUrl
+    \brief the url of the icon associated with the web page currently viewed
+
+    \sa iconUrlChanged()
+*/
+
+/*!
     \property QWebEngineView::hasSelection
     \brief whether this page contains selected content or not.
 
@@ -312,6 +319,14 @@
     This signal is emitted when the \a url of the view changes.
 
     \sa url(), load()
+*/
+
+/*!
+    \fn void QWebEngineView::iconUrlChanged(const QUrl &url)
+
+    This signal is emitted whenever the icon \a url of the view changes.
+
+    \sa iconUrl()
 */
 
 /*!
