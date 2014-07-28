@@ -41,6 +41,7 @@
 
 import glob
 import os
+import re
 import subprocess
 import sys
 import version_resolver as resolver
@@ -79,42 +80,24 @@ class DEPSParser:
                 if subdir.startswith('src'):
                     # Ignore the information about chromium since we get that from git.
                     continue
-                shasum = ''
-                if len(rev) == 40: # Length of a git shasum
-                    shasum = rev
+
                 submodule = Submodule(subdir, repo)
                 submodule.os = os
-                submodule.shasum = shasum
+
                 if not submodule.matchesOS():
                     print '-- skipping ' + submodule.path + ' for this operating system. --'
                     continue
-                if not submodule.shasum:
-                    # We need to parse the svn branch and revision number.
-                    ref = repo
-                    # Try to find out the branch.
-                    ref_path = repo.split('branches/')
-                    if len(ref_path) > 1:
-                        ref = ref_path[1]
-                    if 'trunk' in ref or 'svn' in ref:
-                        # Trunk is used, so we can use the remote master.
-                        ref = 'master'
-                    name_path = subdir.split('/')
-                    if len(name_path) > 1:
-                        # At this point some svn repository paths still include the repo name
-                        # after the actual branch so we have to strip it together with the leading /
-                        name = name_path[-1]
-                        if ref.endswith(name):
-                            branch = ref[:-(len(name) + 1)]
-                            ref = 'refs/branch-heads/' + branch
-                        if name in ref:
-                            # At this point the last partition in the path
-                            # is the branch name, so compose the git ref.
-                            branch = ref.split('/')[-1]
-                            ref = 'refs/branch-heads/' + branch
-                    if 'master' not in ref and 'refs/branch-heads' not in ref:
-                        # Finally compose the refs that did not mach previous rules.
-                        ref = 'refs/branch-heads/' + ref
-                    submodule.ref = ref
+
+                if len(rev) == 40: # Length of a git shasum
+                    submodule.shasum = rev
+                else:
+                    # Try to find out the git branch using the svn path.
+                    branchMatch = re.search('/branches/((chromium/)?[^/]+)', repo)
+                    trunkMatch = re.search('/(trunk|svn)/', repo)
+                    if branchMatch:
+                        submodule.ref = 'refs/branch-heads/' + branchMatch.group(1)
+                    elif trunkMatch:
+                        submodule.ref = 'refs/heads/master'
                     submodule.revision = int(rev)
                 submodules.append(submodule)
         return submodules
