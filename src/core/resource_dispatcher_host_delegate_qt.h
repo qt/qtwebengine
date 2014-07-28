@@ -65,7 +65,7 @@ private:
     QString m_host;
 
     int m_renderProcessId;
-    int m_renderViewId;
+    int m_renderFrameId;
 
     // The request that wants login data.
     // Must only be accessed on the IO thread.
@@ -74,7 +74,6 @@ private:
 
 class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate {
 public:
-    virtual bool AcceptAuthRequest(net::URLRequest *request, net::AuthChallengeInfo *authInfo) Q_DECL_OVERRIDE;
     virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) Q_DECL_OVERRIDE;
 };
 

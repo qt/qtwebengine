@@ -111,16 +111,6 @@ net::URLRequestContextGetter *BrowserContextQt::GetMediaRequestContextForStorage
     return GetRequestContext();
 }
 
-void BrowserContextQt::RequestMIDISysExPermission(int, int, int, const GURL &, const MIDISysExPermissionCallback &callback)
-{
-    callback.Run(false);
-}
-
-void BrowserContextQt::CancelMIDISysExPermissionRequest(int, int, int, const GURL &)
-{
-
-}
-
 content::ResourceContext *BrowserContextQt::GetResourceContext()
 {
     return resourceContext.get();
@@ -131,15 +121,19 @@ content::DownloadManagerDelegate *BrowserContextQt::GetDownloadManagerDelegate()
     return downloadManagerDelegate.get();
 }
 
-content::GeolocationPermissionContext *BrowserContextQt::GetGeolocationPermissionContext()
+content::BrowserPluginGuestManager *BrowserContextQt::GetGuestManager()
 {
-    QT_NOT_YET_IMPLEMENTED
     return 0;
 }
 
 quota::SpecialStoragePolicy *BrowserContextQt::GetSpecialStoragePolicy()
 {
     QT_NOT_YET_IMPLEMENTED
+    return 0;
+}
+
+content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
+{
     return 0;
 }
 

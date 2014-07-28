@@ -43,9 +43,10 @@
 
 #include "gl_context_qt.h"
 #include "qtwebenginecoreglobal.h"
+#include "web_contents_view_qt.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/font_list.h"
 
 #include <QGuiApplication>
@@ -58,7 +59,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_x11.h"
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 #if defined(USE_AURA) && !defined(USE_OZONE)
@@ -85,38 +86,30 @@ void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* result
     *results = r;
 }
 
-namespace base {
-
 #if defined(USE_X11)
-Display* MessagePumpForUI::GetDefaultXDisplay() {
-    static void *display = GLContextHelper::getXDisplay();
-    return static_cast<Display*>(display);
+XDisplay* GetQtXDisplay()
+{
+    return static_cast<XDisplay*>(GLContextHelper::getXDisplay());
 }
 #endif
 
-}
-
 namespace content {
 class WebContentsImpl;
-class WebContentsViewPort;
+class WebContentsView;
 class WebContentsViewDelegate;
 class RenderViewHostDelegateView;
 
-WebContentsViewPort* CreateWebContentsView(WebContentsImpl*,
-                                           WebContentsViewDelegate*,
-                                           RenderViewHostDelegateView**)
+WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
+    WebContentsViewDelegate *,
+    RenderViewHostDelegateView **render_view_host_delegate_view)
 {
-    return 0;
-}
-
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
-    // WebContentsViewQt should take care of this directly.
-    Q_UNREACHABLE();
-    return NULL;
+    WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
+    *render_view_host_delegate_view = rv;
+    return rv;
 }
 
 // static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
+void RenderWidgetHostViewBase::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
     QWindow dummy;
     GetScreenInfoFromNativeWindow(&dummy, results);
 }
@@ -163,7 +156,7 @@ namespace gfx {
 // Stubs for these unused functions that are stripped in case
 // of a release aura build but a debug build needs the symbols.
 
-RenderText* RenderText::CreateInstance()
+RenderText* RenderText::CreateNativeInstance()
 {
     QT_NOT_USED;
     return 0;

@@ -58,7 +58,7 @@ ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(net
     : m_request(request)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    content::ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(&m_renderProcessId,  &m_renderViewId);
+    content::ResourceRequestInfo::GetRenderFrameForRequest(request, &m_renderProcessId,  &m_renderFrameId);
 
     m_url = toQt(request->url());
     m_realm = QString::fromStdString(authInfo->realm);
@@ -84,8 +84,8 @@ void ResourceDispatcherHostLoginDelegateQt::OnRequestCancelled()
 void ResourceDispatcherHostLoginDelegateQt::triggerDialog()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    content::RenderViewHost* renderViewHost = content::RenderViewHost::FromID(m_renderProcessId, m_renderViewId);
-    content::WebContents *webContents = content::WebContents::FromRenderViewHost(renderViewHost);
+    content::RenderViewHost* renderViewHost = content::RenderFrameHost::FromID(m_renderProcessId, m_renderFrameId)->GetRenderViewHost();
+    content::WebContentsImpl *webContents = static_cast<content::WebContentsImpl *>(content::WebContents::FromRenderViewHost(renderViewHost));
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
 
     // The widgets API will ask for credentials synchronouly, keep it simple for now.
@@ -114,11 +114,6 @@ void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, co
     content::ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(m_request);
 
     m_request = 0;
-}
-
-bool ResourceDispatcherHostDelegateQt::AcceptAuthRequest(net::URLRequest *, net::AuthChallengeInfo *)
-{
-    return true;
 }
 
 content::ResourceDispatcherHostLoginDelegate *ResourceDispatcherHostDelegateQt::CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request)

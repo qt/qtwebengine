@@ -3,7 +3,7 @@
     # information so that qmake can take care of the deployment.
     'let_qmake_do_the_linking': 1,
     'variables': {
-      'version_script_location%': '<(chromium_src_dir)/chrome/tools/build/version.py',
+      'version_script_location%': '<(chromium_src_dir)/build/util/version.py',
     },
     'dependencies': [
       '<(chromium_src_dir)/base/base.gyp:base',
@@ -24,12 +24,12 @@
       '<(chromium_src_dir)/net/net.gyp:net',
       '<(chromium_src_dir)/net/net.gyp:net_resources',
       '<(chromium_src_dir)/skia/skia.gyp:skia',
-      '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:webkit',
+      '<(chromium_src_dir)/third_party/WebKit/Source/web/web.gyp:blink_web',
+      '<(chromium_src_dir)/ui/base/ui_base.gyp:ui_base',
       '<(chromium_src_dir)/ui/gl/gl.gyp:gl',
-      '<(chromium_src_dir)/ui/ui.gyp:ui',
       '<(chromium_src_dir)/url/url.gyp:url_lib',
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
-      '<(chromium_src_dir)/webkit/glue/webkit_glue.gyp:*',
+
       'chrome_qt.gyp:chrome_qt',
     ],
     'include_dirs': [

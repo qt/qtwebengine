@@ -314,6 +314,10 @@ bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
 GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
     : m_size(size)
 {
+    // Some implementations of Pbuffer do not support having a 0 size. For such
+    // cases use a (1, 1) surface.
+    if (m_size.GetArea() == 0)
+        m_size.SetSize(1, 1);
 }
 
 bool GLSurfaceQt::HasEGLExtension(const char* name)
@@ -334,12 +338,6 @@ bool GLSurfaceQtEGL::Initialize()
     EGLDisplay display = g_display;
     if (!display) {
         LOG(ERROR) << "Trying to create surface with invalid display.";
-        return false;
-    }
-
-    if (m_size.GetArea() == 0) {
-        LOG(ERROR) << "Error: surface has zero area"
-                   << m_size.width() << " x " << m_size.height();
         return false;
     }
 

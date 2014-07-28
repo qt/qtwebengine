@@ -59,7 +59,7 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
 {
     Q_UNUSED(acceptLang);
 
-    WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
+    WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
     if (!client) {
         if (didSuppressMessage)
             *didSuppressMessage = true;
@@ -84,7 +84,7 @@ void JavaScriptDialogManagerQt::runDialogForContents(content::WebContents *webCo
                                                      , const QString &messageText, const QString &defaultPrompt, const QUrl &origin
                                                      , const content::JavaScriptDialogManager::DialogClosedCallback &callback, const QString &title)
 {
-    WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
+    WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
     if (!client)
         return;
 

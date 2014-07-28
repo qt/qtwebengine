@@ -42,8 +42,7 @@
 #ifndef UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
 #define UI_OZONE_PLATFORM_EGLFS_OZONE_PLATFORM_EGLFS_H_
 
-#include "ui/events/ozone/evdev/event_factory.h"
-#include "ui/gfx/ozone/dri/dri_surface_factory.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/ozone/ozone_platform.h"
 
 #include "surface_factory_qt.h"

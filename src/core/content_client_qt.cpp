@@ -42,9 +42,16 @@
 #include "content_client_qt.h"
 
 #include "base/strings/string_piece.h"
+#include "content/public/common/user_agent.h"
 #include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+std::string ContentClientQt::getUserAgent()
+{
+    // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
+    return content::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION);
+}
 
 #include <QCoreApplication>
 #include <QStringBuilder>

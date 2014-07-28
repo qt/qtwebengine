@@ -49,7 +49,10 @@
 
 class ContentClientQt : public content::ContentClient {
 public:
+    static std::string getUserAgent();
+
     virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) const Q_DECL_OVERRIDE;
+    virtual std::string GetUserAgent() const Q_DECL_OVERRIDE { return getUserAgent(); }
     virtual base::string16 GetLocalizedString(int message_id) const Q_DECL_OVERRIDE;
     virtual std::string GetProduct() const Q_DECL_OVERRIDE;
 };

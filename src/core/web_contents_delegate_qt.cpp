@@ -180,9 +180,8 @@ void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame
     }
 }
 
-void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
+void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates)
 {
-    Q_UNUSED(page_id)
     Q_FOREACH (content::FaviconURL candidate, candidates) {
         if (candidate.icon_type == content::FaviconURL::FAVICON && !candidate.icon_url.is_empty()) {
             content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();

@@ -45,6 +45,7 @@
 #include "chrome/common/localized_error.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -78,7 +79,7 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
 }
 
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
-void ContentRendererClientQt::GetNavigationErrorStrings(blink::WebFrame *frame, const blink::WebURLRequest &failed_request, const blink::WebURLError &error, const std::string &accept_languages, std::string *error_html, base::string16 *error_description)
+void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* render_view, blink::WebFrame *frame, const blink::WebURLRequest &failed_request, const blink::WebURLError &error, std::string *error_html, base::string16 *error_description)
 {
     Q_UNUSED(frame)
 
@@ -92,8 +93,9 @@ void ContentRendererClientQt::GetNavigationErrorStrings(blink::WebFrame *frame, 
       const std::string locale = content::RenderThread::Get()->GetLocale();
       // TODO(elproxy): We could potentially get better diagnostics here by first calling NetErrorHelper::GetErrorStringsForDnsProbe
       LocalizedError::GetStrings(error.reason, error.domain.utf8(),
-                                 error.unreachableURL, isPost, locale,
-                                 accept_languages, &error_strings);
+                                 error.unreachableURL, isPost, error.staleCopyInCache && !isPost,
+                                 locale, render_view->GetAcceptLanguages(), scoped_ptr<LocalizedError::ErrorPageParams>(),
+                                 &error_strings);
       resource_id = IDR_NET_ERROR_HTML;
 
 

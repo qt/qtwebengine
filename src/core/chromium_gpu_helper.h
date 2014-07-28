@@ -55,9 +55,9 @@ class SyncPointManager;
 }
 
 namespace gpu {
+struct Mailbox;
 namespace gles2 {
 class MailboxManager;
-struct MailboxName;
 class Texture;
 }
 }
@@ -99,7 +99,7 @@ content::SyncPointManager *sync_point_manager();
 gpu::gles2::MailboxManager *mailbox_manager();
 
 void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback);
-gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::gles2::MailboxName& name);
+gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox);
 unsigned int service_id(gpu::gles2::Texture *tex);
 
 #ifdef Q_OS_QNX

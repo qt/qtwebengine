@@ -258,7 +258,6 @@ void WebEngineSettings::doApply()
 
 void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
 {
-    Q_ASSERT(prefs->accelerated_compositing_enabled);
     // Override for now
     prefs->java_enabled = false;
 

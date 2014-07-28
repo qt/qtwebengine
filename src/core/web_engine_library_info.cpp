@@ -170,6 +170,8 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
     case base::DIR_USER_DESKTOP:
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
+    case base::DIR_QT_LIBRARY_DATA:
+        return toFilePath(location(QLibraryInfo::DataPath));
 #if defined(OS_ANDROID)
     case base::DIR_SOURCE_ROOT:
     case base::DIR_ANDROID_EXTERNAL_STORAGE:

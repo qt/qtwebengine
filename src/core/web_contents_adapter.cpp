@@ -62,6 +62,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
@@ -374,7 +375,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     d->renderViewObserverHost.reset(new QtRenderViewObserverHost(d->webContents.get(), adapterClient));
 
     // Let the WebContent's view know about the WebContentsAdapterClient.
-    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContents->GetView());
+    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(static_cast<content::WebContentsImpl*>(d->webContents.get())->GetView());
     contentsView->initialize(adapterClient);
 
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
@@ -384,8 +385,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE);
-
+        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true);
 }
 
 void WebContentsAdapter::reattachRWHV()
@@ -423,14 +423,14 @@ void WebContentsAdapter::stop()
         controller.RemoveEntryAtIndex(index);
 
     d->webContents->Stop();
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::reload()
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().Reload(/*checkRepost = */false);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::load(const QUrl &url)
@@ -439,7 +439,7 @@ void WebContentsAdapter::load(const QUrl &url)
     content::NavigationController::LoadURLParams params(toGurl(url));
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     d->webContents->GetController().LoadURLWithParams(params);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
@@ -454,7 +454,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     content::NavigationController::LoadURLParams params((GURL(urlString)));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
-    params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(content::kAboutBlankURL) : toGurl(baseUrl);
+    params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
     params.can_load_local_resources = true;
     d->webContents->GetController().LoadURLWithParams(params);
 }
@@ -502,57 +502,57 @@ QString WebContentsAdapter::selectedText() const
 void WebContentsAdapter::undo()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Undo();
+    d->webContents->Undo();
 }
 
 void WebContentsAdapter::redo()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Redo();
+    d->webContents->Redo();
 }
 
 void WebContentsAdapter::cut()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Cut();
+    d->webContents->Cut();
 }
 
 void WebContentsAdapter::copy()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Copy();
+    d->webContents->Copy();
 }
 
 void WebContentsAdapter::paste()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Paste();
+    d->webContents->Paste();
 }
 
 void WebContentsAdapter::pasteAndMatchStyle()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->PasteAndMatchStyle();
+    d->webContents->PasteAndMatchStyle();
 }
 
 void WebContentsAdapter::selectAll()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->SelectAll();
+    d->webContents->SelectAll();
 }
 
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().GoToIndex(offset);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::navigateToOffset(int offset)
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().GoToOffset(offset);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 int WebContentsAdapter::navigationEntryCount()
@@ -611,13 +611,13 @@ void WebContentsAdapter::serializeNavigationHistory(QDataStream &output)
 void WebContentsAdapter::setZoomFactor(qreal factor)
 {
     Q_D(WebContentsAdapter);
-    d->webContents->SetZoomLevel(content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
+    content::HostZoomMap::SetZoomLevel(d->webContents.get(), content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
 }
 
 qreal WebContentsAdapter::currentZoomFactor() const
 {
     Q_D(const WebContentsAdapter);
-    return static_cast<qreal>(content::ZoomLevelToZoomFactor(d->webContents->GetZoomLevel()));
+    return content::ZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(d->webContents.get()));
 }
 
 void WebContentsAdapter::enableInspector(bool enable)
@@ -637,8 +637,7 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript)
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    base::string16 mainFrameXPath;
-    rvh->ExecuteJavascriptInWebFrame(mainFrameXPath, toString16(javaScript));
+    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript));
 }
 
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript)
@@ -646,9 +645,8 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    content::RenderViewHost::JavascriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, ++d->lastRequestId);
-    base::string16 mainFrameXPath;
-    rvh->ExecuteJavascriptInWebFrameCallbackResult(mainFrameXPath, toString16(javaScript), callback);
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, ++d->lastRequestId);
+    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
     return d->lastRequestId;
 }
 
@@ -678,7 +676,7 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
     // Find already allows a request ID as input, but only as an int.
     // Use the same counter but mod it to MAX_INT, this keeps the same likeliness of request ID clashing.
     int shrunkRequestId = ++d->lastRequestId & 0x7fffffff;
-    d->webContents->GetRenderViewHost()->Find(shrunkRequestId, toString16(subString), options);
+    d->webContents->Find(shrunkRequestId, toString16(subString), options);
     return shrunkRequestId;
 }
 
@@ -686,7 +684,7 @@ void WebContentsAdapter::stopFinding()
 {
     Q_D(WebContentsAdapter);
     d->webContentsDelegate->setLastSearchedString(QString());
-    d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
+    d->webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
 void WebContentsAdapter::updateWebPreferences(const WebPreferences & webPreferences)

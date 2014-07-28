@@ -62,13 +62,12 @@ class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
 public:
     BrowserAccessibilityManagerQt(
         QObject* parentObject,
-        const AccessibilityNodeData& src,
+        const ui::AXTreeUpdate& initialTree,
         BrowserAccessibilityDelegate* delegate,
         BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactoryQt());
 
-    void NotifyRootChanged() Q_DECL_OVERRIDE;
     void NotifyAccessibilityEvent(
-        blink::WebAXEvent event_type,
+        ui::AXEvent event_type,
         BrowserAccessibility* node) Q_DECL_OVERRIDE;
 
     QAccessibleInterface *rootParentAccessible();

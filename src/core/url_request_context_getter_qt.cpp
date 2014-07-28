@@ -67,6 +67,7 @@
 #include "net/ftp/ftp_network_layer.h"
 
 #include "network_delegate_qt.h"
+#include "content_client_qt.h"
 #include "qrc_protocol_handler_qt.h"
 
 static const char kQrcSchemeQt[] = "qrc";
@@ -98,8 +99,8 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
         base::FilePath cookiesPath = m_basePath.Append(FILE_PATH_LITERAL("Cookies"));
-        scoped_refptr<net::CookieStore> cookieStore = content::CreatePersistentCookieStore(cookiesPath, true, NULL, NULL, scoped_ptr<content::CookieCryptoDelegate>());
-        cookieStore->GetCookieMonster()->SetPersistSessionCookies(true);
+        content::CookieStoreConfig cookieStoreConfig(cookiesPath, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL, NULL);
+        scoped_refptr<net::CookieStore> cookieStore = content::CreateCookieStore(cookieStoreConfig);
 
         m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
         m_storage->set_cookie_store(cookieStore.get());
@@ -107,7 +108,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
             new net::DefaultServerBoundCertStore(NULL),
             base::WorkerPool::GetTaskRunner(true)));
         m_storage->set_http_user_agent_settings(
-            new net::StaticHttpUserAgentSettings("en-us,en", base::EmptyString()));
+            new net::StaticHttpUserAgentSettings("en-us,en", ContentClientQt::getUserAgent()));
 
         scoped_ptr<net::HostResolver> host_resolver(
             net::HostResolver::CreateDefaultResolver(NULL));
@@ -166,16 +167,16 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
 
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
-        content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(chrome::kBlobScheme);
+        content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         m_jobFactory->SetProtocolHandler(it->first, it->second.release());
         m_protocolHandlers.clear();
 
-        m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
-        m_jobFactory->SetProtocolHandler(chrome::kFileScheme, new net::FileProtocolHandler(
+        m_jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
+        m_jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
             content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
         m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
-        m_jobFactory->SetProtocolHandler(content::kFtpScheme, new net::FtpProtocolHandler(
+        m_jobFactory->SetProtocolHandler(url::kFtpScheme, new net::FtpProtocolHandler(
             new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
         m_urlRequestContext->set_job_factory(m_jobFactory.get());
     }

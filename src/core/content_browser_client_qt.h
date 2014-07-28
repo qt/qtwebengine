@@ -78,17 +78,16 @@ public:
     ContentBrowserClientQt();
     ~ContentBrowserClientQt();
     static ContentBrowserClientQt* Get();
-    virtual content::WebContentsViewPort* OverrideCreateWebContentsView(content::WebContents* , content::RenderViewHostDelegateView**) Q_DECL_OVERRIDE;
     virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
-    virtual void RenderProcessHostCreated(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
+    virtual void RenderProcessWillLaunch(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
     virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
     virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
-    virtual content::MediaObserver* GetMediaObserver();
+    virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
     virtual void OverrideWebkitPrefs(content::RenderViewHost *, const GURL &, WebPreferences *) Q_DECL_OVERRIDE;
 
     BrowserContextQt* browser_context();
 
-    net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers);
+    virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;
 
     void enableInspector(bool);
 

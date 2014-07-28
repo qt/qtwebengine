@@ -41,11 +41,12 @@
 
 #include "browser_accessibility_qt.h"
 
-#include "qtwebenginecoreglobal.h"
-#include "content/common/accessibility_node_data.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
-#include "type_conversion.h"
+#include "ui/accessibility/ax_node_data.h"
+
 #include "browser_accessibility_manager_qt.h"
+#include "qtwebenginecoreglobal.h"
+#include "type_conversion.h"
 
 using namespace blink;
 
@@ -105,7 +106,7 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
 
 QAccessibleInterface *BrowserAccessibilityQt::parent() const
 {
-    BrowserAccessibility *p = BrowserAccessibility::parent();
+    BrowserAccessibility *p = GetParent();
     if (p)
         return static_cast<BrowserAccessibilityQt*>(p);
     return static_cast<BrowserAccessibilityManagerQt*>(manager())->rootParentAccessible();
@@ -118,29 +119,29 @@ QAccessibleInterface *BrowserAccessibilityQt::child(int index) const
 
 int BrowserAccessibilityQt::childCount() const
 {
-    return child_count();
+    return PlatformChildCount();
 }
 
 int BrowserAccessibilityQt::indexOfChild(const QAccessibleInterface *iface) const
 {
 
     const BrowserAccessibilityQt *child = static_cast<const BrowserAccessibilityQt*>(iface);
-    return child->index_in_parent();
+    return child->GetIndexInParent();
 }
 
 QString BrowserAccessibilityQt::text(QAccessible::Text t) const
 {
     switch (t) {
     case QAccessible::Name:
-        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_NAME));
+        return toQt(GetStringAttribute(ui::AX_ATTR_NAME));
     case QAccessible::Description:
-        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION));
+        return toQt(GetStringAttribute(ui::AX_ATTR_DESCRIPTION));
     case QAccessible::Help:
-        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_HELP));
+        return toQt(GetStringAttribute(ui::AX_ATTR_HELP));
     case QAccessible::Value:
-        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_VALUE));
+        return toQt(GetStringAttribute(ui::AX_ATTR_VALUE));
     case QAccessible::Accelerator:
-        return toQt(GetStringAttribute(AccessibilityNodeData::ATTR_SHORTCUT));
+        return toQt(GetStringAttribute(ui::AX_ATTR_SHORTCUT));
     default:
         break;
     }
@@ -161,7 +162,7 @@ QRect BrowserAccessibilityQt::rect() const
 
 QAccessible::Role BrowserAccessibilityQt::role() const
 {
-    switch (BrowserAccessibility::role()) {
+    switch (GetRole()) {
     case WebAXRoleUnknown:
         return QAccessible::NoRole;
 
@@ -376,7 +377,7 @@ QAccessible::Role BrowserAccessibilityQt::role() const
 QAccessible::State BrowserAccessibilityQt::state() const
 {
     QAccessible::State state = QAccessible::State();
-    int32 s = BrowserAccessibility::state();
+    int32 s = GetState();
     if (s & (1 << WebAXStateBusy))
         state.busy = true;
     if (s & (1 << WebAXStateChecked))
@@ -445,7 +446,7 @@ void BrowserAccessibilityQt::NativeReleaseReference()
 QStringList BrowserAccessibilityQt::actionNames() const
 {
     QStringList actions;
-    if (HasState(blink::WebAXStateFocusable))
+    if (HasState(ui::AX_STATE_FOCUSABLE))
         actions << QAccessibleActionInterface::setFocusAction();
     return actions;
 }
@@ -477,7 +478,7 @@ QString BrowserAccessibilityQt::attributes(int offset, int *startOffset, int *en
 int BrowserAccessibilityQt::cursorPosition() const
 {
     int pos = 0;
-    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START, &pos);
+    GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START, &pos);
     return pos;
 }
 
@@ -491,8 +492,8 @@ int BrowserAccessibilityQt::selectionCount() const
 {
     int start = 0;
     int end = 0;
-    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START, &start);
-    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, &end);
+    GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START, &start);
+    GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, &end);
     if (start != end)
         return 1;
     return 0;
@@ -511,8 +512,8 @@ void BrowserAccessibilityQt::selection(int selectionIndex, int *startOffset, int
     *endOffset = 0;
     if (selectionIndex != 0)
         return;
-    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START, startOffset);
-    GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, endOffset);
+    GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START, startOffset);
+    GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, endOffset);
 }
 
 QString BrowserAccessibilityQt::text(int startOffset, int endOffset) const
@@ -553,7 +554,7 @@ QVariant BrowserAccessibilityQt::currentValue() const
 {
     QVariant result;
     float value;
-    if (GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &value)) {
+    if (GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, &value)) {
         result = (double) value;
     }
     return result;
@@ -569,7 +570,7 @@ QVariant BrowserAccessibilityQt::maximumValue() const
 {
     QVariant result;
     float value;
-    if (GetFloatAttribute(AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE, &value)) {
+    if (GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE, &value)) {
         result = (double) value;
     }
     return result;
@@ -579,7 +580,7 @@ QVariant BrowserAccessibilityQt::minimumValue() const
 {
     QVariant result;
     float value;
-    if (GetFloatAttribute(AccessibilityNodeData::ATTR_MIN_VALUE_FOR_RANGE, &value)) {
+    if (GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE, &value)) {
         result = (double) value;
     }
     return result;

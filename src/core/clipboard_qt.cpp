@@ -261,12 +261,12 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const
 
     Q_ASSERT(image.format() == QImage::Format_ARGB32);
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, image.width(), image.height());
+    bitmap.setInfo(SkImageInfo::MakeN32(image.width(), image.height(), kOpaque_SkAlphaType));
     bitmap.setPixels(const_cast<uchar*>(image.constBits()));
 
     // Return a deep copy of the pixel data.
     SkBitmap copy;
-    bitmap.copyTo(&copy, SkBitmap::kARGB_8888_Config);
+    bitmap.copyTo(&copy, kN32_SkColorType);
     return copy;
 }
 

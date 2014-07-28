@@ -55,7 +55,7 @@ QT_END_NAMESPACE
 class YUVVideoMaterial : public QSGMaterial
 {
 public:
-    YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, const QSizeF &texScale);
+    YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, const QRectF &texCoordRect);
 
     virtual QSGMaterialType *type() const Q_DECL_OVERRIDE {
         static QSGMaterialType theType;
@@ -68,13 +68,13 @@ public:
     QSGTexture *m_yTexture;
     QSGTexture *m_uTexture;
     QSGTexture *m_vTexture;
-    QSizeF m_texScale;
+    QRectF m_texCoordRect;
 };
 
 class YUVAVideoMaterial : public YUVVideoMaterial
 {
 public:
-    YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QSizeF &texScale);
+    YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QRectF &texCoordRect);
 
     virtual QSGMaterialType *type() const Q_DECL_OVERRIDE{
         static QSGMaterialType theType;
@@ -90,7 +90,7 @@ public:
 class YUVVideoNode : public QSGGeometryNode
 {
 public:
-    YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QSizeF &texScale);
+    YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QRectF &texCoordRect);
     void setRect(const QRectF &rect);
 
 private:

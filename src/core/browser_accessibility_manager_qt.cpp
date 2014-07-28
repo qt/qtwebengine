@@ -55,12 +55,12 @@ BrowserAccessibility *BrowserAccessibilityFactoryQt::Create()
 
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QObject* parentObject,
-    const AccessibilityNodeData& src,
+    const ui::AXTreeUpdate& initialTree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory)
     , m_parentObject(parentObject) {
-    Initialize(src);
+    Initialize(initialTree);
 }
 
 QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
@@ -68,11 +68,7 @@ QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
     return QAccessible::queryAccessibleInterface(m_parentObject);
 }
 
-void BrowserAccessibilityManagerQt::NotifyRootChanged()
-{
-}
-
-void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(blink::WebAXEvent event_type,
+void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(ui::AXEvent event_type,
     BrowserAccessibility* node)
 {
     BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);

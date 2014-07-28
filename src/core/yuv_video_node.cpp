@@ -58,16 +58,17 @@ public:
 
 protected:
     virtual const char *vertexShader() const Q_DECL_OVERRIDE {
-        // Keep in sync with cc::VertexShaderPosTexYUVStretch
+        // Keep in sync with cc::VertexShaderPosTexYUVStretchOffset
         const char *shader =
         "attribute highp vec4 a_position;\n"
         "attribute mediump vec2 a_texCoord;\n"
         "uniform highp mat4 matrix;\n"
         "varying mediump vec2 v_texCoord;\n"
         "uniform mediump vec2 texScale;\n"
+        "uniform mediump vec2 texOffset;\n"
         "void main() {\n"
         "  gl_Position = matrix * a_position;\n"
-        "  v_texCoord = a_texCoord * texScale;\n"
+        "  v_texCoord = a_texCoord * texScale + texOffset;\n"
         "}";
         return shader;
     }
@@ -96,6 +97,7 @@ protected:
     virtual void initialize() Q_DECL_OVERRIDE {
         m_id_matrix = program()->uniformLocation("matrix");
         m_id_texScale = program()->uniformLocation("texScale");
+        m_id_texOffset = program()->uniformLocation("texOffset");
         m_id_yTexture = program()->uniformLocation("y_texture");
         m_id_uTexture = program()->uniformLocation("u_texture");
         m_id_vTexture = program()->uniformLocation("v_texture");
@@ -106,6 +108,7 @@ protected:
 
     int m_id_matrix;
     int m_id_texScale;
+    int m_id_texOffset;
     int m_id_yTexture;
     int m_id_uTexture;
     int m_id_vTexture;
@@ -122,8 +125,6 @@ protected:
     virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::FragmentShaderYUVAVideo
         static const char *shader =
-        // "precision mediump float;\n"
-        // "precision mediump int;\n"
         "varying mediump vec2 v_texCoord;\n"
         "uniform sampler2D y_texture;\n"
         "uniform sampler2D u_texture;\n"
@@ -169,7 +170,8 @@ void YUVVideoMaterialShader::updateState(const RenderState &state, QSGMaterial *
     glActiveTexture(GL_TEXTURE0); // Finish with 0 as default texture unit
     mat->m_yTexture->bind();
 
-    program()->setUniformValue(m_id_texScale, mat->m_texScale);
+    program()->setUniformValue(m_id_texOffset, mat->m_texCoordRect.topLeft());
+    program()->setUniformValue(m_id_texScale, mat->m_texCoordRect.size());
 
     // These values are magic numbers that are used in the transformation from YUV
     // to RGB color values.  They are taken from the following webpage:
@@ -213,11 +215,11 @@ void YUVAVideoMaterialShader::updateState(const RenderState &state, QSGMaterial 
 }
 
 
-YUVVideoMaterial::YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, const QSizeF &texScale)
+YUVVideoMaterial::YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, const QRectF &texCoordRect)
     : m_yTexture(yTexture)
     , m_uTexture(uTexture)
     , m_vTexture(vTexture)
-    , m_texScale(texScale)
+    , m_texCoordRect(texCoordRect)
 {
 }
 
@@ -236,8 +238,8 @@ int YUVVideoMaterial::compare(const QSGMaterial *other) const
     return m_vTexture->textureId() - m->m_vTexture->textureId();
 }
 
-YUVAVideoMaterial::YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QSizeF &texScale)
-    : YUVVideoMaterial(yTexture, uTexture, vTexture, texScale)
+YUVAVideoMaterial::YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QRectF &texCoordRect)
+    : YUVVideoMaterial(yTexture, uTexture, vTexture, texCoordRect)
     , m_aTexture(aTexture)
 {
     setFlag(Blending, aTexture);
@@ -256,15 +258,15 @@ int YUVAVideoMaterial::compare(const QSGMaterial *other) const
     return (m_aTexture ? m_aTexture->textureId() : 0) - (m->m_aTexture ? m->m_aTexture->textureId() : 0);
 }
 
-YUVVideoNode::YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QSizeF &texScale)
+YUVVideoNode::YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QRectF &texCoordRect)
     : m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {
     setGeometry(&m_geometry);
     setFlag(QSGNode::OwnsMaterial);
     if (aTexture)
-        m_material = new YUVAVideoMaterial(yTexture, uTexture, vTexture, aTexture, texScale);
+        m_material = new YUVAVideoMaterial(yTexture, uTexture, vTexture, aTexture, texCoordRect);
     else
-        m_material = new YUVVideoMaterial(yTexture, uTexture, vTexture, texScale);
+        m_material = new YUVVideoMaterial(yTexture, uTexture, vTexture, texCoordRect);
     setMaterial(m_material);
 }
 

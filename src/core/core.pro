@@ -38,16 +38,15 @@ macx: PLUGIN_PREFIX =
 win32 {
     PLUGIN_EXTENSION = .dll
     PLUGIN_PREFIX =
-
-    icu.files = $$OUT_PWD/$$getConfigDir()/icudt46l.dat
-    icu.CONFIG += no_check_exist
-    icu.path = $$[QT_INSTALL_BINS]
-    INSTALLS += icu
 }
+
+icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
+icu.CONFIG += no_check_exist
+icu.path = $$[QT_INSTALL_DATA]
 
 plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION}
 plugins.CONFIG += no_check_exist
 plugins.path = $$[QT_INSTALL_PLUGINS]/qtwebengine
 
-INSTALLS += locales resources plugins
+INSTALLS += icu locales resources plugins
 

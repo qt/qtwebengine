@@ -84,8 +84,8 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     const content::ResourceRequestInfo *info = content::ResourceRequestInfo::ForRequest(request);
     int renderProcessId;
-    int renderViewId;
-    if (!info || !info->GetRenderViewForRequest(request, &renderProcessId, &renderViewId))
+    int renderFrameId;
+    if (!info || !info->GetRenderFrameForRequest(request, &renderProcessId, &renderFrameId))
         // Abort the request if it has no associated render info / render view.
         return net::ERR_ABORTED;
 
@@ -105,7 +105,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
         resourceType == ResourceType::MAIN_FRAME,
         navigationType,
         renderProcessId,
-        renderViewId
+        renderFrameId
     };
 
     content::BrowserThread::PostTask(
@@ -159,11 +159,11 @@ void NetworkDelegateQt::NotifyNavigationRequestedOnUIThread(net::URLRequest *req
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
-    content::RenderViewHost *rvh = content::RenderViewHost::FromID(params.renderProcessId, params.renderViewId);
+    content::RenderFrameHost *rfh = content::RenderFrameHost::FromID(params.renderProcessId, params.renderFrameId);
 
-    if (rvh) {
-        content::WebContents *webContents = content::WebContents::FromRenderViewHost(rvh);
-        WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
+    if (rfh) {
+        content::WebContents *webContents = content::WebContents::FromRenderViewHost(rfh->GetRenderViewHost());
+        WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
         client->navigationRequested(params.navigationType, params.url, navigationRequestAction, params.isMainFrameRequest);
     }
 

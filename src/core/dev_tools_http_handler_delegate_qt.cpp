@@ -70,7 +70,7 @@ DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(BrowserContext* bro
         if (base::StringToInt(portString, &portInt) && portInt > 0 && portInt < 65535)
             listeningPort = portInt;
     }
-    m_devtoolsHttpHandler = DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", listeningPort), std::string(), this);
+    m_devtoolsHttpHandler = DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", listeningPort), std::string(), this, base::FilePath());
 }
 
 DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()

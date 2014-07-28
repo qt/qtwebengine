@@ -45,7 +45,6 @@
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/gl_implementation_linux.h"
 
 #include <QGuiApplication>
 #include <qpa/qplatformnativeinterface.h>

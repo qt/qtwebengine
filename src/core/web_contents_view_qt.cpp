@@ -59,7 +59,7 @@ void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
         static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())->setAdapterClient(client);
 }
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
+content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
@@ -73,7 +73,7 @@ content::RenderWidgetHostView* WebContentsViewQt::CreateViewForWidget(content::R
     return view;
 }
 
-content::RenderWidgetHostView* WebContentsViewQt::CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host)
+content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host)
 {
     RenderWidgetHostViewQt *view = new RenderWidgetHostViewQt(render_widget_host);
 
@@ -123,7 +123,7 @@ static WebEngineContextMenuData fromParams(const content::ContextMenuParams &par
     return ret;
 }
 
-void WebContentsViewQt::ShowContextMenu(const content::ContextMenuParams &params)
+void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData contextMenuData(fromParams(params));
     m_client->contextMenuRequested(contextMenuData);

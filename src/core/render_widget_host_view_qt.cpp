@@ -56,10 +56,12 @@
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
+#include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/browser/browser_accessibility_state.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -67,7 +69,6 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/size_conversions.h"
-#include "webkit/common/cursors/webcursor.h"
 
 #include <QEvent>
 #include <QFocusEvent>
@@ -90,8 +91,6 @@ static inline ui::EventType toUIEventType(Qt::TouchPointState state)
         return ui::ET_TOUCH_PRESSED;
     case Qt::TouchPointMoved:
         return ui::ET_TOUCH_MOVED;
-    case Qt::TouchPointStationary:
-        return ui::ET_TOUCH_STATIONARY;
     case Qt::TouchPointReleased:
         return ui::ET_TOUCH_RELEASED;
     default:
@@ -188,11 +187,6 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
     m_adapterClient = adapterClient;
     if (m_initPending)
         InitAsChild(0);
-}
-
-content::BackingStore *RenderWidgetHostViewQt::AllocBackingStore(const gfx::Size &size)
-{
-    Q_UNREACHABLE();
 }
 
 void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
@@ -323,14 +317,6 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
     return gfx::BoundingRect(p1, p2);
 }
 
-// Subclasses should override this method to do what is appropriate to set
-// the custom background for their platform.
-void RenderWidgetHostViewQt::SetBackground(const SkBitmap& background)
-{
-    RenderWidgetHostViewBase::SetBackground(background);
-    // Send(new ViewMsg_SetBackground(m_host->GetRoutingID(), background));
-}
-
 // Return value indicates whether the mouse is locked successfully or not.
 bool RenderWidgetHostViewQt::LockMouse()
 {
@@ -352,7 +338,7 @@ void RenderWidgetHostViewQt::WasHidden()
     m_host->WasHidden();
 }
 
-void RenderWidgetHostViewQt::MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&)
+void RenderWidgetHostViewQt::MovePluginWindows(const std::vector<content::WebPluginGeometry>&)
 {
     // QT_NOT_YET_IMPLEMENTED
 }
@@ -363,9 +349,9 @@ void RenderWidgetHostViewQt::Blur()
     m_host->Blur();
 }
 
-void RenderWidgetHostViewQt::UpdateCursor(const WebCursor &webCursor)
+void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 {
-    WebCursor::CursorInfo cursorInfo;
+    content::WebCursor::CursorInfo cursorInfo;
     webCursor.GetCursorInfo(&cursorInfo);
     Qt::CursorShape shape;
     switch (cursorInfo.type) {
@@ -465,10 +451,10 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, ui::TextInputMode, bool)
+void RenderWidgetHostViewQt::TextInputStateChanged(const ViewHostMsg_TextInputState_Params& params)
 {
-    m_currentInputType = type;
-    m_delegate->inputMethodStateChanged(static_cast<bool>(type));
+    m_currentInputType = params.type;
+    m_delegate->inputMethodStateChanged(static_cast<bool>(params.type));
 }
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
@@ -480,21 +466,6 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const
 {
     // FIXME: not implemented?
     QT_NOT_YET_IMPLEMENTED
-}
-
-void RenderWidgetHostViewQt::DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo& /* latency_info */)
-{
-    if (!m_delegate->isVisible())
-        return;
-
-    Paint(scroll_rect);
-
-    for (size_t i = 0; i < copy_rects.size(); ++i) {
-        gfx::Rect rect = gfx::SubtractRects(copy_rects[i], scroll_rect);
-        if (rect.IsEmpty())
-            continue;
-        Paint(rect);
-    }
 }
 
 void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus, int)
@@ -533,12 +504,10 @@ void RenderWidgetHostViewQt::ScrollOffsetChanged()
     // Not used.
 }
 
-void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback)
+void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback, const SkBitmap::Config config)
 {
-    // Grab the snapshot from the renderer as that's the only reliable way to
-    // readback from the GPU for this platform right now.
-    // FIXME: is this true?
-    GetRenderWidgetHost()->GetSnapshotFromRenderer(src_subrect, callback);
+    NOTIMPLEMENTED();
+    callback.Run(false, SkBitmap());
 }
 
 void RenderWidgetHostViewQt::CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback)
@@ -550,12 +519,6 @@ void RenderWidgetHostViewQt::CopyFromCompositingSurfaceToVideoFrame(const gfx::R
 bool RenderWidgetHostViewQt::CanCopyToVideoFrame() const
 {
     return false;
-}
-
-void RenderWidgetHostViewQt::OnAcceleratedCompositingStateChange()
-{
-    // bool activated = m_host->is_accelerated_compositing_active();
-    QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::AcceleratedSurfaceInitialized(int host_id, int route_id)
@@ -641,16 +604,6 @@ gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
     return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
 }
 
-void RenderWidgetHostViewQt::SetHasHorizontalScrollbar(bool) { }
-
-void RenderWidgetHostViewQt::SetScrollOffsetPinning(bool, bool) { }
-
-void RenderWidgetHostViewQt::OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams> &notifications)
-{
-    CreateBrowserAccessibilityManagerIfNeeded();
-    GetBrowserAccessibilityManager()->OnAccessibilityEvents(notifications);
-}
-
 void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range)
 {
     content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
@@ -671,7 +624,7 @@ bool RenderWidgetHostViewQt::CanDispatchToConsumer(ui::GestureConsumer *consumer
     return true;
 }
 
-void RenderWidgetHostViewQt::DispatchPostponedGestureEvent(ui::GestureEvent* event)
+void RenderWidgetHostViewQt::DispatchGestureEvent(ui::GestureEvent* event)
 {
     ForwardGestureEventToRenderer(event);
 }
@@ -805,11 +758,6 @@ void RenderWidgetHostViewQt::sendDelegatedFrameAck()
         m_host->GetProcess()->GetID(), ack);
 }
 
-void RenderWidgetHostViewQt::Paint(const gfx::Rect& damage_rect)
-{
-    Q_UNREACHABLE();
-}
-
 void RenderWidgetHostViewQt::ForwardGestureEventToRenderer(ui::GestureEvent* gesture)
 {
     if ((gesture->type() == ui::ET_GESTURE_PINCH_BEGIN
@@ -830,7 +778,7 @@ void RenderWidgetHostViewQt::ForwardGestureEventToRenderer(ui::GestureEvent* ges
         // So explicitly send an event to stop any in-progress flings.
         blink::WebGestureEvent flingCancel = webGestureEvent;
         flingCancel.type = blink::WebInputEvent::GestureFlingCancel;
-        flingCancel.sourceDevice = blink::WebGestureEvent::Touchscreen;
+        flingCancel.sourceDevice = blink::WebGestureDeviceTouchscreen;
         m_host->ForwardGestureEvent(flingCancel);
     }
 
@@ -973,7 +921,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     }
 }
 
-void RenderWidgetHostViewQt::SetAccessibilityFocus(int acc_obj_id)
+void RenderWidgetHostViewQt::AccessibilitySetFocus(int acc_obj_id)
 {
     if (!m_host)
         return;
@@ -1008,17 +956,11 @@ void RenderWidgetHostViewQt::AccessibilitySetTextSelection(int acc_obj_id, int s
     m_host->AccessibilitySetTextSelection(acc_obj_id, start_offset, end_offset);
 }
 
-gfx::Point RenderWidgetHostViewQt::GetLastTouchEventLocation() const
-{
-    QT_NOT_YET_IMPLEMENTED
-    return gfx::Point();
-}
-
-void RenderWidgetHostViewQt::FatalAccessibilityTreeError()
+void RenderWidgetHostViewQt::AccessibilityFatalError()
 {
     if (!m_host)
         return;
-    m_host->FatalAccessibilityTreeError();
+    m_host->AccessibilityFatalError();
     SetBrowserAccessibilityManager(NULL);
 }
 
@@ -1103,8 +1045,7 @@ QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
     // Assume we have a screen reader doing stuff
     CreateBrowserAccessibilityManagerIfNeeded();
     content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    content::BrowserAccessibilityStateImpl::GetInstance()->SetAccessibilityMode(
-                AccessibilityModeComplete);
+    content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
 
     content::BrowserAccessibility *acc = GetBrowserAccessibilityManager()->GetRoot();
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);

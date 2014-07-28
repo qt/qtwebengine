@@ -52,14 +52,21 @@ namespace QtWebEngine {
 
 int processMain(int argc, const char **argv)
 {
+    ContentMainDelegateQt delegate;
+    content::ContentMainParams params(&delegate);
+
 #if defined(OS_WIN)
     HINSTANCE instance_handle = NULL;
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
     content::InitializeSandboxInfo(&sandbox_info);
-    return content::ContentMain(instance_handle, &sandbox_info, new ContentMainDelegateQt);
+    params.instance = instance_handle;
+    params.sandbox_info = &sandbox_info;
 #else
-    return content::ContentMain(argc, argv, new ContentMainDelegateQt);
+    params.argc = argc;
+    params.argv = argv;
 #endif // OS_WIN
+
+    return content::ContentMain(params);
 }
 
 }

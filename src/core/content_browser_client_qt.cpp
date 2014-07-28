@@ -43,10 +43,14 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/screen.h"
@@ -59,7 +63,7 @@
 #include "dev_tools_http_handler_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
-#include "web_contents_view_qt.h"
+#include "web_contents_delegate_qt.h"
 
 #include <QGuiApplication>
 #include <QOpenGLContext>
@@ -159,9 +163,9 @@ private:
     Delegate *m_delegate;
 };
 
-base::MessagePump* messagePumpFactory()
+scoped_ptr<base::MessagePump> messagePumpFactory()
 {
-    return new MessagePumpForUIQt;
+    return scoped_ptr<base::MessagePump>(new MessagePumpForUIQt);
 }
 
 } // namespace
@@ -272,14 +276,6 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
     m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
 }
 
-content::WebContentsViewPort* ContentBrowserClientQt::OverrideCreateWebContentsView(content::WebContents* web_contents,
-                                                                                    content::RenderViewHostDelegateView** render_view_host_delegate_view)
-{
-    WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
-    *render_view_host_delegate_view = rv;
-    return rv;
-}
-
 ContentBrowserClientQt::ContentBrowserClientQt()
     : m_browserMainParts(0)
 {
@@ -303,10 +299,10 @@ content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const 
     return m_browserMainParts;
 }
 
-void ContentBrowserClientQt::RenderProcessHostCreated(content::RenderProcessHost* host)
+void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost* host)
 {
     // FIXME: Add a settings variable to enable/disable the file scheme.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), chrome::kFileScheme);
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), url::kFileScheme);
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
@@ -339,7 +335,7 @@ BrowserContextQt* ContentBrowserClientQt::browser_context() {
     return static_cast<BrowserMainPartsQt*>(m_browserMainParts)->browser_context();
 }
 
-net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* content_browser_context, content::ProtocolHandlerMap* protocol_handlers)
+net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* content_browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
     if (content_browser_context != browser_context())
         fprintf(stderr, "Warning: off the record browser context not implemented !\n");
