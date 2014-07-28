@@ -311,6 +311,7 @@ WebView::WebView(QWidget* parent)
     : QWebEngineView(parent)
     , m_progress(0)
     , m_page(new WebPage(this))
+    , m_iconReply(0)
 {
     setPage(m_page);
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
@@ -323,6 +324,8 @@ WebView::WebView(QWidget* parent)
             this, SLOT(loadFinished()));
     connect(page(), SIGNAL(loadingUrl(QUrl)),
             this, SIGNAL(urlChanged(QUrl)));
+    connect(page(), SIGNAL(iconUrlChanged(QUrl)),
+            this, SLOT(onIconUrlChanged(QUrl)));
 #if defined(QWEBENGINEPAGE_DOWNLOADREQUESTED)
     connect(page(), SIGNAL(downloadRequested(QNetworkRequest)),
             this, SLOT(downloadRequested(QNetworkRequest)));
@@ -421,6 +424,25 @@ QUrl WebView::url() const
         return url;
 
     return m_initialUrl;
+}
+
+void WebView::onIconUrlChanged(const QUrl &url)
+{
+    m_icon = QIcon();
+    QNetworkRequest iconRequest(url);
+    m_iconReply = BrowserApplication::networkAccessManager()->get(iconRequest);
+    connect(m_iconReply, SIGNAL(finished()), this, SLOT(iconLoaded()));
+}
+
+void WebView::iconLoaded()
+{
+    QByteArray data = m_iconReply->readAll();
+    QPixmap pixmap;
+    pixmap.loadFromData(data);
+    m_icon.addPixmap(pixmap);
+    m_iconReply->deleteLater();
+    m_iconReply = 0;
+    emit iconChanged();
 }
 
 void WebView::mousePressEvent(QMouseEvent *event)

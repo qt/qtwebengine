@@ -74,7 +74,7 @@
 
 DownloadManager *BrowserApplication::s_downloadManager = 0;
 HistoryManager *BrowserApplication::s_historyManager = 0;
-NetworkAccessManager *BrowserApplication::s_networkAccessManager = 0;
+QNetworkAccessManager *BrowserApplication::s_networkAccessManager = 0;
 BookmarksManager *BrowserApplication::s_bookmarksManager = 0;
 
 BrowserApplication::BrowserApplication(int &argc, char **argv)
@@ -433,7 +433,7 @@ DownloadManager *BrowserApplication::downloadManager()
     return s_downloadManager;
 }
 
-NetworkAccessManager *BrowserApplication::networkAccessManager()
+QNetworkAccessManager *BrowserApplication::networkAccessManager()
 {
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     if (!s_networkAccessManager) {
@@ -442,7 +442,10 @@ NetworkAccessManager *BrowserApplication::networkAccessManager()
     }
     return s_networkAccessManager;
 #else
-    return 0;
+    if (!s_networkAccessManager) {
+        s_networkAccessManager = new QNetworkAccessManager();
+    }
+    return s_networkAccessManager;
 #endif
 }
 
