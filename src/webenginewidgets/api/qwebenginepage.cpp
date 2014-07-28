@@ -802,6 +802,12 @@ QUrl QWebEnginePage::requestedUrl() const
     return d->adapter->requestedUrl();
 }
 
+QUrl QWebEnginePage::iconUrl() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->iconUrl();
+}
+
 qreal QWebEnginePage::zoomFactor() const
 {
     Q_D(const QWebEnginePage);

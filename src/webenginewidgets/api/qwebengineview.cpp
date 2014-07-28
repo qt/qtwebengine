@@ -168,6 +168,11 @@ QUrl QWebEngineView::url() const
     return page()->url();
 }
 
+QUrl QWebEngineView::iconUrl() const
+{
+    return page()->iconUrl();
+}
+
 bool QWebEngineView::hasSelection() const
 {
     return page()->hasSelection();

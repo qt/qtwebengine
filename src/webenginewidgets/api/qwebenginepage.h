@@ -171,6 +171,7 @@ public:
     void setUrl(const QUrl &url);
     QUrl url() const;
     QUrl requestedUrl() const;
+    QUrl iconUrl() const;
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);

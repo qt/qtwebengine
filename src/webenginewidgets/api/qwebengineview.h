@@ -59,6 +59,7 @@ public:
     QString title() const;
     void setUrl(const QUrl &url);
     QUrl url() const;
+    QUrl iconUrl() const;
 
     bool hasSelection() const;
     QString selectedText() const;
