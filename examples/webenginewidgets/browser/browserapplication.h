@@ -51,6 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 class QLocalServer;
+class QNetworkAccessManager;
 QT_END_NAMESPACE
 
 class BookmarksManager;
@@ -58,7 +59,6 @@ class BrowserMainWindow;
 class CookieJar;
 class DownloadManager;
 class HistoryManager;
-class NetworkAccessManager;
 class BrowserApplication : public QApplication
 {
     Q_OBJECT
@@ -73,6 +73,7 @@ public:
     BrowserMainWindow *mainWindow();
     QList<BrowserMainWindow*> mainWindows();
     QIcon icon(const QUrl &url) const;
+    QIcon defaultIcon() const;
 
     void saveSession();
     bool canRestoreSession() const;
@@ -80,7 +81,7 @@ public:
     static HistoryManager *historyManager();
     static CookieJar *cookieJar();
     static DownloadManager *downloadManager();
-    static NetworkAccessManager *networkAccessManager();
+    static QNetworkAccessManager *networkAccessManager();
     static BookmarksManager *bookmarksManager();
 
 #if defined(Q_WS_MAC)
@@ -106,7 +107,7 @@ private:
 
     static HistoryManager *s_historyManager;
     static DownloadManager *s_downloadManager;
-    static NetworkAccessManager *s_networkAccessManager;
+    static QNetworkAccessManager *s_networkAccessManager;
     static BookmarksManager *s_bookmarksManager;
 
     QList<QPointer<BrowserMainWindow> > m_mainWindows;

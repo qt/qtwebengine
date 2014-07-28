@@ -39,6 +39,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
     Q_OBJECT
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
+    Q_PROPERTY(QUrl iconUrl READ iconUrl)
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(bool hasSelection READ hasSelection)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
@@ -59,6 +60,7 @@ public:
     QString title() const;
     void setUrl(const QUrl &url);
     QUrl url() const;
+    QUrl iconUrl() const;
 
     bool hasSelection() const;
     QString selectedText() const;
@@ -88,6 +90,7 @@ Q_SIGNALS:
     void titleChanged(const QString& title);
     void selectionChanged();
     void urlChanged(const QUrl&);
+    void iconUrlChanged(const QUrl&);
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
