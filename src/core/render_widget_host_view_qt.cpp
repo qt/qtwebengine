@@ -897,6 +897,11 @@ void RenderWidgetHostViewQt::AccessibilitySetTextSelection(int acc_obj_id, int s
     m_host->AccessibilitySetTextSelection(acc_obj_id, start_offset, end_offset);
 }
 
+bool RenderWidgetHostViewQt::AccessibilityViewHasFocus() const
+{
+    return HasFocus();
+}
+
 void RenderWidgetHostViewQt::AccessibilityFatalError()
 {
     if (!m_host)
