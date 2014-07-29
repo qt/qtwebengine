@@ -111,7 +111,6 @@ void tst_QWebEngineView::hierarchy()
     QCOMPARE(text->role(), QAccessible::StaticText);
     QCOMPARE(text->parent(), grouping);
     QCOMPARE(grouping->indexOfChild(text), 0);
-    QEXPECT_FAIL("", "FIXME: static text should probably not have a child element", Continue);
     QCOMPARE(text->childCount(), 0);
     QCOMPARE(text->text(QAccessible::Name), QString());
     QCOMPARE(text->text(QAccessible::Description), QString());
