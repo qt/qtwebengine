@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 {
     Application app(argc, argv);
 
-    QWebEngine::initialize();
+    QtWebEngine::initialize();
 
     ApplicationEngine appEngine;
 
