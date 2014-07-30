@@ -141,6 +141,8 @@ WebEngineContext::WebEngineContext()
 #if defined(OS_WIN)
     // FIXME: The renderer process should be fixed on windows.
     parsedCommandLine->AppendSwitch(switches::kSingleProcess);
+    parsedCommandLine->AppendSwitch(switches::kDisableD3D11);
+    parsedCommandLine->AppendSwitch(switches::kDisableExperimentalWebGL);
 #endif
 
 #if defined(QTWEBENGINE_MOBILE_SWITCHES)
