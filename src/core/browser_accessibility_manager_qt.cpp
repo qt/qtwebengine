@@ -74,19 +74,19 @@ void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(ui::AXEvent event_t
     BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);
 
     switch (event_type) {
-    case WebAXEventFocus: {
+    case ui::AX_EVENT_FOCUS: {
         QAccessibleEvent event(iface, QAccessible::Focus);
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventCheckedStateChanged: {
+    case ui::AX_EVENT_CHECKED_STATE_CHANGED: {
         QAccessible::State change;
         change.checked = true;
         QAccessibleStateChangeEvent event(iface, change);
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventValueChanged: {
+    case ui::AX_EVENT_VALUE_CHANGED: {
         QVariant value;
         if (QAccessibleValueInterface *valueIface = iface->valueInterface())
             value = valueIface->currentValue();
@@ -94,29 +94,29 @@ void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(ui::AXEvent event_t
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventChildrenChanged:
+    case ui::AX_EVENT_CHILDREN_CHANGED:
         break;
-    case WebAXEventLayoutComplete:
+    case ui::AX_EVENT_LAYOUT_COMPLETE:
         break;
-    case WebAXEventLoadComplete:
+    case ui::AX_EVENT_LOAD_COMPLETE:
         break;
 
-    case WebAXEventTextChanged: {
+    case ui::AX_EVENT_TEXT_CHANGED: {
         QAccessibleTextUpdateEvent event(iface, -1, QString(), QString());
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventTextInserted: {
+    case ui::AX_EVENT_TEXT_INSERTED: {
         QAccessibleTextInsertEvent event(iface, -1, QString());
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventTextRemoved: {
+    case ui::AX_EVENT_TEXT_REMOVED: {
         QAccessibleTextRemoveEvent event(iface, -1, QString());
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventSelectedTextChanged: {
+    case ui::AX_EVENT_SELECTED_TEXT_CHANGED: {
         QAccessibleTextInterface *textIface = iface->textInterface();
         if (textIface) {
             int start = 0;
