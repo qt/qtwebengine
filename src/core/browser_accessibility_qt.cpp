@@ -378,49 +378,49 @@ QAccessible::State BrowserAccessibilityQt::state() const
 {
     QAccessible::State state = QAccessible::State();
     int32 s = GetState();
-    if (s & (1 << WebAXStateBusy))
+    if (s & (1 << ui::AX_STATE_BUSY))
         state.busy = true;
-    if (s & (1 << WebAXStateChecked))
+    if (s & (1 << ui::AX_STATE_CHECKED))
         state.checked = true;
-    if (s & (1 << WebAXStateCollapsed))
+    if (s & (1 << ui::AX_STATE_COLLAPSED))
         state.collapsed = true;
-    if (!(s & (1 << WebAXStateEnabled)))
+    if (s & (1 << ui::AX_STATE_DISABLED))
         state.disabled = true;
-    if (s & (1 << WebAXStateExpanded))
+    if (s & (1 << ui::AX_STATE_EXPANDED))
         state.expanded = true;
-    if (s & (1 << WebAXStateFocusable))
+    if (s & (1 << ui::AX_STATE_FOCUSABLE))
         state.focusable = true;
-    if (s & (1 << WebAXStateFocused))
+    if (s & (1 << ui::AX_STATE_FOCUSED))
         state.focused = true;
-    if (s & (1 << WebAXStateHaspopup))
+    if (s & (1 << ui::AX_STATE_HASPOPUP))
         state.hasPopup = true;
-    if (s & (1 << WebAXStateHovered))
+    if (s & (1 << ui::AX_STATE_HOVERED))
         state.hotTracked = true;
-    if (s & (1 << WebAXStateIndeterminate))
+    if (s & (1 << ui::AX_STATE_INDETERMINATE))
     {} // FIXME
-    if (s & (1 << WebAXStateInvisible))
+    if (s & (1 << ui::AX_STATE_INVISIBLE))
         state.invisible = true;
-    if (s & (1 << WebAXStateLinked))
+    if (s & (1 << ui::AX_STATE_LINKED))
         state.linked = true;
-    if (s & (1 << WebAXStateMultiselectable))
+    if (s & (1 << ui::AX_STATE_MULTISELECTABLE))
         state.multiSelectable = true;
-    if (s & (1 << WebAXStateOffscreen))
+    if (s & (1 << ui::AX_STATE_OFFSCREEN))
         state.offscreen = true;
-    if (s & (1 << WebAXStatePressed))
+    if (s & (1 << ui::AX_STATE_PRESSED))
         state.pressed = true;
-    if (s & (1 << WebAXStateProtected))
+    if (s & (1 << ui::AX_STATE_PROTECTED))
     {} // FIXME
-    if (s & (1 << WebAXStateReadonly))
+    if (s & (1 << ui::AX_STATE_READ_ONLY))
         state.readOnly = true;
-    if (s & (1 << WebAXStateRequired))
+    if (s & (1 << ui::AX_STATE_REQUIRED))
     {} // FIXME
-    if (s & (1 << WebAXStateSelectable))
+    if (s & (1 << ui::AX_STATE_SELECTABLE))
         state.selectable = true;
-    if (s & (1 << WebAXStateSelected))
+    if (s & (1 << ui::AX_STATE_SELECTED))
         state.selected = true;
-    if (s & (1 << WebAXStateVertical))
+    if (s & (1 << ui::AX_STATE_VERTICAL))
     {} // FIXME
-    if (s & (1 << WebAXStateVisited))
+    if (s & (1 << ui::AX_STATE_VISITED))
     {} // FIXME
     if (IsEditableText())
         state.editable = true;
