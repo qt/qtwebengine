@@ -88,6 +88,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
     Q_ENUMS(Feature)
+    Q_FLAGS(FindFlags)
 
 public:
     enum Feature {
@@ -95,6 +96,12 @@ public:
         MediaVideoDevices,
         MediaAudioVideoDevices
     };
+
+    enum FindFlag {
+        FindBackward = 1,
+        FindCaseSensitively = 2,
+    };
+    Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
     bool inspectable() const;
     void setInspectable(bool);
@@ -109,6 +116,7 @@ public Q_SLOTS:
     void goBackTo(int index);
     void goForwardTo(int index);
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
+    void findText(const QString&, FindFlags, const QJSValue & = QJSValue());
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 
 Q_SIGNALS:
@@ -117,6 +125,7 @@ Q_SIGNALS:
     void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();
     void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
+    void textFound(int matchCount);
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -163,7 +172,7 @@ public:
     virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
-    virtual void didFindText(quint64, int) Q_DECL_OVERRIDE { }
+    virtual void didFindText(quint64, int) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
