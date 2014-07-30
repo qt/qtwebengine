@@ -61,6 +61,11 @@ void QWebEngine::initialize()
         qFatal("QWebEngine(Widgets)::initialize() must be called after the construction of the application object.");
         return;
     }
+
+#ifdef Q_OS_WIN
+    _wputenv(L"QT_D3DCREATE_MULTITHREADED=1");
+#endif
+
     if (app->thread() != QThread::currentThread()) {
         qFatal("QWebEngine(Widgets)::initialize() must be called from the Qt gui thread.");
         return;
