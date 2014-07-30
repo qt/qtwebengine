@@ -126,7 +126,7 @@ tst_QQuickWebEngineViewGraphics::~tst_QQuickWebEngineViewGraphics()
 // It is only called once.
 void tst_QQuickWebEngineViewGraphics::initTestCase()
 {
-    QWebEngine::initialize();
+    QtWebEngine::initialize();
 }
 
 void tst_QQuickWebEngineViewGraphics::init()
