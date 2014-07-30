@@ -554,6 +554,14 @@ void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVari
     callback.call(args);
 }
 
+void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
+{
+    QJSValue callback = m_callbacks.take(requestId);
+    QJSValueList args;
+    args.append(QJSValue(matchCount));
+    callback.call(args);
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
@@ -635,6 +643,22 @@ void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlCo
 QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent() const
 {
     return d_ptr->contextMenuExtraItems;
+}
+
+void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFlags options, const QJSValue &callback)
+{
+    if (subString.isEmpty()) {
+        d_ptr->adapter->stopFinding();
+        if (!callback.isUndefined()) {
+            QJSValueList args;
+            args.append(QJSValue(0));
+            const_cast<QJSValue&>(callback).call(args);
+        }
+    } else {
+        quint64 requestId = d_ptr->adapter->findText(subString, options & FindCaseSensitively, options & FindBackward);
+        if (!callback.isUndefined())
+            d_ptr->m_callbacks.insert(requestId, callback);
+    }
 }
 
 QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const

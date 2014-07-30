@@ -253,6 +253,15 @@ ApplicationWindow {
             Item {
                 property alias webView: webEngineView
                 property alias title: webEngineView.title
+                Action {
+                    shortcut: "Ctrl+F"
+                    onTriggered: {
+                        findBar.visible = !findBar.visible
+                        if (findBar.visible) {
+                            findTextField.forceActiveFocus()
+                        }
+                    }
+                }
                 FeaturePermissionBar {
                     id: permBar
                     view: webEngineView
@@ -322,6 +331,44 @@ ApplicationWindow {
                             permBar.visible = true;
                         }
                         extraContextMenuEntriesComponent: ContextMenuExtras {}
+                    }
+                }
+
+                Rectangle {
+                    id: findBar
+                    anchors.top: webEngineView.top
+                    anchors.right: webEngineView.right
+                    width: 240
+                    height: 35
+                    border.color: "lightgray"
+                    border.width: 1
+                    radius: 5
+                    visible: false
+                    color: browserWindow.color
+
+                    RowLayout {
+                        anchors.centerIn: findBar
+                        TextField {
+                            id: findTextField
+                            onAccepted: {
+                                webEngineView.experimental.findText(text, 0)
+                            }
+                        }
+                        ToolButton {
+                            id: findBackwardButton
+                            iconSource: "icons/go-previous.png"
+                            onClicked: webEngineView.experimental.findText(findTextField.text, WebEngineViewExperimental.FindBackward)
+                        }
+                        ToolButton {
+                            id: findForwardButton
+                            iconSource: "icons/go-next.png"
+                            onClicked: webEngineView.experimental.findText(findTextField.text, 0)
+                        }
+                        ToolButton {
+                            id: findCancelButton
+                            iconSource: "icons/process-stop.png"
+                            onClicked: findBar.visible = false
+                        }
                     }
                 }
             }
