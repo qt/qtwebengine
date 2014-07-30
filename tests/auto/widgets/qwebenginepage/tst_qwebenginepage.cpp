@@ -229,7 +229,6 @@ void tst_QWebEnginePage::cleanupFiles()
 
 void tst_QWebEnginePage::initTestCase()
 {
-    QWebEngineWidgets::initialize();
     cleanupFiles(); // In case there are old files from previous runs
 }
 
