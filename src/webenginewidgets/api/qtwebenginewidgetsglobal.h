@@ -55,12 +55,6 @@ QT_BEGIN_NAMESPACE
 #  define QWEBENGINEWIDGETS_EXPORT
 #endif
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineWidgets
-{
-public:
-    static void initialize();
-};
-
 QT_END_NAMESPACE
 
 #endif // QTWEBENGINEWIDGETSGLOBAL_H
