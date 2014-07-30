@@ -118,7 +118,6 @@ bool tst_QWebEngineFrame::eventFilter(QObject* watched, QEvent* event)
 
 void tst_QWebEngineFrame::initTestCase()
 {
-    QWebEngineWidgets::initialize();
 }
 
 void tst_QWebEngineFrame::init()

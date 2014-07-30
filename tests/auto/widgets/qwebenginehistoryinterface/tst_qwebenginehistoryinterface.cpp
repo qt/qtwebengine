@@ -61,7 +61,6 @@ tst_QWebEngineHistoryInterface::~tst_QWebEngineHistoryInterface()
 
 void tst_QWebEngineHistoryInterface::initTestCase()
 {
-    QWebEngineWidgets::initialize();
 }
 
 void tst_QWebEngineHistoryInterface::init()

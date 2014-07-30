@@ -50,8 +50,6 @@ int main(int argc, char **argv)
     if (!application.isTheOnlyBrowser())
         return 0;
 
-    QWebEngineWidgets::initialize();
-
     application.newMainWindow();
     return application.exec();
 }

@@ -85,11 +85,6 @@
 
     \section1 Architecture
 
-    Before an application can use the Qt WebEngine Widgets classes, it must call
-    the static initialization method for the module.
-
-    \snippet snippets/simple/main.cpp Initializing QWebEngineWidgets
-
     The easiest way to render content is through the QWebEngineView class. As a
     widget it can be embedded into your forms or a graphics view, and it
     provides convenience functions for downloading and rendering web sites.
