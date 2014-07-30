@@ -55,11 +55,10 @@ QT_BEGIN_NAMESPACE
 #  define Q_WEBENGINE_EXPORT
 #endif
 
-class Q_WEBENGINE_EXPORT QWebEngine
+namespace QtWebEngine
 {
-public:
-    static void initialize();
-};
+    Q_WEBENGINE_EXPORT void initialize();
+}
 
 QT_END_NAMESPACE
 
