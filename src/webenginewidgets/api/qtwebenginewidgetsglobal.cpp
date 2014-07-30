@@ -42,8 +42,11 @@
 #include "qtwebenginewidgetsglobal.h"
 
 #include "qtwebengineglobal.h"
+#include <QCoreApplication>
 
-void QWebEngineWidgets::initialize()
+static void initialize()
 {
     QWebEngine::initialize();
 }
+
+Q_COREAPP_STARTUP_FUNCTION(initialize)

@@ -45,7 +45,6 @@
 int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
-    QWebEngineWidgets::initialize();
 
     QUrl url;
     if (argc > 1)
