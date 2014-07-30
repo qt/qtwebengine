@@ -46,7 +46,7 @@
 
 static void initialize()
 {
-    QWebEngine::initialize();
+    QtWebEngine::initialize();
 }
 
 Q_COREAPP_STARTUP_FUNCTION(initialize)
