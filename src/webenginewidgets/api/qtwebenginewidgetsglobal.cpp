@@ -44,9 +44,12 @@
 #include "qtwebengineglobal.h"
 #include <QCoreApplication>
 
+QT_BEGIN_NAMESPACE
 static void initialize()
 {
-    QWebEngine::initialize();
+    QtWebEngine::initialize();
 }
 
 Q_COREAPP_STARTUP_FUNCTION(initialize)
+
+QT_END_NAMESPACE

@@ -45,6 +45,10 @@
 #include <QThread>
 #include <private/qopenglcontext_p.h>
 
+QT_BEGIN_NAMESPACE
+
+namespace QtWebEngine {
+
 static QOpenGLContext *shareContext;
 
 static void deleteShareContext()
@@ -53,7 +57,7 @@ static void deleteShareContext()
     shareContext = 0;
 }
 
-void QWebEngine::initialize()
+void initialize()
 {
     QCoreApplication *app = QCoreApplication::instance();
     if (!app) {
@@ -73,4 +77,6 @@ void QWebEngine::initialize()
     qAddPostRoutine(deleteShareContext);
     QOpenGLContextPrivate::setGlobalShareContext(shareContext);
 }
+} // namespace QtWebEngine
 
+QT_END_NAMESPACE
