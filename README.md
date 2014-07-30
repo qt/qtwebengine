@@ -7,7 +7,7 @@ To be able to build QtWebEngine you need Qt 5.2 or newer.
 
 ### 1) Clone the QtWebEngine repository ###
 
-    git clone git://gitorious.org/qt-labs/qtwebengine.git
+    git clone git://gitorious.org/qt/qtwebengine.git
 
 ### 2) Initialize the repository ###
 
