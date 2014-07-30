@@ -74,6 +74,10 @@ void initialize()
     if (shareContext)
         return;
 
+#ifdef Q_OS_WIN32
+    qputenv("QT_D3DCREATE_MULTITHREADED", "1");
+#endif
+
     shareContext = new QOpenGLContext;
     shareContext->create();
     qAddPostRoutine(deleteShareContext);
