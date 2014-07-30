@@ -46,7 +46,6 @@ private Q_SLOTS:
 // It is only called once.
 void tst_QWebEngineView::initTestCase()
 {
-    QWebEngineWidgets::initialize();
 }
 
 // This will be called after the last test function is executed.
