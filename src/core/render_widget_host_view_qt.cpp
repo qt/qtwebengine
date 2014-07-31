@@ -1085,6 +1085,11 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
     if (ev->gotFocus()) {
         m_host->GotFocus();
         m_host->SetActive(true);
+        Q_ASSERT(m_host->IsRenderView());
+        if (ev->reason() == Qt::TabFocusReason)
+            static_cast<content::RenderViewHostImpl*>(m_host)->SetInitialFocus(false);
+        else if (ev->reason() == Qt::BacktabFocusReason)
+            static_cast<content::RenderViewHostImpl*>(m_host)->SetInitialFocus(true);
         ev->accept();
     } else if (ev->lostFocus()) {
         m_host->SetActive(false);

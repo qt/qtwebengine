@@ -303,6 +303,12 @@ void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
     m_callbacks.invoke(requestId, matchCount > 0);
 }
 
+void QWebEnginePagePrivate::passOnFocus(bool reverse)
+{
+    if (view)
+        view->focusNextPrevChild(!reverse);
+}
+
 void QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword)
 {
     Q_Q(QWebEnginePage);
