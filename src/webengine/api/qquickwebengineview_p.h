@@ -77,7 +77,6 @@ public:
     QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
-    void forceActiveFocus();
 
     QQuickWebEngineViewExperimental *experimental() const;
 

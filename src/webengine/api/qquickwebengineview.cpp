@@ -469,7 +469,6 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     Q_D(QQuickWebEngineView);
     d->e->q_ptr = this;
     d->adapter->initialize(d);
-    this->setFocus(true);
     this->setActiveFocusOnTab(true);
     this->setFlag(QQuickItem::ItemIsFocusScope);
 
@@ -568,16 +567,6 @@ bool QQuickWebEngineView::canGoForward() const
 {
     Q_D(const QQuickWebEngineView);
     return d->adapter->canGoForward();
-}
-
-void QQuickWebEngineView::forceActiveFocus()
-{
-    Q_FOREACH (QQuickItem *child, childItems()) {
-        if (qobject_cast<RenderWidgetHostViewQtDelegateQuick *>(child)) {
-            child->forceActiveFocus();
-            break;
-        }
-    }
 }
 
 QQuickWebEngineViewExperimental *QQuickWebEngineView::experimental() const
