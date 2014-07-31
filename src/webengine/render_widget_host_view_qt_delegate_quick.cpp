@@ -61,7 +61,6 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
         return;
     setFocus(true);
     setActiveFocusOnTab(true);
-    setFlag(QQuickItem::ItemIsFocusScope);
 }
 
 void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
