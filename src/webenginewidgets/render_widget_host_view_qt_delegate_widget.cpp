@@ -60,7 +60,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     , sgRenderContext(new QSGRenderContext(sgContext.data()))
     , m_isPopup(false)
 {
-    setFocusPolicy(Qt::ClickFocus);
+    setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
@@ -72,6 +72,7 @@ void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient*
     QWebEnginePagePrivate *pagePrivate = static_cast<QWebEnginePagePrivate *>(container);
     if (pagePrivate->view) {
         pagePrivate->view->layout()->addWidget(this);
+        pagePrivate->view->setFocusProxy(this);
         QOpenGLWidget::show();
     } else
         setParent(0);
