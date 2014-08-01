@@ -1,4 +1,4 @@
 [submodule "3rdparty"]
     path = src/3rdparty
-    url = ../chromium.git
+    url = ../qtwebengine-chromium.git
     ignore = all
