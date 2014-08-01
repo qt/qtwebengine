@@ -64,6 +64,7 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
+#include <QOpenGLFunctions>
 #include <QSGAbstractRenderer>
 #include <QSGEngine>
 #include <QSGSimpleRectNode>
@@ -75,7 +76,7 @@
 #include <EGL/eglext.h>
 #endif
 
-class RenderPassTexture : public QSGTexture
+class RenderPassTexture : public QSGTexture, protected QOpenGLFunctions
 {
 public:
     RenderPassTexture(const cc::RenderPass::Id &id);
@@ -105,7 +106,7 @@ private:
     QScopedPointer<QOpenGLFramebufferObject> m_fbo;
 };
 
-class MailboxTexture : public QSGTexture {
+class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const cc::TransferableResource &resource);
     virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
@@ -232,7 +233,14 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
         break;
     case gfx::TransferableFence::ArbSync:
 #ifdef GL_ARB_sync
-        glWaitSync(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
+        typedef void (QOPENGLF_APIENTRYP WaitSyncPtr)(GLsync sync, GLbitfield flags, GLuint64 timeout);
+        static WaitSyncPtr glWaitSync_ = 0;
+        if (!glWaitSync_) {
+            QOpenGLContext *context = QOpenGLContext::currentContext();
+            glWaitSync_ = (WaitSyncPtr)context->getProcAddress("glWaitSync");
+            Q_ASSERT(glWaitSync_);
+        }
+        glWaitSync_(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
 #endif
         break;
     }
@@ -270,7 +278,14 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
         break;
     case gfx::TransferableFence::ArbSync:
 #ifdef GL_ARB_sync
-        glDeleteSync(sync->arb.sync);
+        typedef void (QOPENGLF_APIENTRYP DeleteSyncPtr)(GLsync sync);
+        static DeleteSyncPtr glDeleteSync_ = 0;
+        if (!glDeleteSync_) {
+            QOpenGLContext *context = QOpenGLContext::currentContext();
+            glDeleteSync_ = (DeleteSyncPtr)context->getProcAddress("glDeleteSync");
+            Q_ASSERT(glDeleteSync_);
+        }
+        glDeleteSync_(sync->arb.sync);
         sync->reset();
 #endif
         break;
@@ -286,6 +301,7 @@ RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id)
     , m_sgEngine(new QSGEngine)
     , m_rootNode(new QSGRootNode)
 {
+    initializeOpenGLFunctions();
 }
 
 void RenderPassTexture::bind()
@@ -330,6 +346,7 @@ MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
     , m_target(GL_TEXTURE_2D)
     , m_importCount(1)
 {
+    initializeOpenGLFunctions();
 }
 
 void MailboxTexture::bind()

@@ -250,7 +250,7 @@ public:
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglContext"), qtContext);
             else
-                qFatal("Only the EGLGLES2 implementation is supported on %s platform.", platform.toLatin1().constData());
+                m_handle = pni->nativeResourceForContext(QByteArrayLiteral("renderingcontext"), qtContext);
         } else {
             qFatal("%s platform not yet supported", platform.toLatin1().constData());
             // Add missing platforms once they work.

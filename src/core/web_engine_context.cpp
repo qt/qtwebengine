@@ -75,6 +75,7 @@
 #include "web_engine_library_info.h"
 #include "web_engine_visited_links_manager.h"
 #include <QGuiApplication>
+#include <QOpenGLContext>
 #include <QStringList>
 #include <QVector>
 #include <qpa/qplatformnativeinterface.h>
@@ -170,10 +171,16 @@ WebEngineContext::WebEngineContext()
 
     GLContextHelper::initialize();
 
-    // Tell Chromium to use EGL instead of GLX if the Qt xcb plugin also does.
-    if ((qApp->platformName() == QStringLiteral("xcb") || qApp->platformName() == QStringLiteral("eglfs"))
-        && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
-        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
+    const char *glType;
+    switch (QOpenGLContext::currentContext()->openGLModuleType()) {
+    case QOpenGLContext::LibGL:
+        glType = gfx::kGLImplementationDesktopName;
+        break;
+    case QOpenGLContext::LibGLES:
+        glType = gfx::kGLImplementationEGLName;
+        break;
+    }
+    parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
 
     content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);

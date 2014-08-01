@@ -36,6 +36,8 @@
 
 #include "yuv_video_node.h"
 
+#include <QtGui/qopenglcontext.h>
+#include <QtGui/qopenglfunctions.h>
 #include <QtQuick/qsgtexture.h>
 
 class YUVVideoMaterialShader : public QSGMaterialShader
@@ -159,11 +161,13 @@ void YUVVideoMaterialShader::updateState(const RenderState &state, QSGMaterial *
     program()->setUniformValue(m_id_uTexture, 1);
     program()->setUniformValue(m_id_vTexture, 2);
 
-    glActiveTexture(GL_TEXTURE1);
+    QOpenGLFunctions glFuncs(QOpenGLContext::currentContext());
+
+    glFuncs.glActiveTexture(GL_TEXTURE1);
     mat->m_uTexture->bind();
-    glActiveTexture(GL_TEXTURE2);
+    glFuncs.glActiveTexture(GL_TEXTURE2);
     mat->m_vTexture->bind();
-    glActiveTexture(GL_TEXTURE0); // Finish with 0 as default texture unit
+    glFuncs.glActiveTexture(GL_TEXTURE0); // Finish with 0 as default texture unit
     mat->m_yTexture->bind();
 
     program()->setUniformValue(m_id_texOffset, mat->m_texCoordRect.topLeft());
@@ -203,11 +207,13 @@ void YUVAVideoMaterialShader::updateState(const RenderState &state, QSGMaterial 
     YUVAVideoMaterial *mat = static_cast<YUVAVideoMaterial *>(newMaterial);
     program()->setUniformValue(m_id_aTexture, 3);
 
-    glActiveTexture(GL_TEXTURE3);
+    QOpenGLFunctions glFuncs(QOpenGLContext::currentContext());
+
+    glFuncs.glActiveTexture(GL_TEXTURE3);
     mat->m_aTexture->bind();
 
     // Reset the default texture unit.
-    glActiveTexture(GL_TEXTURE0);
+    glFuncs.glActiveTexture(GL_TEXTURE0);
 }
 
 

@@ -64,6 +64,11 @@ extern "C" {
 }
 #endif
 
+#if defined(OS_WIN)
+#include "ui/gl/gl_surface_wgl.h"
+#include "ui/gl/gl_context_wgl.h"
+#endif
+
 using ui::GetLastEGLErrorString;
 
 namespace gfx {
@@ -239,7 +244,75 @@ void* GLSurfaceQtGLX::GetHandle()
     return reinterpret_cast<void*>(m_surfaceBuffer);
 }
 
-#endif // defined(USE_X11)
+#elif defined(OS_WIN)
+
+class GLSurfaceQtWGL: public GLSurfaceQt {
+public:
+    explicit GLSurfaceQtWGL(const gfx::Size& size);
+
+    static bool InitializeOneOff();
+
+    virtual bool Initialize() Q_DECL_OVERRIDE;
+    virtual void Destroy() Q_DECL_OVERRIDE;
+    virtual void* GetHandle() Q_DECL_OVERRIDE;
+    virtual void* GetDisplay() Q_DECL_OVERRIDE;
+    virtual void* GetConfig() Q_DECL_OVERRIDE;
+
+protected:
+    ~GLSurfaceQtWGL();
+
+private:
+    PbufferGLSurfaceWGL *m_surfaceBuffer;
+    DISALLOW_COPY_AND_ASSIGN(GLSurfaceQtWGL);
+};
+
+GLSurfaceQtWGL::GLSurfaceQtWGL(const gfx::Size& size)
+    : GLSurfaceQt(size),
+      m_surfaceBuffer(0)
+{
+}
+
+GLSurfaceQtWGL::~GLSurfaceQtWGL()
+{
+    Destroy();
+}
+
+bool GLSurfaceQtWGL::InitializeOneOff()
+{
+    return GLSurfaceWGL::InitializeOneOff();
+}
+
+bool GLSurfaceQtWGL::Initialize()
+{
+    m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
+
+    return m_surfaceBuffer->Initialize();
+}
+
+void GLSurfaceQtWGL::Destroy()
+{
+    if (m_surfaceBuffer) {
+        delete m_surfaceBuffer;
+        m_surfaceBuffer = 0;
+    }
+}
+
+void *GLSurfaceQtWGL::GetHandle()
+{
+    return m_surfaceBuffer->GetHandle();
+}
+
+void *GLSurfaceQtWGL::GetDisplay()
+{
+    return m_surfaceBuffer->GetDisplay();
+}
+
+void *GLSurfaceQtWGL::GetConfig()
+{
+    return m_surfaceBuffer->GetConfig();
+}
+
+#endif // defined(OS_WIN)
 
 GLSurfaceQt::GLSurfaceQt()
 {
@@ -287,9 +360,11 @@ bool GLSurface::InitializeOneOffInternal()
     if (GetGLImplementation() == kGLImplementationEGLGLES2)
         return GLSurfaceQtEGL::InitializeOneOff();
 
-#if defined(USE_X11)
     if (GetGLImplementation() == kGLImplementationDesktopGL)
+#if defined(USE_X11)
         return GLSurfaceQtGLX::InitializeOneOff();
+#elif defined(OS_WIN)
+        return GLSurfaceQtWGL::InitializeOneOff();
 #endif
 
     return false;
@@ -453,6 +528,11 @@ GLSurface::CreateOffscreenGLSurface(const gfx::Size& size)
     case kGLImplementationDesktopGL: {
 #if defined(USE_X11)
         scoped_refptr<GLSurface> surface = new GLSurfaceQtGLX(size);
+        if (!surface->Initialize())
+            return NULL;
+        return surface;
+#elif defined(OS_WIN)
+        scoped_refptr<GLSurface> surface = new GLSurfaceQtWGL(size);
         if (!surface->Initialize())
             return NULL;
         return surface;

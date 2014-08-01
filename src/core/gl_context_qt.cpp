@@ -41,9 +41,14 @@
 #include <QThread>
 #include <qpa/qplatformnativeinterface.h>
 #include "ui/gl/gl_context_egl.h"
+#include "ui/gl/gl_implementation.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
+#endif
+
+#if defined(OS_WIN)
+#include "ui/gl/gl_context_wgl.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -135,7 +140,16 @@ namespace gfx {
 
 scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, GLSurface* compatible_surface, GpuPreference gpu_preference)
 {
-    scoped_refptr<GLContext> context(new GLContextEGL(share_group));
+#if defined(OS_WIN)
+    scoped_refptr<GLContext> context;
+    if (GetGLImplementation() == kGLImplementationDesktopGL)
+        context = new GLContextWGL(share_group);
+    else
+        context = new GLContextEGL(share_group);
+#else
+    scoped_refptr<GLContext> context = new GLContextEGL(share_group);
+#endif
+
     if (!GLContextHelper::initializeContext(context.get(), compatible_surface))
         return NULL;
 
