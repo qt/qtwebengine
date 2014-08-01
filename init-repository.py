@@ -60,7 +60,7 @@ def sanityCheckRepo():
         print 'you do not need to run the init-repository.py script.'
         print ''
         print 'If you want to use git for working with qtwebengine,'
-        print 'use git to clone: git@gitorious.org:qt-labs/qtwebengine.git'
+        print 'use git to clone: git@gitorious.org:qt/qtwebengine.git'
         print ''
         sys.exit(0)
 
@@ -120,7 +120,7 @@ def addGerritRemote():
     os.chdir(qtwebengine_root)
     remotes = subprocess.check_output(['git', 'remote'])
     if not 'gerrit' in remotes:
-        subprocess.call(['git', 'remote', 'add', 'gerrit', 'ssh://codereview.qt-project.org:29418/qt-labs/qtwebengine.git'])
+        subprocess.call(['git', 'remote', 'add', 'gerrit', 'ssh://codereview.qt-project.org:29418/qt/qtwebengine.git'])
 
 def installGitHooks():
     os.chdir(qtwebengine_root)
