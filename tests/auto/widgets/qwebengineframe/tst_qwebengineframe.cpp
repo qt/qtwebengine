@@ -1256,16 +1256,17 @@ void tst_QWebEngineFrame::setUrlWithFragment()
         QCOMPARE(page.url(), previousUrl);
     }
 
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, SIGNAL(urlChanged(QUrl)));
     const QUrl url("qrc:/test1.html#");
     QVERIFY(!url.fragment().isNull());
 
     page.setUrl(url);
-    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    ::waitForSignal(&page, SIGNAL(urlChanged(QUrl)));
 
     QCOMPARE(spy.count(), 1);
     QVERIFY(!toPlainTextSync(&page).isEmpty());
-    QCOMPARE(page.requestedUrl(), url);
+    // Slight change: This information now comes from Chromium and the behavior of requestedUrl changed in this case.
+    // QCOMPARE(page.requestedUrl(), url);
     QCOMPARE(page.url(), url);
 }
 
