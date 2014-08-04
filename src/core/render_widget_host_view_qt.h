@@ -48,6 +48,7 @@
 #include <QPoint>
 #include <QRect>
 #include <QtGlobal>
+#include <QtGui/qaccessible.h>
 
 #include "delegated_frame_node.h"
 
@@ -91,6 +92,7 @@ class RenderWidgetHostViewQt
     , public RenderWidgetHostViewQtDelegateClient
     , public content::BrowserAccessibilityDelegate
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
+    , public QAccessible::ActivationObserver
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -209,6 +211,7 @@ public:
     virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) const Q_DECL_OVERRIDE  { return gfx::Point(); }
     virtual void AccessibilityHitTest(const gfx::Point& point) Q_DECL_OVERRIDE  { }
     virtual void AccessibilityFatalError() Q_DECL_OVERRIDE;
+    virtual void accessibilityActiveChanged(bool active) Q_DECL_OVERRIDE;
 
     QAccessibleInterface *GetQtAccessible();
 

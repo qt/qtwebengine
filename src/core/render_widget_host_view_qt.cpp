@@ -179,10 +179,15 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
 {
     m_host->SetView(this);
+
+    QAccessible::installActivationObserver(this);
+    if (QAccessible::isActive())
+        content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    QAccessible::removeActivationObserver(this);
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -908,6 +913,14 @@ void RenderWidgetHostViewQt::AccessibilityFatalError()
     SetBrowserAccessibilityManager(NULL);
 }
 
+void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
+{
+    if (active)
+        content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+    else
+        content::BrowserAccessibilityStateImpl::GetInstance()->DisableAccessibility();
+}
+
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
     m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
@@ -988,8 +1001,6 @@ QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
     // Assume we have a screen reader doing stuff
     CreateBrowserAccessibilityManagerIfNeeded();
     content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
-
     content::BrowserAccessibility *acc = GetBrowserAccessibilityManager()->GetRoot();
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
     return accQt;
