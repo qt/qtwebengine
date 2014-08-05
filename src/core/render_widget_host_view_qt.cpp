@@ -54,8 +54,8 @@
 #include "base/command_line.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
@@ -67,7 +67,8 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/events/event.h"
+#include "ui/events/gesture_detection/gesture_config_helper.h"
+#include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/size_conversions.h"
 
 #include <QEvent>
@@ -83,21 +84,6 @@
 #include <QWheelEvent>
 #include <QWindow>
 #include <QtGui/qaccessible.h>
-
-static inline ui::EventType toUIEventType(Qt::TouchPointState state)
-{
-    switch (state) {
-    case Qt::TouchPointPressed:
-        return ui::ET_TOUCH_PRESSED;
-    case Qt::TouchPointMoved:
-        return ui::ET_TOUCH_MOVED;
-    case Qt::TouchPointReleased:
-        return ui::ET_TOUCH_RELEASED;
-    default:
-        Q_ASSERT(false);
-        return ui::ET_UNKNOWN;
-    }
-}
 
 static inline Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputType)
 {
@@ -134,30 +120,61 @@ static inline Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputT
     }
 }
 
-static inline gfx::Point toGfxPoint(const QPoint& point)
-{
-    return gfx::Point(point.x(), point.y());
+static inline ui::GestureProvider::Config QtGestureProviderConfig() {
+    ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
+    // Causes an assert in CreateWebGestureEventFromGestureEventData and we don't need them in Qt.
+    config.gesture_begin_end_types_enabled = false;
+    return config;
 }
 
-static void UpdateWebTouchEventAfterDispatch(blink::WebTouchEvent* event, blink::WebTouchPoint* point) {
-    if (point->state != blink::WebTouchPoint::StateReleased &&
-        point->state != blink::WebTouchPoint::StateCancelled)
-        return;
-    --event->touchesLength;
-    for (unsigned i = point - event->touches; i < event->touchesLength; ++i) {
-        event->touches[i] = event->touches[i + 1];
+class MotionEventQt : public ui::MotionEvent {
+public:
+    MotionEventQt(QTouchEvent *ev, const base::TimeTicks &eventTime, Action action, int index = -1)
+        : touchPoints(ev->touchPoints())
+        , eventTime(eventTime)
+        , action(action)
+        , index(index)
+    {
+        // ACTION_DOWN and ACTION_UP must be accesssed through pointer_index 0
+        Q_ASSERT((action != ACTION_DOWN && action != ACTION_UP) || index == 0);
     }
-}
 
-static bool shouldSendPinchGesture()
-{
-    static bool pinchAllowed = CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
-    return pinchAllowed;
-}
+    virtual int GetId() const Q_DECL_OVERRIDE { return 0; }
+    virtual Action GetAction() const Q_DECL_OVERRIDE { return action; }
+    virtual int GetActionIndex() const Q_DECL_OVERRIDE { return index; }
+    virtual size_t GetPointerCount() const Q_DECL_OVERRIDE { return touchPoints.size(); }
+    virtual int GetPointerId(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).id(); }
+    virtual float GetX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().x(); }
+    virtual float GetY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().y(); }
+    virtual float GetRawX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().x(); }
+    virtual float GetRawY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().y(); }
+    virtual float GetTouchMajor(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).rect().height(); }
+    virtual float GetPressure(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pressure(); }
+    virtual base::TimeTicks GetEventTime() const Q_DECL_OVERRIDE { return eventTime; }
+
+    virtual size_t GetHistorySize() const Q_DECL_OVERRIDE { return 0; }
+    virtual base::TimeTicks GetHistoricalEventTime(size_t historical_index) const Q_DECL_OVERRIDE { return base::TimeTicks(); }
+    virtual float GetHistoricalTouchMajor(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
+    virtual float GetHistoricalX(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
+    virtual float GetHistoricalY(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
+
+    virtual scoped_ptr<MotionEvent> Cancel() const Q_DECL_OVERRIDE { Q_UNREACHABLE(); return scoped_ptr<MotionEvent>(); }
+
+    virtual scoped_ptr<MotionEvent> Clone() const Q_DECL_OVERRIDE {
+        return scoped_ptr<MotionEvent>(new MotionEventQt(*this));
+    }
+
+private:
+    QList<QTouchEvent::TouchPoint> touchPoints;
+    base::TimeTicks eventTime;
+    Action action;
+    int index;
+};
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
     : m_host(content::RenderWidgetHostImpl::From(widget))
-    , m_gestureRecognizer(ui::GestureRecognizer::Create())
+    , m_gestureProvider(QtGestureProviderConfig(), this)
+    , m_sendMotionActionDown(false)
     , m_frameNodeData(new DelegatedFrameNodeData)
     , m_needsDelegatedFrameAck(false)
     , m_didFirstVisuallyNonEmptyLayout(false)
@@ -167,12 +184,10 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
 {
     m_host->SetView(this);
-    m_gestureRecognizer->AddGestureEventHelper(this);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
-    m_gestureRecognizer->RemoveGestureEventHelper(this);
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -618,26 +633,9 @@ void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t
 #endif
 }
 
-bool RenderWidgetHostViewQt::CanDispatchToConsumer(ui::GestureConsumer *consumer)
+void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 {
-    Q_ASSERT(static_cast<RenderWidgetHostViewQt*>(consumer) == this);
-    return true;
-}
-
-void RenderWidgetHostViewQt::DispatchGestureEvent(ui::GestureEvent* event)
-{
-    ForwardGestureEventToRenderer(event);
-}
-
-void RenderWidgetHostViewQt::DispatchCancelTouchEvent(ui::TouchEvent *event)
-{
-    if (!m_host)
-        return;
-
-    blink::WebTouchEvent cancelEvent;
-    cancelEvent.type = blink::WebInputEvent::TouchCancel;
-    cancelEvent.timeStampSeconds = event->time_stamp().InSecondsF();
-    m_host->ForwardTouchEventWithLatencyInfo(cancelEvent, *event->latency());
+    m_host->ForwardGestureEvent(content::CreateWebGestureEventFromGestureEventData(gesture));
 }
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
@@ -684,6 +682,7 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         Focus(); // Fall through.
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
+    case QEvent::TouchCancel:
         handleTouchEvent(static_cast<QTouchEvent*>(event));
         break;
     case QEvent::HoverEnter:
@@ -737,16 +736,9 @@ void RenderWidgetHostViewQt::windowChanged()
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
-    ScopedVector<ui::TouchEvent> events;
-    if (!content::MakeUITouchEventsFromWebTouchEvents(touch, &events, content::LOCAL_COORDINATES))
-        return;
-
-    ui::EventResult result = (ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED) ? ui::ER_HANDLED : ui::ER_UNHANDLED;
-    for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(), end = events.end(); iter != end; ++iter)  {
-        scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-        gestures.reset(m_gestureRecognizer->ProcessTouchEventForGesture(*(*iter), result, this));
-        ProcessGestures(gestures.get());
-    }
+    Q_UNUSED(touch);
+    const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
+    m_gestureProvider.OnTouchEventAck(eventConsumed);
 }
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
@@ -758,70 +750,19 @@ void RenderWidgetHostViewQt::sendDelegatedFrameAck()
         m_host->GetProcess()->GetID(), ack);
 }
 
-void RenderWidgetHostViewQt::ForwardGestureEventToRenderer(ui::GestureEvent* gesture)
+void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
 {
-    if ((gesture->type() == ui::ET_GESTURE_PINCH_BEGIN
-       || gesture->type() == ui::ET_GESTURE_PINCH_UPDATE
-       || gesture->type() == ui::ET_GESTURE_PINCH_END)
-       && !shouldSendPinchGesture()
-       ) {
+    if (!m_gestureProvider.OnTouchEvent(motionEvent))
+        return;
+
+    // Short-circuit touch forwarding if no touch handlers exist.
+    if (!m_host->ShouldForwardTouchEvent()) {
+        const bool eventConsumed = false;
+        m_gestureProvider.OnTouchEventAck(eventConsumed);
         return;
     }
 
-    blink::WebGestureEvent webGestureEvent = content::MakeWebGestureEventFromUIEvent(*gesture);
-
-    if (webGestureEvent.type == blink::WebInputEvent::Undefined)
-        return;
-
-    if (webGestureEvent.type == blink::WebGestureEvent::GestureTapDown) {
-        // Chromium does not stop a fling-scroll on tap-down.
-        // So explicitly send an event to stop any in-progress flings.
-        blink::WebGestureEvent flingCancel = webGestureEvent;
-        flingCancel.type = blink::WebInputEvent::GestureFlingCancel;
-        flingCancel.sourceDevice = blink::WebGestureDeviceTouchscreen;
-        m_host->ForwardGestureEvent(flingCancel);
-    }
-
-    webGestureEvent.x = gesture->x();
-    webGestureEvent.y = gesture->y();
-    m_host->ForwardGestureEventWithLatencyInfo(webGestureEvent, *gesture->latency());
-}
-
-void RenderWidgetHostViewQt::ProcessGestures(ui::GestureRecognizer::Gestures *gestures)
-{
-    if (!gestures || gestures->empty())
-        return;
-    for (ui::GestureRecognizer::Gestures::iterator g_it = gestures->begin(); g_it != gestures->end(); ++g_it) {
-        ForwardGestureEventToRenderer(*g_it);
-    }
-}
-
-// Find (or create) a mapping to a 0-based ID.
-int RenderWidgetHostViewQt::GetMappedTouch(int qtTouchId)
-{
-    QMap<int, int>::const_iterator it = m_touchIdMapping.find(qtTouchId);
-    if (it != m_touchIdMapping.end())
-        return it.value();
-    int nextValue = 0;
-    for (it = m_touchIdMapping.begin(); it != m_touchIdMapping.end(); ++it)
-        nextValue = std::max(nextValue, it.value() + 1);
-    m_touchIdMapping[qtTouchId] = nextValue;
-    return nextValue;
-}
-
-void RenderWidgetHostViewQt::RemoveExpiredMappings(QTouchEvent *ev)
-{
-    QMap<int, int> newMap;
-    for (QMap<int, int>::const_iterator it = m_touchIdMapping.begin(); it != m_touchIdMapping.end(); ++it) {
-        Q_FOREACH (const QTouchEvent::TouchPoint& touchPoint, ev->touchPoints()) {
-            if ((touchPoint.id() == it.key()) &&
-                (touchPoint.state() != Qt::TouchPointReleased)) {
-                newMap.insert(it.key(), it.value());
-                break;
-            }
-        }
-    }
-    m_touchIdMapping.swap(newMap);
+    m_host->ForwardTouchEvent(content::CreateWebTouchEventFromMotionEvent(motionEvent));
 }
 
 float RenderWidgetHostViewQt::dpiScale() const
@@ -976,45 +917,44 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     // Calculate a delta between event timestamps and Now() on the first received event, and
     // apply this delta to all successive events. This delta is most likely smaller than it
     // should by calculating it here but this will hopefully cause less than one frame of delay.
-    base::TimeDelta eventTimestamp = base::TimeDelta::FromMilliseconds(ev->timestamp());
+    base::TimeTicks eventTimestamp = base::TimeTicks() + base::TimeDelta::FromMilliseconds(ev->timestamp());
     if (m_eventsToNowDelta == base::TimeDelta())
-        m_eventsToNowDelta = base::TimeTicks::Now() - base::TimeTicks() - eventTimestamp;
+        m_eventsToNowDelta = base::TimeTicks::Now() - eventTimestamp;
     eventTimestamp += m_eventsToNowDelta;
 
-    // Convert each of our QTouchEvent::TouchPoint to the simpler ui::TouchEvent to
-    // be able to use the same code path for both gesture recognition and WebTouchEvents.
-    // It's a waste to do a double QTouchEvent -> ui::TouchEvent -> blink::WebTouchEvent
-    // conversion but this should hopefully avoid a few bugs in the future.
-    // FIXME: Carry Qt::TouchCancel from the event to each TouchPoint.
-    Q_FOREACH (const QTouchEvent::TouchPoint& touchPoint, ev->touchPoints()) {
-        // Stationary touch points are already in our accumulator.
-        if (touchPoint.state() == Qt::TouchPointStationary)
-            continue;
-
-        ui::TouchEvent uiEvent(
-            toUIEventType(touchPoint.state()),
-            toGfxPoint((touchPoint.pos() / dpiScale()).toPoint()),
-            0, // flags
-            GetMappedTouch(touchPoint.id()),
-            eventTimestamp,
-            0, 0, // radius
-            0, // angle
-            touchPoint.pressure());
-
-        blink::WebTouchPoint *point = content::UpdateWebTouchEventFromUIEvent(uiEvent, &m_accumTouchEvent);
-        if (point) {
-            if (m_host->ShouldForwardTouchEvent())
-                // This will come back through ProcessAckedTouchEvent if the page didn't want it.
-                m_host->ForwardTouchEventWithLatencyInfo(m_accumTouchEvent, ui::LatencyInfo());
-            else {
-                scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-                gestures.reset(m_gestureRecognizer->ProcessTouchEventForGesture(uiEvent, ui::ER_UNHANDLED, this));
-                ProcessGestures(gestures.get());
-            }
-            UpdateWebTouchEventAfterDispatch(&m_accumTouchEvent, point);
-        }
+    if (ev->type() == QEvent::TouchCancel) {
+        MotionEventQt cancelEvent(ev, eventTimestamp, ui::MotionEvent::ACTION_CANCEL);
+        processMotionEvent(cancelEvent);
+        return;
     }
-    RemoveExpiredMappings(ev);
+
+    if (ev->type() == QEvent::TouchBegin)
+        m_sendMotionActionDown = true;
+
+    for (int i = 0; i < ev->touchPoints().size(); ++i) {
+        ui::MotionEvent::Action action;
+        switch (ev->touchPoints()[i].state()) {
+        case Qt::TouchPointPressed:
+            if (m_sendMotionActionDown) {
+                action = ui::MotionEvent::ACTION_DOWN;
+                m_sendMotionActionDown = false;
+            } else
+                action = ui::MotionEvent::ACTION_POINTER_DOWN;
+            break;
+        case Qt::TouchPointMoved:
+            action = ui::MotionEvent::ACTION_MOVE;
+            break;
+        case Qt::TouchPointReleased:
+            action = ev->touchPoints().size() > 1 ? ui::MotionEvent::ACTION_POINTER_UP : ui::MotionEvent::ACTION_UP;
+            break;
+        default:
+            // Ignore Qt::TouchPointStationary
+            continue;
+        }
+
+        MotionEventQt motionEvent(ev, eventTimestamp, action, i);
+        processMotionEvent(motionEvent);
+    }
 }
 
 void RenderWidgetHostViewQt::handleHoverEvent(QHoverEvent *ev)

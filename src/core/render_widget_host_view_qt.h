@@ -49,13 +49,12 @@
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "delegated_frame_node.h"
-#include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/events/gestures/gesture_types.h"
-#include <QMap>
+#include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include <QPoint>
 #include <QRect>
 #include <QtGlobal>
+
+#include "delegated_frame_node.h"
 
 QT_BEGIN_NAMESPACE
 class QEvent;
@@ -93,8 +92,7 @@ struct MultipleMouseClickHelper
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
-    , public ui::GestureConsumer
-    , public ui::GestureEventHelper
+    , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public content::BrowserAccessibilityDelegate
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
@@ -157,10 +155,8 @@ public:
     // Overridden from RenderWidgetHostViewBase.
     virtual void SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
 
-    // Overridden from ui::GestureEventHelper.
-    virtual bool CanDispatchToConsumer(ui::GestureConsumer*) Q_DECL_OVERRIDE;
-    virtual void DispatchGestureEvent(ui::GestureEvent*) Q_DECL_OVERRIDE;
-    virtual void DispatchCancelTouchEvent(ui::TouchEvent*) Q_DECL_OVERRIDE;
+    // Overridden from ui::GestureProviderClient.
+    virtual void OnGestureEvent(const ui::GestureEventData& gesture) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     virtual QSGNode *updatePaintNode(QSGNode *) Q_DECL_OVERRIDE;
@@ -224,20 +220,16 @@ public:
 
 private:
     void sendDelegatedFrameAck();
-    void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
-    void ForwardGestureEventToRenderer(ui::GestureEvent* gesture);
-    int GetMappedTouch(int qtTouchId);
-    void RemoveExpiredMappings(QTouchEvent *ev);
+    void processMotionEvent(const ui::MotionEvent &motionEvent);
     float dpiScale() const;
 
     bool IsPopup() const;
     void CreateBrowserAccessibilityManagerIfNeeded();
 
     content::RenderWidgetHostImpl *m_host;
-    scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
+    ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
-    QMap<int, int> m_touchIdMapping;
-    blink::WebTouchEvent m_accumTouchEvent;
+    bool m_sendMotionActionDown;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;

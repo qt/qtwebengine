@@ -98,7 +98,6 @@ gfx::Display DesktopScreenQt::GetDisplayMatching(const gfx::Rect& match_rect) co
 
 gfx::Display DesktopScreenQt::GetPrimaryDisplay() const
 {
-    Q_UNREACHABLE();
     return gfx::Display();
 }
 
