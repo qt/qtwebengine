@@ -107,7 +107,6 @@ public:
 public Q_SLOTS:
     void goBackTo(int index);
     void goForwardTo(int index);
-    void runJavaScript(const QString&, const QJSValue & = QJSValue());
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 
 Q_SIGNALS:

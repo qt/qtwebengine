@@ -584,6 +584,16 @@ bool QQuickWebEngineView::canGoForward() const
     return d->adapter->canGoForward();
 }
 
+void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &callback)
+{
+    Q_D(QQuickWebEngineView);
+    if (!callback.isUndefined()) {
+        quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script);
+        d->m_callbacks.insert(requestId, callback);
+    } else
+        d->adapter->runJavaScript(script);
+}
+
 QQuickWebEngineViewExperimental *QQuickWebEngineView::experimental() const
 {
     Q_D(const QQuickWebEngineView);
@@ -625,15 +635,6 @@ void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlCo
 QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent() const
 {
     return d_ptr->contextMenuExtraItems;
-}
-
-void QQuickWebEngineViewExperimental::runJavaScript(const QString &script, const QJSValue &callback)
-{
-    if (!callback.isUndefined()) {
-        quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script);
-        d_ptr->m_callbacks.insert(requestId, callback);
-    } else
-        d_ptr->adapter->runJavaScript(script);
 }
 
 QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const

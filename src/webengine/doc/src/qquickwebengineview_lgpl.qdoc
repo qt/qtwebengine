@@ -181,6 +181,20 @@
     \sa WebEngineView::url
 */
 
+
+/*!
+    \qmlmethod void WebEngineView::runJavaScript(string script, variant callback)
+    \brief Runs the specified \a script in the content of the web view.
+
+    In case a callback function is provided it will be invoked after the script
+    finished running.
+
+    \code
+    runJavaScript("document.title", function(result) { console.log(result); });
+    \endcode
+
+*/
+
 /*!
     \qmlsignal WebEngineView::onLoadingChanged(loadRequest)
 

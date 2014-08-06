@@ -132,6 +132,7 @@ public:
     };
 
 public Q_SLOTS:
+    void runJavaScript(const QString&, const QJSValue & = QJSValue());
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void goBack();
     void goForward();

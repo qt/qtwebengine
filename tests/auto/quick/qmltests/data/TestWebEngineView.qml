@@ -79,8 +79,6 @@ WebEngineView {
         return predicate()
     }
 
-    function runJavaScript(script, callback) { experimental.runJavaScript(script, callback); }
-
     TestResult { id: testResult }
 
     onLoadingChanged: {
