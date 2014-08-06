@@ -41,6 +41,26 @@
 
 #include <qquickwebengineloadrequest_p.h>
 
+QT_BEGIN_NAMESPACE
+
+class QQuickWebEngineLoadRequestPrivate {
+public:
+    QQuickWebEngineLoadRequestPrivate(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain)
+        : url(url)
+        , status(status)
+        , errorString(errorString)
+        , errorCode(errorCode)
+        , errorDomain(errorDomain)
+    {
+    }
+
+    QUrl url;
+    QQuickWebEngineView::LoadStatus status;
+    QString errorString;
+    int errorCode;
+    QQuickWebEngineView::ErrorDomain errorDomain;
+};
+
 /*!
     \qmltype WebEngineLoadRequest
     \instantiates QQuickWebEngineLoadRequest
@@ -55,7 +75,7 @@
 */
 QQuickWebEngineLoadRequest::QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain, QObject* parent)
     : QObject(parent)
-    , d(new QQuickWebEngineLoadRequestPrivate(url, status, errorString, errorCode, errorDomain))
+    , d_ptr(new QQuickWebEngineLoadRequestPrivate(url, status, errorString, errorCode, errorDomain))
 {
 }
 
@@ -69,6 +89,7 @@ QQuickWebEngineLoadRequest::~QQuickWebEngineLoadRequest()
  */
 QUrl QQuickWebEngineLoadRequest::url() const
 {
+    Q_D(const QQuickWebEngineLoadRequest);
     return d->url;
 }
 
@@ -88,6 +109,7 @@ QUrl QQuickWebEngineLoadRequest::url() const
 */
 QQuickWebEngineView::LoadStatus QQuickWebEngineLoadRequest::status() const
 {
+    Q_D(const QQuickWebEngineLoadRequest);
     return d->status;
 }
 
@@ -96,11 +118,13 @@ QQuickWebEngineView::LoadStatus QQuickWebEngineLoadRequest::status() const
 */
 QString QQuickWebEngineLoadRequest::errorString() const
 {
+    Q_D(const QQuickWebEngineLoadRequest);
     return d->errorString;
 }
 
 QQuickWebEngineView::ErrorDomain QQuickWebEngineLoadRequest::errorDomain() const
 {
+    Q_D(const QQuickWebEngineLoadRequest);
     return d->errorDomain;
 }
 
@@ -109,5 +133,8 @@ QQuickWebEngineView::ErrorDomain QQuickWebEngineLoadRequest::errorDomain() const
 */
 int QQuickWebEngineLoadRequest::errorCode() const
 {
+    Q_D(const QQuickWebEngineLoadRequest);
     return d->errorCode;
 }
+
+QT_END_NAMESPACE

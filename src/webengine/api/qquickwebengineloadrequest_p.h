@@ -67,25 +67,8 @@ public:
     int errorCode() const;
 
 private:
-    QScopedPointer<QQuickWebEngineLoadRequestPrivate> d;
-};
-
-class QQuickWebEngineLoadRequestPrivate {
-public:
-    QQuickWebEngineLoadRequestPrivate(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain)
-        : url(url)
-        , status(status)
-        , errorString(errorString)
-        , errorCode(errorCode)
-        , errorDomain(errorDomain)
-    {
-    }
-
-    QUrl url;
-    QQuickWebEngineView::LoadStatus status;
-    QString errorString;
-    int errorCode;
-    QQuickWebEngineView::ErrorDomain errorDomain;
+    Q_DECLARE_PRIVATE(QQuickWebEngineLoadRequest)
+    QScopedPointer<QQuickWebEngineLoadRequestPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
