@@ -67,6 +67,11 @@ def additional_include_files(args=[]):
 
   return result
 
+def purifyGypVarPath(path):
+  # Backslash escapings are somehow reduced once every time a variable is resolved
+  # Python is able to understand mixed slash paths anyway, so don't use backslashes.
+  return path.replace('\\', '/')
+
 if __name__ == '__main__':
   output_dir = sys.argv[1]
   if not os.path.isdir(output_dir):
@@ -125,11 +130,11 @@ if __name__ == '__main__':
   toplevel= os.path.commonprefix([root_dir, chrome_src])
   if not os.path.exists(toplevel):
     toplevel = os.path.join(toplevel, os.pardir)
-  args.extend(["--toplevel-dir=" + toplevel])
+  args.extend(["--toplevel-dir=" + purifyGypVarPath(toplevel)])
   # Chromium specific Hack: for Chromium to build, the depth has to be set to the chromium src dir.
-  args.extend(["--depth=" + chrome_src])
-  args.extend(['-D', 'qtwebengine_root=' + qtwebengine_root])
-  args.extend(['-D', 'chromium_src_dir=' + chrome_src])
+  args.extend(["--depth=" + purifyGypVarPath(chrome_src)])
+  args.extend(['-D', 'qtwebengine_root=' + purifyGypVarPath(qtwebengine_root)])
+  args.extend(['-D', 'chromium_src_dir=' + purifyGypVarPath(chrome_src)])
 
   # linux_use_bundled_gold currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
   # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
