@@ -59,8 +59,8 @@ def getChromiumSrcDir():
 
   if chrome_src:
     chrome_src = os.path.join(qtwebengine_root, chrome_src)
+    print('Using external chromium sources specified in git config qtwebengine.chromiumsrcdir: ' + chrome_src)
   if not chrome_src or not os.path.isdir(chrome_src):
     chrome_src = os.path.normpath(os.path.join(qtwebengine_root, 'src/3rdparty/chromium'))
-    print 'No external chromium sources were found, falling back to ' + chrome_src
   return chrome_src
 
