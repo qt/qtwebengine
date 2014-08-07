@@ -147,6 +147,10 @@ if __name__ == '__main__':
   # Tweak the output location and format (hardcode ninja for now if not set)
   args.extend(['--generator-output', os.path.abspath(output_dir)])
   args.extend(['-Goutput_dir='+ os.path.abspath(output_dir)])
+
+  # Tell gyp not to try finding cl.exe on Windows, Qt already requires the env to be set prior to the build.
+  args.extend(['-G', 'ninja_use_custom_environment_files'])
+
   if not os.environ.get('GYP_GENERATORS'):
     args.extend(['--format=ninja'])
   if "QTWEBENGINE_GYP_DEBUG" in os.environ:
