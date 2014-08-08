@@ -173,6 +173,22 @@ void *BrowserAccessibilityQt::interface_cast(QAccessible::InterfaceType type)
             return static_cast<QAccessibleValueInterface*>(this);
         break;
     }
+    case QAccessible::TableInterface: {
+        QAccessible::Role r = role();
+        if (r == QAccessible::Table ||
+            r == QAccessible::List ||
+            r == QAccessible::Tree)
+            return static_cast<QAccessibleTableInterface*>(this);
+        break;
+    }
+    case QAccessible::TableCellInterface: {
+        QAccessible::Role r = role();
+        if (r == QAccessible::Cell ||
+            r == QAccessible::ListItem ||
+            r == QAccessible::TreeItem)
+            return static_cast<QAccessibleTableCellInterface*>(this);
+        break;
+    }
     default:
         break;
     }
@@ -699,6 +715,186 @@ QVariant BrowserAccessibilityQt::minimumValue() const
 QVariant BrowserAccessibilityQt::minimumStepSize() const
 {
     return QVariant();
+}
+
+QAccessibleInterface *BrowserAccessibilityQt::cellAt(int row, int column) const
+{
+    int columns = 0;
+    int rows = 0;
+    if (!GetIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
+        !GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, &rows) ||
+        columns <= 0 ||
+        rows <= 0) {
+      return 0;
+    }
+
+    if (row < 0 || row >= rows || column < 0 || column >= columns)
+      return 0;
+
+    const std::vector<int32>& cell_ids = GetIntListAttribute(ui::AX_ATTR_CELL_IDS);
+    DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
+
+    int cell_id = cell_ids[row * columns + column];
+    BrowserAccessibility* cell = manager()->GetFromID(cell_id);
+    if (cell) {
+      QAccessibleInterface *iface = static_cast<BrowserAccessibilityQt*>(cell);
+      return iface;
+    }
+
+    return 0;
+}
+
+QAccessibleInterface *BrowserAccessibilityQt::caption() const
+{
+    return 0;
+}
+
+QAccessibleInterface *BrowserAccessibilityQt::summary() const
+{
+    return 0;
+}
+
+QString BrowserAccessibilityQt::columnDescription(int column) const
+{
+    return QString();
+}
+
+QString BrowserAccessibilityQt::rowDescription(int row) const
+{
+    return QString();
+}
+
+int BrowserAccessibilityQt::columnCount() const
+{
+    int columns = 0;
+    if (GetIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns))
+        return columns;
+
+    return 0;
+}
+
+int BrowserAccessibilityQt::rowCount() const
+{
+    int rows = 0;
+    if (GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, &rows))
+      return rows;
+    return 0;
+}
+
+int BrowserAccessibilityQt::selectedCellCount() const
+{
+    return 0;
+}
+
+int BrowserAccessibilityQt::selectedColumnCount() const
+{
+    return 0;
+}
+
+int BrowserAccessibilityQt::selectedRowCount() const
+{
+    return 0;
+}
+
+QList<QAccessibleInterface *> BrowserAccessibilityQt::selectedCells() const
+{
+    return QList<QAccessibleInterface *>();
+}
+
+QList<int> BrowserAccessibilityQt::selectedColumns() const
+{
+    return QList<int>();
+}
+
+QList<int> BrowserAccessibilityQt::selectedRows() const
+{
+    return QList<int>();
+}
+
+bool BrowserAccessibilityQt::isColumnSelected(int /*column*/) const
+{
+    return false;
+}
+
+bool BrowserAccessibilityQt::isRowSelected(int /*row*/) const
+{
+    return false;
+}
+
+bool BrowserAccessibilityQt::selectRow(int /*row*/)
+{
+    return false;
+}
+
+bool BrowserAccessibilityQt::selectColumn(int /*column*/)
+{
+    return false;
+}
+
+bool BrowserAccessibilityQt::unselectRow(int /*row*/)
+{
+    return false;
+}
+
+bool BrowserAccessibilityQt::unselectColumn(int /*column*/)
+{
+    return false;
+}
+
+int BrowserAccessibilityQt::columnExtent() const
+{
+    return 1;
+}
+
+QList<QAccessibleInterface *> BrowserAccessibilityQt::columnHeaderCells() const
+{
+    return QList<QAccessibleInterface*>();
+}
+
+int BrowserAccessibilityQt::columnIndex() const
+{
+    int column = 0;
+    if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX, &column))
+      return column;
+    return 0;
+}
+
+int BrowserAccessibilityQt::rowExtent() const
+{
+    return 1;
+}
+
+QList<QAccessibleInterface *> BrowserAccessibilityQt::rowHeaderCells() const
+{
+    return QList<QAccessibleInterface*>();
+}
+
+int BrowserAccessibilityQt::rowIndex() const
+{
+    int row = 0;
+    if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX, &row))
+      return row;
+    return 0;
+}
+
+bool BrowserAccessibilityQt::isSelected() const
+{
+    return false;
+}
+
+QAccessibleInterface *BrowserAccessibilityQt::table() const
+{
+    BrowserAccessibility* find_table = GetParent();
+    while (find_table && find_table->GetRole() != ui::AX_ROLE_TABLE)
+        find_table = find_table->GetParent();
+    if (!find_table)
+        return 0;
+    return static_cast<BrowserAccessibilityQt*>(find_table);
+}
+
+void BrowserAccessibilityQt::modelChange(QAccessibleTableModelChangeEvent *)
+{
+
 }
 
 } // namespace content
