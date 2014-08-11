@@ -64,8 +64,8 @@ public:
 
         qmlRegisterType<QQuickWebEngineView>(uri, 0, 9, "WebEngineView");
         qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 0, 9, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 0, 9, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 0, 9, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
 
         // The QML type loader relies on the minimum and maximum minor version of registered types
         // to validate imports. We want to tie our import version to the module version, so register

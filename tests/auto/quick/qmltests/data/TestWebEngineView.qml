@@ -41,7 +41,7 @@
 
 import QtQuick 2.0
 import QtTest 1.0
-import QtWebEngine 0.9
+import QtWebEngine 1.0
 import QtWebEngine.experimental 1.0
 
 WebEngineView {
