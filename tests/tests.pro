@@ -1,3 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS +=  auto quicktestbrowser
 
+isPlatformSupported() {
+    SUBDIRS +=  auto quicktestbrowser
+}

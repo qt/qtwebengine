@@ -1,3 +1,8 @@
+defineTest(isPlatformSupported) {
+  linux-g++|win32-msvc2013|macx-clang: return(true)
+  return(false)
+}
+
 # Map to the correct target type for gyp
 defineReplace(toGypTargetType) {
   equals(TEMPLATE, "app"):return("executable")
