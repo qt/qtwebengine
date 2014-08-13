@@ -44,6 +44,7 @@
 // found in the LICENSE file.
 
 #include "web_contents_adapter.h"
+#include "web_contents_adapter_p.h"
 
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
@@ -52,7 +53,6 @@
 #include "qt_render_view_observer_host.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
-#include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
@@ -297,23 +297,15 @@ void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::ve
     }
 }
 
-class WebContentsAdapterPrivate {
-public:
-    WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
-};
-
 WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
     , nextRequestId(1)
     , lastFindRequestId(0)
+{
+}
+
+WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 {
 }
 

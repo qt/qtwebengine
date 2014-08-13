@@ -119,6 +119,7 @@ HEADERS = \
         url_request_qrc_job_qt.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \
+        web_contents_adapter_p.h \
         web_contents_delegate_qt.h \
         web_contents_view_qt.h \
         web_engine_context.h \

@@ -47,8 +47,8 @@
 
 #include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
-#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
+#include "web_contents_adapter_p.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
 #include "web_engine_visited_links_manager.h"
@@ -84,8 +84,12 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
 
 content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
 {
-    // We already carry the disposition to the application through AddNewContents.
-    Q_UNUSED(params.disposition);
+    content::WebContents *target = source;
+    if (params.disposition != CURRENT_TAB) {
+        WebContentsAdapter *targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
+        if (targetAdapter)
+            target = targetAdapter->d_func()->webContents.get();
+    }
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
     load_url_params.referrer = params.referrer;
@@ -98,8 +102,8 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     if (params.transferred_global_request_id != content::GlobalRequestID())
         load_url_params.transferred_global_request_id = params.transferred_global_request_id;
 
-    source->GetController().LoadURLWithParams(load_url_params);
-    return source;
+    target->GetController().LoadURLWithParams(load_url_params);
+    return target;
 }
 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
@@ -112,18 +116,7 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
-    WebContentsAdapter *newAdapter = new WebContentsAdapter(new_contents);
-    // Do the first ref-count manually to be able to know if the application is handling adoptNewWindow through the public API.
-    newAdapter->ref.ref();
-
-    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos));
-
-    if (!newAdapter->ref.deref()) {
-        // adoptNewWindow didn't increase the ref-count, new_contents needs to be discarded.
-        delete newAdapter;
-        newAdapter = 0;
-    }
-
+    WebContentsAdapter *newAdapter = createWindow(new_contents, disposition, initial_pos, user_gesture);
     if (was_blocked)
         *was_blocked = !newAdapter;
 }
@@ -257,6 +250,7 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents *source, int32 
     Q_UNUSED(page_id)
     m_viewClient->didUpdateTargetURL(toQt(url));
 }
+
 void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDetails &, const content::FrameNavigateParams &params)
 {
     if (!params.should_update_history)
@@ -264,7 +258,25 @@ void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDeta
     WebEngineContext::current()->visitedLinksManager()->addUrl(params.url);
 }
 
+
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, WebPreferences *webPreferences)
 {
     m_viewClient->webEngineSettings()->overrideWebPreferences(webPreferences);
+}
+
+WebContentsAdapter *WebContentsDelegateQt::createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture)
+{
+    WebContentsAdapter *newAdapter = new WebContentsAdapter(new_contents);
+    // Do the first ref-count manually to be able to know if the application is handling adoptNewWindow through the public API.
+    newAdapter->ref.ref();
+
+    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos));
+
+    if (!newAdapter->ref.deref()) {
+        // adoptNewWindow didn't increase the ref-count, newAdapter and its new_contents (if non-null) need to be discarded.
+        delete newAdapter;
+        newAdapter = 0;
+    }
+
+    return newAdapter;
 }

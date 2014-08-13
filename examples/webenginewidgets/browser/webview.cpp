@@ -177,8 +177,6 @@ private:
 
 QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type)
 {
-    if (m_keyboardModifiers & Qt::ControlModifier || m_pressedButtons == Qt::MidButton)
-        m_openInNewTab = true;
     if (m_openInNewTab || type == QWebEnginePage::WebBrowserTab) {
         m_openInNewTab = false;
         return mainWindow()->tabWidget()->newTab()->page();
