@@ -175,6 +175,7 @@ private Q_SLOTS:
     void testStopScheduledPageRefresh();
     void findText();
     void findTextResult();
+    void findTextSuccessiveShouldCallAllCallbacks();
     void supportedContentType();
     // [Qt] tst_QWebEnginePage::infiniteLoopJS() timeouts with DFG JIT
     // https://bugs.webkit.org/show_bug.cgi?id=79040
@@ -3252,6 +3253,29 @@ void tst_QWebEnginePage::findTextResult()
 
     QCOMPARE(findTextSync(m_page, "blahhh"), false);
     QCOMPARE(findTextSync(m_page, ""), false);
+}
+
+void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
+{
+    CallbackSpy<bool> spy1;
+    CallbackSpy<bool> spy2;
+    CallbackSpy<bool> spy3;
+    CallbackSpy<bool> spy4;
+    CallbackSpy<bool> spy5;
+    QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
+    m_view->setHtml(QString("<html><head></head><body><div>abcdefg abcdefg abcdefg abcdefg abcdefg</div></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    m_page->findText("abcde", 0, spy1.ref());
+    m_page->findText("abcd", 0, spy2.ref());
+    m_page->findText("abc", 0, spy3.ref());
+    m_page->findText("ab", 0, spy4.ref());
+    m_page->findText("a", 0, spy5.ref());
+    spy5.waitForResult();
+    QVERIFY(spy1.wasCalled());
+    QVERIFY(spy2.wasCalled());
+    QVERIFY(spy3.wasCalled());
+    QVERIFY(spy4.wasCalled());
+    QVERIFY(spy5.wasCalled());
 }
 
 static QString getMimeTypeForExtension(const QString &ext)

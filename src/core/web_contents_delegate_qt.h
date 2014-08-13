@@ -65,6 +65,7 @@ public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
     QString lastSearchedString() const { return m_lastSearchedString; }
     void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
+    int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
 
     virtual content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) Q_DECL_OVERRIDE;
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags) Q_DECL_OVERRIDE;
@@ -92,6 +93,7 @@ public:
 private:
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
+    int m_lastReceivedFindReply;
 };
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H

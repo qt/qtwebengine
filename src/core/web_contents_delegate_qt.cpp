@@ -76,6 +76,7 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
+    , m_lastReceivedFindReply(0)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -239,8 +240,10 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     Q_UNUSED(source)
     Q_UNUSED(selection_rect)
     Q_UNUSED(active_match_ordinal)
-    if (final_update)
+    if (final_update) {
+        m_lastReceivedFindReply = request_id;
         m_viewClient->didFindText(request_id, number_of_matches);
+    }
 }
 
 void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request, const content::MediaResponseCallback &callback)

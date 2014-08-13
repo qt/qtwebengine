@@ -305,13 +305,15 @@ public:
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
     scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
     WebContentsAdapterClient *adapterClient;
-    quint64 lastRequestId;
+    quint64 nextRequestId;
+    int lastFindRequestId;
 };
 
 WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
-    , lastRequestId(0)
+    , nextRequestId(1)
+    , lastFindRequestId(0)
 {
 }
 
@@ -645,28 +647,37 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, ++d->lastRequestId);
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, d->nextRequestId++);
     rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
-    return d->lastRequestId;
+    return d->nextRequestId;
 }
 
 quint64 WebContentsAdapter::fetchDocumentMarkup()
 {
     Q_D(WebContentsAdapter);
-    d->renderViewObserverHost->fetchDocumentMarkup(++d->lastRequestId);
-    return d->lastRequestId;
+    d->renderViewObserverHost->fetchDocumentMarkup(d->nextRequestId++);
+    return d->nextRequestId;
 }
 
 quint64 WebContentsAdapter::fetchDocumentInnerText()
 {
     Q_D(WebContentsAdapter);
-    d->renderViewObserverHost->fetchDocumentInnerText(++d->lastRequestId);
-    return d->lastRequestId;
+    d->renderViewObserverHost->fetchDocumentInnerText(d->nextRequestId++);
+    return d->nextRequestId;
 }
 
 quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitively, bool findBackward)
 {
     Q_D(WebContentsAdapter);
+    if (d->lastFindRequestId > d->webContentsDelegate->lastReceivedFindReply()) {
+        // There are cases where the render process will overwrite a previous request
+        // with the new search and we'll have a dangling callback, leaving the application
+        // waiting for it forever.
+        // Assume that any unfinished find has been unsuccessful when a new one is started
+        // to cover that case.
+        d->adapterClient->didFindText(d->lastFindRequestId, 0);
+    }
+
     blink::WebFindOptions options;
     options.forward = !findBackward;
     options.matchCase = caseSensitively;
@@ -675,8 +686,9 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
 
     // Find already allows a request ID as input, but only as an int.
     // Use the same counter but mod it to MAX_INT, this keeps the same likeliness of request ID clashing.
-    int shrunkRequestId = ++d->lastRequestId & 0x7fffffff;
+    int shrunkRequestId = d->nextRequestId++ & 0x7fffffff;
     d->webContents->Find(shrunkRequestId, toString16(subString), options);
+    d->lastFindRequestId = shrunkRequestId;
     return shrunkRequestId;
 }
 
