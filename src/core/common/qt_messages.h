@@ -29,6 +29,8 @@ IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentMarkup,
 IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentInnerText,
                     uint64 /* requestId */)
 
+IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/)
+
 //-----------------------------------------------------------------------------
 // WebContents messages
 // These are messages sent from the renderer back to the browser process.
@@ -42,3 +44,5 @@ IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentInnerText,
                     base::string16 /* innerText */)
 
 IPC_MESSAGE_ROUTED0(QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout)
+
+IPC_MESSAGE_ROUTED1(WebChannelIPCTransportHost_SendMessage, std::vector<char> /*binaryJSON*/)

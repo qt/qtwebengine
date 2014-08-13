@@ -49,6 +49,7 @@
 #include "media_capture_devices_dispatcher.h"
 #include "qt_render_view_observer_host.h"
 #include "type_conversion.h"
+#include "web_channel_ipc_transport_host.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
@@ -77,6 +78,7 @@
 #include <QStyleHints>
 #include <QVariant>
 #include <QtGui/qaccessible.h>
+#include <QtWebChannel/QWebChannel>
 
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
@@ -320,6 +322,8 @@ class LoadRecursionGuard {
 WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
+    , webChannel(0)
+    , adapterClient(0)
     , nextRequestId(1)
     , lastFindRequestId(0)
 {
@@ -829,4 +833,28 @@ content::WebContents *WebContentsAdapter::webContents() const
 {
     Q_D(const WebContentsAdapter);
     return d->webContents.get();
+}
+
+QWebChannel *WebContentsAdapter::webChannel() const
+{
+    Q_D(const WebContentsAdapter);
+    return d->webChannel;
+}
+
+void WebContentsAdapter::setWebChannel(QWebChannel *channel)
+{
+    Q_D(WebContentsAdapter);
+    if (d->webChannel == channel)
+        return;
+    if (!d->webChannelTransport.get())
+        d->webChannelTransport.reset(new WebChannelIPCTransportHost(d->webContents.get()));
+    else
+        d->webChannel->disconnectFrom(d->webChannelTransport.get());
+
+    d->webChannel = channel;
+    if (!channel) {
+        d->webChannelTransport.reset();
+        return;
+    }
+    channel->connectTo(d->webChannelTransport.get());
 }

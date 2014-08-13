@@ -50,6 +50,7 @@
 #include "ui/base/webui/jstemplate_builder.h"
 #include "content/public/common/web_preferences.h"
 
+#include "renderer/web_channel_ipc_transport.h"
 #include "renderer/qt_render_view_observer.h"
 
 #include "grit/renderer_resources.h"
@@ -66,14 +67,17 @@ ContentRendererClientQt::~ContentRendererClientQt()
 
 void ContentRendererClientQt::RenderThreadStarted()
 {
+    content::RenderThread *renderThread = content::RenderThread::Get();
+    renderThread->RegisterExtension(WebChannelIPCTransport::getV8Extension());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
-    content::RenderThread::Get()->AddObserver(m_visitedLinkSlave.data());
+    renderThread->AddObserver(m_visitedLinkSlave.data());
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
 {
-    // RenderViewObserver destroys itself with its RenderView.
+    // RenderViewObservers destroy themselves with their RenderView.
     new QtRenderViewObserver(render_view);
+    new WebChannelIPCTransport(render_view);
 }
 
 bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)

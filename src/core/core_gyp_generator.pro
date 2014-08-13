@@ -7,11 +7,7 @@ GYPINCLUDES += qtwebengine.gypi
 
 TEMPLATE = lib
 
-# NOTE: The TARGET, QT, QT_PRIVATE variables must match those in core_module.pro.
-# gyp/ninja will take care of the compilation, qmake/make will finish with linking and install.
-TARGET = QtWebEngineCore
-QT += qml quick
-QT_PRIVATE += quick-private gui-private core-private
+include(core_common.pri)
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
@@ -63,6 +59,7 @@ SOURCES = \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
         renderer/qt_render_view_observer.cpp \
+        renderer/web_channel_ipc_transport.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
         resource_dispatcher_host_delegate_qt.cpp \
@@ -70,6 +67,7 @@ SOURCES = \
         surface_factory_qt.cpp \
         url_request_context_getter_qt.cpp \
         url_request_qrc_job_qt.cpp \
+        web_channel_ipc_transport_host.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
@@ -116,6 +114,7 @@ HEADERS = \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
         renderer/qt_render_view_observer.h \
+        renderer/web_channel_ipc_transport.h \
         resource_context_qt.h \
         resource_dispatcher_host_delegate_qt.h \
         stream_video_node.h \
@@ -123,6 +122,7 @@ HEADERS = \
         type_conversion.h \
         url_request_context_getter_qt.h \
         url_request_qrc_job_qt.h \
+        web_channel_ipc_transport_host.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \
         web_contents_adapter_p.h \
@@ -140,5 +140,4 @@ qtHaveModule(positioning) {
     SOURCES += location_provider_qt.cpp
     HEADERS += location_provider_qt.h
     DEFINES += QT_USE_POSITIONING=1
-    QT += positioning
 }

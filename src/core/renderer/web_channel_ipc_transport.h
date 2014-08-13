@@ -34,38 +34,26 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef NAVIGATOR_QT_EXTENSION_H
+#define NAVIGATOR_QT_EXTENSION_H
 
-#include "web_contents_adapter.h"
+#include "base/values.h"
+#include "content/public/renderer/render_view_observer.h"
+#include <QtCore/qcompilerdetection.h>
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+namespace v8 {
+class Extension;
+}
 
-#include <QExplicitlySharedDataPointer>
-
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
-
-class WebContentsAdapterPrivate {
+class WebChannelIPCTransport : public content::RenderViewObserver {
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    static v8::Extension* getV8Extension();
+
+    WebChannelIPCTransport(content::RenderView *);
+
+private:
+    void dispatchWebChannelMessage(const std::vector<char> &binaryJSON);
+    virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+#endif // NAVIGATOR_QT_EXTENSION_H

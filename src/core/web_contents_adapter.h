@@ -50,9 +50,13 @@ class WebContents;
 struct WebPreferences;
 }
 class BrowserContextQt;
+class MessagePassingInterface;
 class WebContentsAdapterPrivate;
 
-QT_FORWARD_DECLARE_CLASS(QAccessibleInterface);
+QT_BEGIN_NAMESPACE
+class QAccessibleInterface;
+class QWebChannel;
+QT_END_NAMESPACE
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
@@ -115,6 +119,8 @@ public:
     QAccessibleInterface *browserAccessible();
     BrowserContextQt* browserContext();
     BrowserContextAdapter* browserContextAdapter();
+    QWebChannel *webChannel() const;
+    void setWebChannel(QWebChannel *);
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;

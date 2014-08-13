@@ -34,38 +34,47 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#include "web_channel_ipc_transport_host.h"
 
-#include "web_contents_adapter.h"
+#include "base/strings/string16.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "common/qt_messages.h"
+#include "type_conversion.h"
 
-#include <QExplicitlySharedDataPointer>
+#include <QJsonDocument>
+#include <QJsonObject>
 
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
+WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *contents, QObject *parent)
+    : QWebChannelAbstractTransport(parent)
+    , content::WebContentsObserver(contents)
+{
+}
 
-class WebContentsAdapterPrivate {
-public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
-};
+WebChannelIPCTransportHost::~WebChannelIPCTransportHost()
+{
+}
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
+{
+    QJsonDocument doc(message);
+    int size = 0;
+    const char *rawData = doc.rawData(&size);
+    Send(new WebChannelIPCTransport_Message(routing_id(), std::vector<char>(rawData, rawData + size)));
+}
+
+void WebChannelIPCTransportHost::onWebChannelMessage(const std::vector<char> &message)
+{
+    QJsonDocument doc = QJsonDocument::fromRawData(message.data(), message.size(), QJsonDocument::BypassValidation);
+    Q_ASSERT(doc.isObject());
+    Q_EMIT messageReceived(doc.object(), this);
+}
+
+bool WebChannelIPCTransportHost::OnMessageReceived(const IPC::Message &message)
+{
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(WebChannelIPCTransportHost, message)
+        IPC_MESSAGE_HANDLER(WebChannelIPCTransportHost_SendMessage, onWebChannelMessage)
+        IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+}

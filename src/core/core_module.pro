@@ -1,10 +1,6 @@
 MODULE = webenginecore
-TARGET = QtWebEngineCore
 
-qtHaveModule(positioning):QT += positioning
-QT += qml quick
-QT_PRIVATE += quick-private gui-private core-private
-
+include(core_common.pri)
 # Needed to set a CFBundleIdentifier
 QMAKE_INFO_PLIST = Info_mac.plist
 

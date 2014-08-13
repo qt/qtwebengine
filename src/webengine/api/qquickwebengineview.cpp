@@ -61,6 +61,7 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlProperty>
+#include <QQmlWebChannel>
 #include <QScreen>
 #include <QStringBuilder>
 #include <QUrl>
@@ -809,6 +810,23 @@ void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFla
 QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const
 {
     return d_ptr->m_history.data();
+}
+
+QQmlWebChannel *QQuickWebEngineViewExperimental::webChannel() const
+{
+    d_ptr->ensureContentsAdapter();
+    QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(d_ptr->adapter->webChannel());
+    Q_ASSERT(!d_ptr->adapter->webChannel() || qmlWebChannel);
+    if (!qmlWebChannel) {
+        qmlWebChannel = new QQmlWebChannel;
+        d_ptr->adapter->setWebChannel(qmlWebChannel);
+    }
+    return qmlWebChannel;
+}
+
+void QQuickWebEngineViewExperimental::setWebChannel(QQmlWebChannel *webChannel)
+{
+    d_ptr->adapter->setWebChannel(webChannel);
 }
 
 void QQuickWebEngineViewExperimental::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineViewExperimental::Feature feature, bool granted)

@@ -34,38 +34,32 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
+#define WEB_CHANNEL_IPC_TRANSPORT_H
 
-#include "web_contents_adapter.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include <QtWebChannel/QWebChannelAbstractTransport>
+#include "content/public/browser/web_contents_observer.h"
 
-#include <QExplicitlySharedDataPointer>
+#include "qtwebenginecoreglobal.h"
+#include <QtCore/QObject>
 
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
 
-class WebContentsAdapterPrivate {
+QT_FORWARD_DECLARE_CLASS(QString)
+
+class WebChannelIPCTransportHost : public QWebChannelAbstractTransport
+        , public content::WebContentsObserver
+{
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    WebChannelIPCTransportHost(content::WebContents *, QObject *parent = 0);
+    virtual ~WebChannelIPCTransportHost();
+
+    // QWebChannelAbstractTransport
+    virtual void sendMessage(const QJsonObject &message) Q_DECL_OVERRIDE;
+
+private:
+    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    void onWebChannelMessage(const std::vector<char> &message);
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+#endif // WEB_CHANNEL_IPC_TRANSPORT_H
