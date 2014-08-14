@@ -767,7 +767,7 @@ void QWebEnginePagePrivate::runFileChooser(WebContentsAdapterClient::FileChooser
 
 WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
 {
-    return settings->d->coreSettings.data();
+    return settings->d_func()->coreSettings.data();
 }
 
 void QWebEnginePage::load(const QUrl& url)

@@ -83,13 +83,12 @@ public:
 
 private:
     Q_DISABLE_COPY(QWebEngineSettings)
+    Q_DECLARE_PRIVATE(QWebEngineSettings);
+    QScopedPointer<QWebEngineSettingsPrivate> d_ptr;
     friend class QWebEnginePagePrivate;
-    friend class QWebEngineSettingsPrivate;
 
     QWebEngineSettings();
     ~QWebEngineSettings();
-
-    QWebEngineSettingsPrivate *d;
 };
 
 QT_END_NAMESPACE

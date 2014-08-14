@@ -87,7 +87,7 @@ QWebEngineSettingsPrivate::QWebEngineSettingsPrivate()
 void QWebEngineSettingsPrivate::apply()
 {
     coreSettings->scheduleApply();
-    QWebEngineSettingsPrivate *globals = QWebEngineSettings::globalSettings()->d;
+    QWebEngineSettingsPrivate *globals = QWebEngineSettings::globalSettings()->d_func();
     Q_ASSERT((this == globals) != (allSettings->contains(this)));
     if (this == globals) {
         Q_FOREACH (QWebEngineSettingsPrivate *settings, *allSettings)
@@ -101,7 +101,7 @@ void QWebEngineSettingsPrivate::initDefaults()
 }
 
 WebEngineSettings *QWebEngineSettingsPrivate::fallbackSettings() const {
-    return QWebEngineSettings::globalSettings()->d->coreSettings.data();
+    return QWebEngineSettings::globalSettings()->d_func()->coreSettings.data();
 }
 
 QWebEngineSettings *QWebEngineSettings::globalSettings()
@@ -110,8 +110,8 @@ QWebEngineSettings *QWebEngineSettings::globalSettings()
     if (!globalSettings) {
         globalSettings = new QWebEngineSettings;
         // globalSettings shouldn't be in that list.
-        allSettings->removeAll(globalSettings->d);
-        globalSettings->d->initDefaults();
+        allSettings->removeAll(globalSettings->d_func());
+        globalSettings->d_func()->initDefaults();
     }
     return globalSettings;
 }
@@ -125,16 +125,19 @@ Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::FantasyFont) == static_cas
 
 void QWebEngineSettings::setFontFamily(QWebEngineSettings::FontFamily which, const QString &family)
 {
+    Q_D(QWebEngineSettings);
     d->coreSettings->setFontFamily(static_cast<WebEngineSettings::FontFamily>(which), family);
 }
 
 QString QWebEngineSettings::fontFamily(QWebEngineSettings::FontFamily which) const
 {
+    Q_D(const QWebEngineSettings);
     return d->coreSettings->fontFamily(static_cast<WebEngineSettings::FontFamily>(which));
 }
 
 void QWebEngineSettings::resetFontFamily(QWebEngineSettings::FontFamily which)
 {
+    Q_D(QWebEngineSettings);
     d->coreSettings->resetFontFamily(static_cast<WebEngineSettings::FontFamily>(which));
 }
 
@@ -145,23 +148,27 @@ Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::MinimumLogicalFontSize) ==
 
 void QWebEngineSettings::setFontSize(QWebEngineSettings::FontSize type, int size)
 {
+    Q_D(const QWebEngineSettings);
     d->coreSettings->setFontSize(static_cast<WebEngineSettings::FontSize>(type), size);
 }
 
 int QWebEngineSettings::fontSize(QWebEngineSettings::FontSize type) const
 {
+    Q_D(const QWebEngineSettings);
     return d->coreSettings->fontSize(static_cast<WebEngineSettings::FontSize>(type));
 }
 
 void QWebEngineSettings::resetFontSize(QWebEngineSettings::FontSize type)
 {
+    Q_D(QWebEngineSettings);
     d->coreSettings->resetFontSize(static_cast<WebEngineSettings::FontSize>(type));
 }
 
 
 QWebEngineSettings::QWebEngineSettings()
-    : d(new QWebEngineSettingsPrivate)
+    : d_ptr(new QWebEngineSettingsPrivate)
 {
+    Q_D(QWebEngineSettings);
     allSettings->append(d);
     d->coreSettings->scheduleApply();
 }
@@ -169,22 +176,25 @@ QWebEngineSettings::QWebEngineSettings()
 
 QWebEngineSettings::~QWebEngineSettings()
 {
+    Q_D(QWebEngineSettings);
     allSettings->removeAll(d);
-    delete d;
 }
 
 void QWebEngineSettings::setDefaultTextEncoding(const QString &encoding)
 {
+    Q_D(QWebEngineSettings);
     d->coreSettings->setDefaultTextEncoding(encoding);
 }
 
 QString QWebEngineSettings::defaultTextEncoding() const
 {
+    Q_D(const QWebEngineSettings);
     return d->coreSettings->defaultTextEncoding();
 }
 
 void QWebEngineSettings::setAttribute(QWebEngineSettings::WebAttribute attr, bool on)
 {
+    Q_D(QWebEngineSettings);
     WebEngineSettings::Attribute webEngineAttribute = toWebEngineAttribute(attr);
     if (webEngineAttribute != WebEngineSettings::UnsupportedInCoreSettings)
         return d->coreSettings->setAttribute(webEngineAttribute, on);
@@ -193,6 +203,7 @@ void QWebEngineSettings::setAttribute(QWebEngineSettings::WebAttribute attr, boo
 
 bool QWebEngineSettings::testAttribute(QWebEngineSettings::WebAttribute attr) const
 {
+    Q_D(const QWebEngineSettings);
     WebEngineSettings::Attribute webEngineAttribute = toWebEngineAttribute(attr);
     if (webEngineAttribute != WebEngineSettings::UnsupportedInCoreSettings)
         return d->coreSettings->testAttribute(webEngineAttribute);
