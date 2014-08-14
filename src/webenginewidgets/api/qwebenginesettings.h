@@ -87,7 +87,6 @@ private:
     friend class QWebEngineSettingsPrivate;
 
     QWebEngineSettings();
-    QWebEngineSettings(QWebEngineSettingsPrivate *);
     ~QWebEngineSettings();
 
     QWebEngineSettingsPrivate *d;

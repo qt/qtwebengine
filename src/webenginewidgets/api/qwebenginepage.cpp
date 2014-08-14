@@ -168,7 +168,7 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
-    , settings(new QWebEngineSettings(new QWebEngineSettingsPrivate(adapter.data())))
+    , settings(new QWebEngineSettings)
     , view(0)
 {
     memset(actions, 0, sizeof(actions));

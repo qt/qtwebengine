@@ -52,7 +52,6 @@ class QWebEngineSettingsPrivate : public WebEngineSettingsDelegate {
 
 public:
     QWebEngineSettingsPrivate();
-    QWebEngineSettingsPrivate(WebContentsAdapter *adapter);
 
     void initDefaults();
     void apply() Q_DECL_OVERRIDE;

@@ -84,15 +84,11 @@ QWebEngineSettingsPrivate::QWebEngineSettingsPrivate()
 {
 }
 
-QWebEngineSettingsPrivate::QWebEngineSettingsPrivate(WebContentsAdapter *adapter)
-    : coreSettings(new WebEngineSettings(this, adapter))
-{
-}
-
 void QWebEngineSettingsPrivate::apply()
 {
     coreSettings->scheduleApply();
     QWebEngineSettingsPrivate *globals = QWebEngineSettings::globalSettings()->d;
+    Q_ASSERT((this == globals) != (allSettings->contains(this)));
     if (this == globals) {
         Q_FOREACH (QWebEngineSettingsPrivate *settings, *allSettings)
             settings->coreSettings->scheduleApply();
@@ -111,8 +107,12 @@ WebEngineSettings *QWebEngineSettingsPrivate::fallbackSettings() const {
 QWebEngineSettings *QWebEngineSettings::globalSettings()
 {
     static QWebEngineSettings* globalSettings = 0;
-    if (!globalSettings)
+    if (!globalSettings) {
         globalSettings = new QWebEngineSettings;
+        // globalSettings shouldn't be in that list.
+        allSettings->removeAll(globalSettings->d);
+        globalSettings->d->initDefaults();
+    }
     return globalSettings;
 }
 
@@ -162,14 +162,6 @@ void QWebEngineSettings::resetFontSize(QWebEngineSettings::FontSize type)
 QWebEngineSettings::QWebEngineSettings()
     : d(new QWebEngineSettingsPrivate)
 {
-    d->initDefaults();
-}
-
-
-QWebEngineSettings::QWebEngineSettings(QWebEngineSettingsPrivate *p)
-    : d(p)
-{
-    Q_ASSERT(d);
     allSettings->append(d);
     d->coreSettings->scheduleApply();
 }

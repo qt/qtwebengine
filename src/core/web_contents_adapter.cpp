@@ -357,6 +357,9 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     if (!d->webContents)
         d->webContents.reset(createBlankWebContents(adapterClient));
 
+    // This might replace any adapter that has been initialized with this WebEngineSettings.
+    adapterClient->webEngineSettings()->setWebContentsAdapter(this);
+
     content::RendererPreferences* rendererPrefs = d->webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds

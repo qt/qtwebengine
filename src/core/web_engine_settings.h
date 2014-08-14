@@ -99,7 +99,6 @@ public:
     };
 
     WebEngineSettings(WebEngineSettingsDelegate*);
-    WebEngineSettings(WebEngineSettingsDelegate *,WebContentsAdapter *);
     virtual ~WebEngineSettings();
 
     void overrideWebPreferences(WebPreferences *prefs);
@@ -125,6 +124,7 @@ public:
 private:
     void doApply();
     void applySettingsToWebPreferences(WebPreferences *);
+    void setWebContentsAdapter(WebContentsAdapter *adapter) { m_adapter = adapter; }
 
     WebContentsAdapter* m_adapter;
     WebEngineSettingsDelegate* m_delegate;
@@ -136,6 +136,7 @@ private:
     QScopedPointer<BatchTimer> m_batchTimer;
 
     friend class BatchTimer;
+    friend class WebContentsAdapter;
 };
 
 #endif // WEB_ENGINE_SETTINGS_H

@@ -82,14 +82,6 @@ WebEngineSettings::WebEngineSettings(WebEngineSettingsDelegate *delegate)
     Q_ASSERT(delegate);
 }
 
-WebEngineSettings::WebEngineSettings(WebEngineSettingsDelegate *delegate, WebContentsAdapter *adapter)
-    : m_adapter(adapter)
-    , m_delegate(delegate)
-    , m_batchTimer(new BatchTimer(this))
-{
-    Q_ASSERT(delegate);
-}
-
 WebEngineSettings::~WebEngineSettings()
 {
 }
@@ -252,8 +244,8 @@ void WebEngineSettings::doApply()
     // FIXME: batch sequential calls to apply?
     applySettingsToWebPreferences(webPreferences.data());
 
-    if (m_adapter)
-        m_adapter->updateWebPreferences(*webPreferences.data());
+    Q_ASSERT(m_adapter);
+    m_adapter->updateWebPreferences(*webPreferences.data());
 }
 
 void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
