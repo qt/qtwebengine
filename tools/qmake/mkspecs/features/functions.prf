@@ -1,4 +1,5 @@
 defineTest(isPlatformSupported) {
+  static: return(false)
   linux-g++|win32-msvc2013|macx-clang: return(true)
   return(false)
 }

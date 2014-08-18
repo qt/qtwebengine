@@ -26,5 +26,5 @@ isPlatformSupported() {
         SUBDIRS += webenginewidgets
     }
 } else {
-    warning("QtWebEngine is not maintained on this platform and is therefore disabled.")
+    warning("QtWebEngine is not maintained for this platform/configuration and is therefore disabled.")
 }
