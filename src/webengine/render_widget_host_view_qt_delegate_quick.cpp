@@ -224,11 +224,26 @@ void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeome
 void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const ItemChangeData &value)
 {
     QQuickItem::itemChange(change, value);
-    if (m_initialized  && change == QQuickItem::ItemSceneChange)
-        m_client->windowChanged();
+    if (change == QQuickItem::ItemSceneChange) {
+        foreach (const QMetaObject::Connection &c, m_windowConnections)
+            disconnect(c);
+        m_windowConnections.clear();
+        if (value.window) {
+            m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
+            m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
+        }
+
+        if (m_initialized)
+            m_client->windowChanged();
+    }
 }
 
 QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *)
 {
     return m_client->updatePaintNode(oldNode);
+}
+
+void RenderWidgetHostViewQtDelegateQuick::onWindowPosChanged()
+{
+    m_client->windowBoundsChanged();
 }

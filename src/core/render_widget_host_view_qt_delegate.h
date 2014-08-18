@@ -64,9 +64,10 @@ public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
     virtual QSGNode *updatePaintNode(QSGNode *) = 0;
     virtual void notifyResize() = 0;
+    virtual void windowBoundsChanged() = 0;
+    virtual void windowChanged() = 0;
     virtual bool forwardEvent(QEvent *) = 0;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const = 0;
-    virtual void windowChanged() = 0;
 };
 
 class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegate {

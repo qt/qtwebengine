@@ -109,7 +109,7 @@ public:
     virtual void InitAsFullscreen(content::RenderWidgetHostView*) Q_DECL_OVERRIDE;
     virtual content::RenderWidgetHost* GetRenderWidgetHost() const Q_DECL_OVERRIDE;
     virtual void SetSize(const gfx::Size& size) Q_DECL_OVERRIDE;
-    virtual void SetBounds(const gfx::Rect& rect) Q_DECL_OVERRIDE;
+    virtual void SetBounds(const gfx::Rect&) Q_DECL_OVERRIDE;
     virtual gfx::Size GetPhysicalBackingSize() const Q_DECL_OVERRIDE;
     virtual gfx::NativeView GetNativeView() const Q_DECL_OVERRIDE;
     virtual gfx::NativeViewId GetNativeViewId() const Q_DECL_OVERRIDE;
@@ -161,9 +161,10 @@ public:
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     virtual QSGNode *updatePaintNode(QSGNode *) Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
+    virtual void windowBoundsChanged() Q_DECL_OVERRIDE;
+    virtual void windowChanged() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
-    virtual void windowChanged() Q_DECL_OVERRIDE;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);

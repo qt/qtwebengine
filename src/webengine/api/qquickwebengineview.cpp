@@ -265,12 +265,6 @@ QRectF QQuickWebEngineViewPrivate::viewportRect() const
     return QRectF(q->x(), q->y(), q->width(), q->height());
 }
 
-QPoint QQuickWebEngineViewPrivate::mapToGlobal(const QPoint &posInView) const
-{
-    Q_Q(const QQuickWebEngineView);
-    return q->window() ? q->window()->mapToGlobal(posInView) : QPoint();
-}
-
 qreal QQuickWebEngineViewPrivate::dpiScale() const
 {
     return m_dpiScale;

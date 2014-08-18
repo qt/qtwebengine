@@ -86,8 +86,12 @@ protected:
     virtual void itemChange(ItemChange change, const ItemChangeData &value) Q_DECL_OVERRIDE;
     virtual QSGNode *updatePaintNode(QSGNode *, UpdatePaintNodeData *) Q_DECL_OVERRIDE;
 
+private slots:
+    void onWindowPosChanged();
+
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
+    QList<QMetaObject::Connection> m_windowConnections;
     bool m_isPopup;
     bool m_initialized;
 };

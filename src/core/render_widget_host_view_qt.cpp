@@ -216,9 +216,7 @@ void RenderWidgetHostViewQt::InitAsChild(gfx::NativeView)
 
 void RenderWidgetHostViewQt::InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect& rect)
 {
-    QRect screenRect = toQt(rect);
-    screenRect.moveTo(m_adapterClient->mapToGlobal(screenRect.topLeft()));
-    m_delegate->initAsPopup(screenRect);
+    m_delegate->initAsPopup(toQt(rect));
 }
 
 void RenderWidgetHostViewQt::InitAsFullscreen(content::RenderWidgetHostView*)
@@ -238,12 +236,12 @@ void RenderWidgetHostViewQt::SetSize(const gfx::Size& size)
     m_delegate->resize(width,height);
 }
 
-void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& rect)
+void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& screenRect)
 {
     // This is called when webkit has sent us a Move message.
-     if (IsPopup())
-         m_delegate->move(m_adapterClient->mapToGlobal(toQt(rect.origin())));
-    SetSize(rect.size());
+    if (IsPopup())
+        m_delegate->move(toQt(screenRect.origin()));
+    SetSize(screenRect.size());
 }
 
 gfx::Size RenderWidgetHostViewQt::GetPhysicalBackingSize() const
@@ -659,7 +657,18 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
 
 void RenderWidgetHostViewQt::notifyResize()
 {
-    GetRenderWidgetHost()->WasResized();
+    m_host->WasResized();
+}
+
+void RenderWidgetHostViewQt::windowBoundsChanged()
+{
+    m_host->SendScreenRects();
+}
+
+void RenderWidgetHostViewQt::windowChanged()
+{
+    if (m_delegate->window())
+        m_host->NotifyScreenInfoChanged();
 }
 
 bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
@@ -727,12 +736,6 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
     default:
         return QVariant();
     }
-}
-
-void RenderWidgetHostViewQt::windowChanged()
-{
-    if (m_delegate->window())
-        m_host->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {

@@ -155,7 +155,6 @@ public:
     virtual void didUpdateTargetURL(const QUrl&) Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE { }
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
-    virtual QPoint mapToGlobal(const QPoint &posInView) const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;

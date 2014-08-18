@@ -201,6 +201,22 @@ void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent
     m_client->notifyResize();
 }
 
+void RenderWidgetHostViewQtDelegateWidget::showEvent(QShowEvent *event)
+{
+    QOpenGLWidget::showEvent(event);
+    // We don't have a way to catch a top-level window change with QWidget
+    // but a widget will most likely be shown again if it changes, so do
+    // the reconnection at this point.
+    foreach (const QMetaObject::Connection &c, m_windowConnections)
+        disconnect(c);
+    m_windowConnections.clear();
+    if (QWindow *w = window()) {
+        m_windowConnections.append(connect(w, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
+        m_windowConnections.append(connect(w, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
+    }
+    m_client->windowChanged();
+}
+
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     bool handled = false;
@@ -247,4 +263,9 @@ void RenderWidgetHostViewQtDelegateWidget::paintGL()
     m_sgRenderer->setProjectionMatrixToRect(QRectF(QPointF(), size()));
 
     m_sgRenderer->renderScene(defaultFramebufferObject());
+}
+
+void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
+{
+    m_client->windowBoundsChanged();
 }

@@ -227,11 +227,6 @@ QRectF QWebEnginePagePrivate::viewportRect() const
     return view ? view->rect() : QRectF();
 }
 
-QPoint QWebEnginePagePrivate::mapToGlobal(const QPoint &posInView) const
-{
-    return view ? view->mapToGlobal(posInView) : QPoint();
-}
-
 qreal QWebEnginePagePrivate::dpiScale() const
 {
     return 1.0;

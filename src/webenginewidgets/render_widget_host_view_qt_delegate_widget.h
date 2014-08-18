@@ -58,8 +58,8 @@ class QSGRootNode;
 class QWindow;
 QT_END_NAMESPACE
 
-class RenderWidgetHostViewQtDelegateWidget : public QOpenGLWidget, public RenderWidgetHostViewQtDelegate
-{
+class RenderWidgetHostViewQtDelegateWidget : public QOpenGLWidget, public RenderWidgetHostViewQtDelegate {
+    Q_OBJECT
 public:
     RenderWidgetHostViewQtDelegateWidget(RenderWidgetHostViewQtDelegateClient *client, QWidget *parent = 0);
 
@@ -81,12 +81,16 @@ public:
     virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
 
 protected:
-    bool event(QEvent *event);
-    void resizeEvent(QResizeEvent *resizeEvent);
+    bool event(QEvent *event) Q_DECL_OVERRIDE;
+    void resizeEvent(QResizeEvent *resizeEvent) Q_DECL_OVERRIDE;
+    void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
     void initializeGL() Q_DECL_OVERRIDE;
     void paintGL() Q_DECL_OVERRIDE;
 
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+
+private slots:
+    void onWindowPosChanged();
 
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;
@@ -95,6 +99,7 @@ private:
     QScopedPointer<QSGEngine> m_sgEngine;
     QScopedPointer<QSGAbstractRenderer> m_sgRenderer;
     bool m_isPopup;
+    QList<QMetaObject::Connection> m_windowConnections;
 };
 
 #endif
