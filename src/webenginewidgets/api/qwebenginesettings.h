@@ -22,6 +22,7 @@
 #define QWEBENGINESETTINGS_H
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
