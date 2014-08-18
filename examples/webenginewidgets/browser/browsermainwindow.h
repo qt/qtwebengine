@@ -107,7 +107,6 @@ private slots:
     void slotViewZoomIn();
     void slotViewZoomOut();
     void slotViewResetZoom();
-    void slotViewZoomTextOnly(bool enable);
     void slotViewToolbar();
     void slotViewBookmarksBar();
     void slotViewStatusbar();

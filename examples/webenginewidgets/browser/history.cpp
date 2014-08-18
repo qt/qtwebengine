@@ -62,9 +62,7 @@
 #if defined(QWEBENGINEHISTORYINTERFACE)
 #include <QWebEngineHistoryInterface>
 #endif
-#if defined(QWEBENGINESETTINGS)
 #include <QWebEngineSettings>
-#endif
 
 #include <QtCore/QDebug>
 
@@ -189,7 +187,7 @@ void HistoryManager::checkForExpired()
 
 void HistoryManager::addHistoryItem(const HistoryItem &item)
 {
-#if defined(QWEBENGINESETTINGS)
+#if defined(QTWEBENGINE_PRIVATEBROWSING)
     QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
     if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
         return;

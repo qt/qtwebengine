@@ -66,9 +66,7 @@
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QSslSocket>
 
-#if defined(QWEBENGINESETTINGS)
 #include <QWebEngineSettings>
-#endif
 
 #include <QtCore/QDebug>
 
@@ -203,10 +201,10 @@ void BrowserApplication::quitBrowser()
  */
 void BrowserApplication::postLaunch()
 {
-#if defined(QWEBENGINESETTINGS)
     QString directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
     if (directory.isEmpty())
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
+#if defined(QWEBENGINESETTINGS_PATHS)
     QWebEngineSettings::setIconDatabasePath(directory);
     QWebEngineSettings::setOfflineStoragePath(directory);
 #endif
@@ -228,7 +226,6 @@ void BrowserApplication::postLaunch()
 
 void BrowserApplication::loadSettings()
 {
-#if defined(QWEBENGINESETTINGS)
     QSettings settings;
     settings.beginGroup(QLatin1String("websettings"));
 
@@ -248,15 +245,17 @@ void BrowserApplication::loadSettings()
     defaultSettings->setFontSize(QWebEngineSettings::DefaultFixedFontSize, fixedFont.pointSize());
 
     defaultSettings->setAttribute(QWebEngineSettings::JavascriptEnabled, settings.value(QLatin1String("enableJavascript"), true).toBool());
-    defaultSettings->setAttribute(QWebEngineSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
 
+#if defined(QTWEBENGINE_PLUGINS)
+    defaultSettings->setAttribute(QWebEngineSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
+#endif
+
+#if defined(QTWEBENGINE_USERSTYLESHEET)
     QUrl url = settings.value(QLatin1String("userStyleSheet")).toUrl();
     defaultSettings->setUserStyleSheetUrl(url);
-
-    defaultSettings->setAttribute(QWebEngineSettings::DnsPrefetchEnabled, true);
+#endif
 
     settings.endGroup();
-#endif
 }
 
 QList<BrowserMainWindow*> BrowserApplication::mainWindows()
@@ -278,7 +277,7 @@ void BrowserApplication::clean()
 
 void BrowserApplication::saveSession()
 {
-#if defined(QWEBENGINESETTINGS)
+#if defined(QTWEBENGINE_PRIVATEBROWSING)
     QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
     if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
         return;
@@ -466,7 +465,7 @@ BookmarksManager *BrowserApplication::bookmarksManager()
 
 QIcon BrowserApplication::icon(const QUrl &url) const
 {
-#if defined(QWEBENGINESETTINGS)
+#if defined(QTWEBENGINE_ICONDATABASE)
     QIcon icon = QWebEngineSettings::iconForUrl(url);
     if (!icon.isNull())
         return icon.pixmap(16, 16);
