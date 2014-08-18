@@ -87,6 +87,8 @@ void SettingsDialog::loadDefaults()
 #if defined(QTWEBENGINE_PLUGINS)
     enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
 #endif
+
+    enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
 }
 
 void SettingsDialog::loadFromSettings()
@@ -134,6 +136,7 @@ void SettingsDialog::loadFromSettings()
     enableJavascript->setChecked(settings.value(QLatin1String("enableJavascript"), enableJavascript->isChecked()).toBool());
     enablePlugins->setChecked(settings.value(QLatin1String("enablePlugins"), enablePlugins->isChecked()).toBool());
     userStyleSheet->setText(settings.value(QLatin1String("userStyleSheet")).toUrl().toString());
+    enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
     settings.endGroup();
 
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
@@ -218,6 +221,7 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("standardFont"), standardFont);
     settings.setValue(QLatin1String("enableJavascript"), enableJavascript->isChecked());
     settings.setValue(QLatin1String("enablePlugins"), enablePlugins->isChecked());
+    settings.setValue(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked());
     QString userStyleSheetString = userStyleSheet->text();
     if (QFile::exists(userStyleSheetString))
         settings.setValue(QLatin1String("userStyleSheet"), QUrl::fromLocalFile(userStyleSheetString));
