@@ -8,7 +8,6 @@ GYP_ARGS += "-D qt_os=\"embedded_android\" -D android_src=\"$${TOOLCHAIN_SYSROOT
 
 GYP_CONFIG += \
     OS=android_no_sdk \
-    android_use_tcmalloc=0 \
     android_webview_build=0 \
     build_ffmpegsumo=0 \
     configuration_policy=0 \
@@ -34,7 +33,6 @@ GYP_CONFIG += \
     icu_use_data_file_flag=0 \
     input_speech=0 \
     java_bridge=0 \
-    linux_use_tcmalloc=0 \
     media_use_ffmpeg=0 \
     media_use_libvpx=0 \
     native_discardable_memory=1 \

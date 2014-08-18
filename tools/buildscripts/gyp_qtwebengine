@@ -106,7 +106,7 @@ if __name__ == '__main__':
   # We always have to disable tcmalloc.
   # Allocating with tcmalloc in chromium code and freeing without
   # tcmalloc outside of chromium code would cause erratic behavior.
-  args.extend(['-D', 'linux_use_tcmalloc=0'])
+  args.extend(['-D', 'use_allocator=none'])
 
   # On Mac we want to build in x64 mode. And we want to use libc++.
   if sys.platform in ('darwin',) and not 'GYP_CROSSCOMPILE' in os.environ:
