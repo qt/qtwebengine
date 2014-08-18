@@ -204,14 +204,14 @@ public:
     // Overridden from content::BrowserAccessibilityDelegate
     virtual void AccessibilitySetFocus(int acc_obj_id) Q_DECL_OVERRIDE;
     virtual void AccessibilityDoDefaultAction(int acc_obj_id) Q_DECL_OVERRIDE;
-    virtual void AccessibilityShowMenu(int acc_obj_id) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual void AccessibilityShowMenu(int acc_obj_id) Q_DECL_OVERRIDE { }
     virtual void AccessibilityScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus) Q_DECL_OVERRIDE;
     virtual void AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point) Q_DECL_OVERRIDE;
     virtual void AccessibilitySetTextSelection(int acc_obj_id, int start_offset, int end_offset) Q_DECL_OVERRIDE;
     virtual bool AccessibilityViewHasFocus() const Q_DECL_OVERRIDE;
-    virtual gfx::Rect AccessibilityGetViewBounds() const Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) const Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual void AccessibilityHitTest(const gfx::Point& point) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual gfx::Rect AccessibilityGetViewBounds() const Q_DECL_OVERRIDE  { return GetViewBounds(); }
+    virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) const Q_DECL_OVERRIDE  { return gfx::Point(); }
+    virtual void AccessibilityHitTest(const gfx::Point& point) Q_DECL_OVERRIDE  { }
     virtual void AccessibilityFatalError() Q_DECL_OVERRIDE;
 
     QAccessibleInterface *GetQtAccessible();
