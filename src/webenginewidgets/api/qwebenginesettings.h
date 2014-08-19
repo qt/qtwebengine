@@ -47,7 +47,6 @@ public:
         JavascriptEnabled,
         JavascriptCanOpenWindows,
         JavascriptCanAccessClipboard,
-        DeveloperExtrasEnabled,
         LinksIncludedInFocusChain,
         LocalStorageEnabled,
         LocalContentCanAccessRemoteUrls,
