@@ -97,6 +97,12 @@ QDateTime QWebEngineHistoryItem::lastVisited() const
     return d->page ? d->page->webContents()->getNavigationEntryTimestamp(d->index) : QDateTime();
 }
 
+QUrl QWebEngineHistoryItem::iconUrl() const
+{
+    Q_D(const QWebEngineHistoryItem);
+    return d->page ? d->page->webContents()->getNavigationEntryIconUrl(d->index) : QUrl();
+}
+
 bool QWebEngineHistoryItem::isValid() const
 {
     Q_D(const QWebEngineHistoryItem);

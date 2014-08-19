@@ -592,6 +592,16 @@ QDateTime WebContentsAdapter::getNavigationEntryTimestamp(int index)
     return entry ? toQt(entry->GetTimestamp()) : QDateTime();
 }
 
+QUrl WebContentsAdapter::getNavigationEntryIconUrl(int index)
+{
+    Q_D(WebContentsAdapter);
+    content::NavigationEntry *entry = d->webContents->GetController().GetEntryAtIndex(index);
+    if (!entry)
+        return QUrl();
+    content::FaviconStatus favicon = entry->GetFavicon();
+    return favicon.valid ? toQt(favicon.url) : QUrl();
+}
+
 void WebContentsAdapter::clearNavigationHistory()
 {
     Q_D(WebContentsAdapter);

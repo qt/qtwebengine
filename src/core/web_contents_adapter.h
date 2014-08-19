@@ -95,6 +95,7 @@ public:
     QUrl getNavigationEntryUrl(int index);
     QString getNavigationEntryTitle(int index);
     QDateTime getNavigationEntryTimestamp(int index);
+    QUrl getNavigationEntryIconUrl(int index);
     void clearNavigationHistory();
     void serializeNavigationHistory(QDataStream &output);
     void setZoomFactor(qreal);

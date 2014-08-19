@@ -46,6 +46,7 @@ public:
 
     QString title() const;
     QDateTime lastVisited() const;
+    QUrl iconUrl() const;
 
     bool isValid() const;
 private:
