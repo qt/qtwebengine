@@ -148,31 +148,21 @@ ApplicationWindow {
         id: navigationBar
             RowLayout {
                 anchors.fill: parent;
-                ToolButton {
+                ButtonWithMenu {
                     id: backButton
                     iconSource: "icons/go-previous.png"
-                    onClicked: currentWebView.goBack()
                     enabled: currentWebView && currentWebView.canGoBack
                     activeFocusOnTab: !browserWindow.platformIsMac
-
-                    MouseArea {
-                        anchors.fill: parent
-                        acceptedButtons: Qt.RightButton
-                        onClicked: backHistoryMenu.popup()
-                    }
+                    onClicked: currentWebView.goBack()
+                    longPressMenu: backHistoryMenu
                 }
-                ToolButton {
+                ButtonWithMenu {
                     id: forwardButton
                     iconSource: "icons/go-next.png"
-                    onClicked: currentWebView.goForward()
                     enabled: currentWebView && currentWebView.canGoForward
                     activeFocusOnTab: !browserWindow.platformIsMac
-
-                    MouseArea {
-                        anchors.fill: parent
-                        acceptedButtons: Qt.RightButton
-                        onClicked: forwardHistoryMenu.popup()
-                    }
+                    onClicked: currentWebView.goForward()
+                    longPressMenu: forwardHistoryMenu
                 }
                 ToolButton {
                     id: reloadButton
