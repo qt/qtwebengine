@@ -46,6 +46,7 @@
 #include <QSGAbstractRenderer>
 #include <QSGEngine>
 #include <QSGNode>
+#include <QWindow>
 
 static const int MaxTooltipLength = 1024;
 

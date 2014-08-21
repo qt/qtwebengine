@@ -40,18 +40,15 @@
 #include "render_widget_host_view_qt_delegate.h"
 #include "web_contents_adapter_client.h"
 
+#include <QSGAbstractRenderer>
+#include <QSGEngine>
+#include <QSGNode>
+
 #if (QT_VERSION < QT_VERSION_CHECK(5, 4, 0))
 #include <QtWidgets/private/qopenglwidget_p.h>
 #else
 #include <QtWidgets/QOpenGLWidget>
 #endif
-
-QT_BEGIN_NAMESPACE
-class QSGAbstractRenderer;
-class QSGEngine;
-class QSGRootNode;
-class QWindow;
-QT_END_NAMESPACE
 
 class RenderWidgetHostViewQtDelegateWidget : public QOpenGLWidget, public RenderWidgetHostViewQtDelegate {
     Q_OBJECT
