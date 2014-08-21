@@ -56,8 +56,8 @@
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/url_constants.h"
 #include "webkit/common/webpreferences.h"
-
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32 messageLevel) {
@@ -72,6 +72,7 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
     , m_lastReceivedFindReply(0)
+    , m_isLoadingErrorPage(false)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -124,11 +125,16 @@ void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 
 void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
 {
+    if (m_isLoadingErrorPage)
+        return;
     m_viewClient->loadProgressChanged(qRound(progress * 100));
 }
 
-void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(int64, int64, bool is_main_frame, const GURL &validated_url, bool, bool, content::RenderViewHost*)
+void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(int64, int64, bool is_main_frame, const GURL &validated_url, bool isErrorPage, bool, content::RenderViewHost*)
 {
+    m_isLoadingErrorPage = isErrorPage;
+    if (isErrorPage)
+        return;
     if (is_main_frame)
         m_viewClient->loadStarted(toQt(validated_url));
 }
@@ -147,15 +153,24 @@ void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, const base::s
     DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);
 }
 
-void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, int error_code, const base::string16 &error_description, content::RenderViewHost*)
+void WebContentsDelegateQt::DidFailLoad(int64, const GURL&, bool is_main_frame, int error_code, const base::string16 &error_description, content::RenderViewHost *rvh)
 {
-    if (is_main_frame)
-        m_viewClient->loadFinished(false, error_code, toQt(error_description));
+    if (!is_main_frame || m_isLoadingErrorPage)
+        return;
+    m_viewClient->loadFinished(false, error_code, toQt(error_description));
+    m_viewClient->loadProgressChanged(0);
 }
 
-void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame, content::RenderViewHost*)
+void WebContentsDelegateQt::DidFinishLoad(int64, const GURL &url, bool is_main_frame, content::RenderViewHost*)
 {
+    if (m_isLoadingErrorPage) {
+        Q_ASSERT(url.is_valid() && url.spec() == content::kUnreachableWebDataURL);
+        m_viewClient->iconChanged(QUrl());
+        return;
+    }
+
     if (is_main_frame) {
+        m_viewClient->loadProgressChanged(100);
         m_viewClient->loadFinished(true);
 
         content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();

@@ -399,12 +399,6 @@ bool WebContentsAdapter::canGoForward() const
     return d->webContents->GetController().CanGoForward();
 }
 
-bool WebContentsAdapter::isLoading() const
-{
-    Q_D(const WebContentsAdapter);
-    return d->webContents->IsLoading();
-}
-
 void WebContentsAdapter::stop()
 {
     Q_D(WebContentsAdapter);

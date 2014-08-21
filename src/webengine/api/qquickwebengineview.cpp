@@ -82,6 +82,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , loadProgress(0)
     , inspectable(false)
     , m_isFullScreen(false)
+    , isLoading(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -277,6 +278,7 @@ qreal QQuickWebEngineViewPrivate::dpiScale() const
 void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl)
 {
     Q_Q(QQuickWebEngineView);
+    isLoading = true;
     m_history->reset();
     QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
     Q_EMIT q->loadingChanged(&loadRequest);
@@ -299,6 +301,7 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<
 void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
 {
     Q_Q(QQuickWebEngineView);
+    isLoading = false;
     m_history->reset();
     if (error_code == WebEngineError::UserAbortedError) {
         QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
@@ -571,7 +574,7 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->adapter->isLoading();
+    return d->isLoading;
 }
 
 int QQuickWebEngineView::loadProgress() const

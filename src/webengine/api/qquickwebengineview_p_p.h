@@ -192,6 +192,7 @@ public:
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;
+    bool isLoading;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
 

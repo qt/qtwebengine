@@ -153,6 +153,7 @@ public:
     QSize viewportSize;
     QUrl m_explicitUrl;
     WebEngineContextMenuData m_menuData;
+    bool isLoading;
 
     mutable CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

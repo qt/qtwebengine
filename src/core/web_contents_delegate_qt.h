@@ -94,6 +94,7 @@ private:
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
     int m_lastReceivedFindReply;
+    bool m_isLoadingErrorPage;
 };
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H

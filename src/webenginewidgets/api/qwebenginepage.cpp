@@ -171,6 +171,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , settings(new QWebEngineSettings)
     , view(0)
+    , isLoading(false)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -237,6 +238,7 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl)
 {
     Q_UNUSED(provisionalUrl)
     Q_Q(QWebEnginePage);
+    isLoading = true;
     Q_EMIT q->loadStarted();
     updateNavigationActions();
 }
@@ -251,6 +253,7 @@ void QWebEnginePagePrivate::loadFinished(bool success, int error_code, const QSt
     Q_Q(QWebEnginePage);
     Q_UNUSED(error_code);
     Q_UNUSED(error_description);
+    isLoading = false;
     if (success)
         m_explicitUrl = QUrl();
     Q_EMIT q->loadFinished(success);
@@ -362,11 +365,11 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
         enabled = adapter->canGoForward();
         break;
     case QWebEnginePage::Stop:
-        enabled = adapter->isLoading();
+        enabled = isLoading;
         break;
     case QWebEnginePage::Reload:
     case QWebEnginePage::ReloadAndBypassCache:
-        enabled = !adapter->isLoading();
+        enabled = !isLoading;
         break;
     default:
         break;
