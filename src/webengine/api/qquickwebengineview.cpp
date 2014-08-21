@@ -563,9 +563,10 @@ void QQuickWebEngineView::stop()
 
 void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVariant &result)
 {
+    Q_Q(QQuickWebEngineView);
     QJSValue callback = m_callbacks.take(requestId);
     QJSValueList args;
-    args.append(callback.engine()->toScriptValue(result));
+    args.append(qmlEngine(q)->toScriptValue(result));
     callback.call(args);
 }
 
