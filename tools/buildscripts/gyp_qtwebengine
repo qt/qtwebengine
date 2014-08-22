@@ -11,7 +11,7 @@ if sys.platform == "darwin":
   print 'xcode version: ' + subprocess.check_output(['xcodebuild', '-version']).replace('\n', ' ')
   print 'clang++ version: ' + subprocess.check_output(['clang++', '--version']).replace('\n', ' ')
 
-qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+qtwebengine_root = os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import qtwebengine_utils as utils
 chrome_src = utils.getChromiumSrcDir()
 
@@ -19,7 +19,7 @@ script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
 if not os.path.isdir(script_dir):
   print script_dir + " is not a valid directory"
   sys.exit(1)
-root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir))
+root_dir = os.path.normcase(os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir)))
 
 sys.path.insert(1, script_dir)
 import gyp_helper
@@ -145,8 +145,8 @@ if __name__ == '__main__':
   # Trigger Qt-specific build conditions.
   args.extend(['-D', 'use_qt=1'])
   # Tweak the output location and format (hardcode ninja for now if not set)
-  args.extend(['--generator-output', os.path.abspath(output_dir)])
-  args.extend(['-Goutput_dir='+ os.path.abspath(output_dir)])
+  args.extend(['--generator-output', '.'])
+  args.extend(['-Goutput_dir='+ os.path.relpath(output_dir, qtwebengine_root)])
 
   # Tell gyp not to try finding cl.exe on Windows, Qt already requires the env to be set prior to the build.
   args.extend(['-G', 'ninja_use_custom_environment_files'])
