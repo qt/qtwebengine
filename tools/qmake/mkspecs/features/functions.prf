@@ -1,6 +1,10 @@
 defineTest(isPlatformSupported) {
   static: return(false)
   osx:lessThan(QMAKE_XCODE_VERSION, 5): return(false)
+  win32 {
+    equals(QT_ARCH, x86_64): return(false)
+    !contains(QT_CONFIG, angle): return(false)
+  }
 
   linux-g++|win32-msvc2013|macx-clang: return(true)
   return(false)
