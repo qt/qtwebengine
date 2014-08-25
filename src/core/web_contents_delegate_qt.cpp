@@ -275,3 +275,8 @@ WebContentsAdapter *WebContentsDelegateQt::createWindow(content::WebContents *ne
 
     return newAdapter;
 }
+
+void WebContentsDelegateQt::allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController)
+{
+    m_viewClient->allowCertificateError(errorController);
+}

@@ -38,6 +38,7 @@
 #define QWEBENGINEPAGE_H
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineWidgets/qwebenginecertificateerror.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -228,6 +229,7 @@ protected:
     virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
     virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
+    virtual bool certificateError(const QWebEngineCertificateError &certificateError);
 
 private:
     Q_DECLARE_PRIVATE(QWebEnginePage);

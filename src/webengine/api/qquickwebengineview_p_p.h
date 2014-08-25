@@ -174,6 +174,7 @@ public:
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
+    virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController);
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);

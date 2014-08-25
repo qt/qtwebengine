@@ -42,6 +42,7 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
@@ -54,6 +55,8 @@
 #include "ui/gl/gl_share_group.h"
 
 #include "browser_context_qt.h"
+#include "certificate_error_controller.h"
+#include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
@@ -344,4 +347,23 @@ void ContentBrowserClientQt::enableInspector(bool enable)
     } else if (!enable && m_devtools) {
         m_devtools.reset();
     }
+}
+
+void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int render_frame_id, int cert_error,
+                                                   const net::SSLInfo& ssl_info, const GURL& request_url,
+                                                   ResourceType::Type resource_type,
+                                                   bool overridable, bool strict_enforcement,
+                                                   const base::Callback<void(bool)>& callback,
+                                                   content::CertificateRequestResultType* result)
+{
+    // We leave the result with its default value.
+    Q_UNUSED(result);
+
+    content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    WebContentsDelegateQt* contentsDelegate = 0;
+    if (content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents())
+        contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+
+    QExplicitlySharedDataPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
+    contentsDelegate->allowCertificateError(errorController);
 }

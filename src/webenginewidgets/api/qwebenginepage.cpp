@@ -23,6 +23,7 @@
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
+#include "certificate_error_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
@@ -646,6 +647,18 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         controller->reject();
 }
 
+void QWebEnginePagePrivate::allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &controller)
+{
+    Q_Q(QWebEnginePage);
+    bool accepted = false;
+
+    QWebEngineCertificateError error(controller->error(), controller->url(), controller->overridable() && !controller->strictEnforcement(), controller->errorString());
+    accepted = q->certificateError(error);
+
+    if (error.isOverridable())
+        controller->accept(accepted);
+}
+
 void QWebEnginePagePrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {
     Q_Q(QWebEnginePage);
@@ -919,6 +932,12 @@ void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel leve
     Q_UNUSED(lineNumber);
     Q_UNUSED(sourceID);
 }
+
+bool QWebEnginePage::certificateError(const QWebEngineCertificateError &)
+{
+    return false;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwebenginepage.cpp"

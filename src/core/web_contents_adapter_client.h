@@ -48,6 +48,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QVariant)
 
+class CertificateErrorController;
 class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
@@ -172,6 +173,9 @@ public:
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
+
+    virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController) = 0;
+
 };
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

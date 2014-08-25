@@ -50,8 +50,10 @@ namespace content {
     class JavaScriptDialogManager;
     class WebContents;
 }
+
 struct WebPreferences;
 class WebContentsAdapterClient;
+class CertificateErrorController;
 
 class WebContentsDelegateQt : public content::WebContentsDelegate
                             , public content::WebContentsObserver
@@ -84,6 +86,7 @@ public:
     virtual void DidNavigateAnyFrame(const content::LoadCommittedDetails&, const content::FrameNavigateParams& params) Q_DECL_OVERRIDE;
 
     void overrideWebPreferences(content::WebContents *, WebPreferences*);
+    void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &) ;
 
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);

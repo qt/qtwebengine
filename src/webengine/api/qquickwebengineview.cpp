@@ -37,6 +37,7 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
+#include "certificate_error_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebengineloadrequest_p.h"
@@ -206,6 +207,11 @@ void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialo
     ui()->showDialog(dialog);
 }
 
+void QQuickWebEngineViewPrivate::allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController)
+{
+    // ### Implement a way to export this to QML
+    Q_UNUSED(errorController);
+}
 
 void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes)
 {

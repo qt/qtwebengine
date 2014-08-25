@@ -79,6 +79,17 @@ public:
     virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
     virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
     virtual void OverrideWebkitPrefs(content::RenderViewHost *, const GURL &, WebPreferences *) Q_DECL_OVERRIDE;
+    virtual void AllowCertificateError(
+        int render_process_id,
+        int render_frame_id,
+        int cert_error,
+        const net::SSLInfo& ssl_info,
+        const GURL& request_url,
+        ResourceType::Type resource_type,
+        bool overridable,
+        bool strict_enforcement,
+        const base::Callback<void(bool)>& callback,
+        content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
 
     BrowserContextQt* browser_context();
 

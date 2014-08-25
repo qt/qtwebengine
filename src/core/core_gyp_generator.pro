@@ -39,6 +39,7 @@ SOURCES = \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_qt.cpp \
+        certificate_error_controller.cpp \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         clipboard_qt.cpp \
@@ -85,6 +86,8 @@ HEADERS = \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_qt.h \
+        certificate_error_controller_p.h \
+        certificate_error_controller.h \
         chromium_overrides.h \
         clipboard_qt.h \
         common/qt_messages.h \
