@@ -113,7 +113,11 @@ defineReplace(findOrBuildNinja) {
 
     # If we did not find ninja, then we bootstrap it.
     !exists($$out) {
-        system("python $$dirname(out)/bootstrap.py")
+        contains(DEFINES, WIN64) {
+          system("python $$dirname(out)/bootstrap.py --x64")
+        } else {
+          system("python $$dirname(out)/bootstrap.py")
+        }
     }
     return($$out)
 }
