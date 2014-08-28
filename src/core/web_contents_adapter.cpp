@@ -647,23 +647,23 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, d->nextRequestId++);
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, d->nextRequestId);
     rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
-    return d->nextRequestId;
+    return d->nextRequestId++;
 }
 
 quint64 WebContentsAdapter::fetchDocumentMarkup()
 {
     Q_D(WebContentsAdapter);
-    d->renderViewObserverHost->fetchDocumentMarkup(d->nextRequestId++);
-    return d->nextRequestId;
+    d->renderViewObserverHost->fetchDocumentMarkup(d->nextRequestId);
+    return d->nextRequestId++;
 }
 
 quint64 WebContentsAdapter::fetchDocumentInnerText()
 {
     Q_D(WebContentsAdapter);
-    d->renderViewObserverHost->fetchDocumentInnerText(d->nextRequestId++);
-    return d->nextRequestId;
+    d->renderViewObserverHost->fetchDocumentInnerText(d->nextRequestId);
+    return d->nextRequestId++;
 }
 
 quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitively, bool findBackward)
