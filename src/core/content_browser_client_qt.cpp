@@ -99,18 +99,24 @@ public:
         // Usually this gets passed through Run, but since we have
         // our own event loop, attach it explicitly ourselves.
         : m_delegate(base::MessageLoopForUI::current())
+        , m_explicitLoop(0)
     {
     }
 
     virtual void Run(Delegate *delegate) Q_DECL_OVERRIDE
     {
-        // FIXME: This could be needed if we want to run Chromium tests.
-        // We could run a QEventLoop here.
+        Q_ASSERT(delegate == m_delegate);
+        // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
+        QEventLoop loop;
+        m_explicitLoop = &loop;
+        loop.exec();
+        m_explicitLoop = 0;
     }
 
     virtual void Quit() Q_DECL_OVERRIDE
     {
-        Q_UNREACHABLE();
+        Q_ASSERT(m_explicitLoop);
+        m_explicitLoop->quit();
     }
 
     virtual void ScheduleWork() Q_DECL_OVERRIDE
@@ -159,6 +165,7 @@ private:
     }
 
     Delegate *m_delegate;
+    QEventLoop *m_explicitLoop;
 };
 
 scoped_ptr<base::MessagePump> messagePumpFactory()
