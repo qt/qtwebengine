@@ -75,7 +75,7 @@ private:
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_data;
     QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
     int m_numPendingSyncPoints;
-    FenceSync m_mailboxesGLFence;
+    QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
 

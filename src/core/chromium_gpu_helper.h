@@ -38,8 +38,10 @@
 #define CHROMIUM_GPU_HELPER_H
 
 #include <QtGlobal> // We need this for the Q_OS_QNX define.
+#include <QMap>
 
 #include "base/callback.h"
+#include "ui/gl/gl_fence.h"
 
 namespace base {
 class MessageLoop;
@@ -57,38 +59,12 @@ class Texture;
 }
 }
 
-typedef void *EGLDisplay;
-typedef void *EGLSyncKHR;
-typedef struct __GLsync *GLsync;
-
-union FenceSync {
-    enum SyncType {
-        NoSync,
-        EglSync,
-        ArbSync
-    };
-    SyncType type;
-    struct {
-        SyncType type;
-        EGLDisplay display;
-        EGLSyncKHR sync;
-    } egl;
-    struct {
-        SyncType type;
-        GLsync sync;
-    } arb;
-
-    FenceSync() : type(NoSync) { }
-    operator bool() { return type != NoSync; }
-    void reset() { type = NoSync; }
-};
-
 // These functions wrap code that needs to include headers that are
 // incompatible with Qt GL headers.
 // From the outside, types from incompatible headers referenced in these
 // functions should only be forward-declared and considered as opaque types.
 
-FenceSync createFence();
+QMap<uint32, gfx::TransferableFence> transferFences();
 base::MessageLoop *gpu_message_loop();
 content::SyncPointManager *sync_point_manager();
 gpu::gles2::MailboxManager *mailbox_manager();
