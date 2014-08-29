@@ -138,8 +138,6 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
 #if defined(OS_WIN)
-    // FIXME: The renderer process should be fixed on windows.
-    parsedCommandLine->AppendSwitch(switches::kSingleProcess);
     parsedCommandLine->AppendSwitch(switches::kDisableD3D11);
     parsedCommandLine->AppendSwitch(switches::kDisableExperimentalWebGL);
 #endif
