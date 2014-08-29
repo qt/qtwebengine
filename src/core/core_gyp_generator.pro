@@ -24,9 +24,6 @@ DEFINES += QT_NO_KEYWORDS \
 # whenever we are cross compiling.
 cross_compile: DEFINES += QTWEBENGINE_MOBILE_SWITCHES
 
-# Keep Skia happy
-CONFIG(release, debug|release): DEFINES += NDEBUG
-
 contains(QT_CONFIG, egl): CONFIG += egl
 else: DEFINES += QT_NO_EGL
 
