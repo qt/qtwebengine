@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -55,12 +50,12 @@ BrowserAccessibility *BrowserAccessibilityFactoryQt::Create()
 
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QObject* parentObject,
-    const AccessibilityNodeData& src,
+    const ui::AXTreeUpdate& initialTree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory)
     , m_parentObject(parentObject) {
-    Initialize(src);
+    Initialize(initialTree);
 }
 
 QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
@@ -68,29 +63,25 @@ QAccessibleInterface *BrowserAccessibilityManagerQt::rootParentAccessible()
     return QAccessible::queryAccessibleInterface(m_parentObject);
 }
 
-void BrowserAccessibilityManagerQt::NotifyRootChanged()
-{
-}
-
-void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(blink::WebAXEvent event_type,
+void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(ui::AXEvent event_type,
     BrowserAccessibility* node)
 {
     BrowserAccessibilityQt *iface = static_cast<BrowserAccessibilityQt*>(node);
 
     switch (event_type) {
-    case WebAXEventFocus: {
+    case ui::AX_EVENT_FOCUS: {
         QAccessibleEvent event(iface, QAccessible::Focus);
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventCheckedStateChanged: {
+    case ui::AX_EVENT_CHECKED_STATE_CHANGED: {
         QAccessible::State change;
         change.checked = true;
         QAccessibleStateChangeEvent event(iface, change);
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventValueChanged: {
+    case ui::AX_EVENT_VALUE_CHANGED: {
         QVariant value;
         if (QAccessibleValueInterface *valueIface = iface->valueInterface())
             value = valueIface->currentValue();
@@ -98,29 +89,29 @@ void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(blink::WebAXEvent e
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventChildrenChanged:
+    case ui::AX_EVENT_CHILDREN_CHANGED:
         break;
-    case WebAXEventLayoutComplete:
+    case ui::AX_EVENT_LAYOUT_COMPLETE:
         break;
-    case WebAXEventLoadComplete:
+    case ui::AX_EVENT_LOAD_COMPLETE:
         break;
 
-    case WebAXEventTextChanged: {
+    case ui::AX_EVENT_TEXT_CHANGED: {
         QAccessibleTextUpdateEvent event(iface, -1, QString(), QString());
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventTextInserted: {
+    case ui::AX_EVENT_TEXT_INSERTED: {
         QAccessibleTextInsertEvent event(iface, -1, QString());
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventTextRemoved: {
+    case ui::AX_EVENT_TEXT_REMOVED: {
         QAccessibleTextRemoveEvent event(iface, -1, QString());
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case WebAXEventSelectedTextChanged: {
+    case ui::AX_EVENT_SELECTED_TEXT_CHANGED: {
         QAccessibleTextInterface *textIface = iface->textInterface();
         if (textIface) {
             int start = 0;

@@ -24,9 +24,6 @@ DEFINES += QT_NO_KEYWORDS \
 # whenever we are cross compiling.
 cross_compile: DEFINES += QTWEBENGINE_MOBILE_SWITCHES
 
-# Keep Skia happy
-CONFIG(release, debug|release): DEFINES += NDEBUG
-
 contains(QT_CONFIG, egl): CONFIG += egl
 else: DEFINES += QT_NO_EGL
 
@@ -39,6 +36,7 @@ SOURCES = \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_qt.cpp \
+        certificate_error_controller.cpp \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         clipboard_qt.cpp \
@@ -85,6 +83,8 @@ HEADERS = \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_qt.h \
+        certificate_error_controller_p.h \
+        certificate_error_controller.h \
         chromium_overrides.h \
         clipboard_qt.h \
         common/qt_messages.h \
@@ -119,6 +119,7 @@ HEADERS = \
         url_request_qrc_job_qt.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \
+        web_contents_adapter_p.h \
         web_contents_delegate_qt.h \
         web_contents_view_qt.h \
         web_engine_context.h \

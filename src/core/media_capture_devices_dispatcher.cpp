@@ -16,28 +16,24 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -53,7 +49,7 @@
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "content/public/browser/media_devices_monitor.h"
+#include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -80,7 +76,7 @@ const content::MediaStreamDevice *findDeviceWithId(const content::MediaStreamDev
 
 base::string16 getContentsUrl(content::WebContents *webContents)
 {
-  return UTF8ToUTF16(webContents->GetURL().GetOrigin().spec());
+  return base::UTF8ToUTF16(webContents->GetURL().GetOrigin().spec());
 }
 
 scoped_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::MediaStreamDevices &devices, content::DesktopMediaID mediaId
@@ -183,7 +179,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
                     BrowserThread::UI, FROM_HERE, base::Bind(&MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest, base::Unretained(this), webContents));
     }
 
-    callback.Run(devices, scoped_ptr<content::MediaStreamUI>());
+    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, scoped_ptr<content::MediaStreamUI>());
 }
 
 
@@ -194,7 +190,6 @@ MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
 }
 
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
-    : m_devicesEnumerated(false)
 {
   // MediaCaptureDevicesDispatcher is a singleton. It should be created on
   // UI thread. Otherwise, it will not receive
@@ -207,26 +202,6 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher()
 {
-}
-
-const MediaStreamDevices &MediaCaptureDevicesDispatcher::getAudioCaptureDevices()
-{
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!m_devicesEnumerated) {
-    content::EnsureMonitorCaptureDevices();
-    m_devicesEnumerated = true;
-  }
-  return m_audioDevices;
-}
-
-const MediaStreamDevices &MediaCaptureDevicesDispatcher::getVideoCaptureDevices()
-{
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!m_devicesEnumerated) {
-    content::EnsureMonitorCaptureDevices();
-    m_devicesEnumerated = true;
-  }
-  return m_videoDevices;
 }
 
 void MediaCaptureDevicesDispatcher::Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details)
@@ -267,7 +242,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
   scoped_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    callback.Run(devices, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
     return;
   }
 
@@ -279,15 +254,18 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     return;
   }
 
+  // The extension name that the stream is registered with.
+  std::string originalExtensionName;
   // Resolve DesktopMediaID for the specified device id.
   content::DesktopMediaID mediaId =
       getDesktopStreamsRegistry()->RequestMediaForStreamId(
           request.requested_video_device_id, request.render_process_id,
-          request.render_view_id, request.security_origin);
+          request.render_view_id, request.security_origin,
+          &originalExtensionName);
 
   // Received invalid device id.
   if (mediaId.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
     return;
   }
 
@@ -299,7 +277,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
       devices, mediaId, capture_audio, true,
       getContentsUrl(webContents));
 
-  callback.Run(devices, ui.Pass());
+  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
@@ -324,7 +302,7 @@ void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::W
       JavaScriptDialogManagerQt::GetInstance()->runDialogForContents(webContents, WebContentsAdapterClient::InternalAuthorizationDialog, message
                                                                      , QString(), securityOrigin, dialogCallback, title);
   } else
-      callback.Run(content::MediaStreamDevices(), scoped_ptr<content::MediaStreamUI>());
+      callback.Run(content::MediaStreamDevices(), content::MEDIA_DEVICE_INVALID_STATE, scoped_ptr<content::MediaStreamUI>());
 }
 
 void MediaCaptureDevicesDispatcher::handleScreenCaptureAccessRequest(content::WebContents *webContents, bool userAccepted, const base::string16 &)
@@ -349,7 +327,7 @@ void MediaCaptureDevicesDispatcher::handleScreenCaptureAccessRequest(content::We
     content::MediaResponseCallback callback = queue.front().callback;
     queue.pop_front();
 
-    callback.Run(devices, ui.Pass());
+    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
@@ -377,7 +355,7 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(content::WebConte
   content::MediaStreamRequest &request = queue.front().request;
 
   DCHECK(!it->second.empty());
-  WebContentsAdapterClient *adapterClient = WebContentsViewQt::from(webContents->GetView())->client();
+  WebContentsAdapterClient *adapterClient = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
   adapterClient->runMediaAccessPermissionRequest(toQt(request.security_origin), mediaRequestFlagsForRequest(request));
 }
 
@@ -388,7 +366,7 @@ void MediaCaptureDevicesDispatcher::getDefaultDevices(const std::string &audioDe
   DCHECK(audio || video);
 
   if (audio) {
-    const content::MediaStreamDevices &audioDevices = getAudioCaptureDevices();
+    const content::MediaStreamDevices &audioDevices = content::MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices();
     const content::MediaStreamDevice *device = findDeviceWithId(audioDevices, audioDeviceId);
     if (!device && !audioDevices.empty())
         device = &(*audioDevices.begin());
@@ -397,7 +375,7 @@ void MediaCaptureDevicesDispatcher::getDefaultDevices(const std::string &audioDe
   }
 
   if (video) {
-    const content::MediaStreamDevices &videoDevices = getVideoCaptureDevices();
+    const content::MediaStreamDevices &videoDevices = content::MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices();
     const content::MediaStreamDevice *device = findDeviceWithId(videoDevices, videoDeviceId);
     if (!device && !videoDevices.empty())
       device = &(*videoDevices.begin());
@@ -413,25 +391,7 @@ DesktopStreamsRegistry *MediaCaptureDevicesDispatcher::getDesktopStreamsRegistry
   return m_desktopStreamsRegistry.get();
 }
 
-void MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged(const content::MediaStreamDevices &devices)
-{
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaCaptureDevicesDispatcher::updateAudioDevicesOnUIThread,
-                 base::Unretained(this), devices));
-}
-
-void MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged(const content::MediaStreamDevices &devices)
-{
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&MediaCaptureDevicesDispatcher::updateVideoDevicesOnUIThread,
-                 base::Unretained(this), devices));
-}
-
-void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int renderProcessId, int renderViewId, int pageRequestId
+void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int renderProcessId, int renderViewId, int pageRequestId, const GURL& securityOrigin
                                                                , const content::MediaStreamDevice &device, content::MediaRequestState state)
 {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -441,25 +401,6 @@ void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int renderProcess
           &MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread,
           base::Unretained(this), renderProcessId, renderViewId,
           pageRequestId, device, state));
-}
-
-void MediaCaptureDevicesDispatcher::OnCreatingAudioStream(int /*renderProcessId*/, int /*renderViewId*/)
-{
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
-
-void MediaCaptureDevicesDispatcher::updateAudioDevicesOnUIThread(const content::MediaStreamDevices &devices)
-{
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  m_devicesEnumerated = true;
-  m_audioDevices = devices;
-}
-
-void MediaCaptureDevicesDispatcher::updateVideoDevicesOnUIThread(const content::MediaStreamDevices &devices)
-{
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  m_devicesEnumerated = true;
-  m_videoDevices = devices;
 }
 
 void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int renderProcessId, int renderViewId, int pageRequestId

@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -45,6 +40,7 @@
 #include "chrome/common/localized_error.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -78,7 +74,7 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
 }
 
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
-void ContentRendererClientQt::GetNavigationErrorStrings(blink::WebFrame *frame, const blink::WebURLRequest &failed_request, const blink::WebURLError &error, const std::string &accept_languages, std::string *error_html, base::string16 *error_description)
+void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* render_view, blink::WebFrame *frame, const blink::WebURLRequest &failed_request, const blink::WebURLError &error, std::string *error_html, base::string16 *error_description)
 {
     Q_UNUSED(frame)
 
@@ -92,8 +88,9 @@ void ContentRendererClientQt::GetNavigationErrorStrings(blink::WebFrame *frame, 
       const std::string locale = content::RenderThread::Get()->GetLocale();
       // TODO(elproxy): We could potentially get better diagnostics here by first calling NetErrorHelper::GetErrorStringsForDnsProbe
       LocalizedError::GetStrings(error.reason, error.domain.utf8(),
-                                 error.unreachableURL, isPost, locale,
-                                 accept_languages, &error_strings);
+                                 error.unreachableURL, isPost, error.staleCopyInCache && !isPost,
+                                 locale, render_view->GetAcceptLanguages(), scoped_ptr<LocalizedError::ErrorPageParams>(),
+                                 &error_strings);
       resource_id = IDR_NET_ERROR_HTML;
 
 

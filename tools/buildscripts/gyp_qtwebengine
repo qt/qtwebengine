@@ -11,7 +11,7 @@ if sys.platform == "darwin":
   print 'xcode version: ' + subprocess.check_output(['xcodebuild', '-version']).replace('\n', ' ')
   print 'clang++ version: ' + subprocess.check_output(['clang++', '--version']).replace('\n', ' ')
 
-qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+qtwebengine_root = os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import qtwebengine_utils as utils
 chrome_src = utils.getChromiumSrcDir()
 
@@ -19,7 +19,7 @@ script_dir = os.path.abspath(os.path.join(chrome_src, 'build'))
 if not os.path.isdir(script_dir):
   print script_dir + " is not a valid directory"
   sys.exit(1)
-root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir))
+root_dir = os.path.normcase(os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir)))
 
 sys.path.insert(1, script_dir)
 import gyp_helper
@@ -67,6 +67,11 @@ def additional_include_files(args=[]):
 
   return result
 
+def purifyGypVarPath(path):
+  # Backslash escapings are somehow reduced once every time a variable is resolved
+  # Python is able to understand mixed slash paths anyway, so don't use backslashes.
+  return path.replace('\\', '/')
+
 if __name__ == '__main__':
   output_dir = sys.argv[1]
   if not os.path.isdir(output_dir):
@@ -76,16 +81,6 @@ if __name__ == '__main__':
 
   if 'qt_cross_compile=1' in sys.argv:
     os.environ['GYP_CROSSCOMPILE'] = '1'
-
-  # On Windows we have to update the path of Chromium's Cygwin in registry to ensure current build
-  # uses Cygwin from the current source directory.
-  if sys.platform.startswith('win32'):
-    print 'Updating Cygwin\'s path in registry...'
-    setup_mount = os.path.abspath(os.path.join(chrome_src,'third_party','cygwin','setup_mount.bat'))
-    ret = subprocess.call(setup_mount)
-    if ret != 0:
-      print 'Failed to run', setup_mount
-      sys.exit(1)
 
   # On Mac we want to override CXX and CC that is provided with
   # the Chromium GYP environment.
@@ -111,7 +106,7 @@ if __name__ == '__main__':
   # We always have to disable tcmalloc.
   # Allocating with tcmalloc in chromium code and freeing without
   # tcmalloc outside of chromium code would cause erratic behavior.
-  args.extend(['-D', 'linux_use_tcmalloc=0'])
+  args.extend(['-D', 'use_allocator=none'])
 
   # On Mac we want to build in x64 mode. And we want to use libc++.
   if sys.platform in ('darwin',) and not 'GYP_CROSSCOMPILE' in os.environ:
@@ -135,21 +130,27 @@ if __name__ == '__main__':
   toplevel= os.path.commonprefix([root_dir, chrome_src])
   if not os.path.exists(toplevel):
     toplevel = os.path.join(toplevel, os.pardir)
-  args.extend(["--toplevel-dir=" + toplevel])
+  args.extend(["--toplevel-dir=" + purifyGypVarPath(toplevel)])
   # Chromium specific Hack: for Chromium to build, the depth has to be set to the chromium src dir.
-  args.extend(["--depth=" + chrome_src])
-  args.extend(['-D', 'qtwebengine_root=' + qtwebengine_root])
-  args.extend(['-D', 'chromium_src_dir=' + chrome_src])
+  args.extend(["--depth=" + purifyGypVarPath(chrome_src)])
+  args.extend(['-D', 'qtwebengine_root=' + purifyGypVarPath(qtwebengine_root)])
+  args.extend(['-D', 'chromium_src_dir=' + purifyGypVarPath(chrome_src)])
 
-  # linux_use_gold_binary currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
+  # linux_use_bundled_gold currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
   # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
-  args.extend(['-D', 'linux_use_gold_binary=0'])
+  args.extend(['-D', 'linux_use_bundled_gold=0'])
+  args.extend(['-D', 'linux_use_bundled_binutils=0'])
   args.extend(['-D', 'linux_use_gold_flags=0'])
+  args.extend(['-D', 'clang_use_chrome_plugins=0'])
   # Trigger Qt-specific build conditions.
   args.extend(['-D', 'use_qt=1'])
   # Tweak the output location and format (hardcode ninja for now if not set)
-  args.extend(['--generator-output', os.path.abspath(output_dir)])
-  args.extend(['-Goutput_dir='+ os.path.abspath(output_dir)])
+  args.extend(['--generator-output', '.'])
+  args.extend(['-Goutput_dir='+ os.path.relpath(output_dir, qtwebengine_root)])
+
+  # Tell gyp not to try finding cl.exe on Windows, Qt already requires the env to be set prior to the build.
+  args.extend(['-G', 'ninja_use_custom_environment_files'])
+
   if not os.environ.get('GYP_GENERATORS'):
     args.extend(['--format=ninja'])
   if "QTWEBENGINE_GYP_DEBUG" in os.environ:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -44,6 +39,7 @@
 // found in the LICENSE file.
 
 #include "web_contents_adapter.h"
+#include "web_contents_adapter_p.h"
 
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
@@ -52,7 +48,6 @@
 #include "qt_render_view_observer_host.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
-#include "web_contents_delegate_qt.h"
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
@@ -62,6 +57,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
@@ -296,21 +292,15 @@ void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::ve
     }
 }
 
-class WebContentsAdapterPrivate {
-public:
-    WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    WebContentsAdapterClient *adapterClient;
-    quint64 lastRequestId;
-};
-
 WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
-    , lastRequestId(0)
+    , nextRequestId(1)
+    , lastFindRequestId(0)
+{
+}
+
+WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 {
 }
 
@@ -362,6 +352,9 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     if (!d->webContents)
         d->webContents.reset(createBlankWebContents(adapterClient));
 
+    // This might replace any adapter that has been initialized with this WebEngineSettings.
+    adapterClient->webEngineSettings()->setWebContentsAdapter(this);
+
     content::RendererPreferences* rendererPrefs = d->webContents->GetMutableRendererPrefs();
     rendererPrefs->use_custom_colors = true;
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
@@ -374,7 +367,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     d->renderViewObserverHost.reset(new QtRenderViewObserverHost(d->webContents.get(), adapterClient));
 
     // Let the WebContent's view know about the WebContentsAdapterClient.
-    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(d->webContents->GetView());
+    WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(static_cast<content::WebContentsImpl*>(d->webContents.get())->GetView());
     contentsView->initialize(adapterClient);
 
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
@@ -384,8 +377,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE);
-
+        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true);
 }
 
 void WebContentsAdapter::reattachRWHV()
@@ -423,14 +415,14 @@ void WebContentsAdapter::stop()
         controller.RemoveEntryAtIndex(index);
 
     d->webContents->Stop();
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::reload()
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().Reload(/*checkRepost = */false);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::load(const QUrl &url)
@@ -439,7 +431,7 @@ void WebContentsAdapter::load(const QUrl &url)
     content::NavigationController::LoadURLParams params(toGurl(url));
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     d->webContents->GetController().LoadURLWithParams(params);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
@@ -454,7 +446,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     content::NavigationController::LoadURLParams params((GURL(urlString)));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
-    params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(content::kAboutBlankURL) : toGurl(baseUrl);
+    params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
     params.can_load_local_resources = true;
     d->webContents->GetController().LoadURLWithParams(params);
 }
@@ -502,57 +494,57 @@ QString WebContentsAdapter::selectedText() const
 void WebContentsAdapter::undo()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Undo();
+    d->webContents->Undo();
 }
 
 void WebContentsAdapter::redo()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Redo();
+    d->webContents->Redo();
 }
 
 void WebContentsAdapter::cut()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Cut();
+    d->webContents->Cut();
 }
 
 void WebContentsAdapter::copy()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Copy();
+    d->webContents->Copy();
 }
 
 void WebContentsAdapter::paste()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->Paste();
+    d->webContents->Paste();
 }
 
 void WebContentsAdapter::pasteAndMatchStyle()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->PasteAndMatchStyle();
+    d->webContents->PasteAndMatchStyle();
 }
 
 void WebContentsAdapter::selectAll()
 {
     Q_D(const WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->SelectAll();
+    d->webContents->SelectAll();
 }
 
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().GoToIndex(offset);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 void WebContentsAdapter::navigateToOffset(int offset)
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().GoToOffset(offset);
-    d->webContents->GetView()->Focus();
+    d->webContents->Focus();
 }
 
 int WebContentsAdapter::navigationEntryCount()
@@ -595,6 +587,16 @@ QDateTime WebContentsAdapter::getNavigationEntryTimestamp(int index)
     return entry ? toQt(entry->GetTimestamp()) : QDateTime();
 }
 
+QUrl WebContentsAdapter::getNavigationEntryIconUrl(int index)
+{
+    Q_D(WebContentsAdapter);
+    content::NavigationEntry *entry = d->webContents->GetController().GetEntryAtIndex(index);
+    if (!entry)
+        return QUrl();
+    content::FaviconStatus favicon = entry->GetFavicon();
+    return favicon.valid ? toQt(favicon.url) : QUrl();
+}
+
 void WebContentsAdapter::clearNavigationHistory()
 {
     Q_D(WebContentsAdapter);
@@ -611,13 +613,13 @@ void WebContentsAdapter::serializeNavigationHistory(QDataStream &output)
 void WebContentsAdapter::setZoomFactor(qreal factor)
 {
     Q_D(WebContentsAdapter);
-    d->webContents->SetZoomLevel(content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
+    content::HostZoomMap::SetZoomLevel(d->webContents.get(), content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
 }
 
 qreal WebContentsAdapter::currentZoomFactor() const
 {
     Q_D(const WebContentsAdapter);
-    return static_cast<qreal>(content::ZoomLevelToZoomFactor(d->webContents->GetZoomLevel()));
+    return content::ZoomLevelToZoomFactor(content::HostZoomMap::GetZoomLevel(d->webContents.get()));
 }
 
 void WebContentsAdapter::enableInspector(bool enable)
@@ -637,8 +639,7 @@ void WebContentsAdapter::runJavaScript(const QString &javaScript)
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    base::string16 mainFrameXPath;
-    rvh->ExecuteJavascriptInWebFrame(mainFrameXPath, toString16(javaScript));
+    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript));
 }
 
 quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript)
@@ -646,29 +647,37 @@ quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScrip
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    content::RenderViewHost::JavascriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, ++d->lastRequestId);
-    base::string16 mainFrameXPath;
-    rvh->ExecuteJavascriptInWebFrameCallbackResult(mainFrameXPath, toString16(javaScript), callback);
-    return d->lastRequestId;
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, d->nextRequestId);
+    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
+    return d->nextRequestId++;
 }
 
 quint64 WebContentsAdapter::fetchDocumentMarkup()
 {
     Q_D(WebContentsAdapter);
-    d->renderViewObserverHost->fetchDocumentMarkup(++d->lastRequestId);
-    return d->lastRequestId;
+    d->renderViewObserverHost->fetchDocumentMarkup(d->nextRequestId);
+    return d->nextRequestId++;
 }
 
 quint64 WebContentsAdapter::fetchDocumentInnerText()
 {
     Q_D(WebContentsAdapter);
-    d->renderViewObserverHost->fetchDocumentInnerText(++d->lastRequestId);
-    return d->lastRequestId;
+    d->renderViewObserverHost->fetchDocumentInnerText(d->nextRequestId);
+    return d->nextRequestId++;
 }
 
 quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitively, bool findBackward)
 {
     Q_D(WebContentsAdapter);
+    if (d->lastFindRequestId > d->webContentsDelegate->lastReceivedFindReply()) {
+        // There are cases where the render process will overwrite a previous request
+        // with the new search and we'll have a dangling callback, leaving the application
+        // waiting for it forever.
+        // Assume that any unfinished find has been unsuccessful when a new one is started
+        // to cover that case.
+        d->adapterClient->didFindText(d->lastFindRequestId, 0);
+    }
+
     blink::WebFindOptions options;
     options.forward = !findBackward;
     options.matchCase = caseSensitively;
@@ -677,8 +686,9 @@ quint64 WebContentsAdapter::findText(const QString &subString, bool caseSensitiv
 
     // Find already allows a request ID as input, but only as an int.
     // Use the same counter but mod it to MAX_INT, this keeps the same likeliness of request ID clashing.
-    int shrunkRequestId = ++d->lastRequestId & 0x7fffffff;
-    d->webContents->GetRenderViewHost()->Find(shrunkRequestId, toString16(subString), options);
+    int shrunkRequestId = d->nextRequestId++ & 0x7fffffff;
+    d->webContents->Find(shrunkRequestId, toString16(subString), options);
+    d->lastFindRequestId = shrunkRequestId;
     return shrunkRequestId;
 }
 
@@ -686,7 +696,7 @@ void WebContentsAdapter::stopFinding()
 {
     Q_D(WebContentsAdapter);
     d->webContentsDelegate->setLastSearchedString(QString());
-    d->webContents->GetRenderViewHost()->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
+    d->webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
 void WebContentsAdapter::updateWebPreferences(const WebPreferences & webPreferences)

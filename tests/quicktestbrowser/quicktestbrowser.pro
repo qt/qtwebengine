@@ -8,7 +8,8 @@ HEADERS = quickwindow.h \
 SOURCES = quickwindow.cpp \
           main.cpp
 
-OTHER_FILES += ContextMenuExtras.qml \
+OTHER_FILES += ButtonWithMenu.qml \
+               ContextMenuExtras.qml \
                FeaturePermissionBar.qml \
                quickwindow.qml
 

@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -314,6 +309,10 @@ bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
 GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
     : m_size(size)
 {
+    // Some implementations of Pbuffer do not support having a 0 size. For such
+    // cases use a (1, 1) surface.
+    if (m_size.GetArea() == 0)
+        m_size.SetSize(1, 1);
 }
 
 bool GLSurfaceQt::HasEGLExtension(const char* name)
@@ -334,12 +333,6 @@ bool GLSurfaceQtEGL::Initialize()
     EGLDisplay display = g_display;
     if (!display) {
         LOG(ERROR) << "Trying to create surface with invalid display.";
-        return false;
-    }
-
-    if (m_size.GetArea() == 0) {
-        LOG(ERROR) << "Error: surface has zero area"
-                   << m_size.width() << " x " << m_size.height();
         return false;
     }
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -49,13 +44,12 @@
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "delegated_frame_node.h"
-#include "ui/events/gestures/gesture_recognizer.h"
-#include "ui/events/gestures/gesture_types.h"
-#include <QMap>
+#include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include <QPoint>
 #include <QRect>
 #include <QtGlobal>
+
+#include "delegated_frame_node.h"
 
 QT_BEGIN_NAMESPACE
 class QEvent;
@@ -70,6 +64,10 @@ class QAccessibleInterface;
 QT_END_NAMESPACE
 
 class WebContentsAdapterClient;
+
+namespace content {
+class RenderWidgetHostImpl;
+}
 
 struct MultipleMouseClickHelper
 {
@@ -89,8 +87,7 @@ struct MultipleMouseClickHelper
 
 class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
-    , public ui::GestureConsumer
-    , public ui::GestureEventHelper
+    , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public content::BrowserAccessibilityDelegate
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
@@ -102,14 +99,12 @@ public:
     void setDelegate(RenderWidgetHostViewQtDelegate *delegate);
     void setAdapterClient(WebContentsAdapterClient *adapterClient);
 
-    virtual content::BackingStore *AllocBackingStore(const gfx::Size &size) Q_DECL_OVERRIDE;
-
     virtual void InitAsChild(gfx::NativeView) Q_DECL_OVERRIDE;
     virtual void InitAsPopup(content::RenderWidgetHostView*, const gfx::Rect&) Q_DECL_OVERRIDE;
     virtual void InitAsFullscreen(content::RenderWidgetHostView*) Q_DECL_OVERRIDE;
     virtual content::RenderWidgetHost* GetRenderWidgetHost() const Q_DECL_OVERRIDE;
     virtual void SetSize(const gfx::Size& size) Q_DECL_OVERRIDE;
-    virtual void SetBounds(const gfx::Rect& rect) Q_DECL_OVERRIDE;
+    virtual void SetBounds(const gfx::Rect&) Q_DECL_OVERRIDE;
     virtual gfx::Size GetPhysicalBackingSize() const Q_DECL_OVERRIDE;
     virtual gfx::NativeView GetNativeView() const Q_DECL_OVERRIDE;
     virtual gfx::NativeViewId GetNativeViewId() const Q_DECL_OVERRIDE;
@@ -121,28 +116,25 @@ public:
     virtual void Hide() Q_DECL_OVERRIDE;
     virtual bool IsShowing() Q_DECL_OVERRIDE;
     virtual gfx::Rect GetViewBounds() const Q_DECL_OVERRIDE;
-    virtual void SetBackground(const SkBitmap& background) Q_DECL_OVERRIDE;
     virtual bool LockMouse() Q_DECL_OVERRIDE;
     virtual void UnlockMouse() Q_DECL_OVERRIDE;
     virtual void WasShown() Q_DECL_OVERRIDE;
     virtual void WasHidden() Q_DECL_OVERRIDE;
-    virtual void MovePluginWindows(const gfx::Vector2d&, const std::vector<content::WebPluginGeometry>&) Q_DECL_OVERRIDE;
+    virtual void MovePluginWindows(const std::vector<content::WebPluginGeometry>&) Q_DECL_OVERRIDE;
     virtual void Blur() Q_DECL_OVERRIDE;
-    virtual void UpdateCursor(const WebCursor&) Q_DECL_OVERRIDE;
+    virtual void UpdateCursor(const content::WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
-    virtual void TextInputTypeChanged(ui::TextInputType, ui::TextInputMode, bool) Q_DECL_OVERRIDE;
+    virtual void TextInputStateChanged(const ViewHostMsg_TextInputState_Params& params) Q_DECL_OVERRIDE;
     virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
     virtual void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
-    virtual void DidUpdateBackingStore(const gfx::Rect& scroll_rect, const gfx::Vector2d& scroll_delta, const std::vector<gfx::Rect>& copy_rects, const ui::LatencyInfo&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
     virtual void SetTooltipText(const base::string16 &tooltip_text) Q_DECL_OVERRIDE;
     virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&) Q_DECL_OVERRIDE;
     virtual void ScrollOffsetChanged() Q_DECL_OVERRIDE;
-    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback) Q_DECL_OVERRIDE;
+    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback, const SkBitmap::Config config) Q_DECL_OVERRIDE;
     virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback) Q_DECL_OVERRIDE;
     virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
-    virtual void OnAcceleratedCompositingStateChange() Q_DECL_OVERRIDE;
     virtual void AcceleratedSurfaceInitialized(int host_id, int route_id) Q_DECL_OVERRIDE;
     virtual void AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
     virtual void AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
@@ -153,25 +145,21 @@ public:
     virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
     virtual gfx::GLSurfaceHandle GetCompositingSurface() Q_DECL_OVERRIDE;
-    virtual void SetHasHorizontalScrollbar(bool) Q_DECL_OVERRIDE;
-    virtual void SetScrollOffsetPinning(bool, bool) Q_DECL_OVERRIDE;
-    virtual void OnAccessibilityEvents(const std::vector<AccessibilityHostMsg_EventParams>&) Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewBase.
     virtual void SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
 
-    // Overridden from ui::GestureEventHelper.
-    virtual bool CanDispatchToConsumer(ui::GestureConsumer*) Q_DECL_OVERRIDE;
-    virtual void DispatchPostponedGestureEvent(ui::GestureEvent*) Q_DECL_OVERRIDE;
-    virtual void DispatchCancelTouchEvent(ui::TouchEvent*) Q_DECL_OVERRIDE;
+    // Overridden from ui::GestureProviderClient.
+    virtual void OnGestureEvent(const ui::GestureEventData& gesture) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     virtual QSGNode *updatePaintNode(QSGNode *) Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
+    virtual void windowBoundsChanged() Q_DECL_OVERRIDE;
+    virtual void windowChanged() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const Q_DECL_OVERRIDE;
-    virtual void windowChanged() Q_DECL_OVERRIDE;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -187,7 +175,6 @@ public:
     virtual bool IsSpeaking() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
     virtual void SpeakSelection() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual bool PostProcessEventForPluginIme(const content::NativeWebKeyboardEvent& event) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
-    virtual void AboutToWaitForBackingStoreMsg() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual void StopSpeaking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual void SetWindowVisibility(bool visible) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual bool SupportsSpeech() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
@@ -211,13 +198,17 @@ public:
 #endif // defined(OS_WIN)
 
     // Overridden from content::BrowserAccessibilityDelegate
-    virtual void SetAccessibilityFocus(int acc_obj_id) Q_DECL_OVERRIDE;
+    virtual void AccessibilitySetFocus(int acc_obj_id) Q_DECL_OVERRIDE;
     virtual void AccessibilityDoDefaultAction(int acc_obj_id) Q_DECL_OVERRIDE;
+    virtual void AccessibilityShowMenu(int acc_obj_id) Q_DECL_OVERRIDE { }
     virtual void AccessibilityScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus) Q_DECL_OVERRIDE;
     virtual void AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point) Q_DECL_OVERRIDE;
     virtual void AccessibilitySetTextSelection(int acc_obj_id, int start_offset, int end_offset) Q_DECL_OVERRIDE;
-    virtual gfx::Point GetLastTouchEventLocation() const Q_DECL_OVERRIDE;
-    virtual void FatalAccessibilityTreeError() Q_DECL_OVERRIDE;
+    virtual bool AccessibilityViewHasFocus() const Q_DECL_OVERRIDE;
+    virtual gfx::Rect AccessibilityGetViewBounds() const Q_DECL_OVERRIDE  { return GetViewBounds(); }
+    virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) const Q_DECL_OVERRIDE  { return gfx::Point(); }
+    virtual void AccessibilityHitTest(const gfx::Point& point) Q_DECL_OVERRIDE  { }
+    virtual void AccessibilityFatalError() Q_DECL_OVERRIDE;
 
     QAccessibleInterface *GetQtAccessible();
 
@@ -225,21 +216,16 @@ public:
 
 private:
     void sendDelegatedFrameAck();
-    void Paint(const gfx::Rect& damage_rect);
-    void ProcessGestures(ui::GestureRecognizer::Gestures *gestures);
-    void ForwardGestureEventToRenderer(ui::GestureEvent* gesture);
-    int GetMappedTouch(int qtTouchId);
-    void RemoveExpiredMappings(QTouchEvent *ev);
+    void processMotionEvent(const ui::MotionEvent &motionEvent);
     float dpiScale() const;
 
     bool IsPopup() const;
     void CreateBrowserAccessibilityManagerIfNeeded();
 
     content::RenderWidgetHostImpl *m_host;
-    scoped_ptr<ui::GestureRecognizer> m_gestureRecognizer;
+    ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
-    QMap<int, int> m_touchIdMapping;
-    blink::WebTouchEvent m_accumTouchEvent;
+    bool m_sendMotionActionDown;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -62,17 +57,17 @@ public:
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
 
-        qmlRegisterType<QQuickWebEngineView>(uri, 0, 9, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 0, 9, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 0, 9, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 0, 9, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
+        qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
+        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 0, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
 
         // The QML type loader relies on the minimum and maximum minor version of registered types
         // to validate imports. We want to tie our import version to the module version, so register
         // a dummy type in order to allow importing the latest version even if it didn't include
         // an API update that would appear here in a registered type.
         int major = QTWEBENGINE_VERSION >> 16;
-        int minor = QTWEBENGINE_VERSION >> 8;
+        int minor = (QTWEBENGINE_VERSION >> 8) & 0xFF;
         qmlRegisterUncreatableType<QQuickWebEngineVersionBumper>(uri, major, minor, "WebEngineVersionBumper", QObject::tr("This is a dummy type and cannot be created."));
     }
 };

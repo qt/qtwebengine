@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -76,14 +71,6 @@ private:
 
 WebEngineSettings::WebEngineSettings(WebEngineSettingsDelegate *delegate)
     : m_adapter(0)
-    , m_delegate(delegate)
-    , m_batchTimer(new BatchTimer(this))
-{
-    Q_ASSERT(delegate);
-}
-
-WebEngineSettings::WebEngineSettings(WebEngineSettingsDelegate *delegate, WebContentsAdapter *adapter)
-    : m_adapter(adapter)
     , m_delegate(delegate)
     , m_batchTimer(new BatchTimer(this))
 {
@@ -252,13 +239,12 @@ void WebEngineSettings::doApply()
     // FIXME: batch sequential calls to apply?
     applySettingsToWebPreferences(webPreferences.data());
 
-    if (m_adapter)
-        m_adapter->updateWebPreferences(*webPreferences.data());
+    Q_ASSERT(m_adapter);
+    m_adapter->updateWebPreferences(*webPreferences.data());
 }
 
 void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
 {
-    Q_ASSERT(prefs->accelerated_compositing_enabled);
     // Override for now
     prefs->java_enabled = false;
 

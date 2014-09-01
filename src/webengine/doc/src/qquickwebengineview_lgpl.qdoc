@@ -58,6 +58,12 @@
     }
     \endcode
 
+    \section1 API References
+
+    \list
+    \li \l{Qt WebEngine QML Types}{QML Types}
+    \endlist
+
     \section1 Examples
 
     There are several Qt WebEngine examples located in the

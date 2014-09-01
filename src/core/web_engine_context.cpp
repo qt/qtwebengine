@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -49,21 +44,21 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/utility_process_host_impl.h"
+#include "content/gpu/in_process_gpu_thread.h"
+#include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/utility/in_process_utility_thread.h"
 #include "content/renderer/in_process_renderer_thread.h"
-#include "content/gpu/in_process_gpu_thread.h"
+#include "content/utility/in_process_utility_thread.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/gl/gl_switches.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
-#include "webkit/common/user_agent/user_agent_util.h"
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
 #include "content/public/app/startup_helper_win.h"
@@ -135,8 +130,6 @@ WebEngineContext::WebEngineContext()
     CommandLine::Init(argv.size(), argv.constData());
 
     CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
-    // Mention the Chromium version we're based on to get passed stupid UA-string-based feature detection (several WebRTC demos need this)
-    parsedCommandLine->AppendSwitchASCII(switches::kUserAgent, webkit_glue::BuildUserAgentFromProduct("QtWebEngine/" QTWEBENGINECORE_VERSION_STR " Chrome/" CHROMIUM_VERSION));
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
@@ -189,17 +182,17 @@ WebEngineContext::WebEngineContext()
         && qApp->platformNativeInterface()->nativeResourceForWindow(QByteArrayLiteral("egldisplay"), 0))
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
 
-    content::UtilityProcessHost::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
-    content::RenderProcessHost::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
+    content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
+    content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
     content::GpuProcessHost::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 
+    content::ContentMainParams contentMainParams(m_mainDelegate.get());
 #if defined(OS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
     content::InitializeSandboxInfo(&sandbox_info);
-    m_contentRunner->Initialize(0, &sandbox_info, m_mainDelegate.get());
-#else
-    m_contentRunner->Initialize(0, 0, m_mainDelegate.get());
+    contentMainParams.sandbox_info = &sandbox_info;
 #endif
+    m_contentRunner->Initialize(contentMainParams);
     m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.

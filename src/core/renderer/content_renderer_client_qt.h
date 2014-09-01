@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -55,9 +50,9 @@ public:
     virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
     virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
 
-    virtual bool ShouldSuppressErrorPage(const GURL &) Q_DECL_OVERRIDE { return false; }
-    virtual void GetNavigationErrorStrings(blink::WebFrame* frame, const blink::WebURLRequest& failed_request, const blink::WebURLError& error
-            , const std::string& accept_languages, std::string* error_html, base::string16* error_description) Q_DECL_OVERRIDE;
+    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE { return true; }
+    virtual void GetNavigationErrorStrings(content::RenderView* render_view, blink::WebFrame* frame, const blink::WebURLRequest& failed_request
+            , const blink::WebURLError& error, std::string* error_html, base::string16* error_description) Q_DECL_OVERRIDE;
 
     virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
     virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;

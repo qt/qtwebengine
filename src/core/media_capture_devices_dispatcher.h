@@ -17,24 +17,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -60,9 +55,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
-class AudioStreamIndicator;
 class DesktopStreamsRegistry;
-class MediaStreamCaptureIndicator;
 
 // This singleton is used to receive updates about media events from the content
 // layer. Based on Chrome's implementation.
@@ -80,13 +73,14 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void getDefaultDevices(const std::string &audioDeviceId, const std::string &videoDeviceId, bool audio, bool video, content::MediaStreamDevices *);
 
   // Overridden from content::MediaObserver:
-  virtual void OnAudioCaptureDevicesChanged(const content::MediaStreamDevices &) Q_DECL_OVERRIDE;
-  virtual void OnVideoCaptureDevicesChanged(const content::MediaStreamDevices &) Q_DECL_OVERRIDE;
-  virtual void OnMediaRequestStateChanged(int renderProcessId, int renderViewId, int pageRequestId, const content::MediaStreamDevice &device
+  virtual void OnAudioCaptureDevicesChanged() Q_DECL_OVERRIDE { }
+  virtual void OnVideoCaptureDevicesChanged() Q_DECL_OVERRIDE { }
+  virtual void OnMediaRequestStateChanged(int renderProcessId, int renderViewId, int pageRequestId, const GURL &securityOrigin, const content::MediaStreamDevice &device
                                           , content::MediaRequestState state) Q_DECL_OVERRIDE;
-  virtual void OnAudioStreamPlayingChanged(int /*render_process_id*/, int /*render_view_id*/, int /*stream_id*/
-                                           , bool /*is_playing*/, float /*power_dBFS*/, bool /*clipped*/) Q_DECL_OVERRIDE {}
-  virtual void OnCreatingAudioStream(int renderProcessId, int renderViewId) Q_DECL_OVERRIDE;
+
+  virtual void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) Q_DECL_OVERRIDE { }
+  virtual void OnAudioStreamPlaying(int /*render_process_id*/, int /*render_frame_id*/, int /*stream_id*/, const ReadPowerAndClipCallback& /*power_read_callback*/) Q_DECL_OVERRIDE { }
+  virtual void OnAudioStreamStopped(int /*render_process_id*/, int /*render_frame_id*/, int /*stream_id*/) Q_DECL_OVERRIDE { }
 
   DesktopStreamsRegistry *getDesktopStreamsRegistry();
 
@@ -107,9 +101,6 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   MediaCaptureDevicesDispatcher();
   virtual ~MediaCaptureDevicesDispatcher();
 
-  const content::MediaStreamDevices &getAudioCaptureDevices();
-  const content::MediaStreamDevices &getVideoCaptureDevices();
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type, const content::NotificationSource &source, const content::NotificationDetails &details) Q_DECL_OVERRIDE;
 
@@ -121,20 +112,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void ProcessQueuedAccessRequest(content::WebContents *);
 
   // Called by the MediaObserver() functions, executed on UI thread.
-  void updateAudioDevicesOnUIThread(const content::MediaStreamDevices &);
-  void updateVideoDevicesOnUIThread(const content::MediaStreamDevices &);
   void updateMediaRequestStateOnUIThread(int renderProcessId, int renderViewId, int pageRequestId, const content::MediaStreamDevice &
                                          , content::MediaRequestState);
-
-  // A list of cached audio capture devices.
-  content::MediaStreamDevices m_audioDevices;
-
-  // A list of cached video capture devices.
-  content::MediaStreamDevices m_videoDevices;
-
-  // Flag to indicate if device enumeration has been done/doing.
-  // Only accessed on UI thread.
-  bool m_devicesEnumerated;
 
   RequestsQueues m_pendingRequests;
 

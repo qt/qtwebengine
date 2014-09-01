@@ -23,9 +23,12 @@
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
+#include "certificate_error_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebenginesettings.h"
+#include "qwebenginesettings_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
@@ -166,6 +169,7 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
 QWebEnginePagePrivate::QWebEnginePagePrivate()
     : adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
+    , settings(new QWebEngineSettings)
     , view(0)
 {
     memset(actions, 0, sizeof(actions));
@@ -174,6 +178,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
 QWebEnginePagePrivate::~QWebEnginePagePrivate()
 {
     delete history;
+    delete settings;
 }
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
@@ -221,11 +226,6 @@ void QWebEnginePagePrivate::selectionChanged()
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
     return view ? view->rect() : QRectF();
-}
-
-QPoint QWebEnginePagePrivate::mapToGlobal(const QPoint &posInView) const
-{
-    return view ? view->mapToGlobal(posInView) : QPoint();
 }
 
 qreal QWebEnginePagePrivate::dpiScale() const
@@ -343,30 +343,6 @@ QObject *QWebEnginePagePrivate::accessibilityParentObject()
     return view;
 }
 
-namespace {
-class DummySettingsDelegate : public WebEngineSettingsDelegate {
-public:
-    DummySettingsDelegate()
-        : settings(0) {}
-    void apply() { }
-    WebEngineSettings* fallbackSettings() const { return settings; }
-    WebEngineSettings *settings;
-};
-
-}// anonymous namespace
-
-WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
-{
-    static WebEngineSettings *dummySettings = 0;
-    if (!dummySettings) {
-        DummySettingsDelegate *dummyDelegate = new DummySettingsDelegate;
-        dummySettings = new WebEngineSettings(dummyDelegate);
-        dummyDelegate->settings = dummySettings;
-        dummySettings->initDefaults();
-    }
-    return dummySettings;
-}
-
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {
 #ifdef QT_NO_ACTION
@@ -449,6 +425,12 @@ QWebEngineHistory *QWebEnginePage::history() const
 {
     Q_D(const QWebEnginePage);
     return d->history;
+}
+
+QWebEngineSettings *QWebEnginePage::settings() const
+{
+    Q_D(const QWebEnginePage);
+    return d->settings;
 }
 
 void QWebEnginePage::setView(QWidget *view)
@@ -665,6 +647,18 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         controller->reject();
 }
 
+void QWebEnginePagePrivate::allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &controller)
+{
+    Q_Q(QWebEnginePage);
+    bool accepted = false;
+
+    QWebEngineCertificateError error(controller->error(), controller->url(), controller->overridable() && !controller->strictEnforcement(), controller->errorString());
+    accepted = q->certificateError(error);
+
+    if (error.isOverridable())
+        controller->accept(accepted);
+}
+
 void QWebEnginePagePrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {
     Q_Q(QWebEnginePage);
@@ -777,6 +771,11 @@ void QWebEnginePagePrivate::runFileChooser(WebContentsAdapterClient::FileChooser
     Q_Q(QWebEnginePage);
     QStringList selectedFileNames = q->chooseFiles(toPublic(mode), (QStringList() << defaultFileName), acceptedMimeTypes);
     adapter->filesSelectedInChooser(selectedFileNames, mode);
+}
+
+WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
+{
+    return settings->d_func()->coreSettings.data();
 }
 
 void QWebEnginePage::load(const QUrl& url)
@@ -933,6 +932,12 @@ void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel leve
     Q_UNUSED(lineNumber);
     Q_UNUSED(sourceID);
 }
+
+bool QWebEnginePage::certificateError(const QWebEngineCertificateError &)
+{
+    return false;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwebenginepage.cpp"

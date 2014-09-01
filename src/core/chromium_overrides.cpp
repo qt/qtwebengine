@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -43,9 +38,10 @@
 
 #include "gl_context_qt.h"
 #include "qtwebenginecoreglobal.h"
+#include "web_contents_view_qt.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
+#include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/font_list.h"
 
 #include <QGuiApplication>
@@ -58,7 +54,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "base/message_loop/message_pump_x11.h"
+#include "ui/gfx/x/x11_types.h"
 #endif
 
 #if defined(USE_AURA) && !defined(USE_OZONE)
@@ -85,38 +81,30 @@ void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* result
     *results = r;
 }
 
-namespace base {
-
 #if defined(USE_X11)
-Display* MessagePumpForUI::GetDefaultXDisplay() {
-    static void *display = GLContextHelper::getXDisplay();
-    return static_cast<Display*>(display);
+XDisplay* GetQtXDisplay()
+{
+    return static_cast<XDisplay*>(GLContextHelper::getXDisplay());
 }
 #endif
 
-}
-
 namespace content {
 class WebContentsImpl;
-class WebContentsViewPort;
+class WebContentsView;
 class WebContentsViewDelegate;
 class RenderViewHostDelegateView;
 
-WebContentsViewPort* CreateWebContentsView(WebContentsImpl*,
-                                           WebContentsViewDelegate*,
-                                           RenderViewHostDelegateView**)
+WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
+    WebContentsViewDelegate *,
+    RenderViewHostDelegateView **render_view_host_delegate_view)
 {
-    return 0;
-}
-
-RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(RenderWidgetHost*) {
-    // WebContentsViewQt should take care of this directly.
-    Q_UNREACHABLE();
-    return NULL;
+    WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
+    *render_view_host_delegate_view = rv;
+    return rv;
 }
 
 // static
-void RenderWidgetHostViewPort::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
+void RenderWidgetHostViewBase::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
     QWindow dummy;
     GetScreenInfoFromNativeWindow(&dummy, results);
 }
@@ -163,7 +151,7 @@ namespace gfx {
 // Stubs for these unused functions that are stripped in case
 // of a release aura build but a debug build needs the symbols.
 
-RenderText* RenderText::CreateInstance()
+RenderText* RenderText::CreateNativeInstance()
 {
     QT_NOT_USED;
     return 0;

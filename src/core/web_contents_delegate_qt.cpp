@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -47,8 +42,8 @@
 
 #include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
-#include "web_contents_adapter.h"
 #include "web_contents_adapter_client.h"
+#include "web_contents_adapter_p.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
 #include "web_engine_visited_links_manager.h"
@@ -76,6 +71,7 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
+    , m_lastReceivedFindReply(0)
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -83,8 +79,12 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
 
 content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
 {
-    // We already carry the disposition to the application through AddNewContents.
-    Q_UNUSED(params.disposition);
+    content::WebContents *target = source;
+    if (params.disposition != CURRENT_TAB) {
+        WebContentsAdapter *targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
+        if (targetAdapter)
+            target = targetAdapter->d_func()->webContents.get();
+    }
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
     load_url_params.referrer = params.referrer;
@@ -97,8 +97,8 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     if (params.transferred_global_request_id != content::GlobalRequestID())
         load_url_params.transferred_global_request_id = params.transferred_global_request_id;
 
-    source->GetController().LoadURLWithParams(load_url_params);
-    return source;
+    target->GetController().LoadURLWithParams(load_url_params);
+    return target;
 }
 
 void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
@@ -111,18 +111,7 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
-    WebContentsAdapter *newAdapter = new WebContentsAdapter(new_contents);
-    // Do the first ref-count manually to be able to know if the application is handling adoptNewWindow through the public API.
-    newAdapter->ref.ref();
-
-    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos));
-
-    if (!newAdapter->ref.deref()) {
-        // adoptNewWindow didn't increase the ref-count, new_contents needs to be discarded.
-        delete newAdapter;
-        newAdapter = 0;
-    }
-
+    WebContentsAdapter *newAdapter = createWindow(new_contents, disposition, initial_pos, user_gesture);
     if (was_blocked)
         *was_blocked = !newAdapter;
 }
@@ -180,9 +169,8 @@ void WebContentsDelegateQt::DidFinishLoad(int64, const GURL&, bool is_main_frame
     }
 }
 
-void WebContentsDelegateQt::DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates)
+void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates)
 {
-    Q_UNUSED(page_id)
     Q_FOREACH (content::FaviconURL candidate, candidates) {
         if (candidate.icon_type == content::FaviconURL::FAVICON && !candidate.icon_url.is_empty()) {
             content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
@@ -240,8 +228,10 @@ void WebContentsDelegateQt::FindReply(content::WebContents *source, int request_
     Q_UNUSED(source)
     Q_UNUSED(selection_rect)
     Q_UNUSED(active_match_ordinal)
-    if (final_update)
+    if (final_update) {
+        m_lastReceivedFindReply = request_id;
         m_viewClient->didFindText(request_id, number_of_matches);
+    }
 }
 
 void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *web_contents, const content::MediaStreamRequest &request, const content::MediaResponseCallback &callback)
@@ -255,6 +245,7 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents *source, int32 
     Q_UNUSED(page_id)
     m_viewClient->didUpdateTargetURL(toQt(url));
 }
+
 void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDetails &, const content::FrameNavigateParams &params)
 {
     if (!params.should_update_history)
@@ -262,7 +253,30 @@ void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDeta
     WebEngineContext::current()->visitedLinksManager()->addUrl(params.url);
 }
 
+
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, WebPreferences *webPreferences)
 {
     m_viewClient->webEngineSettings()->overrideWebPreferences(webPreferences);
+}
+
+WebContentsAdapter *WebContentsDelegateQt::createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture)
+{
+    WebContentsAdapter *newAdapter = new WebContentsAdapter(new_contents);
+    // Do the first ref-count manually to be able to know if the application is handling adoptNewWindow through the public API.
+    newAdapter->ref.ref();
+
+    m_viewClient->adoptNewWindow(newAdapter, static_cast<WebContentsAdapterClient::WindowOpenDisposition>(disposition), user_gesture, toQt(initial_pos));
+
+    if (!newAdapter->ref.deref()) {
+        // adoptNewWindow didn't increase the ref-count, newAdapter and its new_contents (if non-null) need to be discarded.
+        delete newAdapter;
+        newAdapter = 0;
+    }
+
+    return newAdapter;
+}
+
+void WebContentsDelegateQt::allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController)
+{
+    m_viewClient->allowCertificateError(errorController);
 }

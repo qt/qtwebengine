@@ -63,6 +63,10 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
 
 static QList<const char *> knownEnumNames = QList<const char *>();
 
+static QStringList hardcodedTypes = QStringList()
+    << "QJSValue"
+    ;
+
 static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.AcceptRequest --> NavigationRequestAction"
     << "QQuickWebEngineView.IgnoreRequest --> NavigationRequestAction"
@@ -160,7 +164,7 @@ static bool isCheckedClass(const QByteArray &typeName)
 
 static void checkKnownType(const QByteArray &typeName)
 {
-    if ((typeName != "void" && !QMetaType::type(typeName)) || QMetaType::type(typeName) >= QMetaType::User) {
+    if ((!hardcodedTypes.contains(typeName) && !QMetaType::type(typeName)) || QMetaType::type(typeName) >= QMetaType::User) {
         bool knownEnum = isCheckedEnum(typeName);
         bool knownClass = isCheckedClass(typeName);
         QVERIFY2(knownEnum || knownClass, qPrintable(QString("The API uses an unknown type [%1], you might have to add it to the typesToCheck list.").arg(typeName.constData())));

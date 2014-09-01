@@ -35,6 +35,8 @@
     import QtQuick 2.0
     import QtWebEngine 1.0
     \endcode
+
+    \sa {Qt WebEngine Examples}
 */
 
 /*!
@@ -43,7 +45,9 @@
     \brief Examples demonstrating the Qt WebEngine usage
     \ingroup all-examples
 
-    These examples and demonstrations show a range of different uses for Qt WebEngine,
+    These examples and demonstrations show a range of different uses for \l{Qt WebEngine},
     from displaying Web pages within a QML user interface to an implementation of
     a basic function Web browser.
+
+    \sa {Qt WebEngine QML Types}
 */

@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -63,12 +58,11 @@ public:
     virtual net::URLRequestContextGetter *GetMediaRequestContext() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *GetMediaRequestContextForRenderProcess(int) Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *GetMediaRequestContextForStoragePartition(const base::FilePath&, bool) Q_DECL_OVERRIDE;
-    virtual void RequestMIDISysExPermission(int render_process_id, int render_view_id, int bridge_id, const GURL &requesting_frame, const MIDISysExPermissionCallback&) Q_DECL_OVERRIDE;
-    virtual void CancelMIDISysExPermissionRequest(int render_process_id, int render_view_id, int bridge_id, const GURL &requesting_frame) Q_DECL_OVERRIDE;
     virtual content::ResourceContext *GetResourceContext() Q_DECL_OVERRIDE;
     virtual content::DownloadManagerDelegate *GetDownloadManagerDelegate() Q_DECL_OVERRIDE;
-    virtual content::GeolocationPermissionContext *GetGeolocationPermissionContext() Q_DECL_OVERRIDE;
+    virtual content::BrowserPluginGuestManager* GetGuestManager() Q_DECL_OVERRIDE;
     virtual quota::SpecialStoragePolicy *GetSpecialStoragePolicy() Q_DECL_OVERRIDE;
+    virtual content::PushMessagingService* GetPushMessagingService() Q_DECL_OVERRIDE;
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers);
 
 private:

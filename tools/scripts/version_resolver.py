@@ -51,8 +51,8 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '33.0.1750.170'
-chromium_branch = '1750'
+chromium_version = '37.0.2062.68'
+chromium_branch = '2062'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 git_deps_url = 'http://src.chromium.org/chrome/branches/' + chromium_branch + '/src/.DEPS.git'
@@ -62,13 +62,18 @@ qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 snapshot_src_dir = os.path.abspath(os.path.join(qtwebengine_root, 'src/3rdparty'))
 upstream_src_dir = os.path.abspath(snapshot_src_dir + '_upstream')
 
+submodule_blacklist = [
+    'third_party/WebKit/LayoutTests/w3c/csswg-test'
+    , 'third_party/WebKit/LayoutTests/w3c/web-platform-tests'
+    , 'chrome/tools/test/reference_build/chrome_mac'
+    , 'chrome/tools/test/reference_build/chrome_linux'
+    , 'chrome/tools/test/reference_build/chrome_win'
+    ]
+
 sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 
 def currentVersion():
     return chromium_version
-
-def currentBranch():
-    return chromium_branch
 
 def readReleaseChannels():
     response = urllib2.urlopen(json_url)
@@ -139,7 +144,7 @@ def readSubmodules():
         git_dict[sub.path] = sub
 
     for sub in svn_submodules:
-        if 'reference_build' not in sub.path and (sub.revision or sub.shasum) and sub.path in git_dict:
+        if (sub.revision or sub.shasum) and sub.path in git_dict:
             submodule_dict[sub.path] = sub
 
     for git in git_submodules:
@@ -150,6 +155,11 @@ def readSubmodules():
             if not module.shasum:
                 # We use the git shasum as fallback.
                 module.shasum = git.shasum
+
+    # Remove unwanted upstream submodules
+    for path in submodule_blacklist:
+        if path in submodule_dict:
+            del submodule_dict[path]
 
     return sanityCheckModules(submodule_dict.values())
 

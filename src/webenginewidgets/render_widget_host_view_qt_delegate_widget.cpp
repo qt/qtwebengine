@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -51,6 +46,7 @@
 #include <QSGAbstractRenderer>
 #include <QSGEngine>
 #include <QSGNode>
+#include <QWindow>
 
 static const int MaxTooltipLength = 1024;
 
@@ -201,6 +197,22 @@ void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent
     m_client->notifyResize();
 }
 
+void RenderWidgetHostViewQtDelegateWidget::showEvent(QShowEvent *event)
+{
+    QOpenGLWidget::showEvent(event);
+    // We don't have a way to catch a top-level window change with QWidget
+    // but a widget will most likely be shown again if it changes, so do
+    // the reconnection at this point.
+    foreach (const QMetaObject::Connection &c, m_windowConnections)
+        disconnect(c);
+    m_windowConnections.clear();
+    if (QWindow *w = window()) {
+        m_windowConnections.append(connect(w, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
+        m_windowConnections.append(connect(w, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
+    }
+    m_client->windowChanged();
+}
+
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     bool handled = false;
@@ -247,4 +259,9 @@ void RenderWidgetHostViewQtDelegateWidget::paintGL()
     m_sgRenderer->setProjectionMatrixToRect(QRectF(QPointF(), size()));
 
     m_sgRenderer->renderScene(defaultFramebufferObject());
+}
+
+void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
+{
+    m_client->windowBoundsChanged();
 }

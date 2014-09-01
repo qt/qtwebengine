@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -58,7 +53,7 @@ ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(net
     : m_request(request)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-    content::ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(&m_renderProcessId,  &m_renderViewId);
+    content::ResourceRequestInfo::GetRenderFrameForRequest(request, &m_renderProcessId,  &m_renderFrameId);
 
     m_url = toQt(request->url());
     m_realm = QString::fromStdString(authInfo->realm);
@@ -84,8 +79,8 @@ void ResourceDispatcherHostLoginDelegateQt::OnRequestCancelled()
 void ResourceDispatcherHostLoginDelegateQt::triggerDialog()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    content::RenderViewHost* renderViewHost = content::RenderViewHost::FromID(m_renderProcessId, m_renderViewId);
-    content::WebContents *webContents = content::WebContents::FromRenderViewHost(renderViewHost);
+    content::RenderViewHost* renderViewHost = content::RenderFrameHost::FromID(m_renderProcessId, m_renderFrameId)->GetRenderViewHost();
+    content::WebContentsImpl *webContents = static_cast<content::WebContentsImpl *>(content::WebContents::FromRenderViewHost(renderViewHost));
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
 
     // The widgets API will ask for credentials synchronouly, keep it simple for now.
@@ -114,11 +109,6 @@ void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, co
     content::ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(m_request);
 
     m_request = 0;
-}
-
-bool ResourceDispatcherHostDelegateQt::AcceptAuthRequest(net::URLRequest *, net::AuthChallengeInfo *)
-{
-    return true;
 }
 
 content::ResourceDispatcherHostLoginDelegate *ResourceDispatcherHostDelegateQt::CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request)

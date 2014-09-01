@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -55,8 +50,10 @@ namespace content {
     class JavaScriptDialogManager;
     class WebContents;
 }
+
 struct WebPreferences;
 class WebContentsAdapterClient;
+class CertificateErrorController;
 
 class WebContentsDelegateQt : public content::WebContentsDelegate
                             , public content::WebContentsObserver
@@ -65,6 +62,7 @@ public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
     QString lastSearchedString() const { return m_lastSearchedString; }
     void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
+    int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
 
     virtual content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) Q_DECL_OVERRIDE;
     virtual void NavigationStateChanged(const content::WebContents* source, unsigned changed_flags) Q_DECL_OVERRIDE;
@@ -76,7 +74,7 @@ public:
     virtual void DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const base::string16 &error_description, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, content::RenderViewHost *render_view_host) Q_DECL_OVERRIDE;
-    virtual void DidUpdateFaviconURL(int32 page_id, const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
+    virtual void DidUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
     virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen) Q_DECL_OVERRIDE;
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
@@ -88,10 +86,14 @@ public:
     virtual void DidNavigateAnyFrame(const content::LoadCommittedDetails&, const content::FrameNavigateParams& params) Q_DECL_OVERRIDE;
 
     void overrideWebPreferences(content::WebContents *, WebPreferences*);
+    void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &) ;
 
 private:
+    WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
+
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
+    int m_lastReceivedFindReply;
 };
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H

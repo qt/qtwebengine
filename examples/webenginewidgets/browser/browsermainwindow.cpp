@@ -68,6 +68,7 @@
 #include <QtWidgets/QInputDialog>
 
 #include <QWebEngineHistory>
+#include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
 
@@ -295,7 +296,7 @@ void BrowserMainWindow::setupMenu()
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
     fileMenu->addSeparator();
 #endif
-#if defined(QWEBENGINESETTINGS)
+#if defined(QTWEBENGINE_PRIVATEBROWSING)
     QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
     action->setCheckable(true);
     fileMenu->addSeparator();
@@ -380,12 +381,6 @@ void BrowserMainWindow::setupMenu()
     viewMenu->addAction(tr("Zoom &In"), this, SLOT(slotViewZoomIn()), QKeySequence(Qt::CTRL | Qt::Key_Plus));
     viewMenu->addAction(tr("Zoom &Out"), this, SLOT(slotViewZoomOut()), QKeySequence(Qt::CTRL | Qt::Key_Minus));
     viewMenu->addAction(tr("Reset &Zoom"), this, SLOT(slotViewResetZoom()), QKeySequence(Qt::CTRL | Qt::Key_0));
-#if defined(QWEBENGINESETTINGS)
-    QAction *zoomTextOnlyAction = viewMenu->addAction(tr("Zoom &Text Only"));
-    connect(zoomTextOnlyAction, SIGNAL(toggled(bool)), this, SLOT(slotViewZoomTextOnly(bool)));
-    zoomTextOnlyAction->setCheckable(true);
-    zoomTextOnlyAction->setChecked(false);
-#endif
 
     viewMenu->addSeparator();
     viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
@@ -701,7 +696,7 @@ void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
 
 void BrowserMainWindow::slotPrivateBrowsing()
 {
-#if defined(QWEBENGINESETTINGS)
+#if defined(QTWEBENGINE_PRIVATEBROWSING)
     QWebEngineSettings *settings = QWebEngineSettings::globalSettings();
     bool pb = settings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled);
     if (!pb) {
@@ -798,15 +793,6 @@ void BrowserMainWindow::slotViewResetZoom()
     if (!currentTab())
         return;
     currentTab()->setZoomFactor(1.0);
-}
-
-void BrowserMainWindow::slotViewZoomTextOnly(bool enable)
-{
-#if defined(QWEBENGINESETTINGS)
-    if (!currentTab())
-        return;
-    currentTab()->page()->settings()->setAttribute(QWebEngineSettings::ZoomTextOnly, enable);
-#endif
 }
 
 void BrowserMainWindow::slotViewFullScreen(bool makeFullScreen)

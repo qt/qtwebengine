@@ -56,7 +56,7 @@ os.chdir(qtwebengine_root)
 
 def isInGitBlacklist(file_path):
     # We do need all the gyp files.
-    if file_path.endswith('.gyp') or file_path.endswith('.gypi'):
+    if file_path.endswith('.gyp') or file_path.endswith('.gypi') or file_path.endswith('.isolate'):
         False
     if ( '.gitignore' in file_path
         or '.gitmodules' in file_path
@@ -68,7 +68,7 @@ def isInChromiumBlacklist(file_path):
     if (os.path.isdir(file_path)):
         return True
     # We do need all the gyp files.
-    if file_path.endswith('.gyp') or file_path.endswith('.gypi'):
+    if file_path.endswith('.gyp') or file_path.endswith('.gypi') or file_path.endswith('.isolate'):
         return False
     if ( '_jni' in file_path
         or 'jni_' in file_path
@@ -77,7 +77,6 @@ def isInChromiumBlacklist(file_path):
             not 'android/cpufeatures' in file_path)
         or '/tests/' in file_path
         or ('/test/' in file_path and
-            not file_path.endswith('isolate') and
             not '/webrtc/test/testsupport/' in file_path and
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h') and
@@ -86,6 +85,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.endswith('.java')
         or file_path.startswith('android_webview')
         or file_path.startswith('apps/')
+        or file_path.startswith('ash/')
+        or file_path.startswith('athena')
         or file_path.startswith('base/android/java')
         or file_path.startswith('breakpad')
         or file_path.startswith('build/android/')
@@ -102,7 +103,6 @@ def isInChromiumBlacklist(file_path):
             not 'media/desktop_streams_registry.h' in file_path and
             not 'net/net_error_info' in file_path and
             not 'common/localized_error' in file_path and
-            not file_path.endswith('.isolate') and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
             not file_path.endswith('.grd') and
@@ -111,86 +111,104 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('chrome_frame')
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
+        or (file_path.startswith('components') and
+            not file_path.startswith('components/tracing') and
+            not file_path.startswith('components/visitedlink'))
         or file_path.startswith('content/public/android/java')
-        or file_path.startswith('content/shell/android/java')
+        or file_path.startswith('content/shell')
         or file_path.startswith('courgette')
-        or file_path.startswith('extensions')
+        or (file_path.startswith('extensions') and
+            # Included by generated sources of ui/accessibility/ax_enums.idl
+            not 'browser/extension_function_registry.h' in file_path and
+            not 'browser/extension_function_histogram_value.h' in file_path)
         or file_path.startswith('google_update')
         or file_path.startswith('ios')
         or file_path.startswith('media/base/android/java')
-        or file_path.startswith('mojo')
         or file_path.startswith('native_client')
         or file_path.startswith('net/android/java')
+        or file_path.startswith('pdf')
         or file_path.startswith('remoting')
         or file_path.startswith('rlz')
-        or file_path.startswith('sync/android')
+        or file_path.startswith('sync')
         or file_path.startswith('testing/android')
+        or file_path.startswith('testing/buildbot')
         or file_path.startswith('third_party/accessibility-developer-tools')
         or file_path.startswith('third_party/GTM')
         or file_path.startswith('third_party/WebKit/LayoutTests')
         or file_path.startswith('third_party/WebKit/ManualTests')
         or file_path.startswith('third_party/WebKit/PerformanceTests')
         or file_path.startswith('third_party/active_doc')
+        or file_path.startswith('third_party/android_crazy_linker')
         or file_path.startswith('third_party/android_platform')
         or file_path.startswith('third_party/android_testrunner')
         or file_path.startswith('third_party/aosp')
         or file_path.startswith('third_party/apache-mime4j')
+        or file_path.startswith('third_party/apache-win32')
         or file_path.startswith('third_party/apple_sample_code')
+        or file_path.startswith('third_party/binutils')
         or file_path.startswith('third_party/bison')
-        or file_path.startswith('third_party/brotli')
         or (file_path.startswith('third_party/cacheinvalidation') and
             not file_path.endswith('isolate'))
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
+        or file_path.startswith('third_party/colorama')
         or file_path.startswith('third_party/cros_dbus_cplusplus')
         or file_path.startswith('third_party/cros_system_api')
+        or file_path.startswith('third_party/cygwin')
+        or file_path.startswith('third_party/elfutils')
         or file_path.startswith('third_party/eyesfree')
         or file_path.startswith('third_party/findbugs')
         or file_path.startswith('third_party/gperf')
         or file_path.startswith('third_party/gnu_binutils')
         or file_path.startswith('third_party/gtk+')
+        or file_path.startswith('third_party/google_appengine_cloudstorage')
+        or file_path.startswith('third_party/google_toolbox_for_mac')
         or file_path.startswith('third_party/guava/src')
         or file_path.startswith('third_party/httpcomponents-client')
         or file_path.startswith('third_party/httpcomponents-core')
         or file_path.startswith('third_party/hunspell')
         or file_path.startswith('third_party/hunspell_dictionaries')
+        or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jarjar')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/libphonenumber')
         or file_path.startswith('third_party/libaddressinput')
+        or file_path.startswith('third_party/libc++')
+        or file_path.startswith('third_party/libc++abi')
         or file_path.startswith('third_party/liblouis')
         or file_path.startswith('third_party/lighttpd')
+        or file_path.startswith('third_party/markdown')
         or file_path.startswith('third_party/mingw-w64')
         or file_path.startswith('third_party/nacl_sdk_binaries')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')
+        or file_path.startswith('third_party/pdfium')
         or file_path.startswith('third_party/psyco_win32')
         or file_path.startswith('third_party/python_26')
         or file_path.startswith('third_party/scons-2.0.1')
         or file_path.startswith('third_party/syzygy')
         or file_path.startswith('third_party/swig')
         or file_path.startswith('third_party/webgl')
-        or (file_path.startswith('third_party/trace-viewer') and
-            not file_path.endswith('.template') and
-            not file_path.endswith('.html') and
-            not file_path.endswith('.js') and
-            not file_path.endswith('.css') and
-            not file_path.endswith('.png') and
-            not '/build/' in file_path)
+        or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/xulrunner-sdk')
-        or file_path.startswith('tools/android')
-        or file_path.startswith('tools/deep_memory_profiler')
-        or file_path.startswith('tools/gn')
-        or file_path.startswith('tools/page_cycler')
-        or file_path.startswith('tools/perf')
-        or file_path.startswith('tools/swarming_client')
-        or file_path.startswith('tools/swarm_client')
-        or file_path.startswith('tools/telemetry')
-        or (file_path.startswith('tools/win') and
-           not 'toolchain' in file_path)
+        or (file_path.startswith('tools') and
+           not file_path.startswith('tools/clang') and
+           not file_path.startswith('tools/generate_library_loader') and
+           not file_path.startswith('tools/generate_shim_headers') and
+           not file_path.startswith('tools/generate_stubs') and
+           not file_path.startswith('tools/grit') and
+           not file_path.startswith('tools/gyp') and
+           not file_path.startswith('tools/json_comment_eater') and
+           not file_path.startswith('tools/json_schema_compiler') and
+           not file_path.startswith('tools/idl_parser') and
+           not file_path.startswith('tools/protoc_wrapper'))
         or file_path.startswith('ui/android/java')
+        or file_path.startswith('ui/app_list')
+        or file_path.startswith('ui/chromeos')
+        or file_path.startswith('ui/display/chromeos')
+        or file_path.startswith('ui/file_manager')
 
         ):
             return True

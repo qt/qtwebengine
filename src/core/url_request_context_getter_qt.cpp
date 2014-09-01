@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -67,6 +62,7 @@
 #include "net/ftp/ftp_network_layer.h"
 
 #include "network_delegate_qt.h"
+#include "content_client_qt.h"
 #include "qrc_protocol_handler_qt.h"
 
 static const char kQrcSchemeQt[] = "qrc";
@@ -98,8 +94,8 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
         base::FilePath cookiesPath = m_basePath.Append(FILE_PATH_LITERAL("Cookies"));
-        scoped_refptr<net::CookieStore> cookieStore = content::CreatePersistentCookieStore(cookiesPath, true, NULL, NULL, scoped_ptr<content::CookieCryptoDelegate>());
-        cookieStore->GetCookieMonster()->SetPersistSessionCookies(true);
+        content::CookieStoreConfig cookieStoreConfig(cookiesPath, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL, NULL);
+        scoped_refptr<net::CookieStore> cookieStore = content::CreateCookieStore(cookieStoreConfig);
 
         m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
         m_storage->set_cookie_store(cookieStore.get());
@@ -107,7 +103,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
             new net::DefaultServerBoundCertStore(NULL),
             base::WorkerPool::GetTaskRunner(true)));
         m_storage->set_http_user_agent_settings(
-            new net::StaticHttpUserAgentSettings("en-us,en", base::EmptyString()));
+            new net::StaticHttpUserAgentSettings("en-us,en", ContentClientQt::getUserAgent()));
 
         scoped_ptr<net::HostResolver> host_resolver(
             net::HostResolver::CreateDefaultResolver(NULL));
@@ -166,16 +162,16 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
         m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
 
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
-        content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(chrome::kBlobScheme);
+        content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         m_jobFactory->SetProtocolHandler(it->first, it->second.release());
         m_protocolHandlers.clear();
 
-        m_jobFactory->SetProtocolHandler(chrome::kDataScheme, new net::DataProtocolHandler());
-        m_jobFactory->SetProtocolHandler(chrome::kFileScheme, new net::FileProtocolHandler(
+        m_jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
+        m_jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
             content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
         m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
-        m_jobFactory->SetProtocolHandler(content::kFtpScheme, new net::FtpProtocolHandler(
+        m_jobFactory->SetProtocolHandler(url::kFtpScheme, new net::FtpProtocolHandler(
             new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
         m_urlRequestContext->set_job_factory(m_jobFactory.get());
     }

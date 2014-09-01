@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -43,10 +38,15 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/screen.h"
@@ -55,11 +55,13 @@
 #include "ui/gl/gl_share_group.h"
 
 #include "browser_context_qt.h"
+#include "certificate_error_controller.h"
+#include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
-#include "web_contents_view_qt.h"
+#include "web_contents_delegate_qt.h"
 
 #include <QGuiApplication>
 #include <QOpenGLContext>
@@ -159,9 +161,9 @@ private:
     Delegate *m_delegate;
 };
 
-base::MessagePump* messagePumpFactory()
+scoped_ptr<base::MessagePump> messagePumpFactory()
 {
-    return new MessagePumpForUIQt;
+    return scoped_ptr<base::MessagePump>(new MessagePumpForUIQt);
 }
 
 } // namespace
@@ -272,14 +274,6 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
     m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
 }
 
-content::WebContentsViewPort* ContentBrowserClientQt::OverrideCreateWebContentsView(content::WebContents* web_contents,
-                                                                                    content::RenderViewHostDelegateView** render_view_host_delegate_view)
-{
-    WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
-    *render_view_host_delegate_view = rv;
-    return rv;
-}
-
 ContentBrowserClientQt::ContentBrowserClientQt()
     : m_browserMainParts(0)
 {
@@ -303,10 +297,10 @@ content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const 
     return m_browserMainParts;
 }
 
-void ContentBrowserClientQt::RenderProcessHostCreated(content::RenderProcessHost* host)
+void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost* host)
 {
     // FIXME: Add a settings variable to enable/disable the file scheme.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), chrome::kFileScheme);
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), url::kFileScheme);
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
@@ -339,7 +333,7 @@ BrowserContextQt* ContentBrowserClientQt::browser_context() {
     return static_cast<BrowserMainPartsQt*>(m_browserMainParts)->browser_context();
 }
 
-net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* content_browser_context, content::ProtocolHandlerMap* protocol_handlers)
+net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* content_browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
     if (content_browser_context != browser_context())
         fprintf(stderr, "Warning: off the record browser context not implemented !\n");
@@ -353,4 +347,23 @@ void ContentBrowserClientQt::enableInspector(bool enable)
     } else if (!enable && m_devtools) {
         m_devtools.reset();
     }
+}
+
+void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int render_frame_id, int cert_error,
+                                                   const net::SSLInfo& ssl_info, const GURL& request_url,
+                                                   ResourceType::Type resource_type,
+                                                   bool overridable, bool strict_enforcement,
+                                                   const base::Callback<void(bool)>& callback,
+                                                   content::CertificateRequestResultType* result)
+{
+    // We leave the result with its default value.
+    Q_UNUSED(result);
+
+    content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    WebContentsDelegateQt* contentsDelegate = 0;
+    if (content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents())
+        contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+
+    QExplicitlySharedDataPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
+    contentsDelegate->allowCertificateError(errorController);
 }

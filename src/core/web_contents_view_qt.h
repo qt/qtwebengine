@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -16,24 +16,19 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
 ** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Digia gives you certain additional
-** rights.  These rights are described in the Digia Qt LGPL Exception
-** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
 **
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
 **
 ** $QT_END_LICENSE$
 **
@@ -42,11 +37,11 @@
 #ifndef WEB_CONTENTS_VIEW_QT_H
 #define WEB_CONTENTS_VIEW_QT_H
 
+#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
-#include "content/port/browser/render_view_host_delegate_view.h"
-#include "content/port/browser/web_contents_view_port.h"
 
 #include "web_contents_adapter_client.h"
 #include "render_widget_host_view_qt.h"
@@ -54,7 +49,7 @@
 #include "web_engine_context.h"
 
 class WebContentsViewQt
-    : public content::WebContentsViewPort
+    : public content::WebContentsView
     , public content::RenderViewHostDelegateView
 {
 public:
@@ -69,11 +64,11 @@ public:
     void initialize(WebContentsAdapterClient* client);
     WebContentsAdapterClient *client() { return m_client; }
 
-    virtual content::RenderWidgetHostView *CreateViewForWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
+    virtual content::RenderWidgetHostViewBase *CreateViewForWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
 
     virtual void CreateView(const gfx::Size& initial_size, gfx::NativeView context) Q_DECL_OVERRIDE;
 
-    virtual content::RenderWidgetHostView* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
+    virtual content::RenderWidgetHostViewBase* CreateViewForPopupWidget(content::RenderWidgetHost* render_widget_host) Q_DECL_OVERRIDE;
 
     virtual void SetPageTitle(const base::string16& title) Q_DECL_OVERRIDE { }
 
@@ -90,8 +85,6 @@ public:
     virtual gfx::NativeWindow GetTopLevelNativeWindow() const Q_DECL_OVERRIDE { QT_NOT_USED return 0; }
 
     virtual void GetContainerBounds(gfx::Rect* out) const Q_DECL_OVERRIDE;
-
-    virtual void OnTabCrashed(base::TerminationStatus status, int error_code) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
     virtual void SizeContents(const gfx::Size& size) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 
@@ -112,7 +105,7 @@ public:
 
     virtual void StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info) Q_DECL_OVERRIDE;
 
-    virtual void ShowContextMenu(const content::ContextMenuParams &params) Q_DECL_OVERRIDE;
+    virtual void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) Q_DECL_OVERRIDE;
 
     virtual void TakeFocus(bool reverse) Q_DECL_OVERRIDE;
 

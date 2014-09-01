@@ -574,7 +574,7 @@ void TabWidget::closeTab(int index)
 #endif
         hasFocus = tab->hasFocus();
 
-#if defined(QWEBENGINESETTINGS)
+#if defined(QTWEBENGINE_PRIVATEBROWSING)
         QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
         if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
 #endif
