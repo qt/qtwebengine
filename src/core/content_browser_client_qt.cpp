@@ -100,6 +100,7 @@ public:
         // our own event loop, attach it explicitly ourselves.
         : m_delegate(base::MessageLoopForUI::current())
         , m_explicitLoop(0)
+        , m_timerId(0)
     {
     }
 
@@ -126,7 +127,15 @@ public:
 
     virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) Q_DECL_OVERRIDE
     {
-        startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+        if (delayed_work_time.is_null()) {
+            killTimer(m_timerId);
+            m_timerId = 0;
+            m_timerScheduledTime = base::TimeTicks();
+        } else if (!m_timerId || delayed_work_time < m_timerScheduledTime) {
+            killTimer(m_timerId);
+            m_timerId = startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+            m_timerScheduledTime = delayed_work_time;
+        }
     }
 
 protected:
@@ -138,13 +147,14 @@ protected:
 
     virtual void timerEvent(QTimerEvent *ev) Q_DECL_OVERRIDE
     {
-        killTimer(ev->timerId());
+        Q_ASSERT(m_timerId == ev->timerId());
+        killTimer(m_timerId);
+        m_timerId = 0;
+        m_timerScheduledTime = base::TimeTicks();
 
         base::TimeTicks next_delayed_work_time;
         m_delegate->DoDelayedWork(&next_delayed_work_time);
-
-        if (!next_delayed_work_time.is_null())
-            startTimer(GetTimeIntervalMilliseconds(next_delayed_work_time));
+        ScheduleDelayedWork(next_delayed_work_time);
     }
 
 private:
@@ -158,14 +168,16 @@ private:
             return true;
 
         more_work_is_plausible |= m_delegate->DoIdleWork();
-        if (!more_work_is_plausible && !delayed_work_time.is_null())
-            startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+        if (!more_work_is_plausible)
+            ScheduleDelayedWork(delayed_work_time);
 
         return more_work_is_plausible;
     }
 
     Delegate *m_delegate;
     QEventLoop *m_explicitLoop;
+    int m_timerId;
+    base::TimeTicks m_timerScheduledTime;
 };
 
 scoped_ptr<base::MessagePump> messagePumpFactory()
