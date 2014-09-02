@@ -48,6 +48,7 @@
 namespace content {
 class WebContents;
 }
+class BrowserContextQt;
 class WebContentsAdapterPrivate;
 struct WebPreferences;
 
@@ -111,11 +112,13 @@ public:
 
     void dpiScaleChanged();
     QAccessibleInterface *browserAccessible();
+    BrowserContextQt* browserContext();
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);
     Q_DECLARE_PRIVATE(WebContentsAdapter);
     QScopedPointer<WebContentsAdapterPrivate> d_ptr;
+
     friend class WebContentsDelegateQt;
 };
 #endif // WEB_CONTENTS_ADAPTER_H

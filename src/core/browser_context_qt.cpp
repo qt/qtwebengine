@@ -36,6 +36,7 @@
 
 #include "browser_context_qt.h"
 
+#include "browser_context_adapter.h"
 #include "type_conversion.h"
 #include "qtwebenginecoreglobal.h"
 #include "resource_context_qt.h"
@@ -47,14 +48,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/proxy/proxy_config_service.h"
 
-#include <QByteArray>
-#include <QCoreApplication>
-#include <QDir>
-#include <QStandardPaths>
-#include <QString>
-#include <QStringBuilder>
-
-BrowserContextQt::BrowserContextQt()
+BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
+    : m_adapter(adapter)
 {
     resourceContext.reset(new ResourceContextQt(this));
 }
@@ -67,17 +62,12 @@ BrowserContextQt::~BrowserContextQt()
 
 base::FilePath BrowserContextQt::GetPath() const
 {
-    QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-    if (dataLocation.isEmpty())
-        dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
-
-    dataLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
-    return base::FilePath(toFilePathString(dataLocation));
+    return base::FilePath(toFilePathString(m_adapter->path()));
 }
 
 bool BrowserContextQt::IsOffTheRecord() const
 {
-    return false;
+    return m_adapter->isOffTheRecord();
 }
 
 net::URLRequestContextGetter *BrowserContextQt::GetRequestContext()

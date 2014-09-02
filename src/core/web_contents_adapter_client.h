@@ -48,6 +48,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QVariant)
 
+class BrowserContextAdapter;
 class CertificateErrorController;
 class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
@@ -175,6 +176,8 @@ public:
     virtual WebEngineSettings *webEngineSettings() const = 0;
 
     virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController) = 0;
+
+    virtual BrowserContextAdapter* browserContextAdapter() = 0;
 
 };
 

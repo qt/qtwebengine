@@ -179,6 +179,8 @@ public:
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController);
 
+    virtual BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
+
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);
 

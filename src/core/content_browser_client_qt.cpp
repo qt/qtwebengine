@@ -201,12 +201,10 @@ public:
 
     void PreMainMessageLoopRun() Q_DECL_OVERRIDE
     {
-        m_browserContext.reset(new BrowserContextQt());
     }
 
     void PostMainMessageLoopRun()
     {
-        m_browserContext.reset();
     }
 
     int PreCreateThreads() Q_DECL_OVERRIDE
@@ -217,13 +215,7 @@ public:
         return 0;
     }
 
-    BrowserContextQt* browser_context() const {
-        return m_browserContext.get();
-    }
-
 private:
-    scoped_ptr<BrowserContextQt> m_browserContext;
-
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
 };
 
@@ -347,22 +339,15 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, c
         static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
 }
 
-BrowserContextQt* ContentBrowserClientQt::browser_context() {
-    Q_ASSERT(m_browserMainParts);
-    return static_cast<BrowserMainPartsQt*>(m_browserMainParts)->browser_context();
-}
-
-net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* content_browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
+net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    if (content_browser_context != browser_context())
-        fprintf(stderr, "Warning: off the record browser context not implemented !\n");
-    return static_cast<BrowserContextQt*>(browser_context())->CreateRequestContext(protocol_handlers);
+    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers);
 }
 
-void ContentBrowserClientQt::enableInspector(bool enable)
+void ContentBrowserClientQt::enableInspector(bool enable, content::BrowserContext* browser_context)
 {
     if (enable && !m_devtools) {
-        m_devtools.reset(new DevToolsHttpHandlerDelegateQt(browser_context()));
+        m_devtools.reset(new DevToolsHttpHandlerDelegateQt(browser_context));
     } else if (!enable && m_devtools) {
         m_devtools.reset();
     }

@@ -36,8 +36,9 @@
 
 #include "web_engine_visited_links_manager.h"
 
-#include "content_browser_client_qt.h"
+#include "browser_context_adapter.h"
 #include "browser_context_qt.h"
+#include "content_browser_client_qt.h"
 #include "type_conversion.h"
 
 #include "base/memory/scoped_ptr.h"
@@ -80,11 +81,11 @@ void WebEngineVisitedLinksManager::deleteVisitedLinkDataForUrls(const QList<QUrl
     m_visitedLinkMaster->DeleteURLs(&iterator);
 }
 
-WebEngineVisitedLinksManager::WebEngineVisitedLinksManager()
+WebEngineVisitedLinksManager::WebEngineVisitedLinksManager(BrowserContextAdapter *adapter)
     : m_delegate(new VisitedLinkDelegateQt)
 {
-    Q_ASSERT(ContentBrowserClientQt::Get() && ContentBrowserClientQt::Get()->browser_context());
-    BrowserContextQt *browserContext = ContentBrowserClientQt::Get()->browser_context();
+    Q_ASSERT(adapter && adapter->browserContext());
+    BrowserContextQt *browserContext = adapter->browserContext();
     m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(browserContext, m_delegate.data(), /* persist to disk = */true));
     m_visitedLinkMaster->Init();
 }

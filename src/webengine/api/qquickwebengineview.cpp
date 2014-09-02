@@ -37,6 +37,7 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
+#include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qquickwebenginehistory_p.h"
@@ -399,6 +400,11 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 {
     Q_Q(QQuickWebEngineView);
     return q;
+}
+
+BrowserContextAdapter *QQuickWebEngineViewPrivate::browserContextAdapter()
+{
+    return BrowserContextAdapter::defaultContext();
 }
 
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const

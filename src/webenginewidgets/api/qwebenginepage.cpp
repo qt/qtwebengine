@@ -23,6 +23,7 @@
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
+#include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
@@ -408,6 +409,11 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
         adapter = newWebContents.data();
         adapter->initialize(this);
     }
+}
+
+BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
+{
+    return BrowserContextAdapter::defaultContext();
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)

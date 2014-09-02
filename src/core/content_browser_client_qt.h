@@ -91,11 +91,9 @@ public:
         const base::Callback<void(bool)>& callback,
         content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
 
-    BrowserContextQt* browser_context();
-
     virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *content_browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;
 
-    void enableInspector(bool);
+    void enableInspector(bool enable, content::BrowserContext *browser_context);
 
 private:
     BrowserMainPartsQt* m_browserMainParts;

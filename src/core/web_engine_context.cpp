@@ -65,6 +65,7 @@
 #include "content/public/app/startup_helper_win.h"
 #endif // OS_WIN
 
+#include "browser_context_adapter.h"
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
@@ -73,7 +74,6 @@
 #include "type_conversion.h"
 #include "surface_factory_qt.h"
 #include "web_engine_library_info.h"
-#include "web_engine_visited_links_manager.h"
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QStringList>
@@ -107,9 +107,18 @@ scoped_refptr<WebEngineContext> WebEngineContext::current()
     return sContext;
 }
 
-WebEngineVisitedLinksManager *WebEngineContext::visitedLinksManager()
+BrowserContextAdapter* WebEngineContext::defaultBrowserContext()
 {
-    return m_visitedLinksManager.get();
+    if (!m_defaultBrowserContext)
+        m_defaultBrowserContext.reset(new BrowserContextAdapter());
+    return m_defaultBrowserContext.get();
+}
+
+BrowserContextAdapter* WebEngineContext::offTheRecordBrowserContext()
+{
+    if (!m_offTheRecordBrowserContext)
+        m_offTheRecordBrowserContext.reset(new BrowserContextAdapter(true));
+    return m_offTheRecordBrowserContext.get();
 }
 
 #ifndef CHROMIUM_VERSION
@@ -203,7 +212,4 @@ WebEngineContext::WebEngineContext()
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
-
-    // Ensure we have a VisitedLinksMaster instance up and running
-    m_visitedLinksManager.reset(new WebEngineVisitedLinksManager);
 }

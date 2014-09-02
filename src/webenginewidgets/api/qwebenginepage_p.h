@@ -139,6 +139,8 @@ public:
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &controller) Q_DECL_OVERRIDE;
 
+    virtual BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
+
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);

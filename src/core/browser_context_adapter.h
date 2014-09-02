@@ -34,46 +34,42 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_CONTEXT_H
-#define WEB_ENGINE_CONTEXT_H
+#ifndef BROWSER_CONTEXT_ADAPTER_H
+#define BROWSER_CONTEXT_ADAPTER_H
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "qtwebenginecoreglobal.h"
 
-namespace base {
-class RunLoop;
-}
+#include <QScopedPointer>
+#include <QSharedData>
 
-namespace content {
-class BrowserMainRunner;
-class ContentMainRunner;
-}
+class BrowserContextQt;
+class WebEngineVisitedLinksManager;
 
-class BrowserContextAdapter;
-class ContentMainDelegateQt;
-class SurfaceFactoryQt;
-
-class WebEngineContext : public base::RefCounted<WebEngineContext> {
+// Make a QSharedData if we need to open arbitrary BrowserContextAdapter beyond the defaults.
+class QWEBENGINE_EXPORT BrowserContextAdapter // : public QSharedData
+{
 public:
-    static scoped_refptr<WebEngineContext> current();
+    virtual ~BrowserContextAdapter();
 
-    BrowserContextAdapter *defaultBrowserContext();
-    BrowserContextAdapter *offTheRecordBrowserContext();
+    static BrowserContextAdapter* defaultContext();
+    static BrowserContextAdapter* offTheRecordContext();
+
+    WebEngineVisitedLinksManager *visitedLinksManager();
+
+    BrowserContextQt *browserContext();
+    bool isOffTheRecord() const { return m_offTheRecord; }
+    QString path() const;
+
+protected:
+    explicit BrowserContextAdapter(bool offTheRecord = false);
 
 private:
-    friend class base::RefCounted<WebEngineContext>;
-    WebEngineContext();
-    ~WebEngineContext();
+    bool m_offTheRecord;
+    QScopedPointer<BrowserContextQt> m_browserContext;
+    QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
+    friend class WebEngineContext;
 
-    scoped_ptr<base::RunLoop> m_runLoop;
-    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
-    scoped_ptr<content::ContentMainRunner> m_contentRunner;
-    scoped_ptr<content::BrowserMainRunner> m_browserRunner;
-#if defined(OS_ANDROID)
-    scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
-#endif
-    scoped_ptr<BrowserContextAdapter> m_defaultBrowserContext;
-    scoped_ptr<BrowserContextAdapter> m_offTheRecordBrowserContext;
+    Q_DISABLE_COPY(BrowserContextAdapter)
 };
 
-#endif // WEB_ENGINE_CONTEXT_H
+#endif // BROWSER_CONTEXT_ADAPTER_H

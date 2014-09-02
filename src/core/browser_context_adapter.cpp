@@ -34,46 +34,56 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_CONTEXT_H
-#define WEB_ENGINE_CONTEXT_H
+#include "browser_context_adapter.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "browser_context_qt.h"
+#include "web_engine_context.h"
+#include "web_engine_visited_links_manager.h"
 
-namespace base {
-class RunLoop;
+#include <QCoreApplication>
+#include <QDir>
+#include <QString>
+#include <QStringBuilder>
+#include <QStandardPaths>
+
+
+BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
+    : m_offTheRecord(offTheRecord)
+    , m_browserContext(new BrowserContextQt(this))
+    , m_visitedLinksManager(new WebEngineVisitedLinksManager(this))
+{
 }
 
-namespace content {
-class BrowserMainRunner;
-class ContentMainRunner;
+BrowserContextAdapter::~BrowserContextAdapter()
+{
 }
 
-class BrowserContextAdapter;
-class ContentMainDelegateQt;
-class SurfaceFactoryQt;
+BrowserContextQt *BrowserContextAdapter::browserContext()
+{
+    return m_browserContext.data();
+}
 
-class WebEngineContext : public base::RefCounted<WebEngineContext> {
-public:
-    static scoped_refptr<WebEngineContext> current();
+WebEngineVisitedLinksManager *BrowserContextAdapter::visitedLinksManager()
+{
+    return m_visitedLinksManager.data();
+}
 
-    BrowserContextAdapter *defaultBrowserContext();
-    BrowserContextAdapter *offTheRecordBrowserContext();
+BrowserContextAdapter* BrowserContextAdapter::defaultContext()
+{
+    return WebEngineContext::current()->defaultBrowserContext();
+}
 
-private:
-    friend class base::RefCounted<WebEngineContext>;
-    WebEngineContext();
-    ~WebEngineContext();
+BrowserContextAdapter* BrowserContextAdapter::offTheRecordContext()
+{
+    return WebEngineContext::current()->offTheRecordBrowserContext();
+}
 
-    scoped_ptr<base::RunLoop> m_runLoop;
-    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
-    scoped_ptr<content::ContentMainRunner> m_contentRunner;
-    scoped_ptr<content::BrowserMainRunner> m_browserRunner;
-#if defined(OS_ANDROID)
-    scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
-#endif
-    scoped_ptr<BrowserContextAdapter> m_defaultBrowserContext;
-    scoped_ptr<BrowserContextAdapter> m_offTheRecordBrowserContext;
-};
+QString BrowserContextAdapter::path() const
+{
+    QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    if (dataLocation.isEmpty())
+        dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
 
-#endif // WEB_ENGINE_CONTEXT_H
+    dataLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
+    return dataLocation;
+}

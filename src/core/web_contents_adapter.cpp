@@ -41,6 +41,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_p.h"
 
+#include "browser_context_adapter.h"
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
 #include "javascript_dialog_manager_qt.h"
@@ -175,9 +176,8 @@ static QStringList listRecursively(const QDir& dir) {
     return ret;
 }
 
-static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient)
+static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
-    content::BrowserContext* browserContext = ContentBrowserClientQt::Get()->browser_context();
     content::WebContents::CreateParams create_params(browserContext, NULL);
     create_params.routing_id = MSG_ROUTING_NONE;
     create_params.initial_size = gfx::Size(kTestWindowWidth, kTestWindowHeight);
@@ -222,7 +222,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<content::NavigationEntry*> *entries)
+void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<content::NavigationEntry*> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
@@ -278,7 +278,7 @@ void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::ve
             false,
             // The extra headers are not sync'ed across sessions.
             std::string(),
-            ContentBrowserClientQt::Get()->browser_context());
+            browserContext);
 
         entry->SetTitle(toString16(title));
         entry->SetPageState(content::PageState::CreateFromEncodedData(std::string(pageState.data(), pageState.size())));
@@ -308,13 +308,13 @@ QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromS
 {
     int currentIndex;
     std::vector<content::NavigationEntry*> entries;
-    deserializeNavigationHistory(input, &currentIndex, &entries);
+    deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
         return QExplicitlySharedDataPointer<WebContentsAdapter>();
 
     // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
-    content::WebContents* newWebContents = createBlankWebContents(adapterClient);
+    content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->browserContext());
     content::NavigationController &controller = newWebContents->GetController();
     controller.Restore(currentIndex, content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
 
@@ -350,7 +350,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 
     // Create our own if a WebContents wasn't provided at construction.
     if (!d->webContents)
-        d->webContents.reset(createBlankWebContents(adapterClient));
+        d->webContents.reset(createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->browserContext()));
 
     // This might replace any adapter that has been initialized with this WebEngineSettings.
     adapterClient->webEngineSettings()->setWebContentsAdapter(this);
@@ -623,7 +623,13 @@ qreal WebContentsAdapter::currentZoomFactor() const
 
 void WebContentsAdapter::enableInspector(bool enable)
 {
-    ContentBrowserClientQt::Get()->enableInspector(enable);
+    ContentBrowserClientQt::Get()->enableInspector(enable, browserContext());
+}
+
+BrowserContextQt* WebContentsAdapter::browserContext()
+{
+    Q_D(WebContentsAdapter);
+    return static_cast<BrowserContextQt*>(d->webContents->GetBrowserContext());
 }
 
 QAccessibleInterface *WebContentsAdapter::browserAccessible()

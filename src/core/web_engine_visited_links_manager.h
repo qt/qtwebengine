@@ -49,6 +49,7 @@ namespace visitedlink {
 class VisitedLinkMaster;
 }
 
+class BrowserContextAdapter;
 class VisitedLinkDelegateQt;
 
 class GURL;
@@ -57,7 +58,7 @@ class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
 
 public:
     virtual~WebEngineVisitedLinksManager();
-    WebEngineVisitedLinksManager();
+    WebEngineVisitedLinksManager(BrowserContextAdapter*);
 
     void deleteAllVisitedLinkData();
     void deleteVisitedLinkDataForUrls(const QList<QUrl> &);

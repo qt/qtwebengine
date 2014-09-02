@@ -40,6 +40,7 @@
 
 #include "web_contents_delegate_qt.h"
 
+#include "browser_context_adapter.h"
 #include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
@@ -270,7 +271,7 @@ void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDeta
 {
     if (!params.should_update_history)
         return;
-    WebEngineContext::current()->visitedLinksManager()->addUrl(params.url);
+    m_viewClient->browserContextAdapter()->visitedLinksManager()->addUrl(params.url);
 }
 
 
