@@ -21,6 +21,11 @@ if not os.path.isdir(script_dir):
   sys.exit(1)
 root_dir = os.path.normcase(os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir)))
 
+if sys.platform in ('cygwin', 'win32'):
+  gnuwin_tools_dir = os.path.normcase(os.path.abspath(os.path.join(qtwebengine_root, "../gnuwin32/bin")))
+  if os.path.isdir(gnuwin_tools_dir):
+    os.environ['PATH'] = gnuwin_tools_dir + os.pathsep + os.environ['PATH']
+
 sys.path.insert(1, script_dir)
 import gyp_helper
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
