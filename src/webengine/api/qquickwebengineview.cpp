@@ -298,29 +298,29 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<i
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::CertificateErrorDomain) == static_cast<int>(QQuickWebEngineView::CertificateErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<int>(QQuickWebEngineView::DnsErrorDomain));
 
-void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
+void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, int errorCode, const QString &errorDescription)
 {
     Q_Q(QQuickWebEngineView);
     isLoading = false;
     m_history->reset();
-    if (error_code == WebEngineError::UserAbortedError) {
-        QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
+    if (errorCode == WebEngineError::UserAbortedError) {
+        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadStoppedStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
         return;
     }
     if (success) {
-        QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadSucceededStatus);
+        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
         return;
     }
 
-    Q_ASSERT(error_code);
+    Q_ASSERT(errorCode);
     QQuickWebEngineLoadRequest loadRequest(
-        q->url(),
+        url,
         QQuickWebEngineView::LoadFailedStatus,
-        error_description,
-        error_code,
-        static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(error_code)));
+        errorDescription,
+        errorCode,
+        static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(errorCode)));
     Q_EMIT q->loadingChanged(&loadRequest);
     return;
 }

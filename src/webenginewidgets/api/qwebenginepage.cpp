@@ -248,11 +248,12 @@ void QWebEnginePagePrivate::loadCommitted()
     updateNavigationActions();
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success, int error_code, const QString &error_description)
+void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, int errorCode, const QString &errorDescription)
 {
     Q_Q(QWebEnginePage);
-    Q_UNUSED(error_code);
-    Q_UNUSED(error_description);
+    Q_UNUSED(url);
+    Q_UNUSED(errorCode);
+    Q_UNUSED(errorDescription);
     isLoading = false;
     if (success)
         m_explicitUrl = QUrl();
