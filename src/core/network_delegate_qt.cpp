@@ -136,9 +136,7 @@ void NetworkDelegateQt::CompleteURLRequestOnIOThread(net::URLRequest *request,
         error = net::OK;
         break;
     case WebContentsAdapterClient::IgnoreRequest:
-        error = net::OK;
-        // We can cancel the request here since we are on the IO thread.
-        request->Cancel();
+        error = net::ERR_ABORTED;
         break;
     default:
         error = net::ERR_FAILED;
