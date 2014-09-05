@@ -1,10 +1,7 @@
 defineTest(isPlatformSupported) {
   static: return(false)
   osx:lessThan(QMAKE_XCODE_VERSION, 5): return(false)
-  win32 {
-    equals(QT_ARCH, x86_64): return(false)
-    !contains(QT_CONFIG, angle): return(false)
-  }
+  win32: !contains(QT_CONFIG, angle): return(false)
 
   linux-g++|win32-msvc2013|macx-clang: return(true)
   return(false)
@@ -112,12 +109,6 @@ defineReplace(findOrBuildNinja) {
     win32: out = $$system_path($${out}.exe)
 
     # If we did not find ninja, then we bootstrap it.
-    !exists($$out) {
-        contains(DEFINES, WIN64) {
-          system("python $$dirname(out)/bootstrap.py --x64")
-        } else {
-          system("python $$dirname(out)/bootstrap.py")
-        }
-    }
+    !exists($$out): system("python $$dirname(out)/bootstrap.py")
     return($$out)
 }
