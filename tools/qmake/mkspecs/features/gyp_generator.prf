@@ -6,6 +6,9 @@ load(functions)
 load(moc)
 load(resources)
 
+MOC_GEN_DIR = <(SHARED_INTERMEDIATE_DIR)/moc
+RCC_GEN_DIR = <(SHARED_INTERMEDIATE_DIR)/rcc
+
 defineReplace(mocAction) {
     INPUT_FILE = $$1
     OUTPUT_NAME = $$mocOutput($$INPUT_FILE)
@@ -15,7 +18,7 @@ defineReplace(mocAction) {
     MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(DEFINES)"), $$DEFINES_LIST)
     MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(INCPATH)"), $$INCPATH)
     MOC_COMMAND = $$split(MOC_COMMAND, " ")
-    OUTPUT_FILE = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}$${OUTPUT_NAME}
+    OUTPUT_FILE = $$MOC_GEN_DIR/$${OUTPUT_NAME}
     contents = "      {" \
                "        'action_name':'$$OUTPUT_NAME'," \
                "        'inputs': ['$$INPUT_FILE',]," \
@@ -35,7 +38,7 @@ defineReplace(rccAction) {
     INPUT_FILE = $$1
     OUTPUT_NAME = $$rccOutput($$INPUT_FILE)
     EXTERN_FUNC = $$rccExternFunc($$INPUT_FILE)
-    OUTPUT_FILE = $$absolute_path($$RCC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}$${OUTPUT_NAME}
+    OUTPUT_FILE = $$RCC_GEN_DIR/$${OUTPUT_NAME}
     contents = "      {" \
                "        'action_name':'$$OUTPUT_NAME'," \
                "        'inputs': ['$$INPUT_FILE',]," \
@@ -110,24 +113,23 @@ for (headerfile, HEADERS): GYP_CONTENTS += "      '$$headerfile',"
 for (resourcefile, RESOURCES) {
   RCC_CPP = $$replace(resourcefile, .qrc, .cpp)
   RCC_CPP = $$join(RCC_CPP, "qrc_", qrc_)
-  RCC_CPP = $$absolute_path($$RCC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}$${RCC_CPP}
+  RCC_CPP = $$RCC_GEN_DIR/$${RCC_CPP}
   GYP_CONTENTS += "      '$$RCC_CPP',"
 }
 
 # Add moc output files to compile that aren't included at the end of any other source
-MOC_OUT_PATH = $$absolute_path($$MOC_DIR, $$OUT_PWD)$${QMAKE_DIR_SEP}
 for (mocable, MOCABLES) {
     !contains(INCLUDED_MOC_FILES, $$mocOutput($$mocable)) {
-        GYP_CONTENTS += "      '$$MOC_OUT_PATH$$mocOutput($$mocable)',"
+        GYP_CONTENTS += "      '$$MOC_GEN_DIR/$$mocOutput($$mocable)',"
     }
 }
 
 GYP_CONTENTS += "    ],"
-!isEmpty(INCLUDEPATH) {
-  GYP_CONTENTS += "    'include_dirs': ["
-  for (path, INCLUDEPATH): GYP_CONTENTS += "      '$$path',"
-  GYP_CONTENTS += "    ],"
-}
+GYP_CONTENTS += "    'include_dirs': ["
+for (path, INCLUDEPATH): GYP_CONTENTS += "      '$$path',"
+# qmake already added MOC_DIR to INCLUDEPATH, but we're telling gyp to use a different one.
+GYP_CONTENTS += "      '$$MOC_GEN_DIR',"
+GYP_CONTENTS += "    ],"
 
 # Generate the actions for moc and rcc
 GYP_CONTENTS += "    'actions': ["
