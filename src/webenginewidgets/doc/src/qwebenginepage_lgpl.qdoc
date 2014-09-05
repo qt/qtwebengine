@@ -305,6 +305,13 @@
 */
 
 /*!
+    \fn QWebEngineSettings *QWebEnginePage::settings() const
+    Returns a pointer to the page's settings object.
+
+    \sa QWebEngineSettings::globalSettings()
+*/
+
+/*!
     \fn QString QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList& oldFiles, const QStringList& acceptedMimeTypes)
     This function is called when the web content requests a file name, for example
     as a result of the user clicking on a "file upload" button in a HTML form.

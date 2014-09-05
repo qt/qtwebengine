@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 class QContextMenuEvent;
 class QUrl;
 class QWebEnginePage;
+class QWebEngineSettings;
 class QWebEngineViewPrivate;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
@@ -90,7 +91,8 @@ public:
 
     void findText(const QString &subString, QWebEnginePage::FindFlags options = 0, const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 
-    virtual QSize sizeHint() const { return QSize(800, 600); }
+    virtual QSize sizeHint() const Q_DECL_OVERRIDE;
+    QWebEngineSettings *settings() const;
 
 public Q_SLOTS:
     void stop();

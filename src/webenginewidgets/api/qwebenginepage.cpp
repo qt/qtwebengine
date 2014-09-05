@@ -583,6 +583,9 @@ void QWebEnginePage::findText(const QString &subString, FindFlags options, const
     }
 }
 
+/*!
+ * \reimp
+ */
 bool QWebEnginePage::event(QEvent *e)
 {
     return QObject::event(e);

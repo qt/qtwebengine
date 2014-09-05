@@ -199,6 +199,19 @@ void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlag
     page()->findText(subString, options, resultCallback);
 }
 
+/*!
+ * \reimp
+ */
+QSize QWebEngineView::sizeHint() const
+{
+    return QSize(800, 600);
+}
+
+QWebEngineSettings *QWebEngineView::settings() const
+{
+    return page()->settings();
+}
+
 void QWebEngineView::stop()
 {
     page()->triggerAction(QWebEnginePage::Stop);
@@ -236,6 +249,9 @@ void QWebEngineView::setZoomFactor(qreal factor)
     page()->setZoomFactor(factor);
 }
 
+/*!
+ * \reimp
+ */
 bool QWebEngineView::event(QEvent *ev)
 {
     Q_D(QWebEngineView);
@@ -249,6 +265,9 @@ bool QWebEngineView::event(QEvent *ev)
     return QWidget::event(ev);
 }
 
+/*!
+ * \reimp
+ */
 void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
 {
     QMenu *menu = page()->createStandardContextMenu();

@@ -104,7 +104,7 @@ private:
     ~QWebEngineHistory();
 
     Q_DISABLE_COPY(QWebEngineHistory)
-    Q_DECLARE_PRIVATE(QWebEngineHistory);
+    Q_DECLARE_PRIVATE(QWebEngineHistory)
     QScopedPointer<QWebEngineHistoryPrivate> d_ptr;
 
     friend QWEBENGINEWIDGETS_EXPORT QDataStream& operator>>(QDataStream&, QWebEngineHistory&);

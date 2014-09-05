@@ -367,3 +367,15 @@
 
     \sa loadStarted(), loadFinished()
 */
+
+/*!
+    \fn QWebEngineSettings *QWebEngineView::settings() const
+
+    Returns a pointer to the view/page specific settings object.
+
+    It is equivalent to
+
+    \snippet snippets/qtwebengine_qwebengineview_snippet.cpp 6
+
+    \sa QWebEngineSettings::globalSettings()
+*/
