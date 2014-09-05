@@ -74,7 +74,7 @@ GYP_CONTENTS += "    ],"
 
 !isEmpty(QMAKE_FRAMEWORKPATH) {
     GYP_CONTENTS += "    'mac_framework_dirs': ["
-    GYP_CONTENTS += "      '$$QMAKE_FRAMEWORKPATH',"
+    for(path, QMAKE_FRAMEWORKPATH): GYP_CONTENTS += "      '$$path',"
     GYP_CONTENTS += "    ],"
 }
 
