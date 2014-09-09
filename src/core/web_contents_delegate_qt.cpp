@@ -170,7 +170,6 @@ void WebContentsDelegateQt::DidFinishLoad(int64, const GURL &url, bool is_main_f
     }
 
     if (is_main_frame) {
-        m_viewClient->loadProgressChanged(100);
         m_viewClient->loadFinished(true, toQt(url));
 
         content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
