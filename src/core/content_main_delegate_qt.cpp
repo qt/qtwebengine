@@ -36,8 +36,12 @@
 
 #include "content_main_delegate_qt.h"
 
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -60,6 +64,19 @@ void ContentMainDelegateQt::PreSandboxStartup()
 {
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);
+
+    // Suppress info, warning and error messages per default.
+    int logLevel = logging::LOG_FATAL;
+
+    CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
+    if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
+        std::string logLevelValue = parsedCommandLine->GetSwitchValueASCII(switches::kLoggingLevel);
+        int level = 0;
+        if (base::StringToInt(logLevelValue, &level) && level >= logging::LOG_INFO && level < logging::LOG_NUM_SEVERITIES)
+            logLevel = level;
+    }
+
+    logging::SetMinLogLevel(logLevel);
 }
 
 content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()
