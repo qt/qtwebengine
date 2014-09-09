@@ -77,8 +77,9 @@ class DEPSParser:
                 subdir = dep
                 if subdir.startswith('src/'):
                     subdir = subdir[4:]
-                if subdir.startswith('src'):
-                    # Ignore the information about chromium since we get that from git.
+                else:
+                    # Ignore the information about chromium itself since we get that from git,
+                    # also ignore anything outside src/ (e.g. depot_tools)
                     continue
 
                 submodule = Submodule(subdir, repo)
@@ -91,14 +92,10 @@ class DEPSParser:
                 if len(rev) == 40: # Length of a git shasum
                     submodule.shasum = rev
                 else:
-                    # Try to find out the git branch using the svn path.
+                    # Try to find out the git branch.
                     branchMatch = re.search('/branches/((chromium/)?[^/]+)', repo)
-                    trunkMatch = re.search('/(trunk|svn)/', repo)
                     if branchMatch:
                         submodule.ref = 'refs/branch-heads/' + branchMatch.group(1)
-                    elif trunkMatch:
-                        submodule.ref = 'refs/heads/master'
-                    submodule.revision = int(rev)
                 submodules.append(submodule)
         return submodules
 
@@ -118,7 +115,6 @@ class Submodule:
         self.shasum = shasum
         self.os = os
         self.ref = ''
-        self.revision = None
 
     def matchesOS(self):
         if not self.os:
@@ -152,12 +148,6 @@ class Submodule:
                 return error
 
             error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
-
-            if self.revision:
-                search_string = 'git-svn-id:.*@%d' % self.revision
-                line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', r'--grep=%s' % search_string])
-                if line:
-                    self.shasum = line.split()[0]
 
         current_shasum = subprocessCheckOutput(['git', 'rev-parse', 'HEAD']).strip()
         current_tag = subprocessCheckOutput(['git', 'name-rev', '--tags', '--name-only', current_shasum]).strip()
@@ -249,8 +239,6 @@ class Submodule:
             print 'DEPS file provides the following submodules:'
             for submodule in submodules:
                 submodule_ref = submodule.shasum
-                if submodule.revision:
-                    submodule_ref = submodule.ref + '@' + str(submodule.revision)
                 print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule_ref
         else: # Try .gitmodules since no ref has been specified
             if not os.path.isfile('.gitmodules'):

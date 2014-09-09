@@ -55,8 +55,6 @@ chromium_version = '37.0.2062.68'
 chromium_branch = '2062'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
-git_deps_url = 'http://src.chromium.org/chrome/branches/' + chromium_branch + '/src/.DEPS.git'
-base_deps_url = 'http://src.chromium.org/chrome/releases/'
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 snapshot_src_dir = os.path.abspath(os.path.join(qtwebengine_root, 'src/3rdparty'))
@@ -88,33 +86,12 @@ def readReleaseChannels():
             channels[os].append({ 'channel': ver['channel'], 'version': ver['version'], 'branch': ver['true_branch'] })
     return channels
 
-def repositoryUrlFix(submodule):
-    # The git repository info for webrtc is outdated in the 1750
-    # branch's .DEPS.git file, so we have to update the url.
-    # We should be able to remove this with a branch post 1750.
-    repository_url = submodule.url
-    if 'external/webrtc/stable' in repository_url:
-        submodule.url = repository_url.replace('external/webrtc/stable', 'external/webrtc/trunk')
-
 def sanityCheckModules(submodules):
     submodule_dict = {}
     sys.stdout.write('\nverifying submodule refs.')
     for submodule in submodules:
         sys.stdout.flush()
-        if submodule.path in submodule_dict:
-            prev_module = submodule_dict[submodule.path]
-            # We might have to create our own DEPS file if different platforms use different branches,
-            # but for now it should be safe to select the latest revision from the requirements.
-            if submodule.shasum or prev_module.revision >= submodule.revision:
-                continue
-            if prev_module.ref != submodule.ref:
-                # Ignore for Android which might lag behind.
-                if submodule.os == 'android':
-                    continue
-                sys.exit('ERROR: branch mismatch for ' + submodule.path + '(' + prev_module.ref + ' vs ' + submodule.ref + ')')
-            print('Duplicate submodule ' + submodule.path + '. Using latest revison ' + str(submodule.revision) + '.')
         if submodule.ref:
-            repositoryUrlFix(submodule)
             sys.stdout.write('.')
             result = subprocess.check_output(['git', 'ls-remote', submodule.url, submodule.ref])
             if submodule.ref not in result:
@@ -127,34 +104,15 @@ def sanityCheckModules(submodules):
     return list(submodule_dict.values())
 
 def readSubmodules():
-    response = urllib2.urlopen(base_deps_url + chromium_version + '/DEPS')
-    svn_deps = response.read().strip()
-
-    response = urllib2.urlopen(git_deps_url)
-    git_deps = response.read().strip()
+    git_deps = subprocess.check_output(['git', 'show', chromium_version +':.DEPS.git'])
 
     parser = GitSubmodule.DEPSParser()
-    svn_submodules = parser.parse(svn_deps)
     git_submodules = parser.parse(git_deps)
 
     submodule_dict = {}
-    git_dict = {}
 
     for sub in git_submodules:
-        git_dict[sub.path] = sub
-
-    for sub in svn_submodules:
-        if (sub.revision or sub.shasum) and sub.path in git_dict:
-            submodule_dict[sub.path] = sub
-
-    for git in git_submodules:
-        if git.path in submodule_dict:
-            # We'll use the git repository instead of svn.
-            module = submodule_dict[git.path]
-            module.url = git.url
-            if not module.shasum:
-                # We use the git shasum as fallback.
-                module.shasum = git.shasum
+        submodule_dict[sub.path] = sub
 
     # Remove unwanted upstream submodules
     for path in submodule_blacklist:
