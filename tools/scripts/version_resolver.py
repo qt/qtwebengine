@@ -86,23 +86,6 @@ def readReleaseChannels():
             channels[os].append({ 'channel': ver['channel'], 'version': ver['version'], 'branch': ver['true_branch'] })
     return channels
 
-def sanityCheckModules(submodules):
-    submodule_dict = {}
-    sys.stdout.write('\nverifying submodule refs.')
-    for submodule in submodules:
-        sys.stdout.flush()
-        if submodule.ref:
-            sys.stdout.write('.')
-            result = subprocess.check_output(['git', 'ls-remote', submodule.url, submodule.ref])
-            if submodule.ref not in result:
-                # We could fall back to the git shasum if the parsed remote ref does not exist in
-                # the git repository but that would most certainly be outdated, so bail out here.
-                sys.exit('\nERROR: No valid remote found!')
-            sys.stdout.flush()
-        submodule_dict[submodule.path] = submodule
-    print('done.\n')
-    return list(submodule_dict.values())
-
 def readSubmodules():
     git_deps = subprocess.check_output(['git', 'show', chromium_version +':.DEPS.git'])
 
@@ -119,7 +102,7 @@ def readSubmodules():
         if path in submodule_dict:
             del submodule_dict[path]
 
-    return sanityCheckModules(submodule_dict.values())
+    return submodule_dict.values()
 
 def findSnapshotBaselineSha1():
     if not os.path.isdir(snapshot_src_dir):

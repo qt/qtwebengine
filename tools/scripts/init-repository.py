@@ -110,7 +110,7 @@ def initUpstreamSubmodules():
 
     ninjaSubmodule = GitSubmodule.Submodule()
     ninjaSubmodule.path = 'src/3rdparty_upstream/ninja'
-    ninjaSubmodule.shasum = ninja_shasum
+    ninjaSubmodule.ref = ninja_shasum
     ninjaSubmodule.url = ninja_url
     ninjaSubmodule.os = 'all'
     ninjaSubmodule.initialize()
