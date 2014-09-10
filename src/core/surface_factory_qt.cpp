@@ -43,7 +43,6 @@
 #include "ui/gl/gl_implementation.h"
 
 #include <QGuiApplication>
-#include <qpa/qplatformnativeinterface.h>
 
 #if defined(USE_OZONE) || defined(OS_ANDROID)
 #include <EGL/egl.h>

@@ -4,7 +4,7 @@ TARGET = QtWebEngineCore
 CMAKE_MODULE_TESTS = "-"
 
 QT += qml quick
-QT_PRIVATE += qml-private quick-private gui-private core-private
+QT_PRIVATE += gui-private
 
 # Look for linking information produced by gyp for our target according to core_generated.gyp
 !include($$OUT_PWD/$$getConfigDir()/$${TARGET}_linking.pri) {

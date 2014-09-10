@@ -43,7 +43,6 @@
 #if !defined(OS_MACOSX)
 
 #include <QGuiApplication>
-#include <qpa/qplatformnativeinterface.h>
 #include "gl_context_qt.h"
 #include "qtwebenginecoreglobal.h"
 

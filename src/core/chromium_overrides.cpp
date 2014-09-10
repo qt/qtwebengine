@@ -47,7 +47,6 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QWindow>
-#include <qpa/qplatformnativeinterface.h>
 
 #if defined(OS_ANDROID)
 #include "media/video/capture/fake_video_capture_device.h"

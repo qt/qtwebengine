@@ -37,12 +37,10 @@
 #include "gl_context_qt.h"
 
 #include <QGuiApplication>
+#include <QOpenGLContext>
 #include <QThread>
-#include "ui/gl/gl_context_egl.h"
-
-#include <private/qopenglcontext_p.h>
-#include <private/qsgcontext_p.h>
 #include <qpa/qplatformnativeinterface.h>
+#include "ui/gl/gl_context_egl.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
@@ -50,13 +48,14 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 GLContextHelper* GLContextHelper::contextHelper = 0;
 
 namespace {
 
 inline void *resourceForContext(const QByteArray &resource)
 {
-    return qApp->platformNativeInterface()->nativeResourceForContext(resource, QOpenGLContextPrivate::globalShareContext());
+    return qApp->platformNativeInterface()->nativeResourceForContext(resource, qt_gl_global_share_context());
 }
 
 inline void *resourceForIntegration(const QByteArray &resource)
