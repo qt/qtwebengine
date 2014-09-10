@@ -296,8 +296,12 @@ def exportChromium():
             copyFile(f, os.path.join(third_party_chromium, f))
     print("")
 
-dos2unixVersion = StrictVersion(subprocess.Popen(['dos2unix', '-V'], stdout=subprocess.PIPE).communicate()[0].splitlines()[0].split()[1])
-if dos2unixVersion < StrictVersion('6.0.6'):
+commandNotFound = subprocess.call(['which', 'dos2unix'])
+
+if not commandNotFound:
+    dos2unixVersion = StrictVersion(subprocess.Popen(['dos2unix', '-V', '| true'], stdout=subprocess.PIPE).communicate()[0].splitlines()[0].split()[1])
+
+if commandNotFound or dos2unixVersion < StrictVersion('6.0.6'):
     raise Exception("You need dos2unix version 6.0.6 minimum.")
 
 clearDirectory(third_party)
