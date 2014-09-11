@@ -51,12 +51,23 @@ class OzonePlatformEglfs : public OzonePlatform {
   OzonePlatformEglfs();
   virtual ~OzonePlatformEglfs();
 
-  virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE;
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE;
   virtual ui::EventFactoryOzone* GetEventFactoryOzone() OVERRIDE;
+  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE;
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE;
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE;
+  virtual void InitializeUI() OVERRIDE;
+  virtual void InitializeGPU() OVERRIDE;
 
  private:
-  SurfaceFactoryQt surface_factory_ozone_;
-  ui::EventFactoryEvdev event_factory_ozone_;
+  scoped_ptr<DeviceManager> device_manager_;
+
+  scoped_ptr<SurfaceFactoryQt> surface_factory_ozone_;
+  scoped_ptr<ui::CursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<ui::EventFactoryEvdev> event_factory_ozone_;
+
+  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
+  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformEglfs);
 };
