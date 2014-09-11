@@ -203,10 +203,10 @@ void WebEngineSettings::initDefaults()
     // Initialize the default settings.
     m_attributes.insert(AutoLoadImages, true);
     m_attributes.insert(JavascriptEnabled, true);
-    m_attributes.insert(JavascriptCanOpenWindows, false);
+    m_attributes.insert(JavascriptCanOpenWindows, true);
     m_attributes.insert(JavascriptCanAccessClipboard, false);
     m_attributes.insert(LinksIncludedInFocusChain, true);
-    m_attributes.insert(LocalStorageEnabled, false);
+    m_attributes.insert(LocalStorageEnabled, true);
     m_attributes.insert(LocalContentCanAccessRemoteUrls, false);
     m_attributes.insert(XSSAuditingEnabled, false);
     m_attributes.insert(SpatialNavigationEnabled, false);
