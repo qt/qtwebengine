@@ -42,6 +42,7 @@
 
 #include <QFont>
 #include <QTimer>
+#include <QTouchDevice>
 
 static const int batchTimerTimeout = 100;
 
@@ -67,6 +68,21 @@ private:
 };
 
 #include "web_engine_settings.moc"
+
+static inline bool isTouchScreenAvailable() {
+    static bool initialized = false;
+    static bool touchScreenAvailable = false;
+    if (!initialized) {
+        Q_FOREACH (const QTouchDevice *d, QTouchDevice::devices()) {
+            if (d->type() == QTouchDevice::TouchScreen) {
+                touchScreenAvailable = true;
+                break;
+            }
+        }
+        initialized = true;
+    }
+    return touchScreenAvailable;
+}
 
 
 WebEngineSettings::WebEngineSettings(WebEngineSettingsDelegate *delegate)
@@ -245,6 +261,7 @@ void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
 {
     // Override for now
     prefs->java_enabled = false;
+    prefs->touch_enabled = isTouchScreenAvailable();
 
     // Attributes mapping.
     prefs->loads_images_automatically = testAttribute(AutoLoadImages);
