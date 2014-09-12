@@ -467,7 +467,6 @@ void BrowserMainWindow::setupMenu()
 
 void BrowserMainWindow::setupToolBar()
 {
-    setUnifiedTitleAndToolBarOnMac(true);
     m_navigationBar = addToolBar(tr("Navigation"));
     connect(m_navigationBar->toggleViewAction(), SIGNAL(toggled(bool)),
             this, SLOT(updateToolbarActionText(bool)));
