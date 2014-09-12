@@ -359,7 +359,7 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
 
 void QQuickWebEngineViewPrivate::close()
 {
-    Q_UNREACHABLE();
+    // Not implemented yet.
 }
 
 void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
