@@ -59,6 +59,7 @@
         'conditions': [
           ['qt_os=="embedded_android"', {
             'dependencies': [
+              '<(chromium_src_dir)/ui/ozone/ozone.gyp:ozone_base',
               '<(chromium_src_dir)/third_party/ashmem/ashmem.gyp:ashmem',
               '<(chromium_src_dir)/third_party/freetype/freetype.gyp:ft2',
               '<(chromium_src_dir)/third_party/android_tools/ndk/android_tools_ndk.gyp:cpu_features',

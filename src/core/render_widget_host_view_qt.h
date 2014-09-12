@@ -186,7 +186,8 @@ public:
 
 #if defined(OS_ANDROID)
     virtual void ShowDisambiguationPopup(const gfx::Rect&, const SkBitmap&) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual void HasTouchEventHandlers(bool) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void LockCompositingSurface() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_ANDROID)
 
 #if defined(OS_WIN)

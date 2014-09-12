@@ -4,6 +4,7 @@ defineTest(isPlatformSupported) {
   win32: !contains(QT_CONFIG, angle): return(false)
 
   linux-g++|win32-msvc2013|macx-clang: return(true)
+  android-g++-b2qt: return(true)
   return(false)
 }
 

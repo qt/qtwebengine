@@ -58,6 +58,7 @@
 #include "content/utility/in_process_utility_thread.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/events/event_switches.h"
+#include "ui/native_theme/native_theme_switches.h"
 #include "ui/gl/gl_switches.h"
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
@@ -144,23 +145,18 @@ WebEngineContext::WebEngineContext()
 
 #if defined(QTWEBENGINE_MOBILE_SWITCHES)
     // Inspired from the Android port's default switches
-    parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbars);
+    parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
     parsedCommandLine->AppendSwitch(switches::kEnableGestureTapHighlight);
     parsedCommandLine->AppendSwitch(switches::kEnablePinch);
     parsedCommandLine->AppendSwitch(switches::kEnableViewport);
     parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
     parsedCommandLine->AppendSwitch(switches::kEnableSmoothScrolling);
-    parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideo);
-    parsedCommandLine->AppendSwitch(switches::kDisableAudio);
+    parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
     parsedCommandLine->AppendSwitch(switches::kEnableAcceleratedOverflowScroll);
     parsedCommandLine->AppendSwitch(switches::kEnableCompositingForFixedPosition);
-    parsedCommandLine->AppendSwitch(switches::kEnableAcceleratedScrollableFrames);
-    parsedCommandLine->AppendSwitch(switches::kEnableCompositedScrollingForFrames);
-    parsedCommandLine->AppendSwitch(switches::kForceCompositingMode);
     parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
     parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
-    parsedCommandLine->AppendSwitch(switches::kEnableDeadlineScheduling);
-    parsedCommandLine->AppendSwitch(cc::switches::kEnableImplSidePainting);
+    parsedCommandLine->AppendSwitch(switches::kEnableImplSidePainting);
     parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
 
     parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
@@ -170,7 +166,6 @@ WebEngineContext::WebEngineContext()
     // On eAndroid we use this to get the native display
     // from Qt in GLSurfaceEGL::InitializeOneOff.
     m_surfaceFactory.reset(new SurfaceFactoryQt());
-    gfx::SurfaceFactoryOzone::SetInstance(m_surfaceFactory.get());
 #endif
 
     GLContextHelper::initialize();

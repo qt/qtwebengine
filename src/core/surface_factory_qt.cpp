@@ -36,6 +36,7 @@
 
 #include "surface_factory_qt.h"
 
+#include "gl_context_qt.h"
 #include "type_conversion.h"
 
 #include "base/files/file_path.h"
@@ -95,7 +96,7 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
 
 intptr_t SurfaceFactoryQt::GetNativeDisplay()
 {
-    static void *display = qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("nativedisplay"));
+    static void *display = GLContextHelper::getNativeDisplay();
 
     if (display)
         return reinterpret_cast<intptr_t>(display);
