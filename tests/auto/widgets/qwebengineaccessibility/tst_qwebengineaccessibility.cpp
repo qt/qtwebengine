@@ -75,7 +75,7 @@ void tst_QWebEngineView::noPage()
     QCOMPARE(view->role(), QAccessible::Client);
     QCOMPARE(view->childCount(), 1);
     QAccessibleInterface *document = view->child(0);
-    QCOMPARE(document->role(), QAccessible::Document);
+    QCOMPARE(document->role(), QAccessible::WebDocument);
     QCOMPARE(document->parent(), view);
     QCOMPARE(document->childCount(), 0);
 }
@@ -97,7 +97,7 @@ void tst_QWebEngineView::hierarchy()
     // Wait for accessibility to be fully initialized
     QTRY_VERIFY(view->child(0)->childCount() == 1);
     QAccessibleInterface *document = view->child(0);
-    QCOMPARE(document->role(), QAccessible::Document);
+    QCOMPARE(document->role(), QAccessible::WebDocument);
     QCOMPARE(document->parent(), view);
     QCOMPARE(view->indexOfChild(document), 0);
     QCOMPARE(document->childCount(), 1);
