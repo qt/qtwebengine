@@ -182,7 +182,7 @@ void RenderWidgetHostViewQtDelegateWidget::setTooltip(const QString &tooltip)
 {
     QString wrappedTip;
     if (!tooltip.isEmpty())
-         wrappedTip = QStringLiteral("<p>") % tooltip.toHtmlEscaped().left(MaxTooltipLength) % QStringLiteral("</p>");
+         wrappedTip = QLatin1String("<p>") % tooltip.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
     setToolTip(wrappedTip);
 }
 

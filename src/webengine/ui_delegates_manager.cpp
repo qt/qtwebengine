@@ -78,7 +78,7 @@ static QString getUIDelegatesImportDir(QQmlEngine *engine) {
     if (initialized)
         return importDir;
     Q_FOREACH (const QString &path, engine->importPathList()) {
-        QFileInfo fi(path % QStringLiteral("/QtWebEngine/UIDelegates/"));
+        QFileInfo fi(path % QLatin1String("/QtWebEngine/UIDelegates/"));
         if (fi.exists()) {
             importDir = fi.absolutePath();
             break;

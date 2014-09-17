@@ -72,7 +72,7 @@ base::FilePath BrowserContextQt::GetPath() const
     if (dataLocation.isEmpty())
         dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
 
-    dataLocation.append(QDir::separator() % QStringLiteral("QtWebEngine"));
+    dataLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
     return base::FilePath(toFilePathString(dataLocation));
 }
 

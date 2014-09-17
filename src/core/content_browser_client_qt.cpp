@@ -235,18 +235,18 @@ public:
     {
         QString platform = qApp->platformName().toLower();
         QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
-        if (platform == QStringLiteral("xcb")) {
+        if (platform == QLatin1String("xcb")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
             else
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("glxcontext"), qtContext);
-        } else if (platform == QStringLiteral("cocoa"))
+        } else if (platform == QLatin1String("cocoa"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
-        else if (platform == QStringLiteral("qnx"))
+        else if (platform == QLatin1String("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QStringLiteral("eglfs"))
+        else if (platform == QLatin1String("eglfs"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QStringLiteral("windows")) {
+        else if (platform == QLatin1String("windows")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglContext"), qtContext);
             else

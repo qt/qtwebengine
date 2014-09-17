@@ -95,7 +95,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     // and instead use a reasonable default value for viewport.devicePixelRatio to avoid every
     // app having to use this experimental API.
     QString platform = qApp->platformName().toLower();
-    if (platform == QStringLiteral("qnx")) {
+    if (platform == QLatin1String("qnx")) {
         qreal webPixelRatio = QGuiApplication::primaryScreen()->physicalDotsPerInch() / 160;
 
         // Quantize devicePixelRatio to increments of 1 to allow JS and media queries to select
@@ -135,7 +135,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
-    const bool hasWindowCapability = qApp->platformName().toLower() != QStringLiteral("eglfs");
+    const bool hasWindowCapability = qApp->platformName().toLower() != QLatin1String("eglfs");
     RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
     if (hasWindowCapability) {
         RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
