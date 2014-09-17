@@ -296,12 +296,23 @@
 */
 
 /*!
-    \fn void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
+    \fn void QWebEnginePage::findText(const QString &subString, FindFlags options)
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    To clear the selection, just pass an empty string.
+*/
+
+/*!
+    \fn void QWebEnginePage::findText(const QString &subString, FindFlags options, FunctorOrLambda resultCallback)
     Finds the specified string, \a subString, in the page, using the given \a options.
 
     To clear the selection, just pass an empty string.
 
-    The \a resultCallback will be called with a value of true if the \a subString was found; otherwise the callback value will be false.
+    The \a resultCallback must take a boolean parameter. It will be called with a value of true if the \a subString
+    was found; otherwise the callback value will be false.
+
+    For example:
+    \snippet snippets/qtwebengine_qwebenginepage_snippet.cpp 0
 */
 
 /*!
@@ -397,18 +408,22 @@
 */
 
 /*!
-    \fn void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
+    \fn void QWebEnginePage::toHtml(FunctorOrLambda resultCallback) const
     Asynchronous method to retrieve the page's content as HTML, enclosed in HTML and BODY tags.
     Upon successful completion, \a resultCallback is called with the page's content.
+
+    \note \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a QString parameter.
 
     \sa setHtml(), toPlainText()
 */
 
 /*!
-    \fn void QWebEnginePage::toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const
+    \fn void QWebEnginePage::toPlainText(FunctorOrLambda resultCallback) const
     Asynchronous method to retrieve the page's content converted to plain text, completely stripped of all
     HTML formatting.
     Upon successful completion, \a resultCallback is called with the page's content.
+
+    \note \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a QString parameter.
 
     \sa toHtml()
 */
@@ -508,10 +523,12 @@
 */
 
 /*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback)
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
     Runs the JavaScript code contained in \a scriptSource.
 
     When the script has been executed, \a resultCallback is called with the result of the last executed statement.
+
+    \note \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a QVariant parameter.
 */
 
 /*!
