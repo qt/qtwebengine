@@ -343,6 +343,12 @@ void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &security
     Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
 }
 
+void QWebEnginePagePrivate::runGeolocationPermissionRequest(const QUrl &securityOrigin)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::Geolocation);
+}
+
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view;
@@ -756,6 +762,8 @@ QMenu *QWebEnginePage::createStandardContextMenu()
 void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature, QWebEnginePage::PermissionPolicy policy)
 {
     Q_D(QWebEnginePage);
+    if (policy == PermissionUnknown)
+        return;
     WebContentsAdapterClient::MediaRequestFlags flags =  WebContentsAdapterClient::MediaNone;
     switch (feature) {
     case MediaAudioVideoCapture:
@@ -774,6 +782,10 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
             }
             d->adapter->grantMediaAccessPermission(securityOrigin, flags);
         }
+        d->adapter->grantMediaAccessPermission(securityOrigin, flags);
+        break;
+    case QWebEnginePage::Geolocation:
+        d->adapter->runGeolocationRequestCallback(securityOrigin, (policy == PermissionGrantedByUser) ? true : false);
         break;
     default:
         break;

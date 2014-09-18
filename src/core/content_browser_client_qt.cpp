@@ -54,11 +54,15 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
 
+#include "access_token_store_qt.h"
 #include "browser_context_qt.h"
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
 #include "dev_tools_http_handler_delegate_qt.h"
+#ifdef QT_USE_POSITIONING
+#include "location_provider_qt.h"
+#endif
 #include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "web_contents_delegate_qt.h"
@@ -332,6 +336,13 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
+content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
+{
+    // We return a dumb in-memory AccessTokenStore implementation for now
+    // since this is not null-checked before it's used in the content layer.
+    return new AccessTokenStoreQt;
+}
+
 void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, const GURL &url, WebPreferences *web_prefs)
 {
     Q_UNUSED(url);
@@ -372,19 +383,18 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
     contentsDelegate->allowCertificateError(errorController);
 }
 
-void ContentBrowserClientQt::RequestGeolocationPermission(content::WebContents *webContents,
-                                                          int bridge_id,
-                                                          const GURL &requesting_frame,
-                                                          bool user_gesture,
-                                                          base::Callback<void(bool)> result_callback,
-                                                          base::Closure *cancel_callback)
+void ContentBrowserClientQt::RequestGeolocationPermission(content::WebContents *webContents, int /*bridgeId*/, const GURL &requestingFrameOrigin, bool /*userGesture*/, base::Callback<void (bool)> resultCallback, base::Closure *cancelCallback)
 {
-    Q_UNUSED(webContents);
-    Q_UNUSED(bridge_id);
-    Q_UNUSED(requesting_frame);
-    Q_UNUSED(user_gesture);
-    Q_UNUSED(cancel_callback);
+    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    Q_ASSERT(contentsDelegate);
+    contentsDelegate->requestGeolocationPermission(requestingFrameOrigin, resultCallback, cancelCallback);
+}
 
-    // TODO: Add geolocation support
-    result_callback.Run(false);
+content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()
+{
+#ifdef QT_USE_POSITIONING
+    return new LocationProviderQt;
+#else
+    return 0; // Leave it up to Chromium to figure something out.
+#endif
 }

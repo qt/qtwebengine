@@ -172,6 +172,7 @@ public:
     virtual QObject *accessibilityParentObject() = 0;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
+    virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
 

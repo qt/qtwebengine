@@ -178,6 +178,7 @@ public:
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController);
+    virtual void runGeolocationPermissionRequest(QUrl const&) Q_DECL_OVERRIDE { }
 
     virtual BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 

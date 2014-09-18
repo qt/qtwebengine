@@ -301,3 +301,9 @@ void WebContentsDelegateQt::allowCertificateError(const QExplicitlySharedDataPoi
 {
     m_viewClient->allowCertificateError(errorController);
 }
+
+void WebContentsDelegateQt::requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback, base::Closure *cancelCallback)
+{
+    m_lastGeolocationRequestCallbacks = qMakePair(resultCallback, cancelCallback);
+    m_viewClient->runGeolocationPermissionRequest(toQt(requestingFrameOrigin));
+}

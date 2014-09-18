@@ -40,6 +40,8 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
+#include "base/callback.h"
+
 #include "javascript_dialog_manager_qt.h"
 #include <QtCore/qcompilerdetection.h>
 
@@ -88,7 +90,9 @@ public:
 
     void overrideWebPreferences(content::WebContents *, WebPreferences*);
     void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &) ;
+    void requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback, base::Closure *cancelCallback);
 
+    QPair<base::Callback<void (bool)>, base::Closure*> m_lastGeolocationRequestCallbacks;
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
 

@@ -109,6 +109,7 @@ public:
     void wasShown();
     void wasHidden();
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
+    void runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed);
 
     void dpiScaleChanged();
     QAccessibleInterface *browserAccessible();

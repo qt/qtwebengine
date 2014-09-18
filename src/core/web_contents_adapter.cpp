@@ -730,6 +730,12 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, 
     MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(d->webContents.get(), securityOrigin, flags);
 }
 
+void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed)
+{
+    Q_D(WebContentsAdapter);
+    d->webContentsDelegate->m_lastGeolocationRequestCallbacks.first.Run(allowed);
+}
+
 void WebContentsAdapter::dpiScaleChanged()
 {
     Q_D(WebContentsAdapter);

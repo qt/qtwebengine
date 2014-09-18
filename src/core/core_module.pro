@@ -3,6 +3,7 @@ TARGET = QtWebEngineCore
 
 CMAKE_MODULE_TESTS = "-"
 
+qtHaveModule(positioning):QT += positioning
 QT += qml quick
 QT_PRIVATE += gui-private
 

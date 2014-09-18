@@ -135,6 +135,10 @@ inline QDateTime toQt(base::Time time)
     return QDateTime::fromMSecsSinceEpoch(time.ToJavaTime());
 }
 
+inline base::Time toTime(const QDateTime &dateTime) {
+    return base::Time::FromInternalValue(dateTime.toMSecsSinceEpoch());
+}
+
 inline base::FilePath::StringType toFilePathString(const QString &str)
 {
 #if defined(OS_WIN)

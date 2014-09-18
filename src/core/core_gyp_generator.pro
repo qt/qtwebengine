@@ -33,6 +33,7 @@ RESOURCES += devtools.qrc
 INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
 
 SOURCES = \
+        access_token_store_qt.cpp \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_adapter.cpp \
@@ -81,6 +82,7 @@ SOURCES = \
         yuv_video_node.cpp
 
 HEADERS = \
+        access_token_store_qt.h \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_adapter.h \
@@ -132,3 +134,10 @@ HEADERS = \
         web_engine_visited_links_manager.h \
         web_event_factory.h \
         yuv_video_node.h
+
+qtHaveModule(positioning) {
+    SOURCES += location_provider_qt.cpp
+    HEADERS += location_provider_qt.h
+    DEFINES += QT_USE_POSITIONING=1
+    QT += positioning
+}
