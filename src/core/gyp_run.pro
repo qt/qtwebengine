@@ -52,7 +52,7 @@ cross_compile {
         !isEmpty(MARCH): GYP_ARGS += "-D arm_arch=\"$$MARCH\""
 
         MTUNE = $$extractCFlag("-mtune=.*")
-        !isEmpty(MTUNE): GYP_ARGS += "-D arm_tune=\"$$MTUNE\""
+        GYP_ARGS += "-D arm_tune=\"$$MTUNE\""
 
         MFLOAT = $$extractCFlag("-mfloat-abi=.*")
         !isEmpty(MFLOAT): GYP_ARGS += "-D arm_float_abi=\"$$MFLOAT\""
