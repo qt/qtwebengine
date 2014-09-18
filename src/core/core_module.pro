@@ -21,6 +21,4 @@ CONFIG -= bsymbolic_functions
 
 contains(QT_CONFIG, egl): CONFIG += egl
 
-linux {
-    CONFIG(release, debug|release) | contains(QT_CONFIG, separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
-}
+linux: contains(QT_CONFIG, separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"

@@ -23,6 +23,11 @@ GYP_CONFIG += disable_glibcxx_debug=1
 
 linux:contains(QT_CONFIG, separate_debug_info): GYP_CONFIG += linux_dump_symbols=1
 
+force_debug_info {
+    win32: GYP_CONFIG += win_release_extra_cflags=-Zi
+    else: GYP_CONFIG += release_extra_cflags=-g
+}
+
 # Append additional platform options defined in GYP_CONFIG
 for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
