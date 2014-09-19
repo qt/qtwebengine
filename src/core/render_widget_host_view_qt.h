@@ -45,6 +45,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
+#include <QMap>
 #include <QPoint>
 #include <QRect>
 #include <QtGlobal>
@@ -221,6 +222,7 @@ public:
 private:
     void sendDelegatedFrameAck();
     void processMotionEvent(const ui::MotionEvent &motionEvent);
+    QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
     float dpiScale() const;
 
     bool IsPopup() const;
@@ -230,6 +232,7 @@ private:
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
     bool m_sendMotionActionDown;
+    QMap<int, int> m_touchIdMapping;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
