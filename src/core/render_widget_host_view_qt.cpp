@@ -635,7 +635,7 @@ void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t
     content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
     m_adapterClient->selectionChanged();
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
     // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
     ui::ScopedClipboardWriter clipboard_writer(
                 ui::Clipboard::GetForCurrentThread(),
