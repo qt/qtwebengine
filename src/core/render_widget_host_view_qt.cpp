@@ -676,6 +676,8 @@ void RenderWidgetHostViewQt::notifyResize()
 void RenderWidgetHostViewQt::windowBoundsChanged()
 {
     m_host->SendScreenRects();
+    if (m_delegate->window())
+        m_host->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewQt::windowChanged()

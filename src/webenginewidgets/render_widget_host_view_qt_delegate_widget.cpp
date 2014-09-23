@@ -254,8 +254,9 @@ void RenderWidgetHostViewQtDelegateWidget::paintGL()
         m_rootNode->appendChildNode(paintNode);
     }
 
-    m_sgRenderer->setDeviceRect(size());
-    m_sgRenderer->setViewportRect(size());
+    QSize deviceSize = size() * devicePixelRatio();
+    m_sgRenderer->setDeviceRect(deviceSize);
+    m_sgRenderer->setViewportRect(deviceSize);
     m_sgRenderer->setProjectionMatrixToRect(QRectF(QPointF(), size()));
 
     m_sgRenderer->renderScene(defaultFramebufferObject());
