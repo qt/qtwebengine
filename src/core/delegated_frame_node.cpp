@@ -55,6 +55,7 @@
 #include "base/bind.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/checkerboard_draw_quad.h"
+#include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -600,6 +601,30 @@ void DelegatedFrameNode::commit(DelegatedFrameNodeData* data, cc::ReturnedResour
                 rectangleNode->setRect(toQt(quad->rect));
                 rectangleNode->setColor(toQt(scquad->color));
                 currentLayerChain->appendChildNode(rectangleNode);
+                break;
+            } case cc::DrawQuad::DEBUG_BORDER: {
+                const cc::DebugBorderDrawQuad *dbquad = cc::DebugBorderDrawQuad::MaterialCast(quad);
+                QSGGeometryNode *geometryNode = new QSGGeometryNode;
+
+                QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
+                geometry->setDrawingMode(GL_LINE_LOOP);
+                geometry->setLineWidth(dbquad->width);
+                // QSGGeometry::updateRectGeometry would actually set the corners in the following order:
+                // top-left, bottom-left, top-right, bottom-right, leading to a nice criss cross, instead
+                // of having a closed loop.
+                const gfx::Rect &r(dbquad->rect);
+                geometry->vertexDataAsPoint2D()[0].set(r.x(), r.y());
+                geometry->vertexDataAsPoint2D()[1].set(r.x() + r.width(), r.y());
+                geometry->vertexDataAsPoint2D()[2].set(r.x() + r.width(), r.y() + r.height());
+                geometry->vertexDataAsPoint2D()[3].set(r.x(), r.y() + r.height());
+                geometryNode->setGeometry(geometry);
+
+                QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
+                material->setColor(toQt(dbquad->color));
+                geometryNode->setMaterial(material);
+
+                geometryNode->setFlags(QSGNode::OwnsGeometry | QSGNode::OwnsMaterial);
+                currentLayerChain->appendChildNode(geometryNode);
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
