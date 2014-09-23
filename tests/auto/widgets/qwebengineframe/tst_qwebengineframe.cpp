@@ -1245,6 +1245,7 @@ void tst_QWebEngineFrame::setUrlWithFragment_data()
 // Based on bug report https://bugs.webkit.org/show_bug.cgi?id=32723
 void tst_QWebEngineFrame::setUrlWithFragment()
 {
+    QSKIP("FIXME: https://trello.com/c/3L7F8VZJ/217-take-care-about-the-in-page-navigations-in-the-tests");
     QFETCH(QUrl, previousUrl);
 
     QWebEnginePage page;
