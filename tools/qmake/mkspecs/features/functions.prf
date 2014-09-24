@@ -1,9 +1,9 @@
 defineTest(isPlatformSupported) {
   static: return(false)
+  !equals(QMAKE_HOST.arch, "x86_64"): return(false)
   osx:lessThan(QMAKE_XCODE_VERSION, 5.1): return(false)
 
-  linux-g++|win32-msvc2013|macx-clang: return(true)
-  android-g++-b2qt: return(true)
+  linux|win32-msvc2013|macx-clang: return(true)
   return(false)
 }
 
