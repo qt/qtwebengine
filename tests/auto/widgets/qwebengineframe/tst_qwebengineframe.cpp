@@ -365,6 +365,7 @@ void tst_QWebEngineFrame::requestedUrlAfterSetAndLoadFailures()
     ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(spy.count(), 2);
     QCOMPARE(page.url(), first);
+    QEXPECT_FAIL("", "Slight change: The requestedUrl() function catches the error page's entry here thus it results the error page's requested url.", Continue);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
 }
@@ -1293,7 +1294,6 @@ void tst_QWebEngineFrame::setUrlToEmpty()
 
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), aboutBlank);
-    QEXPECT_FAIL("", "Slight change: This information now comes from Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(page.requestedUrl(), QUrl());
     QCOMPARE(baseUrlSync(&page), aboutBlank);
 
@@ -1312,7 +1312,6 @@ void tst_QWebEngineFrame::setUrlToEmpty()
 
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), aboutBlank);
-    QEXPECT_FAIL("", "Slight change: This information now comes from Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(page.requestedUrl(), QUrl());
     QCOMPARE(baseUrlSync(&page), aboutBlank);
 }
@@ -1368,7 +1367,6 @@ void tst_QWebEngineFrame::setUrlHistory()
     m_page->setUrl(QUrl());
     expectedLoadFinishedCount++;
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
-    QEXPECT_FAIL("", "Slight change: QUrl() isn't replaced by about:blank.", Continue);
     QCOMPARE(m_page->url(), aboutBlank);
     QCOMPARE(m_page->requestedUrl(), QUrl());
     QCOMPARE(collectHistoryUrls(m_page->history()), QStringList());
@@ -1393,7 +1391,6 @@ void tst_QWebEngineFrame::setUrlHistory()
     expectedLoadFinishedCount++;
     QTRY_COMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(m_page->url(), aboutBlank);
-    QEXPECT_FAIL("", "Slight change: This information now comes from Chromium and the behavior of requestedUrl changed in this case.", Continue);
     QCOMPARE(m_page->requestedUrl(), QUrl());
     QEXPECT_FAIL("", "Slight change: load(QUrl()) currently loads about:blank and nothing prevents it from being added to the history.", Continue);
     QCOMPARE(collectHistoryUrls(m_page->history()), QStringList() << QStringLiteral("qrc:/test1.html"));
