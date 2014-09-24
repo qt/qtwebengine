@@ -9,7 +9,6 @@ print 'using python: ' + sys.executable + ' version: ' + sys.version
 
 if sys.platform == "darwin":
   print 'xcode version: ' + subprocess.check_output(['xcodebuild', '-version']).replace('\n', ' ')
-  print 'clang++ version: ' + subprocess.check_output(['clang++', '--version']).replace('\n', ' ')
 
 qtwebengine_root = os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import qtwebengine_utils as utils
@@ -86,12 +85,6 @@ if __name__ == '__main__':
 
   if 'qt_cross_compile=1' in sys.argv:
     os.environ['GYP_CROSSCOMPILE'] = '1'
-
-  # On Mac we want to override CXX and CC that is provided with
-  # the Chromium GYP environment.
-  if sys.platform.startswith('darwin') and not 'GYP_CROSSCOMPILE' in os.environ:
-    os.environ['CXX'] = 'clang++'
-    os.environ['CC'] = 'clang'
 
   gyp_helper.apply_chromium_gyp_env()
 
