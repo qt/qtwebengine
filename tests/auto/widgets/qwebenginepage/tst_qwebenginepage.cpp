@@ -39,6 +39,7 @@
 #include <qpa/qplatforminputcontext.h>
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
+#include <qwebenginesettings.h>
 #include <qwebengineview.h>
 #include <qimagewriter.h>
 
@@ -171,7 +172,6 @@ private Q_SLOTS:
     void networkReplyParentDidntChange();
     void destroyQNAMBeforeAbortDoesntCrash();
     void testJSPrompt();
-    void showModalDialog();
     void testStopScheduledPageRefresh();
     void findText();
     void findTextResult();
@@ -471,9 +471,6 @@ private Q_SLOTS:
 
 void tst_QWebEnginePage::popupFormSubmission()
 {
-#if !defined(QWEBENGINEPAGE_SETTINGS)
-  QSKIP("QWEBENGINEPAGE_SETTINGS");
-#else
     TestPage page;
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     page.setHtml("<form name=form1 method=get action='' target=myNewWin>"\
@@ -490,7 +487,6 @@ void tst_QWebEnginePage::popupFormSubmission()
     // Check if the form submission was OK.
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118597", Continue);
     QVERIFY(url.contains("?foo=bar"));
-#endif
 }
 
 void tst_QWebEnginePage::acceptNavigationRequestWithNewWindow()
@@ -3148,32 +3144,6 @@ void tst_QWebEnginePage::testJSPrompt()
     QVERIFY(res);
 }
 
-class TestModalPage : public QWebEnginePage
-{
-    Q_OBJECT
-public:
-    TestModalPage(QObject* parent = 0) : QWebEnginePage(parent) {
-    }
-    virtual QWebEnginePage* createWindow(WebWindowType) {
-        QWebEnginePage* page = new TestModalPage();
-        connect(page, SIGNAL(windowCloseRequested()), page, SLOT(deleteLater()));
-        return page;
-    }
-};
-
-void tst_QWebEnginePage::showModalDialog()
-{
-#if !defined(QWEBENGINESETTINGS)
-    QSKIP("QWEBENGINESETTINGS");
-#else
-    TestModalPage page;
-    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
-    page.setHtml(QString("<html></html>"));
-    QString res = evaluateJavaScriptSync(&page, "window.showModalDialog('javascript:window.returnValue=dialogArguments; window.close();', 'This is a test');").toString();
-    QCOMPARE(res, QString("This is a test"));
-#endif
-}
-
 void tst_QWebEnginePage::testStopScheduledPageRefresh()
 {
 #if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
@@ -3680,10 +3650,11 @@ void tst_QWebEnginePage::getUserMediaRequest()
 
 void tst_QWebEnginePage::openWindowDefaultSize()
 {
-#if !defined(QWEBENGINEPAGE_SETTINGS)
-    QSKIP("QWEBENGINEPAGE_SETTINGS");
-#else
     TestPage page;
+    QWebEngineView view;
+    page.setView(&view);
+    view.show();
+
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     // Open a default window.
     page.runJavaScript("window.open()");
@@ -3703,7 +3674,6 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     // Check minimum size has been requested.
     QVERIFY(requestedGeometry.width() == 100);
     QVERIFY(requestedGeometry.height() == 100);
-#endif
 }
 
 void tst_QWebEnginePage::cssMediaTypeGlobalSetting()
