@@ -50,6 +50,7 @@
       ['exclude', 'gl_surface_glx\\.cc$'],
       ['exclude', 'gl_surface_x11\\.cc$'],
       ['exclude', 'gl_surface_win\\.cc$'],
+      ['exclude', 'gl_surface_ozone\\.cc$'],
       # Avoid the ATL dependency to allow building with VS Express
       ['exclude', 'browser/accessibility/accessibility_tree_formatter\\.(cc|h)$',],
       ['exclude', 'browser/accessibility/accessibility_tree_formatter_android\\.(cc|h)$',],
@@ -78,6 +79,8 @@
             # At runtime the env variable SSL_CERT_DIR can be used to override this
             'OPENSSLDIR="/usr/lib/ssl"',
             'OPENSSL_LOAD_CONF',
+            'EGL_API_FB=1',
+            'LINUX=1',
         ],
         'defines!': [
             'OPENSSLDIR="/etc/ssl"',
