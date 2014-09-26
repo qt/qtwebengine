@@ -262,7 +262,7 @@ protected:
     ~GLSurfaceQtWGL();
 
 private:
-    PbufferGLSurfaceWGL *m_surfaceBuffer;
+    scoped_refptr<PbufferGLSurfaceWGL> m_surfaceBuffer;
     DISALLOW_COPY_AND_ASSIGN(GLSurfaceQtWGL);
 };
 
@@ -291,10 +291,7 @@ bool GLSurfaceQtWGL::Initialize()
 
 void GLSurfaceQtWGL::Destroy()
 {
-    if (m_surfaceBuffer) {
-        delete m_surfaceBuffer;
-        m_surfaceBuffer = 0;
-    }
+    m_surfaceBuffer = 0;
 }
 
 void *GLSurfaceQtWGL::GetHandle()
