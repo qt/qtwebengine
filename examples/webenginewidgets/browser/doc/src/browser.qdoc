@@ -34,7 +34,4 @@
     providing a little Web browser application with support for tabs.
 
     \image browser-demo.png
-
-    This browser is the foundation for the \l{Arora Browser}, a simple cross-platform
-    Web browser.
 */

@@ -54,7 +54,7 @@
     content from the World Wide Web into your Qt application.
 
     Qt WebEngine Widgets provides facilities for rendering of HyperText Markup
-    Language (HTML), Extensible HyperText Markup Language (XHTML) and Scalable
+    Language version 5 (HTML5), Extensible HyperText Markup Language (XHTML) and Scalable
     Vector Graphics (SVG) documents, styled using Cascading Style Sheets (CSS)
     and scripted with JavaScript.
 
@@ -78,16 +78,11 @@
 
     \snippet snippets/qtwebengine_build_snippet.qdoc 0
 
-    \section1 Notes
-
-    \note Web site icons, also known as "FavIcons", are currently not supported
-    on Windows. We plan to address this in a future release.
-
     \section1 Architecture
 
     The easiest way to render content is through the QWebEngineView class. As a
-    widget it can be embedded into your forms or a graphics view, and it
-    provides convenience functions for downloading and rendering web sites.
+    widget it can be embedded into your forms and it provides convenience functions
+    for downloading and rendering web sites.
 
     \snippet snippets/simple/main.cpp Using QWebEngineView
 
@@ -97,21 +92,15 @@
     customization of handlers for specific events such as showing custom authentication
     dialogs.
 
-    \section1 Examples
-
-    There are several Qt WebEngine Widgets examples located in the
-    \l{Qt WebEngine Widgets Examples} page.
-
     \section1 License Information
-    This is a snapshot of the integration of Chromium into Qt. The exact version information
-    can be found in the \c{VERSION} file supplied with Qt.
+    This is a snapshot of the integration of Chromium into Qt.
 
     Qt Commercial Edition licensees that wish to distribute applications that
     use the Qt WebEngine module need to be aware of their obligations under the
-    GNU Library General Public License (LGPL).
+    GNU Library General Public License (LGPLv2).
 
     Developers using the Open Source Edition can choose to redistribute
-    the module under the appropriate version of the GNU LGPL.
+    the module under the GNU LGPLv3.
 
     \legalese
 

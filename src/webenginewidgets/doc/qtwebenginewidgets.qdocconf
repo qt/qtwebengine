@@ -24,7 +24,7 @@ qhp.QtWebEngineWidgets.subprojects.classes.indexTitle = Qt WebEngine Widgets C++
 qhp.QtWebEngineWidgets.subprojects.classes.selectors = class fake:headerfile
 qhp.QtWebEngineWidgets.subprojects.classes.sortPages = true
 qhp.QtWebEngineWidgets.subprojects.examples.title = Examples
-qhp.QtWebEngineWidgets.subprojects.examples.indexTitle = Qt WebEngine Widgets Code Samples
+qhp.QtWebEngineWidgets.subprojects.examples.indexTitle = Qt WebEngine Widgets Examples
 qhp.QtWebEngineWidgets.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtwebenginewidgets/qtwebenginewidgets.tags

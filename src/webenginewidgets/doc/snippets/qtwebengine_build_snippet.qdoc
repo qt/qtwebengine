@@ -1,8 +1,8 @@
 //! [0]
-QT += webengine
+QT += webenginewidgets
 //! [0]
 
 
 //! [1]
-#include <QtWebEngine>
+#include <QtWebEngineWidgets>
 //! [1]
