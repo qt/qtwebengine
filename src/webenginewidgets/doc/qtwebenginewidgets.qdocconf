@@ -29,7 +29,7 @@ qhp.QtWebEngineWidgets.subprojects.examples.selectors = fake:example
 
 tagfile                 = ../../../doc/qtwebenginewidgets/qtwebenginewidgets.tags
 
-depends += qtcore qtnetwork qtgui qtwidgets qtdoc
+depends += qtwebengine qtcore qtnetwork qtgui qtwidgets qtwebkit qtdoc
 
 headerdirs  += ../api
 sourcedirs  += ../api
