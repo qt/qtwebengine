@@ -44,7 +44,7 @@
 #include <QTimer>
 #include <QTouchDevice>
 
-static const int batchTimerTimeout = 100;
+static const int batchTimerTimeout = 0;
 
 class BatchTimer : public QTimer {
     Q_OBJECT
@@ -290,4 +290,5 @@ void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
     prefs->default_fixed_font_size = fontSize(DefaultFixedFontSize);
     prefs->minimum_font_size = fontSize(MinimumFontSize);
     prefs->minimum_logical_font_size = fontSize(MinimumLogicalFontSize);
+    prefs->default_encoding = defaultTextEncoding().toStdString();
 }

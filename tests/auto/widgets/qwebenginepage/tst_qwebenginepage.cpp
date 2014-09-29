@@ -2706,29 +2706,27 @@ void tst_QWebEnginePage::testEnablePersistentStorage()
 
 void tst_QWebEnginePage::defaultTextEncoding()
 {
-#if !defined(QWEBENGINESETTINGS_SETDEFAULTTEXTENCODING)
-    QSKIP("QWEBENGINESETTINGS_SETDEFAULTTEXTENCODING");
-#else
-
     QString defaultCharset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QVERIFY(!defaultCharset.isEmpty());
     QCOMPARE(QWebEngineSettings::globalSettings()->defaultTextEncoding(), defaultCharset);
 
     m_page->settings()->setDefaultTextEncoding(QString("utf-8"));
+    QCoreApplication::processEvents();
     QString charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QCOMPARE(charset, QString("utf-8"));
     QCOMPARE(m_page->settings()->defaultTextEncoding(), charset);
 
     m_page->settings()->setDefaultTextEncoding(QString());
+    QCoreApplication::processEvents();
     charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QVERIFY(!charset.isEmpty());
     QCOMPARE(charset, defaultCharset);
 
     QWebEngineSettings::globalSettings()->setDefaultTextEncoding(QString("utf-8"));
+    QCoreApplication::processEvents();
     charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
     QCOMPARE(charset, QString("utf-8"));
     QCOMPARE(QWebEngineSettings::globalSettings()->defaultTextEncoding(), charset);
-#endif
 }
 
 #if defined(QWEBENGINEPAGE_ERRORPAGEEXTENSION)
