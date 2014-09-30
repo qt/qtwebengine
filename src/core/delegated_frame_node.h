@@ -58,13 +58,14 @@ class DelegatedFrameData;
 }
 
 class MailboxTexture;
+class ResourceHolder;
 
 // Separating this data allows another DelegatedFrameNode to reconstruct the QSGNode tree from the mailbox textures
 // and render pass information.
 class ChromiumCompositorData : public QSharedData {
 public:
     ChromiumCompositorData() : frameDevicePixelRatio(1) { }
-    QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextures;
+    QHash<unsigned, QSharedPointer<ResourceHolder> > resourceHolders;
     scoped_ptr<cc::DelegatedFrameData> frameData;
     qreal frameDevicePixelRatio;
 };
@@ -77,6 +78,12 @@ public:
     void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
+    // Making those callbacks static bypasses base::Bind's ref-counting requirement
+    // of the this pointer when the callback is a method.
+    static void fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
+    static void syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
+
+    ResourceHolder *findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     struct SGObjects {
         QList<QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > > renderPassLayers;
@@ -86,11 +93,6 @@ private:
     QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
-
-    // Making those callbacks static bypasses base::Bind's ref-counting requirement
-    // of the this pointer when the callback is a method.
-    static void fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
-    static void syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
 };
 
 #endif // DELEGATED_FRAME_NODE_H

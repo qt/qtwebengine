@@ -63,6 +63,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QSGSimpleRectNode>
@@ -77,32 +78,43 @@
 
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
-    MailboxTexture(const cc::TransferableResource &resource);
+    MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize);
     virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
-    void setTextureSize(const QSize& size) { m_textureSize = size; }
     virtual QSize textureSize() const Q_DECL_OVERRIDE { return m_textureSize; }
     virtual bool hasAlphaChannel() const Q_DECL_OVERRIDE { return m_hasAlpha; }
     void setHasAlphaChannel(bool hasAlpha) { m_hasAlpha = hasAlpha; }
     virtual bool hasMipmaps() const Q_DECL_OVERRIDE { return false; }
     virtual void bind() Q_DECL_OVERRIDE;
 
-    bool needsToFetch() const { return !m_textureId; }
-    cc::TransferableResource &resource() { return m_resource; }
-    cc::ReturnedResource returnResource();
+    gpu::MailboxHolder &mailboxHolder() { return m_mailboxHolder; }
     void fetchTexture(gpu::gles2::MailboxManager *mailboxManager);
     void setTarget(GLenum target);
-    void incImportCount() { ++m_importCount; }
 
 private:
-    cc::TransferableResource m_resource;
+    gpu::MailboxHolder m_mailboxHolder;
     int m_textureId;
     QSize m_textureSize;
     bool m_hasAlpha;
     GLenum m_target;
-    int m_importCount;
 #ifdef Q_OS_QNX
     EGLStreamData m_eglStreamData;
 #endif
+};
+
+class ResourceHolder {
+public:
+    ResourceHolder(const cc::TransferableResource &resource);
+    ~ResourceHolder() { delete m_texture; }
+    MailboxTexture *texture() const { return m_texture; }
+    cc::TransferableResource &transferableResource() { return m_resource; }
+    cc::ReturnedResource returnResource();
+    void incImportCount() { ++m_importCount; }
+    bool needsToFetch() const { return !m_texture->textureId(); }
+
+private:
+    MailboxTexture *m_texture;
+    cc::TransferableResource m_resource;
+    int m_importCount;
 };
 
 class RectClipNode : public QSGClipNode
@@ -120,17 +132,6 @@ static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPass:
         if (pair.first == id)
             return pair.second;
     return QSharedPointer<QSGLayer>();
-}
-
-static inline QSharedPointer<MailboxTexture> &findMailboxTexture(unsigned resourceId
-    , QHash<unsigned, QSharedPointer<MailboxTexture> > &usedTextures
-    , QHash<unsigned, QSharedPointer<MailboxTexture> > &candidateTextures)
-{
-    QSharedPointer<MailboxTexture> &texture = usedTextures[resourceId];
-    if (!texture)
-        texture = candidateTextures.take(resourceId);
-    Q_ASSERT(texture);
-    return texture;
 }
 
 static QSGNode *buildRenderPassChain(QSGNode *chainParent)
@@ -264,13 +265,12 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
     Q_ASSERT(!*sync);
 }
 
-MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
-    : m_resource(resource)
+MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize)
+    : m_mailboxHolder(mailboxHolder)
     , m_textureId(0)
-    , m_textureSize(toQt(resource.size))
+    , m_textureSize(textureSize)
     , m_hasAlpha(false)
     , m_target(GL_TEXTURE_2D)
-    , m_importCount(1)
 {
     initializeOpenGLFunctions();
 
@@ -305,7 +305,29 @@ void MailboxTexture::setTarget(GLenum target)
     m_target = target;
 }
 
-cc::ReturnedResource MailboxTexture::returnResource()
+void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
+{
+    gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, m_target, m_mailboxHolder.mailbox);
+
+    // The texture might already have been deleted (e.g. when navigating away from a page).
+    if (tex) {
+        m_textureId = service_id(tex);
+#ifdef Q_OS_QNX
+        if (m_target == GL_TEXTURE_EXTERNAL_OES) {
+            m_eglStreamData = eglstream_connect_consumer(tex);
+        }
+#endif
+    }
+}
+
+ResourceHolder::ResourceHolder(const cc::TransferableResource &resource)
+    : m_texture(new MailboxTexture(resource.mailbox_holder, toQt(resource.size)))
+    , m_resource(resource)
+    , m_importCount(1)
+{
+}
+
+cc::ReturnedResource ResourceHolder::returnResource()
 {
     cc::ReturnedResource returned;
     // The ResourceProvider ensures that the resource isn't used by the parent compositor's GL
@@ -321,20 +343,6 @@ cc::ReturnedResource MailboxTexture::returnResource()
     return returned;
 }
 
-void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
-{
-    gpu::gles2::Texture *tex = ConsumeTexture(mailboxManager, m_target, m_resource.mailbox_holder.mailbox);
-
-    // The texture might already have been deleted (e.g. when navigating away from a page).
-    if (tex) {
-        m_textureId = service_id(tex);
-#ifdef Q_OS_QNX
-        if (m_target == GL_TEXTURE_EXTERNAL_OES) {
-            m_eglStreamData = eglstream_connect_consumer(tex);
-        }
-#endif
-    }
-}
 
 RectClipNode::RectClipNode(const QRectF &rect)
     : m_geometry(QSGGeometry::defaultAttributes_Point2D(), 4)
@@ -361,9 +369,9 @@ void DelegatedFrameNode::preprocess()
     // We can now wait for the Chromium GPU thread to produce textures that will be
     // rendered on our quads and fetch the IDs from the mailboxes we were given.
     QList<MailboxTexture *> mailboxesToFetch;
-    Q_FOREACH (const QSharedPointer<MailboxTexture> &mailboxTexture, m_chromiumCompositorData->mailboxTextures.values())
-        if (mailboxTexture->needsToFetch())
-            mailboxesToFetch.append(mailboxTexture.data());
+    Q_FOREACH (const QSharedPointer<ResourceHolder> &resourceHolder, m_chromiumCompositorData->resourceHolders.values())
+        if (resourceHolder->needsToFetch())
+            mailboxesToFetch.append(static_cast<MailboxTexture *>(resourceHolder->texture()));
 
     if (!mailboxesToFetch.isEmpty()) {
         QMap<uint32, gfx::TransferableFence> transferredFences;
@@ -374,7 +382,7 @@ void DelegatedFrameNode::preprocess()
 
             Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
                 m_numPendingSyncPoints++;
-                AddSyncPointCallbackOnGpuThread(gpuMessageLoop, syncPointManager, mailboxTexture->resource().mailbox_holder.sync_point, base::Bind(&DelegatedFrameNode::syncPointRetired, this, &mailboxesToFetch));
+                AddSyncPointCallbackOnGpuThread(gpuMessageLoop, syncPointManager, mailboxTexture->mailboxHolder().sync_point, base::Bind(&DelegatedFrameNode::syncPointRetired, this, &mailboxesToFetch));
             }
 
             m_mailboxesFetchedWaitCond.wait(&m_mutex);
@@ -384,7 +392,7 @@ void DelegatedFrameNode::preprocess()
         // Tell GL to wait until Chromium is done generating resource textures on the GPU thread
         // for each mailbox. We can safely start referencing those textures onto geometries afterward.
         Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
-            gfx::TransferableFence fence = transferredFences.take(mailboxTexture->resource().mailbox_holder.sync_point);
+            gfx::TransferableFence fence = transferredFences.take(mailboxTexture->mailboxHolder().sync_point);
             waitChromiumSync(&fence);
             deleteChromiumSync(&fence);
         }
@@ -423,8 +431,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     // that we can re-use. Destroy the remaining objects before returning.
     SGObjects previousSGObjects;
     qSwap(m_sgObjects, previousSGObjects);
-    QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextureCandidates;
-    qSwap(m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
+    QHash<unsigned, QSharedPointer<ResourceHolder> > resourceCandidates;
+    qSwap(m_chromiumCompositorData->resourceHolders, resourceCandidates);
 
     // A frame's resource_list only contains the new resources to be added to the scene. Quads can
     // still reference resources that were added in previous frames. Add them to the list of
@@ -432,10 +440,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     // to the producing child compositor.
     for (unsigned i = 0; i < frameData->resource_list.size(); ++i) {
         const cc::TransferableResource &res = frameData->resource_list.at(i);
-        if (QSharedPointer<MailboxTexture> texture = mailboxTextureCandidates.value(res.id))
-            texture->incImportCount();
+        if (QSharedPointer<ResourceHolder> resource = resourceCandidates.value(res.id))
+            resource->incImportCount();
         else
-            mailboxTextureCandidates[res.id] = QSharedPointer<MailboxTexture>(new MailboxTexture(res));
+            resourceCandidates[res.id] = QSharedPointer<ResourceHolder>(new ResourceHolder(res));
     }
 
     frameData->resource_list.clear();
@@ -518,7 +526,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = findMailboxTexture(tquad->resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
+                ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
+                MailboxTexture *texture = resource->texture();
 
                 // TransferableResource::format seems to always be GL_BGRA even though it might not
                 // contain any pixel with alpha < 1.0. The information about if they need blending
@@ -532,8 +541,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
                 textureNode->setTextureCoordinatesTransform(tquad->flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
                 textureNode->setRect(toQt(quad->rect));
-                textureNode->setFiltering(texture->resource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
-                textureNode->setTexture(texture.data());
+                textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
+                textureNode->setTexture(texture);
                 currentLayerChain->appendChildNode(textureNode);
                 break;
             } case cc::DrawQuad::SOLID_COLOR: {
@@ -575,7 +584,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = findMailboxTexture(tquad->resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
+                ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
+                MailboxTexture *texture = resource->texture();
 
                 if (!quad->visible_rect.IsEmpty() && !quad->opaque_rect.Contains(quad->visible_rect))
                     texture->setHasAlphaChannel(true);
@@ -583,33 +593,32 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setSourceRect(toQt(tquad->tex_coord_rect));
-                textureNode->setFiltering(texture->resource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
-                textureNode->setTexture(texture.data());
+                textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
+                textureNode->setTexture(texture);
                 currentLayerChain->appendChildNode(textureNode);
                 break;
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
                 const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &yTexture = findMailboxTexture(vquad->y_plane_resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
-                QSharedPointer<MailboxTexture> &uTexture = findMailboxTexture(vquad->u_plane_resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
-                QSharedPointer<MailboxTexture> &vTexture = findMailboxTexture(vquad->v_plane_resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
-
-                // Do not use a reference for this one, it might be null.
-                QSharedPointer<MailboxTexture> aTexture;
+                ResourceHolder *yResource = findAndHoldResource(vquad->y_plane_resource_id, resourceCandidates);
+                ResourceHolder *uResource = findAndHoldResource(vquad->u_plane_resource_id, resourceCandidates);
+                ResourceHolder *vResource = findAndHoldResource(vquad->v_plane_resource_id, resourceCandidates);
+                ResourceHolder *aResource = 0;
                 // This currently requires --enable-vp8-alpha-playback and needs a video with alpha data to be triggered.
                 if (vquad->a_plane_resource_id)
-                    aTexture = findMailboxTexture(vquad->a_plane_resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
+                    aResource = findAndHoldResource(vquad->a_plane_resource_id, resourceCandidates);
 
-                YUVVideoNode *videoNode = new YUVVideoNode(yTexture.data(), uTexture.data(), vTexture.data(), aTexture.data(), toQt(vquad->tex_coord_rect));
+                YUVVideoNode *videoNode = new YUVVideoNode(yResource->texture(), uResource->texture(), vResource->texture(), aResource ? aResource->texture() : 0, toQt(vquad->tex_coord_rect));
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;
 #ifdef GL_OES_EGL_image_external
             } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
-                QSharedPointer<MailboxTexture> &texture = findMailboxTexture(squad->resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
+                ResourceHolder *resource = findAndHoldResource(squad->resource_id, resourceCandidates);
+                MailboxTexture *texture = resource->texture();
                 texture->setTarget(GL_TEXTURE_EXTERNAL_OES); // since this is not default TEXTURE_2D type
 
-                StreamVideoNode *svideoNode = new StreamVideoNode(texture.data());
+                StreamVideoNode *svideoNode = new StreamVideoNode(texture);
                 svideoNode->setRect(toQt(squad->rect));
                 svideoNode->setTextureMatrix(toQt(squad->matrix.matrix()));
                 currentLayerChain->appendChildNode(svideoNode);
@@ -622,8 +631,18 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     }
 
     // Send resources of remaining candidates back to the child compositors so that they can be freed or reused.
-    Q_FOREACH (const QSharedPointer<MailboxTexture> &mailboxTexture, mailboxTextureCandidates.values())
-        resourcesToRelease->push_back(mailboxTexture->returnResource());
+    Q_FOREACH (const QSharedPointer<ResourceHolder> &resource, resourceCandidates.values())
+        resourcesToRelease->push_back(resource->returnResource());
+}
+
+ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
+{
+    // ResourceHolders must survive when the scene graph destroys our node branch
+    QSharedPointer<ResourceHolder> &resource = m_chromiumCompositorData->resourceHolders[resourceId];
+    if (!resource)
+        resource = candidates.take(resourceId);
+    Q_ASSERT(resource);
+    return resource.data();
 }
 
 void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)
