@@ -50,7 +50,7 @@ QUrl urlFromUserInput(const QString& userInput)
 {
     QFileInfo fileInfo(userInput);
     if (fileInfo.exists())
-        return QUrl(fileInfo.absoluteFilePath());
+        return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
     return QUrl::fromUserInput(userInput);
 }
 
