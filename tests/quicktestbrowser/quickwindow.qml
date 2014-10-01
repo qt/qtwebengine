@@ -346,7 +346,7 @@ ApplicationWindow {
                                 var tab = tabs.createEmptyTab()
                                 request.openIn(tab.item.webView)
                             } else if (request.destination == WebEngineView.NewViewInDialog) {
-                                var dialog = dialogComponent.createObject()
+                                var dialog = dialogComponent.createObject(webEngineView)
                                 request.openIn(dialog.webView)
                             } else {
                                 var component = Qt.createComponent("quickwindow.qml")
