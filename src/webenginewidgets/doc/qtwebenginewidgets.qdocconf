@@ -2,7 +2,6 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtWebEngineWidgets
 description             = Qt WebEngineWidgets Reference Documentation
-url                     = http://qt-project.org/doc/qt-$QT_VER
 version                 = $QT_VERSION
 
 examplesinstallpath     = webenginewidgets
@@ -26,6 +25,7 @@ qhp.QtWebEngineWidgets.subprojects.classes.sortPages = true
 qhp.QtWebEngineWidgets.subprojects.examples.title = Examples
 qhp.QtWebEngineWidgets.subprojects.examples.indexTitle = Qt WebEngine Widgets Examples
 qhp.QtWebEngineWidgets.subprojects.examples.selectors = fake:example
+qhp.QtWebEngineWidgets.subprojects.examples.sortPages = true
 
 tagfile                 = ../../../doc/qtwebenginewidgets/qtwebenginewidgets.tags
 
