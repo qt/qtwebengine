@@ -442,9 +442,6 @@ void tst_QWebEngineFrame::setHtml()
 
 void tst_QWebEngineFrame::setHtmlWithImageResource()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     // By default, only security origins of local files can load local resources.
     // So we should specify baseUrl to be a local file in order to get a proper origin and load the local image.
 
@@ -454,20 +451,19 @@ void tst_QWebEngineFrame::setHtmlWithImageResource()
     page.setHtml(html, QUrl(QLatin1String("file:///path/to/file")));
     waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
 
-    QCOMPARE(page.evaluateJavaScript("document.images.length").toInt(), 1);
-    QCOMPARE(page.evaluateJavaScript("document.images[0].width").toInt(), 128);
-    QCOMPARE(page.evaluateJavaScript("document.images[0].height").toInt(), 128);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
     // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
 
     page.setHtml(html);
     waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(page.evaluateJavaScript("document.images.length").toInt(), 1);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
-    QCOMPARE(page.evaluateJavaScript("document.images[0].width").toInt(), 0);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 0);
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
-    QCOMPARE(page.evaluateJavaScript("document.images[0].height").toInt(), 0);
-#endif
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 0);
 }
 
 void tst_QWebEngineFrame::setHtmlWithStylesheetResource()
@@ -508,9 +504,6 @@ void tst_QWebEngineFrame::setHtmlWithStylesheetResource()
 
 void tst_QWebEngineFrame::setHtmlWithBaseURL()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     // This tests if baseUrl is indeed affecting the relative paths from resources.
     // As we are using a local file as baseUrl, its security origin should be able to load local resources.
 
@@ -530,13 +523,12 @@ void tst_QWebEngineFrame::setHtmlWithBaseURL()
     waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
     QCOMPARE(spy.count(), 1);
 
-    QCOMPARE(page.evaluateJavaScript("document.images.length").toInt(), 1);
-    QCOMPARE(page.evaluateJavaScript("document.images[0].width").toInt(), 128);
-    QCOMPARE(page.evaluateJavaScript("document.images[0].height").toInt(), 128);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
     // no history item has to be added.
     QCOMPARE(m_view->page()->history()->count(), 0);
-#endif
 }
 
 class MyPage : public QWebEnginePage
@@ -1426,9 +1418,6 @@ void tst_QWebEngineFrame::setUrlHistory()
 
 void tst_QWebEngineFrame::setUrlUsingStateObject()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     const QUrl aboutBlank("about:blank");
     QUrl url;
     QSignalSpy urlChangedSpy(m_page, SIGNAL(urlChanged(QUrl)));
@@ -1444,14 +1433,14 @@ void tst_QWebEngineFrame::setUrlUsingStateObject()
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->history()->count(), 1);
 
-    m_page->evaluateJavaScript("window.history.pushState(null,'push', 'navigate/to/here')");
+    evaluateJavaScriptSync(m_page, "window.history.pushState(null, 'push', 'navigate/to/here')");
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/navigate/to/here"));
     QCOMPARE(m_page->history()->count(), 2);
     QVERIFY(m_page->history()->canGoBack());
 
-    m_page->evaluateJavaScript("window.history.replaceState(null,'replace', 'another/location')");
+    evaluateJavaScriptSync(m_page, "window.history.replaceState(null, 'replace', 'another/location')");
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/navigate/to/another/location"));
@@ -1459,14 +1448,13 @@ void tst_QWebEngineFrame::setUrlUsingStateObject()
     QVERIFY(!m_page->history()->canGoForward());
     QVERIFY(m_page->history()->canGoBack());
 
-    m_page->evaluateJavaScript("window.history.back()");
+    evaluateJavaScriptSync(m_page, "window.history.back()");
     QTest::qWait(100);
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), QUrl("qrc:/test1.html"));
     QVERIFY(m_page->history()->canGoForward());
     QVERIFY(!m_page->history()->canGoBack());
-#endif
 }
 
 void tst_QWebEngineFrame::setUrlSameUrl()
