@@ -36,7 +36,7 @@
     \brief The QWebEngineSettings class provides an object to store the settings used
     by QWebEnginePage
 
-    \inmodule QtWebEngine
+    \inmodule QtWebEngineWidgets
 
     Each QWebEnginePage object has its own QWebEngineSettings object, which configures the
     settings for that page. If a setting is not configured, then it is looked

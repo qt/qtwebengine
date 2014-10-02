@@ -30,7 +30,7 @@
     web documents.
     \ingroup advanced
 
-    \inmodule QtWebEngine
+    \inmodule QtWebEngineWidgets
 
     QWebEngineView is the main widget component of the Qt WebEngine web browsing module.
     It can be used in various applications to display web content live from the

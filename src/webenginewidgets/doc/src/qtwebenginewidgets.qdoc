@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \module QtWebEngine
+    \module QtWebEngineWidgets
     \title Qt WebEngine Widgets C++ Classes
     \brief Provides a web browser engine as well as C++ classes to render and
     interact with web content
@@ -110,6 +110,12 @@
     allows to run JavaScript code in the context of the page's main frame and enables
     customization of handlers for specific events such as showing custom authentication
     dialogs.
+
+    \section1 Reference Documentation
+
+    \list
+        \li \l {Qt WebEngine Widgets C++ Classes}
+    \endlist
 
     \section1 License Information
     This is a snapshot of the integration of Chromium into Qt.
