@@ -96,18 +96,22 @@ QString subProcessPath()
 {
     static bool initialized = false;
 #if defined(OS_WIN)
-    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
-                                % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME) % QStringLiteral(".exe"));
+    static QString processBinary (QStringLiteral(QTWEBENGINEPROCESS_NAME) % QStringLiteral(".exe"));
 #else
-    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
-                                % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME));
+    static QString processBinary (QStringLiteral(QTWEBENGINEPROCESS_NAME));
 #endif
+    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
+                                % QDir::separator() % processBinary);
     if (!initialized) {
         // Allow overriding at runtime for the time being.
         const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
         if (!fromEnv.isEmpty())
             processPath = QString::fromLatin1(fromEnv);
-        if (processPath.isEmpty() || !QFileInfo(processPath).exists())
+        if (processPath.isEmpty() || !QFileInfo(processPath).exists()) {
+            qWarning("QtWebEngineProcess not found at location %s. Trying fallback path...", qPrintable(processPath));
+            processPath = QCoreApplication::applicationDirPath() % QDir::separator() % processBinary;
+        }
+        if (!QFileInfo(processPath).exists())
             qFatal("QtWebEngineProcess not found at location %s. Try setting the QTWEBENGINEPROCESS_PATH environment variable.", qPrintable(processPath));
         initialized = true;
     }
