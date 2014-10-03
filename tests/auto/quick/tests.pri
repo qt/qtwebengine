@@ -7,7 +7,9 @@ VPATH += $$_PRO_FILE_PWD_
 TARGET = tst_$$TARGET
 
 SOURCES += $${TARGET}.cpp
-INCLUDEPATH += $$PWD
+INCLUDEPATH += \
+    $$PWD \
+    ../shared
 
 QT += testlib network quick webengine
 
