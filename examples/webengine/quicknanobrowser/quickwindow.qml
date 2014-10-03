@@ -93,6 +93,18 @@ ApplicationWindow {
                 tabs.removeTab(tabs.currentIndex)
         }
     }
+    Action {
+        shortcut: "Ctrl+0"
+        onTriggered: currentWebView.zoomFactor = 1.0;
+    }
+    Action {
+        shortcut: "Ctrl+-"
+        onTriggered: currentWebView.zoomFactor -= 0.1;
+    }
+    Action {
+        shortcut: "Ctrl+="
+        onTriggered: currentWebView.zoomFactor += 0.1;
+    }
 
     toolBar: ToolBar {
         id: navigationBar

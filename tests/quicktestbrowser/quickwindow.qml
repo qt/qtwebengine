@@ -121,6 +121,18 @@ ApplicationWindow {
                 browserWindow.showNormal()
         }
     }
+    Action {
+        shortcut: "Ctrl+0"
+        onTriggered: zoomController.reset()
+    }
+    Action {
+        shortcut: "Ctrl+-"
+        onTriggered: zoomController.zoomOut()
+    }
+    Action {
+        shortcut: "Ctrl+="
+        onTriggered: zoomController.zoomIn()
+    }
 
     Menu {
         id: backHistoryMenu
@@ -390,5 +402,17 @@ ApplicationWindow {
                 }
             }
         }
+    }
+    ZoomController {
+      id: zoomController
+      y: parent.mapFromItem(currentWebView, 0 , 0).y - 4
+      anchors.right: parent.right
+      width: (parent.width > 800) ? parent.width * 0.25 : 220
+      anchors.rightMargin: (parent.width > 400) ? 100 : 0
+    }
+    Binding {
+        target: currentWebView
+        property: "zoomFactor"
+        value: zoomController.zoomFactor
     }
 }

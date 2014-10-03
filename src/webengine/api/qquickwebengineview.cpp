@@ -554,6 +554,17 @@ void QQuickWebEngineView::stop()
     d->adapter->stop();
 }
 
+void QQuickWebEngineView::setZoomFactor(qreal arg)
+{
+    Q_D(QQuickWebEngineView);
+    qreal oldFactor = d->adapter->currentZoomFactor();
+    d->adapter->setZoomFactor(arg);
+    if (qFuzzyCompare(oldFactor, d->adapter->currentZoomFactor()))
+        return;
+
+    emit zoomFactorChanged(arg);
+}
+
 void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVariant &result)
 {
     Q_Q(QQuickWebEngineView);
@@ -615,6 +626,12 @@ QQuickWebEngineViewExperimental *QQuickWebEngineView::experimental() const
 {
     Q_D(const QQuickWebEngineView);
     return d->e.data();
+}
+
+qreal QQuickWebEngineView::zoomFactor() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->adapter->currentZoomFactor();
 }
 
 bool QQuickWebEngineViewExperimental::inspectable() const

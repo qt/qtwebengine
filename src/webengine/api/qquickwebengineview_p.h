@@ -56,6 +56,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingChanged)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
@@ -75,6 +76,7 @@ public:
     QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
+    qreal zoomFactor() const;
 
     QQuickWebEngineViewExperimental *experimental() const;
 
@@ -133,6 +135,7 @@ public Q_SLOTS:
     void goForward();
     void reload();
     void stop();
+    void setZoomFactor(qreal arg);
 
 Q_SIGNALS:
     void titleChanged();
@@ -143,6 +146,7 @@ Q_SIGNALS:
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
+    void zoomFactorChanged(qreal arg);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
