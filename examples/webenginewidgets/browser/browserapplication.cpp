@@ -470,6 +470,8 @@ QIcon BrowserApplication::icon(const QUrl &url) const
     QIcon icon = QWebEngineSettings::iconForUrl(url);
     if (!icon.isNull())
         return icon.pixmap(16, 16);
+#else
+    Q_UNUSED(url);
 #endif
     return defaultIcon();
 }

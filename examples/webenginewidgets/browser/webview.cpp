@@ -298,6 +298,7 @@ void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *aut
 
 void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost)
 {
+    Q_UNUSED(requestUrl);
     BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
 
     QDialog dialog(mainWindow);

@@ -848,6 +848,8 @@ void BrowserMainWindow::slotToggleInspector(bool enable)
             m_tabWidget->reloadAllTabs();
         }
     }
+#else
+    Q_UNUSED(enable);
 #endif
 }
 
