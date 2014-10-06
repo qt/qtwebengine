@@ -84,14 +84,14 @@ public:
     static QNetworkAccessManager *networkAccessManager();
     static BookmarksManager *bookmarksManager();
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_OSX)
     bool event(QEvent *event);
 #endif
 
 public slots:
     BrowserMainWindow *newMainWindow();
     void restoreLastSession();
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_OSX)
     void lastWindowClosed();
     void quitBrowser();
 #endif
