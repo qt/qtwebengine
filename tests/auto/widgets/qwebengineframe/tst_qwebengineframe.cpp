@@ -353,6 +353,7 @@ void tst_QWebEngineFrame::requestedUrlAfterSetAndLoadFailures()
     const QUrl first("http://abcdef.abcdef/");
     page.setUrl(first);
     ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(spy.count(), 1);
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), first);
     QVERIFY(!spy.at(0).first().toBool());
@@ -362,6 +363,7 @@ void tst_QWebEngineFrame::requestedUrlAfterSetAndLoadFailures()
 
     page.load(second);
     ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(spy.count(), 2);
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());

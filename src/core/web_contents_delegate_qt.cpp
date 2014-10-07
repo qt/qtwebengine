@@ -139,6 +139,7 @@ void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(int64 frame_id, int6
     if (!is_main_frame)
         return;
 
+    m_loadingErrorFrameList.clear();
     m_viewClient->loadStarted(toQt(validated_url));
 }
 
