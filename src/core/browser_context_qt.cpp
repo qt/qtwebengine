@@ -57,7 +57,6 @@
 BrowserContextQt::BrowserContextQt()
 {
     resourceContext.reset(new ResourceContextQt(this));
-    downloadManagerDelegate.reset(new DownloadManagerDelegateQt);
 }
 
 BrowserContextQt::~BrowserContextQt()
