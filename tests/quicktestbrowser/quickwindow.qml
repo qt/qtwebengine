@@ -41,11 +41,14 @@
 import QtQuick 2.1
 import QtWebEngine 1.0
 import QtWebEngine.experimental 1.0
+
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
 import QtQuick.Controls.Private 1.0
+import Qt.labs.settings 1.0
+
 
 ApplicationWindow {
     id: browserWindow
@@ -63,6 +66,11 @@ ApplicationWindow {
     width: 800
     visible: true
     title: currentWebView && currentWebView.title
+
+    Settings {
+        property alias autoLoadImages: loadImages.checked;
+        property alias javaScriptEnabled: javaScriptEnabled.checked;
+    }
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
     Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
@@ -189,6 +197,25 @@ ApplicationWindow {
                     Layout.fillWidth: true
                     text: currentWebView && currentWebView.url
                     onAccepted: currentWebView.url = utils.fromUserInput(text)
+                }
+                ToolButton {
+                    id: settingsMenuButton
+                    menu: Menu {
+                        MenuItem {
+                            id: loadImages
+                            text: "Autoload images"
+                            checkable: true
+                            checked: WebEngine.settings.autoLoadImages
+                            onCheckedChanged: WebEngine.settings.autoLoadImages = checked
+                        }
+                        MenuItem {
+                            id: javaScriptEnabled
+                            text: "JavaScript On"
+                            checkable: true
+                            checked: WebEngine.settings.javascriptEnabled
+                            onCheckedChanged: WebEngine.settings.javascriptEnabled = checked
+                        }
+                    }
                 }
             }
             ProgressBar {

@@ -50,6 +50,12 @@ TestWebEngineView {
 
     property variant testUrl
 
+    SignalSpy {
+        id: spyIconChanged
+        target: webEngineView
+        signalName: "iconChanged"
+    }
+
     TestCase {
         id: test
         name: "WebEngineViewLoadFail"
@@ -57,6 +63,11 @@ TestWebEngineView {
             testUrl = Qt.resolvedUrl("file_that_does_not_exist.html")
             webEngineView.url = testUrl
             verify(webEngineView.waitForLoadFailed())
+            spyIconChanged.clear()
+
+            // If this testcase finishes too early, we can not handle the received replacement content.
+            // So we should wait to ignore this error page.
+            spyIconChanged.wait()
         }
     }
 

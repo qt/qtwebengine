@@ -6,7 +6,7 @@ CMAKE_MODULE_TESTS = "-"
 DEFINES += QT_BUILD_WEBENGINE_LIB
 
 QT += qml quick
-QT_PRIVATE += webenginecore qml-private quick-private gui-private core-private
+QT_PRIVATE += webenginecore quick-private
 
 QMAKE_DOCS = $$PWD/doc/qtwebengine.qdocconf
 
@@ -17,6 +17,8 @@ SOURCES = \
         api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenavigationrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
+        api/qquickwebenginesettings.cpp \
+        api/qquickwebenginesingleton.cpp \
         api/qquickwebengineview.cpp \
         api/qtwebengineglobal.cpp \
         render_widget_host_view_qt_delegate_quick.cpp \
@@ -30,6 +32,9 @@ HEADERS = \
         api/qquickwebengineloadrequest_p.h \
         api/qquickwebenginenavigationrequest_p.h \
         api/qquickwebenginenewviewrequest_p.h \
+        api/qquickwebenginesettings_p.h \
+        api/qquickwebenginesettings_p_p.h \
+        api/qquickwebenginesingleton_p.h \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \
         render_widget_host_view_qt_delegate_quick.h \

@@ -77,8 +77,9 @@ class DEPSParser:
                 subdir = dep
                 if subdir.startswith('src/'):
                     subdir = subdir[4:]
-                if subdir.startswith('src'):
-                    # Ignore the information about chromium since we get that from git.
+                else:
+                    # Ignore the information about chromium itself since we get that from git,
+                    # also ignore anything outside src/ (e.g. depot_tools)
                     continue
 
                 submodule = Submodule(subdir, repo)
@@ -89,16 +90,9 @@ class DEPSParser:
                     continue
 
                 if len(rev) == 40: # Length of a git shasum
-                    submodule.shasum = rev
+                    submodule.ref = rev
                 else:
-                    # Try to find out the git branch using the svn path.
-                    branchMatch = re.search('/branches/((chromium/)?[^/]+)', repo)
-                    trunkMatch = re.search('/(trunk|svn)/', repo)
-                    if branchMatch:
-                        submodule.ref = 'refs/branch-heads/' + branchMatch.group(1)
-                    elif trunkMatch:
-                        submodule.ref = 'refs/heads/master'
-                    submodule.revision = int(rev)
+                    sys.exit("Invalid shasum: " + str(rev))
                 submodules.append(submodule)
         return submodules
 
@@ -112,13 +106,11 @@ class DEPSParser:
         return submodules
 
 class Submodule:
-    def __init__(self, path='', url='', shasum='', os=[], ref=''):
+    def __init__(self, path='', url='', ref='', os=[]):
         self.path = path
         self.url = url
-        self.shasum = shasum
+        self.ref = ref
         self.os = os
-        self.ref = ''
-        self.revision = None
 
     def matchesOS(self):
         if not self.os:
@@ -143,41 +135,34 @@ class Submodule:
     def findShaAndCheckout(self):
         oldCwd = os.getcwd()
         os.chdir(self.path)
-        error = 0
-        if self.ref:
-            # Fetch the ref we parsed from the DEPS file.
-            error = subprocessCall(['git', 'fetch', 'origin', self.ref])
-            if error != 0:
-                print('ERROR: Could not fetch from upstream branch ' + self.ref)
-                return error
 
-            error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
+        # Fetch the shasum we parsed from the DEPS file.
+        error = subprocessCall(['git', 'fetch', 'origin', self.ref])
+        if error != 0:
+            print('ERROR: Could not fetch ' + self.ref + ' from upstream origin.')
+            return error
 
-            if self.revision:
-                search_string = 'git-svn-id:.*@%d' % self.revision
-                line = subprocessCheckOutput(['git', 'log', '-n1', '--pretty=oneline', r'--grep=%s' % search_string])
-                if line:
-                    self.shasum = line.split()[0]
+        error = subprocessCall(['git', 'checkout', 'FETCH_HEAD']);
 
         current_shasum = subprocessCheckOutput(['git', 'rev-parse', 'HEAD']).strip()
         current_tag = subprocessCheckOutput(['git', 'name-rev', '--tags', '--name-only', current_shasum]).strip()
 
         if current_tag == resolver.currentVersion():
             # We checked out a tagged version of chromium.
-            self.shasum = current_shasum
+            self.ref = current_shasum
 
-        if not self.shasum:
+        if not self.ref:
             # No shasum could be deduced, use the submodule shasum.
             os.chdir(oldCwd)
             line = subprocessCheckOutput(['git', 'submodule', 'status', self.path])
             os.chdir(self.path)
             line = line.lstrip(' -')
-            self.shasum = line.split(' ')[0]
+            self.ref = line.split(' ')[0]
 
-        if not self.shasum.startswith(current_shasum):
+        if not self.ref.startswith(current_shasum):
             # In case HEAD differs check out the actual shasum we require.
             subprocessCall(['git', 'fetch'])
-            error = subprocessCall(['git', 'checkout', self.shasum])
+            error = subprocessCall(['git', 'checkout', self.ref])
         os.chdir(oldCwd)
         return error
 
@@ -217,10 +202,10 @@ class Submodule:
             subprocessCall(['git', 'submodule', 'init', self.path])
             subprocessCall(['git', 'submodule', 'update', self.path])
 
-            if self.findShaAndCheckout() != 0:
-                sys.exit("!!! initialization failed !!!")
-
             if '3rdparty_upstream' in os.path.abspath(self.path):
+                if self.findShaAndCheckout() != 0:
+                    sys.exit("!!! initialization failed !!!")
+
                 # Add baseline commit for upstream repository to be able to reset.
                 os.chdir(self.path)
                 commit = subprocessCheckOutput(['git', 'rev-list', '--max-count=1', 'HEAD'])
@@ -248,10 +233,7 @@ class Submodule:
             submodules = resolver.readSubmodules()
             print 'DEPS file provides the following submodules:'
             for submodule in submodules:
-                submodule_ref = submodule.shasum
-                if submodule.revision:
-                    submodule_ref = submodule.ref + '@' + str(submodule.revision)
-                print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule_ref
+                print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.ref
         else: # Try .gitmodules since no ref has been specified
             if not os.path.isfile('.gitmodules'):
                 return []
@@ -286,6 +268,5 @@ class Submodule:
         submodules = self.readSubmodules()
         for submodule in submodules:
             submodule.initialize()
-        if self.ref:
-            subprocessCall(['git', 'commit', '-a', '--amend', '--no-edit'])
+        subprocessCall(['git', 'commit', '-a', '--amend', '--no-edit'])
         os.chdir(oldCwd)

@@ -36,6 +36,7 @@
 
 #include "process_main.h"
 
+#include <QCoreApplication>
 #include <stdio.h>
 
 #if defined(OS_LINUX)
@@ -147,6 +148,10 @@ int stat64_proxy(const char *path, struct stat64 *buf)
 
 int main(int argc, const char **argv)
 {
+    // QCoreApplication needs a non-const pointer, while the
+    // ContentMain in Chromium needs the pointer to be const.
+    QCoreApplication qtApplication(argc, const_cast<char**>(argv));
+
     return QtWebEngine::processMain(argc, argv);
 }
 

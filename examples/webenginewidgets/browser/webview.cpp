@@ -298,6 +298,7 @@ void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *aut
 
 void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost)
 {
+    Q_UNUSED(requestUrl);
     BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
 
     QDialog dialog(mainWindow);
@@ -334,7 +335,7 @@ WebView::WebView(QWidget* parent)
     connect(this, SIGNAL(loadProgress(int)),
             this, SLOT(setProgress(int)));
     connect(this, SIGNAL(loadFinished(bool)),
-            this, SLOT(loadFinished()));
+            this, SLOT(loadFinished(bool)));
     connect(page(), SIGNAL(loadingUrl(QUrl)),
             this, SIGNAL(urlChanged(QUrl)));
     connect(page(), SIGNAL(iconUrlChanged(QUrl)),
@@ -410,9 +411,9 @@ void WebView::setProgress(int progress)
     m_progress = progress;
 }
 
-void WebView::loadFinished()
+void WebView::loadFinished(bool success)
 {
-    if (100 != m_progress) {
+    if (success && 100 != m_progress) {
         qWarning() << "Received finished signal while progress is still:" << progress()
                    << "Url:" << url();
     }

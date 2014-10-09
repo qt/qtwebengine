@@ -34,28 +34,24 @@
 **
 ****************************************************************************/
 
-#ifndef SURFACE_FACTORY_QT
-#define SURFACE_FACTORY_QT
+#ifndef QQUICKWEBENGINESETTINGS_P_P_H
+#define QQUICKWEBENGINESETTINGS_P_P_H
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#include "web_engine_settings.h"
 
-#include "ui/ozone/public/surface_factory_ozone.h"
+QT_BEGIN_NAMESPACE
 
-#include <QtGlobal>
+class QQuickWebEngineSettingsPrivate : public WebEngineSettingsDelegate {
+public:
+    QQuickWebEngineSettingsPrivate();
+    QQuickWebEngineSettingsPrivate(WebContentsAdapter *adapter);
 
-class SurfaceFactoryQt
-    : public ui::SurfaceFactoryOzone
-{
-    virtual bool LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library, SetGLGetProcAddressProcCallback set_gl_get_proc_address) Q_DECL_OVERRIDE;
-    virtual intptr_t GetNativeDisplay() Q_DECL_OVERRIDE;
-    virtual ui::SurfaceFactoryOzone::HardwareState InitializeHardware() Q_DECL_OVERRIDE { return ui::SurfaceFactoryOzone::INITIALIZED; }
-    virtual void ShutdownHardware() Q_DECL_OVERRIDE {}
-    virtual gfx::AcceleratedWidget GetAcceleratedWidget() Q_DECL_OVERRIDE { return 0; }
-    virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(gfx::AcceleratedWidget w) Q_DECL_OVERRIDE { return 0; }
-    virtual bool AttemptToResizeAcceleratedWidget(gfx::AcceleratedWidget w, const gfx::Rect& bounds) Q_DECL_OVERRIDE { return false; }
+    void apply() Q_DECL_OVERRIDE;
+    WebEngineSettings *fallbackSettings() const Q_DECL_OVERRIDE;
+
+    QScopedPointer<WebEngineSettings> coreSettings;
 };
 
-#endif
+QT_END_NAMESPACE
 
-#endif // SURFACE_FACTORY_QT
-
+#endif // QQUICKWEBENGINESETTINGS_P_P_H

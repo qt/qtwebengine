@@ -48,9 +48,14 @@ class BrowserAccessibilityQt
     , public QAccessibleActionInterface
     , public QAccessibleTextInterface
     , public QAccessibleValueInterface
+    , public QAccessibleTableInterface
+    , public QAccessibleTableCellInterface
 {
 public:
     BrowserAccessibilityQt();
+
+    // BrowserAccessibility
+    virtual void OnDataChanged() Q_DECL_OVERRIDE;
 
     // QAccessibleInterface
     virtual bool isValid() const Q_DECL_OVERRIDE;
@@ -102,6 +107,40 @@ public:
     QVariant maximumValue() const Q_DECL_OVERRIDE;
     QVariant minimumValue() const Q_DECL_OVERRIDE;
     QVariant minimumStepSize() const Q_DECL_OVERRIDE;
+
+    // QAccessibleTableInterface
+    virtual QAccessibleInterface *cellAt(int row, int column) const Q_DECL_OVERRIDE;
+    virtual QAccessibleInterface *caption() const Q_DECL_OVERRIDE;
+    virtual QAccessibleInterface *summary() const Q_DECL_OVERRIDE;
+    virtual QString columnDescription(int column) const Q_DECL_OVERRIDE;
+    virtual QString rowDescription(int row) const Q_DECL_OVERRIDE;
+    virtual int columnCount() const Q_DECL_OVERRIDE;
+    virtual int rowCount() const Q_DECL_OVERRIDE;
+    // selection
+    virtual int selectedCellCount() const Q_DECL_OVERRIDE;
+    virtual int selectedColumnCount() const Q_DECL_OVERRIDE;
+    virtual int selectedRowCount() const Q_DECL_OVERRIDE;
+    virtual QList<QAccessibleInterface*> selectedCells() const Q_DECL_OVERRIDE;
+    virtual QList<int> selectedColumns() const Q_DECL_OVERRIDE;
+    virtual QList<int> selectedRows() const Q_DECL_OVERRIDE;
+    virtual bool isColumnSelected(int column) const Q_DECL_OVERRIDE;
+    virtual bool isRowSelected(int row) const Q_DECL_OVERRIDE;
+    virtual bool selectRow(int row) Q_DECL_OVERRIDE;
+    virtual bool selectColumn(int column) Q_DECL_OVERRIDE;
+    virtual bool unselectRow(int row) Q_DECL_OVERRIDE;
+    virtual bool unselectColumn(int column) Q_DECL_OVERRIDE;
+
+    // QAccessibleTableCellInterface
+    virtual int columnExtent() const Q_DECL_OVERRIDE;
+    virtual QList<QAccessibleInterface*> columnHeaderCells() const Q_DECL_OVERRIDE;
+    virtual int columnIndex() const Q_DECL_OVERRIDE;
+    virtual int rowExtent() const Q_DECL_OVERRIDE;
+    virtual QList<QAccessibleInterface*> rowHeaderCells() const Q_DECL_OVERRIDE;
+    virtual int rowIndex() const Q_DECL_OVERRIDE;
+    virtual bool isSelected() const Q_DECL_OVERRIDE;
+    virtual QAccessibleInterface* table() const Q_DECL_OVERRIDE;
+
+    virtual void modelChange(QAccessibleTableModelChangeEvent *event) Q_DECL_OVERRIDE;
 };
 
 }

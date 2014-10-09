@@ -2,7 +2,6 @@ include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
 
 project                 = QtWebEngine
 description             = Qt WebEngine Reference Documentation
-url                     = http://qt-project.org/doc/qt-$QT_VER
 version                 = $QT_VERSION
 
 examplesinstallpath     = webengine
@@ -21,11 +20,12 @@ qhp.QtWebEngine.customFilters.Qt.filterAttributes = qtwebengine $QT_VERSION
 qhp.QtWebEngine.subprojects         = qmltypes examples
 qhp.QtWebEngine.subprojects.qmltypes.title = QML Types
 qhp.QtWebEngine.subprojects.qmltypes.indexTitle = Qt WebEngine QML Types
-qhp.QtWebEngine.subprojects.qmltypes.selectors = fake:qmlclass
+qhp.QtWebEngine.subprojects.qmltypes.selectors = qmlclass
 qhp.QtWebEngine.subprojects.qmltypes.sortPages = true
 qhp.QtWebEngine.subprojects.examples.title = Examples
-qhp.QtWebEngine.subprojects.examples.indexTitle = Qt WebEngine Code Samples
+qhp.QtWebEngine.subprojects.examples.indexTitle = Qt WebEngine Examples
 qhp.QtWebEngine.subprojects.examples.selectors = fake:example
+qhp.QtWebEngine.subprojects.examples.sortPages = true
 
 tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 

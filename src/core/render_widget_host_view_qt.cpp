@@ -115,17 +115,28 @@ static inline Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputT
     }
 }
 
+static inline int firstAvailableId(const QMap<int, int> &map)
+{
+    ui::BitSet32 usedIds;
+    QMap<int, int>::const_iterator end = map.end();
+    for (QMap<int, int>::const_iterator it = map.begin(); it != end; ++it)
+        usedIds.mark_bit(it.value());
+    return usedIds.first_unmarked_bit();
+}
+
 static inline ui::GestureProvider::Config QtGestureProviderConfig() {
     ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
     // Causes an assert in CreateWebGestureEventFromGestureEventData and we don't need them in Qt.
     config.gesture_begin_end_types_enabled = false;
+    // Swipe gestures aren't forwarded, we don't use them and they abort the gesture detection.
+    config.scale_gesture_detector_config.gesture_detector_config.swipe_enabled = config.gesture_detector_config.swipe_enabled = false;
     return config;
 }
 
 class MotionEventQt : public ui::MotionEvent {
 public:
-    MotionEventQt(QTouchEvent *ev, const base::TimeTicks &eventTime, Action action, int index = -1)
-        : touchPoints(ev->touchPoints())
+    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, int index = -1)
+        : touchPoints(touchPoints)
         , eventTime(eventTime)
         , action(action)
         , index(index)
@@ -152,6 +163,8 @@ public:
     virtual float GetHistoricalTouchMajor(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
     virtual float GetHistoricalX(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
     virtual float GetHistoricalY(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
+    virtual ToolType GetToolType(size_t pointer_index) const Q_DECL_OVERRIDE { return ui::MotionEvent::TOOL_TYPE_UNKNOWN; }
+    virtual int GetButtonState() const Q_DECL_OVERRIDE { return 0; }
 
     virtual scoped_ptr<MotionEvent> Cancel() const Q_DECL_OVERRIDE { Q_UNREACHABLE(); return scoped_ptr<MotionEvent>(); }
 
@@ -179,10 +192,15 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
 {
     m_host->SetView(this);
+
+    QAccessible::installActivationObserver(this);
+    if (QAccessible::isActive())
+        content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    QAccessible::removeActivationObserver(this);
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -617,7 +635,7 @@ void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t
     content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
     m_adapterClient->selectionChanged();
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
     // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
     ui::ScopedClipboardWriter clipboard_writer(
                 ui::Clipboard::GetForCurrentThread(),
@@ -658,6 +676,8 @@ void RenderWidgetHostViewQt::notifyResize()
 void RenderWidgetHostViewQt::windowBoundsChanged()
 {
     m_host->SendScreenRects();
+    if (m_delegate->window())
+        m_host->NotifyScreenInfoChanged();
 }
 
 void RenderWidgetHostViewQt::windowChanged()
@@ -761,6 +781,25 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
     }
 
     m_host->ForwardTouchEvent(content::CreateWebTouchEventFromMotionEvent(motionEvent));
+}
+
+QList<QTouchEvent::TouchPoint> RenderWidgetHostViewQt::mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints)
+{
+    QList<QTouchEvent::TouchPoint> outputPoints = inputPoints;
+    for (int i = 0; i < outputPoints.size(); ++i) {
+        QTouchEvent::TouchPoint &point = outputPoints[i];
+
+        int qtId = point.id();
+        QMap<int, int>::const_iterator it = m_touchIdMapping.find(qtId);
+        if (it == m_touchIdMapping.end())
+            it = m_touchIdMapping.insert(qtId, firstAvailableId(m_touchIdMapping));
+        point.setId(it.value());
+
+        if (point.state() == Qt::TouchPointReleased)
+            m_touchIdMapping.remove(qtId);
+    }
+
+    return outputPoints;
 }
 
 float RenderWidgetHostViewQt::dpiScale() const
@@ -908,6 +947,14 @@ void RenderWidgetHostViewQt::AccessibilityFatalError()
     SetBrowserAccessibilityManager(NULL);
 }
 
+void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
+{
+    if (active)
+        content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+    else
+        content::BrowserAccessibilityStateImpl::GetInstance()->DisableAccessibility();
+}
+
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
     m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
@@ -925,8 +972,10 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
         m_eventsToNowDelta = base::TimeTicks::Now() - eventTimestamp;
     eventTimestamp += m_eventsToNowDelta;
 
+    QList<QTouchEvent::TouchPoint> touchPoints = mapTouchPointIds(ev->touchPoints());
+
     if (ev->type() == QEvent::TouchCancel) {
-        MotionEventQt cancelEvent(ev, eventTimestamp, ui::MotionEvent::ACTION_CANCEL);
+        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL);
         processMotionEvent(cancelEvent);
         return;
     }
@@ -934,9 +983,9 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     if (ev->type() == QEvent::TouchBegin)
         m_sendMotionActionDown = true;
 
-    for (int i = 0; i < ev->touchPoints().size(); ++i) {
+    for (int i = 0; i < touchPoints.size(); ++i) {
         ui::MotionEvent::Action action;
-        switch (ev->touchPoints()[i].state()) {
+        switch (touchPoints[i].state()) {
         case Qt::TouchPointPressed:
             if (m_sendMotionActionDown) {
                 action = ui::MotionEvent::ACTION_DOWN;
@@ -948,14 +997,14 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             action = ui::MotionEvent::ACTION_MOVE;
             break;
         case Qt::TouchPointReleased:
-            action = ev->touchPoints().size() > 1 ? ui::MotionEvent::ACTION_POINTER_UP : ui::MotionEvent::ACTION_UP;
+            action = touchPoints.size() > 1 ? ui::MotionEvent::ACTION_POINTER_UP : ui::MotionEvent::ACTION_UP;
             break;
         default:
             // Ignore Qt::TouchPointStationary
             continue;
         }
 
-        MotionEventQt motionEvent(ev, eventTimestamp, action, i);
+        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, i);
         processMotionEvent(motionEvent);
     }
 }
@@ -988,8 +1037,6 @@ QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
     // Assume we have a screen reader doing stuff
     CreateBrowserAccessibilityManagerIfNeeded();
     content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
-
     content::BrowserAccessibility *acc = GetBrowserAccessibilityManager()->GetRoot();
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
     return accQt;

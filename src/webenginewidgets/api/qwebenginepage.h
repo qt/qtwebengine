@@ -172,7 +172,12 @@ public:
     virtual void triggerAction(WebAction action, bool checked = false);
 
     virtual bool event(QEvent*);
+#ifdef Q_QDOC
+    void findText(const QString &subString, FindFlags options = 0);
+    void findText(const QString &subString, FindFlags options, FunctorOrLambda resultCallback);
+#else
     void findText(const QString &subString, FindFlags options = 0, const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
+#endif
     QMenu *createStandardContextMenu();
 
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
@@ -182,8 +187,13 @@ public:
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
 
+#ifdef Q_QDOC
+    void toHtml(FunctorOrLambda resultCallback) const;
+    void toPlainText(FunctorOrLambda resultCallback) const;
+#else
     void toHtml(const QWebEngineCallback<const QString &> &resultCallback) const;
     void toPlainText(const QWebEngineCallback<const QString &> &resultCallback) const;
+#endif
 
     QString title() const;
     void setUrl(const QUrl &url);
@@ -195,7 +205,11 @@ public:
     void setZoomFactor(qreal factor);
 
     void runJavaScript(const QString& scriptSource);
+#ifdef Q_QDOC
+    void runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback);
+#else
     void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
+#endif
 
     QWebEngineSettings *settings() const;
 

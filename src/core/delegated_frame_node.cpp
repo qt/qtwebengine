@@ -64,6 +64,7 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
+#include <QOpenGLFunctions>
 #include <QSGAbstractRenderer>
 #include <QSGEngine>
 #include <QSGSimpleRectNode>
@@ -75,7 +76,7 @@
 #include <EGL/eglext.h>
 #endif
 
-class RenderPassTexture : public QSGTexture
+class RenderPassTexture : public QSGTexture, protected QOpenGLFunctions
 {
 public:
     RenderPassTexture(const cc::RenderPass::Id &id);
@@ -105,7 +106,7 @@ private:
     QScopedPointer<QOpenGLFramebufferObject> m_fbo;
 };
 
-class MailboxTexture : public QSGTexture {
+class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const cc::TransferableResource &resource);
     virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
@@ -202,43 +203,89 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
-static void waitAndDeleteChromiumSync(FenceSync *sync)
+static void waitChromiumSync(gfx::TransferableFence *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
     // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
     // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
     switch (sync->type) {
-    case FenceSync::NoSync:
+    case gfx::TransferableFence::NoSync:
         break;
-    case FenceSync::EglSync:
+    case gfx::TransferableFence::EglSync:
 #ifdef EGL_KHR_reusable_sync
     {
         static bool resolved = false;
         static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
-        static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
 
         if (!resolved) {
             if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_reusable_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
+            }
+            resolved = true;
+        }
+
+        if (eglClientWaitSyncKHR)
+            // FIXME: Use the less wasteful eglWaitSyncKHR once we have a device that supports EGL_KHR_wait_sync.
+            eglClientWaitSyncKHR(sync->egl.display, sync->egl.sync, 0, EGL_FOREVER_KHR);
+    }
+#endif
+        break;
+    case gfx::TransferableFence::ArbSync:
+#ifdef GL_ARB_sync
+        typedef void (QOPENGLF_APIENTRYP WaitSyncPtr)(GLsync sync, GLbitfield flags, GLuint64 timeout);
+        static WaitSyncPtr glWaitSync_ = 0;
+        if (!glWaitSync_) {
+            QOpenGLContext *context = QOpenGLContext::currentContext();
+            glWaitSync_ = (WaitSyncPtr)context->getProcAddress("glWaitSync");
+            Q_ASSERT(glWaitSync_);
+        }
+        glWaitSync_(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
+#endif
+        break;
+    }
+}
+
+static void deleteChromiumSync(gfx::TransferableFence *sync)
+{
+    // Chromium uses its own GL bindings and stores in in thread local storage.
+    // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
+    // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
+    switch (sync->type) {
+    case gfx::TransferableFence::NoSync:
+        break;
+    case gfx::TransferableFence::EglSync:
+#ifdef EGL_KHR_reusable_sync
+    {
+        static bool resolved = false;
+        static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
+
+        if (!resolved) {
+            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_reusable_sync")) {
+                QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
             }
             resolved = true;
         }
 
-        if (eglClientWaitSyncKHR && eglDestroySyncKHR) {
+        if (eglDestroySyncKHR) {
             // FIXME: Use the less wasteful eglWaitSyncKHR once we have a device that supports EGL_KHR_wait_sync.
-            eglClientWaitSyncKHR(sync->egl.display, sync->egl.sync, 0, EGL_FOREVER_KHR);
             eglDestroySyncKHR(sync->egl.display, sync->egl.sync);
             sync->reset();
         }
     }
 #endif
         break;
-    case FenceSync::ArbSync:
+    case gfx::TransferableFence::ArbSync:
 #ifdef GL_ARB_sync
-        glWaitSync(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
-        glDeleteSync(sync->arb.sync);
+        typedef void (QOPENGLF_APIENTRYP DeleteSyncPtr)(GLsync sync);
+        static DeleteSyncPtr glDeleteSync_ = 0;
+        if (!glDeleteSync_) {
+            QOpenGLContext *context = QOpenGLContext::currentContext();
+            glDeleteSync_ = (DeleteSyncPtr)context->getProcAddress("glDeleteSync");
+            Q_ASSERT(glDeleteSync_);
+        }
+        glDeleteSync_(sync->arb.sync);
         sync->reset();
 #endif
         break;
@@ -254,6 +301,7 @@ RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id)
     , m_sgEngine(new QSGEngine)
     , m_rootNode(new QSGRootNode)
 {
+    initializeOpenGLFunctions();
 }
 
 void RenderPassTexture::bind()
@@ -298,6 +346,7 @@ MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
     , m_target(GL_TEXTURE_2D)
     , m_importCount(1)
 {
+    initializeOpenGLFunctions();
 }
 
 void MailboxTexture::bind()
@@ -385,20 +434,33 @@ void DelegatedFrameNode::preprocess()
             mailboxesToFetch.append(mailboxTexture.data());
 
     if (!mailboxesToFetch.isEmpty()) {
-        QMutexLocker lock(&m_mutex);
-        base::MessageLoop *gpuMessageLoop = gpu_message_loop();
-        content::SyncPointManager *syncPointManager = sync_point_manager();
+        QMap<uint32, gfx::TransferableFence> transferredFences;
+        {
+            QMutexLocker lock(&m_mutex);
+            base::MessageLoop *gpuMessageLoop = gpu_message_loop();
+            content::SyncPointManager *syncPointManager = sync_point_manager();
 
-        Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
-            m_numPendingSyncPoints++;
-            AddSyncPointCallbackOnGpuThread(gpuMessageLoop, syncPointManager, mailboxTexture->resource().mailbox_holder.sync_point, base::Bind(&DelegatedFrameNode::syncPointRetired, this, &mailboxesToFetch));
+            Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
+                m_numPendingSyncPoints++;
+                AddSyncPointCallbackOnGpuThread(gpuMessageLoop, syncPointManager, mailboxTexture->resource().mailbox_holder.sync_point, base::Bind(&DelegatedFrameNode::syncPointRetired, this, &mailboxesToFetch));
+            }
+
+            m_mailboxesFetchedWaitCond.wait(&m_mutex);
+            m_mailboxGLFences.swap(transferredFences);
         }
 
-        m_mailboxesFetchedWaitCond.wait(&m_mutex);
-
-        // Tell GL to wait until Chromium is done generating resource textures on the GPU thread.
-        // We can safely start referencing those textures onto geometries afterward.
-        waitAndDeleteChromiumSync(&m_mailboxesGLFence);
+        // Tell GL to wait until Chromium is done generating resource textures on the GPU thread
+        // for each mailbox. We can safely start referencing those textures onto geometries afterward.
+        Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
+            gfx::TransferableFence fence = transferredFences.take(mailboxTexture->resource().mailbox_holder.sync_point);
+            waitChromiumSync(&fence);
+            deleteChromiumSync(&fence);
+        }
+        // We transferred all sync point fences from Chromium,
+        // destroy all the ones not referenced by one of our mailboxes without waiting.
+        QMap<uint32, gfx::TransferableFence>::iterator end = transferredFences.end();
+        for (QMap<uint32, gfx::TransferableFence>::iterator it = transferredFences.begin(); it != end; ++it)
+            deleteChromiumSync(&*it);
     }
 
     // Then render any intermediate RenderPass in order.
@@ -602,14 +664,13 @@ void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode,
     Q_FOREACH (MailboxTexture *mailboxTexture, *mailboxesToFetch)
         mailboxTexture->fetchTexture(mailboxManager);
 
-    // Set a fence at this point in Chromium's GL command stream
-    // and transfer the handle to the Qt scene graph thread.
-    FenceSync fence = createFence();
+    // Pick fences that we can ask GL to wait for before trying to sample the mailbox texture IDs.
+    QMap<uint32, gfx::TransferableFence> transferredFences = transferFences();
 
     // Chromium provided everything we were waiting for, let Qt start rendering.
     QMutexLocker lock(&frameNode->m_mutex);
-    Q_ASSERT(!frameNode->m_mailboxesGLFence);
-    frameNode->m_mailboxesGLFence = fence;
+    Q_ASSERT(frameNode->m_mailboxGLFences.isEmpty());
+    frameNode->m_mailboxGLFences.swap(transferredFences);
     frameNode->m_mailboxesFetchedWaitCond.wakeOne();
 }
 

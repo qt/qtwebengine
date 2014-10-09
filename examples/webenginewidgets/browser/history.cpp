@@ -95,6 +95,8 @@ HistoryManager::HistoryManager(QObject *parent)
 #if defined(QWEBENGINEHISTORYINTERFACE)
     // QWebEngineHistoryInterface will delete the history manager
     QWebEngineHistoryInterface::setDefaultInterface(this);
+#else
+    Q_UNUSED(parent);
 #endif
 }
 

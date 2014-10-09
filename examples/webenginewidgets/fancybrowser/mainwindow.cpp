@@ -115,7 +115,6 @@ MainWindow::MainWindow(const QUrl& url)
     toolsMenu->addAction(tr("Remove all embedded elements"), this, SLOT(removeEmbeddedElements()));
 
     setCentralWidget(view);
-    setUnifiedTitleAndToolBarOnMac(true);
 }
 //! [3]
 

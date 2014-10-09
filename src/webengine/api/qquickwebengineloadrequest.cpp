@@ -60,13 +60,14 @@ public:
     \qmltype WebEngineLoadRequest
     \instantiates QQuickWebEngineLoadRequest
     \inqmlmodule QtWebEngine 1.0
+    \since QtWebEngine 1.0
 
     \brief A utility class for the WebEngineView::loadingChanged signal.
 
-    This class contains information about a requested load of a web page, like the URL and
+    This class contains information about a requested load of a web page, such as the URL and
     current loading status (started, finished, failed).
 
-    \sa WebEngineView::onLoadingChanged
+    \sa WebEngineView::loadingChanged
 */
 QQuickWebEngineLoadRequest::QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString, int errorCode, QQuickWebEngineView::ErrorDomain errorDomain, QObject* parent)
     : QObject(parent)
@@ -91,16 +92,13 @@ QUrl QQuickWebEngineLoadRequest::url() const
 /*!
     \qmlproperty enumeration WebEngineLoadRequest::status
 
-    The load status of a web page load request.
+    This enumeration represents the load status of a web page load request.
 
-    \list
-    \li WebEngineView::LoadStartedStatus - the page is currently loading.
-    \li WebEngineView::LoadSucceededStatus - the page has been loaded with success.
-    \li WebEngineView::LoadFailedStatus - the page has failed loading.
-    \endlist
+    \value WebEngineView::LoadStartedStatus The page is currently loading.
+    \value WebEngineView::LoadSucceededStatus The page has been loaded with success.
+    \value WebEngineView::LoadFailedStatus The page has failed loading.
 
-    \sa WebEngineLoadRequest
-    \sa WebEngineView::onLoadingChanged
+    \sa WebEngineView::loadingChanged
 */
 QQuickWebEngineView::LoadStatus QQuickWebEngineLoadRequest::status() const
 {

@@ -48,25 +48,8 @@ import sys
 import string
 import argparse
 
-qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
-def sanityCheckRepo():
-    os.chdir(qtwebengine_root)
-    if not '.git' in os.listdir('.'):
-        print ''
-        print 'This source tree cannot be initialized with init-repository.py.'
-        print ''
-        print 'If you downloaded an archive containing these sources,'
-        print 'you do not need to run the init-repository.py script.'
-        print ''
-        print 'If you want to use git for working with qtwebengine,'
-        print 'use git to clone: git@gitorious.org:qt/qtwebengine.git'
-        print ''
-        sys.exit(0)
-
-sanityCheckRepo()
-
-sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 import git_submodule as GitSubmodule
 import version_resolver as resolver
 
@@ -75,7 +58,6 @@ ninja_src = os.path.join(qtwebengine_root, 'src/3rdparty_upstream/ninja')
 use_external_chromium = False
 
 parser = argparse.ArgumentParser(description='Initialize QtWebEngine repository.')
-parser.add_argument('--no-gerrit', action='store_true', help='skip adding the upstream Gerrit remote and commit hook')
 parser.add_argument('--baseline-upstream', action='store_true', help='initialize using upstream Chromium submodule w/o applying patches (for maintenance purposes only)')
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-u', '--upstream', action='store_true', help='initialize using upstream Chromium submodule')
@@ -97,18 +79,11 @@ if not chromium_src or not os.path.isdir(chromium_src):
         args.snapshot = True
     print 'CHROMIUM_SRC_DIR not set, using Chromium in' + chromium_src
 
-# Write our chromium sources directory into git config.
-relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_root)
-subprocess.call(['git', 'config', 'qtwebengine.chromiumsrcdir', relative_chromium_src])
+if not args.baseline_upstream:
+    # Write our chromium sources directory into git config.
+    relative_chromium_src = os.path.relpath(chromium_src, qtwebengine_root)
+    subprocess.call(['git', 'config', 'qtwebengine.chromiumsrcdir', relative_chromium_src])
 
-
-def which(tool_name):
-    path = os.environ.get('PATH')
-    for entry in path.split(os.pathsep):
-        entry = os.path.join(entry, tool_name)
-        if os.access(entry, os.X_OK):
-            return entry
-    return ''
 
 def updateLastChange():
     if use_external_chromium:
@@ -119,19 +94,6 @@ def updateLastChange():
     subprocess.call(['python', 'build/util/lastchange.py', '-o', 'build/util/LASTCHANGE'])
     subprocess.call(['python', 'build/util/lastchange.py', '-s', 'third_party/WebKit', '-o', 'build/util/LASTCHANGE.blink'])
     os.chdir(currentDir)
-
-def addGerritRemote():
-    os.chdir(qtwebengine_root)
-    remotes = subprocess.check_output(['git', 'remote'])
-    if not 'gerrit' in remotes:
-        subprocess.call(['git', 'remote', 'add', 'gerrit', 'ssh://codereview.qt-project.org:29418/qt/qtwebengine.git'])
-
-def installGitHooks():
-    os.chdir(qtwebengine_root)
-    if sys.platform == 'win32':
-        subprocess.call(['pscp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
-    else:
-        subprocess.call(['scp', '-p', '-P', '29418', 'codereview.qt-project.org:hooks/commit-msg', '.git/hooks'])
 
 def initUpstreamSubmodules():
     ninja_url = 'https://github.com/martine/ninja.git'
@@ -148,7 +110,7 @@ def initUpstreamSubmodules():
 
     ninjaSubmodule = GitSubmodule.Submodule()
     ninjaSubmodule.path = 'src/3rdparty_upstream/ninja'
-    ninjaSubmodule.shasum = ninja_shasum
+    ninjaSubmodule.ref = ninja_shasum
     ninjaSubmodule.url = ninja_url
     ninjaSubmodule.os = 'all'
     ninjaSubmodule.initialize()
@@ -173,14 +135,6 @@ def initSnapshot():
     snapshot.initialize()
 
 os.chdir(qtwebengine_root)
-
-if not args.no_gerrit:
-    addGerritRemote()
-    installGitHooks()
-
-print 'Configuring git to ignore all submodules. Submodule changes will not show up in "git diff"!'
-subprocess.call(['git', 'config', 'diff.ignoreSubmodules', 'all'])
-subprocess.call(['git', 'update-index', '--assume-unchanged', '.gitmodules'])
 
 if args.upstream:
     initUpstreamSubmodules()

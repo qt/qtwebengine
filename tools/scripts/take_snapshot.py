@@ -49,6 +49,7 @@ import imp
 import errno
 import shutil
 
+from distutils.version import StrictVersion
 import git_submodule as GitSubmodule
 
 qtwebengine_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -214,7 +215,11 @@ def isInChromiumBlacklist(file_path):
             return True
     return False
 
-def createHardLinkForFile(src, dst):
+def printProgress(current, total):
+    sys.stdout.write("\r{} of {}".format(current, total))
+    sys.stdout.flush()
+
+def copyFile(src, dst):
     src = os.path.abspath(src)
     dst = os.path.abspath(dst)
     dst_dir = os.path.dirname(dst)
@@ -227,6 +232,8 @@ def createHardLinkForFile(src, dst):
 
     try:
         os.link(src, dst)
+        # Qt uses LF-only but Chromium isn't.
+        subprocess.call(['dos2unix', '--keep-bom', '--quiet', dst])
     except OSError as exception:
         if exception.errno == errno.ENOENT:
             print 'file does not exist:' + src
@@ -263,10 +270,13 @@ def exportNinja():
     print 'exporting contents of:' + third_party_upstream_ninja
     os.chdir(third_party_upstream_ninja)
     files = listFilesInCurrentRepository()
-    print 'creating hardlinks in ' + third_party_ninja
-    for f in files:
+    print 'copying files to ' + third_party_ninja
+    for i in xrange(len(files)):
+        printProgress(i+1, len(files))
+        f = files[i]
         if not isInGitBlacklist(f):
-            createHardLinkForFile(f, os.path.join(third_party_ninja, f))
+            copyFile(f, os.path.join(third_party_ninja, f))
+    print("")
 
 def exportChromium():
     third_party_upstream_chromium = os.path.join(third_party_upstream, 'chromium')
@@ -278,10 +288,21 @@ def exportChromium():
     # Add LASTCHANGE files which are not tracked by git.
     files.append('build/util/LASTCHANGE')
     files.append('build/util/LASTCHANGE.blink')
-    print 'creating hardlinks in ' + third_party_chromium
-    for f in files:
+    print 'copying files to ' + third_party_chromium
+    for i in xrange(len(files)):
+        printProgress(i+1, len(files))
+        f = files[i]
         if not isInChromiumBlacklist(f) and not isInGitBlacklist(f):
-            createHardLinkForFile(f, os.path.join(third_party_chromium, f))
+            copyFile(f, os.path.join(third_party_chromium, f))
+    print("")
+
+commandNotFound = subprocess.call(['which', 'dos2unix'])
+
+if not commandNotFound:
+    dos2unixVersion = StrictVersion(subprocess.Popen(['dos2unix', '-V', '| true'], stdout=subprocess.PIPE).communicate()[0].splitlines()[0].split()[1])
+
+if commandNotFound or dos2unixVersion < StrictVersion('6.0.6'):
+    raise Exception("You need dos2unix version 6.0.6 minimum.")
 
 clearDirectory(third_party)
 

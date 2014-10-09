@@ -37,26 +37,30 @@
 #include "gl_context_qt.h"
 
 #include <QGuiApplication>
+#include <QOpenGLContext>
 #include <QThread>
-#include "ui/gl/gl_context_egl.h"
-
-#include <private/qopenglcontext_p.h>
-#include <private/qsgcontext_p.h>
 #include <qpa/qplatformnativeinterface.h>
+#include "ui/gl/gl_context_egl.h"
+#include "ui/gl/gl_implementation.h"
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
 #endif
 
+#if defined(OS_WIN)
+#include "ui/gl/gl_context_wgl.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 GLContextHelper* GLContextHelper::contextHelper = 0;
 
 namespace {
 
 inline void *resourceForContext(const QByteArray &resource)
 {
-    return qApp->platformNativeInterface()->nativeResourceForContext(resource, QOpenGLContextPrivate::globalShareContext());
+    return qApp->platformNativeInterface()->nativeResourceForContext(resource, qt_gl_global_share_context());
 }
 
 inline void *resourceForIntegration(const QByteArray &resource)
@@ -136,7 +140,16 @@ namespace gfx {
 
 scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, GLSurface* compatible_surface, GpuPreference gpu_preference)
 {
-    scoped_refptr<GLContext> context(new GLContextEGL(share_group));
+#if defined(OS_WIN)
+    scoped_refptr<GLContext> context;
+    if (GetGLImplementation() == kGLImplementationDesktopGL)
+        context = new GLContextWGL(share_group);
+    else
+        context = new GLContextEGL(share_group);
+#else
+    scoped_refptr<GLContext> context = new GLContextEGL(share_group);
+#endif
+
     if (!GLContextHelper::initializeContext(context.get(), compatible_surface))
         return NULL;
 

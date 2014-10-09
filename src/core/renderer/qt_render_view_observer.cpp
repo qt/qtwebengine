@@ -54,7 +54,7 @@ void QtRenderViewObserver::onFetchDocumentMarkup(quint64 requestId)
     Send(new QtRenderViewObserverHost_DidFetchDocumentMarkup(
         routing_id(),
         requestId,
-        render_view()->GetWebView()->mainFrame()->document().createMarkup()));
+        render_view()->GetWebView()->mainFrame()->contentAsMarkup()));
 }
 
 void QtRenderViewObserver::onFetchDocumentInnerText(quint64 requestId)
@@ -62,7 +62,7 @@ void QtRenderViewObserver::onFetchDocumentInnerText(quint64 requestId)
     Send(new QtRenderViewObserverHost_DidFetchDocumentInnerText(
         routing_id(),
         requestId,
-        render_view()->GetWebView()->mainFrame()->document().documentElement().innerText()));
+        render_view()->GetWebView()->mainFrame()->contentAsText(std::numeric_limits<std::size_t>::max())));
 }
 
 void QtRenderViewObserver::OnFirstVisuallyNonEmptyLayout()

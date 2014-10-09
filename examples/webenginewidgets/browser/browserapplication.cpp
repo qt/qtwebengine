@@ -104,7 +104,7 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
         return;
     }
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_OSX)
     QApplication::setQuitOnLastWindowClosed(false);
 #else
     QApplication::setQuitOnLastWindowClosed(true);
@@ -138,7 +138,7 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     m_lastSession = settings.value(QLatin1String("lastSession")).toByteArray();
     settings.endGroup();
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_OSX)
     connect(this, SIGNAL(lastWindowClosed()),
             this, SLOT(lastWindowClosed()));
 #endif
@@ -157,7 +157,7 @@ BrowserApplication::~BrowserApplication()
     delete s_bookmarksManager;
 }
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_OSX)
 void BrowserApplication::lastWindowClosed()
 {
     clean();
@@ -172,7 +172,7 @@ BrowserApplication *BrowserApplication::instance()
     return (static_cast<BrowserApplication *>(QCoreApplication::instance()));
 }
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_OSX)
 #include <QtWidgets/QMessageBox>
 void BrowserApplication::quitBrowser()
 {
@@ -344,7 +344,7 @@ void BrowserApplication::installTranslator(const QString &name)
     QApplication::installTranslator(translator);
 }
 
-#if defined(Q_WS_MAC)
+#if defined(Q_OS_OSX)
 bool BrowserApplication::event(QEvent* event)
 {
     switch (event->type()) {
@@ -470,6 +470,8 @@ QIcon BrowserApplication::icon(const QUrl &url) const
     QIcon icon = QWebEngineSettings::iconForUrl(url);
     if (!icon.isNull())
         return icon.pixmap(16, 16);
+#else
+    Q_UNUSED(url);
 #endif
     return defaultIcon();
 }

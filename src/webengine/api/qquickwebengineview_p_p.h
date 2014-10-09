@@ -55,6 +55,7 @@ class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
+class QQuickWebEngineSettings;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
     Q_OBJECT
@@ -81,6 +82,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineSettings *settings READ settings)
     Q_ENUMS(Feature)
     Q_FLAGS(FindFlags)
 
@@ -105,6 +107,7 @@ public:
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
     QQuickWebEngineHistory *navigationHistory() const;
+    QQuickWebEngineSettings *settings() const;
 
 public Q_SLOTS:
     void goBackTo(int index);
@@ -154,7 +157,7 @@ public:
     virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;
     virtual void loadVisuallyCommitted() Q_DECL_OVERRIDE;
-    virtual void loadFinished(bool success, int error_code = 0, const QString &error_description = QString()) Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
@@ -183,11 +186,13 @@ public:
     QScopedPointer<QQuickWebEngineViewExperimental> e;
     QScopedPointer<QQuickWebEngineViewport> v;
     QScopedPointer<QQuickWebEngineHistory> m_history;
+    QScopedPointer<QQuickWebEngineSettings> m_settings;
     QQmlComponent *contextMenuExtraItems;
     QUrl icon;
     int loadProgress;
     bool inspectable;
     bool m_isFullScreen;
+    bool isLoading;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
 

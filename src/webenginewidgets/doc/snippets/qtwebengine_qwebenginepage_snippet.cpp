@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -25,13 +25,14 @@
 **
 ****************************************************************************/
 
-/*!
-    \example browser
-    \title WebEngine Tab Browser Example
-    \brief The QtWebKit browser example ported to use QtWebEngine
+void wrapInFunction()
+{
 
-    The Tab Browser example shows the \l{Qt WebEngine Widgets} module in action,
-    providing a little Web browser application with support for tabs.
+//! [0]
+    m_view->page()->findText(QStringLiteral("Qt"), QWebEnginePage::FindFlags(), [this](bool found) {
+        if (!found) QMessageBox::information(m_view, QString(), QStringLiteral("No occurrences found"));
+    });
+//! [0]
 
-    \image browser-demo.png
-*/
+}
+

@@ -45,9 +45,11 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
+#include <QMap>
 #include <QPoint>
 #include <QRect>
 #include <QtGlobal>
+#include <QtGui/qaccessible.h>
 
 #include "delegated_frame_node.h"
 
@@ -91,6 +93,7 @@ class RenderWidgetHostViewQt
     , public RenderWidgetHostViewQtDelegateClient
     , public content::BrowserAccessibilityDelegate
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
+    , public QAccessible::ActivationObserver
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -184,7 +187,8 @@ public:
 
 #if defined(OS_ANDROID)
     virtual void ShowDisambiguationPopup(const gfx::Rect&, const SkBitmap&) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual void HasTouchEventHandlers(bool) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void LockCompositingSurface() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_ANDROID)
 
 #if defined(OS_WIN)
@@ -209,6 +213,7 @@ public:
     virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) const Q_DECL_OVERRIDE  { return gfx::Point(); }
     virtual void AccessibilityHitTest(const gfx::Point& point) Q_DECL_OVERRIDE  { }
     virtual void AccessibilityFatalError() Q_DECL_OVERRIDE;
+    virtual void accessibilityActiveChanged(bool active) Q_DECL_OVERRIDE;
 
     QAccessibleInterface *GetQtAccessible();
 
@@ -217,6 +222,7 @@ public:
 private:
     void sendDelegatedFrameAck();
     void processMotionEvent(const ui::MotionEvent &motionEvent);
+    QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
     float dpiScale() const;
 
     bool IsPopup() const;
@@ -226,6 +232,7 @@ private:
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
     bool m_sendMotionActionDown;
+    QMap<int, int> m_touchIdMapping;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;

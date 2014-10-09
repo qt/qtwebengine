@@ -171,6 +171,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate()
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , settings(new QWebEngineSettings)
     , view(0)
+    , isLoading(false)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -237,6 +238,7 @@ void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl)
 {
     Q_UNUSED(provisionalUrl)
     Q_Q(QWebEnginePage);
+    isLoading = true;
     Q_EMIT q->loadStarted();
     updateNavigationActions();
 }
@@ -246,11 +248,13 @@ void QWebEnginePagePrivate::loadCommitted()
     updateNavigationActions();
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success, int error_code, const QString &error_description)
+void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, int errorCode, const QString &errorDescription)
 {
     Q_Q(QWebEnginePage);
-    Q_UNUSED(error_code);
-    Q_UNUSED(error_description);
+    Q_UNUSED(url);
+    Q_UNUSED(errorCode);
+    Q_UNUSED(errorDescription);
+    isLoading = false;
     if (success)
         m_explicitUrl = QUrl();
     Q_EMIT q->loadFinished(success);
@@ -362,11 +366,11 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
         enabled = adapter->canGoForward();
         break;
     case QWebEnginePage::Stop:
-        enabled = adapter->isLoading();
+        enabled = isLoading;
         break;
     case QWebEnginePage::Reload:
     case QWebEnginePage::ReloadAndBypassCache:
-        enabled = !adapter->isLoading();
+        enabled = !isLoading;
         break;
     default:
         break;
@@ -579,6 +583,9 @@ void QWebEnginePage::findText(const QString &subString, FindFlags options, const
     }
 }
 
+/*!
+ * \reimp
+ */
 bool QWebEnginePage::event(QEvent *e)
 {
     return QObject::event(e);

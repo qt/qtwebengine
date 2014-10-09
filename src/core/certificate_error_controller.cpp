@@ -111,7 +111,7 @@ CertificateErrorController::ResourceType CertificateErrorController::resourceTyp
 
 static QString getQStringForMessageId(int message_id) {
     base::string16 string = l10n_util::GetStringUTF16(message_id);
-    return QString::fromUtf16(string.data(), string.length());
+    return toQt(string);
 }
 
 QString CertificateErrorController::errorString() const

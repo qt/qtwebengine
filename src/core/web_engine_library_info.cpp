@@ -78,7 +78,7 @@ QString location(QLibraryInfo::LibraryLocation path)
     switch (path) {
     case QLibraryInfo::TranslationsPath:
         if (!webEnginePath.isEmpty())
-            return webEnginePath % QDir::separator() % QStringLiteral("translations");
+            return webEnginePath % QDir::separator() % QLatin1String("translations");
         break;
     case QLibraryInfo::DataPath:
         if (!webEnginePath.isEmpty())
@@ -96,18 +96,22 @@ QString subProcessPath()
 {
     static bool initialized = false;
 #if defined(OS_WIN)
-    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
-                                % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME) % QStringLiteral(".exe"));
+    static QString processBinary (QLatin1String(QTWEBENGINEPROCESS_NAME) % QLatin1String(".exe"));
 #else
-    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
-                                % QDir::separator() % QStringLiteral(QTWEBENGINEPROCESS_NAME));
+    static QString processBinary (QLatin1String(QTWEBENGINEPROCESS_NAME));
 #endif
+    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
+                                % QDir::separator() % processBinary);
     if (!initialized) {
         // Allow overriding at runtime for the time being.
         const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
         if (!fromEnv.isEmpty())
             processPath = QString::fromLatin1(fromEnv);
-        if (processPath.isEmpty() || !QFileInfo(processPath).exists())
+        if (processPath.isEmpty() || !QFileInfo(processPath).exists()) {
+            qWarning("QtWebEngineProcess not found at location %s. Trying fallback path...", qPrintable(processPath));
+            processPath = QCoreApplication::applicationDirPath() % QDir::separator() % processBinary;
+        }
+        if (!QFileInfo(processPath).exists())
             qFatal("QtWebEngineProcess not found at location %s. Try setting the QTWEBENGINEPROCESS_PATH environment variable.", qPrintable(processPath));
         initialized = true;
     }
@@ -117,12 +121,12 @@ QString subProcessPath()
 
 QString pluginsPath()
 {
-    return location(QLibraryInfo::PluginsPath) % QDir::separator() % QStringLiteral("qtwebengine");
+    return location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
 }
 
 QString localesPath()
 {
-    return location(QLibraryInfo::TranslationsPath) % QStringLiteral("/qtwebengine_locales");
+    return location(QLibraryInfo::TranslationsPath) % QLatin1String("/qtwebengine_locales");
 }
 
 QString fallbackDir() {
@@ -151,7 +155,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
     QString directory;
     switch (key) {
     case QT_RESOURCES_PAK:
-        return toFilePath(location(QLibraryInfo::DataPath) % QStringLiteral("/qtwebengine_resources.pak"));
+        return toFilePath(location(QLibraryInfo::DataPath) % QLatin1String("/qtwebengine_resources.pak"));
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
         return toFilePath(subProcessPath());

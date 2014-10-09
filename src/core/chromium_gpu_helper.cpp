@@ -57,27 +57,17 @@ static void addSyncPointCallbackDelegate(content::SyncPointManager *syncPointMan
     syncPointManager->AddSyncPointCallback(sync_point, callback);
 }
 
-FenceSync createFence()
+QMap<uint32, gfx::TransferableFence> transferFences()
 {
-    FenceSync ret;
-    // Logic taken from chromium/ui/gl/gl_fence.cc
-#if !defined(OS_MACOSX)
-    if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
-        ret.type = FenceSync::EglSync;
-        ret.egl.display = eglGetCurrentDisplay();
-        ret.egl.sync = eglCreateSyncKHR(ret.egl.display, EGL_SYNC_FENCE_KHR, NULL);
-    } else
-#endif
-    if (gfx::g_driver_gl.ext.b_GL_ARB_sync) {
-        ret.type = FenceSync::ArbSync;
-        ret.arb.sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    QMap<uint32, gfx::TransferableFence> ret;
+    content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
+    content::GpuChannelManager::SyncPointGLFences::iterator it = gpuChannelManager->sync_point_gl_fences_.begin();
+    content::GpuChannelManager::SyncPointGLFences::iterator end = gpuChannelManager->sync_point_gl_fences_.end();
+    for (; it != end; ++it) {
+        ret[it->first] = it->second->Transfer();
+        delete it->second;
     }
-
-    // glFlush is necessary to make sure that our fence creation reaches the GL server
-    // before we try waiting on it from a different context, which could deadlock.
-    // In cases where no fence extension is available, this also serves as flushing
-    // Chromium's GL context command stream before yielding to the SG thread.
-    glFlush();
+    gpuChannelManager->sync_point_gl_fences_.clear();
     return ret;
 }
 

@@ -36,6 +36,7 @@
 
 #include "surface_factory_qt.h"
 
+#include "gl_context_qt.h"
 #include "type_conversion.h"
 
 #include "base/files/file_path.h"
@@ -43,7 +44,6 @@
 #include "ui/gl/gl_implementation.h"
 
 #include <QGuiApplication>
-#include <qpa/qplatformnativeinterface.h>
 
 #if defined(USE_OZONE) || defined(OS_ANDROID)
 #include <EGL/egl.h>
@@ -55,6 +55,16 @@
 #define QT_LIBDIR_GLES2 QT_LIBDIR_EGL
 #endif
 
+base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
+    base::NativeLibraryLoadError error;
+    base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
+    if (!library) {
+        LOG(ERROR) << "Failed to load " << filename.MaybeAsASCII() << ": " << error.ToString();
+        return NULL;
+    }
+    return library;
+}
+
 bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library, SetGLGetProcAddressProcCallback set_gl_get_proc_address)
 {
 #if defined(OS_ANDROID)
@@ -65,19 +75,15 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
 #else
     base::FilePath libEGLPath = toFilePath(QT_LIBDIR_EGL);
     libEGLPath = libEGLPath.Append("libEGL.so");
-    base::NativeLibrary eglLibrary = gfx::LoadLibrary(libEGLPath);
-    if (!eglLibrary) {
-        LOG(ERROR) << "Failed to load EGL: " << libEGLPath.LossyDisplayName();
+    base::NativeLibrary eglLibrary = LoadLibrary(libEGLPath);
+    if (!eglLibrary)
         return false;
-    }
 
     base::FilePath libGLES2Path = toFilePath(QT_LIBDIR_GLES2);
     libGLES2Path = libGLES2Path.Append("libGLESv2.so");
-    base::NativeLibrary gles2Library = gfx::LoadLibrary(libGLES2Path);
-    if (!gles2Library) {
-        LOG(ERROR) << "failed to load GLESv2: " << libGLES2Path.LossyDisplayName();
+    base::NativeLibrary gles2Library = LoadLibrary(libGLES2Path);
+    if (!gles2Library)
         return false;
-    }
 
     gfx::GLGetProcAddressProc get_proc_address = reinterpret_cast<gfx::GLGetProcAddressProc>(base::GetFunctionPointerFromNativeLibrary(eglLibrary, "eglGetProcAddress"));
     if (!get_proc_address) {
@@ -96,7 +102,7 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
 
 intptr_t SurfaceFactoryQt::GetNativeDisplay()
 {
-    static void *display = qApp->platformNativeInterface()->nativeResourceForIntegration(QByteArrayLiteral("nativedisplay"));
+    static void *display = GLContextHelper::getNativeDisplay();
 
     if (display)
         return reinterpret_cast<intptr_t>(display);

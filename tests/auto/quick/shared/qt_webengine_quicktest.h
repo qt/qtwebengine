@@ -69,7 +69,6 @@ QT_BEGIN_NAMESPACE
     int main(int argc, char **argv) \
     { \
         Application* app = 0; \
-        qputenv("QTWEBENGINEPROCESS_PATH", QWP_PATH); \
         if (!QCoreApplication::instance()) \
             app = new Application(argc, argv); \
         QtWebEngine::initialize(); \

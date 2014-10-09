@@ -9,7 +9,6 @@ print 'using python: ' + sys.executable + ' version: ' + sys.version
 
 if sys.platform == "darwin":
   print 'xcode version: ' + subprocess.check_output(['xcodebuild', '-version']).replace('\n', ' ')
-  print 'clang++ version: ' + subprocess.check_output(['clang++', '--version']).replace('\n', ' ')
 
 qtwebengine_root = os.path.normcase(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 import qtwebengine_utils as utils
@@ -20,6 +19,11 @@ if not os.path.isdir(script_dir):
   print script_dir + " is not a valid directory"
   sys.exit(1)
 root_dir = os.path.normcase(os.path.abspath(os.path.join(os.getcwd(), os.pardir, os.pardir)))
+
+if sys.platform in ('cygwin', 'win32'):
+  gnuwin_tools_dir = os.path.normcase(os.path.abspath(os.path.join(qtwebengine_root, "../gnuwin32/bin")))
+  if os.path.isdir(gnuwin_tools_dir):
+    os.environ['PATH'] = gnuwin_tools_dir + os.pathsep + os.environ['PATH']
 
 sys.path.insert(1, script_dir)
 import gyp_helper
@@ -81,12 +85,6 @@ if __name__ == '__main__':
 
   if 'qt_cross_compile=1' in sys.argv:
     os.environ['GYP_CROSSCOMPILE'] = '1'
-
-  # On Mac we want to override CXX and CC that is provided with
-  # the Chromium GYP environment.
-  if sys.platform.startswith('darwin') and not 'GYP_CROSSCOMPILE' in os.environ:
-    os.environ['CXX'] = 'clang++'
-    os.environ['CC'] = 'clang'
 
   gyp_helper.apply_chromium_gyp_env()
 

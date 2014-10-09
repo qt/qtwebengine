@@ -30,7 +30,7 @@
     web documents.
     \ingroup advanced
 
-    \inmodule QtWebEngine
+    \inmodule QtWebEngineWidgets
 
     QWebEngineView is the main widget component of the Qt WebEngine web browsing module.
     It can be used in various applications to display web content live from the
@@ -241,12 +241,22 @@
 */
 
 /*!
-    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options, const QWebEngineCallback<bool> &resultCallback)
+    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options)
     Finds the specified string, \a subString, in the page, using the given \a options.
 
     To clear the selection, just pass an empty string.
 
-    The \a resultCallback will be called with a value of true if the \a subString was found; otherwise the callback value will be false.
+    \sa selectedText(), selectionChanged()
+*/
+
+/*!
+    \fn void QWebEngineView::findText(const QString &subString, QWebEnginePage::FindFlags options, FunctorOrLambda resultCallback)
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    To clear the selection, just pass an empty string.
+
+    The \a resultCallback must take a boolean parameter. It will be called with a value of true if the \a subString
+    was found; otherwise the callback value will be false.
 
     \sa selectedText(), selectionChanged()
 */
@@ -366,4 +376,16 @@
     which is the default range of QProgressBar.
 
     \sa loadStarted(), loadFinished()
+*/
+
+/*!
+    \fn QWebEngineSettings *QWebEngineView::settings() const
+
+    Returns a pointer to the view/page specific settings object.
+
+    It is equivalent to
+
+    \snippet snippets/qtwebengine_qwebengineview_snippet.cpp 6
+
+    \sa QWebEngineSettings::globalSettings()
 */

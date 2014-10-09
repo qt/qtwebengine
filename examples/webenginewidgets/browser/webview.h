@@ -116,7 +116,7 @@ signals:
 
 private slots:
     void setProgress(int progress);
-    void loadFinished();
+    void loadFinished(bool success);
     void setStatusBarText(const QString &string);
     void downloadRequested(const QNetworkRequest &request);
     void openLinkInNewTab();

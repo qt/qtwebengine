@@ -117,7 +117,7 @@ public:
     virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;
     virtual void loadVisuallyCommitted() Q_DECL_OVERRIDE { }
-    virtual void loadFinished(bool success, int error_code, const QString &error_description = QString()) Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
@@ -153,6 +153,7 @@ public:
     QSize viewportSize;
     QUrl m_explicitUrl;
     WebEngineContextMenuData m_menuData;
+    bool isLoading;
 
     mutable CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

@@ -54,5 +54,8 @@ void wrapInFunction()
     view->page()->triggerPageAction(QWebPage::GoForward);
 //! [5]
 
+//! [6]
+    view->page()->settings();
+//! [6]
 }
 

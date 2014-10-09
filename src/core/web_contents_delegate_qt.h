@@ -60,6 +60,7 @@ class WebContentsDelegateQt : public content::WebContentsDelegate
 {
 public:
     WebContentsDelegateQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
+    ~WebContentsDelegateQt() { Q_ASSERT(m_loadingErrorFrameList.isEmpty()); }
     QString lastSearchedString() const { return m_lastSearchedString; }
     void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
     int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
@@ -94,6 +95,7 @@ private:
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
     int m_lastReceivedFindReply;
+    QList<int64> m_loadingErrorFrameList;
 };
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H

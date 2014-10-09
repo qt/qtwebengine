@@ -99,18 +99,25 @@ public:
         // Usually this gets passed through Run, but since we have
         // our own event loop, attach it explicitly ourselves.
         : m_delegate(base::MessageLoopForUI::current())
+        , m_explicitLoop(0)
+        , m_timerId(0)
     {
     }
 
     virtual void Run(Delegate *delegate) Q_DECL_OVERRIDE
     {
-        // FIXME: This could be needed if we want to run Chromium tests.
-        // We could run a QEventLoop here.
+        Q_ASSERT(delegate == m_delegate);
+        // This is used only when MessagePumpForUIQt is used outside of the GUI thread.
+        QEventLoop loop;
+        m_explicitLoop = &loop;
+        loop.exec();
+        m_explicitLoop = 0;
     }
 
     virtual void Quit() Q_DECL_OVERRIDE
     {
-        Q_UNREACHABLE();
+        Q_ASSERT(m_explicitLoop);
+        m_explicitLoop->quit();
     }
 
     virtual void ScheduleWork() Q_DECL_OVERRIDE
@@ -120,7 +127,15 @@ public:
 
     virtual void ScheduleDelayedWork(const base::TimeTicks &delayed_work_time) Q_DECL_OVERRIDE
     {
-        startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+        if (delayed_work_time.is_null()) {
+            killTimer(m_timerId);
+            m_timerId = 0;
+            m_timerScheduledTime = base::TimeTicks();
+        } else if (!m_timerId || delayed_work_time < m_timerScheduledTime) {
+            killTimer(m_timerId);
+            m_timerId = startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+            m_timerScheduledTime = delayed_work_time;
+        }
     }
 
 protected:
@@ -132,13 +147,14 @@ protected:
 
     virtual void timerEvent(QTimerEvent *ev) Q_DECL_OVERRIDE
     {
-        killTimer(ev->timerId());
+        Q_ASSERT(m_timerId == ev->timerId());
+        killTimer(m_timerId);
+        m_timerId = 0;
+        m_timerScheduledTime = base::TimeTicks();
 
         base::TimeTicks next_delayed_work_time;
         m_delegate->DoDelayedWork(&next_delayed_work_time);
-
-        if (!next_delayed_work_time.is_null())
-            startTimer(GetTimeIntervalMilliseconds(next_delayed_work_time));
+        ScheduleDelayedWork(next_delayed_work_time);
     }
 
 private:
@@ -152,13 +168,16 @@ private:
             return true;
 
         more_work_is_plausible |= m_delegate->DoIdleWork();
-        if (!more_work_is_plausible && !delayed_work_time.is_null())
-            startTimer(GetTimeIntervalMilliseconds(delayed_work_time));
+        if (!more_work_is_plausible)
+            ScheduleDelayedWork(delayed_work_time);
 
         return more_work_is_plausible;
     }
 
     Delegate *m_delegate;
+    QEventLoop *m_explicitLoop;
+    int m_timerId;
+    base::TimeTicks m_timerScheduledTime;
 };
 
 scoped_ptr<base::MessagePump> messagePumpFactory()
@@ -216,22 +235,22 @@ public:
     {
         QString platform = qApp->platformName().toLower();
         QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
-        if (platform == QStringLiteral("xcb")) {
+        if (platform == QLatin1String("xcb")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
             else
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("glxcontext"), qtContext);
-        } else if (platform == QStringLiteral("cocoa"))
+        } else if (platform == QLatin1String("cocoa"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
-        else if (platform == QStringLiteral("qnx"))
+        else if (platform == QLatin1String("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QStringLiteral("eglfs"))
+        else if (platform == QLatin1String("eglfs"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QStringLiteral("windows")) {
+        else if (platform == QLatin1String("windows")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglContext"), qtContext);
             else
-                qFatal("Only the EGLGLES2 implementation is supported on %s platform.", platform.toLatin1().constData());
+                m_handle = pni->nativeResourceForContext(QByteArrayLiteral("renderingcontext"), qtContext);
         } else {
             qFatal("%s platform not yet supported", platform.toLatin1().constData());
             // Add missing platforms once they work.

@@ -43,6 +43,8 @@
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebenginesettings_p.h"
+#include "qquickwebenginesettings_p_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "ui_delegates_manager.h"
@@ -75,10 +77,12 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , e(new QQuickWebEngineViewExperimental(this))
     , v(new QQuickWebEngineViewport(this))
     , m_history(new QQuickWebEngineHistory(this))
+    , m_settings(new QQuickWebEngineSettings)
     , contextMenuExtraItems(0)
     , loadProgress(0)
     , inspectable(false)
     , m_isFullScreen(false)
+    , isLoading(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -91,7 +95,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     // and instead use a reasonable default value for viewport.devicePixelRatio to avoid every
     // app having to use this experimental API.
     QString platform = qApp->platformName().toLower();
-    if (platform == QStringLiteral("qnx")) {
+    if (platform == QLatin1String("qnx")) {
         qreal webPixelRatio = QGuiApplication::primaryScreen()->physicalDotsPerInch() / 160;
 
         // Quantize devicePixelRatio to increments of 1 to allow JS and media queries to select
@@ -131,7 +135,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
-    const bool hasWindowCapability = qApp->platformName().toLower() != QStringLiteral("eglfs");
+    const bool hasWindowCapability = qApp->platformName().toLower() != QLatin1String("eglfs");
     RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
     if (hasWindowCapability) {
         RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
@@ -274,6 +278,7 @@ qreal QQuickWebEngineViewPrivate::dpiScale() const
 void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl)
 {
     Q_Q(QQuickWebEngineView);
+    isLoading = true;
     m_history->reset();
     QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
     Q_EMIT q->loadingChanged(&loadRequest);
@@ -293,28 +298,29 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<i
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::CertificateErrorDomain) == static_cast<int>(QQuickWebEngineView::CertificateErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<int>(QQuickWebEngineView::DnsErrorDomain));
 
-void QQuickWebEngineViewPrivate::loadFinished(bool success, int error_code, const QString &error_description)
+void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, int errorCode, const QString &errorDescription)
 {
     Q_Q(QQuickWebEngineView);
+    isLoading = false;
     m_history->reset();
-    if (error_code == WebEngineError::UserAbortedError) {
-        QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadStoppedStatus);
+    if (errorCode == WebEngineError::UserAbortedError) {
+        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadStoppedStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
         return;
     }
     if (success) {
-        QQuickWebEngineLoadRequest loadRequest(q->url(), QQuickWebEngineView::LoadSucceededStatus);
+        QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
         return;
     }
 
-    Q_ASSERT(error_code);
+    Q_ASSERT(errorCode);
     QQuickWebEngineLoadRequest loadRequest(
-        q->url(),
+        url,
         QQuickWebEngineView::LoadFailedStatus,
-        error_description,
-        error_code,
-        static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(error_code)));
+        errorDescription,
+        errorCode,
+        static_cast<QQuickWebEngineView::ErrorDomain>(WebEngineError::toQtErrorDomain(errorCode)));
     Q_EMIT q->loadingChanged(&loadRequest);
     return;
 }
@@ -353,7 +359,7 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
 
 void QQuickWebEngineViewPrivate::close()
 {
-    Q_UNREACHABLE();
+    // Not implemented yet.
 }
 
 void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
@@ -393,28 +399,9 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
     return q;
 }
 
-namespace {
-class DummySettingsDelegate : public WebEngineSettingsDelegate {
-public:
-    DummySettingsDelegate()
-        : settings(0) {}
-    void apply() { }
-    WebEngineSettings* fallbackSettings() const { return settings; }
-    WebEngineSettings *settings;
-};
-
-}// anonymous namespace
-
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
 {
-    static WebEngineSettings *dummySettings = 0;
-    if (!dummySettings) {
-        DummySettingsDelegate *dummyDelegate = new DummySettingsDelegate;
-        dummySettings = new WebEngineSettings(dummyDelegate);
-        dummyDelegate->settings = dummySettings;
-        dummySettings->initDefaults();
-    }
-    return dummySettings;
+    return m_settings->d_func()->coreSettings.data();
 }
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
@@ -587,7 +574,7 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->adapter->isLoading();
+    return d->isLoading;
 }
 
 int QQuickWebEngineView::loadProgress() const
@@ -665,6 +652,11 @@ void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlCo
 QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent() const
 {
     return d_ptr->contextMenuExtraItems;
+}
+
+QQuickWebEngineSettings *QQuickWebEngineViewExperimental::settings() const
+{
+    return d_ptr->m_settings.data();
 }
 
 void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFlags options, const QJSValue &callback)

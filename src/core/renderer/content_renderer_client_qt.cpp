@@ -73,6 +73,17 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     new QtRenderViewObserver(render_view);
 }
 
+bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)
+{
+    // Use an internal error page, if we have one for the status code.
+    if (!LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain, httpStatusCode)) {
+        return false;
+    }
+
+    *errorDomain = LocalizedError::kHttpErrorDomain;
+    return true;
+}
+
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
 void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* render_view, blink::WebFrame *frame, const blink::WebURLRequest &failed_request, const blink::WebURLError &error, std::string *error_html, base::string16 *error_description)
 {

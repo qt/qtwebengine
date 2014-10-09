@@ -64,7 +64,6 @@ public:
 
     bool canGoBack() const;
     bool canGoForward() const;
-    bool isLoading() const;
     void stop();
     void reload();
     void load(const QUrl&);

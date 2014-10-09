@@ -78,7 +78,7 @@ static QString getUIDelegatesImportDir(QQmlEngine *engine) {
     if (initialized)
         return importDir;
     Q_FOREACH (const QString &path, engine->importPathList()) {
-        QFileInfo fi(path % QStringLiteral("/QtWebEngine/UIDelegates/"));
+        QFileInfo fi(path % QLatin1String("/QtWebEngine/UIDelegates/"));
         if (fi.exists()) {
             importDir = fi.absolutePath();
             break;
@@ -347,7 +347,7 @@ public:
     FilePickerController(WebContentsAdapterClient::FileChooserMode, const QExplicitlySharedDataPointer<WebContentsAdapter> &, QObject * = 0);
 
 public Q_SLOTS:
-    void accepted(const QVariant &files);
+    void accepted(const QJSValue &files);
     void rejected();
 
 private:
@@ -364,12 +364,13 @@ FilePickerController::FilePickerController(WebContentsAdapterClient::FileChooser
 {
 }
 
-void FilePickerController::accepted(const QVariant &files)
+void FilePickerController::accepted(const QJSValue &filesValue)
 {
     QStringList stringList;
-    // Qt Quick's file dialog returns a list of QUrls, this will hence shape our API there.
-    Q_FOREACH (const QUrl &url, files.value<QList<QUrl> >())
-        stringList.append(url.toLocalFile());
+    int length = filesValue.property(QStringLiteral("length")).toInt();
+    for (int i = 0; i < length; i++) {
+        stringList.append(QUrl(filesValue.property(i).toString()).toLocalFile());
+    }
 
     m_adapter->filesSelectedInChooser(stringList, m_mode);
 }
@@ -389,6 +390,7 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
 
     if (!ensureComponentLoaded(FilePicker))
         return;
+
     QQmlContext *context(creationContextForComponent(filePickerComponent));
     QObject *filePicker = filePickerComponent->beginCreate(context);
     if (QQuickItem* item = qobject_cast<QQuickItem*>(filePicker))
@@ -418,7 +420,7 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
     CHECK_QML_SIGNAL_PROPERTY(filesPickedSignal, filePickerComponent->url());
     QQmlProperty rejectSignal(filePicker, QStringLiteral("onRejected"));
     CHECK_QML_SIGNAL_PROPERTY(rejectSignal, filePickerComponent->url());
-    static int acceptedIndex = controller->metaObject()->indexOfSlot("accepted(QVariant)");
+    static int acceptedIndex = controller->metaObject()->indexOfSlot("accepted(QJSValue)");
     QObject::connect(filePicker, filesPickedSignal.method(), controller, controller->metaObject()->method(acceptedIndex));
     static int rejectedIndex = controller->metaObject()->indexOfSlot("rejected()");
     QObject::connect(filePicker, rejectSignal.method(), controller, controller->metaObject()->method(rejectedIndex));

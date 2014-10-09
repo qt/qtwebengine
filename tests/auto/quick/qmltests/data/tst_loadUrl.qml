@@ -124,9 +124,9 @@ TestWebEngineView {
 
             var handleLoadFailed = function(loadRequest) {
                 if (loadRequest.status == WebEngineView.LoadFailedStatus) {
+                    webEngineView.loadHtml("load failed", bogusSite)
                     compare(webEngineView.url, bogusSite)
                     compare(loadRequest.url, bogusSite)
-                    webEngineView.loadHtml("load failed", bogusSite)
                 }
             }
             webEngineView.loadingChanged.connect(handleLoadFailed)
@@ -166,8 +166,7 @@ TestWebEngineView {
             }
             lastUrl = webEngineView.url
             webEngineView.loadingChanged.connect(handleLoadRequest)
-            webEngineView.forceActiveFocus()
-            keyPress(Qt.Key_Return) // Link is focused
+            mouseClick(webEngineView, 10, 10, Qt.LeftButton, Qt.NoModifiers, 50)
             verify(webEngineView.waitForLoadSucceeded())
             compare(webEngineView.url, url)
             webEngineView.loadingChanged.disconnect(handleLoadRequest)

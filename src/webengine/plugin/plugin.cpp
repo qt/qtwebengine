@@ -36,11 +36,11 @@
 
 #include <QtQml/qqmlextensionplugin.h>
 
-#include "qtwebengineversion.h"
-#include "qquickwebengineview_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
+#include "qquickwebengineview_p.h"
+#include "qtwebengineversion.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -61,14 +61,6 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 0, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
-
-        // The QML type loader relies on the minimum and maximum minor version of registered types
-        // to validate imports. We want to tie our import version to the module version, so register
-        // a dummy type in order to allow importing the latest version even if it didn't include
-        // an API update that would appear here in a registered type.
-        int major = QTWEBENGINE_VERSION >> 16;
-        int minor = (QTWEBENGINE_VERSION >> 8) & 0xFF;
-        qmlRegisterUncreatableType<QQuickWebEngineVersionBumper>(uri, major, minor, "WebEngineVersionBumper", QObject::tr("This is a dummy type and cannot be created."));
     }
 };
 

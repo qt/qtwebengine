@@ -42,8 +42,9 @@
 
 #include <QFont>
 #include <QTimer>
+#include <QTouchDevice>
 
-static const int batchTimerTimeout = 100;
+static const int batchTimerTimeout = 0;
 
 class BatchTimer : public QTimer {
     Q_OBJECT
@@ -67,6 +68,21 @@ private:
 };
 
 #include "web_engine_settings.moc"
+
+static inline bool isTouchScreenAvailable() {
+    static bool initialized = false;
+    static bool touchScreenAvailable = false;
+    if (!initialized) {
+        Q_FOREACH (const QTouchDevice *d, QTouchDevice::devices()) {
+            if (d->type() == QTouchDevice::TouchScreen) {
+                touchScreenAvailable = true;
+                break;
+            }
+        }
+        initialized = true;
+    }
+    return touchScreenAvailable;
+}
 
 
 WebEngineSettings::WebEngineSettings(WebEngineSettingsDelegate *delegate)
@@ -185,13 +201,12 @@ QString WebEngineSettings::defaultTextEncoding() const
 void WebEngineSettings::initDefaults()
 {
     // Initialize the default settings.
-
     m_attributes.insert(AutoLoadImages, true);
     m_attributes.insert(JavascriptEnabled, true);
-    m_attributes.insert(JavascriptCanOpenWindows, false);
+    m_attributes.insert(JavascriptCanOpenWindows, true);
     m_attributes.insert(JavascriptCanAccessClipboard, false);
     m_attributes.insert(LinksIncludedInFocusChain, true);
-    m_attributes.insert(LocalStorageEnabled, false);
+    m_attributes.insert(LocalStorageEnabled, true);
     m_attributes.insert(LocalContentCanAccessRemoteUrls, false);
     m_attributes.insert(XSSAuditingEnabled, false);
     m_attributes.insert(SpatialNavigationEnabled, false);
@@ -236,7 +251,6 @@ void WebEngineSettings::doApply()
     if (webPreferences.isNull())
         return;
     // Override with our settings when applicable
-    // FIXME: batch sequential calls to apply?
     applySettingsToWebPreferences(webPreferences.data());
 
     Q_ASSERT(m_adapter);
@@ -247,6 +261,7 @@ void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
 {
     // Override for now
     prefs->java_enabled = false;
+    prefs->touch_enabled = isTouchScreenAvailable();
 
     // Attributes mapping.
     prefs->loads_images_automatically = testAttribute(AutoLoadImages);
@@ -275,4 +290,5 @@ void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
     prefs->default_fixed_font_size = fontSize(DefaultFixedFontSize);
     prefs->minimum_font_size = fontSize(MinimumFontSize);
     prefs->minimum_logical_font_size = fontSize(MinimumLogicalFontSize);
+    prefs->default_encoding = defaultTextEncoding().toStdString();
 }
