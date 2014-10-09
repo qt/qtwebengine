@@ -36,22 +36,22 @@ void wrapInFunction()
 
 
 //! [2]
-    view->triggerAction(QWebPage::Copy);
+    view->triggerPageAction(QWebEnginePage::Copy);
 //! [2]
 
 
 //! [3]
-    view->page()->triggerPageAction(QWebPage::Stop);
+    view->page()->triggerAction(QWebEnginePage::Stop);
 //! [3]
 
 
 //! [4]
-    view->page()->triggerPageAction(QWebPage::GoBack);
+    view->page()->triggerAction(QWebEnginePage::Back);
 //! [4]
 
 
 //! [5]
-    view->page()->triggerPageAction(QWebPage::GoForward);
+    view->page()->triggerAction(QWebEnginePage::Forward);
 //! [5]
 
 //! [6]
