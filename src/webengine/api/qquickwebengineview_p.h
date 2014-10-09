@@ -54,8 +54,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged)
     Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY loadingChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY loadingChanged)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY urlChanged)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
