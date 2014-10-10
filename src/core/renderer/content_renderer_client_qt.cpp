@@ -39,6 +39,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/localized_error.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
@@ -46,6 +47,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "webkit/common/webpreferences.h"
 
 #include "renderer/qt_render_view_observer.h"
 
@@ -82,6 +84,11 @@ bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *erro
 
     *errorDomain = LocalizedError::kHttpErrorDomain;
     return true;
+}
+
+bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *frame, const GURL &)
+{
+    return !(frame->GetWebkitPreferences().enable_error_page);
 }
 
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).

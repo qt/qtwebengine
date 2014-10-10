@@ -74,6 +74,7 @@ public:
         LocalContentCanAccessFileUrls,
         HyperlinkAuditingEnabled,
         ScrollAnimatorEnabled,
+        ErrorPageEnabled,
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

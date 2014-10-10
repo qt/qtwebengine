@@ -57,6 +57,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool spatialNavigationEnabled READ spatialNavigationEnabled WRITE setSpatialNavigationEnabled NOTIFY spatialNavigationEnabledChanged)
     Q_PROPERTY(bool localContentCanAccessFileUrls READ localContentCanAccessFileUrls WRITE setLocalContentCanAccessFileUrls NOTIFY localContentCanAccessFileUrlsChanged)
     Q_PROPERTY(bool hyperlinkAuditingEnabled READ hyperlinkAuditingEnabled WRITE setHyperlinkAuditingEnabled NOTIFY hyperlinkAuditingEnabledChanged)
+    Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
 
 public:
@@ -74,6 +75,7 @@ public:
     bool spatialNavigationEnabled() const;
     bool localContentCanAccessFileUrls() const;
     bool hyperlinkAuditingEnabled() const;
+    bool errorPageEnabled() const;
     QString defaultTextEncoding() const;
 
     void setAutoLoadImages(bool on);
@@ -86,6 +88,7 @@ public:
     void setSpatialNavigationEnabled(bool on);
     void setLocalContentCanAccessFileUrls(bool on);
     void setHyperlinkAuditingEnabled(bool on);
+    void setErrorPageEnabled(bool on);
     void setDefaultTextEncoding(QString encoding);
 
 signals:
@@ -99,6 +102,7 @@ signals:
     void spatialNavigationEnabledChanged(bool on);
     void localContentCanAccessFileUrlsChanged(bool on);
     void hyperlinkAuditingEnabledChanged(bool on);
+    void errorPageEnabledChanged(bool on);
     void defaultTextEncodingChanged(QString encoding);
 
 private:

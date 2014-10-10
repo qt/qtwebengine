@@ -140,6 +140,12 @@ bool QQuickWebEngineSettings::hyperlinkAuditingEnabled() const
     return d->coreSettings->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
 }
 
+bool QQuickWebEngineSettings::errorPageEnabled() const
+{
+    Q_D(const QQuickWebEngineSettings);
+    return d->coreSettings->testAttribute(WebEngineSettings::ErrorPageEnabled);
+}
+
 QString QQuickWebEngineSettings::defaultTextEncoding() const
 {
     Q_D(const QQuickWebEngineSettings);
@@ -237,6 +243,15 @@ void QQuickWebEngineSettings::setHyperlinkAuditingEnabled(bool on)
     d->coreSettings->setAttribute(WebEngineSettings::HyperlinkAuditingEnabled, on);
     if (wasOn ^ on)
         Q_EMIT hyperlinkAuditingEnabledChanged(on);
+}
+
+void QQuickWebEngineSettings::setErrorPageEnabled(bool on)
+{
+    Q_D(QQuickWebEngineSettings);
+    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::ErrorPageEnabled);
+    d->coreSettings->setAttribute(WebEngineSettings::ErrorPageEnabled, on);
+    if (wasOn ^ on)
+        Q_EMIT errorPageEnabledChanged(on);
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)
