@@ -130,6 +130,9 @@ void NetworkDelegateQt::CompleteURLRequestOnIOThread(net::URLRequest *request,
     if (!m_activeRequests.contains(request))
         return;
 
+    if (request->status().status() == net::URLRequestStatus::CANCELED)
+        return;
+
     int error = net::OK;
     switch (navigationRequestAction) {
     case WebContentsAdapterClient::AcceptRequest:
