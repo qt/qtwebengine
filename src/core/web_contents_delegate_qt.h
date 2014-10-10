@@ -45,6 +45,8 @@
 #include "javascript_dialog_manager_qt.h"
 #include <QtCore/qcompilerdetection.h>
 
+QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
+
 namespace content {
     class BrowserContext;
     class SiteInstance;
@@ -55,7 +57,6 @@ namespace content {
 }
 
 class WebContentsAdapterClient;
-class CertificateErrorController;
 
 class WebContentsDelegateQt : public content::WebContentsDelegate
                             , public content::WebContentsObserver
@@ -90,7 +91,7 @@ public:
     virtual void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) Q_DECL_OVERRIDE;
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
-    void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &) ;
+    void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
     void requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback);
     void geolocationPermissionReply(const QUrl&,  bool permission);
 

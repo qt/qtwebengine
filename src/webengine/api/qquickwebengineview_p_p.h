@@ -176,7 +176,7 @@ public:
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
 #endif // QT_NO_ACCESSIBILITY
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
-    virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController);
+    virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController);
     virtual void runGeolocationPermissionRequest(QUrl const&) Q_DECL_OVERRIDE;
 
     virtual BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
@@ -200,6 +200,7 @@ public:
     bool isLoading;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
+    QSharedPointer<CertificateErrorController> m_certificateErrorController;
 
 private:
     QScopedPointer<UIDelegatesManager> m_uIDelegatesManager;

@@ -11,6 +11,7 @@ QMAKE_DOCS = $$PWD/doc/qtwebengine.qdocconf
 INCLUDEPATH += $$PWD api ../core
 
 SOURCES = \
+        api/qquickwebenginecertificateerror.cpp \
         api/qquickwebenginedownloaditem.cpp \
         api/qquickwebenginehistory.cpp \
         api/qquickwebengineloadrequest.cpp \
@@ -28,6 +29,7 @@ SOURCES = \
 HEADERS = \
         api/qtwebengineglobal.h \
         api/qtwebengineglobal_p.h \
+        api/qquickwebenginecertificateerror_p.h \
         api/qquickwebenginedownloaditem_p.h \
         api/qquickwebenginedownloaditem_p_p.h \
         api/qquickwebenginehistory_p.h \

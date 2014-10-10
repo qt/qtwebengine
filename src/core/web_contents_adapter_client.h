@@ -47,9 +47,9 @@
 #include <QUrl>
 
 QT_FORWARD_DECLARE_CLASS(QVariant)
+QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
 class BrowserContextAdapter;
-class CertificateErrorController;
 class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
@@ -179,7 +179,7 @@ public:
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
 
-    virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController) = 0;
+    virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
 
     virtual BrowserContextAdapter* browserContextAdapter() = 0;
 

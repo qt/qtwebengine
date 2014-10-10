@@ -41,6 +41,7 @@
 #include "certificate_error_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qquickwebenginehistory_p.h"
+#include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
@@ -220,10 +221,16 @@ void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialo
     ui()->showDialog(dialog);
 }
 
-void QQuickWebEngineViewPrivate::allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController)
+void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController)
 {
-    // ### Implement a way to export this to QML
-    Q_UNUSED(errorController);
+    Q_Q(QQuickWebEngineView);
+
+    m_certificateErrorController = errorController;
+    QQuickWebEngineCertificateError *quickController = new QQuickWebEngineCertificateError(errorController);
+    QQmlEngine::setObjectOwnership(quickController, QQmlEngine::JavaScriptOwnership);
+    Q_EMIT q->certificateError(quickController);
+    if (!quickController->deferred())
+        quickController->rejectCertificate();
 }
 
 void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url)

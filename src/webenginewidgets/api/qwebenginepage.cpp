@@ -711,7 +711,7 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         controller->reject();
 }
 
-void QWebEnginePagePrivate::allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &controller)
+void QWebEnginePagePrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &controller)
 {
     Q_Q(QWebEnginePage);
     bool accepted = false;

@@ -36,6 +36,7 @@
 
 #include <QtQml/qqmlextensionplugin.h>
 
+#include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
@@ -59,6 +60,7 @@ public:
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
 
         qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
+        qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", QObject::tr("Cannot create separate instance of WebEngineCertificateError"));
         qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
 

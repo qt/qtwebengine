@@ -387,7 +387,7 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
     if (content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents())
         contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
-    QExplicitlySharedDataPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
+    QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
 

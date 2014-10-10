@@ -46,6 +46,7 @@
 #include <QMetaType>
 #include <QtTest/QtTest>
 #include <private/qquickwebengineview_p.h>
+#include <private/qquickwebenginecertificateerror_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
 #include <private/qquickwebengineloadrequest_p.h>
 #include <private/qquickwebenginenavigationrequest_p.h>
@@ -60,6 +61,7 @@ private Q_SLOTS:
 
 static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
+    << &QQuickWebEngineCertificateError::staticMetaObject
     << &QQuickWebEngineDownloadItem::staticMetaObject
     << &QQuickWebEngineLoadRequest::staticMetaObject
     << &QQuickWebEngineNavigationRequest::staticMetaObject
@@ -80,6 +82,19 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.LoadStoppedStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadSucceededStatus --> LoadStatus"
     << "QQuickWebEngineView.LoadFailedStatus --> LoadStatus"
+    << "QQuickWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Error"
+    << "QQuickWebEngineCertificateError.CertificateCommonNameInvalid --> Error"
+    << "QQuickWebEngineCertificateError.CertificateDateInvalid --> Error"
+    << "QQuickWebEngineCertificateError.CertificateAuthorityInvalid --> Error"
+    << "QQuickWebEngineCertificateError.CertificateContainsErrors --> Error"
+    << "QQuickWebEngineCertificateError.CertificateNoRevocationMechanism --> Error"
+    << "QQuickWebEngineCertificateError.CertificateUnableToCheckRevocation --> Error"
+    << "QQuickWebEngineCertificateError.CertificateRevoked --> Error"
+    << "QQuickWebEngineCertificateError.CertificateInvalid --> Error"
+    << "QQuickWebEngineCertificateError.CertificateWeakSignatureAlgorithm --> Error"
+    << "QQuickWebEngineCertificateError.CertificateNonUniqueName --> Error"
+    << "QQuickWebEngineCertificateError.CertificateWeakKey --> Error"
+    << "QQuickWebEngineCertificateError.CertificateNameConstraintViolation --> Error"
     << "QQuickWebEngineView.NoErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.InternalErrorDomain --> ErrorDomain"
     << "QQuickWebEngineView.ConnectionErrorDomain --> ErrorDomain"
@@ -110,6 +125,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.titleChanged() --> void"
     << "QQuickWebEngineView.navigationHistoryChanged() --> void"
     << "QQuickWebEngineView.loadingChanged(QQuickWebEngineLoadRequest*) --> void"
+    << "QQuickWebEngineView.certificateError(QQuickWebEngineCertificateError*) --> void"
     << "QQuickWebEngineView.loadProgressChanged() --> void"
     << "QQuickWebEngineView.javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
     << "QQuickWebEngineView.urlChanged() --> void"
@@ -175,6 +191,13 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.httpCacheTypeChanged() --> void"
     << "QQuickWebEngineProfile.persistentCookiesPolicyChanged() --> void"
     << "QQuickWebEngineProfile.httpCacheMaxSizeChanged() --> void"
+    << "QQuickWebEngineCertificateError.ignoreCertificateError() --> void"
+    << "QQuickWebEngineCertificateError.rejectCertificate() --> void"
+    << "QQuickWebEngineCertificateError.defer() --> void"
+    << "QQuickWebEngineCertificateError.url --> QUrl"
+    << "QQuickWebEngineCertificateError.error --> Error"
+    << "QQuickWebEngineCertificateError.description --> QString"
+    << "QQuickWebEngineCertificateError.overridable --> bool"
     << "QQuickWebEngineProfile.downloadStarted(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
     ;

@@ -48,7 +48,7 @@ import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
 import QtQuick.Controls.Private 1.0
 import Qt.labs.settings 1.0
-
+import QtQuick.Dialogs 1.2
 
 ApplicationWindow {
     id: browserWindow
@@ -355,6 +355,13 @@ ApplicationWindow {
                         }
                     ]
 
+                    onCertificateError: {
+                        sslDialog.certError = error
+                        sslDialog.text = "Certificate Error: " + error.description
+                        sslDialog.visible = true
+                        error.defer()
+                    }
+
                     onNewViewRequested: {
                         if (!request.userInitiated)
                             print("Warning: Blocked a popup window.")
@@ -430,6 +437,19 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    MessageDialog {
+        id: sslDialog
+
+        property var certError
+
+        standardButtons: StandardButton.Cancel | StandardButton.Ok
+        visible: false
+        title: "Do you want to accept this certificate?"
+
+        onAccepted: certError.ignoreCertificateError()
+        onRejected: certError.rejectCertificate()
     }
 
     DownloadView {

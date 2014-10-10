@@ -142,7 +142,7 @@ public:
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
 #endif // QT_NO_ACCESSIBILITY
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
-    virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &controller) Q_DECL_OVERRIDE;
+    virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &controller) Q_DECL_OVERRIDE;
 
     virtual BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 

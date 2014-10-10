@@ -41,6 +41,8 @@
 
 #include "certificate_error_controller.h"
 
+QT_BEGIN_NAMESPACE
+
 class CertificateErrorControllerPrivate {
 public:
     CertificateErrorControllerPrivate(int cert_error, const net::SSLInfo& ssl_info, const GURL& request_url, content::ResourceType resource_type, bool overridable, bool strict_enforcement, const base::Callback<void(bool)>& callback);
@@ -54,7 +56,9 @@ public:
     CertificateErrorController::ResourceType resourceType;
     bool overridable;
     bool strictEnforcement;
-    const base::Callback<void(bool)>& callback;
+    const base::Callback<void(bool)> callback;
 };
+
+QT_END_NAMESPACE
 
 #endif // CERTIFICATE_ERROR_CONTROLLER_P_H

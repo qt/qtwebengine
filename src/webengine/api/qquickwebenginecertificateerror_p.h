@@ -34,26 +34,29 @@
 **
 ****************************************************************************/
 
-#ifndef CERTIFICATE_ERROR_CONTROLLER_H
-#define CERTIFICATE_ERROR_CONTROLLER_H
+#ifndef QQUICKWEBENGINECERTIFICATEERROR_P_H
+#define QQUICKWEBENGINECERTIFICATEERROR_P_H
 
-#include "qtwebenginecoreglobal.h"
-
-#include <QtCore/QDateTime>
-#include <QtCore/QUrl>
+#include <QObject>
+#include "qquickwebengineview_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class CertificateErrorControllerPrivate;
+class QQuickWebEngineCertificateErrorPrivate;
+class CertificateErrorController;
 
-class QWEBENGINE_EXPORT CertificateErrorController {
+class Q_WEBENGINE_EXPORT QQuickWebEngineCertificateError : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QUrl url READ url)
+    Q_PROPERTY(Error error READ error)
+    Q_PROPERTY(QString description READ description)
+    Q_PROPERTY(bool overridable READ overridable)
+    Q_ENUMS(Error)
+
 public:
-    CertificateErrorController(CertificateErrorControllerPrivate *p);
-    ~CertificateErrorController();
 
-    // We can't use QSslError::SslErrors, because the error categories doesn't map.
-    // Keep up to date with net/base/net_errors.h and net::IsCertificateError():
-    enum CertificateError {
+    // Keep this identical to CertificateErrorController::CertificateError, or add mapping layer.
+    enum Error {
         SslPinnedKeyNotInCertificateChain = -150,
         CertificateCommonNameInvalid = -200,
         CertificateDateInvalid = -201,
@@ -69,45 +72,26 @@ public:
         CertificateNameConstraintViolation = -212,
     };
 
-    CertificateError error() const;
+    QQuickWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller, QObject *parent = 0);
+    ~QQuickWebEngineCertificateError();
+
+    Q_INVOKABLE void defer();
+    Q_INVOKABLE void ignoreCertificateError();
+    Q_INVOKABLE void rejectCertificate();
     QUrl url() const;
+    Error error() const;
+    QString description() const;
     bool overridable() const;
-    bool strictEnforcement() const;
-    QString errorString() const;
-    QDateTime validStart() const;
-    QDateTime validExpiry() const;
-
-    void accept(bool);
-
-    // Note: The resource type should probably not be exported, since once accepted the certificate exception
-    // counts for all resource types.
-    // Keep up to date with webkit/common/resource_type.h
-    enum ResourceType {
-        ResourceTypeMainFrame = 0,  // top level page
-        ResourceTypeSubFrame,       // frame or iframe
-        ResourceTypeStylesheet,     // a CSS stylesheet
-        ResourceTypeScript,         // an external script
-        ResourceTypeImage,          // an image (jpg/gif/png/etc)
-        ResourceTypeFont,           // a font
-        ResourceTypeOther,          // an "other" subresource.
-        ResourceTypeObject,         // an object (or embed) tag for a plugin,
-                                    // or a resource that a plugin requested.
-        ResourceTypeMedia,          // a media resource.
-        ResourceTypeWorker,         // the main resource of a dedicated worker.
-        ResourceTypeSharedWorker,   // the main resource of a shared worker.
-        ResourceTypePrefetch,       // an explicitly requested prefetch
-        ResourceTypeFavicon,        // a favicon
-        ResourceTypeXHR,            // a XMLHttpRequest
-        ResourceTypePing,           // a ping request for <a ping>
-        ResourceTypeServiceWorker,  // the main resource of a service worker.
-    };
-
-    ResourceType resourceType() const;
+    bool deferred() const;
 
 private:
-    CertificateErrorControllerPrivate* d;
+    Q_DISABLE_COPY(QQuickWebEngineCertificateError)
+    Q_DECLARE_PRIVATE(QQuickWebEngineCertificateError)
+    QScopedPointer<QQuickWebEngineCertificateErrorPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif // CERTIFICATE_ERROR_CONTROLLER_H
+QML_DECLARE_TYPE(QQuickWebEngineCertificateError)
+
+#endif // QQUICKWEBENGINECERTIFICATEERROR_P_H

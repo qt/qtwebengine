@@ -42,6 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQuickWebEngineCertificateError;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
@@ -157,6 +158,7 @@ Q_SIGNALS:
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
     void zoomFactorChanged(qreal arg);
+    void certificateError(QQuickWebEngineCertificateError *error);
     Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
 
 protected:
