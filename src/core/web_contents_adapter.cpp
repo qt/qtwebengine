@@ -612,6 +612,8 @@ void WebContentsAdapter::serializeNavigationHistory(QDataStream &output)
 void WebContentsAdapter::setZoomFactor(qreal factor)
 {
     Q_D(WebContentsAdapter);
+    if (factor < content::kMinimumZoomFactor || factor > content::kMaximumZoomFactor)
+        return;
     content::HostZoomMap::SetZoomLevel(d->webContents.get(), content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
 }
 
