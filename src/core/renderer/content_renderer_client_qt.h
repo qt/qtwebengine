@@ -52,8 +52,8 @@ public:
 
     virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
     virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* render_view, blink::WebFrame* frame, const blink::WebURLRequest& failed_request
-            , const blink::WebURLError& error, std::string* error_html, base::string16* error_description) Q_DECL_OVERRIDE;
+    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
+            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
 
     virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
     virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
