@@ -35,7 +35,7 @@ defineReplace(getChromiumSrcDir) {
 }
 
 defineReplace(extractCFlag) {
-    CFLAGS = $$QMAKE_CFLAGS
+    CFLAGS = $$QMAKE_CC $$QMAKE_CFLAGS
     !isEmpty(ANDROID_TARGET_CFLAGS): CFLAGS = $$ANDROID_TARGET_CFLAGS
     OPTION = $$find(CFLAGS, $$1)
     OPTION = $$split(OPTION, =)
