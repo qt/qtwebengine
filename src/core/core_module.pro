@@ -5,7 +5,7 @@ CMAKE_MODULE_TESTS = "-"
 
 qtHaveModule(positioning):QT += positioning
 QT += qml quick
-QT_PRIVATE += gui-private
+QT_PRIVATE += quick-private gui-private core-private
 
 # Look for linking information produced by gyp for our target according to core_generated.gyp
 !include($$OUT_PWD/$$getConfigDir()/$${TARGET}_linking.pri) {

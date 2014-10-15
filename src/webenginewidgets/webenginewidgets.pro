@@ -6,7 +6,7 @@ CMAKE_MODULE_TESTS = "-"
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 
 QT += webengine widgets network quick
-QT_PRIVATE += webenginecore
+QT_PRIVATE += webenginecore quick-private gui-private core-private
 
 QMAKE_DOCS = $$PWD/doc/qtwebenginewidgets.qdocconf
 

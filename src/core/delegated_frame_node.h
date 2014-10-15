@@ -38,6 +38,7 @@
 #define DELEGATED_FRAME_NODE_H
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
 #include <QMutex>
 #include <QSGNode>
@@ -46,13 +47,17 @@
 #include <QWaitCondition>
 
 #include "chromium_gpu_helper.h"
+#include "render_widget_host_view_qt_delegate.h"
+
+QT_BEGIN_NAMESPACE
+class QSGLayer;
+QT_END_NAMESPACE
 
 namespace cc {
 class DelegatedFrameData;
 }
 
 class MailboxTexture;
-class RenderPassTexture;
 
 // Separating this data allows another DelegatedFrameNode to reconstruct the QSGNode tree from the mailbox textures
 // and render pass information.
@@ -69,11 +74,14 @@ public:
     DelegatedFrameNode();
     ~DelegatedFrameNode();
     void preprocess();
-    void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease);
+    void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
-    QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
+    struct SGObjects {
+        QList<QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > > renderPassLayers;
+        QList<QSharedPointer<QSGRootNode> > renderPassRootNodes;
+    } m_sgObjects;
     int m_numPendingSyncPoints;
     QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;
     QWaitCondition m_mailboxesFetchedWaitCond;

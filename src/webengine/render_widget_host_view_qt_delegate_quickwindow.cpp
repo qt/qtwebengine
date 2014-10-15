@@ -95,6 +95,16 @@ QWindow *RenderWidgetHostViewQtDelegateQuickWindow::window() const
     return const_cast<RenderWidgetHostViewQtDelegateQuickWindow*>(this);
 }
 
+QSGLayer *RenderWidgetHostViewQtDelegateQuickWindow::createLayer()
+{
+    return m_realDelegate->createLayer();
+}
+
+QSGImageNode *RenderWidgetHostViewQtDelegateQuickWindow::createImageNode()
+{
+    return m_realDelegate->createImageNode();
+}
+
 void RenderWidgetHostViewQtDelegateQuickWindow::update()
 {
     QQuickWindow::update();

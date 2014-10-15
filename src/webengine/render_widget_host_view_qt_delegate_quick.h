@@ -57,6 +57,8 @@ public:
     virtual void hide() Q_DECL_OVERRIDE;
     virtual bool isVisible() const Q_DECL_OVERRIDE;
     virtual QWindow* window() const Q_DECL_OVERRIDE;
+    virtual QSGLayer *createLayer() Q_DECL_OVERRIDE;
+    virtual QSGImageNode *createImageNode() Q_DECL_OVERRIDE;
     virtual void update() Q_DECL_OVERRIDE;
     virtual void updateCursor(const QCursor &) Q_DECL_OVERRIDE;
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;

@@ -43,6 +43,7 @@
 #include <QQuickWindow>
 #include <QVariant>
 #include <QWindow>
+#include <private/qquickwindow_p.h>
 
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
     : m_client(client)
@@ -121,6 +122,18 @@ bool RenderWidgetHostViewQtDelegateQuick::isVisible() const
 QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
 {
     return QQuickItem::window();
+}
+
+QSGLayer *RenderWidgetHostViewQtDelegateQuick::createLayer()
+{
+    QSGRenderContext *renderContext = QQuickWindowPrivate::get(QQuickItem::window())->context;
+    return renderContext->sceneGraphContext()->createLayer(renderContext);
+}
+
+QSGImageNode *RenderWidgetHostViewQtDelegateQuick::createImageNode()
+{
+    QSGRenderContext *renderContext = QQuickWindowPrivate::get(QQuickItem::window())->context;
+    return renderContext->sceneGraphContext()->createImageNode();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::update()

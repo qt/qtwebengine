@@ -64,48 +64,16 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include <QOpenGLContext>
-#include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions>
-#include <QSGAbstractRenderer>
-#include <QSGEngine>
 #include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
+#include <private/qsgadaptationlayer_p.h>
 
 #if !defined(QT_NO_EGL)
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #endif
-
-class RenderPassTexture : public QSGTexture, protected QOpenGLFunctions
-{
-public:
-    RenderPassTexture(const cc::RenderPass::Id &id);
-
-    const cc::RenderPass::Id &id() const { return m_id; }
-    void bind();
-
-    int textureId() const { return m_fbo ? m_fbo->texture() : 0; }
-    QSize textureSize() const { return m_rect.size(); }
-    bool hasAlphaChannel() const { return m_format != GL_RGB; }
-    bool hasMipmaps() const { return false; }
-
-    void setRect(const QRect &rect) { m_rect = rect; }
-    void setFormat(GLenum format) { m_format = format; }
-    QSGNode *rootNode() { return m_rootNode.data(); }
-
-    void grab();
-
-private:
-    cc::RenderPass::Id m_id;
-    QRect m_rect;
-    GLenum m_format;
-
-    QScopedPointer<QSGEngine> m_sgEngine;
-    QScopedPointer<QSGRootNode> m_rootNode;
-    QScopedPointer<QSGAbstractRenderer> m_renderer;
-    QScopedPointer<QOpenGLFramebufferObject> m_fbo;
-};
 
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
@@ -145,12 +113,13 @@ private:
     QSGGeometry m_geometry;
 };
 
-static inline QSharedPointer<RenderPassTexture> findRenderPassTexture(const cc::RenderPass::Id &id, const QList<QSharedPointer<RenderPassTexture> > &list)
+static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPass::Id &id, const QList<QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > > &list)
 {
-    Q_FOREACH (const QSharedPointer<RenderPassTexture> &texture, list)
-        if (texture->id() == id)
-            return texture;
-    return QSharedPointer<RenderPassTexture>();
+    typedef QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > Pair;
+    Q_FOREACH (const Pair &pair, list)
+        if (pair.first == id)
+            return pair.second;
+    return QSharedPointer<QSGLayer>();
 }
 
 static inline QSharedPointer<MailboxTexture> &findMailboxTexture(unsigned resourceId
@@ -295,50 +264,6 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
     Q_ASSERT(!*sync);
 }
 
-RenderPassTexture::RenderPassTexture(const cc::RenderPass::Id &id)
-    : QSGTexture()
-    , m_id(id)
-    , m_format(GL_RGBA)
-    , m_sgEngine(new QSGEngine)
-    , m_rootNode(new QSGRootNode)
-{
-    initializeOpenGLFunctions();
-}
-
-void RenderPassTexture::bind()
-{
-    glBindTexture(GL_TEXTURE_2D, m_fbo ? m_fbo->texture() : 0);
-    updateBindOptions();
-}
-
-void RenderPassTexture::grab()
-{
-    if (!m_renderer) {
-        m_sgEngine->initialize(QOpenGLContext::currentContext());
-        m_renderer.reset(m_sgEngine->createRenderer());
-        m_renderer->setRootNode(m_rootNode.data());
-    }
-
-    if (!m_fbo || m_fbo->size() != m_rect.size() || m_fbo->format().internalTextureFormat() != m_format)
-    {
-        QOpenGLFramebufferObjectFormat format;
-        format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-        format.setInternalTextureFormat(m_format);
-
-        m_fbo.reset(new QOpenGLFramebufferObject(m_rect.size(), format));
-        glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
-        updateBindOptions(true);
-    }
-
-    m_renderer->setDeviceRect(m_rect.size());
-    m_renderer->setViewportRect(m_rect.size());
-    QRectF mirrored(m_rect.left(), m_rect.bottom(), m_rect.width(), -m_rect.height());
-    m_renderer->setProjectionMatrixToRect(mirrored);
-    m_renderer->setClearColor(Qt::transparent);
-
-    m_renderer->renderScene(m_fbo->handle());
-}
-
 MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
     : m_resource(resource)
     , m_textureId(0)
@@ -471,11 +396,16 @@ void DelegatedFrameNode::preprocess()
     }
 
     // Then render any intermediate RenderPass in order.
-    Q_FOREACH (const QSharedPointer<RenderPassTexture> &renderPass, m_renderPassTextures)
-        renderPass->grab();
+    typedef QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > Pair;
+    Q_FOREACH (const Pair &pair, m_sgObjects.renderPassLayers) {
+        // The layer is non-live, request a one-time update here.
+        pair.second->scheduleUpdate();
+        // Proceed with the actual update.
+        pair.second->updateTexture();
+    }
 }
 
-void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease)
+void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     m_chromiumCompositorData = chromiumCompositorData;
     cc::DelegatedFrameData* frameData = m_chromiumCompositorData->frameData.get();
@@ -489,11 +419,12 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     matrix.scale(1 / m_chromiumCompositorData->frameDevicePixelRatio, 1 / m_chromiumCompositorData->frameDevicePixelRatio);
     setMatrix(matrix);
 
-    // Keep the old texture lists around to find the ones we can re-use.
-    QList<QSharedPointer<RenderPassTexture> > oldRenderPassTextures;
-    m_renderPassTextures.swap(oldRenderPassTextures);
+    // Keep the old objects in scope to hold a ref on layers, resources and textures
+    // that we can re-use. Destroy the remaining objects before returning.
+    SGObjects previousSGObjects;
+    qSwap(m_sgObjects, previousSGObjects);
     QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextureCandidates;
-    m_chromiumCompositorData->mailboxTextures.swap(mailboxTextureCandidates);
+    qSwap(m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
 
     // A frame's resource_list only contains the new resources to be added to the scene. Quads can
     // still reference resources that were added in previous frames. Add them to the list of
@@ -509,6 +440,13 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
 
     frameData->resource_list.clear();
 
+    // There is currently no way to know which and how quads changed since the last frame.
+    // We have to reconstruct the node chain with their geometries on every update.
+    // Intermediate render pass node chains are going to be destroyed when previousSGObjects
+    // goes out of scope together with any QSGLayer that could reference them.
+    while (QSGNode *oldChain = firstChild())
+        delete oldChain;
+
     // The RenderPasses list is actually a tree where a parent RenderPass is connected
     // to its dependencies through a RenderPass::Id reference in one or more RenderPassQuads.
     // The list is already ordered with intermediate RenderPasses placed before their
@@ -522,20 +460,23 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
 
         QSGNode *renderPassParent = 0;
         if (pass != rootRenderPass) {
-            QSharedPointer<RenderPassTexture> rpTexture = findRenderPassTexture(pass->id, oldRenderPassTextures);
-            if (!rpTexture)
-                rpTexture = QSharedPointer<RenderPassTexture>(new RenderPassTexture(pass->id));
-            m_renderPassTextures.append(rpTexture);
-            rpTexture->setRect(toQt(pass->output_rect));
-            rpTexture->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
-            renderPassParent = rpTexture->rootNode();
+            QSharedPointer<QSGLayer> rpLayer = findRenderPassLayer(pass->id, previousSGObjects.renderPassLayers);
+            if (!rpLayer) {
+                rpLayer = QSharedPointer<QSGLayer>(apiDelegate->createLayer());
+                // Avoid any premature texture update since we need to wait
+                // for the GPU thread to produce the dependent resources first.
+                rpLayer->setLive(false);
+            }
+            QSharedPointer<QSGRootNode> rootNode(new QSGRootNode);
+            rpLayer->setRect(toQt(pass->output_rect));
+            rpLayer->setSize(toQt(pass->output_rect.size()));
+            rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
+            rpLayer->setItem(rootNode.data());
+            m_sgObjects.renderPassLayers.append(QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> >(pass->id, rpLayer));
+            m_sgObjects.renderPassRootNodes.append(rootNode);
+            renderPassParent = rootNode.data();
         } else
             renderPassParent = this;
-
-        // There is currently no way to know which and how quads changed since the last frame.
-        // We have to reconstruct the node chain with their geometries on every update.
-        while (QSGNode *oldChain = renderPassParent->firstChild())
-            delete oldChain;
 
         QSGNode *renderPassChain = buildRenderPassChain(renderPassParent);
         const cc::SharedQuadState *currentLayerState = 0;
@@ -562,15 +503,18 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 break;
             } case cc::DrawQuad::RENDER_PASS: {
                 const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
-                QSGTexture *texture = findRenderPassTexture(renderPassQuad->render_pass_id, m_renderPassTextures).data();
+                QSGTexture *layer = findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
                 // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes.
-                if (!texture)
+                if (!layer)
                     continue;
 
-                QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
-                textureNode->setRect(toQt(quad->rect));
-                textureNode->setTexture(texture);
-                currentLayerChain->appendChildNode(textureNode);
+                // Only QSGImageNode currently supports QSGLayer textures.
+                QSGImageNode *imageNode = apiDelegate->createImageNode();
+                imageNode->setTargetRect(toQt(quad->rect));
+                imageNode->setInnerTargetRect(toQt(quad->rect));
+                imageNode->setTexture(layer);
+                imageNode->update();
+                currentLayerChain->appendChildNode(imageNode);
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);

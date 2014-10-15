@@ -44,9 +44,11 @@
 #include <QOpenGLContext>
 #include <QResizeEvent>
 #include <QSGAbstractRenderer>
-#include <QSGEngine>
 #include <QSGNode>
 #include <QWindow>
+#include <private/qsgcontext_p.h>
+#include <private/qsgengine_p.h>
+
 
 static const int MaxTooltipLength = 1024;
 
@@ -141,6 +143,17 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
 {
     const QWidget* root = QOpenGLWidget::window();
     return root ? root->windowHandle() : 0;
+}
+
+QSGLayer *RenderWidgetHostViewQtDelegateWidget::createLayer()
+{
+    QSGEnginePrivate *enginePrivate = QSGEnginePrivate::get(m_sgEngine.data());
+    return enginePrivate->sgContext->createLayer(enginePrivate->sgRenderContext.data());
+}
+
+QSGImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
+{
+    return QSGEnginePrivate::get(m_sgEngine.data())->sgContext->createImageNode();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::update()

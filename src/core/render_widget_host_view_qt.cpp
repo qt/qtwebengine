@@ -655,7 +655,7 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
     if (!frameNode)
         frameNode = new DelegatedFrameNode;
 
-    frameNode->commit(m_chromiumCompositorData.data(), &m_resourcesToRelease);
+    frameNode->commit(m_chromiumCompositorData.data(), &m_resourcesToRelease, m_delegate.get());
 
     // This is possibly called from the Qt render thread, post the ack back to the UI
     // to tell the child compositors to release resources and trigger a new frame.

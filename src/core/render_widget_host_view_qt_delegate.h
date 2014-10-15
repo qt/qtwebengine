@@ -46,6 +46,8 @@ QT_BEGIN_NAMESPACE
 class QCursor;
 class QEvent;
 class QPainter;
+class QSGImageNode;
+class QSGLayer;
 class QSGNode;
 class QVariant;
 class QWindow;
@@ -78,6 +80,8 @@ public:
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
+    virtual QSGLayer *createLayer() = 0;
+    virtual QSGImageNode *createImageNode() = 0;
     virtual void update() = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;

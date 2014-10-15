@@ -11,7 +11,7 @@ TEMPLATE = lib
 # gyp/ninja will take care of the compilation, qmake/make will finish with linking and install.
 TARGET = QtWebEngineCore
 QT += qml quick
-QT_PRIVATE += gui-private
+QT_PRIVATE += quick-private gui-private core-private
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
