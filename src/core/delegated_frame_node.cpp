@@ -348,6 +348,12 @@ MailboxTexture::MailboxTexture(const cc::TransferableResource &resource)
     , m_importCount(1)
 {
     initializeOpenGLFunctions();
+
+    // Assume that resources without a size will be used with a full source rect.
+    // Setting a size of 1x1 will let any texture node compute a normalized source
+    // rect of (0, 0) to (1, 1) while an empty texture size would set (0, 0) on all corners.
+    if (m_textureSize.isEmpty())
+        m_textureSize = QSize(1, 1);
 }
 
 void MailboxTexture::bind()
@@ -569,9 +575,6 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
                 QSharedPointer<MailboxTexture> &texture = findMailboxTexture(tquad->resource_id, m_chromiumCompositorData->mailboxTextures, mailboxTextureCandidates);
-
-                // FIXME: TransferableResource::size isn't always set properly for TextureDrawQuads, use the size of its DrawQuad::rect instead.
-                texture->setTextureSize(toQt(quad->rect.size()));
 
                 // TransferableResource::format seems to always be GL_BGRA even though it might not
                 // contain any pixel with alpha < 1.0. The information about if they need blending
