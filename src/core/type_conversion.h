@@ -121,11 +121,13 @@ inline QColor toQt(const SkColor &c)
 
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
 {
-    return QMatrix4x4(
+    QMatrix4x4 qtMatrix(
         m.get(0, 0), m.get(0, 1), m.get(0, 2), m.get(0, 3),
         m.get(1, 0), m.get(1, 1), m.get(1, 2), m.get(1, 3),
         m.get(2, 0), m.get(2, 1), m.get(2, 2), m.get(2, 3),
         m.get(3, 0), m.get(3, 1), m.get(3, 2), m.get(3, 3));
+    qtMatrix.optimize();
+    return qtMatrix;
 }
 
 inline QDateTime toQt(base::Time time)
