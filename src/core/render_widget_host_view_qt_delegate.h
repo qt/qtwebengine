@@ -49,6 +49,7 @@ class QPainter;
 class QSGImageNode;
 class QSGLayer;
 class QSGNode;
+class QSGTexture;
 class QVariant;
 class QWindow;
 class QInputMethodEvent;
@@ -80,6 +81,7 @@ public:
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;
     virtual QWindow* window() const = 0;
+    virtual QSGTexture *createTextureFromImage(const QImage &) = 0;
     virtual QSGLayer *createLayer() = 0;
     virtual QSGImageNode *createImageNode() = 0;
     virtual void update() = 0;

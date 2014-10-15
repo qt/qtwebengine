@@ -84,10 +84,13 @@ private:
     static void syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
 
     ResourceHolder *findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
+    QSGTexture *initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
+
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     struct SGObjects {
         QList<QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > > renderPassLayers;
         QList<QSharedPointer<QSGRootNode> > renderPassRootNodes;
+        QList<QSharedPointer<QSGTexture> > textureStrongRefs;
     } m_sgObjects;
     int m_numPendingSyncPoints;
     QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;

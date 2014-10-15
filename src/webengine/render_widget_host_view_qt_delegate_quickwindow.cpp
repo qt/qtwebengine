@@ -95,6 +95,11 @@ QWindow *RenderWidgetHostViewQtDelegateQuickWindow::window() const
     return const_cast<RenderWidgetHostViewQtDelegateQuickWindow*>(this);
 }
 
+QSGTexture *RenderWidgetHostViewQtDelegateQuickWindow::createTextureFromImage(const QImage &image)
+{
+    return m_realDelegate->createTextureFromImage(image);
+}
+
 QSGLayer *RenderWidgetHostViewQtDelegateQuickWindow::createLayer()
 {
     return m_realDelegate->createLayer();

@@ -145,6 +145,11 @@ QWindow* RenderWidgetHostViewQtDelegateWidget::window() const
     return root ? root->windowHandle() : 0;
 }
 
+QSGTexture *RenderWidgetHostViewQtDelegateWidget::createTextureFromImage(const QImage &image)
+{
+    return m_sgEngine->createTextureFromImage(image, QSGEngine::TextureCanUseAtlas);
+}
+
 QSGLayer *RenderWidgetHostViewQtDelegateWidget::createLayer()
 {
     QSGEnginePrivate *enginePrivate = QSGEnginePrivate::get(m_sgEngine.data());

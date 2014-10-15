@@ -104,15 +104,15 @@ private:
 class ResourceHolder {
 public:
     ResourceHolder(const cc::TransferableResource &resource);
-    ~ResourceHolder() { delete m_texture; }
-    MailboxTexture *texture() const { return m_texture; }
+    QSharedPointer<QSGTexture> initTexture(bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
+    QSGTexture *texture() const { return m_texture.data(); }
     cc::TransferableResource &transferableResource() { return m_resource; }
     cc::ReturnedResource returnResource();
     void incImportCount() { ++m_importCount; }
-    bool needsToFetch() const { return !m_texture->textureId(); }
+    bool needsToFetch() const { return !m_resource.is_software && m_texture && !m_texture.data()->textureId(); }
 
 private:
-    MailboxTexture *m_texture;
+    QWeakPointer<QSGTexture> m_texture;
     cc::TransferableResource m_resource;
     int m_importCount;
 };
@@ -321,10 +321,36 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
 }
 
 ResourceHolder::ResourceHolder(const cc::TransferableResource &resource)
-    : m_texture(new MailboxTexture(resource.mailbox_holder, toQt(resource.size)))
-    , m_resource(resource)
+    : m_resource(resource)
     , m_importCount(1)
 {
+}
+
+QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    QSharedPointer<QSGTexture> texture = m_texture.toStrongRef();
+    if (!texture) {
+        if (m_resource.is_software) {
+            Q_ASSERT(apiDelegate);
+            scoped_ptr<cc::SharedBitmap> sharedBitmap = content::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
+            // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
+            // to draw it but Chromium keeps this information in the quads.
+            // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
+            // alpha bytes are 0xff if quads aren't requesting blending and avoid the conversion
+            // from Format_ARGB32_Premultiplied to Format_RGB32 just to get hasAlphaChannel to
+            // return false.
+            QImage::Format format = quadNeedsBlending ? QImage::Format_ARGB32_Premultiplied : QImage::Format_RGB32;
+            QImage image(sharedBitmap->pixels(), m_resource.size.width(), m_resource.size.height(), format);
+            texture.reset(apiDelegate->createTextureFromImage(image.copy()));
+        } else {
+            texture.reset(new MailboxTexture(m_resource.mailbox_holder, toQt(m_resource.size)));
+            static_cast<MailboxTexture *>(texture.data())->setHasAlphaChannel(quadNeedsBlending);
+        }
+        m_texture = texture;
+    }
+    // All quads using a resource should request the same blending state.
+    Q_ASSERT(texture->hasAlphaChannel() || !quadNeedsBlending);
+    return texture;
 }
 
 cc::ReturnedResource ResourceHolder::returnResource()
@@ -527,22 +553,12 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
-                MailboxTexture *texture = resource->texture();
-
-                // TransferableResource::format seems to always be GL_BGRA even though it might not
-                // contain any pixel with alpha < 1.0. The information about if they need blending
-                // for the contents itself is actually stored in quads.
-                // Tell the scene graph to enable blending for a texture only when at least one quad asks for it.
-                // Do not rely on DrawQuad::ShouldDrawWithBlending() since the shared_quad_state->opacity
-                // case will be handled by QtQuick by fetching this information from QSGOpacityNodes.
-                if (!quad->visible_rect.IsEmpty() && !quad->opaque_rect.Contains(quad->visible_rect))
-                    texture->setHasAlphaChannel(true);
 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
                 textureNode->setTextureCoordinatesTransform(tquad->flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
-                textureNode->setTexture(texture);
+                textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));
                 currentLayerChain->appendChildNode(textureNode);
                 break;
             } case cc::DrawQuad::SOLID_COLOR: {
@@ -585,16 +601,12 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
-                MailboxTexture *texture = resource->texture();
-
-                if (!quad->visible_rect.IsEmpty() && !quad->opaque_rect.Contains(quad->visible_rect))
-                    texture->setHasAlphaChannel(true);
 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setSourceRect(toQt(tquad->tex_coord_rect));
                 textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
-                textureNode->setTexture(texture);
+                textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));
                 currentLayerChain->appendChildNode(textureNode);
                 break;
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
@@ -607,7 +619,11 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 if (vquad->a_plane_resource_id)
                     aResource = findAndHoldResource(vquad->a_plane_resource_id, resourceCandidates);
 
-                YUVVideoNode *videoNode = new YUVVideoNode(yResource->texture(), uResource->texture(), vResource->texture(), aResource ? aResource->texture() : 0, toQt(vquad->tex_coord_rect));
+                YUVVideoNode *videoNode = new YUVVideoNode(
+                    initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
+                    initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
+                    initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
+                    aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0, toQt(vquad->tex_coord_rect));
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;
@@ -615,7 +631,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(squad->resource_id, resourceCandidates);
-                MailboxTexture *texture = resource->texture();
+                MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
                 texture->setTarget(GL_TEXTURE_EXTERNAL_OES); // since this is not default TEXTURE_2D type
 
                 StreamVideoNode *svideoNode = new StreamVideoNode(texture);
@@ -643,6 +659,16 @@ ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHa
         resource = candidates.take(resourceId);
     Q_ASSERT(resource);
     return resource.data();
+}
+
+QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate)
+{
+    // QSGTextures must be destroyed in the scene graph thread as part of the QSGNode tree,
+    // so we can't store them with the ResourceHolder in m_chromiumCompositorData.
+    // Hold them through a QSharedPointer solely on the root DelegatedFrameNode of the web view
+    // and access them through a QWeakPointer from the resource holder to find them later.
+    m_sgObjects.textureStrongRefs.append(resource->initTexture(quadIsAllOpaque, apiDelegate));
+    return m_sgObjects.textureStrongRefs.last().data();
 }
 
 void DelegatedFrameNode::fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch)

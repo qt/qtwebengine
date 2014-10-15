@@ -44,6 +44,7 @@
 #include <QVariant>
 #include <QWindow>
 #include <private/qquickwindow_p.h>
+#include <private/qsgcontext_p.h>
 
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
     : m_client(client)
@@ -122,6 +123,11 @@ bool RenderWidgetHostViewQtDelegateQuick::isVisible() const
 QWindow* RenderWidgetHostViewQtDelegateQuick::window() const
 {
     return QQuickItem::window();
+}
+
+QSGTexture *RenderWidgetHostViewQtDelegateQuick::createTextureFromImage(const QImage &image)
+{
+    return QQuickItem::window()->createTextureFromImage(image, QQuickWindow::TextureCanUseAtlas);
 }
 
 QSGLayer *RenderWidgetHostViewQtDelegateQuick::createLayer()
