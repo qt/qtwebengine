@@ -395,9 +395,12 @@ void DelegatedFrameNode::preprocess()
     // We can now wait for the Chromium GPU thread to produce textures that will be
     // rendered on our quads and fetch the IDs from the mailboxes we were given.
     QList<MailboxTexture *> mailboxesToFetch;
-    Q_FOREACH (const QSharedPointer<ResourceHolder> &resourceHolder, m_chromiumCompositorData->resourceHolders.values())
-        if (resourceHolder->needsToFetch())
-            mailboxesToFetch.append(static_cast<MailboxTexture *>(resourceHolder->texture()));
+    typedef QHash<unsigned, QSharedPointer<ResourceHolder> >::const_iterator ResourceHolderIterator;
+    ResourceHolderIterator end = m_chromiumCompositorData->resourceHolders.constEnd();
+    for (ResourceHolderIterator it = m_chromiumCompositorData->resourceHolders.constBegin(); it != end ; ++it) {
+        if ((*it)->needsToFetch())
+            mailboxesToFetch.append(static_cast<MailboxTexture *>((*it)->texture()));
+    }
 
     if (!mailboxesToFetch.isEmpty()) {
         QMap<uint32, gfx::TransferableFence> transferredFences;
@@ -647,8 +650,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     }
 
     // Send resources of remaining candidates back to the child compositors so that they can be freed or reused.
-    Q_FOREACH (const QSharedPointer<ResourceHolder> &resource, resourceCandidates.values())
-        resourcesToRelease->push_back(resource->returnResource());
+    typedef QHash<unsigned, QSharedPointer<ResourceHolder> >::const_iterator ResourceHolderIterator;
+    ResourceHolderIterator end = resourceCandidates.constEnd();
+    for (ResourceHolderIterator it = resourceCandidates.constBegin(); it != end ; ++it)
+        resourcesToRelease->push_back((*it)->returnResource());
 }
 
 ResourceHolder *DelegatedFrameNode::findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates)
