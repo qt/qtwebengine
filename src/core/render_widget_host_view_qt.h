@@ -235,7 +235,7 @@ private:
     QMap<int, int> m_touchIdMapping;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
-    QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_frameNodeData;
+    QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     cc::ReturnedResourceArray m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;
     bool m_didFirstVisuallyNonEmptyLayout;

@@ -183,7 +183,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
-    , m_frameNodeData(new DelegatedFrameNodeData)
+    , m_chromiumCompositorData(new ChromiumCompositorData)
     , m_needsDelegatedFrameAck(false)
     , m_didFirstVisuallyNonEmptyLayout(false)
     , m_adapterClient(0)
@@ -588,14 +588,14 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, sco
     m_needsDelegatedFrameAck = true;
     m_pendingOutputSurfaceId = output_surface_id;
     Q_ASSERT(frame->delegated_frame_data);
-    Q_ASSERT(!m_frameNodeData->frameData || m_frameNodeData->frameData->resource_list.empty());
-    m_frameNodeData->frameData = frame->delegated_frame_data.Pass();
-    m_frameNodeData->frameDevicePixelRatio = frame->metadata.device_scale_factor;
+    Q_ASSERT(!m_chromiumCompositorData->frameData || m_chromiumCompositorData->frameData->resource_list.empty());
+    m_chromiumCompositorData->frameData = frame->delegated_frame_data.Pass();
+    m_chromiumCompositorData->frameDevicePixelRatio = frame->metadata.device_scale_factor;
 
     // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
     float dpiScale = this->dpiScale();
     if (dpiScale != 0 && dpiScale != 1)
-        m_frameNodeData->frameDevicePixelRatio /= dpiScale;
+        m_chromiumCompositorData->frameDevicePixelRatio /= dpiScale;
 
     m_delegate->update();
 
@@ -655,7 +655,7 @@ QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
     if (!frameNode)
         frameNode = new DelegatedFrameNode;
 
-    frameNode->commit(m_frameNodeData.data(), &m_resourcesToRelease);
+    frameNode->commit(m_chromiumCompositorData.data(), &m_resourcesToRelease);
 
     // This is possibly called from the Qt render thread, post the ack back to the UI
     // to tell the child compositors to release resources and trigger a new frame.

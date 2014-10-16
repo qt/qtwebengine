@@ -56,9 +56,9 @@ class RenderPassTexture;
 
 // Separating this data allows another DelegatedFrameNode to reconstruct the QSGNode tree from the mailbox textures
 // and render pass information.
-class DelegatedFrameNodeData : public QSharedData {
+class ChromiumCompositorData : public QSharedData {
 public:
-    DelegatedFrameNodeData() : frameDevicePixelRatio(1) { }
+    ChromiumCompositorData() : frameDevicePixelRatio(1) { }
     QHash<unsigned, QSharedPointer<MailboxTexture> > mailboxTextures;
     scoped_ptr<cc::DelegatedFrameData> frameData;
     qreal frameDevicePixelRatio;
@@ -69,10 +69,10 @@ public:
     DelegatedFrameNode();
     ~DelegatedFrameNode();
     void preprocess();
-    void commit(DelegatedFrameNodeData* data, cc::ReturnedResourceArray *resourcesToRelease);
+    void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease);
 
 private:
-    QExplicitlySharedDataPointer<DelegatedFrameNodeData> m_data;
+    QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     QList<QSharedPointer<RenderPassTexture> > m_renderPassTextures;
     int m_numPendingSyncPoints;
     QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;
