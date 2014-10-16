@@ -90,6 +90,13 @@ public:
         bool strict_enforcement,
         const base::Callback<void(bool)>& callback,
         content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
+    virtual void RequestGeolocationPermission(
+        content::WebContents *webContents,
+        int bridge_id,
+        const GURL &requesting_frame,
+        bool user_gesture,
+        base::Callback<void(bool)> result_callback,
+        base::Closure *cancel_callback) Q_DECL_OVERRIDE;
 
     BrowserContextQt* browser_context();
 

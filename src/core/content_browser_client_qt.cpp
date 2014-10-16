@@ -386,3 +386,20 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
     QExplicitlySharedDataPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
 }
+
+void ContentBrowserClientQt::RequestGeolocationPermission(content::WebContents *webContents,
+                                                          int bridge_id,
+                                                          const GURL &requesting_frame,
+                                                          bool user_gesture,
+                                                          base::Callback<void(bool)> result_callback,
+                                                          base::Closure *cancel_callback)
+{
+    Q_UNUSED(webContents);
+    Q_UNUSED(bridge_id);
+    Q_UNUSED(requesting_frame);
+    Q_UNUSED(user_gesture);
+    Q_UNUSED(cancel_callback);
+
+    // TODO: Add geolocation support
+    result_callback.Run(false);
+}
