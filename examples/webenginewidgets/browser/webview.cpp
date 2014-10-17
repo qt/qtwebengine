@@ -97,37 +97,15 @@ BrowserMainWindow *WebPage::mainWindow()
     return BrowserApplication::instance()->mainWindow();
 }
 
-#if defined(QWEBENGINEPAGE_ACCEPTNAVIGATIONREQUEST)
-bool WebPage::acceptNavigationRequest(QWebEngineFrame *frame, const QNetworkRequest &request, NavigationType type)
+bool WebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
 {
-    // ctrl open in new tab
-    // ctrl-shift open in new tab and select
-    // ctrl-alt open in new window
-    if (type == QWebEnginePage::NavigationTypeLinkClicked
-        && (m_keyboardModifiers & Qt::ControlModifier
-            || m_pressedButtons == Qt::MidButton)) {
-        bool newWindow = (m_keyboardModifiers & Qt::AltModifier);
-        WebView *webView;
-        if (newWindow) {
-            BrowserApplication::instance()->newMainWindow();
-            BrowserMainWindow *newMainWindow = BrowserApplication::instance()->mainWindow();
-            webView = newMainWindow->currentTab();
-            newMainWindow->raise();
-            newMainWindow->activateWindow();
-            webView->setFocus();
-        } else {
-            bool selectNewTab = (m_keyboardModifiers & Qt::ShiftModifier);
-            webView = mainWindow()->tabWidget()->newTab(selectNewTab);
-        }
-        webView->load(request);
-        m_keyboardModifiers = Qt::NoModifier;
-        m_pressedButtons = Qt::NoButton;
-        return false;
+    Q_UNUSED(type);
+    if (isMainFrame) {
+        m_loadingUrl = url;
+        emit loadingUrl(m_loadingUrl);
     }
-    m_loadingUrl = request.url();
-    emit loadingUrl(m_loadingUrl);
+    return true;
 }
-#endif
 
 bool WebPage::certificateError(const QWebEngineCertificateError &error)
 {

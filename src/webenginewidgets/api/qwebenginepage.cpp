@@ -624,6 +624,13 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     return true;
 }
 
+void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame)
+{
+    Q_Q(QWebEnginePage);
+    bool accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
+    navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
+}
+
 void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> controller)
 {
     Q_Q(QWebEnginePage);
@@ -943,6 +950,14 @@ void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel leve
 bool QWebEnginePage::certificateError(const QWebEngineCertificateError &)
 {
     return false;
+}
+
+bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+{
+    Q_UNUSED(url);
+    Q_UNUSED(type);
+    Q_UNUSED(isMainFrame);
+    return true;
 }
 
 QT_END_NAMESPACE

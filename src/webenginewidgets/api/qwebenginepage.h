@@ -135,6 +135,16 @@ public:
         PermissionDeniedByUser
     };
 
+    // must match WebContentsAdapterClient::NavigationType
+    enum NavigationType {
+        NavigationTypeLinkClicked,
+        NavigationTypeTyped,
+        NavigationTypeFormSubmitted,
+        NavigationTypeBackForward,
+        NavigationTypeReload,
+        NavigationTypeOther
+    };
+
     enum Feature {
         Notifications,
         Geolocation,
@@ -244,6 +254,7 @@ protected:
     virtual bool javaScriptPrompt(const QUrl &securityOrigin, const QString& msg, const QString& defaultValue, QString* result);
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool certificateError(const QWebEngineCertificateError &certificateError);
+    virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 
 private:
     Q_DECLARE_PRIVATE(QWebEnginePage);
