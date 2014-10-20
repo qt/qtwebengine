@@ -118,7 +118,8 @@ public:
     enum NewViewDestination {
         NewViewInWindow,
         NewViewInTab,
-        NewViewInDialog
+        NewViewInDialog,
+        NewViewInBackgroundTab
     };
 
     // must match WebContentsAdapterClient::JavaScriptConsoleMessageLevel

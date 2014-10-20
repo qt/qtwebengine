@@ -341,8 +341,10 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
 
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
-    case WebContentsAdapterClient::NewBackgroundTabDisposition:
         request.m_destination = QQuickWebEngineView::NewViewInTab;
+        break;
+    case WebContentsAdapterClient::NewBackgroundTabDisposition:
+        request.m_destination = QQuickWebEngineView::NewViewInBackgroundTab;
         break;
     case WebContentsAdapterClient::NewPopupDisposition:
         request.m_destination = QQuickWebEngineView::NewViewInDialog;
@@ -354,7 +356,7 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
         Q_UNREACHABLE();
     }
 
-    emit e->newViewRequested(&request);
+    Q_EMIT e->newViewRequested(&request);
 }
 
 void QQuickWebEngineViewPrivate::close()

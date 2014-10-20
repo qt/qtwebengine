@@ -90,6 +90,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.NewViewInWindow --> NewViewDestination"
     << "QQuickWebEngineView.NewViewInTab --> NewViewDestination"
     << "QQuickWebEngineView.NewViewInDialog --> NewViewDestination"
+    << "QQuickWebEngineView.NewViewInBackgroundTab --> NewViewDestination"
     << "QQuickWebEngineView.InfoMessageLevel --> JavaScriptConsoleMessageLevel"
     << "QQuickWebEngineView.WarningMessageLevel --> JavaScriptConsoleMessageLevel"
     << "QQuickWebEngineView.ErrorMessageLevel --> JavaScriptConsoleMessageLevel"
