@@ -42,38 +42,49 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.0
+import QtWebEngine.experimental 1.0
 
 TestWebEngineView {
     id: webEngineView
     width: 400
     height: 300
 
-    property variant testUrl
-
-    SignalSpy {
-        id: spyIconChanged
-        target: webEngineView
-        signalName: "iconChanged"
-    }
+    property variant unavailableUrl
 
     TestCase {
         id: test
         name: "WebEngineViewLoadFail"
-        function test_fail() {
-            testUrl = Qt.resolvedUrl("file_that_does_not_exist.html")
-            webEngineView.url = testUrl
-            verify(webEngineView.waitForLoadFailed())
-            spyIconChanged.clear()
 
-            // If this testcase finishes too early, we can not handle the received replacement content.
-            // So we should wait to ignore this error page.
-            spyIconChanged.wait()
+        function initTestCase() {
+            WebEngine.settings.errorPageEnabled = false
+        }
+
+        function test_fail() {
+            unavailableUrl = Qt.resolvedUrl("file_that_does_not_exist.html")
+            webEngineView.url = unavailableUrl
+            verify(webEngineView.waitForLoadFailed())
+        }
+
+        function test_fail_url() {
+            var url = Qt.resolvedUrl("test1.html")
+            webEngineView.url = url
+            compare(webEngineView.url, url)
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(webEngineView.url, url)
+
+            unavailableUrl = Qt.resolvedUrl("file_that_does_not_exist.html")
+            webEngineView.url = unavailableUrl
+            compare(webEngineView.url, unavailableUrl)
+            verify(webEngineView.waitForLoadFailed())
+            // When error page is disabled in case of LoadFail the entry of the unavailable page is not stored.
+            // We expect the url of the previously loaded page here.
+            compare(webEngineView.url, url)
         }
     }
 
     onLoadingChanged: {
         if (loadRequest.status == WebEngineView.LoadFailedStatus) {
-            test.compare(loadRequest.url, testUrl)
+            test.compare(loadRequest.url, unavailableUrl)
             test.compare(loadRequest.errorDomain, WebEngineView.InternalErrorDomain)
         }
     }
