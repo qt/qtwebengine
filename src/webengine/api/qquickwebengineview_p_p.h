@@ -188,6 +188,7 @@ public:
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QQmlComponent *contextMenuExtraItems;
+    QUrl explicitUrl;
     QUrl icon;
     int loadProgress;
     bool inspectable;

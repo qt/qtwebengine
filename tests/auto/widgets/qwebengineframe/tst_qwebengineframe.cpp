@@ -1549,7 +1549,6 @@ void tst_QWebEngineFrame::setUrlThenLoads()
 
     // Just after first load. URL didn't changed yet.
     m_page->load(urlToLoad1);
-    QEXPECT_FAIL("", "Slight change: url() will return the loaded URL immediately.", Continue);
     QCOMPARE(m_page->url(), url);
     QCOMPARE(m_page->requestedUrl(), urlToLoad1);
     // baseUrlSync spins an event loop and this sometimes return the next result.
@@ -1566,7 +1565,6 @@ void tst_QWebEngineFrame::setUrlThenLoads()
 
     // Just after second load. URL didn't changed yet.
     m_page->load(urlToLoad2);
-    QEXPECT_FAIL("", "Slight change: url() will return the loaded URL immediately.", Continue);
     QCOMPARE(m_page->url(), urlToLoad1);
     QCOMPARE(m_page->requestedUrl(), urlToLoad2);
     QCOMPARE(baseUrlSync(m_page), extractBaseUrl(urlToLoad1));

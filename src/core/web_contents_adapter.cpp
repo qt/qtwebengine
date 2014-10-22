@@ -448,7 +448,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
 QUrl WebContentsAdapter::activeUrl() const
 {
     Q_D(const WebContentsAdapter);
-    return toQt(d->webContents->GetVisibleURL());
+    return toQt(d->webContents->GetLastCommittedURL());
 }
 
 QUrl WebContentsAdapter::requestedUrl() const

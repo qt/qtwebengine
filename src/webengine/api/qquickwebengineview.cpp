@@ -241,6 +241,7 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
     Q_UNUSED(url);
+    explicitUrl = QUrl();
     Q_EMIT q->urlChanged();
 }
 
@@ -309,6 +310,7 @@ void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, int
         return;
     }
     if (success) {
+        explicitUrl = QUrl();
         QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
         Q_EMIT q->loadingChanged(&loadRequest);
         return;
@@ -506,7 +508,7 @@ QQuickWebEngineView::~QQuickWebEngineView()
 QUrl QQuickWebEngineView::url() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->adapter->activeUrl();
+    return d->explicitUrl.isValid() ? d->explicitUrl : d->adapter->activeUrl();
 }
 
 void QQuickWebEngineView::setUrl(const QUrl& url)
@@ -515,6 +517,7 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
         return;
 
     Q_D(QQuickWebEngineView);
+    d->explicitUrl = url;
     d->adapter->load(url);
 }
 
