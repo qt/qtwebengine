@@ -61,6 +61,7 @@ cross_compile {
         !isEmpty(MARMV) {
             MARMV = $$split(MARMV,)
             MARMV = $$member(MARMV, 0)
+            lessThan(MARMV, 6): error("$$MARCH architecture is not supported")
             GYP_ARGS += "-D arm_version=\"$$MARMV\""
         }
 
