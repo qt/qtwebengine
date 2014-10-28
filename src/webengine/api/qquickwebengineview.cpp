@@ -218,6 +218,11 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QExplicitlySharedDa
     Q_UNUSED(errorController);
 }
 
+void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url)
+{
+    Q_EMIT e->featurePermissionRequested(url, QQuickWebEngineViewExperimental::Geolocation);
+}
+
 void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes)
 {
     ui()->showFilePicker(mode, defaultFileName, acceptedMimeTypes, adapter);
@@ -723,9 +728,13 @@ void QQuickWebEngineViewExperimental::grantFeaturePermission(const QUrl &securit
         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaVideoCapture);
         break;
     case MediaAudioVideoDevices:
-        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaAudioCapture
-                                                                                                               | WebContentsAdapterClient::MediaVideoCapture));
+        d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaAudioCapture                                                                                                               | WebContentsAdapterClient::MediaVideoCapture));
         break;
+    case Geolocation:
+        d_ptr->adapter->runGeolocationRequestCallback(securityOrigin, granted);
+        break;
+    default:
+        Q_UNREACHABLE();
     }
 }
 

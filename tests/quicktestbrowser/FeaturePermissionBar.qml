@@ -75,6 +75,8 @@ Rectangle {
                     return "your camera"
                 if (feature === WebEngineViewExperimental.MediaAudioVideoDevices)
                     return "your camera and microphone"
+                if (feature === WebEngineViewExperimental.Geolocation)
+                    return "your position"
             }
         }
 
