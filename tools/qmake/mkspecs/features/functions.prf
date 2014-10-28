@@ -17,7 +17,7 @@ defineTest(isPythonVersionSupported) {
 }
 
 defineTest(isGCCVersionSupported) {
-  // The below will work for gcc 4.6 and up and also match gcc 5
+  # The below will work for gcc 4.6 and up and also match gcc 5
   greaterThan(QT_GCC_MINOR_VERSION, 5):return(true)
   greaterThan(QT_GCC_MAJOR_VERSION, 4):return(true)
   return(false)
