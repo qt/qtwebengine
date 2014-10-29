@@ -193,6 +193,8 @@ private Q_SLOTS:
     void macCopyUnicodeToClipboard();
 #endif
 
+    void runJavaScript();
+
 private:
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
@@ -3734,6 +3736,72 @@ void tst_QWebEnginePage::cssMediaTypePageSetting()
     QVERIFY(evaluateJavaScriptSync(m_view->page(), "window.matchMedia('screen').matches == true").toBool());
     QVERIFY(m_view->page()->settings()->cssMediaType() == "screen");
 #endif
+}
+
+class JavaScriptCallback
+{
+public:
+    JavaScriptCallback() { }
+    JavaScriptCallback(const QVariant& _expected) : expected(_expected) { }
+    virtual void operator() (const QVariant& result) {
+        QVERIFY(result.isValid());
+        QCOMPARE(result, expected);
+    }
+private:
+    QVariant expected;
+};
+
+class JavaScriptCallbackNull
+{
+public:
+    virtual void operator() (const QVariant& result) {
+        QVERIFY(result.isNull());
+// FIXME: Returned null values are currently invalid QVariants.
+//        QVERIFY(result.isValid());
+    }
+};
+
+class JavaScriptCallbackUndefined
+{
+public:
+    virtual void operator() (const QVariant& result) {
+        QVERIFY(result.isNull());
+        QVERIFY(!result.isValid());
+    }
+};
+
+void tst_QWebEnginePage::runJavaScript()
+{
+    TestPage page;
+
+    JavaScriptCallback callbackBool(QVariant(false));
+    page.runJavaScript("false", QWebEngineCallback<const QVariant&>(callbackBool));
+
+    JavaScriptCallback callbackInt(QVariant(2));
+    page.runJavaScript("2", QWebEngineCallback<const QVariant&>(callbackInt));
+
+    JavaScriptCallback callbackDouble(QVariant(2.5));
+    page.runJavaScript("2.5", QWebEngineCallback<const QVariant&>(callbackDouble));
+
+    JavaScriptCallback callbackString(QVariant(QStringLiteral("Test")));
+    page.runJavaScript("\"Test\"", QWebEngineCallback<const QVariant&>(callbackString));
+
+    QVariantList list;
+    JavaScriptCallback callbackList(list);
+    page.runJavaScript("[]", QWebEngineCallback<const QVariant&>(callbackList));
+
+    QVariantMap map;
+    map.insert(QStringLiteral("test"), QVariant(2));
+    JavaScriptCallback callbackMap(map);
+    page.runJavaScript("var el = {\"test\": 2}; el", QWebEngineCallback<const QVariant&>(callbackMap));
+
+    JavaScriptCallbackNull callbackNull;
+    page.runJavaScript("null", QWebEngineCallback<const QVariant&>(callbackNull));
+
+    JavaScriptCallbackNull callbackUndefined;
+    page.runJavaScript("undefined", QWebEngineCallback<const QVariant&>(callbackUndefined));
+
+    QTest::qWait(100);
 }
 
 QTEST_MAIN(tst_QWebEnginePage)
