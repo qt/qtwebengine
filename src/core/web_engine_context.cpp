@@ -74,6 +74,7 @@
 #include "type_conversion.h"
 #include "surface_factory_qt.h"
 #include "web_engine_library_info.h"
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QStringList>
@@ -87,6 +88,37 @@ scoped_refptr<WebEngineContext> sContext;
 void destroyContext()
 {
     sContext = 0;
+}
+
+bool usingSoftwareDynamicGL()
+{
+#if defined(Q_OS_WIN)
+    HMODULE handle = static_cast<HMODULE>(QOpenGLContext::openGLModuleHandle());
+    wchar_t path[MAX_PATH];
+    DWORD size = GetModuleFileName(handle, path, MAX_PATH);
+    QFileInfo openGLModule(QString::fromWCharArray(path, size));
+    return openGLModule.fileName() == QLatin1String("opengl32sw.dll");
+#else
+    return false;
+#endif
+}
+
+bool usingQtQuick2DRenderer()
+{
+    const QStringList args = QGuiApplication::arguments();
+    QString device;
+    for (int index = 0; index < args.count(); ++index) {
+        if (args.at(index).startsWith(QLatin1String("--device="))) {
+            device = args.at(index).mid(9);
+            break;
+        }
+    }
+
+    if (device.isEmpty())
+        device = QString::fromLocal8Bit(qgetenv("QMLSCENE_DEVICE"));
+
+    // This assumes that the plugin is installed and is going to be used by QtQuick.
+    return device == QLatin1String("softwarecontext");
 }
 
 } // namespace
@@ -181,16 +213,20 @@ WebEngineContext::WebEngineContext()
 
     GLContextHelper::initialize();
 
-    const char *glType;
-    switch (QOpenGLContext::currentContext()->openGLModuleType()) {
-    case QOpenGLContext::LibGL:
-        glType = gfx::kGLImplementationDesktopName;
-        break;
-    case QOpenGLContext::LibGLES:
-        glType = gfx::kGLImplementationEGLName;
-        break;
+    if (usingSoftwareDynamicGL() || usingQtQuick2DRenderer()) {
+        parsedCommandLine->AppendSwitch(switches::kDisableGpu);
+    } else {
+        const char *glType;
+        switch (QOpenGLContext::openGLModuleType()) {
+        case QOpenGLContext::LibGL:
+            glType = gfx::kGLImplementationDesktopName;
+            break;
+        case QOpenGLContext::LibGLES:
+            glType = gfx::kGLImplementationEGLName;
+            break;
+        }
+        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
     }
-    parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
 
     content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
