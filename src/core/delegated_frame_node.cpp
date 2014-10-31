@@ -635,12 +635,9 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
                 textureNode->setRect(toQt(quad->rect));
+                textureNode->setSourceRect(toQt(tquad->tex_coord_rect));
                 textureNode->setFiltering(texture->resource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
                 textureNode->setTexture(texture.data());
-
-                // FIXME: Find out if we can implement a QSGSimpleTextureNode::setSourceRect instead of this hack.
-                // This has to be done at the end since many QSGSimpleTextureNode methods would overwrite this.
-                QSGGeometry::updateTexturedRectGeometry(textureNode->geometry(), textureNode->rect(), textureNode->texture()->convertToNormalizedSourceRect(toQt(tquad->tex_coord_rect)));
                 currentLayerChain->appendChildNode(textureNode);
                 break;
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
