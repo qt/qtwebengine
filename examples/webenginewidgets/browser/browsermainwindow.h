@@ -70,6 +70,8 @@ public:
     ~BrowserMainWindow();
     QSize sizeHint() const;
 
+    static const char *defaultHome;
+
 public:
     TabWidget *tabWidget() const;
     WebView *currentTab() const;
