@@ -70,6 +70,7 @@ ApplicationWindow {
     Settings {
         property alias autoLoadImages: loadImages.checked;
         property alias javaScriptEnabled: javaScriptEnabled.checked;
+        property alias errorPageEnabled: errorPageEnabled.checked;
     }
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
@@ -214,6 +215,13 @@ ApplicationWindow {
                             checkable: true
                             checked: WebEngine.settings.javascriptEnabled
                             onCheckedChanged: WebEngine.settings.javascriptEnabled = checked
+                        }
+                        MenuItem {
+                            id: errorPageEnabled
+                            text: "ErrorPage On"
+                            checkable: true
+                            checked: WebEngine.settings.errorPageEnabled
+                            onCheckedChanged: WebEngine.settings.errorPageEnabled = checked
                         }
                     }
                 }
