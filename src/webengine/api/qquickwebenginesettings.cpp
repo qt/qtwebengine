@@ -78,6 +78,7 @@ QQuickWebEngineSettings *QQuickWebEngineSettings::globalSettings()
 
 QQuickWebEngineSettings::~QQuickWebEngineSettings()
 {
+    allSettings->removeAll(this->d_func());
 }
 
 bool QQuickWebEngineSettings::autoLoadImages() const
