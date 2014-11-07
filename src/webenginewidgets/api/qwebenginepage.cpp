@@ -332,11 +332,11 @@ void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &security
     Q_Q(QWebEnginePage);
     QWebEnginePage::Feature requestedFeature;
     if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        requestedFeature = QWebEnginePage::MediaAudioVideoDevices;
+        requestedFeature = QWebEnginePage::MediaAudioVideoCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-        requestedFeature = QWebEnginePage::MediaAudioDevices;
+        requestedFeature = QWebEnginePage::MediaAudioCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        requestedFeature = QWebEnginePage::MediaVideoDevices;
+        requestedFeature = QWebEnginePage::MediaVideoCapture;
     else
         return;
     Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
@@ -745,16 +745,16 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
     Q_D(QWebEnginePage);
     WebContentsAdapterClient::MediaRequestFlags flags =  WebContentsAdapterClient::MediaNone;
     switch (feature) {
-    case MediaAudioVideoDevices:
-    case MediaAudioDevices:
-    case MediaVideoDevices:
+    case MediaAudioVideoCapture:
+    case MediaAudioCapture:
+    case MediaVideoCapture:
         if (policy != PermissionUnknown) {
             if (policy == PermissionDeniedByUser)
                 flags = WebContentsAdapterClient::MediaNone;
             else {
-                if (feature == MediaAudioDevices)
+                if (feature == MediaAudioCapture)
                     flags = WebContentsAdapterClient::MediaAudioCapture;
-                else if (feature == MediaVideoDevices)
+                else if (feature == MediaVideoCapture)
                     flags = WebContentsAdapterClient::MediaVideoCapture;
                 else
                     flags = WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaVideoCapture | WebContentsAdapterClient::MediaAudioCapture);
