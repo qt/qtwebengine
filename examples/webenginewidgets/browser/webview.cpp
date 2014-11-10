@@ -135,7 +135,10 @@ bool WebPage::certificateError(const QWebEngineCertificateError &error)
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setText(error.errorDescription());
-        msgBox.setInformativeText(tr("If you wish so, you may continue with an unverified certicate. Accepting an unverified certicate means you may not be connected with the host you tried to connect to.\nDo you wish to override the security check and continue?"));
+        msgBox.setInformativeText(tr("If you wish so, you may continue with an unverified certificate. "
+                                     "Accepting an unverified certificate means "
+                                     "you may not be connected with the host you tried to connect to.\n"
+                                     "Do you wish to override the security check and continue?"));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::No);
         return msgBox.exec() == QMessageBox::Yes;
