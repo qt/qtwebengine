@@ -88,6 +88,8 @@ InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(Arg))
     return wrapper;
 }
 
+const char *BrowserMainWindow::defaultHome = "http://qt.io/";
+
 BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
     , m_tabWidget(new TabWidget(this))
@@ -825,7 +827,7 @@ void BrowserMainWindow::slotHome()
 {
     QSettings settings;
     settings.beginGroup(QLatin1String("MainWindow"));
-    QString home = settings.value(QLatin1String("home"), QLatin1String("http://qt-project.org/")).toString();
+    QString home = settings.value(QLatin1String("home"), QLatin1String(defaultHome)).toString();
     loadPage(home);
 }
 

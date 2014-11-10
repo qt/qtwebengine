@@ -66,7 +66,7 @@ QUrl startupUrl()
         if (ret.isValid())
             return ret;
     }
-    return QUrl(QStringLiteral("http://qt-project.org/"));
+    return QUrl(QStringLiteral("http://qt.io/"));
 }
 
 

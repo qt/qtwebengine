@@ -72,7 +72,19 @@ base::FilePath BrowserContextQt::GetPath() const
         dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
 
     dataLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
+    dataLocation.append(QDir::separator() % QLatin1String("Default"));
     return base::FilePath(toFilePathString(dataLocation));
+}
+
+base::FilePath BrowserContextQt::GetCachePath() const
+{
+    QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    if (cacheLocation.isEmpty())
+        cacheLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
+
+    cacheLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
+    cacheLocation.append(QDir::separator() % QLatin1String("Default"));
+    return base::FilePath(toFilePathString(cacheLocation));
 }
 
 bool BrowserContextQt::IsOffTheRecord() const
@@ -133,7 +145,7 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(GetPath(), protocol_handlers);
+    url_request_getter_ = new URLRequestContextGetterQt(GetPath(), GetCachePath(), protocol_handlers);
     static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
     return url_request_getter_.get();
 }
