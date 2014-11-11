@@ -33,6 +33,7 @@ RESOURCES += devtools.qrc
 INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
 
 SOURCES = \
+        access_token_store_qt.cpp \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_qt.cpp \
@@ -80,6 +81,7 @@ SOURCES = \
         yuv_video_node.cpp
 
 HEADERS = \
+        access_token_store_qt.h \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_qt.h \
