@@ -46,6 +46,17 @@
 #include <QStringBuilder>
 #include <QStandardPaths>
 
+namespace {
+inline QString buildLocationFromStandardPath(const QString &standardPath) {
+    QString location = standardPath;
+    if (location.isEmpty())
+        location = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
+
+    location.append(QDir::separator() % QLatin1String("QtWebEngine")
+                         % QDir::separator() % QLatin1String("Default"));
+    return location;
+}
+}
 
 BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
     : m_offTheRecord(offTheRecord)
@@ -80,22 +91,10 @@ BrowserContextAdapter* BrowserContextAdapter::offTheRecordContext()
 
 QString BrowserContextAdapter::dataPath() const
 {
-    QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-    if (dataLocation.isEmpty())
-        dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
-
-    dataLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
-    dataLocation.append(QDir::separator() % QLatin1String("Default"));
-    return dataLocation;
+    return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
 }
 
 QString BrowserContextAdapter::cachePath() const
 {
-    QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    if (cacheLocation.isEmpty())
-        cacheLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
-
-    cacheLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
-    cacheLocation.append(QDir::separator() % QLatin1String("Default"));
-    return cacheLocation;
+    return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
 }
