@@ -53,6 +53,7 @@ public:
     virtual ~BrowserContextQt();
 
     virtual base::FilePath GetPath() const Q_DECL_OVERRIDE;
+    base::FilePath GetCachePath() const;
     virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE;
 
     virtual net::URLRequestContextGetter *GetRequestContext() Q_DECL_OVERRIDE;

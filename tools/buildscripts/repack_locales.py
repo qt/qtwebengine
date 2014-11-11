@@ -77,15 +77,7 @@ class Usage(Exception):
 def calc_output(locale):
   """Determine the file that will be generated for the given locale."""
   #e.g. '<(INTERMEDIATE_DIR)/repack/qtwebengine_locales/da.pak',
-  if OS == 'mac' or OS == 'ios':
-    # For Cocoa to find the locale at runtime, it needs to use '_' instead
-    # of '-' (http://crbug.com/20441).  Also, 'en-US' should be represented
-    # simply as 'en' (http://crbug.com/19165, http://crbug.com/25578).
-    if locale == 'en-US':
-      locale = 'en'
-    return '%s/repack/qtwebengine_locales/%s.lproj/locale.pak' % (INT_DIR, locale.replace('-', '_'))
-  else:
-    return os.path.join(INT_DIR, 'repack/qtwebengine_locales', locale + '.pak')
+  return os.path.join(INT_DIR, 'repack/qtwebengine_locales', locale + '.pak')
 
 
 def calc_inputs(locale):

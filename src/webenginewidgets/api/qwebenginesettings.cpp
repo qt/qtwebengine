@@ -67,6 +67,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::HyperlinkAuditingEnabled;
     case QWebEngineSettings::ScrollAnimatorEnabled:
         return WebEngineSettings::ScrollAnimatorEnabled;
+    case QWebEngineSettings::ErrorPageEnabled:
+        return WebEngineSettings::ErrorPageEnabled;
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }

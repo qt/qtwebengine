@@ -153,7 +153,7 @@ public:
     QWebEngineSettings *settings;
     QWebEngineView *view;
     QSize viewportSize;
-    QUrl m_explicitUrl;
+    QUrl explicitUrl;
     WebEngineContextMenuData m_menuData;
     bool isLoading;
 

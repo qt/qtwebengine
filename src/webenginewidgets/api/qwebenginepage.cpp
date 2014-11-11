@@ -197,7 +197,7 @@ void QWebEnginePagePrivate::titleChanged(const QString &title)
 void QWebEnginePagePrivate::urlChanged(const QUrl &url)
 {
     Q_Q(QWebEnginePage);
-    m_explicitUrl = QUrl();
+    explicitUrl = QUrl();
     Q_EMIT q->urlChanged(url);
 }
 
@@ -257,7 +257,7 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, int erro
     Q_UNUSED(errorDescription);
     isLoading = false;
     if (success)
-        m_explicitUrl = QUrl();
+        explicitUrl = QUrl();
     Q_EMIT q->loadFinished(success);
     updateNavigationActions();
 }
@@ -333,11 +333,11 @@ void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &security
     Q_Q(QWebEnginePage);
     QWebEnginePage::Feature requestedFeature;
     if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        requestedFeature = QWebEnginePage::MediaAudioVideoDevices;
+        requestedFeature = QWebEnginePage::MediaAudioVideoCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-        requestedFeature = QWebEnginePage::MediaAudioDevices;
+        requestedFeature = QWebEnginePage::MediaAudioCapture;
     else if (requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-        requestedFeature = QWebEnginePage::MediaVideoDevices;
+        requestedFeature = QWebEnginePage::MediaVideoCapture;
     else
         return;
     Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
@@ -758,16 +758,16 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
     Q_D(QWebEnginePage);
     WebContentsAdapterClient::MediaRequestFlags flags =  WebContentsAdapterClient::MediaNone;
     switch (feature) {
-    case MediaAudioVideoDevices:
-    case MediaAudioDevices:
-    case MediaVideoDevices:
+    case MediaAudioVideoCapture:
+    case MediaAudioCapture:
+    case MediaVideoCapture:
         if (policy != PermissionUnknown) {
             if (policy == PermissionDeniedByUser)
                 flags = WebContentsAdapterClient::MediaNone;
             else {
-                if (feature == MediaAudioDevices)
+                if (feature == MediaAudioCapture)
                     flags = WebContentsAdapterClient::MediaAudioCapture;
-                else if (feature == MediaVideoDevices)
+                else if (feature == MediaVideoCapture)
                     flags = WebContentsAdapterClient::MediaVideoCapture;
                 else
                     flags = WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaVideoCapture | WebContentsAdapterClient::MediaAudioCapture);
@@ -838,14 +838,14 @@ QString QWebEnginePage::title() const
 void QWebEnginePage::setUrl(const QUrl &url)
 {
     Q_D(QWebEnginePage);
-    d->m_explicitUrl = url;
+    d->explicitUrl = url;
     load(url);
 }
 
 QUrl QWebEnginePage::url() const
 {
     Q_D(const QWebEnginePage);
-    return d->m_explicitUrl.isValid() ? d->m_explicitUrl : d->adapter->activeUrl();
+    return d->explicitUrl.isValid() ? d->explicitUrl : d->adapter->activeUrl();
 }
 
 QUrl QWebEnginePage::requestedUrl() const

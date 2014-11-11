@@ -147,6 +147,7 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+    parsedCommandLine->AppendSwitch(switches::kDisableDesktopNotifications);
 
 #if defined(OS_WIN)
     parsedCommandLine->AppendSwitch(switches::kDisableD3D11);

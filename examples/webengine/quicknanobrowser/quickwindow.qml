@@ -51,8 +51,8 @@ ApplicationWindow {
     function load(url) { currentWebView.url = url }
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
 
-    height: 600
-    width: 800
+    width: 1300
+    height: 900
     visible: true
     title: currentWebView && currentWebView.title
 

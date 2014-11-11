@@ -58,7 +58,8 @@ public:
 
     BrowserContextQt *browserContext();
     bool isOffTheRecord() const { return m_offTheRecord; }
-    QString path() const;
+    QString dataPath() const;
+    QString cachePath() const;
 
 protected:
     explicit BrowserContextAdapter(bool offTheRecord = false);

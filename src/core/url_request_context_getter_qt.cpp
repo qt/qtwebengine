@@ -69,9 +69,10 @@ static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &basePath, content::ProtocolHandlerMap *protocolHandlers)
+URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &dataPath, const base::FilePath &cachePath, content::ProtocolHandlerMap *protocolHandlers)
     : m_ignoreCertificateErrors(false)
-    , m_basePath(basePath)
+    , m_dataPath(dataPath)
+    , m_cachePath(cachePath)
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
@@ -93,7 +94,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
-        base::FilePath cookiesPath = m_basePath.Append(FILE_PATH_LITERAL("Cookies"));
+        base::FilePath cookiesPath = m_dataPath.Append(FILE_PATH_LITERAL("Cookies"));
         content::CookieStoreConfig cookieStoreConfig(cookiesPath, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL, NULL);
         scoped_refptr<net::CookieStore> cookieStore = content::CreateCookieStore(cookieStoreConfig);
 
@@ -119,7 +120,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
             net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
         m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 
-        base::FilePath cache_path = m_basePath.Append(FILE_PATH_LITERAL("Cache"));
+        base::FilePath cache_path = m_cachePath.Append(FILE_PATH_LITERAL("Cache"));
         net::HttpCache::DefaultBackend* main_backend =
             new net::HttpCache::DefaultBackend(
                 net::DISK_CACHE,

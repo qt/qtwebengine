@@ -54,7 +54,8 @@ public:
         SpatialNavigationEnabled,
         LocalContentCanAccessFileUrls,
         HyperlinkAuditingEnabled,
-        ScrollAnimatorEnabled
+        ScrollAnimatorEnabled,
+        ErrorPageEnabled
     };
 
     enum FontSize {

@@ -122,7 +122,8 @@ public:
         FindBackward = 1,
         FindCaseSensitively = 2,
     };
-    Q_DECLARE_FLAGS(FindFlags, FindFlag)
+    Q_DECLARE_FLAGS(FindFlags, FindFlag);
+
     enum WebWindowType {
         WebBrowserWindow,
         WebBrowserTab,
@@ -146,12 +147,15 @@ public:
     };
 
     enum Feature {
-        Notifications,
-        Geolocation,
-        MediaAudioDevices,
-        MediaVideoDevices,
-        MediaAudioVideoDevices
+#ifndef Q_QDOC
+        Notifications = 0,
+        Geolocation = 1,
+#endif
+        MediaAudioCapture = 2,
+        MediaVideoCapture,
+        MediaAudioVideoCapture
     };
+
     // Ex-QWebFrame enum
 
     enum FileSelectionMode {

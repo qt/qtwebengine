@@ -115,6 +115,7 @@
         about security origins and local vs. remote content see QWebEngineSecurityOrigin.
     \value HyperlinkAuditingEnabled This setting enables support for the ping attribute for hyperlinks. It is disabled by default.
     \value ScrollAnimatorEnabled This setting enables animated scrolling. It is disabled by default.
+    \value ErrorPageEnabled This setting enables built-in error pages of Chromium. It is enabled by default.
 */
 
 /*!

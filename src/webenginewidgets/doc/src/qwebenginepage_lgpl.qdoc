@@ -166,11 +166,9 @@
 
     This enum describes the platform feature access categories that the user may be asked to grant or deny access to.
 
-    \value Notifications Grants access to display notifications to the user.
-    \value Geolocation The geographic location devices that may be available.
-    \value MediaAudioDevices Audio devices such as speakers or microphones
-    \value MediaVideoDevices Video devices, e.g. cameras
-    \value MediaAudioVideoDevices Both Audio and Video devices.
+    \value MediaAudioCapture Audio capture devices such a microphones
+    \value MediaVideoCapture Video devices, e.g. cameras
+    \value MediaAudioVideoCapture Both Audio and Video capture devices.
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled(), setFeaturePermission(), PermissionPolicy
 

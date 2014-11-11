@@ -125,7 +125,9 @@ TestWebEngineView {
             var handleLoadFailed = function(loadRequest) {
                 if (loadRequest.status == WebEngineView.LoadFailedStatus) {
                     webEngineView.loadHtml("load failed", bogusSite)
-                    compare(webEngineView.url, bogusSite)
+                    // Since the load did not succeed the active url is the
+                    // url of the previous successful load.
+                    compare(webEngineView.url, "about:blank")
                     compare(loadRequest.url, bogusSite)
                 }
             }

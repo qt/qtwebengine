@@ -78,12 +78,24 @@ BrowserContextAdapter* BrowserContextAdapter::offTheRecordContext()
     return WebEngineContext::current()->offTheRecordBrowserContext();
 }
 
-QString BrowserContextAdapter::path() const
+QString BrowserContextAdapter::dataPath() const
 {
     QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
     if (dataLocation.isEmpty())
         dataLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
 
     dataLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
+    dataLocation.append(QDir::separator() % QLatin1String("Default"));
     return dataLocation;
+}
+
+QString BrowserContextAdapter::cachePath() const
+{
+    QString cacheLocation = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    if (cacheLocation.isEmpty())
+        cacheLocation = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
+
+    cacheLocation.append(QDir::separator() % QLatin1String("QtWebEngine"));
+    cacheLocation.append(QDir::separator() % QLatin1String("Default"));
+    return cacheLocation;
 }

@@ -62,7 +62,12 @@ BrowserContextQt::~BrowserContextQt()
 
 base::FilePath BrowserContextQt::GetPath() const
 {
-    return base::FilePath(toFilePathString(m_adapter->path()));
+    return base::FilePath(toFilePathString(m_adapter->dataPath()));
+}
+
+base::FilePath BrowserContextQt::GetCachePath() const
+{
+    return base::FilePath(toFilePathString(m_adapter->cachePath()));
 }
 
 bool BrowserContextQt::IsOffTheRecord() const
@@ -123,7 +128,7 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(GetPath(), protocol_handlers);
+    url_request_getter_ = new URLRequestContextGetterQt(GetPath(), GetCachePath(), protocol_handlers);
     static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
     return url_request_getter_.get();
 }

@@ -4,8 +4,6 @@ QT += qmltest
 
 IMPORTPATH += $$PWD/data
 
-INCLUDEPATH += $$PWD/../shared
-
 OTHER_FILES += \
     $$PWD/data/TestWebEngineView.qml \
     $$PWD/data/favicon.html \

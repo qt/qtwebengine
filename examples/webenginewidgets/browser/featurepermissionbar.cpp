@@ -56,11 +56,11 @@ static QString textForPermissionType(QWebEnginePage::Feature type)
         return QObject::tr("desktop notifications");
     case QWebEnginePage::Geolocation:
         return QObject::tr("your position");
-    case QWebEnginePage::MediaAudioDevices:
+    case QWebEnginePage::MediaAudioCapture:
         return QObject::tr("your microphone");
-    case QWebEnginePage::MediaVideoDevices:
+    case QWebEnginePage::MediaVideoCapture:
         return QObject::tr("your camera");
-    case QWebEnginePage::MediaAudioVideoDevices:
+    case QWebEnginePage::MediaAudioVideoCapture:
         return QObject::tr("your camera and microphone");
     default:
         Q_UNREACHABLE();
