@@ -395,11 +395,11 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
        return;
    QQuickWebEngineViewExperimental::Feature feature;
    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-       feature = QQuickWebEngineViewExperimental::MediaAudioVideoDevices;
+       feature = QQuickWebEngineViewExperimental::MediaAudioVideoCapture;
    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-       feature = QQuickWebEngineViewExperimental::MediaAudioDevices;
+       feature = QQuickWebEngineViewExperimental::MediaAudioCapture;
    else // WebContentsAdapterClient::MediaVideoCapture
-       feature = QQuickWebEngineViewExperimental::MediaVideoDevices;
+       feature = QQuickWebEngineViewExperimental::MediaVideoCapture;
    Q_EMIT e->featurePermissionRequested(securityOrigin, feature);
 }
 
@@ -715,19 +715,19 @@ QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() con
 
 void QQuickWebEngineViewExperimental::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineViewExperimental::Feature feature, bool granted)
 {
-    if (!granted && feature >= MediaAudioDevices && feature <= MediaAudioVideoDevices) {
+    if (!granted && feature >= MediaAudioCapture && feature <= MediaAudioVideoCapture) {
          d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaNone);
          return;
     }
 
     switch (feature) {
-    case MediaAudioDevices:
+    case MediaAudioCapture:
         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaAudioCapture);
         break;
-    case MediaVideoDevices:
+    case MediaVideoCapture:
         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaVideoCapture);
         break;
-    case MediaAudioVideoDevices:
+    case MediaAudioVideoCapture:
         d_ptr->adapter->grantMediaAccessPermission(securityOrigin, WebContentsAdapterClient::MediaRequestFlags(WebContentsAdapterClient::MediaAudioCapture                                                                                                               | WebContentsAdapterClient::MediaVideoCapture));
         break;
     case Geolocation:

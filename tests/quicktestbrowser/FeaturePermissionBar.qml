@@ -69,11 +69,11 @@ Rectangle {
             Layout.fillWidth: true
 
             function textForFeature(feature) {
-                if (feature === WebEngineViewExperimental.MediaAudioDevices)
+                if (feature === WebEngineViewExperimental.MediaAudioCapture)
                     return "your microphone"
-                if (feature === WebEngineViewExperimental.MediaVideoDevices)
+                if (feature === WebEngineViewExperimental.MediaVideoCapture)
                     return "your camera"
-                if (feature === WebEngineViewExperimental.MediaAudioVideoDevices)
+                if (feature === WebEngineViewExperimental.MediaAudioVideoCapture)
                     return "your camera and microphone"
                 if (feature === WebEngineViewExperimental.Geolocation)
                     return "your position"

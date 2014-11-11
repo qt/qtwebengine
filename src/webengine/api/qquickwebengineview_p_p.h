@@ -88,9 +88,9 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
 
 public:
     enum Feature {
-        MediaAudioDevices,
-        MediaVideoDevices,
-        MediaAudioVideoDevices,
+        MediaAudioCapture,
+        MediaVideoCapture,
+        MediaAudioVideoCapture,
         Geolocation
     };
 
