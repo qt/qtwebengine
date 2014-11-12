@@ -3635,14 +3635,14 @@ void tst_QWebEnginePage::getUserMediaRequest()
 
     QVERIFY(evaluateJavaScriptSync(page, QStringLiteral("!!navigator.webkitGetUserMedia")).toBool());
     evaluateJavaScriptSync(page, QStringLiteral("navigator.webkitGetUserMedia({audio: true}, function() {}, function(){})"));
-    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioDevices), 100);
+    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioCapture), 100);
     // Might end up failing due to the lack of physical media devices deeper in the content layer, so the JS callback is not guaranteed to be called,
     // but at least we go through that code path, potentially uncovering failing assertions.
     page->acceptPendingRequest();
 
     page->runJavaScript(QStringLiteral("errorCallbackCalled = false;"));
     evaluateJavaScriptSync(page, QStringLiteral("navigator.webkitGetUserMedia({audio: true, video: true}, function() {}, function(){errorCallbackCalled = true;})"));
-    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioVideoDevices), 100);
+    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioVideoCapture), 100);
     page->rejectPendingRequest(); // Should always end up calling the error callback in JS.
     QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(page, QStringLiteral("errorCallbackCalled;")).toBool(), 100);
     delete page;
