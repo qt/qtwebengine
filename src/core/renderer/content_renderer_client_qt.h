@@ -33,6 +33,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef CONTENT_RENDERER_CLIENT_QT_H
+#define CONTENT_RENDERER_CLIENT_QT_H
 
 #include "content/public/renderer/content_renderer_client.h"
 
@@ -61,3 +63,5 @@ public:
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
 };
+
+#endif // CONTENT_RENDERER_CLIENT_QT_H
