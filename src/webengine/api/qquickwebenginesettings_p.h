@@ -92,18 +92,18 @@ public:
     void setDefaultTextEncoding(QString encoding);
 
 signals:
-    void autoLoadImagesChanged(bool on);
-    void javascriptEnabledChanged(bool on);
-    void javascriptCanOpenWindowsChanged(bool on);
-    void javascriptCanAccessClipboardChanged(bool on);
-    void linksIncludedInFocusChainChanged(bool on);
-    void localStorageEnabledChanged(bool on);
-    void localContentCanAccessRemoteUrlsChanged(bool on);
-    void spatialNavigationEnabledChanged(bool on);
-    void localContentCanAccessFileUrlsChanged(bool on);
-    void hyperlinkAuditingEnabledChanged(bool on);
-    void errorPageEnabledChanged(bool on);
-    void defaultTextEncodingChanged(QString encoding);
+    void autoLoadImagesChanged();
+    void javascriptEnabledChanged();
+    void javascriptCanOpenWindowsChanged();
+    void javascriptCanAccessClipboardChanged();
+    void linksIncludedInFocusChainChanged();
+    void localStorageEnabledChanged();
+    void localContentCanAccessRemoteUrlsChanged();
+    void spatialNavigationEnabledChanged();
+    void localContentCanAccessFileUrlsChanged();
+    void hyperlinkAuditingEnabledChanged();
+    void errorPageEnabledChanged();
+    void defaultTextEncodingChanged();
 
 private:
     QQuickWebEngineSettings();

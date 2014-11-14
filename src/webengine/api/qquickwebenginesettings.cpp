@@ -160,7 +160,7 @@ void QQuickWebEngineSettings::setAutoLoadImages(bool on)
     // could be from the fallback and is prone to changing later on.
     d->coreSettings->setAttribute(WebEngineSettings::AutoLoadImages, on);
     if (wasOn ^ on)
-        Q_EMIT autoLoadImagesChanged(on);
+        Q_EMIT autoLoadImagesChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptEnabled(bool on)
@@ -169,7 +169,7 @@ void QQuickWebEngineSettings::setJavascriptEnabled(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::JavascriptEnabled);
     d->coreSettings->setAttribute(WebEngineSettings::JavascriptEnabled, on);
     if (wasOn ^ on)
-        Q_EMIT javascriptEnabledChanged(on);
+        Q_EMIT javascriptEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptCanOpenWindows(bool on)
@@ -178,7 +178,7 @@ void QQuickWebEngineSettings::setJavascriptCanOpenWindows(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
     d->coreSettings->setAttribute(WebEngineSettings::JavascriptCanOpenWindows, on);
     if (wasOn ^ on)
-        Q_EMIT javascriptCanOpenWindowsChanged(on);
+        Q_EMIT javascriptCanOpenWindowsChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptCanAccessClipboard(bool on)
@@ -187,7 +187,7 @@ void QQuickWebEngineSettings::setJavascriptCanAccessClipboard(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
     d->coreSettings->setAttribute(WebEngineSettings::JavascriptCanAccessClipboard, on);
     if (wasOn ^ on)
-        Q_EMIT javascriptCanAccessClipboardChanged(on);
+        Q_EMIT javascriptCanAccessClipboardChanged();
 }
 
 void QQuickWebEngineSettings::setLinksIncludedInFocusChain(bool on)
@@ -196,7 +196,7 @@ void QQuickWebEngineSettings::setLinksIncludedInFocusChain(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
     d->coreSettings->setAttribute(WebEngineSettings::LinksIncludedInFocusChain, on);
     if (wasOn ^ on)
-        Q_EMIT linksIncludedInFocusChainChanged(on);
+        Q_EMIT linksIncludedInFocusChainChanged();
 }
 
 void QQuickWebEngineSettings::setLocalStorageEnabled(bool on)
@@ -205,7 +205,7 @@ void QQuickWebEngineSettings::setLocalStorageEnabled(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LocalStorageEnabled);
     d->coreSettings->setAttribute(WebEngineSettings::LocalStorageEnabled, on);
     if (wasOn ^ on)
-        Q_EMIT localStorageEnabledChanged(on);
+        Q_EMIT localStorageEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setLocalContentCanAccessRemoteUrls(bool on)
@@ -214,7 +214,7 @@ void QQuickWebEngineSettings::setLocalContentCanAccessRemoteUrls(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
     d->coreSettings->setAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls, on);
     if (wasOn ^ on)
-        Q_EMIT localContentCanAccessRemoteUrlsChanged(on);
+        Q_EMIT localContentCanAccessRemoteUrlsChanged();
 }
 
 
@@ -224,7 +224,7 @@ void QQuickWebEngineSettings::setSpatialNavigationEnabled(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
     d->coreSettings->setAttribute(WebEngineSettings::SpatialNavigationEnabled, on);
     if (wasOn ^ on)
-        Q_EMIT spatialNavigationEnabledChanged(on);
+        Q_EMIT spatialNavigationEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setLocalContentCanAccessFileUrls(bool on)
@@ -233,7 +233,7 @@ void QQuickWebEngineSettings::setLocalContentCanAccessFileUrls(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
     d->coreSettings->setAttribute(WebEngineSettings::LocalContentCanAccessFileUrls, on);
     if (wasOn ^ on)
-        Q_EMIT localContentCanAccessFileUrlsChanged(on);
+        Q_EMIT localContentCanAccessFileUrlsChanged();
 }
 
 void QQuickWebEngineSettings::setHyperlinkAuditingEnabled(bool on)
@@ -242,7 +242,7 @@ void QQuickWebEngineSettings::setHyperlinkAuditingEnabled(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
     d->coreSettings->setAttribute(WebEngineSettings::HyperlinkAuditingEnabled, on);
     if (wasOn ^ on)
-        Q_EMIT hyperlinkAuditingEnabledChanged(on);
+        Q_EMIT hyperlinkAuditingEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setErrorPageEnabled(bool on)
@@ -251,7 +251,7 @@ void QQuickWebEngineSettings::setErrorPageEnabled(bool on)
     bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::ErrorPageEnabled);
     d->coreSettings->setAttribute(WebEngineSettings::ErrorPageEnabled, on);
     if (wasOn ^ on)
-        Q_EMIT errorPageEnabledChanged(on);
+        Q_EMIT errorPageEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)
@@ -260,7 +260,7 @@ void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)
     const QString oldDefaultTextEncoding = d->coreSettings->defaultTextEncoding();
     d->coreSettings->setDefaultTextEncoding(encoding);
     if (oldDefaultTextEncoding.compare(encoding))
-        Q_EMIT defaultTextEncodingChanged(encoding);
+        Q_EMIT defaultTextEncodingChanged();
 }
 
 QQuickWebEngineSettings::QQuickWebEngineSettings()
