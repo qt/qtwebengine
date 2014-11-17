@@ -1,18 +1,55 @@
-<!--
-Copyright (c) 2013 BlackBerry Limited. All rights reserved.
--->
 <html>
 <head>
-<title>QtWebEngine remote debugging</title>
+<title>QtWebEngine Remote Debugging</title>
 <style>
+body {
+  background-color: rgb(245, 245, 245);
+  font-family: Helvetica, Arial, sans-serif;
+  text-shadow: rgba(255, 255, 255, 0.496094) 0px 1px 0px;
+}
+
+#caption {
+  color: black;
+  font-size: 16px;
+  margin-top: 30px;
+  margin-bottom: 0px;
+  margin-left: 70px;
+  height: 20px;
+  text-align: left;
+}
+
+#items {
+  margin-left: 60px;
+  margin-right: 60px;
+  -webkit-box-orient: horizontal;
+  -webkit-box-lines: multiple;
+}
+
+.frontend_ref {
+  color: black;
+  text-decoration: initial;
+}
+
+.text {
+  background: no-repeat 0;
+  background-size: 16px;
+  font-size: 12px;
+  margin: 4px 0px 0px 4px;
+  overflow: hidden;
+  padding: 2px 0px 0px 20px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 </style>
 
 <script>
+
 function onLoad() {
-  var tabs_list_request = new XMLHttpRequest();
-  tabs_list_request.open('GET', '/json/list?t=' + new Date().getTime(), true);
-  tabs_list_request.onreadystatechange = onReady;
-  tabs_list_request.send();
+  var tabsListRequest = new XMLHttpRequest();
+  tabsListRequest.open('GET', '/json/list', true);
+  tabsListRequest.onreadystatechange = onReady;
+  tabsListRequest.send();
 }
 
 function onReady() {
@@ -24,23 +61,35 @@ function onReady() {
   }
 }
 
+function overrideFrontendUrl(item) {
+  if (window.location.hash) {
+    var overridden_url = window.location.hash.substr(1);
+    var ws_suffix = item.webSocketDebuggerUrl.replace('ws://', 'ws=');
+    if (overridden_url.indexOf('?') == -1)
+      return overridden_url + '?' + ws_suffix;
+    else
+      return overridden_url + '&' + ws_suffix;
+  }
+  return item.devtoolsFrontendUrl;
+}
+
 function appendItem(item_object) {
   var frontend_ref;
   if (item_object.devtoolsFrontendUrl) {
     frontend_ref = document.createElement('a');
-    frontend_ref.href = item_object.devtoolsFrontendUrl;
+    frontend_ref.href = overrideFrontendUrl(item_object);
     frontend_ref.title = item_object.title;
   } else {
     frontend_ref = document.createElement('div');
-    frontend_ref.title = 'The tab already has active debugging session';
+    frontend_ref.title = 'The tab already has an active debug session';
   }
+  frontend_ref.className = 'frontend_ref';
 
   var text = document.createElement('div');
-  if (item_object.title)
-    text.innerText = item_object.title;
-  else
-    text.innerText = '(untitled tab)';
-  text.style.cssText = 'background-image:url(' + item_object.faviconUrl + ')';
+  text.className = 'text';
+  text.innerText = item_object.description || item_object.title;
+  text.style.cssText = 'background-image:url(' +
+                       item_object.faviconUrl + ')';
   frontend_ref.appendChild(text);
 
   var item = document.createElement('p');
@@ -51,7 +100,9 @@ function appendItem(item_object) {
 </script>
 </head>
 <body onload='onLoad()'>
-  <div id='caption'>Inspectable WebContents</div>
-  <div id='items'></div>
+  <div id='caption'>Inspectable pages</div>
+  <div id='items'>
+  </div>
+  <hr>
 </body>
 </html>
