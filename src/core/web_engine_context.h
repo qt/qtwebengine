@@ -53,6 +53,7 @@ class ContentMainRunner;
 
 class BrowserContextAdapter;
 class ContentMainDelegateQt;
+class DevToolsHttpHandlerDelegateQt;
 class SurfaceFactoryQt;
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
@@ -76,6 +77,7 @@ private:
 #endif
     QExplicitlySharedDataPointer<BrowserContextAdapter> m_defaultBrowserContext;
     QExplicitlySharedDataPointer<BrowserContextAdapter> m_offTheRecordBrowserContext;
+    scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
 };
 
 #endif // WEB_ENGINE_CONTEXT_H

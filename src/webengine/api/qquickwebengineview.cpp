@@ -84,7 +84,6 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_settings(new QQuickWebEngineSettings)
     , contextMenuExtraItems(0)
     , loadProgress(0)
-    , inspectable(false)
     , m_isFullScreen(false)
     , isLoading(false)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
@@ -534,7 +533,6 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
     if (!adapter) {
         adapter = new WebContentsAdapter();
         adapter->initialize(this);
-        adapter->enableInspector(inspectable);
         if (explicitUrl.isValid())
             adapter->load(explicitUrl);
     }
@@ -722,21 +720,6 @@ qreal QQuickWebEngineView::zoomFactor() const
     if (!d->adapter)
         return 1.0;
     return d->adapter->currentZoomFactor();
-}
-
-bool QQuickWebEngineViewExperimental::inspectable() const
-{
-    Q_D(const QQuickWebEngineView);
-    return d->inspectable;
-}
-
-void QQuickWebEngineViewExperimental::setInspectable(bool enable)
-{
-    Q_D(QQuickWebEngineView);
-    d->inspectable = enable;
-    if (!d->adapter)
-        return;
-    d->adapter->enableInspector(enable);
 }
 
 void QQuickWebEngineViewExperimental::setIsFullScreen(bool fullscreen)

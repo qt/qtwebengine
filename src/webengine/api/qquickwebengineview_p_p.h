@@ -79,7 +79,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
-    Q_PROPERTY(bool inspectable READ inspectable WRITE setInspectable)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings)
@@ -100,8 +99,6 @@ public:
     };
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
-    bool inspectable() const;
-    void setInspectable(bool);
     void setIsFullScreen(bool fullscreen);
     bool isFullScreen() const;
     QQuickWebEngineViewport *viewport() const;
@@ -199,7 +196,6 @@ public:
     QUrl explicitUrl;
     QUrl icon;
     int loadProgress;
-    bool inspectable;
     bool m_isFullScreen;
     bool isLoading;
     qreal devicePixelRatio;

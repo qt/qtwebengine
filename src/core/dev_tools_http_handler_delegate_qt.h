@@ -40,6 +40,7 @@
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
+#include <QString>
 #include <QtCore/qcompilerdetection.h> // needed for Q_DECL_OVERRIDE
 
 namespace net {
@@ -55,10 +56,11 @@ class RenderViewHost;
 class DevToolsHttpHandlerDelegateQt : public content::DevToolsHttpHandlerDelegate {
 public:
 
-    explicit DevToolsHttpHandlerDelegateQt(content::BrowserContext* browser_context);
+    DevToolsHttpHandlerDelegateQt();
     virtual ~DevToolsHttpHandlerDelegateQt();
 
     // content::DevToolsHttpHandlerDelegate Overrides
+    virtual void Initialized(const net::IPEndPoint &ip_address) Q_DECL_OVERRIDE;
     virtual std::string GetDiscoveryPageHTML() Q_DECL_OVERRIDE;
     virtual bool BundlesFrontendResources() Q_DECL_OVERRIDE;
     virtual base::FilePath GetDebugFrontendDir() Q_DECL_OVERRIDE;
@@ -67,8 +69,9 @@ public:
     virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate *delegate, std::string *name) Q_DECL_OVERRIDE;
 
 private:
-    content::BrowserContext* m_browserContext;
     content::DevToolsHttpHandler *m_devtoolsHttpHandler;
+    QString m_bindAddress;
+    int m_port;
 };
 
 class DevToolsManagerDelegateQt : public content::DevToolsManagerDelegate {

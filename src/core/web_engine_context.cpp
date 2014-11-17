@@ -70,6 +70,7 @@
 #include "content_browser_client_qt.h"
 #include "content_client_qt.h"
 #include "content_main_delegate_qt.h"
+#include "dev_tools_http_handler_delegate_qt.h"
 #include "gl_context_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
@@ -262,6 +263,7 @@ WebEngineContext::WebEngineContext()
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
 
+    m_devtools.reset(new DevToolsHttpHandlerDelegateQt);
     // Force the initialization of MediaCaptureDevicesDispatcher on the UI
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.

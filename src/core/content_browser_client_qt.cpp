@@ -366,15 +366,6 @@ net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(conte
     return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers);
 }
 
-void ContentBrowserClientQt::enableInspector(bool enable, content::BrowserContext* browser_context)
-{
-    if (enable && !m_devtools) {
-        m_devtools.reset(new DevToolsHttpHandlerDelegateQt(browser_context));
-    } else if (!enable && m_devtools) {
-        m_devtools.reset();
-    }
-}
-
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
 {
     return new QuotaPermissionContextQt;

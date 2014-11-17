@@ -40,6 +40,8 @@
 
 #include "dev_tools_http_handler_delegate_qt.h"
 
+#include "type_conversion.h"
+
 #include <QByteArray>
 #include <QFile>
 
@@ -56,6 +58,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/ip_endpoint.h"
 #include "net/socket/stream_listen_socket.h"
 #include "net/socket/tcp_server_socket.h"
 
@@ -140,26 +143,50 @@ bool Target::Close() const {
 
 }  // namespace
 
-DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(BrowserContext* browser_context)
-    : m_browserContext(browser_context)
+DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt()
+    : m_devtoolsHttpHandler(0)
+    , m_bindAddress(QLatin1String("127.0.0.1"))
+    , m_port(0)
 {
-    const int defaultPort = 1337;
-    int listeningPort = defaultPort;
+    const QString inspectorEnv = QString::fromUtf8(qgetenv("QTWEBENGINE_REMOTE_DEBUGGING"));
     const CommandLine &commandLine = *CommandLine::ForCurrentProcess();
+    QString portStr;
+
     if (commandLine.HasSwitch(switches::kRemoteDebuggingPort)) {
-        std::string portString =
-            commandLine.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-        int portInt = 0;
-        if (base::StringToInt(portString, &portInt) && portInt > 0 && portInt < 65535)
-            listeningPort = portInt;
-    }
-    scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory("0.0.0.0", listeningPort, 1));
-    m_devtoolsHttpHandler = DevToolsHttpHandler::Start(factory.Pass(), std::string(), this, base::FilePath());
+        portStr = QString::fromStdString(commandLine.GetSwitchValueASCII(switches::kRemoteDebuggingPort));
+    } else if (!inspectorEnv.isEmpty()) {
+        int portColonPos = inspectorEnv.lastIndexOf(':');
+        if (portColonPos != -1) {
+            portStr = inspectorEnv.mid(portColonPos + 1);
+            m_bindAddress = inspectorEnv.mid(0, portColonPos);
+        } else
+            portStr = inspectorEnv;
+    } else
+        return;
+
+    bool ok = false;
+    m_port = portStr.toInt(&ok);
+    if (ok && m_port > 0 && m_port < 65535) {
+        scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory(m_bindAddress.toStdString(), m_port, 1));
+        m_devtoolsHttpHandler = DevToolsHttpHandler::Start(factory.Pass(), std::string(), this, base::FilePath());
+    } else
+        qWarning("Invalid port given for the inspector server \"%s\". Examples of valid input: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's network interface).", qPrintable(portStr));
 }
 
 DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()
 {
-    m_devtoolsHttpHandler->Stop();
+    // Stop() takes care of deleting the DevToolsHttpHandler.
+    if (m_devtoolsHttpHandler)
+        m_devtoolsHttpHandler->Stop();
+}
+
+void DevToolsHttpHandlerDelegateQt::Initialized(const net::IPEndPoint& ip_address)
+{
+    if (ip_address.address().size()) {
+        QString addressAndPort = QString::fromStdString(ip_address.ToString());
+        qWarning("Remote debugging server started successfully. Try pointing a Chromium-based browser to http://%s", qPrintable(addressAndPort));
+    } else
+        qWarning("Couldn't start the inspector server on bind address \"%s\" and port \"%d\". In case of invalid input, try something like: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's interface).", qPrintable(m_bindAddress), m_port);
 }
 
 std::string DevToolsHttpHandlerDelegateQt::GetDiscoveryPageHTML()

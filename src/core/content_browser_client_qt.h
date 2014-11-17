@@ -66,7 +66,6 @@ class GLShareGroup;
 
 class BrowserContextQt;
 class BrowserMainPartsQt;
-class DevToolsHttpHandlerDelegateQt;
 class ResourceDispatcherHostDelegateQt;
 class ShareGroupQtQuick;
 
@@ -111,11 +110,8 @@ public:
 
     virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
 
-    void enableInspector(bool enable, content::BrowserContext *browser_context);
-
 private:
     BrowserMainPartsQt* m_browserMainParts;
-    scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
     scoped_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
 };
