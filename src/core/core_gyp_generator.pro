@@ -117,6 +117,7 @@ HEADERS = \
         resource_dispatcher_host_delegate_qt.h \
         stream_video_node.h \
         surface_factory_qt.h \
+        type_conversion.h \
         url_request_context_getter_qt.h \
         url_request_qrc_job_qt.h \
         web_contents_adapter.h \
