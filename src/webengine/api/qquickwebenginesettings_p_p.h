@@ -44,7 +44,6 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineSettingsPrivate : public WebEngineSettingsDelegate {
 public:
     QQuickWebEngineSettingsPrivate();
-    QQuickWebEngineSettingsPrivate(WebContentsAdapter *adapter);
 
     void apply() Q_DECL_OVERRIDE;
     WebEngineSettings *fallbackSettings() const Q_DECL_OVERRIDE;
