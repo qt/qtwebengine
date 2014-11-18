@@ -34,39 +34,49 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef USER_SCRIPT_CONTROLLER_H
+#define USER_SCRIPT_CONTROLLER_H
 
-#include "web_contents_adapter.h"
+#include "content/public/renderer/render_process_observer.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "common/user_script_data.h"
 
-#include <QExplicitlySharedDataPointer>
+#include <QtCore/qcompilerdetection.h>
+#include <QtCore/QHash>
+#include <QtCore/QSet>
 
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
+namespace content {
+class RenderView;
+}
 
-class WebContentsAdapterPrivate {
+
+class UserScriptController : public content::RenderProcessObserver {
+
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    static UserScriptController *instance();
+    UserScriptController();
+    void renderViewCreated(content::RenderView *);
+    void renderViewDestroyed(content::RenderView *);
+    void addScriptForView(const UserScriptData &, content::RenderView *);
+    void removeScriptForView(const UserScriptData &, content::RenderView *);
+    void clearScriptsForView(content::RenderView *);
+
+private:
+    Q_DISABLE_COPY(UserScriptController)
+
+    class RenderViewObserverHelper;
+
+    // RenderProcessObserver implementation.
+    virtual bool OnControlMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
+
+    void onAddScript(const UserScriptData &);
+    void onRemoveScript(const UserScriptData &);
+    void onClearScripts();
+
+    typedef QSet<uint64> UserScriptSet;
+    typedef QHash<const content::RenderView *, UserScriptSet> ViewUserScriptMap;
+    ViewUserScriptMap m_viewUserScriptMap;
+    QHash<uint64, UserScriptData> m_scripts;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+#endif // USER_SCRIPT_CONTROLLER_H

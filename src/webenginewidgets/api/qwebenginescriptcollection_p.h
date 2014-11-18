@@ -34,39 +34,38 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef QWEBENGINESCRIPTCOLLECTION_P_H
+#define QWEBENGINESCRIPTCOLLECTION_P_H
 
-#include "web_contents_adapter.h"
+#include "qtwebengineglobal.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "qwebenginescript.h"
 
-#include <QExplicitlySharedDataPointer>
+#include <QtCore/QSet>
 
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
 class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
+class WebContentsAdapter;
 
-class WebContentsAdapterPrivate {
+QT_BEGIN_NAMESPACE
+class QWebEngineScriptCollectionPrivate {
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    QWebEngineScriptCollectionPrivate(UserScriptControllerHost *, WebContentsAdapter * = 0);
+
+    int count() const;
+    bool contains(const QWebEngineScript &) const;
+    QList<QWebEngineScript> toList(const QString &scriptName = QString()) const;
+    QWebEngineScript find(const QString & name) const;
+
+    void insert(const QWebEngineScript &);
+    bool remove(const QWebEngineScript &);
+    void clear();
+    void reserve(int);
+
+private:
+    UserScriptControllerHost *m_scriptController;
+    WebContentsAdapter *m_contents;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+QT_END_NAMESPACE
+
+#endif // QWEBENGINESCRIPTCOLLECTION__PH

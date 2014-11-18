@@ -3,19 +3,21 @@
 // found in the LICENSE file.
 
 // Multiply-included file, no traditional include guard.
+
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 
-// Singly-included section for enums and custom IPC traits.
-#ifndef RENDER_VIEW_MESSAGES_H
-#define RENDER_VIEW_MESSAGES_H
+#include "user_script_data.h"
 
-namespace IPC {
+IPC_STRUCT_TRAITS_BEGIN(UserScriptData)
+    IPC_STRUCT_TRAITS_MEMBER(source)
+    IPC_STRUCT_TRAITS_MEMBER(url)
+    IPC_STRUCT_TRAITS_MEMBER(injectionPoint)
+    IPC_STRUCT_TRAITS_MEMBER(injectForSubframes)
+    IPC_STRUCT_TRAITS_MEMBER(worldId)
+    IPC_STRUCT_TRAITS_MEMBER(scriptId)
+IPC_STRUCT_TRAITS_END()
 
-// TODO - add enums and custom IPC traits here when needed.
-
-}  // namespace IPC
-
-#endif  // RENDER_VIEW_MESSAGES_H
 
 #define IPC_MESSAGE_START QtMsgStart
 
@@ -30,6 +32,17 @@ IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentInnerText,
                     uint64 /* requestId */)
 
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/)
+
+// User scripts messages
+IPC_MESSAGE_ROUTED1(RenderViewObserverHelper_AddScript,
+                    UserScriptData /* script */)
+IPC_MESSAGE_ROUTED1(RenderViewObserverHelper_RemoveScript,
+                    UserScriptData /* script */)
+IPC_MESSAGE_ROUTED0(RenderViewObserverHelper_ClearScripts)
+
+IPC_MESSAGE_CONTROL1(UserScriptController_AddScript, UserScriptData /* scriptContents */)
+IPC_MESSAGE_CONTROL1(UserScriptController_RemoveScript, UserScriptData /* scriptContents */)
+IPC_MESSAGE_CONTROL0(UserScriptController_ClearScripts)
 
 //-----------------------------------------------------------------------------
 // WebContents messages

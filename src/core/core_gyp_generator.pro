@@ -38,6 +38,7 @@ SOURCES = \
         chromium_overrides.cpp \
         clipboard_qt.cpp \
         common/qt_messages.cpp \
+        common/user_script_data.cpp \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
@@ -61,6 +62,7 @@ SOURCES = \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
         renderer/qt_render_view_observer.cpp \
+        renderer/user_script_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
@@ -71,6 +73,8 @@ SOURCES = \
         url_request_custom_job.cpp \
         url_request_custom_job_delegate.cpp \
         url_request_qrc_job_qt.cpp \
+        user_script.cpp \
+        user_script_controller_host.cpp \
         web_channel_ipc_transport_host.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
@@ -95,6 +99,7 @@ HEADERS = \
         chromium_overrides.h \
         clipboard_qt.h \
         common/qt_messages.h \
+        common/user_script_data.h \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
@@ -120,6 +125,7 @@ HEADERS = \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
         renderer/qt_render_view_observer.h \
+        renderer/user_script_controller.h \
         renderer/web_channel_ipc_transport.h \
         resource_context_qt.h \
         resource_dispatcher_host_delegate_qt.h \
@@ -130,6 +136,8 @@ HEADERS = \
         url_request_custom_job.h \
         url_request_custom_job_delegate.h \
         url_request_qrc_job_qt.h \
+        user_script.h \
+        user_script_controller_host.h \
         web_channel_ipc_transport_host.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \

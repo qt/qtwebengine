@@ -17,6 +17,8 @@ SOURCES = \
         api/qwebenginehistory.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineprofile.cpp \
+        api/qwebenginescript.cpp \
+        api/qwebenginescriptcollection.cpp \
         api/qwebenginesettings.cpp \
         api/qwebengineurlrequestjob.cpp \
         api/qwebengineurlschemehandler.cpp \
@@ -33,6 +35,8 @@ HEADERS = \
         api/qwebenginepage_p.h \
         api/qwebengineprofile.h \
         api/qwebengineprofile_p.h \
+        api/qwebenginescriptcollection.h \
+        api/qwebenginescriptcollection_p.h \
         api/qwebenginesettings.h \
         api/qwebengineurlrequestjob_p.h \
         api/qwebengineurlschemehandler_p.h \

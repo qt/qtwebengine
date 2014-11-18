@@ -73,6 +73,8 @@ public:
 
     BrowserContextAdapter* adapter() { return m_adapter; }
 private:
+    friend class ContentBrowserClientQt;
+    friend class WebContentsAdapter;
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
     BrowserContextAdapter *m_adapter;

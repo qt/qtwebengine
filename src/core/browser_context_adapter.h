@@ -48,6 +48,7 @@ class BrowserContextAdapterClient;
 class BrowserContextQt;
 class CustomUrlSchemeHandler;
 class DownloadManagerDelegateQt;
+class UserScriptControllerHost;
 class WebEngineVisitedLinksManager;
 
 class QWEBENGINE_EXPORT BrowserContextAdapter : public QSharedData
@@ -123,6 +124,7 @@ public:
 
     QVector<CustomUrlSchemeHandler*> &customUrlSchemeHandlers();
     void updateCustomUrlSchemeHandlers();
+    UserScriptControllerHost *userScriptController();
 
 private:
     QString m_name;
@@ -130,6 +132,8 @@ private:
     QScopedPointer<BrowserContextQt> m_browserContext;
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
+    QScopedPointer<UserScriptControllerHost> m_userScriptController;
+
     QString m_dataPath;
     QString m_cachePath;
     QString m_httpUserAgent;

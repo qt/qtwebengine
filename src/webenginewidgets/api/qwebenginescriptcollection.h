@@ -34,39 +34,45 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef QWEBENGINESCRIPTCOLLECTION_H
+#define QWEBENGINESCRIPTCOLLECTION_H
 
-#include "web_contents_adapter.h"
+#include "qtwebengineglobal.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "qwebenginescript.h"
+#include <QtCore/QScopedPointer>
+#include <QtCore/QList>
+#include <QtCore/QSet>
 
-#include <QExplicitlySharedDataPointer>
+QT_BEGIN_NAMESPACE
+class QWebEngineScriptCollectionPrivate;
 
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
-
-class WebContentsAdapterPrivate {
+class Q_WEBENGINE_EXPORT QWebEngineScriptCollection {
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    ~QWebEngineScriptCollection();
+    bool isEmpty() const { return !count(); }
+    int count() const;
+    inline int size() const { return count(); }
+    bool contains(const QWebEngineScript &value) const;
+
+    QWebEngineScript findScript(const QString &name) const;
+    QList<QWebEngineScript> findScripts(const QString &name) const;
+
+    void insert(const QWebEngineScript &);
+    void insert(const QList<QWebEngineScript> &list);
+
+    bool remove(const QWebEngineScript &);
+    void clear();
+
+    QList<QWebEngineScript> toList() const;
+
+private:
+    friend class QWebEnginePagePrivate;
+    friend class QWebEngineProfilePrivate;
+    QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *);
+
+    QScopedPointer<QWebEngineScriptCollectionPrivate> d;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+QT_END_NAMESPACE
+#endif // QWEBENGINESCRIPTCOLLECTION_H

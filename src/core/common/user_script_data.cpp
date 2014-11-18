@@ -34,39 +34,13 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#include "user_script_data.h"
+#include "base/pickle.h"
 
-#include "web_contents_adapter.h"
-
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-
-#include <QExplicitlySharedDataPointer>
-
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
-
-class WebContentsAdapterPrivate {
-public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
-};
-
-#endif // WEB_CONTENTS_ADAPTER_P_H
+UserScriptData::UserScriptData() : injectionPoint(AfterLoad)
+  , injectForSubframes(false)
+  , worldId(1)
+{
+    static uint64 idCount = 0;
+    scriptId = idCount++;
+}

@@ -34,39 +34,49 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef USER_SCRIPT_CONTROLLER_HOST_H
+#define USER_SCRIPT_CONTROLLER_HOST_H
 
-#include "web_contents_adapter.h"
+#include "qtwebenginecoreglobal.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include <QtCore/QSet>
+#include <QtCore/QScopedPointer>
+#include "user_script.h"
 
-#include <QExplicitlySharedDataPointer>
+class WebContentsAdapterPrivate;
+namespace content {
+class RenderProcessHost;
+class WebContents;
+}
+class WebContentsAdapter;
 
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
+class QWEBENGINE_EXPORT UserScriptControllerHost {
 
-class WebContentsAdapterPrivate {
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    UserScriptControllerHost();
+    ~UserScriptControllerHost();
+
+    void addUserScript(const UserScript &script, WebContentsAdapter *adapter);
+    bool containsUserScript(const UserScript &script, WebContentsAdapter *adapter);
+    bool removeUserScript(const UserScript &script, WebContentsAdapter *adapter);
+    void clearAllScripts(WebContentsAdapter *adapter);
+    void reserve(WebContentsAdapter *adapter, int count);
+    const QSet<UserScript> registeredScripts(WebContentsAdapter *adapter) const;
+
+    void renderProcessHostCreated(content::RenderProcessHost *renderer);
+
+private:
+    Q_DISABLE_COPY(UserScriptControllerHost)
+    class WebContentsObserverHelper;
+    class RenderProcessObserverHelper;
+
+    void webContentsDestroyed(content::WebContents *);
+
+    QSet<UserScript> m_profileWideScripts;
+    typedef QHash<content::WebContents *, QSet<UserScript>> ContentsScriptsMap;
+    ContentsScriptsMap m_perContentsScripts;
+    QSet<content::RenderProcessHost *> m_observedProcesses;
+    QScopedPointer<RenderProcessObserverHelper> m_renderProcessObserver;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+#endif // USER_SCRIPT_CONTROLLER_HOST_H

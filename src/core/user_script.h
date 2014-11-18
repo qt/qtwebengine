@@ -34,39 +34,60 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef USER_SCRIPT_H
+#define USER_SCRIPT_H
 
-#include "web_contents_adapter.h"
+#include "qtwebenginecoreglobal.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include <QtCore/QAtomicInt>
+#include <QtCore/QScopedPointer>
+#include <QtCore/QSharedData>
+#include <QtCore/QString>
 
-#include <QExplicitlySharedDataPointer>
-
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
 class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
+struct UserScriptData;
 
-class WebContentsAdapterPrivate {
+class QWEBENGINE_EXPORT UserScript : public QSharedData {
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    enum InjectionPoint {
+        AfterLoad,
+        DocumentLoadFinished,
+        DocumentElementCreation
+    };
+
+    UserScript();
+    UserScript(const UserScript &other);
+    ~UserScript();
+    UserScript &operator=(const UserScript &other);
+
+    bool isNull() const;
+
+    QString name() const;
+    void setName(const QString &);
+
+    QString source() const;
+    void setSource(const QString &);
+
+    InjectionPoint injectionPoint() const;
+    void setInjectionPoint(InjectionPoint);
+
+    uint worldId() const;
+    void setWorldId(uint id);
+
+    bool runsOnSubFrames() const;
+    void setRunsOnSubFrames(bool on);
+
+    bool operator==(const UserScript &) const;
+
+private:
+    void initData();
+    UserScriptData &data() const;
+    friend class UserScriptControllerHost;
+
+    QScopedPointer<UserScriptData> scriptData;
+    QString m_name;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+uint qHash(const UserScript &, uint seed = 0);
+
+#endif // USER_SCRIPT_H

@@ -30,6 +30,7 @@
 #include "qwebenginehistory_p.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
+#include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
@@ -175,6 +176,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , settings(new QWebEngineSettings(profile->settings()))
     , view(0)
     , isLoading(false)
+    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter.data()))
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -975,6 +977,17 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngine
     Q_D(QWebEnginePage);
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource);
     d->m_callbacks.registerCallback(requestId, resultCallback.d);
+}
+
+/*!
+    Returns the script collection used by this page.
+    \sa QWebEngineScriptCollection
+*/
+
+QWebEngineScriptCollection &QWebEnginePage::scripts()
+{
+    Q_D(QWebEnginePage);
+    return d->scriptCollection;
 }
 
 QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)

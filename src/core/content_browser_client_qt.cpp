@@ -56,6 +56,7 @@
 #include "ui/gl/gl_share_group.h"
 
 #include "access_token_store_qt.h"
+#include "browser_context_adapter.h"
 #include "browser_context_qt.h"
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
@@ -66,6 +67,7 @@
 #endif
 #include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
+#include "user_script_controller_host.h"
 #include "web_contents_delegate_qt.h"
 #include "access_token_store_qt.h"
 
@@ -329,6 +331,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 {
     // FIXME: Add a settings variable to enable/disable the file scheme.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), url::kFileScheme);
+    static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userScriptController()->renderProcessHostCreated(host);
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()

@@ -42,6 +42,7 @@
 #include "qwebengineprofile_p.h"
 #include "qwebenginesettings.h"
 #include "qwebengineurlschemehandler_p_p.h"
+#include "qwebenginescriptcollection_p.h"
 
 #include "browser_context_adapter.h"
 #include "web_engine_visited_links_manager.h"
@@ -100,7 +101,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
-        : m_settings(new QWebEngineSettings())
+        : scriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userScriptController()))
+        , m_settings(new QWebEngineSettings())
         , m_browserContext(browserContext)
 {
     if (ownsContext)
@@ -430,6 +432,16 @@ bool QWebEngineProfile::visitedLinksContainsUrl(const QUrl &url) const
 {
     Q_D(const QWebEngineProfile);
     return d->browserContext()->visitedLinksManager()->containsUrl(url);
+}
+
+/*!
+    Returns the script collection used by this profile.
+    \sa QWebEngineScriptCollection
+*/
+QWebEngineScriptCollection &QWebEngineProfile::scripts()
+{
+    Q_D(QWebEngineProfile);
+    return d->scriptCollection;
 }
 
 /*!

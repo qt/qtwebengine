@@ -34,39 +34,30 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef USER_SCRIPT_DATA_H
+#define USER_SCRIPT_DATA_H
 
-#include "web_contents_adapter.h"
+#include <QtCore/QHash>
+#include <string>
+#include "base/basictypes.h"
+#include "ipc/ipc_message_utils.h"
+#include "url/gurl.h"
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+struct UserScriptData {
+    enum InjectionPoint {
+        AfterLoad,
+        DocumentLoadFinished,
+        DocumentElementCreation
+    };
 
-#include <QExplicitlySharedDataPointer>
+    UserScriptData();
 
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
-
-class WebContentsAdapterPrivate {
-public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    std::string source;
+    GURL url;
+    /*InjectionPoint*/uint8 injectionPoint;
+    bool injectForSubframes;
+    uint worldId;
+    uint64 scriptId;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+#endif // USER_SCRIPT_DATA_H

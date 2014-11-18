@@ -52,6 +52,7 @@
 
 #include "renderer/web_channel_ipc_transport.h"
 #include "renderer/qt_render_view_observer.h"
+#include "renderer/user_script_controller.h"
 
 #include "grit/renderer_resources.h"
 
@@ -71,6 +72,7 @@ void ContentRendererClientQt::RenderThreadStarted()
     renderThread->RegisterExtension(WebChannelIPCTransport::getV8Extension());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     renderThread->AddObserver(m_visitedLinkSlave.data());
+    renderThread->AddObserver(UserScriptController::instance());
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
@@ -78,6 +80,7 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     // RenderViewObservers destroy themselves with their RenderView.
     new QtRenderViewObserver(render_view);
     new WebChannelIPCTransport(render_view);
+    UserScriptController::instance()->renderViewCreated(render_view);
 }
 
 bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)

@@ -40,6 +40,7 @@
 #include "browser_context_adapter_client.h"
 #include "qwebengineprofile.h"
 #include "qwebengineurlschemehandler_p.h"
+#include "qwebenginescriptcollection.h"
 #include <QMap>
 #include <QPointer>
 
@@ -69,6 +70,7 @@ public:
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     void clearUrlSchemeHandlers();
 
+    QWebEngineScriptCollection scriptCollection;
 private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;

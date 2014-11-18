@@ -52,6 +52,7 @@ class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfilePrivate;
 class QWebEngineSettings;
+class QWebEngineScriptCollection;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineProfile : public QObject {
     Q_OBJECT
@@ -97,6 +98,7 @@ public:
     bool visitedLinksContainsUrl(const QUrl &url) const;
 
     QWebEngineSettings *settings() const;
+    QWebEngineScriptCollection &scripts();
 
     static QWebEngineProfile *defaultProfile();
 

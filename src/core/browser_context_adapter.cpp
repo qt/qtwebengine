@@ -43,6 +43,7 @@
 #include "web_engine_context.h"
 #include "web_engine_visited_links_manager.h"
 #include "url_request_context_getter_qt.h"
+#include "user_script_controller_host.h"
 
 #include "net/proxy/proxy_service.h"
 
@@ -324,4 +325,11 @@ void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
 {
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateStorageSettings();
+}
+
+UserScriptControllerHost *BrowserContextAdapter::userScriptController()
+{
+    if (!m_userScriptController)
+        m_userScriptController.reset(new UserScriptControllerHost);
+    return m_userScriptController.data();
 }

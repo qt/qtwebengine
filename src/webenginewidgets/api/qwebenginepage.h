@@ -53,6 +53,7 @@ class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfile;
+class QWebEngineScriptCollection;
 class QWebEngineSettings;
 
 namespace QtWebEnginePrivate {
@@ -230,7 +231,7 @@ public:
 #else
     void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
 #endif
-
+    QWebEngineScriptCollection &scripts();
     QWebEngineSettings *settings() const;
 
     QWebChannel *webChannel() const;

@@ -39,6 +39,7 @@
 
 #include "qwebenginepage.h"
 
+#include "qwebenginescriptcollection.h"
 #include "web_contents_adapter_client.h"
 #include <QtCore/qcompilerdetection.h>
 #include <QSharedData>
@@ -163,6 +164,7 @@ public:
     QUrl explicitUrl;
     WebEngineContextMenuData m_menuData;
     bool isLoading;
+    QWebEngineScriptCollection scriptCollection;
 
     mutable CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

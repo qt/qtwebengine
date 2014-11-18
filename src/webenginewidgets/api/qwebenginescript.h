@@ -34,39 +34,73 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_CONTENTS_ADAPTER_P_H
-#define WEB_CONTENTS_ADAPTER_P_H
+#ifndef QWEBENGINESCRIPT_H
+#define QWEBENGINESCRIPT_H
+#include "qtwebenginewidgetsglobal.h"
 
-#include "web_contents_adapter.h"
+#include <QtCore/QSharedDataPointer>
+#include <QtCore/QString>
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+class UserScript;
+QT_BEGIN_NAMESPACE
 
-#include <QExplicitlySharedDataPointer>
-
-class BrowserContextAdapter;
-class QtRenderViewObserverHost;
-class UserScriptControllerHost;
-class WebChannelIPCTransportHost;
-class WebContentsAdapterClient;
-class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
-
-class WebContentsAdapterPrivate {
+class QWEBENGINEWIDGETS_EXPORT QWebEngineScript {
 public:
-    WebContentsAdapterPrivate();
-    ~WebContentsAdapterPrivate();
-    scoped_refptr<WebEngineContext> engineContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
-    QWebChannel *webChannel;
-    WebContentsAdapterClient *adapterClient;
-    quint64 nextRequestId;
-    int lastFindRequestId;
+    enum InjectionPoint {
+        Deferred,
+        DocumentReady,
+        DocumentCreation
+    };
+
+    enum ScriptWorldId {
+        MainWorld = 0,
+        ApplicationWorld,
+        UserWorld
+    };
+
+    QWebEngineScript();
+    QWebEngineScript(const QWebEngineScript &other);
+    ~QWebEngineScript();
+
+    QWebEngineScript &operator=(const QWebEngineScript &other);
+
+    bool isNull() const;
+
+    QString name() const;
+    void setName(const QString &);
+
+    QString source() const;
+    void setSource(const QString &);
+
+    InjectionPoint injectionPoint() const;
+    void setInjectionPoint(InjectionPoint);
+
+    quint32 worldId() const;
+    void setWorldId(quint32);
+
+    bool runsOnSubFrames() const;
+    void setRunsOnSubFrames(bool on);
+
+    bool operator==(const QWebEngineScript &other) const;
+    inline bool operator!=(const QWebEngineScript &other) const
+    { return !operator==(other); }
+    void swap(QWebEngineScript &other) { qSwap(d, other.d); }
+
+
+private:
+    friend class QWebEngineScriptCollectionPrivate;
+    friend class QWebEngineScriptCollection;
+    QWebEngineScript(const UserScript &);
+
+    QSharedDataPointer<UserScript> d;
 };
 
-#endif // WEB_CONTENTS_ADAPTER_P_H
+Q_DECLARE_SHARED(QWebEngineScript)
+
+#ifndef QT_NO_DEBUG_STREAM
+QWEBENGINEWIDGETS_EXPORT QDebug operator<<(QDebug, const QWebEngineScript &);
+#endif
+
+QT_END_NAMESPACE
+
+#endif // QWEBENGINESCRIPT_H
