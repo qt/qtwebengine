@@ -105,6 +105,16 @@ bool RenderWidgetHostViewQtDelegateQuick::hasKeyboardFocus()
     return hasFocus();
 }
 
+void RenderWidgetHostViewQtDelegateQuick::lockMouse()
+{
+    grabMouse();
+}
+
+void RenderWidgetHostViewQtDelegateQuick::unlockMouse()
+{
+    ungrabMouse();
+}
+
 void RenderWidgetHostViewQtDelegateQuick::show()
 {
     setVisible(true);

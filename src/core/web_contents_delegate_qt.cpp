@@ -275,6 +275,17 @@ void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDeta
     m_viewClient->browserContextAdapter()->visitedLinksManager()->addUrl(params.url);
 }
 
+void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
+{
+    Q_UNUSED(user_gesture);
+
+    if (last_unlocked_by_target)
+        web_contents->GotResponseToLockMouseRequest(true);
+    else
+        // TODO: Send permission request
+        web_contents->GotResponseToLockMouseRequest(true);
+}
+
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, WebPreferences *webPreferences)
 {
     m_viewClient->webEngineSettings()->overrideWebPreferences(webPreferences);

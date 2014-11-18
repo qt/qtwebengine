@@ -56,6 +56,8 @@ public:
     virtual QRectF contentsRect() const Q_DECL_OVERRIDE;
     virtual void setKeyboardFocus() Q_DECL_OVERRIDE {}
     virtual bool hasKeyboardFocus() Q_DECL_OVERRIDE { return false; }
+    virtual void lockMouse() Q_DECL_OVERRIDE {}
+    virtual void unlockMouse() Q_DECL_OVERRIDE {}
     virtual void show() Q_DECL_OVERRIDE;
     virtual void hide() Q_DECL_OVERRIDE;
     virtual bool isVisible() const Q_DECL_OVERRIDE;

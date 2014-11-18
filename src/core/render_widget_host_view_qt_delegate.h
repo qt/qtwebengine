@@ -77,6 +77,8 @@ public:
     virtual QRectF contentsRect() const = 0;
     virtual void setKeyboardFocus() = 0;
     virtual bool hasKeyboardFocus() = 0;
+    virtual void lockMouse() = 0;
+    virtual void unlockMouse() = 0;
     virtual void show() = 0;
     virtual void hide() = 0;
     virtual bool isVisible() const = 0;

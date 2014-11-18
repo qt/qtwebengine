@@ -248,6 +248,7 @@ private:
     QRect m_cursorRect;
     size_t m_anchorPositionWithinSelection;
     size_t m_cursorPositionWithinSelection;
+    QPoint m_lockedMousePosition;
 
     bool m_initPending;
 };

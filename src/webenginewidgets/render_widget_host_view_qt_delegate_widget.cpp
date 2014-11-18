@@ -121,6 +121,16 @@ bool RenderWidgetHostViewQtDelegateWidget::hasKeyboardFocus()
     return hasFocus();
 }
 
+void RenderWidgetHostViewQtDelegateWidget::lockMouse()
+{
+    grabMouse();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::unlockMouse()
+{
+    releaseMouse();
+}
+
 void RenderWidgetHostViewQtDelegateWidget::show()
 {
     // Check if we're attached to a QWebEngineView, we don't

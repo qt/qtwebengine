@@ -352,12 +352,19 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
 // Return value indicates whether the mouse is locked successfully or not.
 bool RenderWidgetHostViewQt::LockMouse()
 {
-    QT_NOT_USED
-    return false;
+    mouse_locked_ = true;
+    m_lockedMousePosition = QCursor::pos();
+    m_delegate->lockMouse();
+    qApp->setOverrideCursor(Qt::BlankCursor);
+    return true;
 }
+
 void RenderWidgetHostViewQt::UnlockMouse()
 {
-    QT_NOT_USED
+    mouse_locked_ = false;
+    m_delegate->unlockMouse();
+    qApp->restoreOverrideCursor();
+    m_host->LostMouseLock();
 }
 
 void RenderWidgetHostViewQt::WasShown()
@@ -833,11 +840,20 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
         m_clickHelper.lastPressPosition = QPointF(event->pos()).toPoint();
     }
 
+    if (IsMouseLocked()) {
+        webEvent.movementX = -(m_lockedMousePosition.x() - event->globalX());
+        webEvent.movementY = -(m_lockedMousePosition.y() - event->globalY());
+        QCursor::setPos(m_lockedMousePosition);
+    }
+
     m_host->ForwardMouseEvent(webEvent);
 }
 
 void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 {
+    if (IsMouseLocked() && ev->key() == Qt::Key_Escape && ev->type() == QEvent::KeyRelease)
+        UnlockMouse();
+
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
     m_host->ForwardKeyboardEvent(webEvent);
     if (webEvent.type == blink::WebInputEvent::RawKeyDown && !ev->text().isEmpty()) {

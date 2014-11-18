@@ -87,6 +87,7 @@ public:
     virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
     virtual void UpdateTargetURL(content::WebContents *source, int32 page_id, const GURL &url) Q_DECL_OVERRIDE;
     virtual void DidNavigateAnyFrame(const content::LoadCommittedDetails&, const content::FrameNavigateParams& params) Q_DECL_OVERRIDE;
+    virtual void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) Q_DECL_OVERRIDE;
 
     void overrideWebPreferences(content::WebContents *, WebPreferences*);
     void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &) ;
