@@ -63,8 +63,6 @@ void ClipboardChangeObserver::trackChange(QClipboard::Mode mode)
     ++sequenceNumber[mode];
 }
 
-namespace ui {
-
 namespace {
 
 const char kMimeTypeBitmap[] = "image/bmp";
@@ -83,210 +81,11 @@ QMimeData *getUncommittedData()
 
 }  // namespace
 
-Clipboard::FormatType::FormatType()
-{
-}
+namespace ui {
 
-Clipboard::FormatType::FormatType(const std::string& format_string)
-    : data_(format_string)
-{
-}
-
-Clipboard::FormatType::~FormatType()
-{
-}
-
-std::string Clipboard::FormatType::Serialize() const
-{
-  return data_;
-}
-
-Clipboard::FormatType Clipboard::FormatType::Deserialize(const std::string& serialization)
-{
-  return FormatType(serialization);
-}
-
-bool Clipboard::FormatType::Equals(const FormatType& other) const
-{
-  return data_ == other.data_;
-}
-
-Clipboard::Clipboard()
-{
-}
-
-Clipboard::~Clipboard()
-{
-}
-
-void Clipboard::WriteObjects(ClipboardType type, const ObjectMap& objects)
-{
-    DCHECK(CalledOnValidThread());
-    DCHECK(IsSupportedClipboardType(type));
-
-    for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end(); ++iter)
-        DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
-
-    // Commit the accumulated data.
-    if (uncommittedData)
-        QGuiApplication::clipboard()->setMimeData(uncommittedData.take(), type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-
-    if (type == CLIPBOARD_TYPE_COPY_PASTE) {
-        ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
-        if (text_iter != objects.end()) {
-            // Copy text and SourceTag to the selection clipboard.
-            ObjectMap::const_iterator next_iter = text_iter;
-            WriteObjects(CLIPBOARD_TYPE_SELECTION, ObjectMap(text_iter, ++next_iter));
-        }
-    }
-}
-
-void Clipboard::WriteText(const char* text_data, size_t text_len)
-{
-    getUncommittedData()->setText(QString::fromUtf8(text_data, text_len));
-}
-
-void Clipboard::WriteHTML(const char* markup_data, size_t markup_len, const char* url_data, size_t url_len)
-{
-    getUncommittedData()->setHtml(QString::fromUtf8(markup_data, markup_len));
-}
-
-void Clipboard::WriteRTF(const char* rtf_data, size_t data_len)
-{
-    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeRTF), QByteArray(rtf_data, data_len));
-}
-
-void Clipboard::WriteWebSmartPaste()
-{
-    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeWebkitSmartPaste), QByteArray());
-}
-
-void Clipboard::WriteBitmap(const SkBitmap& bitmap)
-{
-    QImage image(reinterpret_cast<const uchar *>(bitmap.getPixels()), bitmap.width(), bitmap.height(), QImage::Format_ARGB32);
-    getUncommittedData()->setImageData(image.copy());
-}
-
-void Clipboard::WriteBookmark(const char* title_data, size_t title_len, const char* url_data, size_t url_len)
-{
-    // FIXME: Untested, seems to be used only for drag-n-drop.
-    // Write as a mozilla url (UTF16: URL, newline, title).
-    QString url = QString::fromUtf8(url_data, url_len);
-    QString title = QString::fromUtf8(title_data, title_len);
-
-    QByteArray data;
-    data.append(reinterpret_cast<const char*>(url.utf16()), url.size() * 2);
-    data.append('\n');
-    data.append(reinterpret_cast<const char*>(title.utf16()), title.size() * 2);
-    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeMozillaURL), data);
-}
-
-void Clipboard::WriteData(const FormatType& format, const char* data_data, size_t data_len)
-{
-    getUncommittedData()->setData(QString::fromStdString(format.data_), QByteArray(data_data, data_len));
-}
-
-bool Clipboard::IsFormatAvailable(const Clipboard::FormatType& format, ClipboardType type) const
-{
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    return mimeData->hasFormat(QString::fromStdString(format.data_));
-}
-
-void Clipboard::Clear(ClipboardType type)
-{
-    QGuiApplication::clipboard()->clear(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-}
-
-void Clipboard::ReadAvailableTypes(ui::ClipboardType type, std::vector<base::string16>* types, bool* contains_filenames) const
-{
-    if (!types || !contains_filenames) {
-        NOTREACHED();
-        return;
-    }
-
-    types->clear();
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    Q_FOREACH (const QString &mimeType, mimeData->formats())
-        types->push_back(toString16(mimeType));
-    *contains_filenames = false;
-
-    const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
-    ReadCustomDataTypes(customData.constData(), customData.size(), types);
-}
-
-
-void Clipboard::ReadText(ClipboardType type, base::string16* result) const
-{
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    *result = toString16(mimeData->text());
-}
-
-void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const
-{
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    *result = mimeData->text().toStdString();
-}
-
-void Clipboard::ReadHTML(ClipboardType type, base::string16* markup, std::string* src_url, uint32* fragment_start, uint32* fragment_end) const
-{
-    markup->clear();
-    if (src_url)
-        src_url->clear();
-    *fragment_start = 0;
-    *fragment_end = 0;
-
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    *markup = toString16(mimeData->html());
-    *fragment_end = static_cast<uint32>(markup->length());
-}
-
-void Clipboard::ReadRTF(ClipboardType type, std::string* result) const
-{
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    const QByteArray byteArray = mimeData->data(QString::fromLatin1(kMimeTypeRTF));
-    *result = std::string(byteArray.constData(), byteArray.length());
-}
-
-SkBitmap Clipboard::ReadImage(ClipboardType type) const
-{
-    // FIXME: Untested, pasting image data seems to only be supported through
-    // FileReader.readAsDataURL in JavaScript and this isn't working down the pipe for some reason.
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    QImage image = qvariant_cast<QImage>(mimeData->imageData());
-
-    Q_ASSERT(image.format() == QImage::Format_ARGB32);
-    SkBitmap bitmap;
-    bitmap.setInfo(SkImageInfo::MakeN32(image.width(), image.height(), kOpaque_SkAlphaType));
-    bitmap.setPixels(const_cast<uchar*>(image.constBits()));
-
-    // Return a deep copy of the pixel data.
-    SkBitmap copy;
-    bitmap.copyTo(&copy, kN32_SkColorType);
-    return copy;
-}
-
-void Clipboard::ReadCustomData(ClipboardType clipboard_type, const base::string16& type, base::string16* result) const
-{
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(clipboard_type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
-    ReadCustomDataForType(customData.constData(), customData.size(), type, result);
-}
-
-void Clipboard::ReadBookmark(base::string16* title, std::string* url) const
-{
-    NOTIMPLEMENTED();
-}
-
-void Clipboard::ReadData(const FormatType& format, std::string* result) const
-{
-    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData();
-    const QByteArray byteArray = mimeData->data(QString::fromStdString(format.data_));
-    *result = std::string(byteArray.constData(), byteArray.length());
-}
-
-uint64 Clipboard::GetSequenceNumber(ClipboardType type)
-{
-    return clipboardChangeObserver()->getSequenceNumber(type == CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+// Factory function
+Clipboard* Clipboard::Create() {
+    return new ClipboardQt;
 }
 
 Clipboard::FormatType Clipboard::GetFormatType(const std::string& format_string)
@@ -351,6 +150,35 @@ const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType()
     return type;
 }
 
+
+Clipboard::FormatType::FormatType()
+{
+}
+
+Clipboard::FormatType::FormatType(const std::string& format_string)
+    : data_(format_string)
+{
+}
+
+Clipboard::FormatType::~FormatType()
+{
+}
+
+std::string Clipboard::FormatType::Serialize() const
+{
+  return data_;
+}
+
+Clipboard::FormatType Clipboard::FormatType::Deserialize(const std::string& serialization)
+{
+  return FormatType(serialization);
+}
+
+bool Clipboard::FormatType::Equals(const FormatType& other) const
+{
+  return data_ == other.data_;
+}
+
 #if defined(OS_WIN) || defined(USE_AURA)
 bool Clipboard::FormatType::operator<(const FormatType& other) const
 {
@@ -358,4 +186,176 @@ bool Clipboard::FormatType::operator<(const FormatType& other) const
 }
 #endif
 
-}  // namespace ui
+} // namespace ui
+
+void ClipboardQt::WriteObjects(ui::ClipboardType type, const ObjectMap& objects)
+{
+    DCHECK(CalledOnValidThread());
+    DCHECK(IsSupportedClipboardType(type));
+
+    for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end(); ++iter)
+        DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+
+    // Commit the accumulated data.
+    if (uncommittedData)
+        QGuiApplication::clipboard()->setMimeData(uncommittedData.take(), type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+
+    if (type == ui::CLIPBOARD_TYPE_COPY_PASTE) {
+        ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
+        if (text_iter != objects.end()) {
+            // Copy text and SourceTag to the selection clipboard.
+            ObjectMap::const_iterator next_iter = text_iter;
+            WriteObjects(ui::CLIPBOARD_TYPE_SELECTION, ObjectMap(text_iter, ++next_iter));
+        }
+    }
+}
+
+void ClipboardQt::WriteText(const char* text_data, size_t text_len)
+{
+    getUncommittedData()->setText(QString::fromUtf8(text_data, text_len));
+}
+
+void ClipboardQt::WriteHTML(const char* markup_data, size_t markup_len, const char* url_data, size_t url_len)
+{
+    getUncommittedData()->setHtml(QString::fromUtf8(markup_data, markup_len));
+}
+
+void ClipboardQt::WriteRTF(const char* rtf_data, size_t data_len)
+{
+    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeRTF), QByteArray(rtf_data, data_len));
+}
+
+void ClipboardQt::WriteWebSmartPaste()
+{
+    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeWebkitSmartPaste), QByteArray());
+}
+
+void ClipboardQt::WriteBitmap(const SkBitmap& bitmap)
+{
+    QImage image(reinterpret_cast<const uchar *>(bitmap.getPixels()), bitmap.width(), bitmap.height(), QImage::Format_ARGB32);
+    getUncommittedData()->setImageData(image.copy());
+}
+
+void ClipboardQt::WriteBookmark(const char* title_data, size_t title_len, const char* url_data, size_t url_len)
+{
+    // FIXME: Untested, seems to be used only for drag-n-drop.
+    // Write as a mozilla url (UTF16: URL, newline, title).
+    QString url = QString::fromUtf8(url_data, url_len);
+    QString title = QString::fromUtf8(title_data, title_len);
+
+    QByteArray data;
+    data.append(reinterpret_cast<const char*>(url.utf16()), url.size() * 2);
+    data.append('\n');
+    data.append(reinterpret_cast<const char*>(title.utf16()), title.size() * 2);
+    getUncommittedData()->setData(QString::fromLatin1(kMimeTypeMozillaURL), data);
+}
+
+void ClipboardQt::WriteData(const FormatType& format, const char* data_data, size_t data_len)
+{
+    getUncommittedData()->setData(QString::fromStdString(format.ToString()), QByteArray(data_data, data_len));
+}
+
+bool ClipboardQt::IsFormatAvailable(const ui::Clipboard::FormatType& format, ui::ClipboardType type) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    return mimeData->hasFormat(QString::fromStdString(format.ToString()));
+}
+
+void ClipboardQt::Clear(ui::ClipboardType type)
+{
+    QGuiApplication::clipboard()->clear(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+}
+
+void ClipboardQt::ReadAvailableTypes(ui::ClipboardType type, std::vector<base::string16>* types, bool* contains_filenames) const
+{
+    if (!types || !contains_filenames) {
+        NOTREACHED();
+        return;
+    }
+
+    types->clear();
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    Q_FOREACH (const QString &mimeType, mimeData->formats())
+        types->push_back(toString16(mimeType));
+    *contains_filenames = false;
+
+    const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
+    ui::ReadCustomDataTypes(customData.constData(), customData.size(), types);
+}
+
+
+void ClipboardQt::ReadText(ui::ClipboardType type, base::string16* result) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    *result = toString16(mimeData->text());
+}
+
+void ClipboardQt::ReadAsciiText(ui::ClipboardType type, std::string* result) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    *result = mimeData->text().toStdString();
+}
+
+void ClipboardQt::ReadHTML(ui::ClipboardType type, base::string16* markup, std::string* src_url, uint32* fragment_start, uint32* fragment_end) const
+{
+    markup->clear();
+    if (src_url)
+        src_url->clear();
+    *fragment_start = 0;
+    *fragment_end = 0;
+
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    *markup = toString16(mimeData->html());
+    *fragment_end = static_cast<uint32>(markup->length());
+}
+
+void ClipboardQt::ReadRTF(ui::ClipboardType type, std::string* result) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    const QByteArray byteArray = mimeData->data(QString::fromLatin1(kMimeTypeRTF));
+    *result = std::string(byteArray.constData(), byteArray.length());
+}
+
+SkBitmap ClipboardQt::ReadImage(ui::ClipboardType type) const
+{
+    // FIXME: Untested, pasting image data seems to only be supported through
+    // FileReader.readAsDataURL in JavaScript and this isn't working down the pipe for some reason.
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    QImage image = qvariant_cast<QImage>(mimeData->imageData());
+
+    Q_ASSERT(image.format() == QImage::Format_ARGB32);
+    SkBitmap bitmap;
+    bitmap.setInfo(SkImageInfo::MakeN32(image.width(), image.height(), kOpaque_SkAlphaType));
+    bitmap.setPixels(const_cast<uchar*>(image.constBits()));
+
+    // Return a deep copy of the pixel data.
+    SkBitmap copy;
+    bitmap.copyTo(&copy, kN32_SkColorType);
+    return copy;
+}
+
+void ClipboardQt::ReadCustomData(ui::ClipboardType clipboard_type, const base::string16& type, base::string16* result) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(clipboard_type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
+    ui::ReadCustomDataForType(customData.constData(), customData.size(), type, result);
+}
+
+void ClipboardQt::ReadBookmark(base::string16* title, std::string* url) const
+{
+    NOTIMPLEMENTED();
+}
+
+void ClipboardQt::ReadData(const FormatType& format, std::string* result) const
+{
+    const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData();
+    const QByteArray byteArray = mimeData->data(QString::fromStdString(format.ToString()));
+    *result = std::string(byteArray.constData(), byteArray.length());
+}
+
+uint64 ClipboardQt::GetSequenceNumber(ui::ClipboardType type)
+{
+    return clipboardChangeObserver()->getSequenceNumber(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+}
+
+
