@@ -41,6 +41,7 @@
 #include "web_contents_adapter.h"
 #include "web_contents_adapter_p.h"
 
+#include "browser_accessibility_qt.h"
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
 #include "content_browser_client_qt.h"
@@ -677,8 +678,12 @@ BrowserContextQt* WebContentsAdapter::browserContext()
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     Q_D(const WebContentsAdapter);
-    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(d->webContents->GetRenderWidgetHostView());
-    return rwhv ? rwhv->GetQtAccessible() : Q_NULLPTR;
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    Q_ASSERT(rvh);
+    content::BrowserAccessibilityManager *manager = static_cast<content::RenderFrameHostImpl*>(rvh->GetMainFrame())->GetOrCreateBrowserAccessibilityManager();
+    content::BrowserAccessibility *acc = manager->GetRoot();
+    content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
+    return accQt;
 }
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript)

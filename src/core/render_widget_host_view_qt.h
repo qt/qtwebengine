@@ -93,7 +93,6 @@ class RenderWidgetHostViewQt
     : public content::RenderWidgetHostViewBase
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
-    , public content::BrowserAccessibilityDelegate
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
     , public QAccessible::ActivationObserver
 {
@@ -198,20 +197,8 @@ public:
 #endif // defined(OS_WIN)
 
     // Overridden from content::BrowserAccessibilityDelegate
-    virtual void AccessibilitySetFocus(int acc_obj_id) Q_DECL_OVERRIDE;
-    virtual void AccessibilityDoDefaultAction(int acc_obj_id) Q_DECL_OVERRIDE;
-    virtual void AccessibilityShowMenu(const gfx::Point& point) Q_DECL_OVERRIDE { }
-    virtual void AccessibilityScrollToMakeVisible(int acc_obj_id, const gfx::Rect& subfocus) Q_DECL_OVERRIDE;
-    virtual void AccessibilityScrollToPoint(int acc_obj_id, const gfx::Point& point) Q_DECL_OVERRIDE;
-    virtual void AccessibilitySetTextSelection(int acc_obj_id, int start_offset, int end_offset) Q_DECL_OVERRIDE;
-    virtual bool AccessibilityViewHasFocus() const Q_DECL_OVERRIDE;
-    virtual gfx::Rect AccessibilityGetViewBounds() const Q_DECL_OVERRIDE  { return GetViewBounds(); }
-    virtual gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) const Q_DECL_OVERRIDE  { return gfx::Point(); }
-    virtual void AccessibilityHitTest(const gfx::Point& point) Q_DECL_OVERRIDE  { }
-    virtual void AccessibilityFatalError() Q_DECL_OVERRIDE;
+    virtual content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate) Q_DECL_OVERRIDE;
     virtual void accessibilityActiveChanged(bool active) Q_DECL_OVERRIDE;
-
-    QAccessibleInterface *GetQtAccessible();
 
     void didFirstVisuallyNonEmptyLayout();
 
@@ -222,7 +209,6 @@ private:
     float dpiScale() const;
 
     bool IsPopup() const;
-    void CreateBrowserAccessibilityManagerIfNeeded();
 
     content::RenderWidgetHostImpl *m_host;
     ui::FilteredGestureProvider m_gestureProvider;

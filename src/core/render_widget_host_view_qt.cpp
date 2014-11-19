@@ -305,15 +305,12 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
     return 0;
 }
 
-void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
+content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate)
 {
-    if (GetBrowserAccessibilityManager())
-        return;
-
-    SetBrowserAccessibilityManager(new content::BrowserAccessibilityManagerQt(
+    return new content::BrowserAccessibilityManagerQt(
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
-        this));
+        delegate);
 }
 
 // Set focus to the associated View component.
@@ -904,53 +901,6 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     }
 }
 
-void RenderWidgetHostViewQt::AccessibilitySetFocus(int acc_obj_id)
-{
-    if (!m_host)
-        return;
-    m_host->AccessibilitySetFocus(acc_obj_id);
-}
-
-void RenderWidgetHostViewQt::AccessibilityDoDefaultAction(int acc_obj_id)
-{
-    if (!m_host)
-      return;
-    m_host->AccessibilityDoDefaultAction(acc_obj_id);
-}
-void RenderWidgetHostViewQt::AccessibilityScrollToMakeVisible(int acc_obj_id, const gfx::Rect& subfocus)
-{
-    if (!m_host)
-        return;
-    m_host->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
-}
-
-void RenderWidgetHostViewQt::AccessibilityScrollToPoint(int acc_obj_id, const gfx::Point& point)
-{
-    if (!m_host)
-      return;
-    m_host->AccessibilityScrollToPoint(acc_obj_id, point);
-}
-
-void RenderWidgetHostViewQt::AccessibilitySetTextSelection(int acc_obj_id, int start_offset, int end_offset)
-{
-    if (!m_host)
-        return;
-    m_host->AccessibilitySetTextSelection(acc_obj_id, start_offset, end_offset);
-}
-
-bool RenderWidgetHostViewQt::AccessibilityViewHasFocus() const
-{
-    return HasFocus();
-}
-
-void RenderWidgetHostViewQt::AccessibilityFatalError()
-{
-    if (!m_host)
-        return;
-    m_host->AccessibilityFatalError();
-    SetBrowserAccessibilityManager(NULL);
-}
-
 void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
 {
     if (active)
@@ -1038,16 +988,6 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         m_host->Blur();
         ev->accept();
     }
-}
-
-QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
-{
-    // Assume we have a screen reader doing stuff
-    CreateBrowserAccessibilityManagerIfNeeded();
-    content::BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
-    content::BrowserAccessibility *acc = GetBrowserAccessibilityManager()->GetRoot();
-    content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
-    return accQt;
 }
 
 void RenderWidgetHostViewQt::didFirstVisuallyNonEmptyLayout()
