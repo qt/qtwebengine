@@ -152,12 +152,37 @@ static inline bool compareTouchPoints(const QTouchEvent::TouchPoint &lhs, const 
     return lhs.state() < rhs.state();
 }
 
+static inline int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
+{
+    int modifierFlags = ui::EF_NONE;
+#if defined(Q_OS_OSX)
+    if (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        if ((modifiers & Qt::ControlModifier) != 0)
+            modifierFlags |= ui::EF_COMMAND_DOWN;
+        if ((modifiers & Qt::MetaModifier) != 0)
+            modifierFlags |= ui::EF_CONTROL_DOWN;
+    } else
+#endif
+    {
+        if ((modifiers & Qt::ControlModifier) != 0)
+            modifierFlags |= ui::EF_CONTROL_DOWN;
+        if ((modifiers & Qt::MetaModifier) != 0)
+            modifierFlags |= ui::EF_COMMAND_DOWN;
+    }
+    if ((modifiers & Qt::ShiftModifier) != 0)
+        modifierFlags |= ui::EF_SHIFT_DOWN;
+    if ((modifiers & Qt::AltModifier) != 0)
+        modifierFlags |= ui::EF_ALT_DOWN;
+    return modifierFlags;
+}
+
 class MotionEventQt : public ui::MotionEvent {
 public:
-    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, int index = -1)
+    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, int index = -1)
         : touchPoints(touchPoints)
         , eventTime(eventTime)
         , action(action)
+        , flags(flagsFromModifiers(modifiers))
         , index(index)
     {
         // ACTION_DOWN and ACTION_UP must be accesssed through pointer_index 0
@@ -173,7 +198,21 @@ public:
     virtual float GetY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().y(); }
     virtual float GetRawX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().x(); }
     virtual float GetRawY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().y(); }
-    virtual float GetTouchMajor(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).rect().height(); }
+    virtual float GetTouchMajor(size_t pointer_index) const Q_DECL_OVERRIDE
+    {
+        QRectF touchRect = touchPoints.at(pointer_index).rect();
+        return std::max(touchRect.height(), touchRect.width());
+    }
+    virtual float GetTouchMinor(size_t pointer_index) const Q_DECL_OVERRIDE
+    {
+        QRectF touchRect = touchPoints.at(pointer_index).rect();
+        return std::min(touchRect.height(), touchRect.width());
+    }
+    virtual float GetOrientation(size_t pointer_index) const Q_DECL_OVERRIDE
+    {
+        return 0;
+    }
+    virtual int GetFlags() const Q_DECL_OVERRIDE { return flags; }
     virtual float GetPressure(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pressure(); }
     virtual base::TimeTicks GetEventTime() const Q_DECL_OVERRIDE { return eventTime; }
 
@@ -189,6 +228,7 @@ private:
     QList<QTouchEvent::TouchPoint> touchPoints;
     base::TimeTicks eventTime;
     Action action;
+    int flags;
     int index;
 };
 
@@ -929,7 +969,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     QList<QTouchEvent::TouchPoint> touchPoints = mapTouchPointIds(ev->touchPoints());
 
     if (ev->type() == QEvent::TouchCancel) {
-        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL);
+        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL, ev->modifiers());
         processMotionEvent(cancelEvent);
         return;
     }
@@ -962,7 +1002,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             continue;
         }
 
-        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, i);
+        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), i);
         processMotionEvent(motionEvent);
     }
 }

@@ -64,6 +64,7 @@
 #include "web_event_factory.h"
 #include "third_party/WebKit/Source/platform/WindowsKeyboardCodes.h"
 
+#include <QCoreApplication>
 #include <QElapsedTimer>
 #include <QKeyEvent>
 #include <QMouseEvent>
@@ -478,14 +479,52 @@ static unsigned mouseButtonsModifiersForEvent(const T* event)
     return ret;
 }
 
+// If only a modifier key is pressed, Qt only reports the key code.
+// But Chromium also expects the modifier being set.
+static inline WebInputEvent::Modifiers modifierForKeyCode(int key)
+{
+    switch (key) {
+        case Qt::Key_Shift:
+            return WebInputEvent::ShiftKey;
+        case Qt::Key_Alt:
+            return WebInputEvent::AltKey;
+#if defined(Q_OS_OSX)
+        case Qt::Key_Control:
+            return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? WebInputEvent::MetaKey : WebInputEvent::ControlKey;
+        case Qt::Key_Meta:
+            return (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) ? WebInputEvent::ControlKey : WebInputEvent::MetaKey;
+#else
+        case Qt::Key_Control:
+            return WebInputEvent::ControlKey;
+        case Qt::Key_Meta:
+            return WebInputEvent::MetaKey;
+#endif
+        default:
+            return static_cast<WebInputEvent::Modifiers>(0);
+    }
+}
+
 static inline WebInputEvent::Modifiers modifiersForEvent(const QInputEvent* event)
 {
     unsigned result = 0;
     Qt::KeyboardModifiers modifiers = event->modifiers();
+#if defined(Q_OS_OSX)
+    if (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
+        if (modifiers & Qt::ControlModifier)
+            result |= WebInputEvent::MetaKey;
+        if (modifiers & Qt::MetaModifier)
+            result |= WebInputEvent::ControlKey;
+    } else
+#endif
+    {
+        if (modifiers & Qt::ControlModifier)
+            result |= WebInputEvent::ControlKey;
+        if (modifiers & Qt::MetaModifier)
+            result |= WebInputEvent::MetaKey;
+    }
+
     if (modifiers & Qt::ShiftModifier)
         result |= WebInputEvent::ShiftKey;
-    if (modifiers & Qt::ControlModifier)
-        result |= WebInputEvent::ControlKey;
     if (modifiers & Qt::AltModifier)
         result |= WebInputEvent::AltKey;
     if (modifiers & Qt::MetaModifier)
@@ -503,9 +542,12 @@ static inline WebInputEvent::Modifiers modifiersForEvent(const QInputEvent* even
         result |= mouseButtonsModifiersForEvent(static_cast<const QWheelEvent*>(event));
         break;
     case QEvent::KeyPress:
-    case QEvent::KeyRelease:
-        if (static_cast<const QKeyEvent*>(event)->isAutoRepeat())
+    case QEvent::KeyRelease: {
+        const QKeyEvent *keyEvent = static_cast<const QKeyEvent*>(event);
+        if (keyEvent->isAutoRepeat())
             result |= WebInputEvent::IsAutoRepeat;
+        result |= modifierForKeyCode(keyEvent->key());
+    }
     default:
         break;
     }
