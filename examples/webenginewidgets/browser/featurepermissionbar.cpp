@@ -80,12 +80,13 @@ FeaturePermissionBar::FeaturePermissionBar(QWidget *view)
     l->addStretch();
     QPushButton *allowButton = new QPushButton(tr("Allow"), this);
     QPushButton *denyButton = new QPushButton(tr("Deny"), this);
+    QPushButton *discardButton = new QPushButton(QIcon(QStringLiteral(":closetab.png")), QString(), this);
     connect(allowButton, &QPushButton::clicked, this, &FeaturePermissionBar::permissionGranted);
     connect(denyButton, &QPushButton::clicked, this, &FeaturePermissionBar::permissionDenied);
-    QPushButton *discardButton = new QPushButton(QIcon(QStringLiteral(":closetab.png")), QString(), this);
-    connect(discardButton, &QPushButton::clicked, this, &QObject::deleteLater);
+    connect(discardButton, &QPushButton::clicked, this, &FeaturePermissionBar::permissionUnknown);
     connect(allowButton, &QPushButton::clicked, this, &QObject::deleteLater);
     connect(denyButton, &QPushButton::clicked, this, &QObject::deleteLater);
+    connect(discardButton, &QPushButton::clicked, this, &QObject::deleteLater);
     l->addWidget(denyButton);
     l->addWidget(allowButton);
     l->addWidget(discardButton);
@@ -117,4 +118,9 @@ void FeaturePermissionBar::permissionDenied()
 void FeaturePermissionBar::permissionGranted()
 {
     emit featurePermissionProvided(m_securityOrigin, m_feature, QWebEnginePage::PermissionGrantedByUser);
+}
+
+void FeaturePermissionBar::permissionUnknown()
+{
+    emit featurePermissionProvided(m_securityOrigin, m_feature, QWebEnginePage::PermissionUnknown);
 }

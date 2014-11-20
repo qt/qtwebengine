@@ -63,6 +63,7 @@ signals:
 private slots:
     void permissionDenied();
     void permissionGranted();
+    void permissionUnknown();
 
 private:
     QWebEnginePage::Feature m_feature;
