@@ -110,6 +110,7 @@ public:
     void wasHidden();
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);
     void runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed);
+    void grantMouseLockPermission(bool granted);
 
     void dpiScaleChanged();
     QAccessibleInterface *browserAccessible();

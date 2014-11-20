@@ -154,7 +154,8 @@ public:
 #endif
         MediaAudioCapture = 2,
         MediaVideoCapture,
-        MediaAudioVideoCapture
+        MediaAudioVideoCapture,
+        MouseLock
     };
 
     // Ex-QWebFrame enum

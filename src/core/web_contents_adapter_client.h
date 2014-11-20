@@ -174,6 +174,7 @@ public:
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
     virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
+    virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
 
     virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController) = 0;

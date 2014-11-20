@@ -776,6 +776,20 @@ void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigi
     d->webContentsDelegate->m_lastGeolocationRequestCallbacks.first.Run(allowed);
 }
 
+void WebContentsAdapter::grantMouseLockPermission(bool granted)
+{
+    Q_D(WebContentsAdapter);
+
+    if (granted) {
+        if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(d->webContents->GetRenderWidgetHostView()))
+            rwhv->Focus();
+        else
+            granted = false;
+    }
+
+    d->webContents->GotResponseToLockMouseRequest(granted);
+}
+
 void WebContentsAdapter::dpiScaleChanged()
 {
     Q_D(WebContentsAdapter);

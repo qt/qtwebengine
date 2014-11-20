@@ -352,6 +352,12 @@ void QWebEnginePagePrivate::runGeolocationPermissionRequest(const QUrl &security
     Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::Geolocation);
 }
 
+void QWebEnginePagePrivate::runMouseLockPermissionRequest(const QUrl &securityOrigin)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::MouseLock);
+}
+
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view;
@@ -816,6 +822,12 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
         break;
     case QWebEnginePage::Geolocation:
         d->adapter->runGeolocationRequestCallback(securityOrigin, (policy == PermissionGrantedByUser) ? true : false);
+        break;
+    case MouseLock:
+        if (policy == PermissionGrantedByUser)
+            d->adapter->grantMouseLockPermission(true);
+        else
+            d->adapter->grantMouseLockPermission(false);
         break;
     default:
         break;

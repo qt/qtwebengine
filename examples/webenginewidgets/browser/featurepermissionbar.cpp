@@ -53,15 +53,17 @@ static QString textForPermissionType(QWebEnginePage::Feature type)
 {
     switch (type) {
     case QWebEnginePage::Notifications:
-        return QObject::tr("desktop notifications");
+        return QObject::tr("use desktop notifications");
     case QWebEnginePage::Geolocation:
-        return QObject::tr("your position");
+        return QObject::tr("use your position");
     case QWebEnginePage::MediaAudioCapture:
-        return QObject::tr("your microphone");
+        return QObject::tr("use your microphone");
     case QWebEnginePage::MediaVideoCapture:
-        return QObject::tr("your camera");
+        return QObject::tr("use your camera");
     case QWebEnginePage::MediaAudioVideoCapture:
-        return QObject::tr("your camera and microphone");
+        return QObject::tr("use your camera and microphone");
+    case QWebEnginePage::MouseLock:
+        return QObject::tr("lock your mouse");
     default:
         Q_UNREACHABLE();
     }
@@ -97,7 +99,7 @@ void FeaturePermissionBar::requestPermission(const QUrl &securityOrigin, QWebEng
 {
     m_securityOrigin = securityOrigin;
     m_feature = feature;
-    m_messageLabel->setText(tr("%1 wants to use %2.").arg(securityOrigin.host()).arg(textForPermissionType(feature)));
+    m_messageLabel->setText(tr("%1 wants to %2.").arg(securityOrigin.host()).arg(textForPermissionType(feature)));
     show();
     // Ease in
     QPropertyAnimation *animation = new QPropertyAnimation(this);

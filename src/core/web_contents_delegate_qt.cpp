@@ -282,8 +282,7 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
     if (last_unlocked_by_target)
         web_contents->GotResponseToLockMouseRequest(true);
     else
-        // TODO: Send permission request
-        web_contents->GotResponseToLockMouseRequest(true);
+        m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetVisibleURL()));
 }
 
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, WebPreferences *webPreferences)
