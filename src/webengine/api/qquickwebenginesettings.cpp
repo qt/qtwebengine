@@ -43,6 +43,20 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QList<QQuickWebEngineSettingsPrivate*>, allSettings)
 
+class QQuickWebEngineGlobalSettings {
+    QQuickWebEngineSettings globalSettings;
+public:
+    QQuickWebEngineGlobalSettings() {
+        // globalSettings shouldn't be in that list.
+        allSettings->removeAll(globalSettings.d_func());
+        globalSettings.d_func()->coreSettings->initDefaults();
+    }
+
+    QQuickWebEngineSettings *data() { return &globalSettings; }
+};
+
+Q_GLOBAL_STATIC(QQuickWebEngineGlobalSettings, globalInstance)
+
 QQuickWebEngineSettingsPrivate::QQuickWebEngineSettingsPrivate()
     : coreSettings(new WebEngineSettings(this))
 {
@@ -64,16 +78,9 @@ WebEngineSettings *QQuickWebEngineSettingsPrivate::fallbackSettings() const
     return QQuickWebEngineSettings::globalSettings()->d_func()->coreSettings.data();
 }
 
-
 QQuickWebEngineSettings *QQuickWebEngineSettings::globalSettings()
 {
-    static QQuickWebEngineSettings *globals = 0;
-    if (!globals) {
-        globals = new QQuickWebEngineSettings;
-        allSettings->removeAll(globals->d_func());
-        globals->d_func()->coreSettings->initDefaults();
-    }
-    return globals;
+    return globalInstance()->data();
 }
 
 QQuickWebEngineSettings::~QQuickWebEngineSettings()

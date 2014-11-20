@@ -48,7 +48,6 @@ class QWebEngineSettingsPrivate : public WebEngineSettingsDelegate {
 public:
     QWebEngineSettingsPrivate();
 
-    void initDefaults();
     void apply() Q_DECL_OVERRIDE;
     WebEngineSettings *fallbackSettings() const Q_DECL_OVERRIDE;
 

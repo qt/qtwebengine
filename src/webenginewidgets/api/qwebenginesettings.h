@@ -31,6 +31,7 @@ class QIcon;
 class QPixmap;
 class QUrl;
 class QWebEngineSettingsPrivate;
+class QWebEngineGlobalSettings;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineSettings {
 public:
@@ -87,6 +88,7 @@ private:
     Q_DECLARE_PRIVATE(QWebEngineSettings);
     QScopedPointer<QWebEngineSettingsPrivate> d_ptr;
     friend class QWebEnginePagePrivate;
+    friend class QWebEngineGlobalSettings;
 
     QWebEngineSettings();
     ~QWebEngineSettings();

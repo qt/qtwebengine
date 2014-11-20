@@ -44,6 +44,7 @@
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineSettingsPrivate;
+class QQuickWebEngineGlobalSettings;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_OBJECT
@@ -110,6 +111,7 @@ private:
     Q_DISABLE_COPY(QQuickWebEngineSettings)
     Q_DECLARE_PRIVATE(QQuickWebEngineSettings)
     friend class QQuickWebEngineViewPrivate;
+    friend class QQuickWebEngineGlobalSettings;
 
     QScopedPointer<QQuickWebEngineSettingsPrivate> d_ptr;
 };

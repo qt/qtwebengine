@@ -39,7 +39,7 @@
 
 #include <QDebug>
 
-QT_USE_NAMESPACE
+QT_BEGIN_NAMESPACE
 
 static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::WebAttribute attribute) {
     switch (attribute) {
@@ -74,7 +74,21 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
     }
 }
 
-Q_GLOBAL_STATIC(QList<QWebEngineSettingsPrivate*>, allSettings);
+Q_GLOBAL_STATIC(QList<QWebEngineSettingsPrivate*>, allSettings)
+
+class QWebEngineGlobalSettings {
+    QWebEngineSettings globalSettings;
+public:
+    QWebEngineGlobalSettings() {
+        // globalSettings shouldn't be in that list.
+        allSettings->removeAll(globalSettings.d_func());
+        globalSettings.d_func()->coreSettings->initDefaults();
+    }
+
+    QWebEngineSettings *data() { return &globalSettings; }
+};
+
+Q_GLOBAL_STATIC(QWebEngineGlobalSettings, globalInstance)
 
 QWebEngineSettingsPrivate::QWebEngineSettingsPrivate()
     : coreSettings(new WebEngineSettings(this))
@@ -92,25 +106,13 @@ void QWebEngineSettingsPrivate::apply()
     }
 }
 
-void QWebEngineSettingsPrivate::initDefaults()
-{
-    coreSettings->initDefaults();
-}
-
 WebEngineSettings *QWebEngineSettingsPrivate::fallbackSettings() const {
     return QWebEngineSettings::globalSettings()->d_func()->coreSettings.data();
 }
 
 QWebEngineSettings *QWebEngineSettings::globalSettings()
 {
-    static QWebEngineSettings* globalSettings = 0;
-    if (!globalSettings) {
-        globalSettings = new QWebEngineSettings;
-        // globalSettings shouldn't be in that list.
-        allSettings->removeAll(globalSettings->d_func());
-        globalSettings->d_func()->initDefaults();
-    }
-    return globalSettings;
+    return globalInstance()->data();
 }
 
 Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::StandardFont) == static_cast<int>(QWebEngineSettings::StandardFont), "The enum values must match");
@@ -215,3 +217,5 @@ void QWebEngineSettings::resetAttribute(QWebEngineSettings::WebAttribute attr)
 {
     setAttribute(attr, globalSettings()->testAttribute(attr));
 }
+
+QT_END_NAMESPACE
