@@ -108,13 +108,17 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('version.py') and
             not file_path.endswith('.grd') and
             not file_path.endswith('.grdp') and
-            not file_path.endswith('.json'))
+            not file_path.endswith('.json') and
+            not file_path.endswith('chrome_version.rc.version'))
         or file_path.startswith('chrome_frame')
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
         or (file_path.startswith('components') and
             not file_path.startswith('components/tracing') and
-            not file_path.startswith('components/visitedlink'))
+            not file_path.startswith('components/visitedlink') and
+            not file_path.startswith('components/error_page') and
+            not file_path.endswith('.grdp') and
+            not 'components_strings' in file_path)
         or file_path.startswith('content/public/android/java')
         or file_path.startswith('content/shell')
         or file_path.startswith('courgette')
@@ -157,9 +161,11 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/cros_dbus_cplusplus')
         or file_path.startswith('third_party/cros_system_api')
         or file_path.startswith('third_party/cygwin')
+        or file_path.startswith('third_party/cython')
         or file_path.startswith('third_party/elfutils')
         or file_path.startswith('third_party/eyesfree')
         or file_path.startswith('third_party/findbugs')
+        or file_path.startswith('third_party/google_input_tools')
         or file_path.startswith('third_party/gperf')
         or file_path.startswith('third_party/gnu_binutils')
         or file_path.startswith('third_party/gtk+')
@@ -173,6 +179,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jarjar')
         or file_path.startswith('third_party/jsr-305/src')
+        or file_path.startswith('third_party/junit')
         or file_path.startswith('third_party/libphonenumber')
         or file_path.startswith('third_party/libaddressinput')
         or file_path.startswith('third_party/libc++')
@@ -182,6 +189,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/markdown')
         or file_path.startswith('third_party/mingw-w64')
         or file_path.startswith('third_party/nacl_sdk_binaries')
+        or file_path.startswith('third_party/polymer')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')
