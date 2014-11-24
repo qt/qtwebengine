@@ -142,14 +142,14 @@ scoped_refptr<WebEngineContext> WebEngineContext::current()
 BrowserContextAdapter* WebEngineContext::defaultBrowserContext()
 {
     if (!m_defaultBrowserContext)
-        m_defaultBrowserContext.reset(new BrowserContextAdapter());
+        m_defaultBrowserContext.reset(new BrowserContextAdapter(QStringLiteral("Default"), false));
     return m_defaultBrowserContext.get();
 }
 
 BrowserContextAdapter* WebEngineContext::offTheRecordBrowserContext()
 {
     if (!m_offTheRecordBrowserContext)
-        m_offTheRecordBrowserContext.reset(new BrowserContextAdapter(true));
+        m_offTheRecordBrowserContext.reset(new BrowserContextAdapter(QStringLiteral("OTR"), true));
     return m_offTheRecordBrowserContext.get();
 }
 

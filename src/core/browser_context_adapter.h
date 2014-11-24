@@ -41,6 +41,7 @@
 
 #include <QScopedPointer>
 #include <QSharedData>
+#include <QString>
 
 class BrowserContextQt;
 class WebEngineVisitedLinksManager;
@@ -62,9 +63,10 @@ public:
     QString cachePath() const;
 
 protected:
-    explicit BrowserContextAdapter(bool offTheRecord = false);
+    BrowserContextAdapter(const QString &name, bool offTheRecord = false);
 
 private:
+    const QString m_name;
     bool m_offTheRecord;
     QScopedPointer<BrowserContextQt> m_browserContext;
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;

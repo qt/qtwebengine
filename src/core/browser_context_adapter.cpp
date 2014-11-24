@@ -47,19 +47,19 @@
 #include <QStandardPaths>
 
 namespace {
-inline QString buildLocationFromStandardPath(const QString &standardPath) {
+inline QString buildLocationFromStandardPath(const QString &standardPath, const QString &name) {
     QString location = standardPath;
     if (location.isEmpty())
         location = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
 
-    location.append(QDir::separator() % QLatin1String("QtWebEngine")
-                         % QDir::separator() % QLatin1String("Default"));
+    location.append(QDir::separator() % QLatin1String("QtWebEngine") % QDir::separator() % name);
     return location;
 }
 }
 
-BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
-    : m_offTheRecord(offTheRecord)
+BrowserContextAdapter::BrowserContextAdapter(const QString &name, bool offTheRecord)
+    : m_name(name)
+    , m_offTheRecord(offTheRecord)
     , m_browserContext(new BrowserContextQt(this))
     , m_visitedLinksManager(new WebEngineVisitedLinksManager(this))
 {
@@ -91,10 +91,10 @@ BrowserContextAdapter* BrowserContextAdapter::offTheRecordContext()
 
 QString BrowserContextAdapter::dataPath() const
 {
-    return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation));
+    return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::DataLocation), m_name);
 }
 
 QString BrowserContextAdapter::cachePath() const
 {
-    return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
+    return buildLocationFromStandardPath(QStandardPaths::writableLocation(QStandardPaths::CacheLocation), m_name);
 }
