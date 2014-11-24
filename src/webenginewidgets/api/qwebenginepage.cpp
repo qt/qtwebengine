@@ -28,6 +28,8 @@
 #include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
+#include "qwebengineprofile.h"
+#include "qwebengineprofile_p.h"
 #include "qwebenginesettings.h"
 #include "qwebenginesettings_p.h"
 #include "qwebengineview.h"
@@ -167,9 +169,10 @@ void CallbackDirectory::CallbackSharedDataPointer::doDeref()
     }
 }
 
-QWebEnginePagePrivate::QWebEnginePagePrivate()
+QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     : adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
+    , profile(_profile ? _profile : QWebEngineProfile::defaultProfile())
     , settings(new QWebEngineSettings)
     , view(0)
     , isLoading(false)
@@ -419,12 +422,29 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 
 BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
 {
-    return BrowserContextAdapter::defaultContext();
+    return profile->d_ptr->browserContext();
 }
 
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(parent)
-    , d_ptr(new QWebEnginePagePrivate)
+    , d_ptr(new QWebEnginePagePrivate())
+{
+    Q_D(QWebEnginePage);
+    d->q_ptr = this;
+    d->adapter->initialize(d);
+}
+
+/*!
+    Constructs an empty QWebEnginePage in the QWebEngineProfile \a profile with parent \a parent.
+
+    If the profile is not the default profile the caller must ensure the profile is alive for as
+    long as the page is.
+
+    \since 5.5
+*/
+QWebEnginePage::QWebEnginePage(QWebEngineProfile *profile, QObject* parent)
+    : QObject(parent)
+    , d_ptr(new QWebEnginePagePrivate(profile))
 {
     Q_D(QWebEnginePage);
     d->q_ptr = this;
@@ -458,6 +478,16 @@ QWidget *QWebEnginePage::view() const
 {
     Q_D(const QWebEnginePage);
     return d->view;
+}
+
+/*!
+    Returns the QWebEngineProfile the page belongs to.
+    \since 5.5
+*/
+QWebEngineProfile *QWebEnginePage::profile() const
+{
+    Q_D(const QWebEnginePage);
+    return d->profile;
 }
 
 bool QWebEnginePage::hasSelection() const

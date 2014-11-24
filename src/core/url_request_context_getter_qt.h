@@ -40,6 +40,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/content_browser_client.h"
@@ -50,26 +51,41 @@
 #include "qglobal.h"
 
 namespace net {
-class HostResolver;
 class MappedHostResolver;
 class NetworkDelegate;
 class ProxyConfigService;
 }
 
-class BrowserContextQt;
+class BrowserContextAdapter;
 
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
-    explicit URLRequestContextGetterQt(BrowserContextQt *browserContext, content::ProtocolHandlerMap *protocolHandlers);
+    explicit URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers);
 
     virtual net::URLRequestContext *GetURLRequestContext() Q_DECL_OVERRIDE;
     virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
 
+    // Called on the UI thread:
+    void updateStorageSettings();
+    void updateUserAgent();
+    void updateCookieStore();
+    void updateHttpCache();
+
 private:
     virtual ~URLRequestContextGetterQt() {}
 
+    // Called on the IO thread:
+    void generateStorage();
+    void generateCookieStore();
+    void generateHttpCache();
+    void generateUserAgent();
+    void generateJobFactory();
+
     bool m_ignoreCertificateErrors;
-    BrowserContextQt *m_browserContext;
+    volatile bool m_updateStorageSettings;
+    volatile bool m_updateCookieStore;
+    volatile bool m_updateHttpCache;
+    BrowserContextAdapter *m_browserContext;
     content::ProtocolHandlerMap m_protocolHandlers;
 
     scoped_ptr<net::ProxyConfigService> m_proxyConfigService;

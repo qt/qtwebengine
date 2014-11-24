@@ -347,10 +347,13 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 {
     Q_D(WebContentsAdapter);
     d->adapterClient = adapterClient;
+    // We keep a reference to browserContextAdapter to keep it alive as long as we use it.
+    // This is needed in case the QML WebEngineProfile is garbage collected before the WebEnginePage.
+    d->browserContextAdapter = adapterClient->browserContextAdapter();
 
     // Create our own if a WebContents wasn't provided at construction.
     if (!d->webContents)
-        d->webContents.reset(createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->browserContext()));
+        d->webContents.reset(createBlankWebContents(adapterClient, d->browserContextAdapter->browserContext()));
 
     // This might replace any adapter that has been initialized with this WebEngineSettings.
     adapterClient->webEngineSettings()->setWebContentsAdapter(this);
@@ -631,7 +634,7 @@ void WebContentsAdapter::enableInspector(bool enable)
 BrowserContextQt* WebContentsAdapter::browserContext()
 {
     Q_D(WebContentsAdapter);
-    return static_cast<BrowserContextQt*>(d->webContents->GetBrowserContext());
+    return d->browserContextAdapter->browserContext();
 }
 
 QAccessibleInterface *WebContentsAdapter::browserAccessible()

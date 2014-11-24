@@ -51,7 +51,6 @@
 BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     : m_adapter(adapter)
 {
-    resourceContext.reset(new ResourceContextQt(this));
 }
 
 BrowserContextQt::~BrowserContextQt()
@@ -102,6 +101,8 @@ net::URLRequestContextGetter *BrowserContextQt::GetMediaRequestContextForStorage
 
 content::ResourceContext *BrowserContextQt::GetResourceContext()
 {
+    if (!resourceContext)
+        resourceContext.reset(new ResourceContextQt(this));
     return resourceContext.get();
 }
 
@@ -128,7 +129,7 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(this, protocol_handlers);
-    static_cast<ResourceContextQt*>(resourceContext.get())->set_url_request_context_getter(url_request_getter_.get());
+    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers);
+    static_cast<ResourceContextQt*>(GetResourceContext())->set_url_request_context_getter(url_request_getter_.get());
     return url_request_getter_.get();
 }

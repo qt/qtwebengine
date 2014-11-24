@@ -42,6 +42,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
+#include <QExplicitlySharedDataPointer>
+
+class BrowserContextAdapter;
 class QtRenderViewObserverHost;
 class WebContentsAdapterClient;
 class WebContentsDelegateQt;
@@ -52,6 +55,7 @@ public:
     WebContentsAdapterPrivate();
     ~WebContentsAdapterPrivate();
     scoped_refptr<WebEngineContext> engineContext;
+    QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
     scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;

@@ -34,48 +34,27 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_CONTEXT_H
-#define WEB_ENGINE_CONTEXT_H
-
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-
-#include <QExplicitlySharedDataPointer>
-
-namespace base {
-class RunLoop;
-}
-
-namespace content {
-class BrowserMainRunner;
-class ContentMainRunner;
-}
+#ifndef QWEBENGINEPROFILE_P_H
+#define QWEBENGINEPROFILE_P_H
 
 class BrowserContextAdapter;
-class ContentMainDelegateQt;
-class SurfaceFactoryQt;
 
-class WebEngineContext : public base::RefCounted<WebEngineContext> {
+QT_BEGIN_NAMESPACE
+
+class QWebEngineSettings;
+
+class QWebEngineProfilePrivate {
 public:
-    static scoped_refptr<WebEngineContext> current();
+    QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext);
+    ~QWebEngineProfilePrivate();
 
-    BrowserContextAdapter *defaultBrowserContext();
-    BrowserContextAdapter *offTheRecordBrowserContext();
+    BrowserContextAdapter *browserContext() const { return m_browserContext; }
 
 private:
-    friend class base::RefCounted<WebEngineContext>;
-    WebEngineContext();
-    ~WebEngineContext();
-
-    scoped_ptr<base::RunLoop> m_runLoop;
-    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
-    scoped_ptr<content::ContentMainRunner> m_contentRunner;
-    scoped_ptr<content::BrowserMainRunner> m_browserRunner;
-#if defined(OS_ANDROID)
-    scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
-#endif
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_defaultBrowserContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_offTheRecordBrowserContext;
+    BrowserContextAdapter *m_browserContext;
+    QExplicitlySharedDataPointer<BrowserContextAdapter> m_browserContextRef;
 };
 
-#endif // WEB_ENGINE_CONTEXT_H
+QT_END_NAMESPACE
+
+#endif // QWEBENGINEPROFILE_P_H

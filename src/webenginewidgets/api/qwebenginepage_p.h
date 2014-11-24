@@ -49,6 +49,7 @@ class WebContentsAdapter;
 QT_BEGIN_NAMESPACE
 class QWebEngineHistory;
 class QWebEnginePage;
+class QWebEngineProfile;
 class QWebEngineSettings;
 class QWebEngineView;
 
@@ -101,7 +102,7 @@ public:
     Q_DECLARE_PUBLIC(QWebEnginePage)
     QWebEnginePage *q_ptr;
 
-    QWebEnginePagePrivate();
+    QWebEnginePagePrivate(QWebEngineProfile *profile = 0);
     ~QWebEnginePagePrivate();
 
     virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE;
@@ -151,6 +152,7 @@ public:
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QWebEngineHistory *history;
+    QWebEngineProfile *profile;
     QWebEngineSettings *settings;
     QWebEngineView *view;
     QSize viewportSize;

@@ -50,8 +50,9 @@ QT_BEGIN_NAMESPACE
 class QMenu;
 class QWebEngineHistory;
 class QWebEnginePage;
-class QWebEngineSettings;
 class QWebEnginePagePrivate;
+class QWebEngineProfile;
+class QWebEngineSettings;
 
 namespace QtWebEnginePrivate {
 
@@ -171,6 +172,7 @@ public:
     };
 
     explicit QWebEnginePage(QObject *parent = 0);
+    QWebEnginePage(QWebEngineProfile *profile, QObject *parent = 0);
     ~QWebEnginePage();
     QWebEngineHistory *history() const;
 
@@ -179,6 +181,8 @@ public:
 
     bool hasSelection() const;
     QString selectedText() const;
+
+    QWebEngineProfile *profile() const;
 
 #ifndef QT_NO_ACTION
     QAction *action(WebAction action) const;

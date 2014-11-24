@@ -46,10 +46,11 @@
 class BrowserContextQt;
 class WebEngineVisitedLinksManager;
 
-// Make a QSharedData if we need to open arbitrary BrowserContextAdapter beyond the defaults.
-class QWEBENGINE_EXPORT BrowserContextAdapter // : public QSharedData
+class QWEBENGINE_EXPORT BrowserContextAdapter : public QSharedData
 {
 public:
+    explicit BrowserContextAdapter(bool offTheRecord = false);
+    explicit BrowserContextAdapter(const QString &storagePrefix);
     virtual ~BrowserContextAdapter();
 
     static BrowserContextAdapter* defaultContext();
@@ -58,19 +59,57 @@ public:
     WebEngineVisitedLinksManager *visitedLinksManager();
 
     BrowserContextQt *browserContext();
-    bool isOffTheRecord() const { return m_offTheRecord; }
-    QString dataPath() const;
-    QString cachePath() const;
 
-protected:
-    BrowserContextAdapter(const QString &name, bool offTheRecord = false);
+    QString storageName() const { return m_name; }
+    void setStorageName(const QString &storageName);
+
+    bool isOffTheRecord() const { return m_offTheRecord; }
+    void setOffTheRecord(bool offTheRecord);
+
+    QString dataPath() const;
+    void setDataPath(const QString &path);
+
+    QString cachePath() const;
+    void setCachePath(const QString &path);
+
+    QString httpCachePath() const;
+    QString cookiesPath() const;
+
+    QString httpUserAgent() const;
+    void setHttpUserAgent(const QString &userAgent);
+
+    // KEEP IN SYNC with API or add mapping layer
+    enum HttpCacheType {
+        MemoryHttpCache = 0,
+        DiskHttpCache
+    };
+
+    enum PersistentCookiesPolicy {
+        NoPersistentCookies = 0,
+        AllowPersistentCookies,
+        ForcePersistentCookies
+    };
+
+    HttpCacheType httpCacheType() const;
+    void setHttpCacheType(BrowserContextAdapter::HttpCacheType);
+
+    PersistentCookiesPolicy persistentCookiesPolicy() const;
+    void setPersistentCookiesPolicy(BrowserContextAdapter::PersistentCookiesPolicy);
+
+    int httpCacheMaxSize() const;
+    void setHttpCacheMaxSize(int maxSize);
 
 private:
-    const QString m_name;
+    QString m_name;
     bool m_offTheRecord;
     QScopedPointer<BrowserContextQt> m_browserContext;
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
-    friend class WebEngineContext;
+    QString m_dataPath;
+    QString m_cachePath;
+    QString m_httpUserAgent;
+    HttpCacheType m_httpCacheType;
+    PersistentCookiesPolicy m_persistentCookiesPolicy;
+    int m_httpCacheMaxSize;
 
     Q_DISABLE_COPY(BrowserContextAdapter)
 };

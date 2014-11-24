@@ -34,48 +34,71 @@
 **
 ****************************************************************************/
 
-#ifndef WEB_ENGINE_CONTEXT_H
-#define WEB_ENGINE_CONTEXT_H
+#ifndef QWEBENGINEPROFILE_H
+#define QWEBENGINEPROFILE_H
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "qtwebenginewidgetsglobal.h"
 
-#include <QExplicitlySharedDataPointer>
+#include <QObject>
+#include <QScopedPointer>
+#include <QString>
 
-namespace base {
-class RunLoop;
-}
+QT_BEGIN_NAMESPACE
 
-namespace content {
-class BrowserMainRunner;
-class ContentMainRunner;
-}
+class QObject;
+class QWebEnginePage;
+class QWebEnginePagePrivate;
+class QWebEngineProfilePrivate;
 
-class BrowserContextAdapter;
-class ContentMainDelegateQt;
-class SurfaceFactoryQt;
-
-class WebEngineContext : public base::RefCounted<WebEngineContext> {
+class QWEBENGINEWIDGETS_EXPORT QWebEngineProfile : public QObject {
+    Q_OBJECT
 public:
-    static scoped_refptr<WebEngineContext> current();
+    explicit QWebEngineProfile(QObject *parent = 0);
+    explicit QWebEngineProfile(const QString &name, QObject *parent = 0);
+    virtual ~QWebEngineProfile();
 
-    BrowserContextAdapter *defaultBrowserContext();
-    BrowserContextAdapter *offTheRecordBrowserContext();
+    enum HttpCacheType {
+        MemoryHttpCache,
+        DiskHttpCache
+    };
+
+    enum PersistentCookiesPolicy {
+        NoPersistentCookies,
+        AllowPersistentCookies,
+        ForcePersistentCookies
+    };
+
+    QString storageName() const;
+    bool isOffTheRecord() const;
+
+    QString persistentStoragePath() const;
+    void setPersistentStoragePath(const QString &path);
+
+    QString cachePath() const;
+    void setCachePath(const QString &path);
+
+    QString httpUserAgent() const;
+    void setHttpUserAgent(const QString &userAgent);
+
+    HttpCacheType httpCacheType() const;
+    void setHttpCacheType(QWebEngineProfile::HttpCacheType);
+
+    PersistentCookiesPolicy persistentCookiesPolicy() const;
+    void setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy);
+
+    int httpCacheMaximumSize() const;
+    void setHttpCacheMaximumSize(int maxSize);
+
+    static QWebEngineProfile *defaultProfile();
 
 private:
-    friend class base::RefCounted<WebEngineContext>;
-    WebEngineContext();
-    ~WebEngineContext();
+    Q_DECLARE_PRIVATE(QWebEngineProfile);
+    QWebEngineProfile(QWebEngineProfilePrivate *);
 
-    scoped_ptr<base::RunLoop> m_runLoop;
-    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
-    scoped_ptr<content::ContentMainRunner> m_contentRunner;
-    scoped_ptr<content::BrowserMainRunner> m_browserRunner;
-#if defined(OS_ANDROID)
-    scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
-#endif
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_defaultBrowserContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_offTheRecordBrowserContext;
+    friend class QWebEnginePagePrivate;
+    QScopedPointer<QWebEngineProfilePrivate> d_ptr;
 };
 
-#endif // WEB_ENGINE_CONTEXT_H
+QT_END_NAMESPACE
+
+#endif // QWEBENGINEPROFILE_H

@@ -17,8 +17,9 @@ SOURCES = \
         api/qwebenginecertificateerror.cpp \
         api/qwebenginehistory.cpp \
         api/qwebenginepage.cpp \
+        api/qwebengineprofile.cpp \
         api/qwebenginesettings.cpp \
-        api/qwebengineview.cpp\
+        api/qwebengineview.cpp \
         render_widget_host_view_qt_delegate_widget.cpp
 
 HEADERS = \
@@ -27,6 +28,8 @@ HEADERS = \
         api/qwebenginehistory.h \
         api/qwebenginepage.h \
         api/qwebenginepage_p.h \
+        api/qwebengineprofile.h \
+        api/qwebengineprofile_p.h \
         api/qwebenginesettings.h \
         api/qwebenginesettings_p.h \
         api/qwebengineview.h \

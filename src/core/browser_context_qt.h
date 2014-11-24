@@ -44,6 +44,7 @@
 #include "download_manager_delegate_qt.h"
 
 class BrowserContextAdapter;
+class URLRequestContextGetterQt;
 
 class BrowserContextQt : public content::BrowserContext
 {
@@ -70,9 +71,10 @@ public:
 
 private:
     scoped_ptr<content::ResourceContext> resourceContext;
-    scoped_refptr<net::URLRequestContextGetter> url_request_getter_;
+    scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
     scoped_ptr<DownloadManagerDelegateQt> downloadManagerDelegate;
     BrowserContextAdapter *m_adapter;
+    friend class BrowserContextAdapter;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
 };

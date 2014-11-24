@@ -58,9 +58,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     : QDialog(parent)
 {
     setupUi(this);
-    connect(exceptionsButton, SIGNAL(clicked()), this, SLOT(showExceptions()));
     connect(setHomeToCurrentPageButton, SIGNAL(clicked()), this, SLOT(setHomeToCurrentPage()));
-    connect(cookiesButton, SIGNAL(clicked()), this, SLOT(showCookies()));
     connect(standardFontButton, SIGNAL(clicked()), this, SLOT(chooseFont()));
     connect(fixedFontButton, SIGNAL(clicked()), this, SLOT(chooseFixedFont()));
 
@@ -89,6 +87,10 @@ void SettingsDialog::loadDefaults()
 #endif
 
     enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
+
+    persistentDataPath->setText(QWebEngineProfile::defaultProfile()->persistentStoragePath());
+    sessionCookiesCombo->setCurrentIndex(QWebEngineProfile::defaultProfile()->persistentCookiesPolicy());
+    httpUserAgent->setText(QWebEngineProfile::defaultProfile()->httpUserAgent());
 }
 
 void SettingsDialog::loadFromSettings()
@@ -137,47 +139,19 @@ void SettingsDialog::loadFromSettings()
     enablePlugins->setChecked(settings.value(QLatin1String("enablePlugins"), enablePlugins->isChecked()).toBool());
     userStyleSheet->setText(settings.value(QLatin1String("userStyleSheet")).toUrl().toString());
     enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
+    httpUserAgent->setText(settings.value(QLatin1String("httpUserAgent"), httpUserAgent->text()).toString());
     settings.endGroup();
 
-#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     // Privacy
     settings.beginGroup(QLatin1String("cookies"));
 
-    QByteArray value = settings.value(QLatin1String("acceptCookies"), QLatin1String("AcceptOnlyFromSitesNavigatedTo")).toByteArray();
-    QMetaEnum acceptPolicyEnum = CookieJar::staticMetaObject.enumerator(CookieJar::staticMetaObject.indexOfEnumerator("AcceptPolicy"));
-    CookieJar::AcceptPolicy acceptCookies = acceptPolicyEnum.keyToValue(value) == -1 ?
-                        CookieJar::AcceptOnlyFromSitesNavigatedTo :
-                        static_cast<CookieJar::AcceptPolicy>(acceptPolicyEnum.keyToValue(value));
-    switch (acceptCookies) {
-    case CookieJar::AcceptAlways:
-        acceptCombo->setCurrentIndex(0);
-        break;
-    case CookieJar::AcceptNever:
-        acceptCombo->setCurrentIndex(1);
-        break;
-    case CookieJar::AcceptOnlyFromSitesNavigatedTo:
-        acceptCombo->setCurrentIndex(2);
-        break;
-    }
+    int persistentCookiesPolicy = settings.value(QLatin1String("persistentCookiesPolicy"), sessionCookiesCombo->currentIndex()).toInt();
+    sessionCookiesCombo->setCurrentIndex(persistentCookiesPolicy);
 
-    value = settings.value(QLatin1String("keepCookiesUntil"), QLatin1String("Expire")).toByteArray();
-    QMetaEnum keepPolicyEnum = CookieJar::staticMetaObject.enumerator(CookieJar::staticMetaObject.indexOfEnumerator("KeepPolicy"));
-    CookieJar::KeepPolicy keepCookies = keepPolicyEnum.keyToValue(value) == -1 ?
-                        CookieJar::KeepUntilExpire :
-                        static_cast<CookieJar::KeepPolicy>(keepPolicyEnum.keyToValue(value));
-    switch (keepCookies) {
-    case CookieJar::KeepUntilExpire:
-        keepUntilCombo->setCurrentIndex(0);
-        break;
-    case CookieJar::KeepUntilExit:
-        keepUntilCombo->setCurrentIndex(1);
-        break;
-    case CookieJar::KeepUntilTimeLimit:
-        keepUntilCombo->setCurrentIndex(2);
-        break;
-    }
+    QString pdataPath = settings.value(QLatin1String("persistentDataPath"), persistentDataPath->text()).toString();
+    persistentDataPath->setText(pdataPath);
+
     settings.endGroup();
-#endif
 
     // Proxy
     settings.beginGroup(QLatin1String("proxy"));
@@ -227,47 +201,19 @@ void SettingsDialog::saveToSettings()
         settings.setValue(QLatin1String("userStyleSheet"), QUrl::fromLocalFile(userStyleSheetString));
     else
         settings.setValue(QLatin1String("userStyleSheet"), QUrl(userStyleSheetString));
+    settings.setValue(QLatin1String("httpUserAgent"), httpUserAgent->text());
     settings.endGroup();
 
-#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     //Privacy
     settings.beginGroup(QLatin1String("cookies"));
 
-    CookieJar::KeepPolicy keepCookies;
-    switch (acceptCombo->currentIndex()) {
-    default:
-    case 0:
-        keepCookies = CookieJar::KeepUntilExpire;
-        break;
-    case 1:
-        keepCookies = CookieJar::KeepUntilExit;
-        break;
-    case 2:
-        keepCookies = CookieJar::KeepUntilTimeLimit;
-        break;
-    }
-    QMetaEnum acceptPolicyEnum = CookieJar::staticMetaObject.enumerator(CookieJar::staticMetaObject.indexOfEnumerator("AcceptPolicy"));
-    settings.setValue(QLatin1String("acceptCookies"), QLatin1String(acceptPolicyEnum.valueToKey(keepCookies)));
+    int persistentCookiesPolicy = sessionCookiesCombo->currentIndex();
+    settings.setValue(QLatin1String("persistentCookiesPolicy"), persistentCookiesPolicy);
 
-    CookieJar::KeepPolicy keepPolicy;
-    switch (keepUntilCombo->currentIndex()) {
-        default:
-    case 0:
-        keepPolicy = CookieJar::KeepUntilExpire;
-        break;
-    case 1:
-        keepPolicy = CookieJar::KeepUntilExit;
-        break;
-    case 2:
-        keepPolicy = CookieJar::KeepUntilTimeLimit;
-        break;
-    }
-
-    QMetaEnum keepPolicyEnum = CookieJar::staticMetaObject.enumerator(CookieJar::staticMetaObject.indexOfEnumerator("KeepPolicy"));
-    settings.setValue(QLatin1String("keepCookiesUntil"), QLatin1String(keepPolicyEnum.valueToKey(keepPolicy)));
+    QString pdataPath = persistentDataPath->text();
+    settings.setValue(QLatin1String("persistentDataPath"), pdataPath);
 
     settings.endGroup();
-#endif
 
     // proxy
     settings.beginGroup(QLatin1String("proxy"));

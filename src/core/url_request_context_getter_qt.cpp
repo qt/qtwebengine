@@ -61,141 +61,229 @@
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/ftp/ftp_network_layer.h"
 
-#include "browser_context_qt.h"
+#include "browser_context_adapter.h"
 #include "content_client_qt.h"
 #include "network_delegate_qt.h"
 #include "qrc_protocol_handler_qt.h"
+#include "type_conversion.h"
 
 static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextQt *browserContext, content::ProtocolHandlerMap *protocolHandlers)
+URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers)
     : m_ignoreCertificateErrors(false)
+    , m_updateStorageSettings(false)
+    , m_updateCookieStore(false)
+    , m_updateHttpCache(false)
     , m_browserContext(browserContext)
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
-    // We must create the proxy config service on the UI loop on Linux because it
-    // must synchronously run on the glib message loop. This will be passed to
-    // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-//#ifdef Q_OS_LINUX
-    m_proxyConfigService.reset(net::ProxyService::CreateSystemProxyConfigService(BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)->message_loop_proxy()
-                                                                                 , BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE)));
-//#endif
+    updateStorageSettings();
 }
 
 net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 {
     if (!m_urlRequestContext) {
-
         m_urlRequestContext.reset(new net::URLRequestContext());
-        m_networkDelegate.reset(new NetworkDelegateQt);
 
+        m_networkDelegate.reset(new NetworkDelegateQt);
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
-        scoped_refptr<net::CookieStore> cookieStore;
-        if (m_browserContext->IsOffTheRecord()) {
-            cookieStore = content::CreateCookieStore(content::CookieStoreConfig(base::FilePath(), content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, NULL, NULL));
-        } else {
-            base::FilePath cookiesPath = m_browserContext->GetPath().Append(FILE_PATH_LITERAL("Cookies"));
-            cookieStore = content::CreateCookieStore(content::CookieStoreConfig(cookiesPath, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL, NULL));
-        }
-
-        m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
-        m_storage->set_cookie_store(cookieStore.get());
-        m_storage->set_server_bound_cert_service(new net::ServerBoundCertService(
-            new net::DefaultServerBoundCertStore(NULL),
-            base::WorkerPool::GetTaskRunner(true)));
-        m_storage->set_http_user_agent_settings(
-            new net::StaticHttpUserAgentSettings("en-us,en", ContentClientQt::getUserAgent()));
-
-        scoped_ptr<net::HostResolver> host_resolver(
-            net::HostResolver::CreateDefaultResolver(NULL));
-
-        m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
-
-        m_storage->set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(m_proxyConfigService.release(), 0, NULL));
-
-        m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-        m_storage->set_transport_security_state(new net::TransportSecurityState());
-
-        m_storage->set_http_auth_handler_factory(
-            net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
-        m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
-
-        net::HttpCache::DefaultBackend* main_backend;
-        if (m_browserContext->IsOffTheRecord()) {
-            main_backend =
-                new net::HttpCache::DefaultBackend(
-                    net::MEMORY_CACHE,
-                    net::CACHE_BACKEND_DEFAULT,
-                    base::FilePath(),
-                    0,
-                    BrowserThread::GetMessageLoopProxyForThread(
-                        BrowserThread::CACHE));
-        } else {
-            base::FilePath cache_path = m_browserContext->GetCachePath().Append(FILE_PATH_LITERAL("Cache"));
-            main_backend =
-                new net::HttpCache::DefaultBackend(
-                    net::DISK_CACHE,
-                    net::CACHE_BACKEND_DEFAULT,
-                    cache_path,
-                    0,
-                    BrowserThread::GetMessageLoopProxyForThread(
-                        BrowserThread::CACHE));
-        }
-
-        net::HttpNetworkSession::Params network_session_params;
-        network_session_params.transport_security_state =
-            m_urlRequestContext->transport_security_state();
-        network_session_params.cert_verifier =
-            m_urlRequestContext->cert_verifier();
-        network_session_params.server_bound_cert_service =
-            m_urlRequestContext->server_bound_cert_service();
-        network_session_params.proxy_service =
-            m_urlRequestContext->proxy_service();
-        network_session_params.ssl_config_service =
-            m_urlRequestContext->ssl_config_service();
-        network_session_params.http_auth_handler_factory =
-            m_urlRequestContext->http_auth_handler_factory();
-        network_session_params.network_delegate =
-            m_networkDelegate.get();
-        network_session_params.http_server_properties =
-            m_urlRequestContext->http_server_properties();
-        network_session_params.ignore_certificate_errors =
-            m_ignoreCertificateErrors;
-
-        // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.
-        m_storage->set_host_resolver(host_resolver.Pass());
-        network_session_params.host_resolver =
-            m_urlRequestContext->host_resolver();
-
-        net::HttpCache* main_cache = new net::HttpCache(
-            network_session_params, main_backend);
-        m_storage->set_http_transaction_factory(main_cache);
-
-
-        m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
-
-        // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
-        content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
-        Q_ASSERT(it != m_protocolHandlers.end());
-        m_jobFactory->SetProtocolHandler(it->first, it->second.release());
-        m_protocolHandlers.clear();
-
-        m_jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
-        m_jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
-            content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
-        m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
-        m_jobFactory->SetProtocolHandler(url::kFtpScheme, new net::FtpProtocolHandler(
-            new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
-        m_urlRequestContext->set_job_factory(m_jobFactory.get());
+        generateStorage();
+        generateJobFactory();
     }
 
     return m_urlRequestContext.get();
 }
 
+void URLRequestContextGetterQt::updateStorageSettings()
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    if (!m_proxyConfigService) {
+        // We must create the proxy config service on the UI loop on Linux because it
+        // must synchronously run on the glib message loop. This will be passed to
+        // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
+        m_proxyConfigService.reset(net::ProxyService::CreateSystemProxyConfigService(
+            BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)->message_loop_proxy(),
+            BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE))
+        );
+    }
+    if (m_storage && !m_updateStorageSettings) {
+        m_updateStorageSettings = true;
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
+    }
+}
+
+void URLRequestContextGetterQt::generateStorage()
+{
+    Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(m_proxyConfigService);
+    m_updateStorageSettings = false;
+
+    m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
+
+    generateCookieStore();
+    generateUserAgent();
+
+    m_storage->set_server_bound_cert_service(new net::ServerBoundCertService(
+        new net::DefaultServerBoundCertStore(NULL),
+        base::WorkerPool::GetTaskRunner(true)));
+
+    m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
+    m_storage->set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
+        m_proxyConfigService.release(), 0, NULL));
+    m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
+    m_storage->set_transport_security_state(new net::TransportSecurityState());
+
+    scoped_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
+    m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
+    m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
+
+     // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.
+    m_storage->set_host_resolver(host_resolver.Pass());
+
+    generateHttpCache();
+}
+
+void URLRequestContextGetterQt::updateCookieStore()
+{
+    if (m_urlRequestContext && !m_updateCookieStore && !m_updateStorageSettings) {
+        m_updateCookieStore = true;
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateCookieStore, this));
+    }
+}
+
+void URLRequestContextGetterQt::generateCookieStore()
+{
+    Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(m_storage);
+    m_updateCookieStore = false;
+
+    // Unset it first to get a chance to destroy and flush the old cookie store before before opening a new on possibly the same file.
+    m_storage->set_cookie_store(0);
+
+    net::CookieStore* cookieStore = 0;
+    switch (m_browserContext->persistentCookiesPolicy()) {
+    case BrowserContextAdapter::NoPersistentCookies:
+        cookieStore =
+            content::CreateCookieStore(content::CookieStoreConfig(
+                base::FilePath(),
+                content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
+                NULL, NULL)
+            );
+        break;
+    case BrowserContextAdapter::AllowPersistentCookies:
+        cookieStore =
+            content::CreateCookieStore(content::CookieStoreConfig(
+                base::FilePath(toFilePathString(m_browserContext->cookiesPath())),
+                content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
+                NULL, NULL)
+            );
+        break;
+    case BrowserContextAdapter::ForcePersistentCookies:
+        cookieStore =
+            content::CreateCookieStore(content::CookieStoreConfig(
+                base::FilePath(toFilePathString(m_browserContext->cookiesPath())),
+                content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
+                NULL, NULL)
+            );
+        break;
+    }
+    m_storage->set_cookie_store(cookieStore);
+}
+
+void URLRequestContextGetterQt::updateUserAgent()
+{
+    if (m_urlRequestContext && !m_updateStorageSettings)
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateUserAgent, this));
+}
+
+void URLRequestContextGetterQt::generateUserAgent()
+{
+    Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(m_storage);
+
+    m_storage->set_http_user_agent_settings(
+        new net::StaticHttpUserAgentSettings("en-us,en", m_browserContext->httpUserAgent().toStdString()));
+}
+
+void URLRequestContextGetterQt::updateHttpCache()
+{
+    if (m_urlRequestContext && !m_updateHttpCache && !m_updateStorageSettings) {
+        m_updateHttpCache = true;
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateHttpCache, this));
+    }
+}
+
+void URLRequestContextGetterQt::generateHttpCache()
+{
+    Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(m_storage);
+    m_updateHttpCache = false;
+
+    net::HttpCache::DefaultBackend* main_backend = 0;
+    switch (m_browserContext->httpCacheType()) {
+    case BrowserContextAdapter::MemoryHttpCache:
+        main_backend =
+            new net::HttpCache::DefaultBackend(
+                net::MEMORY_CACHE,
+                net::CACHE_BACKEND_DEFAULT,
+                base::FilePath(),
+                m_browserContext->httpCacheMaxSize(),
+                BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
+            );
+        break;
+    case BrowserContextAdapter::DiskHttpCache:
+        main_backend =
+            new net::HttpCache::DefaultBackend(
+                net::DISK_CACHE,
+                net::CACHE_BACKEND_DEFAULT,
+                base::FilePath(toFilePathString(m_browserContext->httpCachePath())),
+                m_browserContext->httpCacheMaxSize(),
+                BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
+            );
+        break;
+    }
+
+    net::HttpNetworkSession::Params network_session_params;
+    network_session_params.transport_security_state     = m_urlRequestContext->transport_security_state();
+    network_session_params.cert_verifier                = m_urlRequestContext->cert_verifier();
+    network_session_params.server_bound_cert_service    = m_urlRequestContext->server_bound_cert_service();
+    network_session_params.proxy_service                = m_urlRequestContext->proxy_service();
+    network_session_params.ssl_config_service           = m_urlRequestContext->ssl_config_service();
+    network_session_params.http_auth_handler_factory    = m_urlRequestContext->http_auth_handler_factory();
+    network_session_params.network_delegate             = m_networkDelegate.get();
+    network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
+    network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
+    network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
+
+    m_storage->set_http_transaction_factory(new net::HttpCache(network_session_params, main_backend));
+}
+
+void URLRequestContextGetterQt::generateJobFactory()
+{
+    Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(!m_jobFactory);
+    m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
+
+    // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
+    content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
+    Q_ASSERT(it != m_protocolHandlers.end());
+    m_jobFactory->SetProtocolHandler(it->first, it->second.release());
+    m_protocolHandlers.clear();
+
+    m_jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
+    m_jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
+        content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+    m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
+    m_jobFactory->SetProtocolHandler(url::kFtpScheme,
+        new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
+
+    m_urlRequestContext->set_job_factory(m_jobFactory.get());
+}
 
 scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetworkTaskRunner() const
 {

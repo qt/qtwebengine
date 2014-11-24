@@ -66,6 +66,7 @@
 #include <QtNetwork/QNetworkProxy>
 #include <QtNetwork/QSslSocket>
 
+#include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
@@ -230,6 +231,8 @@ void BrowserApplication::loadSettings()
     settings.beginGroup(QLatin1String("websettings"));
 
     QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
+    QWebEngineProfile *defaultProfile = QWebEngineProfile::defaultProfile();
+
     QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
     int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
     QFont standardFont = QFont(standardFontFamily, standardFontSize);
@@ -255,6 +258,14 @@ void BrowserApplication::loadSettings()
     QUrl url = settings.value(QLatin1String("userStyleSheet")).toUrl();
     defaultSettings->setUserStyleSheetUrl(url);
 #endif
+    defaultProfile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
+    settings.endGroup();
+    settings.beginGroup(QLatin1String("cookies"));
+
+    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(settings.value(QLatin1String("persistentCookiesPolicy")).toInt());
+    defaultProfile->setPersistentCookiesPolicy(persistentCookiesPolicy);
+    QString pdataPath = settings.value(QLatin1String("persistentDataPath")).toString();
+    defaultProfile->setPersistentStoragePath(pdataPath);
 
     settings.endGroup();
 }
