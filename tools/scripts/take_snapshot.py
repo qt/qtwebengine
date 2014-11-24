@@ -61,6 +61,7 @@ def isInGitBlacklist(file_path):
         False
     if ( '.gitignore' in file_path
         or '.gitmodules' in file_path
+        or '.gitattributes' in file_path
         or '.DEPS' in file_path ):
         return True
 
