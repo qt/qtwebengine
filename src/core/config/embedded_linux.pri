@@ -46,6 +46,7 @@ GYP_CONFIG += \
     use_pulseaudio=0 \
     use_system_harfbuzz=0 \
     use_system_icu=1 \
+    icu_use_data_file_flag=0 \
     use_x11=0 \
     v8_use_snapshot=false \
     want_separate_host_toolset=1 \
