@@ -313,6 +313,12 @@ if not commandNotFound:
 if commandNotFound or dos2unixVersion < StrictVersion('6.0.6'):
     raise Exception("You need dos2unix version 6.0.6 minimum.")
 
+os.chdir(third_party)
+ignore_case_setting = subprocess.Popen(['git', 'config', '--get', 'core.ignorecase'], stdout=subprocess.PIPE).communicate()[0]
+if 'true' in ignore_case_setting:
+    raise Exception("Your 3rdparty repository is configured to ignore case. "
+                    "A snapshot created with these settings would cause problems on case sensitive file systems.")
+
 clearDirectory(third_party)
 
 exportNinja()
