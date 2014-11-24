@@ -256,7 +256,7 @@ def clearDirectory(directory):
     os.chdir(directory)
     print 'clearing the directory:' + directory
     for direntry in os.listdir(directory):
-        if not direntry == '.git':
+        if not direntry == '.git' and os.path.isdir(direntry):
             print 'clearing:' + direntry
             shutil.rmtree(direntry)
     os.chdir(currentDir)
