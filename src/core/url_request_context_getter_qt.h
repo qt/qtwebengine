@@ -56,9 +56,11 @@ class NetworkDelegate;
 class ProxyConfigService;
 }
 
+class BrowserContextQt;
+
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
-    explicit URLRequestContextGetterQt(const base::FilePath &, const base::FilePath &, content::ProtocolHandlerMap *protocolHandlers);
+    explicit URLRequestContextGetterQt(BrowserContextQt *browserContext, content::ProtocolHandlerMap *protocolHandlers);
 
     virtual net::URLRequestContext *GetURLRequestContext() Q_DECL_OVERRIDE;
     virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
@@ -67,8 +69,7 @@ private:
     virtual ~URLRequestContextGetterQt() {}
 
     bool m_ignoreCertificateErrors;
-    base::FilePath m_dataPath;
-    base::FilePath m_cachePath;
+    BrowserContextQt *m_browserContext;
     content::ProtocolHandlerMap m_protocolHandlers;
 
     scoped_ptr<net::ProxyConfigService> m_proxyConfigService;

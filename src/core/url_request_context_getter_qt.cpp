@@ -61,18 +61,18 @@
 #include "net/url_request/ftp_protocol_handler.h"
 #include "net/ftp/ftp_network_layer.h"
 
-#include "network_delegate_qt.h"
+#include "browser_context_qt.h"
 #include "content_client_qt.h"
+#include "network_delegate_qt.h"
 #include "qrc_protocol_handler_qt.h"
 
 static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(const base::FilePath &dataPath, const base::FilePath &cachePath, content::ProtocolHandlerMap *protocolHandlers)
+URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextQt *browserContext, content::ProtocolHandlerMap *protocolHandlers)
     : m_ignoreCertificateErrors(false)
-    , m_dataPath(dataPath)
-    , m_cachePath(cachePath)
+    , m_browserContext(browserContext)
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
@@ -94,9 +94,13 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
-        base::FilePath cookiesPath = m_dataPath.Append(FILE_PATH_LITERAL("Cookies"));
-        content::CookieStoreConfig cookieStoreConfig(cookiesPath, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL, NULL);
-        scoped_refptr<net::CookieStore> cookieStore = content::CreateCookieStore(cookieStoreConfig);
+        scoped_refptr<net::CookieStore> cookieStore;
+        if (m_browserContext->IsOffTheRecord()) {
+            cookieStore = content::CreateCookieStore(content::CookieStoreConfig(base::FilePath(), content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES, NULL, NULL));
+        } else {
+            base::FilePath cookiesPath = m_browserContext->GetPath().Append(FILE_PATH_LITERAL("Cookies"));
+            cookieStore = content::CreateCookieStore(content::CookieStoreConfig(cookiesPath, content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL, NULL));
+        }
 
         m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
         m_storage->set_cookie_store(cookieStore.get());
@@ -120,15 +124,27 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
             net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
         m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 
-        base::FilePath cache_path = m_cachePath.Append(FILE_PATH_LITERAL("Cache"));
-        net::HttpCache::DefaultBackend* main_backend =
-            new net::HttpCache::DefaultBackend(
-                net::DISK_CACHE,
-                net::CACHE_BACKEND_DEFAULT,
-                cache_path,
-                0,
-                BrowserThread::GetMessageLoopProxyForThread(
-                    BrowserThread::CACHE));
+        net::HttpCache::DefaultBackend* main_backend;
+        if (m_browserContext->IsOffTheRecord()) {
+            main_backend =
+                new net::HttpCache::DefaultBackend(
+                    net::MEMORY_CACHE,
+                    net::CACHE_BACKEND_DEFAULT,
+                    base::FilePath(),
+                    0,
+                    BrowserThread::GetMessageLoopProxyForThread(
+                        BrowserThread::CACHE));
+        } else {
+            base::FilePath cache_path = m_browserContext->GetCachePath().Append(FILE_PATH_LITERAL("Cache"));
+            main_backend =
+                new net::HttpCache::DefaultBackend(
+                    net::DISK_CACHE,
+                    net::CACHE_BACKEND_DEFAULT,
+                    cache_path,
+                    0,
+                    BrowserThread::GetMessageLoopProxyForThread(
+                        BrowserThread::CACHE));
+        }
 
         net::HttpNetworkSession::Params network_session_params;
         network_session_params.transport_security_state =
