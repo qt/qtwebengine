@@ -117,6 +117,12 @@
         \li \l {Qt WebEngine Widgets C++ Classes}
     \endlist
 
+    \section1 Examples
+
+    \list
+        \li \l {Qt WebEngine Widgets Examples}
+    \endlist
+
     \section1 License Information
     This is a snapshot of the integration of Chromium into Qt.
 

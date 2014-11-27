@@ -92,6 +92,39 @@ QString location(QLibraryInfo::LibraryLocation path)
     return QLibraryInfo::location(path);
 }
 
+#if defined(OS_MACOSX)
+static inline CFBundleRef frameworkBundle()
+{
+    return CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.Qt.QtWebEngineCore"));
+}
+
+static QString getPath(CFBundleRef frameworkBundle)
+{
+    QString path;
+    if (frameworkBundle) {
+        CFURLRef bundleUrl = CFBundleCopyBundleURL(frameworkBundle);
+        CFStringRef bundlePath = CFURLCopyFileSystemPath(bundleUrl, kCFURLPOSIXPathStyle);
+        path = QString::fromCFString(bundlePath);
+        CFRelease(bundlePath);
+        CFRelease(bundleUrl);
+    }
+    return path;
+}
+
+static QString getResourcesPath(CFBundleRef frameworkBundle)
+{
+    QString path;
+    if (frameworkBundle) {
+        CFURLRef resourcesRelativeUrl = CFBundleCopyResourcesDirectoryURL(frameworkBundle);
+        CFStringRef resourcesRelativePath = CFURLCopyFileSystemPath(resourcesRelativeUrl, kCFURLPOSIXPathStyle);
+        path = getPath(frameworkBundle) % QLatin1Char('/') % QString::fromCFString(resourcesRelativePath);
+        CFRelease(resourcesRelativePath);
+        CFRelease(resourcesRelativeUrl);
+    }
+    return path;
+}
+#endif
+
 QString subProcessPath()
 {
     static bool initialized = false;
@@ -100,14 +133,19 @@ QString subProcessPath()
 #else
     static QString processBinary (QLatin1String(QTWEBENGINEPROCESS_NAME));
 #endif
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+    static QString processPath (getPath(frameworkBundle())
+                                % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME));
+#else
     static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
                                 % QDir::separator() % processBinary);
+#endif
     if (!initialized) {
         // Allow overriding at runtime for the time being.
         const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
         if (!fromEnv.isEmpty())
             processPath = QString::fromLatin1(fromEnv);
-        if (processPath.isEmpty() || !QFileInfo(processPath).exists()) {
+        if (!QFileInfo(processPath).exists()) {
             qWarning("QtWebEngineProcess not found at location %s. Trying fallback path...", qPrintable(processPath));
             processPath = QCoreApplication::applicationDirPath() % QDir::separator() % processBinary;
         }
@@ -121,12 +159,20 @@ QString subProcessPath()
 
 QString pluginsPath()
 {
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+    return getPath(frameworkBundle()) % QLatin1String("/Libraries");
+#else
     return location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
+#endif
 }
 
 QString localesPath()
 {
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+    return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
+#else
     return location(QLibraryInfo::TranslationsPath) % QLatin1String("/qtwebengine_locales");
+#endif
 }
 
 QString fallbackDir() {
@@ -155,7 +201,11 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
     QString directory;
     switch (key) {
     case QT_RESOURCES_PAK:
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+        return toFilePath(getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_resources.pak"));
+#else
         return toFilePath(location(QLibraryInfo::DataPath) % QLatin1String("/qtwebengine_resources.pak"));
+#endif
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
         return toFilePath(subProcessPath());
@@ -171,7 +221,11 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
     case base::DIR_QT_LIBRARY_DATA:
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+        return toFilePath(getResourcesPath(frameworkBundle()));
+#else
         return toFilePath(location(QLibraryInfo::DataPath));
+#endif
 #if defined(OS_ANDROID)
     case base::DIR_SOURCE_ROOT:
     case base::DIR_ANDROID_EXTERNAL_STORAGE:

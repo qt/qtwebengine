@@ -33,35 +33,24 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef CONTENT_RENDERER_CLIENT_QT_H
-#define CONTENT_RENDERER_CLIENT_QT_H
 
-#include "content/public/renderer/content_renderer_client.h"
+#include "access_token_store_qt.h"
 
-#include <QtGlobal>
-#include <QScopedPointer>
+#include <QDebug>
 
-namespace visitedlink {
-class VisitedLinkSlave;
+AccessTokenStoreQt::AccessTokenStoreQt()
+{
 }
 
-class ContentRendererClientQt : public content::ContentRendererClient {
-public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
+AccessTokenStoreQt::~AccessTokenStoreQt()
+{
+}
 
-    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
-    virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
-            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
+void AccessTokenStoreQt::LoadAccessTokens(const LoadAccessTokensCallbackType& callback)
+{
+}
 
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
+void AccessTokenStoreQt::SaveAccessToken(const GURL& server_url, const base::string16& access_token)
+{
+}
 
-private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
-};
-
-#endif // CONTENT_RENDERER_CLIENT_QT_H

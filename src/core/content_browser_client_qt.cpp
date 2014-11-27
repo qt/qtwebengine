@@ -62,6 +62,7 @@
 #include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "web_contents_delegate_qt.h"
+#include "access_token_store_qt.h"
 
 #include <QGuiApplication>
 #include <QOpenGLContext>
@@ -345,6 +346,11 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, c
     Q_UNUSED(url);
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
         static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
+}
+
+content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
+{
+    return new AccessTokenStoreQt;
 }
 
 BrowserContextQt* ContentBrowserClientQt::browser_context() {

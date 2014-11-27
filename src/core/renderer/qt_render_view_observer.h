@@ -33,6 +33,8 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef QT_RENDER_VIEW_OBSERVER_H
+#define QT_RENDER_VIEW_OBSERVER_H
 
 #include "content/public/renderer/render_view_observer.h"
 
@@ -52,3 +54,5 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(QtRenderViewObserver);
 };
+
+#endif // QT_RENDER_VIEW_OBSERVER_H
