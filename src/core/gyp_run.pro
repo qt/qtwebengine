@@ -87,6 +87,11 @@ contains(QT_ARCH, "i386"): GYP_ARGS += "-D target_arch=ia32"
 
 contains(WEBENGINE_CONFIG, proprietary_codecs): GYP_ARGS += "-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome -Duse_system_ffmpeg=0"
 
+!contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
+    GYP_ARGS += "-D qt_install_data=\"$$[QT_INSTALL_DATA]\""
+    GYP_ARGS += "-D qt_install_translations=\"$$[QT_INSTALL_TRANSLATIONS]\""
+}
+
 !build_pass {
     message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
     !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")

@@ -69,3 +69,22 @@ CONFIG -= bsymbolic_functions
 contains(QT_CONFIG, egl): CONFIG += egl
 
 linux: contains(QT_CONFIG, separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
+
+!contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
+    ICU_TARGET = $$shell_path($$[QT_INSTALL_DATA]/icudtl.dat)
+    ICU_FILE = $$shell_path($$OUT_PWD/$$getConfigDir()/icudtl.dat)
+    icu_rule.target = $$ICU_TARGET
+    unix: icu_rule.commands = if [ -e $$ICU_FILE ] ; then $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET ; fi
+    win32: icu_rule.commands = if exist $$ICU_FILE ( $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET )
+
+    PLUGIN_DIR = $$shell_path($$[QT_INSTALL_PLUGINS]/qtwebengine)
+    PLUGIN_TARGET = $$shell_path($$PLUGIN_DIR/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION})
+    PLUGIN_FILE = $$shell_path($$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION})
+    plugins_rule.target = $$PLUGIN_TARGET
+    unix: plugins_rule.commands = $$QMAKE_MKDIR $$PLUGIN_DIR && if [ -e $$PLUGIN_FILE ] ; then $$QMAKE_COPY $$PLUGIN_FILE $$PLUGIN_TARGET ; fi
+    win32: plugins_rule.commands = (if not exist $$PLUGIN_DIR ( $$QMAKE_MKDIR $$PLUGIN_DIR )) && \
+                                    if exist $$PLUGIN_FILE ( $$QMAKE_COPY $$PLUGIN_FILE $$PLUGIN_TARGET )
+
+    QMAKE_EXTRA_TARGETS += icu_rule plugins_rule
+    PRE_TARGETDEPS += $$ICU_TARGET $$PLUGIN_TARGET
+}
