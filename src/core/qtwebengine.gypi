@@ -102,7 +102,7 @@
           },
         },
         # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-        'msvs_disabled_warnings': [ 4267, ],
+        'msvs_disabled_warnings': [ 4267, 4996, ],
       }],  # OS=="win"
       ['OS=="linux"', {
         'dependencies': [
