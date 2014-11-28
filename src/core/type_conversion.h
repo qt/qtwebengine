@@ -154,7 +154,7 @@ inline base::FilePath toFilePath(const QString &str)
 }
 
 template <typename T>
-inline T fileListingHelper(const QString &) {qFatal("Specialization missing for %s.", Q_FUNC_INFO);}
+inline T fileListingHelper(const QString &) {qFatal("Specialization missing for %s.", Q_FUNC_INFO); return T(); }
 
 template <>
 inline ui::SelectedFileInfo fileListingHelper<ui::SelectedFileInfo>(const QString &file)
