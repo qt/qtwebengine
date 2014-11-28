@@ -51,6 +51,7 @@ class QWebEngineDownloadItem;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfilePrivate;
+class QWebEngineSettings;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineProfile : public QObject {
     Q_OBJECT
@@ -94,6 +95,8 @@ public:
     void clearAllVisitedLinks();
     void clearVisitedLinks(const QList<QUrl> &urls);
     bool visitedLinksContainsUrl(const QUrl &url) const;
+
+    QWebEngineSettings *settings() const;
 
     static QWebEngineProfile *defaultProfile();
 

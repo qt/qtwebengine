@@ -40,9 +40,11 @@
 #include "qwebenginedownloaditem_p.h"
 #include "qwebenginepage.h"
 #include "qwebengineprofile_p.h"
+#include "qwebenginesettings.h"
 
 #include "browser_context_adapter.h"
 #include "web_engine_visited_links_manager.h"
+#include "web_engine_settings.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -97,16 +99,20 @@ QT_BEGIN_NAMESPACE
 */
 
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
-        : m_browserContext(browserContext)
+        : m_settings(new QWebEngineSettings())
+        , m_browserContext(browserContext)
 {
     if (ownsContext)
         m_browserContextRef = browserContext;
 
     m_browserContext->setClient(this);
+    m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
 }
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 {
+    delete m_settings;
+    m_settings = 0;
     m_browserContext->setClient(0);
 
     Q_FOREACH (QWebEngineDownloadItem* download, m_ongoingDownloads) {
@@ -436,6 +442,15 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
 {
     static QWebEngineProfile profile(new QWebEngineProfilePrivate(BrowserContextAdapter::defaultContext(), false));
     return &profile;
+}
+
+/*!
+    Returns the default settings for all pages in this profile.
+*/
+QWebEngineSettings *QWebEngineProfile::settings() const
+{
+    const Q_D(QWebEngineProfile);
+    return d->settings();
 }
 
 QT_END_NAMESPACE

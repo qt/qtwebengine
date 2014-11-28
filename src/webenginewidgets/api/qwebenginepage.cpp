@@ -31,7 +31,6 @@
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginesettings.h"
-#include "qwebenginesettings_p.h"
 #include "qwebengineview.h"
 #include "qwebengineview_p.h"
 #include "render_widget_host_view_qt_delegate_widget.h"
@@ -173,7 +172,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     : adapter(new WebContentsAdapter)
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , profile(_profile ? _profile : QWebEngineProfile::defaultProfile())
-    , settings(new QWebEngineSettings)
+    , settings(new QWebEngineSettings(profile->settings()))
     , view(0)
     , isLoading(false)
 {
@@ -857,7 +856,7 @@ void QWebEnginePagePrivate::runFileChooser(WebContentsAdapterClient::FileChooser
 
 WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
 {
-    return settings->d_func()->coreSettings.data();
+    return settings->d_func();
 }
 
 void QWebEnginePage::load(const QUrl& url)

@@ -47,15 +47,15 @@ class BrowserContextAdapter;
 QT_BEGIN_NAMESPACE
 
 class QWebEngineSettings;
-class QWebEngineProfilePrivate
-        : public BrowserContextAdapterClient
-{
+
+class QWebEngineProfilePrivate : public BrowserContextAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QWebEngineProfile)
     QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext);
     ~QWebEngineProfilePrivate();
 
     BrowserContextAdapter *browserContext() const { return m_browserContext; }
+    QWebEngineSettings *settings() const { return m_settings; }
 
     void cancelDownload(quint32 downloadId);
     void downloadDestroyed(quint32 downloadId);
@@ -65,6 +65,7 @@ public:
 
 private:
     QWebEngineProfile *q_ptr;
+    QWebEngineSettings *m_settings;
     BrowserContextAdapter *m_browserContext;
     QExplicitlySharedDataPointer<BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;

@@ -39,9 +39,12 @@
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
 #include "qquickwebengineprofile_p_p.h"
+#include "qquickwebenginesettings_p.h"
+
 #include <QQmlEngine>
 
 #include "browser_context_adapter.h"
+#include "web_engine_settings.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,12 +65,14 @@ static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int sta
 }
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
-        : m_browserContext(browserContext)
+        : m_settings(new QQuickWebEngineSettings())
+        , m_browserContext(browserContext)
 {
     if (ownsContext)
         m_browserContextRef = browserContext;
 
     m_browserContext->setClient(this);
+    m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
 }
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
@@ -392,6 +397,12 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
 {
     static QQuickWebEngineProfile profile(new QQuickWebEngineProfilePrivate(BrowserContextAdapter::defaultContext(), false));
     return &profile;
+}
+
+QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
+{
+    const Q_D(QQuickWebEngineProfile);
+    return d->settings();
 }
 
 QT_END_NAMESPACE

@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
+class QQuickWebEngineSettings;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_OBJECT
@@ -115,9 +116,12 @@ signals:
     void downloadFinished(QQuickWebEngineDownloadItem *download);
 
 private:
-    Q_DECLARE_PRIVATE(QQuickWebEngineProfile);
+    Q_DECLARE_PRIVATE(QQuickWebEngineProfile)
     QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *);
+    QQuickWebEngineSettings *settings() const;
 
+    friend class QQuickWebEngineSettings;
+    friend class QQuickWebEngineSingleton;
     friend class QQuickWebEngineViewPrivate;
     QScopedPointer<QQuickWebEngineProfilePrivate> d_ptr;
 };

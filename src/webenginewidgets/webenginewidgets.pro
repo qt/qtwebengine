@@ -32,7 +32,6 @@ HEADERS = \
         api/qwebengineprofile.h \
         api/qwebengineprofile_p.h \
         api/qwebenginesettings.h \
-        api/qwebenginesettings_p.h \
         api/qwebengineview.h \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h

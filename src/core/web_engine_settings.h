@@ -43,6 +43,7 @@
 #include <QScopedPointer>
 #include <QHash>
 #include <QUrl>
+#include <QSet>
 
 class BatchTimer;
 class WebContentsAdapter;
@@ -51,14 +52,6 @@ class WebEngineSettings;
 namespace content {
 struct WebPreferences;
 }
-
-class QWEBENGINE_EXPORT WebEngineSettingsDelegate {
-public:
-    virtual ~WebEngineSettingsDelegate() {}
-    virtual void apply() = 0;
-    // Needs to be a valid pointer, the last available fallback (ex: global settings) should return itself.
-    virtual WebEngineSettings *fallbackSettings() const = 0;
-};
 
 class QWEBENGINE_EXPORT WebEngineSettings {
 public:
@@ -98,8 +91,10 @@ public:
         DefaultFixedFontSize
     };
 
-    WebEngineSettings(WebEngineSettingsDelegate*);
-    virtual ~WebEngineSettings();
+    explicit WebEngineSettings(WebEngineSettings *parentSettings = 0);
+    ~WebEngineSettings();
+
+    void setParentSettings(WebEngineSettings *parentSettings);
 
     void overrideWebPreferences(content::WebPreferences *prefs);
 
@@ -118,8 +113,10 @@ public:
     void setDefaultTextEncoding(const QString &encoding);
     QString defaultTextEncoding() const;
 
-    void initDefaults();
+    void initDefaults(bool offTheRecord = false);
     void scheduleApply();
+
+    void scheduleApplyRecursively();
 
 private:
     void doApply();
@@ -127,13 +124,15 @@ private:
     void setWebContentsAdapter(WebContentsAdapter *adapter) { m_adapter = adapter; }
 
     WebContentsAdapter* m_adapter;
-    WebEngineSettingsDelegate* m_delegate;
     QHash<Attribute, bool> m_attributes;
     QHash<FontFamily, QString> m_fontFamilies;
     QHash<FontSize, int> m_fontSizes;
     QString m_defaultEncoding;
     QScopedPointer<content::WebPreferences> webPreferences;
     QScopedPointer<BatchTimer> m_batchTimer;
+
+    WebEngineSettings *parentSettings;
+    QSet<WebEngineSettings *> childSettings;
 
     friend class BatchTimer;
     friend class WebContentsAdapter;

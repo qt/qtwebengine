@@ -67,7 +67,6 @@ private:
     WebEngineSettings *m_settings;
 };
 
-#include "web_engine_settings.moc"
 
 static inline bool isTouchScreenAvailable() {
     static bool initialized = false;
@@ -85,16 +84,23 @@ static inline bool isTouchScreenAvailable() {
 }
 
 
-WebEngineSettings::WebEngineSettings(WebEngineSettingsDelegate *delegate)
+WebEngineSettings::WebEngineSettings(WebEngineSettings *_parentSettings)
     : m_adapter(0)
-    , m_delegate(delegate)
     , m_batchTimer(new BatchTimer(this))
+    , parentSettings(_parentSettings)
 {
-    Q_ASSERT(delegate);
+    if (parentSettings)
+        parentSettings->childSettings.insert(this);
 }
 
 WebEngineSettings::~WebEngineSettings()
 {
+    if (parentSettings)
+        parentSettings->childSettings.remove(this);
+    // In QML the profile and its settings may be garbage collected before the page and its settings.
+    Q_FOREACH (WebEngineSettings *settings, childSettings) {
+        settings->parentSettings = 0;
+    }
 }
 
 void WebEngineSettings::overrideWebPreferences(content::WebPreferences *prefs)
@@ -111,94 +117,86 @@ void WebEngineSettings::overrideWebPreferences(content::WebPreferences *prefs)
 void WebEngineSettings::setAttribute(WebEngineSettings::Attribute attr, bool on)
 {
     m_attributes.insert(attr, on);
-    m_delegate->apply();
+    scheduleApplyRecursively();
 }
 
 bool WebEngineSettings::testAttribute(WebEngineSettings::Attribute attr) const
 {
-    WebEngineSettings *fallback = m_delegate->fallbackSettings();
-    Q_ASSERT(fallback);
-    if (this == fallback) {
+    if (!parentSettings) {
         Q_ASSERT(m_attributes.contains(attr));
         return m_attributes.value(attr);
     }
-    return m_attributes.value(attr, fallback->testAttribute(attr));
+    return m_attributes.value(attr, parentSettings->testAttribute(attr));
 }
 
 void WebEngineSettings::resetAttribute(WebEngineSettings::Attribute attr)
 {
-    if (this == m_delegate->fallbackSettings())
+    if (!parentSettings) // FIXME: Set initial defaults.
         return;
     m_attributes.remove(attr);
-    m_delegate->apply();
+    scheduleApplyRecursively();
 }
 
 void WebEngineSettings::setFontFamily(WebEngineSettings::FontFamily which, const QString &family)
 {
     m_fontFamilies.insert(which, family);
-    m_delegate->apply();
+    scheduleApplyRecursively();
 }
 
 QString WebEngineSettings::fontFamily(WebEngineSettings::FontFamily which)
 {
-    WebEngineSettings *fallback = m_delegate->fallbackSettings();
-    Q_ASSERT(fallback);
-    if (this == fallback) {
+    if (!parentSettings) {
         Q_ASSERT(m_fontFamilies.contains(which));
         return m_fontFamilies.value(which);
     }
-    return m_fontFamilies.value(which, fallback->fontFamily(which));
+    return m_fontFamilies.value(which, parentSettings->fontFamily(which));
 }
 
 void WebEngineSettings::resetFontFamily(WebEngineSettings::FontFamily which)
 {
-    if (this == m_delegate->fallbackSettings())
+    if (!parentSettings) // FIXME: Set initial defaults.
         return;
     m_fontFamilies.remove(which);
-    m_delegate->apply();
+    scheduleApplyRecursively();
 }
 
 void WebEngineSettings::setFontSize(WebEngineSettings::FontSize type, int size)
 {
     m_fontSizes.insert(type, size);
-    m_delegate->apply();
+    scheduleApplyRecursively();
 }
 
 int WebEngineSettings::fontSize(WebEngineSettings::FontSize type) const
 {
-    WebEngineSettings *fallback = m_delegate->fallbackSettings();
-    Q_ASSERT(fallback);
-    if (this == fallback) {
+    if (!parentSettings) {
         Q_ASSERT(m_fontSizes.contains(type));
         return m_fontSizes.value(type);
     }
-    return m_fontSizes.value(type, fallback->fontSize(type));
+    return m_fontSizes.value(type, parentSettings->fontSize(type));
 }
 
 void WebEngineSettings::resetFontSize(WebEngineSettings::FontSize type)
 {
-    if (this == m_delegate->fallbackSettings())
+    if (!parentSettings) // FIXME: Set initial defaults.
         return;
     m_fontSizes.remove(type);
-    m_delegate->apply();
+    scheduleApplyRecursively();
 }
 
 void WebEngineSettings::setDefaultTextEncoding(const QString &encoding)
 {
     m_defaultEncoding = encoding;
-    m_delegate->apply();
+    scheduleApplyRecursively();
 }
 
 QString WebEngineSettings::defaultTextEncoding() const
 {
-    WebEngineSettings *fallback = m_delegate->fallbackSettings();
-    Q_ASSERT(fallback);
-    if (this == fallback)
+    if (!parentSettings)
         return m_defaultEncoding;
-    return m_defaultEncoding.isEmpty()? fallback->defaultTextEncoding() : m_defaultEncoding;
+    return m_defaultEncoding.isEmpty()? parentSettings->defaultTextEncoding() : m_defaultEncoding;
 }
 
-void WebEngineSettings::initDefaults()
+void WebEngineSettings::initDefaults(bool offTheRecord)
 {
     // Initialize the default settings.
     m_attributes.insert(AutoLoadImages, true);
@@ -206,7 +204,7 @@ void WebEngineSettings::initDefaults()
     m_attributes.insert(JavascriptCanOpenWindows, true);
     m_attributes.insert(JavascriptCanAccessClipboard, false);
     m_attributes.insert(LinksIncludedInFocusChain, true);
-    m_attributes.insert(LocalStorageEnabled, true);
+    m_attributes.insert(LocalStorageEnabled, !offTheRecord);
     m_attributes.insert(LocalContentCanAccessRemoteUrls, false);
     m_attributes.insert(XSSAuditingEnabled, false);
     m_attributes.insert(SpatialNavigationEnabled, false);
@@ -294,3 +292,22 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->minimum_logical_font_size = fontSize(MinimumLogicalFontSize);
     prefs->default_encoding = defaultTextEncoding().toStdString();
 }
+
+void WebEngineSettings::scheduleApplyRecursively()
+{
+    scheduleApply();
+    Q_FOREACH (WebEngineSettings *settings, childSettings) {
+        settings->scheduleApply();
+    }
+}
+
+void WebEngineSettings::setParentSettings(WebEngineSettings *_parentSettings)
+{
+    if (parentSettings)
+        parentSettings->childSettings.remove(this);
+    parentSettings = _parentSettings;
+    if (parentSettings)
+        parentSettings->childSettings.insert(this);
+}
+
+#include "web_engine_settings.moc"

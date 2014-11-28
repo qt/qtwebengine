@@ -39,7 +39,6 @@ HEADERS = \
         api/qquickwebengineprofile_p.h \
         api/qquickwebengineprofile_p_p.h \
         api/qquickwebenginesettings_p.h \
-        api/qquickwebenginesettings_p_p.h \
         api/qquickwebenginesingleton_p.h \
         api/qquickwebengineview_p.h \
         api/qquickwebengineview_p_p.h \

@@ -35,245 +35,184 @@
 ****************************************************************************/
 
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebenginesettings_p_p.h"
+
+#include "qquickwebengineprofile_p.h"
+#include "web_engine_settings.h"
 
 #include <QtCore/QList>
 
 QT_BEGIN_NAMESPACE
 
-Q_GLOBAL_STATIC(QList<QQuickWebEngineSettingsPrivate*>, allSettings)
-
-class QQuickWebEngineGlobalSettings {
-    QQuickWebEngineSettings globalSettings;
-public:
-    QQuickWebEngineGlobalSettings() {
-        // globalSettings shouldn't be in that list.
-        allSettings->removeAll(globalSettings.d_func());
-        globalSettings.d_func()->coreSettings->initDefaults();
-    }
-
-    QQuickWebEngineSettings *data() { return &globalSettings; }
-};
-
-Q_GLOBAL_STATIC(QQuickWebEngineGlobalSettings, globalInstance)
-
-QQuickWebEngineSettingsPrivate::QQuickWebEngineSettingsPrivate()
-    : coreSettings(new WebEngineSettings(this))
-{
-    allSettings->append(this);
-}
-
-void QQuickWebEngineSettingsPrivate::apply()
-{
-    coreSettings->scheduleApply();
-    QQuickWebEngineSettingsPrivate *globals = QQuickWebEngineSettings::globalSettings()->d_func();
-    Q_ASSERT((this == globals) != (allSettings->contains(this)));
-    if (this == globals)
-        Q_FOREACH (QQuickWebEngineSettingsPrivate *settings, *allSettings)
-            settings->coreSettings->scheduleApply();
-}
-
-WebEngineSettings *QQuickWebEngineSettingsPrivate::fallbackSettings() const
-{
-    return QQuickWebEngineSettings::globalSettings()->d_func()->coreSettings.data();
-}
-
-QQuickWebEngineSettings *QQuickWebEngineSettings::globalSettings()
-{
-    return globalInstance()->data();
-}
+QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings)
+    : d_ptr(new WebEngineSettings(parentSettings ? parentSettings->d_ptr.data() : 0))
+{ }
 
 QQuickWebEngineSettings::~QQuickWebEngineSettings()
-{
-    allSettings->removeAll(this->d_func());
-}
+{ }
 
 bool QQuickWebEngineSettings::autoLoadImages() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::AutoLoadImages);
+    return d_ptr->testAttribute(WebEngineSettings::AutoLoadImages);
 }
 
 bool QQuickWebEngineSettings::javascriptEnabled() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::JavascriptEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::JavascriptEnabled);
 }
 
 bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
+    return d_ptr->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
 }
 
 bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
+    return d_ptr->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
 }
 
 bool QQuickWebEngineSettings::linksIncludedInFocusChain() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
+    return d_ptr->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
 }
 
 bool QQuickWebEngineSettings::localStorageEnabled() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::LocalStorageEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::LocalStorageEnabled);
 }
 
 bool QQuickWebEngineSettings::localContentCanAccessRemoteUrls() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
+    return d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
 }
 
 bool QQuickWebEngineSettings::spatialNavigationEnabled() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
 }
 
 bool QQuickWebEngineSettings::localContentCanAccessFileUrls() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
+    return d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
 }
 
 bool QQuickWebEngineSettings::hyperlinkAuditingEnabled() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
 }
 
 bool QQuickWebEngineSettings::errorPageEnabled() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->testAttribute(WebEngineSettings::ErrorPageEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::ErrorPageEnabled);
 }
 
 QString QQuickWebEngineSettings::defaultTextEncoding() const
 {
-    Q_D(const QQuickWebEngineSettings);
-    return d->coreSettings->defaultTextEncoding();
+    return d_ptr->defaultTextEncoding();
 }
 
 void QQuickWebEngineSettings::setAutoLoadImages(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::AutoLoadImages);
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AutoLoadImages);
     // Set unconditionally as it sets the override for the current settings while the current setting
     // could be from the fallback and is prone to changing later on.
-    d->coreSettings->setAttribute(WebEngineSettings::AutoLoadImages, on);
-    if (wasOn ^ on)
+    d_ptr->setAttribute(WebEngineSettings::AutoLoadImages, on);
+    if (wasOn != on)
         Q_EMIT autoLoadImagesChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptEnabled(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::JavascriptEnabled);
-    d->coreSettings->setAttribute(WebEngineSettings::JavascriptEnabled, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptEnabled);
+    d_ptr->setAttribute(WebEngineSettings::JavascriptEnabled, on);
+    if (wasOn != on)
         Q_EMIT javascriptEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptCanOpenWindows(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
-    d->coreSettings->setAttribute(WebEngineSettings::JavascriptCanOpenWindows, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
+    d_ptr->setAttribute(WebEngineSettings::JavascriptCanOpenWindows, on);
+    if (wasOn != on)
         Q_EMIT javascriptCanOpenWindowsChanged();
 }
 
 void QQuickWebEngineSettings::setJavascriptCanAccessClipboard(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
-    d->coreSettings->setAttribute(WebEngineSettings::JavascriptCanAccessClipboard, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
+    d_ptr->setAttribute(WebEngineSettings::JavascriptCanAccessClipboard, on);
+    if (wasOn != on)
         Q_EMIT javascriptCanAccessClipboardChanged();
 }
 
 void QQuickWebEngineSettings::setLinksIncludedInFocusChain(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
-    d->coreSettings->setAttribute(WebEngineSettings::LinksIncludedInFocusChain, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
+    d_ptr->setAttribute(WebEngineSettings::LinksIncludedInFocusChain, on);
+    if (wasOn != on)
         Q_EMIT linksIncludedInFocusChainChanged();
 }
 
 void QQuickWebEngineSettings::setLocalStorageEnabled(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LocalStorageEnabled);
-    d->coreSettings->setAttribute(WebEngineSettings::LocalStorageEnabled, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LocalStorageEnabled);
+    d_ptr->setAttribute(WebEngineSettings::LocalStorageEnabled, on);
+    if (wasOn != on)
         Q_EMIT localStorageEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setLocalContentCanAccessRemoteUrls(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
-    d->coreSettings->setAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
+    d_ptr->setAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls, on);
+    if (wasOn != on)
         Q_EMIT localContentCanAccessRemoteUrlsChanged();
 }
 
 
 void QQuickWebEngineSettings::setSpatialNavigationEnabled(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
-    d->coreSettings->setAttribute(WebEngineSettings::SpatialNavigationEnabled, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
+    d_ptr->setAttribute(WebEngineSettings::SpatialNavigationEnabled, on);
+    if (wasOn != on)
         Q_EMIT spatialNavigationEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setLocalContentCanAccessFileUrls(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
-    d->coreSettings->setAttribute(WebEngineSettings::LocalContentCanAccessFileUrls, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
+    d_ptr->setAttribute(WebEngineSettings::LocalContentCanAccessFileUrls, on);
+    if (wasOn != on)
         Q_EMIT localContentCanAccessFileUrlsChanged();
 }
 
 void QQuickWebEngineSettings::setHyperlinkAuditingEnabled(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
-    d->coreSettings->setAttribute(WebEngineSettings::HyperlinkAuditingEnabled, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
+    d_ptr->setAttribute(WebEngineSettings::HyperlinkAuditingEnabled, on);
+    if (wasOn != on)
         Q_EMIT hyperlinkAuditingEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setErrorPageEnabled(bool on)
 {
-    Q_D(QQuickWebEngineSettings);
-    bool wasOn = d->coreSettings->testAttribute(WebEngineSettings::ErrorPageEnabled);
-    d->coreSettings->setAttribute(WebEngineSettings::ErrorPageEnabled, on);
-    if (wasOn ^ on)
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::ErrorPageEnabled);
+    d_ptr->setAttribute(WebEngineSettings::ErrorPageEnabled, on);
+    if (wasOn != on)
         Q_EMIT errorPageEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)
 {
-    Q_D(QQuickWebEngineSettings);
-    const QString oldDefaultTextEncoding = d->coreSettings->defaultTextEncoding();
-    d->coreSettings->setDefaultTextEncoding(encoding);
+    const QString oldDefaultTextEncoding = d_ptr->defaultTextEncoding();
+    d_ptr->setDefaultTextEncoding(encoding);
     if (oldDefaultTextEncoding.compare(encoding))
         Q_EMIT defaultTextEncodingChanged();
 }
 
-QQuickWebEngineSettings::QQuickWebEngineSettings()
-    : d_ptr(new QQuickWebEngineSettingsPrivate)
+void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)
 {
+    d_ptr->setParentSettings(parentSettings->d_ptr.data());
+    d_ptr->scheduleApplyRecursively();
 }
 
 QT_END_NAMESPACE

@@ -25,13 +25,13 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
 
+class WebEngineSettings;
+
 QT_BEGIN_NAMESPACE
 
 class QIcon;
 class QPixmap;
 class QUrl;
-class QWebEngineSettingsPrivate;
-class QWebEngineGlobalSettings;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineSettings {
 public:
@@ -66,7 +66,10 @@ public:
         DefaultFixedFontSize
     };
 
+#if QT_DEPRECATED_SINCE(5, 5)
     static QWebEngineSettings *globalSettings();
+#endif
+    static QWebEngineSettings *defaultSettings();
 
     void setFontFamily(FontFamily which, const QString &family);
     QString fontFamily(FontFamily which) const;
@@ -85,13 +88,15 @@ public:
 
 private:
     Q_DISABLE_COPY(QWebEngineSettings)
-    Q_DECLARE_PRIVATE(QWebEngineSettings);
+    typedef WebEngineSettings QWebEngineSettingsPrivate;
+    QWebEngineSettingsPrivate* d_func() { return d_ptr.data(); }
+    const QWebEngineSettingsPrivate* d_func() const { return d_ptr.data(); }
     QScopedPointer<QWebEngineSettingsPrivate> d_ptr;
     friend class QWebEnginePagePrivate;
-    friend class QWebEngineGlobalSettings;
+    friend class QWebEngineProfilePrivate;
 
-    QWebEngineSettings();
     ~QWebEngineSettings();
+    explicit QWebEngineSettings(QWebEngineSettings *parentSettings = 0);
 };
 
 QT_END_NAMESPACE

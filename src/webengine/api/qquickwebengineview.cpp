@@ -48,7 +48,6 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebengineprofile_p_p.h"
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebenginesettings_p_p.h"
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "ui_delegates_manager.h"
@@ -86,7 +85,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , v(new QQuickWebEngineViewport(this))
     , m_history(new QQuickWebEngineHistory(this))
     , m_profile(QQuickWebEngineProfile::defaultProfile())
-    , m_settings(new QQuickWebEngineSettings)
+    , m_settings(new QQuickWebEngineSettings(m_profile->settings()))
     , contextMenuExtraItems(0)
     , loadProgress(0)
     , m_isFullScreen(false)
@@ -450,7 +449,7 @@ BrowserContextAdapter *QQuickWebEngineViewPrivate::browserContextAdapter()
 
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
 {
-    return m_settings->d_func()->coreSettings.data();
+    return m_settings->d_ptr.data();
 }
 
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
@@ -664,7 +663,11 @@ void QQuickWebEngineView::setProfile(QQuickWebEngineProfile *profile)
 
 void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
 {
+    if (profile == m_profile)
+        return;
     m_profile = profile;
+    m_settings->setParentSettings(profile->settings());
+
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         QUrl activeUrl = adapter->activeUrl();

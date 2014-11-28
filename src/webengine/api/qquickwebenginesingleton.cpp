@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
 QQuickWebEngineSettings *QQuickWebEngineSingleton::settings() const
 {
-    return QQuickWebEngineSettings::globalSettings();
+    return defaultProfile()->settings();
 }
 
 QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const

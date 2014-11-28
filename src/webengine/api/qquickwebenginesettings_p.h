@@ -41,10 +41,9 @@
 #include <QObject>
 #include <QScopedPointer>
 
-QT_BEGIN_NAMESPACE
+class WebEngineSettings;
 
-class QQuickWebEngineSettingsPrivate;
-class QQuickWebEngineGlobalSettings;
+QT_BEGIN_NAMESPACE
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_OBJECT
@@ -62,8 +61,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
 
 public:
-    static QQuickWebEngineSettings *globalSettings();
-
     ~QQuickWebEngineSettings();
 
     bool autoLoadImages() const;
@@ -107,13 +104,14 @@ signals:
     void defaultTextEncodingChanged();
 
 private:
-    QQuickWebEngineSettings();
+    explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);
     Q_DISABLE_COPY(QQuickWebEngineSettings)
-    Q_DECLARE_PRIVATE(QQuickWebEngineSettings)
+    friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
-    friend class QQuickWebEngineGlobalSettings;
 
-    QScopedPointer<QQuickWebEngineSettingsPrivate> d_ptr;
+    void setParentSettings(QQuickWebEngineSettings *parentSettings);
+
+    QScopedPointer<WebEngineSettings> d_ptr;
 };
 
 QT_END_NAMESPACE
