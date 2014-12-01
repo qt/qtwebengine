@@ -33,7 +33,7 @@ depends += qtcore qtgui qtquick qtquickcontrols qtdoc
 
 headerdirs  += . ../api
 sourcedirs  += . ../api
-exampledirs +=  ../../../examples/webengine
+exampledirs +=  ../../../examples/webengine .
 
 navigation.landingpage = "Qt WebEngine"
 navigation.qmltypespage = "Qt WebEngine QML Types"

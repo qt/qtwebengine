@@ -59,10 +59,12 @@ public:
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
 
         qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", QObject::tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 0, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", QObject::tr("Cannot create separate instance of WebEngineNavigationRequest"));
+
+        qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
+        qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
+        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
     }
 };
 

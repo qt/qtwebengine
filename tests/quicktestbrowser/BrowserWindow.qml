@@ -355,6 +355,21 @@ ApplicationWindow {
                         }
                     ]
 
+                    onNewViewRequested: {
+                        if (!request.userInitiated)
+                            print("Warning: Blocked a popup window.")
+                        else if (request.destination == WebEngineView.NewViewInTab) {
+                            var tab = tabs.createEmptyTab()
+                            request.openIn(tab.item.webView)
+                        } else if (request.destination == WebEngineView.NewViewInDialog) {
+                            var dialog = applicationRoot.createDialog()
+                            request.openIn(dialog.currentWebView)
+                        } else {
+                            var window = applicationRoot.createWindow()
+                            request.openIn(window.currentWebView)
+                        }
+                    }
+
                     experimental {
                         isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
                         onFullScreenRequested: {
@@ -367,20 +382,6 @@ ApplicationWindow {
                             }
                         }
 
-                        onNewViewRequested: {
-                            if (!request.userInitiated)
-                                print("Warning: Blocked a popup window.")
-                            else if (request.destination == WebEngineView.NewViewInTab) {
-                                var tab = tabs.createEmptyTab()
-                                request.openIn(tab.item.webView)
-                            } else if (request.destination == WebEngineView.NewViewInDialog) {
-                                var dialog = applicationRoot.createDialog()
-                                request.openIn(dialog.currentWebView)
-                            } else {
-                                var window = applicationRoot.createWindow()
-                                request.openIn(window.currentWebView)
-                            }
-                        }
                         onFeaturePermissionRequested: {
                             permBar.securityOrigin = securityOrigin;
                             permBar.requestedFeature = feature;

@@ -44,6 +44,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
+class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineProfile;
 class QQuickWebEngineViewExperimental;
 class QQuickWebEngineViewPrivate;
@@ -156,6 +157,7 @@ Q_SIGNALS:
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
     void zoomFactorChanged(qreal arg);
+    Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

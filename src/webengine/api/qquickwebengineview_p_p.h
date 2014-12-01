@@ -51,7 +51,6 @@ class UIDelegatesManager;
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineHistory;
-class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
@@ -114,7 +113,6 @@ public Q_SLOTS:
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 
 Q_SIGNALS:
-    void newViewRequested(QQuickWebEngineNewViewRequest *request);
     void fullScreenRequested(bool fullScreen);
     void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();

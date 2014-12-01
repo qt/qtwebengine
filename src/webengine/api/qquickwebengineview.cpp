@@ -349,6 +349,7 @@ void QQuickWebEngineViewPrivate::focusContainer()
 
 void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
 {
+    Q_Q(QQuickWebEngineView);
     QQuickWebEngineNewViewRequest request;
     // This increases the ref-count of newWebContents and will tell Chromium
     // to start loading it and possibly return it to its parent page window.open().
@@ -372,7 +373,7 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
         Q_UNREACHABLE();
     }
 
-    Q_EMIT e->newViewRequested(&request);
+    Q_EMIT q->newViewRequested(&request);
 }
 
 void QQuickWebEngineViewPrivate::close()

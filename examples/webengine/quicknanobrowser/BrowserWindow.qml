@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import QtQuick 2.1
-import QtWebEngine 1.0
+import QtWebEngine 1.1
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
@@ -48,7 +48,7 @@ import QtQuick.Controls.Private 1.0
 
 ApplicationWindow {
     id: browserWindow
-    function load(url) { currentWebView.url = url }
+    property QtObject applicationRoot
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
 
     width: 1300
@@ -196,6 +196,20 @@ ApplicationWindow {
                     else {
                         resetStatusText.stop()
                         statusText.text = hoveredUrl
+                    }
+                }
+                onNewViewRequested: {
+                    if (!request.userInitiated)
+                        print("Warning: Blocked a popup window.")
+                    else if (request.destination == WebEngineView.NewViewInTab) {
+                        var tab = tabs.createEmptyTab()
+                        request.openIn(tab.item)
+                    } else if (request.destination == WebEngineView.NewViewInDialog) {
+                        var dialog = applicationRoot.createDialog()
+                        request.openIn(dialog.currentWebView)
+                    } else {
+                        var window = applicationRoot.createWindow()
+                        request.openIn(window.currentWebView)
                     }
                 }
             }

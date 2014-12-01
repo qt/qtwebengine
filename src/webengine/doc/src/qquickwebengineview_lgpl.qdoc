@@ -258,6 +258,26 @@
 */
 
 /*!
+    \qmlsignal WebEngineView::newViewRequested(request)
+
+    This signal is emitted when a page load is requested to happen in a separate
+    WebEngineView. This can either be because the current page requested it explicitly
+    through a JavaScript call to window.open, or because the user clicked on a link
+    while holding Shift, Ctrl or a built-in combination that triggers the page to open
+    in a new window.
+
+    If this signal isn't handled the requested load will fail.
+
+    An example implementation:
+
+    \snippet snippets/qtwebengine_webengineview_newviewrequested.qml 0
+
+    The corresponding handler is onNewViewRequested.
+
+    \sa WebEngineNewViewRequest, WebEngineView::NewViewDestination, {WebEngine Quick Nano Browser}
+*/
+
+/*!
     \qmlproperty enumeration WebEngineView::ErrorDomain
 
     This enumeration details various high-level error types.
@@ -327,4 +347,21 @@
     \li Page has failed to load, and is not currently loading.
 
     \endtable
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::NewViewDestination
+
+    This enumeration details the format in which a new view request should be opened.
+
+    \value WebEngineView::NewViewInWindow
+            The page expects to be opened in a separate Window.
+    \value WebEngineView::NewViewInTab
+            The page expects to be opened in a tab of the same window.
+    \value WebEngineView::NewViewInDialog
+            The page expects to be opened in a Window without any tab, tool or URL bar.
+    \value WebEngineView::NewViewInBackgroundTab
+            The page expects to be opened in a tab of the same window, without hiding the currently visible WebEngineView.
+
+    \sa WebEngineNewViewRequest::destination
 */

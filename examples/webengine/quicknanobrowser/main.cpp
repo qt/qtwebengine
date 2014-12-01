@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     QQmlApplicationEngine appEngine;
     Utils utils;
     appEngine.rootContext()->setContextProperty("utils", &utils);
-    appEngine.load(QUrl("qrc:/BrowserWindow.qml"));
+    appEngine.load(QUrl("qrc:/ApplicationRoot.qml"));
     QMetaObject::invokeMethod(appEngine.rootObjects().first(), "load", Q_ARG(QVariant, startupUrl()));
 
     return app.exec();
