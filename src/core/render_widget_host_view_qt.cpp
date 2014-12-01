@@ -133,6 +133,12 @@ static inline ui::GestureProvider::Config QtGestureProviderConfig() {
     return config;
 }
 
+static inline bool compareTouchPoints(const QTouchEvent::TouchPoint &lhs, const QTouchEvent::TouchPoint &rhs)
+{
+    // TouchPointPressed < TouchPointMoved < TouchPointReleased
+    return lhs.state() < rhs.state();
+}
+
 class MotionEventQt : public ui::MotionEvent {
 public:
     MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, int index = -1)
@@ -982,6 +988,10 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 
     if (ev->type() == QEvent::TouchBegin)
         m_sendMotionActionDown = true;
+
+    // Make sure that ACTION_POINTER_DOWN is delivered before ACTION_MOVE,
+    // and ACTION_MOVE before ACTION_POINTER_UP.
+    std::sort(touchPoints.begin(), touchPoints.end(), compareTouchPoints);
 
     for (int i = 0; i < touchPoints.size(); ++i) {
         ui::MotionEvent::Action action;

@@ -13,7 +13,7 @@
     '<!@pymod_do_main(repack_locales -i -p <(OS) -s <(SHARED_INTERMEDIATE_DIR) -x <(repack_output_dir) <(repack_extra_flags) <(locales))'
   ],
   'outputs': [
-    '<!@pymod_do_main(repack_locales -o -p <(OS) -s <(SHARED_INTERMEDIATE_DIR) -x <(repack_output_dir) <(locales))'
+    '<@(locale_files)'
   ],
   'action': [
     '<@(repack_locales_script)',

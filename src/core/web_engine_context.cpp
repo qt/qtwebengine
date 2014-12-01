@@ -183,7 +183,11 @@ WebEngineContext::WebEngineContext()
 
 #if defined(OS_WIN)
     parsedCommandLine->AppendSwitch(switches::kDisableD3D11);
+    // ANGLE doesn't support multi-threading, doing texture upload from the GPU thread
+    // hasn't been causing problems yet but doing rendering there is conflicting with
+    // Qt's rendering of the scene graph.
     parsedCommandLine->AppendSwitch(switches::kDisableExperimentalWebGL);
+    parsedCommandLine->AppendSwitch(switches::kDisableAccelerated2dCanvas);
 #endif
 
 #if defined(QTWEBENGINE_MOBILE_SWITCHES)

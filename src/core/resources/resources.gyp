@@ -9,6 +9,9 @@
       'sk', 'sl', 'sr', 'sv', 'sw', 'ta', 'te', 'th', 'tr', 'uk',
       'vi', 'zh-CN', 'zh-TW',
     ],
+    'locale_files': ['<!@pymod_do_main(repack_locales -o -p <(OS) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))'],
+    'qt_install_data%': '',
+    'qt_install_translations%': '',
   },
   'dependencies': [
       '<(chromium_src_dir)/webkit/webkit_resources.gyp:webkit_strings',
@@ -29,7 +32,25 @@
         'action_name': 'repack_locales',
         'includes': [ 'repack_locales.gypi' ],
       },
-    ]
+    ],
+    'conditions': [
+      ['qt_install_data != ""', {
+        'copies': [
+          {
+            'destination': '<(qt_install_data)',
+            'files': [ '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_resources.pak' ],
+          },
+        ],
+      }],
+      ['qt_install_translations != ""', {
+        'copies': [
+          {
+            'destination': '<(qt_install_translations)/qtwebengine_locales',
+            'files': [ '<@(locale_files)' ],
+          },
+        ],
+      }],
+    ],
   }
   ]
 }

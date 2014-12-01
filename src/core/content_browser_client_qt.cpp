@@ -66,6 +66,7 @@
 #include "media_capture_devices_dispatcher.h"
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "web_contents_delegate_qt.h"
+#include "access_token_store_qt.h"
 
 #include <QGuiApplication>
 #include <QOpenGLContext>
@@ -336,18 +337,16 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
-{
-    // We return a dumb in-memory AccessTokenStore implementation for now
-    // since this is not null-checked before it's used in the content layer.
-    return new AccessTokenStoreQt;
-}
-
 void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, const GURL &url, WebPreferences *web_prefs)
 {
     Q_UNUSED(url);
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
         static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
+}
+
+content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
+{
+    return new AccessTokenStoreQt;
 }
 
 net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)

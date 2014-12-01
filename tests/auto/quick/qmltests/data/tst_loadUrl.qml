@@ -42,6 +42,7 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.0
+import QtWebEngine.experimental 1.0
 
 TestWebEngineView {
     id: webEngineView
@@ -106,6 +107,8 @@ TestWebEngineView {
         }
 
         function test_urlProperty() {
+            WebEngine.settings.errorPageEnabled = false
+
             var url = Qt.resolvedUrl("test1.html")
 
             webEngineView.url = url
@@ -117,7 +120,7 @@ TestWebEngineView {
             webEngineView.url = bogusSite
             compare(webEngineView.url, bogusSite)
             verify(webEngineView.waitForLoadFailed())
-            compare(webEngineView.url, bogusSite)
+            compare(webEngineView.url, url)
 
             webEngineView.url = "about:blank" // Reset from previous test
             verify(webEngineView.waitForLoadSucceeded())
