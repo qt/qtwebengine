@@ -70,7 +70,7 @@ defineReplace(findMocables) {
   for (file, input): \
       infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
   mocables = $$system("python $$QTWEBENGINE_ROOT/tools/buildscripts/find-mocables $$infiles")
-  mocables = $$replace(mocables, $$_PRO_FILE_PWD_/, '')
+  mocables = $$replace(mocables, $$re_escape($${_PRO_FILE_PWD_}/), '')
   return($$mocables)
 }
 
@@ -84,8 +84,10 @@ defineReplace(findIncludedMocFiles) {
 defineReplace(mocOutput) {
   out = $$1
   # The order is important, since the output of the second replace would end up accidentaly transformed by the first one
-  out = $$replace(out, ^(.*)($$join(QMAKE_EXT_CPP,|)), $${QMAKE_CPP_MOD_MOC}\\1$${QMAKE_EXT_CPP_MOC})
-  out = $$replace(out, ^(.*)($$join(QMAKE_EXT_H,|)), $${QMAKE_H_MOD_MOC}\\1$${first(QMAKE_EXT_CPP)})
+  for(ext, $$list($${QMAKE_EXT_CPP})): \
+      out = $$replace(out, ^(.*)($$re_escape($${ext})), $${QMAKE_CPP_MOD_MOC}\\1$${QMAKE_EXT_CPP_MOC})
+  for(ext, $$list($${QMAKE_EXT_H})): \
+      out = $$replace(out, ^(.*)($$re_escape($${ext})), $${QMAKE_H_MOD_MOC}\\1$${first(QMAKE_EXT_CPP)})
   return($$out)
 }
 
