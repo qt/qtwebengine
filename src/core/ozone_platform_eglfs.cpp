@@ -36,6 +36,8 @@
 
 #include "ozone_platform_eglfs.h"
 
+#if defined(USE_OZONE)
+
 #include "media/ozone/media_ozone_platform.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/ozone_platform.h"
@@ -43,7 +45,6 @@
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
-#if defined(USE_OZONE)
 
 namespace media {
 

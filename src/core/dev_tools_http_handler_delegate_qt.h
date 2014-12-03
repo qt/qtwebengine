@@ -61,11 +61,8 @@ public:
     virtual std::string GetDiscoveryPageHTML() Q_DECL_OVERRIDE;
     virtual bool BundlesFrontendResources() Q_DECL_OVERRIDE;
     virtual base::FilePath GetDebugFrontendDir() Q_DECL_OVERRIDE;
-    virtual std::string GetPageThumbnailData(const GURL& url) Q_DECL_OVERRIDE;
-    virtual scoped_ptr<content::DevToolsTarget> CreateNewTarget(const GURL&) Q_DECL_OVERRIDE;
     // Requests the list of all inspectable targets.
     // The caller gets the ownership of the returned targets.
-    virtual void EnumerateTargets(TargetCallback callback) Q_DECL_OVERRIDE;
     virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name) Q_DECL_OVERRIDE;
 
 private:

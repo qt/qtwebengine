@@ -44,7 +44,6 @@
 class DesktopScreenQt : public gfx::Screen {
 public:
     // Overridden from gfx::Screen:
-    virtual bool IsDIPEnabled() Q_DECL_OVERRIDE;
     virtual gfx::Point GetCursorScreenPoint() Q_DECL_OVERRIDE;
     virtual gfx::NativeWindow GetWindowUnderCursor() Q_DECL_OVERRIDE;
     virtual gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) Q_DECL_OVERRIDE;

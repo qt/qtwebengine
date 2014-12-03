@@ -40,7 +40,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/resource_request_info.h"
-#include "content/public/common/page_transition_types.h"
+#include "ui/base/page_transition_types.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "type_conversion.h"
@@ -49,23 +49,23 @@
 
 namespace {
 
-int pageTransitionToNavigationType(content::PageTransition transition)
+int pageTransitionToNavigationType(ui::PageTransition transition)
 {
-    int32 qualifier = content::PageTransitionGetQualifier(transition);
+    int32 qualifier = ui::PageTransitionGetQualifier(transition);
 
-    if (qualifier & content::PAGE_TRANSITION_FORWARD_BACK)
+    if (qualifier & ui::PAGE_TRANSITION_FORWARD_BACK)
         return WebContentsAdapterClient::BackForwardNavigation;
 
-    content::PageTransition stippedTransition = content::PageTransitionStripQualifier(transition);
+    ui::PageTransition stippedTransition = ui::PageTransitionStripQualifier(transition);
 
     switch (stippedTransition) {
-    case content::PAGE_TRANSITION_LINK:
+    case ui::PAGE_TRANSITION_LINK:
         return WebContentsAdapterClient::LinkClickedNavigation;
-    case content::PAGE_TRANSITION_TYPED:
+    case ui::PAGE_TRANSITION_TYPED:
         return WebContentsAdapterClient::TypedNavigation;
-    case content::PAGE_TRANSITION_FORM_SUBMIT:
+    case ui::PAGE_TRANSITION_FORM_SUBMIT:
         return WebContentsAdapterClient::FormSubmittedNavigation;
-    case content::PAGE_TRANSITION_RELOAD:
+    case ui::PAGE_TRANSITION_RELOAD:
         return WebContentsAdapterClient::ReloadNavigation;
     default:
         return WebContentsAdapterClient::OtherNavigation;
@@ -84,9 +84,9 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
         // Abort the request if it has no associated render info / render view.
         return net::ERR_ABORTED;
 
-    ResourceType::Type resourceType = info->GetResourceType();
+    content::ResourceType resourceType = info->GetResourceType();
     // Only intercept MAIN_FRAME and SUB_FRAME.
-    if (!ResourceType::IsFrame(resourceType))
+    if (!content::IsResourceTypeFrame(resourceType))
         return net::OK;
 
     // Track active requests since |callback| and |new_url| are valid
@@ -97,7 +97,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 
     RequestParams params = {
         toQt(request->url()),
-        resourceType == ResourceType::MAIN_FRAME,
+        info->IsMainFrame(),
         navigationType,
         renderProcessId,
         renderFrameId

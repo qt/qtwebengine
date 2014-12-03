@@ -21,8 +21,6 @@
         '<(chromium_src_dir)/chrome/browser/media/desktop_media_list.h',
         '<(chromium_src_dir)/chrome/common/localized_error.cc',
         '<(chromium_src_dir)/chrome/common/localized_error.h',
-        '<(chromium_src_dir)/chrome/common/net/net_error_info.cc',
-        '<(chromium_src_dir)/chrome/common/net/net_error_info.h',
       ],
     },
     {

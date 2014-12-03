@@ -116,13 +116,18 @@ content::BrowserPluginGuestManager *BrowserContextQt::GetGuestManager()
     return 0;
 }
 
-quota::SpecialStoragePolicy *BrowserContextQt::GetSpecialStoragePolicy()
+storage::SpecialStoragePolicy *BrowserContextQt::GetSpecialStoragePolicy()
 {
     QT_NOT_YET_IMPLEMENTED
     return 0;
 }
 
 content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
+{
+    return 0;
+}
+
+content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
 {
     return 0;
 }

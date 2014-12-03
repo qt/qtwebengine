@@ -51,8 +51,8 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/proxy/proxy_service.h"
-#include "net/ssl/default_server_bound_cert_store.h"
-#include "net/ssl/server_bound_cert_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
@@ -106,8 +106,8 @@ void URLRequestContextGetterQt::updateStorageSettings()
         // must synchronously run on the glib message loop. This will be passed to
         // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
         m_proxyConfigService.reset(net::ProxyService::CreateSystemProxyConfigService(
-            BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)->message_loop_proxy(),
-            BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::FILE))
+            content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+            content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))
         );
     }
     if (m_storage && !m_updateStorageSettings) {
@@ -127,8 +127,8 @@ void URLRequestContextGetterQt::generateStorage()
     generateCookieStore();
     generateUserAgent();
 
-    m_storage->set_server_bound_cert_service(new net::ServerBoundCertService(
-        new net::DefaultServerBoundCertStore(NULL),
+    m_storage->set_channel_id_service(new net::ChannelIDService(
+        new net::DefaultChannelIDStore(NULL),
         base::WorkerPool::GetTaskRunner(true)));
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
@@ -250,7 +250,7 @@ void URLRequestContextGetterQt::generateHttpCache()
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.transport_security_state     = m_urlRequestContext->transport_security_state();
     network_session_params.cert_verifier                = m_urlRequestContext->cert_verifier();
-    network_session_params.server_bound_cert_service    = m_urlRequestContext->server_bound_cert_service();
+    network_session_params.channel_id_service           = m_urlRequestContext->channel_id_service();
     network_session_params.proxy_service                = m_urlRequestContext->proxy_service();
     network_session_params.ssl_config_service           = m_urlRequestContext->ssl_config_service();
     network_session_params.http_auth_handler_factory    = m_urlRequestContext->http_auth_handler_factory();

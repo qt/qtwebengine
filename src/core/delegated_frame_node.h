@@ -88,7 +88,7 @@ private:
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     struct SGObjects {
-        QList<QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > > renderPassLayers;
+        QList<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > renderPassLayers;
         QList<QSharedPointer<QSGRootNode> > renderPassRootNodes;
         QList<QSharedPointer<QSGTexture> > textureStrongRefs;
     } m_sgObjects;

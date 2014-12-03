@@ -43,7 +43,7 @@
 
 class CertificateErrorControllerPrivate {
 public:
-    CertificateErrorControllerPrivate(int cert_error, const net::SSLInfo& ssl_info, const GURL& request_url, ResourceType::Type resource_type, bool overridable, bool strict_enforcement, const base::Callback<void(bool)>& callback);
+    CertificateErrorControllerPrivate(int cert_error, const net::SSLInfo& ssl_info, const GURL& request_url, content::ResourceType resource_type, bool overridable, bool strict_enforcement, const base::Callback<void(bool)>& callback);
 
     void accept(bool accepted);
 

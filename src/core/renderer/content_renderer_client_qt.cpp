@@ -38,6 +38,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/localized_error.h"
+#include "components/error_page/common/error_page_params.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -47,7 +48,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
-#include "webkit/common/webpreferences.h"
+#include "content/public/common/web_preferences.h"
 
 #include "renderer/qt_render_view_observer.h"
 
@@ -107,7 +108,7 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* ren
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
         LocalizedError::GetStrings(error.reason, error.domain.utf8(), error.unreachableURL, isPost
                                    , error.staleCopyInCache && !isPost, locale, renderView->GetAcceptLanguages()
-                                   , scoped_ptr<LocalizedError::ErrorPageParams>(), &errorStrings);
+                                   , scoped_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 
 

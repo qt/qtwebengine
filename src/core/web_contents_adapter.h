@@ -47,10 +47,10 @@
 
 namespace content {
 class WebContents;
+struct WebPreferences;
 }
 class BrowserContextQt;
 class WebContentsAdapterPrivate;
-struct WebPreferences;
 
 QT_FORWARD_DECLARE_CLASS(QAccessibleInterface);
 
@@ -104,7 +104,7 @@ public:
     quint64 fetchDocumentInnerText();
     quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
     void stopFinding();
-    void updateWebPreferences(const WebPreferences &webPreferences);
+    void updateWebPreferences(const content::WebPreferences &webPreferences);
 
     void wasShown();
     void wasHidden();

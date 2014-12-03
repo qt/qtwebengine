@@ -57,7 +57,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "net/socket/stream_listen_socket.h"
-#include "net/socket/tcp_listen_socket.h"
+#include "net/socket/tcp_server_socket.h"
 
 using namespace content;
 
@@ -65,28 +65,40 @@ namespace {
 
 const char kTargetTypePage[] = "page";
 
+class TCPServerSocketFactory
+    : public DevToolsHttpHandler::ServerSocketFactory {
+public:
+    TCPServerSocketFactory(const std::string& address, int port, int backlog)
+        : DevToolsHttpHandler::ServerSocketFactory(address, port, backlog) {}
+private:
+    scoped_ptr<net::ServerSocket> Create() const override {
+        return scoped_ptr<net::ServerSocket>(new net::TCPServerSocket(NULL, net::NetLog::Source()));
+  }
+  DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
+};
+
 class Target : public content::DevToolsTarget {
 public:
     explicit Target(WebContents* web_contents);
 
-    virtual std::string GetId() const OVERRIDE { return id_; }
-    virtual std::string GetParentId() const OVERRIDE { return std::string(); }
-    virtual std::string GetType() const OVERRIDE { return kTargetTypePage; }
-    virtual std::string GetTitle() const OVERRIDE { return title_; }
-    virtual std::string GetDescription() const OVERRIDE { return std::string(); }
-    virtual GURL GetURL() const OVERRIDE { return url_; }
-    virtual GURL GetFaviconURL() const OVERRIDE { return favicon_url_; }
-    virtual base::TimeTicks GetLastActivityTime() const OVERRIDE {
+    virtual std::string GetId() const override { return id_; }
+    virtual std::string GetParentId() const override { return std::string(); }
+    virtual std::string GetType() const override { return kTargetTypePage; }
+    virtual std::string GetTitle() const override { return title_; }
+    virtual std::string GetDescription() const override { return std::string(); }
+    virtual GURL GetURL() const override { return url_; }
+    virtual GURL GetFaviconURL() const override { return favicon_url_; }
+    virtual base::TimeTicks GetLastActivityTime() const override {
         return last_activity_time_;
     }
-    virtual bool IsAttached() const OVERRIDE {
+    virtual bool IsAttached() const override {
         return agent_host_->IsAttached();
     }
-    virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const OVERRIDE {
+    virtual scoped_refptr<DevToolsAgentHost> GetAgentHost() const override {
         return agent_host_;
     }
-    virtual bool Activate() const OVERRIDE;
-    virtual bool Close() const OVERRIDE;
+    virtual bool Activate() const override;
+    virtual bool Close() const override;
 
 private:
     scoped_refptr<DevToolsAgentHost> agent_host_;
@@ -98,7 +110,7 @@ private:
 };
 
 Target::Target(WebContents* web_contents) {
-    agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
+    agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
     id_ = agent_host_->GetId();
     title_ = base::UTF16ToUTF8(web_contents->GetTitle());
     url_ = web_contents->GetURL();
@@ -110,10 +122,7 @@ Target::Target(WebContents* web_contents) {
 }
 
 bool Target::Activate() const {
-    RenderViewHost* rvh = agent_host_->GetRenderViewHost();
-    if (!rvh)
-        return false;
-    WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+    WebContents *web_contents = agent_host_->GetWebContents();
     if (!web_contents)
         return false;
     web_contents->GetDelegate()->ActivateContents(web_contents);
@@ -121,7 +130,10 @@ bool Target::Activate() const {
 }
 
 bool Target::Close() const {
-    RenderViewHost* rvh = agent_host_->GetRenderViewHost();
+    WebContents *web_contents = agent_host_->GetWebContents();
+    if (!web_contents)
+        return false;
+    RenderViewHost* rvh = web_contents->GetRenderViewHost();
     if (!rvh)
         return false;
     rvh->ClosePage();
@@ -143,7 +155,8 @@ DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt(BrowserContext* bro
         if (base::StringToInt(portString, &portInt) && portInt > 0 && portInt < 65535)
             listeningPort = portInt;
     }
-    m_devtoolsHttpHandler = DevToolsHttpHandler::Start(new net::TCPListenSocketFactory("0.0.0.0", listeningPort), std::string(), this, base::FilePath());
+    scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory("0.0.0.0", listeningPort, 1));
+    m_devtoolsHttpHandler = DevToolsHttpHandler::Start(factory.Pass(), std::string(), this, base::FilePath());
 }
 
 DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()
@@ -171,28 +184,6 @@ bool DevToolsHttpHandlerDelegateQt::BundlesFrontendResources()
 base::FilePath DevToolsHttpHandlerDelegateQt::GetDebugFrontendDir()
 {
     return base::FilePath();
-}
-
-std::string DevToolsHttpHandlerDelegateQt::GetPageThumbnailData(const GURL& url)
-{
-    return std::string();
-}
-
-scoped_ptr<DevToolsTarget> DevToolsHttpHandlerDelegateQt::CreateNewTarget(const GURL&)
-{
-    return scoped_ptr<DevToolsTarget>();
-}
-
-void DevToolsHttpHandlerDelegateQt::EnumerateTargets(TargetCallback callback)
-{
-    TargetList targets;
-    std::vector<RenderViewHost*> rvh_list = content::DevToolsAgentHost::GetValidRenderViewHosts();
-    for (std::vector<RenderViewHost*>::iterator it = rvh_list.begin(); it != rvh_list.end(); ++it) {
-        WebContents* web_contents = WebContents::FromRenderViewHost(*it);
-        if (web_contents)
-            targets.push_back(new Target(web_contents));
-    }
-    callback.Run(targets);
 }
 
 scoped_ptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)

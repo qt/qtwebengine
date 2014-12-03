@@ -384,8 +384,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_MATH:
         return QAccessible::Equation;
-    case ui::AX_ROLE_MATH_ELEMENT:
-        return QAccessible::Equation;
     case ui::AX_ROLE_MATTE:
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_MENU:

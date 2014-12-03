@@ -43,6 +43,14 @@ using namespace blink;
 
 namespace content {
 
+BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
+      const ui::AXTreeUpdate& initial_tree,
+      BrowserAccessibilityDelegate* delegate,
+      BrowserAccessibilityFactory* factory)
+{
+        return new BrowserAccessibilityManagerQt(0, initial_tree, delegate);
+}
+
 BrowserAccessibility *BrowserAccessibilityFactoryQt::Create()
 {
     return new BrowserAccessibilityQt();
@@ -95,23 +103,12 @@ void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(ui::AXEvent event_t
         break;
     case ui::AX_EVENT_LOAD_COMPLETE:
         break;
-
     case ui::AX_EVENT_TEXT_CHANGED: {
         QAccessibleTextUpdateEvent event(iface, -1, QString(), QString());
         QAccessible::updateAccessibility(&event);
         break;
     }
-    case ui::AX_EVENT_TEXT_INSERTED: {
-        QAccessibleTextInsertEvent event(iface, -1, QString());
-        QAccessible::updateAccessibility(&event);
-        break;
-    }
-    case ui::AX_EVENT_TEXT_REMOVED: {
-        QAccessibleTextRemoveEvent event(iface, -1, QString());
-        QAccessible::updateAccessibility(&event);
-        break;
-    }
-    case ui::AX_EVENT_SELECTED_TEXT_CHANGED: {
+    case ui::AX_EVENT_TEXT_SELECTION_CHANGED: {
         QAccessibleTextInterface *textIface = iface->textInterface();
         if (textIface) {
             int start = 0;

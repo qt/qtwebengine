@@ -15,6 +15,7 @@
       ['exclude', 'clipboard/clipboard_util_win\\.(cc|h)$'],
       ['exclude', 'dragdrop/os_exchange_data_provider_aurax11\\.(cc|h)$'],
       ['exclude', 'dragdrop/os_exchange_data_provider_win\\.(cc|h)$'],
+      ['exclude', 'dragdrop/os_exchange_data_provider_mac\\.(mm|h)$'],
       ['exclude', 'resource/resource_bundle_android.cc$'],
       ['exclude', 'resource/resource_bundle_auralinux.cc$'],
       ['exclude', 'resource/resource_bundle_gtk.cc$'],

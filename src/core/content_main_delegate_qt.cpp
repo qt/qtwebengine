@@ -65,7 +65,7 @@ static base::StringPiece PlatformResourceProvider(int key) {
 void ContentMainDelegateQt::PreSandboxStartup()
 {
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
-    ui::ResourceBundle::InitSharedInstanceWithLocale(QLocale().name().toStdString(), 0);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(QLocale().name().toStdString(), 0, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
     // Suppress info, warning and error messages per default.
     int logLevel = logging::LOG_FATAL;

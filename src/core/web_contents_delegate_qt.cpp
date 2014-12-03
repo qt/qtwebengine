@@ -53,12 +53,13 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
-#include "webkit/common/webpreferences.h"
+#include "content/public/common/web_preferences.h"
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32 messageLevel) {
@@ -102,7 +103,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     return target;
 }
 
-void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, unsigned changed_flags)
+void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, content::InvalidateTypes changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL)
         m_viewClient->urlChanged(toQt(source->GetVisibleURL()));
@@ -130,21 +131,21 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, do
     m_viewClient->loadProgressChanged(qRound(progress * 100));
 }
 
-void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(int64 frame_id, int64 parent_frame_id, bool is_main_frame, const GURL &validated_url, bool isErrorPage, bool, content::RenderViewHost*)
+void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc)
 {
-    if (isErrorPage) {
-        m_loadingErrorFrameList.append(frame_id);
+    if (is_error_page) {
+        m_loadingErrorFrameList.append(render_frame_host->GetRoutingID());
         return;
     }
 
-    if (!is_main_frame)
+    if (render_frame_host->GetParent())
         return;
 
     m_loadingErrorFrameList.clear();
     m_viewClient->loadStarted(toQt(validated_url));
 }
 
-void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& url, content::PageTransition transition_type, content::RenderViewHost* render_view_host)
+void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& url, ui::PageTransition transition_type)
 {
     // Make sure that we don't set the findNext WebFindOptions on a new frame.
     m_lastSearchedString = QString();
@@ -153,32 +154,32 @@ void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(int64 frame_id, con
     m_viewClient->loadCommitted();
 }
 
-void WebContentsDelegateQt::DidFailProvisionalLoad(int64 frame_id, const base::string16& frame_unique_name, bool is_main_frame, const GURL& validated_url, int error_code, const base::string16& error_description, content::RenderViewHost* render_view_host)
+void WebContentsDelegateQt::DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
 {
-    DidFailLoad(frame_id, validated_url, is_main_frame, error_code, error_description, render_view_host);
+    DidFailLoad(render_frame_host, validated_url, error_code, error_description);
 }
 
-void WebContentsDelegateQt::DidFailLoad(int64 frame_id, const GURL &validated_url, bool is_main_frame, int error_code, const base::string16 &error_description, content::RenderViewHost *rvh)
+void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
 {
-    if (m_loadingErrorFrameList.removeOne(frame_id) || !is_main_frame)
+    if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID()) || render_frame_host->GetParent())
         return;
 
     m_viewClient->loadFinished(false, toQt(validated_url), error_code, toQt(error_description));
     m_viewClient->loadProgressChanged(0);
 }
 
-void WebContentsDelegateQt::DidFinishLoad(int64 frame_id, const GURL &url, bool is_main_frame, content::RenderViewHost*)
+void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url)
 {
-    if (m_loadingErrorFrameList.removeOne(frame_id)) {
-        Q_ASSERT(url.is_valid() && url.spec() == content::kUnreachableWebDataURL);
+    if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID())) {
+        Q_ASSERT(validated_url.is_valid() && validated_url.spec() == content::kUnreachableWebDataURL);
         m_viewClient->iconChanged(QUrl());
         return;
     }
 
-    if (!is_main_frame)
+    if (render_frame_host->GetParent())
         return;
 
-    m_viewClient->loadFinished(true, toQt(url));
+    m_viewClient->loadFinished(true, toQt(validated_url));
 
     content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
     if (!entry)
@@ -260,14 +261,13 @@ void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *w
     MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, callback);
 }
 
-void WebContentsDelegateQt::UpdateTargetURL(content::WebContents *source, int32 page_id, const GURL &url)
+void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const GURL& url)
 {
     Q_UNUSED(source)
-    Q_UNUSED(page_id)
     m_viewClient->didUpdateTargetURL(toQt(url));
 }
 
-void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDetails &, const content::FrameNavigateParams &params)
+void WebContentsDelegateQt::DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host, const content::LoadCommittedDetails& details, const content::FrameNavigateParams& params)
 {
     // VisistedLinksMaster asserts !IsOffTheRecord().
     if (!params.should_update_history || !m_viewClient->browserContextAdapter()->trackVisitedLinks())
@@ -285,7 +285,7 @@ void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_content
         m_viewClient->runMouseLockPermissionRequest(toQt(web_contents->GetVisibleURL()));
 }
 
-void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, WebPreferences *webPreferences)
+void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, content::WebPreferences *webPreferences)
 {
     m_viewClient->webEngineSettings()->overrideWebPreferences(webPreferences);
 }
@@ -312,8 +312,8 @@ void WebContentsDelegateQt::allowCertificateError(const QExplicitlySharedDataPoi
     m_viewClient->allowCertificateError(errorController);
 }
 
-void WebContentsDelegateQt::requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback, base::Closure *cancelCallback)
+void WebContentsDelegateQt::requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback)
 {
-    m_lastGeolocationRequestCallbacks = qMakePair(resultCallback, cancelCallback);
+    m_lastGeolocationRequestCallback = resultCallback;
     m_viewClient->runGeolocationPermissionRequest(toQt(requestingFrameOrigin));
 }

@@ -44,6 +44,8 @@
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/common/gpu/gpu_messages.h"
+#include "content/common/view_messages.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include <QMap>
 #include <QPoint>
@@ -108,6 +110,7 @@ public:
     virtual content::RenderWidgetHost* GetRenderWidgetHost() const Q_DECL_OVERRIDE;
     virtual void SetSize(const gfx::Size& size) Q_DECL_OVERRIDE;
     virtual void SetBounds(const gfx::Rect&) Q_DECL_OVERRIDE;
+    virtual gfx::Vector2dF GetLastScrollOffset() const Q_DECL_OVERRIDE;
     virtual gfx::Size GetPhysicalBackingSize() const Q_DECL_OVERRIDE;
     virtual gfx::NativeView GetNativeView() const Q_DECL_OVERRIDE;
     virtual gfx::NativeViewId GetNativeViewId() const Q_DECL_OVERRIDE;
@@ -127,22 +130,16 @@ public:
     virtual void Blur() Q_DECL_OVERRIDE;
     virtual void UpdateCursor(const content::WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
-    virtual void TextInputStateChanged(const ViewHostMsg_TextInputState_Params& params) Q_DECL_OVERRIDE;
+    virtual void TextInputTypeChanged(ui::TextInputType type, ui::TextInputMode mode, bool can_compose_inline, int flags) Q_DECL_OVERRIDE;
     virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
     virtual void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
     virtual void SetTooltipText(const base::string16 &tooltip_text) Q_DECL_OVERRIDE;
     virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&) Q_DECL_OVERRIDE;
-    virtual void ScrollOffsetChanged() Q_DECL_OVERRIDE;
-    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback, const SkBitmap::Config config) Q_DECL_OVERRIDE;
+    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, content::CopyFromCompositingSurfaceCallback& callback, const SkColorType color_type) Q_DECL_OVERRIDE;
     virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback) Q_DECL_OVERRIDE;
     virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
-    virtual void AcceleratedSurfaceInitialized(int host_id, int route_id) Q_DECL_OVERRIDE;
-    virtual void AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
-    virtual void AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id) Q_DECL_OVERRIDE;
-    virtual void AcceleratedSurfaceSuspend() Q_DECL_OVERRIDE;
-    virtual void AcceleratedSurfaceRelease() Q_DECL_OVERRIDE;
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
     virtual void OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
     virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
@@ -173,7 +170,6 @@ public:
     void handleInputMethodEvent(QInputMethodEvent*);
 
 #if defined(OS_MACOSX)
-    virtual void SetTakesFocusOnlyOnMouseDown(bool flag) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual void SetActive(bool active) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual bool IsSpeaking() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
     virtual void SpeakSelection() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
@@ -204,9 +200,9 @@ public:
     // Overridden from content::BrowserAccessibilityDelegate
     virtual void AccessibilitySetFocus(int acc_obj_id) Q_DECL_OVERRIDE;
     virtual void AccessibilityDoDefaultAction(int acc_obj_id) Q_DECL_OVERRIDE;
-    virtual void AccessibilityShowMenu(int acc_obj_id) Q_DECL_OVERRIDE { }
-    virtual void AccessibilityScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus) Q_DECL_OVERRIDE;
-    virtual void AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point) Q_DECL_OVERRIDE;
+    virtual void AccessibilityShowMenu(const gfx::Point& point) Q_DECL_OVERRIDE { }
+    virtual void AccessibilityScrollToMakeVisible(int acc_obj_id, const gfx::Rect& subfocus) Q_DECL_OVERRIDE;
+    virtual void AccessibilityScrollToPoint(int acc_obj_id, const gfx::Point& point) Q_DECL_OVERRIDE;
     virtual void AccessibilitySetTextSelection(int acc_obj_id, int start_offset, int end_offset) Q_DECL_OVERRIDE;
     virtual bool AccessibilityViewHasFocus() const Q_DECL_OVERRIDE;
     virtual gfx::Rect AccessibilityGetViewBounds() const Q_DECL_OVERRIDE  { return GetViewBounds(); }
@@ -251,6 +247,8 @@ private:
     QPoint m_lockedMousePosition;
 
     bool m_initPending;
+
+    gfx::Vector2dF m_lastScrollOffset;
 };
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

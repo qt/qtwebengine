@@ -51,8 +51,9 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '37.0.2062.103'
-chromium_branch = '2062'
+chromium_version = '40.0.2214.28'
+chromium_branch = '2214'
+ninja_version = 'v1.5.3'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 
@@ -72,6 +73,9 @@ sys.path.append(os.path.join(qtwebengine_root, 'tools', 'scripts'))
 
 def currentVersion():
     return chromium_version
+
+def currentNinjaVersion():
+    return ninja_version
 
 def readReleaseChannels():
     response = urllib2.urlopen(json_url)

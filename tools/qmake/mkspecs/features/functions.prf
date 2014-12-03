@@ -145,7 +145,7 @@ defineReplace(findOrBuildNinja) {
       win32: out = $$system_path($${out}.exe)
 
       # If we did not find ninja, then we bootstrap it.
-      !exists($$out): system("python $$dirname(out)/bootstrap.py")
+      !exists($$out): system("cd $$dirname(out) && python configure.py --bootstrap")
     }
     return($$out)
 }

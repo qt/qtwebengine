@@ -125,9 +125,9 @@ private:
     QSGGeometry m_geometry;
 };
 
-static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPass::Id &id, const QList<QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > > &list)
+static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPassId &id, const QList<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > &list)
 {
-    typedef QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > Pair;
+    typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
     Q_FOREACH (const Pair &pair, list)
         if (pair.first == id)
             return pair.second;
@@ -433,7 +433,7 @@ void DelegatedFrameNode::preprocess()
     }
 
     // Then render any intermediate RenderPass in order.
-    typedef QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> > Pair;
+    typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
     Q_FOREACH (const Pair &pair, m_sgObjects.renderPassLayers) {
         // The layer is non-live, request a one-time update here.
         pair.second->scheduleUpdate();
@@ -485,7 +485,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
         delete oldChain;
 
     // The RenderPasses list is actually a tree where a parent RenderPass is connected
-    // to its dependencies through a RenderPass::Id reference in one or more RenderPassQuads.
+    // to its dependencies through a RenderPassId reference in one or more RenderPassQuads.
     // The list is already ordered with intermediate RenderPasses placed before their
     // parent, with the last one in the list being the root RenderPass, the one
     // that we displayed to the user.
@@ -509,7 +509,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             rpLayer->setSize(toQt(pass->output_rect.size()));
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
             rpLayer->setItem(rootNode.data());
-            m_sgObjects.renderPassLayers.append(QPair<cc::RenderPass::Id, QSharedPointer<QSGLayer> >(pass->id, rpLayer));
+            m_sgObjects.renderPassLayers.append(QPair<cc::RenderPassId, QSharedPointer<QSGLayer> >(pass->id, rpLayer));
             m_sgObjects.renderPassRootNodes.append(rootNode);
             renderPassParent = rootNode.data();
         } else
@@ -522,7 +522,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
         cc::QuadList::ConstBackToFrontIterator it = pass->quad_list.BackToFrontBegin();
         cc::QuadList::ConstBackToFrontIterator end = pass->quad_list.BackToFrontEnd();
         for (; it != end; ++it) {
-            cc::DrawQuad *quad = *it;
+            const cc::DrawQuad *quad = *it;
 
             if (currentLayerState != quad->shared_quad_state) {
                 currentLayerState = quad->shared_quad_state;

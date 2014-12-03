@@ -60,9 +60,6 @@ public:
 
     virtual net::URLRequestContext* GetRequestContext() Q_DECL_OVERRIDE;
 
-    virtual bool AllowMicAccess(const GURL& origin) Q_DECL_OVERRIDE { return false; }
-    virtual bool AllowCameraAccess(const GURL& origin) Q_DECL_OVERRIDE { return false; }
-
     void set_url_request_context_getter(net::URLRequestContextGetter* getter);
 
 private:

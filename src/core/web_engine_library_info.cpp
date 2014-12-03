@@ -38,7 +38,7 @@
 #include "web_engine_library_info.h"
 
 #include "base/base_paths.h"
-#include "base/file_util.h"
+#include "base/files/file_util.h"
 #include "content/public/common/content_paths.h"
 #include "ui/base/ui_base_paths.h"
 #include "type_conversion.h"

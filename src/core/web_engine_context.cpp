@@ -144,7 +144,7 @@ WebEngineContext::~WebEngineContext()
 
 scoped_refptr<WebEngineContext> WebEngineContext::current()
 {
-    if (!sContext) {
+    if (!sContext.get()) {
         sContext = new WebEngineContext();
         // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
         qAddPostRoutine(destroyContext);
@@ -192,7 +192,6 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
-    parsedCommandLine->AppendSwitch(switches::kDisableDesktopNotifications);
 
 #if defined(OS_WIN)
     parsedCommandLine->AppendSwitch(switches::kDisableD3D11);

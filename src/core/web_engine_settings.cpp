@@ -38,7 +38,7 @@
 #include "web_contents_adapter.h"
 #include "type_conversion.h"
 
-#include "webkit/common/webpreferences.h"
+#include "content/public/common/web_preferences.h"
 
 #include <QFont>
 #include <QTimer>
@@ -97,7 +97,7 @@ WebEngineSettings::~WebEngineSettings()
 {
 }
 
-void WebEngineSettings::overrideWebPreferences(WebPreferences *prefs)
+void WebEngineSettings::overrideWebPreferences(content::WebPreferences *prefs)
 {
     // Apply our settings on top of those.
     applySettingsToWebPreferences(prefs);
@@ -105,7 +105,7 @@ void WebEngineSettings::overrideWebPreferences(WebPreferences *prefs)
     // as the host process already overides some of the default WebPreferences values
     // before we get here (e.g. number_of_cpu_cores).
     if (webPreferences.isNull())
-        webPreferences.reset(new WebPreferences(*prefs));
+        webPreferences.reset(new content::WebPreferences(*prefs));
 }
 
 void WebEngineSettings::setAttribute(WebEngineSettings::Attribute attr, bool on)
@@ -258,7 +258,7 @@ void WebEngineSettings::doApply()
     m_adapter->updateWebPreferences(*webPreferences.data());
 }
 
-void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
+void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *prefs)
 {
     // Override for now
     prefs->java_enabled = false;
@@ -280,14 +280,14 @@ void WebEngineSettings::applySettingsToWebPreferences(WebPreferences *prefs)
     prefs->enable_error_page = testAttribute(ErrorPageEnabled);
 
     // Fonts settings.
-    prefs->standard_font_family_map[webkit_glue::kCommonScript] = toString16(fontFamily(StandardFont));
-    prefs->fixed_font_family_map[webkit_glue::kCommonScript] = toString16(fontFamily(FixedFont));
-    prefs->serif_font_family_map[webkit_glue::kCommonScript] = toString16(fontFamily(SerifFont));
-    prefs->sans_serif_font_family_map[webkit_glue::kCommonScript] = toString16(fontFamily(SansSerifFont));
-    prefs->cursive_font_family_map[webkit_glue::kCommonScript] = toString16(fontFamily(CursiveFont));
-    prefs->fantasy_font_family_map[webkit_glue::kCommonScript] = toString16(fontFamily(FantasyFont));
+    prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));
+    prefs->fixed_font_family_map[content::kCommonScript] = toString16(fontFamily(FixedFont));
+    prefs->serif_font_family_map[content::kCommonScript] = toString16(fontFamily(SerifFont));
+    prefs->sans_serif_font_family_map[content::kCommonScript] = toString16(fontFamily(SansSerifFont));
+    prefs->cursive_font_family_map[content::kCommonScript] = toString16(fontFamily(CursiveFont));
+    prefs->fantasy_font_family_map[content::kCommonScript] = toString16(fontFamily(FantasyFont));
     // FIXME: add pictograph?
-    //    prefs.pictograph_font_family_map[webkit_glue::kCommonScript] = toString16(fontFamily());
+    //    prefs.pictograph_font_family_map[content::kCommonScript] = toString16(fontFamily());
     prefs->default_font_size = fontSize(DefaultFontSize);
     prefs->default_fixed_font_size = fontSize(DefaultFixedFontSize);
     prefs->minimum_font_size = fontSize(MinimumFontSize);

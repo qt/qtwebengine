@@ -13,4 +13,6 @@ GYP_CONFIG += \
     use_gnome_keyring=0 \
     use_kerberos=0 \
     use_pango=0 \
+    host_clang=0 \
+    clang=0 \
 

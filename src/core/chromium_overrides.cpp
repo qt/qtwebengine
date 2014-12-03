@@ -156,6 +156,7 @@ RenderText* RenderText::CreateNativeInstance()
     return 0;
 }
 
+#if defined(OS_LINUX)
 PlatformFont* PlatformFont::CreateDefault()
 {
     QT_NOT_USED;
@@ -173,6 +174,7 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string&, int)
     QT_NOT_USED;
     return 0;
 }
+#endif
 
 } // namespace gfx
 

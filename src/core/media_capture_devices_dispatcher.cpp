@@ -254,14 +254,20 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
     return;
   }
 
-  // The extension name that the stream is registered with.
-  std::string originalExtensionName;
-  // Resolve DesktopMediaID for the specified device id.
-  content::DesktopMediaID mediaId =
-      getDesktopStreamsRegistry()->RequestMediaForStreamId(
-          request.requested_video_device_id, request.render_process_id,
-          request.render_view_id, request.security_origin,
-          &originalExtensionName);
+  content::WebContents* const web_contents_for_stream = content::WebContents::FromRenderFrameHost(
+                                                          content::RenderFrameHost::FromID(request.render_process_id, request.render_frame_id));
+  content::RenderFrameHost* const main_frame = web_contents_for_stream ? web_contents_for_stream->GetMainFrame() : NULL;
+
+  content::DesktopMediaID mediaId;
+  if (main_frame) {
+    // The extension name that the stream is registered with.
+    std::string originalExtensionName;
+    // Resolve DesktopMediaID for the specified device id.
+    mediaId = getDesktopStreamsRegistry()->RequestMediaForStreamId(
+                    request.requested_video_device_id, main_frame->GetProcess()->GetID(),
+                    main_frame->GetRoutingID(), request.security_origin,
+                    &originalExtensionName);
+  }
 
   // Received invalid device id.
   if (mediaId.type == content::DesktopMediaID::TYPE_NONE) {
@@ -391,37 +397,36 @@ DesktopStreamsRegistry *MediaCaptureDevicesDispatcher::getDesktopStreamsRegistry
   return m_desktopStreamsRegistry.get();
 }
 
-void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int renderProcessId, int renderViewId, int pageRequestId, const GURL& securityOrigin
-                                                               , const content::MediaStreamDevice &device, content::MediaRequestState state)
+void MediaCaptureDevicesDispatcher::OnMediaRequestStateChanged(int render_process_id, int render_frame_id, int page_request_id, const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state)
 {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread,
-          base::Unretained(this), renderProcessId, renderViewId,
-          pageRequestId, device, state));
+          base::Unretained(this), render_process_id, render_frame_id,
+          page_request_id, security_origin, stream_type, state));
 }
 
-void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int renderProcessId, int renderViewId, int pageRequestId
-                                                                      , const content::MediaStreamDevice &device, content::MediaRequestState state)
+void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id
+                                                                      , const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state)
 {
   // Track desktop capture sessions.  Tracking is necessary to avoid unbalanced
   // session counts since not all requests will reach MEDIA_REQUEST_STATE_DONE,
   // but they will all reach MEDIA_REQUEST_STATE_CLOSING.
-  if (device.type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
+  if (stream_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
     if (state == content::MEDIA_REQUEST_STATE_DONE) {
-      DesktopCaptureSession session = { renderProcessId, renderViewId,
-                                        pageRequestId };
+      DesktopCaptureSession session = { render_process_id, render_frame_id,
+                                        page_request_id };
       m_desktopCaptureSessions.push_back(session);
     } else if (state == content::MEDIA_REQUEST_STATE_CLOSING) {
       for (DesktopCaptureSessions::iterator it =
                m_desktopCaptureSessions.begin();
            it != m_desktopCaptureSessions.end();
            ++it) {
-        if (it->render_process_id == renderProcessId &&
-            it->render_view_id == renderViewId &&
-            it->page_request_id == pageRequestId) {
+        if (it->render_process_id == render_process_id &&
+            it->render_view_id == render_frame_id &&
+            it->page_request_id == page_request_id) {
           m_desktopCaptureSessions.erase(it);
           break;
         }
@@ -437,9 +442,9 @@ void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int render
       RequestsQueue &queue = rqs_it->second;
       for (RequestsQueue::iterator it = queue.begin();
            it != queue.end(); ++it) {
-        if (it->request.render_process_id == renderProcessId &&
-            it->request.render_view_id == renderViewId &&
-            it->request.page_request_id == pageRequestId) {
+        if (it->request.render_process_id == render_process_id &&
+            it->request.render_frame_id == render_frame_id &&
+            it->request.page_request_id == page_request_id) {
           queue.erase(it);
           found = true;
           break;

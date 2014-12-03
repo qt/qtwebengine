@@ -47,7 +47,10 @@
 class BatchTimer;
 class WebContentsAdapter;
 class WebEngineSettings;
+
+namespace content {
 struct WebPreferences;
+}
 
 class QWEBENGINE_EXPORT WebEngineSettingsDelegate {
 public:
@@ -98,7 +101,7 @@ public:
     WebEngineSettings(WebEngineSettingsDelegate*);
     virtual ~WebEngineSettings();
 
-    void overrideWebPreferences(WebPreferences *prefs);
+    void overrideWebPreferences(content::WebPreferences *prefs);
 
     void setAttribute(Attribute, bool on);
     bool testAttribute(Attribute) const;
@@ -120,7 +123,7 @@ public:
 
 private:
     void doApply();
-    void applySettingsToWebPreferences(WebPreferences *);
+    void applySettingsToWebPreferences(content::WebPreferences *);
     void setWebContentsAdapter(WebContentsAdapter *adapter) { m_adapter = adapter; }
 
     WebContentsAdapter* m_adapter;
@@ -129,7 +132,7 @@ private:
     QHash<FontFamily, QString> m_fontFamilies;
     QHash<FontSize, int> m_fontSizes;
     QString m_defaultEncoding;
-    QScopedPointer<WebPreferences> webPreferences;
+    QScopedPointer<content::WebPreferences> webPreferences;
     QScopedPointer<BatchTimer> m_batchTimer;
 
     friend class BatchTimer;

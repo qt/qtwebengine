@@ -66,9 +66,9 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/web_preferences.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
-#include "webkit/common/webpreferences.h"
 
 #include <QDir>
 #include <QGuiApplication>
@@ -274,7 +274,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
             content::Referrer(toGurl(referrerUrl), static_cast<blink::WebReferrerPolicy>(referrerPolicy)),
             // Use a transition type of reload so that we don't incorrectly
             // increase the typed count.
-            content::PAGE_TRANSITION_RELOAD,
+            ui::PAGE_TRANSITION_RELOAD,
             false,
             // The extra headers are not sync'ed across sessions.
             std::string(),
@@ -463,7 +463,7 @@ void WebContentsAdapter::load(const QUrl &url)
 
     Q_D(WebContentsAdapter);
     content::NavigationController::LoadURLParams params(toGurl(url));
-    params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->Focus();
 }
@@ -746,7 +746,7 @@ void WebContentsAdapter::stopFinding()
     d->webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 
-void WebContentsAdapter::updateWebPreferences(const WebPreferences & webPreferences)
+void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & webPreferences)
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
@@ -773,7 +773,7 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, 
 void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed)
 {
     Q_D(WebContentsAdapter);
-    d->webContentsDelegate->m_lastGeolocationRequestCallbacks.first.Run(allowed);
+    d->webContentsDelegate->m_lastGeolocationRequestCallback.Run(allowed);
 }
 
 void WebContentsAdapter::grantMouseLockPermission(bool granted)
@@ -809,5 +809,5 @@ void WebContentsAdapter::filesSelectedInChooser(const QStringList &fileList, Web
     if (mode == WebContentsAdapterClient::UploadFolder && !fileList.isEmpty()
             && QFileInfo(fileList.first()).isDir()) // Enumerate the directory
         files = listRecursively(QDir(fileList.first()));
-    rvh->FilesSelectedInChooser(toVector<ui::SelectedFileInfo>(files), static_cast<content::FileChooserParams::Mode>(mode));
+    rvh->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(mode));
 }

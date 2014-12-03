@@ -75,12 +75,9 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   // Overridden from content::MediaObserver:
   virtual void OnAudioCaptureDevicesChanged() Q_DECL_OVERRIDE { }
   virtual void OnVideoCaptureDevicesChanged() Q_DECL_OVERRIDE { }
-  virtual void OnMediaRequestStateChanged(int renderProcessId, int renderViewId, int pageRequestId, const GURL &securityOrigin, const content::MediaStreamDevice &device
-                                          , content::MediaRequestState state) Q_DECL_OVERRIDE;
+  virtual void OnMediaRequestStateChanged(int render_process_id, int render_frame_id, int page_request_id, const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state) Q_DECL_OVERRIDE;
 
   virtual void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) Q_DECL_OVERRIDE { }
-  virtual void OnAudioStreamPlaying(int /*render_process_id*/, int /*render_frame_id*/, int /*stream_id*/, const ReadPowerAndClipCallback& /*power_read_callback*/) Q_DECL_OVERRIDE { }
-  virtual void OnAudioStreamStopped(int /*render_process_id*/, int /*render_frame_id*/, int /*stream_id*/) Q_DECL_OVERRIDE { }
 
   DesktopStreamsRegistry *getDesktopStreamsRegistry();
 
@@ -112,8 +109,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void ProcessQueuedAccessRequest(content::WebContents *);
 
   // Called by the MediaObserver() functions, executed on UI thread.
-  void updateMediaRequestStateOnUIThread(int renderProcessId, int renderViewId, int pageRequestId, const content::MediaStreamDevice &
-                                         , content::MediaRequestState);
+  void updateMediaRequestStateOnUIThread(int render_process_id, int render_frame_id, int page_request_id, const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state);
 
   RequestsQueues m_pendingRequests;
 

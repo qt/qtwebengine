@@ -51,7 +51,7 @@ void CertificateErrorControllerPrivate::accept(bool accepted)
 CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_error,
                                                                      const net::SSLInfo& ssl_info,
                                                                      const GURL &request_url,
-                                                                     ResourceType::Type resource_type,
+                                                                     content::ResourceType resource_type,
                                                                      bool _overridable,
                                                                      bool strict_enforcement,
                                                                      const base::Callback<void(bool)>& cb
@@ -63,7 +63,7 @@ CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_er
     , strictEnforcement(strict_enforcement)
     , callback(cb)
 {
-    if (ssl_info.cert) {
+    if (ssl_info.cert.get()) {
         validStart = toQt(ssl_info.cert->valid_start());
         validExpiry = toQt(ssl_info.cert->valid_expiry());
     }
@@ -135,8 +135,6 @@ QString CertificateErrorController::errorString() const
         return getQStringForMessageId(IDS_CERT_ERROR_CONTAINS_ERRORS_DESCRIPTION);
     case CertificateNoRevocationMechanism:
         return getQStringForMessageId(IDS_CERT_ERROR_NO_REVOCATION_MECHANISM_DETAILS);
-    case CertificateUnableToCheckRevocation:
-        return getQStringForMessageId(IDS_CERT_ERROR_UNABLE_TO_CHECK_REVOCATION_DETAILS);
     case CertificateRevoked:
         return getQStringForMessageId(IDS_CERT_ERROR_REVOKED_CERT_DESCRIPTION);
     case CertificateInvalid:
@@ -149,6 +147,7 @@ QString CertificateErrorController::errorString() const
         return getQStringForMessageId(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
     case CertificateNameConstraintViolation:
         return getQStringForMessageId(IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION);
+    case CertificateUnableToCheckRevocation: // Deprecated in Chromium.
     default:
         break;
     }

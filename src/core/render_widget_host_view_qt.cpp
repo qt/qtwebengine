@@ -52,8 +52,6 @@
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/cursors/webcursor.h"
-#include "content/common/gpu/gpu_messages.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -62,7 +60,8 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/events/gesture_detection/gesture_config_helper.h"
+#include "ui/events/event.h"
+#include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/size_conversions.h"
 
@@ -79,6 +78,22 @@
 #include <QWheelEvent>
 #include <QWindow>
 #include <QtGui/qaccessible.h>
+
+static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
+  ui::LatencyInfo latency_info;
+  // The latency number should only be added if the timestamp is valid.
+  if (event.timeStampSeconds) {
+    const int64 time_micros = static_cast<int64>(
+        event.timeStampSeconds * base::Time::kMicrosecondsPerSecond);
+    latency_info.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
+        0,
+        0,
+        base::TimeTicks() + base::TimeDelta::FromMicroseconds(time_micros),
+        1);
+  }
+  return latency_info;
+}
 
 static inline Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputType)
 {
@@ -128,8 +143,6 @@ static inline ui::GestureProvider::Config QtGestureProviderConfig() {
     ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
     // Causes an assert in CreateWebGestureEventFromGestureEventData and we don't need them in Qt.
     config.gesture_begin_end_types_enabled = false;
-    // Swipe gestures aren't forwarded, we don't use them and they abort the gesture detection.
-    config.scale_gesture_detector_config.gesture_detector_config.swipe_enabled = config.gesture_detector_config.swipe_enabled = false;
     return config;
 }
 
@@ -171,12 +184,6 @@ public:
     virtual float GetHistoricalY(size_t pointer_index, size_t historical_index) const Q_DECL_OVERRIDE { return 0; }
     virtual ToolType GetToolType(size_t pointer_index) const Q_DECL_OVERRIDE { return ui::MotionEvent::TOOL_TYPE_UNKNOWN; }
     virtual int GetButtonState() const Q_DECL_OVERRIDE { return 0; }
-
-    virtual scoped_ptr<MotionEvent> Cancel() const Q_DECL_OVERRIDE { Q_UNREACHABLE(); return scoped_ptr<MotionEvent>(); }
-
-    virtual scoped_ptr<MotionEvent> Clone() const Q_DECL_OVERRIDE {
-        return scoped_ptr<MotionEvent>(new MotionEventQt(*this));
-    }
 
 private:
     QList<QTouchEvent::TouchPoint> touchPoints;
@@ -261,6 +268,10 @@ void RenderWidgetHostViewQt::SetBounds(const gfx::Rect& screenRect)
     if (IsPopup())
         m_delegate->move(toQt(screenRect.origin()));
     SetSize(screenRect.size());
+}
+
+gfx::Vector2dF RenderWidgetHostViewQt::GetLastScrollOffset() const {
+    return m_lastScrollOffset;
 }
 
 gfx::Size RenderWidgetHostViewQt::GetPhysicalBackingSize() const
@@ -369,7 +380,7 @@ void RenderWidgetHostViewQt::UnlockMouse()
 
 void RenderWidgetHostViewQt::WasShown()
 {
-    m_host->WasShown();
+    m_host->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQt::WasHidden()
@@ -490,10 +501,13 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputStateChanged(const ViewHostMsg_TextInputState_Params& params)
+void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, ui::TextInputMode mode, bool can_compose_inline, int flags)
 {
-    m_currentInputType = params.type;
-    m_delegate->inputMethodStateChanged(static_cast<bool>(params.type));
+    Q_UNUSED(mode);
+    Q_UNUSED(can_compose_inline);
+    Q_UNUSED(flags);
+    m_currentInputType = type;
+    m_delegate->inputMethodStateChanged(static_cast<bool>(type));
 }
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
@@ -538,14 +552,12 @@ void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionB
     m_cursorRect = QRect(caretRect.x(), caretRect.y(), caretRect.width(), caretRect.height());
 }
 
-void RenderWidgetHostViewQt::ScrollOffsetChanged()
-{
-    // Not used.
-}
-
-void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& /* dst_size */, const base::Callback<void(bool, const SkBitmap&)>& callback, const SkBitmap::Config config)
+void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, content::CopyFromCompositingSurfaceCallback& callback, const SkColorType color_type)
 {
     NOTIMPLEMENTED();
+    Q_UNUSED(src_subrect);
+    Q_UNUSED(dst_size);
+    Q_UNUSED(color_type);
     callback.Run(false, SkBitmap());
 }
 
@@ -560,36 +572,6 @@ bool RenderWidgetHostViewQt::CanCopyToVideoFrame() const
     return false;
 }
 
-void RenderWidgetHostViewQt::AcceleratedSurfaceInitialized(int host_id, int route_id)
-{
-}
-
-void RenderWidgetHostViewQt::AcceleratedSurfaceBuffersSwapped(const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params, int gpu_host_id)
-{
-    AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-    ack_params.sync_point = 0;
-    content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
-    content::RenderWidgetHostImpl::CompositorFrameDrawn(params.latency_info);
-}
-
-void RenderWidgetHostViewQt::AcceleratedSurfacePostSubBuffer(const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params, int gpu_host_id)
-{
-    AcceleratedSurfaceMsg_BufferPresented_Params ack_params;
-    ack_params.sync_point = 0;
-    content::RenderWidgetHostImpl::AcknowledgeBufferPresent(params.route_id, gpu_host_id, ack_params);
-    content::RenderWidgetHostImpl::CompositorFrameDrawn(params.latency_info);
-}
-
-void RenderWidgetHostViewQt::AcceleratedSurfaceSuspend()
-{
-    QT_NOT_YET_IMPLEMENTED
-}
-
-void RenderWidgetHostViewQt::AcceleratedSurfaceRelease()
-{
-    QT_NOT_YET_IMPLEMENTED
-}
-
 bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 {
     return false;
@@ -597,6 +579,7 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 
 void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
 {
+    m_lastScrollOffset = frame->metadata.root_scroll_offset;
     Q_ASSERT(!m_needsDelegatedFrameAck);
     m_needsDelegatedFrameAck = true;
     m_pendingOutputSurfaceId = output_surface_id;
@@ -640,7 +623,7 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 
 gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
 {
-    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
+    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
 }
 
 void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range)
@@ -650,9 +633,7 @@ void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t
 
 #if defined(USE_X11)
     // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
-    ui::ScopedClipboardWriter clipboard_writer(
-                ui::Clipboard::GetForCurrentThread(),
-                ui::CLIPBOARD_TYPE_SELECTION);
+    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
     clipboard_writer.WriteText(text);
 #endif
 }
@@ -792,8 +773,8 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
         m_gestureProvider.OnTouchEventAck(eventConsumed);
         return;
     }
-
-    m_host->ForwardTouchEvent(content::CreateWebTouchEventFromMotionEvent(motionEvent));
+    blink::WebTouchEvent touchEvent = content::CreateWebTouchEventFromMotionEvent(motionEvent);
+    m_host->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
 }
 
 QList<QTouchEvent::TouchPoint> RenderWidgetHostViewQt::mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints)
@@ -887,10 +868,12 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
             QTextCharFormat textCharFormat = attribute.value.value<QTextFormat>().toCharFormat();
             QColor qcolor = textCharFormat.underlineColor();
+            QColor qBackgroundColor = textCharFormat.background().color();
             blink::WebColor color = SkColorSetARGB(qcolor.alpha(), qcolor.red(), qcolor.green(), qcolor.blue());
+            blink::WebColor backgroundColor = SkColorSetARGB(qBackgroundColor.alpha(), qBackgroundColor.red(), qBackgroundColor.green(), qBackgroundColor.blue());
             int start = qMin(attribute.start, (attribute.start + attribute.length));
             int end = qMax(attribute.start, (attribute.start + attribute.length));
-            underlines.push_back(blink::WebCompositionUnderline(start, end, color, false));
+            underlines.push_back(blink::WebCompositionUnderline(start, end, color, false, backgroundColor));
             break;
         }
         case QInputMethodEvent::Cursor:
@@ -934,15 +917,14 @@ void RenderWidgetHostViewQt::AccessibilityDoDefaultAction(int acc_obj_id)
       return;
     m_host->AccessibilityDoDefaultAction(acc_obj_id);
 }
-
-void RenderWidgetHostViewQt::AccessibilityScrollToMakeVisible(int acc_obj_id, gfx::Rect subfocus)
+void RenderWidgetHostViewQt::AccessibilityScrollToMakeVisible(int acc_obj_id, const gfx::Rect& subfocus)
 {
     if (!m_host)
         return;
     m_host->AccessibilityScrollToMakeVisible(acc_obj_id, subfocus);
 }
 
-void RenderWidgetHostViewQt::AccessibilityScrollToPoint(int acc_obj_id, gfx::Point point)
+void RenderWidgetHostViewQt::AccessibilityScrollToPoint(int acc_obj_id, const gfx::Point& point)
 {
     if (!m_host)
       return;

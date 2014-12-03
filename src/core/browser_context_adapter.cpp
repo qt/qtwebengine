@@ -96,7 +96,7 @@ void BrowserContextAdapter::setStorageName(const QString &storageName)
     if (storageName == m_name)
         return;
     m_name = storageName;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateStorageSettings();
     m_visitedLinksManager.reset();
 }
@@ -106,7 +106,7 @@ void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
     if (offTheRecord == m_offTheRecord)
         return;
     m_offTheRecord = offTheRecord;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateStorageSettings();
     m_visitedLinksManager.reset();
 }
@@ -166,7 +166,7 @@ void BrowserContextAdapter::setDataPath(const QString &path)
     if (m_dataPath == path)
         return;
     m_dataPath = path;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateStorageSettings();
     m_visitedLinksManager.reset();
 }
@@ -187,7 +187,7 @@ void BrowserContextAdapter::setCachePath(const QString &path)
     if (m_cachePath == path)
         return;
     m_cachePath = path;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateHttpCache();
 }
 
@@ -223,7 +223,7 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
     if (m_httpUserAgent == userAgent)
         return;
     m_httpUserAgent = userAgent;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateUserAgent();
 }
 
@@ -240,7 +240,7 @@ void BrowserContextAdapter::setHttpCacheType(BrowserContextAdapter::HttpCacheTyp
     m_httpCacheType = newhttpCacheType;
     if (oldCacheType == httpCacheType())
         return;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateHttpCache();
 }
 
@@ -257,7 +257,7 @@ void BrowserContextAdapter::setPersistentCookiesPolicy(BrowserContextAdapter::Pe
     m_persistentCookiesPolicy = newPersistentCookiesPolicy;
     if (oldPolicy == persistentCookiesPolicy())
         return;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateCookieStore();
 }
 
@@ -311,6 +311,6 @@ void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_httpCacheMaxSize == maxSize)
         return;
     m_httpCacheMaxSize = maxSize;
-    if (m_browserContext->url_request_getter_)
+    if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateHttpCache();
 }

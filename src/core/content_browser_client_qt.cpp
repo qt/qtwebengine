@@ -339,7 +339,7 @@ void ContentBrowserClientQt::ResourceDispatcherHostCreated()
 
 gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
 {
-    if (!m_shareGroupQtQuick)
+    if (!m_shareGroupQtQuick.get())
         m_shareGroupQtQuick = new ShareGroupQtQuick;
     return m_shareGroupQtQuick.get();
 }
@@ -349,7 +349,7 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, const GURL &url, WebPreferences *web_prefs)
+void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, const GURL &url, content::WebPreferences *web_prefs)
 {
     Q_UNUSED(url);
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
@@ -382,8 +382,9 @@ content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionCo
 
 void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int render_frame_id, int cert_error,
                                                    const net::SSLInfo& ssl_info, const GURL& request_url,
-                                                   ResourceType::Type resource_type,
+                                                   content::ResourceType resource_type,
                                                    bool overridable, bool strict_enforcement,
+                                                   bool expired_previous_decision,
                                                    const base::Callback<void(bool)>& callback,
                                                    content::CertificateRequestResultType* result)
 {
@@ -399,16 +400,27 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
     contentsDelegate->allowCertificateError(errorController);
 }
 
-void ContentBrowserClientQt::RequestGeolocationPermission(content::WebContents *webContents, int /*bridgeId*/, const GURL &requestingFrameOrigin, bool /*userGesture*/, base::Callback<void (bool)> resultCallback, base::Closure *cancelCallback)
+void ContentBrowserClientQt::RequestPermission(content::PermissionType permission,
+                                                content::WebContents* web_contents,
+                                                int bridge_id,
+                                                const GURL& requesting_frame,
+                                                bool user_gesture,
+                                                const base::Callback<void(bool)>& result_callback)
 {
-    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    Q_UNUSED(bridge_id);
+    Q_UNUSED(requesting_frame);
+    Q_UNUSED(user_gesture);
+    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
     Q_ASSERT(contentsDelegate);
-    contentsDelegate->requestGeolocationPermission(requestingFrameOrigin, resultCallback, cancelCallback);
+    if (permission == content::PERMISSION_GEOLOCATION)
+        contentsDelegate->requestGeolocationPermission(requesting_frame, result_callback);
+    else
+        result_callback.Run(false);
 }
 
-blink::WebNotificationPresenter::Permission ContentBrowserClientQt::CheckDesktopNotificationPermission(const GURL&, content::ResourceContext *, int )
+blink::WebNotificationPermission ContentBrowserClientQt::CheckDesktopNotificationPermission(const GURL&, content::ResourceContext *, int )
 {
-    return blink::WebNotificationPresenter::PermissionDenied;
+    return blink::WebNotificationPermission::WebNotificationPermissionDenied;
 }
 
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()

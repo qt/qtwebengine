@@ -36,13 +36,6 @@
 
 #include "desktop_screen_qt.h"
 
-bool DesktopScreenQt::IsDIPEnabled()
-{
-    // Currently only used by GetScaleFactorForNativeView for drag events.
-    // Short-circuit this until we can test any implementation properly in real code.
-    return false;
-}
-
 gfx::Point DesktopScreenQt::GetCursorScreenPoint()
 {
     Q_UNREACHABLE();

@@ -66,8 +66,9 @@ public:
     virtual content::ResourceContext *GetResourceContext() Q_DECL_OVERRIDE;
     virtual content::DownloadManagerDelegate *GetDownloadManagerDelegate() Q_DECL_OVERRIDE;
     virtual content::BrowserPluginGuestManager* GetGuestManager() Q_DECL_OVERRIDE;
-    virtual quota::SpecialStoragePolicy *GetSpecialStoragePolicy() Q_DECL_OVERRIDE;
+    virtual storage::SpecialStoragePolicy *GetSpecialStoragePolicy() Q_DECL_OVERRIDE;
     virtual content::PushMessagingService* GetPushMessagingService() Q_DECL_OVERRIDE;
+    virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() Q_DECL_OVERRIDE;
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers);
 
 private:

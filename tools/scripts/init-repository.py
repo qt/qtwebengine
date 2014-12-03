@@ -98,7 +98,7 @@ def updateLastChange():
 def initUpstreamSubmodules():
     ninja_url = 'https://github.com/martine/ninja.git'
     chromium_url = 'https://chromium.googlesource.com/chromium/src.git'
-    ninja_shasum = '7103c32646df958b0287c65b1c660bf528a191d6'
+    ninja_shasum = 'refs/tags/' + resolver.currentNinjaVersion()
     chromium_ref = 'refs/tags/' + resolver.currentVersion()
     os.chdir(qtwebengine_root)
 

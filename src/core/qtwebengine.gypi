@@ -8,6 +8,7 @@
     'dependencies': [
       '<(chromium_src_dir)/base/base.gyp:base',
       '<(chromium_src_dir)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      '<(chromium_src_dir)/components/components.gyp:error_page_renderer',
       '<(chromium_src_dir)/components/components.gyp:visitedlink_browser',
       '<(chromium_src_dir)/components/components.gyp:visitedlink_renderer',
       '<(chromium_src_dir)/content/content.gyp:content',
@@ -17,8 +18,7 @@
       '<(chromium_src_dir)/content/content.gyp:content_gpu',
       '<(chromium_src_dir)/content/content.gyp:content_renderer',
       '<(chromium_src_dir)/content/content.gyp:content_utility',
-      '<(chromium_src_dir)/content/content.gyp:content_worker',
-      '<(chromium_src_dir)/content/content_resources.gyp:content_resources',
+      '<(chromium_src_dir)/content/app/resources/content_resources.gyp:content_resources',
       '<(chromium_src_dir)/ipc/ipc.gyp:ipc',
       '<(chromium_src_dir)/media/media.gyp:media',
       '<(chromium_src_dir)/net/net.gyp:net',

@@ -96,7 +96,8 @@ gpu::gles2::MailboxManager *mailbox_manager()
 
 gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox)
 {
-    return mailboxManager->ConsumeTexture(target, mailbox);
+    Q_UNUSED(target);
+    return mailboxManager->ConsumeTexture(mailbox);
 }
 
 unsigned int service_id(gpu::gles2::Texture *tex)
