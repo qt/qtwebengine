@@ -42,6 +42,7 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/media_observer.h"
+#include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -294,6 +295,16 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
     m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
 }
 
+class QuotaPermissionContextQt : public content::QuotaPermissionContext {
+public:
+    virtual void RequestQuotaPermission(const content::StorageQuotaParams &params, int render_process_id, const PermissionCallback &callback) Q_DECL_OVERRIDE
+    {
+        Q_UNUSED(params);
+        Q_UNUSED(render_process_id);
+        callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
+    }
+};
+
 ContentBrowserClientQt::ContentBrowserClientQt()
     : m_browserMainParts(0)
 {
@@ -372,6 +383,11 @@ void ContentBrowserClientQt::enableInspector(bool enable)
     } else if (!enable && m_devtools) {
         m_devtools.reset();
     }
+}
+
+content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
+{
+    return new QuotaPermissionContextQt;
 }
 
 void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int render_frame_id, int cert_error,

@@ -80,6 +80,7 @@ public:
     virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
     virtual void OverrideWebkitPrefs(content::RenderViewHost *, const GURL &, WebPreferences *) Q_DECL_OVERRIDE;
     virtual content::AccessTokenStore *CreateAccessTokenStore() Q_DECL_OVERRIDE;
+    virtual content::QuotaPermissionContext *CreateQuotaPermissionContext() Q_DECL_OVERRIDE;
     virtual void AllowCertificateError(
         int render_process_id,
         int render_frame_id,
