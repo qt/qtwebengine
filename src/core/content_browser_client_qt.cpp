@@ -241,7 +241,7 @@ public:
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
         else if (platform == QLatin1String("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QLatin1String("eglfs"))
+        else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else if (platform == QLatin1String("windows")) {
             if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
