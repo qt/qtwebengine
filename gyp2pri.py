@@ -55,7 +55,7 @@ class ProFile(object):
         self.config.append(cfg)
 
     def generate(self):
-        result = ""
+        result = "# This is a generated file, do not edit!\n"
         if self.defines:
             result += "DEFINES += \\\n    "
             result += " \\\n    ".join(self.defines)
@@ -87,8 +87,6 @@ for dep in mainTarget["dependencies"]:
     pro.addSources(gyp.target(dep)["sources"])
 
 pro.addDefines(gyp.target_defaults()["defines"])
-pro.addConfig("c++11")
-pro.addConfig("warn_off")
 
 with open(sys.argv[3], "w") as f:
     f.write(pro.generate())
