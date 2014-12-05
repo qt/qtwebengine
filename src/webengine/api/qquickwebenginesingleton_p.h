@@ -41,14 +41,17 @@
 #include <qtwebengineglobal_p.h>
 
 QT_BEGIN_NAMESPACE
+class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSingleton : public QObject {
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineSettings* settings READ settings CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineProfile* defaultProfile READ defaultProfile CONSTANT FINAL REVISION 1)
 
 public:
     QQuickWebEngineSettings *settings() const;
+    QQuickWebEngineProfile *defaultProfile() const;
 };
 
 QT_END_NAMESPACE

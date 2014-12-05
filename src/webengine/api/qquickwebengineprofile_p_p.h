@@ -34,21 +34,28 @@
 **
 ****************************************************************************/
 
-#include "qquickwebenginesingleton_p.h"
+#ifndef QQUICKWEBENGINEPROFILE_P_P_H
+#define QQUICKWEBENGINEPROFILE_P_P_H
 
-#include "qquickwebenginesettings_p.h"
-#include "qquickwebengineprofile_p.h"
+class BrowserContextAdapter;
+
+#include <QExplicitlySharedDataPointer>
 
 QT_BEGIN_NAMESPACE
 
-QQuickWebEngineSettings *QQuickWebEngineSingleton::settings() const
-{
-    return QQuickWebEngineSettings::globalSettings();
-}
+class QQuickWebEngineProfilePrivate {
+public:
+    QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext);
+    ~QQuickWebEngineProfilePrivate();
 
-QQuickWebEngineProfile *QQuickWebEngineSingleton::defaultProfile() const
-{
-    return QQuickWebEngineProfile::defaultProfile();
-}
+    BrowserContextAdapter *browserContext() const { return m_browserContext; }
+
+private:
+    friend class QQuickWebEngineViewPrivate;
+    BrowserContextAdapter *m_browserContext;
+    QExplicitlySharedDataPointer<BrowserContextAdapter> m_browserContextRef;
+};
 
 QT_END_NAMESPACE
+
+#endif // QQUICKWEBENGINEPROFILE_P_P_H

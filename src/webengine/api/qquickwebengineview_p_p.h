@@ -185,11 +185,14 @@ public:
 
     void setDevicePixelRatio(qreal);
     void adoptWebContents(WebContentsAdapter *webContents);
+    void setProfile(QQuickWebEngineProfile *profile);
+    void ensureContentsAdapter();
 
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineViewExperimental> e;
     QScopedPointer<QQuickWebEngineViewport> v;
     QScopedPointer<QQuickWebEngineHistory> m_history;
+    QQuickWebEngineProfile *m_profile;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QQmlComponent *contextMenuExtraItems;
     QUrl explicitUrl;

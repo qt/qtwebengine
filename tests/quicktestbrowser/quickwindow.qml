@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import QtQuick 2.1
-import QtWebEngine 1.0
+import QtWebEngine 1.1
 import QtWebEngine.experimental 1.0
 
 import QtQuick.Controls 1.0
@@ -71,6 +71,17 @@ ApplicationWindow {
         property alias autoLoadImages: loadImages.checked;
         property alias javaScriptEnabled: javaScriptEnabled.checked;
         property alias errorPageEnabled: errorPageEnabled.checked;
+    }
+
+    WebEngineProfile {
+        id: testProfile;
+        storageName: "Test";
+        httpCacheType: httpDiskCacheEnabled.checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+    }
+
+    WebEngineProfile {
+        id: otrProfile;
+        offTheRecord: true;
     }
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
@@ -235,6 +246,18 @@ ApplicationWindow {
                             checked: WebEngine.settings.errorPageEnabled
                             onCheckedChanged: WebEngine.settings.errorPageEnabled = checked
                         }
+                        MenuItem {
+                            id: offTheRecordEnabled
+                            text: "Off The Record"
+                            checkable: true
+                            checked: false
+                        }
+                        MenuItem {
+                            id: httpDiskCacheEnabled
+                            text: "HTTP Disk Cache"
+                            checkable: true
+                            checked: (testProfile.httpCacheType == WebEngineProfile.DiskHttpCache)
+                        }
                     }
                 }
             }
@@ -312,6 +335,7 @@ ApplicationWindow {
 
                 WebEngineView {
                     id: webEngineView
+                    profile: offTheRecordEnabled.checked ? otrProfile : testProfile
 
                     anchors {
                         fill: parent

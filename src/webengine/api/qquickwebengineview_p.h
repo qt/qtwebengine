@@ -42,10 +42,11 @@
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineViewExperimental;
-class QQuickWebEngineViewPrivate;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
+class QQuickWebEngineProfile;
+class QQuickWebEngineViewExperimental;
+class QQuickWebEngineViewPrivate;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -57,6 +58,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY urlChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
+    Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
@@ -128,6 +130,12 @@ public:
         WarningMessageLevel,
         ErrorMessageLevel
     };
+
+    // QmlParserStatus
+    virtual void componentComplete() Q_DECL_OVERRIDE;
+
+    QQuickWebEngineProfile *profile() const;
+    void setProfile(QQuickWebEngineProfile *);
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
