@@ -90,14 +90,26 @@ public:
         ForcePersistentCookies
     };
 
+    enum VisitedLinksPolicy {
+        DoNotTrackVisitedLinks = 0,
+        TrackVisitedLinksInMemory,
+        TrackVisitedLinksOnDisk,
+    };
+
     HttpCacheType httpCacheType() const;
     void setHttpCacheType(BrowserContextAdapter::HttpCacheType);
 
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(BrowserContextAdapter::PersistentCookiesPolicy);
 
+    VisitedLinksPolicy visitedLinksPolicy() const;
+    void setVisitedLinksPolicy(BrowserContextAdapter::VisitedLinksPolicy);
+
     int httpCacheMaxSize() const;
     void setHttpCacheMaxSize(int maxSize);
+
+    bool trackVisitedLinks() const;
+    bool persistVisitedLinks() const;
 
 private:
     QString m_name;
@@ -109,6 +121,7 @@ private:
     QString m_httpUserAgent;
     HttpCacheType m_httpCacheType;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
+    VisitedLinksPolicy m_visitedLinksPolicy;
     int m_httpCacheMaxSize;
 
     Q_DISABLE_COPY(BrowserContextAdapter)

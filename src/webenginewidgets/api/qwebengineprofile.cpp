@@ -40,6 +40,7 @@
 #include "qwebengineprofile_p.h"
 
 #include "browser_context_adapter.h"
+#include "web_engine_visited_links_manager.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -302,6 +303,37 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 {
     Q_D(QWebEngineProfile);
     d->browserContext()->setHttpCacheMaxSize(maxSize);
+}
+
+/*!
+    Clears all links from the visited links database.
+
+    \sa clearVisitedLinks()
+*/
+void QWebEngineProfile::clearAllVisitedLinks()
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->visitedLinksManager()->deleteAllVisitedLinkData();
+}
+
+/*!
+    Clears the links in \a urls from the visited links database.
+
+    \sa clearAllVisitedLinks()
+*/
+void QWebEngineProfile::clearVisitedLinks(const QList<QUrl> &urls)
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->visitedLinksManager()->deleteVisitedLinkDataForUrls(urls);
+}
+
+/*!
+    Returns true if \a url is considered a visited link by this profile.
+*/
+bool QWebEngineProfile::visitedLinksContainsUrl(const QUrl &url) const
+{
+    Q_D(const QWebEngineProfile);
+    return d->browserContext()->visitedLinksManager()->containsUrl(url);
 }
 
 /*!

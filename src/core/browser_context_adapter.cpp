@@ -66,6 +66,7 @@ BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
     , m_browserContext(new BrowserContextQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
+    , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
 }
@@ -76,6 +77,7 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
     , m_browserContext(new BrowserContextQt(this))
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
+    , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
 }
@@ -91,6 +93,7 @@ void BrowserContextAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (m_browserContext->url_request_getter_)
         m_browserContext->url_request_getter_->updateStorageSettings();
+    m_visitedLinksManager.reset();
 }
 
 void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
@@ -100,6 +103,7 @@ void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
     m_offTheRecord = offTheRecord;
     if (m_browserContext->url_request_getter_)
         m_browserContext->url_request_getter_->updateStorageSettings();
+    m_visitedLinksManager.reset();
 }
 
 BrowserContextQt *BrowserContextAdapter::browserContext()
@@ -142,6 +146,7 @@ void BrowserContextAdapter::setDataPath(const QString &path)
     m_dataPath = path;
     if (m_browserContext->url_request_getter_)
         m_browserContext->url_request_getter_->updateStorageSettings();
+    m_visitedLinksManager.reset();
 }
 
 QString BrowserContextAdapter::cachePath() const
@@ -232,6 +237,46 @@ void BrowserContextAdapter::setPersistentCookiesPolicy(BrowserContextAdapter::Pe
         return;
     if (m_browserContext->url_request_getter_)
         m_browserContext->url_request_getter_->updateCookieStore();
+}
+
+BrowserContextAdapter::VisitedLinksPolicy BrowserContextAdapter::visitedLinksPolicy() const
+{
+    if (isOffTheRecord() || m_visitedLinksPolicy == DoNotTrackVisitedLinks)
+        return DoNotTrackVisitedLinks;
+    if (dataPath().isEmpty())
+        return TrackVisitedLinksInMemory;
+    return m_visitedLinksPolicy;
+}
+
+bool BrowserContextAdapter::trackVisitedLinks() const
+{
+    switch (visitedLinksPolicy()) {
+    case DoNotTrackVisitedLinks:
+        return false;
+    default:
+        break;
+    }
+    return true;
+}
+
+bool BrowserContextAdapter::persistVisitedLinks() const
+{
+    switch (visitedLinksPolicy()) {
+    case DoNotTrackVisitedLinks:
+    case TrackVisitedLinksInMemory:
+        return false;
+    default:
+        break;
+    }
+    return true;
+}
+
+void BrowserContextAdapter::setVisitedLinksPolicy(BrowserContextAdapter::VisitedLinksPolicy visitedLinksPolicy)
+{
+    if (m_visitedLinksPolicy == visitedLinksPolicy)
+        return;
+    m_visitedLinksPolicy = visitedLinksPolicy;
+    m_visitedLinksManager.reset();
 }
 
 int BrowserContextAdapter::httpCacheMaxSize() const

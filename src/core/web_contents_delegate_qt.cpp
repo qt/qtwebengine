@@ -269,11 +269,11 @@ void WebContentsDelegateQt::UpdateTargetURL(content::WebContents *source, int32 
 
 void WebContentsDelegateQt::DidNavigateAnyFrame(const content::LoadCommittedDetails &, const content::FrameNavigateParams &params)
 {
-    if (!params.should_update_history || m_viewClient->browserContextAdapter()->isOffTheRecord())
+    // VisistedLinksMaster asserts !IsOffTheRecord().
+    if (!params.should_update_history || !m_viewClient->browserContextAdapter()->trackVisitedLinks())
         return;
     m_viewClient->browserContextAdapter()->visitedLinksManager()->addUrl(params.url);
 }
-
 
 void WebContentsDelegateQt::overrideWebPreferences(content::WebContents *, WebPreferences *webPreferences)
 {

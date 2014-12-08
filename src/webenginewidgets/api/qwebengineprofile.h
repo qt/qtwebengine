@@ -46,6 +46,7 @@
 QT_BEGIN_NAMESPACE
 
 class QObject;
+class QUrl;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfilePrivate;
@@ -88,6 +89,10 @@ public:
 
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
+
+    void clearAllVisitedLinks();
+    void clearVisitedLinks(const QList<QUrl> &urls);
+    bool visitedLinksContainsUrl(const QUrl &url) const;
 
     static QWebEngineProfile *defaultProfile();
 

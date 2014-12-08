@@ -81,12 +81,17 @@ void WebEngineVisitedLinksManager::deleteVisitedLinkDataForUrls(const QList<QUrl
     m_visitedLinkMaster->DeleteURLs(&iterator);
 }
 
+bool WebEngineVisitedLinksManager::containsUrl(const QUrl &url) const
+{
+    return m_visitedLinkMaster->IsVisited(toGurl(url));
+}
+
 WebEngineVisitedLinksManager::WebEngineVisitedLinksManager(BrowserContextAdapter *adapter)
     : m_delegate(new VisitedLinkDelegateQt)
 {
     Q_ASSERT(adapter && adapter->browserContext());
     BrowserContextQt *browserContext = adapter->browserContext();
-    m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(browserContext, m_delegate.data(), /* persist to disk = */true));
+    m_visitedLinkMaster.reset(new visitedlink::VisitedLinkMaster(browserContext, m_delegate.data(), adapter->persistVisitedLinks()));
     m_visitedLinkMaster->Init();
 }
 

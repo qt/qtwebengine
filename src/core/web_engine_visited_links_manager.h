@@ -63,6 +63,8 @@ public:
     void deleteAllVisitedLinkData();
     void deleteVisitedLinkDataForUrls(const QList<QUrl> &);
 
+    bool containsUrl(const QUrl &) const;
+
 private:
     void addUrl(const GURL &);
     friend class WebContentsDelegateQt;
