@@ -24,7 +24,7 @@ defineReplace(mocAction) {
                "        'inputs': ['$$INPUT_FILE',]," \
                "        'outputs': ['$$OUTPUT_FILE',]," \
                "        'action': ["
-    for(token, MOC_COMMAND): contents += "          '$$token',"
+    for(token, MOC_COMMAND): contents += "          '$$replace(token,\',)',"
     contents += "          '$$INPUT_FILE'," \
                 "          '-o'," \
                 "          '$$OUTPUT_FILE'," \
@@ -39,12 +39,13 @@ defineReplace(rccAction) {
     OUTPUT_NAME = $$rccOutput($$INPUT_FILE)
     EXTERN_FUNC = $$rccExternFunc($$INPUT_FILE)
     OUTPUT_FILE = $$RCC_GEN_DIR/$${OUTPUT_NAME}
+    CLEAN_QMAKE_RCC = $$clean_path($$QMAKE_RCC)
     contents = "      {" \
                "        'action_name':'$$OUTPUT_NAME'," \
                "        'inputs': ['$$INPUT_FILE',]," \
                "        'outputs': ['$$OUTPUT_FILE',]," \
                "        'action': [" \
-               "          '$$clean_path($$QMAKE_RCC)',"
+               "          '$$replace(CLEAN_QMAKE_RCC,\',)',"
     for(resource_flag, $$QMAKE_RESOURCE_FLAGS): contents += "          '$$resource_flag',"
     contents += "          '-name'," \
                 "          '$$EXTERN_FUNC'," \
