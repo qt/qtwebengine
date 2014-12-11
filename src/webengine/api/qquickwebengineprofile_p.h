@@ -45,6 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
@@ -109,6 +110,9 @@ signals:
     void httpCacheTypeChanged();
     void persistentCookiesPolicyChanged();
     void httpCacheMaxSizeChanged();
+
+    void downloadStarted(QQuickWebEngineDownloadItem *download);
+    void downloadFinished(QQuickWebEngineDownloadItem *download);
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile);

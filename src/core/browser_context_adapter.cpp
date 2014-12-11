@@ -36,8 +36,10 @@
 
 #include "browser_context_adapter.h"
 
+#include "content/public/browser/browser_thread.h"
 #include "browser_context_qt.h"
 #include "content_client_qt.h"
+#include "download_manager_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_visited_links_manager.h"
 #include "url_request_context_getter_qt.h"
@@ -67,6 +69,7 @@ BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
+    , m_client(0)
     , m_httpCacheMaxSize(0)
 {
 }
@@ -84,6 +87,8 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
 
 BrowserContextAdapter::~BrowserContextAdapter()
 {
+    if (m_downloadManagerDelegate)
+        content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE, m_downloadManagerDelegate.take());
 }
 
 void BrowserContextAdapter::setStorageName(const QString &storageName)
@@ -116,6 +121,23 @@ WebEngineVisitedLinksManager *BrowserContextAdapter::visitedLinksManager()
     if (!m_visitedLinksManager)
         m_visitedLinksManager.reset(new WebEngineVisitedLinksManager(this));
     return m_visitedLinksManager.data();
+}
+
+DownloadManagerDelegateQt *BrowserContextAdapter::downloadManagerDelegate()
+{
+    if (!m_downloadManagerDelegate)
+        m_downloadManagerDelegate.reset(new DownloadManagerDelegateQt(this));
+    return m_downloadManagerDelegate.data();
+}
+
+void BrowserContextAdapter::setClient(BrowserContextAdapterClient *adapterClient)
+{
+    m_client = adapterClient;
+}
+
+void BrowserContextAdapter::cancelDownload(quint32 downloadId)
+{
+    downloadManagerDelegate()->cancelDownload(downloadId);
 }
 
 BrowserContextAdapter* BrowserContextAdapter::defaultContext()

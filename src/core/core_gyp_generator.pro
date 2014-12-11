@@ -86,6 +86,7 @@ HEADERS = \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_adapter.h \
+        browser_context_adapter_client.h \
         browser_context_qt.h \
         certificate_error_controller_p.h \
         certificate_error_controller.h \

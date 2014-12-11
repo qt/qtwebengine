@@ -41,7 +41,8 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
-#include "download_manager_delegate_qt.h"
+
+#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
 class BrowserContextAdapter;
 class URLRequestContextGetterQt;
@@ -72,7 +73,6 @@ public:
 private:
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
-    scoped_ptr<DownloadManagerDelegateQt> downloadManagerDelegate;
     BrowserContextAdapter *m_adapter;
     friend class BrowserContextAdapter;
 

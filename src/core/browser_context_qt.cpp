@@ -37,12 +37,12 @@
 #include "browser_context_qt.h"
 
 #include "browser_context_adapter.h"
+#include "download_manager_delegate_qt.h"
 #include "type_conversion.h"
 #include "qtwebenginecoreglobal.h"
 #include "resource_context_qt.h"
 #include "url_request_context_getter_qt.h"
 
-#include "base/files/scoped_temp_dir.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -108,7 +108,7 @@ content::ResourceContext *BrowserContextQt::GetResourceContext()
 
 content::DownloadManagerDelegate *BrowserContextQt::GetDownloadManagerDelegate()
 {
-    return downloadManagerDelegate.get();
+    return m_adapter->downloadManagerDelegate();
 }
 
 content::BrowserPluginGuestManager *BrowserContextQt::GetGuestManager()

@@ -36,6 +36,7 @@
 
 #include <QtQml/qqmlextensionplugin.h>
 
+#include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginesingleton_p.h"
@@ -80,7 +81,9 @@ public:
             QObject::tr("Cannot create a separate instance of NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 0, "WebEngineSettings",
             QObject::tr("Cannot create a separate instance of WebEngineSettings"));
-        qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 0, "WebEngine", webEngineSingletonProvider);
+        qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 1, "WebEngineDownloadItem",
+            QObject::tr("Cannot create a separate instance of WebEngineDownloadItem"));
+        qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 1, "WebEngine", webEngineSingletonProvider);
     }
 };
 

@@ -4,6 +4,7 @@
         <file>ContextMenuExtras.qml</file>
         <file>FeaturePermissionBar.qml</file>
         <file>ButtonWithMenu.qml</file>
+        <file>DownloadView.qml</file>
         <file>ZoomController.qml</file>
     </qresource>
     <qresource prefix="icons">

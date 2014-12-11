@@ -43,7 +43,9 @@
 #include <QSharedData>
 #include <QString>
 
+class BrowserContextAdapterClient;
 class BrowserContextQt;
+class DownloadManagerDelegateQt;
 class WebEngineVisitedLinksManager;
 
 class QWEBENGINE_EXPORT BrowserContextAdapter : public QSharedData
@@ -57,6 +59,12 @@ public:
     static BrowserContextAdapter* offTheRecordContext();
 
     WebEngineVisitedLinksManager *visitedLinksManager();
+    DownloadManagerDelegateQt *downloadManagerDelegate();
+
+    BrowserContextAdapterClient* client() { return m_client; }
+
+    void setClient(BrowserContextAdapterClient *adapterClient);
+    void cancelDownload(quint32 downloadId);
 
     BrowserContextQt *browserContext();
 
@@ -116,12 +124,14 @@ private:
     bool m_offTheRecord;
     QScopedPointer<BrowserContextQt> m_browserContext;
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
+    QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QString m_dataPath;
     QString m_cachePath;
     QString m_httpUserAgent;
     HttpCacheType m_httpCacheType;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
+    BrowserContextAdapterClient *m_client;
     int m_httpCacheMaxSize;
 
     Q_DISABLE_COPY(BrowserContextAdapter)

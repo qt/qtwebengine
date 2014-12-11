@@ -36,31 +36,114 @@
 
 #include "qquickwebengineprofile_p.h"
 
+#include "qquickwebenginedownloaditem_p.h"
+#include "qquickwebenginedownloaditem_p_p.h"
 #include "qquickwebengineprofile_p_p.h"
+#include <QQmlEngine>
 
 #include "browser_context_adapter.h"
 
 QT_BEGIN_NAMESPACE
+
+static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int state) {
+    switch (state) {
+    case BrowserContextAdapterClient::DownloadInProgress:
+        return QQuickWebEngineDownloadItem::DownloadInProgress;
+    case BrowserContextAdapterClient::DownloadCompleted:
+        return QQuickWebEngineDownloadItem::DownloadCompleted;
+    case BrowserContextAdapterClient::DownloadCancelled:
+        return QQuickWebEngineDownloadItem::DownloadCancelled;
+    case BrowserContextAdapterClient::DownloadInterrupted:
+        return QQuickWebEngineDownloadItem::DownloadInterrupted;
+    default:
+        Q_UNREACHABLE();
+        return QQuickWebEngineDownloadItem::DownloadCancelled;
+    }
+}
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
         : m_browserContext(browserContext)
 {
     if (ownsContext)
         m_browserContextRef = browserContext;
+
+    m_browserContext->setClient(this);
 }
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 {
+    m_browserContext->setClient(0);
+
+    Q_FOREACH (QQuickWebEngineDownloadItem* download, m_ongoingDownloads) {
+        if (download)
+            download->cancel();
+    }
+
+    m_ongoingDownloads.clear();
+}
+
+void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
+{
+    m_browserContext->cancelDownload(downloadId);
+}
+
+void QQuickWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
+{
+    m_ongoingDownloads.remove(downloadId);
+}
+
+void QQuickWebEngineProfilePrivate::downloadRequested(quint32 downloadId, QString &downloadPath, bool &cancelled)
+{
+    Q_Q(QQuickWebEngineProfile);
+
+    Q_ASSERT(!m_ongoingDownloads.contains(downloadId));
+    QQuickWebEngineDownloadItemPrivate *itemPrivate = new QQuickWebEngineDownloadItemPrivate(this);
+    itemPrivate->downloadId = downloadId;
+    itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadInProgress;
+    itemPrivate->downloadPath = downloadPath;
+
+    QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
+
+    m_ongoingDownloads.insert(downloadId, download);
+
+    QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
+    Q_EMIT q->downloadStarted(download);
+    download->d_func()->downloadStarted = true;
+
+    downloadPath = download->path();
+    cancelled = download->state() == QQuickWebEngineDownloadItem::DownloadCancelled;
+}
+
+void QQuickWebEngineProfilePrivate::downloadUpdated(quint32 downloadId, int downloadState, int percentComplete)
+{
+    Q_Q(QQuickWebEngineProfile);
+
+    Q_ASSERT(m_ongoingDownloads.contains(downloadId));
+    QQuickWebEngineDownloadItem* download = m_ongoingDownloads.value(downloadId).data();
+
+    if (!download) {
+        cancelDownload(downloadId);
+        return;
+    }
+
+    download->d_func()->update(toDownloadState(downloadState), percentComplete);
+
+    if (downloadState != BrowserContextAdapterClient::DownloadInProgress) {
+        Q_EMIT q->downloadFinished(download);
+        m_ongoingDownloads.remove(downloadId);
+    }
 }
 
 QQuickWebEngineProfile::QQuickWebEngineProfile()
     : d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false), true))
 {
+    d_ptr->q_ptr = this;
 }
 
 QQuickWebEngineProfile::QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *privatePtr)
     : d_ptr(privatePtr)
 {
+    d_ptr->q_ptr = this;
 }
 
 QQuickWebEngineProfile::~QQuickWebEngineProfile()

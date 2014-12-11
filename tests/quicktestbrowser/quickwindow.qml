@@ -40,7 +40,7 @@
 
 import QtQuick 2.1
 import QtWebEngine 1.1
-import QtWebEngine.experimental 1.0
+import QtWebEngine.experimental 1.1
 
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
@@ -74,14 +74,18 @@ ApplicationWindow {
     }
 
     WebEngineProfile {
-        id: testProfile;
-        storageName: "Test";
+        id: testProfile
+        storageName: "Test"
         httpCacheType: httpDiskCacheEnabled.checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+        onDownloadStarted: {
+            downloadView.visible = true
+            downloadView.append(download)
+        }
     }
 
     WebEngineProfile {
-        id: otrProfile;
-        offTheRecord: true;
+        id: otrProfile
+        offTheRecord: true
     }
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
@@ -92,6 +96,12 @@ ApplicationWindow {
     StyleItem { id: styleItem }
     property bool platformIsMac: styleItem.style == "mac"
 
+    Action {
+        shortcut: "Ctrl+D"
+        onTriggered: {
+            downloadView.visible = !downloadView.visible
+        }
+    }
 
     Action {
         id: focus
@@ -435,6 +445,13 @@ ApplicationWindow {
             }
         }
     }
+
+    DownloadView {
+        id: downloadView
+        visible: false
+        anchors.fill: parent
+    }
+
     ZoomController {
       id: zoomController
       y: parent.mapFromItem(currentWebView, 0 , 0).y - 4

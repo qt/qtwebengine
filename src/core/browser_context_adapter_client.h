@@ -1,4 +1,4 @@
-/****************************************************************************
+  /****************************************************************************
 **
 ** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
@@ -34,44 +34,30 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEPROFILE_P_P_H
-#define QQUICKWEBENGINEPROFILE_P_P_H
+#ifndef BROWSER_CONTEXT_ADAPTER_CLIENT_H
+#define BROWSER_CONTEXT_ADAPTER_CLIENT_H
 
-class BrowserContextAdapter;
+#include "qtwebenginecoreglobal.h"
+#include <QString>
 
-#include "browser_context_adapter_client.h"
-#include "qquickwebengineprofile_p.h"
-
-#include <QExplicitlySharedDataPointer>
-#include <QMap>
-#include <QPointer>
-
-QT_BEGIN_NAMESPACE
-class QQuickWebEngineDownloadItem;
-class QQuickWebEngineProfilePrivate
-        : public BrowserContextAdapterClient
+class QWEBENGINE_EXPORT BrowserContextAdapterClient
 {
 public:
-    Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
-    QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext);
-    ~QQuickWebEngineProfilePrivate();
+    // Keep in sync with content::DownloadItem::DownloadState
+    enum DownloadState {
+        // Download is actively progressing.
+        DownloadInProgress = 0,
+        // Download is completely finished.
+        DownloadCompleted,
+        // Download has been cancelled.
+        DownloadCancelled,
+        // This state indicates that the download has been interrupted.
+        DownloadInterrupted
+    };
+    virtual ~BrowserContextAdapterClient() { }
 
-    BrowserContextAdapter *browserContext() const { return m_browserContext; }
-
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
-
-    void downloadRequested(quint32 downloadId, QString &downloadPath, bool &cancelled) Q_DECL_OVERRIDE;
-    void downloadUpdated(quint32 downloadId, int downloadState, int percentComplete) Q_DECL_OVERRIDE;
-
-private:
-    friend class QQuickWebEngineViewPrivate;
-    QQuickWebEngineProfile *q_ptr;
-    BrowserContextAdapter *m_browserContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_browserContextRef;
-    QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
+    virtual void downloadRequested(quint32 downloadId, QString &downloadPath, bool &cancelled) = 0;
+    virtual void downloadUpdated(quint32 downloadId, int downloadState, int percentComplete) = 0;
 };
 
-QT_END_NAMESPACE
-
-#endif // QQUICKWEBENGINEPROFILE_P_P_H
+#endif // BROWSER_CONTEXT_ADAPTER_CLIENT_H

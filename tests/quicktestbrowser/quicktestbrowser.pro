@@ -10,6 +10,7 @@ SOURCES = quickwindow.cpp \
 
 OTHER_FILES += ButtonWithMenu.qml \
                ContextMenuExtras.qml \
+               DownloadView.qml \
                FeaturePermissionBar.qml \
                quickwindow.qml
 

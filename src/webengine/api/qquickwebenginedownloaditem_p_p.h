@@ -34,56 +34,34 @@
 **
 ****************************************************************************/
 
-#ifndef DOWNLOAD_MANAGER_DELEGATE_QT_H
-#define DOWNLOAD_MANAGER_DELEGATE_QT_H
+#ifndef QQUICKWEBENGINEDOWNLOADITEM_P_P_H
+#define QQUICKWEBENGINEDOWNLOADITEM_P_P_H
 
-#include "content/public/browser/download_manager_delegate.h"
+#include "qquickwebenginedownloaditem_p.h"
+#include "qquickwebengineprofile_p_p.h"
+#include <private/qtwebengineglobal_p.h>
+#include <QString>
 
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+QT_BEGIN_NAMESPACE
 
-namespace base {
-class FilePath;
-}
-
-namespace content {
-class BrowserContext;
-class DownloadItem;
-class WebContents;
-}
-
-class BrowserContextAdapter;
-class DownloadManagerDelegateInstance;
-class DownloadManagerDelegateQt
-        : public content::DownloadManagerDelegate
-        , public content::DownloadItem::Observer
-{
+class QQuickWebEngineDownloadItemPrivate {
+    QQuickWebEngineDownloadItem *q_ptr;
+    QQuickWebEngineProfilePrivate* profile;
+    friend class QQuickWebEngineProfilePrivate;
 public:
-    DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter);
-    ~DownloadManagerDelegateQt();
-    void GetNextId(const content::DownloadIdCallback& callback) Q_DECL_OVERRIDE;
+    Q_DECLARE_PUBLIC(QQuickWebEngineDownloadItem)
+    QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfilePrivate *p);
+    ~QQuickWebEngineDownloadItemPrivate();
 
-    bool DetermineDownloadTarget(content::DownloadItem* item,
-                                 const content::DownloadTargetCallback& callback) Q_DECL_OVERRIDE;
+    bool downloadStarted;
+    quint32 downloadId;
+    QQuickWebEngineDownloadItem::DownloadState downloadState;
+    int downloadProgress;
+    QString downloadPath;
 
-    void GetSaveDir(content::BrowserContext* browser_context,
-                    base::FilePath* website_save_dir,
-                    base::FilePath* download_save_dir,
-                    bool* skip_dir_check) Q_DECL_OVERRIDE;
-
-    void cancelDownload(quint32 downloadId);
-
-    // Inherited from content::DownloadItem::Observer
-    void OnDownloadUpdated(content::DownloadItem *download) Q_DECL_OVERRIDE;
-    void OnDownloadDestroyed(content::DownloadItem *download) Q_DECL_OVERRIDE;
-
-private:
-    void cancelDownload(const content::DownloadTargetCallback& callback);
-    BrowserContextAdapter *m_contextAdapter;
-
-    uint64 m_currentId;
-
-    friend class DownloadManagerDelegateInstance;
-    DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
+    void update(QQuickWebEngineDownloadItem::DownloadState state, int progress);
 };
 
-#endif //DOWNLOAD_MANAGER_DELEGATE_QT_H
+QT_END_NAMESPACE
+
+#endif // QQUICKWEBENGINEDOWNLOADITEM_P_P_H

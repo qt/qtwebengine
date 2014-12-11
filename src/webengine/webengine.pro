@@ -13,6 +13,7 @@ QMAKE_DOCS = $$PWD/doc/qtwebengine.qdocconf
 INCLUDEPATH += $$PWD api ../core
 
 SOURCES = \
+        api/qquickwebenginedownloaditem.cpp \
         api/qquickwebenginehistory.cpp \
         api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenavigationrequest.cpp \
@@ -29,6 +30,8 @@ SOURCES = \
 HEADERS = \
         api/qtwebengineglobal.h \
         api/qtwebengineglobal_p.h \
+        api/qquickwebenginedownloaditem_p.h \
+        api/qquickwebenginedownloaditem_p_p.h \
         api/qquickwebenginehistory_p.h \
         api/qquickwebengineloadrequest_p.h \
         api/qquickwebenginenavigationrequest_p.h \
