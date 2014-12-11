@@ -222,7 +222,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<content::NavigationEntry*> *entries, content::BrowserContext *browserContext)
+static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<content::NavigationEntry*> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
