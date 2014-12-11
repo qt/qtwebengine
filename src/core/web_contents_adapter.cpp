@@ -292,6 +292,30 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
     }
 }
 
+namespace {
+static QList<WebContentsAdapter *> recursive_guard_loading_adapters;
+
+class LoadRecursionGuard {
+    public:
+    static bool isGuarded(WebContentsAdapter *adapter)
+    {
+        return recursive_guard_loading_adapters.contains(adapter);
+    }
+    LoadRecursionGuard(WebContentsAdapter *adapter)
+        : m_adapter(adapter)
+    {
+        recursive_guard_loading_adapters.append(adapter);
+    }
+
+    ~LoadRecursionGuard() {
+        recursive_guard_loading_adapters.removeOne(m_adapter);
+    }
+
+    private:
+        WebContentsAdapter *m_adapter;
+};
+} // Anonymous namespace
+
 WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
@@ -424,6 +448,19 @@ void WebContentsAdapter::reload()
 
 void WebContentsAdapter::load(const QUrl &url)
 {
+    // The situation can occur when relying on the editingFinished signal in QML to set the url
+    // of the WebView.
+    // When enter is pressed, onEditingFinished fires and the url of the webview is set, which
+    // calls into this and focuses the webview, taking the focus from the TextField/TextInput,
+    // which in turn leads to editingFinished firing again. This scenario would cause a crash
+    // down the line when unwinding as the first RenderWidgetHostViewQtDelegateQuick instance is
+    // a dangling pointer by that time.
+
+    if (LoadRecursionGuard::isGuarded(this))
+        return;
+    LoadRecursionGuard guard(this);
+    Q_UNUSED(guard);
+
     Q_D(WebContentsAdapter);
     content::NavigationController::LoadURLParams params(toGurl(url));
     params.transition_type = content::PageTransitionFromInt(content::PAGE_TRANSITION_TYPED | content::PAGE_TRANSITION_FROM_ADDRESS_BAR);
