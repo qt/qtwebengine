@@ -48,6 +48,7 @@
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebengineloadrequest_p.h>
 #include <private/qquickwebenginenavigationrequest_p.h>
+#include <private/qquickwebengineprofile_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -59,6 +60,7 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
     << &QQuickWebEngineLoadRequest::staticMetaObject
     << &QQuickWebEngineNavigationRequest::staticMetaObject
+    << &QQuickWebEngineProfile::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
@@ -118,6 +120,10 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.goForward() --> void"
     << "QQuickWebEngineView.stop() --> void"
     << "QQuickWebEngineView.reload() --> void"
+    << "QQuickWebEngineView.zoomFactor --> double"
+    << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
+    << "QQuickWebEngineView.setZoomFactor(double) --> void"
+    << "QQuickWebEngineView.profile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineLoadRequest.url --> QUrl"
     << "QQuickWebEngineLoadRequest.status --> QQuickWebEngineView::LoadStatus"
     << "QQuickWebEngineLoadRequest.errorString --> QString"
@@ -128,6 +134,27 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineNavigationRequest.action --> QQuickWebEngineView::NavigationRequestAction"
     << "QQuickWebEngineNavigationRequest.navigationType --> QQuickWebEngineView::NavigationType"
     << "QQuickWebEngineNavigationRequest.actionChanged() --> void"
+    << "QQuickWebEngineProfile.MemoryHttpCache --> HttpCacheType"
+    << "QQuickWebEngineProfile.DiskHttpCache --> HttpCacheType"
+    << "QQuickWebEngineProfile.NoPersistentCookies --> PersistentCookiesPolicy"
+    << "QQuickWebEngineProfile.AllowPersistentCookies --> PersistentCookiesPolicy"
+    << "QQuickWebEngineProfile.ForcePersistentCookies --> PersistentCookiesPolicy"
+    << "QQuickWebEngineProfile.storageName --> QString"
+    << "QQuickWebEngineProfile.offTheRecord --> bool"
+    << "QQuickWebEngineProfile.persistentStoragePath --> QString"
+    << "QQuickWebEngineProfile.cachePath --> QString"
+    << "QQuickWebEngineProfile.httpUserAgent --> QString"
+    << "QQuickWebEngineProfile.httpCacheType --> HttpCacheType"
+    << "QQuickWebEngineProfile.persistentCookiesPolicy --> PersistentCookiesPolicy"
+    << "QQuickWebEngineProfile.httpCacheMaxSize --> int"
+    << "QQuickWebEngineProfile.storageNameChanged() --> void"
+    << "QQuickWebEngineProfile.offTheRecordChanged() --> void"
+    << "QQuickWebEngineProfile.persistentStoragePathChanged() --> void"
+    << "QQuickWebEngineProfile.cachePathChanged() --> void"
+    << "QQuickWebEngineProfile.httpUserAgentChanged() --> void"
+    << "QQuickWebEngineProfile.httpCacheTypeChanged() --> void"
+    << "QQuickWebEngineProfile.persistentCookiesPolicyChanged() --> void"
+    << "QQuickWebEngineProfile.httpCacheMaxSizeChanged() --> void"
     ;
 
 static bool isCheckedEnum(const QByteArray &typeName)
