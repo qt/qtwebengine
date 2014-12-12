@@ -41,7 +41,10 @@
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QString>
 
+namespace QtWebEngineCore {
 class UserScript;
+} // namespace
+
 QT_BEGIN_NAMESPACE
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineScript {
@@ -90,9 +93,9 @@ public:
 private:
     friend class QWebEngineScriptCollectionPrivate;
     friend class QWebEngineScriptCollection;
-    QWebEngineScript(const UserScript &);
+    QWebEngineScript(const QtWebEngineCore::UserScript &);
 
-    QSharedDataPointer<UserScript> d;
+    QSharedDataPointer<QtWebEngineCore::UserScript> d;
 };
 
 Q_DECLARE_SHARED(QWebEngineScript)

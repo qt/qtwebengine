@@ -41,6 +41,8 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
 
+namespace QtWebEngineCore {
+
 CustomProtocolHandler::CustomProtocolHandler(CustomUrlSchemeHandler *schemeHandler)
     : m_schemeHandler(schemeHandler)
 {
@@ -53,3 +55,5 @@ net::URLRequestJob *CustomProtocolHandler::MaybeCreateJob(net::URLRequest *reque
 
     return new URLRequestCustomJob(request, networkDelegate, m_schemeHandler);
 }
+
+} // namespace

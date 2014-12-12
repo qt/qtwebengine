@@ -43,6 +43,8 @@
 
 #include "base/memory/singleton.h"
 
+namespace QtWebEngineCore {
+
 Q_STATIC_ASSERT_X(static_cast<int>(content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) == static_cast<int>(WebContentsAdapterClient::PromptDialog), "These enums should be in sync.");
 
 JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
@@ -101,3 +103,5 @@ QSharedPointer<JavaScriptDialogController> JavaScriptDialogManagerQt::takeDialog
         Q_EMIT dialog->dialogCloseRequested();
     return dialog;
 }
+
+} // namespace QtWebEngineCore

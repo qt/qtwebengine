@@ -50,6 +50,8 @@ QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
+namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
@@ -186,5 +188,7 @@ public:
     virtual BrowserContextAdapter* browserContextAdapter() = 0;
 
 };
+
+} // namespace QtWebEngineCore
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

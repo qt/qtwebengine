@@ -42,6 +42,8 @@
 
 #include "web_contents_adapter_client.h"
 
+namespace QtWebEngineCore {
+
 class ResourceDispatcherHostLoginDelegateQt : public content::ResourceDispatcherHostLoginDelegate {
 public:
     ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request);
@@ -71,5 +73,7 @@ class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostD
 public:
     virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) Q_DECL_OVERRIDE;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H

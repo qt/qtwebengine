@@ -41,6 +41,8 @@
 #include <QString>
 #include <QUrl>
 
+namespace QtWebEngineCore {
+
 class QWEBENGINE_EXPORT BrowserContextAdapterClient
 {
 public:
@@ -72,5 +74,7 @@ public:
     virtual void downloadRequested(DownloadItemInfo &info) = 0;
     virtual void downloadUpdated(const DownloadItemInfo &info) = 0;
 };
+
+} // namespace
 
 #endif // BROWSER_CONTEXT_ADAPTER_CLIENT_H

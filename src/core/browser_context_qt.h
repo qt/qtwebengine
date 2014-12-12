@@ -44,6 +44,8 @@
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
+namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 class URLRequestContextGetterQt;
 
@@ -82,5 +84,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);
 };
+
+} // namespace QtWebEngineCore
 
 #endif // BROWSER_CONTEXT_QT_H

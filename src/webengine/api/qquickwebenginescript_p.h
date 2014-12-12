@@ -40,9 +40,6 @@
 #include <private/qtwebengineglobal_p.h>
 #include <QtCore/QObject>
 
-class UserScriptControllerHost;
-class WebContentsAdapter;
-
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineScriptPrivate;
 class QQuickWebEngineView;
@@ -101,7 +98,7 @@ protected:
 
 private:
     friend class QQuickWebEngineViewPrivate;
-    Q_DECLARE_PRIVATE(QQuickWebEngineScript);
+    Q_DECLARE_PRIVATE(QQuickWebEngineScript)
     QScopedPointer<QQuickWebEngineScriptPrivate> d_ptr;
 };
 QT_END_NAMESPACE

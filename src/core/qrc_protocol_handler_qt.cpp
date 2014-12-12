@@ -41,16 +41,18 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
 
-using namespace net;
+namespace QtWebEngineCore {
 
 QrcProtocolHandlerQt::QrcProtocolHandlerQt()
 {
 }
 
-URLRequestJob *QrcProtocolHandlerQt::MaybeCreateJob(URLRequest *request, NetworkDelegate *networkDelegate) const
+net::URLRequestJob *QrcProtocolHandlerQt::MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const
 {
     if (!networkDelegate)
-        return new URLRequestErrorJob(request, Q_NULLPTR, ERR_ACCESS_DENIED);
+        return new net::URLRequestErrorJob(request, Q_NULLPTR, net::ERR_ACCESS_DENIED);
 
     return new URLRequestQrcJobQt(request, networkDelegate);
 }
+
+} // namespace QtWebEngineCore

@@ -49,6 +49,8 @@
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
 
+namespace QtWebEngineCore {
+
 ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request)
     : m_request(request)
 {
@@ -116,3 +118,5 @@ content::ResourceDispatcherHostLoginDelegate *ResourceDispatcherHostDelegateQt::
     // ResourceDispatcherHostLoginDelegateQt is ref-counted and will be released after we called ClearLoginDelegateForRequest.
     return new ResourceDispatcherHostLoginDelegateQt(authInfo, request);
 }
+
+} // namespace QtWebEngineCore

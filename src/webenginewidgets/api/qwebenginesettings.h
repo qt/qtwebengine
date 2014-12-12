@@ -25,7 +25,9 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
 
+namespace QtWebEngineCore {
 class WebEngineSettings;
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -88,7 +90,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QWebEngineSettings)
-    typedef WebEngineSettings QWebEngineSettingsPrivate;
+    typedef ::QtWebEngineCore::WebEngineSettings QWebEngineSettingsPrivate;
     QWebEngineSettingsPrivate* d_func() { return d_ptr.data(); }
     const QWebEngineSettingsPrivate* d_func() const { return d_ptr.data(); }
     QScopedPointer<QWebEngineSettingsPrivate> d_ptr;

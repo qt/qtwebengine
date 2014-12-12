@@ -40,7 +40,9 @@
 #include "qtwebengineglobal_p.h"
 #include "qquickwebengineview_p.h"
 
+namespace QtWebEngineCore {
 class WebContentsAdapter;
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -59,7 +61,7 @@ private:
     QQuickWebEngineNewViewRequest();
     QQuickWebEngineView::NewViewDestination m_destination;
     bool m_isUserInitiated;
-    QExplicitlySharedDataPointer<WebContentsAdapter> m_adapter;
+    QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
     friend class QQuickWebEngineViewPrivate;
 };
 

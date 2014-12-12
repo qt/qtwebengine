@@ -52,6 +52,8 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
+namespace QtWebEngineCore {
+
 inline QString toQt(const base::string16 &string)
 {
 #if defined(OS_WIN)
@@ -190,5 +192,7 @@ inline std::vector<T> toVector(const QStringList &fileList)
         selectedFiles.push_back(fileListingHelper<T>(file));
     return selectedFiles;
 }
+
+} // namespace QtWebEngineCore
 
 #endif // TYPE_CONVERSION_H

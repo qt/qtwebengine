@@ -37,12 +37,13 @@
 #ifndef QQUICKWEBENGINEDOWNLOADITEM_P_P_H
 #define QQUICKWEBENGINEDOWNLOADITEM_P_P_H
 
+#include "browser_context_adapter_client.h"
 #include "qquickwebenginedownloaditem_p.h"
-#include "qquickwebengineprofile_p_p.h"
 #include <private/qtwebengineglobal_p.h>
 #include <QString>
 
 QT_BEGIN_NAMESPACE
+class QQuickWebEngineProfilePrivate;
 
 class QQuickWebEngineDownloadItemPrivate {
     QQuickWebEngineDownloadItem *q_ptr;
@@ -59,7 +60,7 @@ public:
     qint64 receivedBytes;
     QString downloadPath;
 
-    void update(const BrowserContextAdapterClient::DownloadItemInfo &info);
+    void update(const QtWebEngineCore::BrowserContextAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);
 };
 

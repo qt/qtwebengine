@@ -55,6 +55,8 @@ class QWindow;
 class QInputMethodEvent;
 QT_END_NAMESPACE
 
+namespace QtWebEngineCore {
+
 class WebContentsAdapterClient;
 
 class QWEBENGINE_EXPORT RenderWidgetHostViewQtDelegateClient {
@@ -93,5 +95,7 @@ public:
     virtual void inputMethodStateChanged(bool editorVisible) = 0;
     virtual void setTooltip(const QString &) = 0;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_H

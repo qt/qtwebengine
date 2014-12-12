@@ -41,6 +41,8 @@
 
 #include <QQuickItem>
 
+namespace QtWebEngineCore {
+
 class RenderWidgetHostViewQtDelegateQuick : public QQuickItem, public RenderWidgetHostViewQtDelegate
 {
     Q_OBJECT
@@ -95,4 +97,7 @@ private:
     bool m_isPopup;
     bool m_initialized;
 };
+
+} // namespace QtWebEngineCore
+
 #endif

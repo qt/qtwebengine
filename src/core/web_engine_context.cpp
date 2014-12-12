@@ -83,6 +83,8 @@
 #include <QVector>
 #include <qpa/qplatformnativeinterface.h>
 
+using namespace QtWebEngineCore;
+
 namespace {
 
 scoped_refptr<WebEngineContext> sContext;

@@ -41,6 +41,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using QtWebEngineCore::WebEngineSettings;
+
 static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::WebAttribute attribute)
 {
     switch (attribute) {

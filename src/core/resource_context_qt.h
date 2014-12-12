@@ -45,8 +45,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-class BrowserContextQt;
 class GURL;
+
+namespace QtWebEngineCore {
+class BrowserContextQt;
 
 class ResourceContextQt : public content::ResourceContext
 {
@@ -68,5 +70,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };
+
+} // namespace QtWebEngineCore
 
 #endif // RESOURCE_CONTEXT_QT_H

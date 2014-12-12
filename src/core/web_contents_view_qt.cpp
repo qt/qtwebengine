@@ -45,6 +45,8 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/common/context_menu_params.h"
 
+namespace QtWebEngineCore {
+
 void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
 {
     m_client = client;
@@ -139,3 +141,5 @@ void WebContentsViewQt::TakeFocus(bool reverse)
 {
     m_client->passOnFocus(reverse);
 }
+
+} // namespace QtWebEngineCore

@@ -64,6 +64,8 @@ inline QString buildLocationFromStandardPath(const QString &standardPath, const 
 }
 }
 
+namespace QtWebEngineCore {
+
 BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
     : m_offTheRecord(offTheRecord)
     , m_browserContext(new BrowserContextQt(this))
@@ -333,3 +335,5 @@ UserScriptControllerHost *BrowserContextAdapter::userScriptController()
         m_userScriptController.reset(new UserScriptControllerHost);
     return m_userScriptController.data();
 }
+
+} // namespace QtWebEngineCore

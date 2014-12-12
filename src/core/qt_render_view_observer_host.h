@@ -45,6 +45,8 @@ namespace content {
     class WebContents;
 }
 
+namespace QtWebEngineCore {
+
 class WebContentsAdapterClient;
 
 class QtRenderViewObserverHost : public content::WebContentsObserver
@@ -62,5 +64,7 @@ private:
 
     WebContentsAdapterClient *m_adapterClient;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // QT_RENDER_VIEW_OBSERVER_HOST_H

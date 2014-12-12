@@ -72,6 +72,7 @@
 #endif // QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
+using namespace QtWebEngineCore;
 
 #ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)

@@ -45,6 +45,8 @@ namespace content {
 class WebContents;
 }
 
+namespace QtWebEngineCore {
+
 class JavaScriptDialogControllerPrivate {
 
 public:
@@ -62,5 +64,7 @@ public:
     content::JavaScriptDialogManager::DialogClosedCallback callback;
     content::WebContents *contents;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // JAVASCRIPT_DIALOG_CONTROLLER_P_H

@@ -46,6 +46,8 @@
 #include "browser_context_adapter.h"
 #include "web_engine_settings.h"
 
+using QtWebEngineCore::BrowserContextAdapter;
+
 QT_BEGIN_NAMESPACE
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)

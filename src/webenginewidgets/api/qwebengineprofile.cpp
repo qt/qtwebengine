@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using QtWebEngineCore::BrowserContextAdapter;
+
 /*!
     \class QWebEngineProfile
     \brief The QWebEngineProfile class provides a web-engine profile shared by multiple pages.

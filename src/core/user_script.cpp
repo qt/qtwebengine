@@ -39,6 +39,8 @@
 #include "user_script_controller_host.h"
 #include "type_conversion.h"
 
+namespace QtWebEngineCore {
+
 ASSERT_ENUMS_MATCH(UserScript::AfterLoad, UserScriptData::AfterLoad)
 ASSERT_ENUMS_MATCH(UserScript::DocumentLoadFinished, UserScriptData::DocumentLoadFinished)
 ASSERT_ENUMS_MATCH(UserScript::DocumentElementCreation, UserScriptData::DocumentElementCreation)
@@ -175,7 +177,10 @@ UserScriptData &UserScript::data() const
     return *(scriptData.data());
 }
 
-uint qHash(const UserScript &script, uint seed)
+} // namespace QtWebEngineCore
+
+QT_BEGIN_NAMESPACE
+uint qHash(const QtWebEngineCore::UserScript &script, uint seed)
 {
     if (script.isNull())
         return 0;
@@ -183,3 +188,4 @@ uint qHash(const UserScript &script, uint seed)
            ^ (script.injectionPoint() | (script.runsOnSubFrames() << 4))
            ^ script.worldId();
 }
+QT_END_NAMESPACE

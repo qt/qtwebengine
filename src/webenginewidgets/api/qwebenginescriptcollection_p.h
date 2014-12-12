@@ -43,13 +43,15 @@
 
 #include <QtCore/QSet>
 
+namespace QtWebEngineCore {
 class UserScriptControllerHost;
 class WebContentsAdapter;
+} // namespace
 
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollectionPrivate {
 public:
-    QWebEngineScriptCollectionPrivate(UserScriptControllerHost *, WebContentsAdapter * = 0);
+    QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserScriptControllerHost *, QtWebEngineCore::WebContentsAdapter * = 0);
 
     int count() const;
     bool contains(const QWebEngineScript &) const;
@@ -62,8 +64,8 @@ public:
     void reserve(int);
 
 private:
-    UserScriptControllerHost *m_scriptController;
-    WebContentsAdapter *m_contents;
+    QtWebEngineCore::UserScriptControllerHost *m_scriptController;
+    QtWebEngineCore::WebContentsAdapter *m_contents;
 };
 
 QT_END_NAMESPACE

@@ -61,6 +61,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 
+namespace QtWebEngineCore {
+
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32 messageLevel) {
     if (messageLevel < 1)
@@ -341,3 +343,5 @@ void WebContentsDelegateQt::geolocationPermissionReply(const QUrl &origin, bool 
         m_geolocationPermissionRequests.remove(origin);
     }
 }
+
+} // namespace QtWebEngineCore

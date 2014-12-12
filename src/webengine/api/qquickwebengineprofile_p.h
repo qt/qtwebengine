@@ -43,6 +43,10 @@
 #include <QScopedPointer>
 #include <QString>
 
+namespace QtWebEngineCore {
+class BrowserContextAdapter;
+}
+
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadItem;

@@ -56,6 +56,8 @@ namespace content {
     struct WebPreferences;
 }
 
+namespace QtWebEngineCore {
+
 class WebContentsAdapterClient;
 
 class WebContentsDelegateQt : public content::WebContentsDelegate
@@ -110,5 +112,7 @@ private:
     int m_lastReceivedFindReply;
     QList<int64> m_loadingErrorFrameList;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // WEB_CONTENTS_DELEGATE_QT_H

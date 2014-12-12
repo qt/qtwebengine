@@ -51,6 +51,8 @@
 
 using namespace net;
 
+namespace QtWebEngineCore {
+
 URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *networkDelegate, CustomUrlSchemeHandler *schemeHandler)
     : URLRequestJob(request, networkDelegate)
     , m_device(0)
@@ -141,3 +143,5 @@ void URLRequestCustomJob::startAsync()
     m_delegate.reset(new URLRequestCustomJobDelegate(this));
     m_schemeHandler->handleJob(m_delegate.get());
 }
+
+} // namespace

@@ -143,6 +143,8 @@ bool Target::Close() const {
 
 }  // namespace
 
+namespace QtWebEngineCore {
+
 DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt()
     : m_devtoolsHttpHandler(0)
     , m_bindAddress(QLatin1String("127.0.0.1"))
@@ -238,3 +240,5 @@ void DevToolsManagerDelegateQt::EnumerateTargets(TargetCallback callback)
     }
     callback.Run(targets);
 }
+
+} //namespace QtWebEngineCore

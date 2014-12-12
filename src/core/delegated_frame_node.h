@@ -57,6 +57,8 @@ namespace cc {
 class DelegatedFrameData;
 }
 
+namespace QtWebEngineCore {
+
 class MailboxTexture;
 class ResourceHolder;
 
@@ -97,5 +99,7 @@ private:
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // DELEGATED_FRAME_NODE_H

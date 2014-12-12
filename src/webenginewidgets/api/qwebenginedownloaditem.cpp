@@ -41,6 +41,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using QtWebEngineCore::BrowserContextAdapterClient;
+
 static inline QWebEngineDownloadItem::DownloadState toDownloadState(int state)
 {
     switch (state) {

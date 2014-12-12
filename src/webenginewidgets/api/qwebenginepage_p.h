@@ -44,8 +44,10 @@
 #include <QtCore/qcompilerdetection.h>
 #include <QSharedData>
 
+namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
 class WebContentsAdapter;
+}
 
 QT_BEGIN_NAMESPACE
 class QWebEngineHistory;
@@ -97,7 +99,7 @@ private:
     QHash<quint64, CallbackSharedDataPointer> m_callbackMap;
 };
 
-class QWebEnginePagePrivate : public WebContentsAdapterClient
+class QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
     Q_DECLARE_PUBLIC(QWebEnginePage)
@@ -106,8 +108,8 @@ public:
     QWebEnginePagePrivate(QWebEngineProfile *profile = 0);
     ~QWebEnginePagePrivate();
 
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE;
-    virtual RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE { return CreateRenderWidgetHostViewQtDelegate(client); }
+    virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE;
+    virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegateForPopup(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE { return CreateRenderWidgetHostViewQtDelegate(client); }
     virtual void titleChanged(const QString&) Q_DECL_OVERRIDE;
     virtual void urlChanged(const QUrl&) Q_DECL_OVERRIDE;
     virtual void iconChanged(const QUrl&) Q_DECL_OVERRIDE;
@@ -122,13 +124,13 @@ public:
     virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
-    virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
+    virtual void adoptNewWindow(QtWebEngineCore::WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
-    virtual bool contextMenuRequested(const WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
+    virtual bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) Q_DECL_OVERRIDE;
     virtual void requestFullScreen(bool) Q_DECL_OVERRIDE { }
     virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; }
-    virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) Q_DECL_OVERRIDE;
+    virtual void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
@@ -143,26 +145,26 @@ public:
 #ifndef QT_NO_ACCESSIBILITY
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
 #endif // QT_NO_ACCESSIBILITY
-    virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
+    virtual QtWebEngineCore::WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &controller) Q_DECL_OVERRIDE;
 
-    virtual BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
+    virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
 
-    WebContentsAdapter *webContents() { return adapter.data(); }
+    QtWebEngineCore::WebContentsAdapter *webContents() { return adapter.data(); }
     void recreateFromSerializedHistory(QDataStream &input);
 
-    QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
+    QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> adapter;
     QWebEngineHistory *history;
     QWebEngineProfile *profile;
     QWebEngineSettings *settings;
     QWebEngineView *view;
     QSize viewportSize;
     QUrl explicitUrl;
-    WebEngineContextMenuData m_menuData;
+    QtWebEngineCore::WebEngineContextMenuData m_menuData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
 

@@ -51,17 +51,19 @@ class BrowserMainRunner;
 class ContentMainRunner;
 }
 
+namespace QtWebEngineCore {
 class BrowserContextAdapter;
 class ContentMainDelegateQt;
 class DevToolsHttpHandlerDelegateQt;
 class SurfaceFactoryQt;
+}
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static scoped_refptr<WebEngineContext> current();
 
-    BrowserContextAdapter *defaultBrowserContext();
-    BrowserContextAdapter *offTheRecordBrowserContext();
+    QtWebEngineCore::BrowserContextAdapter *defaultBrowserContext();
+    QtWebEngineCore::BrowserContextAdapter *offTheRecordBrowserContext();
 
 private:
     friend class base::RefCounted<WebEngineContext>;
@@ -69,15 +71,15 @@ private:
     ~WebEngineContext();
 
     scoped_ptr<base::RunLoop> m_runLoop;
-    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
+    scoped_ptr<QtWebEngineCore::ContentMainDelegateQt> m_mainDelegate;
     scoped_ptr<content::ContentMainRunner> m_contentRunner;
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
 #if defined(OS_ANDROID)
-    scoped_ptr<SurfaceFactoryQt> m_surfaceFactory;
+    scoped_ptr<QtWebEngine::SurfaceFactoryQt> m_surfaceFactory;
 #endif
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_defaultBrowserContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_offTheRecordBrowserContext;
-    scoped_ptr<DevToolsHttpHandlerDelegateQt> m_devtools;
+    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
+    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_offTheRecordBrowserContext;
+    scoped_ptr<QtWebEngineCore::DevToolsHttpHandlerDelegateQt> m_devtools;
 };
 
 #endif // WEB_ENGINE_CONTEXT_H

@@ -44,6 +44,8 @@
 #include <QQuickWindow>
 #include <QScopedPointer>
 
+namespace QtWebEngineCore {
+
 class RenderWidgetHostViewQtDelegateQuickWindow : public QQuickWindow , public RenderWidgetHostViewQtDelegate {
 
 public:
@@ -75,5 +77,7 @@ public:
 private:
     QScopedPointer<RenderWidgetHostViewQtDelegate> m_realDelegate;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_DELEGATE_QUICKWINDOW_H

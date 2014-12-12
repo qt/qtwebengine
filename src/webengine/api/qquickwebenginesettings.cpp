@@ -43,6 +43,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using QtWebEngineCore::WebEngineSettings;
+
 QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings)
     : d_ptr(new WebEngineSettings(parentSettings ? parentSettings->d_ptr.data() : 0))
 { }

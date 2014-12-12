@@ -39,6 +39,8 @@
 #include "user_script.h"
 #include <QtCore/QDebug>
 
+using QtWebEngineCore::UserScript;
+
 QWebEngineScript::QWebEngineScript()
     : d(new UserScript)
 {

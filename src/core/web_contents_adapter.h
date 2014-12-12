@@ -49,14 +49,17 @@ namespace content {
 class WebContents;
 struct WebPreferences;
 }
-class BrowserContextQt;
-class MessagePassingInterface;
-class WebContentsAdapterPrivate;
 
 QT_BEGIN_NAMESPACE
 class QAccessibleInterface;
 class QWebChannel;
 QT_END_NAMESPACE
+
+namespace QtWebEngineCore {
+
+class BrowserContextQt;
+class MessagePassingInterface;
+class WebContentsAdapterPrivate;
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
@@ -126,9 +129,12 @@ public:
     content::WebContents *webContents() const;
 
 private:
-    Q_DISABLE_COPY(WebContentsAdapter);
-    Q_DECLARE_PRIVATE(WebContentsAdapter);
+    Q_DISABLE_COPY(WebContentsAdapter)
+    Q_DECLARE_PRIVATE(WebContentsAdapter)
     QScopedPointer<WebContentsAdapterPrivate> d_ptr;
 
 };
+
+} // namespace QtWebEngineCore
+
 #endif // WEB_CONTENTS_ADAPTER_H

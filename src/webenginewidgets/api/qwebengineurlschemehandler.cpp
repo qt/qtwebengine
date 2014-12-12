@@ -54,7 +54,7 @@ QWebEngineUrlSchemeHandlerPrivate::~QWebEngineUrlSchemeHandlerPrivate()
 {
 }
 
-bool QWebEngineUrlSchemeHandlerPrivate::handleJob(URLRequestCustomJobDelegate *job)
+bool QWebEngineUrlSchemeHandlerPrivate::handleJob(QtWebEngineCore::URLRequestCustomJobDelegate *job)
 {
     QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(job);
     q_ptr->requestStarted(requestJob);

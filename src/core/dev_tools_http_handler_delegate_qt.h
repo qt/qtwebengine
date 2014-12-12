@@ -53,6 +53,8 @@ class DevToolsHttpHandler;
 class RenderViewHost;
 }
 
+namespace QtWebEngineCore {
+
 class DevToolsHttpHandlerDelegateQt : public content::DevToolsHttpHandlerDelegate {
 public:
 
@@ -83,5 +85,7 @@ public:
     void EnumerateTargets(TargetCallback callback) Q_DECL_OVERRIDE;
     std::string GetPageThumbnailData(const GURL &url) Q_DECL_OVERRIDE;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H

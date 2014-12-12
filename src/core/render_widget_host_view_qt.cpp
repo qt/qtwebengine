@@ -79,6 +79,8 @@
 #include <QWindow>
 #include <QtGui/qaccessible.h>
 
+namespace QtWebEngineCore {
+
 static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
@@ -1050,3 +1052,5 @@ void RenderWidgetHostViewQt::didFirstVisuallyNonEmptyLayout()
 {
     m_didFirstVisuallyNonEmptyLayout = true;
 }
+
+} // namespace QtWebEngineCore

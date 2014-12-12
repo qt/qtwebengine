@@ -57,6 +57,8 @@ class NetworkDelegate;
 class ProxyConfigService;
 }
 
+namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
@@ -94,5 +96,7 @@ private:
     scoped_ptr<net::URLRequestContextStorage> m_storage;
     scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // URL_REQUEST_CONTEXT_GETTER_QT_H

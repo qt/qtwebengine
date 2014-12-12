@@ -43,12 +43,15 @@
 #include <QtCore/QScopedPointer>
 #include "user_script.h"
 
-class WebContentsAdapterPrivate;
 namespace content {
 class RenderProcessHost;
 class WebContents;
 }
+
+namespace QtWebEngineCore {
+
 class WebContentsAdapter;
+class WebContentsAdapterPrivate;
 
 class QWEBENGINE_EXPORT UserScriptControllerHost {
 
@@ -78,5 +81,7 @@ private:
     QSet<content::RenderProcessHost *> m_observedProcesses;
     QScopedPointer<RenderProcessObserverHelper> m_renderProcessObserver;
 };
+
+} // namespace
 
 #endif // USER_SCRIPT_CONTROLLER_HOST_H

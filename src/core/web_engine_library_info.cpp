@@ -56,6 +56,7 @@
 #error "No name defined for QtWebEngine's process"
 #endif
 
+using namespace QtWebEngineCore;
 
 namespace {
 

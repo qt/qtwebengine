@@ -64,6 +64,7 @@ namespace gfx {
 class GLShareGroup;
 }
 
+namespace QtWebEngineCore {
 class BrowserContextQt;
 class BrowserMainPartsQt;
 class ResourceDispatcherHostDelegateQt;
@@ -119,5 +120,7 @@ private:
     scoped_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // CONTENT_BROWSER_CLIENT_QT_H

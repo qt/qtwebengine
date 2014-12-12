@@ -57,6 +57,8 @@
 
 class DesktopStreamsRegistry;
 
+namespace QtWebEngineCore {
+
 // This singleton is used to receive updates about media events from the content
 // layer. Based on Chrome's implementation.
 class MediaCaptureDevicesDispatcher : public content::MediaObserver,
@@ -130,5 +132,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   DISALLOW_COPY_AND_ASSIGN(MediaCaptureDevicesDispatcher);
 };
+
+} // namespace QtWebEngineCore
 
 #endif  // MEDIA_CAPTURE_DEVICES_DISPATCHER_H

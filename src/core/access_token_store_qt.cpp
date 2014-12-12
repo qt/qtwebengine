@@ -50,6 +50,8 @@
 #include "content_browser_client_qt.h"
 #include "web_engine_context.h"
 
+namespace QtWebEngineCore {
+
 using content::AccessTokenStore;
 using content::BrowserThread;
 
@@ -84,3 +86,5 @@ void AccessTokenStoreQt::SaveAccessToken(const GURL& serverUrl, const base::stri
 {
     m_accessTokenSet[serverUrl] = accessToken;
 }
+
+} // namespace QtWebEngineCore

@@ -54,6 +54,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace QtWebEngineCore;
+
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
     switch (disposition) {

@@ -63,6 +63,7 @@
 #include "ui/gfx/platform_font.h"
 #endif
 
+namespace QtWebEngineCore {
 void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* results)
 {
     QScreen* screen = window->screen();
@@ -79,6 +80,8 @@ void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* result
     r.availableRect = blink::WebRect(available.x(), available.y(), available.width(), available.height());
     *results = r;
 }
+
+} // namespace QtWebEngineCore
 
 #if defined(USE_X11)
 XDisplay* GetQtXDisplay()
@@ -97,7 +100,7 @@ WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
     WebContentsViewDelegate *,
     RenderViewHostDelegateView **render_view_host_delegate_view)
 {
-    WebContentsViewQt* rv = new WebContentsViewQt(web_contents);
+    QtWebEngineCore::WebContentsViewQt* rv = new QtWebEngineCore::WebContentsViewQt(web_contents);
     *render_view_host_delegate_view = rv;
     return rv;
 }
@@ -105,10 +108,10 @@ WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
 // static
 void RenderWidgetHostViewBase::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
     QWindow dummy;
-    GetScreenInfoFromNativeWindow(&dummy, results);
+    QtWebEngineCore::GetScreenInfoFromNativeWindow(&dummy, results);
 }
 
-}
+} // namespace content
 
 #if defined(USE_AURA) && !defined(USE_OZONE)
 namespace content {

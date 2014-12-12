@@ -47,7 +47,7 @@ namespace QtWebEngine {
 
 int processMain(int argc, const char **argv)
 {
-    ContentMainDelegateQt delegate;
+    QtWebEngineCore::ContentMainDelegateQt delegate;
     content::ContentMainParams params(&delegate);
 
 #if defined(OS_WIN)
@@ -64,4 +64,4 @@ int processMain(int argc, const char **argv)
     return content::ContentMain(params);
 }
 
-}
+} // namespace

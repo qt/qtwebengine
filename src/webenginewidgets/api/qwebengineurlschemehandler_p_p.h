@@ -49,14 +49,14 @@ class QWebEngineProfile;
 class QWebEngineUrlRequestJob;
 class QWebEngineUrlSchemeHandler;
 
-class QWebEngineUrlSchemeHandlerPrivate : public CustomUrlSchemeHandler {
+class QWebEngineUrlSchemeHandlerPrivate : public QtWebEngineCore::CustomUrlSchemeHandler {
 public:
     Q_DECLARE_PUBLIC(QWebEngineUrlSchemeHandler)
 
     QWebEngineUrlSchemeHandlerPrivate(const QByteArray &, QWebEngineUrlSchemeHandler *, QWebEngineProfile *);
     virtual ~QWebEngineUrlSchemeHandlerPrivate();
 
-    virtual bool handleJob(URLRequestCustomJobDelegate*) Q_DECL_OVERRIDE;
+    virtual bool handleJob(QtWebEngineCore::URLRequestCustomJobDelegate*) Q_DECL_OVERRIDE;
 
 private:
     QWebEngineUrlSchemeHandler *q_ptr;

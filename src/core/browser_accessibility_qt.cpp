@@ -49,6 +49,7 @@
 #include "type_conversion.h"
 
 using namespace blink;
+using QtWebEngineCore::toQt;
 
 namespace content {
 

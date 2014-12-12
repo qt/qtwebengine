@@ -55,6 +55,8 @@
 #define QT_LIBDIR_GLES2 QT_LIBDIR_EGL
 #endif
 
+namespace QtWebEngine {
+
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     base::NativeLibraryLoadError error;
     base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
@@ -109,6 +111,8 @@ intptr_t SurfaceFactoryQt::GetNativeDisplay()
 
     return reinterpret_cast<intptr_t>(EGL_DEFAULT_DISPLAY);
 }
+
+} // namespace QtWebEngineCore
 
 #endif // defined(USE_OZONE) || defined(OS_ANDROID)
 

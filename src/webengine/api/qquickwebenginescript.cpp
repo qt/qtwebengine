@@ -41,6 +41,8 @@
 #include <QtCore/QTimerEvent>
 #include "user_script_controller_host.h"
 
+using QtWebEngineCore::UserScript;
+
 QQuickWebEngineScript::QQuickWebEngineScript()
     : d_ptr(new QQuickWebEngineScriptPrivate)
 {
@@ -178,7 +180,7 @@ void QQuickWebEngineScript::timerEvent(QTimerEvent *e)
     d->m_controllerHost->addUserScript(d->coreScript, d->m_adapter);
 }
 
-void QQuickWebEngineScriptPrivate::bind(UserScriptControllerHost *scriptController, WebContentsAdapter *adapter)
+void QQuickWebEngineScriptPrivate::bind(QtWebEngineCore::UserScriptControllerHost *scriptController, QtWebEngineCore::WebContentsAdapter *adapter)
 {
     aboutToUpdateUnderlyingScript();
     m_adapter = adapter;

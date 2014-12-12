@@ -68,7 +68,7 @@ int QQuickWebEngineHistoryListModelPrivate::offsetForIndex(int index) const
     return index - adapter()->currentNavigationEntryIndex();
 }
 
-WebContentsAdapter *QQuickWebEngineHistoryListModelPrivate::adapter() const
+QtWebEngineCore::WebContentsAdapter *QQuickWebEngineHistoryListModelPrivate::adapter() const
 {
     return view->adapter.data();
 }
