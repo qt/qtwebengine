@@ -1,8 +1,6 @@
 MODULE = webenginecore
 TARGET = QtWebEngineCore
 
-CMAKE_MODULE_TESTS = "-"
-
 QT += qml quick
 QT_PRIVATE += gui-private
 
