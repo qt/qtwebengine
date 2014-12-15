@@ -14,17 +14,18 @@ class Gyp(object):
     def target_defaults(self):
         return self.variables["target_defaults"]
 
-class ProFile(object):
+class ProFileSection(object):
     sourceExtensions = [ ".cpp", ".cc", ".c" ]
     headerExtensions = [ ".h", ".hh" ]
     skippingExtensions = [ ".rc" ]
     skippingFiles = [ "makefile" ]
 
-    def __init__(self):
+    def __init__(self, scope):
         self.sources = []
         self.headers = []
         self.defines = []
         self.config = []
+        self.scope = scope
 
     def addSource(self, fileName):
         extension = os.path.splitext(fileName)[1]
@@ -55,7 +56,7 @@ class ProFile(object):
         self.config.append(cfg)
 
     def generate(self):
-        result = "# This is a generated file, do not edit!\n"
+        result = ""
         if self.defines:
             result += "DEFINES += \\\n    "
             result += " \\\n    ".join(self.defines)
@@ -69,6 +70,24 @@ class ProFile(object):
         result += "\n\n"
         result += "HEADERS += \\\n    "
         result += " \\\n    ".join(self.headers)
+        result += "\n\n"
+        return result
+
+class ProFile(ProFileSection):
+    def __init__(self):
+        ProFileSection.__init__(self, "")
+        self.scopes = []
+
+    def addScope(self, section):
+        self.scopes.append(section)
+
+    def generate(self):
+        result = "# This is a generated file, do not edit!\n"
+        result += ProFileSection.generate(self)
+        for section in self.scopes:
+            result += section.scope + " {\n"
+            result += section.generate()
+            result += "\n}\n"
         return result
 
 gyp = Gyp(sys.argv[1])
@@ -84,7 +103,15 @@ for dep in mainTarget["dependencies"]:
         continue
     if gyp.target(dep)["target_name"] == "jsapi":
         continue
-    pro.addSources(gyp.target(dep)["sources"])
+    t = gyp.target(dep)
+    pro.addSources(t["sources"])
+    
+    if "conditions" in t:
+        for condition in t["conditions"]:
+            if condition[0] == "OS==\"win\"":
+                scope = ProFileSection("win32")
+                scope.addSources(condition[1]["sources"])
+                pro.addScope(scope)
 
 pro.addDefines(gyp.target_defaults()["defines"])
 

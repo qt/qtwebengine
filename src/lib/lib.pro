@@ -8,3 +8,5 @@ load(qt_helper_lib)
 
 VPATH += ../3rdparty/pdfium
 include(../3rdparty/pdfium.pri)
+
+win32: LIBS_PRIVATE += -ladvapi32 -lgdi32 -luser32
