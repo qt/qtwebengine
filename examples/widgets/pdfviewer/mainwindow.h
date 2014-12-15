@@ -11,6 +11,7 @@ class MainWindow;
 }
 
 class QPdfDocument;
+class SequentialPageWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -24,11 +25,13 @@ public slots:
     void open(const QUrl &docLocation);
 
 private slots:
+    void showingPageRange(int start, int end);
     void on_actionOpen_triggered();
 
 private:
     Ui::MainWindow *ui;
     QPdfDocument *m_doc;
+    SequentialPageWidget *m_pageWidget;
 };
 
 #endif // MAINWINDOW_H

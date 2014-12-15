@@ -2,6 +2,7 @@
 #define SEQUENTIALPAGEWIDGET_H
 
 #include <QWidget>
+#include <QDebug>
 
 class QPdfDocument;
 
@@ -17,8 +18,13 @@ public:
 public slots:
     void setDocument(QPdfDocument *doc);
     void setZoom(qreal factor);
+    void invalidate();
+
+signals:
+    void showingPageRange(int start, int end);
 
 private:
+    QSizeF pageSize(int page);
     void render(int page);
 
 private:
@@ -26,8 +32,8 @@ private:
     QHash<int, QPixmap> m_pageCache;
     QBrush m_background;
     int m_pageSpacing;
+    QSize m_totalSize;
     qreal m_zoom;
-    qreal m_top; // 1.5 means start from the bottom half of page 1
     qreal m_screenResolution; // pixels per point
 };
 
