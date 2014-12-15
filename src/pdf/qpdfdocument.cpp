@@ -96,7 +96,10 @@ QPdfDocument::Error QPdfDocumentPrivate::load(QIODevice *newDevice, bool transfe
     password = documentPassword.toUtf8();
 
     doc = FPDF_LoadCustomDocument(this, password.constData());
-    setErrorCode();
+    if (doc)
+        clearError();
+    else
+        setErrorCode();
     return lastError;
 }
 
@@ -147,7 +150,9 @@ void QPdfDocumentPrivate::tryLoadDocument()
     Q_ASSERT(!doc);
 
     doc = FPDFAvail_GetDocument(avail, password);
-    if (!doc) {
+    if (doc) {
+        clearError();
+    } else {
         setErrorCode();
         if (lastError == QPdfDocument::IncorrectPasswordError)
             emit q->passwordRequired();

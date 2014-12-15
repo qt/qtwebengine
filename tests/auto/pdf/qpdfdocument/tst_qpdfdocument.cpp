@@ -18,6 +18,7 @@ private slots:
     void pageCount();
     void loadFromIODevice();
     void loadAsync();
+    void password();
 };
 
 struct TemporaryPdf: public QTemporaryFile
@@ -87,6 +88,16 @@ void tst_QPdfDocument::loadAsync()
     QCOMPARE(startedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(doc.pageCount(), 2);
+}
+
+void tst_QPdfDocument::password()
+{
+    QPdfDocument doc;
+    QCOMPARE(doc.pageCount(), 0);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf"), QStringLiteral("WrongPassword")), QPdfDocument::IncorrectPasswordError);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf"), QStringLiteral("Qt")), QPdfDocument::NoError);
+    QCOMPARE(doc.pageCount(), 1);
 }
 
 QTEST_MAIN(tst_QPdfDocument)
