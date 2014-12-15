@@ -27,18 +27,19 @@ public:
     QPointer<QIODevice> device;
     QScopedPointer<QIODevice> ownDevice;
     QBuffer asyncBuffer;
-    QPointer<QNetworkReply> remoteDevice;
+    QPointer<QIODevice> sequentialSourceDevice;
     QByteArray password;
 
     QPdfDocument::Error lastError;
 
     void clear();
 
-    QPdfDocument::Error load(QIODevice *device, bool ownDevice, const QString &documentPassword);
+    void load(QIODevice *device, bool ownDevice);
     void loadAsync(QIODevice *device);
 
-    void _q_initiateAsyncLoad();
-    void _q_readFromDevice();
+    void _q_tryLoadingWithSizeFromContentHeader();
+    void initiateAsyncLoadWithTotalSizeKnown(quint64 totalSize);
+    void _q_copyFromSequentialSourceDevice();
     void tryLoadDocument();
     void checkComplete();
 

@@ -66,7 +66,12 @@ void tst_QPdfDocument::loadFromIODevice()
 {
     TemporaryPdf tempPdf;
     QPdfDocument doc;
-    QCOMPARE(doc.load(&tempPdf), QPdfDocument::NoError);
+    QSignalSpy startedSpy(&doc, SIGNAL(documentLoadStarted()));
+    QSignalSpy finishedSpy(&doc, SIGNAL(documentLoadFinished()));
+    doc.load(&tempPdf);
+    QCOMPARE(startedSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(doc.error(), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 2);
 }
 
@@ -83,7 +88,7 @@ void tst_QPdfDocument::loadAsync()
     QSignalSpy startedSpy(&doc, SIGNAL(documentLoadStarted()));
     QSignalSpy finishedSpy(&doc, SIGNAL(documentLoadFinished()));
 
-    doc.loadAsynchronously(reply.data());
+    doc.load(reply.data());
 
     QCOMPARE(startedSpy.count(), 1);
     QCOMPARE(finishedSpy.count(), 1);
@@ -95,8 +100,10 @@ void tst_QPdfDocument::password()
     QPdfDocument doc;
     QCOMPARE(doc.pageCount(), 0);
     QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
-    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf"), QStringLiteral("WrongPassword")), QPdfDocument::IncorrectPasswordError);
-    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf"), QStringLiteral("Qt")), QPdfDocument::NoError);
+    doc.setPassword(QStringLiteral("WrongPassword"));
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
+    doc.setPassword(QStringLiteral("Qt"));
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 1);
 }
 

@@ -61,6 +61,9 @@ void QPdfDocumentPrivate::clear()
     asyncBuffer.close();
     asyncBuffer.setData(QByteArray());
     asyncBuffer.open(QIODevice::ReadWrite);
+
+    if (sequentialSourceDevice)
+        sequentialSourceDevice->disconnect(q);
 }
 
 void QPdfDocumentPrivate::updateLastError()
@@ -81,7 +84,7 @@ void QPdfDocumentPrivate::updateLastError()
     }
 }
 
-QPdfDocument::Error QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnership, const QString &documentPassword)
+void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnership)
 {
     clear();
 
@@ -89,57 +92,69 @@ QPdfDocument::Error QPdfDocumentPrivate::load(QIODevice *newDevice, bool transfe
         ownDevice.reset(newDevice);
     else
         ownDevice.reset();
-    device = newDevice;
 
-    if (!device->isOpen() && !device->open(QIODevice::ReadOnly))
-        return QPdfDocument::FileNotFoundError;
+    if (newDevice->isSequential()) {
+        sequentialSourceDevice = newDevice;
+        device = &asyncBuffer;
+        QNetworkReply *reply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
+        if (!reply) {
+            qWarning() << "QPdfDocument: Loading from sequential devices only supported with QNetworkAccessManager.";
+            return;
+        }
 
-    // FPDF_FILEACCESS setup
-    m_FileLen = device->size();
-
-    password = documentPassword.toUtf8();
-
-    doc = FPDF_LoadCustomDocument(this, password.constData());
-    updateLastError();
-    return lastError;
+        if (reply->header(QNetworkRequest::ContentLengthHeader).isValid())
+            _q_tryLoadingWithSizeFromContentHeader();
+        else
+            QObject::connect(reply, SIGNAL(metaDataChanged()), q, SLOT(_q_tryLoadingWithSizeFromContentHeader()));
+    } else {
+        device = newDevice;
+        initiateAsyncLoadWithTotalSizeKnown(device->size());
+        checkComplete();
+    }
 }
 
-void QPdfDocumentPrivate::_q_initiateAsyncLoad()
+void QPdfDocumentPrivate::_q_tryLoadingWithSizeFromContentHeader()
 {
     QMutexLocker lock(pdfMutex());
     if (avail)
         return;
 
-    QVariant contentLength = remoteDevice->header(QNetworkRequest::ContentLengthHeader);
+    QNetworkReply *networkReply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
+    if(!networkReply)
+        return;
+
+    QVariant contentLength = networkReply->header(QNetworkRequest::ContentLengthHeader);
     if (!contentLength.isValid())
         return;
 
-    // FPDF_FILEACCESS setup
-    m_FileLen = contentLength.toULongLong();
+    QObject::connect(sequentialSourceDevice, SIGNAL(readyRead()), q, SLOT(_q_copyFromSequentialSourceDevice()));
 
-    QObject::connect(remoteDevice, SIGNAL(readyRead()), q, SLOT(_q_readFromDevice()));
+    initiateAsyncLoadWithTotalSizeKnown(contentLength.toULongLong());
 
-    avail = FPDFAvail_Create(this, this);
-
-    if (remoteDevice->bytesAvailable())
-        _q_readFromDevice();
+    if (sequentialSourceDevice->bytesAvailable())
+        _q_copyFromSequentialSourceDevice();
 }
 
-void QPdfDocumentPrivate::_q_readFromDevice()
+void QPdfDocumentPrivate::initiateAsyncLoadWithTotalSizeKnown(quint64 totalSize)
+{
+    // FPDF_FILEACCESS setup
+    m_FileLen = totalSize;
+
+    avail = FPDFAvail_Create(this, this);
+}
+
+void QPdfDocumentPrivate::_q_copyFromSequentialSourceDevice()
 {
     QMutexLocker lock(pdfMutex());
     if (loadComplete)
         return;
-    QByteArray data = remoteDevice->read(remoteDevice->bytesAvailable());
+    QByteArray data = sequentialSourceDevice->read(sequentialSourceDevice->bytesAvailable());
     if (data.isEmpty())
         return;
     asyncBuffer.seek(asyncBuffer.size());
     asyncBuffer.write(data);
 
-    if (!doc)
-        tryLoadDocument();
-    if (doc)
-        checkComplete();
+    checkComplete();
 }
 
 void QPdfDocumentPrivate::tryLoadDocument()
@@ -161,7 +176,13 @@ void QPdfDocumentPrivate::tryLoadDocument()
 void QPdfDocumentPrivate::checkComplete()
 {
     QMutexLocker lock(pdfMutex());
-    if (!doc || !avail)
+    if (!avail || loadComplete)
+        return;
+
+    if (!doc)
+        tryLoadDocument();
+
+    if (!doc)
         return;
 
     loadComplete = true;
@@ -175,7 +196,7 @@ void QPdfDocumentPrivate::checkComplete()
 bool QPdfDocumentPrivate::fpdf_IsDataAvail(_FX_FILEAVAIL *pThis, size_t offset, size_t size)
 {
     QPdfDocumentPrivate *d = static_cast<QPdfDocumentPrivate*>(pThis);
-    return offset + size <= static_cast<quint64>(d->asyncBuffer.size());
+    return offset + size <= static_cast<quint64>(d->device->size());
 }
 
 int QPdfDocumentPrivate::fpdf_GetBlock(void *param, unsigned long position, unsigned char *pBuf, unsigned long size)
@@ -204,35 +225,27 @@ QPdfDocument::~QPdfDocument()
 {
 }
 
-QPdfDocument::Error QPdfDocument::load(const QString &fileName, const QString &password)
+QPdfDocument::Error QPdfDocument::load(const QString &fileName)
 {
     QMutexLocker lock(pdfMutex());
-    return d->load(new QFile(fileName), /*transfer ownership*/true, password);
+    QScopedPointer<QFile> f(new QFile(fileName));
+    if (!f->open(QIODevice::ReadOnly)) {
+        d->lastError = FileNotFoundError;
+    } else {
+        d->load(f.take(), /*transfer ownership*/true);
+    }
+    return d->lastError;
 }
 
-QPdfDocument::Error QPdfDocument::load(QIODevice *device, const QString &password)
+bool QPdfDocument::isLoading() const
 {
-    QMutexLocker lock(pdfMutex());
-    return d->load(device, /*transfer ownership*/false, password);
+    return !d->loadComplete;
 }
 
-void QPdfDocument::loadAsynchronously(QNetworkReply *device)
+void QPdfDocument::load(QIODevice *device)
 {
     QMutexLocker lock(pdfMutex());
-    d->clear();
-
-    d->ownDevice.reset();
-    d->device = &d->asyncBuffer;
-
-    if (d->remoteDevice)
-        d->remoteDevice->disconnect(this);
-
-    d->remoteDevice = device;
-
-    if (d->remoteDevice->header(QNetworkRequest::ContentLengthHeader).isValid())
-        d->_q_initiateAsyncLoad();
-    else
-        connect(d->remoteDevice, SIGNAL(metaDataChanged()), this, SLOT(_q_initiateAsyncLoad()));
+    d->load(device, /*transfer ownership*/false);
 }
 
 void QPdfDocument::setPassword(const QString &password)
