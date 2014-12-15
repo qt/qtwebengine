@@ -5,6 +5,9 @@
 #include <QPdfDocument>
 #include <QPrinter>
 #include <QTemporaryFile>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 class tst_QPdfDocument: public QObject
 {
@@ -14,6 +17,7 @@ public:
 private slots:
     void pageCount();
     void loadFromIODevice();
+    void loadAsync();
 };
 
 struct TemporaryPdf: public QTemporaryFile
@@ -28,17 +32,21 @@ TemporaryPdf::TemporaryPdf()
     open();
     pageLayout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
 
-    QPrinter printer;
-    printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setOutputFileName(fileName());
-    printer.setPageLayout(pageLayout);
-
     {
-        QPainter painter(&printer);
-        painter.drawText(100, 100, QStringLiteral("Hello Page 1"));
-        printer.newPage();
-        painter.drawText(100, 100, QStringLiteral("Hello Page 2"));
+        QPrinter printer;
+        printer.setOutputFormat(QPrinter::PdfFormat);
+        printer.setOutputFileName(fileName());
+        printer.setPageLayout(pageLayout);
+
+        {
+            QPainter painter(&printer);
+            painter.drawText(100, 100, QStringLiteral("Hello Page 1"));
+            printer.newPage();
+            painter.drawText(100, 100, QStringLiteral("Hello Page 2"));
+        }
     }
+
+    seek(0);
 }
 
 void tst_QPdfDocument::pageCount()
@@ -58,6 +66,24 @@ void tst_QPdfDocument::loadFromIODevice()
     TemporaryPdf tempPdf;
     QPdfDocument doc;
     QCOMPARE(doc.load(&tempPdf), QPdfDocument::NoError);
+    QCOMPARE(doc.pageCount(), 2);
+}
+
+void tst_QPdfDocument::loadAsync()
+{
+    TemporaryPdf tempPdf;
+
+    QNetworkAccessManager nam;
+
+    QUrl url = QUrl::fromLocalFile(tempPdf.fileName());
+    QScopedPointer<QNetworkReply> reply(nam.get(QNetworkRequest(url)));
+
+    QPdfDocument doc;
+    QSignalSpy readySpy(&doc, SIGNAL(documentReady()));
+
+    doc.loadAsynchronously(reply.data());
+
+    QCOMPARE(readySpy.count(), 1);
     QCOMPARE(doc.pageCount(), 2);
 }
 

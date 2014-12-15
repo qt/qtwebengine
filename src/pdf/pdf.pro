@@ -1,5 +1,6 @@
 TARGET = QtQPdf
-QT = gui core network
+QT += gui core
+QT_PRIVATE += network
 TEMPLATE = lib
 CONFIG += c++11
 INCLUDEPATH += ../3rdparty/pdfium/fpdfsdk/include
