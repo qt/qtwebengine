@@ -4,7 +4,7 @@
 #include <QWidget>
 
 class QPdfDocument;
-class PageCache;
+class PageRenderer;
 
 class SequentialPageWidget : public QWidget
 {
@@ -20,7 +20,7 @@ public:
     int bottomPageShowing() { return m_bottomPageShowing; }
 
 public slots:
-    void setDocument(QPdfDocument *doc);
+    void openDocument(const QUrl &url);
     void setZoom(qreal factor);
     void invalidate();
 
@@ -28,13 +28,18 @@ signals:
     void showingPageRange(int start, int end);
     void zoomChanged(qreal factor);
 
+private slots:
+    void pageLoaded(int page, qreal zoom, QImage image);
+
 private:
+    int pageCount();
     QSizeF pageSize(int page);
     void render(int page);
 
 private:
-    QPdfDocument *m_doc;
-    PageCache *m_pageCache;
+    QHash<int, QImage> m_pageCache;
+    QVector<QSizeF> m_pageSizes;
+    PageRenderer *m_pageRenderer;
     QBrush m_background;
     QPixmap m_placeholderIcon;
     QBrush m_placeholderBackground;

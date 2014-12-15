@@ -15,13 +15,11 @@ Q_LOGGING_CATEGORY(lcExample, "qt.examples.pdfviewer")
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_doc(new QPdfDocument(this))
     , m_pageWidget(new SequentialPageWidget(this))
     , m_zoomEdit(new QLineEdit(this))
     , m_pageEdit(new QLineEdit(this))
 {
     ui->setupUi(this);
-    m_pageWidget->setDocument(m_doc);
     ui->scrollArea->setWidget(m_pageWidget);
     m_zoomEdit->setMaximumWidth(50);
     m_zoomEdit->setAlignment(Qt::AlignHCenter);
@@ -45,13 +43,11 @@ MainWindow::~MainWindow()
 void MainWindow::open(const QUrl &docLocation)
 {
     if (docLocation.isLocalFile())
-        m_doc->load(docLocation.toLocalFile());
+        m_pageWidget->openDocument(docLocation);
     else {
         qCDebug(lcExample) << docLocation << "is not a valid local file";
         QMessageBox::critical(this, tr("Failed to open"), tr("%1 is not a valid local file").arg(docLocation.toString()));
     }
-    // TODO: connect to signal from document
-    m_pageWidget->invalidate();
     qCDebug(lcExample) << docLocation;
     ui->scrollArea->ensureVisible(0, 0, 0, 0);
 }

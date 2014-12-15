@@ -9,29 +9,32 @@
 
 class QPdfDocument;
 
-class PageCache : public QThread
+class PageRenderer : public QThread
 {
     Q_OBJECT
 public:
-    PageCache(QPdfDocument *doc, qreal zoom);
-    ~PageCache();
+    PageRenderer();
+    ~PageRenderer();
 
-    QPixmap get(int page);
+public slots:
+    QVector<QSizeF> openDocument(const QUrl &location);
+    void requestPage(int page, qreal zoom, Priority priority = QThread::NormalPriority);
 
 signals:
-    void pageReady(int page);
+    void pageReady(int page, qreal zoom, QImage image);
 
 protected:
     Q_DECL_OVERRIDE void run();
 
 private:
-    void insertPage(int page);
+    void renderPage(int page, qreal zoom);
 
 private:
     QPdfDocument *m_doc;
-    QHash<int, QPixmap> m_pageCache;
+
+    // current request only
+    int m_page;
     qreal m_zoom;
-    int m_lastPageRequested;
 
     // performance statistics
     qreal m_minRenderTime;

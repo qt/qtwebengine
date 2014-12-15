@@ -5,11 +5,11 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     sequentialpagewidget.cpp \
-    pagecache.cpp
+    pagerenderer.cpp
 
 HEADERS  += mainwindow.h \
     sequentialpagewidget.h \
-    pagecache.h
+    pagerenderer.h
 
 FORMS    += mainwindow.ui
 
