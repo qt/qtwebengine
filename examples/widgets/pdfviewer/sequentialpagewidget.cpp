@@ -13,6 +13,7 @@ SequentialPageWidget::SequentialPageWidget(QWidget *parent)
     , m_doc(Q_NULLPTR)
     , m_background(Qt::darkGray)
     , m_pageSpacing(3)
+    , m_topPageShowing(0)
     , m_zoom(1.)
     , m_screenResolution(QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72.0)
 {
@@ -25,12 +26,14 @@ SequentialPageWidget::~SequentialPageWidget()
 void SequentialPageWidget::setDocument(QPdfDocument *doc)
 {
     m_doc = doc;
+    m_topPageShowing = 0;
     invalidate();
 }
 
 void SequentialPageWidget::setZoom(qreal factor)
 {
     m_zoom = factor;
+    emit zoomChanged(factor);
     invalidate();
 }
 
@@ -52,6 +55,7 @@ void SequentialPageWidget::invalidate()
     }
     m_totalSize = totalSize.toSize();
     setMinimumSize(m_totalSize);
+    emit zoomChanged(m_zoom);
     qCDebug(lcExample) << "total size" << m_totalSize;
     update();
 }
@@ -74,11 +78,11 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
         int height = size.toSize().height();
         if (y + height >= event->rect().top())
             break;
-        y += height;
+        y += height + m_pageSpacing;
         ++page;
     }
     y += m_pageSpacing;
-    int startPage = page;
+    m_topPageShowing = page;
 
     // Actually render pages
     while (y < event->rect().bottom() && page < m_doc->pageCount()) {
@@ -92,6 +96,18 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
         y += pm.height() + m_pageSpacing;
         ++page;
     }
+    m_bottomPageShowing = page - 1;
+    emit showingPageRange(m_topPageShowing, m_bottomPageShowing);
+}
 
-    emit showingPageRange(startPage, page - 1);
+qreal SequentialPageWidget::yForPage(int endPage)
+{
+    // TODO maybe put this loop into a page iterator class
+    int y = m_pageSpacing;
+    for (int page = 0; page < m_doc->pageCount() && page < endPage; ++page) {
+        QSizeF size = pageSize(page);
+        int height = size.toSize().height();
+        y += height + m_pageSpacing;
+    }
+    return y;
 }

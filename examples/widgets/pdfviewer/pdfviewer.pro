@@ -10,3 +10,6 @@ HEADERS  += mainwindow.h \
     sequentialpagewidget.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    resources.qrc

@@ -2,7 +2,6 @@
 #define SEQUENTIALPAGEWIDGET_H
 
 #include <QWidget>
-#include <QDebug>
 
 class QPdfDocument;
 
@@ -14,6 +13,10 @@ public:
     ~SequentialPageWidget();
 
     void paintEvent(QPaintEvent * event);
+    qreal zoom() { return m_zoom; }
+    qreal yForPage(int page);
+    int topPageShowing() { return m_topPageShowing; }
+    int bottomPageShowing() { return m_bottomPageShowing; }
 
 public slots:
     void setDocument(QPdfDocument *doc);
@@ -22,6 +25,7 @@ public slots:
 
 signals:
     void showingPageRange(int start, int end);
+    void zoomChanged(qreal factor);
 
 private:
     QSizeF pageSize(int page);
@@ -32,6 +36,8 @@ private:
     QHash<int, QPixmap> m_pageCache;
     QBrush m_background;
     int m_pageSpacing;
+    int m_topPageShowing;
+    int m_bottomPageShowing;
     QSize m_totalSize;
     qreal m_zoom;
     qreal m_screenResolution; // pixels per point
