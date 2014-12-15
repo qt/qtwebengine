@@ -1,4 +1,5 @@
 #include "sequentialpagewidget.h"
+#include "pagecache.h"
 #include <QPaintEvent>
 #include <QPainter>
 #include <QPdfDocument>
@@ -12,15 +13,12 @@ Q_DECLARE_LOGGING_CATEGORY(lcExample)
 SequentialPageWidget::SequentialPageWidget(QWidget *parent)
     : QWidget(parent)
     , m_doc(Q_NULLPTR)
+    , m_pageCache(Q_NULLPTR)
     , m_background(Qt::darkGray)
     , m_pageSpacing(3)
     , m_topPageShowing(0)
     , m_zoom(1.)
     , m_screenResolution(QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72.0)
-    , m_minRenderTime(1000000000.)
-    , m_maxRenderTime(0.)
-    , m_totalRenderTime(0.)
-    , m_totalPagesRendered(0)
 {
 }
 
@@ -32,6 +30,10 @@ void SequentialPageWidget::setDocument(QPdfDocument *doc)
 {
     m_doc = doc;
     m_topPageShowing = 0;
+    if (m_pageCache)
+        delete m_pageCache;
+    m_pageCache = new PageCache(doc, m_screenResolution * m_zoom);
+    connect(m_pageCache, SIGNAL(pageReady(int)), this, SLOT(update()));
     invalidate();
 }
 
@@ -49,7 +51,11 @@ QSizeF SequentialPageWidget::pageSize(int page)
 
 void SequentialPageWidget::invalidate()
 {
-    m_pageCache.clear();
+    if (m_pageCache)
+        delete m_pageCache;
+    if (m_doc)
+        m_pageCache = new PageCache(m_doc, m_screenResolution * m_zoom);
+    connect(m_pageCache, SIGNAL(pageReady(int)), this, SLOT(update()));
     QSizeF totalSize(0, m_pageSpacing);
     for (int page = 0; page < m_doc->pageCount(); ++page) {
         QSizeF size = pageSize(page);
@@ -88,36 +94,17 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
     }
     y += m_pageSpacing;
     m_topPageShowing = page;
-    int previousRendered = m_totalPagesRendered;
+    if (!m_pageCache) return;
 
     // Actually render pages
     while (y < event->rect().bottom() && page < m_doc->pageCount()) {
-        if (!m_pageCache.contains(page)) {
-            QSizeF size = pageSize(page);
-            qCDebug(lcExample) << "rendering page" << page << "to size" << size;
-            QElapsedTimer timer; timer.start();
-            const QImage &img = m_doc->render(page, size);
-            qreal secs = timer.nsecsElapsed() / 1000000000.0;
-            if (secs < m_minRenderTime)
-                m_minRenderTime = secs;
-            if (secs > m_maxRenderTime)
-                m_maxRenderTime = secs;
-            m_totalRenderTime += secs;
-            ++m_totalPagesRendered;
-            m_pageCache.insert(page, QPixmap::fromImage(img));
-        }
-        const QPixmap &pm = m_pageCache[page];
+        const QPixmap &pm = m_pageCache->get(page);
         painter.drawPixmap((width() - pm.width()) / 2, y, pm);
         y += pm.height() + m_pageSpacing;
         ++page;
     }
     m_bottomPageShowing = page - 1;
     emit showingPageRange(m_topPageShowing, m_bottomPageShowing);
-
-    if (m_totalPagesRendered != previousRendered)
-        qCDebug(lcExample) << "rendering time: min" << m_minRenderTime <<
-                              "avg" << m_totalRenderTime / m_totalPagesRendered <<
-                              "max" << m_maxRenderTime;
 }
 
 qreal SequentialPageWidget::yForPage(int endPage)

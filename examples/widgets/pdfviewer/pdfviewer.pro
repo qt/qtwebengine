@@ -4,10 +4,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    sequentialpagewidget.cpp
+    sequentialpagewidget.cpp \
+    pagecache.cpp
 
 HEADERS  += mainwindow.h \
-    sequentialpagewidget.h
+    sequentialpagewidget.h \
+    pagecache.h
 
 FORMS    += mainwindow.ui
 

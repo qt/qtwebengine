@@ -4,6 +4,7 @@
 #include <QWidget>
 
 class QPdfDocument;
+class PageCache;
 
 class SequentialPageWidget : public QWidget
 {
@@ -33,7 +34,7 @@ private:
 
 private:
     QPdfDocument *m_doc;
-    QHash<int, QPixmap> m_pageCache;
+    PageCache *m_pageCache;
     QBrush m_background;
     int m_pageSpacing;
     int m_topPageShowing;
@@ -41,12 +42,6 @@ private:
     QSize m_totalSize;
     qreal m_zoom;
     qreal m_screenResolution; // pixels per point
-
-    // performance statistics
-    qreal m_minRenderTime;
-    qreal m_maxRenderTime;
-    qreal m_totalRenderTime;
-    int m_totalPagesRendered;
 };
 
 #endif // SEQUENTIALPAGEWIDGET_H
