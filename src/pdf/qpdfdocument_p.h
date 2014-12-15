@@ -45,8 +45,7 @@ public:
     static bool fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
     static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);
     static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
-    void setErrorCode();
-    void clearError() { lastError = QPdfDocument::NoError; }
+    void updateLastError();
 };
 
 QT_END_NAMESPACE

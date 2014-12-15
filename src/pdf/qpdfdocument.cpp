@@ -63,8 +63,12 @@ void QPdfDocumentPrivate::clear()
     asyncBuffer.open(QIODevice::ReadWrite);
 }
 
-void QPdfDocumentPrivate::setErrorCode()
+void QPdfDocumentPrivate::updateLastError()
 {
+    if (doc) {
+        lastError = QPdfDocument::NoError;
+        return;
+    }
     switch (FPDF_GetLastError()) {
     case FPDF_ERR_SUCCESS: lastError = QPdfDocument::NoError; break;
     case FPDF_ERR_UNKNOWN: lastError = QPdfDocument::UnknownError; break;
@@ -96,10 +100,7 @@ QPdfDocument::Error QPdfDocumentPrivate::load(QIODevice *newDevice, bool transfe
     password = documentPassword.toUtf8();
 
     doc = FPDF_LoadCustomDocument(this, password.constData());
-    if (doc)
-        clearError();
-    else
-        setErrorCode();
+    updateLastError();
     return lastError;
 }
 
@@ -150,16 +151,11 @@ void QPdfDocumentPrivate::tryLoadDocument()
     Q_ASSERT(!doc);
 
     doc = FPDFAvail_GetDocument(avail, password);
-    if (doc) {
-        clearError();
-    } else {
-        setErrorCode();
-        if (lastError == QPdfDocument::IncorrectPasswordError)
-            emit q->passwordRequired();
-    }
-    if (doc) {
+    updateLastError();
+    if (lastError == QPdfDocument::IncorrectPasswordError)
+        emit q->passwordRequired();
+    else if (doc)
         emit q->documentLoadStarted();
-    }
 }
 
 void QPdfDocumentPrivate::checkComplete()
