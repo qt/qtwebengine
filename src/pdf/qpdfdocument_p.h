@@ -5,6 +5,7 @@
 #include "fpdf_dataavail.h"
 #include "qpdfdocument.h"
 
+#include <QPointer>
 #include <qbuffer.h>
 #include <qnetworkreply.h>
 #include <qpointer.h>
