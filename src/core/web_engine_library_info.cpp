@@ -78,7 +78,7 @@ QString location(QLibraryInfo::LibraryLocation path)
     switch (path) {
     case QLibraryInfo::TranslationsPath:
         if (!webEnginePath.isEmpty())
-            return webEnginePath % QDir::separator() % QLatin1String("translations");
+            return webEnginePath % QLatin1String("/translations");
         break;
     case QLibraryInfo::DataPath:
         if (!webEnginePath.isEmpty())
@@ -138,7 +138,7 @@ QString subProcessPath()
                                 % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME));
 #else
     static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
-                                % QDir::separator() % processBinary);
+                                % QLatin1Char('/') % processBinary);
 #endif
     if (!initialized) {
         // Allow overriding at runtime for the time being.
@@ -147,7 +147,7 @@ QString subProcessPath()
             processPath = QString::fromLatin1(fromEnv);
         if (!QFileInfo(processPath).exists()) {
             qWarning("QtWebEngineProcess not found at location %s. Trying fallback path...", qPrintable(processPath));
-            processPath = QCoreApplication::applicationDirPath() % QDir::separator() % processBinary;
+            processPath = QCoreApplication::applicationDirPath() % QLatin1Char('/') % processBinary;
         }
         if (!QFileInfo(processPath).exists())
             qFatal("QtWebEngineProcess not found at location %s. Try setting the QTWEBENGINEPROCESS_PATH environment variable.", qPrintable(processPath));
@@ -162,7 +162,7 @@ QString pluginsPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getPath(frameworkBundle()) % QLatin1String("/Libraries");
 #else
-    return location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
+    return location(QLibraryInfo::PluginsPath) % QLatin1String("/qtwebengine");
 #endif
 }
 
@@ -176,7 +176,7 @@ QString localesPath()
 }
 
 QString fallbackDir() {
-    static QString directory = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
+    static QString directory = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
     return directory;
 }
 

@@ -177,7 +177,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     case BrowserContextAdapter::AllowPersistentCookies:
         cookieStore =
             content::CreateCookieStore(content::CookieStoreConfig(
-                base::FilePath(toFilePathString(m_browserContext->cookiesPath())),
+                toFilePath(m_browserContext->cookiesPath()),
                 content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
                 NULL, NULL)
             );
@@ -185,7 +185,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     case BrowserContextAdapter::ForcePersistentCookies:
         cookieStore =
             content::CreateCookieStore(content::CookieStoreConfig(
-                base::FilePath(toFilePathString(m_browserContext->cookiesPath())),
+                toFilePath(m_browserContext->cookiesPath()),
                 content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
                 NULL, NULL)
             );
@@ -240,7 +240,7 @@ void URLRequestContextGetterQt::generateHttpCache()
             new net::HttpCache::DefaultBackend(
                 net::DISK_CACHE,
                 net::CACHE_BACKEND_DEFAULT,
-                base::FilePath(toFilePathString(m_browserContext->httpCachePath())),
+                toFilePath(m_browserContext->httpCachePath()),
                 m_browserContext->httpCacheMaxSize(),
                 BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
             );

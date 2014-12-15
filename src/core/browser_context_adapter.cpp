@@ -54,9 +54,9 @@ namespace {
 inline QString buildLocationFromStandardPath(const QString &standardPath, const QString &name) {
     QString location = standardPath;
     if (location.isEmpty())
-        location = QDir::homePath() % QDir::separator() % QChar::fromLatin1('.') % QCoreApplication::applicationName();
+        location = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
 
-    location.append(QDir::separator() % QLatin1String("QtWebEngine") % QDir::separator() % name);
+    location.append(QLatin1String("/QtWebEngine/") % name);
     return location;
 }
 }
@@ -170,7 +170,7 @@ QString BrowserContextAdapter::cookiesPath() const
         return QString();
     QString basePath = dataPath();
     if (!basePath.isEmpty())
-        return basePath % QDir::separator() % QLatin1String("Coookies");
+        return basePath % QLatin1String("/Coookies");
     return QString();
 }
 
@@ -180,7 +180,7 @@ QString BrowserContextAdapter::httpCachePath() const
         return QString();
     QString basePath = cachePath();
     if (!basePath.isEmpty())
-        return basePath % QDir::separator() % QLatin1String("Cache");
+        return basePath % QLatin1String("/Cache");
     return QString();
 }
 

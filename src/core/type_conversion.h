@@ -39,6 +39,7 @@
 
 #include <QColor>
 #include <QDateTime>
+#include <QDir>
 #include <QMatrix4x4>
 #include <QRect>
 #include <QString>
@@ -142,7 +143,7 @@ inline base::Time toTime(const QDateTime &dateTime) {
 inline base::FilePath::StringType toFilePathString(const QString &str)
 {
 #if defined(OS_WIN)
-    return str.toStdWString();
+    return QDir::toNativeSeparators(str).toStdWString();
 #else
     return str.toStdString();
 #endif

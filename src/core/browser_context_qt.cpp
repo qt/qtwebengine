@@ -61,12 +61,12 @@ BrowserContextQt::~BrowserContextQt()
 
 base::FilePath BrowserContextQt::GetPath() const
 {
-    return base::FilePath(toFilePathString(m_adapter->dataPath()));
+    return toFilePath(m_adapter->dataPath());
 }
 
 base::FilePath BrowserContextQt::GetCachePath() const
 {
-    return base::FilePath(toFilePathString(m_adapter->cachePath()));
+    return toFilePath(m_adapter->cachePath());
 }
 
 bool BrowserContextQt::IsOffTheRecord() const
