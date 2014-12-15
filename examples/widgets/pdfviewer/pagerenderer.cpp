@@ -26,15 +26,15 @@ PageRenderer::~PageRenderer()
 QVector<QSizeF> PageRenderer::openDocument(const QUrl &location)
 {
     if (location.isLocalFile())
-        m_doc->load(location.toLocalFile());
+        m_doc.load(location.toLocalFile());
     else {
         qCWarning(lcExample, "non-local file loading is not implemented");
         return QVector<QSizeF>();
     }
     // TODO maybe do in run() if it takes too long
     QVector<QSizeF> pageSizes;
-    for (int page = 0; page < m_doc->pageCount(); ++page)
-        pageSizes.append(m_doc->pageSize(page));
+    for (int page = 0; page < m_doc.pageCount(); ++page)
+        pageSizes.append(m_doc.pageSize(page));
     return pageSizes;
 }
 
@@ -53,9 +53,9 @@ void PageRenderer::run()
 
 void PageRenderer::renderPage(int page, qreal zoom)
 {
-    QSizeF size = m_doc->pageSize(page) * m_zoom;
+    QSizeF size = m_doc.pageSize(page) * m_zoom;
     QElapsedTimer timer; timer.start();
-    const QImage &img = m_doc->render(page, size);
+    const QImage &img = m_doc.render(page, size);
     qreal secs = timer.nsecsElapsed() / 1000000000.0;
     if (secs < m_minRenderTime)
         m_minRenderTime = secs;

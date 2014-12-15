@@ -6,6 +6,7 @@
 #include <QPixmap>
 #include <QRunnable>
 #include <QThread>
+#include <QPdfDocument>
 
 class QPdfDocument;
 
@@ -30,7 +31,7 @@ private:
     void renderPage(int page, qreal zoom);
 
 private:
-    QPdfDocument *m_doc;
+    QPdfDocument m_doc;
 
     // current request only
     int m_page;

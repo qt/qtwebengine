@@ -11,7 +11,6 @@ class MainWindow;
 }
 
 class QLineEdit;
-class QPdfDocument;
 class SequentialPageWidget;
 
 class MainWindow : public QMainWindow
@@ -43,7 +42,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    QPdfDocument *m_doc;
     SequentialPageWidget *m_pageWidget;
     QLineEdit *m_zoomEdit;
     QLineEdit *m_pageEdit;
