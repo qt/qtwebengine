@@ -2,6 +2,7 @@
 #define QPDFDOCUMENT_H
 
 #include <QObject>
+#include <QImage>
 #include "qtpdfglobal.h"
 
 class QPdfDocumentPrivate;
@@ -27,6 +28,10 @@ public:
     Error load(const QString &fileName, const QString &password = QString());
 
     int pageCount() const;
+
+    QSizeF pageSize(int page) const;
+
+    QImage render(int page, const QSizeF &pageSize);
 
 private:
     QScopedPointer<QPdfDocumentPrivate> d;

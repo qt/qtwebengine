@@ -94,3 +94,31 @@ int QPdfDocument::pageCount() const
         return 0;
     return FPDF_GetPageCount(d->doc);
 }
+
+QSizeF QPdfDocument::pageSize(int page) const
+{
+    QSizeF result;
+    if (!d->doc)
+        return result;
+    FPDF_GetPageSizeByIndex(d->doc, page, &result.rwidth(), &result.rheight());
+    return result;
+}
+
+QImage QPdfDocument::render(int page, const QSizeF &pageSize)
+{
+    if (!d->doc)
+        return QImage();
+
+    FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
+    if (!pdfPage)
+        return QImage();
+
+    QImage result(pageSize.toSize(), QImage::Format_ARGB32);
+    result.fill(Qt::transparent);
+    FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(result.width(), result.height(), FPDFBitmap_BGRA, result.bits(), result.bytesPerLine());
+
+    FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), 0, 0);
+
+    FPDFBitmap_Destroy(bitmap);
+    return result;
+}
