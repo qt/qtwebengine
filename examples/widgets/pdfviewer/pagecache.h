@@ -32,8 +32,6 @@ private:
     QHash<int, QPixmap> m_pageCache;
     qreal m_zoom;
     int m_lastPageRequested;
-    QPixmap m_placeholderIcon;
-    QBrush m_placeholderBackground;
 
     // performance statistics
     qreal m_minRenderTime;

@@ -10,8 +10,6 @@ PageCache::PageCache(QPdfDocument *doc, qreal zoom)
     : QThread(Q_NULLPTR)
     , m_doc(doc)
     , m_zoom(zoom)
-    , m_placeholderIcon(":icons/images/busy.png")
-    , m_placeholderBackground(Qt::white)
     , m_minRenderTime(1000000000.)
     , m_maxRenderTime(0.)
     , m_totalRenderTime(0.)
@@ -25,7 +23,7 @@ PageCache::~PageCache()
 
 /*!
    Get the result from the cache,
-   or a placeholder pixmap if unavailable.
+   or an invalid pixmap if unavailable.
  */
 QPixmap PageCache::get(int page)
 {
@@ -34,18 +32,7 @@ QPixmap PageCache::get(int page)
         return m_pageCache[page];
     if (!isRunning())
         start(QThread::LowestPriority);
-    QSizeF sizeF = m_doc->pageSize(page);
-    if (!sizeF.isValid())
-        return QPixmap();
-    QSize size = QSizeF(sizeF * m_zoom).toSize();
-    QPixmap placeholder(size);
-    {
-        QPainter painter(&placeholder);
-        painter.fillRect(QRect(QPoint(), size), m_placeholderBackground);
-        painter.drawPixmap((size.width() - m_placeholderIcon.width()) / 2,
-            (size.height() - m_placeholderIcon.height()) / 2, m_placeholderIcon);
-    }
-    return placeholder;
+    return QPixmap();
 }
 
 void PageCache::run()

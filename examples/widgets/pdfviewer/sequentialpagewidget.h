@@ -36,6 +36,8 @@ private:
     QPdfDocument *m_doc;
     PageCache *m_pageCache;
     QBrush m_background;
+    QPixmap m_placeholderIcon;
+    QBrush m_placeholderBackground;
     int m_pageSpacing;
     int m_topPageShowing;
     int m_bottomPageShowing;

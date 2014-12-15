@@ -16,6 +16,8 @@ SequentialPageWidget::SequentialPageWidget(QWidget *parent)
     , m_pageCache(Q_NULLPTR)
     , m_background(Qt::darkGray)
     , m_pageSpacing(3)
+    , m_placeholderIcon(":icons/images/busy.png")
+    , m_placeholderBackground(Qt::white)
     , m_topPageShowing(0)
     , m_zoom(1.)
     , m_screenResolution(QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72.0)
@@ -99,7 +101,14 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
     // Actually render pages
     while (y < event->rect().bottom() && page < m_doc->pageCount()) {
         const QPixmap &pm = m_pageCache->get(page);
-        painter.drawPixmap((width() - pm.width()) / 2, y, pm);
+        if (pm.isNull()) {
+            QSizeF size = pageSize(page);
+            painter.fillRect((width() - size.width()) / 2, y, size.width(), size.height(), m_placeholderBackground);
+            painter.drawPixmap((size.width() - m_placeholderIcon.width()) / 2,
+                               (size.height() - m_placeholderIcon.height()) / 2, m_placeholderIcon);
+        } else {
+            painter.drawPixmap((width() - pm.width()) / 2, y, pm);
+        }
         y += pm.height() + m_pageSpacing;
         ++page;
     }
