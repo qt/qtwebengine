@@ -5,10 +5,11 @@
 #include <QHash>
 #include <QPixmap>
 #include <QRunnable>
+#include <QThread>
 
 class QPdfDocument;
 
-class PageCache : public QObject
+class PageCache : public QThread
 {
     Q_OBJECT
 public:
@@ -21,14 +22,15 @@ public slots:
     void run();
 
 signals:
-    void pagesNeeded();
     void pageReady(int page);
+
+protected:
+    Q_DECL_OVERRIDE void run();
 
 private:
     void insertPage(int page);
 
 private:
-    QThread *m_thread;
     QPdfDocument *m_doc;
     QHash<int, QPixmap> m_pageCache;
     qreal m_zoom;

@@ -3,13 +3,11 @@
 #include <QPdfDocument>
 #include <QLoggingCategory>
 #include <QElapsedTimer>
-#include <QThread>
 
 Q_DECLARE_LOGGING_CATEGORY(lcExample)
 
 PageCache::PageCache(QPdfDocument *doc, qreal zoom)
-    : QObject(Q_NULLPTR)
-    , m_thread(new QThread(this))
+    : QThread(Q_NULLPTR)
     , m_doc(doc)
     , m_zoom(zoom)
     , m_placeholderIcon(":icons/images/busy.png")
@@ -19,8 +17,6 @@ PageCache::PageCache(QPdfDocument *doc, qreal zoom)
     , m_totalRenderTime(0.)
     , m_totalPagesRendered(0)
 {
-    moveToThread(m_thread);
-    connect(this, &PageCache::pagesNeeded, this, &PageCache::run, Qt::QueuedConnection);
 }
 
 PageCache::~PageCache()
@@ -36,9 +32,8 @@ QPixmap PageCache::get(int page)
     m_lastPageRequested = page;
     if (m_pageCache.contains(page))
         return m_pageCache[page];
-    if (!m_thread->isRunning())
-        m_thread->start(QThread::LowestPriority);
-    emit pagesNeeded();
+    if (!isRunning())
+        start(QThread::LowestPriority);
     QSizeF sizeF = m_doc->pageSize(page);
     if (!sizeF.isValid())
         return QPixmap();
