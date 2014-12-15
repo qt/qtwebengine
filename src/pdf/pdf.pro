@@ -16,4 +16,10 @@ msvc {
 }
 
 SOURCES += \
-    jsbridge.cpp
+    jsbridge.cpp \
+    qpdfdocument.cpp
+
+HEADERS += \
+    qpdfdocument.h \
+    qpdfdocument_p.h \
+    qtpdfglobal.h
