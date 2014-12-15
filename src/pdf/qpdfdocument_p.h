@@ -7,6 +7,7 @@
 
 #include <qbuffer.h>
 #include <qnetworkreply.h>
+#include <qpointer.h>
 
 QT_BEGIN_NAMESPACE
 
