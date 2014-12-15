@@ -23,6 +23,10 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
             FPDF_InitLibrary();
         ++libraryRefCount;
     }
+
+    // FPDF_FILEACCESS setup
+    m_Param = this;
+    m_GetBlock = fpdf_GetBlock;
 }
 
 QPdfDocumentPrivate::~QPdfDocumentPrivate()
@@ -38,6 +42,49 @@ QPdfDocumentPrivate::~QPdfDocumentPrivate()
     }
 }
 
+QPdfDocument::Error QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnership, const QString &documentPassword)
+{
+    if (doc)
+        FPDF_CloseDocument(doc);
+
+    if (transferDeviceOwnership)
+        ownDevice.reset(newDevice);
+    else
+        ownDevice.reset();
+    device = newDevice;
+
+    if (!device->isOpen() && !device->open(QIODevice::ReadOnly))
+        return QPdfDocument::FileNotFoundError;
+
+    // FPDF_FILEACCESS setup
+    m_FileLen = device->size();
+
+    password = documentPassword.toUtf8();
+
+    QMutexLocker loadLocker(&documentLoadMutex);
+
+    doc = FPDF_LoadCustomDocument(this, password.constData());
+    switch (FPDF_GetLastError()) {
+    case FPDF_ERR_SUCCESS: return QPdfDocument::NoError;
+    case FPDF_ERR_UNKNOWN: return QPdfDocument::UnknownError;
+    case FPDF_ERR_FILE: return QPdfDocument::FileNotFoundError;
+    case FPDF_ERR_FORMAT: return QPdfDocument::InvalidFileFormatError;
+    case FPDF_ERR_PASSWORD: return QPdfDocument::IncorrectPasswordError;
+    case FPDF_ERR_SECURITY: return QPdfDocument::UnsupportedSecuritySchemeError;
+    default:
+        Q_UNREACHABLE();
+    }
+    return QPdfDocument::UnknownError;
+}
+
+int QPdfDocumentPrivate::fpdf_GetBlock(void *param, unsigned long position, unsigned char *pBuf, unsigned long size)
+{
+    QPdfDocumentPrivate *d = static_cast<QPdfDocumentPrivate*>(reinterpret_cast<FPDF_FILEACCESS*>(param));
+    d->device->seek(position);
+    return qMax(qint64(0), d->device->read(reinterpret_cast<char *>(pBuf), size));
+
+}
+
 QPdfDocument::QPdfDocument(QObject *parent)
     : QObject(parent)
     , d(new QPdfDocumentPrivate)
@@ -48,44 +95,14 @@ QPdfDocument::~QPdfDocument()
 {
 }
 
-static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size)
-{
-    QIODevice *dev = reinterpret_cast<QIODevice*>(param);
-    dev->seek(position);
-    return dev->read(reinterpret_cast<char *>(pBuf), size);
-}
-
 QPdfDocument::Error QPdfDocument::load(const QString &fileName, const QString &password)
 {
-    if (d->doc)
-        FPDF_CloseDocument(d->doc);
+    return d->load(new QFile(fileName), /*transfer ownership*/true, password);
+}
 
-    QFile *file = new QFile(fileName);
-    d->device.reset(file);
-
-    if (!d->device->open(QIODevice::ReadOnly))
-        return FileNotFoundError;
-
-    FPDF_FILEACCESS access;
-    access.m_FileLen = file->size();
-    access.m_GetBlock = fpdf_GetBlock;
-    access.m_Param = d->device.data();
-
-    d->password = password.toUtf8();
-
-    QMutexLocker loadLocker(&documentLoadMutex);
-    d->doc = FPDF_LoadCustomDocument(&access, d->password.constData());
-    switch (FPDF_GetLastError()) {
-    case FPDF_ERR_SUCCESS: return NoError;
-    case FPDF_ERR_UNKNOWN: return UnknownError;
-    case FPDF_ERR_FILE: return FileNotFoundError;
-    case FPDF_ERR_FORMAT: return InvalidFileFormatError;
-    case FPDF_ERR_PASSWORD: return IncorrectPasswordError;
-    case FPDF_ERR_SECURITY: return UnsupportedSecuritySchemeError;
-    default:
-        Q_UNREACHABLE();
-    }
-    return UnknownError;
+QPdfDocument::Error QPdfDocument::load(QIODevice *device, const QString &password)
+{
+    return d->load(device, /*transfer ownership*/false, password);
 }
 
 int QPdfDocument::pageCount() const

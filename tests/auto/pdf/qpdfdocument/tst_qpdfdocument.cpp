@@ -13,37 +13,52 @@ public:
 
 private slots:
     void pageCount();
+    void loadFromIODevice();
+};
+
+struct TemporaryPdf: public QTemporaryFile
+{
+    TemporaryPdf();
+    QPageLayout pageLayout;
 };
 
 
-void tst_QPdfDocument::pageCount()
+TemporaryPdf::TemporaryPdf()
 {
-    QTemporaryFile tempPdf;
-    tempPdf.setAutoRemove(true);
-    QVERIFY(tempPdf.open());
+    open();
+    pageLayout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
 
-    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF());
+    QPrinter printer;
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(fileName());
+    printer.setPageLayout(pageLayout);
 
     {
-        QPrinter printer;
-        printer.setOutputFormat(QPrinter::PdfFormat);
-        printer.setOutputFileName(tempPdf.fileName());
-        printer.setPageLayout(layout);
-
-        {
-            QPainter painter(&printer);
-            painter.drawText(100, 100, QStringLiteral("Hello Page 1"));
-            printer.newPage();
-            painter.drawText(100, 100, QStringLiteral("Hello Page 2"));
-        }
+        QPainter painter(&printer);
+        painter.drawText(100, 100, QStringLiteral("Hello Page 1"));
+        printer.newPage();
+        painter.drawText(100, 100, QStringLiteral("Hello Page 2"));
     }
+}
+
+void tst_QPdfDocument::pageCount()
+{
+    TemporaryPdf tempPdf;
 
     QPdfDocument doc;
     QCOMPARE(doc.pageCount(), 0);
     QCOMPARE(doc.load(tempPdf.fileName()), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 2);
 
-    QCOMPARE(doc.pageSize(0).toSize(), layout.fullRectPoints().size());
+    QCOMPARE(doc.pageSize(0).toSize(), tempPdf.pageLayout.fullRectPoints().size());
+}
+
+void tst_QPdfDocument::loadFromIODevice()
+{
+    TemporaryPdf tempPdf;
+    QPdfDocument doc;
+    QCOMPARE(doc.load(&tempPdf), QPdfDocument::NoError);
+    QCOMPARE(doc.pageCount(), 2);
 }
 
 QTEST_MAIN(tst_QPdfDocument)

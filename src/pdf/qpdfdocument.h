@@ -26,6 +26,7 @@ public:
     ~QPdfDocument();
 
     Error load(const QString &fileName, const QString &password = QString());
+    Error load(QIODevice *device, const QString &password = QString());
 
     int pageCount() const;
 
