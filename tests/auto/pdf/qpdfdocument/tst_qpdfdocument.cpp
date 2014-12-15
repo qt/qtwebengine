@@ -79,11 +79,13 @@ void tst_QPdfDocument::loadAsync()
     QScopedPointer<QNetworkReply> reply(nam.get(QNetworkRequest(url)));
 
     QPdfDocument doc;
-    QSignalSpy readySpy(&doc, SIGNAL(documentReady()));
+    QSignalSpy startedSpy(&doc, SIGNAL(documentLoadStarted()));
+    QSignalSpy finishedSpy(&doc, SIGNAL(documentLoadFinished()));
 
     doc.loadAsynchronously(reply.data());
 
-    QCOMPARE(readySpy.count(), 1);
+    QCOMPARE(startedSpy.count(), 1);
+    QCOMPARE(finishedSpy.count(), 1);
     QCOMPARE(doc.pageCount(), 2);
 }
 

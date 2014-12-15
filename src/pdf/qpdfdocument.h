@@ -46,7 +46,8 @@ public:
 
 Q_SIGNALS:
     void passwordRequired();
-    void documentReady();
+    void documentLoadStarted();
+    void documentLoadFinished();
     void pageCountChanged();
 
 private:

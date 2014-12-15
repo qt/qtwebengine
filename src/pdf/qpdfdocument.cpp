@@ -15,6 +15,7 @@ static int libraryRefCount;
 QPdfDocumentPrivate::QPdfDocumentPrivate()
     : avail(0)
     , doc(0)
+    , loadComplete(true)
     , lastError(QPdfDocument::NoError)
 {
     QMutexLocker lock(pdfMutex());
@@ -54,6 +55,8 @@ void QPdfDocumentPrivate::clear()
     if (avail)
         FPDFAvail_Destroy(avail);
     avail = 0;
+
+    loadComplete = false;
 
     asyncBuffer.close();
     asyncBuffer.setData(QByteArray());
@@ -121,19 +124,23 @@ void QPdfDocumentPrivate::_q_initiateAsyncLoad()
 void QPdfDocumentPrivate::_q_readFromDevice()
 {
     QMutexLocker lock(pdfMutex());
+    if (loadComplete)
+        return;
     QByteArray data = remoteDevice->read(remoteDevice->bytesAvailable());
     if (data.isEmpty())
         return;
     asyncBuffer.seek(asyncBuffer.size());
     asyncBuffer.write(data);
 
-    if (!doc) {
+    if (!doc)
         tryLoadDocument();
-    }
+    if (doc)
+        checkComplete();
 }
 
 void QPdfDocumentPrivate::tryLoadDocument()
 {
+    QMutexLocker lock(pdfMutex());
     if (!FPDFAvail_IsDocAvail(avail, this))
         return;
 
@@ -145,8 +152,23 @@ void QPdfDocumentPrivate::tryLoadDocument()
         if (lastError == QPdfDocument::IncorrectPasswordError)
             emit q->passwordRequired();
     }
-    if (doc)
-        emit q->documentReady();
+    if (doc) {
+        emit q->documentLoadStarted();
+    }
+}
+
+void QPdfDocumentPrivate::checkComplete()
+{
+    QMutexLocker lock(pdfMutex());
+    if (!doc || !avail)
+        return;
+
+    loadComplete = true;
+    for (int i = 0, count = FPDF_GetPageCount(doc); i < count; ++i)
+        if (!FPDFAvail_IsPageAvail(avail, i, this))
+            loadComplete = false;
+    if (loadComplete)
+        emit q->documentLoadFinished();
 }
 
 bool QPdfDocumentPrivate::fpdf_IsDataAvail(_FX_FILEAVAIL *pThis, size_t offset, size_t size)

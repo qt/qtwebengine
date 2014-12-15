@@ -22,6 +22,7 @@ public:
 
     FPDF_AVAIL avail;
     FPDF_DOCUMENT doc;
+    bool loadComplete;
 
     QPointer<QIODevice> device;
     QScopedPointer<QIODevice> ownDevice;
@@ -39,6 +40,7 @@ public:
     void _q_initiateAsyncLoad();
     void _q_readFromDevice();
     void tryLoadDocument();
+    void checkComplete();
 
     static bool fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
     static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);
