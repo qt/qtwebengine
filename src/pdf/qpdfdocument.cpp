@@ -6,6 +6,8 @@
 #include <QIODevice>
 #include <QMutex>
 
+QT_BEGIN_NAMESPACE
+
 // The library is not thread-safe at all, it has a lot of global variables.
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
 static int libraryRefCount;
@@ -267,5 +269,7 @@ QImage QPdfDocument::render(int page, const QSizeF &pageSize)
     FPDFBitmap_Destroy(bitmap);
     return result;
 }
+
+QT_END_NAMESPACE
 
 #include "moc_qpdfdocument.cpp"

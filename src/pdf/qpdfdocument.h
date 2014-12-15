@@ -5,6 +5,8 @@
 #include <QImage>
 #include "qtpdfglobal.h"
 
+QT_BEGIN_NAMESPACE
+
 class QPdfDocumentPrivate;
 class QNetworkReply;
 
@@ -52,5 +54,7 @@ private:
     Q_PRIVATE_SLOT(d, void _q_readFromDevice())
     QScopedPointer<QPdfDocumentPrivate> d;
 };
+
+QT_END_NAMESPACE
 
 #endif // QPDFDOCUMENT_H

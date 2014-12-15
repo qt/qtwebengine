@@ -8,6 +8,8 @@
 #include <qbuffer.h>
 #include <qnetworkreply.h>
 
+QT_BEGIN_NAMESPACE
+
 class QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
 {
 public:
@@ -41,6 +43,8 @@ public:
     static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
     void setErrorCode();
 };
+
+QT_END_NAMESPACE
 
 #endif // QPDFDOCUMENT_P_H
 
