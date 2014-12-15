@@ -6,23 +6,17 @@
 #include <QIODevice>
 #include <QMutex>
 
+// The library is not thread-safe at all, it has a lot of global variables.
+Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
 static int libraryRefCount;
-static QMutex libraryInitializerMutex;
-
-// PDFium stores the error code when loading a document in a global
-// variable, but that is only set from the FPDF_Load*Document functions.
-// Therefore this mutex serializes access to the loading.
-static QMutex documentLoadMutex;
 
 QPdfDocumentPrivate::QPdfDocumentPrivate()
     : doc(0)
 {
-    {
-        QMutexLocker lock(&libraryInitializerMutex);
-        if (libraryRefCount == 0)
-            FPDF_InitLibrary();
-        ++libraryRefCount;
-    }
+    QMutexLocker lock(pdfMutex());
+    if (libraryRefCount == 0)
+        FPDF_InitLibrary();
+    ++libraryRefCount;
 
     // FPDF_FILEACCESS setup
     m_Param = this;
@@ -31,19 +25,19 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
 
 QPdfDocumentPrivate::~QPdfDocumentPrivate()
 {
+    QMutexLocker lock(pdfMutex());
     if (doc)
         FPDF_CloseDocument(doc);
     doc = 0;
 
-    {
-        QMutexLocker lock(&libraryInitializerMutex);
-        if (!--libraryRefCount)
-            FPDF_DestroyLibrary();
-    }
+    if (!--libraryRefCount)
+        FPDF_DestroyLibrary();
 }
 
 QPdfDocument::Error QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnership, const QString &documentPassword)
 {
+    QMutexLocker lock(pdfMutex());
+
     if (doc)
         FPDF_CloseDocument(doc);
 
@@ -60,8 +54,6 @@ QPdfDocument::Error QPdfDocumentPrivate::load(QIODevice *newDevice, bool transfe
     m_FileLen = device->size();
 
     password = documentPassword.toUtf8();
-
-    QMutexLocker loadLocker(&documentLoadMutex);
 
     doc = FPDF_LoadCustomDocument(this, password.constData());
     switch (FPDF_GetLastError()) {
@@ -109,6 +101,7 @@ int QPdfDocument::pageCount() const
 {
     if (!d->doc)
         return 0;
+    QMutexLocker lock(pdfMutex());
     return FPDF_GetPageCount(d->doc);
 }
 
@@ -117,6 +110,7 @@ QSizeF QPdfDocument::pageSize(int page) const
     QSizeF result;
     if (!d->doc)
         return result;
+    QMutexLocker lock(pdfMutex());
     FPDF_GetPageSizeByIndex(d->doc, page, &result.rwidth(), &result.rheight());
     return result;
 }
@@ -125,6 +119,8 @@ QImage QPdfDocument::render(int page, const QSizeF &pageSize)
 {
     if (!d->doc)
         return QImage();
+
+    QMutexLocker lock(pdfMutex());
 
     FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
     if (!pdfPage)
