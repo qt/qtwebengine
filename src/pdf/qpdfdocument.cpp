@@ -290,6 +290,9 @@ QImage QPdfDocument::render(int page, const QSizeF &pageSize)
     FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), 0, 0);
 
     FPDFBitmap_Destroy(bitmap);
+
+    FPDF_ClosePage(pdfPage);
+
     return result;
 }
 
