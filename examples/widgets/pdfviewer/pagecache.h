@@ -18,9 +18,6 @@ public:
 
     QPixmap get(int page);
 
-public slots:
-    void run();
-
 signals:
     void pageReady(int page);
 
