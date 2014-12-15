@@ -41,6 +41,12 @@ private:
     QSize m_totalSize;
     qreal m_zoom;
     qreal m_screenResolution; // pixels per point
+
+    // performance statistics
+    qreal m_minRenderTime;
+    qreal m_maxRenderTime;
+    qreal m_totalRenderTime;
+    int m_totalPagesRendered;
 };
 
 #endif // SEQUENTIALPAGEWIDGET_H

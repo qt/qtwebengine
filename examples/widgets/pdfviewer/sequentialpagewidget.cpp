@@ -5,6 +5,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QLoggingCategory>
+#include <QElapsedTimer>
 
 Q_DECLARE_LOGGING_CATEGORY(lcExample)
 
@@ -16,6 +17,10 @@ SequentialPageWidget::SequentialPageWidget(QWidget *parent)
     , m_topPageShowing(0)
     , m_zoom(1.)
     , m_screenResolution(QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72.0)
+    , m_minRenderTime(1000000000.)
+    , m_maxRenderTime(0.)
+    , m_totalRenderTime(0.)
+    , m_totalPagesRendered(0)
 {
 }
 
@@ -83,13 +88,23 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
     }
     y += m_pageSpacing;
     m_topPageShowing = page;
+    int previousRendered = m_totalPagesRendered;
 
     // Actually render pages
     while (y < event->rect().bottom() && page < m_doc->pageCount()) {
         if (!m_pageCache.contains(page)) {
             QSizeF size = pageSize(page);
             qCDebug(lcExample) << "rendering page" << page << "to size" << size;
-            m_pageCache.insert(page, QPixmap::fromImage(m_doc->render(page, size)));
+            QElapsedTimer timer; timer.start();
+            const QImage &img = m_doc->render(page, size);
+            qreal secs = timer.nsecsElapsed() / 1000000000.0;
+            if (secs < m_minRenderTime)
+                m_minRenderTime = secs;
+            if (secs > m_maxRenderTime)
+                m_maxRenderTime = secs;
+            m_totalRenderTime += secs;
+            ++m_totalPagesRendered;
+            m_pageCache.insert(page, QPixmap::fromImage(img));
         }
         const QPixmap &pm = m_pageCache[page];
         painter.drawPixmap((width() - pm.width()) / 2, y, pm);
@@ -98,6 +113,11 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
     }
     m_bottomPageShowing = page - 1;
     emit showingPageRange(m_topPageShowing, m_bottomPageShowing);
+
+    if (m_totalPagesRendered != previousRendered)
+        qCDebug(lcExample) << "rendering time: min" << m_minRenderTime <<
+                              "avg" << m_totalRenderTime / m_totalPagesRendered <<
+                              "max" << m_maxRenderTime;
 }
 
 qreal SequentialPageWidget::yForPage(int endPage)
