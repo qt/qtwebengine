@@ -12,6 +12,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcExample)
 
 SequentialPageWidget::SequentialPageWidget(QWidget *parent)
     : QWidget(parent)
+    , m_pageCacheLimit(20)
     , m_pageRenderer(new PageRenderer())
     , m_background(Qt::darkGray)
     , m_placeholderIcon(":icons/images/busy.png")
@@ -69,7 +70,10 @@ void SequentialPageWidget::invalidate()
 void SequentialPageWidget::pageLoaded(int page, qreal zoom, QImage image)
 {
     Q_UNUSED(zoom)
+    if (m_cachedPagesLRU.length() > m_pageCacheLimit)
+        m_pageCache.remove(m_cachedPagesLRU.takeFirst());
     m_pageCache.insert(page, image);
+    m_cachedPagesLRU.append(page);
     update();
 }
 
