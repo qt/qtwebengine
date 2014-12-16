@@ -25,7 +25,7 @@ signals:
     void pageReady(int page, qreal zoom, QImage image);
 
 protected:
-    Q_DECL_OVERRIDE void run();
+    void run() Q_DECL_OVERRIDE;
 
 private:
     void renderPage(int page, qreal zoom);
