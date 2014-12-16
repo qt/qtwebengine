@@ -10,3 +10,4 @@ VPATH += ../3rdparty/pdfium
 include(../3rdparty/pdfium.pri)
 
 win32: LIBS_PRIVATE += -ladvapi32 -lgdi32 -luser32
+mac: LIBS_PRIVATE += -framework AppKit -framework CoreFoundation
