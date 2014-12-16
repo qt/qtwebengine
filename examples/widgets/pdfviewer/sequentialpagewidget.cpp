@@ -53,11 +53,8 @@ QSizeF SequentialPageWidget::pageSize(int page)
 void SequentialPageWidget::invalidate()
 {
     QSizeF totalSize(0, m_pageSpacing);
-qDebug() << "pageCount" << pageCount();
-
     for (int page = 0; page < pageCount(); ++page) {
         QSizeF size = pageSize(page);
-        qDebug() << "page" << page << "size" << size << "from" << m_pageSizes[page];
         totalSize.setHeight(totalSize.height() + size.height());
         if (size.width() > totalSize.width())
             totalSize.setWidth(size.width());
@@ -102,8 +99,6 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
     }
     y += m_pageSpacing;
     m_topPageShowing = page;
-
-qDebug() << y << m_topPageShowing << pageCount();
 
     // Actually render pages
     while (y < event->rect().bottom() && page < pageCount()) {

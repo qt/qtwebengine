@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QScroller>
 #include <QPdfDocument>
 #include <QtMath>
 #include "sequentialpagewidget.h"
@@ -33,6 +34,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, SLOT(zoomChanged(qreal)));
     connect(m_zoomEdit, SIGNAL(returnPressed()), this, SLOT(zoomEdited()));
     connect(m_pageEdit, SIGNAL(returnPressed()), this, SLOT(on_actionGo_triggered()));
+
+    QScroller::grabGesture(ui->scrollArea);
 }
 
 MainWindow::~MainWindow()
