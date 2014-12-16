@@ -23,6 +23,7 @@ SequentialPageWidget::SequentialPageWidget(QWidget *parent)
     , m_screenResolution(QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72.0)
 {
     connect(m_pageRenderer, SIGNAL(pageReady(int, qreal, QImage)), this, SLOT(pageLoaded(int, qreal, QImage)), Qt::QueuedConnection);
+    grabGesture(Qt::SwipeGesture);
 }
 
 SequentialPageWidget::~SequentialPageWidget()
