@@ -57,6 +57,10 @@ class QQmlComponent;
 class QQmlContext;
 class QQuickWebEngineSettings;
 
+#ifdef ENABLE_QML_TESTSUPPORT_API
+class QQuickWebEngineTestSupport;
+#endif
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
     Q_OBJECT
     Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio WRITE setDevicePixelRatio NOTIFY devicePixelRatioChanged)
@@ -137,10 +141,10 @@ public:
     virtual void selectionChanged() Q_DECL_OVERRIDE { }
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
-    virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
+    virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;
     virtual void loadVisuallyCommitted() Q_DECL_OVERRIDE;
-    virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(QtWebEngineCore::WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &) Q_DECL_OVERRIDE;
@@ -186,6 +190,9 @@ public:
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QQuickWebEngineProfile *m_profile;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    QQuickWebEngineTestSupport *m_testSupport;
+#endif
     QQmlComponent *contextMenuExtraItems;
     QUrl explicitUrl;
     QUrl icon;

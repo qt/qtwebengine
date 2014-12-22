@@ -37,6 +37,12 @@ defineTest(isGCCVersionSupported) {
   return(false)
 }
 
+defineTest(isQMLTestSupportApiEnabled) {
+    contains(QT_BUILD_PARTS, tests): return(true)
+    contains(WEBENGINE_CONFIG, testsupport): return(true)
+    return(false)
+}
+
 # Map to the correct target type for gyp
 defineReplace(toGypTargetType) {
   equals(TEMPLATE, "app"):return("executable")

@@ -54,6 +54,11 @@ class QQuickWebEngineSettings;
 class QQuickWebEngineViewExperimental;
 class QQuickWebEngineViewPrivate;
 
+#ifdef ENABLE_QML_TESTSUPPORT_API
+class QQuickWebEngineTestSupport;
+#endif
+
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
@@ -69,6 +74,11 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL)
+
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
+#endif
+
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
@@ -160,6 +170,11 @@ public:
     QQmlWebChannel *webChannel();
     void setWebChannel(QQmlWebChannel *);
     QQuickWebEngineHistory *navigationHistory() const;
+
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    QQuickWebEngineTestSupport *testSupport() const;
+    void setTestSupport(QQuickWebEngineTestSupport *testSupport);
+#endif
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());

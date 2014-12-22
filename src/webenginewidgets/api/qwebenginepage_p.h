@@ -118,10 +118,10 @@ public:
     virtual void selectionChanged() Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
-    virtual void loadStarted(const QUrl &provisionalUrl) Q_DECL_OVERRIDE;
+    virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;
     virtual void loadVisuallyCommitted() Q_DECL_OVERRIDE { }
-    virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
+    virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(QtWebEngineCore::WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
