@@ -2,6 +2,7 @@ import sys, ast, os
 
 class Gyp(object):
     def __init__(self, fileName):
+        self.fileName = fileName
         with open(fileName, "r") as f:
             self.variables = ast.literal_eval(f.read())
 
@@ -24,6 +25,7 @@ class ProFileSection(object):
         self.sources = []
         self.headers = []
         self.defines = []
+        self.includes = []
         self.config = []
         self.scope = scope
 
@@ -41,9 +43,12 @@ class ProFileSection(object):
         else:
             raise Exception("Unknown source %s" % fileName)
 
-    def addSources(self, sources):
+    def addSources(self, sources, baseDirectory = None):
         for source in sources:
-            self.addSource(source)
+            path = source
+            if baseDirectory:
+                path = baseDirectory + "/" + path
+            self.addSource(path)
 
     def addDefine(self, define):
         self.defines.append(define)
@@ -55,6 +60,9 @@ class ProFileSection(object):
     def addConfig(self, cfg):
         self.config.append(cfg)
 
+    def addInclude(self, path):
+        self.includes.append("$$PWD/" + path)
+
     def generate(self):
         result = ""
         if self.defines:
@@ -64,6 +72,10 @@ class ProFileSection(object):
         if self.config:
             result += "CONFIG += \\\n    "
             result += " \\\n    ".join(self.config)
+            result += "\n\n"
+        if self.includes:
+            result += "INCLUDEPATH += \\\n    "
+            result += " \\\n    ".join(self.includes)
             result += "\n\n"
         result += "SOURCES += \\\n    "
         result += " \\\n    ".join(self.sources)
@@ -99,21 +111,33 @@ pro = ProFile()
 pro.addSources(mainTarget["sources"])
 
 for dep in mainTarget["dependencies"]:
-    if gyp.target(dep)["target_name"] == "javascript":
+    target = None
+    baseDir = None
+    if ".gyp:" in dep:
+        fileName = os.path.dirname(gyp.fileName) + "/" + dep[:dep.index(":")]
+        subDep = dep[dep.index(":") + 1:]
+        target = Gyp(fileName).target(subDep)
+        baseDir = os.path.relpath(os.path.dirname(fileName), os.path.dirname(gyp.fileName))
+    else:
+        target = gyp.target(dep)
+    if target["target_name"] == "javascript":
         continue
-    if gyp.target(dep)["target_name"] == "jsapi":
+    if target["target_name"] == "jsapi":
         continue
-    t = gyp.target(dep)
-    pro.addSources(t["sources"])
+    pro.addSources(target["sources"], baseDir)
     
-    if "conditions" in t:
-        for condition in t["conditions"]:
+    if "conditions" in target:
+        for condition in target["conditions"]:
             if condition[0] == "OS==\"win\"":
                 scope = ProFileSection("win32")
                 scope.addSources(condition[1]["sources"])
                 pro.addScope(scope)
 
-pro.addDefines(gyp.target_defaults()["defines"])
+target_defaults = gyp.target_defaults()
+pro.addDefines(target_defaults["defines"])
+if "include_dirs" in target_defaults:
+    for path in target_defaults["include_dirs"]:
+        pro.addInclude(os.path.relpath(os.path.dirname(gyp.fileName) + "/" + path, os.path.dirname(sys.argv[3])))
 
 with open(sys.argv[3], "w") as f:
     f.write(pro.generate())
