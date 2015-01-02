@@ -189,7 +189,7 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
         static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
 
         if (!resolved) {
-            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_reusable_sync")) {
+            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
             }
@@ -232,7 +232,7 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
         static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
 
         if (!resolved) {
-            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_reusable_sync")) {
+            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
             }

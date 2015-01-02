@@ -211,6 +211,8 @@ void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
 
 void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
 {
+    if (event->type() == QEvent::TouchBegin && !m_isPopup)
+        forceActiveFocus();
     m_client->forwardEvent(event);
 }
 
