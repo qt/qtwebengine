@@ -182,15 +182,6 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     return true;
 }
 
-QQmlContext *UIDelegatesManager::creationContextForComponent(QQmlComponent *component)
-{
-    Q_ASSERT(component);
-
-    QQmlContext* baseContext = component->creationContext() ? component->creationContext() : qmlContext(m_view);
-    Q_ASSERT(baseContext);
-    return baseContext;
-}
-
 #define CHECK_QML_SIGNAL_PROPERTY(prop, location) \
     if (!prop.isSignalProperty()) \
         qWarning("%s is missing %s signal property.\n", qPrintable(location.toString()), qPrintable(prop.name()));
@@ -200,7 +191,7 @@ void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QSt
     Q_ASSERT(menuItemHandler);
     if (!ensureComponentLoaded(MenuItem))
         return;
-    QObject *it = menuItemComponent->beginCreate(creationContextForComponent(menuItemComponent));
+    QObject *it = menuItemComponent->beginCreate(qmlContext(m_view));
 
     QQmlProperty(it, QStringLiteral("text")).write(text);
     QQmlProperty(it, QStringLiteral("iconName")).write(iconName);
@@ -224,7 +215,7 @@ void UIDelegatesManager::addMenuSeparator(QObject *menu)
     if (!ensureComponentLoaded(MenuSeparator))
         return;
 
-    QQmlContext *itemContext = creationContextForComponent(menuSeparatorComponent);
+    QQmlContext *itemContext = qmlContext(m_view);
     QObject *sep = menuSeparatorComponent->create(itemContext);
     sep->setParent(menu);
 
@@ -238,7 +229,7 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
 
     if (!ensureComponentLoaded(Menu))
         return 0;
-    QQmlContext *context(creationContextForComponent(menuComponent));
+    QQmlContext *context = qmlContext(m_view);
     QObject *menu = menuComponent->beginCreate(context);
     // Useful when not using Qt Quick Controls' Menu
     if (QQuickItem* item = qobject_cast<QQuickItem*>(menu))
@@ -310,7 +301,7 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
         Q_UNREACHABLE();
     }
 
-    QQmlContext *context(creationContextForComponent(dialogComponent));
+    QQmlContext *context = qmlContext(m_view);
     QObject *dialog = dialogComponent->beginCreate(context);
     dialog->setParent(m_view);
     QQmlProperty textProp(dialog, QStringLiteral("text"));
@@ -395,7 +386,7 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
     if (!ensureComponentLoaded(FilePicker))
         return;
 
-    QQmlContext *context(creationContextForComponent(filePickerComponent));
+    QQmlContext *context = qmlContext(m_view);
     QObject *filePicker = filePickerComponent->beginCreate(context);
     if (QQuickItem* item = qobject_cast<QQuickItem*>(filePicker))
         item->setParentItem(m_view);
