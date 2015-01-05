@@ -296,8 +296,12 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
         Q_UNREACHABLE();
     }
 
-    if (!ensureComponentLoaded(dialogComponentType))
+    if (!ensureComponentLoaded(dialogComponentType)) {
+        // Let the controller know it couldn't be loaded
+        qWarning("Failed to load dialog, rejecting.");
+        dialogController->reject();
         return;
+    }
 
     QQmlComponent *dialogComponent = Q_NULLPTR;
     switch (dialogComponentType) {
