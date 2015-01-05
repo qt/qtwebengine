@@ -173,10 +173,10 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     *component = (new QQmlComponent(engine, QUrl::fromLocalFile(fi.absoluteFilePath()), QQmlComponent::PreferSynchronous, m_view));
 
     if ((*component)->status() != QQmlComponent::Ready) {
-#ifdef UI_DELEGATES_DEBUG
         Q_FOREACH (const QQmlError& err, (*component)->errors())
-            fprintf(stderr, "  component error: %s\n", qPrintable(err.toString()));
-#endif
+            qWarning("QtWebEngine: component error: %s\n", qPrintable(err.toString()));
+        delete *component;
+        *component = 0;
         return false;
     }
     return true;
