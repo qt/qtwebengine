@@ -90,6 +90,15 @@ void destroyContext()
     sContext = 0;
 }
 
+bool usingANGLE()
+{
+#if defined(Q_OS_WIN)
+    return QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
+#else
+    return false;
+#endif
+}
+
 bool usingSoftwareDynamicGL()
 {
 #if defined(Q_OS_WIN)
@@ -217,7 +226,7 @@ WebEngineContext::WebEngineContext()
 
     GLContextHelper::initialize();
 
-    if (usingSoftwareDynamicGL() || usingQtQuick2DRenderer()) {
+    if (usingANGLE() || usingSoftwareDynamicGL() || usingQtQuick2DRenderer()) {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     } else {
         const char *glType;
