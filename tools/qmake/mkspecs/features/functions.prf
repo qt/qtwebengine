@@ -1,16 +1,19 @@
 defineTest(isPlatformSupported) {
-  static: return(false)
+  static {
+    skipBuild("Static builds of QtWebEngine aren't supported.")
+    return(false)
+  }
   osx:lessThan(QMAKE_XCODE_VERSION, 5.1) {
-    warning("Using xcode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
+    skipBuild("Using xcode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
     return(false)
   }
 
-  linux-g++*:!isGCCVersionSupported():return(false)
+  linux-g++*:!isGCCVersionSupported(): return(false)
   !isPythonVersionSupported(): return(false)
   linux-g++*|win32-msvc2013|macx-clang: return(true)
   boot2qt: return(true)
 
-  warning("Qt WebEngine can currently only be built for Linux (GCC), Windows (MSVC 2013), OS X (XCode 5.1+) or Qt for Device Creation".)
+  skipBuild("Qt WebEngine can currently only be built for Linux (GCC), Windows (MSVC 2013), OS X (XCode 5.1+) or Qt for Device Creation.")
   return(false)
 }
 
@@ -18,7 +21,7 @@ defineTest(isPythonVersionSupported) {
   python_major_version = $$system('python -c "import sys; print sys.version_info.major"')
   python_minor_version = $$system('python -c "import sys; print sys.version_info.minor"')
   greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): return(true)
-  warning("Using Python version "$$python_major_version"."$$python_minor_version", but at least Python version 2.7 is required to build Qt WebEngine.")
+  skipBuild("Using Python version "$$python_major_version"."$$python_minor_version", but at least Python version 2.7 is required to build Qt WebEngine.")
   return(false)
 }
 
@@ -26,7 +29,7 @@ defineTest(isGCCVersionSupported) {
   # The below will work for gcc 4.6 and up and also match gcc 5
   greaterThan(QT_GCC_MINOR_VERSION, 5):return(true)
   greaterThan(QT_GCC_MAJOR_VERSION, 4):return(true)
-  warning("Using gcc version "$$QT_GCC_MAJOR_VERSION"."$$QT_GCC_MINOR_VERSION", but at least gcc version 4.6 is required to build Qt WebEngine.")
+  skipBuild("Using gcc version "$$QT_GCC_MAJOR_VERSION"."$$QT_GCC_MINOR_VERSION", but at least gcc version 4.6 is required to build Qt WebEngine.")
   return(false)
 }
 
@@ -139,4 +142,9 @@ defineReplace(findOrBuildNinja) {
       !exists($$out): system("python $$dirname(out)/bootstrap.py")
     }
     return($$out)
+}
+
+defineTest(skipBuild) {
+    skipBuildReason = "$$skipBuildReason $${EOL}$$1"
+    export(skipBuildReason)
 }
