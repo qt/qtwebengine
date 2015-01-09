@@ -77,6 +77,7 @@ public:
     WebView *currentTab() const;
     QByteArray saveState(bool withTabs = true) const;
     bool restoreState(const QByteArray &state);
+    Q_INVOKABLE void runScriptOnOpenViews(const QString &);
 
 public slots:
     void loadPage(const QString &url);

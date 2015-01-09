@@ -269,6 +269,12 @@ bool BrowserMainWindow::restoreState(const QByteArray &state)
     return true;
 }
 
+void BrowserMainWindow::runScriptOnOpenViews(const QString &source)
+{
+    for (int i =0; i < tabWidget()->count(); ++i)
+        tabWidget()->webView(i)->page()->runJavaScript(source);
+}
+
 void BrowserMainWindow::setupMenu()
 {
     new QShortcut(QKeySequence(Qt::Key_F6), this, SLOT(slotSwapFocus()));
