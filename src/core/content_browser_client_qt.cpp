@@ -389,6 +389,11 @@ void ContentBrowserClientQt::RequestGeolocationPermission(content::WebContents *
     contentsDelegate->requestGeolocationPermission(requestingFrameOrigin, resultCallback, cancelCallback);
 }
 
+blink::WebNotificationPresenter::Permission ContentBrowserClientQt::CheckDesktopNotificationPermission(const GURL&, content::ResourceContext *, int )
+{
+    return blink::WebNotificationPresenter::PermissionDenied;
+}
+
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()
 {
 #ifdef QT_USE_POSITIONING

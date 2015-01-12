@@ -52,6 +52,7 @@ class BrowserContext;
 class BrowserMainParts;
 class RenderProcessHost;
 class RenderViewHostDelegateView;
+class ResourceContext;
 class WebContentsViewPort;
 class WebContents;
 struct MainFunctionParams;
@@ -97,6 +98,8 @@ public:
     content::LocationProvider* OverrideSystemLocationProvider() Q_DECL_OVERRIDE;
 
     virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;
+
+    virtual blink::WebNotificationPresenter::Permission CheckDesktopNotificationPermission(const GURL& source_origin, content::ResourceContext* context, int render_process_id)  Q_DECL_OVERRIDE;
 
     void enableInspector(bool enable, content::BrowserContext *browser_context);
 
