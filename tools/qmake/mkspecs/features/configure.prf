@@ -4,6 +4,10 @@ load(functions)
 
 defineTest(runConfigure) {
     webengine_successfully_configured: return(true)
+    linux:contains(QT_CONFIG,no-pkg-config) {
+        skipBuild("pkg-config is required")
+        return(false)
+    }
     # Ignore the cached config tests results in case they were not successful
     CONFIG += recheck
     #Override the config.tests path
@@ -17,7 +21,11 @@ defineTest(runConfigure) {
     }
     # libcap-dev package doesn't ship .pc files on Ubuntu.
     linux:!config_libcap:skipBuild("libcap appears to be missing")
-
+    contains(QT_CONFIG, xcb) {
+        for(package, $$list("libdrm xcomposite xi xrandr")) {
+            !packagesExist($$package):skipBuild("Unmet dependency: $$package")
+        }
+    }
     isEmpty(skipBuildReason):cache(CONFIG, add, $$list(webengine_successfully_configured))
 }
 
