@@ -69,6 +69,7 @@
 #include "access_token_store_qt.h"
 
 #include <QGuiApplication>
+#include <QLocale>
 #include <QOpenGLContext>
 #include <qpa/qplatformnativeinterface.h>
 
@@ -401,4 +402,9 @@ content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvide
 #else
     return 0; // Leave it up to Chromium to figure something out.
 #endif
+}
+
+std::string ContentBrowserClientQt::GetApplicationLocale()
+{
+    return QLocale().name().toStdString();
 }

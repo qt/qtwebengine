@@ -101,6 +101,8 @@ public:
 
     virtual blink::WebNotificationPresenter::Permission CheckDesktopNotificationPermission(const GURL& source_origin, content::ResourceContext* context, int render_process_id)  Q_DECL_OVERRIDE;
 
+    virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
+
     void enableInspector(bool enable, content::BrowserContext *browser_context);
 
 private:

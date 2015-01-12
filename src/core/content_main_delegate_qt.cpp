@@ -52,6 +52,8 @@
 #include "renderer/content_renderer_client_qt.h"
 #include "web_engine_library_info.h"
 
+#include <QLocale>
+
 static base::StringPiece PlatformResourceProvider(int key) {
     if (key == IDR_DIR_HEADER_HTML) {
         base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
@@ -63,7 +65,7 @@ static base::StringPiece PlatformResourceProvider(int key) {
 void ContentMainDelegateQt::PreSandboxStartup()
 {
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
-    ui::ResourceBundle::InitSharedInstanceWithLocale(l10n_util::GetApplicationLocale(std::string("en-US")), 0);
+    ui::ResourceBundle::InitSharedInstanceWithLocale(QLocale().name().toStdString(), 0);
 
     // Suppress info, warning and error messages per default.
     int logLevel = logging::LOG_FATAL;
