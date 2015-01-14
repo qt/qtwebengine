@@ -64,6 +64,8 @@ using namespace content;
 namespace {
 
 const char kTargetTypePage[] = "page";
+const char kTargetTypeServiceWorker[] = "service_worker";
+const char kTargetTypeOther[] = "other";
 
 class TCPServerSocketFactory
     : public DevToolsHttpHandler::ServerSocketFactory {
@@ -79,14 +81,24 @@ private:
 
 class Target : public content::DevToolsTarget {
 public:
-    explicit Target(WebContents* web_contents);
+    explicit Target(scoped_refptr<DevToolsAgentHost> agent_host);
 
-    virtual std::string GetId() const override { return id_; }
+    virtual std::string GetId() const override { return agent_host_->GetId(); }
     virtual std::string GetParentId() const override { return std::string(); }
-    virtual std::string GetType() const override { return kTargetTypePage; }
-    virtual std::string GetTitle() const override { return title_; }
+    virtual std::string GetType() const override {
+        switch (agent_host_->GetType()) {
+        case DevToolsAgentHost::TYPE_WEB_CONTENTS:
+            return kTargetTypePage;
+        case DevToolsAgentHost::TYPE_SERVICE_WORKER:
+            return kTargetTypeServiceWorker;
+        default:
+            break;
+        }
+        return kTargetTypeOther;
+    }
+    virtual std::string GetTitle() const override { return agent_host_->GetTitle(); }
     virtual std::string GetDescription() const override { return std::string(); }
-    virtual GURL GetURL() const override { return url_; }
+    virtual GURL GetURL() const override { return agent_host_->GetURL(); }
     virtual GURL GetFaviconURL() const override { return favicon_url_; }
     virtual base::TimeTicks GetLastActivityTime() const override {
         return last_activity_time_;
@@ -102,42 +114,28 @@ public:
 
 private:
     scoped_refptr<DevToolsAgentHost> agent_host_;
-    std::string id_;
-    std::string title_;
-    GURL url_;
     GURL favicon_url_;
     base::TimeTicks last_activity_time_;
 };
 
-Target::Target(WebContents* web_contents) {
-    agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
-    id_ = agent_host_->GetId();
-    title_ = base::UTF16ToUTF8(web_contents->GetTitle());
-    url_ = web_contents->GetURL();
-    content::NavigationController& controller = web_contents->GetController();
-    content::NavigationEntry* entry = controller.GetActiveEntry();
-    if (entry != NULL && entry->GetURL().is_valid())
-        favicon_url_ = entry->GetFavicon().url;
-    last_activity_time_ = web_contents->GetLastActiveTime();
+Target::Target(scoped_refptr<DevToolsAgentHost> agent_host)
+    : agent_host_(agent_host)
+{
+    if (WebContents* web_contents = agent_host_->GetWebContents()) {
+        NavigationController& controller = web_contents->GetController();
+        NavigationEntry* entry = controller.GetActiveEntry();
+        if (entry != NULL && entry->GetURL().is_valid())
+            favicon_url_ = entry->GetFavicon().url;
+        last_activity_time_ = web_contents->GetLastActiveTime();
+    }
 }
 
 bool Target::Activate() const {
-    WebContents *web_contents = agent_host_->GetWebContents();
-    if (!web_contents)
-        return false;
-    web_contents->GetDelegate()->ActivateContents(web_contents);
-    return true;
+    return agent_host_->Activate();
 }
 
 bool Target::Close() const {
-    WebContents *web_contents = agent_host_->GetWebContents();
-    if (!web_contents)
-        return false;
-    RenderViewHost* rvh = web_contents->GetRenderViewHost();
-    if (!rvh)
-        return false;
-    rvh->ClosePage();
-    return true;
+    return agent_host_->Close();
 }
 
 }  // namespace
@@ -189,4 +187,27 @@ base::FilePath DevToolsHttpHandlerDelegateQt::GetDebugFrontendDir()
 scoped_ptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)
 {
     return scoped_ptr<net::StreamListenSocket>();
+}
+
+base::DictionaryValue* DevToolsManagerDelegateQt::HandleCommand(DevToolsAgentHost *, base::DictionaryValue *) {
+    return 0;
+}
+
+std::string DevToolsManagerDelegateQt::GetPageThumbnailData(const GURL& url)
+{
+    return std::string();
+}
+
+scoped_ptr<DevToolsTarget> DevToolsManagerDelegateQt::CreateNewTarget(const GURL &)
+{
+    return scoped_ptr<DevToolsTarget>();
+}
+
+void DevToolsManagerDelegateQt::EnumerateTargets(TargetCallback callback)
+{
+    TargetList targets;
+    for (const auto& agent_host : DevToolsAgentHost::GetOrCreateAll()) {
+        targets.push_back(new Target(agent_host));
+    }
+    callback.Run(targets);
 }

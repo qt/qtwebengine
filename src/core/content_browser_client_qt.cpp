@@ -436,3 +436,8 @@ std::string ContentBrowserClientQt::GetApplicationLocale()
 {
     return QLocale().name().toStdString();
 }
+
+content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()
+{
+    return new DevToolsManagerDelegateQt;
+}

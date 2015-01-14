@@ -51,6 +51,7 @@ class URLRequestContextGetter;
 namespace content {
 class BrowserContext;
 class BrowserMainParts;
+class DevToolsManagerDelegate;
 class RenderProcessHost;
 class RenderViewHostDelegateView;
 class ResourceContext;
@@ -103,7 +104,7 @@ public:
         bool user_gesture,
         const base::Callback<void(bool)>& result_callback) Q_DECL_OVERRIDE;
     content::LocationProvider* OverrideSystemLocationProvider() Q_DECL_OVERRIDE;
-
+    content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;
 
     virtual blink::WebNotificationPermission CheckDesktopNotificationPermission(const GURL& source_origin, content::ResourceContext* context, int render_process_id)  Q_DECL_OVERRIDE;

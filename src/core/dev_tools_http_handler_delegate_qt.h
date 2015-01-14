@@ -38,6 +38,7 @@
 #define DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
 
 #include "content/public/browser/devtools_http_handler_delegate.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 
 #include <QtCore/qcompilerdetection.h> // needed for Q_DECL_OVERRIDE
 
@@ -63,11 +64,21 @@ public:
     virtual base::FilePath GetDebugFrontendDir() Q_DECL_OVERRIDE;
     // Requests the list of all inspectable targets.
     // The caller gets the ownership of the returned targets.
-    virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name) Q_DECL_OVERRIDE;
+    virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate *delegate, std::string *name) Q_DECL_OVERRIDE;
 
 private:
     content::BrowserContext* m_browserContext;
-    content::DevToolsHttpHandler* m_devtoolsHttpHandler;
+    content::DevToolsHttpHandler *m_devtoolsHttpHandler;
+};
+
+class DevToolsManagerDelegateQt : public content::DevToolsManagerDelegate {
+public:
+    void Inspect(content::BrowserContext *browser_context, content::DevToolsAgentHost *agent_host) Q_DECL_OVERRIDE { }
+    void DevToolsAgentStateChanged(content::DevToolsAgentHost *agent_host, bool attached) Q_DECL_OVERRIDE { }
+    base::DictionaryValue *HandleCommand(content::DevToolsAgentHost *agent_host, base::DictionaryValue *command) Q_DECL_OVERRIDE;
+    scoped_ptr<content::DevToolsTarget> CreateNewTarget(const GURL &url) Q_DECL_OVERRIDE;
+    void EnumerateTargets(TargetCallback callback) Q_DECL_OVERRIDE;
+    std::string GetPageThumbnailData(const GURL &url) Q_DECL_OVERRIDE;
 };
 
 #endif // DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
