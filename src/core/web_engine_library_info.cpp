@@ -101,7 +101,12 @@ static inline CFBundleRef frameworkBundle()
 static QString getPath(CFBundleRef frameworkBundle)
 {
     QString path;
-    if (frameworkBundle) {
+    // The following is a fix for QtWebEngineProcess crashes on OS X 10.7 and before.
+    // We use it for the other OS X versions as well to make sure it works and because
+    // the directory structure should be the same.
+    if (qApp->applicationName() == QLatin1String(QTWEBENGINEPROCESS_NAME)) {
+        path = QDir::cleanPath(qApp->applicationDirPath() % QLatin1String("/../../../.."));
+    } else if (frameworkBundle) {
         CFURLRef bundleUrl = CFBundleCopyBundleURL(frameworkBundle);
         CFStringRef bundlePath = CFURLCopyFileSystemPath(bundleUrl, kCFURLPOSIXPathStyle);
         path = QString::fromCFString(bundlePath);
@@ -114,7 +119,12 @@ static QString getPath(CFBundleRef frameworkBundle)
 static QString getResourcesPath(CFBundleRef frameworkBundle)
 {
     QString path;
-    if (frameworkBundle) {
+    // The following is a fix for QtWebEngineProcess crashes on OS X 10.7 and before.
+    // We use it for the other OS X versions as well to make sure it works and because
+    // the directory structure should be the same.
+    if (qApp->applicationName() == QLatin1String(QTWEBENGINEPROCESS_NAME)) {
+        path = getPath(frameworkBundle) % QLatin1String("/Resources");
+    } else if (frameworkBundle) {
         CFURLRef resourcesRelativeUrl = CFBundleCopyResourcesDirectoryURL(frameworkBundle);
         CFStringRef resourcesRelativePath = CFURLCopyFileSystemPath(resourcesRelativeUrl, kCFURLPOSIXPathStyle);
         path = getPath(frameworkBundle) % QLatin1Char('/') % QString::fromCFString(resourcesRelativePath);
