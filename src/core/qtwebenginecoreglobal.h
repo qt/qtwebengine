@@ -57,4 +57,6 @@
 #  define QWEBENGINE_EXPORT
 #endif
 
+#define ASSERT_ENUMS_MATCH(A, B) Q_STATIC_ASSERT_X(static_cast<int>(A) == static_cast<int>(B), "The enum values must match");
+
 #endif // QTWEBENGINECOREGLOBAL_H

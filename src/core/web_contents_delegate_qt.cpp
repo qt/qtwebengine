@@ -224,8 +224,8 @@ bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebConten
     return m_viewClient->isFullScreen();
 }
 
-Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Open) == static_cast<int>(content::FileChooserParams::Open), "Enums out of sync");
-Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Save) == static_cast<int>(content::FileChooserParams::Save), "Enums out of sync");
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Open, content::FileChooserParams::Open)
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Save, content::FileChooserParams::Save)
 
 void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, const content::FileChooserParams &params)
 {

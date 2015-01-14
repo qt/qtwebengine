@@ -950,8 +950,8 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
     return 0;
 }
 
-Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::Open) == static_cast<int>(QWebEnginePage::FileSelectOpen), "Enums out of sync");
-Q_STATIC_ASSERT_X(static_cast<int>(WebContentsAdapterClient::OpenMultiple) == static_cast<int>(QWebEnginePage::FileSelectOpenMultiple), "Enums out of sync");
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Open, QWebEnginePage::FileSelectOpen)
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::OpenMultiple, QWebEnginePage::FileSelectOpenMultiple)
 
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
 {

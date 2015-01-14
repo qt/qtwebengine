@@ -115,12 +115,12 @@ QWebEngineSettings *QWebEngineSettings::globalSettings()
     return globalInstance()->data();
 }
 
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::StandardFont) == static_cast<int>(QWebEngineSettings::StandardFont), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::FixedFont) == static_cast<int>(QWebEngineSettings::FixedFont), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::SerifFont) == static_cast<int>(QWebEngineSettings::SerifFont), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::SansSerifFont) == static_cast<int>(QWebEngineSettings::SansSerifFont), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::CursiveFont) == static_cast<int>(QWebEngineSettings::CursiveFont), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::FantasyFont) == static_cast<int>(QWebEngineSettings::FantasyFont), "The enum values must match");
+ASSERT_ENUMS_MATCH(WebEngineSettings::StandardFont, QWebEngineSettings::StandardFont)
+ASSERT_ENUMS_MATCH(WebEngineSettings::FixedFont, QWebEngineSettings::FixedFont)
+ASSERT_ENUMS_MATCH(WebEngineSettings::SerifFont, QWebEngineSettings::SerifFont)
+ASSERT_ENUMS_MATCH(WebEngineSettings::SansSerifFont, QWebEngineSettings::SansSerifFont)
+ASSERT_ENUMS_MATCH(WebEngineSettings::CursiveFont, QWebEngineSettings::CursiveFont)
+ASSERT_ENUMS_MATCH(WebEngineSettings::FantasyFont, QWebEngineSettings::FantasyFont)
 
 void QWebEngineSettings::setFontFamily(QWebEngineSettings::FontFamily which, const QString &family)
 {
@@ -140,10 +140,10 @@ void QWebEngineSettings::resetFontFamily(QWebEngineSettings::FontFamily which)
     d->coreSettings->resetFontFamily(static_cast<WebEngineSettings::FontFamily>(which));
 }
 
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::DefaultFixedFontSize) == static_cast<int>(QWebEngineSettings::DefaultFixedFontSize), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::DefaultFontSize) == static_cast<int>(QWebEngineSettings::DefaultFontSize), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::MinimumFontSize) == static_cast<int>(QWebEngineSettings::MinimumFontSize), "The enum values must match");
-Q_STATIC_ASSERT_X(static_cast<int>(WebEngineSettings::MinimumLogicalFontSize) == static_cast<int>(QWebEngineSettings::MinimumLogicalFontSize), "The enum values must match");
+ASSERT_ENUMS_MATCH(WebEngineSettings::DefaultFixedFontSize, QWebEngineSettings::DefaultFixedFontSize)
+ASSERT_ENUMS_MATCH(WebEngineSettings::DefaultFontSize, QWebEngineSettings::DefaultFontSize)
+ASSERT_ENUMS_MATCH(WebEngineSettings::MinimumFontSize, QWebEngineSettings::MinimumFontSize)
+ASSERT_ENUMS_MATCH(WebEngineSettings::MinimumLogicalFontSize, QWebEngineSettings::MinimumLogicalFontSize)
 
 void QWebEngineSettings::setFontSize(QWebEngineSettings::FontSize type, int size)
 {
