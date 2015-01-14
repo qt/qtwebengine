@@ -171,7 +171,7 @@ QString localesPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
 #else
-    return location(QLibraryInfo::TranslationsPath) % QLatin1String("/qtwebengine_locales");
+    return location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
 #endif
 }
 
@@ -204,7 +204,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
         return toFilePath(getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_resources.pak"));
 #else
-        return toFilePath(location(QLibraryInfo::DataPath) % QLatin1String("/qtwebengine_resources.pak"));
+        return toFilePath(location(QLibraryInfo::DataPath) % QDir::separator() %  QLatin1String("qtwebengine_resources.pak"));
 #endif
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:

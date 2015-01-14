@@ -1,8 +1,6 @@
 MODULE = webenginecore
 TARGET = QtWebEngineCore
 
-CMAKE_MODULE_TESTS = "-"
-
 qtHaveModule(positioning):QT += positioning
 QT += qml quick
 QT_PRIVATE += quick-private gui-private core-private

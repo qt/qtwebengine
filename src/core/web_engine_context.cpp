@@ -41,6 +41,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
@@ -134,6 +135,9 @@ bool usingQtQuick2DRenderer()
 
 WebEngineContext::~WebEngineContext()
 {
+    base::MessagePump::Delegate *delegate = m_runLoop->loop_;
+    // Flush the UI message loop before quitting.
+    while (delegate->DoWork()) { }
     GLContextHelper::destroy();
     m_runLoop->AfterRun();
 }

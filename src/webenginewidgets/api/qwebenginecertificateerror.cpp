@@ -38,6 +38,15 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \class QWebEngineCertificateError
+    \brief The QWebEngineCertificateError class provides information about a certificate error.
+
+    \inmodule QtWebEngineWidgets
+
+    QWebEngineCertificateError holds known information about a certificate error to be used to determine whether to allow it or not, and to be reported to the user.
+*/
+
 class QWebEngineCertificateErrorPrivate {
 public:
     QWebEngineCertificateErrorPrivate(int error, QUrl url, bool overridable, QString errorDescription);
@@ -56,13 +65,37 @@ QWebEngineCertificateErrorPrivate::QWebEngineCertificateErrorPrivate(int error, 
 { }
 
 
+/*! \internal
+*/
 QWebEngineCertificateError::QWebEngineCertificateError(int error, QUrl url, bool overridable, QString errorDescription)
     : d_ptr(new QWebEngineCertificateErrorPrivate(error, url, overridable, errorDescription))
 { }
 
+/*! \internal
+*/
 QWebEngineCertificateError::~QWebEngineCertificateError()
 {
 }
+
+/*!
+    \enum QWebEngineCertificateError::Error
+
+    This enum describes the type of certificate error encountered.
+
+    \value SslPinnedKeyNotInCertificateChain The certificate did not match the built-in public key pins for the host name.
+    \value CertificateCommonNameInvalid The certificate's common name did not match the host name.
+    \value CertificateDateInvalid The certificate is not valid at the current date and time.
+    \value CertificateAuthorityInvalid The certificate is not signed by a trusted authority.
+    \value CertificateContainsErrors The certificate contains errors.
+    \value CertificateNoRevocationMechanism The certificate has no mechanism for determining if it has been revoked.
+    \value CertificateUnableToCheckRevocation Revocation information for the certificate is not available.
+    \value CertificateRevoked The certificate has been revoked.
+    \value CertificateInvalid The certificate is invalid.
+    \value CertificateWeakSignatureAlgorithm The certificate is signed using a weak signature algorithm.
+    \value CertificateNonUniqueName The host name specified in the certificate is not unique.
+    \value CertificateWeakKey The certificate contains a weak key.
+    \value CertificateNameConstraintViolation The certificate claimed DNS names that are in violation of name constraints.
+*/
 
 /*!
     Returns whether this error can be overridden and accepted.
