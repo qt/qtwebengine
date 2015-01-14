@@ -78,15 +78,14 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     const content::ResourceRequestInfo *info = content::ResourceRequestInfo::ForRequest(request);
-    int renderProcessId;
-    int renderFrameId;
-    if (!info || !info->GetRenderFrameForRequest(request, &renderProcessId, &renderFrameId))
-        // Abort the request if it has no associated render info / render view.
-        return net::ERR_ABORTED;
+    if (!info)
+        return net::OK;
 
     content::ResourceType resourceType = info->GetResourceType();
-    // Only intercept MAIN_FRAME and SUB_FRAME.
-    if (!content::IsResourceTypeFrame(resourceType))
+    int renderProcessId;
+    int renderFrameId;
+    // Only intercept MAIN_FRAME and SUB_FRAME with an associated render frame.
+    if (!content::IsResourceTypeFrame(resourceType) || !info->GetRenderFrameForRequest(request, &renderProcessId, &renderFrameId))
         return net::OK;
 
     // Track active requests since |callback| and |new_url| are valid
