@@ -5,16 +5,14 @@ TARGET = quicktestbrowser
 
 macx: CONFIG -= app_bundle
 
-HEADERS = quickwindow.h \
-          util.h
-SOURCES = quickwindow.cpp \
-          main.cpp
+HEADERS = utils.h
+SOURCES = main.cpp
 
-OTHER_FILES += ButtonWithMenu.qml \
+OTHER_FILES += BrowserWindow.qml \
+               ButtonWithMenu.qml \
                ContextMenuExtras.qml \
                DownloadView.qml \
-               FeaturePermissionBar.qml \
-               quickwindow.qml
+               FeaturePermissionBar.qml
 
 RESOURCES += resources.qrc
 

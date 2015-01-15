@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/">
-        <file>quickwindow.qml</file>
+        <file>BrowserWindow.qml</file>
         <file>ContextMenuExtras.qml</file>
         <file>FeaturePermissionBar.qml</file>
         <file>ButtonWithMenu.qml</file>
