@@ -52,7 +52,7 @@ import Qt.labs.settings 1.0
 
 ApplicationWindow {
     id: browserWindow
-    function load(url) { currentWebView.url = url }
+    property QtObject applicationRoot
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item.webView : null
 
     property bool isFullScreen: visibility == Window.FullScreen
@@ -305,20 +305,6 @@ ApplicationWindow {
         Component.onCompleted: createEmptyTab()
 
         Component {
-            id: dialogComponent
-            Window {
-                property Item webView: _webView
-                width: 800
-                height: 600
-                visible: true
-                WebEngineView {
-                    id: _webView
-                    anchors.fill: parent
-                }
-            }
-        }
-
-        Component {
             id: tabComponent
             Item {
                 property alias webView: webEngineView
@@ -388,11 +374,10 @@ ApplicationWindow {
                                 var tab = tabs.createEmptyTab()
                                 request.openIn(tab.item.webView)
                             } else if (request.destination == WebEngineView.NewViewInDialog) {
-                                var dialog = dialogComponent.createObject(webEngineView)
-                                request.openIn(dialog.webView)
+                                var dialog = applicationRoot.createDialog()
+                                request.openIn(dialog.currentWebView)
                             } else {
-                                var component = Qt.createComponent("quickwindow.qml")
-                                var window = component.createObject()
+                                var window = applicationRoot.createWindow()
                                 request.openIn(window.currentWebView)
                             }
                         }

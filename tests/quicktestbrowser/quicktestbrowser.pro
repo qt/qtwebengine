@@ -8,7 +8,9 @@ macx: CONFIG -= app_bundle
 HEADERS = utils.h
 SOURCES = main.cpp
 
-OTHER_FILES += BrowserWindow.qml \
+OTHER_FILES += ApplicationRoot.qml \
+               BrowserDialog.qml \
+               BrowserWindow.qml \
                ButtonWithMenu.qml \
                ContextMenuExtras.qml \
                DownloadView.qml \

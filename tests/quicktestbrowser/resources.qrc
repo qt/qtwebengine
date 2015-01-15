@@ -1,5 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
     <qresource prefix="/">
+        <file>ApplicationRoot.qml</file>
+        <file>BrowserDialog.qml</file>
         <file>BrowserWindow.qml</file>
         <file>ContextMenuExtras.qml</file>
         <file>FeaturePermissionBar.qml</file>
