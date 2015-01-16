@@ -250,6 +250,7 @@ WebEngineContext::WebEngineContext()
     content::GpuProcessHost::RegisterGpuMainThreadFactory(content::CreateInProcessGpuThread);
 
     content::ContentMainParams contentMainParams(m_mainDelegate.get());
+    contentMainParams.setup_signal_handlers = false;
 #if defined(OS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {0};
     content::InitializeSandboxInfo(&sandbox_info);

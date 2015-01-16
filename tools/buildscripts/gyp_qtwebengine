@@ -5,7 +5,7 @@ import os
 import sys
 import subprocess
 
-print 'using python: ' + sys.executable + ' version: ' + sys.version
+print 'using python: ' + sys.executable + ' version: ' + str(sys.version_info.major) + '.' + str(sys.version_info.minor) + '.' + str(sys.version_info.micro)
 
 if sys.platform == "darwin":
   print 'xcode version: ' + subprocess.check_output(['xcodebuild', '-version']).replace('\n', ' ')

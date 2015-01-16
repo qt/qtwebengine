@@ -1,6 +1,9 @@
 TARGET = $$QTWEBENGINEPROCESS_NAME
 TEMPLATE = app
 
+# Needed to set LSUIElement=1
+QMAKE_INFO_PLIST = Info_mac.plist
+
 load(qt_build_paths)
 contains(QT_CONFIG, qt_framework) {
     # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.

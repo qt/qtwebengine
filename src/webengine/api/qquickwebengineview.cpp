@@ -188,7 +188,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     // FIXME: expose the context menu data as an attached property to make this more useful
     if (contextMenuExtraItems) {
         ui()->addMenuSeparator(menu);
-        if (QObject* menuExtras = contextMenuExtraItems->create(ui()->creationContextForComponent(contextMenuExtraItems))) {
+        if (QObject* menuExtras = contextMenuExtraItems->create(qmlContext(q))) {
             menuExtras->setParent(menu);
             QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(q));
             if (entries.isValid())

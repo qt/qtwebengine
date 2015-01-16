@@ -16,9 +16,9 @@
 #   - any git symbolic ref resolvable from the module's repository (e.g. "refs/heads/master" to track master branch)
 #
 %dependencies = (
-    "qtbase" => "refs/heads/dev",
-    "qtdeclarative" => "refs/heads/dev",
-    "qtxmlpatterns" => "refs/heads/dev",
+    "qtbase" => "",
+    "qtdeclarative" => "",
+    "qtxmlpatterns" => "",
 # FIXME: take examples out into their own module to avoid a potential circular dependency later ?
-    "qtquickcontrols" => "refs/heads/dev",
+    "qtquickcontrols" => "",
 );
