@@ -1,4 +1,8 @@
 defineTest(isPlatformSupported) {
+  !contains(QT_CONFIG, c++11) {
+    skipBuild("C++11 support is required in order to build chromium.")
+    return(false)
+  }
   static {
     skipBuild("Static builds of QtWebEngine aren't supported.")
     return(false)
