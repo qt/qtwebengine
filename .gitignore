@@ -27,3 +27,5 @@ moc_*.cpp
 .uic
 .rcc
 *.pyc
+.pch
+.obj
