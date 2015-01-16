@@ -29,8 +29,7 @@ else: DEFINES += QT_NO_EGL
 
 RESOURCES += devtools.qrc
 
-# something fishy with qmake in 5.2 ?
-INCLUDEPATH += $$[QT_INSTALL_HEADERS] $$PWD
+INCLUDEPATH += $$PWD
 
 SOURCES = \
         access_token_store_qt.cpp \
