@@ -667,7 +667,13 @@ qreal WebContentsAdapter::currentZoomFactor() const
 BrowserContextQt* WebContentsAdapter::browserContext()
 {
     Q_D(WebContentsAdapter);
-    return d->browserContextAdapter->browserContext();
+    return d->browserContextAdapter ? d->browserContextAdapter->browserContext() : d->webContents ? static_cast<BrowserContextQt*>(d->webContents->GetBrowserContext()) : 0;
+}
+
+BrowserContextAdapter* WebContentsAdapter::browserContextAdapter()
+{
+    Q_D(WebContentsAdapter);
+    return d->browserContextAdapter ? d->browserContextAdapter.data() : d->webContents ? static_cast<BrowserContextQt*>(d->webContents->GetBrowserContext())->adapter() : 0;
 }
 
 #ifndef QT_NO_ACCESSIBILITY

@@ -114,6 +114,7 @@ public:
     void dpiScaleChanged();
     QAccessibleInterface *browserAccessible();
     BrowserContextQt* browserContext();
+    BrowserContextAdapter* browserContextAdapter();
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter);

@@ -71,6 +71,7 @@ public:
     virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() Q_DECL_OVERRIDE;
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers);
 
+    BrowserContextAdapter* adapter() { return m_adapter; }
 private:
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<URLRequestContextGetterQt> url_request_getter_;

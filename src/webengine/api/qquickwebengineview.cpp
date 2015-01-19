@@ -512,6 +512,11 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
         return;
     }
 
+    if (browserContextAdapter() != webContents->browserContextAdapter()) {
+        qWarning("Can not adopt content from a different WebEngineProfile.");
+        return;
+    }
+
     Q_Q(QQuickWebEngineView);
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
