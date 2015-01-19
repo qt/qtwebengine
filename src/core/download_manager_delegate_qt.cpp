@@ -54,8 +54,8 @@
 #include "qtwebenginecoreglobal.h"
 
 DownloadManagerDelegateQt::DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter)
-    : m_currentId(0)
-    , m_contextAdapter(contextAdapter)
+    : m_contextAdapter(contextAdapter)
+    , m_currentId(0)
 {
     Q_ASSERT(m_contextAdapter);
 }
@@ -120,18 +120,28 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
     }
 
     item->AddObserver(this);
-    quint32 downloadId = item->GetId();
     if (m_contextAdapter->client()) {
         bool cancelled = false;
-        m_contextAdapter->client()->downloadRequested(downloadId, suggestedFilePath, cancelled);
-        suggestedFile.setFile(suggestedFilePath);
+        BrowserContextAdapterClient::DownloadItemInfo info = {
+            item->GetId(),
+            toQt(item->GetURL()),
+            item->GetState(),
+            item->PercentComplete(),
+            item->GetTotalBytes(),
+            item->GetReceivedBytes(),
+            suggestedFilePath,
+            cancelled
+        };
+        m_contextAdapter->client()->downloadRequested(info);
 
-        if (!cancelled && !suggestedFile.absoluteDir().mkpath(suggestedFile.absolutePath())) {
+        suggestedFile.setFile(info.path);
+
+        if (!info.cancelled && !suggestedFile.absoluteDir().mkpath(suggestedFile.absolutePath())) {
             qWarning("Creating download path failed, download cancelled: %s", suggestedFile.absolutePath().toUtf8().data());
             cancelled = true;
         }
 
-        if (cancelled) {
+        if (info.cancelled) {
             cancelDownload(callback);
             return true;
         }
@@ -158,10 +168,19 @@ void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_cont
 
 void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *download)
 {
-    const quint32 downloadId = download->GetId();
-
-    if (m_contextAdapter->client())
-        m_contextAdapter->client()->downloadUpdated(downloadId, download->GetState(), download->PercentComplete());
+    if (m_contextAdapter->client()) {
+        BrowserContextAdapterClient::DownloadItemInfo info = {
+            download->GetId(),
+            toQt(download->GetURL()),
+            download->GetState(),
+            download->PercentComplete(),
+            download->GetTotalBytes(),
+            download->GetReceivedBytes(),
+            QString(),
+            false
+        };
+        m_contextAdapter->client()->downloadUpdated(info);
+    }
 }
 
 void DownloadManagerDelegateQt::OnDownloadDestroyed(content::DownloadItem *download)

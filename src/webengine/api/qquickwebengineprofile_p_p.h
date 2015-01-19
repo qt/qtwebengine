@@ -61,8 +61,8 @@ public:
     void cancelDownload(quint32 downloadId);
     void downloadDestroyed(quint32 downloadId);
 
-    void downloadRequested(quint32 downloadId, QString &downloadPath, bool &cancelled) Q_DECL_OVERRIDE;
-    void downloadUpdated(quint32 downloadId, int downloadState, int percentComplete) Q_DECL_OVERRIDE;
+    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
+    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
 
 private:
     friend class QQuickWebEngineViewPrivate;

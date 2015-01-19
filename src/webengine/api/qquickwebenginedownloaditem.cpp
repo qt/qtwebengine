@@ -50,8 +50,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
 
 QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
 {
-    Q_Q(QQuickWebEngineDownloadItem);
-    q->cancel();
+    profile->downloadDestroyed(downloadId);
 }
 
 void QQuickWebEngineDownloadItemPrivate::update(QQuickWebEngineDownloadItem::DownloadState state, int progress)

@@ -90,47 +90,50 @@ void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 void QQuickWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
 {
     m_ongoingDownloads.remove(downloadId);
+    cancelDownload(downloadId);
 }
 
-void QQuickWebEngineProfilePrivate::downloadRequested(quint32 downloadId, QString &downloadPath, bool &cancelled)
+void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 {
     Q_Q(QQuickWebEngineProfile);
 
-    Q_ASSERT(!m_ongoingDownloads.contains(downloadId));
+    Q_ASSERT(!m_ongoingDownloads.contains(info.id));
     QQuickWebEngineDownloadItemPrivate *itemPrivate = new QQuickWebEngineDownloadItemPrivate(this);
-    itemPrivate->downloadId = downloadId;
+    itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadInProgress;
-    itemPrivate->downloadPath = downloadPath;
+    itemPrivate->downloadPath = info.path;
 
     QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
 
-    m_ongoingDownloads.insert(downloadId, download);
+    m_ongoingDownloads.insert(info.id, download);
 
     QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->downloadStarted(download);
     download->d_func()->downloadStarted = true;
 
-    downloadPath = download->path();
-    cancelled = download->state() == QQuickWebEngineDownloadItem::DownloadCancelled;
+    info.path = download->path();
+    info.cancelled = download->state() == QQuickWebEngineDownloadItem::DownloadCancelled;
 }
 
-void QQuickWebEngineProfilePrivate::downloadUpdated(quint32 downloadId, int downloadState, int percentComplete)
+void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 {
+    if (!m_ongoingDownloads.contains(info.id))
+        return;
+
     Q_Q(QQuickWebEngineProfile);
 
-    Q_ASSERT(m_ongoingDownloads.contains(downloadId));
-    QQuickWebEngineDownloadItem* download = m_ongoingDownloads.value(downloadId).data();
+    QQuickWebEngineDownloadItem* download = m_ongoingDownloads.value(info.id).data();
 
     if (!download) {
-        cancelDownload(downloadId);
+        downloadDestroyed(info.id);
         return;
     }
 
-    download->d_func()->update(toDownloadState(downloadState), percentComplete);
+    download->d_func()->update(toDownloadState(info.state), info.percentComplete);
 
-    if (downloadState != BrowserContextAdapterClient::DownloadInProgress) {
+    if (info.state != BrowserContextAdapterClient::DownloadInProgress) {
         Q_EMIT q->downloadFinished(download);
-        m_ongoingDownloads.remove(downloadId);
+        m_ongoingDownloads.remove(info.id);
     }
 }
 

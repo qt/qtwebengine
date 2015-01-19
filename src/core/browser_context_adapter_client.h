@@ -39,6 +39,7 @@
 
 #include "qtwebenginecoreglobal.h"
 #include <QString>
+#include <QUrl>
 
 class QWEBENGINE_EXPORT BrowserContextAdapterClient
 {
@@ -54,10 +55,23 @@ public:
         // This state indicates that the download has been interrupted.
         DownloadInterrupted
     };
+
+    struct DownloadItemInfo {
+        const quint32 id;
+        const QUrl url;
+        const int state;
+        const int percentComplete;
+        const qint64 totalBytes;
+        const qint64 receivedBytes;
+
+        QString path;
+        bool cancelled;
+    };
+
     virtual ~BrowserContextAdapterClient() { }
 
-    virtual void downloadRequested(quint32 downloadId, QString &downloadPath, bool &cancelled) = 0;
-    virtual void downloadUpdated(quint32 downloadId, int downloadState, int percentComplete) = 0;
+    virtual void downloadRequested(DownloadItemInfo &info) = 0;
+    virtual void downloadUpdated(const DownloadItemInfo &info) = 0;
 };
 
 #endif // BROWSER_CONTEXT_ADAPTER_CLIENT_H
