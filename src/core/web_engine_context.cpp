@@ -232,7 +232,7 @@ WebEngineContext::WebEngineContext()
     if (usingANGLE() || usingSoftwareDynamicGL() || usingQtQuick2DRenderer()) {
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     } else {
-        const char *glType;
+        const char *glType = 0;
         switch (QOpenGLContext::openGLModuleType()) {
         case QOpenGLContext::LibGL:
             glType = gfx::kGLImplementationDesktopName;
