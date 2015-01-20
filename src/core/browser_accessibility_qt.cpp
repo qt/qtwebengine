@@ -38,6 +38,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef QT_NO_ACCESSIBILITY
 #include "browser_accessibility_qt.h"
 
 #include "third_party/WebKit/public/web/WebAXEnums.h"
@@ -896,3 +897,5 @@ void BrowserAccessibilityQt::modelChange(QAccessibleTableModelChangeEvent *)
 }
 
 } // namespace content
+
+#endif // QT_NO_ACCESSIBILITY

@@ -358,10 +358,12 @@ void QWebEnginePagePrivate::runMouseLockPermissionRequest(const QUrl &securityOr
     Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::MouseLock);
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {

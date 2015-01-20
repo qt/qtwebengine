@@ -1,3 +1,5 @@
+requires(contains(QT_CONFIG, accessibility))
+
 TEMPLATE = app
 TARGET = quicknanobrowser
 

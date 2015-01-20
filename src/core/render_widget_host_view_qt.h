@@ -52,6 +52,7 @@
 #include <QRect>
 #include <QtGlobal>
 #include <QtGui/qaccessible.h>
+#include <QtGui/QTouchEvent>
 
 #include "delegated_frame_node.h"
 
@@ -61,7 +62,6 @@ class QFocusEvent;
 class QHoverEvent;
 class QKeyEvent;
 class QMouseEvent;
-class QTouchEvent;
 class QVariant;
 class QWheelEvent;
 class QAccessibleInterface;
@@ -94,7 +94,9 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
+#ifndef QT_NO_ACCESSIBILITY
     , public QAccessible::ActivationObserver
+#endif // QT_NO_ACCESSIBILITY
 {
 public:
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
@@ -198,8 +200,9 @@ public:
 
     // Overridden from content::BrowserAccessibilityDelegate
     virtual content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate) Q_DECL_OVERRIDE;
+#ifndef QT_NO_ACCESSIBILITY
     virtual void accessibilityActiveChanged(bool active) Q_DECL_OVERRIDE;
-
+#endif // QT_NO_ACCESSIBILITY
     void didFirstVisuallyNonEmptyLayout();
 
 private:

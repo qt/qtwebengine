@@ -670,6 +670,7 @@ BrowserContextQt* WebContentsAdapter::browserContext()
     return d->browserContextAdapter->browserContext();
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     Q_D(const WebContentsAdapter);
@@ -680,6 +681,7 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
     return accQt;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript)
 {

@@ -174,7 +174,9 @@ public:
     virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
+#ifndef QT_NO_ACCESSIBILITY
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
+#endif // QT_NO_ACCESSIBILITY
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &errorController);
     virtual void runGeolocationPermissionRequest(QUrl const&) Q_DECL_OVERRIDE;
@@ -206,6 +208,7 @@ private:
     qreal m_dpiScale;
 };
 
+#ifndef QT_NO_ACCESSIBILITY
 class QQuickWebEngineViewAccessible : public QAccessibleObject
 {
 public:
@@ -221,7 +224,7 @@ public:
 private:
     QQuickWebEngineView *engineView() const { return static_cast<QQuickWebEngineView*>(object()); }
 };
-
+#endif // QT_NO_ACCESSIBILITY
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineViewExperimental)

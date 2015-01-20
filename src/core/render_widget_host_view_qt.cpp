@@ -245,15 +245,18 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
 {
     m_host->SetView(this);
-
+#ifndef QT_NO_ACCESSIBILITY
     QAccessible::installActivationObserver(this);
     if (QAccessible::isActive())
         content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+#endif // QT_NO_ACCESSIBILITY
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+#ifndef QT_NO_ACCESSIBILITY
     QAccessible::removeActivationObserver(this);
+#endif // QT_NO_ACCESSIBILITY
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -347,10 +350,14 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 
 content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate)
 {
+#ifndef QT_NO_ACCESSIBILITY
     return new content::BrowserAccessibilityManagerQt(
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
         delegate);
+#else
+    return 0;
+#endif // QT_NO_ACCESSIBILITY
 }
 
 // Set focus to the associated View component.
@@ -941,6 +948,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     }
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
 {
     if (active)
@@ -948,6 +956,7 @@ void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
     else
         content::BrowserAccessibilityStateImpl::GetInstance()->DisableAccessibility();
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {

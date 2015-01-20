@@ -38,6 +38,7 @@
 #define BROWSER_ACCESSIBILITY_MANAGER_QT_H
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#ifndef QT_NO_ACCESSIBILITY
 #include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
@@ -74,4 +75,5 @@ private:
 
 }
 
+#endif // QT_NO_ACCESSIBILITY
 #endif

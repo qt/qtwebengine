@@ -274,7 +274,9 @@ private:
 
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
+#ifndef QT_NO_ACCESSIBILITY
     friend class QWebEngineViewAccessible;
+#endif // QT_NO_ACCESSIBILITY
 };
 
 

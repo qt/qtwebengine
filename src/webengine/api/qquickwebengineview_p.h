@@ -168,7 +168,9 @@ private:
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
     friend class QQuickWebEngineNewViewRequest;
+#ifndef QT_NO_ACCESSIBILITY
     friend class QQuickWebEngineViewAccessible;
+#endif // QT_NO_ACCESSIBILITY
 };
 
 QT_END_NAMESPACE
