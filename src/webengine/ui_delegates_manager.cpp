@@ -310,15 +310,6 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QQmlProperty titleProp(dialog, QStringLiteral("title"));
     titleProp.write(title);
 
-    if (dialogComponentType == PromptDialog) {
-        QQmlProperty promptProp(dialog, QStringLiteral("prompt"));
-        promptProp.write(dialogController->defaultPrompt());
-        QQmlProperty inputSignal(dialog, QStringLiteral("onInput"));
-        CHECK_QML_SIGNAL_PROPERTY(inputSignal, dialogComponent->url());
-        static int setTextIndex = dialogController->metaObject()->indexOfSlot("textProvided(QString)");
-        QObject::connect(dialog, inputSignal.method(), dialogController.data(), dialogController->metaObject()->method(setTextIndex));
-    }
-
     QQmlProperty acceptSignal(dialog, QStringLiteral("onAccepted"));
     QQmlProperty rejectSignal(dialog, QStringLiteral("onRejected"));
     CHECK_QML_SIGNAL_PROPERTY(acceptSignal, dialogComponent->url());
@@ -328,6 +319,18 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QObject::connect(dialog, acceptSignal.method(), dialogController.data(), dialogController->metaObject()->method(acceptIndex));
     static int rejectIndex = dialogController->metaObject()->indexOfSlot("reject()");
     QObject::connect(dialog, rejectSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));
+
+    if (dialogComponentType == PromptDialog) {
+        QQmlProperty promptProp(dialog, QStringLiteral("prompt"));
+        promptProp.write(dialogController->defaultPrompt());
+        QQmlProperty inputSignal(dialog, QStringLiteral("onInput"));
+        CHECK_QML_SIGNAL_PROPERTY(inputSignal, dialogComponent->url());
+        static int setTextIndex = dialogController->metaObject()->indexOfSlot("textProvided(QString)");
+        QObject::connect(dialog, inputSignal.method(), dialogController.data(), dialogController->metaObject()->method(setTextIndex));
+        QQmlProperty closingSignal(dialog, QStringLiteral("onClosing"));
+        QObject::connect(dialog, closingSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));
+    }
+
     dialogComponent->completeCreate();
 
     QObject::connect(dialogController.data(), &JavaScriptDialogController::dialogCloseRequested, dialog, &QObject::deleteLater);
