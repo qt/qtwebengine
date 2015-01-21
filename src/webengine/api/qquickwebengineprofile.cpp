@@ -373,19 +373,19 @@ void QQuickWebEngineProfile::setPersistentCookiesPolicy(QQuickWebEngineProfile::
 
     \sa httpCacheType
 */
-int QQuickWebEngineProfile::httpCacheMaxSize() const
+int QQuickWebEngineProfile::httpCacheMaximumSize() const
 {
     const Q_D(QQuickWebEngineProfile);
     return d->browserContext()->httpCacheMaxSize();
 }
 
-void QQuickWebEngineProfile::setHttpCacheMaxSize(int maxSize)
+void QQuickWebEngineProfile::setHttpCacheMaximumSize(int maximumSize)
 {
     Q_D(QQuickWebEngineProfile);
-    if (d->browserContext()->httpCacheMaxSize() == maxSize)
+    if (d->browserContext()->httpCacheMaxSize() == maximumSize)
         return;
-    d->browserContext()->setHttpCacheMaxSize(maxSize);
-    emit httpCacheMaxSizeChanged();
+    d->browserContext()->setHttpCacheMaxSize(maximumSize);
+    emit httpCacheMaximumSizeChanged();
 }
 
 QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()

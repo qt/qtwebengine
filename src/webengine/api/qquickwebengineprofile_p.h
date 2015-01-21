@@ -59,7 +59,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QString httpUserAgent READ httpUserAgent WRITE setHttpUserAgent NOTIFY httpUserAgentChanged FINAL)
     Q_PROPERTY(HttpCacheType httpCacheType READ httpCacheType WRITE setHttpCacheType NOTIFY httpCacheTypeChanged FINAL)
     Q_PROPERTY(PersistentCookiesPolicy persistentCookiesPolicy READ persistentCookiesPolicy WRITE setPersistentCookiesPolicy NOTIFY persistentCookiesPolicyChanged FINAL)
-    Q_PROPERTY(int httpCacheMaxSize READ httpCacheMaxSize WRITE setHttpCacheMaxSize NOTIFY httpCacheMaxSizeChanged FINAL)
+    Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
 public:
     QQuickWebEngineProfile();
     ~QQuickWebEngineProfile();
@@ -96,8 +96,8 @@ public:
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(QQuickWebEngineProfile::PersistentCookiesPolicy);
 
-    int httpCacheMaxSize() const;
-    void setHttpCacheMaxSize(int maxSize);
+    int httpCacheMaximumSize() const;
+    void setHttpCacheMaximumSize(int maxSize);
 
     static QQuickWebEngineProfile *defaultProfile();
 
@@ -109,7 +109,7 @@ signals:
     void httpUserAgentChanged();
     void httpCacheTypeChanged();
     void persistentCookiesPolicyChanged();
-    void httpCacheMaxSizeChanged();
+    void httpCacheMaximumSizeChanged();
 
     void downloadStarted(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
