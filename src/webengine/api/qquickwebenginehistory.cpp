@@ -63,6 +63,8 @@ QQuickWebEngineBackHistoryListModelPrivate::QQuickWebEngineBackHistoryListModelP
 
 int QQuickWebEngineBackHistoryListModelPrivate::count() const
 {
+    if (!adapter())
+        return -1;
     return adapter()->currentNavigationEntryIndex();
 }
 
@@ -79,6 +81,8 @@ QQuickWebEngineForwardHistoryListModelPrivate::QQuickWebEngineForwardHistoryList
 
 int QQuickWebEngineForwardHistoryListModelPrivate::count() const
 {
+    if (!adapter())
+        return -1;
     return adapter()->navigationEntryCount() - adapter()->currentNavigationEntryIndex() - 1;
 }
 
