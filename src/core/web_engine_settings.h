@@ -71,6 +71,7 @@ public:
         HyperlinkAuditingEnabled,
         ScrollAnimatorEnabled,
         ErrorPageEnabled,
+        PluginsEnabled
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

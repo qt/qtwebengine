@@ -213,6 +213,7 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
     m_attributes.insert(HyperlinkAuditingEnabled, false);
     m_attributes.insert(ScrollAnimatorEnabled, false);
     m_attributes.insert(ErrorPageEnabled, true);
+    m_attributes.insert(PluginsEnabled, false);
 
     // Default fonts
     QFont defaultFont;
@@ -277,6 +278,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->hyperlink_auditing_enabled = testAttribute(HyperlinkAuditingEnabled);
     prefs->enable_scroll_animator = testAttribute(ScrollAnimatorEnabled);
     prefs->enable_error_page = testAttribute(ErrorPageEnabled);
+    prefs->plugins_enabled = testAttribute(PluginsEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));

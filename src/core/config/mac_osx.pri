@@ -14,7 +14,8 @@ GYP_CONFIG += \
     mac_sdk_min=\"10.7\" \
     mac_deployment_target=\"$${QMAKE_MACOSX_DEPLOYMENT_TARGET}\" \
     make_clang_dir=\"$${QMAKE_CLANG_DIR}\" \
-    clang_use_chrome_plugins=0
+    clang_use_chrome_plugins=0 \
+    enable_plugins=1
 
 QMAKE_MAC_SDK_PATH = "$$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path)"
 exists($$QMAKE_MAC_SDK_PATH): GYP_CONFIG += mac_sdk_path=\"$${QMAKE_MAC_SDK_PATH}\"

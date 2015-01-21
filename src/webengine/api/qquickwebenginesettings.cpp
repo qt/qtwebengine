@@ -209,6 +209,18 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::pluginsEnabled
+
+    This setting enables general support for plugins.
+
+    It is disabled by default.
+*/
+bool QQuickWebEngineSettings::pluginsEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::PluginsEnabled);
+}
+
+/*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
 
     The \a encoding, must be a string describing an encoding such as "utf-8",
@@ -310,6 +322,14 @@ void QQuickWebEngineSettings::setErrorPageEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::ErrorPageEnabled, on);
     if (wasOn != on)
         Q_EMIT errorPageEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setPluginsEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PluginsEnabled);
+    d_ptr->setAttribute(WebEngineSettings::PluginsEnabled, on);
+    if (wasOn != on)
+        Q_EMIT pluginsEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

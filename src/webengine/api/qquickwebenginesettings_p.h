@@ -60,6 +60,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool localContentCanAccessFileUrls READ localContentCanAccessFileUrls WRITE setLocalContentCanAccessFileUrls NOTIFY localContentCanAccessFileUrlsChanged)
     Q_PROPERTY(bool hyperlinkAuditingEnabled READ hyperlinkAuditingEnabled WRITE setHyperlinkAuditingEnabled NOTIFY hyperlinkAuditingEnabledChanged)
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
+    Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
 
 public:
@@ -76,6 +77,7 @@ public:
     bool localContentCanAccessFileUrls() const;
     bool hyperlinkAuditingEnabled() const;
     bool errorPageEnabled() const;
+    bool pluginsEnabled() const;
     QString defaultTextEncoding() const;
 
     void setAutoLoadImages(bool on);
@@ -89,6 +91,7 @@ public:
     void setLocalContentCanAccessFileUrls(bool on);
     void setHyperlinkAuditingEnabled(bool on);
     void setErrorPageEnabled(bool on);
+    void setPluginsEnabled(bool on);
     void setDefaultTextEncoding(QString encoding);
 
 signals:
@@ -103,6 +106,7 @@ signals:
     void localContentCanAccessFileUrlsChanged();
     void hyperlinkAuditingEnabledChanged();
     void errorPageEnabledChanged();
+    void pluginsEnabledChanged();
     void defaultTextEncodingChanged();
 
 private:

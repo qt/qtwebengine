@@ -48,6 +48,10 @@ class ContentClientQt : public content::ContentClient {
 public:
     static std::string getUserAgent();
 
+#if defined(ENABLE_PLUGINS)
+    virtual void AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins) Q_DECL_OVERRIDE;
+#endif
+
     virtual base::StringPiece GetDataResource(int, ui::ScaleFactor) const Q_DECL_OVERRIDE;
     virtual std::string GetUserAgent() const Q_DECL_OVERRIDE { return getUserAgent(); }
     virtual base::string16 GetLocalizedString(int message_id) const Q_DECL_OVERRIDE;

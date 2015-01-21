@@ -76,6 +76,7 @@ ApplicationWindow {
         property alias autoLoadImages: loadImages.checked;
         property alias javaScriptEnabled: javaScriptEnabled.checked;
         property alias errorPageEnabled: errorPageEnabled.checked;
+        property alias pluginsEnabled: pluginsEnabled.checked;
     }
 
     WebEngineProfile {
@@ -261,6 +262,12 @@ ApplicationWindow {
                             checked: true
                         }
                         MenuItem {
+                            id: pluginsEnabled
+                            text: "Plugins On"
+                            checkable: true
+                            checked: true
+                        }
+                        MenuItem {
                             id: offTheRecordEnabled
                             text: "Off The Record"
                             checkable: true
@@ -361,6 +368,7 @@ ApplicationWindow {
                     settings.autoLoadImages: appSettings.autoLoadImages
                     settings.javascriptEnabled: appSettings.javaScriptEnabled
                     settings.errorPageEnabled: appSettings.errorPageEnabled
+                    settings.pluginsEnabled: appSettings.pluginsEnabled
 
                     onCertificateError: {
                         if (!acceptedCertificates.shouldAutoAccept(error)){

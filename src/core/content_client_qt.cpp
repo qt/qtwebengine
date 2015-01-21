@@ -36,11 +36,119 @@
 
 #include "content_client_qt.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/layout.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "type_conversion.h"
+
+#include <QCoreApplication>
+#include <QFile>
+#include <QStringBuilder>
+
+#if defined(ENABLE_PLUGINS)
+#include "content/public/common/pepper_plugin_info.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
+
+static const int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
+                                             ppapi::PERMISSION_PRIVATE |
+                                             ppapi::PERMISSION_BYPASS_USER_GESTURE |
+                                             ppapi::PERMISSION_FLASH;
+
+namespace switches {
+const char kPpapiFlashPath[]    = "ppapi-flash-path";
+const char kPpapiFlashVersion[] = "ppapi-flash-version";
+}
+
+// Adopted from chrome_content_client.cc
+content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path, const std::string& version)
+{
+    content::PepperPluginInfo plugin;
+
+    plugin.is_out_of_process = true;
+    plugin.name = content::kFlashPluginName;
+    plugin.path = path;
+    plugin.permissions = kPepperFlashPermissions;
+
+    std::vector<std::string> flash_version_numbers;
+    base::SplitString(version, '.', &flash_version_numbers);
+    if (flash_version_numbers.size() < 1)
+        flash_version_numbers.push_back("11");
+    else if (flash_version_numbers[0].empty())
+        flash_version_numbers[0] = "11";
+    if (flash_version_numbers.size() < 2)
+        flash_version_numbers.push_back("2");
+    if (flash_version_numbers.size() < 3)
+        flash_version_numbers.push_back("999");
+    if (flash_version_numbers.size() < 4)
+        flash_version_numbers.push_back("999");
+
+    // E.g., "Shockwave Flash 10.2 r154":
+    plugin.description = plugin.name + " " + flash_version_numbers[0] + "." + flash_version_numbers[1] + " r" + flash_version_numbers[2];
+    plugin.version = JoinString(flash_version_numbers, '.');
+    content::WebPluginMimeType swf_mime_type(content::kFlashPluginSwfMimeType,
+                                             content::kFlashPluginSwfExtension,
+                                             content::kFlashPluginSwfDescription);
+    plugin.mime_types.push_back(swf_mime_type);
+    content::WebPluginMimeType spl_mime_type(content::kFlashPluginSplMimeType,
+                                             content::kFlashPluginSplExtension,
+                                             content::kFlashPluginSplDescription);
+    plugin.mime_types.push_back(spl_mime_type);
+
+    return plugin;
+}
+
+void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
+{
+    QStringList pluginPaths;
+#if defined(Q_OS_WIN) && defined(Q_PROCESSOR_X86_32)
+    QDir pluginDir("C:/Windows/SysWOW64/Macromed/Flash");
+    pluginDir.setFilter(QDir::Files);
+    QStringList nameFilters("pepflashplayer*.dll");
+    pluginPaths << pluginDir.entryList(nameFilters);
+#endif
+#if defined(Q_OS_OSX)
+    pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // Mac OS X
+#endif
+#if defined(Q_OS_LINUX)
+    pluginPaths << "/usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so" // Ubuntu
+                << "/usr/lib/PepperFlash/libpepflashplayer.so" // Arch
+                << "/usr/lib64/chromium/PepperFlash/libpepflashplayer.so"; // OpenSuSE
+#endif
+    for (auto it = pluginPaths.constBegin(); it != pluginPaths.constEnd(); ++it) {
+        if (!QFile(*it).exists())
+            continue;
+        plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), std::string()));
+        return;
+    }
+}
+
+void AddPepperFlashFromCommandLine(std::vector<content::PepperPluginInfo>* plugins)
+{
+    const CommandLine::StringType flash_path = CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kPpapiFlashPath);
+    if (flash_path.empty() || !QFile(QtWebEngineCore::toQt(flash_path)).exists())
+        return;
+
+    // Read pepper flash plugin version from command-line. (e.g. 16.0.0.235)
+    std::string flash_version = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kPpapiFlashVersion);
+    plugins->push_back(CreatePepperFlashInfo(base::FilePath(flash_path), flash_version));
+}
+
+namespace QtWebEngineCore {
+
+void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins)
+{
+    AddPepperFlashFromSystem(plugins);
+    AddPepperFlashFromCommandLine(plugins);
+}
+
+}
+#endif
 
 #include <QCoreApplication>
 #include <QStringBuilder>

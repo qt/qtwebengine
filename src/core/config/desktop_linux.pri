@@ -15,6 +15,7 @@ GYP_CONFIG += \
     use_pango=0 \
     host_clang=0 \
     clang=0 \
+    enable_plugins=1 \
 
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 

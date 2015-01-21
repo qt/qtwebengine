@@ -16,6 +16,7 @@
       '<(chromium_src_dir)/content/content.gyp:content_browser',
       '<(chromium_src_dir)/content/content.gyp:content_common',
       '<(chromium_src_dir)/content/content.gyp:content_gpu',
+      '<(chromium_src_dir)/content/content.gyp:content_ppapi_plugin',
       '<(chromium_src_dir)/content/content.gyp:content_renderer',
       '<(chromium_src_dir)/content/content.gyp:content_utility',
       '<(chromium_src_dir)/content/app/resources/content_resources.gyp:content_resources',

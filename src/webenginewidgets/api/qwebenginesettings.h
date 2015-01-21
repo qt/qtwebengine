@@ -58,7 +58,8 @@ public:
         LocalContentCanAccessFileUrls,
         HyperlinkAuditingEnabled,
         ScrollAnimatorEnabled,
-        ErrorPageEnabled
+        ErrorPageEnabled,
+        PluginsEnabled
     };
 
     enum FontSize {
