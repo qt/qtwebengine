@@ -85,7 +85,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     if (params.disposition != CURRENT_TAB) {
         WebContentsAdapter *targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
         if (targetAdapter)
-            target = targetAdapter->d_func()->webContents.get();
+            target = targetAdapter->webContents();
     }
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
