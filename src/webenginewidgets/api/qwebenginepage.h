@@ -150,8 +150,8 @@ public:
     enum Feature {
 #ifndef Q_QDOC
         Notifications = 0,
-        Geolocation = 1,
 #endif
+        Geolocation = 1,
         MediaAudioCapture = 2,
         MediaVideoCapture,
         MediaAudioVideoCapture,

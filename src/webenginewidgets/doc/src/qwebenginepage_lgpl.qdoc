@@ -166,6 +166,7 @@
 
     This enum describes the platform feature access categories that the user may be asked to grant or deny access to.
 
+    \value Geolocation Access to location hardware or service
     \value MediaAudioCapture Audio capture devices such a microphones
     \value MediaVideoCapture Video devices, e.g. cameras
     \value MediaAudioVideoCapture Both Audio and Video capture devices.
