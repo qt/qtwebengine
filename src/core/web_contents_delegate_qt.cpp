@@ -314,6 +314,13 @@ void WebContentsDelegateQt::allowCertificateError(const QExplicitlySharedDataPoi
 
 void WebContentsDelegateQt::requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback)
 {
-    m_lastGeolocationRequestCallback = resultCallback;
-    m_viewClient->runGeolocationPermissionRequest(toQt(requestingFrameOrigin));
+    m_lastGeolocationPermissionRequest.url = toQt(requestingFrameOrigin);
+    m_lastGeolocationPermissionRequest.callback = resultCallback;
+    m_viewClient->runGeolocationPermissionRequest(m_lastGeolocationPermissionRequest.url);
+}
+
+void WebContentsDelegateQt::geolocationPermissionReply(const QUrl &origin, bool permission)
+{
+    if (m_lastGeolocationPermissionRequest.url == origin)
+        m_lastGeolocationPermissionRequest.callback.Run(permission);
 }

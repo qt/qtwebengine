@@ -92,10 +92,15 @@ public:
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &) ;
     void requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback);
+    void geolocationPermissionReply(const QUrl&,  bool permission);
 
-    base::Callback<void (bool)> m_lastGeolocationRequestCallback;
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
+
+    struct {
+        QUrl url;
+        base::Callback<void (bool)> callback;
+    } m_lastGeolocationPermissionRequest;
 
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;

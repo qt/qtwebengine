@@ -773,7 +773,7 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, 
 void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed)
 {
     Q_D(WebContentsAdapter);
-    d->webContentsDelegate->m_lastGeolocationRequestCallback.Run(allowed);
+    d->webContentsDelegate->geolocationPermissionReply(securityOrigin, allowed);
 }
 
 void WebContentsAdapter::grantMouseLockPermission(bool granted)
