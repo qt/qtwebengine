@@ -121,7 +121,7 @@ signals:
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)
-    QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *);
+    QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = 0);
     QQuickWebEngineSettings *settings() const;
 
     friend class QQuickWebEngineSettings;

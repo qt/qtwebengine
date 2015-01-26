@@ -37,6 +37,8 @@
 #ifndef WEB_ENGINE_CONTEXT_H
 #define WEB_ENGINE_CONTEXT_H
 
+#include "qtwebenginecoreglobal.h"
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -51,19 +53,22 @@ class BrowserMainRunner;
 class ContentMainRunner;
 }
 
+QT_FORWARD_DECLARE_CLASS(QObject)
+
 namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 class ContentMainDelegateQt;
 class DevToolsHttpHandlerDelegateQt;
 class SurfaceFactoryQt;
-}
+} // namespace
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static scoped_refptr<WebEngineContext> current();
 
     QtWebEngineCore::BrowserContextAdapter *defaultBrowserContext();
-    QtWebEngineCore::BrowserContextAdapter *offTheRecordBrowserContext();
+    QObject *globalQObject();
 
 private:
     friend class base::RefCounted<WebEngineContext>;
@@ -77,8 +82,8 @@ private:
 #if defined(OS_ANDROID)
     scoped_ptr<QtWebEngineCore::SurfaceFactoryQt> m_surfaceFactory;
 #endif
+    QObject* m_globalQObject;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
-    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_offTheRecordBrowserContext;
     scoped_ptr<QtWebEngineCore::DevToolsHttpHandlerDelegateQt> m_devtools;
 };
 

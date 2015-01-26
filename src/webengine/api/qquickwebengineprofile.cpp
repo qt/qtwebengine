@@ -50,20 +50,17 @@ using QtWebEngineCore::BrowserContextAdapter;
 
 QT_BEGIN_NAMESPACE
 
-QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
+QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
         : m_settings(new QQuickWebEngineSettings())
-        , m_browserContext(browserContext)
+        , m_browserContextRef(browserContext)
 {
-    if (ownsContext)
-        m_browserContextRef = browserContext;
-
-    m_browserContext->setClient(this);
+    m_browserContextRef->addClient(this);
     m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
 }
 
 QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 {
-    m_browserContext->setClient(0);
+    m_browserContextRef->removeClient(this);
 
     Q_FOREACH (QQuickWebEngineDownloadItem* download, m_ongoingDownloads) {
         if (download)
@@ -75,7 +72,7 @@ QQuickWebEngineProfilePrivate::~QQuickWebEngineProfilePrivate()
 
 void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 {
-    m_browserContext->cancelDownload(downloadId);
+    browserContext()->cancelDownload(downloadId);
 }
 
 void QQuickWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
@@ -161,13 +158,14 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 */
 
 QQuickWebEngineProfile::QQuickWebEngineProfile()
-    : d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false), true))
+    : d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false)))
 {
     d_ptr->q_ptr = this;
 }
 
-QQuickWebEngineProfile::QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *privatePtr)
-    : d_ptr(privatePtr)
+QQuickWebEngineProfile::QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *privatePtr, QObject *parent)
+    : QObject(parent)
+    , d_ptr(privatePtr)
 {
     d_ptr->q_ptr = this;
 }
@@ -399,8 +397,10 @@ void QQuickWebEngineProfile::setHttpCacheMaximumSize(int maximumSize)
 
 QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
 {
-    static QQuickWebEngineProfile profile(new QQuickWebEngineProfilePrivate(BrowserContextAdapter::defaultContext(), false));
-    return &profile;
+    static QQuickWebEngineProfile *profile = new QQuickWebEngineProfile(
+                new QQuickWebEngineProfilePrivate(BrowserContextAdapter::defaultContext()),
+                BrowserContextAdapter::globalQObjectRoot());
+    return profile;
 }
 
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const

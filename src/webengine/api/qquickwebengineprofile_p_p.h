@@ -52,10 +52,10 @@ class QQuickWebEngineSettings;
 class QQuickWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
-    QQuickWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter* browserContext, bool ownsContext);
+    QQuickWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter* browserContext);
     ~QQuickWebEngineProfilePrivate();
 
-    QtWebEngineCore::BrowserContextAdapter *browserContext() const { return m_browserContext; }
+    QtWebEngineCore::BrowserContextAdapter *browserContext() const { return m_browserContextRef.data(); }
     QQuickWebEngineSettings *settings() const { return m_settings.data(); }
 
     void cancelDownload(quint32 downloadId);
@@ -68,7 +68,6 @@ private:
     friend class QQuickWebEngineViewPrivate;
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
-    QtWebEngineCore::BrowserContextAdapter *m_browserContext;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
 };
