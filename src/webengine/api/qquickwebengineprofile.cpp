@@ -137,6 +137,20 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
     }
 }
 
+/*!
+    \qmltype WebEngineProfile
+    \instantiates QQuickWebEngineProfile
+    \inqmlmodule QtWebEngine 1.1
+    \since QtWebEngine 1.1
+    \brief A WebEngineProfile contains common settings for multiple WebEngineView.
+
+    WebEngineProfile contains settings and history shared by all WebEngineView that belong
+    to the profile.
+
+    A default profile is built-in that all web pages not specifically created with another profile
+    belongs to.
+*/
+
 QQuickWebEngineProfile::QQuickWebEngineProfile()
     : d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false), true))
 {
@@ -152,6 +166,12 @@ QQuickWebEngineProfile::QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *pr
 QQuickWebEngineProfile::~QQuickWebEngineProfile()
 {
 }
+
+/*!
+    \qmlproperty QString WebEngineProfile::storageName
+
+    The storage name is used to give each profile that uses the disk separate subdirectories for persistent data and cache.
+*/
 
 QString QQuickWebEngineProfile::storageName() const
 {
@@ -176,6 +196,12 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
         emit persistentCookiesPolicyChanged();
 }
 
+/*!
+    \qmlproperty bool WebEngineProfile::offTheRecord
+
+    An offTheRecord profile forces cookies and HTTP cache to be in memory, but also force
+    all other normally persistent data to be stored in memory.
+*/
 bool QQuickWebEngineProfile::isOffTheRecord() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -197,6 +223,14 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
         emit persistentCookiesPolicyChanged();
 }
 
+/*!
+    \qmlproperty QString WebEngineProfile::persistentStoragePath
+
+    The persistent storage path is where persistent data for the browser and web content is stored.
+    Persistent data includes persistent cookies, HTML5 local storage and visited links.
+
+    By default this is below QStandardPaths::writableLocation(QStandardPaths::DataLocation) in a storageName specific directory.
+*/
 QString QQuickWebEngineProfile::persistentStoragePath() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -212,6 +246,11 @@ void QQuickWebEngineProfile::setPersistentStoragePath(const QString &path)
     emit persistentStoragePathChanged();
 }
 
+/*!
+    \qmlproperty QString WebEngineProfile::cachePath
+
+    By default this is below QStandardPaths::writableLocation(QStandardPaths::CacheLocation) in a storageName specific directory.
+*/
 QString QQuickWebEngineProfile::cachePath() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -227,6 +266,11 @@ void QQuickWebEngineProfile::setCachePath(const QString &path)
     emit cachePathChanged();
 }
 
+/*!
+    \qmlproperty QString WebEngineProfile::httpUserAgent
+
+    The user-agent string send with HTTP to identify the browser.
+*/
 QString QQuickWebEngineProfile::httpUserAgent() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -241,6 +285,29 @@ void QQuickWebEngineProfile::setHttpUserAgent(const QString &userAgent)
     d->browserContext()->setHttpUserAgent(userAgent);
     emit httpUserAgentChanged();
 }
+
+
+/*!
+    \qmlproperty enumeration WebEngineProfile::httpCacheType
+
+    The type of the HTTP cache.
+
+    \table
+
+    \header
+    \li Constant
+    \li Description
+
+    \row
+    \li MemoryHttpCache
+    \li Use a in-memory cache. This is the only setting possible if offTheRecord is set or no cachePath is available.
+
+    \row
+    \li DiskHttpCache
+    \li DiskHttpCache Use a disk cache. This is the default.
+
+    \endtable
+*/
 
 QQuickWebEngineProfile::HttpCacheType QQuickWebEngineProfile::httpCacheType() const
 {
@@ -257,6 +324,32 @@ void QQuickWebEngineProfile::setHttpCacheType(QQuickWebEngineProfile::HttpCacheT
         emit httpCacheTypeChanged();
 }
 
+/*!
+    \qmlproperty enumeration WebEngineProfile::persistentCookiesPolicy
+
+    The policy of cookie persistency.
+
+    \table
+
+    \header
+    \li Constant
+    \li Description
+
+    \row
+    \li NoPersistentCookies
+    \li Both session and persistent cookies are stored in memory. This is the only setting possible if offTheRecord is set or no persistentStoragePath is available.
+
+    \row
+    \li AllowPersistentCookies
+    \li Cookies marked persistent are save and restored from disk, session cookies are only stored to disk for crash recovery. This is the default setting.
+
+    \row
+    \li ForcePersistentCookies
+    \li Both session and persistent cookies are save and restored from disk.
+
+    \endtable
+*/
+
 QQuickWebEngineProfile::PersistentCookiesPolicy QQuickWebEngineProfile::persistentCookiesPolicy() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -272,6 +365,14 @@ void QQuickWebEngineProfile::setPersistentCookiesPolicy(QQuickWebEngineProfile::
         emit persistentCookiesPolicyChanged();
 }
 
+/*!
+    \qmlproperty int WebEngineProfile::httpCacheMaximumSize
+
+    The maximum size of the HTTP cache. If 0 it means the size will be controlled automatically by QtWebEngine.
+    The default value is 0.
+
+    \sa httpCacheType
+*/
 int QQuickWebEngineProfile::httpCacheMaxSize() const
 {
     const Q_D(QQuickWebEngineProfile);
