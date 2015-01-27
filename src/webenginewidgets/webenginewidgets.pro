@@ -13,6 +13,7 @@ INCLUDEPATH += $$PWD api ../core ../webengine/api
 SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
         api/qwebenginecertificateerror.cpp \
+        api/qwebenginedownloaditem.cpp \
         api/qwebenginehistory.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineprofile.cpp \
@@ -22,6 +23,8 @@ SOURCES = \
 
 HEADERS = \
         api/qtwebenginewidgetsglobal.h \
+        api/qwebenginedownloaditem.h \
+        api/qwebenginedownloaditem_p.h \
         api/qwebenginecertificateerror.h \
         api/qwebenginehistory.h \
         api/qwebenginepage.h \

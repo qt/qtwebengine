@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -34,42 +34,61 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEPROFILE_P_H
-#define QWEBENGINEPROFILE_P_H
+#ifndef QWEBENGINEDOWNLOADITEM_H
+#define QWEBENGINEDOWNLOADITEM_H
 
-#include "browser_context_adapter_client.h"
-#include "qwebengineprofile.h"
-#include <QMap>
-#include <QPointer>
+#include "qtwebenginewidgetsglobal.h"
 
-class BrowserContextAdapter;
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineSettings;
-class QWebEngineProfilePrivate
-        : public BrowserContextAdapterClient
+class QWebEngineDownloadItemPrivate;
+class QWebEngineProfilePrivate;
+
+class QWEBENGINEWIDGETS_EXPORT QWebEngineDownloadItem : public QObject
 {
+    Q_OBJECT
 public:
-    Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext);
-    ~QWebEngineProfilePrivate();
+    ~QWebEngineDownloadItem();
 
-    BrowserContextAdapter *browserContext() const { return m_browserContext; }
+    enum DownloadState {
+        DownloadRequested,
+        DownloadInProgress,
+        DownloadCompleted,
+        DownloadCancelled,
+        DownloadInterrupted
+    };
+    Q_ENUMS(DownloadState)
 
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
+    quint32 id();
+    DownloadState state();
+    qint64 totalBytes();
+    qint64 receivedBytes();
+    QUrl url();
+    QString path();
+    void setPath(QString path);
+    bool isFinished();
 
-    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
-    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
+public Q_SLOTS:
+    void accept();
+    void cancel();
+
+Q_SIGNALS:
+    void finished();
+    void stateChanged(DownloadState state);
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
-    QWebEngineProfile *q_ptr;
-    BrowserContextAdapter *m_browserContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_browserContextRef;
-    QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
+    Q_DISABLE_COPY(QWebEngineDownloadItem)
+    Q_DECLARE_PRIVATE(QWebEngineDownloadItem)
+
+    friend class QWebEngineProfilePrivate;
+
+    QWebEngineDownloadItem(QWebEngineDownloadItemPrivate*, QObject *parent = 0);
+    QScopedPointer<QWebEngineDownloadItemPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEPROFILE_P_H
+#endif // QWEBENGINEDOWNLOADITEM_H

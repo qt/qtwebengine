@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2014 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -34,42 +34,39 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEPROFILE_P_H
-#define QWEBENGINEPROFILE_P_H
+#ifndef QWEBENGINEDOWNLOADITEM_P_H
+#define QWEBENGINEDOWNLOADITEM_P_H
 
-#include "browser_context_adapter_client.h"
-#include "qwebengineprofile.h"
-#include <QMap>
-#include <QPointer>
+#include "qtwebenginewidgetsglobal.h"
 
-class BrowserContextAdapter;
+#include "qwebenginedownloaditem_p.h"
+#include "qwebengineprofile_p.h"
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineSettings;
-class QWebEngineProfilePrivate
-        : public BrowserContextAdapterClient
-{
+class QWebEngineDownloadItemPrivate {
+    QWebEngineDownloadItem *q_ptr;
+    QWebEngineProfilePrivate* profile;
+    friend class QWebEngineProfilePrivate;
 public:
-    Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext);
-    ~QWebEngineProfilePrivate();
+    Q_DECLARE_PUBLIC(QWebEngineDownloadItem)
+    QWebEngineDownloadItemPrivate(QWebEngineProfilePrivate *p, const QUrl &url);
+    ~QWebEngineDownloadItemPrivate();
 
-    BrowserContextAdapter *browserContext() const { return m_browserContext; }
+    bool downloadFinished;
+    quint32 downloadId;
+    QWebEngineDownloadItem::DownloadState downloadState;
+    QString downloadPath;
+    const QUrl downloadUrl;
 
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
+    qint64 totalBytes;
+    qint64 receivedBytes;
 
-    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
-    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
-
-private:
-    QWebEngineProfile *q_ptr;
-    BrowserContextAdapter *m_browserContext;
-    QExplicitlySharedDataPointer<BrowserContextAdapter> m_browserContextRef;
-    QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
+    void update(const BrowserContextAdapterClient::DownloadItemInfo &info);
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEPROFILE_P_H
+#endif // QWEBENGINEDOWNLOADITEM_P_H
+

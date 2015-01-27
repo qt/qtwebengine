@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 class QUrl;
+class QWebEngineDownloadItem;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfilePrivate;
@@ -95,6 +96,9 @@ public:
     bool visitedLinksContainsUrl(const QUrl &url) const;
 
     static QWebEngineProfile *defaultProfile();
+
+Q_SIGNALS:
+    void downloadRequested(QWebEngineDownloadItem *download);
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineProfile);

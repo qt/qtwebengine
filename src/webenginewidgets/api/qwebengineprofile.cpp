@@ -36,6 +36,8 @@
 
 #include "qwebengineprofile.h"
 
+#include "qwebenginedownloaditem.h"
+#include "qwebenginedownloaditem_p.h"
 #include "qwebenginepage.h"
 #include "qwebengineprofile_p.h"
 
@@ -77,15 +79,98 @@ QT_BEGIN_NAMESPACE
     \value ForcePersistentCookies Both session and persistent cookies are save and restored from disk.
 */
 
+/*!
+  \fn QWebEngineProfile::downloadRequested(QWebEngineDownloadItem *download)
+
+  \since 5.5
+
+  This signal is emitted whenever a download has been triggered.
+  The \a download argument holds the state of the download.
+  The \a download either has to be explicitly accepted with
+  QWebEngineDownloadItem::accept(), else the download will be
+  cancelled by default.
+  The download item is parented by the profile, but if not accepted
+  will be deleted immediately after the signal emission.
+
+  \sa QWebEngineDownloadItem
+*/
+
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
         : m_browserContext(browserContext)
 {
     if (ownsContext)
         m_browserContextRef = browserContext;
+
+    m_browserContext->setClient(this);
 }
 
 QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 {
+    m_browserContext->setClient(0);
+
+    Q_FOREACH (QWebEngineDownloadItem* download, m_ongoingDownloads) {
+        if (download)
+            download->cancel();
+    }
+
+    m_ongoingDownloads.clear();
+}
+
+void QWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
+{
+    m_browserContext->cancelDownload(downloadId);
+}
+
+void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
+{
+    m_ongoingDownloads.remove(downloadId);
+}
+
+void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
+{
+    Q_Q(QWebEngineProfile);
+
+    Q_ASSERT(!m_ongoingDownloads.contains(info.id));
+    QWebEngineDownloadItemPrivate *itemPrivate = new QWebEngineDownloadItemPrivate(this, info.url);
+    itemPrivate->downloadId = info.id;
+    itemPrivate->downloadState = QWebEngineDownloadItem::DownloadRequested;
+    itemPrivate->downloadPath = info.path;
+
+    QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
+
+    m_ongoingDownloads.insert(info.id, download);
+
+    Q_EMIT q->downloadRequested(download);
+
+    QWebEngineDownloadItem::DownloadState state = download->state();
+
+    info.path = download->path();
+    info.cancelled = state == QWebEngineDownloadItem::DownloadCancelled;
+
+    if (state == QWebEngineDownloadItem::DownloadRequested) {
+        // Delete unaccepted downloads.
+        info.cancelled = true;
+        m_ongoingDownloads.remove(info.id);
+        delete download;
+    }
+}
+
+void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
+{
+    if (!m_ongoingDownloads.contains(info.id))
+        return;
+
+    QWebEngineDownloadItem* download = m_ongoingDownloads.value(info.id).data();
+
+    if (!download) {
+        downloadDestroyed(info.id);
+        return;
+    }
+
+    download->d_func()->update(info);
+
+    if (download->isFinished())
+        m_ongoingDownloads.remove(info.id);
 }
 
 /*!
@@ -101,6 +186,7 @@ QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
     , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(true), true))
 {
+    d_ptr->q_ptr = this;
 }
 
 /*!
@@ -117,6 +203,7 @@ QWebEngineProfile::QWebEngineProfile(const QString &storageName, QObject *parent
     : QObject(parent)
     , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(storageName), true))
 {
+    d_ptr->q_ptr = this;
 }
 
 /*! \internal
@@ -124,6 +211,7 @@ QWebEngineProfile::QWebEngineProfile(const QString &storageName, QObject *parent
 QWebEngineProfile::QWebEngineProfile(QWebEngineProfilePrivate *privatePtr)
     : d_ptr(privatePtr)
 {
+    d_ptr->q_ptr = this;
 }
 
 /*! \internal
