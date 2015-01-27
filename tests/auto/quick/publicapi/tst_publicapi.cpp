@@ -46,8 +46,10 @@
 #include <QMetaType>
 #include <QtTest/QtTest>
 #include <private/qquickwebengineview_p.h>
+#include <private/qquickwebenginedownloaditem_p.h>
 #include <private/qquickwebengineloadrequest_p.h>
 #include <private/qquickwebenginenavigationrequest_p.h>
+#include <private/qquickwebenginenewviewrequest_p.h>
 #include <private/qquickwebengineprofile_p.h>
 
 class tst_publicapi : public QObject {
@@ -58,8 +60,10 @@ private Q_SLOTS:
 
 static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
+    << &QQuickWebEngineDownloadItem::staticMetaObject
     << &QQuickWebEngineLoadRequest::staticMetaObject
     << &QQuickWebEngineNavigationRequest::staticMetaObject
+    << &QQuickWebEngineNewViewRequest::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
     ;
 
@@ -124,6 +128,19 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
     << "QQuickWebEngineView.setZoomFactor(double) --> void"
     << "QQuickWebEngineView.profile --> QQuickWebEngineProfile*"
+    << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
+    << "QQuickWebEngineDownloadItem.id --> uint"
+    << "QQuickWebEngineDownloadItem.state --> DownloadState"
+    << "QQuickWebEngineDownloadItem.progress --> int"
+    << "QQuickWebEngineDownloadItem.path --> QString"
+    << "QQuickWebEngineDownloadItem.DownloadInProgress --> DownloadState"
+    << "QQuickWebEngineDownloadItem.DownloadCompleted --> DownloadState"
+    << "QQuickWebEngineDownloadItem.DownloadCancelled --> DownloadState"
+    << "QQuickWebEngineDownloadItem.DownloadInterrupted --> DownloadState"
+    << "QQuickWebEngineDownloadItem.stateChanged() --> void"
+    << "QQuickWebEngineDownloadItem.progressChanged() --> void"
+    << "QQuickWebEngineDownloadItem.pathChanged() --> void"
+    << "QQuickWebEngineDownloadItem.cancel() --> void"
     << "QQuickWebEngineLoadRequest.url --> QUrl"
     << "QQuickWebEngineLoadRequest.status --> QQuickWebEngineView::LoadStatus"
     << "QQuickWebEngineLoadRequest.errorString --> QString"
@@ -134,6 +151,9 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineNavigationRequest.action --> QQuickWebEngineView::NavigationRequestAction"
     << "QQuickWebEngineNavigationRequest.navigationType --> QQuickWebEngineView::NavigationType"
     << "QQuickWebEngineNavigationRequest.actionChanged() --> void"
+    << "QQuickWebEngineNewViewRequest.destination --> QQuickWebEngineView::NewViewDestination"
+    << "QQuickWebEngineNewViewRequest.userInitiated --> bool"
+    << "QQuickWebEngineNewViewRequest.openIn(QQuickWebEngineView*) --> void"
     << "QQuickWebEngineProfile.MemoryHttpCache --> HttpCacheType"
     << "QQuickWebEngineProfile.DiskHttpCache --> HttpCacheType"
     << "QQuickWebEngineProfile.NoPersistentCookies --> PersistentCookiesPolicy"
@@ -155,6 +175,8 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.httpCacheTypeChanged() --> void"
     << "QQuickWebEngineProfile.persistentCookiesPolicyChanged() --> void"
     << "QQuickWebEngineProfile.httpCacheMaxSizeChanged() --> void"
+    << "QQuickWebEngineProfile.downloadStarted(QQuickWebEngineDownloadItem*) --> void"
+    << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
     ;
 
 static bool isCheckedEnum(const QByteArray &typeName)

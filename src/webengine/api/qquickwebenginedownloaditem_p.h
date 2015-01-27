@@ -37,7 +37,7 @@
 #ifndef QQUICKWEBENGINEDOWNLOADITEM_P_H
 #define QQUICKWEBENGINEDOWNLOADITEM_P_H
 
-#include <qtwebengineglobal_p.h>
+#include "qtwebengineglobal_p.h"
 #include <QObject>
 #include <QScopedPointer>
 #include <QString>
