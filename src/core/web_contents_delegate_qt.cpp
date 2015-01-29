@@ -131,6 +131,13 @@ void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, do
     m_viewClient->loadProgressChanged(qRound(progress * 100));
 }
 
+void WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const content::NativeWebKeyboardEvent &event)
+{
+    Q_ASSERT(!event.skip_in_browser);
+    if (event.os_event)
+        m_viewClient->unhandledKeyEvent(reinterpret_cast<QKeyEvent *>(event.os_event));
+}
+
 void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc)
 {
     if (is_error_page) {

@@ -354,6 +354,13 @@ void QQuickWebEngineViewPrivate::focusContainer()
     q->forceActiveFocus();
 }
 
+void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
+{
+    Q_Q(QQuickWebEngineView);
+    if (q->parentItem())
+        q->window()->sendEvent(q->parentItem(), event);
+}
+
 void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
 {
     Q_Q(QQuickWebEngineView);

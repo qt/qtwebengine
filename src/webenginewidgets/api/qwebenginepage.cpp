@@ -271,6 +271,12 @@ void QWebEnginePagePrivate::focusContainer()
         view->setFocus();
 }
 
+void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
+{
+    if (view && view->parentWidget())
+        QGuiApplication::sendEvent(view->parentWidget(), event);
+}
+
 void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry)
 {
     Q_Q(QWebEnginePage);

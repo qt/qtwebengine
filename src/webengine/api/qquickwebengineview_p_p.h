@@ -155,6 +155,7 @@ public:
     virtual void loadVisuallyCommitted() Q_DECL_OVERRIDE;
     virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) Q_DECL_OVERRIDE;
     virtual void focusContainer() Q_DECL_OVERRIDE;
+    virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual void requestFullScreen(bool) Q_DECL_OVERRIDE;

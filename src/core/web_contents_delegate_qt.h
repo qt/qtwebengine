@@ -68,17 +68,13 @@ public:
     void setLastSearchedString(const QString &s) { m_lastSearchedString = s; }
     int lastReceivedFindReply() const { return m_lastReceivedFindReply; }
 
+    // WebContentsDelegate overrides
     virtual content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) Q_DECL_OVERRIDE;
     virtual void NavigationStateChanged(const content::WebContents* source, content::InvalidateTypes changed_flags) Q_DECL_OVERRIDE;
     virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked) Q_DECL_OVERRIDE;
     virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
     virtual void LoadProgressChanged(content::WebContents* source, double progress) Q_DECL_OVERRIDE;
-    virtual void DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc) Q_DECL_OVERRIDE;
-    virtual void DidCommitProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& url, ui::PageTransition transition_type) Q_DECL_OVERRIDE;
-    virtual void DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description) Q_DECL_OVERRIDE;
-    virtual void DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description) Q_DECL_OVERRIDE;
-    virtual void DidFinishLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url) Q_DECL_OVERRIDE;
-    virtual void DidUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates) Q_DECL_OVERRIDE;
+    virtual void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
     virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen) Q_DECL_OVERRIDE;
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
@@ -87,8 +83,16 @@ public:
     virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
     virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
     virtual void UpdateTargetURL(content::WebContents* source, const GURL& url) Q_DECL_OVERRIDE;
-    virtual void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host, const content::LoadCommittedDetails& details, const content::FrameNavigateParams& params) Q_DECL_OVERRIDE;
     virtual void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) Q_DECL_OVERRIDE;
+
+    // WebContentsObserver overrides
+    virtual void DidStartProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &validated_url, bool is_error_page, bool is_iframe_srcdoc) Q_DECL_OVERRIDE;
+    virtual void DidCommitProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &url, ui::PageTransition transition_type) Q_DECL_OVERRIDE;
+    virtual void DidFailProvisionalLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url, int error_code, const base::string16 &error_description) Q_DECL_OVERRIDE;
+    virtual void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url, int error_code, const base::string16 &error_description) Q_DECL_OVERRIDE;
+    virtual void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) Q_DECL_OVERRIDE;
+    virtual void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) Q_DECL_OVERRIDE;
+    virtual void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) Q_DECL_OVERRIDE;
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;

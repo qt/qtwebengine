@@ -54,6 +54,7 @@ SOURCES = \
         javascript_dialog_controller.cpp \
         javascript_dialog_manager_qt.cpp \
         media_capture_devices_dispatcher.cpp \
+        native_web_keyboard_event_qt.cpp \
         network_delegate_qt.cpp \
         ozone_platform_eglfs.cpp \
         process_main.cpp \

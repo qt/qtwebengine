@@ -661,7 +661,7 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
 
 content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *ev)
 {
-    content::NativeWebKeyboardEvent webKitEvent;
+    content::NativeWebKeyboardEvent webKitEvent(reinterpret_cast<gfx::NativeEvent>(ev));
     webKitEvent.timeStampSeconds = currentTimeForEvent(ev);
     webKitEvent.modifiers = modifiersForEvent(ev);
     webKitEvent.type = webEventTypeForEvent(ev);

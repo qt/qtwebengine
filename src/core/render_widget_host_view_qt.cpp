@@ -880,9 +880,16 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         UnlockMouse();
 
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
-    m_host->ForwardKeyboardEvent(webEvent);
     if (webEvent.type == blink::WebInputEvent::RawKeyDown && !ev->text().isEmpty()) {
+        // Blink won't consume the RawKeyDown, but rather the Char event in this case.
+        // Make sure to skip the former on the way back. The same os_event will be set on both of them.
+        webEvent.skip_in_browser = true;
+        m_host->ForwardKeyboardEvent(webEvent);
+
+        webEvent.skip_in_browser = false;
         webEvent.type = blink::WebInputEvent::Char;
+        m_host->ForwardKeyboardEvent(webEvent);
+    } else {
         m_host->ForwardKeyboardEvent(webEvent);
     }
 }

@@ -46,6 +46,7 @@
 #include <QStringList>
 #include <QUrl>
 
+QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
@@ -154,6 +155,7 @@ public:
     virtual void loadVisuallyCommitted() = 0;
     virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) = 0;
     virtual void focusContainer() = 0;
+    virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
     virtual void close() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
