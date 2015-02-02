@@ -45,12 +45,14 @@
 #include "ui_downloads.h"
 #include "ui_downloaditem.h"
 
-#include <QtNetwork/QNetworkReply>
-
-#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QTime>
+#include <QtCore/QUrl>
 
-class DownloadItem : public QWidget, public Ui_DownloadItem
+#include <QWebEngineDownloadItem>
+
+class DownloadManager;
+class DownloadWidget : public QWidget, public Ui_DownloadItem
 {
     Q_OBJECT
 
@@ -58,37 +60,32 @@ signals:
     void statusChanged();
 
 public:
-    DownloadItem(QNetworkReply *reply = 0, bool requestFileName = false, QWidget *parent = 0);
+    DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent = 0);
     bool downloading() const;
     bool downloadedSuccessfully() const;
 
-    QUrl m_url;
-
-    QFile m_output;
-    QNetworkReply *m_reply;
+    void init();
+    bool getFileName(bool promptForFileName = false);
 
 private slots:
     void stop();
-    void tryAgain();
     void open();
 
-    void downloadReadyRead();
-    void error(QNetworkReply::NetworkError code);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-    void metaDataChanged();
     void finished();
 
 private:
-    void getFileName();
-    void init();
+    friend class DownloadManager;
     void updateInfoLabel();
     QString dataString(int size) const;
 
-    QString saveFileName(const QString &directory) const;
-
-    bool m_requestFileName;
+    QUrl m_url;
+    QFileInfo m_file;
     qint64 m_bytesReceived;
     QTime m_downloadTime;
+    bool m_stopped;
+
+    QScopedPointer<QWebEngineDownloadItem> m_download;
 };
 
 class AutoSaver;
@@ -118,10 +115,7 @@ public:
     void setRemovePolicy(RemovePolicy policy);
 
 public slots:
-    void download(const QNetworkRequest &request, bool requestFileName = false);
-    inline void download(const QUrl &url, bool requestFileName = false)
-        { download(QNetworkRequest(url), requestFileName); }
-    void handleUnsupportedContent(QNetworkReply *reply, bool requestFileName = false);
+    void download(QWebEngineDownloadItem *download);
     void cleanup();
 
 private slots:
@@ -129,15 +123,14 @@ private slots:
     void updateRow();
 
 private:
-    void addItem(DownloadItem *item);
+    void addItem(DownloadWidget *item);
     void updateItemCount();
     void load();
 
     AutoSaver *m_autoSaver;
     DownloadModel *m_model;
-    QNetworkAccessManager *m_manager;
     QFileIconProvider *m_iconProvider;
-    QList<DownloadItem*> m_downloads;
+    QList<DownloadWidget*> m_downloads;
     RemovePolicy m_removePolicy;
     friend class DownloadModel;
 };

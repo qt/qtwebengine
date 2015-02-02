@@ -43,12 +43,15 @@
 
 #include "browserapplication.h"
 #include "browsermainwindow.h"
+#include "downloadmanager.h"
 #include "history.h"
 #include "urllineedit.h"
 #include "webview.h"
 
 #include <QtCore/QMimeData>
 #include <QtGui/QClipboard>
+#include <QtWebEngineWidgets/QWebEngineDownloadItem>
+#include <QtWebEngineWidgets/QWebEngineProfile>
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QListView>
 #include <QtWidgets/QMenu>
@@ -314,6 +317,8 @@ void TabWidget::currentChanged(int index)
                 this, SIGNAL(linkHovered(const QString&)));
         disconnect(oldWebView, SIGNAL(loadProgress(int)),
                 this, SIGNAL(loadProgress(int)));
+        disconnect(oldWebView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
+                this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
     }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
@@ -324,6 +329,8 @@ void TabWidget::currentChanged(int index)
             this, SIGNAL(linkHovered(const QString&)));
     connect(webView, SIGNAL(loadProgress(int)),
             this, SIGNAL(loadProgress(int)));
+    connect(webView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
+            this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
 
     for (int i = 0; i < m_actions.count(); ++i) {
         WebActionMapper *mapper = m_actions[i];
@@ -770,6 +777,12 @@ bool TabWidget::restoreState(const QByteArray &state)
     setCurrentIndex(currentTab);
 
     return true;
+}
+
+void TabWidget::downloadRequested(QWebEngineDownloadItem *download)
+{
+    BrowserApplication::downloadManager()->download(download);
+    download->accept();
 }
 
 WebActionMapper::WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent)

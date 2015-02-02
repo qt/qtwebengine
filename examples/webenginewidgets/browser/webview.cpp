@@ -52,6 +52,7 @@
 
 #include <QtGui/QClipboard>
 #include <QtNetwork/QAuthenticator>
+#include <QtNetwork/QNetworkReply>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
@@ -321,10 +322,6 @@ WebView::WebView(QWidget* parent)
             this, SIGNAL(urlChanged(QUrl)));
     connect(page(), SIGNAL(iconUrlChanged(QUrl)),
             this, SLOT(onIconUrlChanged(QUrl)));
-#if defined(QWEBENGINEPAGE_DOWNLOADREQUESTED)
-    connect(page(), SIGNAL(downloadRequested(QNetworkRequest)),
-            this, SLOT(downloadRequested(QNetworkRequest)));
-#endif
     connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     page()->setForwardUnsupportedContent(true);
@@ -471,9 +468,4 @@ void WebView::mouseReleaseEvent(QMouseEvent *event)
 void WebView::setStatusBarText(const QString &string)
 {
     m_statusBarText = string;
-}
-
-void WebView::downloadRequested(const QNetworkRequest &request)
-{
-    BrowserApplication::downloadManager()->download(request);
 }

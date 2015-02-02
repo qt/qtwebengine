@@ -45,6 +45,11 @@
 #include <QtWidgets/QTabBar>
 
 #include <QtWidgets/QShortcut>
+
+QT_BEGIN_NAMESPACE
+class QWebEngineDownloadItem;
+QT_END_NAMESPACE
+
 /*
     Tab bar with a few more features such as a context menu and shortcuts
  */
@@ -197,6 +202,7 @@ private slots:
     void currentChanged(int index);
     void aboutToShowRecentTabsMenu();
     void aboutToShowRecentTriggeredAction(QAction *action);
+    void downloadRequested(QWebEngineDownloadItem *download);
     void webViewLoadStarted();
     void webViewIconChanged();
     void webViewTitleChanged(const QString &title);

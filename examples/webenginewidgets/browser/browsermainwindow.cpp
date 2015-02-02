@@ -284,7 +284,7 @@ void BrowserMainWindow::setupMenu()
     fileMenu->addSeparator();
     fileMenu->addAction(m_tabWidget->closeTabAction());
     fileMenu->addSeparator();
-#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+#if defined(QWEBENGINE_SAVE_AS_FILE)
     fileMenu->addAction(tr("&Save As..."), this,
                 SLOT(slotFileSaveAs()), QKeySequence(QKeySequence::Save));
     fileMenu->addSeparator();
@@ -603,7 +603,7 @@ void BrowserMainWindow::slotSelectLineEdit()
 
 void BrowserMainWindow::slotFileSaveAs()
 {
-    BrowserApplication::downloadManager()->download(currentTab()->url(), true);
+    // not implemented yet.
 }
 
 void BrowserMainWindow::slotPreferences()
@@ -940,10 +940,8 @@ void BrowserMainWindow::slotAboutToShowWindowMenu()
     m_windowMenu->addAction(m_tabWidget->nextTabAction());
     m_windowMenu->addAction(m_tabWidget->previousTabAction());
     m_windowMenu->addSeparator();
-#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     m_windowMenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
     m_windowMenu->addSeparator();
-#endif
 
     QList<BrowserMainWindow*> windows = BrowserApplication::instance()->mainWindows();
     for (int i = 0; i < windows.count(); ++i) {
