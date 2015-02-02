@@ -53,6 +53,11 @@
 #include "type_conversion.h"
 #include "qtwebenginecoreglobal.h"
 
+ASSERT_ENUMS_MATCH(content::DownloadItem::IN_PROGRESS, BrowserContextAdapterClient::DownloadInProgress)
+ASSERT_ENUMS_MATCH(content::DownloadItem::COMPLETE, BrowserContextAdapterClient::DownloadCompleted)
+ASSERT_ENUMS_MATCH(content::DownloadItem::CANCELLED, BrowserContextAdapterClient::DownloadCancelled)
+ASSERT_ENUMS_MATCH(content::DownloadItem::INTERRUPTED, BrowserContextAdapterClient::DownloadInterrupted)
+
 DownloadManagerDelegateQt::DownloadManagerDelegateQt(BrowserContextAdapter *contextAdapter)
     : m_contextAdapter(contextAdapter)
     , m_currentId(0)

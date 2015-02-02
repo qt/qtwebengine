@@ -91,7 +91,7 @@ void QWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::Do
 
     Q_ASSERT(downloadState != QWebEngineDownloadItem::DownloadRequested);
 
-    if (info.state != downloadState) {
+    if (toDownloadState(info.state) != downloadState) {
         downloadState = toDownloadState(info.state);
         Q_EMIT q->stateChanged(downloadState);
     }

@@ -91,6 +91,7 @@ QT_BEGIN_NAMESPACE
   cancelled by default.
   The download item is parented by the profile, but if not accepted
   will be deleted immediately after the signal emission.
+  This signal can not be used with a queued connection.
 
   \sa QWebEngineDownloadItem
 */
