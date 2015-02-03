@@ -77,9 +77,10 @@ ApplicationWindow {
         id: testProfile
         storageName: "Test"
         httpCacheType: httpDiskCacheEnabled.checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
-        onDownloadStarted: {
+        onDownloadRequested: {
             downloadView.visible = true
             downloadView.append(download)
+            download.accept()
         }
     }
 

@@ -53,13 +53,14 @@ public:
     QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfilePrivate *p);
     ~QQuickWebEngineDownloadItemPrivate();
 
-    bool downloadStarted;
     quint32 downloadId;
     QQuickWebEngineDownloadItem::DownloadState downloadState;
-    int downloadProgress;
+    qint64 totalBytes;
+    qint64 receivedBytes;
     QString downloadPath;
 
-    void update(QQuickWebEngineDownloadItem::DownloadState state, int progress);
+    void update(const BrowserContextAdapterClient::DownloadItemInfo &info);
+    void updateState(QQuickWebEngineDownloadItem::DownloadState newState);
 };
 
 QT_END_NAMESPACE

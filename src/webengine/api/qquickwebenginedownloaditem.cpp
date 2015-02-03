@@ -39,12 +39,26 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int state) {
+    switch (state) {
+    case BrowserContextAdapterClient::DownloadInProgress:
+        return QQuickWebEngineDownloadItem::DownloadInProgress;
+    case BrowserContextAdapterClient::DownloadCompleted:
+        return QQuickWebEngineDownloadItem::DownloadCompleted;
+    case BrowserContextAdapterClient::DownloadCancelled:
+        return QQuickWebEngineDownloadItem::DownloadCancelled;
+    case BrowserContextAdapterClient::DownloadInterrupted:
+        return QQuickWebEngineDownloadItem::DownloadInterrupted;
+    default:
+        Q_UNREACHABLE();
+        return QQuickWebEngineDownloadItem::DownloadCancelled;
+    }
+}
+
 QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfilePrivate *p)
     : profile(p)
-    , downloadStarted(false)
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
-    , downloadProgress(0)
 {
 }
 
@@ -53,64 +67,189 @@ QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
     profile->downloadDestroyed(downloadId);
 }
 
-void QQuickWebEngineDownloadItemPrivate::update(QQuickWebEngineDownloadItem::DownloadState state, int progress)
+/*!
+    \qmltype WebEngineDownloadItem
+    \instantiates QQuickWebEngineDownloadItem
+    \inqmlmodule QtWebEngine 1.1
+    \since QtWebEngine 1.1
+    \brief A WebEngineDownloadItem provides information about a download.
+
+    WebEngineDownloadItem stores the state of a download to be used to manage requested downloads.
+
+    By default the download is rejected unless the user explicitly accepts it with
+    WebEngineDownloadItem::accept().
+*/
+
+void QQuickWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::DownloadItemInfo &info)
 {
     Q_Q(QQuickWebEngineDownloadItem);
-    if (state != downloadState) {
-        downloadState = state;
-        Q_EMIT q->stateChanged();
+
+    updateState(toDownloadState(info.state));
+
+    if (info.receivedBytes != receivedBytes) {
+        receivedBytes = info.receivedBytes;
+        Q_EMIT q->receivedBytesChanged();
     }
-    if (progress != downloadProgress) {
-        downloadProgress = progress;
-        Q_EMIT q->progressChanged();
+
+    if (info.totalBytes != totalBytes) {
+        totalBytes = info.totalBytes;
+        Q_EMIT q->totalBytesChanged();
     }
 }
+
+void QQuickWebEngineDownloadItemPrivate::updateState(QQuickWebEngineDownloadItem::DownloadState newState)
+{
+    Q_Q(QQuickWebEngineDownloadItem);
+
+    if (downloadState != newState) {
+        downloadState = newState;
+        Q_EMIT q->stateChanged();
+    }
+}
+
+/*!
+    \qmlmethod void WebEngineDownloadItem::accept()
+
+    Accepts the download request, which will start the download.
+
+   \sa WebEngineDownloadItem::cancel()
+*/
+
+void QQuickWebEngineDownloadItem::accept()
+{
+    Q_D(QQuickWebEngineDownloadItem);
+
+    if (d->downloadState != QQuickWebEngineDownloadItem::DownloadRequested)
+        return;
+
+    d->updateState(QQuickWebEngineDownloadItem::DownloadInProgress);
+}
+
+/*!
+    \qmlmethod void WebEngineDownloadItem::cancel()
+
+    Cancels the download.
+*/
 
 void QQuickWebEngineDownloadItem::cancel()
 {
     Q_D(QQuickWebEngineDownloadItem);
 
-    if (d->downloadState == QQuickWebEngineDownloadItem::DownloadCompleted
-            || d->downloadState == QQuickWebEngineDownloadItem::DownloadCancelled)
+    QQuickWebEngineDownloadItem::DownloadState state = d->downloadState;
+
+    if (state == QQuickWebEngineDownloadItem::DownloadCompleted
+            || state == QQuickWebEngineDownloadItem::DownloadCancelled)
         return;
 
-    d->update(QQuickWebEngineDownloadItem::DownloadCancelled, d->downloadProgress);
+    d->updateState(QQuickWebEngineDownloadItem::DownloadCancelled);
 
     // We directly cancel the download if the user cancels before
     // it even started, so no need to notify the profile here.
-    if (d->downloadStarted)
+    if (state == QQuickWebEngineDownloadItem::DownloadInProgress)
         d->profile->cancelDownload(d->downloadId);
 }
 
-quint32 QQuickWebEngineDownloadItem::id()
+/*!
+    \qmlproperty quint32 WebEngineDownloadItem::id
+
+    The download item's id.
+*/
+
+quint32 QQuickWebEngineDownloadItem::id() const
 {
-    Q_D(QQuickWebEngineDownloadItem);
+    Q_D(const QQuickWebEngineDownloadItem);
     return d->downloadId;
 }
 
-QQuickWebEngineDownloadItem::DownloadState QQuickWebEngineDownloadItem::state()
+/*!
+    \qmlproperty enumeration WebEngineDownloadItem::state
+
+    This property describes the state in which the download is in.
+
+    The state can be one of:
+
+    \table
+
+    \header
+    \li Constant
+    \li Description
+
+    \row
+    \li DownloadRequested
+    \li The download has been requested, but has not been accepted yet.
+
+    \row
+    \li DownloadInProgress
+    \li The download is in progress.
+
+    \row
+    \li DownloadCompleted
+    \li The download completed successfully.
+
+    \row
+    \li DownloadInterrupted
+    \li The download has been interrupted (by the server or because of lost connectivity).
+
+    \endtable
+*/
+
+QQuickWebEngineDownloadItem::DownloadState QQuickWebEngineDownloadItem::state() const
 {
-    Q_D(QQuickWebEngineDownloadItem);
+    Q_D(const QQuickWebEngineDownloadItem);
     return d->downloadState;
 }
 
-int QQuickWebEngineDownloadItem::progress()
+/*!
+    \qmlproperty int WebEngineDownloadItem::totalBytes
+
+    The download's total size in bytes.
+
+    -1 means the total size is unknown.
+*/
+
+qint64 QQuickWebEngineDownloadItem::totalBytes() const
 {
-    Q_D(QQuickWebEngineDownloadItem);
-    return d->downloadProgress;
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->totalBytes;
 }
 
-QString QQuickWebEngineDownloadItem::path()
+/*!
+    \qmlproperty int WebEngineDownloadItem::receivedBytes
+
+    The download's bytes that have been received so far.
+*/
+
+qint64 QQuickWebEngineDownloadItem::receivedBytes() const
 {
-    Q_D(QQuickWebEngineDownloadItem);
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->receivedBytes;
+}
+
+/*!
+    \qmlproperty QString WebEngineDownloadItem::path
+
+    The download item's full target path where it is being downloaded to.
+
+    The path includes the file name. The default suggested path is the standard
+    download location and file name is deduced not to overwrite already existing files.
+
+    The download path can only be set in the \c WebEngineProfile.onDownloadRequested
+    handler before the download is accepted.
+
+    \sa WebEngineProfile::downloadRequested(WebEngineDownloadItem download), WebEngineDownloadItem::accept()
+*/
+
+QString QQuickWebEngineDownloadItem::path() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
     return d->downloadPath;
 }
 
 void QQuickWebEngineDownloadItem::setPath(QString path)
 {
     Q_D(QQuickWebEngineDownloadItem);
-    if (d->downloadStarted) {
-        qWarning("Setting the download path is not allowed after the download has been started.");
+    if (d->downloadState != QQuickWebEngineDownloadItem::DownloadRequested) {
+        qWarning("Setting the download path is not allowed after the download has been accepted.");
         return;
     }
     if (d->downloadPath != path) {

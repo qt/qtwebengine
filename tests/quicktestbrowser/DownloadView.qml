@@ -72,11 +72,12 @@ Rectangle {
             Rectangle {
                 id: progressBar
 
-                property int progress: downloadModel.downloads[index] ? downloadModel.downloads[index].progress : 0
+                property real progress: downloadModel.downloads[index]
+                                       ? downloadModel.downloads[index].receivedBytes / downloadModel.downloads[index].totalBytes : 0
 
                 radius: 3
                 color: width == listView.width ? "green" : "#2b74c7"
-                width: listView.width / 100 * progress
+                width: listView.width * progress
                 height: cancelButton.height
 
                 Behavior on width {

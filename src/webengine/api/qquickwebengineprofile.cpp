@@ -48,22 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int state) {
-    switch (state) {
-    case BrowserContextAdapterClient::DownloadInProgress:
-        return QQuickWebEngineDownloadItem::DownloadInProgress;
-    case BrowserContextAdapterClient::DownloadCompleted:
-        return QQuickWebEngineDownloadItem::DownloadCompleted;
-    case BrowserContextAdapterClient::DownloadCancelled:
-        return QQuickWebEngineDownloadItem::DownloadCancelled;
-    case BrowserContextAdapterClient::DownloadInterrupted:
-        return QQuickWebEngineDownloadItem::DownloadInterrupted;
-    default:
-        Q_UNREACHABLE();
-        return QQuickWebEngineDownloadItem::DownloadCancelled;
-    }
-}
-
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
         : m_settings(new QQuickWebEngineSettings())
         , m_browserContext(browserContext)
@@ -95,7 +79,6 @@ void QQuickWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 void QQuickWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
 {
     m_ongoingDownloads.remove(downloadId);
-    cancelDownload(downloadId);
 }
 
 void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
@@ -105,7 +88,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
     QQuickWebEngineDownloadItemPrivate *itemPrivate = new QQuickWebEngineDownloadItemPrivate(this);
     itemPrivate->downloadId = info.id;
-    itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadInProgress;
+    itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadRequested;
     itemPrivate->downloadPath = info.path;
 
     QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
@@ -113,11 +96,12 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     m_ongoingDownloads.insert(info.id, download);
 
     QQmlEngine::setObjectOwnership(download, QQmlEngine::JavaScriptOwnership);
-    Q_EMIT q->downloadStarted(download);
-    download->d_func()->downloadStarted = true;
+    Q_EMIT q->downloadRequested(download);
 
+    QQuickWebEngineDownloadItem::DownloadState state = download->state();
     info.path = download->path();
-    info.cancelled = download->state() == QQuickWebEngineDownloadItem::DownloadCancelled;
+    info.cancelled = state == QQuickWebEngineDownloadItem::DownloadCancelled
+                      || state == QQuickWebEngineDownloadItem::DownloadRequested;
 }
 
 void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
@@ -134,7 +118,7 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
         return;
     }
 
-    download->d_func()->update(toDownloadState(info.state), info.percentComplete);
+    download->d_func()->update(info);
 
     if (info.state != BrowserContextAdapterClient::DownloadInProgress) {
         Q_EMIT q->downloadFinished(download);
@@ -154,6 +138,24 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 
     A default profile is built-in that all web pages not specifically created with another profile
     belongs to.
+*/
+
+/*!
+    \qmlsignal WebEngineProfile::downloadRequested(WebEngineDownloadItem download)
+
+    This signal is emitted whenever a download has been triggered.
+    The \a download argument holds the state of the download.
+    The \a download has to be explicitly accepted with WebEngineDownloadItem::accept(),
+    else the download will be cancelled by default.
+*/
+
+/*!
+    \qmlsignal WebEngineProfile::downloadFinished(WebEngineDownloadItem download)
+
+    This signal is emitted whenever a download finishes downloading.
+    This can be due to the download finishing successfully, being cancelled or
+    interrupted by lost connectivity for example.
+    The \a download argument holds the state of the finished download instance.
 */
 
 QQuickWebEngineProfile::QQuickWebEngineProfile()

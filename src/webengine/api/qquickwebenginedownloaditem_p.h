@@ -52,6 +52,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineDownloadItem: public QObject {
 public:
     ~QQuickWebEngineDownloadItem();
     enum DownloadState {
+        DownloadRequested,
         DownloadInProgress,
         DownloadCompleted,
         DownloadCancelled,
@@ -61,20 +62,24 @@ public:
 
     Q_PROPERTY(quint32 id READ id() CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
-    Q_PROPERTY(int progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged)
+    Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
 
+    Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
 
-    quint32 id();
-    DownloadState state();
-    int progress();
-    QString path();
+    quint32 id() const;
+    DownloadState state() const;
+    qint64 totalBytes() const;
+    qint64 receivedBytes() const;
+    QString path() const;
     void setPath(QString path);
 
 Q_SIGNALS:
     void stateChanged();
-    void progressChanged();
+    void receivedBytesChanged();
+    void totalBytesChanged();
     void pathChanged();
 
 private:

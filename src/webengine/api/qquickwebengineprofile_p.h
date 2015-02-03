@@ -112,7 +112,7 @@ signals:
     void persistentCookiesPolicyChanged();
     void httpCacheMaximumSizeChanged();
 
-    void downloadStarted(QQuickWebEngineDownloadItem *download);
+    void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
 
 private:

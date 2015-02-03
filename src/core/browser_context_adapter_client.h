@@ -60,7 +60,6 @@ public:
         const quint32 id;
         const QUrl url;
         const int state;
-        const int percentComplete;
         const qint64 totalBytes;
         const qint64 receivedBytes;
 
