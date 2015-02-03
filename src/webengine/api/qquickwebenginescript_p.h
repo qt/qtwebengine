@@ -1,0 +1,109 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the QtWebEngine module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 3 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPLv3 included in the
+** packaging of this file. Please review the following information to
+** ensure the GNU Lesser General Public License version 3 requirements
+** will be met: https://www.gnu.org/licenses/lgpl.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 or later as published by the Free
+** Software Foundation and appearing in the file LICENSE.GPL included in
+** the packaging of this file. Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html.
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QQUICKWEBENGINESCRIPT_P_H
+#define QQUICKWEBENGINESCRIPT_P_H
+
+#include <private/qtwebengineglobal_p.h>
+#include <QtCore/QObject>
+
+class UserScriptControllerHost;
+class WebContentsAdapter;
+
+QT_BEGIN_NAMESPACE
+class QQuickWebEngineScriptPrivate;
+class QQuickWebEngineView;
+
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineScript : public QObject
+{
+    Q_OBJECT
+    Q_ENUMS(InjectionPoint)
+    Q_ENUMS(ScriptWorldId)
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(InjectionPoint injectionPoint READ injectionPoint WRITE setInjectionPoint NOTIFY injectionPointChanged)
+    Q_PROPERTY(ScriptWorldId worldId READ worldId WRITE setWorldId NOTIFY worldIdChanged)
+    Q_PROPERTY(bool runOnSubframes READ runOnSubframes WRITE setRunOnSubframes NOTIFY runOnSubframesChanged)
+
+
+public:
+    enum InjectionPoint {
+        Deferred,
+        DocumentReady,
+        DocumentCreation
+    };
+
+    enum ScriptWorldId {
+        MainWorld = 0,
+        ApplicationWorld,
+        UserWorld
+    };
+
+    QQuickWebEngineScript();
+    ~QQuickWebEngineScript();
+    Q_INVOKABLE QString toString() const;
+
+    QString name() const;
+    QString source() const;
+    InjectionPoint injectionPoint() const;
+    ScriptWorldId worldId() const;
+    bool runOnSubframes() const;
+
+public Q_SLOTS:
+    void setName(QString arg);
+    void setSource(QString arg);
+    void setInjectionPoint(InjectionPoint arg);
+    void setWorldId(ScriptWorldId arg);
+    void setRunOnSubframes(bool arg);
+
+Q_SIGNALS:
+    void nameChanged(QString arg);
+    void sourceChanged(QString arg);
+    void injectionPointChanged(InjectionPoint arg);
+    void worldIdChanged(ScriptWorldId arg);
+    void runOnSubframesChanged(bool arg);
+
+protected:
+    void timerEvent(QTimerEvent *e) override;
+
+private:
+    friend class QQuickWebEngineViewPrivate;
+    Q_DECLARE_PRIVATE(QQuickWebEngineScript);
+    QScopedPointer<QQuickWebEngineScriptPrivate> d_ptr;
+};
+QT_END_NAMESPACE
+
+#endif // QQUICKWEBENGINESCRIPT_P_H

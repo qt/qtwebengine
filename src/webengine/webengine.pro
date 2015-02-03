@@ -18,6 +18,7 @@ SOURCES = \
         api/qquickwebenginenavigationrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
         api/qquickwebengineprofile.cpp \
+        api/qquickwebenginescript.cpp \
         api/qquickwebenginesettings.cpp \
         api/qquickwebenginesingleton.cpp \
         api/qquickwebengineview.cpp \
@@ -38,6 +39,7 @@ HEADERS = \
         api/qquickwebenginenewviewrequest_p.h \
         api/qquickwebengineprofile_p.h \
         api/qquickwebengineprofile_p_p.h \
+        api/qquickwebenginescript_p.h \
         api/qquickwebenginesettings_p.h \
         api/qquickwebenginesingleton_p.h \
         api/qquickwebengineview_p.h \

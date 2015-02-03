@@ -38,6 +38,7 @@
 #define QQUICKWEBENGINEVIEW_P_H
 
 #include <private/qtwebengineglobal_p.h>
+#include "qquickwebenginescript_p.h"
 #include <QQuickItem>
 
 QT_BEGIN_NAMESPACE
@@ -67,6 +68,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
+    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
@@ -145,6 +147,7 @@ public:
 
     QQuickWebEngineProfile *profile() const;
     void setProfile(QQuickWebEngineProfile *);
+    QQmlListProperty<QQuickWebEngineScript> userScripts();
 
     QQuickWebEngineSettings *settings() const;
     QQmlWebChannel *webChannel();

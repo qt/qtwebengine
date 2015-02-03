@@ -70,6 +70,7 @@ public:
 
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
+        qmlRegisterType<QQuickWebEngineScript>(uri, 1, 1, "WebEngineScript");
         qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", QObject::tr("Cannot create separate instance of WebEngineCertificateError"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 1, "WebEngineDownloadItem",
             QObject::tr("Cannot create a separate instance of WebEngineDownloadItem"));

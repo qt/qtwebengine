@@ -180,6 +180,12 @@ public:
     void setProfile(QQuickWebEngineProfile *profile);
     void ensureContentsAdapter();
 
+    // QQmlListPropertyHelpers
+    static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
+    static int userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p);
+    static QQuickWebEngineScript *userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx);
+    static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
+
     QExplicitlySharedDataPointer<WebContentsAdapter> adapter;
     QScopedPointer<QQuickWebEngineViewExperimental> e;
     QScopedPointer<QQuickWebEngineViewport> v;
@@ -198,6 +204,7 @@ public:
 
 private:
     QScopedPointer<UIDelegatesManager> m_uIDelegatesManager;
+    QList<QQuickWebEngineScript *> m_userScripts;
     qreal m_dpiScale;
 };
 

@@ -44,6 +44,7 @@
 #include <QMetaObject>
 #include <QMetaProperty>
 #include <QMetaType>
+#include <QQmlListProperty>
 #include <QtTest/QtTest>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
@@ -53,6 +54,7 @@
 #include <private/qquickwebenginenavigationrequest_p.h>
 #include <private/qquickwebenginenewviewrequest_p.h>
 #include <private/qquickwebengineprofile_p.h>
+#include <private/qquickwebenginescript_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -70,12 +72,14 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineNavigationRequest::staticMetaObject
     << &QQuickWebEngineNewViewRequest::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
+    << &QQuickWebEngineScript::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
 
 static QStringList hardcodedTypes = QStringList()
     << "QJSValue"
+    << "QQmlListProperty<QQuickWebEngineScript>"
     ;
 
 static QStringList expectedAPI = QStringList()
@@ -148,6 +152,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.profile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineView.navigationHistory --> QQuickWebEngineHistory*"
     << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
+    << "QQuickWebEngineView.userScripts --> QQmlListProperty<QQuickWebEngineScript>"
     << "QQuickWebEngineDownloadItem.id --> uint"
     << "QQuickWebEngineDownloadItem.state --> DownloadState"
     << "QQuickWebEngineDownloadItem.progress --> int"
@@ -206,6 +211,28 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineCertificateError.overridable --> bool"
     << "QQuickWebEngineProfile.downloadStarted(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
+    << "QQuickWebEngineScript.Deferred --> InjectionPoint"
+    << "QQuickWebEngineScript.DocumentReady --> InjectionPoint"
+    << "QQuickWebEngineScript.DocumentCreation --> InjectionPoint"
+    << "QQuickWebEngineScript.MainWorld --> ScriptWorldId"
+    << "QQuickWebEngineScript.ApplicationWorld --> ScriptWorldId"
+    << "QQuickWebEngineScript.UserWorld --> ScriptWorldId"
+    << "QQuickWebEngineScript.name --> QString"
+    << "QQuickWebEngineScript.source --> QString"
+    << "QQuickWebEngineScript.injectionPoint --> InjectionPoint"
+    << "QQuickWebEngineScript.worldId --> ScriptWorldId"
+    << "QQuickWebEngineScript.runOnSubframes --> bool"
+    << "QQuickWebEngineScript.nameChanged(QString) --> void"
+    << "QQuickWebEngineScript.sourceChanged(QString) --> void"
+    << "QQuickWebEngineScript.injectionPointChanged(InjectionPoint) --> void"
+    << "QQuickWebEngineScript.worldIdChanged(ScriptWorldId) --> void"
+    << "QQuickWebEngineScript.runOnSubframesChanged(bool) --> void"
+    << "QQuickWebEngineScript.setName(QString) --> void"
+    << "QQuickWebEngineScript.setSource(QString) --> void"
+    << "QQuickWebEngineScript.setInjectionPoint(InjectionPoint) --> void"
+    << "QQuickWebEngineScript.setWorldId(ScriptWorldId) --> void"
+    << "QQuickWebEngineScript.setRunOnSubframes(bool) --> void"
+    << "QQuickWebEngineScript.toString() --> QString"
     ;
 
 static bool isCheckedEnum(const QByteArray &typeName)
