@@ -102,6 +102,10 @@ public:
         const GURL& requesting_frame,
         bool user_gesture,
         const base::Callback<void(bool)>& result_callback) Q_DECL_OVERRIDE;
+    virtual void CancelPermissionRequest(content::PermissionType permission,
+                                         content::WebContents* web_contents,
+                                         int bridge_id,
+                                         const GURL& requesting_frame) Q_DECL_OVERRIDE;
     content::LocationProvider* OverrideSystemLocationProvider() Q_DECL_OVERRIDE;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;

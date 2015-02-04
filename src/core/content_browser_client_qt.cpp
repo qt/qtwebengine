@@ -399,7 +399,6 @@ void ContentBrowserClientQt::RequestPermission(content::PermissionType permissio
                                                 const base::Callback<void(bool)>& result_callback)
 {
     Q_UNUSED(bridge_id);
-    Q_UNUSED(requesting_frame);
     Q_UNUSED(user_gesture);
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
     Q_ASSERT(contentsDelegate);
@@ -407,6 +406,19 @@ void ContentBrowserClientQt::RequestPermission(content::PermissionType permissio
         contentsDelegate->requestGeolocationPermission(requesting_frame, result_callback);
     else
         result_callback.Run(false);
+}
+
+
+void ContentBrowserClientQt::CancelPermissionRequest(content::PermissionType permission,
+                                                     content::WebContents* web_contents,
+                                                     int bridge_id,
+                                                     const GURL& requesting_frame)
+{
+    Q_UNUSED(bridge_id);
+    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
+    Q_ASSERT(contentsDelegate);
+    if (permission == content::PERMISSION_GEOLOCATION)
+        contentsDelegate->cancelGeolocationPermissionRequest(requesting_frame);
 }
 
 blink::WebNotificationPermission ContentBrowserClientQt::CheckDesktopNotificationPermission(const GURL&, content::ResourceContext *, int )

@@ -312,15 +312,25 @@ void WebContentsDelegateQt::allowCertificateError(const QSharedPointer<Certifica
     m_viewClient->allowCertificateError(errorController);
 }
 
-void WebContentsDelegateQt::requestGeolocationPermission(const GURL &requestingFrameOrigin, base::Callback<void (bool)> resultCallback)
+void WebContentsDelegateQt::requestGeolocationPermission(const GURL &requestingFrameOrigin, const base::Callback<void (bool)> &resultCallback)
 {
-    m_lastGeolocationPermissionRequest.url = toQt(requestingFrameOrigin);
-    m_lastGeolocationPermissionRequest.callback = resultCallback;
-    m_viewClient->runGeolocationPermissionRequest(m_lastGeolocationPermissionRequest.url);
+    QUrl url = toQt(requestingFrameOrigin);
+    bool newRequest = !m_geolocationPermissionRequests.contains(url);
+    m_geolocationPermissionRequests[url] = resultCallback;
+    if (newRequest)
+        m_viewClient->runGeolocationPermissionRequest(url);
+}
+
+void WebContentsDelegateQt::cancelGeolocationPermissionRequest(const GURL &requestingFrameOrigin)
+{
+    m_geolocationPermissionRequests.remove(toQt(requestingFrameOrigin));
+    // FIXME: Tell the API layer to cancel the permission request?
 }
 
 void WebContentsDelegateQt::geolocationPermissionReply(const QUrl &origin, bool permission)
 {
-    if (m_lastGeolocationPermissionRequest.url == origin)
-        m_lastGeolocationPermissionRequest.callback.Run(permission);
+    if (m_geolocationPermissionRequests.contains(origin)) {
+        m_geolocationPermissionRequests[origin].Run(permission);
+        m_geolocationPermissionRequests.remove(origin);
+    }
 }
