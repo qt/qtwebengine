@@ -661,6 +661,12 @@ void QQuickWebEngineView::setProfile(QQuickWebEngineProfile *profile)
     d->setProfile(profile);
 }
 
+QQuickWebEngineSettings *QQuickWebEngineView::settings() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->m_settings.data();
+}
+
 void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
 {
     if (profile == m_profile)
@@ -779,11 +785,6 @@ void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlCo
 QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent() const
 {
     return d_ptr->contextMenuExtraItems;
-}
-
-QQuickWebEngineSettings *QQuickWebEngineViewExperimental::settings() const
-{
-    return d_ptr->m_settings.data();
 }
 
 void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFlags options, const QJSValue &callback)

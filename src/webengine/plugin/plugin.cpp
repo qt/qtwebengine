@@ -41,6 +41,7 @@
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
+#include "qquickwebenginesettings_p.h"
 #include "qquickwebengineview_p.h"
 #include "qtwebengineversion.h"
 
@@ -67,6 +68,7 @@ public:
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", QObject::tr("Cannot create a separate instance of WebEngineSettings"));
     }
 };
 

@@ -47,6 +47,7 @@ class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineProfile;
+class QQuickWebEngineSettings;
 class QQuickWebEngineViewExperimental;
 class QQuickWebEngineViewPrivate;
 
@@ -61,6 +62,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL)
+    Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
@@ -138,6 +140,8 @@ public:
 
     QQuickWebEngineProfile *profile() const;
     void setProfile(QQuickWebEngineProfile *);
+
+    QQuickWebEngineSettings *settings() const;
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
