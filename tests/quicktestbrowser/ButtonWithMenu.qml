@@ -47,7 +47,7 @@ ToolButton {
     id: root
     property Menu longPressMenu
     function showMenu() {
-        longPressMenu.__popup(0, root.height, 0)
+        longPressMenu.__popup(Qt.rect(0, root.height, 0, 0), 0)
     }
 
     Binding {
