@@ -342,7 +342,7 @@ public:
     FilePickerController(WebContentsAdapterClient::FileChooserMode, const QExplicitlySharedDataPointer<WebContentsAdapter> &, QObject * = 0);
 
 public Q_SLOTS:
-    void accepted(const QJSValue &files);
+    void accepted(const QVariant &files);
     void rejected();
 
 private:
@@ -359,14 +359,11 @@ FilePickerController::FilePickerController(WebContentsAdapterClient::FileChooser
 {
 }
 
-void FilePickerController::accepted(const QJSValue &filesValue)
+void FilePickerController::accepted(const QVariant &files)
 {
     QStringList stringList;
-    int length = filesValue.property(QStringLiteral("length")).toInt();
-    for (int i = 0; i < length; i++) {
-        stringList.append(QUrl(filesValue.property(i).toString()).toLocalFile());
-    }
-
+    Q_FOREACH (const QUrl &url, files.value<QList<QUrl> >())
+        stringList.append(url.toLocalFile());
     m_adapter->filesSelectedInChooser(stringList, m_mode);
 }
 
@@ -415,7 +412,7 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
     CHECK_QML_SIGNAL_PROPERTY(filesPickedSignal, filePickerComponent->url());
     QQmlProperty rejectSignal(filePicker, QStringLiteral("onRejected"));
     CHECK_QML_SIGNAL_PROPERTY(rejectSignal, filePickerComponent->url());
-    static int acceptedIndex = controller->metaObject()->indexOfSlot("accepted(QJSValue)");
+    static int acceptedIndex = controller->metaObject()->indexOfSlot("accepted(QVariant)");
     QObject::connect(filePicker, filesPickedSignal.method(), controller, controller->metaObject()->method(acceptedIndex));
     static int rejectedIndex = controller->metaObject()->indexOfSlot("rejected()");
     QObject::connect(filePicker, rejectSignal.method(), controller, controller->metaObject()->method(rejectedIndex));
