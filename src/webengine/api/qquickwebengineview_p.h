@@ -60,8 +60,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY urlChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged)
-    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
-    Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1)
+    Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL REVISION 1)
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
@@ -83,6 +83,7 @@ public:
     bool canGoBack() const;
     bool canGoForward() const;
     qreal zoomFactor() const;
+    void setZoomFactor(qreal arg);
 
     QQuickWebEngineViewExperimental *experimental() const;
 
@@ -150,7 +151,6 @@ public Q_SLOTS:
     void goForward();
     void reload();
     void stop();
-    void setZoomFactor(qreal arg);
 
 Q_SIGNALS:
     void titleChanged();
@@ -161,9 +161,9 @@ Q_SIGNALS:
     void linkHovered(const QUrl &hoveredUrl);
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
-    void zoomFactorChanged(qreal arg);
-    void certificateError(QQuickWebEngineCertificateError *error);
+    Q_REVISION(1) void certificateError(QQuickWebEngineCertificateError *error);
     Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
+    Q_REVISION(1) void zoomFactorChanged(qreal arg);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

@@ -142,7 +142,6 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.reload() --> void"
     << "QQuickWebEngineView.zoomFactor --> double"
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
-    << "QQuickWebEngineView.setZoomFactor(double) --> void"
     << "QQuickWebEngineView.profile --> QQuickWebEngineProfile*"
     << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
     << "QQuickWebEngineDownloadItem.id --> uint"
