@@ -46,10 +46,10 @@
 #include <QUrl>
 #include "base/files/file_path.h"
 #include "base/time/time.h"
+#include "content/public/common/file_chooser_file_info.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 #include "url/gurl.h"
 
 inline QString toQt(const base::string16 &string)
@@ -158,10 +158,13 @@ template <typename T>
 inline T fileListingHelper(const QString &) {qFatal("Specialization missing for %s.", Q_FUNC_INFO); return T(); }
 
 template <>
-inline ui::SelectedFileInfo fileListingHelper<ui::SelectedFileInfo>(const QString &file)
+inline content::FileChooserFileInfo fileListingHelper<content::FileChooserFileInfo>(const QString &file)
 {
-    base::FilePath fp(toFilePathString(file));
-    return ui::SelectedFileInfo(fp, fp);
+    content::FileChooserFileInfo choose_file;
+    base::FilePath fp(toFilePath(file));
+    choose_file.file_path = fp;
+    choose_file.display_name = fp.BaseName().value();
+    return choose_file;
 }
 
 template <>
