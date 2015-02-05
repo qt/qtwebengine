@@ -41,6 +41,7 @@
 #include "qwebenginepage.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginesettings.h"
+#include "qwebengineurlschemehandler_p_p.h"
 
 #include "browser_context_adapter.h"
 #include "web_engine_visited_links_manager.h"
@@ -451,6 +452,53 @@ QWebEngineSettings *QWebEngineProfile::settings() const
 {
     const Q_D(QWebEngineProfile);
     return d->settings();
+}
+
+QWebEngineUrlSchemeHandler *QWebEngineProfilePrivate::urlSchemeHandler(const QByteArray &protocol)
+{
+    if (m_urlSchemeHandlers.contains(protocol))
+        return m_urlSchemeHandlers.value(protocol);
+    return 0;
+}
+
+static bool checkInternalScheme(const QByteArray &scheme)
+{
+    static QSet<QByteArray> internalSchemes;
+    if (internalSchemes.isEmpty()) {
+        internalSchemes << QByteArrayLiteral("qrc") << QByteArrayLiteral("data") << QByteArrayLiteral("blob")
+                        << QByteArrayLiteral("http") << QByteArrayLiteral("ftp") << QByteArrayLiteral("javascript");
+    }
+    return internalSchemes.contains(scheme);
+}
+
+void QWebEngineProfilePrivate::installUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+{
+    Q_ASSERT(handler);
+    QByteArray scheme = handler->scheme();
+    if (checkInternalScheme(scheme)) {
+        qWarning() << "Can not install a URL scheme handler overriding internal scheme: " << scheme;
+        return;
+    }
+
+    m_urlSchemeHandlers.insert(scheme, handler);
+    browserContext()->customUrlSchemeHandlers().append(handler->d_func());
+    browserContext()->updateCustomUrlSchemeHandlers();
+}
+
+void QWebEngineProfilePrivate::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+{
+    int count = m_urlSchemeHandlers.remove(handler->scheme());
+    if (!count)
+        return;
+    browserContext()->customUrlSchemeHandlers().removeOne(handler->d_func());
+    browserContext()->updateCustomUrlSchemeHandlers();
+}
+
+void QWebEngineProfilePrivate::clearUrlSchemeHandlers()
+{
+    m_urlSchemeHandlers.clear();
+    browserContext()->customUrlSchemeHandlers().clear();
+    browserContext()->updateCustomUrlSchemeHandlers();
 }
 
 QT_END_NAMESPACE

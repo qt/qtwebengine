@@ -314,3 +314,14 @@ void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateHttpCache();
 }
+
+QVector<CustomUrlSchemeHandler*> &BrowserContextAdapter::customUrlSchemeHandlers()
+{
+    return m_customUrlSchemeHandlers;
+}
+
+void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
+{
+    if (m_browserContext->url_request_getter_.get())
+        m_browserContext->url_request_getter_->updateStorageSettings();
+}

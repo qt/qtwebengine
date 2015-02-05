@@ -41,6 +41,8 @@ SOURCES = \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
+        custom_protocol_handler.cpp \
+        custom_url_scheme_handler.cpp \
         delegated_frame_node.cpp \
         desktop_screen_qt.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
@@ -66,6 +68,8 @@ SOURCES = \
         stream_video_node.cpp \
         surface_factory_qt.cpp \
         url_request_context_getter_qt.cpp \
+        url_request_custom_job.cpp \
+        url_request_custom_job_delegate.cpp \
         url_request_qrc_job_qt.cpp \
         web_channel_ipc_transport_host.cpp \
         web_contents_adapter.cpp \
@@ -94,6 +98,8 @@ HEADERS = \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
+        custom_protocol_handler.h \
+        custom_url_scheme_handler.h \
         delegated_frame_node.h \
         desktop_screen_qt.h \
         dev_tools_http_handler_delegate_qt.h \
@@ -121,6 +127,8 @@ HEADERS = \
         surface_factory_qt.h \
         type_conversion.h \
         url_request_context_getter_qt.h \
+        url_request_custom_job.h \
+        url_request_custom_job_delegate.h \
         url_request_qrc_job_qt.h \
         web_channel_ipc_transport_host.h \
         web_contents_adapter.h \

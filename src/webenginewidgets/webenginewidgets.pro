@@ -18,6 +18,8 @@ SOURCES = \
         api/qwebenginepage.cpp \
         api/qwebengineprofile.cpp \
         api/qwebenginesettings.cpp \
+        api/qwebengineurlrequestjob.cpp \
+        api/qwebengineurlschemehandler.cpp \
         api/qwebengineview.cpp \
         render_widget_host_view_qt_delegate_widget.cpp
 
@@ -32,6 +34,9 @@ HEADERS = \
         api/qwebengineprofile.h \
         api/qwebengineprofile_p.h \
         api/qwebenginesettings.h \
+        api/qwebengineurlrequestjob_p.h \
+        api/qwebengineurlschemehandler_p.h \
+        api/qwebengineurlschemehandler_p_p.h \
         api/qwebengineview.h \
         api/qwebengineview_p.h \
         render_widget_host_view_qt_delegate_widget.h

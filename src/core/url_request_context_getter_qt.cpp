@@ -62,6 +62,8 @@
 #include "net/ftp/ftp_network_layer.h"
 
 #include "browser_context_adapter.h"
+#include "custom_protocol_handler.h"
+#include "custom_url_scheme_handler.h"
 #include "content_client_qt.h"
 #include "network_delegate_qt.h"
 #include "qrc_protocol_handler_qt.h"
@@ -281,6 +283,10 @@ void URLRequestContextGetterQt::generateJobFactory()
     m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
     m_jobFactory->SetProtocolHandler(url::kFtpScheme,
         new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
+
+    Q_FOREACH (CustomUrlSchemeHandler* handler, m_browserContext->customUrlSchemeHandlers()) {
+        m_jobFactory->SetProtocolHandler(handler->scheme().toStdString(), handler->protocolHandler());
+    }
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }

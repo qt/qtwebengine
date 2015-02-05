@@ -104,10 +104,11 @@ Q_SIGNALS:
     void downloadRequested(QWebEngineDownloadItem *download);
 
 private:
-    Q_DECLARE_PRIVATE(QWebEngineProfile);
+    Q_DECLARE_PRIVATE(QWebEngineProfile)
     QWebEngineProfile(QWebEngineProfilePrivate *);
 
     friend class QWebEnginePagePrivate;
+    friend class QWebEngineUrlSchemeHandler;
     QScopedPointer<QWebEngineProfilePrivate> d_ptr;
 };
 

@@ -42,9 +42,11 @@
 #include <QScopedPointer>
 #include <QSharedData>
 #include <QString>
+#include <QVector>
 
 class BrowserContextAdapterClient;
 class BrowserContextQt;
+class CustomUrlSchemeHandler;
 class DownloadManagerDelegateQt;
 class WebEngineVisitedLinksManager;
 
@@ -119,6 +121,9 @@ public:
     bool trackVisitedLinks() const;
     bool persistVisitedLinks() const;
 
+    QVector<CustomUrlSchemeHandler*> &customUrlSchemeHandlers();
+    void updateCustomUrlSchemeHandlers();
+
 private:
     QString m_name;
     bool m_offTheRecord;
@@ -131,6 +136,7 @@ private:
     HttpCacheType m_httpCacheType;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
+    QVector<CustomUrlSchemeHandler*> m_customUrlSchemeHandlers;
     BrowserContextAdapterClient *m_client;
     int m_httpCacheMaxSize;
 
