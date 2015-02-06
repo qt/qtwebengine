@@ -126,7 +126,6 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
 
     item->AddObserver(this);
     if (m_contextAdapter->client()) {
-        bool cancelled = false;
         BrowserContextAdapterClient::DownloadItemInfo info = {
             item->GetId(),
             toQt(item->GetURL()),
@@ -134,18 +133,18 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             item->GetTotalBytes(),
             item->GetReceivedBytes(),
             suggestedFilePath,
-            cancelled
+            false /* accepted */
         };
         m_contextAdapter->client()->downloadRequested(info);
 
         suggestedFile.setFile(info.path);
 
-        if (!info.cancelled && !suggestedFile.absoluteDir().mkpath(suggestedFile.absolutePath())) {
+        if (info.accepted && !suggestedFile.absoluteDir().mkpath(suggestedFile.absolutePath())) {
             qWarning("Creating download path failed, download cancelled: %s", suggestedFile.absolutePath().toUtf8().data());
-            cancelled = true;
+            info.accepted = false;
         }
 
-        if (info.cancelled) {
+        if (!info.accepted) {
             cancelDownload(callback);
             return true;
         }
@@ -180,7 +179,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             download->GetTotalBytes(),
             download->GetReceivedBytes(),
             QString(),
-            false
+            true /* accepted */
         };
         m_contextAdapter->client()->downloadUpdated(info);
     }

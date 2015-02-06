@@ -100,8 +100,8 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 
     QQuickWebEngineDownloadItem::DownloadState state = download->state();
     info.path = download->path();
-    info.cancelled = state == QQuickWebEngineDownloadItem::DownloadCancelled
-                      || state == QQuickWebEngineDownloadItem::DownloadRequested;
+    info.accepted = state != QQuickWebEngineDownloadItem::DownloadCancelled
+                      && state != QQuickWebEngineDownloadItem::DownloadRequested;
 }
 
 void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)

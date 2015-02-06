@@ -152,11 +152,11 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QWebEngineDownloadItem::DownloadState state = download->state();
 
     info.path = download->path();
-    info.cancelled = state == QWebEngineDownloadItem::DownloadCancelled;
+    info.accepted = state != QWebEngineDownloadItem::DownloadCancelled;
 
     if (state == QWebEngineDownloadItem::DownloadRequested) {
         // Delete unaccepted downloads.
-        info.cancelled = true;
+        info.accepted = false;
         m_ongoingDownloads.remove(info.id);
         delete download;
     }

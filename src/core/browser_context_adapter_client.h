@@ -64,7 +64,7 @@ public:
         const qint64 receivedBytes;
 
         QString path;
-        bool cancelled;
+        bool accepted;
     };
 
     virtual ~BrowserContextAdapterClient() { }
