@@ -180,7 +180,7 @@ void BrowserApplication::quitBrowser()
     clean();
     int tabCount = 0;
     for (int i = 0; i < m_mainWindows.count(); ++i) {
-        tabCount =+ m_mainWindows.at(i)->tabWidget()->count();
+        tabCount += m_mainWindows.at(i)->tabWidget()->count();
     }
 
     if (tabCount > 1) {
