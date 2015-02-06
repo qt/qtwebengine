@@ -37,19 +37,22 @@
 #include <QtQml/qqmlextensionplugin.h>
 
 #include "qquickwebenginecertificateerror_p.h"
+#include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
+#include "qquickwebenginesingleton_p.h"
 #include "qquickwebengineview_p.h"
 #include "qtwebengineversion.h"
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineVersionBumper : public QObject {
-    Q_OBJECT
-};
+static QObject *webEngineSingletonProvider(QQmlEngine *, QJSEngine *)
+{
+    return new QQuickWebEngineSingleton;
+}
 
 class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
@@ -67,8 +70,11 @@ public:
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", QObject::tr("Cannot create separate instance of WebEngineCertificateError"));
+        qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 1, "WebEngineDownloadItem",
+            QObject::tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", QObject::tr("Cannot create a separate instance of WebEngineSettings"));
+        qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 1, "WebEngine", webEngineSingletonProvider);
     }
 };
 

@@ -3,6 +3,7 @@
         <file>ApplicationRoot.qml</file>
         <file>BrowserDialog.qml</file>
         <file>BrowserWindow.qml</file>
+        <file>DownloadView.qml</file>
     </qresource>
     <qresource prefix="icons">
         <file alias="go-next.png">icons/go-next.png</file>

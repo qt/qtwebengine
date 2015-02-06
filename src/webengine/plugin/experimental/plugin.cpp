@@ -36,18 +36,11 @@
 
 #include <QtQml/qqmlextensionplugin.h>
 
-#include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginehistory_p.h"
-#include "qquickwebenginesingleton_p.h"
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
 QT_BEGIN_NAMESPACE
-
-static QObject *webEngineSingletonProvider(QQmlEngine *, QJSEngine *)
-{
-    return new QQuickWebEngineSingleton;
-}
 
 class QQuickWebEngineViewExperimentalExtension : public QObject {
     Q_OBJECT
@@ -78,9 +71,6 @@ public:
             QObject::tr("Cannot create a separate instance of NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineHistoryListModel>(uri, 1, 0, "NavigationHistoryListModel",
             QObject::tr("Cannot create a separate instance of NavigationHistory"));
-        qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 0, "WebEngineDownloadItem",
-            QObject::tr("Cannot create a separate instance of WebEngineDownloadItem"));
-        qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 0, "WebEngine", webEngineSingletonProvider);
 
         // Use the latest revision of QQuickWebEngineView when importing QtWebEngine.experimental 1.0
         qmlRegisterRevision<QQuickWebEngineView, 1>(uri, 1, 0);

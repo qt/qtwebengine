@@ -8,7 +8,8 @@ SOURCES = main.cpp
 
 OTHER_FILES += ApplicationRoot.qml \
                BrowserDialog.qml \
-               BrowserWindow.qml
+               BrowserWindow.qml \
+               DownloadView.qml
 
 RESOURCES += resources.qrc
 

@@ -46,6 +46,7 @@ import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
 import QtQuick.Controls.Private 1.0
 import QtQuick.Dialogs 1.2
+import Qt.labs.settings 1.0
 
 ApplicationWindow {
     id: browserWindow
@@ -62,6 +63,34 @@ ApplicationWindow {
     StyleItem { id: styleItem }
     property bool platformIsMac: styleItem.style == "mac"
 
+    Settings {
+        property alias autoLoadImages: loadImages.checked;
+        property alias javaScriptEnabled: javaScriptEnabled.checked;
+        property alias errorPageEnabled: errorPageEnabled.checked;
+    }
+
+    WebEngineProfile {
+        id: defaultProfile
+        storageName: "Default"
+        httpCacheType: httpDiskCacheEnabled.checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
+        onDownloadRequested: {
+            downloadView.visible = true
+            downloadView.append(download)
+            download.accept()
+        }
+    }
+
+    WebEngineProfile {
+        id: otrProfile
+        offTheRecord: true
+    }
+
+    Action {
+        shortcut: "Ctrl+D"
+        onTriggered: {
+            downloadView.visible = !downloadView.visible
+        }
+    }
     Action {
         id: focus
         shortcut: "Ctrl+L"
@@ -151,6 +180,44 @@ ApplicationWindow {
                     text: currentWebView && currentWebView.url
                     onAccepted: currentWebView.url = utils.fromUserInput(text)
                 }
+                ToolButton {
+                    id: settingsMenuButton
+                    menu: Menu {
+                        MenuItem {
+                            id: loadImages
+                            text: "Autoload images"
+                            checkable: true
+                            checked: WebEngine.settings.autoLoadImages
+                            onCheckedChanged: WebEngine.settings.autoLoadImages = checked
+                        }
+                        MenuItem {
+                            id: javaScriptEnabled
+                            text: "JavaScript On"
+                            checkable: true
+                            checked: WebEngine.settings.javascriptEnabled
+                            onCheckedChanged: WebEngine.settings.javascriptEnabled = checked
+                        }
+                        MenuItem {
+                            id: errorPageEnabled
+                            text: "ErrorPage On"
+                            checkable: true
+                            checked: WebEngine.settings.errorPageEnabled
+                            onCheckedChanged: WebEngine.settings.errorPageEnabled = checked
+                        }
+                        MenuItem {
+                            id: offTheRecordEnabled
+                            text: "Off The Record"
+                            checkable: true
+                            checked: false
+                        }
+                        MenuItem {
+                            id: httpDiskCacheEnabled
+                            text: "HTTP Disk Cache"
+                            checkable: true
+                            checked: (defaultProfile.httpCacheType == WebEngineProfile.DiskHttpCache)
+                        }
+                    }
+                }
             }
             ProgressBar {
                 id: progressBar
@@ -190,6 +257,7 @@ ApplicationWindow {
             WebEngineView {
                 id: webEngineView
                 focus: true
+                profile: offTheRecordEnabled.checked ? otrProfile : defaultProfile
 
                 onLinkHovered: {
                     if (hoveredUrl == "")
@@ -235,6 +303,11 @@ ApplicationWindow {
 
         onAccepted: certError.ignoreCertificateError()
         onRejected: certError.rejectCertificate()
+    }
+    DownloadView {
+        id: downloadView
+        visible: false
+        anchors.fill: parent
     }
     Rectangle {
         id: statusBubble
