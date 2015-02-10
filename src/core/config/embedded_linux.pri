@@ -1,7 +1,7 @@
 GYP_ARGS += "-D qt_os=\"embedded_linux\" -I config/embedded_linux.gypi"
 
 GYP_CONFIG += \
-    build_ffmpegsumo=0 \
+    build_ffmpegsumo=1 \
     configuration_policy=0 \
     desktop_linux=0 \
     disable_nacl=1 \

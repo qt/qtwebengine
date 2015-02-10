@@ -14,3 +14,4 @@ GYP_CONFIG += \
     use_kerberos=0 \
     use_pango=0 \
 
+!contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
