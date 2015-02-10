@@ -437,7 +437,7 @@ content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvide
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
 {
-    return QLocale().name().toStdString();
+    return QLocale().bcp47Name().toStdString();
 }
 
 content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()
