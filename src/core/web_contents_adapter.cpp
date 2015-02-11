@@ -808,6 +808,11 @@ void WebContentsAdapter::dpiScaleChanged()
         impl->NotifyScreenInfoChanged();
 }
 
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Open, content::FileChooserParams::Open)
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::OpenMultiple, content::FileChooserParams::OpenMultiple)
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::UploadFolder, content::FileChooserParams::UploadFolder)
+ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Save, content::FileChooserParams::Save)
+
 void WebContentsAdapter::filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode mode)
 {
     Q_D(WebContentsAdapter);
