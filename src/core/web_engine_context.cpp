@@ -195,16 +195,13 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
 #if defined(QTWEBENGINE_MOBILE_SWITCHES)
-    // Inspired from the Android port's default switches
+    // Inspired by the Android port's default switches
     parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
-    parsedCommandLine->AppendSwitch(switches::kEnableGestureTapHighlight);
     parsedCommandLine->AppendSwitch(switches::kEnablePinch);
     parsedCommandLine->AppendSwitch(switches::kEnableViewport);
     parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
-    parsedCommandLine->AppendSwitch(switches::kEnableSmoothScrolling);
+    parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
     parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-    parsedCommandLine->AppendSwitch(switches::kEnableAcceleratedOverflowScroll);
-    parsedCommandLine->AppendSwitch(switches::kEnableCompositingForFixedPosition);
     parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
     parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
     parsedCommandLine->AppendSwitch(switches::kEnableImplSidePainting);
@@ -217,6 +214,7 @@ WebEngineContext::WebEngineContext()
     // On eAndroid we use this to get the native display
     // from Qt in GLSurfaceEGL::InitializeOneOff.
     m_surfaceFactory.reset(new SurfaceFactoryQt());
+    parsedCommandLine->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
 #endif
 
     GLContextHelper::initialize();

@@ -48,14 +48,9 @@ class SurfaceFactoryQt
 {
     virtual bool LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library, SetGLGetProcAddressProcCallback set_gl_get_proc_address) Q_DECL_OVERRIDE;
     virtual intptr_t GetNativeDisplay() Q_DECL_OVERRIDE;
-    virtual ui::SurfaceFactoryOzone::HardwareState InitializeHardware() Q_DECL_OVERRIDE { return ui::SurfaceFactoryOzone::INITIALIZED; }
-    virtual void ShutdownHardware() Q_DECL_OVERRIDE {}
-    virtual gfx::AcceleratedWidget GetAcceleratedWidget() Q_DECL_OVERRIDE { return 0; }
-    virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(gfx::AcceleratedWidget w) Q_DECL_OVERRIDE { return 0; }
-    virtual bool AttemptToResizeAcceleratedWidget(gfx::AcceleratedWidget w, const gfx::Rect& bounds) Q_DECL_OVERRIDE { return false; }
 };
 
-#endif
+#endif // defined(USE_OZONE) || defined(OS_ANDROID)
 
 #endif // SURFACE_FACTORY_QT
 

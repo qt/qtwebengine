@@ -39,32 +39,38 @@
 
 #if defined(USE_OZONE)
 
-#include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/ozone_platform.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 #include "surface_factory_qt.h"
 
 namespace ui {
+
+class DeviceManager;
+class EventFactoryEvdev;
+class CursorFactoryOzone;
 
 class OzonePlatformEglfs : public OzonePlatform {
  public:
   OzonePlatformEglfs();
   virtual ~OzonePlatformEglfs();
 
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE;
-  virtual ui::EventFactoryOzone* GetEventFactoryOzone() OVERRIDE;
-  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE;
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() OVERRIDE;
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() OVERRIDE;
-  virtual void InitializeUI() OVERRIDE;
-  virtual void InitializeGPU() OVERRIDE;
+  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override;
+  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
+  virtual GpuPlatformSupport* GetGpuPlatformSupport() override;
+  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
+  virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
+      PlatformWindowDelegate* delegate,
+      const gfx::Rect& bounds) override;
+  virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
 
  private:
+  virtual void InitializeUI() override;
+  virtual void InitializeGPU() override;
   scoped_ptr<DeviceManager> device_manager_;
 
   scoped_ptr<SurfaceFactoryQt> surface_factory_ozone_;
-  scoped_ptr<ui::CursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<ui::EventFactoryEvdev> event_factory_ozone_;
+  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;

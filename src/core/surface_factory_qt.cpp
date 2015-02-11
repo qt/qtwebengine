@@ -97,7 +97,7 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
     gfx::AddGLNativeLibrary(eglLibrary);
     gfx::AddGLNativeLibrary(gles2Library);
     return true;
-#endif
+#endif // defined(OS_ANDROID)
 }
 
 intptr_t SurfaceFactoryQt::GetNativeDisplay()
@@ -110,5 +110,5 @@ intptr_t SurfaceFactoryQt::GetNativeDisplay()
     return reinterpret_cast<intptr_t>(EGL_DEFAULT_DISPLAY);
 }
 
-#endif
+#endif // defined(USE_OZONE) || defined(OS_ANDROID)
 

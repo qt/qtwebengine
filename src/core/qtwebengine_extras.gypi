@@ -86,9 +86,6 @@
             'EGL_API_FB=1',
             'LINUX=1',
         ],
-        'defines!': [
-            'OPENSSLDIR="/etc/ssl"',
-        ],
         'target_conditions': [
           ['_type=="shared_library"', {
             'ldflags': [

@@ -38,12 +38,19 @@
 
 #if defined(USE_OZONE)
 
+#include "base/bind.h"
 #include "media/ozone/media_ozone_platform.h"
 #include "ui/events/ozone/device/device_manager.h"
-#include "ui/ozone/ozone_platform.h"
+#include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/events/ozone/events_ozone.h"
+#include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
+#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_delegate.h"
 
 
 namespace media {
@@ -56,16 +63,79 @@ MediaOzonePlatform* CreateMediaOzonePlatformEglfs() {
 
 namespace ui {
 
+namespace {
+class EglfsWindow : public PlatformWindow, public PlatformEventDispatcher {
+public:
+    EglfsWindow(PlatformWindowDelegate* delegate,
+                EventFactoryEvdev* event_factory,
+                const gfx::Rect& bounds)
+        : delegate_(delegate)
+        , event_factory_(event_factory)
+        , bounds_(bounds)
+    {
+        ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+    }
+
+    ~EglfsWindow() override
+    {
+        ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+    }
+
+    // PlatformWindow:
+    gfx::Rect GetBounds() override;
+    void SetBounds(const gfx::Rect& bounds) override;
+    void Show() override { }
+    void Hide() override { }
+    void Close() override { }
+    void SetCapture() override { }
+    void ReleaseCapture() override { }
+    void ToggleFullscreen() override { }
+    void Maximize() override { }
+    void Minimize() override { }
+    void Restore() override { }
+    void SetCursor(PlatformCursor) override { }
+    void MoveCursorTo(const gfx::Point&) override { }
+
+    // PlatformEventDispatcher:
+    bool CanDispatchEvent(const PlatformEvent& event) override;
+    uint32_t DispatchEvent(const PlatformEvent& event) override;
+
+private:
+    PlatformWindowDelegate* delegate_;
+    EventFactoryEvdev* event_factory_;
+    gfx::Rect bounds_;
+
+    DISALLOW_COPY_AND_ASSIGN(EglfsWindow);
+};
+
+gfx::Rect EglfsWindow::GetBounds() {
+    return bounds_;
+}
+
+void EglfsWindow::SetBounds(const gfx::Rect& bounds) {
+    bounds_ = bounds;
+    delegate_->OnBoundsChanged(bounds);
+}
+
+bool EglfsWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
+    return true;
+}
+
+uint32_t EglfsWindow::DispatchEvent(const ui::PlatformEvent& native_event) {
+    DispatchEventFromNativeUiEvent(
+                native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
+                                         base::Unretained(delegate_)));
+
+    return ui::POST_DISPATCH_STOP_PROPAGATION;
+}
+} // namespace
+
 OzonePlatformEglfs::OzonePlatformEglfs() {}
 
 OzonePlatformEglfs::~OzonePlatformEglfs() {}
 
 ui::SurfaceFactoryOzone* OzonePlatformEglfs::GetSurfaceFactoryOzone() {
   return surface_factory_ozone_.get();
-}
-
-ui::EventFactoryOzone* OzonePlatformEglfs::GetEventFactoryOzone() {
-  return event_factory_ozone_.get();
 }
 
 ui::CursorFactoryOzone* OzonePlatformEglfs::GetCursorFactoryOzone() {
@@ -78,6 +148,21 @@ GpuPlatformSupport* OzonePlatformEglfs::GetGpuPlatformSupport() {
 
 GpuPlatformSupportHost* OzonePlatformEglfs::GetGpuPlatformSupportHost() {
   return gpu_platform_support_host_.get();
+}
+
+scoped_ptr<PlatformWindow> OzonePlatformEglfs::CreatePlatformWindow(
+      PlatformWindowDelegate* delegate,
+      const gfx::Rect& bounds)
+{
+    return make_scoped_ptr<PlatformWindow>(
+        new EglfsWindow(delegate,
+                          event_factory_ozone_.get(),
+                          bounds));
+}
+
+scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
+{
+    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
 }
 
 OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }

@@ -69,6 +69,12 @@ extern "C" {
 #include "ui/gl/gl_context_wgl.h"
 #endif
 
+// From ANGLE's egl/eglext.h.
+#ifndef EGL_ANGLE_surface_d3d_texture_2d_share_handle
+#define EGL_ANGLE_surface_d3d_texture_2d_share_handle 1
+#define EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE 0x3200
+#endif
+
 using ui::GetLastEGLErrorString;
 
 namespace gfx {
@@ -357,12 +363,13 @@ bool GLSurface::InitializeOneOffInternal()
     if (GetGLImplementation() == kGLImplementationEGLGLES2)
         return GLSurfaceQtEGL::InitializeOneOff();
 
-    if (GetGLImplementation() == kGLImplementationDesktopGL)
+    if (GetGLImplementation() == kGLImplementationDesktopGL) {
 #if defined(USE_X11)
         return GLSurfaceQtGLX::InitializeOneOff();
 #elif defined(OS_WIN)
         return GLSurfaceQtWGL::InitializeOneOff();
 #endif
+    }
 
     return false;
 }
