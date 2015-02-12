@@ -482,6 +482,37 @@ QWebEngineSettings *QWebEnginePage::settings() const
     return d->settings;
 }
 
+/*!
+ * Returns a pointer to the web channel instance used by this page, or a null pointer if none was set.
+ * This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
+ * and exposed in the javascript context of this page as  \c navigator.qtWebChannelTransport
+ *
+ * \since 5.5
+ * \sa {QtWebChannel::QWebChannel}{QWebChannel}
+ */
+QWebChannel *QWebEnginePage::webChannel() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->webChannel();
+}
+
+/*!
+ * Sets the web channel instance to be used by this page and connects it to QtWebEngine's transport
+ * using Chromium IPC messages. That transport is exposed in the javascript context of this page as
+ * \c navigator.qtWebChannelTransport, which should be used when using the \l{Qt WebChannel JavaScript API}.
+ *
+ * \note The page does not take ownership of the \a channel object.
+ *
+ * \since 5.5
+ * \param channel
+ */
+
+void QWebEnginePage::setWebChannel(QWebChannel *channel)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->setWebChannel(channel);
+}
+
 void QWebEnginePage::setView(QWidget *view)
 {
     QWebEngineViewPrivate::bind(qobject_cast<QWebEngineView*>(view), this);

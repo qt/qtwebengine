@@ -48,6 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 class QMenu;
+class QWebChannel;
 class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
@@ -231,6 +232,9 @@ public:
 #endif
 
     QWebEngineSettings *settings() const;
+
+    QWebChannel *webChannel() const;
+    void setWebChannel(QWebChannel *);
 
 Q_SIGNALS:
     void loadStarted();
