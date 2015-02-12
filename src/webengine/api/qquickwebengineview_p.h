@@ -42,6 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QQmlWebChannel;
 class QQuickWebEngineCertificateError;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
@@ -63,6 +64,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1)
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL REVISION 1)
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
+    Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
     Q_ENUMS(LoadStatus);
@@ -143,6 +145,8 @@ public:
     void setProfile(QQuickWebEngineProfile *);
 
     QQuickWebEngineSettings *settings() const;
+    QQmlWebChannel *webChannel();
+    void setWebChannel(QQmlWebChannel *);
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
@@ -164,6 +168,8 @@ Q_SIGNALS:
     Q_REVISION(1) void certificateError(QQuickWebEngineCertificateError *error);
     Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
     Q_REVISION(1) void zoomFactorChanged(qreal arg);
+    Q_REVISION(1) void webChannelChanged();
+
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

@@ -812,21 +812,39 @@ QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() con
     return d_ptr->m_history.data();
 }
 
-QQmlWebChannel *QQuickWebEngineViewExperimental::webChannel() const
+/*!
+ * \qmlproperty QQmlWebChannel WebEngineView::webChannel
+ * \since QtWebEngine 1.1
+ *
+ * The web channel instance used by this view.
+ * This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
+ * and exposed in the javascript context of the page it is rendering as \c navigator.qtWebChannelTransport.
+ * This transport object is used when instantiating the JavaScript counterpart of QWebChannel using
+ * the \l{Qt WebChannel JavaScript API}.
+ *
+ * \note The view does not take ownership when explicitly setting a webChannel object.
+ */
+
+QQmlWebChannel *QQuickWebEngineView::webChannel()
 {
-    d_ptr->ensureContentsAdapter();
-    QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(d_ptr->adapter->webChannel());
-    Q_ASSERT(!d_ptr->adapter->webChannel() || qmlWebChannel);
+    Q_D(QQuickWebEngineView);
+    d->ensureContentsAdapter();
+    QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(d->adapter->webChannel());
+    Q_ASSERT(!d->adapter->webChannel() || qmlWebChannel);
     if (!qmlWebChannel) {
-        qmlWebChannel = new QQmlWebChannel;
-        d_ptr->adapter->setWebChannel(qmlWebChannel);
+        qmlWebChannel = new QQmlWebChannel(this);
+        d->adapter->setWebChannel(qmlWebChannel);
     }
     return qmlWebChannel;
 }
 
-void QQuickWebEngineViewExperimental::setWebChannel(QQmlWebChannel *webChannel)
+void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
 {
-    d_ptr->adapter->setWebChannel(webChannel);
+    Q_D(QQuickWebEngineView);
+    bool notify = (d->adapter->webChannel() == webChannel);
+    d->adapter->setWebChannel(webChannel);
+    if (notify)
+        Q_EMIT webChannelChanged();
 }
 
 void QQuickWebEngineViewExperimental::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineViewExperimental::Feature feature, bool granted)

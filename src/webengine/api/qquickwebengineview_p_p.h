@@ -55,7 +55,6 @@ class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
 class QQuickWebEngineSettings;
-class QQmlWebChannel;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
     Q_OBJECT
@@ -81,7 +80,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
-    Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel)
     Q_ENUMS(Feature)
     Q_FLAGS(FindFlags)
 
@@ -105,9 +103,6 @@ public:
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
     QQuickWebEngineHistory *navigationHistory() const;
-    QQuickWebEngineSettings *settings() const;
-    QQmlWebChannel *webChannel() const;
-    void setWebChannel(QQmlWebChannel *);
 
 public Q_SLOTS:
     void goBackTo(int index);
