@@ -155,7 +155,14 @@ inline base::FilePath toFilePath(const QString &str)
 }
 
 template <typename T>
-inline T fileListingHelper(const QString &) {qFatal("Specialization missing for %s.", Q_FUNC_INFO); return T(); }
+inline T fileListingHelper(const QString &)
+// Clang is still picky about this though it should be supported eventually.
+// See http://www.open-std.org/jtc1/sc22/wg21/docs/cwg_defects.html#941
+#ifndef Q_CC_CLANG
+= delete;
+#else
+{ return T(); }
+#endif
 
 template <>
 inline content::FileChooserFileInfo fileListingHelper<content::FileChooserFileInfo>(const QString &file)
