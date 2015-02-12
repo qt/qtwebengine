@@ -48,6 +48,7 @@
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
+#include <private/qquickwebenginehistory_p.h>
 #include <private/qquickwebengineloadrequest_p.h>
 #include <private/qquickwebenginenavigationrequest_p.h>
 #include <private/qquickwebenginenewviewrequest_p.h>
@@ -63,6 +64,8 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineView::staticMetaObject
     << &QQuickWebEngineCertificateError::staticMetaObject
     << &QQuickWebEngineDownloadItem::staticMetaObject
+    << &QQuickWebEngineHistory::staticMetaObject
+    << &QQuickWebEngineHistoryListModel::staticMetaObject
     << &QQuickWebEngineLoadRequest::staticMetaObject
     << &QQuickWebEngineNavigationRequest::staticMetaObject
     << &QQuickWebEngineNewViewRequest::staticMetaObject
@@ -123,7 +126,6 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadProgress --> int"
     << "QQuickWebEngineView.titleChanged() --> void"
-    << "QQuickWebEngineView.navigationHistoryChanged() --> void"
     << "QQuickWebEngineView.loadingChanged(QQuickWebEngineLoadRequest*) --> void"
     << "QQuickWebEngineView.certificateError(QQuickWebEngineCertificateError*) --> void"
     << "QQuickWebEngineView.loadProgressChanged() --> void"
@@ -138,11 +140,13 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.loadHtml(QString) --> void"
     << "QQuickWebEngineView.goBack() --> void"
     << "QQuickWebEngineView.goForward() --> void"
+    << "QQuickWebEngineView.goBackOrForward(int) --> void"
     << "QQuickWebEngineView.stop() --> void"
     << "QQuickWebEngineView.reload() --> void"
     << "QQuickWebEngineView.zoomFactor --> double"
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
     << "QQuickWebEngineView.profile --> QQuickWebEngineProfile*"
+    << "QQuickWebEngineView.navigationHistory --> QQuickWebEngineHistory*"
     << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
     << "QQuickWebEngineDownloadItem.id --> uint"
     << "QQuickWebEngineDownloadItem.state --> DownloadState"
@@ -156,6 +160,9 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineDownloadItem.progressChanged() --> void"
     << "QQuickWebEngineDownloadItem.pathChanged() --> void"
     << "QQuickWebEngineDownloadItem.cancel() --> void"
+    << "QQuickWebEngineHistory.items --> QQuickWebEngineHistoryListModel*"
+    << "QQuickWebEngineHistory.backItems --> QQuickWebEngineHistoryListModel*"
+    << "QQuickWebEngineHistory.forwardItems --> QQuickWebEngineHistoryListModel*"
     << "QQuickWebEngineLoadRequest.url --> QUrl"
     << "QQuickWebEngineLoadRequest.status --> QQuickWebEngineView::LoadStatus"
     << "QQuickWebEngineLoadRequest.errorString --> QString"

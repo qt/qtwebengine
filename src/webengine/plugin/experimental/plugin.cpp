@@ -36,7 +36,6 @@
 
 #include <QtQml/qqmlextensionplugin.h>
 
-#include "qquickwebenginehistory_p.h"
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
@@ -67,10 +66,6 @@ public:
             QObject::tr("Cannot create a separate instance of WebEngineViewExperimental"));
         qmlRegisterUncreatableType<QQuickWebEngineViewport>(uri, 1, 0, "WebEngineViewport",
             QObject::tr("Cannot create a separate instance of WebEngineViewport"));
-        qmlRegisterUncreatableType<QQuickWebEngineHistory>(uri, 1, 0, "NavigationHistory",
-            QObject::tr("Cannot create a separate instance of NavigationHistory"));
-        qmlRegisterUncreatableType<QQuickWebEngineHistoryListModel>(uri, 1, 0, "NavigationHistoryListModel",
-            QObject::tr("Cannot create a separate instance of NavigationHistory"));
 
         // Use the latest revision of QQuickWebEngineView when importing QtWebEngine.experimental 1.0
         qmlRegisterRevision<QQuickWebEngineView, 1>(uri, 1, 0);

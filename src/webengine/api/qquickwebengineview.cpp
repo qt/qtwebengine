@@ -807,9 +807,10 @@ void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFla
     }
 }
 
-QQuickWebEngineHistory *QQuickWebEngineViewExperimental::navigationHistory() const
+QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
 {
-    return d_ptr->m_history.data();
+    Q_D(const QQuickWebEngineView);
+    return d->m_history.data();
 }
 
 /*!
@@ -874,26 +875,19 @@ void QQuickWebEngineViewExperimental::grantFeaturePermission(const QUrl &securit
     }
 }
 
-void QQuickWebEngineViewExperimental::goBackTo(int index)
+void QQuickWebEngineView::goBackOrForward(int offset)
 {
-    if (!d_ptr->adapter)
+    Q_D(QQuickWebEngineView);
+    if (!d->adapter)
         return;
-    int count = d_ptr->adapter->currentNavigationEntryIndex();
+    const int current = d->adapter->currentNavigationEntryIndex();
+    const int count = d->adapter->navigationEntryCount();
+    const int index = current + offset;
+
     if (index < 0 || index >= count)
         return;
 
-    d_ptr->adapter->navigateToIndex(count - 1 - index);
-}
-
-void QQuickWebEngineViewExperimental::goForwardTo(int index)
-{
-    if (!d_ptr->adapter)
-        return;
-    int count = d_ptr->adapter->navigationEntryCount() - d_ptr->adapter->currentNavigationEntryIndex() - 1;
-    if (index < 0 || index >= count)
-        return;
-
-    d_ptr->adapter->navigateToIndex(d_ptr->adapter->currentNavigationEntryIndex() + 1 + index);
+    d->adapter->navigateToIndex(index);
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)

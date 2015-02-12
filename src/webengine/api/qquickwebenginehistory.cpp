@@ -51,6 +51,23 @@ QQuickWebEngineHistoryListModelPrivate::~QQuickWebEngineHistoryListModelPrivate(
 {
 }
 
+int QQuickWebEngineHistoryListModelPrivate::count() const
+{
+    if (!adapter())
+        return -1;
+    return adapter()->navigationEntryCount();
+}
+
+int QQuickWebEngineHistoryListModelPrivate::index(int index) const
+{
+    return index;
+}
+
+int QQuickWebEngineHistoryListModelPrivate::offsetForIndex(int index) const
+{
+    return index - adapter()->currentNavigationEntryIndex();
+}
+
 WebContentsAdapter *QQuickWebEngineHistoryListModelPrivate::adapter() const
 {
     return view->adapter.data();
@@ -74,6 +91,11 @@ int QQuickWebEngineBackHistoryListModelPrivate::index(int i) const
     return count() - 1 - i;
 }
 
+int QQuickWebEngineBackHistoryListModelPrivate::offsetForIndex(int index) const
+{
+    return - index - 1;
+}
+
 QQuickWebEngineForwardHistoryListModelPrivate::QQuickWebEngineForwardHistoryListModelPrivate(QQuickWebEngineViewPrivate *view)
     : QQuickWebEngineHistoryListModelPrivate(view)
 {
@@ -89,6 +111,11 @@ int QQuickWebEngineForwardHistoryListModelPrivate::count() const
 int QQuickWebEngineForwardHistoryListModelPrivate::index(int i) const
 {
     return adapter()->currentNavigationEntryIndex() + i + 1;
+}
+
+int QQuickWebEngineForwardHistoryListModelPrivate::offsetForIndex(int index) const
+{
+    return index + 1;
 }
 
 QQuickWebEngineHistoryListModel::QQuickWebEngineHistoryListModel()
@@ -111,6 +138,7 @@ QHash<int, QByteArray> QQuickWebEngineHistoryListModel::roleNames() const
     QHash<int, QByteArray> roles;
     roles[QQuickWebEngineHistory::UrlRole] = "url";
     roles[QQuickWebEngineHistory::TitleRole] = "title";
+    roles[QQuickWebEngineHistory::OffsetRole] = "offset";
     return roles;
 }
 
@@ -128,7 +156,7 @@ QVariant QQuickWebEngineHistoryListModel::data(const QModelIndex &index, int rol
     if (!index.isValid())
         return QVariant();
 
-    if (role < QQuickWebEngineHistory::UrlRole || role > QQuickWebEngineHistory::TitleRole)
+    if (role < QQuickWebEngineHistory::UrlRole || role > QQuickWebEngineHistory::OffsetRole)
         return QVariant();
 
     if (role == QQuickWebEngineHistory::UrlRole)
@@ -137,6 +165,8 @@ QVariant QQuickWebEngineHistoryListModel::data(const QModelIndex &index, int rol
     if (role == QQuickWebEngineHistory::TitleRole)
         return QString(d->adapter()->getNavigationEntryTitle(d->index(index.row())));
 
+    if (role == QQuickWebEngineHistory::OffsetRole)
+        return d->offsetForIndex(index.row());
     return QVariant();
 }
 
@@ -147,8 +177,7 @@ void QQuickWebEngineHistoryListModel::reset()
 }
 
 QQuickWebEngineHistoryPrivate::QQuickWebEngineHistoryPrivate(QQuickWebEngineViewPrivate *view)
-    : m_backNavigationModel(new QQuickWebEngineHistoryListModel(new QQuickWebEngineBackHistoryListModelPrivate(view)))
-    , m_forwardNavigationModel(new QQuickWebEngineHistoryListModel(new QQuickWebEngineForwardHistoryListModelPrivate(view)))
+    : m_view(view)
 {
 }
 
@@ -165,23 +194,39 @@ QQuickWebEngineHistory::~QQuickWebEngineHistory()
 {
 }
 
+QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::items() const
+{
+    Q_D(const QQuickWebEngineHistory);
+    if (!d->m_navigationModel)
+        d->m_navigationModel.reset(new QQuickWebEngineHistoryListModel(new QQuickWebEngineHistoryListModelPrivate(d->m_view)));
+    return d->m_navigationModel.data();
+}
+
 QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::backItems() const
 {
     Q_D(const QQuickWebEngineHistory);
+    if (!d->m_backNavigationModel)
+        d->m_backNavigationModel.reset(new QQuickWebEngineHistoryListModel(new QQuickWebEngineBackHistoryListModelPrivate(d->m_view)));
     return d->m_backNavigationModel.data();
 }
 
 QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::forwardItems() const
 {
     Q_D(const QQuickWebEngineHistory);
+    if (!d->m_forwardNavigationModel)
+        d->m_forwardNavigationModel.reset(new QQuickWebEngineHistoryListModel(new QQuickWebEngineForwardHistoryListModelPrivate(d->m_view)));
     return d->m_forwardNavigationModel.data();
 }
 
 void QQuickWebEngineHistory::reset()
 {
     Q_D(QQuickWebEngineHistory);
-    d->m_backNavigationModel->reset();
-    d->m_forwardNavigationModel->reset();
+    if (d->m_navigationModel)
+        d->m_navigationModel->reset();
+    if (d->m_backNavigationModel)
+        d->m_backNavigationModel->reset();
+    if (d->m_forwardNavigationModel)
+        d->m_forwardNavigationModel->reset();
 }
 
 

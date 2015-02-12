@@ -50,7 +50,6 @@ class WebContentsAdapter;
 class UIDelegatesManager;
 
 QT_BEGIN_NAMESPACE
-class QQuickWebEngineHistory;
 class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
@@ -79,7 +78,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
-    Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL)
     Q_ENUMS(Feature)
     Q_FLAGS(FindFlags)
 
@@ -102,11 +100,8 @@ public:
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
-    QQuickWebEngineHistory *navigationHistory() const;
 
 public Q_SLOTS:
-    void goBackTo(int index);
-    void goForwardTo(int index);
     void findText(const QString&, FindFlags, const QJSValue & = QJSValue());
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 

@@ -161,10 +161,10 @@ ApplicationWindow {
         id: backHistoryMenu
 
         Instantiator {
-            model: currentWebView && currentWebView.experimental.navigationHistory.backItems
+            model: currentWebView && currentWebView.navigationHistory.backItems
             MenuItem {
                 text: model.title
-                onTriggered: currentWebView.experimental.goBackTo(index)
+                onTriggered: currentWebView.goBackOrForward(model.offset)
             }
 
             onObjectAdded: backHistoryMenu.insertItem(index, object)
@@ -176,10 +176,10 @@ ApplicationWindow {
         id: forwardHistoryMenu
 
         Instantiator {
-            model: currentWebView && currentWebView.experimental.navigationHistory.forwardItems
+            model: currentWebView && currentWebView.navigationHistory.forwardItems
             MenuItem {
                 text: model.title
-                onTriggered: currentWebView.experimental.goForwardTo(index)
+                onTriggered: currentWebView.goBackOrForward(model.offset)
             }
 
             onObjectAdded: forwardHistoryMenu.insertItem(index, object)

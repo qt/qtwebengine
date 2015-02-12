@@ -141,6 +141,27 @@ ApplicationWindow {
             RowLayout {
                 anchors.fill: parent;
                 ToolButton {
+                    enabled: currentWebView && (currentWebView.canGoBack || currentWebView.canGoForward)
+                    menu:Menu {
+                        id: historyMenu
+
+                        Instantiator {
+                            model: currentWebView && currentWebView.navigationHistory.items
+                            MenuItem {
+                                text: model.title
+                                onTriggered: currentWebView.goBackOrForward(model.offset)
+                                checkable: !enabled
+                                checked: !enabled
+                                enabled: model.offset
+                            }
+
+                            onObjectAdded: historyMenu.insertItem(index, object)
+                            onObjectRemoved: historyMenu.removeItem(object)
+                        }
+                    }
+                }
+
+                ToolButton {
                     id: backButton
                     iconSource: "icons/go-previous.png"
                     onClicked: currentWebView.goBack()

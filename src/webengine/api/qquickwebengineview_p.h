@@ -44,6 +44,7 @@ QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
 class QQuickWebEngineCertificateError;
+class QQuickWebEngineHistory;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
@@ -64,6 +65,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1)
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL REVISION 1)
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
+    Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
     Q_ENUMS(NavigationRequestAction);
     Q_ENUMS(NavigationType);
@@ -147,12 +149,14 @@ public:
     QQuickWebEngineSettings *settings() const;
     QQmlWebChannel *webChannel();
     void setWebChannel(QQmlWebChannel *);
+    QQuickWebEngineHistory *navigationHistory() const;
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void goBack();
     void goForward();
+    void goBackOrForward(int index);
     void reload();
     void stop();
 

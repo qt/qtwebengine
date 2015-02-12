@@ -48,8 +48,9 @@ public:
     QQuickWebEngineHistoryListModelPrivate(QQuickWebEngineViewPrivate*);
     virtual ~QQuickWebEngineHistoryListModelPrivate();
 
-    virtual int count() const = 0;
-    virtual int index(int) const = 0;
+    virtual int count() const;
+    virtual int index(int) const;
+    virtual int offsetForIndex(int) const;
 
     WebContentsAdapter *adapter() const;
 
@@ -60,16 +61,18 @@ class QQuickWebEngineBackHistoryListModelPrivate : public QQuickWebEngineHistory
 public:
     QQuickWebEngineBackHistoryListModelPrivate(QQuickWebEngineViewPrivate*);
 
-    int count() const;
-    int index(int) const;
+    int count() const override;
+    int index(int) const override;
+    int offsetForIndex(int) const override;
 };
 
 class QQuickWebEngineForwardHistoryListModelPrivate : public QQuickWebEngineHistoryListModelPrivate {
 public:
     QQuickWebEngineForwardHistoryListModelPrivate(QQuickWebEngineViewPrivate*);
 
-    int count() const;
-    int index(int) const;
+    int count() const override;
+    int index(int) const override;
+    int offsetForIndex(int) const override;
 };
 
 class QQuickWebEngineHistoryPrivate {
@@ -77,8 +80,10 @@ public:
     QQuickWebEngineHistoryPrivate(QQuickWebEngineViewPrivate*);
     ~QQuickWebEngineHistoryPrivate();
 
-    QScopedPointer<QQuickWebEngineHistoryListModel> m_backNavigationModel;
-    QScopedPointer<QQuickWebEngineHistoryListModel> m_forwardNavigationModel;
+    QQuickWebEngineViewPrivate *m_view;
+    mutable QScopedPointer<QQuickWebEngineHistoryListModel> m_navigationModel;
+    mutable QScopedPointer<QQuickWebEngineHistoryListModel> m_backNavigationModel;
+    mutable QScopedPointer<QQuickWebEngineHistoryListModel> m_forwardNavigationModel;
 };
 
 QT_END_NAMESPACE

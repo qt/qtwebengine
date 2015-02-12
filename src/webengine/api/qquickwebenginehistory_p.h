@@ -37,7 +37,7 @@
 #ifndef QQUICKWEBENGINEHISTORY_P_H
 #define QQUICKWEBENGINEHISTORY_P_H
 
-#include <qtwebengineglobal_p.h>
+#include <qtwebengineglobal.h>
 #include <QAbstractListModel>
 #include <QtCore/qshareddata.h>
 #include <QQuickItem>
@@ -54,7 +54,7 @@ class QQuickWebEngineHistoryListModelPrivate;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineViewPrivate;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineHistoryListModel : public QAbstractListModel {
+class Q_WEBENGINE_EXPORT QQuickWebEngineHistoryListModel : public QAbstractListModel {
     Q_OBJECT
 
 public:
@@ -75,8 +75,9 @@ private:
     friend class QQuickWebEngineHistory;
 };
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineHistory : public QQuickItem {
+class Q_WEBENGINE_EXPORT QQuickWebEngineHistory : public QQuickItem {
     Q_OBJECT
+    Q_PROPERTY(QQuickWebEngineHistoryListModel *items READ items CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineHistoryListModel *backItems READ backItems CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineHistoryListModel *forwardItems READ forwardItems CONSTANT FINAL)
 
@@ -86,9 +87,11 @@ public:
 
     enum NavigationHistoryRoles {
         UrlRole = Qt::UserRole + 1,
-        TitleRole = Qt::UserRole + 2
+        TitleRole = Qt::UserRole + 2,
+        OffsetRole = Qt::UserRole + 3,
     };
 
+    QQuickWebEngineHistoryListModel *items() const;
     QQuickWebEngineHistoryListModel *backItems() const;
     QQuickWebEngineHistoryListModel *forwardItems() const;
 
