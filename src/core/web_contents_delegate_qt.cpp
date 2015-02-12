@@ -354,4 +354,22 @@ void WebContentsDelegateQt::geolocationPermissionReply(const QUrl &origin, bool 
     }
 }
 
+void WebContentsDelegateQt::ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text)
+{
+    Q_UNUSED(web_contents);
+    m_viewClient->showValidationMessage(toQt(anchor_in_root_view), toQt(main_text), toQt(sub_text));
+}
+
+void WebContentsDelegateQt::HideValidationMessage(content::WebContents *web_contents)
+{
+    Q_UNUSED(web_contents);
+    m_viewClient->hideValidationMessage();
+}
+
+void WebContentsDelegateQt::MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view)
+{
+    Q_UNUSED(web_contents);
+    m_viewClient->moveValidationMessage(toQt(anchor_in_root_view));
+}
+
 } // namespace QtWebEngineCore

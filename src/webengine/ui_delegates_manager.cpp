@@ -138,6 +138,7 @@ void NavigateMenuItem::onTriggered()
 
 UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
     : m_view(view)
+    , m_messageBubbleItem(0)
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_INIT, NO_SEPARATOR)
 {
 }
@@ -428,6 +429,38 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
     QObject::connect(filePicker, rejectSignal.method(), filePicker, filePicker->metaObject()->method(deleteLaterIndex));
 
     QMetaObject::invokeMethod(filePicker, "open");
+}
+
+void UIDelegatesManager::showMessageBubble(const QRect &anchor, const QString &mainText, const QString &subText)
+{
+    if (!ensureComponentLoaded(MessageBubble))
+        return;
+
+    Q_ASSERT(m_messageBubbleItem.isNull());
+
+    QQmlContext *context = qmlContext(m_view);
+    m_messageBubbleItem.reset(qobject_cast<QQuickItem *>(messageBubbleComponent->beginCreate(context)));
+    m_messageBubbleItem->setParentItem(m_view);
+    messageBubbleComponent->completeCreate();
+
+    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("maxWidth")).write(anchor.size().width());
+    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("mainText")).write(mainText);
+    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("subText")).write(subText);
+    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("x")).write(anchor.x());
+    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("y")).write(anchor.y() + anchor.size().height());
+}
+
+void UIDelegatesManager::hideMessageBubble()
+{
+    m_messageBubbleItem.reset();
+}
+
+void UIDelegatesManager::moveMessageBubble(const QRect &anchor)
+{
+    Q_ASSERT(!m_messageBubbleItem.isNull());
+
+    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("x")).write(anchor.x());
+    QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("y")).write(anchor.y() + anchor.size().height());
 }
 
 } // namespace QtWebEngineCore
