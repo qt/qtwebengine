@@ -1,6 +1,6 @@
 TARGET = $$QTWEBENGINEPROCESS_NAME
 TEMPLATE = app
-
+!build_pass:contains(QT_CONFIG, debug_and_release):contains(QT_CONFIG, build_all): CONFIG += release
 # Needed to set LSUIElement=1
 QMAKE_INFO_PLIST = Info_mac.plist
 

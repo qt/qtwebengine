@@ -16,3 +16,4 @@ GYP_CONFIG += \
     host_clang=0 \
     clang=0 \
 
+!contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
