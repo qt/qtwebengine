@@ -392,6 +392,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // Qt returns a flash time (the whole cycle) in ms, chromium expects just the interval in seconds
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
     rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
+    rendererPrefs->user_agent_override = d->browserContextAdapter->httpUserAgent().toStdString();
     d->webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     // Create and attach observers to the WebContents.
@@ -469,6 +470,7 @@ void WebContentsAdapter::load(const QUrl &url)
     Q_D(WebContentsAdapter);
     content::NavigationController::LoadURLParams params(toGurl(url));
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->Focus();
 }
