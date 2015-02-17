@@ -245,5 +245,8 @@ void tst_QWebEngineView::value()
     QCOMPARE(progressBarValueInterface->maximumValue().toInt(), 99);
 }
 
-QTEST_MAIN(tst_QWebEngineView)
+static QByteArrayList params = QByteArrayList()
+    << "--force-renderer-accessibility";
+
+W_QTEST_MAIN(tst_QWebEngineView, params)
 #include "tst_qwebengineaccessibility.moc"

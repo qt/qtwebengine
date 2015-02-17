@@ -164,3 +164,20 @@ static inline QUrl baseUrlSync(QWebEnginePage *page)
 }
 
 #define W_QSKIP(a, b) QSKIP(a)
+
+#define W_QTEST_MAIN(TestObject, params) \
+int main(int argc, char *argv[]) \
+{ \
+    QVector<const char *> w_argv(argc); \
+    for (int i = 0; i < argc; ++i) \
+        w_argv[i] = argv[i]; \
+    for (int i = 0; i < params.size(); ++i) \
+        w_argv.append(params[i].data()); \
+    int w_argc = w_argv.size(); \
+    \
+    QApplication app(w_argc, const_cast<char **>(w_argv.data())); \
+    app.setAttribute(Qt::AA_Use96Dpi, true); \
+    QTEST_DISABLE_KEYPAD_NAVIGATION \
+    TestObject tc; \
+    return QTest::qExec(&tc, argc, argv); \
+}
