@@ -11,6 +11,8 @@ MODULE_BASE_DIR = $$QTWEBENGINE_ROOT
 
 EOL = $$escape_expand(\\n)
 
+# Call the original default_pre.
+load(default_pre)
 load(functions)
 
 # Check platform support and run config tests early enough to bail
@@ -18,6 +20,3 @@ equals(_PRO_FILE_, "$$QTWEBENGINE_ROOT/qtwebengine.pro"): isPlatformSupported() 
    load(configure)
    runConfigure()
 }
-
-# Call the original default_pre.
-load(default_pre)
