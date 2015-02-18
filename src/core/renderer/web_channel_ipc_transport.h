@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef NAVIGATOR_QT_EXTENSION_H
-#define NAVIGATOR_QT_EXTENSION_H
+#ifndef WEB_CHANNEL_IPC_TRANSPORT_H
+#define WEB_CHANNEL_IPC_TRANSPORT_H
 
 #include "base/values.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -56,4 +56,4 @@ private:
     virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
 };
 
-#endif // NAVIGATOR_QT_EXTENSION_H
+#endif // WEB_CHANNEL_IPC_TRANSPORT

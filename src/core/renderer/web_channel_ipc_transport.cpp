@@ -51,11 +51,11 @@
 static const char kWebChannelTransportExtensionName[] = "v8/WebChannelTransport";
 
 static const char kWebChannelTransportApi[] =
-        "if (typeof(navigator) === 'undefined')" \
-        "  navigator = {};" \
-        "if (typeof(navigator.qtWebChannelTransport) === 'undefined')" \
-        "  navigator.qtWebChannelTransport = {};" \
-        "navigator.qtWebChannelTransport.send = function(message) {" \
+        "if (typeof(qt) === 'undefined')" \
+        "  qt = {};" \
+        "if (typeof(qt.webChannelTransport) === 'undefined')" \
+        "  qt.webChannelTransport = {};" \
+        "qt.webChannelTransport.send = function(message) {" \
         "  native function NativeQtSendMessage();" \
         "  NativeQtSendMessage(message);" \
         "};";
@@ -135,15 +135,15 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> global(context->Global());
-    v8::Handle<v8::Value> navigatorValue(global->Get(v8::String::NewFromUtf8(isolate, "navigator")));
-    if (!navigatorValue->IsObject())
+    v8::Handle<v8::Value> qtObjectValue(global->Get(v8::String::NewFromUtf8(isolate, "qt")));
+    if (!qtObjectValue->IsObject())
         return;
-    v8::Handle<v8::Value> navigatorQtValue(navigatorValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "qtWebChannelTransport")));
-    if (!navigatorQtValue->IsObject())
+    v8::Handle<v8::Value> webChannelObjectValue(qtObjectValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "webChannelTransport")));
+    if (!webChannelObjectValue->IsObject())
         return;
-    v8::Handle<v8::Value> onmessageCallbackValue(navigatorQtValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "onmessage")));
+    v8::Handle<v8::Value> onmessageCallbackValue(webChannelObjectValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "onmessage")));
     if (!onmessageCallbackValue->IsFunction()) {
-        qWarning("onmessage is not a callable property of navigator.qtWebChannelTransport. Some things might not work as expected.");
+        qWarning("onmessage is not a callable property of qt.webChannelTransport. Some things might not work as expected.");
         return;
     }
 
@@ -156,7 +156,7 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     const int argc = 1;
     v8::Handle<v8::Value> argv[argc];
     argv[0] = messageObject;
-    frame->callFunctionEvenIfScriptDisabled(callback, navigatorQtValue->ToObject(), argc, argv);
+    frame->callFunctionEvenIfScriptDisabled(callback, webChannelObjectValue->ToObject(), argc, argv);
 }
 
 v8::Extension *WebChannelIPCTransport::getV8Extension()

@@ -819,7 +819,7 @@ QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
  *
  * The web channel instance used by this view.
  * This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
- * and exposed in the javascript context of the page it is rendering as \c navigator.qtWebChannelTransport.
+ * and exposed in the javascript context of the page it is rendering as \c qt.webChannelTransport.
  * This transport object is used when instantiating the JavaScript counterpart of QWebChannel using
  * the \l{Qt WebChannel JavaScript API}.
  *
