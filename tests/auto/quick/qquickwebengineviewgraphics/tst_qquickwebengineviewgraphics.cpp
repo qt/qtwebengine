@@ -184,7 +184,7 @@ void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
 void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
 {
     QString htmlData = QUrl::toPercentEncoding(html);
-    QString qmlData = QUrl::toPercentEncoding(QStringLiteral("import QtQuick 2.0; import QtWebEngine 1.0; WebEngineView { width: 150; height: 150; url: loadUrl }"));
+    QString qmlData = QUrl::toPercentEncoding(QStringLiteral("import QtQuick 2.0; import QtWebEngine 1.1; WebEngineView { width: 150; height: 150; url: loadUrl }"));
     m_view->rootContext()->setContextProperty("loadUrl", QUrl(QStringLiteral("data:text/html,%1").arg(htmlData)));
     m_view->setSource(QUrl(QStringLiteral("data:text/plain,%1").arg(qmlData)));
     m_view->create();
