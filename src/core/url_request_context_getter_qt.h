@@ -49,6 +49,7 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #include "qglobal.h"
+#include <qatomic.h>
 
 namespace net {
 class MappedHostResolver;
@@ -72,7 +73,7 @@ public:
     void updateHttpCache();
 
 private:
-    virtual ~URLRequestContextGetterQt() {}
+    virtual ~URLRequestContextGetterQt();
 
     // Called on the IO thread:
     void generateStorage();
@@ -82,13 +83,12 @@ private:
     void generateJobFactory();
 
     bool m_ignoreCertificateErrors;
-    volatile bool m_updateStorageSettings;
-    volatile bool m_updateCookieStore;
-    volatile bool m_updateHttpCache;
+    QAtomicInt m_updateCookieStore;
+    QAtomicInt m_updateHttpCache;
     BrowserContextAdapter *m_browserContext;
     content::ProtocolHandlerMap m_protocolHandlers;
 
-    scoped_ptr<net::ProxyConfigService> m_proxyConfigService;
+    QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     scoped_ptr<net::URLRequestContext> m_urlRequestContext;
     scoped_ptr<net::NetworkDelegate> m_networkDelegate;
     scoped_ptr<net::URLRequestContextStorage> m_storage;

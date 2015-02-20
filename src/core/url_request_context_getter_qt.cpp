@@ -75,14 +75,16 @@ using content::BrowserThread;
 
 URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers)
     : m_ignoreCertificateErrors(false)
-    , m_updateStorageSettings(false)
-    , m_updateCookieStore(false)
-    , m_updateHttpCache(false)
     , m_browserContext(browserContext)
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
     updateStorageSettings();
+}
+
+URLRequestContextGetterQt::~URLRequestContextGetterQt()
+{
+    delete m_proxyConfigService.fetchAndStoreAcquire(0);
 }
 
 net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
@@ -103,30 +105,27 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 void URLRequestContextGetterQt::updateStorageSettings()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (!m_proxyConfigService) {
+    if (!m_proxyConfigService.loadAcquire()) {
         // We must create the proxy config service on the UI loop on Linux because it
         // must synchronously run on the glib message loop. This will be passed to
         // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-        m_proxyConfigService.reset(net::ProxyService::CreateSystemProxyConfigService(
+        m_proxyConfigService = net::ProxyService::CreateSystemProxyConfigService(
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-            content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE))
+            content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
         );
-    }
-    if (m_storage && !m_updateStorageSettings) {
-        m_updateStorageSettings = true;
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
+        if (m_storage)
+            content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
     }
 }
 
 void URLRequestContextGetterQt::generateStorage()
 {
     Q_ASSERT(m_urlRequestContext);
-    Q_ASSERT(m_proxyConfigService);
-    if (!m_proxyConfigService)
-        return;
-    m_updateStorageSettings = false;
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
+
+    net::ProxyConfigService *proxyConfigService = m_proxyConfigService.fetchAndStoreAcquire(0);
+    Q_ASSERT(proxyConfigService);
 
     generateCookieStore();
     generateUserAgent();
@@ -136,8 +135,7 @@ void URLRequestContextGetterQt::generateStorage()
         base::WorkerPool::GetTaskRunner(true)));
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
-    m_storage->set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(
-        m_proxyConfigService.release(), 0, NULL));
+    m_storage->set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(proxyConfigService, 0, NULL));
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     m_storage->set_transport_security_state(new net::TransportSecurityState());
 
@@ -153,8 +151,8 @@ void URLRequestContextGetterQt::generateStorage()
 
 void URLRequestContextGetterQt::updateCookieStore()
 {
-    if (m_urlRequestContext && !m_updateCookieStore && !m_updateStorageSettings) {
-        m_updateCookieStore = true;
+    if (m_urlRequestContext && !m_updateCookieStore && !m_proxyConfigService) {
+        m_updateCookieStore = 1;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateCookieStore, this));
     }
 }
@@ -163,7 +161,7 @@ void URLRequestContextGetterQt::generateCookieStore()
 {
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
-    m_updateCookieStore = false;
+    m_updateCookieStore = 0;
 
     // Unset it first to get a chance to destroy and flush the old cookie store before before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
@@ -200,7 +198,7 @@ void URLRequestContextGetterQt::generateCookieStore()
 
 void URLRequestContextGetterQt::updateUserAgent()
 {
-    if (m_urlRequestContext && !m_updateStorageSettings)
+    if (m_urlRequestContext && !m_proxyConfigService)
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateUserAgent, this));
 }
 
@@ -215,8 +213,8 @@ void URLRequestContextGetterQt::generateUserAgent()
 
 void URLRequestContextGetterQt::updateHttpCache()
 {
-    if (m_urlRequestContext && !m_updateHttpCache && !m_updateStorageSettings) {
-        m_updateHttpCache = true;
+    if (m_urlRequestContext && !m_updateHttpCache && !m_proxyConfigService) {
+        m_updateHttpCache = 1;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateHttpCache, this));
     }
 }
@@ -225,7 +223,7 @@ void URLRequestContextGetterQt::generateHttpCache()
 {
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
-    m_updateHttpCache = false;
+    m_updateHttpCache = 0;
 
     net::HttpCache::DefaultBackend* main_backend = 0;
     switch (m_browserContext->httpCacheType()) {
