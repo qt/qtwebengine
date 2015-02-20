@@ -54,7 +54,7 @@ class QWebEngineUrlSchemeHandlerPrivate;
 class QWEBENGINEWIDGETS_EXPORT QWebEngineUrlSchemeHandler : public QObject {
     Q_OBJECT
 public:
-    QWebEngineUrlSchemeHandler(const QByteArray &scheme, QWebEngineProfile *profile);
+    QWebEngineUrlSchemeHandler(const QByteArray &scheme, QWebEngineProfile *profile, QObject *parent = 0);
     virtual ~QWebEngineUrlSchemeHandler();
 
     QByteArray scheme() const;

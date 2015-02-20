@@ -122,6 +122,8 @@ void URLRequestContextGetterQt::generateStorage()
 {
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_proxyConfigService);
+    if (!m_proxyConfigService)
+        return;
     m_updateStorageSettings = false;
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
@@ -285,7 +287,7 @@ void URLRequestContextGetterQt::generateJobFactory()
         new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
 
     Q_FOREACH (CustomUrlSchemeHandler* handler, m_browserContext->customUrlSchemeHandlers()) {
-        m_jobFactory->SetProtocolHandler(handler->scheme().toStdString(), handler->protocolHandler());
+        m_jobFactory->SetProtocolHandler(handler->scheme().toStdString(), handler->createProtocolHandler());
     }
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());

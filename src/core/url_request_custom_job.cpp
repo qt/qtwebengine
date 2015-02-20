@@ -72,7 +72,7 @@ void URLRequestCustomJob::Start()
 
 void URLRequestCustomJob::Kill()
 {
-    if (m_device->isOpen())
+    if (m_device && m_device->isOpen())
         m_device->close();
     m_weakFactory.InvalidateWeakPtrs();
 

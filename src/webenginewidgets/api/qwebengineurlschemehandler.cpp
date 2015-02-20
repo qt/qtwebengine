@@ -41,8 +41,6 @@
 #include "qwebengineprofile_p.h"
 #include "qwebengineurlrequestjob_p.h"
 
-#include <QSharedPointer>
-
 QT_BEGIN_NAMESPACE
 
 QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme, QWebEngineUrlSchemeHandler *q, QWebEngineProfile *profile)
@@ -63,8 +61,8 @@ bool QWebEngineUrlSchemeHandlerPrivate::handleJob(URLRequestCustomJobDelegate *j
     return true;
 }
 
-QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme, QWebEngineProfile *profile)
-    : QObject(profile)
+QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme, QWebEngineProfile *profile, QObject *parent)
+    : QObject(parent)
     , d_ptr(new QWebEngineUrlSchemeHandlerPrivate(scheme, this, profile))
 {
     profile->d_func()->installUrlSchemeHandler(this);
@@ -72,7 +70,8 @@ QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme,
 
 QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
-    d_ptr->m_profile->d_func()->removeUrlSchemeHandler(this);
+    if (d_ptr->m_profile)
+        d_ptr->m_profile->d_func()->removeUrlSchemeHandler(this);
 }
 
 QByteArray QWebEngineUrlSchemeHandler::scheme() const

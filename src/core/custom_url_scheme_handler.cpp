@@ -39,7 +39,6 @@
 
 CustomUrlSchemeHandler::CustomUrlSchemeHandler(const QByteArray &scheme)
     : m_scheme(scheme)
-    , m_protocolHandler(new CustomProtocolHandler(this))
 {
 }
 
@@ -57,7 +56,8 @@ void CustomUrlSchemeHandler::setScheme(const QByteArray &scheme)
     m_scheme = scheme;
 }
 
-CustomProtocolHandler *CustomUrlSchemeHandler::protocolHandler()
+CustomProtocolHandler *CustomUrlSchemeHandler::createProtocolHandler()
 {
-    return m_protocolHandler.data();
+    // Will be owned by the JobFactory.
+    return new CustomProtocolHandler(this);
 }

@@ -55,13 +55,12 @@ public:
 
     QByteArray scheme() const;
     void setScheme(const QByteArray &);
-    CustomProtocolHandler *protocolHandler();
+    CustomProtocolHandler *createProtocolHandler();
 
     virtual bool handleJob(URLRequestCustomJobDelegate*) = 0;
 
 private:
     QByteArray m_scheme;
-    QScopedPointer<CustomProtocolHandler> m_protocolHandler;
 };
 
 #endif // CUSTOM_URL_SCHEME_HANDLER_H_

@@ -41,6 +41,8 @@
 
 #include "custom_url_scheme_handler.h"
 
+#include <QPointer>
+
 QT_BEGIN_NAMESPACE
 
 class QWebEngineProfile;
@@ -58,7 +60,7 @@ public:
 
 private:
     QWebEngineUrlSchemeHandler *q_ptr;
-    QWebEngineProfile* m_profile;
+    QPointer<QWebEngineProfile> m_profile;
 };
 
 QT_END_NAMESPACE
