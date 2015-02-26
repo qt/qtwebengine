@@ -42,7 +42,6 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.1
-import QtWebEngine.experimental 1.0
 
 TestWebEngineView {
     id: webEngineView
@@ -52,7 +51,7 @@ TestWebEngineView {
     ListView {
         id: backItemsList
         anchors.fill: parent
-        model: webEngineView.experimental.navigationHistory.backItems
+        model: webEngineView.navigationHistory.backItems
         currentIndex: count - 1
         delegate:
             Text {
@@ -64,7 +63,7 @@ TestWebEngineView {
     ListView {
         id: forwardItemsList
         anchors.fill: parent
-        model: webEngineView.experimental.navigationHistory.forwardItems
+        model: webEngineView.navigationHistory.forwardItems
         currentIndex: 0
         delegate:
             Text {
@@ -94,7 +93,7 @@ TestWebEngineView {
             compare(backItemsList.count, 1)
             compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
 
-            webEngineView.experimental.goBackTo(0)
+            webEngineView.goBackOrForward(-1)
             verify(webEngineView.waitForLoadSucceeded())
             compare(webEngineView.url, Qt.resolvedUrl("test1.html"))
             compare(webEngineView.canGoBack, false)
@@ -121,7 +120,7 @@ TestWebEngineView {
             compare(forwardItemsList.count, 0)
             compare(backItemsList.currentItem.text, Qt.resolvedUrl("test1.html"))
 
-            webEngineView.experimental.goBackTo(1)
+            webEngineView.goBackOrForward(-2)
             verify(webEngineView.waitForLoadSucceeded())
             compare(webEngineView.url, Qt.resolvedUrl("test1.html"))
             compare(webEngineView.canGoBack, false)
@@ -130,7 +129,7 @@ TestWebEngineView {
             compare(forwardItemsList.count, 2)
             compare(forwardItemsList.currentItem.text, Qt.resolvedUrl("test2.html"))
 
-            webEngineView.experimental.goForwardTo(1)
+            webEngineView.goBackOrForward(2)
             verify(webEngineView.waitForLoadSucceeded())
             compare(webEngineView.url, Qt.resolvedUrl("javascript.html"))
             compare(webEngineView.canGoBack, true)
