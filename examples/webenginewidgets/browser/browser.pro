@@ -2,8 +2,6 @@ TEMPLATE = app
 TARGET = browser
 QT += webenginewidgets network widgets printsupport
 
-macx: CONFIG -= app_bundle
-
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS
 
@@ -82,20 +80,6 @@ mac {
     ICON = browser.icns
     QMAKE_INFO_PLIST = Info_mac.plist
     TARGET = Browser
-
-    # No 64-bit Flash on Mac, so build the browser 32-bit
-    contains(QT_CONFIG, x86) {
-        CONFIG -= x86_64
-        CONFIG += x86
-    }
-    contains(QT_CONFIG, ppc) {
-        CONFIG -= ppc64
-        CONFIG += ppc
-    }
-}
-
-wince*: {
-    DEPLOYMENT_PLUGIN += qjpeg qgif
 }
 
 EXAMPLE_FILES = Info_mac.plist browser.icns browser.ico browser.rc
