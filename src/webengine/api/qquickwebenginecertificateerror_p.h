@@ -83,6 +83,7 @@ public:
     QString description() const;
     bool overridable() const;
     bool deferred() const;
+    bool answered() const;
 
 private:
     Q_DISABLE_COPY(QQuickWebEngineCertificateError)

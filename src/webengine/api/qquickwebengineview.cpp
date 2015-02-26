@@ -228,12 +228,13 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
 {
     Q_Q(QQuickWebEngineView);
 
-    m_certificateErrorController = errorController;
     QQuickWebEngineCertificateError *quickController = new QQuickWebEngineCertificateError(errorController);
     QQmlEngine::setObjectOwnership(quickController, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->certificateError(quickController);
-    if (!quickController->deferred())
+    if (!quickController->deferred() && !quickController->answered())
         quickController->rejectCertificate();
+    else
+        m_certificateErrorControllers.append(errorController);
 }
 
 void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url)
@@ -305,6 +306,7 @@ void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl)
     Q_Q(QQuickWebEngineView);
     isLoading = true;
     m_history->reset();
+    m_certificateErrorControllers.clear();
     QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
     Q_EMIT q->loadingChanged(&loadRequest);
 }

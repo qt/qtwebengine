@@ -202,7 +202,7 @@ public:
     bool isLoading;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
-    QSharedPointer<CertificateErrorController> m_certificateErrorController;
+    QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;
 
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;

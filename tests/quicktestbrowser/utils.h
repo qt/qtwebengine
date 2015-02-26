@@ -48,6 +48,7 @@ class Utils : public QObject {
     Q_OBJECT
 public:
     Q_INVOKABLE static QUrl fromUserInput(const QString& userInput);
+    Q_INVOKABLE static QString domainFromString(const QString& urlString);
 };
 
 inline QUrl Utils::fromUserInput(const QString& userInput)
@@ -56,6 +57,11 @@ inline QUrl Utils::fromUserInput(const QString& userInput)
     if (fileInfo.exists())
         return QUrl::fromLocalFile(fileInfo.absoluteFilePath());
     return QUrl::fromUserInput(userInput);
+}
+
+inline QString Utils::domainFromString(const QString& urlString)
+{
+    return QUrl::fromUserInput(urlString).host();
 }
 
 #endif // UTILS_H

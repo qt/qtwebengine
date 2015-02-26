@@ -357,10 +357,12 @@ ApplicationWindow {
                     ]
 
                     onCertificateError: {
-                        sslDialog.certError = error
-                        sslDialog.text = "Certificate Error: " + error.description
-                        sslDialog.visible = true
-                        error.defer()
+                        if (!acceptedCertificates.shouldAutoAccept(error)){
+                            error.defer()
+                            sslDialog.enqueue(error)
+                        } else{
+                            error.ignoreCertificateError()
+                        }
                     }
 
                     onNewViewRequested: {
@@ -440,17 +442,50 @@ ApplicationWindow {
         }
     }
 
+    QtObject{
+        id:acceptedCertificates
+
+        property var acceptedUrls : []
+
+        function shouldAutoAccept(certificateError){
+            var domain = utils.domainFromString(certificateError.url)
+            return acceptedUrls.indexOf(domain) >= 0
+        }
+    }
+
     MessageDialog {
         id: sslDialog
 
-        property var certError
+        property var certErrors: []
+        icon: StandardIcon.Warning
+        standardButtons: StandardButton.No | StandardButton.Yes
+        title: "Server's certificate not trusted"
+        text: "Do you wish to continue?"
+        detailedText: "If you wish so, you may continue with an unverified certificate. " +
+                      "Accepting an unverified certificate means " +
+                      "you may not be connected with the host you tried to connect to.\n" +
+                      "Do you wish to override the security check and continue?"
+        onYes: {
+            var cert = certErrors.shift()
+            var domain = utils.domainFromString(cert.url)
+            acceptedCertificates.acceptedUrls.push(domain)
+            cert.ignoreCertificateError()
+            presentError()
+        }
+        onNo: reject()
+        onRejected: reject()
 
-        standardButtons: StandardButton.Cancel | StandardButton.Ok
-        visible: false
-        title: "Do you want to accept this certificate?"
-
-        onAccepted: certError.ignoreCertificateError()
-        onRejected: certError.rejectCertificate()
+        function reject(){
+            certErrors.shift().rejectCertificate()
+            presentError()
+        }
+        function enqueue(error){
+            certErrors.push(error)
+            presentError()
+        }
+        function presentError(){
+            visible = certErrors.length > 0
+        }
     }
 
     DownloadView {
