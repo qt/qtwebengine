@@ -427,12 +427,14 @@ void QQuickWebEngineViewPrivate::close()
 
 void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
 {
-    Q_EMIT e->fullScreenRequested(fullScreen);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineFullScreenRequest request(this, fullScreen);
+    Q_EMIT q->fullScreenRequested(request);
 }
 
 bool QQuickWebEngineViewPrivate::isFullScreen() const
 {
-    return e->isFullScreen();
+    return m_isFullScreen;
 }
 
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -821,15 +823,11 @@ qreal QQuickWebEngineView::zoomFactor() const
     return d->adapter->currentZoomFactor();
 }
 
-void QQuickWebEngineViewExperimental::setIsFullScreen(bool fullscreen)
-{
-    d_ptr->m_isFullScreen = fullscreen;
-    emit isFullScreenChanged();
-}
 
-bool QQuickWebEngineViewExperimental::isFullScreen() const
+bool QQuickWebEngineView::isFullScreen() const
 {
-    return d_ptr->m_isFullScreen;
+    Q_D(const QQuickWebEngineView);
+    return d->m_isFullScreen;
 }
 
 void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlComponent *contextMenuExtras)
@@ -947,6 +945,15 @@ void QQuickWebEngineView::goBackOrForward(int offset)
     d->adapter->navigateToIndex(index);
 }
 
+void QQuickWebEngineView::fullScreenCancelled()
+{
+    Q_D(QQuickWebEngineView);
+    if (d->m_isFullScreen) {
+        d->m_isFullScreen = false;
+        Q_EMIT isFullScreenChanged();
+    }
+}
+
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
@@ -1008,6 +1015,26 @@ void QQuickWebEngineView::componentComplete()
     Q_D(QQuickWebEngineView);
     QQuickItem::componentComplete();
     d->ensureContentsAdapter();
+}
+
+QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest()
+    : viewPrivate(0)
+    , m_toggleOn(false)
+{
+}
+
+QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, bool toggleOn)
+    : viewPrivate(viewPrivate)
+    , m_toggleOn(toggleOn)
+{
+}
+
+void QQuickWebEngineFullScreenRequest::accept()
+{
+    if (viewPrivate && viewPrivate->m_isFullScreen != m_toggleOn) {
+        viewPrivate->m_isFullScreen = m_toggleOn;
+        Q_EMIT viewPrivate->q_ptr->isFullScreenChanged();
+    }
 }
 
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)

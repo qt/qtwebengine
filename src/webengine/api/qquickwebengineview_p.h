@@ -58,6 +58,20 @@ class QQuickWebEngineViewPrivate;
 class QQuickWebEngineTestSupport;
 #endif
 
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFullScreenRequest {
+    Q_GADGET
+    Q_PROPERTY(bool toggleOn READ toggleOn)
+public:
+    QQuickWebEngineFullScreenRequest();
+    QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, bool toggleOn);
+
+    Q_INVOKABLE void accept();
+    bool toggleOn() { return m_toggleOn; }
+
+private:
+    QQuickWebEngineViewPrivate *viewPrivate;
+    bool m_toggleOn;
+};
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -68,6 +82,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY urlChanged)
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged)
+    Q_PROPERTY(bool isFullScreen READ isFullScreen NOTIFY isFullScreenChanged REVISION 1)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1)
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL REVISION 1)
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
@@ -99,6 +114,7 @@ public:
     QString title() const;
     bool canGoBack() const;
     bool canGoForward() const;
+    bool isFullScreen() const;
     qreal zoomFactor() const;
     void setZoomFactor(qreal arg);
 
@@ -185,6 +201,7 @@ public Q_SLOTS:
     void reload();
     void stop();
     Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
+    Q_REVISION(1) void fullScreenCancelled();
 
 Q_SIGNALS:
     void titleChanged();
@@ -196,6 +213,8 @@ Q_SIGNALS:
     void navigationRequested(QQuickWebEngineNavigationRequest *request);
     void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID);
     Q_REVISION(1) void certificateError(QQuickWebEngineCertificateError *error);
+    Q_REVISION(1) void fullScreenRequested(const QQuickWebEngineFullScreenRequest &request);
+    Q_REVISION(1) void isFullScreenChanged();
     Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
     Q_REVISION(1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1) void webChannelChanged();
@@ -220,5 +239,6 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineView)
+Q_DECLARE_METATYPE(QQuickWebEngineFullScreenRequest)
 
 #endif // QQUICKWEBENGINEVIEW_P_H

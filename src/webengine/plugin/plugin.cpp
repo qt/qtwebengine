@@ -81,6 +81,8 @@ public:
             QObject::tr("Cannot create a separate instance of NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineHistoryListModel>(uri, 1, 1, "NavigationHistoryListModel",
             QObject::tr("Cannot create a separate instance of NavigationHistory"));
+        qmlRegisterUncreatableType<QQuickWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
+            QObject::tr("Cannot create a separate instance of FullScreenRequest"));
     }
 };
 

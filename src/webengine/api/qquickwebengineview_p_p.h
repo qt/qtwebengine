@@ -83,7 +83,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
-    Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_ENUMS(Feature)
 
 public:
@@ -94,8 +93,6 @@ public:
         Geolocation
     };
 
-    void setIsFullScreen(bool fullscreen);
-    bool isFullScreen() const;
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
@@ -104,8 +101,6 @@ public Q_SLOTS:
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 
 Q_SIGNALS:
-    void fullScreenRequested(bool fullScreen);
-    void isFullScreenChanged();
     void extraContextMenuEntriesComponentChanged();
     void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
     void loadVisuallyCommitted();

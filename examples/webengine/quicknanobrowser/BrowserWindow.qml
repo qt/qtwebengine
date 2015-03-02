@@ -52,11 +52,25 @@ ApplicationWindow {
     id: browserWindow
     property QtObject applicationRoot
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
+    property int previousVisibility: Window.Windowed
+
+    property bool isFullScreen: visibility == Window.FullScreen
+    onIsFullScreenChanged: {
+        // This is for the case where the system forces us to leave fullscreen.
+        if (currentWebView && !isFullScreen) {
+            currentWebView.state = ""
+            if (currentWebView.isFullScreen)
+                currentWebView.fullScreenCancelled()
+        }
+    }
 
     width: 1300
     height: 900
     visible: true
     title: currentWebView && currentWebView.title
+
+    // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
+    Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
 
     // Create a styleItem to determine the platform.
     // When using style "mac", ToolButtons are not supposed to accept focus.
@@ -121,6 +135,13 @@ ApplicationWindow {
                 browserWindow.close()
             else
                 tabs.removeTab(tabs.currentIndex)
+        }
+    }
+    Action {
+        shortcut: "Escape"
+        onTriggered: {
+            if (browserWindow.isFullScreen)
+                browserWindow.visibility = browserWindow.previousVisibility
         }
     }
     Action {
@@ -289,6 +310,21 @@ ApplicationWindow {
                     }
                 }
 
+                states: [
+                    State {
+                        name: "FullScreen"
+                        PropertyChanges {
+                            target: tabs
+                            frameVisible: false
+                            tabsVisible: false
+                        }
+                        PropertyChanges {
+                            target: navigationBar
+                            visible: false
+                        }
+                    }
+                ]
+
                 onCertificateError: {
                     error.defer()
                     sslDialog.enqueue(error)
@@ -307,6 +343,18 @@ ApplicationWindow {
                         var window = applicationRoot.createWindow()
                         request.openIn(window.currentWebView)
                     }
+                }
+
+                onFullScreenRequested: {
+                    if (request.toggleOn) {
+                        webEngineView.state = "FullScreen"
+                        browserWindow.previousVisibility = browserWindow.visibility
+                        browserWindow.showFullScreen()
+                    } else {
+                        webEngineView.state = ""
+                        browserWindow.visibility = browserWindow.previousVisibility
+                    }
+                    request.accept()
                 }
             }
         }

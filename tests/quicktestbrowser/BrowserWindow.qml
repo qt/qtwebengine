@@ -54,12 +54,16 @@ ApplicationWindow {
     id: browserWindow
     property QtObject applicationRoot
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item.webView : null
+    property int previousVisibility: Window.Windowed
 
     property bool isFullScreen: visibility == Window.FullScreen
     onIsFullScreenChanged: {
         // This is for the case where the system forces us to leave fullscreen.
-        if (currentWebView)
-            currentWebView.state = isFullScreen ? "FullScreen" : ""
+        if (currentWebView && !isFullScreen) {
+            currentWebView.state = ""
+            if (currentWebView.isFullScreen)
+                currentWebView.fullScreenCancelled()
+        }
     }
 
     height: 600
@@ -89,7 +93,7 @@ ApplicationWindow {
         offTheRecord: true
     }
 
-    // Make sure the Qt.WindowFullscreenButtonHint is set on Mac.
+    // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
     Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
 
     // Create a styleItem to determine the platform.
@@ -141,7 +145,7 @@ ApplicationWindow {
         shortcut: "Escape"
         onTriggered: {
             if (browserWindow.isFullScreen)
-                browserWindow.showNormal()
+                browserWindow.visibility = browserWindow.previousVisibility
         }
     }
     Action {
@@ -380,18 +384,19 @@ ApplicationWindow {
                         }
                     }
 
-                    experimental {
-                        isFullScreen: webEngineView.state == "FullScreen" && browserWindow.isFullScreen
-                        onFullScreenRequested: {
-                            if (fullScreen) {
-                                webEngineView.state = "FullScreen"
-                                browserWindow.showFullScreen();
-                            } else {
-                                webEngineView.state = ""
-                                browserWindow.showNormal();
-                            }
+                    onFullScreenRequested: {
+                        if (request.toggleOn) {
+                            webEngineView.state = "FullScreen"
+                            browserWindow.previousVisibility = browserWindow.visibility
+                            browserWindow.showFullScreen()
+                        } else {
+                            webEngineView.state = ""
+                            browserWindow.visibility = browserWindow.previousVisibility
                         }
+                        request.accept()
+                    }
 
+                    experimental {
                         onFeaturePermissionRequested: {
                             permBar.securityOrigin = securityOrigin;
                             permBar.requestedFeature = feature;
