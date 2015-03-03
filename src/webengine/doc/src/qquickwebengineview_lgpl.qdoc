@@ -245,14 +245,13 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::linkHovered(hoveredUrl, hoveredTitle)
+    \qmlsignal WebEngineView::linkHovered(hoveredUrl)
 
     Within a mouse-driven interface, this signal is emitted when a mouse
     pointer passes over a link, corresponding to the \c{mouseover} DOM
     event. This event may also occur in touch interfaces for \c{mouseover}
     events that are not cancelled with \c{preventDefault()}. \a{hoveredUrl}
-    provides the link's location, and \a{hoveredTitle} is any available
-    link text.
+    provides the link's location.
 
     The corresponding handler is onLinkHovered.
 */
