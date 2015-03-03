@@ -418,18 +418,18 @@ ApplicationWindow {
                         TextField {
                             id: findTextField
                             onAccepted: {
-                                webEngineView.experimental.findText(text, 0)
+                                webEngineView.findText(text)
                             }
                         }
                         ToolButton {
                             id: findBackwardButton
                             iconSource: "icons/go-previous.png"
-                            onClicked: webEngineView.experimental.findText(findTextField.text, WebEngineViewExperimental.FindBackward)
+                            onClicked: webEngineView.findText(findTextField.text, WebEngineView.FindBackward)
                         }
                         ToolButton {
                             id: findForwardButton
                             iconSource: "icons/go-next.png"
-                            onClicked: webEngineView.experimental.findText(findTextField.text, 0)
+                            onClicked: webEngineView.findText(findTextField.text)
                         }
                         ToolButton {
                             id: findCancelButton

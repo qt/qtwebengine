@@ -75,6 +75,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_ENUMS(ErrorDomain);
     Q_ENUMS(NewViewDestination);
     Q_ENUMS(JavaScriptConsoleMessageLevel);
+    Q_FLAGS(FindFlags);
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -142,6 +143,12 @@ public:
         ErrorMessageLevel
     };
 
+    enum FindFlag {
+        FindBackward = 1,
+        FindCaseSensitively = 2,
+    };
+    Q_DECLARE_FLAGS(FindFlags, FindFlag)
+
     // QmlParserStatus
     virtual void componentComplete() Q_DECL_OVERRIDE;
 
@@ -162,6 +169,7 @@ public Q_SLOTS:
     void goBackOrForward(int index);
     void reload();
     void stop();
+    Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
 
 Q_SIGNALS:
     void titleChanged();

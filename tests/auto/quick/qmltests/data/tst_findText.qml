@@ -42,7 +42,6 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.1
-import QtWebEngine.experimental 1.0
 
 TestWebEngineView {
     id: webEngineView
@@ -67,12 +66,12 @@ TestWebEngineView {
         name: "WebViewFindText"
 
         function test_findText() {
-            var findFlags = WebEngineViewExperimental.FindCaseSensitively
+            var findFlags = WebEngineView.FindCaseSensitively
             webEngineView.url = Qt.resolvedUrl("test1.html")
             verify(webEngineView.waitForLoadSucceeded())
 
             webEngineView.clear()
-            webEngineView.experimental.findText("Hello", findFlags, webEngineView.findTextCallback)
+            webEngineView.findText("Hello", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 1)
             verify(!findFailed)
         }
@@ -83,7 +82,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded())
 
             webEngineView.clear()
-            webEngineView.experimental.findText("heLLo", findFlags, webEngineView.findTextCallback)
+            webEngineView.findText("heLLo", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 1)
             verify(!findFailed)
         }
@@ -94,19 +93,19 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded())
 
             webEngineView.clear()
-            webEngineView.experimental.findText("bla", findFlags, webEngineView.findTextCallback)
+            webEngineView.findText("bla", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 100)
             verify(!findFailed)
         }
 
 
         function test_findTextFailCaseSensitive() {
-            var findFlags = WebEngineViewExperimental.FindCaseSensitively
+            var findFlags = WebEngineView.FindCaseSensitively
             webEngineView.url = Qt.resolvedUrl("test1.html")
             verify(webEngineView.waitForLoadSucceeded())
 
             webEngineView.clear()
-            webEngineView.experimental.findText("heLLo", findFlags, webEngineView.findTextCallback)
+            webEngineView.findText("heLLo", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 0)
             verify(findFailed)
         }
@@ -117,7 +116,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded())
 
             webEngineView.clear()
-            webEngineView.experimental.findText("string-that-is-not-threre", findFlags, webEngineView.findTextCallback)
+            webEngineView.findText("string-that-is-not-threre", findFlags, webEngineView.findTextCallback)
             tryCompare(webEngineView, "matchCount", 0)
             verify(findFailed)
         }

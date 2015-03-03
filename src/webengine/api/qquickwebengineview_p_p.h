@@ -81,7 +81,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
     Q_PROPERTY(bool isFullScreen READ isFullScreen WRITE setIsFullScreen NOTIFY isFullScreenChanged)
     Q_ENUMS(Feature)
-    Q_FLAGS(FindFlags)
 
 public:
     enum Feature {
@@ -91,12 +90,6 @@ public:
         Geolocation
     };
 
-    enum FindFlag {
-        FindBackward = 1,
-        FindCaseSensitively = 2,
-    };
-    Q_DECLARE_FLAGS(FindFlags, FindFlag)
-
     void setIsFullScreen(bool fullscreen);
     bool isFullScreen() const;
     QQuickWebEngineViewport *viewport() const;
@@ -104,7 +97,6 @@ public:
     QQmlComponent *extraContextMenuEntriesComponent() const;
 
 public Q_SLOTS:
-    void findText(const QString&, FindFlags, const QJSValue & = QJSValue());
     void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 
 Q_SIGNALS:

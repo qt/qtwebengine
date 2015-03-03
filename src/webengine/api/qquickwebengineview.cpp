@@ -806,7 +806,7 @@ QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent
     return d_ptr->contextMenuExtraItems;
 }
 
-void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFlags options, const QJSValue &callback)
+void QQuickWebEngineView::findText(const QString &subString, FindFlags options, const QJSValue &callback)
 {
     Q_D(QQuickWebEngineView);
     if (!d->adapter)
