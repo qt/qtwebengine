@@ -38,8 +38,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef QT_NO_ACCESSIBILITY
 #include "browser_accessibility_qt.h"
+#ifndef QT_NO_ACCESSIBILITY
 
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_node_data.h"

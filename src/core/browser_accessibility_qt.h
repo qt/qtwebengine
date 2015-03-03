@@ -36,9 +36,9 @@
 
 #ifndef BROWSER_ACCESSIBILITY_QT_H
 #define BROWSER_ACCESSIBILITY_QT_H
-#ifndef QT_NO_ACCESSIBILITY
 
 #include <QtGui/qaccessible.h>
+#ifndef QT_NO_ACCESSIBILITY
 #include "content/browser/accessibility/browser_accessibility.h"
 
 namespace content {
