@@ -100,7 +100,6 @@ public:
     void serializeNavigationHistory(QDataStream &output);
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
-    void filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode);
     void runJavaScript(const QString &javaScript);
     quint64 runJavaScriptCallbackResult(const QString &javaScript);
     quint64 fetchDocumentMarkup();

@@ -25,6 +25,7 @@
 
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
+#include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
@@ -874,17 +875,22 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
     }
 }
 
-static inline QWebEnginePage::FileSelectionMode toPublic(WebContentsAdapterClient::FileChooserMode mode)
+static inline QWebEnginePage::FileSelectionMode toPublic(FilePickerController::FileChooserMode mode)
 {
     // Should the underlying values change, we'll need a switch here.
     return static_cast<QWebEnginePage::FileSelectionMode>(mode);
 }
 
-void QWebEnginePagePrivate::runFileChooser(WebContentsAdapterClient::FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes)
+void QWebEnginePagePrivate::runFileChooser(FilePickerController *controller)
 {
     Q_Q(QWebEnginePage);
-    QStringList selectedFileNames = q->chooseFiles(toPublic(mode), (QStringList() << defaultFileName), acceptedMimeTypes);
-    adapter->filesSelectedInChooser(selectedFileNames, mode);
+
+    QStringList selectedFileNames = q->chooseFiles(toPublic(controller->mode()), (QStringList() << controller->defaultFileName()), controller->acceptedMimeTypes());
+
+    if (!selectedFileNames.empty())
+        controller->accepted(selectedFileNames);
+    else
+        controller->rejected();
 }
 
 WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
@@ -1001,8 +1007,8 @@ QWebEnginePage *QWebEnginePage::createWindow(WebWindowType type)
     return 0;
 }
 
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Open, QWebEnginePage::FileSelectOpen)
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::OpenMultiple, QWebEnginePage::FileSelectOpenMultiple)
+ASSERT_ENUMS_MATCH(FilePickerController::Open, QWebEnginePage::FileSelectOpen)
+ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, QWebEnginePage::FileSelectOpenMultiple)
 
 QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes)
 {
@@ -1010,19 +1016,19 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
     // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
     Q_UNUSED(acceptedMimeTypes);
     QStringList ret;
-    switch (static_cast<WebContentsAdapterClient::FileChooserMode>(mode)) {
-    case WebContentsAdapterClient::OpenMultiple:
+    switch (static_cast<FilePickerController::FileChooserMode>(mode)) {
+    case FilePickerController::OpenMultiple:
         ret = QFileDialog::getOpenFileNames(view(), QString());
         break;
     // Chromium extension, not exposed as part of the public API for now.
-    case WebContentsAdapterClient::UploadFolder:
+    case FilePickerController::UploadFolder:
         ret << QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
         break;
-    case WebContentsAdapterClient::Save:
+    case FilePickerController::Save:
         ret << QFileDialog::getSaveFileName(view(), QString(), (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + oldFiles.first()));
         break;
     default:
-    case WebContentsAdapterClient::Open:
+    case FilePickerController::Open:
         ret << QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
         break;
     }

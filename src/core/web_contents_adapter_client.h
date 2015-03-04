@@ -51,6 +51,7 @@ QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
 class BrowserContextAdapter;
+class FilePickerController;
 class JavaScriptDialogController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
@@ -100,14 +101,6 @@ public:
         PromptDialog,
         // Leave room for potential new specs
         InternalAuthorizationDialog = 0x10,
-    };
-
-    // Must match the ones in file_chooser_params.h
-    enum FileChooserMode {
-        Open,
-        OpenMultiple,
-        UploadFolder,
-        Save
     };
 
     enum NavigationRequestAction {
@@ -163,7 +156,7 @@ public:
     virtual void requestFullScreen(bool) = 0;
     virtual bool isFullScreen() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
-    virtual void runFileChooser(FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes) = 0;
+    virtual void runFileChooser(FilePickerController *controller) = 0;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;

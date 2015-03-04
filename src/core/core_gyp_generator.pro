@@ -48,6 +48,7 @@ SOURCES = \
         desktop_screen_qt.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
+        file_picker_controller.cpp \
         gl_context_qt.cpp \
         gl_surface_qt.cpp \
         javascript_dialog_controller.cpp \
@@ -110,6 +111,7 @@ HEADERS = \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
+        file_picker_controller.h \
         gl_context_qt.h \
         gl_surface_qt.h \
         javascript_dialog_controller_p.h \

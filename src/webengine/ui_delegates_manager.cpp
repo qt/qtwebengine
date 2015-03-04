@@ -37,6 +37,7 @@
 #include "ui_delegates_manager.h"
 
 #include "api/qquickwebengineview_p.h"
+#include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 
 #include <QAbstractListModel>
@@ -338,50 +339,8 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QMetaObject::invokeMethod(dialog, "open");
 }
 
-namespace {
-class FilePickerController : public QObject {
-    Q_OBJECT
-public:
-    FilePickerController(WebContentsAdapterClient::FileChooserMode, const QExplicitlySharedDataPointer<WebContentsAdapter> &, QObject * = 0);
-
-public Q_SLOTS:
-    void accepted(const QVariant &files);
-    void rejected();
-
-private:
-    QExplicitlySharedDataPointer<WebContentsAdapter> m_adapter;
-    WebContentsAdapterClient::FileChooserMode m_mode;
-
-};
-
-
-FilePickerController::FilePickerController(WebContentsAdapterClient::FileChooserMode mode, const QExplicitlySharedDataPointer<WebContentsAdapter> &adapter, QObject *parent)
-    : QObject(parent)
-    , m_adapter(adapter)
-    , m_mode(mode)
+void UIDelegatesManager::showFilePicker(FilePickerController *controller)
 {
-}
-
-void FilePickerController::accepted(const QVariant &files)
-{
-    QStringList stringList;
-    Q_FOREACH (const QUrl &url, files.value<QList<QUrl> >())
-        stringList.append(url.toLocalFile());
-    m_adapter->filesSelectedInChooser(stringList, m_mode);
-}
-
-void FilePickerController::rejected()
-{
-    m_adapter->filesSelectedInChooser(QStringList(), m_mode);
-}
-
-} // namespace
-
-
-void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes, const QExplicitlySharedDataPointer<WebContentsAdapter> &adapter)
-{
-    Q_UNUSED(defaultFileName);
-    Q_UNUSED(acceptedMimeTypes);
 
     if (!ensureComponentLoaded(FilePicker))
         return;
@@ -394,23 +353,24 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
     filePickerComponent->completeCreate();
 
     // Fine-tune some properties depending on the mode.
-    switch (mode) {
-    case WebContentsAdapterClient::Open:
+    switch (controller->mode()) {
+    case FilePickerController::Open:
         break;
-    case WebContentsAdapterClient::Save:
+    case FilePickerController::Save:
         filePicker->setProperty("selectExisting", false);
         break;
-    case WebContentsAdapterClient::OpenMultiple:
+    case FilePickerController::OpenMultiple:
         filePicker->setProperty("selectMultiple", true);
         break;
-    case WebContentsAdapterClient::UploadFolder:
+    case FilePickerController::UploadFolder:
         filePicker->setProperty("selectFolder", true);
         break;
     default:
         Q_UNREACHABLE();
     }
 
-    FilePickerController *controller = new FilePickerController(mode, adapter, filePicker);
+    controller->setParent(filePicker);
+
     QQmlProperty filesPickedSignal(filePicker, QStringLiteral("onFilesSelected"));
     CHECK_QML_SIGNAL_PROPERTY(filesPickedSignal, filePickerComponent->url());
     QQmlProperty rejectSignal(filePicker, QStringLiteral("onRejected"));
@@ -427,5 +387,3 @@ void UIDelegatesManager::showFilePicker(WebContentsAdapterClient::FileChooserMod
 
     QMetaObject::invokeMethod(filePicker, "open");
 }
-
-#include "ui_delegates_manager.moc"

@@ -69,7 +69,6 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
-#include "ui/shell_dialogs/selected_file_info.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 #include <QDir>
@@ -164,19 +163,6 @@ static QVariant fromJSValue(const base::Value *result)
 static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, const base::Value *result)
 {
     adapterClient->didRunJavaScript(requestId, fromJSValue(result));
-}
-
-static QStringList listRecursively(const QDir& dir) {
-    QStringList ret;
-    QFileInfoList infoList(dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot |QDir::Hidden));
-    Q_FOREACH (const QFileInfo &fileInfo, infoList) {
-        if (fileInfo.isDir()) {
-            ret.append(fileInfo.absolutePath() + QStringLiteral("/.")); // Match chromium's behavior. See chrome/browser/file_select_helper.cc
-            ret.append(listRecursively(QDir(fileInfo.absoluteFilePath())));
-        } else
-            ret.append(fileInfo.absoluteFilePath());
-    }
-    return ret;
 }
 
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
@@ -812,23 +798,6 @@ void WebContentsAdapter::dpiScaleChanged()
         impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost());
     if (impl)
         impl->NotifyScreenInfoChanged();
-}
-
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Open, content::FileChooserParams::Open)
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::OpenMultiple, content::FileChooserParams::OpenMultiple)
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::UploadFolder, content::FileChooserParams::UploadFolder)
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Save, content::FileChooserParams::Save)
-
-void WebContentsAdapter::filesSelectedInChooser(const QStringList &fileList, WebContentsAdapterClient::FileChooserMode mode)
-{
-    Q_D(WebContentsAdapter);
-    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    Q_ASSERT(rvh);
-    QStringList files(fileList);
-    if (mode == WebContentsAdapterClient::UploadFolder && !fileList.isEmpty()
-            && QFileInfo(fileList.first()).isDir()) // Enumerate the directory
-        files = listRecursively(QDir(fileList.first()));
-    rvh->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(mode));
 }
 
 content::WebContents *WebContentsAdapter::webContents() const

@@ -41,6 +41,7 @@
 #include "web_contents_delegate_qt.h"
 
 #include "browser_context_adapter.h"
+#include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
@@ -231,18 +232,20 @@ bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebConten
     return m_viewClient->isFullScreen();
 }
 
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Open, content::FileChooserParams::Open)
-ASSERT_ENUMS_MATCH(WebContentsAdapterClient::Save, content::FileChooserParams::Save)
+ASSERT_ENUMS_MATCH(FilePickerController::Open, content::FileChooserParams::Open)
+ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, content::FileChooserParams::OpenMultiple)
+ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, content::FileChooserParams::UploadFolder)
+ASSERT_ENUMS_MATCH(FilePickerController::Save, content::FileChooserParams::Save)
 
 void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, const content::FileChooserParams &params)
 {
-    Q_UNUSED(web_contents)
     QStringList acceptedMimeTypes;
     acceptedMimeTypes.reserve(params.accept_types.size());
     for (std::vector<base::string16>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
         acceptedMimeTypes.append(toQt(*it));
 
-    m_viewClient->runFileChooser(static_cast<WebContentsAdapterClient::FileChooserMode>(params.mode), toQt(params.default_file_name.value()), acceptedMimeTypes);
+    FilePickerController *controller = new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode), web_contents, toQt(params.default_file_name.value()), acceptedMimeTypes);
+    m_viewClient->runFileChooser(controller);
 }
 
 bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const base::string16 &message, int32 line_no, const base::string16 &source_id)

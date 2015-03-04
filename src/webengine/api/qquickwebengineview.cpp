@@ -39,6 +39,7 @@
 
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
+#include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginecertificateerror_p.h"
@@ -240,9 +241,9 @@ void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url
     Q_EMIT e->featurePermissionRequested(url, QQuickWebEngineViewExperimental::Geolocation);
 }
 
-void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes)
+void QQuickWebEngineViewPrivate::runFileChooser(FilePickerController* controller)
 {
-    ui()->showFilePicker(mode, defaultFileName, acceptedMimeTypes, adapter);
+    ui()->showFilePicker(controller);
 }
 
 void QQuickWebEngineViewPrivate::passOnFocus(bool reverse)

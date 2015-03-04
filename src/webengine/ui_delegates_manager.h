@@ -64,6 +64,7 @@
     QQmlComponent *COMPONENT##Component
 
 class JavaScriptDialogController;
+class FilePickerController;
 QT_BEGIN_NAMESPACE
 class QObject;
 class QQmlContext;
@@ -120,8 +121,7 @@ public:
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
     void showDialog(QSharedPointer<JavaScriptDialogController>);
-    void showFilePicker(WebContentsAdapterClient::FileChooserMode, const QString &defaultFileName, const QStringList &acceptedMimeTypes
-                        , const QExplicitlySharedDataPointer<WebContentsAdapter> &);
+    void showFilePicker(FilePickerController *controller);
 
 private:
     bool ensureComponentLoaded(ComponentType);

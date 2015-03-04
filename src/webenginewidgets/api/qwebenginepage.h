@@ -261,7 +261,6 @@ Q_SIGNALS:
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);
-
     virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes);
     virtual void javaScriptAlert(const QUrl &securityOrigin, const QString& msg);
     virtual bool javaScriptConfirm(const QUrl &securityOrigin, const QString& msg);
