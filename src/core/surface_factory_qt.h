@@ -43,7 +43,7 @@
 
 #include <QtGlobal>
 
-namespace QtWebEngine {
+namespace QtWebEngineCore {
 
 class SurfaceFactoryQt
     : public ui::SurfaceFactoryOzone

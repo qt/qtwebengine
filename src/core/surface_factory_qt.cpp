@@ -55,7 +55,7 @@
 #define QT_LIBDIR_GLES2 QT_LIBDIR_EGL
 #endif
 
-namespace QtWebEngine {
+namespace QtWebEngineCore {
 
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     base::NativeLibraryLoadError error;

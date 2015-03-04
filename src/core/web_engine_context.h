@@ -75,7 +75,7 @@ private:
     scoped_ptr<content::ContentMainRunner> m_contentRunner;
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
 #if defined(OS_ANDROID)
-    scoped_ptr<QtWebEngine::SurfaceFactoryQt> m_surfaceFactory;
+    scoped_ptr<QtWebEngineCore::SurfaceFactoryQt> m_surfaceFactory;
 #endif
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_offTheRecordBrowserContext;
