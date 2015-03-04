@@ -198,15 +198,18 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_initPending(false)
 {
     m_host->SetView(this);
-
+#ifndef QT_NO_ACCESSIBILITY
     QAccessible::installActivationObserver(this);
     if (QAccessible::isActive())
         content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
+#endif // QT_NO_ACCESSIBILITY
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+#ifndef QT_NO_ACCESSIBILITY
     QAccessible::removeActivationObserver(this);
+#endif // QT_NO_ACCESSIBILITY
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -296,6 +299,7 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 
 void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
 {
+#ifndef QT_NO_ACCESSIBILITY
     if (GetBrowserAccessibilityManager())
         return;
 
@@ -303,6 +307,9 @@ void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
         this));
+#else
+    return 0;
+#endif // QT_NO_ACCESSIBILITY
 }
 
 // Set focus to the associated View component.
@@ -953,6 +960,7 @@ void RenderWidgetHostViewQt::AccessibilityFatalError()
     SetBrowserAccessibilityManager(NULL);
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
 {
     if (active)
@@ -960,6 +968,7 @@ void RenderWidgetHostViewQt::accessibilityActiveChanged(bool active)
     else
         content::BrowserAccessibilityStateImpl::GetInstance()->DisableAccessibility();
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
 {
@@ -1042,6 +1051,7 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
     }
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
 {
     // Assume we have a screen reader doing stuff
@@ -1051,6 +1061,7 @@ QAccessibleInterface *RenderWidgetHostViewQt::GetQtAccessible()
     content::BrowserAccessibilityQt *accQt = static_cast<content::BrowserAccessibilityQt*>(acc);
     return accQt;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void RenderWidgetHostViewQt::didFirstVisuallyNonEmptyLayout()
 {

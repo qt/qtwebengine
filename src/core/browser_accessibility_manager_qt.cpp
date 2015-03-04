@@ -45,9 +45,14 @@ namespace content {
 
 BrowserAccessibility *BrowserAccessibilityFactoryQt::Create()
 {
+#ifndef QT_NO_ACCESSIBILITY
     return new BrowserAccessibilityQt();
+#else
+    return 0;
+#endif // QT_NO_ACCESSIBILITY
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QObject* parentObject,
     const ui::AXTreeUpdate& initialTree,
@@ -131,5 +136,6 @@ void BrowserAccessibilityManagerQt::NotifyAccessibilityEvent(ui::AXEvent event_t
         break;
     }
 }
+#endif // QT_NO_ACCESSIBILITY
 
 }

@@ -61,16 +61,20 @@
 #include <QScreen>
 #include <QStringBuilder>
 #include <QUrl>
+#ifndef QT_NO_ACCESSIBILITY
 #include <private/qquickaccessibleattached_p.h>
+#endif // QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
 {
     if (QQuickWebEngineView *v = qobject_cast<QQuickWebEngineView*>(object))
         return new QQuickWebEngineViewAccessible(v);
     return 0;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     : adapter(new WebContentsAdapter)
@@ -102,7 +106,9 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
         // 1x, 2x, 3x etc assets that fit an integral number of pixels.
         setDevicePixelRatio(qMax(1, qRound(webPixelRatio)));
     }
+#ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
+#endif // QT_NO_ACCESSIBILITY
 }
 
 QQuickWebEngineViewPrivate::~QQuickWebEngineViewPrivate()
@@ -395,11 +401,13 @@ void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &sec
    Q_EMIT e->featurePermissionRequested(securityOrigin, feature);
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 {
     Q_Q(QQuickWebEngineView);
     return q;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
 {
@@ -414,6 +422,7 @@ void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
     m_dpiScale = devicePixelRatio / screen->devicePixelRatio();
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QQuickWebEngineViewAccessible::QQuickWebEngineViewAccessible(QQuickWebEngineView *o)
     : QAccessibleObject(o)
 {}
@@ -460,6 +469,7 @@ QAccessible::State QQuickWebEngineViewAccessible::state() const
     QAccessible::State s;
     return s;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContents)
 {
@@ -497,8 +507,10 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
     this->setActiveFocusOnTab(true);
     this->setFlag(QQuickItem::ItemIsFocusScope);
 
+#ifndef QT_NO_ACCESSIBILITY
     QQuickAccessibleAttached *accessible = QQuickAccessibleAttached::qmlAttachedProperties(this);
     accessible->setRole(QAccessible::Grouping);
+#endif // QT_NO_ACCESSIBILITY
 }
 
 QQuickWebEngineView::~QQuickWebEngineView()

@@ -135,7 +135,9 @@ public:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
+#ifndef QT_NO_ACCESSIBILITY
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
+#endif // QT_NO_ACCESSIBILITY
     virtual WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QExplicitlySharedDataPointer<CertificateErrorController> &controller) Q_DECL_OVERRIDE;
 

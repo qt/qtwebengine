@@ -85,19 +85,22 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
     }
 }
 
-
+#ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
 {
     if (QWebEngineView *v = qobject_cast<QWebEngineView*>(object))
         return new QWebEngineViewAccessible(v);
     return Q_NULLPTR;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : page(0)
     , m_pendingContextMenuEvent(false)
 {
+#ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
+#endif // QT_NO_ACCESSIBILITY
 }
 
 QWebEngineView::QWebEngineView(QWidget *parent)
@@ -274,6 +277,7 @@ void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 int QWebEngineViewAccessible::childCount() const
 {
     if (view() && child(0))
@@ -294,6 +298,7 @@ int QWebEngineViewAccessible::indexOfChild(const QAccessibleInterface *c) const
         return 0;
     return -1;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 

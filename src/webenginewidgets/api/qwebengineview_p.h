@@ -59,6 +59,7 @@ public:
     bool m_pendingContextMenuEvent;
 };
 
+#ifndef QT_NO_ACCESSIBILITY
 class QWebEngineViewAccessible : public QAccessibleWidget
 {
 public:
@@ -72,7 +73,7 @@ public:
 private:
     QWebEngineView *view() const { return static_cast<QWebEngineView*>(object()); }
 };
-
+#endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE
 

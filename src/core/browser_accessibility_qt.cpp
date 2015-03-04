@@ -40,6 +40,8 @@
 
 #include "browser_accessibility_qt.h"
 
+#ifndef QT_NO_ACCESSIBILITY
+
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_node_data.h"
 
@@ -898,3 +900,5 @@ void BrowserAccessibilityQt::modelChange(QAccessibleTableModelChangeEvent *)
 }
 
 } // namespace content
+
+#endif // QT_NO_ACCESSIBILITY

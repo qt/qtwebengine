@@ -39,6 +39,7 @@
 #include <QApplication>
 #include <QAuthenticator>
 #include <QClipboard>
+#include <QContextMenuEvent>
 #include <QFileDialog>
 #include <QIcon>
 #include <QInputDialog>
@@ -342,10 +343,12 @@ void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &security
     Q_EMIT q->featurePermissionRequested(securityOrigin, requestedFeature);
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
 {

@@ -628,12 +628,14 @@ void WebContentsAdapter::enableInspector(bool enable)
     ContentBrowserClientQt::Get()->enableInspector(enable);
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 QAccessibleInterface *WebContentsAdapter::browserAccessible()
 {
     Q_D(const WebContentsAdapter);
     RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(d->webContents->GetRenderWidgetHostView());
     return rwhv ? rwhv->GetQtAccessible() : Q_NULLPTR;
 }
+#endif // QT_NO_ACCESSIBILITY
 
 void WebContentsAdapter::runJavaScript(const QString &javaScript)
 {
