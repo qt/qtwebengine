@@ -175,7 +175,7 @@ void OzonePlatformEglfs::InitializeUI() {
 }
 
 void OzonePlatformEglfs::InitializeGPU() {
-  surface_factory_ozone_.reset(new SurfaceFactoryQt());
+  surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
   gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
 }
 

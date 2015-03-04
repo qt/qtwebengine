@@ -43,6 +43,7 @@
 #include <QAuthenticator>
 #include <QClipboard>
 #include <QFileDialog>
+#include <QKeyEvent>
 #include <QIcon>
 #include <QInputDialog>
 #include <QLayout>

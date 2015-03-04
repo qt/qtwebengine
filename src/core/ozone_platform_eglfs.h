@@ -68,7 +68,7 @@ class OzonePlatformEglfs : public OzonePlatform {
   virtual void InitializeGPU() override;
   scoped_ptr<DeviceManager> device_manager_;
 
-  scoped_ptr<SurfaceFactoryQt> surface_factory_ozone_;
+  scoped_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
