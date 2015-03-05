@@ -559,7 +559,7 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
         return;
     }
 
-    if (browserContextAdapter() != webContents->browserContextAdapter()) {
+    if (webContents->browserContextAdapter() && browserContextAdapter() != webContents->browserContextAdapter()) {
         qWarning("Can not adopt content from a different WebEngineProfile.");
         return;
     }
