@@ -307,8 +307,6 @@ void RenderWidgetHostViewQt::CreateBrowserAccessibilityManagerIfNeeded()
         m_adapterClient->accessibilityParentObject(),
         content::BrowserAccessibilityManagerQt::GetEmptyDocument(),
         this));
-#else
-    return 0;
 #endif // QT_NO_ACCESSIBILITY
 }
 
