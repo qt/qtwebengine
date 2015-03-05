@@ -7,6 +7,9 @@ IMPORTPATH += $$PWD/data
 OTHER_FILES += \
     $$PWD/data/TestWebEngineView.qml \
     $$PWD/data/alert.html \
+    $$PWD/data/append-document-title.js \
+    $$PWD/data/big-user-script.js \
+    $$PWD/data/change-document-title.js \
     $$PWD/data/confirm.html \
     $$PWD/data/favicon.html \
     $$PWD/data/favicon.png \
@@ -36,6 +39,9 @@ OTHER_FILES += \
     $$PWD/data/tst_properties.qml \
     $$PWD/data/tst_runJavaScript.qml \
     $$PWD/data/tst_titleChanged.qml \
+    $$PWD/data/tst_unhandledKeyEventPropagation.qml \
+    $$PWD/data/tst_userScripts.qml \
+    $$PWD/data/tst_webchannel.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/AlertDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/ConfirmDialog.qml \
