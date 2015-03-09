@@ -40,8 +40,7 @@
 
 import QtQuick 2.1
 import QtQuick.Controls 1.0
-import QtWebEngine 1.0
-import QtWebEngine.experimental 1.0
+import QtWebEngine 1.1
 import QtQuick.Layouts 1.0
 
 Rectangle {
@@ -69,13 +68,13 @@ Rectangle {
             Layout.fillWidth: true
 
             function textForFeature(feature) {
-                if (feature === WebEngineViewExperimental.MediaAudioCapture)
+                if (feature === WebEngineView.MediaAudioCapture)
                     return "your microphone"
-                if (feature === WebEngineViewExperimental.MediaVideoCapture)
+                if (feature === WebEngineView.MediaVideoCapture)
                     return "your camera"
-                if (feature === WebEngineViewExperimental.MediaAudioVideoCapture)
+                if (feature === WebEngineView.MediaAudioVideoCapture)
                     return "your camera and microphone"
-                if (feature === WebEngineViewExperimental.Geolocation)
+                if (feature === WebEngineView.Geolocation)
                     return "your position"
             }
         }
@@ -85,7 +84,7 @@ Rectangle {
             text: "Accept"
             Layout.alignment: Qt.AlignRight
             onClicked: {
-                view.experimental.grantFeaturePermission(securityOrigin, requestedFeature, true);
+                view.grantFeaturePermission(securityOrigin, requestedFeature, true);
                 permissionBar.visible = false;
             }
         }
@@ -94,7 +93,7 @@ Rectangle {
             text: "Deny"
             Layout.alignment: Qt.AlignRight
             onClicked: {
-                view.experimental.grantFeaturePermission(securityOrigin, requestedFeature, false);
+                view.grantFeaturePermission(securityOrigin, requestedFeature, false);
                 permissionBar.visible = false
             }
         }

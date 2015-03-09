@@ -245,6 +245,23 @@
 */
 
 /*!
+    \qmlmethod void WebEngineView::grantFeaturePermission(url securityOrigin, WebEngineView::Feature feature, bool granted)
+
+    Sets the permission for the web site identified by \a securityOrigin to use \a feature.
+
+    \sa featurePermissionRequested()
+*/
+
+/*!
+    \qmlsignal void WebEngineView::featurePermissionRequested(url securityOrigin, WebEngineView::Feature feature)
+
+    This is signal is emitted when the web site identified by \a securityOrigin requests
+    to make use of the resource or device identified by \a feature.
+
+    \sa grantFeaturePermission()
+*/
+
+/*!
     \qmlsignal WebEngineView::loadingChanged(loadRequest)
 
     This signal is emitted when a page load begins, ends, or fails.
@@ -415,4 +432,18 @@
             this option changes the behavior to a case sensitive find operation.
 
     \sa WebEngineView::findText()
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::Feature
+
+    This enum describes the platform feature access categories that the user may be asked to grant or deny access to.
+
+    \value Geolocation Access to location hardware or service
+    \value MediaAudioCapture Audio capture devices such a microphones
+    \value MediaVideoCapture Video devices, e.g. cameras
+    \value MediaAudioVideoCapture Both Audio and Video capture devices.
+
+    \sa featurePermissionRequested(), grantFeaturePermission()
+
 */

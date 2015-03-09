@@ -397,12 +397,13 @@ ApplicationWindow {
                         request.accept()
                     }
 
+                    onFeaturePermissionRequested: {
+                        permBar.securityOrigin = securityOrigin;
+                        permBar.requestedFeature = feature;
+                        permBar.visible = true;
+                    }
+
                     experimental {
-                        onFeaturePermissionRequested: {
-                            permBar.securityOrigin = securityOrigin;
-                            permBar.requestedFeature = feature;
-                            permBar.visible = true;
-                        }
                         extraContextMenuEntriesComponent: ContextMenuExtras {}
                     }
                 }

@@ -253,7 +253,8 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
 
 void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url)
 {
-    Q_EMIT e->featurePermissionRequested(url, QQuickWebEngineViewExperimental::Geolocation);
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->featurePermissionRequested(url, QQuickWebEngineView::Geolocation);
 }
 
 void QQuickWebEngineViewPrivate::runFileChooser(FileChooserMode mode, const QString &defaultFileName, const QStringList &acceptedMimeTypes)
@@ -452,16 +453,17 @@ void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessa
 
 void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
 {
-   if (!requestFlags)
-       return;
-   QQuickWebEngineViewExperimental::Feature feature;
-   if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
-       feature = QQuickWebEngineViewExperimental::MediaAudioVideoCapture;
-   else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
-       feature = QQuickWebEngineViewExperimental::MediaAudioCapture;
-   else // WebContentsAdapterClient::MediaVideoCapture
-       feature = QQuickWebEngineViewExperimental::MediaVideoCapture;
-   Q_EMIT e->featurePermissionRequested(securityOrigin, feature);
+    Q_Q(QQuickWebEngineView);
+    if (!requestFlags)
+        return;
+    QQuickWebEngineView::Feature feature;
+    if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture) && requestFlags.testFlag(WebContentsAdapterClient::MediaVideoCapture))
+        feature = QQuickWebEngineView::MediaAudioVideoCapture;
+    else if (requestFlags.testFlag(WebContentsAdapterClient::MediaAudioCapture))
+        feature = QQuickWebEngineView::MediaAudioCapture;
+    else // WebContentsAdapterClient::MediaVideoCapture
+        feature = QQuickWebEngineView::MediaVideoCapture;
+    Q_EMIT q->featurePermissionRequested(securityOrigin, feature);
 }
 
 void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &securityOrigin)
@@ -923,7 +925,7 @@ void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
         Q_EMIT webChannelChanged();
 }
 
-void QQuickWebEngineViewExperimental::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineViewExperimental::Feature feature, bool granted)
+void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature feature, bool granted)
 {
     if (!d_ptr->adapter)
         return;
