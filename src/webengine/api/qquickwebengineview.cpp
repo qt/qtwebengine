@@ -229,6 +229,12 @@ void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const Q
 
 void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)
 {
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    if (m_testSupport) {
+        m_testSupport->testDialog(dialog);
+        return;
+    }
+#endif
     ui()->showDialog(dialog);
 }
 
