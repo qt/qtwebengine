@@ -70,6 +70,12 @@
 #include "user_script_controller_host.h"
 #include "web_contents_delegate_qt.h"
 
+#if defined(ENABLE_PLUGINS)
+#include "content/public/browser/browser_ppapi_host.h"
+#include "ppapi/host/ppapi_host.h"
+#include "renderer/pepper/pepper_host_factory_qt.h"
+#endif
+
 #include <QGuiApplication>
 #include <QLocale>
 #include <QOpenGLContext>
@@ -443,6 +449,13 @@ std::string ContentBrowserClientQt::GetApplicationLocale()
 {
     return QLocale().bcp47Name().toStdString();
 }
+
+#if defined(ENABLE_PLUGINS)
+    void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) {
+        browser_host->GetPpapiHost()->AddHostFactoryFilter(
+            scoped_ptr<ppapi::host::HostFactory>(new QtWebEngineCore::PepperHostFactoryQt(browser_host)));
+    }
+#endif
 
 content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()
 {

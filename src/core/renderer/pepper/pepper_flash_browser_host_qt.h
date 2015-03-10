@@ -33,39 +33,59 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef CONTENT_RENDERER_CLIENT_QT_H
-#define CONTENT_RENDERER_CLIENT_QT_H
 
-#include "content/public/renderer/content_renderer_client.h"
+#ifndef PEPPER_FLASH_BROWSER_HOST_QT_H
+#define PEPPER_FLASH_BROWSER_HOST_QT_H
 
-#include <QtGlobal>
-#include <QScopedPointer>
+#include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "ppapi/host/host_message_context.h"
+#include "ppapi/host/resource_host.h"
 
-namespace visitedlink {
-class VisitedLinkSlave;
+namespace base {
+class Time;
 }
+
+namespace content {
+class BrowserPpapiHost;
+class ResourceContext;
+}
+
+class GURL;
 
 namespace QtWebEngineCore {
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+class PepperFlashBrowserHostQt : public ppapi::host::ResourceHost {
 public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
-    virtual void RenderFrameCreated(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
-    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
-    virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
-            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
+    PepperFlashBrowserHostQt(content::BrowserPpapiHost* host,
+                             PP_Instance instance,
+                             PP_Resource resource);
+    ~PepperFlashBrowserHostQt() override;
 
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
+    // ppapi::host::ResourceHost override.
+    int32_t OnResourceMessageReceived(
+            const IPC::Message& msg,
+            ppapi::host::HostMessageContext* context) override;
 
 private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
+    int32_t OnUpdateActivity(ppapi::host::HostMessageContext* host_context);
+    int32_t OnGetLocalTimeZoneOffset(
+            ppapi::host::HostMessageContext* host_context,
+            const base::Time& t);
+    int32_t OnGetLocalDataRestrictions(ppapi::host::HostMessageContext* context);
+
+    void GetLocalDataRestrictions(ppapi::host::ReplyMessageContext reply_context,
+                                  const GURL& document_url,
+                                  const GURL& plugin_url);
+
+    content::BrowserPpapiHost* host_;
+    int render_process_id_;
+    base::WeakPtrFactory<PepperFlashBrowserHostQt> weak_factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(PepperFlashBrowserHostQt);
 };
 
-} // namespace
+}  // namespace QtWebEngineCore
 
-#endif // CONTENT_RENDERER_CLIENT_QT_H
+#endif  // PEPPER_FLASH_BROWSER_HOST_QT_H

@@ -33,39 +33,41 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef CONTENT_RENDERER_CLIENT_QT_H
-#define CONTENT_RENDERER_CLIENT_QT_H
 
-#include "content/public/renderer/content_renderer_client.h"
+#ifndef PEPPER_RENDERER_HOST_FACTORY_QT_H
+#define PEPPER_RENDERER_HOST_FACTORY_QT_H
 
-#include <QtGlobal>
-#include <QScopedPointer>
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "ppapi/host/host_factory.h"
+#include "content/public/renderer/render_frame_observer.h"
 
-namespace visitedlink {
-class VisitedLinkSlave;
+
+namespace content {
+class RenderFrame;
 }
 
 namespace QtWebEngineCore {
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+class PepperRendererHostFactoryQt : public ppapi::host::HostFactory {
 public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
-    virtual void RenderFrameCreated(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
-    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
-    virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
-            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
+    explicit PepperRendererHostFactoryQt(content::RendererPpapiHost* host);
+    ~PepperRendererHostFactoryQt();
 
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
+    // HostFactory.
+    scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
+            ppapi::host::PpapiHost* host,
+            const ppapi::proxy::ResourceMessageCallParams& params,
+            PP_Instance instance,
+            const IPC::Message& message) override;
 
 private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
+    // Not owned by this object.
+    content::RendererPpapiHost* host_;
+
+    DISALLOW_COPY_AND_ASSIGN(PepperRendererHostFactoryQt);
 };
 
-} // namespace
+} // namespace QtWebEngineCore
 
-#endif // CONTENT_RENDERER_CLIENT_QT_H
+#endif // PEPPER_RENDERER_HOST_FACTORY_QT_H

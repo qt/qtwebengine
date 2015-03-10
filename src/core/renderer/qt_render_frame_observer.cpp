@@ -33,39 +33,33 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef CONTENT_RENDERER_CLIENT_QT_H
-#define CONTENT_RENDERER_CLIENT_QT_H
 
-#include "content/public/renderer/content_renderer_client.h"
+#include "qt_render_frame_observer.h"
 
-#include <QtGlobal>
-#include <QScopedPointer>
+#include "content/public/renderer/renderer_ppapi_host.h"
+#include "ppapi/host/ppapi_host.h"
 
-namespace visitedlink {
-class VisitedLinkSlave;
-}
+#include "renderer/pepper/pepper_renderer_host_factory_qt.h"
+#include "renderer/pepper/pepper_flash_renderer_host_qt.h"
 
 namespace QtWebEngineCore {
 
-class ContentRendererClientQt : public content::ContentRendererClient {
-public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
-    virtual void RenderFrameCreated(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
-    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
-    virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
-            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
+QtRenderFrameObserver::QtRenderFrameObserver(content::RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame)
+{
+}
 
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
+QtRenderFrameObserver::~QtRenderFrameObserver()
+{
+}
 
-private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
-};
+#if defined(ENABLE_PLUGINS)
+void QtRenderFrameObserver::DidCreatePepperPlugin(content::RendererPpapiHost* host)
+{
+    host->GetPpapiHost()->AddHostFactoryFilter(
+        scoped_ptr<ppapi::host::HostFactory>(
+            new PepperRendererHostFactoryQt(host)));
+}
+#endif
 
-} // namespace
-
-#endif // CONTENT_RENDERER_CLIENT_QT_H
+} // namespace QtWebEngineCore

@@ -62,6 +62,11 @@ SOURCES = \
         qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
+        renderer/pepper/pepper_flash_browser_host_qt.cpp \
+        renderer/pepper/pepper_flash_renderer_host_qt.cpp \
+        renderer/pepper/pepper_host_factory_qt.cpp \
+        renderer/pepper/pepper_renderer_host_factory_qt.cpp \
+        renderer/qt_render_frame_observer.cpp \
         renderer/qt_render_view_observer.cpp \
         renderer/user_script_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
@@ -126,6 +131,11 @@ HEADERS = \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
+        renderer/pepper/pepper_flash_browser_host_qt.h \
+        renderer/pepper/pepper_flash_renderer_host_qt.h \
+        renderer/pepper/pepper_host_factory_qt.h \
+        renderer/pepper/pepper_renderer_host_factory_qt.h \
+        renderer/qt_render_frame_observer.h \
         renderer/qt_render_view_observer.h \
         renderer/user_script_controller.h \
         renderer/web_channel_ipc_transport.h \

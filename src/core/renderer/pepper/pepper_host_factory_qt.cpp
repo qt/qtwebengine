@@ -33,39 +33,51 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef CONTENT_RENDERER_CLIENT_QT_H
-#define CONTENT_RENDERER_CLIENT_QT_H
 
-#include "content/public/renderer/content_renderer_client.h"
+#include "pepper_host_factory_qt.h"
 
-#include <QtGlobal>
-#include <QScopedPointer>
+#include "build/build_config.h"
+#include "content/public/browser/browser_ppapi_host.h"
+#include "ppapi/host/message_filter_host.h"
+#include "ppapi/host/ppapi_host.h"
+#include "ppapi/host/resource_host.h"
+#include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
+#include "pepper_flash_browser_host_qt.h"
 
-namespace visitedlink {
-class VisitedLinkSlave;
-}
+using ppapi::host::MessageFilterHost;
+using ppapi::host::ResourceHost;
+using ppapi::host::ResourceMessageFilter;
 
 namespace QtWebEngineCore {
 
-class ContentRendererClientQt : public content::ContentRendererClient {
-public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
-    virtual void RenderFrameCreated(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
-    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
-    virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
-            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
+PepperHostFactoryQt::PepperHostFactoryQt(content::BrowserPpapiHost* host)
+    : host_(host)
+{
+}
 
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
+PepperHostFactoryQt::~PepperHostFactoryQt() {}
 
-private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
-};
+scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(
+        ppapi::host::PpapiHost* host,
+        const ppapi::proxy::ResourceMessageCallParams& params,
+        PP_Instance instance,
+        const IPC::Message& message)
+{
+    DCHECK(host == host_->GetPpapiHost());
 
-} // namespace
 
-#endif // CONTENT_RENDERER_CLIENT_QT_H
+    if (!host_->IsValidInstance(instance))
+        return scoped_ptr<ppapi::host::ResourceHost>();
+
+    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)
+            && message.type() == PpapiHostMsg_Flash_Create::ID)
+        return scoped_ptr<ppapi::host::ResourceHost>(
+                    new PepperFlashBrowserHostQt(host_,
+                                                 instance,
+                                                 params.pp_resource()));
+
+    return scoped_ptr<ppapi::host::ResourceHost>();
+}
+
+}  // namespace QtWebEngineCore

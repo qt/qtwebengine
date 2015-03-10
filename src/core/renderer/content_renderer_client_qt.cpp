@@ -51,6 +51,7 @@
 #include "content/public/common/web_preferences.h"
 
 #include "renderer/web_channel_ipc_transport.h"
+#include "renderer/qt_render_frame_observer.h"
 #include "renderer/qt_render_view_observer.h"
 #include "renderer/user_script_controller.h"
 
@@ -83,6 +84,11 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     new QtRenderViewObserver(render_view);
     new WebChannelIPCTransport(render_view);
     UserScriptController::instance()->renderViewCreated(render_view);
+}
+
+void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
+{
+    new QtWebEngineCore::QtRenderFrameObserver(render_frame);
 }
 
 bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)

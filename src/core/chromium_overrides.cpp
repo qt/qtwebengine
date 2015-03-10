@@ -47,6 +47,8 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QWindow>
+#include <QFontDatabase>
+#include <QStringList>
 
 #if defined(OS_ANDROID)
 #include "media/video/capture/fake_video_capture_device.h"
@@ -119,8 +121,17 @@ namespace content {
 // content/common/font_list.h
 scoped_ptr<base::ListValue> GetFontList_SlowBlocking()
 {
-    QT_NOT_USED
-    return scoped_ptr<base::ListValue>(new base::ListValue);
+    scoped_ptr<base::ListValue> font_list(new base::ListValue);
+
+     QFontDatabase database;
+     for (auto family : database.families()){
+         base::ListValue* font_item = new base::ListValue();
+         font_item->Append(new base::StringValue(family.toStdString()));
+         font_item->Append(new base::StringValue(family.toStdString()));  // should be localized name.
+         // TODO: Support localized family names.
+         font_list->Append(font_item);
+     }
+    return font_list.Pass();
 }
 
 #if defined(ENABLE_PLUGINS)

@@ -51,6 +51,11 @@ class URLRequestContextGetter;
 namespace content {
 class BrowserContext;
 class BrowserMainParts;
+
+#if defined(ENABLE_PLUGINS)
+class BrowserPpapiHost;
+#endif
+
 class DevToolsManagerDelegate;
 class RenderProcessHost;
 class RenderViewHostDelegateView;
@@ -114,6 +119,10 @@ public:
     virtual blink::WebNotificationPermission CheckDesktopNotificationPermission(const GURL& source_origin, content::ResourceContext* context, int render_process_id)  Q_DECL_OVERRIDE;
 
     virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
+
+#if defined(ENABLE_PLUGINS)
+    virtual void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) Q_DECL_OVERRIDE;
+#endif
 
 private:
     BrowserMainPartsQt* m_browserMainParts;
