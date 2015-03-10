@@ -50,7 +50,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineScript : public QObject
     Q_ENUMS(InjectionPoint)
     Q_ENUMS(ScriptWorldId)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
-    Q_PROPERTY(QString source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QString sourceCode READ sourceCode WRITE setSourceCode NOTIFY sourceCodeChanged)
     Q_PROPERTY(InjectionPoint injectionPoint READ injectionPoint WRITE setInjectionPoint NOTIFY injectionPointChanged)
     Q_PROPERTY(ScriptWorldId worldId READ worldId WRITE setWorldId NOTIFY worldIdChanged)
     Q_PROPERTY(bool runOnSubframes READ runOnSubframes WRITE setRunOnSubframes NOTIFY runOnSubframesChanged)
@@ -74,21 +74,21 @@ public:
     Q_INVOKABLE QString toString() const;
 
     QString name() const;
-    QString source() const;
+    QString sourceCode() const;
     InjectionPoint injectionPoint() const;
     ScriptWorldId worldId() const;
     bool runOnSubframes() const;
 
 public Q_SLOTS:
     void setName(QString arg);
-    void setSource(QString arg);
+    void setSourceCode(QString arg);
     void setInjectionPoint(InjectionPoint arg);
     void setWorldId(ScriptWorldId arg);
     void setRunOnSubframes(bool arg);
 
 Q_SIGNALS:
     void nameChanged(QString arg);
-    void sourceChanged(QString arg);
+    void sourceCodeChanged(QString arg);
     void injectionPointChanged(InjectionPoint arg);
     void worldIdChanged(ScriptWorldId arg);
     void runOnSubframesChanged(bool arg);

@@ -97,14 +97,14 @@ void UserScript::setName(const QString &name)
     scriptData->url = GURL(QStringLiteral("userScript:%1").arg(name).toStdString());
 }
 
-QString UserScript::source() const
+QString UserScript::sourceCode() const
 {
     if (isNull())
         return QString();
     return toQt(scriptData->source);
 }
 
-void UserScript::setSource(const QString &source)
+void UserScript::setSourceCode(const QString &source)
 {
     initData();
     scriptData->source = source.toStdString();
@@ -158,7 +158,7 @@ bool UserScript::operator==(const UserScript &other) const
     return worldId() == other.worldId()
             && runsOnSubFrames() == other.runsOnSubFrames()
             && injectionPoint() == other.injectionPoint()
-            && name() == other.name() && source() == other.source();
+            && name() == other.name() && sourceCode() == other.sourceCode();
 }
 
 void UserScript::initData()
@@ -184,7 +184,7 @@ uint qHash(const QtWebEngineCore::UserScript &script, uint seed)
 {
     if (script.isNull())
         return 0;
-    return qHash(script.source(), seed) ^ qHash(script.name(), seed)
+    return qHash(script.sourceCode(), seed) ^ qHash(script.name(), seed)
            ^ (script.injectionPoint() | (script.runsOnSubFrames() << 4))
            ^ script.worldId();
 }

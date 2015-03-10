@@ -78,16 +78,16 @@ void QWebEngineScript::setName(const QString &scriptName)
     d->setName(scriptName);
 }
 
-QString QWebEngineScript::source() const
+QString QWebEngineScript::sourceCode() const
 {
-    return d->source();
+    return d->sourceCode();
 }
 
-void QWebEngineScript::setSource(const QString &scriptSource)
+void QWebEngineScript::setSourceCode(const QString &scriptSource)
 {
-    if (scriptSource == source())
+    if (scriptSource == sourceCode())
         return;
-    d->setSource(scriptSource);
+    d->setSourceCode(scriptSource);
 }
 
 ASSERT_ENUMS_MATCH(QWebEngineScript::Deferred, UserScript::AfterLoad)
@@ -159,7 +159,7 @@ QDebug operator<<(QDebug d, const QWebEngineScript &script)
         break;
     }
     d << script.worldId() << ", "
-      << script.runsOnSubFrames() << ", " << script.source() << ")";
+      << script.runsOnSubFrames() << ", " << script.sourceCode() << ")";
     return d.space();
 }
 #endif

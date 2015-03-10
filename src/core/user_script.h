@@ -68,8 +68,8 @@ public:
     QString name() const;
     void setName(const QString &);
 
-    QString source() const;
-    void setSource(const QString &);
+    QString sourceCode() const;
+    void setSourceCode(const QString &);
 
     InjectionPoint injectionPoint() const;
     void setInjectionPoint(InjectionPoint);
