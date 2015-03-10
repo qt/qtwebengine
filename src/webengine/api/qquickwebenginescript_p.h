@@ -39,6 +39,7 @@
 
 #include <private/qtwebengineglobal_p.h>
 #include <QtCore/QObject>
+#include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineScriptPrivate;
@@ -50,6 +51,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineScript : public QObject
     Q_ENUMS(InjectionPoint)
     Q_ENUMS(ScriptWorldId)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl NOTIFY sourceUrlChanged)
     Q_PROPERTY(QString sourceCode READ sourceCode WRITE setSourceCode NOTIFY sourceCodeChanged)
     Q_PROPERTY(InjectionPoint injectionPoint READ injectionPoint WRITE setInjectionPoint NOTIFY injectionPointChanged)
     Q_PROPERTY(ScriptWorldId worldId READ worldId WRITE setWorldId NOTIFY worldIdChanged)
@@ -74,6 +76,7 @@ public:
     Q_INVOKABLE QString toString() const;
 
     QString name() const;
+    QUrl sourceUrl() const;
     QString sourceCode() const;
     InjectionPoint injectionPoint() const;
     ScriptWorldId worldId() const;
@@ -81,6 +84,7 @@ public:
 
 public Q_SLOTS:
     void setName(QString arg);
+    void setSourceUrl(QUrl arg);
     void setSourceCode(QString arg);
     void setInjectionPoint(InjectionPoint arg);
     void setWorldId(ScriptWorldId arg);
@@ -88,6 +92,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void nameChanged(QString arg);
+    void sourceUrlChanged(QUrl arg);
     void sourceCodeChanged(QString arg);
     void injectionPointChanged(InjectionPoint arg);
     void worldIdChanged(ScriptWorldId arg);

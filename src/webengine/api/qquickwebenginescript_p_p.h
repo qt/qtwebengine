@@ -61,6 +61,7 @@ public:
     QBasicTimer m_basicTimer;
     QtWebEngineCore::UserScriptControllerHost *m_controllerHost;
     QtWebEngineCore::WebContentsAdapter *m_adapter;
+    QUrl m_sourceUrl;
 
 private:
     QQuickWebEngineScript *q_ptr;
