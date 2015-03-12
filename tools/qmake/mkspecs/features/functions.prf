@@ -38,6 +38,7 @@ defineTest(isGCCVersionSupported) {
 }
 
 defineTest(isQMLTestSupportApiEnabled) {
+    contains(QT_CONFIG, private_tests): return(true) # enable for developer-build
     contains(QT_BUILD_PARTS, tests): return(true)
     contains(WEBENGINE_CONFIG, testsupport): return(true)
     return(false)
