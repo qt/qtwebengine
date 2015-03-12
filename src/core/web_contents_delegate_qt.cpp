@@ -354,9 +354,10 @@ void WebContentsDelegateQt::cancelGeolocationPermissionRequest(const GURL &reque
 
 void WebContentsDelegateQt::geolocationPermissionReply(const QUrl &origin, bool permission)
 {
-    if (m_geolocationPermissionRequests.contains(origin)) {
-        m_geolocationPermissionRequests[origin].Run(permission);
-        m_geolocationPermissionRequests.remove(origin);
+    auto it = m_geolocationPermissionRequests.find(origin);
+    if (it != m_geolocationPermissionRequests.end()) {
+        (*it).Run(permission);
+        m_geolocationPermissionRequests.erase(it);
     }
 }
 

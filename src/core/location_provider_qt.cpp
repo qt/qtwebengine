@@ -188,7 +188,7 @@ void QtPositioningHelper::timeout()
 
 inline void QtPositioningHelper::postToLocationProvider(const base::Closure &task)
 {
-    LocationProviderQt::messageLoop()->PostTask(FROM_HERE, task);
+    static_cast<content::GeolocationProviderImpl*>(content::GeolocationProvider::GetInstance())->message_loop()->PostTask(FROM_HERE, task);
 }
 
 LocationProviderQt::LocationProviderQt()
@@ -203,7 +203,6 @@ LocationProviderQt::~LocationProviderQt()
 
 bool LocationProviderQt::StartProvider(bool highAccuracy)
 {
-    DCHECK(base::MessageLoop::current() == messageLoop());
     QThread *guiThread = qApp->thread();
     if (!m_positioningHelper) {
         m_positioningHelper = new QtPositioningHelper(this);
@@ -216,7 +215,6 @@ bool LocationProviderQt::StartProvider(bool highAccuracy)
 
 void LocationProviderQt::StopProvider()
 {
-    DCHECK(base::MessageLoop::current() == messageLoop());
     if (m_positioningHelper)
         BrowserThread::PostTask(BrowserThread::UI,FROM_HERE, base::Bind(&QtPositioningHelper::stop
                                                                      , base::Unretained(m_positioningHelper)));
@@ -224,7 +222,6 @@ void LocationProviderQt::StopProvider()
 
 void LocationProviderQt::RequestRefresh()
 {
-    DCHECK(base::MessageLoop::current() == messageLoop());
     if (m_positioningHelper)
         BrowserThread::PostTask(BrowserThread::UI,FROM_HERE, base::Bind(&QtPositioningHelper::refresh
                                                                      , base::Unretained(m_positioningHelper)));
@@ -237,14 +234,8 @@ void LocationProviderQt::OnPermissionGranted()
 
 void LocationProviderQt::updatePosition(const content::Geoposition &position)
 {
-    DCHECK(base::MessageLoop::current() == messageLoop());
     m_lastKnownPosition = position;
     NotifyCallback(position);
-}
-
-base::MessageLoop *LocationProviderQt::messageLoop()
-{
-    return static_cast<content::GeolocationProviderImpl*>(content::GeolocationProvider::GetInstance())->message_loop();
 }
 
 } // namespace QtWebEngineCore

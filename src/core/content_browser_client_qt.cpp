@@ -69,7 +69,6 @@
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "user_script_controller_host.h"
 #include "web_contents_delegate_qt.h"
-#include "access_token_store_qt.h"
 
 #include <QGuiApplication>
 #include <QLocale>

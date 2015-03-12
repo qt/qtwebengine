@@ -67,7 +67,6 @@ public:
 private:
     friend class QtPositioningHelper;
 
-    static base::MessageLoop *messageLoop();
     void updatePosition(const content::Geoposition &);
 
     content::Geoposition m_lastKnownPosition;
