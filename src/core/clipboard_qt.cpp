@@ -51,6 +51,8 @@
 #include <QImage>
 #include <QMimeData>
 
+namespace QtWebEngineCore {
+
 Q_GLOBAL_STATIC(ClipboardChangeObserver, clipboardChangeObserver)
 
 ClipboardChangeObserver::ClipboardChangeObserver()
@@ -62,6 +64,10 @@ void ClipboardChangeObserver::trackChange(QClipboard::Mode mode)
 {
     ++sequenceNumber[mode];
 }
+
+} // namespace QtWebEngineCore
+
+using namespace QtWebEngineCore;
 
 namespace {
 
@@ -187,6 +193,8 @@ bool Clipboard::FormatType::operator<(const FormatType& other) const
 #endif
 
 } // namespace ui
+
+namespace QtWebEngineCore {
 
 void ClipboardQt::WriteObjects(ui::ClipboardType type, const ObjectMap& objects)
 {
@@ -358,4 +366,4 @@ uint64 ClipboardQt::GetSequenceNumber(ui::ClipboardType type)
     return clipboardChangeObserver()->getSequenceNumber(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
 }
 
-
+}  // namespace QtWebEngineCore

@@ -47,6 +47,7 @@
 #include <QMimeType>
 
 using namespace net;
+namespace QtWebEngineCore {
 
 URLRequestQrcJobQt::URLRequestQrcJobQt(URLRequest *request, NetworkDelegate *networkDelegate)
     : URLRequestJob(request, networkDelegate)
@@ -127,3 +128,5 @@ void URLRequestQrcJobQt::startGetHead()
         NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, ERR_INVALID_URL));
     }
 }
+
+} // namespace QtWebEngineCore

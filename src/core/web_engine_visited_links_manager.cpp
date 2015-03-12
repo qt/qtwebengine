@@ -45,6 +45,8 @@
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 
+namespace QtWebEngineCore {
+
 namespace {
 class BasicUrlIterator : public visitedlink::VisitedLinkMaster::URLIterator {
 public:
@@ -104,3 +106,5 @@ void WebEngineVisitedLinksManager::addUrl(const GURL &urlToAdd)
     Q_ASSERT(m_visitedLinkMaster);
     m_visitedLinkMaster->AddURL(urlToAdd);
 }
+
+} // namespace QtWebEngineCore

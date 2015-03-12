@@ -44,15 +44,17 @@
 #include <QtCore/QObject>
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
-class BrowserContextAdapter;
-class CustomUrlSchemeHandler;
-
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
 namespace net {
 class NetworkDelegate;
 class URLRequestJob;
 } // namespace
+
+namespace QtWebEngineCore {
+
+class BrowserContextAdapter;
+class CustomUrlSchemeHandler;
 
 // Implements a ProtocolHandler for custom URL schemes.
 // If |network_delegate_| is NULL then all file requests will fail with ERR_ACCESS_DENIED.
@@ -67,5 +69,7 @@ private:
     DISALLOW_COPY_AND_ASSIGN(CustomProtocolHandler);
     CustomUrlSchemeHandler *m_schemeHandler;
 };
+
+} // namespace
 
 #endif // CUSTOM_PROTOCOL_HANDLER_H_

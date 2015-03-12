@@ -42,7 +42,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QWebEngineUrlRequestJob::QWebEngineUrlRequestJob(URLRequestCustomJobDelegate * p)
+QWebEngineUrlRequestJob::QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate * p)
     : QObject(p) // owned by the jobdelegate and deleted when the job is done
     , d_ptr(p)
 {

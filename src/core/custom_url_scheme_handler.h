@@ -42,11 +42,13 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QScopedPointer>
 
+QT_FORWARD_DECLARE_CLASS(QIODevice)
+
+namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 class CustomProtocolHandler;
 class URLRequestCustomJobDelegate;
-
-QT_FORWARD_DECLARE_CLASS(QIODevice)
 
 class QWEBENGINE_EXPORT CustomUrlSchemeHandler {
 public:
@@ -62,5 +64,8 @@ public:
 private:
     QByteArray m_scheme;
 };
+
+
+} // namespace
 
 #endif // CUSTOM_URL_SCHEME_HANDLER_H_

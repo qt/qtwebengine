@@ -58,6 +58,8 @@
 #include "media/audio/audio_manager_base.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace QtWebEngineCore {
+
 using content::BrowserThread;
 using content::MediaStreamDevices;
 
@@ -455,3 +457,5 @@ void MediaCaptureDevicesDispatcher::updateMediaRequestStateOnUIThread(int render
     }
   }
 }
+
+} // namespace QtWebEngineCore

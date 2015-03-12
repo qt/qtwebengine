@@ -41,7 +41,9 @@
 #include <QObject>
 #include <QScopedPointer>
 
+namespace QtWebEngineCore {
 class WebEngineSettings;
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -111,7 +113,7 @@ private:
 
     void setParentSettings(QQuickWebEngineSettings *parentSettings);
 
-    QScopedPointer<WebEngineSettings> d_ptr;
+    QScopedPointer<QtWebEngineCore::WebEngineSettings> d_ptr;
 };
 
 QT_END_NAMESPACE

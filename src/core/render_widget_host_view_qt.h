@@ -73,6 +73,8 @@ namespace content {
 class RenderWidgetHostImpl;
 }
 
+namespace QtWebEngineCore {
+
 struct MultipleMouseClickHelper
 {
     QPoint lastPressPosition;
@@ -239,5 +241,7 @@ private:
 
     gfx::Vector2dF m_lastScrollOffset;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // RENDER_WIDGET_HOST_VIEW_QT_H

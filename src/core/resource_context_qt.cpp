@@ -40,6 +40,8 @@
 
 #include "browser_context_qt.h"
 
+namespace QtWebEngineCore {
+
 net::HostResolver *ResourceContextQt::GetHostResolver()
 {
     CHECK(getter_);
@@ -57,3 +59,5 @@ void ResourceContextQt::set_url_request_context_getter(net::URLRequestContextGet
 {
     getter_ = getter;
 }
+
+} // namespace QtWebEngineCore

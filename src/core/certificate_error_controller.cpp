@@ -43,6 +43,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "type_conversion.h"
 
+QT_BEGIN_NAMESPACE
+
+using namespace QtWebEngineCore;
+
 void CertificateErrorControllerPrivate::accept(bool accepted)
 {
     callback.Run(accepted);
@@ -154,3 +158,5 @@ QString CertificateErrorController::errorString() const
 
     return getQStringForMessageId(IDS_CERT_ERROR_UNKNOWN_ERROR_DESCRIPTION);
 }
+
+QT_END_NAMESPACE

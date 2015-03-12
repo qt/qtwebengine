@@ -37,6 +37,8 @@
 #include "custom_url_scheme_handler.h"
 #include "custom_protocol_handler.h"
 
+namespace QtWebEngineCore {
+
 CustomUrlSchemeHandler::CustomUrlSchemeHandler(const QByteArray &scheme)
     : m_scheme(scheme)
 {
@@ -61,3 +63,5 @@ CustomProtocolHandler *CustomUrlSchemeHandler::createProtocolHandler()
     // Will be owned by the JobFactory.
     return new CustomProtocolHandler(this);
 }
+
+} // namespace

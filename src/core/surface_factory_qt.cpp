@@ -55,6 +55,8 @@
 #define QT_LIBDIR_GLES2 QT_LIBDIR_EGL
 #endif
 
+namespace QtWebEngineCore {
+
 base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
     base::NativeLibraryLoadError error;
     base::NativeLibrary library = base::LoadNativeLibrary(filename, &error);
@@ -73,13 +75,13 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
     Q_UNREACHABLE();
     return false;
 #else
-    base::FilePath libEGLPath = toFilePath(QT_LIBDIR_EGL);
+    base::FilePath libEGLPath = QtWebEngineCore::toFilePath(QT_LIBDIR_EGL);
     libEGLPath = libEGLPath.Append("libEGL.so");
     base::NativeLibrary eglLibrary = LoadLibrary(libEGLPath);
     if (!eglLibrary)
         return false;
 
-    base::FilePath libGLES2Path = toFilePath(QT_LIBDIR_GLES2);
+    base::FilePath libGLES2Path = QtWebEngineCore::toFilePath(QT_LIBDIR_GLES2);
     libGLES2Path = libGLES2Path.Append("libGLESv2.so");
     base::NativeLibrary gles2Library = LoadLibrary(libGLES2Path);
     if (!gles2Library)
@@ -109,6 +111,8 @@ intptr_t SurfaceFactoryQt::GetNativeDisplay()
 
     return reinterpret_cast<intptr_t>(EGL_DEFAULT_DISPLAY);
 }
+
+} // namespace QtWebEngineCore
 
 #endif // defined(USE_OZONE) || defined(OS_ANDROID)
 

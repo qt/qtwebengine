@@ -39,6 +39,8 @@
 
 #include "user_script_controller_host.h"
 
+using QtWebEngineCore::UserScript;
+
 QWebEngineScriptCollection::QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *collectionPrivate)
     :d(collectionPrivate)
 {
@@ -96,7 +98,7 @@ QList<QWebEngineScript> QWebEngineScriptCollection::toList() const
 }
 
 
-QWebEngineScriptCollectionPrivate::QWebEngineScriptCollectionPrivate(UserScriptControllerHost *controller, WebContentsAdapter *webContents)
+QWebEngineScriptCollectionPrivate::QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserScriptControllerHost *controller, QtWebEngineCore::WebContentsAdapter *webContents)
     : m_scriptController(controller)
     , m_contents(webContents)
 {

@@ -44,6 +44,7 @@
 
 #include "content_browser_client_qt.h"
 
+namespace QtWebEngineCore {
 
 class ContentMainDelegateQt : public content::ContentMainDelegate
 {
@@ -61,5 +62,7 @@ public:
 private:
     scoped_ptr<ContentBrowserClientQt> m_browserClient;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // CONTENT_MAIN_DELEGATE_QT_H

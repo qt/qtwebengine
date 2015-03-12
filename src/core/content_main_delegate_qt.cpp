@@ -54,6 +54,8 @@
 
 #include <QLocale>
 
+namespace QtWebEngineCore {
+
 static base::StringPiece PlatformResourceProvider(int key) {
     if (key == IDR_DIR_HEADER_HTML) {
         base::StringPiece html_data = ui::ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_DIR_HEADER_HTML);
@@ -103,3 +105,4 @@ bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
     return false;
 }
 
+} // namespace QtWebEngineCore

@@ -39,6 +39,7 @@
 #include "qquickwebengineview_p_p.h"
 #include <QQuickItem>
 
+namespace QtWebEngineCore {
 
 RenderWidgetHostViewQtDelegateQuickWindow::RenderWidgetHostViewQtDelegateQuickWindow(RenderWidgetHostViewQtDelegate *realDelegate)
     : m_realDelegate(realDelegate)
@@ -136,3 +137,5 @@ void RenderWidgetHostViewQtDelegateQuickWindow::setTooltip(const QString &toolti
 {
     Q_UNUSED(tooltip);
 }
+
+} // namespace QtWebEngineCore

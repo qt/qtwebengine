@@ -43,7 +43,9 @@
 #include <QtCore/QObject>
 #include <QtCore/QUrl>
 
+namespace QtWebEngineCore {
 class URLRequestCustomJobDelegate;
+} // namespace
 
 QT_BEGIN_NAMESPACE
 
@@ -58,10 +60,10 @@ public:
     void setReply(const QByteArray &contentType, QIODevice *device);
 
 private:
-    QWebEngineUrlRequestJob(URLRequestCustomJobDelegate *);
+    QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
     friend class QWebEngineUrlSchemeHandlerPrivate;
 
-    URLRequestCustomJobDelegate* d_ptr;
+    QtWebEngineCore::URLRequestCustomJobDelegate* d_ptr;
 };
 
 QT_END_NAMESPACE

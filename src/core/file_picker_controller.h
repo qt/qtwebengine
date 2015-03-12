@@ -37,12 +37,14 @@
 #ifndef FILE_PICKER_CONTROLLER_H
 #define FILE_PICKER_CONTROLLER_H
 
+#include "qtwebenginecoreglobal.h"
+#include <QObject>
+
 namespace content {
     class WebContents;
 }
 
-#include "qtwebenginecoreglobal.h"
-#include <QObject>
+namespace QtWebEngineCore {
 
 class QWEBENGINE_EXPORT FilePickerController : public QObject {
     Q_OBJECT
@@ -73,5 +75,7 @@ private:
     FileChooserMode m_mode;
 
 };
+
+} // namespace
 
 #endif // FILE_PICKER_CONTROLLER_H

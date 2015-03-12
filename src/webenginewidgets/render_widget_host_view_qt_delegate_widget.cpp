@@ -49,6 +49,7 @@
 #include <private/qsgcontext_p.h>
 #include <private/qsgengine_p.h>
 
+namespace QtWebEngineCore {
 
 static const int MaxTooltipLength = 1024;
 
@@ -294,3 +295,5 @@ void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
 {
     m_client->windowBoundsChanged();
 }
+
+} // namespace QtWebEngineCore

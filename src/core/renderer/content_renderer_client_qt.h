@@ -45,6 +45,8 @@ namespace visitedlink {
 class VisitedLinkSlave;
 }
 
+namespace QtWebEngineCore {
+
 class ContentRendererClientQt : public content::ContentRendererClient {
 public:
     ContentRendererClientQt();
@@ -63,5 +65,7 @@ public:
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
 };
+
+} // namespace
 
 #endif // CONTENT_RENDERER_CLIENT_QT_H

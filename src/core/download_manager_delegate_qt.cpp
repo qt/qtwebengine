@@ -53,6 +53,8 @@
 #include "type_conversion.h"
 #include "qtwebenginecoreglobal.h"
 
+namespace QtWebEngineCore {
+
 ASSERT_ENUMS_MATCH(content::DownloadItem::IN_PROGRESS, BrowserContextAdapterClient::DownloadInProgress)
 ASSERT_ENUMS_MATCH(content::DownloadItem::COMPLETE, BrowserContextAdapterClient::DownloadCompleted)
 ASSERT_ENUMS_MATCH(content::DownloadItem::CANCELLED, BrowserContextAdapterClient::DownloadCancelled)
@@ -190,3 +192,5 @@ void DownloadManagerDelegateQt::OnDownloadDestroyed(content::DownloadItem *downl
     download->RemoveObserver(this);
     download->Cancel(/* user_cancel */ false);
 }
+
+} // namespace QtWebEngineCore

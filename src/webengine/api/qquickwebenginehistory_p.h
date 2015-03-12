@@ -46,8 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class WebEngineHistory;
-class WebEngineHistoryItem;
 class QQuickWebEngineHistory;
 class QQuickWebEngineHistoryPrivate;
 class QQuickWebEngineHistoryListModelPrivate;

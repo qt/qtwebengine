@@ -50,6 +50,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
 
+namespace QtWebEngineCore {
+
 using content::BrowserThread;
 
 class QtPositioningHelper : public QObject {
@@ -189,8 +191,6 @@ inline void QtPositioningHelper::postToLocationProvider(const base::Closure &tas
     LocationProviderQt::messageLoop()->PostTask(FROM_HERE, task);
 }
 
-#include "location_provider_qt.moc"
-
 LocationProviderQt::LocationProviderQt()
     : m_positioningHelper(0)
 {
@@ -246,3 +246,7 @@ base::MessageLoop *LocationProviderQt::messageLoop()
 {
     return static_cast<content::GeolocationProviderImpl*>(content::GeolocationProvider::GetInstance())->message_loop();
 }
+
+} // namespace QtWebEngineCore
+
+#include "location_provider_qt.moc"

@@ -49,10 +49,12 @@ namespace visitedlink {
 class VisitedLinkMaster;
 }
 
+class GURL;
+
+namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 class VisitedLinkDelegateQt;
-
-class GURL;
 
 class QWEBENGINE_EXPORT WebEngineVisitedLinksManager {
 
@@ -72,5 +74,7 @@ private:
     QScopedPointer<visitedlink::VisitedLinkMaster> m_visitedLinkMaster;
     QScopedPointer<VisitedLinkDelegateQt> m_delegate;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // WEB_ENGINE_VISITED_LINKS_MANAGER_H

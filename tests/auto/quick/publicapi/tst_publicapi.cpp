@@ -73,6 +73,7 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineNewViewRequest::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
     << &QQuickWebEngineScript::staticMetaObject
+    << &QQuickWebEngineFullScreenRequest::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
@@ -127,6 +128,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.icon --> QUrl"
     << "QQuickWebEngineView.canGoBack --> bool"
     << "QQuickWebEngineView.canGoForward --> bool"
+    << "QQuickWebEngineView.isFullScreen --> bool"
     << "QQuickWebEngineView.loading --> bool"
     << "QQuickWebEngineView.loadProgress --> int"
     << "QQuickWebEngineView.titleChanged() --> void"
@@ -138,6 +140,9 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.iconChanged() --> void"
     << "QQuickWebEngineView.linkHovered(QUrl) --> void"
     << "QQuickWebEngineView.navigationRequested(QQuickWebEngineNavigationRequest*) --> void"
+    << "QQuickWebEngineView.fullScreenRequested(QQuickWebEngineFullScreenRequest) --> void"
+    << "QQuickWebEngineView.isFullScreenChanged() --> void"
+    << "QQuickWebEngineView.fullScreenCancelled() --> void"
     << "QQuickWebEngineView.runJavaScript(QString,QJSValue) --> void"
     << "QQuickWebEngineView.runJavaScript(QString) --> void"
     << "QQuickWebEngineView.loadHtml(QString,QUrl) --> void"
@@ -218,21 +223,23 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineScript.ApplicationWorld --> ScriptWorldId"
     << "QQuickWebEngineScript.UserWorld --> ScriptWorldId"
     << "QQuickWebEngineScript.name --> QString"
-    << "QQuickWebEngineScript.source --> QString"
+    << "QQuickWebEngineScript.sourceCode --> QString"
     << "QQuickWebEngineScript.injectionPoint --> InjectionPoint"
     << "QQuickWebEngineScript.worldId --> ScriptWorldId"
     << "QQuickWebEngineScript.runOnSubframes --> bool"
     << "QQuickWebEngineScript.nameChanged(QString) --> void"
-    << "QQuickWebEngineScript.sourceChanged(QString) --> void"
+    << "QQuickWebEngineScript.sourceCodeChanged(QString) --> void"
     << "QQuickWebEngineScript.injectionPointChanged(InjectionPoint) --> void"
     << "QQuickWebEngineScript.worldIdChanged(ScriptWorldId) --> void"
     << "QQuickWebEngineScript.runOnSubframesChanged(bool) --> void"
     << "QQuickWebEngineScript.setName(QString) --> void"
-    << "QQuickWebEngineScript.setSource(QString) --> void"
+    << "QQuickWebEngineScript.setSourceCode(QString) --> void"
     << "QQuickWebEngineScript.setInjectionPoint(InjectionPoint) --> void"
     << "QQuickWebEngineScript.setWorldId(ScriptWorldId) --> void"
     << "QQuickWebEngineScript.setRunOnSubframes(bool) --> void"
     << "QQuickWebEngineScript.toString() --> QString"
+    << "QQuickWebEngineFullScreenRequest.toggleOn --> bool"
+    << "QQuickWebEngineFullScreenRequest.accept() --> void"
     ;
 
 static bool isCheckedEnum(const QByteArray &typeName)

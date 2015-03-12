@@ -43,6 +43,8 @@
 #include <QMap>
 #include <QObject>
 
+namespace QtWebEngineCore {
+
 class ClipboardChangeObserver : public QObject {
     Q_OBJECT
 public:
@@ -87,5 +89,7 @@ protected:
     virtual void WriteBitmap(const SkBitmap& bitmap) Q_DECL_OVERRIDE;
     virtual void WriteData(const FormatType& format, const char* data_data, size_t data_len) Q_DECL_OVERRIDE;
 };
+
+} // namespace QtWebEngineCore
 
 #endif

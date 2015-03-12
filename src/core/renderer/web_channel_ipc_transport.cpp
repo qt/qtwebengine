@@ -48,6 +48,8 @@
 
 #include <QJsonDocument>
 
+namespace QtWebEngineCore {
+
 static const char kWebChannelTransportExtensionName[] = "v8/WebChannelTransport";
 
 static const char kWebChannelTransportApi[] =
@@ -173,3 +175,5 @@ bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)
     IPC_END_MESSAGE_MAP()
     return handled;
 }
+
+} // namespace

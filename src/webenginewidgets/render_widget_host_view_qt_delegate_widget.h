@@ -50,6 +50,8 @@
 #include <QtWidgets/QOpenGLWidget>
 #endif
 
+namespace QtWebEngineCore {
+
 class RenderWidgetHostViewQtDelegateWidget : public QOpenGLWidget, public RenderWidgetHostViewQtDelegate {
     Q_OBJECT
 public:
@@ -98,5 +100,7 @@ private:
     bool m_isPopup;
     QList<QMetaObject::Connection> m_windowConnections;
 };
+
+} // namespace QtWebEngineCore
 
 #endif

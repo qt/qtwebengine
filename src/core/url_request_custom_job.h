@@ -44,6 +44,8 @@
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
+namespace QtWebEngineCore {
+
 class CustomUrlSchemeHandler;
 class URLRequestCustomJobDelegate;
 
@@ -76,5 +78,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(URLRequestCustomJob);
 };
+
+} // namespace QtWebEngineCore
 
 #endif // URL_REQUEST_CUSTOM_JOB_H_

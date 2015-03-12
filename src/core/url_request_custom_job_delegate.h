@@ -44,6 +44,8 @@
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
+namespace QtWebEngineCore {
+
 class URLRequestCustomJob;
 
 class QWEBENGINE_EXPORT URLRequestCustomJobDelegate : public QObject {
@@ -61,5 +63,7 @@ private:
     friend class URLRequestCustomJob;
     URLRequestCustomJob *m_job;
 };
+
+} // namespace
 
 #endif // URL_REQUEST_CUSTOM_JOB_DELEGATE_H_

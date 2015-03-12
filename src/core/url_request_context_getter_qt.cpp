@@ -69,6 +69,8 @@
 #include "qrc_protocol_handler_qt.h"
 #include "type_conversion.h"
 
+namespace QtWebEngineCore {
+
 static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
@@ -295,3 +297,5 @@ scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetwor
 {
     return content::BrowserThread::GetMessageLoopProxyForThread(content::BrowserThread::IO);
 }
+
+} // namespace QtWebEngineCore

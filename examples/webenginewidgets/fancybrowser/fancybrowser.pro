@@ -1,7 +1,5 @@
 QT      +=  webenginewidgets
 
-macx: CONFIG -= app_bundle
-
 HEADERS =   mainwindow.h
 SOURCES =   main.cpp \
             mainwindow.cpp

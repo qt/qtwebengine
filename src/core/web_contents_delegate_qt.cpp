@@ -62,6 +62,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 
+namespace QtWebEngineCore {
+
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
 static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32 messageLevel) {
     if (messageLevel < 1)
@@ -143,6 +145,11 @@ void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrame
 {
     if (is_error_page) {
         m_loadingErrorFrameList.append(render_frame_host->GetRoutingID());
+
+        // Trigger LoadStarted signal for main frame's error page only.
+        if (!render_frame_host->GetParent())
+            m_viewClient->loadStarted(toQt(validated_url), true);
+
         return;
     }
 
@@ -172,7 +179,7 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
     if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID()) || render_frame_host->GetParent())
         return;
 
-    m_viewClient->loadFinished(false, toQt(validated_url), error_code, toQt(error_description));
+    m_viewClient->loadFinished(false /* success */ , toQt(validated_url), false /* isErrorPage */, error_code, toQt(error_description));
     m_viewClient->loadProgressChanged(0);
 }
 
@@ -181,6 +188,11 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID())) {
         Q_ASSERT(validated_url.is_valid() && validated_url.spec() == content::kUnreachableWebDataURL);
         m_viewClient->iconChanged(QUrl());
+
+        // Trigger LoadFinished signal for main frame's error page only.
+        if (!render_frame_host->GetParent())
+            m_viewClient->loadFinished(true /* success */, toQt(validated_url), true /* isErrorPage */);
+
         return;
     }
 
@@ -344,3 +356,5 @@ void WebContentsDelegateQt::geolocationPermissionReply(const QUrl &origin, bool 
         m_geolocationPermissionRequests.remove(origin);
     }
 }
+
+} // namespace QtWebEngineCore

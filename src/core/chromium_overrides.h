@@ -44,6 +44,8 @@ QT_BEGIN_NAMESPACE
 class QWindow;
 QT_END_NAMESPACE
 
+namespace QtWebEngineCore {
 void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* results);
+}
 
 #endif

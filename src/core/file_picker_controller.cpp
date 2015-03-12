@@ -44,6 +44,8 @@
 #include <QVariant>
 #include <QStringList>
 
+namespace QtWebEngineCore {
+
 FilePickerController::FilePickerController(FileChooserMode mode, content::WebContents *contents, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent)
     : QObject(parent)
     , m_acceptedMimeTypes(acceptedMimeTypes)
@@ -116,3 +118,5 @@ QString FilePickerController::defaultFileName()
 {
     return m_defaultFileName;
 }
+
+} // namespace

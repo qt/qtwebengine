@@ -45,13 +45,13 @@
 #include <QUrl>
 #include <QSet>
 
-class BatchTimer;
-class WebContentsAdapter;
-class WebEngineSettings;
-
 namespace content {
 struct WebPreferences;
 }
+namespace QtWebEngineCore {
+
+class BatchTimer;
+class WebContentsAdapter;
 
 class QWEBENGINE_EXPORT WebEngineSettings {
 public:
@@ -137,5 +137,7 @@ private:
     friend class BatchTimer;
     friend class WebContentsAdapter;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // WEB_ENGINE_SETTINGS_H

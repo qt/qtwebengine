@@ -42,6 +42,8 @@
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 
+namespace QtWebEngineCore {
+
 QtRenderViewObserverHost::QtRenderViewObserverHost(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : content::WebContentsObserver(webContents)
     , m_adapterClient(adapterClient)
@@ -90,3 +92,5 @@ void QtRenderViewObserverHost::onDidFirstVisuallyNonEmptyLayout()
     if (rwhv)
         rwhv->didFirstVisuallyNonEmptyLayout();
 }
+
+} // namespace QtWebEngineCore

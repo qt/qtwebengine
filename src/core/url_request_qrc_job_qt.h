@@ -43,6 +43,8 @@
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 #include <QFile>
 
+namespace QtWebEngineCore {
+
 // A request job that handles reading qrc file URLs
 class URLRequestQrcJobQt : public net::URLRequestJob {
 
@@ -66,5 +68,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(URLRequestQrcJobQt);
 };
+
+} // namespace QtWebEngineCore
 
 #endif // URL_REQUEST_QRC_JOB_QT_H_

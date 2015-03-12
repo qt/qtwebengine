@@ -44,8 +44,11 @@
 #include <QtCore/QSharedData>
 #include <QtCore/QString>
 
-class UserScriptControllerHost;
 struct UserScriptData;
+
+namespace QtWebEngineCore {
+
+class UserScriptControllerHost;
 
 class QWEBENGINE_EXPORT UserScript : public QSharedData {
 public:
@@ -65,8 +68,8 @@ public:
     QString name() const;
     void setName(const QString &);
 
-    QString source() const;
-    void setSource(const QString &);
+    QString sourceCode() const;
+    void setSourceCode(const QString &);
 
     InjectionPoint injectionPoint() const;
     void setInjectionPoint(InjectionPoint);
@@ -88,6 +91,10 @@ private:
     QString m_name;
 };
 
-uint qHash(const UserScript &, uint seed = 0);
+} // namespace QtWebEngineCore
+
+QT_BEGIN_NAMESPACE
+uint qHash(const QtWebEngineCore::UserScript &, uint seed = 0);
+QT_END_NAMESPACE
 
 #endif // USER_SCRIPT_H

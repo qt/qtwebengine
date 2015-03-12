@@ -47,7 +47,7 @@
 #include "web_contents_adapter_client.h"
 #include "web_contents_view_qt.h"
 
-namespace {
+namespace QtWebEngineCore {
 
 int pageTransitionToNavigationType(ui::PageTransition transition)
 {
@@ -70,8 +70,6 @@ int pageTransitionToNavigationType(ui::PageTransition transition)
     default:
         return WebContentsAdapterClient::OtherNavigation;
     }
-}
-
 }
 
 int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::CompletionCallback &callback, GURL *)
@@ -173,3 +171,5 @@ void NetworkDelegateQt::NotifyNavigationRequestedOnUIThread(net::URLRequest *req
                            callback)
                 );
 }
+
+} // namespace QtWebEngineCore

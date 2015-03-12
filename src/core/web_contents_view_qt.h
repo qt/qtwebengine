@@ -48,6 +48,8 @@
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 
+namespace QtWebEngineCore {
+
 class WebContentsViewQt
     : public content::WebContentsView
     , public content::RenderViewHostDelegateView
@@ -122,5 +124,7 @@ private:
     WebContentsAdapterClient *m_factoryClient;
     bool m_allowOtherViews;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // WEB_CONTENTS_VIEW_QT_H

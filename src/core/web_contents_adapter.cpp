@@ -79,6 +79,8 @@
 #include <QtGui/qaccessible.h>
 #include <QtWebChannel/QWebChannel>
 
+namespace QtWebEngineCore {
+
 static const int kTestWindowWidth = 800;
 static const int kTestWindowHeight = 600;
 static const int kHistoryStreamVersion = 3;
@@ -639,7 +641,7 @@ void WebContentsAdapter::clearNavigationHistory()
 void WebContentsAdapter::serializeNavigationHistory(QDataStream &output)
 {
     Q_D(WebContentsAdapter);
-    ::serializeNavigationHistory(d->webContents->GetController(), output);
+    QtWebEngineCore::serializeNavigationHistory(d->webContents->GetController(), output);
 }
 
 void WebContentsAdapter::setZoomFactor(qreal factor)
@@ -829,3 +831,5 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel)
     }
     channel->connectTo(d->webChannelTransport.get());
 }
+
+} // namespace QtWebEngineCore

@@ -52,11 +52,25 @@ ApplicationWindow {
     id: browserWindow
     property QtObject applicationRoot
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
+    property int previousVisibility: Window.Windowed
+
+    property bool isFullScreen: visibility == Window.FullScreen
+    onIsFullScreenChanged: {
+        // This is for the case where the system forces us to leave fullscreen.
+        if (currentWebView && !isFullScreen) {
+            currentWebView.state = ""
+            if (currentWebView.isFullScreen)
+                currentWebView.fullScreenCancelled()
+        }
+    }
 
     width: 1300
     height: 900
     visible: true
     title: currentWebView && currentWebView.title
+
+    // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
+    Component.onCompleted: flags = flags | Qt.WindowFullscreenButtonHint
 
     // Create a styleItem to determine the platform.
     // When using style "mac", ToolButtons are not supposed to accept focus.
@@ -121,6 +135,13 @@ ApplicationWindow {
                 browserWindow.close()
             else
                 tabs.removeTab(tabs.currentIndex)
+        }
+    }
+    Action {
+        shortcut: "Escape"
+        onTriggered: {
+            if (browserWindow.isFullScreen)
+                browserWindow.visibility = browserWindow.previousVisibility
         }
     }
     Action {
@@ -289,11 +310,24 @@ ApplicationWindow {
                     }
                 }
 
+                states: [
+                    State {
+                        name: "FullScreen"
+                        PropertyChanges {
+                            target: tabs
+                            frameVisible: false
+                            tabsVisible: false
+                        }
+                        PropertyChanges {
+                            target: navigationBar
+                            visible: false
+                        }
+                    }
+                ]
+
                 onCertificateError: {
-                    sslDialog.certError = error
-                    sslDialog.text = "Certificate Error: " + error.description
-                    sslDialog.visible = true
                     error.defer()
+                    sslDialog.enqueue(error)
                 }
 
                 onNewViewRequested: {
@@ -310,20 +344,51 @@ ApplicationWindow {
                         request.openIn(window.currentWebView)
                     }
                 }
+
+                onFullScreenRequested: {
+                    if (request.toggleOn) {
+                        webEngineView.state = "FullScreen"
+                        browserWindow.previousVisibility = browserWindow.visibility
+                        browserWindow.showFullScreen()
+                    } else {
+                        webEngineView.state = ""
+                        browserWindow.visibility = browserWindow.previousVisibility
+                    }
+                    request.accept()
+                }
             }
         }
     }
     MessageDialog {
         id: sslDialog
 
-        property var certError
+        property var certErrors: []
+        icon: StandardIcon.Warning
+        standardButtons: StandardButton.No | StandardButton.Yes
+        title: "Server's certificate not trusted"
+        text: "Do you wish to continue?"
+        detailedText: "If you wish so, you may continue with an unverified certificate. " +
+                      "Accepting an unverified certificate means " +
+                      "you may not be connected with the host you tried to connect to.\n" +
+                      "Do you wish to override the security check and continue?"
+        onYes: {
+            certErrors.shift().ignoreCertificateError()
+            presentError()
+        }
+        onNo: reject()
+        onRejected: reject()
 
-        standardButtons: StandardButton.Cancel | StandardButton.Ok
-        visible: false
-        title: "Do you want to accept this certificate?"
-
-        onAccepted: certError.ignoreCertificateError()
-        onRejected: certError.rejectCertificate()
+        function reject(){
+            certErrors.shift().rejectCertificate()
+            presentError()
+        }
+        function enqueue(error){
+            certErrors.push(error)
+            presentError()
+        }
+        function presentError(){
+            visible = certErrors.length > 0
+        }
     }
     DownloadView {
         id: downloadView

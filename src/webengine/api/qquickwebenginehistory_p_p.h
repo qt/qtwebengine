@@ -37,11 +37,13 @@
 #ifndef QQUICKWEBENGINEHISTORY_P_P_H
 #define QQUICKWEBENGINEHISTORY_P_P_H
 
+namespace QtWebEngineCore {
 class WebContentsAdapter;
-class QQuickWebEngineHistoryListModel;
-class QQuickWebEngineViewPrivate;
+}
 
 QT_BEGIN_NAMESPACE
+class QQuickWebEngineHistoryListModel;
+class QQuickWebEngineViewPrivate;
 
 class QQuickWebEngineHistoryListModelPrivate {
 public:
@@ -52,7 +54,7 @@ public:
     virtual int index(int) const;
     virtual int offsetForIndex(int) const;
 
-    WebContentsAdapter *adapter() const;
+    QtWebEngineCore::WebContentsAdapter *adapter() const;
 
     QQuickWebEngineViewPrivate *view;
 };

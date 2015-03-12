@@ -44,6 +44,8 @@
 #include <QTimer>
 #include <QTouchDevice>
 
+namespace QtWebEngineCore {
+
 static const int batchTimerTimeout = 0;
 
 class BatchTimer : public QTimer {
@@ -66,7 +68,6 @@ private Q_SLOTS:
 private:
     WebEngineSettings *m_settings;
 };
-
 
 static inline bool isTouchScreenAvailable() {
     static bool initialized = false;
@@ -309,5 +310,7 @@ void WebEngineSettings::setParentSettings(WebEngineSettings *_parentSettings)
     if (parentSettings)
         parentSettings->childSettings.insert(this);
 }
+
+} // namespace QtWebEngineCore
 
 #include "web_engine_settings.moc"

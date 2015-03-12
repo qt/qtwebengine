@@ -44,8 +44,9 @@
 #include "qtwebenginecoreglobal.h"
 #include <QtCore/QObject>
 
-
 QT_FORWARD_DECLARE_CLASS(QString)
+
+namespace QtWebEngineCore {
 
 class WebChannelIPCTransportHost : public QWebChannelAbstractTransport
         , public content::WebContentsObserver
@@ -61,5 +62,7 @@ private:
     bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
     void onWebChannelMessage(const std::vector<char> &message);
 };
+
+} // namespace
 
 #endif // WEB_CHANNEL_IPC_TRANSPORT_H

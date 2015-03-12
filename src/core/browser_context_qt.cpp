@@ -48,6 +48,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/proxy/proxy_config_service.h"
 
+namespace QtWebEngineCore {
+
 BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     : m_adapter(adapter)
 {
@@ -138,3 +140,5 @@ net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::Pr
     static_cast<ResourceContextQt*>(GetResourceContext())->set_url_request_context_getter(url_request_getter_.get());
     return url_request_getter_.get();
 }
+
+} // namespace QtWebEngineCore

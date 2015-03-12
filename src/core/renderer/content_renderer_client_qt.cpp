@@ -56,6 +56,8 @@
 
 #include "grit/renderer_resources.h"
 
+namespace QtWebEngineCore {
+
 static const char kHttpErrorDomain[] = "http";
 
 ContentRendererClientQt::ContentRendererClientQt()
@@ -139,3 +141,5 @@ bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
 {
     return m_visitedLinkSlave->IsVisited(linkHash);
 }
+
+} // namespace

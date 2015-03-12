@@ -40,4 +40,4 @@ namespace QtWebEngine {
 
 QWEBENGINE_EXPORT int processMain(int argc, const char **argv);
 
-}
+} // namespace

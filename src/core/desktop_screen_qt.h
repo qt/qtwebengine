@@ -41,6 +41,8 @@
 
 #include <QtGlobal>
 
+namespace QtWebEngineCore {
+
 class DesktopScreenQt : public gfx::Screen {
 public:
     // Overridden from gfx::Screen:
@@ -56,5 +58,7 @@ public:
     virtual void AddObserver(gfx::DisplayObserver* observer) Q_DECL_OVERRIDE;
     virtual void RemoveObserver(gfx::DisplayObserver* observer) Q_DECL_OVERRIDE;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // DESKTOP_SCREEN_QT_H

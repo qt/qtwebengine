@@ -43,6 +43,10 @@
 #include "user_script.h"
 #include "web_contents_adapter.h"
 
+namespace QtWebEngineCore {
+class UserScriptControllerHost;
+class WebContentsAdapter;
+} // namespace
 
 QT_BEGIN_NAMESPACE
 
@@ -51,12 +55,12 @@ public:
     Q_DECLARE_PUBLIC(QQuickWebEngineScript)
     QQuickWebEngineScriptPrivate();
     void aboutToUpdateUnderlyingScript();
-    void bind(UserScriptControllerHost *, WebContentsAdapter * = 0);
+    void bind(QtWebEngineCore::UserScriptControllerHost *, QtWebEngineCore::WebContentsAdapter * = 0);
 
-    UserScript coreScript;
+    QtWebEngineCore::UserScript coreScript;
     QBasicTimer m_basicTimer;
-    UserScriptControllerHost *m_controllerHost;
-    WebContentsAdapter *m_adapter;
+    QtWebEngineCore::UserScriptControllerHost *m_controllerHost;
+    QtWebEngineCore::WebContentsAdapter *m_adapter;
 
 private:
     QQuickWebEngineScript *q_ptr;

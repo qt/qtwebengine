@@ -45,10 +45,12 @@
 #include <QMap>
 #include <QSharedPointer>
 
-class JavaScriptDialogController;
 namespace content {
 class WebContents;
 }
+
+namespace QtWebEngineCore {
+class JavaScriptDialogController;
 
 class JavaScriptDialogManagerQt : public content::JavaScriptDialogManager
 {
@@ -75,6 +77,8 @@ private:
     QMap<content::WebContents *, QSharedPointer<JavaScriptDialogController> > m_activeDialogs;
 
 };
+
+} // namespace QtWebEngineCore
 
 #endif // JAVASCRIPT_DIALOG_MANAGER_QT_H
 

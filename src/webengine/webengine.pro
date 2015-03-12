@@ -48,4 +48,11 @@ HEADERS = \
         render_widget_host_view_qt_delegate_quickwindow.h \
         ui_delegates_manager.h
 
+isQMLTestSupportApiEnabled() {
+    SOURCES += api/qquickwebenginetestsupport.cpp
+    HEADERS += api/qquickwebenginetestsupport_p.h
+
+    DEFINES += ENABLE_QML_TESTSUPPORT_API
+}
+
 load(qt_module)

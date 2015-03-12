@@ -36,6 +36,8 @@
 
 #include "desktop_screen_qt.h"
 
+namespace QtWebEngineCore {
+
 gfx::Point DesktopScreenQt::GetCursorScreenPoint()
 {
     Q_UNREACHABLE();
@@ -98,3 +100,5 @@ void DesktopScreenQt::RemoveObserver(gfx::DisplayObserver* observer)
 {
     Q_UNREACHABLE();
 }
+
+} // namespace QtWebEngineCore

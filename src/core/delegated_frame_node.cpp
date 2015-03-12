@@ -76,6 +76,8 @@
 #include <EGL/eglext.h>
 #endif
 
+namespace QtWebEngineCore {
+
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize);
@@ -708,3 +710,4 @@ void DelegatedFrameNode::syncPointRetired(DelegatedFrameNode *frameNode, QList<M
         base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fetchTexturesAndUnlockQt, frameNode, mailboxesToFetch));
 }
 
+} // namespace QtWebEngineCore

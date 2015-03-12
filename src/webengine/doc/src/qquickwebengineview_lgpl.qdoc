@@ -206,6 +206,45 @@
 */
 
 /*!
+    \qmlmethod void WebEngineView::findText(string subString)
+    \since QtWebEngine 1.1
+    Finds the specified string, \a subString, in the page.
+
+    To clear the selection, just pass an empty string.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::findText(string subString, FindFlags options)
+    \since QtWebEngine 1.1
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    To clear the selection, just pass an empty string.
+
+    \code
+    findText("Qt", WebEngineView.FindBackward | WebEngineView.FindCaseSensitively);
+    \endcode
+*/
+
+/*!
+    \qmlmethod void WebEngineView::findText(string subString, FindFlags options, variant resultCallback)
+    \since QtWebEngine 1.1
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    To clear the selection, just pass an empty string.
+
+    The \a resultCallback must take a boolean parameter. It will be called with
+    a value of true if the \a subString was found; otherwise the callback value
+    will be false.
+
+    \code
+    findText("Qt", WebEngineView.FindCaseSensitively, function(success) {
+        if (success)
+            console.log("Qt was found!");
+    });
+    \endcode
+*/
+
+/*!
     \qmlsignal WebEngineView::loadingChanged(loadRequest)
 
     This signal is emitted when a page load begins, ends, or fails.
@@ -245,14 +284,13 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::linkHovered(hoveredUrl, hoveredTitle)
+    \qmlsignal WebEngineView::linkHovered(hoveredUrl)
 
     Within a mouse-driven interface, this signal is emitted when a mouse
     pointer passes over a link, corresponding to the \c{mouseover} DOM
     event. This event may also occur in touch interfaces for \c{mouseover}
     events that are not cancelled with \c{preventDefault()}. \a{hoveredUrl}
-    provides the link's location, and \a{hoveredTitle} is any available
-    link text.
+    provides the link's location.
 
     The corresponding handler is onLinkHovered.
 */
@@ -364,4 +402,17 @@
             The page expects to be opened in a tab of the same window, without hiding the currently visible WebEngineView.
 
     \sa WebEngineNewViewRequest::destination
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::FindFlags
+
+    This enum describes the options available to the findText() function. The options
+    can be OR-ed together from the following list:
+
+    \value FindBackward Searches backwards instead of forwards.
+    \value FindCaseSensitively By default findText() works case insensitive. Specifying
+            this option changes the behavior to a case sensitive find operation.
+
+    \sa WebEngineView::findText()
 */

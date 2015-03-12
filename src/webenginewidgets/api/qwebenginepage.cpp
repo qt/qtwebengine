@@ -44,6 +44,7 @@
 #include <QAuthenticator>
 #include <QClipboard>
 #include <QFileDialog>
+#include <QKeyEvent>
 #include <QIcon>
 #include <QInputDialog>
 #include <QLayout>
@@ -54,6 +55,8 @@
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
+
+using namespace QtWebEngineCore;
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
@@ -240,10 +243,14 @@ qreal QWebEnginePagePrivate::dpiScale() const
     return 1.0;
 }
 
-void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl)
+void QWebEnginePagePrivate::loadStarted(const QUrl &provisionalUrl, bool isErrorPage)
 {
-    Q_UNUSED(provisionalUrl)
+    Q_UNUSED(provisionalUrl);
     Q_Q(QWebEnginePage);
+
+    if (isErrorPage)
+        return;
+
     isLoading = true;
     Q_EMIT q->loadStarted();
     updateNavigationActions();
@@ -254,12 +261,16 @@ void QWebEnginePagePrivate::loadCommitted()
     updateNavigationActions();
 }
 
-void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, int errorCode, const QString &errorDescription)
+void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(url);
     Q_UNUSED(errorCode);
     Q_UNUSED(errorDescription);
+
+    if (isErrorPage)
+        return;
+
     isLoading = false;
     if (success)
         explicitUrl = QUrl();

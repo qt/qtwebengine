@@ -41,6 +41,8 @@
 #include <QtCore/QTimerEvent>
 #include "user_script_controller_host.h"
 
+using QtWebEngineCore::UserScript;
+
 QQuickWebEngineScript::QQuickWebEngineScript()
     : d_ptr(new QQuickWebEngineScriptPrivate)
 {
@@ -70,7 +72,7 @@ QString QQuickWebEngineScript::toString() const
     }
     ret.append(QString::number(d->coreScript.worldId()) % QStringLiteral(", ")
                % (d->coreScript.runsOnSubFrames() ? QStringLiteral("true") : QStringLiteral("false"))
-               % QStringLiteral(", ") % d->coreScript.source() % QLatin1Char(')'));
+               % QStringLiteral(", ") % d->coreScript.sourceCode() % QLatin1Char(')'));
     return ret;
 }
 
@@ -81,10 +83,10 @@ QString QQuickWebEngineScript::name() const
 }
 
 
-QString QQuickWebEngineScript::source() const
+QString QQuickWebEngineScript::sourceCode() const
 {
     Q_D(const QQuickWebEngineScript);
-    return d->coreScript.source();
+    return d->coreScript.sourceCode();
 }
 
 ASSERT_ENUMS_MATCH(QQuickWebEngineScript::Deferred, UserScript::AfterLoad)
@@ -122,16 +124,15 @@ void QQuickWebEngineScript::setName(QString arg)
     Q_EMIT nameChanged(arg);
 }
 
-void QQuickWebEngineScript::setSource(QString arg)
+void QQuickWebEngineScript::setSourceCode(QString arg)
 {
     Q_D(QQuickWebEngineScript);
-    if (arg == source())
+    if (arg == sourceCode())
         return;
     d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setSource(arg);
-    Q_EMIT sourceChanged(arg);
+    d->coreScript.setSourceCode(arg);
+    Q_EMIT sourceCodeChanged(arg);
 }
-
 
 void QQuickWebEngineScript::setInjectionPoint(QQuickWebEngineScript::InjectionPoint arg)
 {
@@ -178,7 +179,7 @@ void QQuickWebEngineScript::timerEvent(QTimerEvent *e)
     d->m_controllerHost->addUserScript(d->coreScript, d->m_adapter);
 }
 
-void QQuickWebEngineScriptPrivate::bind(UserScriptControllerHost *scriptController, WebContentsAdapter *adapter)
+void QQuickWebEngineScriptPrivate::bind(QtWebEngineCore::UserScriptControllerHost *scriptController, QtWebEngineCore::WebContentsAdapter *adapter)
 {
     aboutToUpdateUnderlyingScript();
     m_adapter = adapter;

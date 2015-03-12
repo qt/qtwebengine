@@ -50,6 +50,8 @@ QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
+namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 class FilePickerController;
 class JavaScriptDialogController;
@@ -143,10 +145,10 @@ public:
     virtual void selectionChanged() = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
-    virtual void loadStarted(const QUrl &provisionalUrl) = 0;
+    virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) = 0;
     virtual void loadCommitted() = 0;
     virtual void loadVisuallyCommitted() = 0;
-    virtual void loadFinished(bool success, const QUrl &url, int errorCode = 0, const QString &errorDescription = QString()) = 0;
+    virtual void loadFinished(bool success, const QUrl &url, bool isErrorPage = false, int errorCode = 0, const QString &errorDescription = QString()) = 0;
     virtual void focusContainer() = 0;
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
@@ -179,5 +181,7 @@ public:
     virtual BrowserContextAdapter* browserContextAdapter() = 0;
 
 };
+
+} // namespace QtWebEngineCore
 
 #endif // WEB_CONTENTS_ADAPTER_CLIENT_H

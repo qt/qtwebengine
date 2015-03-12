@@ -46,6 +46,8 @@
 #include <private/qquickwindow_p.h>
 #include <private/qsgcontext_p.h>
 
+namespace QtWebEngineCore {
+
 RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderWidgetHostViewQtDelegateClient *client, bool isPopup)
     : m_client(client)
     , m_isPopup(isPopup)
@@ -273,3 +275,5 @@ void RenderWidgetHostViewQtDelegateQuick::onWindowPosChanged()
 {
     m_client->windowBoundsChanged();
 }
+
+} // namespace QtWebEngineCore

@@ -41,6 +41,8 @@
 
 QT_FORWARD_DECLARE_CLASS(QString)
 
+namespace QtWebEngineCore {
+
 class JavaScriptDialogControllerPrivate;
 
 class QWEBENGINE_EXPORT JavaScriptDialogController : public QObject {
@@ -67,5 +69,7 @@ private:
     QScopedPointer<JavaScriptDialogControllerPrivate> d;
     friend class JavaScriptDialogManagerQt;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // JAVASCRIPT_DIALOG_CONTROLLER_H

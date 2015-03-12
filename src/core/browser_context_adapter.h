@@ -44,7 +44,10 @@
 #include <QString>
 #include <QVector>
 
+namespace QtWebEngineCore {
+
 class BrowserContextAdapterClient;
+
 class BrowserContextQt;
 class CustomUrlSchemeHandler;
 class DownloadManagerDelegateQt;
@@ -146,5 +149,7 @@ private:
 
     Q_DISABLE_COPY(BrowserContextAdapter)
 };
+
+} // namespace QtWebEngineCore
 
 #endif // BROWSER_CONTEXT_ADAPTER_H

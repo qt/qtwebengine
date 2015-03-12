@@ -43,11 +43,13 @@
 #include "content/public/common/geoposition.h"
 
 QT_FORWARD_DECLARE_CLASS(QThread)
-class QtPositioningHelper;
 
 namespace base {
 class MessageLoop;
 }
+
+namespace QtWebEngineCore {
+class QtPositioningHelper;
 
 class LocationProviderQt : public content::LocationProviderBase
 {
@@ -72,5 +74,7 @@ private:
     QtPositioningHelper *m_positioningHelper;
 };
 //#define QT_USE_POSITIONING 1
+
+} // namespace QtWebEngineCore
 
 #endif // LOCATION_PROVIDER_QT_H

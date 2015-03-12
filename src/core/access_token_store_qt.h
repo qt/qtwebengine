@@ -48,6 +48,8 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace QtWebEngineCore {
+
 class AccessTokenStoreQt : public content::AccessTokenStore {
 public:
     AccessTokenStoreQt();
@@ -66,5 +68,7 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN(AccessTokenStoreQt);
 };
+
+} // namespace QtWebEngineCore
 
 #endif  // ACCESS_TOKEN_STORE_QT_H

@@ -51,8 +51,11 @@ class DownloadItem;
 class WebContents;
 }
 
+namespace QtWebEngineCore {
 class BrowserContextAdapter;
 class DownloadManagerDelegateInstance;
+class DownloadTargetHelper;
+
 class DownloadManagerDelegateQt
         : public content::DownloadManagerDelegate
         , public content::DownloadItem::Observer
@@ -85,5 +88,7 @@ private:
     friend class DownloadManagerDelegateInstance;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);
 };
+
+} // namespace QtWebEngineCore
 
 #endif //DOWNLOAD_MANAGER_DELEGATE_QT_H

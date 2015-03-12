@@ -63,13 +63,15 @@
 #define MEMBER_DECLARATION(TYPE, COMPONENT) \
     QQmlComponent *COMPONENT##Component
 
-class JavaScriptDialogController;
-class FilePickerController;
 QT_BEGIN_NAMESPACE
 class QObject;
 class QQmlContext;
 class QQuickWebEngineView;
 QT_END_NAMESPACE
+
+namespace QtWebEngineCore {
+class JavaScriptDialogController;
+class FilePickerController;
 
 const char *defaultPropertyName(QObject *obj);
 
@@ -130,8 +132,10 @@ private:
 
     FOR_EACH_COMPONENT_TYPE(MEMBER_DECLARATION, SEMICOLON_SEPARATOR)
 
-    Q_DISABLE_COPY(UIDelegatesManager);
+    Q_DISABLE_COPY(UIDelegatesManager)
 
 };
+
+} // namespace QtWebEngineCore
 
 #endif // UI_DELEGATES_MANAGER_H

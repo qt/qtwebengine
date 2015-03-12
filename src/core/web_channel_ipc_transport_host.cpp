@@ -44,6 +44,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
+namespace QtWebEngineCore {
+
 WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *contents, QObject *parent)
     : QWebChannelAbstractTransport(parent)
     , content::WebContentsObserver(contents)
@@ -78,3 +80,5 @@ bool WebChannelIPCTransportHost::OnMessageReceived(const IPC::Message &message)
     IPC_END_MESSAGE_MAP()
     return handled;
 }
+
+} // namespace

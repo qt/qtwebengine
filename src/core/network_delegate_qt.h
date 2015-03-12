@@ -44,6 +44,8 @@
 #include <QSet>
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
+namespace QtWebEngineCore {
+
 class NetworkDelegateQt : public net::NetworkDelegate {
 public:
     NetworkDelegateQt() {}
@@ -72,5 +74,7 @@ public:
 
     QSet<net::URLRequest *> m_activeRequests;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // NETWORK_DELEGATE_QT_H

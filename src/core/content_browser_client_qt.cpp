@@ -80,6 +80,8 @@ QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 
+namespace QtWebEngineCore {
+
 namespace {
 
 ContentBrowserClientQt* gBrowserClient = 0; // Owned by ContentMainDelegateQt.
@@ -205,7 +207,7 @@ public:
 
     void PreMainMessageLoopStart() Q_DECL_OVERRIDE
     {
-        base::MessageLoop::InitMessagePumpForUIFactory(::messagePumpFactory);
+        base::MessageLoop::InitMessagePumpForUIFactory(messagePumpFactory);
     }
 
     void PreMainMessageLoopRun() Q_DECL_OVERRIDE
@@ -447,3 +449,5 @@ content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDele
 {
     return new DevToolsManagerDelegateQt;
 }
+
+} // namespace QtWebEngineCore

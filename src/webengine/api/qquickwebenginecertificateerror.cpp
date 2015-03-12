@@ -45,7 +45,8 @@ public:
           error(static_cast<QQuickWebEngineCertificateError::Error>(static_cast<int>(controller->error()))),
           description(controller->errorString()),
           overridable(controller->overridable()),
-          async(false)
+          async(false),
+          answered(false)
     {
     }
 
@@ -54,6 +55,7 @@ public:
     QString description;
     bool overridable;
     bool async;
+    bool answered;
 };
 
 
@@ -102,7 +104,9 @@ void QQuickWebEngineCertificateError::defer()
  */
 void QQuickWebEngineCertificateError::ignoreCertificateError()
 {
-    Q_D(const QQuickWebEngineCertificateError);
+    Q_D(QQuickWebEngineCertificateError);
+
+    d->answered = true;
 
     QSharedPointer<CertificateErrorController> strongRefCert = d->weakRefCertErrorController.toStrongRef();
     if (strongRefCert)
@@ -116,7 +120,9 @@ void QQuickWebEngineCertificateError::ignoreCertificateError()
  */
 void QQuickWebEngineCertificateError::rejectCertificate()
 {
-    Q_D(const QQuickWebEngineCertificateError);
+    Q_D(QQuickWebEngineCertificateError);
+
+    d->answered = true;
 
     QSharedPointer<CertificateErrorController> strongRefCert = d->weakRefCertErrorController.toStrongRef();
     if (strongRefCert)
@@ -167,6 +173,12 @@ bool QQuickWebEngineCertificateError::deferred() const
 {
     Q_D(const QQuickWebEngineCertificateError);
     return d->async;
+}
+
+bool QQuickWebEngineCertificateError::answered() const
+{
+    Q_D(const QQuickWebEngineCertificateError);
+    return d->answered;
 }
 
 QT_END_NAMESPACE

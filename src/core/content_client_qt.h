@@ -42,6 +42,8 @@
 #include "ui/base/layout.h"
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
+namespace QtWebEngineCore {
+
 class ContentClientQt : public content::ContentClient {
 public:
     static std::string getUserAgent();
@@ -51,5 +53,7 @@ public:
     virtual base::string16 GetLocalizedString(int message_id) const Q_DECL_OVERRIDE;
     virtual std::string GetProduct() const Q_DECL_OVERRIDE;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // CONTENT_CLIENT_QT_H

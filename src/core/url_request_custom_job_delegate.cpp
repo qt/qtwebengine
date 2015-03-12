@@ -41,6 +41,8 @@
 
 #include <QByteArray>
 
+namespace QtWebEngineCore {
+
 URLRequestCustomJobDelegate::URLRequestCustomJobDelegate(URLRequestCustomJob *job)
     : m_job(job)
 {
@@ -61,3 +63,4 @@ void URLRequestCustomJobDelegate::setReply(const QByteArray &contentType, QIODev
     m_job->setReplyDevice(device);
 }
 
+} // namespace

@@ -50,6 +50,11 @@
 #include "qquickwebengineprofile_p_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p_p.h"
+
+#ifdef ENABLE_QML_TESTSUPPORT_API
+#include "qquickwebenginetestsupport_p.h"
+#endif
+
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "ui_delegates_manager.h"
@@ -73,6 +78,7 @@
 #endif // QT_NO_ACCESSIBILITY
 
 QT_BEGIN_NAMESPACE
+using namespace QtWebEngineCore;
 
 #ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
@@ -90,6 +96,9 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_history(new QQuickWebEngineHistory(this))
     , m_profile(QQuickWebEngineProfile::defaultProfile())
     , m_settings(new QQuickWebEngineSettings(m_profile->settings()))
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    , m_testSupport(0)
+#endif
     , contextMenuExtraItems(0)
     , loadProgress(0)
     , m_isFullScreen(false)
@@ -221,6 +230,12 @@ void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const Q
 
 void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)
 {
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    if (m_testSupport) {
+        m_testSupport->testDialog(dialog);
+        return;
+    }
+#endif
     ui()->showDialog(dialog);
 }
 
@@ -228,12 +243,13 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
 {
     Q_Q(QQuickWebEngineView);
 
-    m_certificateErrorController = errorController;
     QQuickWebEngineCertificateError *quickController = new QQuickWebEngineCertificateError(errorController);
     QQmlEngine::setObjectOwnership(quickController, QQmlEngine::JavaScriptOwnership);
     Q_EMIT q->certificateError(quickController);
-    if (!quickController->deferred())
+    if (!quickController->deferred() && !quickController->answered())
         quickController->rejectCertificate();
+    else
+        m_certificateErrorControllers.append(errorController);
 }
 
 void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url)
@@ -300,11 +316,20 @@ qreal QQuickWebEngineViewPrivate::dpiScale() const
     return m_dpiScale;
 }
 
-void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl)
+void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool isErrorPage)
 {
     Q_Q(QQuickWebEngineView);
+    if (isErrorPage) {
+#ifdef ENABLE_QML_TESTSUPPORT_API
+        if (m_testSupport)
+            m_testSupport->errorPage()->loadStarted(provisionalUrl);
+#endif
+        return;
+    }
+
     isLoading = true;
     m_history->reset();
+    m_certificateErrorControllers.clear();
     QQuickWebEngineLoadRequest loadRequest(provisionalUrl, QQuickWebEngineView::LoadStartedStatus);
     Q_EMIT q->loadingChanged(&loadRequest);
 }
@@ -323,9 +348,18 @@ Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<i
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::CertificateErrorDomain) == static_cast<int>(QQuickWebEngineView::CertificateErrorDomain));
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::DnsErrorDomain) == static_cast<int>(QQuickWebEngineView::DnsErrorDomain));
 
-void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, int errorCode, const QString &errorDescription)
+void QQuickWebEngineViewPrivate::loadFinished(bool success, const QUrl &url, bool isErrorPage, int errorCode, const QString &errorDescription)
 {
     Q_Q(QQuickWebEngineView);
+
+    if (isErrorPage) {
+#ifdef ENABLE_QML_TESTSUPPORT_API
+        if (m_testSupport)
+            m_testSupport->errorPage()->loadFinished(success, url);
+#endif
+        return;
+    }
+
     isLoading = false;
     m_history->reset();
     if (errorCode == WebEngineError::UserAbortedError) {
@@ -400,12 +434,14 @@ void QQuickWebEngineViewPrivate::close()
 
 void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
 {
-    Q_EMIT e->fullScreenRequested(fullScreen);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineFullScreenRequest request(this, fullScreen);
+    Q_EMIT q->fullScreenRequested(request);
 }
 
 bool QQuickWebEngineViewPrivate::isFullScreen() const
 {
-    return e->isFullScreen();
+    return m_isFullScreen;
 }
 
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -701,6 +737,20 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     }
 }
 
+#ifdef ENABLE_QML_TESTSUPPORT_API
+QQuickWebEngineTestSupport *QQuickWebEngineView::testSupport() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->m_testSupport;
+}
+
+void QQuickWebEngineView::setTestSupport(QQuickWebEngineTestSupport *testSupport)
+{
+    Q_D(QQuickWebEngineView);
+    d->m_testSupport = testSupport;
+}
+#endif
+
 void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVariant &result)
 {
     Q_Q(QQuickWebEngineView);
@@ -780,15 +830,11 @@ qreal QQuickWebEngineView::zoomFactor() const
     return d->adapter->currentZoomFactor();
 }
 
-void QQuickWebEngineViewExperimental::setIsFullScreen(bool fullscreen)
-{
-    d_ptr->m_isFullScreen = fullscreen;
-    emit isFullScreenChanged();
-}
 
-bool QQuickWebEngineViewExperimental::isFullScreen() const
+bool QQuickWebEngineView::isFullScreen() const
 {
-    return d_ptr->m_isFullScreen;
+    Q_D(const QQuickWebEngineView);
+    return d->m_isFullScreen;
 }
 
 void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlComponent *contextMenuExtras)
@@ -804,7 +850,7 @@ QQmlComponent *QQuickWebEngineViewExperimental::extraContextMenuEntriesComponent
     return d_ptr->contextMenuExtraItems;
 }
 
-void QQuickWebEngineViewExperimental::findText(const QString &subString, FindFlags options, const QJSValue &callback)
+void QQuickWebEngineView::findText(const QString &subString, FindFlags options, const QJSValue &callback)
 {
     Q_D(QQuickWebEngineView);
     if (!d->adapter)
@@ -906,6 +952,15 @@ void QQuickWebEngineView::goBackOrForward(int offset)
     d->adapter->navigateToIndex(index);
 }
 
+void QQuickWebEngineView::fullScreenCancelled()
+{
+    Q_D(QQuickWebEngineView);
+    if (d->m_isFullScreen) {
+        d->m_isFullScreen = false;
+        Q_EMIT isFullScreenChanged();
+    }
+}
+
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
@@ -967,6 +1022,26 @@ void QQuickWebEngineView::componentComplete()
     Q_D(QQuickWebEngineView);
     QQuickItem::componentComplete();
     d->ensureContentsAdapter();
+}
+
+QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest()
+    : viewPrivate(0)
+    , m_toggleOn(false)
+{
+}
+
+QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, bool toggleOn)
+    : viewPrivate(viewPrivate)
+    , m_toggleOn(toggleOn)
+{
+}
+
+void QQuickWebEngineFullScreenRequest::accept()
+{
+    if (viewPrivate && viewPrivate->m_isFullScreen != m_toggleOn) {
+        viewPrivate->m_isFullScreen = m_toggleOn;
+        Q_EMIT viewPrivate->q_ptr->isFullScreenChanged();
+    }
 }
 
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)

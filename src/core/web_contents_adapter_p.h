@@ -44,14 +44,18 @@
 
 #include <QExplicitlySharedDataPointer>
 
+QT_FORWARD_DECLARE_CLASS(QWebChannel)
+
+class WebEngineContext;
+
+namespace QtWebEngineCore {
+
 class BrowserContextAdapter;
 class QtRenderViewObserverHost;
 class UserScriptControllerHost;
 class WebChannelIPCTransportHost;
 class WebContentsAdapterClient;
 class WebContentsDelegateQt;
-class WebEngineContext;
-QT_FORWARD_DECLARE_CLASS(QWebChannel)
 
 class WebContentsAdapterPrivate {
 public:
@@ -68,5 +72,7 @@ public:
     quint64 nextRequestId;
     int lastFindRequestId;
 };
+
+} // namespace QtWebEngineCore
 
 #endif // WEB_CONTENTS_ADAPTER_P_H

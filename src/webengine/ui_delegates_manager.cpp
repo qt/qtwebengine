@@ -52,6 +52,8 @@
 // Uncomment for QML debugging
 //#define UI_DELEGATES_DEBUG
 
+namespace QtWebEngineCore {
+
 #define NO_SEPARATOR
 #if defined(Q_OS_WIN)
 #define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
@@ -387,3 +389,5 @@ void UIDelegatesManager::showFilePicker(FilePickerController *controller)
 
     QMetaObject::invokeMethod(filePicker, "open");
 }
+
+} // namespace QtWebEngineCore

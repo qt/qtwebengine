@@ -36,6 +36,9 @@
 
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
+#include "qquickwebengineprofile_p_p.h"
+
+using QtWebEngineCore::BrowserContextAdapterClient;
 
 QT_BEGIN_NAMESPACE
 
