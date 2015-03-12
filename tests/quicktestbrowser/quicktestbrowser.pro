@@ -19,6 +19,7 @@ OTHER_FILES += ApplicationRoot.qml \
 RESOURCES += resources.qrc
 
 QT += qml quick webengine
+CONFIG += c++11
 
 qtHaveModule(widgets) {
     QT += widgets # QApplication is required to get native styling with QtQuickControls
