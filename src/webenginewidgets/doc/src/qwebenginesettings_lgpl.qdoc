@@ -107,8 +107,8 @@
         feature, which consists in the ability to navigate between focusable
         elements in a Web page, such as hyperlinks and form controls, by using
         Left, Right, Up and Down arrow keys. For example, if a user presses the
-        Right key, heuristics determine whether there is an element he might be
-        trying to reach towards the right and which element he probably wants.
+        Right key, heuristics determine whether there is an element they might be
+        trying to reach towards the right and which element they probably want.
         This is disabled by default.
     \value LocalContentCanAccessFileUrls Specifies whether locally loaded documents are
         allowed to access other local urls. This is enabled by default. For more information
