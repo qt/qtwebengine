@@ -49,64 +49,173 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
     : d_ptr(new WebEngineSettings(parentSettings ? parentSettings->d_ptr.data() : 0))
 { }
 
+/*!
+    \qmltype WebEngineSettings
+    \instantiates QQuickWebEngineSettings
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.1
+    \brief WebEngineSettings allows configuration of browser properties and attributes.
+
+    WebEngineSettings allows configuration of browser properties and generic attributes like for example
+    JavaScript, focus behavior and access to remote content.
+
+    Each WebEngineView can have individual settings.
+
+*/
+
+
 QQuickWebEngineSettings::~QQuickWebEngineSettings()
 { }
 
+/*!
+    \qmlproperty bool WebEngineSettings::autoLoadImages
+
+    Specifies whether images are automatically loaded in web pages.
+
+    This is enabled by default.
+*/
 bool QQuickWebEngineSettings::autoLoadImages() const
 {
     return d_ptr->testAttribute(WebEngineSettings::AutoLoadImages);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::javascriptEnabled
+
+    Enables or disables the running of JavaScript programs.
+
+    This is enabled by default.
+*/
 bool QQuickWebEngineSettings::javascriptEnabled() const
 {
     return d_ptr->testAttribute(WebEngineSettings::JavascriptEnabled);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::javascriptCanOpenWindows
+
+    Specifies whether JavaScript programs can open new windows.
+
+    This is enabled by default.
+*/
 bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 {
     return d_ptr->testAttribute(WebEngineSettings::JavascriptCanOpenWindows);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::javascriptCanAccessClipboard
+
+    Specifies whether JavaScript programs can read or write to the clipboard.
+
+    This is disabled by default.
+*/
 bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
 {
     return d_ptr->testAttribute(WebEngineSettings::JavascriptCanAccessClipboard);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::linksIncludedInFocusChain
+
+    Specifies whether hyperlinks should be included in the keyboard focus chain.
+
+    This is enabled by default.
+*/
 bool QQuickWebEngineSettings::linksIncludedInFocusChain() const
 {
     return d_ptr->testAttribute(WebEngineSettings::LinksIncludedInFocusChain);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::localStorageEnabled
+
+    Specifies whether support for the HTML 5 local storage feature is enabled or not.
+
+    This is enabled by default.
+*/
 bool QQuickWebEngineSettings::localStorageEnabled() const
 {
     return d_ptr->testAttribute(WebEngineSettings::LocalStorageEnabled);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::localContentCanAccessRemoteUrls
+
+    Specifies whether locally loaded documents are allowed to access remote urls.
+    For more information about security origins and local vs. remote content see QWebEngineSecurityOrigin.
+
+    This is disabled by default.
+*/
 bool QQuickWebEngineSettings::localContentCanAccessRemoteUrls() const
 {
     return d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessRemoteUrls);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::spatialNavigationEnabled
+
+    Enables or disables the Spatial Navigation feature, which consists in the
+    ability to navigate between focusable elements in a Web page, such as hyperlinks
+    and form controls, by using Left, Right, Up and Down arrow keys.
+
+    For example, if a user presses the Right key, heuristics determine whether there
+    is an element they might be trying to reach towards the right and which element
+    they probably want.
+
+    This is disabled by default.
+
+*/
 bool QQuickWebEngineSettings::spatialNavigationEnabled() const
 {
     return d_ptr->testAttribute(WebEngineSettings::SpatialNavigationEnabled);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::localContentCanAccessFileUrls
+
+    Specifies whether locally loaded documents are allowed to access other local urls.
+    For more information about security origins and local vs. remote content see QWebEngineSecurityOrigin.
+
+    This is enabled by default.
+*/
 bool QQuickWebEngineSettings::localContentCanAccessFileUrls() const
 {
     return d_ptr->testAttribute(WebEngineSettings::LocalContentCanAccessFileUrls);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::hyperlinkAuditingEnabled
+
+    This setting enables support for the ping attribute for hyperlinks.
+
+    It is disabled by default.
+*/
 bool QQuickWebEngineSettings::hyperlinkAuditingEnabled() const
 {
     return d_ptr->testAttribute(WebEngineSettings::HyperlinkAuditingEnabled);
 }
 
+/*!
+    \qmlproperty bool WebEngineSettings::errorPageEnabled
+
+    This setting enables built-in error pages of Chromium.
+
+    It is enabled by default.
+*/
 bool QQuickWebEngineSettings::errorPageEnabled() const
 {
     return d_ptr->testAttribute(WebEngineSettings::ErrorPageEnabled);
 }
 
+/*!
+    \qmlproperty QString WebEngineSettings::defaultTextEncoding
+
+    The \a encoding, must be a string describing an encoding such as "utf-8",
+    "iso-8859-1", etc.
+
+    If left empty a default value will be used.
+*/
 QString QQuickWebEngineSettings::defaultTextEncoding() const
 {
     return d_ptr->defaultTextEncoding();
