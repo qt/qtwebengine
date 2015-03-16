@@ -9,6 +9,8 @@ QML_FILES += \
     # Menus. Based on Qt Quick Controls
     Menu.qml \
     MenuItem.qml \
-    MenuSeparator.qml
+    MenuSeparator.qml \
+    # Message Bubble
+    MessageBubble.qml
 
 load(qml_module)

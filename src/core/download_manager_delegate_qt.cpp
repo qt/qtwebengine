@@ -127,7 +127,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
     }
 
     item->AddObserver(this);
-    if (m_contextAdapter->client()) {
+    QList<BrowserContextAdapterClient*> clients = m_contextAdapter->clients();
+    if (!clients.isEmpty()) {
         BrowserContextAdapterClient::DownloadItemInfo info = {
             item->GetId(),
             toQt(item->GetURL()),
@@ -137,7 +138,12 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             suggestedFilePath,
             false /* accepted */
         };
-        m_contextAdapter->client()->downloadRequested(info);
+
+        Q_FOREACH (BrowserContextAdapterClient *client, clients) {
+            client->downloadRequested(info);
+            if (info.accepted)
+                break;
+        }
 
         suggestedFile.setFile(info.path);
 
@@ -173,7 +179,8 @@ void DownloadManagerDelegateQt::GetSaveDir(content::BrowserContext* browser_cont
 
 void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *download)
 {
-    if (m_contextAdapter->client()) {
+    QList<BrowserContextAdapterClient*> clients = m_contextAdapter->clients();
+    if (!clients.isEmpty()) {
         BrowserContextAdapterClient::DownloadItemInfo info = {
             download->GetId(),
             toQt(download->GetURL()),
@@ -183,7 +190,10 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             QString(),
             true /* accepted */
         };
-        m_contextAdapter->client()->downloadUpdated(info);
+
+        Q_FOREACH (BrowserContextAdapterClient *client, clients) {
+            client->downloadUpdated(info);
+        }
     }
 }
 

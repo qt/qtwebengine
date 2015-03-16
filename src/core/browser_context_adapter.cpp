@@ -72,7 +72,6 @@ BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
     , m_httpCacheType(DiskHttpCache)
     , m_persistentCookiesPolicy(AllowPersistentCookies)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
-    , m_client(0)
     , m_httpCacheMaxSize(0)
 {
 }
@@ -133,9 +132,14 @@ DownloadManagerDelegateQt *BrowserContextAdapter::downloadManagerDelegate()
     return m_downloadManagerDelegate.data();
 }
 
-void BrowserContextAdapter::setClient(BrowserContextAdapterClient *adapterClient)
+void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
 {
-    m_client = adapterClient;
+    m_clients.append(adapterClient);
+}
+
+void BrowserContextAdapter::removeClient(BrowserContextAdapterClient *adapterClient)
+{
+    m_clients.removeOne(adapterClient);
 }
 
 void BrowserContextAdapter::cancelDownload(quint32 downloadId)
@@ -148,9 +152,9 @@ BrowserContextAdapter* BrowserContextAdapter::defaultContext()
     return WebEngineContext::current()->defaultBrowserContext();
 }
 
-BrowserContextAdapter* BrowserContextAdapter::offTheRecordContext()
+QObject* BrowserContextAdapter::globalQObjectRoot()
 {
-    return WebEngineContext::current()->offTheRecordBrowserContext();
+    return WebEngineContext::current()->globalQObject();
 }
 
 QString BrowserContextAdapter::dataPath() const

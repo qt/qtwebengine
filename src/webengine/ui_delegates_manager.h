@@ -54,7 +54,8 @@
     F(AlertDialog, alertDialog) SEPARATOR \
     F(ConfirmDialog, confirmDialog) SEPARATOR \
     F(PromptDialog, promptDialog) SEPARATOR \
-    F(FilePicker, filePicker) SEPARATOR
+    F(FilePicker, filePicker) SEPARATOR \
+    F(MessageBubble, messageBubble) SEPARATOR
 
 #define COMMA_SEPARATOR ,
 #define SEMICOLON_SEPARATOR ;
@@ -66,6 +67,7 @@
 QT_BEGIN_NAMESPACE
 class QObject;
 class QQmlContext;
+class QQuickItem;
 class QQuickWebEngineView;
 QT_END_NAMESPACE
 
@@ -124,11 +126,15 @@ public:
     QQmlContext *creationContextForComponent(QQmlComponent *);
     void showDialog(QSharedPointer<JavaScriptDialogController>);
     void showFilePicker(FilePickerController *controller);
+    void showMessageBubble(const QRect &anchor, const QString &mainText, const QString &subText);
+    void hideMessageBubble();
+    void moveMessageBubble(const QRect &anchor);
 
 private:
     bool ensureComponentLoaded(ComponentType);
 
     QQuickWebEngineView *m_view;
+    QScopedPointer<QQuickItem> m_messageBubbleItem;
 
     FOR_EACH_COMPONENT_TYPE(MEMBER_DECLARATION, SEMICOLON_SEPARATOR)
 

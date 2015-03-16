@@ -107,7 +107,7 @@ Q_SIGNALS:
 
 private:
     Q_DECLARE_PRIVATE(QWebEngineProfile)
-    QWebEngineProfile(QWebEngineProfilePrivate *);
+    QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = 0);
 
     friend class QWebEnginePagePrivate;
     friend class QWebEngineUrlSchemeHandler;
