@@ -767,6 +767,20 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
     args.append(QJSValue(matchCount));
     callback.call(args);
 }
+void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText)
+{
+    ui()->showMessageBubble(anchor, mainText, subText);
+}
+
+void QQuickWebEngineViewPrivate::hideValidationMessage()
+{
+    ui()->hideMessageBubble();
+}
+
+void QQuickWebEngineViewPrivate::moveValidationMessage(const QRect &anchor)
+{
+    ui()->moveMessageBubble(anchor);
+}
 
 bool QQuickWebEngineView::isLoading() const
 {

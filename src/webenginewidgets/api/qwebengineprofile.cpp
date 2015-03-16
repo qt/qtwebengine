@@ -102,15 +102,12 @@ using QtWebEngineCore::BrowserContextAdapter;
   \sa QWebEngineDownloadItem
 */
 
-QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext, bool ownsContext)
+QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
         : scriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userScriptController()))
         , m_settings(new QWebEngineSettings())
-        , m_browserContext(browserContext)
+        , m_browserContextRef(browserContext)
 {
-    if (ownsContext)
-        m_browserContextRef = browserContext;
-
-    m_browserContext->setClient(this);
+    m_browserContextRef->addClient(this);
     m_settings->d_ptr->initDefaults(browserContext->isOffTheRecord());
 }
 
@@ -118,7 +115,7 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 {
     delete m_settings;
     m_settings = 0;
-    m_browserContext->setClient(0);
+    m_browserContextRef->removeClient(this);
 
     Q_FOREACH (QWebEngineDownloadItem* download, m_ongoingDownloads) {
         if (download)
@@ -130,7 +127,7 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
 
 void QWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
 {
-    m_browserContext->cancelDownload(downloadId);
+    browserContext()->cancelDownload(downloadId);
 }
 
 void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
@@ -196,7 +193,7 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 */
 QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(true), true))
+    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(false)))
 {
     d_ptr->q_ptr = this;
 }
@@ -213,15 +210,16 @@ QWebEngineProfile::QWebEngineProfile(QObject *parent)
 */
 QWebEngineProfile::QWebEngineProfile(const QString &storageName, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(storageName), true))
+    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(storageName)))
 {
     d_ptr->q_ptr = this;
 }
 
 /*! \internal
 */
-QWebEngineProfile::QWebEngineProfile(QWebEngineProfilePrivate *privatePtr)
-    : d_ptr(privatePtr)
+QWebEngineProfile::QWebEngineProfile(QWebEngineProfilePrivate *privatePtr, QObject *parent)
+    : QObject(parent)
+    , d_ptr(privatePtr)
 {
     d_ptr->q_ptr = this;
 }
@@ -455,8 +453,10 @@ QWebEngineScriptCollection &QWebEngineProfile::scripts()
 */
 QWebEngineProfile *QWebEngineProfile::defaultProfile()
 {
-    static QWebEngineProfile profile(new QWebEngineProfilePrivate(BrowserContextAdapter::defaultContext(), false));
-    return &profile;
+    static QWebEngineProfile* profile = new QWebEngineProfile(
+                new QWebEngineProfilePrivate(BrowserContextAdapter::defaultContext()),
+                BrowserContextAdapter::globalQObjectRoot());
+    return profile;
 }
 
 /*!

@@ -40,6 +40,10 @@
 #include "qwebenginepage_p.h"
 #include "web_contents_adapter.h"
 
+#ifdef QT_UI_DELEGATES
+#include "ui/messagebubblewidget_p.h"
+#endif
+
 #include <QAction>
 #include <QMenu>
 #include <QContextMenuEvent>
@@ -118,6 +122,10 @@ QWebEngineView::~QWebEngineView()
 {
     Q_D(QWebEngineView);
     QWebEngineViewPrivate::bind(0, d->page);
+
+#ifdef QT_UI_DELEGATES
+    QtWebEngineWidgetUI::MessageBubbleWidget::hideBubble();
+#endif
 }
 
 QWebEnginePage* QWebEngineView::page() const

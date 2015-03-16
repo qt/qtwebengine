@@ -138,6 +138,9 @@ bool usingQtQuick2DRenderer()
 
 WebEngineContext::~WebEngineContext()
 {
+    m_defaultBrowserContext = 0;
+    delete m_globalQObject;
+    m_globalQObject = 0;
     base::MessagePump::Delegate *delegate = m_runLoop->loop_;
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
@@ -162,11 +165,9 @@ BrowserContextAdapter* WebEngineContext::defaultBrowserContext()
     return m_defaultBrowserContext.data();
 }
 
-BrowserContextAdapter* WebEngineContext::offTheRecordBrowserContext()
+QObject *WebEngineContext::globalQObject()
 {
-    if (!m_offTheRecordBrowserContext)
-        m_offTheRecordBrowserContext = new BrowserContextAdapter(true);
-    return m_offTheRecordBrowserContext.data();
+    return m_globalQObject;
 }
 
 #ifndef CHROMIUM_VERSION
@@ -178,6 +179,7 @@ WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_contentRunner(content::ContentMainRunner::Create())
     , m_browserRunner(content::BrowserMainRunner::Create())
+    , m_globalQObject(new QObject())
 {
     QList<QByteArray> args;
     Q_FOREACH (const QString& arg, QCoreApplication::arguments())

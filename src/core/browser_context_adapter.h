@@ -39,15 +39,17 @@
 
 #include "qtwebenginecoreglobal.h"
 
+#include <QList>
 #include <QScopedPointer>
 #include <QSharedData>
 #include <QString>
 #include <QVector>
 
+QT_FORWARD_DECLARE_CLASS(QObject)
+
 namespace QtWebEngineCore {
 
 class BrowserContextAdapterClient;
-
 class BrowserContextQt;
 class CustomUrlSchemeHandler;
 class DownloadManagerDelegateQt;
@@ -62,14 +64,15 @@ public:
     virtual ~BrowserContextAdapter();
 
     static BrowserContextAdapter* defaultContext();
-    static BrowserContextAdapter* offTheRecordContext();
+    static QObject* globalQObjectRoot();
 
     WebEngineVisitedLinksManager *visitedLinksManager();
     DownloadManagerDelegateQt *downloadManagerDelegate();
 
-    BrowserContextAdapterClient* client() { return m_client; }
+    QList<BrowserContextAdapterClient*> clients() { return m_clients; }
+    void addClient(BrowserContextAdapterClient *adapterClient);
+    void removeClient(BrowserContextAdapterClient *adapterClient);
 
-    void setClient(BrowserContextAdapterClient *adapterClient);
     void cancelDownload(quint32 downloadId);
 
     BrowserContextQt *browserContext();
@@ -144,7 +147,7 @@ private:
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
     QVector<CustomUrlSchemeHandler*> m_customUrlSchemeHandlers;
-    BrowserContextAdapterClient *m_client;
+    QList<BrowserContextAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
 
     Q_DISABLE_COPY(BrowserContextAdapter)

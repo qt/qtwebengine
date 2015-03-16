@@ -72,6 +72,7 @@ ApplicationWindow {
     title: currentWebView && currentWebView.title
 
     Settings {
+        id : appSettings
         property alias autoLoadImages: loadImages.checked;
         property alias javaScriptEnabled: javaScriptEnabled.checked;
         property alias errorPageEnabled: errorPageEnabled.checked;
@@ -244,22 +245,19 @@ ApplicationWindow {
                             id: loadImages
                             text: "Autoload images"
                             checkable: true
-                            checked: WebEngine.settings.autoLoadImages
-                            onCheckedChanged: WebEngine.settings.autoLoadImages = checked
+                            checked: true
                         }
                         MenuItem {
                             id: javaScriptEnabled
                             text: "JavaScript On"
                             checkable: true
-                            checked: WebEngine.settings.javascriptEnabled
-                            onCheckedChanged: WebEngine.settings.javascriptEnabled = checked
+                            checked: true
                         }
                         MenuItem {
                             id: errorPageEnabled
                             text: "ErrorPage On"
                             checkable: true
-                            checked: WebEngine.settings.errorPageEnabled
-                            onCheckedChanged: WebEngine.settings.errorPageEnabled = checked
+                            checked: true
                         }
                         MenuItem {
                             id: offTheRecordEnabled
@@ -359,6 +357,9 @@ ApplicationWindow {
                             }
                         }
                     ]
+                    settings.autoLoadImages: appSettings.autoLoadImages
+                    settings.javascriptEnabled: appSettings.javaScriptEnabled
+                    settings.errorPageEnabled: appSettings.errorPageEnabled
 
                     onCertificateError: {
                         if (!acceptedCertificates.shouldAutoAccept(error)){

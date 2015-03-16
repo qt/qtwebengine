@@ -147,6 +147,9 @@ public:
 #endif // QT_NO_ACCESSIBILITY
     virtual QtWebEngineCore::WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &controller) Q_DECL_OVERRIDE;
+    virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) Q_DECL_OVERRIDE;
+    virtual void hideValidationMessage() Q_DECL_OVERRIDE;
+    virtual void moveValidationMessage(const QRect &anchor) Q_DECL_OVERRIDE;
 
     virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 
