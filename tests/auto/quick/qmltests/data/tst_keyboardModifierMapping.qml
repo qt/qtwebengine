@@ -49,7 +49,7 @@ TestWebEngineView {
     height: 300
 
     SignalSpy {
-        id: spy
+        id: titleSpy
         target: webEngineView
         signalName: "titleChanged"
     }
@@ -68,10 +68,12 @@ TestWebEngineView {
         function test_keyboardModifierMapping() {
             webEngineView.url = Qt.resolvedUrl("keyboardModifierMapping.html")
             waitForLoadSucceeded();
+            titleSpy.wait()
             var callbackCalled = false;
 
             // Alt
             keyPress(Qt.Key_Alt);
+            titleSpy.wait()
             runJavaScript("getPressedModifiers()", function(result) {
                     compare(result, "alt:pressed ctrl:no meta:no");
                     callbackCalled = true;
@@ -79,6 +81,7 @@ TestWebEngineView {
             wait(100);
             verify(callbackCalled);
             keyRelease(Qt.Key_Alt)
+            titleSpy.wait()
             callbackCalled = false;
 
             // Ctrl
@@ -87,6 +90,7 @@ TestWebEngineView {
             // so we have to do this here manually.
             // For testing we assume that the flag Qt::AA_MacDontSwapCtrlAndMeta is NOT set.
             keyPress(Qt.platform.os == "osx" ? Qt.Key_Meta : Qt.Key_Control);
+            titleSpy.wait()
             runJavaScript("getPressedModifiers()", function(result) {
                     compare(result, "alt:released ctrl:pressed meta:no");
                     callbackCalled = true;
@@ -94,10 +98,12 @@ TestWebEngineView {
             wait(100);
             verify(callbackCalled);
             keyRelease(Qt.platform.os == "osx" ? Qt.Key_Meta : Qt.Key_Control);
+            titleSpy.wait()
             callbackCalled = false;
 
             // Meta (Command on Mac)
             keyPress(Qt.platform.os == "osx" ? Qt.Key_Control : Qt.Key_Meta);
+            titleSpy.wait()
             runJavaScript("getPressedModifiers()", function(result) {
                     compare(result, "alt:released ctrl:released meta:pressed");
                     callbackCalled = true;
@@ -105,6 +111,7 @@ TestWebEngineView {
             wait(100);
             verify(callbackCalled);
             keyRelease(Qt.platform.os == "osx" ? Qt.Key_Control : Qt.Key_Meta);
+            titleSpy.wait()
             callbackCalled = false;
 
             runJavaScript("getPressedModifiers()", function(result) {

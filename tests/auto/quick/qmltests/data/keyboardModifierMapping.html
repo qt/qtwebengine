@@ -15,6 +15,7 @@ document.body.onkeydown = function(e) {
     if (e.metaKey)
         meta_state.textContent = 'pressed'
     last_keycode.textContent = e.keyCode
+    document.title = "Key pressed";
 };
 document.body.onkeyup = function(e) {
     if (e.altKey)
@@ -24,6 +25,7 @@ document.body.onkeyup = function(e) {
     if (e.metaKey)
         meta_state.textContent = 'released'
     last_keycode.textContent = e.keyCode
+    document.title = "Key released";
 };
 
 function getPressedModifiers() {
