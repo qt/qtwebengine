@@ -454,6 +454,13 @@ void WebContentsAdapter::reload()
     d->webContents->Focus();
 }
 
+void WebContentsAdapter::reloadAndBypassCache()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->GetController().ReloadIgnoringCache(/*checkRepost = */false);
+    d->webContents->Focus();
+}
+
 void WebContentsAdapter::load(const QUrl &url)
 {
     // The situation can occur when relying on the editingFinished signal in QML to set the url

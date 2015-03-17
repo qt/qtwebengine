@@ -665,6 +665,14 @@ void QQuickWebEngineView::reload()
     d->adapter->reload();
 }
 
+void QQuickWebEngineView::reloadAndBypassCache()
+{
+    Q_D(QQuickWebEngineView);
+    if (!d->adapter)
+        return;
+    d->adapter->reloadAndBypassCache();
+}
+
 void QQuickWebEngineView::stop()
 {
     Q_D(QQuickWebEngineView);
