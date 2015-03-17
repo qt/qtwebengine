@@ -50,6 +50,7 @@
 #include "web_engine_settings.h"
 #include "web_engine_visited_links_manager.h"
 
+#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
@@ -61,6 +62,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
+#include "ui/events/latency_info.h"
 
 namespace QtWebEngineCore {
 
@@ -116,9 +118,13 @@ void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* s
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
+    Q_UNUSED(source)
     WebContentsAdapter *newAdapter = createWindow(new_contents, disposition, initial_pos, user_gesture);
     if (was_blocked)
         *was_blocked = !newAdapter;
+
+    if (content::RenderWidgetHostImpl *impl = content::RenderWidgetHostImpl::From(new_contents->GetRenderViewHost()))
+        impl->WasShown(ui::LatencyInfo());
 }
 
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)

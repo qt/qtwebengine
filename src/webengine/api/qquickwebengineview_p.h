@@ -99,6 +99,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_ENUMS(LoadStatus);
     Q_ENUMS(ErrorDomain);
     Q_ENUMS(NewViewDestination);
+    Q_ENUMS(Feature);
     Q_ENUMS(JavaScriptConsoleMessageLevel);
     Q_FLAGS(FindFlags);
 
@@ -162,6 +163,13 @@ public:
         NewViewInBackgroundTab
     };
 
+    enum Feature {
+        MediaAudioCapture,
+        MediaVideoCapture,
+        MediaAudioVideoCapture,
+        Geolocation
+    };
+
     // must match WebContentsAdapterClient::JavaScriptConsoleMessageLevel
     enum JavaScriptConsoleMessageLevel {
         InfoMessageLevel = 0,
@@ -202,6 +210,7 @@ public Q_SLOTS:
     void stop();
     Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
     Q_REVISION(1) void fullScreenCancelled();
+    Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
 
 Q_SIGNALS:
     void titleChanged();
@@ -215,6 +224,7 @@ Q_SIGNALS:
     Q_REVISION(1) void certificateError(QQuickWebEngineCertificateError *error);
     Q_REVISION(1) void fullScreenRequested(const QQuickWebEngineFullScreenRequest &request);
     Q_REVISION(1) void isFullScreenChanged();
+    Q_REVISION(1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
     Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
     Q_REVISION(1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1) void webChannelChanged();

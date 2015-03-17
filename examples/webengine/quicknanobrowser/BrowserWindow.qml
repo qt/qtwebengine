@@ -78,6 +78,7 @@ ApplicationWindow {
     property bool platformIsMac: styleItem.style == "mac"
 
     Settings {
+        id : appSettings
         property alias autoLoadImages: loadImages.checked;
         property alias javaScriptEnabled: javaScriptEnabled.checked;
         property alias errorPageEnabled: errorPageEnabled.checked;
@@ -124,6 +125,7 @@ ApplicationWindow {
         shortcut: "Ctrl+T"
         onTriggered: {
             tabs.createEmptyTab()
+            tabs.currentIndex = tabs.count - 1
             addressBar.forceActiveFocus();
             addressBar.selectAll();
         }
@@ -230,21 +232,18 @@ ApplicationWindow {
                             text: "Autoload images"
                             checkable: true
                             checked: WebEngine.settings.autoLoadImages
-                            onCheckedChanged: WebEngine.settings.autoLoadImages = checked
                         }
                         MenuItem {
                             id: javaScriptEnabled
                             text: "JavaScript On"
                             checkable: true
                             checked: WebEngine.settings.javascriptEnabled
-                            onCheckedChanged: WebEngine.settings.javascriptEnabled = checked
                         }
                         MenuItem {
                             id: errorPageEnabled
                             text: "ErrorPage On"
                             checkable: true
                             checked: WebEngine.settings.errorPageEnabled
-                            onCheckedChanged: WebEngine.settings.errorPageEnabled = checked
                         }
                         MenuItem {
                             id: offTheRecordEnabled
@@ -286,7 +285,7 @@ ApplicationWindow {
         function createEmptyTab() {
             var tab = addTab("", tabComponent)
             // We must do this first to make sure that tab.active gets set so that tab.item gets instantiated immediately.
-            tabs.currentIndex = tabs.count - 1
+            tab.active = true
             tab.title = Qt.binding(function() { return tab.item.title })
             return tab
         }
@@ -324,6 +323,9 @@ ApplicationWindow {
                         }
                     }
                 ]
+                settings.autoLoadImages: appSettings.autoLoadImages
+                settings.javascriptEnabled: appSettings.javaScriptEnabled
+                settings.errorPageEnabled: appSettings.errorPageEnabled
 
                 onCertificateError: {
                     error.defer()
@@ -334,6 +336,10 @@ ApplicationWindow {
                     if (!request.userInitiated)
                         print("Warning: Blocked a popup window.")
                     else if (request.destination == WebEngineView.NewViewInTab) {
+                        var tab = tabs.createEmptyTab()
+                        tabs.currentIndex = tabs.count - 1
+                        request.openIn(tab.item)
+                    } else if (request.destination == WebEngineView.NewViewInBackgroundTab) {
                         var tab = tabs.createEmptyTab()
                         request.openIn(tab.item)
                     } else if (request.destination == WebEngineView.NewViewInDialog) {
