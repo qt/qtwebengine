@@ -39,6 +39,7 @@
 
 #include "qtwebenginecoreglobal.h"
 #include <QObject>
+#include <QStringList>
 
 namespace content {
     class WebContents;
