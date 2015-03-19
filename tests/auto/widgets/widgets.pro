@@ -10,3 +10,4 @@ SUBDIRS += \
     qwebengineview \
     qwebenginehistory \
     qwebengineinspector \
+    qwebenginescript \

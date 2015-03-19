@@ -58,17 +58,17 @@ void tst_QWebEngineScript::domEditing()
     QWebEngineScript s;
     s.setInjectionPoint(QWebEngineScript::DocumentReady);
     s.setWorldId(QWebEngineScript::ApplicationWorld + 1);
-    s.setSourceCode("el = document.createElement(\"div\");"\
-                "el.id = \"banner\";"\
-                "el.style.position = \"absolute\";"\
-                "el.style.width = \"100%\";"\
-                "el.style.padding = \"1em\";"\
-                "el.style.textAlign = \"center\";"\
-                "el.style.top = \"0\";"\
-                "el.style.left = \"0\";"\
-                "el.style.backgroundColor = \"#80C342\";"\
-                "el.innerText = \"Injected banner\";"
-                "document.body.appendChild(el);");
+    s.setSourceCode("el = document.createElement(\"div\");\
+                el.id = \"banner\";\
+                el.style.position = \"absolute\";\
+                el.style.width = \"100%\";\
+                el.style.padding = \"1em\";\
+                el.style.textAlign = \"center\";\
+                el.style.top = \"0\";\
+                el.style.left = \"0\";\
+                el.style.backgroundColor = \"#80C342\";\
+                el.innerText = \"Injected banner\";\
+                document.body.appendChild(el);");
     page.scripts().insert(s);
     page.load(QUrl("about:blank"));
     view.show();
@@ -91,10 +91,10 @@ void tst_QWebEngineScript::injectionPoint()
     WebEnginePage page;
     page.scripts().insert(s);
     page.setHtml(QStringLiteral("<html><head><script> var contents;") + testScript
-                 + QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {"\
-                                  "document.body.innerText = contents;"\
-                                  "}, 550));"\
-                                  "</script></head><body></body></html>"));
+                 + QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {\
+                                   document.body.innerText = contents;\
+                                   }, 550));\
+                                   </script></head><body></body></html>"));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QTest::qWait(550);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
@@ -108,13 +108,13 @@ void tst_QWebEngineScript::injectionPoint_data()
                                       << QStringLiteral("var contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";");
     QTest::newRow("DocumentReady") << static_cast<int>(QWebEngineScript::DocumentReady)
     // use a zero timeout to make sure the user script got a chance to run as the order is undefined.
-                                   << QStringLiteral("document.addEventListener(\"DOMContentLoaded\", setTimeout(function(event) {"\
-                                                     "contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";"\
-                                                     "}, 0));");
+                                   << QStringLiteral("document.addEventListener(\"DOMContentLoaded\", setTimeout(function(event) {\
+                                                      contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
+                                                      }, 0));");
     QTest::newRow("Deferred") << static_cast<int>(QWebEngineScript::Deferred)
-                              << QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {"\
-                                                "contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";"\
-                                                "}, 500));");
+                              << QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {\
+                                                 contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
+                                                 }, 500));");
 }
 
 void tst_QWebEngineScript::scriptWorld()
@@ -145,9 +145,9 @@ void tst_QWebEngineScript::scriptModifications()
     script.setWorldId(QWebEngineScript::MainWorld);
     script.setSourceCode("var foo = \"SUCCESS\";");
     page.scripts().insert(script);
-    page.setHtml(QStringLiteral("<html><head><script>document.addEventListener(\"DOMContentLoaded\", function() {"\
-                                "document.body.innerText = foo;});"\
-                                "</script></head><body></body></html>"));
+    page.setHtml(QStringLiteral("<html><head><script>document.addEventListener(\"DOMContentLoaded\", function() {\
+                                 document.body.innerText = foo;});\
+                                 </script></head><body></body></html>"));
     QVERIFY(page.scripts().count() == 1);
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
