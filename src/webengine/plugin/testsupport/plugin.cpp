@@ -55,8 +55,6 @@ public:
         qmlRegisterType<QQuickWebEngineTestSupport>(uri, 1, 0, "WebEngineTestSupport");
         qmlRegisterUncreatableType<QQuickWebEngineErrorPage>(uri, 1, 0, "WebEngineErrorPage",
             QObject::tr("Cannot create a separate instance of WebEngineErrorPage"));
-        qmlRegisterUncreatableType<QQuickWebEngineJavaScriptDialog>(uri, 1, 0, "WebEngineJavaScriptDialog",
-            QObject::tr("Cannot create a separate instance of WebEngineJavaScriptDialog"));
     }
 };
 

@@ -1,0 +1,4 @@
+module QtWebEngine.UIDelegates
+AlertDialog 1.0 AlertDialog.qml
+ConfirmDialog 1.0 ConfirmDialog.qml
+PromptDialog 1.0 PromptDialog.qml

@@ -65,18 +65,6 @@ QT_BEGIN_NAMESPACE
 #define Application QGuiApplication
 #endif
 
-#define QT_WEBENGINE_TEST_MAIN(name) \
-    int main(int argc, char **argv) \
-    { \
-        Application* app = 0; \
-        if (!QCoreApplication::instance()) \
-            app = new Application(argc, argv); \
-        QtWebEngine::initialize(); \
-        int i = quick_test_main(argc, argv, #name, QUICK_TEST_SOURCE_DIR); \
-        delete app; \
-        return i; \
-    }
-
 QT_END_NAMESPACE
 
 #endif // QT_WEBENGINE_QUICKTEST_H

@@ -39,6 +39,19 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QScopedPointer>
 #include <QtQuickTest/quicktest.h>
 #include "qt_webengine_quicktest.h"
-QT_WEBENGINE_TEST_MAIN(qmltests);
+
+int main(int argc, char **argv)
+{
+    // Inject the mock ui delegates module
+    qputenv("QML2_IMPORT_PATH", QByteArray(TESTS_SOURCE_DIR "qmltests/mock-delegates"));
+    QScopedPointer<Application> app;
+
+    if (!QCoreApplication::instance())
+        app.reset(new Application(argc, argv));
+    QtWebEngine::initialize();
+    int i = quick_test_main(argc, argv, "qmltests", QUICK_TEST_SOURCE_DIR);
+    return i;
+}
