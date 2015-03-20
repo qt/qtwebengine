@@ -58,8 +58,6 @@ public:
     bool answered;
 };
 
-
-
 /*!
     \qmltype WebEngineCertificateError
     \instantiates QQuickWebEngineCertificateError
@@ -71,7 +69,7 @@ public:
     This class contains information about a certificate error that happened and provides a way to accept or
     deny a certificate exception.
 
-    \sa WebEngineView::certificateError
+    \sa WebEngineCertificateError::certificateError
 */
 QQuickWebEngineCertificateError::QQuickWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller, QObject *parent)
     : QObject(parent)
@@ -131,7 +129,9 @@ void QQuickWebEngineCertificateError::rejectCertificate()
 
 /*!
     \qmlproperty url WebEngineCertificateError::url
-    \brief The URL of the certificate error.
+    \readonly
+
+    The URL that triggered the error.
  */
 QUrl QQuickWebEngineCertificateError::url() const
 {
@@ -144,6 +144,23 @@ QUrl QQuickWebEngineCertificateError::url() const
 
 /*!
     \qmlproperty enumeration WebEngineCertificateError::error
+    \readonly
+
+    The type of the error.
+
+    \value SslPinnedKeyNotInCertificateChain The certificate did not match the built-in public key pins for the host name.
+    \value CertificateCommonNameInvalid The certificate's common name did not match the host name.
+    \value CertificateDateInvalid The certificate is not valid at the current date and time.
+    \value CertificateAuthorityInvalid The certificate is not signed by a trusted authority.
+    \value CertificateContainsErrors The certificate contains errors.
+    \value CertificateNoRevocationMechanism The certificate has no mechanism for determining if it has been revoked.
+    \value CertificateUnableToCheckRevocation Revocation information for the certificate is not available.
+    \value CertificateRevoked The certificate has been revoked.
+    \value CertificateInvalid The certificate is invalid.
+    \value CertificateWeakSignatureAlgorithm The certificate is signed using a weak signature algorithm.
+    \value CertificateNonUniqueName The host name specified in the certificate is not unique.
+    \value CertificateWeakKey The certificate contains a weak key.
+    \value CertificateNameConstraintViolation The certificate claimed DNS names that are in violation of name constraints.
 */
 QQuickWebEngineCertificateError::Error QQuickWebEngineCertificateError::error() const
 {
@@ -153,6 +170,9 @@ QQuickWebEngineCertificateError::Error QQuickWebEngineCertificateError::error() 
 
 /*!
     \qmlproperty string WebEngineCertificateError::description
+    \readonly
+
+    A short localized human-readable description of the error.
 */
 QString QQuickWebEngineCertificateError::description() const
 {
@@ -162,6 +182,9 @@ QString QQuickWebEngineCertificateError::description() const
 
 /*!
     \qmlproperty bool WebEngineCertificateError::overridable
+    \readonly
+
+    A boolean that indicates if the certificate error can be overridden and accepted.
 */
 bool QQuickWebEngineCertificateError::overridable() const
 {
