@@ -55,13 +55,8 @@ UserScript::UserScript(const UserScript &other)
 {
     if (other.isNull())
         return;
-    scriptData.reset(new UserScriptData);
+    scriptData.reset(new UserScriptData(*other.scriptData));
     m_name = other.m_name;
-    scriptData->source = other.scriptData->source;
-    scriptData->url = other.scriptData->url;
-    scriptData->injectionPoint = other.scriptData->injectionPoint;
-    scriptData->injectForSubframes = other.scriptData->injectForSubframes;
-    scriptData->worldId = other.scriptData->worldId;
 }
 
 UserScript::~UserScript()
@@ -75,13 +70,8 @@ UserScript &UserScript::operator=(const UserScript &other)
         m_name = QString();
         return *this;
     }
-    scriptData.reset(new UserScriptData);
+    scriptData.reset(new UserScriptData(*other.scriptData));
     m_name = other.m_name;
-    scriptData->source = other.scriptData->source;
-    scriptData->url = other.scriptData->url;
-    scriptData->injectionPoint = other.scriptData->injectionPoint;
-    scriptData->injectForSubframes = other.scriptData->injectForSubframes;
-    scriptData->worldId = other.scriptData->worldId;
     return *this;
 }
 

@@ -1,0 +1,4 @@
+# QML module so that the autotests can set testing parameters
+module TestParams
+singleton JSDialogParams 1.0 JSDialogParams.qml
+

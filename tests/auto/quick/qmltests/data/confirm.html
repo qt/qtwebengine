@@ -1,19 +1,10 @@
-<!doctype html>
 <html>
 <head>
     <script>
-        document.title = "";
-        function updateTitle(accepted) {
-            if (accepted)
-                document.title += " ACCEPTED";
-            else
-                document.title += " REJECTED";
-        }
-
-        updateTitle(confirm("ACCEPT"));
-        updateTitle(confirm("REJECT"));
+    if (confirm("Confirm test"))
+        document.title += " ACCEPTED";
+    else
+        document.title += " REJECTED";
     </script>
 </head>
-<body>
-</body>
 </html>

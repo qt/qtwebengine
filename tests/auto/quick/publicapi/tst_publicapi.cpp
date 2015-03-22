@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the Qt Quick Controls module of the Qt Toolkit.
+** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -229,16 +229,19 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineScript.ApplicationWorld --> ScriptWorldId"
     << "QQuickWebEngineScript.UserWorld --> ScriptWorldId"
     << "QQuickWebEngineScript.name --> QString"
+    << "QQuickWebEngineScript.sourceUrl --> QUrl"
     << "QQuickWebEngineScript.sourceCode --> QString"
     << "QQuickWebEngineScript.injectionPoint --> InjectionPoint"
     << "QQuickWebEngineScript.worldId --> ScriptWorldId"
     << "QQuickWebEngineScript.runOnSubframes --> bool"
     << "QQuickWebEngineScript.nameChanged(QString) --> void"
+    << "QQuickWebEngineScript.sourceUrlChanged(QUrl) --> void"
     << "QQuickWebEngineScript.sourceCodeChanged(QString) --> void"
     << "QQuickWebEngineScript.injectionPointChanged(InjectionPoint) --> void"
     << "QQuickWebEngineScript.worldIdChanged(ScriptWorldId) --> void"
     << "QQuickWebEngineScript.runOnSubframesChanged(bool) --> void"
     << "QQuickWebEngineScript.setName(QString) --> void"
+    << "QQuickWebEngineScript.setSourceUrl(QUrl) --> void"
     << "QQuickWebEngineScript.setSourceCode(QString) --> void"
     << "QQuickWebEngineScript.setInjectionPoint(InjectionPoint) --> void"
     << "QQuickWebEngineScript.setWorldId(ScriptWorldId) --> void"

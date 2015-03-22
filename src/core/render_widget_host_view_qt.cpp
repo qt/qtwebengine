@@ -145,6 +145,8 @@ static inline ui::GestureProvider::Config QtGestureProviderConfig() {
     ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
     // Causes an assert in CreateWebGestureEventFromGestureEventData and we don't need them in Qt.
     config.gesture_begin_end_types_enabled = false;
+    config.gesture_detector_config.swipe_enabled = false;
+    config.gesture_detector_config.two_finger_tap_enabled = false;
     return config;
 }
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
-** This file is part of the Qt Quick Controls module of the Qt Toolkit.
+** This file is part of the QtWebEngine module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** Commercial License Usage
@@ -42,68 +42,55 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.0
-import QtWebEngine.testsupport 1.0
+import "../mock-delegates/TestParams" 1.0
 
 TestWebEngineView {
     id: webEngineView
-
-    property string messageFromAlertDialog: ""
-    property int confirmCount: 0
-    property int promptCount: 0
-
-    testSupport: WebEngineTestSupport {
-        onAlertDialog: {
-            webEngineView.messageFromAlertDialog = dialog.message
-            dialog.accept()
-        }
-
-        onConfirmDialog: {
-            webEngineView.confirmCount += 1
-            if (dialog.message == "ACCEPT")
-                dialog.accept()
-            else
-                dialog.reject()
-        }
-
-        onPromptDialog: {
-            webEngineView.promptCount += 1
-            if (dialog.message == "REJECT")
-                dialog.reject()
-            else {
-                var reversedDefaultValue = dialog.defaultValue.split("").reverse().join("")
-                dialog.accept(reversedDefaultValue)
-            }
-        }
-    }
 
     TestCase {
         id: test
         name: "WebEngineViewJavaScriptDialogs"
 
         function init() {
-            webEngineView.messageFromAlertDialog = ""
-            webEngineView.confirmCount = 0
-            webEngineView.promptCount = 0
+            JSDialogParams.dialogMessage = "";
+            JSDialogParams.dialogTitle = "";
+            JSDialogParams.dialogCount = 0;
+            JSDialogParams.shouldAcceptDialog = true;
         }
 
         function test_alert() {
             webEngineView.url = Qt.resolvedUrl("alert.html")
             verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.messageFromAlertDialog, "Hello Qt")
+            compare(JSDialogParams.dialogCount, 1)
+            compare(JSDialogParams.dialogMessage, "Hello Qt")
+            verify(JSDialogParams.dialogTitle.indexOf("Javascript Alert -") === 0)
         }
 
         function test_confirm() {
             webEngineView.url = Qt.resolvedUrl("confirm.html")
             verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.confirmCount, 2)
-            compare(webEngineView.title, "ACCEPTED REJECTED")
+            compare(JSDialogParams.dialogMessage, "Confirm test")
+            compare(JSDialogParams.dialogCount, 1)
+            compare(webEngineView.title, "ACCEPTED")
+            JSDialogParams.shouldAcceptDialog = false
+            webEngineView.reload()
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(JSDialogParams.dialogCount, 2)
+            compare(webEngineView.title, "REJECTED")
+
         }
 
         function test_prompt() {
+            JSDialogParams.inputForPrompt = "tQ olleH"
             webEngineView.url = Qt.resolvedUrl("prompt.html")
             verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.promptCount, 2)
+            compare(JSDialogParams.dialogCount, 1)
             compare(webEngineView.title, "tQ olleH")
+            JSDialogParams.shouldAcceptDialog = false
+            webEngineView.reload()
+            verify(webEngineView.waitForLoadSucceeded())
+            compare(JSDialogParams.dialogCount, 2)
+            compare(webEngineView.title, "prompt.html")
         }
     }
 }

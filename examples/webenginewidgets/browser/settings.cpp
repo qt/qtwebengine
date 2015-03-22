@@ -137,7 +137,7 @@ void SettingsDialog::loadFromSettings()
 
     enableJavascript->setChecked(settings.value(QLatin1String("enableJavascript"), enableJavascript->isChecked()).toBool());
     enablePlugins->setChecked(settings.value(QLatin1String("enablePlugins"), enablePlugins->isChecked()).toBool());
-    userStyleSheet->setText(settings.value(QLatin1String("userStyleSheet")).toUrl().toString());
+    userStyleSheet->setPlainText(settings.value(QLatin1String("userStyleSheet")).toString());
     enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
     httpUserAgent->setText(settings.value(QLatin1String("httpUserAgent"), httpUserAgent->text()).toString());
     settings.endGroup();
@@ -196,11 +196,7 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("enableJavascript"), enableJavascript->isChecked());
     settings.setValue(QLatin1String("enablePlugins"), enablePlugins->isChecked());
     settings.setValue(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked());
-    QString userStyleSheetString = userStyleSheet->text();
-    if (QFile::exists(userStyleSheetString))
-        settings.setValue(QLatin1String("userStyleSheet"), QUrl::fromLocalFile(userStyleSheetString));
-    else
-        settings.setValue(QLatin1String("userStyleSheet"), QUrl(userStyleSheetString));
+    settings.setValue(QLatin1String("userStyleSheet"), userStyleSheet->toPlainText());
     settings.setValue(QLatin1String("httpUserAgent"), httpUserAgent->text());
     settings.endGroup();
 

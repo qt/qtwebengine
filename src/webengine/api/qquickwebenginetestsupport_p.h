@@ -39,31 +39,12 @@
 
 #include <private/qtwebengineglobal_p.h>
 
-#include "javascript_dialog_controller.h"
 #include <QObject>
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineLoadRequest;
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineJavaScriptDialog : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QString message READ message CONSTANT)
-    Q_PROPERTY(QString defaultValue READ defaultValue CONSTANT)
-
-public:
-    QQuickWebEngineJavaScriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>);
-    QString message() const;
-    QString defaultValue() const;
-
-public Q_SLOTS:
-    void reject();
-    void accept(const QString &input = QString());
-
-private:
-    QSharedPointer<QtWebEngineCore::JavaScriptDialogController> m_dialogController;
-};
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineErrorPage : public QObject {
     Q_OBJECT
@@ -85,12 +66,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestSupport : public QObject {
 public:
     QQuickWebEngineTestSupport();
     QQuickWebEngineErrorPage *errorPage() const;
-    void testDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController> dialog);
-
-Q_SIGNALS:
-    void alertDialog(QQuickWebEngineJavaScriptDialog *dialog);
-    void confirmDialog(QQuickWebEngineJavaScriptDialog *dialog);
-    void promptDialog(QQuickWebEngineJavaScriptDialog *dialog);
 
 private:
     QScopedPointer<QQuickWebEngineErrorPage> m_errorPage;

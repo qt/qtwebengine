@@ -37,6 +37,8 @@
 #include "qquickwebenginescript_p.h"
 #include "qquickwebenginescript_p_p.h"
 
+#include <QtCore/QDebug>
+#include <QtCore/QFile>
 #include <QtCore/QStringBuilder>
 #include <QtCore/QTimerEvent>
 #include "user_script_controller_host.h"
@@ -82,6 +84,11 @@ QString QQuickWebEngineScript::name() const
     return d->coreScript.name();
 }
 
+QUrl QQuickWebEngineScript::sourceUrl() const
+{
+    Q_D(const QQuickWebEngineScript);
+    return d->m_sourceUrl;
+}
 
 QString QQuickWebEngineScript::sourceCode() const
 {
@@ -129,9 +136,37 @@ void QQuickWebEngineScript::setSourceCode(QString arg)
     Q_D(QQuickWebEngineScript);
     if (arg == sourceCode())
         return;
+
+    // setting the source directly resets the sourceUrl
+    if (d->m_sourceUrl != QUrl()) {
+        d->m_sourceUrl = QUrl();
+        Q_EMIT sourceUrlChanged(d->m_sourceUrl);
+    }
+
     d->aboutToUpdateUnderlyingScript();
     d->coreScript.setSourceCode(arg);
     Q_EMIT sourceCodeChanged(arg);
+}
+
+void QQuickWebEngineScript::setSourceUrl(QUrl arg)
+{
+    Q_D(QQuickWebEngineScript);
+    if (arg == sourceUrl())
+        return;
+
+    d->m_sourceUrl = arg;
+    Q_EMIT sourceUrlChanged(d->m_sourceUrl);
+
+    QFile f(arg.toLocalFile());
+    if (!f.open(QIODevice::ReadOnly)) {
+        qWarning() << "Can't open user script " << arg;
+        return;
+    }
+
+    d->aboutToUpdateUnderlyingScript();
+    QString source = QString::fromUtf8(f.readAll());
+    d->coreScript.setSourceCode(source);
+    Q_EMIT sourceCodeChanged(source);
 }
 
 void QQuickWebEngineScript::setInjectionPoint(QQuickWebEngineScript::InjectionPoint arg)

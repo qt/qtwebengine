@@ -40,6 +40,8 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/public/browser/browser_ipc_logging.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -81,6 +83,10 @@ void ContentMainDelegateQt::PreSandboxStartup()
     }
 
     logging::SetMinLogLevel(logLevel);
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, base::Bind(&content::EnableIPCLogging, true));
+#endif
 }
 
 content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()

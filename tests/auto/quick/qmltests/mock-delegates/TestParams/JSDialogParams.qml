@@ -33,47 +33,13 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+pragma Singleton
+import QtQml 2.0
 
-#ifndef LOCATION_PROVIDER_QT_H
-#define LOCATION_PROVIDER_QT_H
-
-#include <QtCore/qcompilerdetection.h>
-
-#include "content/browser/geolocation/location_provider_base.h"
-#include "content/public/common/geoposition.h"
-
-QT_FORWARD_DECLARE_CLASS(QThread)
-
-namespace base {
-class MessageLoop;
+QtObject {
+    property string dialogMessage: "";
+    property string dialogTitle: "";
+    property bool shouldAcceptDialog: true;
+    property string inputForPrompt;
+    property int dialogCount: 0
 }
-
-namespace QtWebEngineCore {
-class QtPositioningHelper;
-
-class LocationProviderQt : public content::LocationProviderBase
-{
-public:
-    LocationProviderQt();
-    virtual ~LocationProviderQt();
-
-    // LocationProviderBase
-    virtual bool StartProvider(bool highAccuracy) Q_DECL_OVERRIDE;
-    virtual void StopProvider() Q_DECL_OVERRIDE;
-    virtual void GetPosition(content::Geoposition *position) Q_DECL_OVERRIDE { *position = m_lastKnownPosition; }
-    virtual void RequestRefresh() Q_DECL_OVERRIDE;
-    virtual void OnPermissionGranted() Q_DECL_OVERRIDE;
-
-private:
-    friend class QtPositioningHelper;
-
-    void updatePosition(const content::Geoposition &);
-
-    content::Geoposition m_lastKnownPosition;
-    QtPositioningHelper *m_positioningHelper;
-};
-//#define QT_USE_POSITIONING 1
-
-} // namespace QtWebEngineCore
-
-#endif // LOCATION_PROVIDER_QT_H

@@ -98,7 +98,6 @@ public:
     virtual bool Initialize() Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
     virtual void* GetHandle() Q_DECL_OVERRIDE;
-    virtual void* GetShareHandle() Q_DECL_OVERRIDE;
     virtual bool Resize(const gfx::Size &size) Q_DECL_OVERRIDE;
 
 protected:
@@ -488,30 +487,6 @@ bool GLSurfaceQtEGL::Resize(const gfx::Size& size)
 void* GLSurfaceQtEGL::GetHandle()
 {
     return reinterpret_cast<void*>(m_surfaceBuffer);
-}
-
-void* GLSurfaceQtEGL::GetShareHandle()
-{
-#if defined(OS_ANDROID)
-    Q_UNREACHABLE();
-    return NULL;
-#else
-    if (!gfx::g_driver_egl.ext.b_EGL_ANGLE_query_surface_pointer)
-        return NULL;
-
-    if (!gfx::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle)
-        return NULL;
-
-    void* handle;
-    if (!eglQuerySurfacePointerANGLE(g_display,
-                                     GetHandle(),
-                                     EGL_D3D_TEXTURE_2D_SHARE_HANDLE_ANGLE,
-                                     &handle)) {
-        return NULL;
-    }
-
-    return handle;
-#endif
 }
 
 void* GLSurfaceQt::GetDisplay()

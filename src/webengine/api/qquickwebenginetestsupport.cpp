@@ -39,34 +39,6 @@
 #include "qquickwebengineloadrequest_p.h"
 
 QT_BEGIN_NAMESPACE
-using namespace QtWebEngineCore;
-
-QQuickWebEngineJavaScriptDialog::QQuickWebEngineJavaScriptDialog(QSharedPointer<JavaScriptDialogController> controller)
-{
-    m_dialogController = controller;
-}
-
-QString QQuickWebEngineJavaScriptDialog::message() const
-{
-    return m_dialogController->message();
-}
-
-QString QQuickWebEngineJavaScriptDialog::defaultValue() const
-{
-    return m_dialogController->defaultPrompt();
-}
-
-void QQuickWebEngineJavaScriptDialog::reject()
-{
-    QMetaObject::invokeMethod(m_dialogController.data(), "reject");
-}
-
-void QQuickWebEngineJavaScriptDialog::accept(const QString &input)
-{
-    if (!input.isNull())
-        QMetaObject::invokeMethod(m_dialogController.data(), "textProvided", Q_ARG(QString, input));
-    QMetaObject::invokeMethod(m_dialogController.data(), "accept");
-}
 
 QQuickWebEngineErrorPage::QQuickWebEngineErrorPage()
 {
@@ -96,28 +68,6 @@ QQuickWebEngineTestSupport::QQuickWebEngineTestSupport()
 QQuickWebEngineErrorPage *QQuickWebEngineTestSupport::errorPage() const
 {
     return m_errorPage.data();
-}
-
-void QQuickWebEngineTestSupport::testDialog(QSharedPointer<JavaScriptDialogController> dialogController)
-{
-    Q_ASSERT(!dialogController.isNull());
-
-    QQuickWebEngineJavaScriptDialog dialog(dialogController);
-    switch (dialogController->type()) {
-    case WebContentsAdapterClient::AlertDialog:
-        Q_EMIT alertDialog(&dialog);
-        break;
-    case WebContentsAdapterClient::ConfirmDialog:
-        Q_EMIT confirmDialog(&dialog);
-        break;
-    case WebContentsAdapterClient::PromptDialog:
-        Q_EMIT promptDialog(&dialog);
-        break;
-    case WebContentsAdapterClient::InternalAuthorizationDialog:
-        break;
-    default:
-        Q_UNREACHABLE();
-    }
 }
 
 QT_END_NAMESPACE

@@ -37,6 +37,12 @@ OTHER_FILES += \
     $$PWD/data/tst_runJavaScript.qml \
     $$PWD/data/tst_titleChanged.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
+    $$PWD/mock-delegates/QtWebEngine/UIDelegates/AlertDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/UIDelegates/ConfirmDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/UIDelegates/PromptDialog.qml \
+    $$PWD/mock-delegates/QtWebEngine/UIDelegates/qmldir \
+    $$PWD/mock-delegates/TestParams/JSDialogParams.qml \
+    $$PWD/mock-delegates/TestParams/qmldir \
 
 
 load(qt_build_paths)

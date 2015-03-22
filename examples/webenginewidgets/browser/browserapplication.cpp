@@ -68,6 +68,8 @@
 
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
+#include <QWebEngineScript>
+#include <QWebEngineScriptCollection>
 
 #include <QtCore/QDebug>
 
@@ -75,6 +77,41 @@ DownloadManager *BrowserApplication::s_downloadManager = 0;
 HistoryManager *BrowserApplication::s_historyManager = 0;
 QNetworkAccessManager *BrowserApplication::s_networkAccessManager = 0;
 BookmarksManager *BrowserApplication::s_bookmarksManager = 0;
+
+static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSheet, BrowserMainWindow *mainWindow = 0)
+{
+    Q_ASSERT(profile);
+    QString scriptName(QStringLiteral("userStyleSheet"));
+    QWebEngineScript script;
+    QList<QWebEngineScript> styleSheets = profile->scripts().findScripts(scriptName);
+    if (!styleSheets.isEmpty())
+        script = styleSheets.first();
+    Q_FOREACH (const QWebEngineScript &s, styleSheets)
+        profile->scripts().remove(s);
+
+    if (script.isNull()) {
+        script.setName(scriptName);
+        script.setInjectionPoint(QWebEngineScript::DocumentReady);
+        script.setRunsOnSubFrames(true);
+        script.setWorldId(QWebEngineScript::ApplicationWorld);
+    }
+    QString source = QString::fromLatin1("(function() {"\
+                                         "var css = document.getElementById(\"_qt_testBrowser_userStyleSheet\");"\
+                                         "if (css == undefined) {"\
+                                         "    css = document.createElement(\"style\");"\
+                                         "    css.type = \"text/css\";"\
+                                         "    css.id = \"_qt_testBrowser_userStyleSheet\";"\
+                                         "    document.head.appendChild(css);"\
+                                         "}"\
+                                         "css.innerText = \"%1\";"\
+                                         "})()").arg(styleSheet);
+    script.setSourceCode(source);
+    profile->scripts().insert(script);
+    // run the script on the already loaded views
+    // this has to be deferred as it could mess with the storage initialization on startup
+    if (mainWindow)
+        QMetaObject::invokeMethod(mainWindow, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, source));
+}
 
 BrowserApplication::BrowserApplication(int &argc, char **argv)
     : QApplication(argc, argv)
@@ -254,10 +291,9 @@ void BrowserApplication::loadSettings()
     defaultSettings->setAttribute(QWebEngineSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
 #endif
 
-#if defined(QTWEBENGINE_USERSTYLESHEET)
-    QUrl url = settings.value(QLatin1String("userStyleSheet")).toUrl();
-    defaultSettings->setUserStyleSheetUrl(url);
-#endif
+    QString css = settings.value(QLatin1String("userStyleSheet")).toString();
+    setUserStyleSheet(defaultProfile, css, mainWindow());
+
     defaultProfile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
     settings.endGroup();
     settings.beginGroup(QLatin1String("cookies"));

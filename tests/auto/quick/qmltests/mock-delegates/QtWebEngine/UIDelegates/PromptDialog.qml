@@ -34,46 +34,27 @@
 **
 ****************************************************************************/
 
-#ifndef LOCATION_PROVIDER_QT_H
-#define LOCATION_PROVIDER_QT_H
+import QtQml 2.0
+import QtTest 1.0
+import "../../TestParams" 1.0
 
-#include <QtCore/qcompilerdetection.h>
+QtObject {
+    property string text;
+    property string title;
+    signal accepted();
+    signal rejected();
+    signal input(string text);
+    signal closing();
 
-#include "content/browser/geolocation/location_provider_base.h"
-#include "content/public/common/geoposition.h"
-
-QT_FORWARD_DECLARE_CLASS(QThread)
-
-namespace base {
-class MessageLoop;
+    function open() {
+        JSDialogParams.dialogTitle = title;
+        JSDialogParams.dialogMessage = text;
+        JSDialogParams.dialogCount++;
+        if (JSDialogParams.shouldAcceptDialog) {
+            input(JSDialogParams.inputForPrompt)
+            accepted()
+        } else {
+            rejected()
+        }
+    }
 }
-
-namespace QtWebEngineCore {
-class QtPositioningHelper;
-
-class LocationProviderQt : public content::LocationProviderBase
-{
-public:
-    LocationProviderQt();
-    virtual ~LocationProviderQt();
-
-    // LocationProviderBase
-    virtual bool StartProvider(bool highAccuracy) Q_DECL_OVERRIDE;
-    virtual void StopProvider() Q_DECL_OVERRIDE;
-    virtual void GetPosition(content::Geoposition *position) Q_DECL_OVERRIDE { *position = m_lastKnownPosition; }
-    virtual void RequestRefresh() Q_DECL_OVERRIDE;
-    virtual void OnPermissionGranted() Q_DECL_OVERRIDE;
-
-private:
-    friend class QtPositioningHelper;
-
-    void updatePosition(const content::Geoposition &);
-
-    content::Geoposition m_lastKnownPosition;
-    QtPositioningHelper *m_positioningHelper;
-};
-//#define QT_USE_POSITIONING 1
-
-} // namespace QtWebEngineCore
-
-#endif // LOCATION_PROVIDER_QT_H
