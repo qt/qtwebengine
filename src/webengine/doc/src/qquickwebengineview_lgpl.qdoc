@@ -313,6 +313,18 @@
 */
 
 /*!
+    \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, message, lineNumber, sourceID)
+    This signal is emitted when a JavaScript program tries to print a \a message to the web browser's console.
+
+    For example in case of evaluation errors the source URL may be provided in \a sourceID as well as the \a lineNumber.
+
+    \a level indicates the severity of the event that triggered the message, i.e. if it
+    was triggered by an error or a less severe event.
+
+    The corresponding handler is onJavaScriptConsoleMessage.
+*/
+
+/*!
     \qmlsignal WebEngineView::newViewRequested(request)
 
     This signal is emitted when a page load is requested to happen in a separate

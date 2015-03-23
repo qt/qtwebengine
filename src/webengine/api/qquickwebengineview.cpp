@@ -441,7 +441,6 @@ bool QQuickWebEngineViewPrivate::isFullScreen() const
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
 {
     Q_Q(QQuickWebEngineView);
-    Q_UNUSED(level);
     Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
 }
 
