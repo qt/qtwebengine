@@ -55,6 +55,7 @@
 #include <private/qquickwebenginenewviewrequest_p.h>
 #include <private/qquickwebengineprofile_p.h>
 #include <private/qquickwebenginescript_p.h>
+#include <private/qquickwebenginesettings_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -73,6 +74,7 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineNewViewRequest::staticMetaObject
     << &QQuickWebEngineProfile::staticMetaObject
     << &QQuickWebEngineScript::staticMetaObject
+    << &QQuickWebEngineSettings::staticMetaObject
     << &QQuickWebEngineFullScreenRequest::staticMetaObject
     ;
 
@@ -81,6 +83,10 @@ static QList<const char *> knownEnumNames = QList<const char *>();
 static QStringList hardcodedTypes = QStringList()
     << "QJSValue"
     << "QQmlListProperty<QQuickWebEngineScript>"
+    << "QQmlWebChannel*"
+    // Ignore the testSupport types without making a fuss.
+    << "QQuickWebEngineTestSupport*"
+    << "QQuickWebEngineErrorPage*"
     ;
 
 static QStringList expectedAPI = QStringList()
