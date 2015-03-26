@@ -3588,22 +3588,23 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     // Open a default window.
     page.runJavaScript("window.open()");
+    QTest::qWait(200);
     // Open a too small window.
-    evaluateJavaScriptSync(&page, "window.open('', '', 'width=10,height=10')");
+    evaluateJavaScriptSync(&page, "window.open('','about:blank','width=10,height=10')");
 
-    QTest::qWait(500);
+    QTest::qWait(200);
     // The number of popups created should be two.
-    QVERIFY(page.createdWindows.size() == 2);
+    QCOMPARE(page.createdWindows.size(), 2);
 
     QRect requestedGeometry = page.createdWindows[0]->requestedGeometry;
     // Check default size has been requested.
-    QVERIFY(requestedGeometry.width() == 0);
-    QVERIFY(requestedGeometry.height() == 0);
+    QCOMPARE(requestedGeometry.width(), 0);
+    QCOMPARE(requestedGeometry.height(), 0);
 
     requestedGeometry = page.createdWindows[1]->requestedGeometry;
     // Check minimum size has been requested.
-    QVERIFY(requestedGeometry.width() == 100);
-    QVERIFY(requestedGeometry.height() == 100);
+    QCOMPARE(requestedGeometry.width(), 100);
+    QCOMPARE(requestedGeometry.height(), 100);
 }
 
 void tst_QWebEnginePage::cssMediaTypeGlobalSetting()
