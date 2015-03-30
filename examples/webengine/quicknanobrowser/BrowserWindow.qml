@@ -84,22 +84,6 @@ ApplicationWindow {
         property alias errorPageEnabled: errorPageEnabled.checked;
     }
 
-    WebEngineProfile {
-        id: defaultProfile
-        storageName: "Default"
-        httpCacheType: httpDiskCacheEnabled.checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache;
-        onDownloadRequested: {
-            downloadView.visible = true
-            downloadView.append(download)
-            download.accept()
-        }
-    }
-
-    WebEngineProfile {
-        id: otrProfile
-        offTheRecord: true
-    }
-
     Action {
         shortcut: "Ctrl+D"
         onTriggered: {
@@ -124,7 +108,7 @@ ApplicationWindow {
     Action {
         shortcut: "Ctrl+T"
         onTriggered: {
-            tabs.createEmptyTab()
+            tabs.createEmptyTab(currentWebView.profile)
             tabs.currentIndex = tabs.count - 1
             addressBar.forceActiveFocus();
             addressBar.selectAll();
@@ -249,13 +233,15 @@ ApplicationWindow {
                             id: offTheRecordEnabled
                             text: "Off The Record"
                             checkable: true
-                            checked: false
+                            checked: currentWebView.profile.offTheRecord
+                            onToggled: currentWebView.profile = checked ? otrProfile : defaultProfile;
                         }
                         MenuItem {
                             id: httpDiskCacheEnabled
                             text: "HTTP Disk Cache"
-                            checkable: true
-                            checked: (defaultProfile.httpCacheType == WebEngineProfile.DiskHttpCache)
+                            checkable: !currentWebView.profile.offTheRecord
+                            checked: (currentWebView.profile.httpCacheType == WebEngineProfile.DiskHttpCache)
+                            onToggled: currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache
                         }
                     }
                 }
@@ -282,23 +268,23 @@ ApplicationWindow {
 
     TabView {
         id: tabs
-        function createEmptyTab() {
+        function createEmptyTab(profile) {
             var tab = addTab("", tabComponent)
             // We must do this first to make sure that tab.active gets set so that tab.item gets instantiated immediately.
             tab.active = true
             tab.title = Qt.binding(function() { return tab.item.title })
+            tab.item.profile = profile
             return tab
         }
 
         anchors.fill: parent
-        Component.onCompleted: createEmptyTab()
+        Component.onCompleted: createEmptyTab(defaultProfile)
 
         Component {
             id: tabComponent
             WebEngineView {
                 id: webEngineView
                 focus: true
-                profile: offTheRecordEnabled.checked ? otrProfile : defaultProfile
 
                 onLinkHovered: {
                     if (hoveredUrl == "")
@@ -336,17 +322,17 @@ ApplicationWindow {
                     if (!request.userInitiated)
                         print("Warning: Blocked a popup window.")
                     else if (request.destination == WebEngineView.NewViewInTab) {
-                        var tab = tabs.createEmptyTab()
+                        var tab = tabs.createEmptyTab(currentWebView.profile)
                         tabs.currentIndex = tabs.count - 1
                         request.openIn(tab.item)
                     } else if (request.destination == WebEngineView.NewViewInBackgroundTab) {
-                        var tab = tabs.createEmptyTab()
+                        var tab = tabs.createEmptyTab(currentWebView.profile)
                         request.openIn(tab.item)
                     } else if (request.destination == WebEngineView.NewViewInDialog) {
-                        var dialog = applicationRoot.createDialog()
+                        var dialog = applicationRoot.createDialog(currentWebView.profile)
                         request.openIn(dialog.currentWebView)
                     } else {
-                        var window = applicationRoot.createWindow()
+                        var window = applicationRoot.createWindow(currentWebView.profile)
                         request.openIn(window.currentWebView)
                     }
                 }
@@ -401,6 +387,13 @@ ApplicationWindow {
         visible: false
         anchors.fill: parent
     }
+
+    function onDownloadRequested(download) {
+        downloadView.visible = true
+        downloadView.append(download)
+        download.accept()
+    }
+
     Rectangle {
         id: statusBubble
         color: "oldlace"

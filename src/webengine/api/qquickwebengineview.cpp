@@ -724,9 +724,12 @@ QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineView::userScripts()
 
 void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
 {
+    Q_Q(QQuickWebEngineView);
+
     if (profile == m_profile)
         return;
     m_profile = profile;
+    Q_EMIT q->profileChanged();
     m_settings->setParentSettings(profile->settings());
 
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {

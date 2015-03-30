@@ -40,7 +40,7 @@
 
 import QtQuick 2.1
 import QtQuick.Window 2.2
-import QtWebEngine 1.0
+import QtWebEngine 1.1
 
 Window {
     property alias currentWebView: webView
