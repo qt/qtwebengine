@@ -60,6 +60,11 @@ using namespace QtWebEngineCore;
 
 namespace {
 
+QString fallbackDir() {
+    static QString directory = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
+    return directory;
+}
+
 QString location(QLibraryInfo::LibraryLocation path)
 {
 #if defined(Q_OS_BLACKBERRY)
@@ -173,7 +178,22 @@ QString pluginsPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getPath(frameworkBundle()) % QLatin1String("/Libraries");
 #else
-    return location(QLibraryInfo::PluginsPath) % QLatin1String("/qtwebengine");
+    static bool initialized = false;
+    static QString potentialPluginsPath = location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
+
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialPluginsPath)) {
+            qWarning("Installed Qt plugins directory not found at location %s. Trying application directory...", qPrintable(potentialPluginsPath));
+            potentialPluginsPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine");
+        }
+        if (!QFileInfo::exists(potentialPluginsPath)) {
+            qWarning("Qt WebEngine Plugins directory not found at location %s. Trying fallback directory. Plugins as for example video codecs MAY NOT work.", qPrintable(potentialPluginsPath));
+            potentialPluginsPath = fallbackDir();
+        }
+    }
+
+    return potentialPluginsPath;
 #endif
 }
 
@@ -182,13 +202,23 @@ QString localesPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
 #else
-    return location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
-#endif
-}
+    static bool initialized = false;
+    static QString potentialLocalesPath = location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
 
-QString fallbackDir() {
-    static QString directory = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
-    return directory;
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialLocalesPath)) {
+            qWarning("Installed Qt WebEngine locales directory not found at location %s. Trying application directory...", qPrintable(potentialLocalesPath));
+            potentialLocalesPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine_locales");
+        }
+        if (!QFileInfo::exists(potentialLocalesPath)) {
+            qWarning("Qt WebEngine locales directory not found at location %s. Trying fallback directory. Translations MAY NOT not be correct.", qPrintable(potentialLocalesPath));
+            potentialLocalesPath = fallbackDir();
+        }
+    }
+
+    return potentialLocalesPath;
+#endif
 }
 
 } // namespace
