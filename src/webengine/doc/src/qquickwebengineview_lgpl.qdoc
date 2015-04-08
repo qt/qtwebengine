@@ -301,6 +301,26 @@
 */
 
 /*!
+    \qmlsignal WebEngineView::certificateError(error)
+
+    This signal is emitted when an invalid certificate error is raised while loading a given request.
+
+    The certificate error can be rejected by calling WebEngineCertificateError::rejectCertificate,
+    which will stop loading the request.
+
+    The certificate error can be ignored  by calling WebEngineCertificateError::ignoreCertificateError
+    which will resume loading the request.
+
+    It is possible to defer the decision of rejecting the given certificate by calling
+    WebEngineCertificateError::defer, which is useful when waiting for user input.
+    By default the invalid certificate will be automatically rejected.
+
+    The corresponding handler is onCertificateError.
+
+    \sa WebEngineCertificateError
+*/
+
+/*!
     \qmlsignal WebEngineView::linkHovered(hoveredUrl)
 
     Within a mouse-driven interface, this signal is emitted when a mouse
@@ -310,6 +330,18 @@
     provides the link's location.
 
     The corresponding handler is onLinkHovered.
+*/
+
+/*!
+    \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, message, lineNumber, sourceID)
+    This signal is emitted when a JavaScript program tries to print a \a message to the web browser's console.
+
+    For example in case of evaluation errors the source URL may be provided in \a sourceID as well as the \a lineNumber.
+
+    \a level indicates the severity of the event that triggered the message, i.e. if it
+    was triggered by an error or a less severe event.
+
+    The corresponding handler is onJavaScriptConsoleMessage.
 */
 
 /*!

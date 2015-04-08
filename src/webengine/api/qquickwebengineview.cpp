@@ -442,7 +442,6 @@ bool QQuickWebEngineViewPrivate::isFullScreen() const
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
 {
     Q_Q(QQuickWebEngineView);
-    Q_UNUSED(level);
     Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
 }
 
@@ -665,6 +664,14 @@ void QQuickWebEngineView::reload()
     if (!d->adapter)
         return;
     d->adapter->reload();
+}
+
+void QQuickWebEngineView::reloadAndBypassCache()
+{
+    Q_D(QQuickWebEngineView);
+    if (!d->adapter)
+        return;
+    d->adapter->reloadAndBypassCache();
 }
 
 void QQuickWebEngineView::stop()

@@ -647,6 +647,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case Reload:
         d->adapter->reload();
         break;
+    case ReloadAndBypassCache:
+        d->adapter->reloadAndBypassCache();
+        break;
     case Cut:
         d->adapter->cut();
         break;

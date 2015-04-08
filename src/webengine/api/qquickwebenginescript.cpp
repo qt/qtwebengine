@@ -84,12 +84,33 @@ QString QQuickWebEngineScript::name() const
     return d->coreScript.name();
 }
 
+/*!
+    \qmlproperty url WebEngineScript::sourceUrl
+
+    This property holds the remote source location of the user script (if any).
+
+    Unlike \l sourceCode, this property allows referring to user scripts that
+    are not already loaded in memory, for instance,  when stored on disk.
+
+    Setting this property will change the \l sourceCode of the script.
+
+    \note At present, only file-based sources are supported.
+
+    \sa sourceCode
+*/
 QUrl QQuickWebEngineScript::sourceUrl() const
 {
     Q_D(const QQuickWebEngineScript);
     return d->m_sourceUrl;
 }
 
+/*!
+    \qmlproperty string WebEngineScript::sourceCode
+
+    This property holds the JavaScript source code of the user script.
+
+    \sa sourceUrl
+*/
 QString QQuickWebEngineScript::sourceCode() const
 {
     Q_D(const QQuickWebEngineScript);

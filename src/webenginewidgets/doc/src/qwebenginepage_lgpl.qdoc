@@ -346,6 +346,17 @@
 */
 
 /*!
+    \fn bool QWebEnginePage::certificateError(const QWebEngineCertificateError & certificateError)
+    This function is called when an invalid certificate error is raised while loading a given request.
+
+    The \a certificateError parameter contains information about the certificate and details of the error.
+
+    Return true to ignore the error and complete the request, otherwise return false to stop loading the request.
+
+    \sa QWebEngineCertificateError
+*/
+
+/*!
     \fn QString QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringList& oldFiles, const QStringList& acceptedMimeTypes)
     This function is called when the web content requests a file name, for example
     as a result of the user clicking on a "file upload" button in a HTML form.

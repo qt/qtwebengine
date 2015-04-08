@@ -207,6 +207,7 @@ public Q_SLOTS:
     void goForward();
     void goBackOrForward(int index);
     void reload();
+    void reloadAndBypassCache();
     void stop();
     Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
     Q_REVISION(1) void fullScreenCancelled();
