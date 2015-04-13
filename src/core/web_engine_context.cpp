@@ -214,13 +214,6 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
 #endif
 
-#if defined(OS_ANDROID)
-    // On eAndroid we use this to get the native display
-    // from Qt in GLSurfaceEGL::InitializeOneOff.
-    m_surfaceFactory.reset(new SurfaceFactoryQt());
-    parsedCommandLine->AppendSwitch(switches::kDisableOverscrollEdgeEffect);
-#endif
-
     GLContextHelper::initialize();
 
     if (usingANGLE() || usingSoftwareDynamicGL() || usingQtQuick2DRenderer()) {

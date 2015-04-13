@@ -37,7 +37,7 @@
 #ifndef SURFACE_FACTORY_QT
 #define SURFACE_FACTORY_QT
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE)
 
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -54,7 +54,7 @@ class SurfaceFactoryQt
 
 } // namespace QtWebEngineCore
 
-#endif // defined(USE_OZONE) || defined(OS_ANDROID)
+#endif // defined(USE_OZONE)
 
 #endif // SURFACE_FACTORY_QT
 

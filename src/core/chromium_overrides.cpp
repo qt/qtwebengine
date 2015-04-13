@@ -48,10 +48,6 @@
 #include <QScreen>
 #include <QWindow>
 
-#if defined(OS_ANDROID)
-#include "media/video/capture/fake_video_capture_device.h"
-#endif
-
 #if defined(USE_X11)
 #include "ui/gfx/x/x11_types.h"
 #endif
@@ -182,20 +178,3 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string&, int)
 } // namespace gfx
 
 #endif // defined(USE_AURA) && !defined(USE_OZONE)
-
-#if defined(OS_ANDROID)
-namespace ui {
-bool GrabViewSnapshot(gfx::NativeView /*view*/, std::vector<unsigned char>* /*png_representation*/, const gfx::Rect& /*snapshot_bounds*/)
-{
-    NOTIMPLEMENTED();
-    return false;
-}
-}
-
-namespace media {
-const std::string FakeVideoCaptureDevice::Name::GetModel() const
-{
-    return "";
-}
-}
-#endif

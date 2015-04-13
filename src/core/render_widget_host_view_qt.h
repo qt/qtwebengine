@@ -184,12 +184,6 @@ public:
     virtual void WindowFrameChanged() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
-#if defined(OS_ANDROID)
-    virtual void ShowDisambiguationPopup(const gfx::Rect&, const SkBitmap&) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual void LockCompositingSurface() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-#endif // defined(OS_ANDROID)
-
 #if defined(OS_WIN)
 #if defined(USE_AURA)
     virtual void SetParentNativeViewAccessible(gfx::NativeViewAccessible accessible_parent) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }

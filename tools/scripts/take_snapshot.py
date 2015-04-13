@@ -75,8 +75,7 @@ def isInChromiumBlacklist(file_path):
     if ( '_jni' in file_path
         or 'jni_' in file_path
         or 'testdata/' in file_path
-        or (file_path.startswith('third_party/android_tools') and
-            not 'android/cpufeatures' in file_path)
+        or file_path.startswith('third_party/android_tools')
         or '/tests/' in file_path
         or ('/test/' in file_path and
             not '/webrtc/test/testsupport/' in file_path and

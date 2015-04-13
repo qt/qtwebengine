@@ -223,20 +223,6 @@ QString localesPath()
 
 } // namespace
 
-#if defined(OS_ANDROID)
-namespace base {
-// Replace the Android base path provider that depends on jni.
-// With this we avoid patching chromium which we would need since
-// PathService registers PathProviderAndroid by default on Android.
-bool PathProviderAndroid(int key, FilePath* result)
-{
-    *result = WebEngineLibraryInfo::getPath(key);
-    return !(result->empty());
-}
-
-}
-#endif // defined(OS_ANDROID)
-
 base::FilePath WebEngineLibraryInfo::getPath(int key)
 {
     QString directory;
@@ -266,13 +252,6 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(getResourcesPath(frameworkBundle()));
 #else
         return toFilePath(location(QLibraryInfo::DataPath));
-#endif
-#if defined(OS_ANDROID)
-    case base::DIR_SOURCE_ROOT:
-    case base::DIR_ANDROID_EXTERNAL_STORAGE:
-    case base::DIR_ANDROID_APP_DATA:
-        directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-        break;
 #endif
     case content::DIR_MEDIA_LIBS:
         return toFilePath(pluginsPath());

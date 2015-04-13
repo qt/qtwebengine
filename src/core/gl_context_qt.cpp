@@ -134,7 +134,7 @@ void* GLContextHelper::getNativeDisplay()
 
 QT_END_NAMESPACE
 
-#if defined(USE_OZONE) || defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(USE_OZONE) || defined(OS_WIN)
 
 namespace gfx {
 
@@ -158,4 +158,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, G
 
 }  // namespace gfx
 
-#endif // defined(USE_OZONE) || defined(OS_ANDROID) || defined(OS_WIN)
+#endif // defined(USE_OZONE) || defined(OS_WIN)
