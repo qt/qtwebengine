@@ -48,9 +48,9 @@ namespace QtWebEngineCore {
 
 FilePickerController::FilePickerController(FileChooserMode mode, content::WebContents *contents, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject *parent)
     : QObject(parent)
+    , m_defaultFileName(defaultFileName)
     , m_acceptedMimeTypes(acceptedMimeTypes)
     , m_contents(contents)
-    , m_defaultFileName(defaultFileName)
     , m_mode(mode)
 {
 }
