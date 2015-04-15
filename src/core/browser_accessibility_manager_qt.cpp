@@ -55,12 +55,16 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 #endif // QT_NO_ACCESSIBILITY
 }
 
-#ifndef QT_NO_ACCESSIBILITY
 BrowserAccessibility *BrowserAccessibilityFactoryQt::Create()
 {
+#ifndef QT_NO_ACCESSIBILITY
     return new BrowserAccessibilityQt();
+#else
+    return 0;
+#endif // QT_NO_ACCESSIBILITY
 }
 
+#ifndef QT_NO_ACCESSIBILITY
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QObject* parentObject,
     const ui::AXTreeUpdate& initialTree,
