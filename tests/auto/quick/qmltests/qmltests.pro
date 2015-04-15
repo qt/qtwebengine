@@ -52,7 +52,7 @@ OTHER_FILES += \
 
 
 load(qt_build_paths)
-DEFINES += QUICK_TEST_SOURCE_DIR=\"\\\"$$PWD$${QMAKE_DIR_SEP}data\\\"\"
+DEFINES += QUICK_TEST_SOURCE_DIR=\\\"$$re_escape($$PWD$${QMAKE_DIR_SEP}data)\\\"
 
 !isQMLTestSupportApiEnabled() {
     PLUGIN_EXTENSION = .so
