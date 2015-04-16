@@ -188,7 +188,7 @@ QString pluginsPath()
             potentialPluginsPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine");
         }
         if (!QFileInfo::exists(potentialPluginsPath)) {
-            qWarning("Qt WebEngine Plugins directory not found at location %s. Trying fallback directory. Plugins as for example video codecs MAY NOT work.", qPrintable(potentialPluginsPath));
+            qWarning("Qt WebEngine Plugins directory not found at location %s. Trying fallback directory... Plugins as for example video codecs MAY NOT work.", qPrintable(potentialPluginsPath));
             potentialPluginsPath = fallbackDir();
         }
     }
@@ -212,7 +212,7 @@ QString localesPath()
             potentialLocalesPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine_locales");
         }
         if (!QFileInfo::exists(potentialLocalesPath)) {
-            qWarning("Qt WebEngine locales directory not found at location %s. Trying fallback directory. Translations MAY NOT not be correct.", qPrintable(potentialLocalesPath));
+            qWarning("Qt WebEngine locales directory not found at location %s. Trying fallback directory... Translations MAY NOT not be correct.", qPrintable(potentialLocalesPath));
             potentialLocalesPath = fallbackDir();
         }
     }
@@ -221,6 +221,28 @@ QString localesPath()
 #endif
 }
 
+QString libraryDataPath()
+{
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+    return getResourcesPath(frameworkBundle());
+#else
+    static bool initialized = false;
+    static QString potentialDataPath = location(QLibraryInfo::DataPath);
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialDataPath)) {
+            qWarning("Qt WebEngine data directory not found at location %s. Trying application directory...", qPrintable(potentialDataPath));
+            potentialDataPath = QCoreApplication::applicationDirPath();
+        }
+        if (!QFileInfo::exists(potentialDataPath)) {
+            qWarning("Qt WebEngine data directory not found at location %s. Trying fallback directory... The application MAY NOT work.", qPrintable(potentialDataPath));
+            potentialDataPath = fallbackDir();
+        }
+    }
+
+    return potentialDataPath;
+#endif
+}
 } // namespace
 
 base::FilePath WebEngineLibraryInfo::getPath(int key)
@@ -248,11 +270,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
     case base::DIR_QT_LIBRARY_DATA:
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-        return toFilePath(getResourcesPath(frameworkBundle()));
-#else
-        return toFilePath(location(QLibraryInfo::DataPath));
-#endif
+        return toFilePath(libraryDataPath());
     case content::DIR_MEDIA_LIBS:
         return toFilePath(pluginsPath());
     case ui::DIR_LOCALES:
