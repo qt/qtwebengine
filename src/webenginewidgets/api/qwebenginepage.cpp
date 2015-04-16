@@ -46,6 +46,7 @@
 #include <QApplication>
 #include <QAuthenticator>
 #include <QClipboard>
+#include <QContextMenuEvent>
 #include <QFileDialog>
 #include <QKeyEvent>
 #include <QIcon>
