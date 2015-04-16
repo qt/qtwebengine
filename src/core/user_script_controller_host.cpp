@@ -207,6 +207,8 @@ UserScriptControllerHost::UserScriptControllerHost()
 
 UserScriptControllerHost::~UserScriptControllerHost()
 {
+    Q_FOREACH (content::RenderProcessHost *renderer, m_observedProcesses)
+        renderer->RemoveObserver(m_renderProcessObserver.data());
 }
 
 } // namespace
