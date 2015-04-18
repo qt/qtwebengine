@@ -176,6 +176,16 @@
 */
 
 /*!
+    \qmlproperty bool WebEngineView::isFullScreen
+    \since QtWebEngine 1.1
+    \readonly
+
+    Returns \c{true} if the web view is in fullscreen mode, \c{false} otherwise.
+
+    \sa WebEngineView::fullScreenRequested(), WebEngineView::fullScreenCancelled()
+*/
+
+/*!
     \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl)
     \brief Loads the specified \a html as the content of the web view.
 
@@ -250,6 +260,30 @@
     Sets the permission for the web site identified by \a securityOrigin to use \a feature.
 
     \sa featurePermissionRequested()
+*/
+
+/*!
+    \qmlmethod void WebEngineView::fullScreenCancelled()
+    \since QtWebEngine 1.1
+
+    Immediately sets \c{isFullScreen} property to \c{false}. It can be used to notify the
+    browser engine when the windowing system forces the application to leave fullscreen mode.
+
+    \code
+    ApplicationWindow {
+        onVisibilityChanged: {
+            if (webEngineView.isFullScreen && visibility != Window.FullScreen)
+                webEngineView.fullScreenCancelled()
+        }
+
+        WebEngineView {
+            id: webEngineView
+            ...
+        }
+    }
+    \endcode
+
+    \sa WebEngineView::isFullScreen, WebEngineView::fullScreenRequested()
 */
 
 /*!
@@ -362,6 +396,18 @@
     The corresponding handler is onNewViewRequested.
 
     \sa WebEngineNewViewRequest, WebEngineView::NewViewDestination, {WebEngine Quick Nano Browser}
+*/
+
+/*!
+    \qmlsignal WebEngineView::fullScreenRequested(request)
+    \since QtWebEngine 1.1
+
+    This signal is emitted when the web page requests fullscreen mode through the
+    JavaScript API.
+
+    The corresponding handler is onFullScreenRequested.
+
+    \sa WebEngineFullScreenRequest, WebEngineView::isFullScreen
 */
 
 /*!
@@ -478,4 +524,50 @@
 
     \sa featurePermissionRequested(), grantFeaturePermission()
 
+*/
+
+/*!
+    \qmltype WebEngineFullScreenRequest
+    \instantiates QQuickWebEngineFullScreenRequest
+    \inqmlmodule QtWebEngine 1.1
+    \since QtWebEngine 1.1
+
+    \brief A utility class for the WebEngineView::fullScreenRequested signal.
+
+    \sa WebEngineView::fullScreenRequested
+*/
+
+/*!
+    \qmlproperty bool WebEngineFullScreenRequest::toggleOn
+    \since QtWebEngine 1.1
+    \readonly
+
+    Returns \c{true} if the application should toggle fullscreen mode on, \c{false} otherwise.
+
+    \sa WebEngineFullScreenRequest::accept()
+*/
+
+/*!
+    \qmlmethod void WebEngineFullScreenRequest::accept()
+    \since QtWebEngine 1.1
+
+    Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
+    property to be equal to WebEngineFullScreenRequest::toggleOn.
+
+    \code
+    ApplicationWindow {
+        id: window
+        WebEngineView {
+            onFullScreenRequested: {
+                if (request.toggleOn)
+                    window.showFullScreen()
+                else
+                    window.showNormal()
+                request.accept()
+            }
+        }
+    }
+    \endcode
+
+    \sa WebEngineFullScreenRequest::toggleOn()
 */

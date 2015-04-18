@@ -39,6 +39,7 @@
 // found in the LICENSE file.
 
 #include "browser_accessibility_qt.h"
+
 #ifndef QT_NO_ACCESSIBILITY
 
 #include "third_party/WebKit/public/web/WebAXEnums.h"

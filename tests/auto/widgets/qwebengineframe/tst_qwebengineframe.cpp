@@ -87,8 +87,6 @@ private Q_SLOTS:
     void setContent();
     void setCacheLoadControlAttribute();
     void setUrlWithPendingLoads();
-    void setUrlWithFragment_data();
-    void setUrlWithFragment();
     void setUrlToEmpty();
     void setUrlToInvalid();
     void setUrlHistory();
@@ -1225,45 +1223,6 @@ void tst_QWebEngineFrame::setUrlWithPendingLoads()
     QWebEnginePage page;
     page.setHtml("<img src='dummy:'/>");
     page.setUrl(QUrl("about:blank"));
-}
-
-void tst_QWebEngineFrame::setUrlWithFragment_data()
-{
-    QTest::addColumn<QUrl>("previousUrl");
-    QTest::newRow("empty") << QUrl();
-    QTest::newRow("same URL no fragment") << QUrl("qrc:/test1.html");
-    // See comments in setUrlSameUrl about using setUrl() with the same url().
-    QTest::newRow("same URL with same fragment") << QUrl("qrc:/test1.html#");
-    QTest::newRow("same URL with different fragment") << QUrl("qrc:/test1.html#anotherFragment");
-    QTest::newRow("another URL") << QUrl("qrc:/test2.html");
-}
-
-// Based on bug report https://bugs.webkit.org/show_bug.cgi?id=32723
-void tst_QWebEngineFrame::setUrlWithFragment()
-{
-    QSKIP("FIXME: https://trello.com/c/3L7F8VZJ/217-take-care-about-the-in-page-navigations-in-the-tests");
-    QFETCH(QUrl, previousUrl);
-
-    QWebEnginePage page;
-
-    if (!previousUrl.isEmpty()) {
-        page.load(previousUrl);
-        ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
-        QCOMPARE(page.url(), previousUrl);
-    }
-
-    QSignalSpy spy(&page, SIGNAL(urlChanged(QUrl)));
-    const QUrl url("qrc:/test1.html#");
-    QVERIFY(!url.fragment().isNull());
-
-    page.setUrl(url);
-    ::waitForSignal(&page, SIGNAL(urlChanged(QUrl)));
-
-    QCOMPARE(spy.count(), 1);
-    QVERIFY(!toPlainTextSync(&page).isEmpty());
-    // Slight change: This information now comes from Chromium and the behavior of requestedUrl changed in this case.
-    // QCOMPARE(page.requestedUrl(), url);
-    QCOMPARE(page.url(), url);
 }
 
 void tst_QWebEngineFrame::setUrlToEmpty()

@@ -28,7 +28,8 @@ contains(QT_CONFIG, qt_framework) {
         "$(TARGET) "
 } else {
     CONFIG -= app_bundle
-    DESTDIR = $$MODULE_BASE_OUTDIR/libexec
+    win32: DESTDIR = $$MODULE_BASE_OUTDIR/bin
+    else:  DESTDIR = $$MODULE_BASE_OUTDIR/libexec
 
     QT_PRIVATE += webenginecore
 }

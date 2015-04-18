@@ -55,18 +55,8 @@
           '<(chromium_src_dir)/base/allocator/allocator.gyp:allocator',
         ],
       }],
-      # embedded_android and embedded_linux need some additional options.
-      ['qt_os=="embedded_linux" or qt_os=="embedded_android"', {
-        'conditions': [
-          ['qt_os=="embedded_android"', {
-            'dependencies': [
-              '<(chromium_src_dir)/ui/ozone/ozone.gyp:ozone_base',
-              '<(chromium_src_dir)/third_party/ashmem/ashmem.gyp:ashmem',
-              '<(chromium_src_dir)/third_party/freetype/freetype.gyp:ft2',
-              '<(chromium_src_dir)/third_party/android_tools/ndk/android_tools_ndk.gyp:cpu_features',
-            ],
-          }],
-        ],
+      # embedded_linux need some additional options.
+      ['qt_os=="embedded_linux"', {
         'configurations': {
           'Debug_Base': {
             # Reduce the binary size.

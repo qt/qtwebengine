@@ -1661,6 +1661,7 @@ void tst_QWebEnginePage::inputMethods_data()
     QTest::newRow("QGraphicsWebView") << "QGraphicsWebView";
 }
 
+#if defined(QWEBENGINEPAGE_INPUTMETHODQUERY)
 static Qt::InputMethodHints inputMethodHints(QObject* object)
 {
     if (QGraphicsObject* o = qobject_cast<QGraphicsObject*>(object))
@@ -1686,6 +1687,7 @@ static void clickOnPage(QWebEnginePage* page, const QPoint& position)
     QMouseEvent evrel(QEvent::MouseButtonRelease, position, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
     page->event(&evrel);
 }
+#endif
 
 void tst_QWebEnginePage::inputMethods()
 {
@@ -2827,6 +2829,7 @@ public:
 protected:
     virtual QString userAgentForUrl(const QUrl& url) const
     {
+        Q_UNUSED(url);
         return QString("My User Agent\nX-New-Http-Header: Oh Noes!");
     }
 };
@@ -3178,6 +3181,7 @@ void tst_QWebEnginePage::findTextSuccessiveShouldCallAllCallbacks()
     QVERIFY(spy5.wasCalled());
 }
 
+#if defined(QWEBENGINEPAGE_SUPPORTEDCONTENTTYPES)
 static QString getMimeTypeForExtension(const QString &ext)
 {
     QMimeType mimeType = QMimeDatabase().mimeTypeForFile(QStringLiteral("filename.") + ext.toLower(), QMimeDatabase::MatchExtension);
@@ -3186,6 +3190,7 @@ static QString getMimeTypeForExtension(const QString &ext)
 
     return QString();
 }
+#endif
 
 void tst_QWebEnginePage::supportedContentType()
 {

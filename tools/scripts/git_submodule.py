@@ -46,7 +46,7 @@ import subprocess
 import sys
 import version_resolver as resolver
 
-extra_os = ['android', 'mac', 'win']
+extra_os = ['mac', 'win']
 
 def subprocessCall(args):
     print args

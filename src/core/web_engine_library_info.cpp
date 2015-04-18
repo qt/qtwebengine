@@ -60,6 +60,11 @@ using namespace QtWebEngineCore;
 
 namespace {
 
+QString fallbackDir() {
+    static QString directory = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
+    return directory;
+}
+
 QString location(QLibraryInfo::LibraryLocation path)
 {
 #if defined(Q_OS_BLACKBERRY)
@@ -173,7 +178,22 @@ QString pluginsPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getPath(frameworkBundle()) % QLatin1String("/Libraries");
 #else
-    return location(QLibraryInfo::PluginsPath) % QLatin1String("/qtwebengine");
+    static bool initialized = false;
+    static QString potentialPluginsPath = location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
+
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialPluginsPath)) {
+            qWarning("Installed Qt plugins directory not found at location %s. Trying application directory...", qPrintable(potentialPluginsPath));
+            potentialPluginsPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine");
+        }
+        if (!QFileInfo::exists(potentialPluginsPath)) {
+            qWarning("Qt WebEngine Plugins directory not found at location %s. Trying fallback directory... Plugins as for example video codecs MAY NOT work.", qPrintable(potentialPluginsPath));
+            potentialPluginsPath = fallbackDir();
+        }
+    }
+
+    return potentialPluginsPath;
 #endif
 }
 
@@ -182,30 +202,48 @@ QString localesPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
 #else
-    return location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
+    static bool initialized = false;
+    static QString potentialLocalesPath = location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
+
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialLocalesPath)) {
+            qWarning("Installed Qt WebEngine locales directory not found at location %s. Trying application directory...", qPrintable(potentialLocalesPath));
+            potentialLocalesPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine_locales");
+        }
+        if (!QFileInfo::exists(potentialLocalesPath)) {
+            qWarning("Qt WebEngine locales directory not found at location %s. Trying fallback directory... Translations MAY NOT not be correct.", qPrintable(potentialLocalesPath));
+            potentialLocalesPath = fallbackDir();
+        }
+    }
+
+    return potentialLocalesPath;
 #endif
 }
 
-QString fallbackDir() {
-    static QString directory = QDir::homePath() % QLatin1String("/.") % QCoreApplication::applicationName();
-    return directory;
-}
-
-} // namespace
-
-#if defined(OS_ANDROID)
-namespace base {
-// Replace the Android base path provider that depends on jni.
-// With this we avoid patching chromium which we would need since
-// PathService registers PathProviderAndroid by default on Android.
-bool PathProviderAndroid(int key, FilePath* result)
+QString libraryDataPath()
 {
-    *result = WebEngineLibraryInfo::getPath(key);
-    return !(result->empty());
-}
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+    return getResourcesPath(frameworkBundle());
+#else
+    static bool initialized = false;
+    static QString potentialDataPath = location(QLibraryInfo::DataPath);
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialDataPath)) {
+            qWarning("Qt WebEngine data directory not found at location %s. Trying application directory...", qPrintable(potentialDataPath));
+            potentialDataPath = QCoreApplication::applicationDirPath();
+        }
+        if (!QFileInfo::exists(potentialDataPath)) {
+            qWarning("Qt WebEngine data directory not found at location %s. Trying fallback directory... The application MAY NOT work.", qPrintable(potentialDataPath));
+            potentialDataPath = fallbackDir();
+        }
+    }
 
+    return potentialDataPath;
+#endif
 }
-#endif // defined(OS_ANDROID)
+} // namespace
 
 base::FilePath WebEngineLibraryInfo::getPath(int key)
 {
@@ -232,18 +270,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
     case base::DIR_QT_LIBRARY_DATA:
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-        return toFilePath(getResourcesPath(frameworkBundle()));
-#else
-        return toFilePath(location(QLibraryInfo::DataPath));
-#endif
-#if defined(OS_ANDROID)
-    case base::DIR_SOURCE_ROOT:
-    case base::DIR_ANDROID_EXTERNAL_STORAGE:
-    case base::DIR_ANDROID_APP_DATA:
-        directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-        break;
-#endif
+        return toFilePath(libraryDataPath());
     case content::DIR_MEDIA_LIBS:
         return toFilePath(pluginsPath());
     case ui::DIR_LOCALES:

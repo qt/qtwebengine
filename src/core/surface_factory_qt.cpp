@@ -45,7 +45,8 @@
 
 #include <QGuiApplication>
 
-#if defined(USE_OZONE) || defined(OS_ANDROID)
+#if defined(USE_OZONE)
+
 #include <EGL/egl.h>
 
 #ifndef QT_LIBDIR_EGL
@@ -69,12 +70,6 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
 
 bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library, SetGLGetProcAddressProcCallback set_gl_get_proc_address)
 {
-#if defined(OS_ANDROID)
-    // This is done in gl_implementation_android.cc for now. We might need to switch if we
-    // start supporting the emulator platform but that would be a more intrusive change.
-    Q_UNREACHABLE();
-    return false;
-#else
     base::FilePath libEGLPath = QtWebEngineCore::toFilePath(QT_LIBDIR_EGL);
     libEGLPath = libEGLPath.Append("libEGL.so");
     base::NativeLibrary eglLibrary = LoadLibrary(libEGLPath);
@@ -99,7 +94,6 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
     gfx::AddGLNativeLibrary(eglLibrary);
     gfx::AddGLNativeLibrary(gles2Library);
     return true;
-#endif // defined(OS_ANDROID)
 }
 
 intptr_t SurfaceFactoryQt::GetNativeDisplay()
@@ -114,5 +108,5 @@ intptr_t SurfaceFactoryQt::GetNativeDisplay()
 
 } // namespace QtWebEngineCore
 
-#endif // defined(USE_OZONE) || defined(OS_ANDROID)
+#endif // defined(USE_OZONE)
 

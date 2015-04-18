@@ -62,6 +62,8 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     : profile(p)
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
+    , totalBytes(-1)
+    , receivedBytes(0)
 {
 }
 
