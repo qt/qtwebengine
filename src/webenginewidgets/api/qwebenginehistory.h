@@ -67,7 +67,7 @@ public:
     bool isValid() const;
 private:
     QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *priv);
-    Q_DECLARE_PRIVATE_D(d.data(), QWebEngineHistoryItem);
+    Q_DECLARE_PRIVATE_D(d.data(), QWebEngineHistoryItem)
     QExplicitlySharedDataPointer<QWebEngineHistoryItemPrivate> d;
     friend class QWebEngineHistory;
     friend class QWebEngineHistoryPrivate;

@@ -125,7 +125,7 @@ public:
         FindBackward = 1,
         FindCaseSensitively = 2,
     };
-    Q_DECLARE_FLAGS(FindFlags, FindFlag);
+    Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
     enum WebWindowType {
         WebBrowserWindow,
@@ -271,7 +271,7 @@ protected:
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
 
 private:
-    Q_DECLARE_PRIVATE(QWebEnginePage);
+    Q_DECLARE_PRIVATE(QWebEnginePage)
     QScopedPointer<QWebEnginePagePrivate> d_ptr;
 #ifndef QT_NO_ACTION
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))

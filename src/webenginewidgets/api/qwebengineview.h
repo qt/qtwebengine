@@ -120,7 +120,7 @@ protected:
     virtual bool event(QEvent*) Q_DECL_OVERRIDE;
 
 private:
-    Q_DECLARE_PRIVATE(QWebEngineView);
+    Q_DECLARE_PRIVATE(QWebEngineView)
     QScopedPointer<QWebEngineViewPrivate> d_ptr;
 
     friend class QWebEnginePage;

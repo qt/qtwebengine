@@ -75,7 +75,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QWebEngineCertificateError)
-    Q_DECLARE_PRIVATE(QWebEngineCertificateError);
+    Q_DECLARE_PRIVATE(QWebEngineCertificateError)
     QScopedPointer<QWebEngineCertificateErrorPrivate> d_ptr;
 };
 
