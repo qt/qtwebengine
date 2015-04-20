@@ -186,8 +186,11 @@ void UserScriptControllerHost::reserve(WebContentsAdapter *adapter, int count)
         m_perContentsScripts[adapter->webContents()].reserve(count);
 }
 
-void UserScriptControllerHost::renderProcessHostCreated(content::RenderProcessHost *renderer)
+void UserScriptControllerHost::renderProcessStartedWithHost(content::RenderProcessHost *renderer)
 {
+    if (m_observedProcesses.contains(renderer))
+        return;
+
     if (m_renderProcessObserver.isNull())
         m_renderProcessObserver.reset(new RenderProcessObserverHelper(this));
     renderer->AddObserver(m_renderProcessObserver.data());
