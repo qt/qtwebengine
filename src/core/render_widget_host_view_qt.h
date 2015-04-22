@@ -159,6 +159,8 @@ public:
     // Overridden from RenderWidgetHostViewQtDelegateClient.
     virtual QSGNode *updatePaintNode(QSGNode *) Q_DECL_OVERRIDE;
     virtual void notifyResize() Q_DECL_OVERRIDE;
+    virtual void notifyShown() Q_DECL_OVERRIDE;
+    virtual void notifyHidden() Q_DECL_OVERRIDE;
     virtual void windowBoundsChanged() Q_DECL_OVERRIDE;
     virtual void windowChanged() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;

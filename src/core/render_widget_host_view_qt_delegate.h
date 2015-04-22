@@ -64,6 +64,8 @@ public:
     virtual ~RenderWidgetHostViewQtDelegateClient() { }
     virtual QSGNode *updatePaintNode(QSGNode *) = 0;
     virtual void notifyResize() = 0;
+    virtual void notifyShown() = 0;
+    virtual void notifyHidden() = 0;
     virtual void windowBoundsChanged() = 0;
     virtual void windowChanged() = 0;
     virtual bool forwardEvent(QEvent *) = 0;

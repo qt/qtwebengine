@@ -715,6 +715,16 @@ void RenderWidgetHostViewQt::notifyResize()
     m_host->WasResized();
 }
 
+void RenderWidgetHostViewQt::notifyShown()
+{
+    WasShown();
+}
+
+void RenderWidgetHostViewQt::notifyHidden()
+{
+    WasHidden();
+}
+
 void RenderWidgetHostViewQt::windowBoundsChanged()
 {
     m_host->SendScreenRects();

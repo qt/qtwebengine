@@ -120,11 +120,13 @@ void RenderWidgetHostViewQtDelegateQuick::unlockMouse()
 void RenderWidgetHostViewQtDelegateQuick::show()
 {
     setVisible(true);
+    m_client->notifyShown();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::hide()
 {
     setVisible(false);
+    m_client->notifyHidden();
 }
 
 bool RenderWidgetHostViewQtDelegateQuick::isVisible() const
