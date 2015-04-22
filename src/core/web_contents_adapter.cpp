@@ -44,8 +44,6 @@
 #include "browser_accessibility_qt.h"
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
-#include "content_browser_client_qt.h"
-#include "javascript_dialog_manager_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "qt_render_view_observer_host.h"
 #include "type_conversion.h"
@@ -54,7 +52,6 @@
 #include "web_contents_view_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
-#include "web_engine_visited_links_manager.h"
 
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
