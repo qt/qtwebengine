@@ -38,9 +38,11 @@
 #include "web_engine_library_info.h"
 
 #include "base/base_paths.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "content/public/common/content_paths.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/base/ui_base_switches.h"
 #include "type_conversion.h"
 
 #include <QByteArray>
@@ -288,4 +290,13 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
 base::string16 WebEngineLibraryInfo::getApplicationName()
 {
     return toString16(qApp->applicationName());
+}
+
+std::string WebEngineLibraryInfo::getApplicationLocale()
+{
+    CommandLine *parsedCommandLine = CommandLine::ForCurrentProcess();
+    if (!parsedCommandLine->HasSwitch(switches::kLang))
+        return QLocale().bcp47Name().toStdString();
+
+    return parsedCommandLine->GetSwitchValueASCII(switches::kLang);
 }

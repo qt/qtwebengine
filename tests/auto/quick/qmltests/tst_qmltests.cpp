@@ -49,6 +49,9 @@ int main(int argc, char **argv)
     qputenv("QML2_IMPORT_PATH", QByteArray(TESTS_SOURCE_DIR "qmltests/mock-delegates"));
     QScopedPointer<Application> app;
 
+    // Force to use English language for testing due to error message checks
+    QLocale::setDefault(QLocale("en"));
+
     if (!QCoreApplication::instance())
         app.reset(new Application(argc, argv));
     QtWebEngine::initialize();

@@ -48,8 +48,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -69,6 +71,7 @@
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "user_script_controller_host.h"
 #include "web_contents_delegate_qt.h"
+#include "web_engine_library_info.h"
 
 #include <QGuiApplication>
 #include <QLocale>
@@ -441,7 +444,16 @@ content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvide
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
 {
-    return QLocale().bcp47Name().toStdString();
+    return WebEngineLibraryInfo::getApplicationLocale();
+}
+
+void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id)
+{
+    Q_UNUSED(child_process_id);
+
+    std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
+    if (processType == switches::kZygoteProcess)
+        command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
 
 content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()

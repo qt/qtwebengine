@@ -49,6 +49,7 @@ public:
     static base::FilePath getPath(int key);
     // Called by localized_error in our custom chrome layer
     static base::string16 getApplicationName();
+    static std::string getApplicationLocale();
 };
 
 
