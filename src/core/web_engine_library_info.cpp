@@ -67,39 +67,6 @@ QString fallbackDir() {
     return directory;
 }
 
-QString location(QLibraryInfo::LibraryLocation path)
-{
-#if defined(Q_OS_BLACKBERRY)
-    // On BlackBerry, the qtwebengine may live in /usr/lib/qtwebengine.
-    // If so, the QTWEBENGINEPROCESS_PATH env var is set to /usr/lib/qtwebengine/bin/QTWEBENGINEPROCESS_NAME.
-    static QString webEnginePath;
-    static bool initialized = false;
-    if (!initialized) {
-        const QByteArray fromEnv = qgetenv("QTWEBENGINEPROCESS_PATH");
-        if (!fromEnv.isEmpty()) {
-            QDir dir = QFileInfo(QString::fromLatin1(fromEnv)).dir();
-            if (dir.cdUp())
-                webEnginePath = dir.absolutePath();
-        }
-        initialized = true;
-    }
-    switch (path) {
-    case QLibraryInfo::TranslationsPath:
-        if (!webEnginePath.isEmpty())
-            return webEnginePath % QLatin1String("/translations");
-        break;
-    case QLibraryInfo::DataPath:
-        if (!webEnginePath.isEmpty())
-            return webEnginePath;
-        break;
-    default:
-        break;
-    }
-#endif
-
-    return QLibraryInfo::location(path);
-}
-
 #if defined(OS_MACOSX)
 static inline CFBundleRef frameworkBundle()
 {
@@ -155,7 +122,7 @@ QString subProcessPath()
     static QString processPath (getPath(frameworkBundle())
                                 % QStringLiteral("/Helpers/" QTWEBENGINEPROCESS_NAME ".app/Contents/MacOS/" QTWEBENGINEPROCESS_NAME));
 #else
-    static QString processPath (location(QLibraryInfo::LibraryExecutablesPath)
+    static QString processPath (QLibraryInfo::location(QLibraryInfo::LibraryExecutablesPath)
                                 % QLatin1Char('/') % processBinary);
 #endif
     if (!initialized) {
@@ -181,7 +148,7 @@ QString pluginsPath()
     return getPath(frameworkBundle()) % QLatin1String("/Libraries");
 #else
     static bool initialized = false;
-    static QString potentialPluginsPath = location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
+    static QString potentialPluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
 
     if (!initialized) {
         initialized = true;
@@ -205,7 +172,7 @@ QString localesPath()
     return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_locales");
 #else
     static bool initialized = false;
-    static QString potentialLocalesPath = location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
+    static QString potentialLocalesPath = QLibraryInfo::location(QLibraryInfo::TranslationsPath) % QDir::separator() % QLatin1String("qtwebengine_locales");
 
     if (!initialized) {
         initialized = true;
@@ -229,7 +196,7 @@ QString libraryDataPath()
     return getResourcesPath(frameworkBundle());
 #else
     static bool initialized = false;
-    static QString potentialDataPath = location(QLibraryInfo::DataPath);
+    static QString potentialDataPath = QLibraryInfo::location(QLibraryInfo::DataPath);
     if (!initialized) {
         initialized = true;
         if (!QFileInfo::exists(potentialDataPath)) {
@@ -255,7 +222,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
         return toFilePath(getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_resources.pak"));
 #else
-        return toFilePath(location(QLibraryInfo::DataPath) % QDir::separator() %  QLatin1String("qtwebengine_resources.pak"));
+        return toFilePath(QLibraryInfo::location(QLibraryInfo::DataPath) % QDir::separator() %  QLatin1String("qtwebengine_resources.pak"));
 #endif
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
