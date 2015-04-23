@@ -136,13 +136,16 @@ void RenderWidgetHostViewQtDelegateWidget::show()
 {
     // Check if we're attached to a QWebEngineView, we don't
     // want to show anything else than popups as top-level.
-    if (parent() || m_isPopup)
+    if (parent() || m_isPopup) {
         QOpenGLWidget::show();
+        m_client->notifyShown();
+    }
 }
 
 void RenderWidgetHostViewQtDelegateWidget::hide()
 {
     QOpenGLWidget::hide();
+    m_client->notifyHidden();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::isVisible() const

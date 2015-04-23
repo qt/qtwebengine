@@ -67,7 +67,7 @@ public:
 private:
     QQuickWebEngineHistoryListModel();
 
-    Q_DECLARE_PRIVATE(QQuickWebEngineHistoryListModel);
+    Q_DECLARE_PRIVATE(QQuickWebEngineHistoryListModel)
     QScopedPointer<QQuickWebEngineHistoryListModelPrivate> d_ptr;
 
     friend class QQuickWebEngineHistory;
@@ -98,7 +98,7 @@ public:
 private:
     QQuickWebEngineHistory();
 
-    Q_DECLARE_PRIVATE(QQuickWebEngineHistory);
+    Q_DECLARE_PRIVATE(QQuickWebEngineHistory)
     QScopedPointer<QQuickWebEngineHistoryPrivate> d_ptr;
 };
 

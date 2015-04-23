@@ -66,7 +66,7 @@ public:
     void reserve(WebContentsAdapter *adapter, int count);
     const QSet<UserScript> registeredScripts(WebContentsAdapter *adapter) const;
 
-    void renderProcessHostCreated(content::RenderProcessHost *renderer);
+    void renderProcessStartedWithHost(content::RenderProcessHost *renderer);
 
 private:
     Q_DISABLE_COPY(UserScriptControllerHost)

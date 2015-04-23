@@ -79,11 +79,13 @@ QRectF RenderWidgetHostViewQtDelegateQuickWindow::contentsRect() const
 void RenderWidgetHostViewQtDelegateQuickWindow::show()
 {
     QQuickWindow::show();
+    m_realDelegate->show();
 }
 
 void RenderWidgetHostViewQtDelegateQuickWindow::hide()
 {
     QQuickWindow::hide();
+    m_realDelegate->hide();
 }
 
 bool RenderWidgetHostViewQtDelegateQuickWindow::isVisible() const

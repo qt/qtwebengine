@@ -119,6 +119,7 @@ public:
     virtual blink::WebNotificationPermission CheckDesktopNotificationPermission(const GURL& source_origin, content::ResourceContext* context, int render_process_id)  Q_DECL_OVERRIDE;
 
     virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
+    virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) Q_DECL_OVERRIDE;
 
 #if defined(ENABLE_PLUGINS)
     virtual void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) Q_DECL_OVERRIDE;
