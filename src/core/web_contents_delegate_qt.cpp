@@ -121,9 +121,6 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
     WebContentsAdapter *newAdapter = createWindow(new_contents, disposition, initial_pos, user_gesture);
     if (was_blocked)
         *was_blocked = !newAdapter;
-
-    if (content::RenderWidgetHostImpl *impl = content::RenderWidgetHostImpl::From(new_contents->GetRenderViewHost()))
-        impl->WasShown(ui::LatencyInfo());
 }
 
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)

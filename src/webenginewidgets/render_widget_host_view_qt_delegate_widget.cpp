@@ -81,7 +81,7 @@ void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient*
     if (pagePrivate->view) {
         pagePrivate->view->layout()->addWidget(this);
         pagePrivate->view->setFocusProxy(this);
-        QOpenGLWidget::show();
+        show();
     } else
         setParent(0);
 }
