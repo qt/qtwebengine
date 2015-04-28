@@ -67,13 +67,13 @@ plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_
     }
 
     !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
-        ICU_TARGET = $$shell_path($$[QT_INSTALL_DATA]/icudtl.dat)
+        ICU_TARGET = $$shell_path($$[QT_INSTALL_DATA/get]/icudtl.dat)
         ICU_FILE = $$shell_path($$OUT_PWD/$$getConfigDir()/icudtl.dat)
         icu_rule.target = $$ICU_TARGET
         unix: icu_rule.commands = if [ -e $$ICU_FILE ] ; then $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET ; fi
         win32: icu_rule.commands = if exist $$ICU_FILE ( $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET )
 
-        PLUGIN_DIR = $$shell_path($$[QT_INSTALL_PLUGINS]/qtwebengine)
+        PLUGIN_DIR = $$shell_path($$[QT_INSTALL_PLUGINS/get]/qtwebengine)
         PLUGIN_TARGET = $$shell_path($$PLUGIN_DIR/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION})
         PLUGIN_FILE = $$shell_path($$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION})
         plugins_rule.target = $$PLUGIN_TARGET
