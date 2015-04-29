@@ -176,9 +176,11 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVis
     if (qApp->inputMethod()->isVisible() == editorVisible)
         return;
 
-    setFlag(QQuickItem::ItemAcceptsInputMethod, editorVisible);
-    qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
-    qApp->inputMethod()->setVisible(editorVisible);
+    if (parentItem() && parentItem()->flags() & QQuickItem::ItemAcceptsInputMethod) {
+        qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
+        qApp->inputMethod()->setVisible(editorVisible);
+    }
+
 }
 
 void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
