@@ -41,7 +41,7 @@
 
 import QtQuick 2.3
 import QtTest 1.0
-import QtWebEngine 1.1
+import QtWebEngine 1.2
 
 Item {
 width: 300

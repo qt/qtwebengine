@@ -184,6 +184,7 @@ public:
     int loadProgress;
     bool m_isFullScreen;
     bool isLoading;
+    bool m_activeFocusOnPress;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
     QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;

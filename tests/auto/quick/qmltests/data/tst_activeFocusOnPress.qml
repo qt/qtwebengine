@@ -39,41 +39,44 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
+import QtQuick 2.5
 import QtTest 1.0
-import QtWebEngine 1.2
 
-TestWebEngineView {
-    id: webEngineView
-    width: 400
-    height: 300
-
-    SignalSpy {
-        id: spy
-        target: webEngineView
-        signalName: "titleChanged"
+Item {
+    id: root
+    width: 300
+    height: 400
+    TextInput {
+        id: textInput
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        focus: true
+        text: "foo"
     }
 
-    TestCase {
-        name: "WebEngineViewRunJavaScript"
-        function test_runJavaScript() {
-            var testTitle = "Title to test runJavaScript";
-            runJavaScript("document.title = \"" + testTitle +"\"");
-            _waitFor(function() { spy.count > 0; });
-            compare(spy.count, 1);
-            compare(webEngineView.title, testTitle);
+    TestWebEngineView {
+        id: webEngineView
+        activeFocusOnPress: false
+        anchors {
+            top: textInput.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
 
-            var testTitle2 = "Foobar"
-            var testHtml = "<html><head><title>" + testTitle2 + "</title></head><body></body></html>";
-            loadHtml(testHtml);
-            waitForLoadSucceeded();
-            var callbackCalled = false;
-            runJavaScript("document.title", function(result) {
-                    compare(result, testTitle2);
-                    callbackCalled = true;
-                });
-            wait(100);
-            verify(callbackCalled);
+        TestCase {
+            name: "ActiveFocusOnPress"
+            when:windowShown
+
+            function test_activeFocusOnPress() {
+                textInput.forceActiveFocus()
+                verify(textInput.activeFocus)
+                mouseClick(root, 150, 300, Qt.LeftButton)
+                verify(textInput.activeFocus)
+            }
         }
     }
 }

@@ -73,6 +73,8 @@ private:
     bool m_toggleOn;
 };
 
+#define LATEST_WEBENGINEVIEW_REVISION 2
+
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
@@ -89,6 +91,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL)
+    Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
@@ -200,6 +203,8 @@ public:
     void setTestSupport(QQuickWebEngineTestSupport *testSupport);
 #endif
 
+    bool activeFocusOnPress() const;
+
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
@@ -212,6 +217,7 @@ public Q_SLOTS:
     Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
     Q_REVISION(1) void fullScreenCancelled();
     Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
+    Q_REVISION(2) void setActiveFocusOnPress(bool arg);
 
 Q_SIGNALS:
     void titleChanged();
@@ -230,7 +236,7 @@ Q_SIGNALS:
     Q_REVISION(1) void zoomFactorChanged(qreal arg);
     Q_REVISION(1) void profileChanged();
     Q_REVISION(1) void webChannelChanged();
-
+    Q_REVISION(2) void activeFocusOnPressChanged(bool);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

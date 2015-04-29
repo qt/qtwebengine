@@ -61,14 +61,14 @@ public:
 
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine.experimental"));
 
-        qmlRegisterExtendedType<QQuickWebEngineView, QQuickWebEngineViewExperimentalExtension>(uri, 1, 0, "WebEngineView");
+        qmlRegisterExtendedType<QQuickWebEngineView, QQuickWebEngineViewExperimentalExtension>(uri, 1, 2, "WebEngineView");
         qmlRegisterUncreatableType<QQuickWebEngineViewExperimental>(uri, 1, 0, "WebEngineViewExperimental",
             QObject::tr("Cannot create a separate instance of WebEngineViewExperimental"));
         qmlRegisterUncreatableType<QQuickWebEngineViewport>(uri, 1, 0, "WebEngineViewport",
             QObject::tr("Cannot create a separate instance of WebEngineViewport"));
 
         // Use the latest revision of QQuickWebEngineView when importing QtWebEngine.experimental 1.0
-        qmlRegisterRevision<QQuickWebEngineView, 1>(uri, 1, 0);
+        qmlRegisterRevision<QQuickWebEngineView, LATEST_WEBENGINEVIEW_REVISION>(uri, 1, LATEST_WEBENGINEVIEW_REVISION);
     }
 };
 

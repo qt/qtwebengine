@@ -41,7 +41,7 @@
 
 import QtQuick 2.0
 import QtTest 1.0
-import QtWebEngine 1.0
+import QtWebEngine 1.2
 import "../mock-delegates/TestParams" 1.0
 
 TestWebEngineView {

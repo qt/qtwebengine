@@ -103,6 +103,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , loadProgress(0)
     , m_isFullScreen(false)
     , isLoading(false)
+    , m_activeFocusOnPress(true)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
 {
@@ -758,7 +759,22 @@ void QQuickWebEngineView::setTestSupport(QQuickWebEngineTestSupport *testSupport
     Q_D(QQuickWebEngineView);
     d->m_testSupport = testSupport;
 }
+
 #endif
+
+/*!
+ * \qmlproperty bool WebEngineView::activeFocusOnPress
+ * \since QtWebEngine 1.2
+ *
+ * This property specifies whether the view should gain active focus when pressed.
+ * The default value is true.
+ *
+ */
+bool QQuickWebEngineView::activeFocusOnPress() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->m_activeFocusOnPress;
+}
 
 void QQuickWebEngineViewPrivate::didRunJavaScript(quint64 requestId, const QVariant &result)
 {
@@ -958,6 +974,16 @@ void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQu
     default:
         Q_UNREACHABLE();
     }
+}
+
+void QQuickWebEngineView::setActiveFocusOnPress(bool arg)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->m_activeFocusOnPress == arg)
+        return;
+
+    d->m_activeFocusOnPress = arg;
+    emit activeFocusOnPressChanged(arg);
 }
 
 void QQuickWebEngineView::goBackOrForward(int offset)

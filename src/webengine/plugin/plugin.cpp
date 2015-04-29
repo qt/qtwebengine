@@ -83,6 +83,9 @@ public:
             QObject::tr("Cannot create a separate instance of NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
             QObject::tr("Cannot create a separate instance of FullScreenRequest"));
+
+        // For now (1.x import), the latest revision matches the minor version of the import.
+        qmlRegisterRevision<QQuickWebEngineView, LATEST_WEBENGINEVIEW_REVISION>(uri, 1, LATEST_WEBENGINEVIEW_REVISION);
     }
 };
 

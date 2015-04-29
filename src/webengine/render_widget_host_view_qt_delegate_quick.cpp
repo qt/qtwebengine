@@ -64,10 +64,14 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
 
 void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)
 {
-    QQuickWebEngineViewPrivate *viewPrivate = static_cast<QQuickWebEngineViewPrivate *>(container);
-    setParentItem(viewPrivate->q_func());
-    setSize(viewPrivate->q_func()->boundingRect().size());
+    QQuickWebEngineView *view = static_cast<QQuickWebEngineViewPrivate *>(container)->q_func();
+    setParentItem(view);
+    setSize(view->boundingRect().size());
+    // Focus on creation if the view accepts it
+    if (view->activeFocusOnPress())
+        setFocus(true);
     m_initialized = true;
+
 }
 
 void RenderWidgetHostViewQtDelegateQuick::initAsPopup(const QRect &r)
@@ -195,7 +199,7 @@ void RenderWidgetHostViewQtDelegateQuick::focusOutEvent(QFocusEvent *event)
 
 void RenderWidgetHostViewQtDelegateQuick::mousePressEvent(QMouseEvent *event)
 {
-    if (!m_isPopup)
+    if (!m_isPopup && (parentItem() && parentItem()->property("activeFocusOnPress").toBool()))
         forceActiveFocus();
     m_client->forwardEvent(event);
 }
@@ -227,7 +231,8 @@ void RenderWidgetHostViewQtDelegateQuick::wheelEvent(QWheelEvent *event)
 
 void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
 {
-    if (event->type() == QEvent::TouchBegin && !m_isPopup)
+    if (event->type() == QEvent::TouchBegin && !m_isPopup
+            && (parentItem() && parentItem()->property("activeFocusOnPress").toBool()))
         forceActiveFocus();
     m_client->forwardEvent(event);
 }
