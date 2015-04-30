@@ -40,13 +40,15 @@
 
 #include "chromium_gpu_helper.h"
 
-#include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/sync_point_manager.h"
-#include "content/gpu/gpu_child_thread.h"
+// Including gpu/command_buffer headers before content/gpu headers makes sure that
+// guards are defined to prevent duplicate definition errors with forward declared
+// GL typedefs cascading through content header includes.
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
-#include <QtGlobal> // We need this for the Q_OS_QNX define.
+#include "content/common/gpu/gpu_channel_manager.h"
+#include "content/common/gpu/sync_point_manager.h"
+#include "content/gpu/gpu_child_thread.h"
 
 #ifdef Q_OS_QNX
 #include "content/common/gpu/stream_texture_qnx.h"
