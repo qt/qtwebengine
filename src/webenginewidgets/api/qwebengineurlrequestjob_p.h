@@ -56,8 +56,19 @@ class QWEBENGINEWIDGETS_EXPORT QWebEngineUrlRequestJob : public QObject {
 public:
     ~QWebEngineUrlRequestJob();
 
+    enum Error {
+        NoError = 0,
+        UrlNotFound,
+        UrlInvalid,
+        RequestAborted,
+        RequestDenied,
+        RequestFailed
+    };
+
     QUrl requestUrl() const;
     void setReply(const QByteArray &contentType, QIODevice *device);
+    void setError(Error error);
+    void setRedirect(const QUrl &url);
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
