@@ -72,7 +72,6 @@ WebPage::WebPage(QObject *parent)
     : QWebEnginePage(parent)
     , m_keyboardModifiers(Qt::NoModifier)
     , m_pressedButtons(Qt::NoButton)
-    , m_openInNewTab(false)
 {
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     setNetworkAccessManager(BrowserApplication::networkAccessManager());
@@ -174,8 +173,7 @@ private:
 
 QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type)
 {
-    if (m_openInNewTab || type == QWebEnginePage::WebBrowserTab) {
-        m_openInNewTab = false;
+    if (type == QWebEnginePage::WebBrowserTab) {
         return mainWindow()->tabWidget()->newTab()->page();
     } else if (type == QWebEnginePage::WebBrowserWindow) {
         BrowserApplication::instance()->newMainWindow();
@@ -331,24 +329,16 @@ WebView::WebView(QWidget* parent)
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
-#if defined(QWEBENGINEPAGE_HITTESTCONTENT)
-    QWebEngineHitTestResult r = page()->hitTestContent(event->pos());
-    if (!r.linkUrl().isEmpty()) {
-        QMenu menu(this);
-        menu.addAction(pageAction(QWebEnginePage::OpenLinkInNewWindow));
-        menu.addAction(tr("Open in New Tab"), this, SLOT(openLinkInNewTab()));
-        menu.addSeparator();
-        menu.addAction(pageAction(QWebEnginePage::DownloadLinkToDisk));
-        // Add link to bookmarks...
-        menu.addSeparator();
-        menu.addAction(pageAction(QWebEnginePage::CopyLinkToClipboard));
-        if (page()->settings()->testAttribute(QWebEngineSettings::DeveloperExtrasEnabled))
-            menu.addAction(pageAction(QWebEnginePage::InspectElement));
-        menu.exec(mapToGlobal(event->pos()));
-        return;
+    QMenu *menu = page()->createStandardContextMenu();
+    const QList<QAction*> actions = menu->actions();
+    QList<QAction*>::const_iterator it = qFind(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::OpenLinkInThisWindow));
+    if (it != actions.cend()) {
+        ++it;
+        menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewWindow));
+        menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewTab));
     }
-#endif
-    QWebEngineView::contextMenuEvent(event);
+
+    menu->popup(event->globalPos());
 }
 
 void WebView::wheelEvent(QWheelEvent *event)
@@ -367,10 +357,7 @@ void WebView::wheelEvent(QWheelEvent *event)
 
 void WebView::openLinkInNewTab()
 {
-#if defined(QWEBENGINEPAGE_WEBACTION_OPENLINKINNEWWINDOW)
-    m_page->m_openInNewTab = true;
-    pageAction(QWebEnginePage::OpenLinkInNewWindow)->trigger();
-#endif
+    pageAction(QWebEnginePage::OpenLinkInNewTab)->trigger();
 }
 
 void WebView::onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)

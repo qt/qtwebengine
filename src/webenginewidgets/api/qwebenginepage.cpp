@@ -55,6 +55,7 @@
 #include <QLayout>
 #include <QMenu>
 #include <QMessageBox>
+#include <QMimeData>
 #include <QStandardPaths>
 #include <QStyle>
 #include <QUrl>
@@ -615,6 +616,39 @@ QAction *QWebEnginePage::action(WebAction action) const
     case PasteAndMatchStyle:
         text = tr("Paste and Match Style");
         break;
+    case OpenLinkInThisWindow:
+        text = tr("Open Link in This Window");
+        break;
+    case OpenLinkInNewWindow:
+        text = tr("Open Link in New Window");
+        break;
+    case OpenLinkInNewTab:
+        text = tr("Open Link in New Tab");
+        break;
+    case CopyLinkToClipboard:
+        text = tr("Copy Link URL");
+        break;
+    case CopyImageToClipboard:
+        text = tr("Copy Image");
+        break;
+    case CopyImageUrlToClipboard:
+        text = tr("Copy Image URL");
+        break;
+    case CopyMediaUrlToClipboard:
+        text = tr("Copy Media URL");
+        break;
+    case ToggleMediaControls:
+        text = tr("Toggle Media Controls");
+        break;
+    case ToggleMediaLoop:
+        text = tr("Toggle Looping");
+        break;
+    case ToggleMediaPlayPause:
+        text = tr("Toggle Play/Pause");
+        break;
+    case ToggleMediaMute:
+        text = tr("Toggle Mute");
+        break;
     default:
         break;
     }
@@ -672,6 +706,104 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case PasteAndMatchStyle:
         d->adapter->pasteAndMatchStyle();
         break;
+    case OpenLinkInThisWindow:
+        if (d->m_menuData.linkUrl.isValid())
+            setUrl(d->m_menuData.linkUrl);
+        break;
+    case OpenLinkInNewWindow:
+        if (d->m_menuData.linkUrl.isValid()) {
+            QWebEnginePage *newPage = createWindow(WebBrowserWindow);
+            if (newPage)
+                newPage->setUrl(d->m_menuData.linkUrl);
+        }
+        break;
+    case OpenLinkInNewTab:
+        if (d->m_menuData.linkUrl.isValid()) {
+            QWebEnginePage *newPage = createWindow(WebBrowserTab);
+            if (newPage)
+                newPage->setUrl(d->m_menuData.linkUrl);
+        }
+        break;
+    case CopyLinkToClipboard:
+        if (d->m_menuData.linkUrl.isValid()) {
+            QString urlString = d->m_menuData.linkUrl.toString(QUrl::FullyEncoded);
+            QString title = d->m_menuData.linkText.toHtmlEscaped();
+            QMimeData *data = new QMimeData();
+            data->setText(urlString);
+            QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
+            data->setHtml(html);
+            data->setUrls(QList<QUrl>() << d->m_menuData.linkUrl);
+            qApp->clipboard()->setMimeData(data);
+        }
+        break;
+    case CopyImageToClipboard:
+        if (d->m_menuData.hasImageContent &&
+                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeImage ||
+                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas))
+        {
+            d->adapter->copyImageAt(d->m_menuData.pos);
+        }
+        break;
+    case CopyImageUrlToClipboard:
+        if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeImage) {
+            QString urlString = d->m_menuData.mediaUrl.toString(QUrl::FullyEncoded);
+            QString title = d->m_menuData.linkText;
+            if (!title.isEmpty())
+                title = QStringLiteral(" alt=\"%1\"").arg(title.toHtmlEscaped());
+            QMimeData *data = new QMimeData();
+            data->setText(urlString);
+            QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral("></img>");
+            data->setHtml(html);
+            data->setUrls(QList<QUrl>() << d->m_menuData.mediaUrl);
+            qApp->clipboard()->setMimeData(data);
+        }
+        break;
+    case CopyMediaUrlToClipboard:
+        if (d->m_menuData.mediaUrl.isValid() &&
+                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
+                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        {
+            QString urlString = d->m_menuData.mediaUrl.toString(QUrl::FullyEncoded);
+            QMimeData *data = new QMimeData();
+            data->setText(urlString);
+            if (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio)
+                data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"></audio>"));
+            else
+                data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"></video>"));
+            data->setUrls(QList<QUrl>() << d->m_menuData.mediaUrl);
+            qApp->clipboard()->setMimeData(data);
+        }
+        break;
+    case ToggleMediaControls:
+        if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
+            bool enable = !(d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaControls);
+            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerControls, enable);
+        }
+        break;
+    case ToggleMediaLoop:
+        if (d->m_menuData.mediaUrl.isValid() &&
+                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
+                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        {
+            bool enable = !(d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaLoop);
+            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerLoop, enable);
+        }
+        break;
+    case ToggleMediaPlayPause:
+        if (d->m_menuData.mediaUrl.isValid() &&
+                (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
+                 d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        {
+            bool enable = (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaPaused);
+            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerPlay, enable);
+        }
+        break;
+    case ToggleMediaMute:
+        if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
+            bool enable = (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
+            d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
+        }
+        break;
     default:
         Q_UNREACHABLE();
     }
@@ -704,6 +836,7 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     if (!view)
         return false;
 
+    m_menuData = WebEngineContextMenuData();
     QContextMenuEvent event(QContextMenuEvent::Mouse, data.pos, view->mapToGlobal(data.pos));
     switch (view->contextMenuPolicy()) {
     case Qt::PreventContextMenu:
@@ -728,7 +861,6 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     }
     Q_ASSERT(view->d_func()->m_pendingContextMenuEvent);
     view->d_func()->m_pendingContextMenuEvent = false;
-    m_menuData = WebEngineContextMenuData();
     return true;
 }
 
@@ -821,21 +953,6 @@ public:
         qApp->clipboard()->setText(m_text);
     }
 };
-
-class LoadUrlFunctor
-{
-    QWebEnginePage *m_page;
-    QUrl m_url;
-public:
-    LoadUrlFunctor(QWebEnginePage *page, const QUrl &url)
-      : m_page(page)
-      , m_url(url)
-    {}
-    void operator()() const
-    {
-        m_page->load(m_url);
-    }
-};
 }
 
 QMenu *QWebEnginePage::createStandardContextMenu()
@@ -844,6 +961,9 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     QMenu *menu = new QMenu(d->view);
     QAction *action = 0;
     WebEngineContextMenuData contextMenuData(d->m_menuData);
+    if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
+        menu->addAction(QWebEnginePage::action(OpenLinkInThisWindow));
+    }
     if (contextMenuData.selectedText.isEmpty()) {
         action = new QAction(QIcon::fromTheme(QStringLiteral("go-previous")), tr("&Back"), menu);
         connect(action, &QAction::triggered, d->view, &QWebEngineView::back);
@@ -865,14 +985,31 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
-        menu->addSeparator();
-        action = new QAction(tr("Navigate to..."), menu);
-        connect(action, &QAction::triggered, LoadUrlFunctor(this, contextMenuData.linkUrl));
-        menu->addAction(action);
-        action = new QAction(tr("Copy link address"), menu);
-        connect(action, &QAction::triggered, SaveToClipboardFunctor(contextMenuData.linkUrl.toString()));
-        menu->addAction(action);
+        menu->addAction(QWebEnginePage::action(CopyLinkToClipboard));
     }
+    if (contextMenuData.mediaUrl.isValid()) {
+        switch (contextMenuData.mediaType) {
+        case WebEngineContextMenuData::MediaTypeImage:
+            menu->addAction(QWebEnginePage::action(CopyImageUrlToClipboard));
+            // no break
+        case WebEngineContextMenuData::MediaTypeCanvas:
+            menu->addAction(QWebEnginePage::action(CopyImageToClipboard));
+            break;
+        case WebEngineContextMenuData::MediaTypeAudio:
+        case WebEngineContextMenuData::MediaTypeVideo:
+            menu->addAction(QWebEnginePage::action(CopyMediaUrlToClipboard));
+            menu->addAction(QWebEnginePage::action(ToggleMediaPlayPause));
+            menu->addAction(QWebEnginePage::action(ToggleMediaLoop));
+            if (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio)
+                menu->addAction(QWebEnginePage::action(ToggleMediaMute));
+            if (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls)
+                menu->addAction(QWebEnginePage::action(ToggleMediaControls));
+            break;
+        default:
+            break;
+        }
+    }
+
     return menu;
 }
 

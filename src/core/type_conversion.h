@@ -92,6 +92,11 @@ inline QPoint toQt(const gfx::Point &point)
     return QPoint(point.x(), point.y());
 }
 
+inline gfx::Point toGfx(const QPoint& point)
+{
+  return gfx::Point(point.x(), point.y());
+}
+
 inline QRect toQt(const gfx::Rect &rect)
 {
     return QRect(rect.x(), rect.y(), rect.width(), rect.height());

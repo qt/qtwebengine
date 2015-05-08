@@ -66,10 +66,54 @@ class WebEngineSettings;
 class WebEngineContextMenuData {
 
 public:
+    WebEngineContextMenuData()
+        : mediaType(MediaTypeNone)
+        , hasImageContent(false)
+        , mediaFlags(0)
+    {
+    }
+
+    // Must match blink::WebContextMenuData::MediaType:
+    enum MediaType {
+        // No special node is in context.
+        MediaTypeNone,
+        // An image node is selected.
+        MediaTypeImage,
+        // A video node is selected.
+        MediaTypeVideo,
+        // An audio node is selected.
+        MediaTypeAudio,
+        // A canvas node is selected.
+        MediaTypeCanvas,
+        // A file node is selected.
+        MediaTypeFile,
+        // A plugin node is selected.
+        MediaTypePlugin,
+        MediaTypeLast = MediaTypePlugin
+    };
+    // Must match blink::WebContextMenuData::MediaFlags:
+    enum MediaFlags {
+        MediaNone = 0x0,
+        MediaInError = 0x1,
+        MediaPaused = 0x2,
+        MediaMuted = 0x4,
+        MediaLoop = 0x8,
+        MediaCanSave = 0x10,
+        MediaHasAudio = 0x20,
+        MediaCanToggleControls = 0x40,
+        MediaControls = 0x80,
+        MediaCanPrint = 0x100,
+        MediaCanRotate = 0x200,
+    };
+
     QPoint pos;
     QUrl linkUrl;
     QString linkText;
     QString selectedText;
+    QUrl mediaUrl;
+    MediaType mediaType;
+    bool hasImageContent;
+    uint mediaFlags;
 // Some likely candidates for future additions as we add support for the related actions:
 //    bool isImageBlocked;
 //    bool isEditable;

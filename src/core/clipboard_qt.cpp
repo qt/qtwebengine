@@ -331,7 +331,7 @@ SkBitmap ClipboardQt::ReadImage(ui::ClipboardType type) const
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     QImage image = qvariant_cast<QImage>(mimeData->imageData());
 
-    Q_ASSERT(image.format() == QImage::Format_ARGB32);
+    image = image.convertToFormat(QImage::Format_ARGB32);
     SkBitmap bitmap;
     bitmap.setInfo(SkImageInfo::MakeN32(image.width(), image.height(), kOpaque_SkAlphaType));
     bitmap.setPixels(const_cast<uchar*>(image.constBits()));

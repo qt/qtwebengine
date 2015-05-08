@@ -98,6 +98,19 @@
     \value SelectAll Selects all content.
     \value PasteAndMatchStyle Paste content from the clipboard with current style.
 
+    \value OpenLinkInThisWindow Open the current link in the current window. (Added in Qt 5.6)
+    \value OpenLinkInNewWindow Open the current link in a new window. (Added in Qt 5.6)
+    \value OpenLinkInNewTab Open the current link in a new tab. (Added in Qt 5.6)
+    \value CopyLinkToClipboard Copy the current link to the clipboard. (Added in Qt 5.6)
+
+    \value CopyImageToClipboard Copy the clicked image to the clipboard. (Added in Qt 5.6)
+    \value CopyImageUrlToClipboard Copy the clicked image's URL to the clipboard. (Added in Qt 5.6)
+    \value CopyMediaUrlToClipboard Copy the hovered audio or video's URL to the clipboard. (Added in Qt 5.6)
+    \value ToggleMediaControls Toggles between showing and hiding the controls for the hovered audio or video element. (Added in Qt 5.6)
+    \value ToggleMediaLoop Toggles whether the hovered audio or video should loop on completetion or not. (Added in Qt 5.6)
+    \value ToggleMediaPlayPause Toggles the play/pause state of the hovered audio or video element. (Added in Qt 5.6)
+    \value ToggleMediaMute Mutes or unmutes the hovered audio or video element. (Added in Qt 5.6)
+
     \omitvalue WebActionCount
 
 */

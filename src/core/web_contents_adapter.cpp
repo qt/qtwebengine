@@ -758,6 +758,25 @@ void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & we
     d->webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
 }
 
+void WebContentsAdapter::copyImageAt(const QPoint &location)
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->GetRenderViewHost()->CopyImageAt(location.x(), location.y());
+}
+
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerNoAction, blink::WebMediaPlayerAction::Unknown)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerPlay, blink::WebMediaPlayerAction::Play)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerMute, blink::WebMediaPlayerAction::Mute)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerLoop,  blink::WebMediaPlayerAction::Loop)
+ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerControls,  blink::WebMediaPlayerAction::Controls)
+
+void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, MediaPlayerAction action, bool enable)
+{
+    Q_D(WebContentsAdapter);
+    blink::WebMediaPlayerAction blinkAction((blink::WebMediaPlayerAction::Type)action, enable);
+    d->webContents->GetRenderViewHost()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
+}
+
 void WebContentsAdapter::wasShown()
 {
     Q_D(WebContentsAdapter);

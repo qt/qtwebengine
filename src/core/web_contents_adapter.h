@@ -112,6 +112,18 @@ public:
     void stopFinding();
     void updateWebPreferences(const content::WebPreferences &webPreferences);
 
+    // Must match blink::WebMediaPlayerAction::Type.
+    enum MediaPlayerAction {
+        MediaPlayerNoAction,
+        MediaPlayerPlay,
+        MediaPlayerMute,
+        MediaPlayerLoop,
+        MediaPlayerControls,
+        MediaPlayerTypeLast = MediaPlayerControls
+    };
+    void copyImageAt(const QPoint &location);
+    void executeMediaPlayerActionAt(const QPoint &location, MediaPlayerAction action, bool enable);
+
     void wasShown();
     void wasHidden();
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);

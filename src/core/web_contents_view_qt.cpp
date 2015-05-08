@@ -110,6 +110,26 @@ void WebContentsViewQt::SetInitialFocus()
     Focus();
 }
 
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeNone, blink::WebContextMenuData::MediaTypeNone)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeImage, blink::WebContextMenuData::MediaTypeImage)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeVideo, blink::WebContextMenuData::MediaTypeVideo)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeAudio, blink::WebContextMenuData::MediaTypeAudio)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeCanvas, blink::WebContextMenuData::MediaTypeCanvas)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypeFile, blink::WebContextMenuData::MediaTypeFile)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaTypePlugin, blink::WebContextMenuData::MediaTypePlugin)
+
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaNone, blink::WebContextMenuData::MediaNone)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaInError, blink::WebContextMenuData::MediaInError)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaPaused, blink::WebContextMenuData::MediaPaused)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaMuted, blink::WebContextMenuData::MediaMuted)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaLoop, blink::WebContextMenuData::MediaLoop)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanSave, blink::WebContextMenuData::MediaCanSave)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaHasAudio, blink::WebContextMenuData::MediaHasAudio)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanToggleControls, blink::WebContextMenuData::MediaCanToggleControls)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaControls, blink::WebContextMenuData::MediaControls)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanPrint, blink::WebContextMenuData::MediaCanPrint)
+ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanRotate, blink::WebContextMenuData::MediaCanRotate)
+
 static WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData ret;
@@ -117,6 +137,10 @@ static WebEngineContextMenuData fromParams(const content::ContextMenuParams &par
     ret.linkUrl = toQt(params.link_url);
     ret.linkText = toQt(params.link_text.data());
     ret.selectedText = toQt(params.selection_text.data());
+    ret.mediaUrl = toQt(params.src_url);
+    ret.mediaType = (WebEngineContextMenuData::MediaType)params.media_type;
+    ret.hasImageContent = params.has_image_contents;
+    ret.mediaFlags = params.media_flags;
     return ret;
 }
 
