@@ -68,8 +68,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QBuffer>
 
-WebPage::WebPage(QObject *parent)
-    : QWebEnginePage(parent)
+WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
+    : QWebEnginePage(profile, parent)
     , m_keyboardModifiers(Qt::NoModifier)
     , m_pressedButtons(Qt::NoButton)
     , m_openInNewTab(false)
@@ -129,10 +129,11 @@ bool WebPage::certificateError(const QWebEngineCertificateError &error)
 class PopupWindow : public QWidget {
     Q_OBJECT
 public:
-    PopupWindow()
+    PopupWindow(QWebEngineProfile *profile)
         : m_addressBar(new QLineEdit(this))
         , m_view(new WebView(this))
     {
+        m_view->setPage(new WebPage(profile, m_view));
         QVBoxLayout *layout = new QVBoxLayout;
         layout->setMargin(0);
         setLayout(layout);
@@ -182,7 +183,7 @@ QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type)
         BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
         return mainWindow->currentTab()->page();
     } else {
-        PopupWindow *popup = new PopupWindow;
+        PopupWindow *popup = new PopupWindow(profile());
         popup->setAttribute(Qt::WA_DeleteOnClose);
         popup->show();
         return popup->page();
@@ -306,18 +307,25 @@ void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator
 WebView::WebView(QWidget* parent)
     : QWebEngineView(parent)
     , m_progress(0)
-    , m_page(new WebPage(this))
+    , m_page(0)
     , m_iconReply(0)
 {
-    setPage(m_page);
-#if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
-    connect(page(), SIGNAL(statusBarMessage(QString)),
-            SLOT(setStatusBarText(QString)));
-#endif
     connect(this, SIGNAL(loadProgress(int)),
             this, SLOT(setProgress(int)));
     connect(this, SIGNAL(loadFinished(bool)),
             this, SLOT(loadFinished(bool)));
+}
+
+void WebView::setPage(WebPage *_page)
+{
+    if (m_page)
+        m_page->deleteLater();
+    m_page = _page;
+    QWebEngineView::setPage(_page);
+#if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
+    connect(page(), SIGNAL(statusBarMessage(QString)),
+            SLOT(setStatusBarText(QString)));
+#endif
     connect(page(), SIGNAL(loadingUrl(QUrl)),
             this, SIGNAL(urlChanged(QUrl)));
     connect(page(), SIGNAL(iconUrlChanged(QUrl)),
@@ -326,7 +334,6 @@ WebView::WebView(QWidget* parent)
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     page()->setForwardUnsupportedContent(true);
 #endif
-
 }
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)

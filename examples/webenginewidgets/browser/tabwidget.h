@@ -48,6 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 class QWebEngineDownloadItem;
+class QWebEngineProfile;
 QT_END_NAMESPACE
 
 /*
@@ -182,6 +183,8 @@ public:
     QByteArray saveState() const;
     bool restoreState(const QByteArray &state);
 
+    void setProfile(QWebEngineProfile *profile);
+
 protected:
     void mouseDoubleClickEvent(QMouseEvent *event);
     void contextMenuEvent(QContextMenuEvent *event);
@@ -226,6 +229,7 @@ private:
     QCompleter *m_lineEditCompleter;
     QStackedWidget *m_lineEdits;
     TabBar *m_tabBar;
+    QWebEngineProfile *m_profile;
 };
 
 #endif // TABWIDGET_H

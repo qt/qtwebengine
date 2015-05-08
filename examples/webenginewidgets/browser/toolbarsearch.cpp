@@ -41,6 +41,7 @@
 
 #include "toolbarsearch.h"
 #include "autosaver.h"
+#include "browserapplication.h"
 
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
@@ -109,11 +110,7 @@ void ToolbarSearch::searchNow()
     if (newList.size() >= m_maxSavedSearches)
         newList.removeLast();
 
-#if defined(QTWEBENGINE_PRIVATEBROWSING)
-    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-    if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
-#endif
-    {
+    if (!BrowserApplication::instance()->privateBrowsing()) {
         m_stringListModel->setStringList(newList);
         m_autosaver->changeOccurred();
     }

@@ -352,12 +352,9 @@ void DownloadManager::updateRow()
     downloadsView->setRowHeight(row, widget->minimumSizeHint().height());
 
     bool remove = false;
-#if defined(QTWEBENGINE_PRIVATEBROWSING)
-    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
     if (!widget->downloading()
-        && globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
+        && BrowserApplication::instance()->privateBrowsing())
         remove = true;
-#endif
 
     if (widget->downloadedSuccessfully()
         && removePolicy() == DownloadManager::SuccessFullDownload) {

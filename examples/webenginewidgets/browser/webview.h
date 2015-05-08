@@ -61,7 +61,7 @@ signals:
     void loadingUrl(const QUrl &url);
 
 public:
-    WebPage(QObject *parent = 0);
+    WebPage(QWebEngineProfile *profile, QObject *parent = 0);
     BrowserMainWindow *mainWindow();
 
 protected:
@@ -95,6 +95,7 @@ class WebView : public QWebEngineView {
 public:
     WebView(QWidget *parent = 0);
     WebPage *webPage() const { return m_page; }
+    void setPage(WebPage *page);
 
     void loadUrl(const QUrl &url);
     QUrl url() const;

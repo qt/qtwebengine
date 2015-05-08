@@ -52,6 +52,7 @@
 QT_BEGIN_NAMESPACE
 class QLocalServer;
 class QNetworkAccessManager;
+class QWebEngineProfile;
 QT_END_NAMESPACE
 
 class BookmarksManager;
@@ -77,6 +78,7 @@ public:
 
     void saveSession();
     bool canRestoreSession() const;
+    bool privateBrowsing() const { return m_privateBrowsing; }
 
     static HistoryManager *historyManager();
     static CookieJar *cookieJar();
@@ -95,6 +97,10 @@ public slots:
     void lastWindowClosed();
     void quitBrowser();
 #endif
+    void setPrivateBrowsing(bool);
+
+signals:
+    void privateBrowsingChanged(bool);
 
 private slots:
     void postLaunch();
@@ -113,6 +119,8 @@ private:
     QList<QPointer<BrowserMainWindow> > m_mainWindows;
     QLocalServer *m_localServer;
     QByteArray m_lastSession;
+    QWebEngineProfile *m_privateProfile;
+    bool m_privateBrowsing;
     mutable QIcon m_defaultIcon;
 };
 

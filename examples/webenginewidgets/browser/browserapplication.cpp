@@ -116,6 +116,8 @@ static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSh
 BrowserApplication::BrowserApplication(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_localServer(0)
+    , m_privateProfile(0)
+    , m_privateBrowsing(false)
 {
     QCoreApplication::setOrganizationName(QLatin1String("Qt"));
     QCoreApplication::setApplicationName(QLatin1String("demobrowser"));
@@ -325,11 +327,8 @@ void BrowserApplication::clean()
 
 void BrowserApplication::saveSession()
 {
-#if defined(QTWEBENGINE_PRIVATEBROWSING)
-    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-    if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
+    if (m_privateBrowsing)
         return;
-#endif
 
     clean();
 
@@ -528,4 +527,25 @@ QIcon BrowserApplication::defaultIcon() const
     if (m_defaultIcon.isNull())
         m_defaultIcon = QIcon(QLatin1String(":defaulticon.png"));
     return m_defaultIcon;
+}
+
+void BrowserApplication::setPrivateBrowsing(bool privateBrowsing)
+{
+    if (m_privateBrowsing == privateBrowsing)
+        return;
+    m_privateBrowsing = privateBrowsing;
+    if (privateBrowsing) {
+        if (!m_privateProfile)
+            m_privateProfile = new QWebEngineProfile(this);
+        Q_FOREACH (BrowserMainWindow* window, mainWindows()) {
+            window->tabWidget()->setProfile(m_privateProfile);
+        }
+    } else {
+        Q_FOREACH (BrowserMainWindow* window, mainWindows()) {
+            window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
+            window->m_lastSearch = QString::null;
+            window->tabWidget()->clear();
+        }
+    }
+    emit privateBrowsingChanged(privateBrowsing);
 }

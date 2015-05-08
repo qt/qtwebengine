@@ -170,6 +170,7 @@ private:
     QIcon m_stopIcon;
 
     QString m_lastSearch;
+    friend class BrowserApplication;
 };
 
 #endif // BROWSERMAINWINDOW_H
