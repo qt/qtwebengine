@@ -84,7 +84,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged)
     Q_PROPERTY(bool isFullScreen READ isFullScreen NOTIFY isFullScreenChanged REVISION 1)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1)
-    Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile FINAL REVISION 1)
+    Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile NOTIFY profileChanged FINAL REVISION 1)
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
@@ -228,6 +228,7 @@ Q_SIGNALS:
     Q_REVISION(1) void featurePermissionRequested(const QUrl &securityOrigin, Feature feature);
     Q_REVISION(1) void newViewRequested(QQuickWebEngineNewViewRequest *request);
     Q_REVISION(1) void zoomFactorChanged(qreal arg);
+    Q_REVISION(1) void profileChanged();
     Q_REVISION(1) void webChannelChanged();
 
 

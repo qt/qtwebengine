@@ -49,8 +49,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/gpu/image_transport_surface.h"
-#include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -544,7 +542,9 @@ GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window)
 }  // namespace gfx
 
 namespace content {
-scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(GpuChannelManager* manager, GpuCommandBufferStub* stub, const gfx::GLSurfaceHandle& handle)
+class GpuCommandBufferStub;
+class GpuChannelManager;
+scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(GpuChannelManager*, GpuCommandBufferStub*, const gfx::GLSurfaceHandle&)
 {
     QT_NOT_USED
     return scoped_refptr<gfx::GLSurface>();

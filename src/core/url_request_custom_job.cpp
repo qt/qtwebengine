@@ -57,25 +57,41 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *n
     : URLRequestJob(request, networkDelegate)
     , m_device(0)
     , m_schemeHandler(schemeHandler)
+    , m_error(0)
+    , m_started(false)
     , m_weakFactory(this)
 {
 }
 
 URLRequestCustomJob::~URLRequestCustomJob()
 {
+    QMutexLocker lock(&m_mutex);
+    if (m_delegate) {
+        m_delegate->m_job = 0;
+        m_delegate->deleteLater();
+    }
     if (m_device && m_device->isOpen())
         m_device->close();
 }
 
 void URLRequestCustomJob::Start()
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, base::Bind(&URLRequestCustomJob::startAsync, m_weakFactory.GetWeakPtr()));
 }
 
 void URLRequestCustomJob::Kill()
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    QMutexLocker lock(&m_mutex);
+    if (m_delegate) {
+        m_delegate->m_job = 0;
+        m_delegate->deleteLater();
+    }
+    m_delegate = 0;
     if (m_device && m_device->isOpen())
         m_device->close();
+    m_device = 0;
     m_weakFactory.InvalidateWeakPtrs();
 
     URLRequestJob::Kill();
@@ -83,6 +99,7 @@ void URLRequestCustomJob::Kill()
 
 bool URLRequestCustomJob::GetMimeType(std::string *mimeType) const
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (m_mimeType.size() > 0) {
         *mimeType = m_mimeType;
         return true;
@@ -92,6 +109,7 @@ bool URLRequestCustomJob::GetMimeType(std::string *mimeType) const
 
 bool URLRequestCustomJob::GetCharset(std::string* charset)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (m_charset.size() > 0) {
         *charset = m_charset;
         return true;
@@ -101,25 +119,35 @@ bool URLRequestCustomJob::GetCharset(std::string* charset)
 
 void URLRequestCustomJob::setReplyMimeType(const std::string &mimeType)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     m_mimeType = mimeType;
 }
 
 void URLRequestCustomJob::setReplyCharset(const std::string &charset)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     m_charset = charset;
 }
 
 void URLRequestCustomJob::setReplyDevice(QIODevice *device)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    QMutexLocker lock(&m_mutex);
     m_device = device;
     if (m_device && !m_device->isReadable())
         m_device->open(QIODevice::ReadOnly);
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactory.GetWeakPtr()));
+
+    if (m_device && m_device->isReadable())
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactory.GetWeakPtr()));
+    else
+        fail(ERR_INVALID_URL);
 }
 
 bool URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead)
 {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     Q_ASSERT(bytesRead);
+    QMutexLocker lock(&m_mutex);
     qint64 rv = m_device ? m_device->read(buf->data(), bufSize) : -1;
     if (rv >= 0) {
         *bytesRead = static_cast<int>(rv);
@@ -132,16 +160,41 @@ bool URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead
 
 void URLRequestCustomJob::notifyStarted()
 {
-    if (m_device && m_device->isReadable())
-        NotifyHeadersComplete();
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    Q_ASSERT(!m_started);
+    m_started = true;
+    NotifyHeadersComplete();
+}
+
+void URLRequestCustomJob::fail(int error)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    QMutexLocker lock(&m_mutex);
+    m_error = error;
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyFailure, m_weakFactory.GetWeakPtr()));
+}
+
+void URLRequestCustomJob::notifyFailure()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    QMutexLocker lock(&m_mutex);
+    if (m_device)
+        m_device->close();
+    if (m_started)
+        NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, m_error));
     else
-        NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, ERR_INVALID_URL));
+        NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, m_error));
 }
 
 void URLRequestCustomJob::startAsync()
 {
-    m_delegate.reset(new URLRequestCustomJobDelegate(this));
-    m_schemeHandler->handleJob(m_delegate.get());
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    Q_ASSERT(!m_started);
+    Q_ASSERT(!m_delegate);
+    QMutexLocker lock(&m_mutex);
+    m_delegate = new URLRequestCustomJobDelegate(this);
+    lock.unlock();
+    m_schemeHandler->handleJob(m_delegate);
 }
 
 } // namespace
