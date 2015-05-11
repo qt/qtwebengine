@@ -35,9 +35,9 @@
 ****************************************************************************/
 
 // FIXME: prompt missing in Qt Quick Dialogs atm. Make our own for now.
-import QtQuick.Controls 1.1
+import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.0
-import QtQuick 2.0
+import QtQuick 2.5
 
 ApplicationWindow {
     signal input(string text);
