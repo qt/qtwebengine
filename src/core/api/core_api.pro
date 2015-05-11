@@ -26,6 +26,8 @@ INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core \
 linux-g++*: QMAKE_CXXFLAGS += -Wno-unused-parameter
 
 HEADERS = \
+    qwebenginecallback.h \
+    qwebenginecallback_p.h \
     qtwebenginecoreglobal.h \
     qtwebenginecoreglobal_p.h \
 

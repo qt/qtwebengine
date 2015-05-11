@@ -39,10 +39,10 @@
 
 #include "qwebenginepage.h"
 
+#include "qwebenginecallback_p.h"
 #include "qwebenginescriptcollection.h"
 #include "web_contents_adapter_client.h"
 #include <QtCore/qcompilerdetection.h>
-#include <QSharedData>
 
 namespace QtWebEngineCore {
 class RenderWidgetHostViewQtDelegate;
@@ -55,49 +55,6 @@ class QWebEnginePage;
 class QWebEngineProfile;
 class QWebEngineSettings;
 class QWebEngineView;
-
-class CallbackDirectory {
-public:
-    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QVariant&> VariantCallback;
-    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<const QString&> StringCallback;
-    typedef QtWebEnginePrivate::QWebEngineCallbackPrivateBase<bool> BoolCallback;
-
-    ~CallbackDirectory();
-    void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<VariantCallback> &callback);
-    void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<StringCallback> &callback);
-    void registerCallback(quint64 requestId, const QExplicitlySharedDataPointer<BoolCallback> &callback);
-    void invoke(quint64 requestId, const QVariant &result);
-    void invoke(quint64 requestId, const QString &result);
-    void invoke(quint64 requestId, bool result);
-
-private:
-    struct CallbackSharedDataPointer {
-        enum {
-            None,
-            Variant,
-            String,
-            Bool
-        } type;
-        union {
-            VariantCallback *variantCallback;
-            StringCallback *stringCallback;
-            BoolCallback *boolCallback;
-        };
-        CallbackSharedDataPointer() : type(None) { }
-        CallbackSharedDataPointer(VariantCallback *callback) : type(Variant), variantCallback(callback) { callback->ref.ref(); }
-        CallbackSharedDataPointer(StringCallback *callback) : type(String), stringCallback(callback) { callback->ref.ref(); }
-        CallbackSharedDataPointer(BoolCallback *callback) : type(Bool), boolCallback(callback) { callback->ref.ref(); }
-        CallbackSharedDataPointer(const CallbackSharedDataPointer &other) : type(other.type), variantCallback(other.variantCallback) { doRef(); }
-        ~CallbackSharedDataPointer() { doDeref(); }
-        operator bool () const { return type != None; }
-
-    private:
-        void doRef();
-        void doDeref();
-    };
-
-    QHash<quint64, CallbackSharedDataPointer> m_callbackMap;
-};
 
 class QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
@@ -171,7 +128,7 @@ public:
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
 
-    mutable CallbackDirectory m_callbacks;
+    mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
 };
 

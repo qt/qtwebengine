@@ -39,6 +39,7 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineWidgets/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginecallback.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -55,37 +56,6 @@ class QWebEnginePagePrivate;
 class QWebEngineProfile;
 class QWebEngineScriptCollection;
 class QWebEngineSettings;
-
-namespace QtWebEnginePrivate {
-
-template <typename T>
-class QWebEngineCallbackPrivateBase : public QSharedData {
-public:
-    virtual ~QWebEngineCallbackPrivateBase() {}
-    virtual void operator()(T) = 0;
-};
-
-template <typename T, typename F>
-class QWebEngineCallbackPrivate : public QWebEngineCallbackPrivateBase<T> {
-public:
-    QWebEngineCallbackPrivate(F callable) : m_callable(callable) {}
-    virtual void operator()(T value) Q_DECL_OVERRIDE { m_callable(value); }
-private:
-    F m_callable;
-};
-
-} // namespace QtWebEnginePrivate
-
-template <typename T>
-class QWebEngineCallback {
-public:
-    template <typename F>
-    QWebEngineCallback(F f) : d(new QtWebEnginePrivate::QWebEngineCallbackPrivate<T, F>(f)) { }
-    QWebEngineCallback() { }
-private:
-    QExplicitlySharedDataPointer<QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> > d;
-    friend class QWebEnginePage;
-};
 
 class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_OBJECT
