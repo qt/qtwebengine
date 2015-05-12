@@ -44,6 +44,7 @@
 #include <QClipboard>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QMimeData>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlProperty>
@@ -119,6 +120,26 @@ CopyMenuItem::CopyMenuItem(QObject *parent, const QString &textToCopy)
 void CopyMenuItem::onTriggered()
 {
     qApp->clipboard()->setText(m_textToCopy);
+}
+
+CopyLinkMenuItem::CopyLinkMenuItem(QObject *parent, const QUrl &url, const QString &title)
+    : MenuItemHandler(parent)
+    , m_url(url)
+    , m_title(title)
+{
+    connect(this, &MenuItemHandler::triggered, this, &CopyLinkMenuItem::onTriggered);
+}
+
+void CopyLinkMenuItem::onTriggered()
+{
+    QString urlString = m_url.toString(QUrl::FullyEncoded);
+    QString title = m_title.toHtmlEscaped();
+    QMimeData *data = new QMimeData();
+    data->setText(urlString);
+    QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
+    data->setHtml(html);
+    data->setUrls(QList<QUrl>() << m_url);
+    qApp->clipboard()->setMimeData(data);
 }
 
 NavigateMenuItem::NavigateMenuItem(QObject *parent, const QExplicitlySharedDataPointer<WebContentsAdapter> &adapter, const QUrl &targetUrl)

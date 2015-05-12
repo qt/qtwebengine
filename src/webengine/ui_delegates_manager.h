@@ -97,6 +97,18 @@ private:
     QString m_textToCopy;
 };
 
+class CopyLinkMenuItem : public MenuItemHandler {
+    Q_OBJECT
+public:
+    CopyLinkMenuItem(QObject *parent, const QUrl &url, const QString &title);
+
+private:
+    void onTriggered();
+
+    const QUrl m_url;
+    const QString m_title;
+};
+
 class NavigateMenuItem : public MenuItemHandler {
     Q_OBJECT
 public:

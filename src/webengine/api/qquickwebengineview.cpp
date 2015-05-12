@@ -179,6 +179,11 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     // Populate our menu
     MenuItemHandler *item = 0;
 
+    if (!data.linkText.isEmpty() && data.linkUrl.isValid()) {
+        item = new NavigateMenuItem(menu, adapter, data.linkUrl);
+        ui()->addMenuItem(item, QObject::tr("Follow link"));
+    }
+
     if (data.selectedText.isEmpty()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::goBack);
@@ -197,9 +202,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     }
 
     if (!data.linkText.isEmpty() && data.linkUrl.isValid()) {
-        item = new NavigateMenuItem(menu, adapter, data.linkUrl);
-        ui()->addMenuItem(item, QObject::tr("Navigate to..."));
-        item = new CopyMenuItem(menu, data.linkUrl.toString());
+        item = new CopyLinkMenuItem(menu, data.linkUrl, data.linkText);
         ui()->addMenuItem(item, QObject::tr("Copy link address"));
     }
 

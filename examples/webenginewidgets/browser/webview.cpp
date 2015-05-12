@@ -340,6 +340,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     const QList<QAction*> actions = menu->actions();
     QList<QAction*>::const_iterator it = qFind(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::OpenLinkInThisWindow));
     if (it != actions.cend()) {
+       (*it)->setText(tr("Open Link in This Window"));
         ++it;
         menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewWindow));
         menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewTab));

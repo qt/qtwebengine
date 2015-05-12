@@ -962,7 +962,9 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     QAction *action = 0;
     WebEngineContextMenuData contextMenuData(d->m_menuData);
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
-        menu->addAction(QWebEnginePage::action(OpenLinkInThisWindow));
+        action = QWebEnginePage::action(OpenLinkInThisWindow);
+        action->setText(tr("Follow Link"));
+        menu->addAction(action);
     }
     if (contextMenuData.selectedText.isEmpty()) {
         action = new QAction(QIcon::fromTheme(QStringLiteral("go-previous")), tr("&Back"), menu);
