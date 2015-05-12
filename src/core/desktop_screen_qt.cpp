@@ -70,7 +70,8 @@ std::vector<gfx::Display> DesktopScreenQt::GetAllDisplays() const
 
 gfx::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeView window) const
 {
-    Q_UNREACHABLE();
+    // RenderViewHostImpl::OnStartDragging uses this to determine
+    // the scale factor for the view.
     return gfx::Display();
 }
 

@@ -124,6 +124,18 @@ void URLRequestContextGetterQt::generateStorage()
 {
     Q_ASSERT(m_urlRequestContext);
 
+    if (m_storage) {
+        // We must stop all requests before deleting their backends.
+        std::set<const net::URLRequest*>* url_requests = m_urlRequestContext->url_requests();
+        std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
+        std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
+        for ( ; it != end; ++it) {
+            net::URLRequest* request = const_cast<net::URLRequest*>(*it);
+            if (request)
+                request->Cancel();
+        }
+    }
+
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
 
     net::ProxyConfigService *proxyConfigService = m_proxyConfigService.fetchAndStoreAcquire(0);

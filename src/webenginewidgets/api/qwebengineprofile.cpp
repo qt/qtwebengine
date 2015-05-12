@@ -494,6 +494,10 @@ void QWebEngineProfilePrivate::installUrlSchemeHandler(QWebEngineUrlSchemeHandle
         return;
     }
 
+    if (m_urlSchemeHandlers.contains(scheme)) {
+        qWarning() << "URL scheme handler already installed for the scheme: " << scheme;
+        return;
+    }
     m_urlSchemeHandlers.insert(scheme, handler);
     browserContext()->customUrlSchemeHandlers().append(handler->d_func());
     browserContext()->updateCustomUrlSchemeHandlers();

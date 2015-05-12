@@ -10,4 +10,4 @@ for f in filter(os.path.isfile, sys.argv[1:]):
         if m:
             includedMocs.add(m.group(1))
 for moc in includedMocs:
-    print(moc)
+    print moc

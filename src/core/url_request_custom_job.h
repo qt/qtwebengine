@@ -41,6 +41,8 @@
 #include "net/url_request/url_request_job.h"
 
 #include <QtCore/qglobal.h>
+#include <QtCore/QMutex>
+#include <QtCore/QPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
 
@@ -63,18 +65,26 @@ public:
     void setReplyCharset(const std::string &);
     void setReplyDevice(QIODevice *);
 
+    void fail(int);
+
 protected:
     virtual ~URLRequestCustomJob();
     void startAsync();
     void notifyStarted();
+    void notifyFailure();
 
 private:
-    QIODevice *m_device;
-    scoped_ptr<URLRequestCustomJobDelegate> m_delegate;
+    QMutex m_mutex;
+    QPointer<QIODevice> m_device;
+    QPointer<URLRequestCustomJobDelegate> m_delegate;
     CustomUrlSchemeHandler *m_schemeHandler;
     std::string m_mimeType;
     std::string m_charset;
+    int m_error;
+    bool m_started;
     base::WeakPtrFactory<URLRequestCustomJob> m_weakFactory;
+
+    friend class URLRequestCustomJobDelegate;
 
     DISALLOW_COPY_AND_ASSIGN(URLRequestCustomJob);
 };
