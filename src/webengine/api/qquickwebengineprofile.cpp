@@ -40,6 +40,7 @@
 #include "qquickwebenginedownloaditem_p_p.h"
 #include "qquickwebengineprofile_p_p.h"
 #include "qquickwebenginesettings_p.h"
+#include "qwebenginecookiestoreclient.h"
 
 #include <QQmlEngine>
 
@@ -433,6 +434,12 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 {
     const Q_D(QQuickWebEngineProfile);
     return d->settings();
+}
+
+void QQuickWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient* client)
+{
+    Q_D(QQuickWebEngineProfile);
+    d->browserContext()->setCookieStoreClient(client);
 }
 
 QT_END_NAMESPACE

@@ -63,6 +63,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineSettings;
+class QWebEngineCookieStoreClient;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_OBJECT
@@ -120,6 +121,8 @@ public:
     Q_REVISION(1) void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
 
     static QQuickWebEngineProfile *defaultProfile();
+
+    Q_REVISION(1) Q_INVOKABLE void setCookieStoreClient(QWebEngineCookieStoreClient* client);
 
 signals:
     void storageNameChanged();

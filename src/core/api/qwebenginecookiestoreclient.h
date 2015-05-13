@@ -89,4 +89,6 @@ private:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QWebEngineCookieStoreClient*)
+
 #endif // QWEBENGINECOOKIESTORECLIENT_H

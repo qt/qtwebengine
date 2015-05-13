@@ -44,6 +44,8 @@ import QtWebEngine 1.1
 QtObject {
     id: root
 
+    property bool thirdPartyCookiesEnabled: true
+
     property QtObject testProfile: WebEngineProfile {
         storageName: "Test"
     }

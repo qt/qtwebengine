@@ -50,7 +50,9 @@ typedef QGuiApplication Application;
 #endif
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
+#include <QtQml/QQmlComponent>
 #include <QtWebEngine/qtwebengineglobal.h>
+#include <QtWebEngineCore/qwebenginecookiestoreclient.h>
 
 static QUrl startupUrl()
 {
@@ -67,6 +69,24 @@ static QUrl startupUrl()
     return QUrl(QStringLiteral("http://qt.io/"));
 }
 
+class CookieClient: public QWebEngineCookieStoreClient
+{
+    QMetaProperty m_settingProperty;
+    const QObject *m_object;
+public:
+    CookieClient(const QObject *object)
+        : m_object(object)
+    {
+        const QMetaObject *rootMeta = object->metaObject();
+        int index = rootMeta->indexOfProperty("thirdPartyCookiesEnabled");
+        Q_ASSERT(index != -1);
+        m_settingProperty = rootMeta->property(index);
+    }
+    virtual bool acceptCookieFromUrl(const QByteArray &, const QUrl &) {
+        return m_settingProperty.read(m_object).toBool();
+    }
+};
+
 int main(int argc, char **argv)
 {
     Application app(argc, argv);
@@ -80,7 +100,25 @@ int main(int argc, char **argv)
     Utils utils;
     appEngine.rootContext()->setContextProperty("utils", &utils);
     appEngine.load(QUrl("qrc:/ApplicationRoot.qml"));
-    QMetaObject::invokeMethod(appEngine.rootObjects().first(), "load", Q_ARG(QVariant, startupUrl()));
+    QObject *rootObject = appEngine.rootObjects().first();
+
+    QQmlComponent component(&appEngine);
+    component.setData(QByteArrayLiteral("import QtQuick 2.0\n"
+                                        "import QtWebEngine 1.1\n"
+                                        "WebEngineProfile {\n"
+                                        "storageName: \"Test\"\n"
+                                        "}")
+                      , QUrl());
+    QObject *profile = component.create();
+    CookieClient client(rootObject);
+    QMetaObject::invokeMethod(profile, "setCookieStoreClient", Q_ARG(QWebEngineCookieStoreClient*, &client));
+    const QMetaObject *rootMeta = rootObject->metaObject();
+    int index = rootMeta->indexOfProperty("testProfile");
+    Q_ASSERT(index != -1);
+    QMetaProperty profileProperty = rootMeta->property(index);
+    profileProperty.write(rootObject, qVariantFromValue(profile));
+
+    QMetaObject::invokeMethod(rootObject, "load", Q_ARG(QVariant, startupUrl()));
 
     return app.exec();
 }
