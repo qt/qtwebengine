@@ -66,6 +66,7 @@
 #include "custom_url_scheme_handler.h"
 #include "content_client_qt.h"
 #include "network_delegate_qt.h"
+#include "proxy_config_service_qt.h"
 #include "qrc_protocol_handler_qt.h"
 #include "type_conversion.h"
 
@@ -111,10 +112,10 @@ void URLRequestContextGetterQt::updateStorageSettings()
         // We must create the proxy config service on the UI loop on Linux because it
         // must synchronously run on the glib message loop. This will be passed to
         // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-        m_proxyConfigService = net::ProxyService::CreateSystemProxyConfigService(
+        m_proxyConfigService = new ProxyConfigServiceQt(net::ProxyService::CreateSystemProxyConfigService(
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-        );
+        ));
         if (m_storage)
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
     }
