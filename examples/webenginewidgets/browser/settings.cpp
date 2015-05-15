@@ -47,7 +47,6 @@
 #include "cookiejar.h"
 #endif
 #include "history.h"
-#include "networkaccessmanager.h"
 #include "webview.h"
 
 #include <QtCore/QLocale>
@@ -240,7 +239,6 @@ void SettingsDialog::saveToSettings()
 
     BrowserApplication::instance()->loadSettings();
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    BrowserApplication::networkAccessManager()->loadSettings();
     BrowserApplication::cookieJar()->loadSettings();
 #endif
     BrowserApplication::historyManager()->loadSettings();
