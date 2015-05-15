@@ -68,6 +68,7 @@
 #include <QtWidgets/QInputDialog>
 
 #include <QWebEngineHistory>
+#include <QWebEngineProfile>
 #include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
@@ -304,11 +305,11 @@ void BrowserMainWindow::setupMenu()
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
     fileMenu->addSeparator();
 #endif
-#if defined(QTWEBENGINE_PRIVATEBROWSING)
     QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
     action->setCheckable(true);
+    action->setChecked(BrowserApplication::instance()->privateBrowsing());
+    connect(BrowserApplication::instance(), SIGNAL(privateBrowsingChanged(bool)), action, SLOT(setChecked(bool)));
     fileMenu->addSeparator();
-#endif
 
 #if defined(Q_OS_OSX)
     fileMenu->addAction(tr("&Quit"), BrowserApplication::instance(), SLOT(quitBrowser()), QKeySequence(Qt::CTRL | Qt::Key_Q));
@@ -703,12 +704,11 @@ void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
 
 void BrowserMainWindow::slotPrivateBrowsing()
 {
-#if defined(QTWEBENGINE_PRIVATEBROWSING)
-    QWebEngineSettings *settings = QWebEngineSettings::globalSettings();
-    bool pb = settings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled);
-    if (!pb) {
+    if (!BrowserApplication::instance()->privateBrowsing()) {
         QString title = tr("Are you sure you want to turn on private browsing?");
-        QString text = tr("<b>%1</b><br><br>When private browsing in turned on,"
+        QString text = tr("<b>%1</b><br><br>"
+            "This action will reload all open tabs.<br>"
+            "When private browsing in turned on,"
             " webpages are not added to the history,"
             " items are automatically removed from the Downloads window," \
             " new cookies are not stored, current cookies can't be accessed," \
@@ -720,20 +720,13 @@ void BrowserMainWindow::slotPrivateBrowsing()
         QMessageBox::StandardButton button = QMessageBox::question(this, QString(), text,
                                QMessageBox::Ok | QMessageBox::Cancel,
                                QMessageBox::Ok);
-        if (button == QMessageBox::Ok) {
-            settings->setAttribute(QWebEngineSettings::PrivateBrowsingEnabled, true);
-        }
-    } else {
-        settings->setAttribute(QWebEngineSettings::PrivateBrowsingEnabled, false);
 
-        QList<BrowserMainWindow*> windows = BrowserApplication::instance()->mainWindows();
-        for (int i = 0; i < windows.count(); ++i) {
-            BrowserMainWindow *window = windows.at(i);
-            window->m_lastSearch = QString::null;
-            window->tabWidget()->clear();
-        }
+        if (button == QMessageBox::Ok)
+            BrowserApplication::instance()->setPrivateBrowsing(true);
+    } else {
+        // TODO: Also ask here
+        BrowserApplication::instance()->setPrivateBrowsing(false);
     }
-#endif
 }
 
 void BrowserMainWindow::closeEvent(QCloseEvent *event)

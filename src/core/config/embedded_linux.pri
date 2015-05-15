@@ -3,13 +3,11 @@ GYP_ARGS += "-D qt_os=\"embedded_linux\" -I config/embedded_linux.gypi"
 GYP_CONFIG += \
     build_ffmpegsumo=1 \
     clang=0 \
-    configuration_policy=0 \
     desktop_linux=0 \
     disable_nacl=1 \
     embedded=1 \
     enable_autofill_dialog=0 \
     enable_automation=0 \
-    enable_background=0 \
     enable_captive_portal_detection=0 \
     enable_extensions=0 \
     enable_google_now=0 \
@@ -30,7 +28,6 @@ GYP_CONFIG += \
     ozone_platform_test=0 \
     p2p_apis=0 \
     safe_browsing=0 \
-    toolkit_uses_gtk=0 \
     toolkit_views=1 \
     use_ash=0 \
     use_aura=1 \
@@ -46,11 +43,11 @@ GYP_CONFIG += \
     use_openssl=1 \
     use_ozone=1 \
     use_pango=0 \
-    use_pulseaudio=0 \
-    use_system_harfbuzz=0 \
     use_system_icu=1 \
     icu_use_data_file_flag=0 \
     use_x11=0 \
     v8_use_snapshot=false \
     want_separate_host_toolset=1 \
 
+contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
+!contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0

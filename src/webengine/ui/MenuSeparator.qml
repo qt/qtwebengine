@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.1
-import QtQuick.Controls 1.0 as Controls
+import QtQuick 2.5
+import QtQuick.Controls 1.4 as Controls
 
 Controls.MenuSeparator { }

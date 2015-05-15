@@ -40,6 +40,8 @@
 
 #include "url_request_custom_job_delegate.h"
 
+using QtWebEngineCore::URLRequestCustomJobDelegate;
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -51,7 +53,7 @@ QT_BEGIN_NAMESPACE
     A QWebEngineUrlRequestJob is given to QWebEngineUrlSchemeHandler::requestStarted() and must
     be handled by the derived implementations of class.
 
-    A job can be handled by calling setReply().
+    A job can be handled by calling either setReply(), redirect() or setError().
 
     The class is owned by QtWebEngine and does not need to be deleted. Note QtWebEngine may delete
     the job when it is no longer needed, so the signal QObject::destroyed() must be monitored if
@@ -63,7 +65,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
  */
-QWebEngineUrlRequestJob::QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate * p)
+QWebEngineUrlRequestJob::QWebEngineUrlRequestJob(URLRequestCustomJobDelegate * p)
     : QObject(p) // owned by the jobdelegate and deleted when the job is done
     , d_ptr(p)
 {
@@ -92,6 +94,20 @@ void QWebEngineUrlRequestJob::setReply(const QByteArray &contentType, QIODevice 
     d_ptr->setReply(contentType, device);
 }
 
+/*!
+    Fails the request with error \a error.
+ */
+void QWebEngineUrlRequestJob::setError(Error r)
+{
+    d_ptr->fail((URLRequestCustomJobDelegate::Error)r);
+}
 
+/*!
+    Tell the request is redirected to \a url.
+ */
+void QWebEngineUrlRequestJob::setRedirect(const QUrl &url)
+{
+    d_ptr->redirect(url);
+}
 
 QT_END_NAMESPACE

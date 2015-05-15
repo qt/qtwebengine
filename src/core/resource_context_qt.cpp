@@ -44,20 +44,13 @@ namespace QtWebEngineCore {
 
 net::HostResolver *ResourceContextQt::GetHostResolver()
 {
-    CHECK(getter_);
-    return getter_->GetURLRequestContext()->host_resolver();
+    return GetRequestContext()->host_resolver();
 }
 
 net::URLRequestContext* ResourceContextQt::GetRequestContext()
 {
-    if (getter_)
-        return getter_->GetURLRequestContext();
+    Q_ASSERT(context);
     return context->GetRequestContext()->GetURLRequestContext();
-}
-
-void ResourceContextQt::set_url_request_context_getter(net::URLRequestContextGetter *getter)
-{
-    getter_ = getter;
 }
 
 } // namespace QtWebEngineCore

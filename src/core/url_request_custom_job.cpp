@@ -117,6 +117,18 @@ bool URLRequestCustomJob::GetCharset(std::string* charset)
     return false;
 }
 
+bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    QMutexLocker lock(&m_mutex);
+    if (m_redirect.is_valid()) {
+        *location = m_redirect;
+        *http_status_code = 303;
+        return true;
+    }
+    return false;
+}
+
 void URLRequestCustomJob::setReplyMimeType(const std::string &mimeType)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -156,6 +168,36 @@ bool URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead
         NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, ERR_FAILED));
     }
     return false;
+}
+
+void URLRequestCustomJob::redirect(const GURL &url)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (m_device || m_error)
+        return;
+
+    QMutexLocker lock(&m_mutex);
+    m_redirect = url;
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactory.GetWeakPtr()));
+}
+
+void URLRequestCustomJob::abort()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    QMutexLocker lock(&m_mutex);
+    if (m_device && m_device->isOpen())
+        m_device->close();
+    m_device = 0;
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyCanceled, m_weakFactory.GetWeakPtr()));
+}
+
+void URLRequestCustomJob::notifyCanceled()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    if (m_started)
+        NotifyDone(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
+    else
+        NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
 }
 
 void URLRequestCustomJob::notifyStarted()

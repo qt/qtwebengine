@@ -60,18 +60,22 @@ public:
     virtual bool ReadRawData(net::IOBuffer *buf, int bufSize, int *bytesRead) Q_DECL_OVERRIDE;
     virtual bool GetMimeType(std::string *mimeType) const Q_DECL_OVERRIDE;
     virtual bool GetCharset(std::string *charset) Q_DECL_OVERRIDE;
+    virtual bool IsRedirectResponse(GURL* location, int* http_status_code) Q_DECL_OVERRIDE;
 
     void setReplyMimeType(const std::string &);
     void setReplyCharset(const std::string &);
     void setReplyDevice(QIODevice *);
 
+    void redirect(const GURL &url);
     void fail(int);
+    void abort();
 
 protected:
     virtual ~URLRequestCustomJob();
     void startAsync();
     void notifyStarted();
     void notifyFailure();
+    void notifyCanceled();
 
 private:
     QMutex m_mutex;
@@ -81,6 +85,7 @@ private:
     std::string m_mimeType;
     std::string m_charset;
     int m_error;
+    GURL m_redirect;
     bool m_started;
     base::WeakPtrFactory<URLRequestCustomJob> m_weakFactory;
 

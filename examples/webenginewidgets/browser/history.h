@@ -81,6 +81,7 @@ class AutoSaver;
 class HistoryModel;
 class HistoryFilterModel;
 class HistoryTreeModel;
+
 class HistoryManager
 #if defined(QWEBENGINEHISTORYINTERFACE)
  : public QWebEngineHistoryInterface
