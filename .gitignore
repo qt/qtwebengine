@@ -9,8 +9,11 @@ src/core/core_generated.gyp
 src/core/gypfiles
 src/core/qmake_extras.gypi
 examples/webengine/quicknanobrowser/quicknanobrowser
+examples/webengine/quicknanobrowser/quicknanobrowser.app
 examples/webenginewidgets/browser/browser
+examples/webenginewidgets/browser/browser.app
 examples/webenginewidgets/fancybrowser/fancybrowser
+examples/webenginewidgets/fancybrowser/fancybrowser.app
 tests/quicktestbrowser/quicktestbrowser
 
 tests/**/tst_*

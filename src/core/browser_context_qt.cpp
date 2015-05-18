@@ -78,7 +78,7 @@ bool BrowserContextQt::IsOffTheRecord() const
 
 net::URLRequestContextGetter *BrowserContextQt::GetRequestContext()
 {
-    return GetDefaultStoragePartition(this)->GetURLRequestContext();
+    return url_request_getter_.get();
 }
 
 net::URLRequestContextGetter *BrowserContextQt::GetRequestContextForRenderProcess(int)
@@ -137,7 +137,6 @@ content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers)
 {
     url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers);
-    static_cast<ResourceContextQt*>(GetResourceContext())->set_url_request_context_getter(url_request_getter_.get());
     return url_request_getter_.get();
 }
 

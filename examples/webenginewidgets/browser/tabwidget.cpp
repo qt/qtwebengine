@@ -217,6 +217,7 @@ TabWidget::TabWidget(QWidget *parent)
     , m_lineEditCompleter(0)
     , m_lineEdits(0)
     , m_tabBar(new TabBar(this))
+    , m_profile(QWebEngineProfile::defaultProfile())
 {
     setElideMode(Qt::ElideRight);
 
@@ -456,6 +457,7 @@ WebView *TabWidget::newTab(bool makeCurrent)
 
     // webview
     WebView *webView = new WebView;
+    webView->setPage(new WebPage(m_profile, webView));
     urlLineEdit->setWebView(webView);
     connect(webView, SIGNAL(loadStarted()),
             this, SLOT(webViewLoadStarted()));
@@ -581,11 +583,7 @@ void TabWidget::closeTab(int index)
 #endif
         hasFocus = tab->hasFocus();
 
-#if defined(QTWEBENGINE_PRIVATEBROWSING)
-        QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-        if (!globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
-#endif
-        {
+        if (m_profile == QWebEngineProfile::defaultProfile()) {
             m_recentlyClosedTabsAction->setEnabled(true);
             m_recentlyClosedTabs.prepend(tab->url());
             if (m_recentlyClosedTabs.size() >= TabWidget::m_recentlyClosedTabsSize)
@@ -603,6 +601,19 @@ void TabWidget::closeTab(int index)
         currentWebView()->setFocus();
     if (count() == 0)
         emit lastTabClosed();
+}
+
+void TabWidget::setProfile(QWebEngineProfile *profile)
+{
+    m_profile = profile;
+    for (int i = 0; i < count(); ++i) {
+        QWidget *tabWidget = widget(i);
+        if (WebView *tab = qobject_cast<WebView*>(tabWidget)) {
+            WebPage* webPage = new WebPage(m_profile, tab);
+            webPage->load(tab->page()->url());
+            tab->setPage(webPage);
+        }
+    }
 }
 
 void TabWidget::webViewLoadStarted()

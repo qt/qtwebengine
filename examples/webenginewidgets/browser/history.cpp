@@ -189,11 +189,8 @@ void HistoryManager::checkForExpired()
 
 void HistoryManager::addHistoryItem(const HistoryItem &item)
 {
-#if defined(QTWEBENGINE_PRIVATEBROWSING)
-    QWebEngineSettings *globalSettings = QWebEngineSettings::globalSettings();
-    if (globalSettings->testAttribute(QWebEngineSettings::PrivateBrowsingEnabled))
+    if (BrowserApplication::instance()->privateBrowsing())
         return;
-#endif
 
     m_history.prepend(item);
     emit entryAdded(item);

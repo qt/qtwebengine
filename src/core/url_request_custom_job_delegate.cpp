@@ -38,6 +38,7 @@
 #include "url_request_custom_job_delegate.h"
 
 #include "type_conversion.h"
+#include "net/base/net_errors.h"
 
 #include <QByteArray>
 
@@ -61,6 +62,42 @@ void URLRequestCustomJobDelegate::setReply(const QByteArray &contentType, QIODev
 {
     m_job->setReplyMimeType(contentType.toStdString());
     m_job->setReplyDevice(device);
+}
+
+void URLRequestCustomJobDelegate::abort()
+{
+    m_job->abort();
+}
+
+void URLRequestCustomJobDelegate::redirect(const QUrl &url)
+{
+    m_job->redirect(toGurl(url));
+}
+
+void URLRequestCustomJobDelegate::fail(Error error)
+{
+    int net_error =  0;
+    switch (error) {
+    case NoError:
+        break;
+    case UrlInvalid:
+        net_error = net::ERR_INVALID_URL;
+        break;
+    case UrlNotFound:
+        net_error = net::ERR_FILE_NOT_FOUND;
+        break;
+    case RequestAborted:
+        net_error = net::ERR_ABORTED;
+        break;
+    case RequestDenied:
+        net_error = net::ERR_ACCESS_DENIED;
+        break;
+    case RequestFailed:
+        net_error = net::ERR_FAILED;
+        break;
+    }
+    if (net_error)
+        m_job->fail(net_error);
 }
 
 } // namespace

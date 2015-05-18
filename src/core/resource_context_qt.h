@@ -55,18 +55,13 @@ class ResourceContextQt : public content::ResourceContext
 public:
     ResourceContextQt(BrowserContextQt *ctx)
         : context(ctx)
-        , getter_(0)
     {}
 
     virtual net::HostResolver* GetHostResolver() Q_DECL_OVERRIDE;
 
     virtual net::URLRequestContext* GetRequestContext() Q_DECL_OVERRIDE;
-
-    void set_url_request_context_getter(net::URLRequestContextGetter* getter);
-
 private:
     BrowserContextQt *context;
-    net::URLRequestContextGetter* getter_;
 
     DISALLOW_COPY_AND_ASSIGN(ResourceContextQt);
 };
