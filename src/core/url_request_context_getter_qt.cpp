@@ -226,6 +226,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     m_storage->set_cookie_store(cookieStore);
 
     net::CookieMonster * const cookieMonster = cookieStore->GetCookieMonster();
+    cookieMonster->SetCookieableSchemes(kCookieableSchemes, arraysize(kCookieableSchemes));
     m_cookieDelegate->setCookieMonster(cookieMonster);
 }
 

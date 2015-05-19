@@ -55,6 +55,13 @@ QT_FORWARD_DECLARE_CLASS(QWebEngineCookieStoreClient)
 
 namespace QtWebEngineCore {
 
+// Extends net::CookieMonster::kDefaultCookieableSchemes with qrc, without enabling
+// cookies for the file:// scheme, which is disabled by default in Chromium.
+// Since qrc:// is similar to file:// and there are some unknowns about how
+// to correctly handle file:// cookies, qrc:// should only be used for testing.
+static const char* const kCookieableSchemes[] =
+    { "http", "https", "qrc", "ws", "wss" };
+
 class QWEBENGINE_EXPORT CookieMonsterDelegateQt: public net::CookieMonsterDelegate {
     QPointer<QWebEngineCookieStoreClient> m_client;
     scoped_refptr<net::CookieMonster> m_cookieMonster;

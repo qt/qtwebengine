@@ -158,7 +158,8 @@ inline QNetworkCookie toQt(const net::CanonicalCookie & cookie)
 {
     QNetworkCookie qCookie = QNetworkCookie(QByteArray::fromStdString(cookie.Name()), QByteArray::fromStdString(cookie.Value()));
     qCookie.setDomain(toQt(cookie.Domain()));
-    qCookie.setExpirationDate(toQt(cookie.ExpiryDate()));
+    if (!cookie.ExpiryDate().is_null())
+        qCookie.setExpirationDate(toQt(cookie.ExpiryDate()));
     qCookie.setHttpOnly(cookie.IsHttpOnly());
     qCookie.setPath(toQt(cookie.Path()));
     qCookie.setSecure(cookie.IsSecure());
