@@ -122,14 +122,8 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     QCoreApplication::setOrganizationName(QLatin1String("Qt"));
     QCoreApplication::setApplicationName(QLatin1String("demobrowser"));
     QCoreApplication::setApplicationVersion(QLatin1String("0.1"));
-#ifdef Q_WS_QWS
-    // Use a different server name for QWS so we can run an X11
-    // browser and a QWS browser in parallel on the same machine for
-    // debugging
-    QString serverName = QCoreApplication::applicationName() + QLatin1String("_qws");
-#else
-    QString serverName = QCoreApplication::applicationName();
-#endif
+    QString serverName = QCoreApplication::applicationName()
+        + QString::fromLatin1(QT_VERSION_STR).remove('.') + QLatin1String("webengine");
     QLocalSocket socket;
     socket.connectToServer(serverName);
     if (socket.waitForConnected(500)) {
