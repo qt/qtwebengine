@@ -59,6 +59,7 @@ SOURCES = \
         ozone_platform_eglfs.cpp \
         process_main.cpp \
         proxy_config_service_qt.cpp \
+        proxy_resolver_qt.cpp \
         qrc_protocol_handler_qt.cpp \
         qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
@@ -128,6 +129,7 @@ HEADERS = \
         ozone_platform_eglfs.h \
         process_main.h \
         proxy_config_service_qt.h \
+        proxy_resolver_qt.h \
         qrc_protocol_handler_qt.h \
         qt_render_view_observer_host.h \
         qtwebenginecoreglobal.h \

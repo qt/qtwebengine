@@ -67,6 +67,7 @@
 #include "content_client_qt.h"
 #include "network_delegate_qt.h"
 #include "proxy_config_service_qt.h"
+#include "proxy_resolver_qt.h"
 #include "qrc_protocol_handler_qt.h"
 #include "type_conversion.h"
 
@@ -150,7 +151,12 @@ void URLRequestContextGetterQt::generateStorage()
         base::WorkerPool::GetTaskRunner(true)));
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
-    m_storage->set_proxy_service(net::ProxyService::CreateUsingSystemProxyResolver(proxyConfigService, 0, NULL));
+    net::ProxyService *proxyService = nullptr;
+    if (ProxyResolverQt::useProxyResolverQt())
+        proxyService = new net::ProxyService(proxyConfigService, new ProxyResolverQt, nullptr);
+    else
+        proxyService = net::ProxyService::CreateUsingSystemProxyResolver(proxyConfigService, /*num_pac_threads = */0 /*default*/, NULL);
+    m_storage->set_proxy_service(proxyService);
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     m_storage->set_transport_security_state(new net::TransportSecurityState());
 
