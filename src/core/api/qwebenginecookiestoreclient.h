@@ -60,11 +60,19 @@ public:
 
 #ifdef Q_QDOC
     void setCookieWithCallback(const QNetworkCookie &cookie, FunctorOrLambda resultCallback, const QUrl &origin = QUrl());
+    void deleteSessionCookiesWithCallback(FunctorOrLambda resultCallback);
+    void deleteAllCookiesWithCallback(FunctorOrLambda resultCallback);
+    void getAllCookies(FunctorOrLambda resultCallback);
 #else
     void setCookieWithCallback(const QNetworkCookie &cookie, const QWebEngineCallback<bool> &resultCallback, const QUrl &origin = QUrl());
+    void deleteSessionCookiesWithCallback(const QWebEngineCallback<int> &resultCallback);
+    void deleteAllCookiesWithCallback(const QWebEngineCallback<int> &resultCallback);
+    void getAllCookies(const QWebEngineCallback<const QByteArray&> &resultCallback);
 #endif
     void setCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
+    void deleteSessionCookies();
+    void deleteAllCookies();
 
 Q_SIGNALS:
     void cookieAdded(const QNetworkCookie &cookie);

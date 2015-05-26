@@ -66,6 +66,9 @@ public:
 
     void setCookie(quint64 callbackId, const QNetworkCookie &cookie, const QUrl &origin);
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &origin);
+    void getAllCookies(quint64 callbackId);
+    void deleteSessionCookies(quint64 callbackId);
+    void deleteAllCookies(quint64 callbackId);
 
     void setCookieMonster(net::CookieMonster* monster);
     void setClient(QWebEngineCookieStoreClient *client);

@@ -73,6 +73,9 @@ public:
     QtWebEngineCore::CallbackDirectory callbackDirectory;
     QList<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
+    bool m_deleteSessionCookiesPending;
+    bool m_deleteAllCookiesPending;
+    bool m_getAllCookiesPending;
 
     QtWebEngineCore::CookieMonsterDelegateQt *delegate;
     QWebEngineCookieStoreClient *q_ptr;
@@ -83,8 +86,13 @@ public:
     void processPendingUserCookies();
     void setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin);
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &url);
+    void deleteSessionCookies();
+    void deleteAllCookies();
+    void getAllCookies();
 
+    void onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList);
     void onSetCallbackResult(qint64 callbackId, bool success);
+    void onDeleteCallbackResult(qint64 callbackId, int numCookies);
     void onCookieChanged(const QNetworkCookie &cookie, bool removed);
 };
 

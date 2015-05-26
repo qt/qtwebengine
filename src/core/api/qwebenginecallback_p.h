@@ -40,6 +40,7 @@
 #include "qtwebenginecoreglobal_p.h"
 #include "qwebenginecallback.h"
 
+#include <QByteArray>
 #include <QHash>
 #include <QSharedData>
 #include <QString>
@@ -50,6 +51,7 @@
     F(bool) \
     F(int) \
     F(const QString &) \
+    F(const QByteArray &) \
     F(const QVariant &)
 
 namespace QtWebEngineCore {
@@ -75,6 +77,9 @@ public:
     enum ReservedCallbackIds {
         NoCallbackId = 0,
         DeleteCookieCallbackId,
+        DeleteSessionCookiesCallbackId,
+        DeleteAllCookiesCallbackId,
+        GetAllCookiesCallbackId,
 
         // Place reserved id's before this.
         ReservedCallbackIdsEnd
