@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollectionPrivate;
 
-class Q_WEBENGINE_EXPORT QWebEngineScriptCollection {
+class QWEBENGINEWIDGETS_EXPORT QWebEngineScriptCollection {
 public:
     ~QWebEngineScriptCollection();
     bool isEmpty() const { return !count(); }
