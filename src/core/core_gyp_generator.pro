@@ -42,6 +42,7 @@ SOURCES = \
         content_client_qt.cpp \
         content_browser_client_qt.cpp \
         content_main_delegate_qt.cpp \
+        cookie_monster_delegate_qt.cpp \
         custom_protocol_handler.cpp \
         custom_url_scheme_handler.cpp \
         delegated_frame_node.cpp \
@@ -111,6 +112,7 @@ HEADERS = \
         content_client_qt.h \
         content_browser_client_qt.h \
         content_main_delegate_qt.h \
+        cookie_monster_delegate_qt.h \
         custom_protocol_handler.h \
         custom_url_scheme_handler.h \
         delegated_frame_node.h \

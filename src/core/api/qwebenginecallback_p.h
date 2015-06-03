@@ -72,6 +72,14 @@ public:
         }
     }
 
+    enum ReservedCallbackIds {
+        NoCallbackId = 0,
+        DeleteCookieCallbackId,
+
+        // Place reserved id's before this.
+        ReservedCallbackIdsEnd
+    };
+
     template<typename T>
     void registerCallback(quint64 callbackId, const QWebEngineCallback<T> &callback);
 

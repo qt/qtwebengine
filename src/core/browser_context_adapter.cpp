@@ -132,6 +132,18 @@ DownloadManagerDelegateQt *BrowserContextAdapter::downloadManagerDelegate()
     return m_downloadManagerDelegate.data();
 }
 
+QWebEngineCookieStoreClient *BrowserContextAdapter::cookieStoreClient()
+{
+    return m_cookieStoreClient.data();
+}
+
+void BrowserContextAdapter::setCookieStoreClient(QWebEngineCookieStoreClient *client)
+{
+    m_cookieStoreClient = client;
+    if (m_browserContext->url_request_getter_.get())
+        m_browserContext->url_request_getter_->updateStorageSettings();
+}
+
 void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
 {
     m_clients.append(adapterClient);

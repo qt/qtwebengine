@@ -46,6 +46,7 @@
 #include "browser_context_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "qt_render_view_observer_host.h"
+#include "qwebenginecallback_p.h"
 #include "type_conversion.h"
 #include "web_channel_ipc_transport_host.h"
 #include "web_contents_adapter_client.h"
@@ -309,7 +310,7 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     : engineContext(WebEngineContext::current())
     , webChannel(0)
     , adapterClient(0)
-    , nextRequestId(1)
+    , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
 {
 }

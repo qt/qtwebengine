@@ -36,6 +36,7 @@
 
 #include "qwebengineprofile.h"
 
+#include "qwebenginecookiestoreclient.h"
 #include "qwebenginedownloaditem.h"
 #include "qwebenginedownloaditem_p.h"
 #include "qwebenginepage.h"
@@ -401,6 +402,18 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 {
     Q_D(QWebEngineProfile);
     d->browserContext()->setHttpCacheMaxSize(maxSize);
+}
+
+QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
+{
+    Q_D(QWebEngineProfile);
+    return d->browserContext()->cookieStoreClient();
+}
+
+void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client)
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->setCookieStoreClient(client);
 }
 
 /*!

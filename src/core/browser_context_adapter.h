@@ -40,10 +40,13 @@
 #include "qtwebenginecoreglobal.h"
 
 #include <QList>
+#include <QPointer>
 #include <QScopedPointer>
 #include <QSharedData>
 #include <QString>
 #include <QVector>
+
+#include "api/qwebenginecookiestoreclient.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
@@ -68,6 +71,9 @@ public:
 
     WebEngineVisitedLinksManager *visitedLinksManager();
     DownloadManagerDelegateQt *downloadManagerDelegate();
+
+    QWebEngineCookieStoreClient *cookieStoreClient();
+    void setCookieStoreClient(QWebEngineCookieStoreClient *client);
 
     QList<BrowserContextAdapterClient*> clients() { return m_clients; }
     void addClient(BrowserContextAdapterClient *adapterClient);
@@ -139,6 +145,7 @@ private:
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserScriptControllerHost> m_userScriptController;
+    QPointer<QWebEngineCookieStoreClient> m_cookieStoreClient;
 
     QString m_dataPath;
     QString m_cachePath;

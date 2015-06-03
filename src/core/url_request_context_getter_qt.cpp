@@ -64,11 +64,14 @@
 #include "browser_context_adapter.h"
 #include "custom_protocol_handler.h"
 #include "custom_url_scheme_handler.h"
+#include "cookie_monster_delegate_qt.h"
 #include "content_client_qt.h"
 #include "network_delegate_qt.h"
 #include "proxy_config_service_qt.h"
 #include "proxy_resolver_qt.h"
 #include "qrc_protocol_handler_qt.h"
+#include "qwebenginecookiestoreclient.h"
+#include "qwebenginecookiestoreclient_p.h"
 #include "type_conversion.h"
 
 namespace QtWebEngineCore {
@@ -80,6 +83,7 @@ using content::BrowserThread;
 URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers)
     : m_ignoreCertificateErrors(false)
     , m_browserContext(browserContext)
+    , m_cookieDelegate(new CookieMonsterDelegateQt())
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
@@ -186,6 +190,8 @@ void URLRequestContextGetterQt::generateCookieStore()
 
     // Unset it first to get a chance to destroy and flush the old cookie store before before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
+    m_cookieDelegate->setCookieMonster(0);
+    m_cookieDelegate->setClient(m_browserContext->cookieStoreClient());
 
     net::CookieStore* cookieStore = 0;
     switch (m_browserContext->persistentCookiesPolicy()) {
@@ -194,7 +200,8 @@ void URLRequestContextGetterQt::generateCookieStore()
             content::CreateCookieStore(content::CookieStoreConfig(
                 base::FilePath(),
                 content::CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-                NULL, NULL)
+                NULL,
+                m_cookieDelegate.get())
             );
         break;
     case BrowserContextAdapter::AllowPersistentCookies:
@@ -202,7 +209,8 @@ void URLRequestContextGetterQt::generateCookieStore()
             content::CreateCookieStore(content::CookieStoreConfig(
                 toFilePath(m_browserContext->cookiesPath()),
                 content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES,
-                NULL, NULL)
+                NULL,
+                m_cookieDelegate.get())
             );
         break;
     case BrowserContextAdapter::ForcePersistentCookies:
@@ -210,11 +218,15 @@ void URLRequestContextGetterQt::generateCookieStore()
             content::CreateCookieStore(content::CookieStoreConfig(
                 toFilePath(m_browserContext->cookiesPath()),
                 content::CookieStoreConfig::RESTORED_SESSION_COOKIES,
-                NULL, NULL)
+                NULL,
+                m_cookieDelegate.get())
             );
         break;
     }
     m_storage->set_cookie_store(cookieStore);
+
+    net::CookieMonster * const cookieMonster = cookieStore->GetCookieMonster();
+    m_cookieDelegate->setCookieMonster(cookieMonster);
 }
 
 void URLRequestContextGetterQt::updateUserAgent()

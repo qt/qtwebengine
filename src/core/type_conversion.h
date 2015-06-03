@@ -41,12 +41,14 @@
 #include <QDateTime>
 #include <QDir>
 #include <QMatrix4x4>
+#include <QNetworkCookie>
 #include <QRect>
 #include <QString>
 #include <QUrl>
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/public/common/file_chooser_file_info.h"
+#include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
@@ -145,6 +147,17 @@ inline QDateTime toQt(base::Time time)
 
 inline base::Time toTime(const QDateTime &dateTime) {
     return base::Time::FromInternalValue(dateTime.toMSecsSinceEpoch());
+}
+
+inline QNetworkCookie toQt(const net::CanonicalCookie & cookie)
+{
+    QNetworkCookie qCookie = QNetworkCookie(QByteArray::fromStdString(cookie.Name()), QByteArray::fromStdString(cookie.Value()));
+    qCookie.setDomain(toQt(cookie.Domain()));
+    qCookie.setExpirationDate(toQt(cookie.ExpiryDate()));
+    qCookie.setHttpOnly(cookie.IsHttpOnly());
+    qCookie.setPath(toQt(cookie.Path()));
+    qCookie.setSecure(cookie.IsSecure());
+    return qCookie;
 }
 
 inline base::FilePath::StringType toFilePathString(const QString &str)

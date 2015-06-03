@@ -4,6 +4,7 @@ DESTDIR = $$OUT_PWD/$$getConfigDir()
 TEMPLATE = lib
 
 CONFIG += staticlib c++11
+QT += network
 
 # Don't create .prl file for this intermediate library because
 # their contents get used when linking against them, breaking
@@ -17,7 +18,9 @@ CONFIG -= create_prl
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
 
-DEFINES += BUILDING_CHROMIUM
+DEFINES += \
+    BUILDING_CHROMIUM \
+    NOMINMAX
 
 CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 INCLUDEPATH += $$QTWEBENGINE_ROOT/src/core \
@@ -30,5 +33,8 @@ HEADERS = \
     qwebenginecallback_p.h \
     qtwebenginecoreglobal.h \
     qtwebenginecoreglobal_p.h \
+    qwebenginecookiestoreclient.h \
+    qwebenginecookiestoreclient_p.h \
 
-SOURCES = dummy.cpp \
+SOURCES = \
+    qwebenginecookiestoreclient.cpp \

@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 class QObject;
 class QUrl;
+class QWebEngineCookieStoreClient;
 class QWebEngineDownloadItem;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
@@ -92,6 +93,9 @@ public:
 
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
+
+    QWebEngineCookieStoreClient* cookieStoreClient();
+    void setCookieStoreClient(QWebEngineCookieStoreClient *client);
 
     void clearAllVisitedLinks();
     void clearVisitedLinks(const QList<QUrl> &urls);

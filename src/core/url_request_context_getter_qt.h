@@ -48,6 +48,8 @@
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
+#include "cookie_monster_delegate_qt.h"
+
 #include "qglobal.h"
 #include <qatomic.h>
 
@@ -95,6 +97,8 @@ private:
     scoped_ptr<net::NetworkDelegate> m_networkDelegate;
     scoped_ptr<net::URLRequestContextStorage> m_storage;
     scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
+
+    scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
 };
 
 } // namespace QtWebEngineCore
