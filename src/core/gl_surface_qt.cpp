@@ -44,7 +44,7 @@
 
 #include <QGuiApplication>
 #include "gl_context_qt.h"
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

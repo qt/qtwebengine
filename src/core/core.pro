@@ -8,12 +8,16 @@ core_gyp_generator.file = core_gyp_generator.pro
 gyp_run.file = gyp_run.pro
 gyp_run.depends = core_gyp_generator
 
+core_api.file = api/core_api.pro
+core_api.depends = gyp_run
+
 # This will take the compile output of ninja, and link+deploy the final binary.
 core_module.file = core_module.pro
-core_module.depends = gyp_run
+core_module.depends = core_api
 
 SUBDIRS += core_gyp_generator \
            gyp_run \
+           core_api \
            core_module
 
 !win32 {

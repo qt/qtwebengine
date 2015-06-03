@@ -38,9 +38,9 @@
 
 #include "browser_context_adapter.h"
 #include "download_manager_delegate_qt.h"
-#include "type_conversion.h"
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 #include "resource_context_qt.h"
+#include "type_conversion.h"
 #include "url_request_context_getter_qt.h"
 
 #include "base/time/time.h"

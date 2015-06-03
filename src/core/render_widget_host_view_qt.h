@@ -47,6 +47,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
+#include "qtwebenginecoreglobal_p.h"
 #include <QMap>
 #include <QPoint>
 #include <QRect>

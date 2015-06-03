@@ -37,8 +37,9 @@
 #include "chromium_overrides.h"
 
 #include "gl_context_qt.h"
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 #include "web_contents_view_qt.h"
+
 #include "base/values.h"
 #include "content/browser/renderer_host/pepper/pepper_truetype_font_list.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"

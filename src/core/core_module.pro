@@ -9,9 +9,25 @@ QMAKE_INFO_PLIST = Info_mac.plist
     error("Could not find the linking information that gyp should have generated.")
 }
 
-# We distribute the module binary but headers are only available in-tree.
-CONFIG += no_module_headers
 load(qt_module)
+
+api_library_name = qtwebenginecoreapi
+api_library_path = $$OUT_PWD/api/$$getConfigDir()
+LIBS_PRIVATE += -L$$api_library_path
+CONFIG *= no_smart_library_merge
+osx {
+    LIBS_PRIVATE += -Wl,-force_load,$${api_library_path}$${QMAKE_DIR_SEP}lib$${api_library_name}.a
+} else:win32-msvc* {
+    LIBS_PRIVATE += /OPT:REF -l$$api_library_name
+} else {
+    LIBS_PRIVATE += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive
+}
+
+win32-msvc* {
+    POST_TARGETDEPS += $${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib
+} else {
+    POST_TARGETDEPS += $${api_library_path}$${QMAKE_DIR_SEP}lib$${api_library_name}.a
+}
 
 # Using -Wl,-Bsymbolic-functions seems to confuse the dynamic linker
 # and doesn't let Chromium get access to libc symbols through dlsym.

@@ -25,7 +25,7 @@ else: DEFINES += QT_NO_EGL
 
 RESOURCES += devtools.qrc
 
-INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD $$PWD/api
 
 SOURCES = \
         access_token_store_qt.cpp \

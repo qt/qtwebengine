@@ -3,12 +3,12 @@ TARGET = QtWebEngine
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINE_LIB
 
-QT += qml quick
-QT_PRIVATE += webenginecore quick-private gui-private core-private
+QT += qml quick webenginecore
+QT_PRIVATE += quick-private gui-private core-private
 
 QMAKE_DOCS = $$PWD/doc/qtwebengine.qdocconf
 
-INCLUDEPATH += $$PWD api ../core
+INCLUDEPATH += $$PWD api ../core ../core/api
 
 SOURCES = \
         api/qquickwebenginecertificateerror.cpp \

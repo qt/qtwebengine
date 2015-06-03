@@ -6,7 +6,7 @@ QT += qml quick webchannel
 QT_PRIVATE += quick-private gui-private core-private
 
 # Make QtCreator happy.
-CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$${getChromiumSrcDir()}
+CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 INCLUDEPATH += $$CHROMIUM_SRC_DIR
 
 qtHaveModule(positioning):QT += positioning

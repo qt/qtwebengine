@@ -46,7 +46,7 @@
 #include "ui/accessibility/ax_node_data.h"
 
 #include "browser_accessibility_manager_qt.h"
-#include "qtwebenginecoreglobal.h"
+#include "qtwebenginecoreglobal_p.h"
 #include "type_conversion.h"
 
 using namespace blink;

@@ -40,6 +40,7 @@
 #include "browser_accessibility_qt.h"
 #include "chromium_overrides.h"
 #include "delegated_frame_node.h"
+#include "qtwebenginecoreglobal_p.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
 #include "web_contents_adapter.h"

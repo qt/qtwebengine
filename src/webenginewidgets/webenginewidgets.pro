@@ -3,12 +3,12 @@ TARGET = QtWebEngineWidgets
 # For our export macros
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 
-QT += webengine widgets network quick
-QT_PRIVATE += webenginecore quick-private gui-private core-private
+QT += webengine webenginecore widgets network quick
+QT_PRIVATE += quick-private gui-private core-private
 
 QMAKE_DOCS = $$PWD/doc/qtwebenginewidgets.qdocconf
 
-INCLUDEPATH += $$PWD api ../core ../webengine/api
+INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 
 SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
