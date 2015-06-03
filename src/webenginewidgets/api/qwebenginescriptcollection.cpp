@@ -41,6 +41,14 @@
 
 using QtWebEngineCore::UserScript;
 
+/*!
+    \class QWebEngineScriptCollection
+    \inmodule QtWebEngineWidgets
+    \since 5.5
+    \brief The QWebEngineScriptCollection class represents a collection of user scripts.
+
+*/
+
 QWebEngineScriptCollection::QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *collectionPrivate)
     :d(collectionPrivate)
 {
@@ -50,31 +58,67 @@ QWebEngineScriptCollection::~QWebEngineScriptCollection()
 {
 }
 
+/*!
+ * \brief QWebEngineScriptCollection::count
+ * \return the number of elements in the collection.
+ */
+
 int QWebEngineScriptCollection::count() const
 {
     return d->count();
 }
+
+/*!
+ * \brief QWebEngineScriptCollection::contains
+ * \param value
+ * \return \c true if the collection contains an occurrence of \a value; otherwise returns false.
+ */
 
 bool QWebEngineScriptCollection::contains(const QWebEngineScript &value) const
 {
     return d->contains(value);
 }
 
+/*!
+ * \brief QWebEngineScriptCollection::findScript
+ * \param name
+ * \return the first script found in collection the name property of which is \a name, or a null QWebEngineScript if none was found.
+ * \note the order in which the script collection is traversed is undefined, which means this should be used when the unicity is
+ * guaranteed at the application level.
+ * \sa findScripts()
+ */
+
 QWebEngineScript QWebEngineScriptCollection::findScript(const QString &name) const
 {
     return d->find(name);
 }
 
+/*!
+ * \brief QWebEngineScriptCollection::findScripts
+ * \param name
+ * \return the list of scripts in the collection the name property of which is \a name, or an empty list if none was found.
+ */
+
 QList<QWebEngineScript> QWebEngineScriptCollection::findScripts(const QString &name) const
 {
     return d->toList(name);
 }
-
+/*!
+ * \brief QWebEngineScriptCollection::insert
+ * \param s
+ *
+ * Inserts script \c s into the collection.
+ */
 void QWebEngineScriptCollection::insert(const QWebEngineScript &s)
 {
     d->insert(s);
 }
-
+/*!
+ * \brief QWebEngineScriptCollection::insert
+ * \param list
+ *
+ * Inserts scripts \c list into the collection.
+ */
 void QWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
 {
     d->reserve(list.size());
@@ -82,16 +126,30 @@ void QWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
         d->insert(s);
 }
 
+/*!
+ * \brief QWebEngineScriptCollection::remove
+ * \param script
+ * Removes \a script from the collection, if it is present.
+ * \return \c true if the script was found and successfully removed from the collection, \c false otherwise.
+ */
 bool QWebEngineScriptCollection::remove(const QWebEngineScript &script)
 {
     return d->remove(script);
 }
 
+/*!
+ * \brief QWebEngineScriptCollection::clear
+ * Removes all scripts from this collection.
+ */
 void QWebEngineScriptCollection::clear()
 {
     d->clear();
 }
 
+/*!
+ * \brief QWebEngineScriptCollection::toList
+ * \return a QList with the values of the scripts used in this collection.
+ */
 QList<QWebEngineScript> QWebEngineScriptCollection::toList() const
 {
     return d->toList();
