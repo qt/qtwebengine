@@ -62,7 +62,7 @@ private:
 
 class ClipboardQt : public ui::Clipboard {
 public:
-    virtual uint64 GetSequenceNumber(ui::ClipboardType type) Q_DECL_OVERRIDE;
+    virtual uint64 GetSequenceNumber(ui::ClipboardType type) const Q_DECL_OVERRIDE;
     virtual bool IsFormatAvailable(const FormatType& format, ui::ClipboardType type) const Q_DECL_OVERRIDE;
     virtual void Clear(ui::ClipboardType type) Q_DECL_OVERRIDE;
     virtual void ReadAvailableTypes(ui::ClipboardType type, std::vector<base::string16>* types, bool* contains_filenames) const Q_DECL_OVERRIDE;

@@ -188,9 +188,9 @@ WebEngineContext::WebEngineContext()
     QVector<const char*> argv(args.size());
     for (int i = 0; i < args.size(); ++i)
         argv[i] = args[i].constData();
-    CommandLine::Init(argv.size(), argv.constData());
+    base::CommandLine::Init(argv.size(), argv.constData());
 
-    CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
+    base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
     parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
@@ -243,7 +243,7 @@ WebEngineContext::WebEngineContext()
     contentMainParams.sandbox_info = &sandbox_info;
 #endif
     m_contentRunner->Initialize(contentMainParams);
-    m_browserRunner->Initialize(content::MainFunctionParams(*CommandLine::ForCurrentProcess()));
+    m_browserRunner->Initialize(content::MainFunctionParams(*base::CommandLine::ForCurrentProcess()));
 
     // Once the MessageLoop has been created, attach a top-level RunLoop.
     m_runLoop.reset(new base::RunLoop);

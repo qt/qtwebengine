@@ -108,7 +108,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     return target;
 }
 
-void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, content::InvalidateTypes changed_flags)
+void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL)
         m_viewClient->urlChanged(toQt(source->GetVisibleURL()));

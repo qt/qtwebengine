@@ -58,9 +58,8 @@ PepperHostFactoryQt::PepperHostFactoryQt(content::BrowserPpapiHost* host)
 
 PepperHostFactoryQt::~PepperHostFactoryQt() {}
 
-scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(
-        ppapi::host::PpapiHost* host,
-        const ppapi::proxy::ResourceMessageCallParams& params,
+scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(ppapi::host::PpapiHost* host,
+        PP_Resource resource,
         PP_Instance instance,
         const IPC::Message& message)
 {
@@ -75,7 +74,7 @@ scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(
         return scoped_ptr<ppapi::host::ResourceHost>(
                     new PepperFlashBrowserHostQt(host_,
                                                  instance,
-                                                 params.pp_resource()));
+                                                 resource));
 
     return scoped_ptr<ppapi::host::ResourceHost>();
 }

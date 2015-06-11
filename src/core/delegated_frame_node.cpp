@@ -409,7 +409,7 @@ void DelegatedFrameNode::preprocess()
         {
             QMutexLocker lock(&m_mutex);
             base::MessageLoop *gpuMessageLoop = gpu_message_loop();
-            content::SyncPointManager *syncPointManager = sync_point_manager();
+            gpu::SyncPointManager *syncPointManager = sync_point_manager();
 
             Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
                 m_numPendingSyncPoints++;
@@ -560,7 +560,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
-                textureNode->setTextureCoordinatesTransform(tquad->flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
+                textureNode->setTextureCoordinatesTransform(tquad->y_flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
                 textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));

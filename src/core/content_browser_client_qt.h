@@ -40,7 +40,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
-#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
@@ -88,7 +88,7 @@ public:
     virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
     virtual content::AccessTokenStore* CreateAccessTokenStore() Q_DECL_OVERRIDE;
     virtual content::QuotaPermissionContext *CreateQuotaPermissionContext() Q_DECL_OVERRIDE;
-    virtual void OverrideWebkitPrefs(content::RenderViewHost *, const GURL &, content::WebPreferences *) Q_DECL_OVERRIDE;
+    virtual void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) Q_DECL_OVERRIDE;
     virtual void AllowCertificateError(
         int render_process_id,
         int render_frame_id,

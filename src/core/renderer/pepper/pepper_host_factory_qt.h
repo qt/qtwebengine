@@ -56,7 +56,7 @@ public:
 
     virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
             ppapi::host::PpapiHost* host,
-            const ppapi::proxy::ResourceMessageCallParams& params,
+            PP_Resource resource,
             PP_Instance instance,
             const IPC::Message& message) override;
 private:

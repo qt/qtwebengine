@@ -261,7 +261,7 @@ base::string16 WebEngineLibraryInfo::getApplicationName()
 
 std::string WebEngineLibraryInfo::getApplicationLocale()
 {
-    CommandLine *parsedCommandLine = CommandLine::ForCurrentProcess();
+    base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
     if (!parsedCommandLine->HasSwitch(switches::kLang))
         return QLocale().bcp47Name().toStdString();
 
