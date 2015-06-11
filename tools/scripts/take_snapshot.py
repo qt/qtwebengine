@@ -78,7 +78,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/android_tools')
         or '/tests/' in file_path
         or ('/test/' in file_path and
-            not '/webrtc/test/testsupport/' in file_path and
+            not '/webrtc/' in file_path and
             not file_path.startswith('net/test/') and
             not file_path.endswith('mock_chrome_application_mac.h') and
             not file_path.endswith('perftimer.h') and
@@ -100,9 +100,9 @@ def isInChromiumBlacklist(file_path):
             not 'repack_locales' in file_path and
             not 'third_party/chromevox' in file_path and
             not 'media/desktop_media_list.h' in file_path and
-            not 'media/desktop_streams_registry.cc' in file_path and
-            not 'media/desktop_streams_registry.h' in file_path and
-            not 'common/localized_error' in file_path and
+            not 'media/desktop_streams_registry.' in file_path and
+            not 'common/chrome_switches.' in file_path and
+            not 'common/localized_error.' in file_path and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
             not file_path.endswith('.grd') and
@@ -113,16 +113,24 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
         or (file_path.startswith('components') and
+            not file_path.startswith('components/device_event_log') and
+            not file_path.startswith('components/devtools_') and
+            not file_path.startswith('components/error_page') and
+            not file_path.startswith('components/mime_util') and
+            not file_path.startswith('components/printing') and
+            not file_path.startswith('components/resources') and
+            not file_path.startswith('components/scheduler') and
+            not file_path.startswith('components/strings') and
             not file_path.startswith('components/tracing') and
             not file_path.startswith('components/visitedlink') and
-            not file_path.startswith('components/error_page') and
+            not file_path.startswith('components/webcrypto') and
             not file_path.endswith('.grdp') and
             not 'components_strings' in file_path)
         or file_path.startswith('content/public/android/java')
-        or file_path.startswith('content/shell')
+        or (file_path.startswith('content/shell') and
+            not file_path.startswith('content/shell/common'))
         or file_path.startswith('courgette')
         or (file_path.startswith('extensions') and
-            # Included by generated sources of ui/accessibility/ax_enums.idl
             not 'browser/extension_function_registry.h' in file_path and
             not 'browser/extension_function_histogram_value.h' in file_path)
         or file_path.startswith('google_update')
@@ -136,17 +144,11 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('sync')
         or file_path.startswith('testing/android')
         or file_path.startswith('testing/buildbot')
-        or file_path.startswith('third_party/accessibility-developer-tools')
-        or file_path.startswith('third_party/GTM')
         or file_path.startswith('third_party/WebKit/LayoutTests')
         or file_path.startswith('third_party/WebKit/ManualTests')
         or file_path.startswith('third_party/WebKit/PerformanceTests')
-        or file_path.startswith('third_party/active_doc')
-        or file_path.startswith('third_party/android_crazy_linker')
-        or file_path.startswith('third_party/android_platform')
-        or file_path.startswith('third_party/android_testrunner')
-        or file_path.startswith('third_party/aosp')
-        or file_path.startswith('third_party/apache-mime4j')
+        or file_path.startswith('third_party/accessibility-audit')
+        or file_path.startswith('third_party/android_')
         or file_path.startswith('third_party/apache-win32')
         or file_path.startswith('third_party/apple_sample_code')
         or file_path.startswith('third_party/binutils')
@@ -157,13 +159,10 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
         or file_path.startswith('third_party/colorama')
-        or file_path.startswith('third_party/cros_dbus_cplusplus')
         or file_path.startswith('third_party/cros_system_api')
         or file_path.startswith('third_party/cygwin')
         or file_path.startswith('third_party/cython')
         or file_path.startswith('third_party/elfutils')
-        or file_path.startswith('third_party/eyesfree')
-        or file_path.startswith('third_party/findbugs')
         or file_path.startswith('third_party/google_input_tools')
         or file_path.startswith('third_party/gperf')
         or file_path.startswith('third_party/gnu_binutils')
@@ -176,7 +175,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/hunspell')
         or file_path.startswith('third_party/hunspell_dictionaries')
         or file_path.startswith('third_party/instrumented_libraries')
-        or file_path.startswith('third_party/jarjar')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
         or file_path.startswith('third_party/libphonenumber')
@@ -188,7 +186,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/markdown')
         or file_path.startswith('third_party/mingw-w64')
         or file_path.startswith('third_party/nacl_sdk_binaries')
-        or file_path.startswith('third_party/polymer')
+        or (file_path.startswith('third_party/polymer') and
+            not file_path.startswith('third_party/polymer/components-chromium/'))
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')
@@ -196,8 +195,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/psyco_win32')
         or file_path.startswith('third_party/python_26')
         or file_path.startswith('third_party/scons-2.0.1')
-        or file_path.startswith('third_party/syzygy')
-        or file_path.startswith('third_party/swig')
         or file_path.startswith('third_party/webgl')
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/xulrunner-sdk')
