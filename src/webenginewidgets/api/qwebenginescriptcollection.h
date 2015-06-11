@@ -67,6 +67,7 @@ public:
     QList<QWebEngineScript> toList() const;
 
 private:
+    Q_DISABLE_COPY(QWebEngineScriptCollection)
     friend class QWebEnginePagePrivate;
     friend class QWebEngineProfilePrivate;
     QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *);
