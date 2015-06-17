@@ -185,6 +185,11 @@ WebEngineContext::WebEngineContext()
     Q_FOREACH (const QString& arg, QCoreApplication::arguments())
         args << arg.toUtf8();
 
+    bool useEmbeddedSwitches = args.removeAll("--enable-embedded-switches");
+#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
+    useEmbeddedSwitches = !args.removeAll("--disable-embedded-switches");
+#endif
+
     QVector<const char*> argv(args.size());
     for (int i = 0; i < args.size(); ++i)
         argv[i] = args[i].constData();
@@ -198,21 +203,20 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
 
-#if defined(QTWEBENGINE_MOBILE_SWITCHES)
-    // Inspired by the Android port's default switches
-    parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
-    parsedCommandLine->AppendSwitch(switches::kEnablePinch);
-    parsedCommandLine->AppendSwitch(switches::kEnableViewport);
-    parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
-    parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
-    parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-    parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
-    parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
-    parsedCommandLine->AppendSwitch(switches::kEnableImplSidePainting);
-    parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
-
-    parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
-#endif
+    if (useEmbeddedSwitches) {
+        // Inspired by the Android port's default switches
+        parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
+        parsedCommandLine->AppendSwitch(switches::kEnablePinch);
+        parsedCommandLine->AppendSwitch(switches::kEnableViewport);
+        parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
+        parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
+        parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+        parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
+        parsedCommandLine->AppendSwitch(switches::kDisable2dCanvasAntialiasing);
+        parsedCommandLine->AppendSwitch(switches::kEnableImplSidePainting);
+        parsedCommandLine->AppendSwitch(cc::switches::kDisableCompositedAntialiasing);
+        parsedCommandLine->AppendSwitchASCII(switches::kProfilerTiming, switches::kProfilerTimingDisabledValue);
+    }
 
     GLContextHelper::initialize();
 

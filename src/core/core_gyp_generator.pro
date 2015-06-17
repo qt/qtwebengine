@@ -18,7 +18,7 @@ DEFINES += QT_NO_KEYWORDS \
 
 # Assume that we want mobile touch and low-end hardware behaviors
 # whenever we are cross compiling.
-cross_compile: DEFINES += QTWEBENGINE_MOBILE_SWITCHES
+cross_compile: DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
 
 contains(QT_CONFIG, egl): CONFIG += egl
 else: DEFINES += QT_NO_EGL
