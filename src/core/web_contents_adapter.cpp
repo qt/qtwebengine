@@ -799,7 +799,7 @@ void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, 
 void WebContentsAdapter::runGeolocationRequestCallback(const QUrl &securityOrigin, bool allowed)
 {
     Q_D(WebContentsAdapter);
-    d->webContentsDelegate->geolocationPermissionReply(securityOrigin, allowed);
+    d->browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::GeolocationPermission, allowed);
 }
 
 void WebContentsAdapter::grantMouseLockPermission(bool granted)

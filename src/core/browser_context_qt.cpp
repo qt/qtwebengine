@@ -38,6 +38,7 @@
 
 #include "browser_context_adapter.h"
 #include "download_manager_delegate_qt.h"
+#include "permission_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "resource_context_qt.h"
 #include "type_conversion.h"
@@ -132,6 +133,13 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
 {
     return 0;
+}
+
+content::PermissionManager *BrowserContextQt::GetPermissionManager()
+{
+    if (!permissionManager)
+        permissionManager.reset(new PermissionManagerQt(m_adapter));
+    return permissionManager.get();
 }
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers)

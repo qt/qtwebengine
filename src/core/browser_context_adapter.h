@@ -119,6 +119,13 @@ public:
         TrackVisitedLinksOnDisk,
     };
 
+    enum PermissionType {
+        UnsupportedPermission = 0,
+        GeolocationPermission = 1,
+// Reserved:
+//        NotificationPermission = 2,
+    };
+
     HttpCacheType httpCacheType() const;
     void setHttpCacheType(BrowserContextAdapter::HttpCacheType);
 
@@ -137,6 +144,8 @@ public:
     QVector<CustomUrlSchemeHandler*> &customUrlSchemeHandlers();
     void updateCustomUrlSchemeHandlers();
     UserScriptControllerHost *userScriptController();
+
+    void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
 
 private:
     QString m_name;

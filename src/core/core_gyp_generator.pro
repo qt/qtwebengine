@@ -58,6 +58,7 @@ SOURCES = \
         native_web_keyboard_event_qt.cpp \
         network_delegate_qt.cpp \
         ozone_platform_eglfs.cpp \
+        permission_manager_qt.cpp \
         process_main.cpp \
         proxy_config_service_qt.cpp \
         proxy_resolver_qt.cpp \
@@ -129,6 +130,7 @@ HEADERS = \
         media_capture_devices_dispatcher.h \
         network_delegate_qt.h \
         ozone_platform_eglfs.h \
+        permission_manager_qt.h \
         process_main.h \
         proxy_config_service_qt.h \
         proxy_resolver_qt.h \

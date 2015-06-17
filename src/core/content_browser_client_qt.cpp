@@ -408,41 +408,6 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
     contentsDelegate->allowCertificateError(errorController);
 }
 
-void ContentBrowserClientQt::RequestPermission(content::PermissionType permission,
-                                                content::WebContents* web_contents,
-                                                int bridge_id,
-                                                const GURL& requesting_frame,
-                                                bool user_gesture,
-                                                const base::Callback<void(bool)>& result_callback)
-{
-    Q_UNUSED(bridge_id);
-    Q_UNUSED(user_gesture);
-    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
-    Q_ASSERT(contentsDelegate);
-    if (permission == content::PERMISSION_GEOLOCATION)
-        contentsDelegate->requestGeolocationPermission(requesting_frame, result_callback);
-    else
-        result_callback.Run(false);
-}
-
-
-void ContentBrowserClientQt::CancelPermissionRequest(content::PermissionType permission,
-                                                     content::WebContents* web_contents,
-                                                     int bridge_id,
-                                                     const GURL& requesting_frame)
-{
-    Q_UNUSED(bridge_id);
-    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
-    Q_ASSERT(contentsDelegate);
-    if (permission == content::PERMISSION_GEOLOCATION)
-        contentsDelegate->cancelGeolocationPermissionRequest(requesting_frame);
-}
-
-blink::WebNotificationPermission ContentBrowserClientQt::CheckDesktopNotificationPermission(const GURL&, content::ResourceContext *, int )
-{
-    return blink::WebNotificationPermission::WebNotificationPermissionDenied;
-}
-
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()
 {
 #ifdef QT_USE_POSITIONING

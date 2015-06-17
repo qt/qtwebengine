@@ -39,6 +39,7 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/permission_status.mojom.h"
 
 #include "base/callback.h"
 
@@ -101,14 +102,10 @@ public:
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
-    void requestGeolocationPermission(const GURL &requestingFrameOrigin, const base::Callback<void (bool)> &resultCallback);
-    void cancelGeolocationPermissionRequest(const GURL &requestingFrameOrigin);
-    void geolocationPermissionReply(const QUrl&,  bool permission);
+    void requestGeolocationPermission(const QUrl &requestingOrigin);
 
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
-
-    QHash<QUrl, base::Callback<void (bool)> > m_geolocationPermissionRequests;
 
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
