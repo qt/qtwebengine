@@ -249,7 +249,7 @@ WebEngineContext::WebEngineContext()
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
 
-    m_devtools.reset(new DevToolsHttpHandlerDelegateQt);
+    m_devtools = createDevToolsHttpHandler();
     // Force the initialization of MediaCaptureDevicesDispatcher on the UI
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
