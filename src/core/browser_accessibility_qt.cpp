@@ -59,82 +59,6 @@ BrowserAccessibilityQt::BrowserAccessibilityQt()
     QAccessible::registerAccessibleInterface(this);
 }
 
-// This function is taken from chromium/content/browser/accessibility/browser_accessibility_win.cc
-// see also http://www.w3.org/TR/html-aapi
-void BrowserAccessibilityQt::OnDataChanged()
-{
-    BrowserAccessibility::OnDataChanged();
-
-    // The calculation of the accessible name of an element has been
-    // standardized in the HTML to Platform Accessibility APIs Implementation
-    // Guide (http://www.w3.org/TR/html-aapi/). In order to return the
-    // appropriate accessible name on Windows, we need to apply some logic
-    // to the fields we get from WebKit.
-    //
-    // TODO(dmazzoni): move most of this logic into WebKit.
-    //
-    // WebKit gives us:
-    //
-    //   name: the default name, e.g. inner text
-    //   title ui element: a reference to a <label> element on the same
-    //       page that labels this node.
-    //   description: accessible labels that override the default name:
-    //       aria-label or aria-labelledby or aria-describedby
-    //   help: the value of the "title" attribute
-    //
-    // On Windows, the logic we apply lets some fields take precedence and
-    // always returns the primary name in "name" and the secondary name,
-    // if any, in "description".
-
-    int title_elem_id = GetIntAttribute(
-                ui::AX_ATTR_TITLE_UI_ELEMENT);
-    std::string help = GetStringAttribute(ui::AX_ATTR_HELP);
-    std::string description = GetStringAttribute(
-                ui::AX_ATTR_DESCRIPTION);
-
-    // WebKit annoyingly puts the title in the description if there's no other
-    // description, which just confuses the rest of the logic. Put it back.
-    // Now "help" is always the value of the "title" attribute, if present.
-    std::string title_attr;
-    if (GetHtmlAttribute("title", &title_attr) &&
-            description == title_attr &&
-            help.empty()) {
-        help = description;
-        description.clear();
-    }
-
-    // Now implement the main logic: the descripion should become the name if
-    // it's nonempty, and the help should become the description if
-    // there's no description - or the name if there's no name or description.
-    if (!description.empty()) {
-        set_name(description);
-        description.clear();
-    }
-    if (!help.empty() && description.empty()) {
-        description = help;
-        help.clear();
-    }
-    if (!description.empty() && name().empty() && !title_elem_id) {
-        set_name(description);
-        description.clear();
-    }
-
-    // If it's a text field, also consider the placeholder.
-    std::string placeholder;
-    if (GetRole() == ui::AX_ROLE_TEXT_FIELD &&
-            HasState(ui::AX_STATE_FOCUSABLE) &&
-            GetHtmlAttribute("placeholder", &placeholder)) {
-        if (name().empty() && !title_elem_id) {
-            set_name(placeholder);
-        } else if (description.empty()) {
-            description = placeholder;
-        }
-    }
-
-    SetStringAttribute(ui::AX_ATTR_DESCRIPTION, description);
-    SetStringAttribute(ui::AX_ATTR_HELP, help);
-}
-
 bool BrowserAccessibilityQt::isValid() const
 {
     return true;
@@ -227,7 +151,7 @@ QString BrowserAccessibilityQt::text(QAccessible::Text t) const
 {
     switch (t) {
     case QAccessible::Name:
-        return toQt(name());
+        return toQt(GetStringAttribute(ui::AX_ATTR_NAME));
     case QAccessible::Description:
         return toQt(GetStringAttribute(ui::AX_ATTR_DESCRIPTION));
     case QAccessible::Help:
@@ -277,9 +201,9 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Document; // returning Application here makes Qt return the top level app object
     case ui::AX_ROLE_ARTICLE:
         return QAccessible::Section;
-    case ui::AX_ROLE_BROWSER:
-        return QAccessible::Document; // FIXME
     case ui::AX_ROLE_BANNER:
+        return QAccessible::Section;
+    case ui::AX_ROLE_BLOCKQUOTE:
         return QAccessible::Section;
     case ui::AX_ROLE_BUSY_INDICATOR:
         return QAccessible::Animation; // FIXME
@@ -325,10 +249,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Section;
     case ui::AX_ROLE_DOCUMENT:
         return QAccessible::Document;
-    case ui::AX_ROLE_DRAWER:
-        return QAccessible::Client; // FIXME
-    case ui::AX_ROLE_EDITABLE_TEXT:
-        return QAccessible::EditableText;
     case ui::AX_ROLE_EMBEDDED_OBJECT:
         return QAccessible::Grouping; // FIXME
     case ui::AX_ROLE_FOOTER:
@@ -339,14 +259,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Table;
     case ui::AX_ROLE_GROUP:
         return QAccessible::Grouping;
-    case ui::AX_ROLE_GROW_AREA:
-        return QAccessible::Grip;
     case ui::AX_ROLE_HEADING:
         return QAccessible::Heading;
-    case ui::AX_ROLE_HELP_TAG:
-        return QAccessible::HelpBalloon; // FIXME
-    case ui::AX_ROLE_HORIZONTAL_RULE:
-        return QAccessible::Separator;
     case ui::AX_ROLE_IFRAME:
         return QAccessible::Grouping;
     case ui::AX_ROLE_IGNORED:
@@ -357,8 +271,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Graphic;
     case ui::AX_ROLE_IMAGE_MAP_LINK:
         return QAccessible::Link;
-    case ui::AX_ROLE_INCREMENTOR:
-        return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_INLINE_TEXT_BOX:
         return QAccessible::EditableText;
     case ui::AX_ROLE_LABEL_TEXT:
@@ -387,8 +299,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_MATH:
         return QAccessible::Equation;
-    case ui::AX_ROLE_MATTE:
-        return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_MENU:
         return QAccessible::PopupMenu;
     case ui::AX_ROLE_MENU_BAR:
@@ -413,6 +323,8 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Paragraph;
     case ui::AX_ROLE_POP_UP_BUTTON:
         return QAccessible::ComboBox;
+    case ui::AX_ROLE_PRE:
+        return QAccessible::Section;
     case ui::AX_ROLE_PRESENTATIONAL:
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_PROGRESS_INDICATOR:
@@ -429,8 +341,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::RowHeader;
     case ui::AX_ROLE_RULER:
         return QAccessible::NoRole; // FIXME
-    case ui::AX_ROLE_RULER_MARKER:
-        return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_SCROLL_AREA:
         return QAccessible::Client; // FIXME
     case ui::AX_ROLE_SCROLL_BAR:
@@ -439,8 +349,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_SEARCH:
         return QAccessible::Section;
-    case ui::AX_ROLE_SHEET:
-        return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_SLIDER:
         return QAccessible::Slider;
     case ui::AX_ROLE_SLIDER_THUMB:
@@ -451,16 +359,12 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_SPLITTER:
         return QAccessible::Splitter;
-    case ui::AX_ROLE_SPLIT_GROUP:
-        return QAccessible::Splitter;
     case ui::AX_ROLE_STATIC_TEXT:
         return QAccessible::StaticText;
     case ui::AX_ROLE_STATUS:
         return QAccessible::StatusBar;
     case ui::AX_ROLE_SVG_ROOT:
         return QAccessible::Graphic;
-    case ui::AX_ROLE_SYSTEM_WIDE:
-        return QAccessible::NoRole; // FIXME
     case ui::AX_ROLE_TABLE:
         return QAccessible::Table;
     case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
@@ -473,8 +377,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::PageTabList;
     case ui::AX_ROLE_TAB_PANEL:
         return QAccessible::PageTab;
-    case ui::AX_ROLE_TEXT_AREA:
-        return QAccessible::EditableText;
     case ui::AX_ROLE_TEXT_FIELD:
         return QAccessible::EditableText;
     case ui::AX_ROLE_TIMER:
@@ -493,8 +395,6 @@ QAccessible::Role BrowserAccessibilityQt::role() const
         return QAccessible::Tree;
     case ui::AX_ROLE_TREE_ITEM:
         return QAccessible::TreeItem;
-    case ui::AX_ROLE_VALUE_INDICATOR:
-        return QAccessible::Client; // FIXME
     case ui::AX_ROLE_WINDOW:
         return QAccessible::Window;
     }
