@@ -440,6 +440,20 @@ void DelegatedFrameNode::preprocess()
     }
 }
 
+static YUVVideoMaterial::ColorSpace toQt(cc::YUVVideoDrawQuad::ColorSpace color_space)
+{
+    switch (color_space) {
+    case cc::YUVVideoDrawQuad::REC_601:
+        return YUVVideoMaterial::REC_601;
+    case cc::YUVVideoDrawQuad::REC_709:
+        return YUVVideoMaterial::REC_709;
+    case cc::YUVVideoDrawQuad::JPEG:
+        return YUVVideoMaterial::JPEG;
+    }
+    Q_UNREACHABLE();
+    return YUVVideoMaterial::REC_601;
+}
+
 void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     m_chromiumCompositorData = chromiumCompositorData;
@@ -624,7 +638,9 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                     initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
                     initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
                     initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
-                    aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0, toQt(vquad->tex_coord_rect));
+                    aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
+                                                   toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
+                                                   toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), toQt(vquad->color_space));
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;

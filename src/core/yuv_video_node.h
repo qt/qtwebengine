@@ -50,7 +50,14 @@ QT_END_NAMESPACE
 class YUVVideoMaterial : public QSGMaterial
 {
 public:
-    YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, const QRectF &texCoordRect);
+    enum ColorSpace {
+        REC_601,  // SDTV standard with restricted "studio swing" color range.
+        REC_709,  // HDTV standard with restricted "studio swing" color range.
+        JPEG      // Full color range [0, 255] JPEG color space.
+    };
+    YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
+                     const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
+                     ColorSpace colorspace);
 
     virtual QSGMaterialType *type() const Q_DECL_OVERRIDE {
         static QSGMaterialType theType;
@@ -63,13 +70,20 @@ public:
     QSGTexture *m_yTexture;
     QSGTexture *m_uTexture;
     QSGTexture *m_vTexture;
-    QRectF m_texCoordRect;
+    QRectF m_yaTexCoordRect;
+    QRectF m_uvTexCoordRect;
+    QSizeF m_yaTexSize;
+    QSizeF m_uvTexSize;
+    ColorSpace m_colorSpace;
+
 };
 
 class YUVAVideoMaterial : public YUVVideoMaterial
 {
 public:
-    YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QRectF &texCoordRect);
+    YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
+                      const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
+                      ColorSpace colorspace);
 
     virtual QSGMaterialType *type() const Q_DECL_OVERRIDE{
         static QSGMaterialType theType;
@@ -85,7 +99,9 @@ public:
 class YUVVideoNode : public QSGGeometryNode
 {
 public:
-    YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture, const QRectF &texCoordRect);
+    YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
+                 const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
+                 YUVVideoMaterial::ColorSpace colorspace);
     void setRect(const QRectF &rect);
 
 private:
