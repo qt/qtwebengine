@@ -156,9 +156,10 @@ void URLRequestContextGetterQt::generateStorage()
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
     net::ProxyService *proxyService = nullptr;
-    if (ProxyResolverQt::useProxyResolverQt())
-        proxyService = new net::ProxyService(proxyConfigService, new ProxyResolverQt, nullptr);
-    else
+    if (ProxyResolverQt::useProxyResolverQt()) {
+        scoped_ptr<ProxyResolverFactoryQt> factory(new ProxyResolverFactoryQt(false));
+        proxyService = new net::ProxyService(proxyConfigService, factory.Pass(), nullptr);
+    } else
         proxyService = net::ProxyService::CreateUsingSystemProxyResolver(proxyConfigService, /*num_pac_threads = */0 /*default*/, NULL);
     m_storage->set_proxy_service(proxyService);
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);

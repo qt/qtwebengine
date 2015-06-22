@@ -38,6 +38,7 @@
 #define PROXY_RESOLVER_QT_H
 
 #include "net/proxy/proxy_resolver.h"
+#include "net/proxy/proxy_resolver_factory.h"
 #include <qglobal.h>
 
 
@@ -57,6 +58,17 @@ public:
     void CancelSetPacScript() override;
 
     int SetPacScript(const scoped_refptr<net::ProxyResolverScriptData>& /*script_data*/, const net::CompletionCallback& /*callback*/) override;
+};
+
+class ProxyResolverFactoryQt : public net::LegacyProxyResolverFactory {
+public:
+    ProxyResolverFactoryQt(bool expects_pac_bytes) : net::LegacyProxyResolverFactory(expects_pac_bytes)
+    {
+    }
+    scoped_ptr<net::ProxyResolver> CreateProxyResolver() override
+    {
+        return scoped_ptr<net::ProxyResolver>(new ProxyResolverQt());
+    }
 };
 
 #endif // PROXY_RESOLVER_QT_H
