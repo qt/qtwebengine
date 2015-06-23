@@ -205,7 +205,6 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
 #endif
         break;
     case gfx::TransferableFence::ArbSync:
-#ifdef GL_ARB_sync
         typedef void (QOPENGLF_APIENTRYP WaitSyncPtr)(GLsync sync, GLbitfield flags, GLuint64 timeout);
         static WaitSyncPtr glWaitSync_ = 0;
         if (!glWaitSync_) {
@@ -214,7 +213,6 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
             Q_ASSERT(glWaitSync_);
         }
         glWaitSync_(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
-#endif
         break;
     }
 }
@@ -250,7 +248,6 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
 #endif
         break;
     case gfx::TransferableFence::ArbSync:
-#ifdef GL_ARB_sync
         typedef void (QOPENGLF_APIENTRYP DeleteSyncPtr)(GLsync sync);
         static DeleteSyncPtr glDeleteSync_ = 0;
         if (!glDeleteSync_) {
@@ -260,7 +257,6 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
         }
         glDeleteSync_(sync->arb.sync);
         sync->reset();
-#endif
         break;
     }
     // If Chromium was able to create a sync, we should have been able to handle its type here too.
