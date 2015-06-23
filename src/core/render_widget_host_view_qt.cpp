@@ -61,10 +61,11 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
-#include "ui/gfx/size_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 
 #include <QEvent>
 #include <QFocusEvent>
@@ -143,7 +144,7 @@ static inline int firstAvailableId(const QMap<int, int> &map)
 }
 
 static inline ui::GestureProvider::Config QtGestureProviderConfig() {
-    ui::GestureProvider::Config config = ui::DefaultGestureProviderConfig();
+    ui::GestureProvider::Config config = ui::GetGestureProviderConfig(ui::GestureProviderConfigType::CURRENT_PLATFORM);
     // Causes an assert in CreateWebGestureEventFromGestureEventData and we don't need them in Qt.
     config.gesture_begin_end_types_enabled = false;
     config.gesture_detector_config.swipe_enabled = false;
@@ -427,25 +428,9 @@ void RenderWidgetHostViewQt::UnlockMouse()
     m_host->LostMouseLock();
 }
 
-void RenderWidgetHostViewQt::WasShown()
-{
-    m_host->WasShown(ui::LatencyInfo());
-}
-
-void RenderWidgetHostViewQt::WasHidden()
-{
-    m_host->WasHidden();
-}
-
 void RenderWidgetHostViewQt::MovePluginWindows(const std::vector<content::WebPluginGeometry>&)
 {
     // QT_NOT_YET_IMPLEMENTED
-}
-
-void RenderWidgetHostViewQt::Blur()
-{
-    m_host->SetInputMethodActive(false);
-    m_host->Blur();
 }
 
 void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
@@ -601,13 +586,13 @@ void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionB
     m_cursorRect = QRect(caretRect.x(), caretRect.y(), caretRect.width(), caretRect.height());
 }
 
-void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, content::CopyFromCompositingSurfaceCallback& callback, const SkColorType color_type)
+void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, content::ReadbackRequestCallback& callback, const SkColorType color_type)
 {
     NOTIMPLEMENTED();
     Q_UNUSED(src_subrect);
     Q_UNUSED(dst_size);
     Q_UNUSED(color_type);
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), content::READBACK_FAILED);
 }
 
 void RenderWidgetHostViewQt::CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback)
@@ -689,7 +674,7 @@ void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t
 
 void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
 {
-    m_host->ForwardGestureEvent(content::CreateWebGestureEventFromGestureEventData(gesture));
+    m_host->ForwardGestureEvent(ui::CreateWebGestureEventFromGestureEventData(gesture));
 }
 
 QSGNode *RenderWidgetHostViewQt::updatePaintNode(QSGNode *oldNode)
@@ -718,12 +703,12 @@ void RenderWidgetHostViewQt::notifyResize()
 
 void RenderWidgetHostViewQt::notifyShown()
 {
-    WasShown();
+    m_host->WasShown(ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewQt::notifyHidden()
 {
-    WasHidden();
+    m_host->WasHidden();
 }
 
 void RenderWidgetHostViewQt::windowBoundsChanged()
@@ -809,7 +794,7 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    m_gestureProvider.OnTouchEventAck(eventConsumed);
+    m_gestureProvider.OnAsyncTouchEventAck(eventConsumed);
 }
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
@@ -823,16 +808,10 @@ void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
 {
-    if (!m_gestureProvider.OnTouchEvent(motionEvent))
+    if (!m_gestureProvider.OnTouchEvent(motionEvent).succeeded)
         return;
 
-    // Short-circuit touch forwarding if no touch handlers exist.
-    if (!m_host->ShouldForwardTouchEvent()) {
-        const bool eventConsumed = false;
-        m_gestureProvider.OnTouchEventAck(eventConsumed);
-        return;
-    }
-    blink::WebTouchEvent touchEvent = content::CreateWebTouchEventFromMotionEvent(motionEvent);
+    blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent, false);
     m_host->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
 }
 
