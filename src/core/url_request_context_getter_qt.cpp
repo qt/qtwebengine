@@ -40,7 +40,6 @@
 #include "base/threading/worker_pool.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
@@ -150,9 +149,9 @@ void URLRequestContextGetterQt::generateStorage()
     generateCookieStore();
     generateUserAgent();
 
-    m_storage->set_channel_id_service(new net::ChannelIDService(
+    m_storage->set_channel_id_service(scoped_ptr<net::ChannelIDService>(new net::ChannelIDService(
         new net::DefaultChannelIDStore(NULL),
-        base::WorkerPool::GetTaskRunner(true)));
+        base::WorkerPool::GetTaskRunner(true))));
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
     net::ProxyService *proxyService = nullptr;

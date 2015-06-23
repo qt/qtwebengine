@@ -193,7 +193,6 @@ WebEngineContext::WebEngineContext()
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
-    parsedCommandLine->AppendSwitch(switches::kDisablePlugins);
     parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);

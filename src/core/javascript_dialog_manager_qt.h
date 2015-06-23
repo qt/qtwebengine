@@ -66,8 +66,7 @@ public:
                                          const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE { Q_UNUSED(messageText); Q_UNUSED(isReload); Q_UNUSED(callback); }
     virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) Q_DECL_OVERRIDE;
     virtual void CancelActiveAndPendingDialogs(content::WebContents *contents) Q_DECL_OVERRIDE { takeDialogForContents(contents); }
-    virtual void WebContentsDestroyed(content::WebContents *contents) Q_DECL_OVERRIDE { takeDialogForContents(contents); }
-
+    virtual void ResetDialogState(content::WebContents *contents) Q_DECL_OVERRIDE { takeDialogForContents(contents); }
 
     void runDialogForContents(content::WebContents *, WebContentsAdapterClient::JavascriptDialogType, const QString &messageText, const QString &defaultPrompt
                               , const QUrl &,const content::JavaScriptDialogManager::DialogClosedCallback &callback, const QString &title = QString());
