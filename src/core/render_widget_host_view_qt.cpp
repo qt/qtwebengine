@@ -182,12 +182,14 @@ static inline int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
     return modifierFlags;
 }
 
+static uint32 s_eventId = 0;
 class MotionEventQt : public ui::MotionEvent {
 public:
     MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, int index = -1)
         : touchPoints(touchPoints)
         , eventTime(eventTime)
         , action(action)
+        , eventId(++s_eventId)
         , flags(flagsFromModifiers(modifiers))
         , index(index)
     {
@@ -195,7 +197,7 @@ public:
         Q_ASSERT((action != ACTION_DOWN && action != ACTION_UP) || index == 0);
     }
 
-    virtual int GetId() const Q_DECL_OVERRIDE { return 0; }
+    virtual uint32 GetUniqueEventId() const Q_DECL_OVERRIDE { return eventId; }
     virtual Action GetAction() const Q_DECL_OVERRIDE { return action; }
     virtual int GetActionIndex() const Q_DECL_OVERRIDE { return index; }
     virtual size_t GetPointerCount() const Q_DECL_OVERRIDE { return touchPoints.size(); }
@@ -234,6 +236,7 @@ private:
     QList<QTouchEvent::TouchPoint> touchPoints;
     base::TimeTicks eventTime;
     Action action;
+    const uint32 eventId;
     int flags;
     int index;
 };
