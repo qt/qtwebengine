@@ -168,6 +168,8 @@ void ProxyConfigServiceQt::OnProxyConfigChanged(const net::ProxyConfig &config, 
             || m_qtApplicationProxy.type() == QNetworkProxy::NoProxy) {
         net::ProxyConfig actual_config;
         availability = GetLatestProxyConfig(&actual_config);
+        if (availability == CONFIG_PENDING)
+            return;
         FOR_EACH_OBSERVER(net::ProxyConfigService::Observer, m_observers,
                           OnProxyConfigChanged(actual_config, availability));
     }
