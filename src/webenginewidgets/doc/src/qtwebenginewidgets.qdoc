@@ -99,17 +99,16 @@
 
     \section1 Architecture
 
-    The easiest way to render content is through the QWebEngineView class. As a
-    widget it can be embedded into your forms and it provides convenience functions
-    for downloading and rendering web sites.
+    Use the QWebEngineView class to display web pages in the simplest way.
+    Because it's a widget, you can embed QWebEngineView into your forms and use
+    its convenience functions to download and display web sites.
 
     \snippet snippets/simple/main.cpp Using QWebEngineView
 
-    QWebEngineView is used to view Web pages. An instance of QWebEngineView has one
-    QWebEnginePage. QWebEnginePage provides access to the page's navigation history,
-    allows to run JavaScript code in the context of the page's main frame and enables
-    customization of handlers for specific events such as showing custom authentication
-    dialogs.
+    An instance of QWebEngineView has one QWebEnginePage. QWebEnginePage
+    provides access to the page's navigation history, ability to run JavaScript
+    code in the context of the page's main frame, and enables customization of
+    handlers for specific events like showing custom authentication dialogs.
 
     \section1 Reference Documentation
 
