@@ -204,9 +204,6 @@ static void serializeNavigationHistory(const content::NavigationController &cont
             output << entry->GetIsOverridingUserAgent();
             output << static_cast<qint64>(entry->GetTimestamp().ToInternalValue());
             output << entry->GetHttpStatusCode();
-            // If you want to navigate a named frame in Chrome, you will first need to
-            // add support for persisting it. It is currently only used for layout tests.
-            CHECK(entry->GetFrameToNavigate().empty());
         }
     }
 }
