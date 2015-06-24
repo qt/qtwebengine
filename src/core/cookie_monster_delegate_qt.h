@@ -71,7 +71,6 @@ public:
     void setClient(QWebEngineCookieStoreClient *client);
 
     void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause) override;
-    void OnLoaded() override;
 };
 
 }

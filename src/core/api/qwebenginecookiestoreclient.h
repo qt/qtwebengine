@@ -69,7 +69,6 @@ public:
 Q_SIGNALS:
     void cookieAdded(const QNetworkCookie &cookie);
     void cookieRemoved(const QNetworkCookie &cookie);
-    void cookieStoreLoaded();
 
 private:
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
