@@ -47,43 +47,22 @@
     \title Qt WebEngine Widgets
     \ingroup modules
 
-    \brief The Qt WebEngine Widgets module provides a web browser engine as well as
-    C++ classes to render and interact with web content.
+    \brief The Qt WebEngine Widgets module provides a web browser engine as
+    well as C++ classes to display and interact with web content.
 
-    Qt WebEngine Widgets provides a Web browser engine that makes it easy to embed
-    content from the World Wide Web into your Qt application.
+    Qt WebEngine Widgets gives you a Web browser engine that you can use to
+    embed content easily from the World Wide Web into your Qt application.
 
-    Qt WebEngine Widgets provides facilities for rendering of HyperText Markup
-    Language version 5 (HTML5), Extensible HyperText Markup Language (XHTML) and Scalable
-    Vector Graphics (SVG) documents, styled using Cascading Style Sheets (CSS)
-    and scripted with JavaScript.
+    Qt WebEngine Widgets lets you display HyperText Markup Language version 5
+    (HTML5), Extensible HyperText Markup Language (XHTML) and Scalable Vector
+    Graphics (SVG) documents, styled using Cascading Style Sheets (CSS) and
+    scripted with JavaScript.
 
-    In addition to providing pure rendering features, HTML documents can be
-    made fully editable to the user through the use of the \c{contenteditable}
-    attribute on HTML elements.
+    HTML and XHTML documents can also be made fully editable to the user by
+    using the \c{contenteditable} attribute on HTML elements.
 
-    Qt WebEngine is based on the Chromium project. More information about
-    Chromium itself can be found on the \l{http://www.chromium.org}
-    {Chromium Project} Web site.
-
-    \section1 Should I use Qt WebEngine or Qt WebKit?
-
-    Qt WebEngine supercedes the \l{Qt WebKit Widgets}{Qt WebKit} module, which
-    was based on the WebKit project, but isn't actively synchronized with the
-    upstream WebKit code since Qt 5.2.
-
-    Chromium provides its own network and painting engines and is developed
-    tightly together with its dependent modules, thus Qt WebEngine provides
-    better and more reliable support for the latest HTML5 specification.
-    For this reason Qt WebEngine is however heavier than Qt WebKit and doesn't
-    give direct access to the network stack and the HTML document through C++ APIs.
-
-    For new code we suggest using Qt WebEngine, but it makes sense to continue
-    using Qt WebKit for applications that are in need of a deeper C++ API than
-    having better and up-to-date support for HTML, CSS and JavaScript features.
-
-    For tips on how to change a Qt WebKit application to use Qt WebEngine, see
-    \l{Porting from Qt WebKit to Qt WebEngine}
+    Qt WebEngine is based on the Chromium project. See the
+    \l{http://www.chromium.org}{Chromium Project} Web site for more information.
 
     \section1 Including In Your Project
 
