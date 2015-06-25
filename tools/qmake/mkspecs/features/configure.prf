@@ -27,6 +27,14 @@ defineTest(runConfigure) {
             !packagesExist($$package):skipBuild("Unmet dependency: $$package")
         }
     }
+
+    linux {
+        packagesExist(minizip, zlib): CONFIG += config_system_minizip
+        else: log("System zlib and minizip not found. Using Chromium's copies.$${EOL}")
+        packagesExist(libxml-2.0,libxslt): CONFIG += config_system_libxslt
+        else: log("System libxml2 and libxslt not found. Using Chromium's copies.$${EOL}")
+    }
+
     isEmpty(skipBuildReason):cache(CONFIG, add, $$list(webengine_successfully_configured))
 }
 

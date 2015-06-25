@@ -17,6 +17,8 @@ GYP_CONFIG += \
     clang=0 \
     enable_plugins=1 \
 
+config_system_libxslt: GYP_CONFIG += use_system_libxml=1
+contains(QT_CONFIG, system-zlib): config_system_minizip: GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 

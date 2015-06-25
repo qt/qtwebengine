@@ -49,6 +49,8 @@ GYP_CONFIG += \
     v8_use_snapshot=false \
     want_separate_host_toolset=1 \
 
+config_system_libxslt: GYP_CONFIG += use_system_libxml=1
+contains(QT_CONFIG, system-zlib): config_system_minizip: GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 !contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
