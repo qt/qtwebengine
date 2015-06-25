@@ -17,6 +17,7 @@ GYP_CONFIG += \
     clang=0 \
     enable_plugins=1 \
 
+contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 
 !contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
