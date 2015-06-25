@@ -1050,20 +1050,27 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
     // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
     Q_UNUSED(acceptedMimeTypes);
     QStringList ret;
+    QString str;
     switch (static_cast<WebContentsAdapterClient::FileChooserMode>(mode)) {
     case WebContentsAdapterClient::OpenMultiple:
         ret = QFileDialog::getOpenFileNames(view(), QString());
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case WebContentsAdapterClient::UploadFolder:
-        ret << QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
+        str = QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
+        if (!str.isNull())
+            ret << str;
         break;
     case WebContentsAdapterClient::Save:
-        ret << QFileDialog::getSaveFileName(view(), QString(), (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + oldFiles.first()));
+        str = QFileDialog::getSaveFileName(view(), QString(), (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + oldFiles.first()));
+        if (!str.isNull())
+            ret << str;
         break;
     default:
     case WebContentsAdapterClient::Open:
-        ret << QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        if (!str.isNull())
+            ret << str;
         break;
     }
     return ret;
