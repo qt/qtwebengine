@@ -43,6 +43,7 @@
 #include "qwebenginescriptcollection.h"
 #include <QMap>
 #include <QPointer>
+#include <QScopedPointer>
 
 namespace QtWebEngineCore {
 class BrowserContextAdapter;
@@ -72,10 +73,10 @@ public:
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     void clearUrlSchemeHandlers();
 
-    QWebEngineScriptCollection scriptCollection;
 private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;
+    QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
     QMap<QByteArray, QPointer<QWebEngineUrlSchemeHandler> > m_urlSchemeHandlers;

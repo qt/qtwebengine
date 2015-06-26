@@ -83,11 +83,11 @@ static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSh
     Q_ASSERT(profile);
     QString scriptName(QStringLiteral("userStyleSheet"));
     QWebEngineScript script;
-    QList<QWebEngineScript> styleSheets = profile->scripts().findScripts(scriptName);
+    QList<QWebEngineScript> styleSheets = profile->scripts()->findScripts(scriptName);
     if (!styleSheets.isEmpty())
         script = styleSheets.first();
     Q_FOREACH (const QWebEngineScript &s, styleSheets)
-        profile->scripts().remove(s);
+        profile->scripts()->remove(s);
 
     if (script.isNull()) {
         script.setName(scriptName);
@@ -106,7 +106,7 @@ static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSh
                                          "css.innerText = \"%1\";"\
                                          "})()").arg(styleSheet);
     script.setSourceCode(source);
-    profile->scripts().insert(script);
+    profile->scripts()->insert(script);
     // run the script on the already loaded views
     // this has to be deferred as it could mess with the storage initialization on startup
     if (mainWindow)
