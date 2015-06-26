@@ -37,7 +37,7 @@
 #ifndef QWEBENGINESCRIPTCOLLECTION_P_H
 #define QWEBENGINESCRIPTCOLLECTION_P_H
 
-#include "qtwebengineglobal.h"
+#include "qtwebenginewidgetsglobal.h"
 
 #include "qwebenginescript.h"
 

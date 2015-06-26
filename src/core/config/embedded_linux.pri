@@ -43,6 +43,7 @@ GYP_CONFIG += \
     use_openssl=1 \
     use_ozone=1 \
     use_pango=0 \
+    use_system_fontconfig=1 \
     use_system_icu=1 \
     icu_use_data_file_flag=0 \
     use_x11=0 \
