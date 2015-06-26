@@ -208,7 +208,7 @@ void ClipboardQt::WriteObjects(ui::ClipboardType type, const ObjectMap& objects)
     if (uncommittedData)
         QGuiApplication::clipboard()->setMimeData(uncommittedData.take(), type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
 
-    if (type == ui::CLIPBOARD_TYPE_COPY_PASTE) {
+    if (type == ui::CLIPBOARD_TYPE_COPY_PASTE && IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION)) {
         ObjectMap::const_iterator text_iter = objects.find(CBF_TEXT);
         if (text_iter != objects.end()) {
             // Copy text and SourceTag to the selection clipboard.
