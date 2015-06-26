@@ -534,8 +534,6 @@ static inline WebInputEvent::Modifiers modifiersForEvent(const QInputEvent* even
         result |= WebInputEvent::ShiftKey;
     if (modifiers & Qt::AltModifier)
         result |= WebInputEvent::AltKey;
-    if (modifiers & Qt::MetaModifier)
-        result |= WebInputEvent::MetaKey;
     if (modifiers & Qt::KeypadModifier)
         result |= WebInputEvent::IsKeyPad;
 
