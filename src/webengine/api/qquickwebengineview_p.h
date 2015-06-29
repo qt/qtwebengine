@@ -192,6 +192,20 @@ public:
 
         PasteAndMatchStyle,
 
+        OpenLinkInThisWindow,
+        OpenLinkInNewWindow,
+        OpenLinkInNewTab,
+        CopyLinkToClipboard,
+
+        CopyImageToClipboard,
+        CopyImageUrlToClipboard,
+
+        CopyMediaUrlToClipboard,
+        ToggleMediaControls,
+        ToggleMediaLoop,
+        ToggleMediaPlayPause,
+        ToggleMediaMute,
+
         WebActionCount
     };
 

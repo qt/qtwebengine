@@ -86,30 +86,6 @@ Q_SIGNALS:
     void triggered();
 };
 
-class CopyLinkMenuItem : public MenuItemHandler {
-    Q_OBJECT
-public:
-    CopyLinkMenuItem(QObject *parent, const QUrl &url, const QString &title);
-
-private:
-    void onTriggered();
-
-    const QUrl m_url;
-    const QString m_title;
-};
-
-class NavigateMenuItem : public MenuItemHandler {
-    Q_OBJECT
-public:
-    NavigateMenuItem(QObject *parent, const QExplicitlySharedDataPointer<WebContentsAdapter> &adapter, const QUrl &targetUrl);
-
-private:
-    void onTriggered();
-
-    QExplicitlySharedDataPointer<WebContentsAdapter> m_adapter;
-    QUrl m_targetUrl;
-};
-
 class UIDelegatesManager {
 
 public:

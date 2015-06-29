@@ -179,6 +179,7 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
+    QtWebEngineCore::WebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
     QUrl icon;
     int loadProgress;

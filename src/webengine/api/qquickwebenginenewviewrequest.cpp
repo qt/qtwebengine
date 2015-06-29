@@ -90,7 +90,7 @@ bool QQuickWebEngineNewViewRequest::isUserInitiated() const
   */
 void QQuickWebEngineNewViewRequest::openIn(QQuickWebEngineView *view)
 {
-    if (!m_adapter) {
+    if (!m_adapter && !m_requestedUrl.isValid()) {
         qWarning("Trying to open an empty request, it was either already used or was invalidated."
             "\nYou must complete the request synchronously within the newViewRequested signal handler."
             " If a view hasn't been adopted before returning, the request will be invalidated.");
@@ -101,6 +101,9 @@ void QQuickWebEngineNewViewRequest::openIn(QQuickWebEngineView *view)
         qWarning("Trying to open a WebEngineNewViewRequest in an invalid WebEngineView.");
         return;
     }
-    view->d_func()->adoptWebContents(m_adapter.data());
+    if (m_adapter)
+        view->d_func()->adoptWebContents(m_adapter.data());
+    else
+        view->setUrl(m_requestedUrl);
     m_adapter.reset();
 }
