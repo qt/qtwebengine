@@ -86,17 +86,6 @@ Q_SIGNALS:
     void triggered();
 };
 
-class CopyMenuItem : public MenuItemHandler {
-    Q_OBJECT
-public:
-    CopyMenuItem(QObject *parent, const QString &textToCopy);
-
-private:
-    void onTriggered();
-
-    QString m_textToCopy;
-};
-
 class CopyLinkMenuItem : public MenuItemHandler {
     Q_OBJECT
 public:

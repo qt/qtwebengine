@@ -38,8 +38,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.1
-import QtWebEngine 1.1
+import QtQuick 2.2
+import QtWebEngine 1.3
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
 import QtQuick.Layouts 1.0
@@ -100,14 +100,14 @@ ApplicationWindow {
         }
     }
     Action {
-        shortcut: "Ctrl+R"
+        shortcut: StandardKey.Refresh
         onTriggered: {
             if (currentWebView)
                 currentWebView.reload()
         }
     }
     Action {
-        shortcut: "Ctrl+T"
+        shortcut: StandardKey.AddTab
         onTriggered: {
             tabs.createEmptyTab(currentWebView.profile)
             tabs.currentIndex = tabs.count - 1
@@ -116,7 +116,7 @@ ApplicationWindow {
         }
     }
     Action {
-        shortcut: "Ctrl+W"
+        shortcut: StandardKey.Close
         onTriggered: {
             if (tabs.count == 1)
                 browserWindow.close()
@@ -136,12 +136,49 @@ ApplicationWindow {
         onTriggered: currentWebView.zoomFactor = 1.0;
     }
     Action {
-        shortcut: "Ctrl+-"
+        shortcut: StandardKey.ZoomOut
         onTriggered: currentWebView.zoomFactor -= 0.1;
     }
     Action {
-        shortcut: "Ctrl+="
+        shortcut: StandardKey.ZoomIn
         onTriggered: currentWebView.zoomFactor += 0.1;
+    }
+
+    Action {
+        shortcut: StandardKey.Copy
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.Copy)
+    }
+    Action {
+        shortcut: StandardKey.Cut
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.Cut)
+    }
+    Action {
+        shortcut: StandardKey.Paste
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.Paste)
+    }
+    Action {
+        shortcut: "Shift+"+StandardKey.Paste
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.PasteAndMatchStyle)
+    }
+    Action {
+        shortcut: StandardKey.SelectAll
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.SelectAll)
+    }
+    Action {
+        shortcut: StandardKey.Undo
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.Undo)
+    }
+    Action {
+        shortcut: StandardKey.Redo
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.Redo)
+    }
+    Action {
+        shortcut: StandardKey.Back
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.Back)
+    }
+    Action {
+        shortcut: StandardKey.Forward
+        onTriggered: currentWebView.triggerWebAction(WebEngineView.Forward)
     }
 
     toolBar: ToolBar {

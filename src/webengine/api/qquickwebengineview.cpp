@@ -198,7 +198,8 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::reload);
         ui()->addMenuItem(item, QObject::tr("Reload"), QStringLiteral("view-refresh"));
     } else {
-        item = new CopyMenuItem(menu, data.selectedText);
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::Copy); });
         ui()->addMenuItem(item, QObject::tr("Copy..."));
     }
 
@@ -1038,6 +1039,51 @@ void QQuickWebEngineView::itemChange(ItemChange change, const ItemChangeData &va
             d->adapter->wasHidden();
     }
     QQuickItem::itemChange(change, value);
+}
+
+void QQuickWebEngineView::triggerWebAction(WebAction action)
+{
+    Q_D(QQuickWebEngineView);
+    switch (action) {
+    case Back:
+        d->adapter->navigateToOffset(-1);
+        break;
+    case Forward:
+        d->adapter->navigateToOffset(1);
+        break;
+    case Stop:
+        d->adapter->stop();
+        break;
+    case Reload:
+        d->adapter->reload();
+        break;
+    case ReloadAndBypassCache:
+        d->adapter->reloadAndBypassCache();
+        break;
+    case Cut:
+        d->adapter->cut();
+        break;
+    case Copy:
+        d->adapter->copy();
+        break;
+    case Paste:
+        d->adapter->paste();
+        break;
+    case Undo:
+        d->adapter->undo();
+        break;
+    case Redo:
+        d->adapter->redo();
+        break;
+    case SelectAll:
+        d->adapter->selectAll();
+        break;
+    case PasteAndMatchStyle:
+        d->adapter->pasteAndMatchStyle();
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
 }
 
 void QQuickWebEngineViewPrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)

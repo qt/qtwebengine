@@ -109,19 +109,6 @@ MenuItemHandler::MenuItemHandler(QObject *parent)
 {
 }
 
-
-CopyMenuItem::CopyMenuItem(QObject *parent, const QString &textToCopy)
-    : MenuItemHandler(parent)
-    , m_textToCopy(textToCopy)
-{
-    connect(this, &MenuItemHandler::triggered, this, &CopyMenuItem::onTriggered);
-}
-
-void CopyMenuItem::onTriggered()
-{
-    qApp->clipboard()->setText(m_textToCopy);
-}
-
 CopyLinkMenuItem::CopyLinkMenuItem(QObject *parent, const QUrl &url, const QString &title)
     : MenuItemHandler(parent)
     , m_url(url)
