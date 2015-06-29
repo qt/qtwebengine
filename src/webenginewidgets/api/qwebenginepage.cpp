@@ -1093,20 +1093,27 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
     // can work with) and mimetypes ranging from text/plain or images/* to application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
     Q_UNUSED(acceptedMimeTypes);
     QStringList ret;
+    QString str;
     switch (static_cast<FilePickerController::FileChooserMode>(mode)) {
     case FilePickerController::OpenMultiple:
         ret = QFileDialog::getOpenFileNames(view(), QString());
         break;
     // Chromium extension, not exposed as part of the public API for now.
     case FilePickerController::UploadFolder:
-        ret << QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
+        str = QFileDialog::getExistingDirectory(view(), tr("Select folder to upload")) + QLatin1Char('/');
+        if (!str.isNull())
+            ret << str;
         break;
     case FilePickerController::Save:
-        ret << QFileDialog::getSaveFileName(view(), QString(), (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + oldFiles.first()));
+        str = QFileDialog::getSaveFileName(view(), QString(), (QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + oldFiles.first()));
+        if (!str.isNull())
+            ret << str;
         break;
     default:
     case FilePickerController::Open:
-        ret << QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
+        if (!str.isNull())
+            ret << str;
         break;
     }
     return ret;

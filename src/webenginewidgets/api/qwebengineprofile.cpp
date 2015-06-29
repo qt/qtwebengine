@@ -104,8 +104,8 @@ using QtWebEngineCore::BrowserContextAdapter;
 */
 
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
-        : scriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userScriptController()))
-        , m_settings(new QWebEngineSettings())
+        : m_settings(new QWebEngineSettings())
+        , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userScriptController())))
         , m_browserContextRef(browserContext)
 {
     m_browserContextRef->addClient(this);
@@ -451,10 +451,10 @@ bool QWebEngineProfile::visitedLinksContainsUrl(const QUrl &url) const
     Returns the script collection used by this profile.
     \sa QWebEngineScriptCollection
 */
-QWebEngineScriptCollection &QWebEngineProfile::scripts()
+QWebEngineScriptCollection *QWebEngineProfile::scripts() const
 {
-    Q_D(QWebEngineProfile);
-    return d->scriptCollection;
+    Q_D(const QWebEngineProfile);
+    return d->m_scriptCollection.data();
 }
 
 /*!
