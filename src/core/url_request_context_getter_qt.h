@@ -47,6 +47,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
+#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
 
 #include "qglobal.h"
 #include <qatomic.h>
@@ -95,6 +96,7 @@ private:
     scoped_ptr<net::NetworkDelegate> m_networkDelegate;
     scoped_ptr<net::URLRequestContextStorage> m_storage;
     scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
+    scoped_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
 };
 
 } // namespace QtWebEngineCore
