@@ -52,10 +52,6 @@
 
 #include <QtCore/QSortFilterProxyModel>
 
-#if defined(QWEBENGINEHISTORYINTERFACE)
-#include <QWebEngineHistoryInterface>
-#endif
-
 class HistoryItem
 {
 public:
@@ -82,12 +78,7 @@ class HistoryModel;
 class HistoryFilterModel;
 class HistoryTreeModel;
 
-class HistoryManager
-#if defined(QWEBENGINEHISTORYINTERFACE)
- : public QWebEngineHistoryInterface
-#else
- : public QObject
-#endif
+class HistoryManager : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int historyLimit READ historyLimit WRITE setHistoryLimit)

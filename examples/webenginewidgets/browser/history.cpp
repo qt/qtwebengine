@@ -59,9 +59,6 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QStyle>
 
-#if defined(QWEBENGINEHISTORYINTERFACE)
-#include <QWebEngineHistoryInterface>
-#endif
 #include <QWebEngineSettings>
 
 #include <QtCore/QDebug>
@@ -69,11 +66,8 @@
 static const unsigned int HISTORY_VERSION = 23;
 
 HistoryManager::HistoryManager(QObject *parent)
-    :
-#if defined(QWEBENGINEHISTORYINTERFACE)
-      QWebEngineHistoryInterface(parent),
-#endif
-      m_saveTimer(new AutoSaver(this))
+    : QObject(parent)
+    , m_saveTimer(new AutoSaver(this))
     , m_historyLimit(30)
     , m_historyModel(0)
     , m_historyFilterModel(0)
@@ -91,13 +85,6 @@ HistoryManager::HistoryManager(QObject *parent)
     m_historyModel = new HistoryModel(this, this);
     m_historyFilterModel = new HistoryFilterModel(m_historyModel, this);
     m_historyTreeModel = new HistoryTreeModel(m_historyFilterModel, this);
-
-#if defined(QWEBENGINEHISTORYINTERFACE)
-    // QWebEngineHistoryInterface will delete the history manager
-    QWebEngineHistoryInterface::setDefaultInterface(this);
-#else
-    Q_UNUSED(parent);
-#endif
 }
 
 HistoryManager::~HistoryManager()
