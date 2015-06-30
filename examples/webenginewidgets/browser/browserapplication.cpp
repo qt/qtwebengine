@@ -83,11 +83,11 @@ static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSh
     Q_ASSERT(profile);
     QString scriptName(QStringLiteral("userStyleSheet"));
     QWebEngineScript script;
-    QList<QWebEngineScript> styleSheets = profile->scripts().findScripts(scriptName);
+    QList<QWebEngineScript> styleSheets = profile->scripts()->findScripts(scriptName);
     if (!styleSheets.isEmpty())
         script = styleSheets.first();
     Q_FOREACH (const QWebEngineScript &s, styleSheets)
-        profile->scripts().remove(s);
+        profile->scripts()->remove(s);
 
     if (script.isNull()) {
         script.setName(scriptName);
@@ -106,7 +106,7 @@ static void setUserStyleSheet(QWebEngineProfile *profile, const QString &styleSh
                                          "css.innerText = \"%1\";"\
                                          "})()").arg(styleSheet);
     script.setSourceCode(source);
-    profile->scripts().insert(script);
+    profile->scripts()->insert(script);
     // run the script on the already loaded views
     // this has to be deferred as it could mess with the storage initialization on startup
     if (mainWindow)
@@ -122,14 +122,8 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     QCoreApplication::setOrganizationName(QLatin1String("Qt"));
     QCoreApplication::setApplicationName(QLatin1String("demobrowser"));
     QCoreApplication::setApplicationVersion(QLatin1String("0.1"));
-#ifdef Q_WS_QWS
-    // Use a different server name for QWS so we can run an X11
-    // browser and a QWS browser in parallel on the same machine for
-    // debugging
-    QString serverName = QCoreApplication::applicationName() + QLatin1String("_qws");
-#else
-    QString serverName = QCoreApplication::applicationName();
-#endif
+    QString serverName = QCoreApplication::applicationName()
+        + QString::fromLatin1(QT_VERSION_STR).remove('.') + QLatin1String("webengine");
     QLocalSocket socket;
     socket.connectToServer(serverName);
     if (socket.waitForConnected(500)) {

@@ -37,7 +37,7 @@
 #ifndef QWEBENGINESCRIPTCOLLECTION_H
 #define QWEBENGINESCRIPTCOLLECTION_H
 
-#include "qtwebengineglobal.h"
+#include "qtwebenginewidgetsglobal.h"
 
 #include "qwebenginescript.h"
 #include <QtCore/QScopedPointer>
@@ -67,6 +67,7 @@ public:
     QList<QWebEngineScript> toList() const;
 
 private:
+    Q_DISABLE_COPY(QWebEngineScriptCollection)
     friend class QWebEnginePagePrivate;
     friend class QWebEngineProfilePrivate;
     QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *);

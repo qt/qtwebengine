@@ -102,7 +102,7 @@ public:
     bool visitedLinksContainsUrl(const QUrl &url) const;
 
     QWebEngineSettings *settings() const;
-    QWebEngineScriptCollection &scripts();
+    QWebEngineScriptCollection *scripts() const;
 
     static QWebEngineProfile *defaultProfile();
 

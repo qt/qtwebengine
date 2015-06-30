@@ -710,6 +710,15 @@ void QQuickWebEngineView::setProfile(QQuickWebEngineProfile *profile)
     Q_D(QQuickWebEngineView);
     d->setProfile(profile);
 }
+/*!
+ * \qmlproperty WebEngineSettings QQuickWebEngineView::settings
+ * \readonly settings
+ * \since QtWebEngine 1.1
+ *
+ * The \a settings property holds the settings used by this view.
+ *
+ * \sa WebEngineSettings
+ */
 
 QQuickWebEngineSettings *QQuickWebEngineView::settings() const
 {

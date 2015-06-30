@@ -61,14 +61,14 @@ public:
     };
     Q_ENUMS(DownloadState)
 
-    quint32 id();
-    DownloadState state();
-    qint64 totalBytes();
-    qint64 receivedBytes();
-    QUrl url();
-    QString path();
+    quint32 id() const;
+    DownloadState state() const;
+    qint64 totalBytes() const;
+    qint64 receivedBytes() const;
+    QUrl url() const;
+    QString path() const;
     void setPath(QString path);
-    bool isFinished();
+    bool isFinished() const;
 
 public Q_SLOTS:
     void accept();

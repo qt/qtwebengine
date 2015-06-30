@@ -156,9 +156,9 @@ void QWebEngineDownloadItem::cancel()
     Returns the download item's id.
 */
 
-quint32 QWebEngineDownloadItem::id()
+quint32 QWebEngineDownloadItem::id() const
 {
-    Q_D(QWebEngineDownloadItem);
+    Q_D(const QWebEngineDownloadItem);
     return d->downloadId;
 }
 
@@ -205,9 +205,9 @@ quint32 QWebEngineDownloadItem::id()
     \sa QWebEngineDownloadItem::DownloadState
 */
 
-QWebEngineDownloadItem::DownloadState QWebEngineDownloadItem::state()
+QWebEngineDownloadItem::DownloadState QWebEngineDownloadItem::state() const
 {
-    Q_D(QWebEngineDownloadItem);
+    Q_D(const QWebEngineDownloadItem);
     return d->downloadState;
 }
 
@@ -217,9 +217,9 @@ QWebEngineDownloadItem::DownloadState QWebEngineDownloadItem::state()
     -1 means the size is unknown.
 */
 
-qint64 QWebEngineDownloadItem::totalBytes()
+qint64 QWebEngineDownloadItem::totalBytes() const
 {
-    Q_D(QWebEngineDownloadItem);
+    Q_D(const QWebEngineDownloadItem);
     return d->totalBytes;
 }
 
@@ -229,9 +229,9 @@ qint64 QWebEngineDownloadItem::totalBytes()
     -1 means the size is unknown.
 */
 
-qint64 QWebEngineDownloadItem::receivedBytes()
+qint64 QWebEngineDownloadItem::receivedBytes() const
 {
-    Q_D(QWebEngineDownloadItem);
+    Q_D(const QWebEngineDownloadItem);
     return d->receivedBytes;
 }
 
@@ -239,9 +239,9 @@ qint64 QWebEngineDownloadItem::receivedBytes()
     Returns the download's origin url.
 */
 
-QUrl QWebEngineDownloadItem::url()
+QUrl QWebEngineDownloadItem::url() const
 {
-    Q_D(QWebEngineDownloadItem);
+    Q_D(const QWebEngineDownloadItem);
     return d->downloadUrl;
 }
 
@@ -252,9 +252,9 @@ QUrl QWebEngineDownloadItem::url()
     and file name is deduced not to overwrite already existing files.
 */
 
-QString QWebEngineDownloadItem::path()
+QString QWebEngineDownloadItem::path() const
 {
-    Q_D(QWebEngineDownloadItem);
+    Q_D(const QWebEngineDownloadItem);
     return d->downloadPath;
 }
 
@@ -282,9 +282,9 @@ void QWebEngineDownloadItem::setPath(QString path)
     \sa finished(), state(),
 */
 
-bool QWebEngineDownloadItem::isFinished()
+bool QWebEngineDownloadItem::isFinished() const
 {
-    Q_D(QWebEngineDownloadItem);
+    Q_D(const QWebEngineDownloadItem);
     return d->downloadFinished;
 }
 

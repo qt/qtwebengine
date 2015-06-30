@@ -50,6 +50,7 @@ namespace QtWebEngineCore {
 void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
 {
     m_client = client;
+    m_factoryClient = client;
 
     // Check if a RWHV was created before the initialization.
     if (m_webContents->GetRenderWidgetHostView())
