@@ -78,8 +78,9 @@ public:
     virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
     virtual void LoadProgressChanged(content::WebContents* source, double progress) Q_DECL_OVERRIDE;
     virtual void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) Q_DECL_OVERRIDE;
-    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
-    virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen) Q_DECL_OVERRIDE;
+    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) Q_DECL_OVERRIDE;
+    virtual void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) Q_DECL_OVERRIDE;
+    virtual void ExitFullscreenModeForTab(content::WebContents*) Q_DECL_OVERRIDE;
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
     virtual void RunFileChooser(content::WebContents *, const content::FileChooserParams &params) Q_DECL_OVERRIDE;
     virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const base::string16& message, int32 line_no, const base::string16& source_id) Q_DECL_OVERRIDE;

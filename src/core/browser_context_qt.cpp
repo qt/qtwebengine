@@ -135,6 +135,11 @@ content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
     return 0;
 }
 
+scoped_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate(const base::FilePath&)
+{
+    return nullptr;
+}
+
 content::PermissionManager *BrowserContextQt::GetPermissionManager()
 {
     if (!permissionManager)

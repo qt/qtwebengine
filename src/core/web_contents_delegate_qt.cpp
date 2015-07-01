@@ -127,7 +127,7 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 {
     m_viewClient->close();
-    GetJavaScriptDialogManager()->CancelActiveAndPendingDialogs(source);
+    GetJavaScriptDialogManager(source)->CancelActiveAndPendingDialogs(source);
 }
 
 void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
@@ -229,17 +229,26 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     }
 }
 
-content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
+content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager(content::WebContents *)
 {
     return JavaScriptDialogManagerQt::GetInstance();
 }
 
-void WebContentsDelegateQt::ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen)
+void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin)
 {
-    if (m_viewClient->isFullScreen() != enter_fullscreen) {
-        m_viewClient->requestFullScreen(enter_fullscreen);
+    Q_UNUSED(origin); // FIXME
+    if (!m_viewClient->isFullScreen()) {
+        m_viewClient->requestFullScreen(true);
         web_contents->GetRenderViewHost()->WasResized();
     }
+}
+
+void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_contents)
+{
+    if (m_viewClient->isFullScreen()) {
+        m_viewClient->requestFullScreen(false);
+        web_contents->GetRenderViewHost()->WasResized();
+     }
 }
 
 bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents) const
