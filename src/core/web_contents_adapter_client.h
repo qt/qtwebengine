@@ -114,6 +114,7 @@ public:
     MediaType mediaType;
     bool hasImageContent;
     uint mediaFlags;
+    QString suggestedFileName;
 // Some likely candidates for future additions as we add support for the related actions:
 //    bool isImageBlocked;
 //    bool isEditable;

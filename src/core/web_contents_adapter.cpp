@@ -58,6 +58,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include <content/public/browser/download_manager.h>
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -754,6 +755,19 @@ void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & we
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetRenderViewHost()->UpdateWebkitPreferences(webPreferences);
+}
+
+void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileName)
+{
+    content::BrowserContext *bctx = webContents()->GetBrowserContext();
+    content::DownloadManager *dlm =  content::BrowserContext::GetDownloadManager(bctx);
+    if (!dlm)
+        return;
+
+    scoped_ptr<content::DownloadUrlParameters> params(
+            content::DownloadUrlParameters::FromWebContents(webContents(), toGurl(url)));
+    params->set_suggested_name(toString16(suggestedFileName));
+    dlm->DownloadUrl(params.Pass());
 }
 
 void WebContentsAdapter::copyImageAt(const QPoint &location)

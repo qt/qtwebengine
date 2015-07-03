@@ -528,11 +528,17 @@ QAction *QWebEnginePage::action(WebAction action) const
     case CopyLinkToClipboard:
         text = tr("Copy Link URL");
         break;
+    case DownloadLinkToDisk:
+        text = tr("Save Link...");
+        break;
     case CopyImageToClipboard:
         text = tr("Copy Image");
         break;
     case CopyImageUrlToClipboard:
         text = tr("Copy Image URL");
+        break;
+    case DownloadImageToDisk:
+        text = tr("Save Image");
         break;
     case CopyMediaUrlToClipboard:
         text = tr("Copy Media URL");
@@ -548,6 +554,9 @@ QAction *QWebEnginePage::action(WebAction action) const
         break;
     case ToggleMediaMute:
         text = tr("Toggle Mute");
+        break;
+    case DownloadMediaToDisk:
+        text = tr("Download Media");
         break;
     default:
         break;
@@ -636,6 +645,10 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             qApp->clipboard()->setMimeData(data);
         }
         break;
+    case DownloadLinkToDisk:
+        if (d->m_menuData.linkUrl.isValid())
+            d->adapter->download(d->m_menuData.linkUrl, d->m_menuData.suggestedFileName);
+        break;
     case CopyImageToClipboard:
         if (d->m_menuData.hasImageContent &&
                 (d->m_menuData.mediaType == WebEngineContextMenuData::MediaTypeImage ||
@@ -657,6 +670,11 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             data->setUrls(QList<QUrl>() << d->m_menuData.mediaUrl);
             qApp->clipboard()->setMimeData(data);
         }
+        break;
+    case DownloadImageToDisk:
+    case DownloadMediaToDisk:
+        if (d->m_menuData.mediaUrl.isValid())
+            d->adapter->download(d->m_menuData.mediaUrl, d->m_menuData.suggestedFileName);
         break;
     case CopyMediaUrlToClipboard:
         if (d->m_menuData.mediaUrl.isValid() &&
@@ -848,6 +866,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         action = QWebEnginePage::action(OpenLinkInThisWindow);
         action->setText(tr("Follow Link"));
         menu->addAction(action);
+        menu->addAction(QWebEnginePage::action(DownloadLinkToDisk));
     }
     if (contextMenuData.selectedText.isEmpty()) {
         action = new QAction(QIcon::fromTheme(QStringLiteral("go-previous")), tr("&Back"), menu);
@@ -873,6 +892,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     if (contextMenuData.mediaUrl.isValid()) {
         switch (contextMenuData.mediaType) {
         case WebEngineContextMenuData::MediaTypeImage:
+            menu->addAction(QWebEnginePage::action(DownloadImageToDisk));
             menu->addAction(QWebEnginePage::action(CopyImageUrlToClipboard));
             // no break
         case WebEngineContextMenuData::MediaTypeCanvas:
@@ -880,6 +900,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
             break;
         case WebEngineContextMenuData::MediaTypeAudio:
         case WebEngineContextMenuData::MediaTypeVideo:
+            menu->addAction(QWebEnginePage::action(DownloadMediaToDisk));
             menu->addAction(QWebEnginePage::action(CopyMediaUrlToClipboard));
             menu->addAction(QWebEnginePage::action(ToggleMediaPlayPause));
             menu->addAction(QWebEnginePage::action(ToggleMediaLoop));

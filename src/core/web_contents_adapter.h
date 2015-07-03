@@ -111,6 +111,7 @@ public:
     quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
     void stopFinding();
     void updateWebPreferences(const content::WebPreferences &webPreferences);
+    void download(const QUrl &url, const QString &suggestedFileName);
 
     // Must match blink::WebMediaPlayerAction::Type.
     enum MediaPlayerAction {

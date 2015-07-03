@@ -110,6 +110,9 @@
     \value ToggleMediaLoop Toggles whether the hovered audio or video should loop on completetion or not. (Added in Qt 5.6)
     \value ToggleMediaPlayPause Toggles the play/pause state of the hovered audio or video element. (Added in Qt 5.6)
     \value ToggleMediaMute Mutes or unmutes the hovered audio or video element. (Added in Qt 5.6)
+    \value DownloadLinkToDisk Download the current link to the disk. (Added in Qt 5.6)
+    \value DownloadImageToDisk Download the highlighted image to the disk. (Added in Qt 5.6)
+    \value DownloadMediaToDisk Download the hovered audio or video to the disk. (Added in Qt 5.6)
 
     \omitvalue WebActionCount
 

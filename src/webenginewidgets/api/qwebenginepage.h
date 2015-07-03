@@ -92,15 +92,18 @@ public:
         OpenLinkInNewWindow,
         OpenLinkInNewTab,
         CopyLinkToClipboard,
+        DownloadLinkToDisk,
 
         CopyImageToClipboard,
         CopyImageUrlToClipboard,
+        DownloadImageToDisk,
 
         CopyMediaUrlToClipboard,
         ToggleMediaControls,
         ToggleMediaLoop,
         ToggleMediaPlayPause,
         ToggleMediaMute,
+        DownloadMediaToDisk,
 
         WebActionCount
     };

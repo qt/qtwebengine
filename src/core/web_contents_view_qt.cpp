@@ -142,6 +142,7 @@ static WebEngineContextMenuData fromParams(const content::ContextMenuParams &par
     ret.mediaType = (WebEngineContextMenuData::MediaType)params.media_type;
     ret.hasImageContent = params.has_image_contents;
     ret.mediaFlags = params.media_flags;
+    ret.suggestedFileName = toQt(params.suggested_filename.data());
     return ret;
 }
 
