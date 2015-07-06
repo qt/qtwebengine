@@ -47,12 +47,9 @@ namespace base {
 class MessageLoop;
 }
 
-namespace content {
-class SyncPointManager;
-}
-
 namespace gpu {
 struct Mailbox;
+class SyncPointManager;
 namespace gles2 {
 class MailboxManager;
 class Texture;
@@ -66,10 +63,10 @@ class Texture;
 
 QMap<uint32, gfx::TransferableFence> transferFences();
 base::MessageLoop *gpu_message_loop();
-content::SyncPointManager *sync_point_manager();
+gpu::SyncPointManager *sync_point_manager();
 gpu::gles2::MailboxManager *mailbox_manager();
 
-void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback);
+void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, gpu::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback);
 gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox);
 unsigned int service_id(gpu::gles2::Texture *tex);
 

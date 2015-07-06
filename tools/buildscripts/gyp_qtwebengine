@@ -25,6 +25,12 @@ if sys.platform in ('cygwin', 'win32'):
   if os.path.isdir(gnuwin_tools_dir):
     os.environ['PATH'] = gnuwin_tools_dir + os.pathsep + os.environ['PATH']
 
+if 'VisualStudioVersion' in os.environ:
+  if os.environ['VisualStudioVersion'] == '12.0':
+    os.environ['GYP_MSVS_VERSION'] = '2013'
+  elif os.environ['VisualStudioVersion'] == '14.0':
+    os.environ['GYP_MSVS_VERSION'] = '2015'
+
 sys.path.insert(1, script_dir)
 import gyp_helper
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
@@ -140,6 +146,8 @@ if __name__ == '__main__':
   args.extend(['-D', 'linux_use_bundled_binutils=0'])
   args.extend(['-D', 'linux_use_gold_flags=0'])
   args.extend(['-D', 'clang_use_chrome_plugins=0'])
+  # We do not want to ship more external binary blobs, so let v8 embed its startup data.
+  args.extend(['-D', 'v8_use_external_startup_data=0'])
   # Trigger Qt-specific build conditions.
   args.extend(['-D', 'use_qt=1'])
   # Tweak the output location and format (hardcode ninja for now if not set)

@@ -23,10 +23,18 @@ defineTest(runConfigure) {
     linux:!config_libcap:skipBuild("libcap development package appears to be missing")
     linux:!config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
     contains(QT_CONFIG, xcb) {
-        for(package, $$list("libdrm xcomposite xi xrandr")) {
+        for(package, $$list("libdrm xcomposite xi xrandr xscrnsaver")) {
             !packagesExist($$package):skipBuild("Unmet dependency: $$package")
         }
     }
+
+    linux {
+        packagesExist(minizip, zlib): CONFIG += config_system_minizip
+        else: log("System zlib and minizip not found. Using Chromium's copies.$${EOL}")
+        packagesExist(libxml-2.0,libxslt): CONFIG += config_system_libxslt
+        else: log("System libxml2 and libxslt not found. Using Chromium's copies.$${EOL}")
+    }
+
     isEmpty(skipBuildReason):cache(CONFIG, add, $$list(webengine_successfully_configured))
 }
 

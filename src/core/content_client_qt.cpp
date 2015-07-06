@@ -130,12 +130,12 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
 
 void AddPepperFlashFromCommandLine(std::vector<content::PepperPluginInfo>* plugins)
 {
-    const CommandLine::StringType flash_path = CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kPpapiFlashPath);
+    const base::CommandLine::StringType flash_path = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kPpapiFlashPath);
     if (flash_path.empty() || !QFile(QtWebEngineCore::toQt(flash_path)).exists())
         return;
 
     // Read pepper flash plugin version from command-line. (e.g. 16.0.0.235)
-    std::string flash_version = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kPpapiFlashVersion);
+    std::string flash_version = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kPpapiFlashVersion);
     plugins->push_back(CreatePepperFlashInfo(base::FilePath(flash_path), flash_version));
 }
 

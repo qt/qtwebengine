@@ -49,9 +49,11 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/devtools_discovery/devtools_discovery_manager.h"
+#include "components/devtools_discovery/devtools_target_descriptor.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_http_handler.h"
-#include "content/public/browser/devtools_target.h"
+#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -59,14 +61,18 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
 #include "net/socket/stream_listen_socket.h"
 #include "net/socket/tcp_server_socket.h"
 
 using namespace content;
+using namespace devtools_discovery;
+using namespace devtools_http_handler;
 
 namespace {
 
 const char kTargetTypePage[] = "page";
+const char kTargetTypeSharedWorker[] = "worker";
 const char kTargetTypeServiceWorker[] = "service_worker";
 const char kTargetTypeOther[] = "other";
 
@@ -74,15 +80,29 @@ class TCPServerSocketFactory
     : public DevToolsHttpHandler::ServerSocketFactory {
 public:
     TCPServerSocketFactory(const std::string& address, int port, int backlog)
-        : DevToolsHttpHandler::ServerSocketFactory(address, port, backlog) {}
+        : m_address(address), m_port(port), m_backlog(backlog)
+    {}
 private:
-    scoped_ptr<net::ServerSocket> Create() const override {
-        return scoped_ptr<net::ServerSocket>(new net::TCPServerSocket(NULL, net::NetLog::Source()));
-  }
-  DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
+    scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
+        scoped_ptr<net::ServerSocket> socket(new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+        if (socket->ListenWithAddressAndPort(m_address, m_port, m_backlog) != net::OK)
+            return scoped_ptr<net::ServerSocket>();
+
+        return socket;
+    }
+
+    const std::string m_address;
+    int m_port;
+    int m_backlog;
+    DISALLOW_COPY_AND_ASSIGN(TCPServerSocketFactory);
 };
 
-class Target : public content::DevToolsTarget {
+class DevToolsDiscoveryProviderQt : public DevToolsDiscoveryManager::Provider {
+public:
+    DevToolsTargetDescriptor::List GetDescriptors() override;
+};
+
+class Target : public DevToolsTargetDescriptor {
 public:
     explicit Target(scoped_refptr<DevToolsAgentHost> agent_host);
 
@@ -92,6 +112,8 @@ public:
         switch (agent_host_->GetType()) {
         case DevToolsAgentHost::TYPE_WEB_CONTENTS:
             return kTargetTypePage;
+        case DevToolsAgentHost::TYPE_SHARED_WORKER:
+            return kTargetTypeSharedWorker;
         case DevToolsAgentHost::TYPE_SERVICE_WORKER:
             return kTargetTypeServiceWorker;
         default:
@@ -141,17 +163,40 @@ bool Target::Close() const {
     return agent_host_->Close();
 }
 
+DevToolsTargetDescriptor::List DevToolsDiscoveryProviderQt::GetDescriptors()
+{
+    DevToolsTargetDescriptor::List targets;
+    for (const auto& agent_host : DevToolsAgentHost::GetOrCreateAll()) {
+        targets.push_back(new Target(agent_host));
+    }
+    return targets;
+}
+
 }  // namespace
 
 namespace QtWebEngineCore {
 
+scoped_ptr<DevToolsHttpHandler> createDevToolsHttpHandler()
+{
+    DevToolsHttpHandlerDelegateQt *delegate = new DevToolsHttpHandlerDelegateQt();
+    if (!delegate->isValid()) {
+        delete delegate;
+        return nullptr;
+    }
+    scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory(delegate->bindAddress().toStdString(), delegate->port(), 1));
+    // Ownership of the delegate is taken over the devtools http handler.
+    scoped_ptr<DevToolsHttpHandler> handler(new DevToolsHttpHandler(factory.Pass(), std::string(), delegate, base::FilePath(), base::FilePath(), std::string(), std::string()));
+    DevToolsDiscoveryManager::GetInstance()->AddProvider(scoped_ptr<DevToolsDiscoveryManager::Provider>(new DevToolsDiscoveryProviderQt()));
+    return handler;
+}
+
 DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt()
-    : m_devtoolsHttpHandler(0)
-    , m_bindAddress(QLatin1String("127.0.0.1"))
+    : m_bindAddress(QLatin1String("127.0.0.1"))
     , m_port(0)
+    , m_valid(false)
 {
     const QString inspectorEnv = QString::fromUtf8(qgetenv("QTWEBENGINE_REMOTE_DEBUGGING"));
-    const CommandLine &commandLine = *CommandLine::ForCurrentProcess();
+    const base::CommandLine &commandLine = *base::CommandLine::ForCurrentProcess();
     QString portStr;
 
     if (commandLine.HasSwitch(switches::kRemoteDebuggingPort)) {
@@ -166,26 +211,16 @@ DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt()
     } else
         return;
 
-    bool ok = false;
-    m_port = portStr.toInt(&ok);
-    if (ok && m_port > 0 && m_port < 65535) {
-        scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory(m_bindAddress.toStdString(), m_port, 1));
-        m_devtoolsHttpHandler = DevToolsHttpHandler::Start(factory.Pass(), std::string(), this, base::FilePath());
-    } else
+    m_port = portStr.toInt(&m_valid);
+    m_valid = m_valid && m_port > 0 && m_port < 65535;
+    if (!m_valid)
         qWarning("Invalid port given for the inspector server \"%s\". Examples of valid input: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's network interface).", qPrintable(portStr));
 }
 
-DevToolsHttpHandlerDelegateQt::~DevToolsHttpHandlerDelegateQt()
+void DevToolsHttpHandlerDelegateQt::Initialized(const net::IPEndPoint *ip_address)
 {
-    // Stop() takes care of deleting the DevToolsHttpHandler.
-    if (m_devtoolsHttpHandler)
-        m_devtoolsHttpHandler->Stop();
-}
-
-void DevToolsHttpHandlerDelegateQt::Initialized(const net::IPEndPoint& ip_address)
-{
-    if (ip_address.address().size()) {
-        QString addressAndPort = QString::fromStdString(ip_address.ToString());
+    if (ip_address && ip_address->address().size()) {
+        QString addressAndPort = QString::fromStdString(ip_address->ToString());
         qWarning("Remote debugging server started successfully. Try pointing a Chromium-based browser to http://%s", qPrintable(addressAndPort));
     } else
         qWarning("Couldn't start the inspector server on bind address \"%s\" and port \"%d\". In case of invalid input, try something like: \"12345\" or \"192.168.2.14:12345\" (with the address of one of this host's interface).", qPrintable(m_bindAddress), m_port);
@@ -203,42 +238,19 @@ std::string DevToolsHttpHandlerDelegateQt::GetDiscoveryPageHTML()
     return html;
 }
 
-bool DevToolsHttpHandlerDelegateQt::BundlesFrontendResources()
-{
-    return true;
-}
-
-base::FilePath DevToolsHttpHandlerDelegateQt::GetDebugFrontendDir()
-{
-    return base::FilePath();
-}
-
-scoped_ptr<net::StreamListenSocket> DevToolsHttpHandlerDelegateQt::CreateSocketForTethering(net::StreamListenSocket::Delegate* delegate, std::string* name)
-{
-    return scoped_ptr<net::StreamListenSocket>();
-}
-
-base::DictionaryValue* DevToolsManagerDelegateQt::HandleCommand(DevToolsAgentHost *, base::DictionaryValue *) {
-    return 0;
-}
-
-std::string DevToolsManagerDelegateQt::GetPageThumbnailData(const GURL& url)
+std::string DevToolsHttpHandlerDelegateQt::GetPageThumbnailData(const GURL& url)
 {
     return std::string();
 }
 
-scoped_ptr<DevToolsTarget> DevToolsManagerDelegateQt::CreateNewTarget(const GURL &)
+std::string DevToolsHttpHandlerDelegateQt::GetFrontendResource(const std::string &path)
 {
-    return scoped_ptr<DevToolsTarget>();
+    return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
-void DevToolsManagerDelegateQt::EnumerateTargets(TargetCallback callback)
+base::DictionaryValue* DevToolsManagerDelegateQt::HandleCommand(DevToolsAgentHost *, base::DictionaryValue *)
 {
-    TargetList targets;
-    for (const auto& agent_host : DevToolsAgentHost::GetOrCreateAll()) {
-        targets.push_back(new Target(agent_host));
-    }
-    callback.Run(targets);
+    return 0;
 }
 
 } //namespace QtWebEngineCore

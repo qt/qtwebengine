@@ -154,39 +154,6 @@ OSExchangeData::Provider* OSExchangeData::CreateProvider()
     return 0;
 }
 
-}
-
-namespace gfx {
-
-// Stubs for these unused functions that are stripped in case
-// of a release aura build but a debug build needs the symbols.
-
-RenderText* RenderText::CreateNativeInstance()
-{
-    QT_NOT_USED;
-    return 0;
-}
-
-#if defined(OS_LINUX)
-PlatformFont* PlatformFont::CreateDefault()
-{
-    QT_NOT_USED;
-    return 0;
-}
-
-PlatformFont* PlatformFont::CreateFromNativeFont(NativeFont)
-{
-    QT_NOT_USED;
-    return 0;
-}
-
-PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string&, int)
-{
-    QT_NOT_USED;
-    return 0;
-}
-#endif
-
-} // namespace gfx
+} // namespace ui
 
 #endif // defined(USE_AURA) && !defined(USE_OZONE)

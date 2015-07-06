@@ -56,6 +56,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/gpu_timing.h"
 
 #include "access_token_store_qt.h"
 #include "browser_context_adapter.h"
@@ -279,7 +280,11 @@ public:
     virtual bool MakeCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
     virtual void ReleaseCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
     virtual bool IsCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual void SetSwapInterval(int) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual void OnSetSwapInterval(int) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() Q_DECL_OVERRIDE
+    {
+        return nullptr;
+    }
 
 private:
     void *m_handle;
@@ -362,9 +367,8 @@ content::MediaObserver *ContentBrowserClientQt::GetMediaObserver()
     return MediaCaptureDevicesDispatcher::GetInstance();
 }
 
-void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, const GURL &url, content::WebPreferences *web_prefs)
+void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, content::WebPreferences *web_prefs)
 {
-    Q_UNUSED(url);
     if (content::WebContents *webContents = rvh->GetDelegate()->GetAsWebContents())
         static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
 }
@@ -402,41 +406,6 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
 
     QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
-}
-
-void ContentBrowserClientQt::RequestPermission(content::PermissionType permission,
-                                                content::WebContents* web_contents,
-                                                int bridge_id,
-                                                const GURL& requesting_frame,
-                                                bool user_gesture,
-                                                const base::Callback<void(bool)>& result_callback)
-{
-    Q_UNUSED(bridge_id);
-    Q_UNUSED(user_gesture);
-    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
-    Q_ASSERT(contentsDelegate);
-    if (permission == content::PERMISSION_GEOLOCATION)
-        contentsDelegate->requestGeolocationPermission(requesting_frame, result_callback);
-    else
-        result_callback.Run(false);
-}
-
-
-void ContentBrowserClientQt::CancelPermissionRequest(content::PermissionType permission,
-                                                     content::WebContents* web_contents,
-                                                     int bridge_id,
-                                                     const GURL& requesting_frame)
-{
-    Q_UNUSED(bridge_id);
-    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
-    Q_ASSERT(contentsDelegate);
-    if (permission == content::PERMISSION_GEOLOCATION)
-        contentsDelegate->cancelGeolocationPermissionRequest(requesting_frame);
-}
-
-blink::WebNotificationPermission ContentBrowserClientQt::CheckDesktopNotificationPermission(const GURL&, content::ResourceContext *, int )
-{
-    return blink::WebNotificationPermission::WebNotificationPermissionDenied;
 }
 
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()

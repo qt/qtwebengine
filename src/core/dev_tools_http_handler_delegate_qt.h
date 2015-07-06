@@ -37,43 +37,43 @@
 #ifndef DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
 #define DEV_TOOLS_HTTP_HANDLER_DELEGATE_QT_H
 
-#include "content/public/browser/devtools_http_handler_delegate.h"
+#include "components/devtools_http_handler/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
+#include "net/socket/stream_listen_socket.h"
 
 #include <QString>
 #include <QtCore/qcompilerdetection.h> // needed for Q_DECL_OVERRIDE
 
-namespace net {
-class StreamListenSocket;
-}
-
 namespace content {
 class BrowserContext;
+}
+
+namespace devtools_http_handler {
 class DevToolsHttpHandler;
-class RenderViewHost;
 }
 
 namespace QtWebEngineCore {
 
-class DevToolsHttpHandlerDelegateQt : public content::DevToolsHttpHandlerDelegate {
+scoped_ptr<devtools_http_handler::DevToolsHttpHandler> createDevToolsHttpHandler();
+
+class DevToolsHttpHandlerDelegateQt : public devtools_http_handler::DevToolsHttpHandlerDelegate {
 public:
-
     DevToolsHttpHandlerDelegateQt();
-    virtual ~DevToolsHttpHandlerDelegateQt();
 
-    // content::DevToolsHttpHandlerDelegate Overrides
-    virtual void Initialized(const net::IPEndPoint &ip_address) Q_DECL_OVERRIDE;
-    virtual std::string GetDiscoveryPageHTML() Q_DECL_OVERRIDE;
-    virtual bool BundlesFrontendResources() Q_DECL_OVERRIDE;
-    virtual base::FilePath GetDebugFrontendDir() Q_DECL_OVERRIDE;
-    // Requests the list of all inspectable targets.
-    // The caller gets the ownership of the returned targets.
-    virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(net::StreamListenSocket::Delegate *delegate, std::string *name) Q_DECL_OVERRIDE;
+    bool isValid() const { return m_valid; }
+    QString bindAddress() const { return m_bindAddress; }
+    int port() const { return m_port; }
+
+    // devtools_http_handler::DevToolsHttpHandlerDelegate Overrides
+    void Initialized(const net::IPEndPoint *ip_address) Q_DECL_OVERRIDE;
+    std::string GetDiscoveryPageHTML() Q_DECL_OVERRIDE;
+    std::string GetFrontendResource(const std::string&)  Q_DECL_OVERRIDE;
+    std::string GetPageThumbnailData(const GURL &url) Q_DECL_OVERRIDE;
 
 private:
-    content::DevToolsHttpHandler *m_devtoolsHttpHandler;
     QString m_bindAddress;
     int m_port;
+    bool m_valid;
 };
 
 class DevToolsManagerDelegateQt : public content::DevToolsManagerDelegate {
@@ -81,9 +81,6 @@ public:
     void Inspect(content::BrowserContext *browser_context, content::DevToolsAgentHost *agent_host) Q_DECL_OVERRIDE { }
     void DevToolsAgentStateChanged(content::DevToolsAgentHost *agent_host, bool attached) Q_DECL_OVERRIDE { }
     base::DictionaryValue *HandleCommand(content::DevToolsAgentHost *agent_host, base::DictionaryValue *command) Q_DECL_OVERRIDE;
-    scoped_ptr<content::DevToolsTarget> CreateNewTarget(const GURL &url) Q_DECL_OVERRIDE;
-    void EnumerateTargets(TargetCallback callback) Q_DECL_OVERRIDE;
-    std::string GetPageThumbnailData(const GURL &url) Q_DECL_OVERRIDE;
 };
 
 } // namespace QtWebEngineCore

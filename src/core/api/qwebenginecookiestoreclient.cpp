@@ -113,12 +113,6 @@ void QWebEngineCookieStoreClientPrivate::onCookieChanged(const QNetworkCookie &c
         Q_EMIT q->cookieAdded(cookie);
 }
 
-void QWebEngineCookieStoreClientPrivate::onCookieStoreLoaded()
-{
-    Q_Q(QWebEngineCookieStoreClient);
-    Q_EMIT q->cookieStoreLoaded();
-}
-
 QWebEngineCookieStoreClient::QWebEngineCookieStoreClient(QObject *parent)
     : QObject(parent)
     , d_ptr(new QWebEngineCookieStoreClientPrivate(this))

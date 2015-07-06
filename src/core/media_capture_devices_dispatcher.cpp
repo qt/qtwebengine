@@ -91,9 +91,8 @@ scoped_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::MediaStr
   devices.push_back(content::MediaStreamDevice(
       content::MEDIA_DESKTOP_VIDEO_CAPTURE, mediaId.ToString(), "Screen"));
   if (captureAudio) {
-    // Use the special loopback device ID for system audio capture.
     devices.push_back(content::MediaStreamDevice(
-        content::MEDIA_LOOPBACK_AUDIO_CAPTURE,
+        content::MEDIA_DESKTOP_AUDIO_CAPTURE,
         media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
   }
 
@@ -225,7 +224,7 @@ void MediaCaptureDevicesDispatcher::processMediaAccessRequest(WebContentsAdapter
   if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE || request.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE)
       return;
 
-  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE || request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE)
+  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE || request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE)
       // It's still unclear what to make of screen capture. We can rely on existing javascript dialog infrastructure
       // to experiment with this without exposing it through our API yet.
       processDesktopCaptureAccessRequest(webContents, request, callback);
@@ -279,7 +278,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
   // Audio is only supported for screen capture streams.
   bool capture_audio = (mediaId.type == content::DesktopMediaID::TYPE_SCREEN &&
-       request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE);
+       request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE);
 
   ui = getDevicesForDesktopCapture(
       devices, mediaId, capture_audio, true,

@@ -19,6 +19,8 @@
         '<(chromium_src_dir)/chrome/browser/media/desktop_streams_registry.cc',
         '<(chromium_src_dir)/chrome/browser/media/desktop_streams_registry.h',
         '<(chromium_src_dir)/chrome/browser/media/desktop_media_list.h',
+        '<(chromium_src_dir)/chrome/common/chrome_switches.cc',
+        '<(chromium_src_dir)/chrome/common/chrome_switches.h',
         '<(chromium_src_dir)/chrome/common/localized_error.cc',
         '<(chromium_src_dir)/chrome/common/localized_error.h',
       ],

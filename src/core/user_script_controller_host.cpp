@@ -52,9 +52,12 @@ namespace QtWebEngineCore {
 class UserScriptControllerHost::WebContentsObserverHelper : public content::WebContentsObserver {
 public:
     WebContentsObserverHelper(UserScriptControllerHost *, content::WebContents *);
-    virtual void AboutToNavigateRenderView(content::RenderViewHost* renderViewHost) Q_DECL_OVERRIDE;
 
-    virtual void WebContentsDestroyed() Q_DECL_OVERRIDE;
+    // WebContentsObserver overrides:
+    void RenderViewCreated(content::RenderViewHost *renderViewHost) override;
+    void RenderViewHostChanged(content::RenderViewHost *oldHost, content::RenderViewHost *newHost) override;
+    void WebContentsDestroyed() override;
+
 private:
     UserScriptControllerHost *m_controllerHost;
 };
@@ -65,11 +68,21 @@ UserScriptControllerHost::WebContentsObserverHelper::WebContentsObserverHelper(U
 {
 }
 
-void UserScriptControllerHost::WebContentsObserverHelper::AboutToNavigateRenderView(content::RenderViewHost *renderViewHost)
+void UserScriptControllerHost::WebContentsObserverHelper::RenderViewCreated(content::RenderViewHost *renderViewHost)
 {
     content::WebContents *contents = web_contents();
     Q_FOREACH (const UserScript &script, m_controllerHost->m_perContentsScripts.value(contents))
         renderViewHost->Send(new RenderViewObserverHelper_AddScript(renderViewHost->GetRoutingID(), script.data()));
+}
+
+void UserScriptControllerHost::WebContentsObserverHelper::RenderViewHostChanged(content::RenderViewHost *oldHost,
+                                                                                content::RenderViewHost *newHost)
+{
+    oldHost->Send(new RenderViewObserverHelper_ClearScripts(oldHost->GetRoutingID()));
+
+    content::WebContents *contents = web_contents();
+    Q_FOREACH (const UserScript &script, m_controllerHost->m_perContentsScripts.value(contents))
+        newHost->Send(new RenderViewObserverHelper_AddScript(newHost->GetRoutingID(), script.data()));
 }
 
 void UserScriptControllerHost::WebContentsObserverHelper::WebContentsDestroyed()

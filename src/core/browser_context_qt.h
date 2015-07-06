@@ -47,6 +47,7 @@
 namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
+class PermissionManagerQt;
 class URLRequestContextGetterQt;
 
 class BrowserContextQt : public content::BrowserContext
@@ -72,13 +73,17 @@ public:
     virtual content::PushMessagingService* GetPushMessagingService() Q_DECL_OVERRIDE;
     virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() Q_DECL_OVERRIDE;
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers);
+    virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
+    virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
 
-    BrowserContextAdapter* adapter() { return m_adapter; }
+    BrowserContextAdapter *adapter() { return m_adapter; }
+
 private:
     friend class ContentBrowserClientQt;
     friend class WebContentsAdapter;
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
+    scoped_ptr<PermissionManagerQt> permissionManager;
     BrowserContextAdapter *m_adapter;
     friend class BrowserContextAdapter;
 
