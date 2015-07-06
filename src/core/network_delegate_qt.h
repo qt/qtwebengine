@@ -37,7 +37,7 @@
 #ifndef NETWORK_DELEGATE_QT_H
 #define NETWORK_DELEGATE_QT_H
 
-#include "net/base/network_delegate.h"
+#include "net/base/network_delegate_impl.h"
 #include "net/base/net_errors.h"
 
 #include <QUrl>
@@ -46,7 +46,7 @@
 
 namespace QtWebEngineCore {
 
-class NetworkDelegateQt : public net::NetworkDelegate {
+class NetworkDelegateQt : public net::NetworkDelegateImpl {
 public:
     NetworkDelegateQt() {}
     virtual ~NetworkDelegateQt() {}

@@ -539,6 +539,22 @@ GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window)
     return NULL;
 }
 
+std::string DriverEGL::GetPlatformExtensions()
+{
+#if defined(USE_X11)
+    EGLNativeDisplayType nativeDisplay = reinterpret_cast<EGLNativeDisplayType>(GLContextHelper::getXDisplay());
+    EGLDisplay display = eglGetDisplay(nativeDisplay);
+#else
+    EGLDisplay display = GLContextHelper::getEGLDisplay();
+#endif
+    if (display == EGL_NO_DISPLAY)
+        return "";
+
+    DCHECK(g_driver_egl.fn.eglQueryStringFn);
+    const char* str = g_driver_egl.fn.eglQueryStringFn(display, EGL_EXTENSIONS);
+    return str ? std::string(str) : "";
+}
+
 }  // namespace gfx
 
 namespace content {

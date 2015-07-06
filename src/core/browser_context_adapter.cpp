@@ -40,6 +40,7 @@
 #include "browser_context_qt.h"
 #include "content_client_qt.h"
 #include "download_manager_delegate_qt.h"
+#include "permission_manager_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_visited_links_manager.h"
 #include "url_request_context_getter_qt.h"
@@ -350,6 +351,11 @@ UserScriptControllerHost *BrowserContextAdapter::userScriptController()
     if (!m_userScriptController)
         m_userScriptController.reset(new UserScriptControllerHost);
     return m_userScriptController.data();
+}
+
+void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
+{
+    static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
 }
 
 } // namespace QtWebEngineCore

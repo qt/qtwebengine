@@ -361,7 +361,7 @@ void ClipboardQt::ReadData(const FormatType& format, std::string* result) const
     *result = std::string(byteArray.constData(), byteArray.length());
 }
 
-uint64 ClipboardQt::GetSequenceNumber(ui::ClipboardType type)
+uint64 ClipboardQt::GetSequenceNumber(ui::ClipboardType type) const
 {
     return clipboardChangeObserver()->getSequenceNumber(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
 }

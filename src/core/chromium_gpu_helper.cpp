@@ -43,18 +43,18 @@
 // Including gpu/command_buffer headers before content/gpu headers makes sure that
 // guards are defined to prevent duplicate definition errors with forward declared
 // GL typedefs cascading through content header includes.
+#include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
 #include "content/common/gpu/gpu_channel_manager.h"
-#include "content/common/gpu/sync_point_manager.h"
 #include "content/gpu/gpu_child_thread.h"
 
 #ifdef Q_OS_QNX
 #include "content/common/gpu/stream_texture_qnx.h"
 #endif
 
-static void addSyncPointCallbackDelegate(content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
+static void addSyncPointCallbackDelegate(gpu::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
 {
     syncPointManager->AddSyncPointCallback(sync_point, callback);
 }
@@ -78,13 +78,13 @@ base::MessageLoop *gpu_message_loop()
     return content::GpuChildThread::instance()->message_loop();
 }
 
-content::SyncPointManager *sync_point_manager()
+gpu::SyncPointManager *sync_point_manager()
 {
     content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
     return gpuChannelManager->sync_point_manager();
 }
 
-void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, content::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
+void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, gpu::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
 {
     // We need to set our callback from the GPU thread, where the SyncPointManager lives.
     gpuMessageLoop->PostTask(FROM_HERE, base::Bind(&addSyncPointCallbackDelegate, make_scoped_refptr(syncPointManager), sync_point, callback));

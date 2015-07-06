@@ -108,7 +108,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     return target;
 }
 
-void WebContentsDelegateQt::NavigationStateChanged(const content::WebContents* source, content::InvalidateTypes changed_flags)
+void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags)
 {
     if (changed_flags & content::INVALIDATE_TYPE_URL)
         m_viewClient->urlChanged(toQt(source->GetVisibleURL()));
@@ -127,7 +127,7 @@ void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content
 void WebContentsDelegateQt::CloseContents(content::WebContents *source)
 {
     m_viewClient->close();
-    GetJavaScriptDialogManager()->CancelActiveAndPendingDialogs(source);
+    GetJavaScriptDialogManager(source)->CancelActiveAndPendingDialogs(source);
 }
 
 void WebContentsDelegateQt::LoadProgressChanged(content::WebContents* source, double progress)
@@ -229,17 +229,26 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     }
 }
 
-content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager()
+content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager(content::WebContents *)
 {
     return JavaScriptDialogManagerQt::GetInstance();
 }
 
-void WebContentsDelegateQt::ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen)
+void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin)
 {
-    if (m_viewClient->isFullScreen() != enter_fullscreen) {
-        m_viewClient->requestFullScreen(enter_fullscreen);
+    Q_UNUSED(origin); // FIXME
+    if (!m_viewClient->isFullScreen()) {
+        m_viewClient->requestFullScreen(true);
         web_contents->GetRenderViewHost()->WasResized();
     }
+}
+
+void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_contents)
+{
+    if (m_viewClient->isFullScreen()) {
+        m_viewClient->requestFullScreen(false);
+        web_contents->GetRenderViewHost()->WasResized();
+     }
 }
 
 bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents) const
@@ -337,28 +346,9 @@ void WebContentsDelegateQt::allowCertificateError(const QSharedPointer<Certifica
     m_viewClient->allowCertificateError(errorController);
 }
 
-void WebContentsDelegateQt::requestGeolocationPermission(const GURL &requestingFrameOrigin, const base::Callback<void (bool)> &resultCallback)
+void WebContentsDelegateQt::requestGeolocationPermission(const QUrl &requestingOrigin)
 {
-    QUrl url = toQt(requestingFrameOrigin);
-    bool newRequest = !m_geolocationPermissionRequests.contains(url);
-    m_geolocationPermissionRequests[url] = resultCallback;
-    if (newRequest)
-        m_viewClient->runGeolocationPermissionRequest(url);
-}
-
-void WebContentsDelegateQt::cancelGeolocationPermissionRequest(const GURL &requestingFrameOrigin)
-{
-    m_geolocationPermissionRequests.remove(toQt(requestingFrameOrigin));
-    // FIXME: Tell the API layer to cancel the permission request?
-}
-
-void WebContentsDelegateQt::geolocationPermissionReply(const QUrl &origin, bool permission)
-{
-    auto it = m_geolocationPermissionRequests.find(origin);
-    if (it != m_geolocationPermissionRequests.end()) {
-        (*it).Run(permission);
-        m_geolocationPermissionRequests.erase(it);
-    }
+    m_viewClient->runGeolocationPermissionRequest(requestingOrigin);
 }
 
 void WebContentsDelegateQt::ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text)

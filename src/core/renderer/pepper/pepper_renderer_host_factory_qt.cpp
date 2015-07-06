@@ -57,7 +57,7 @@ PepperRendererHostFactoryQt::~PepperRendererHostFactoryQt()
 
 scoped_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateResourceHost(
         ppapi::host::PpapiHost* host,
-        const ppapi::proxy::ResourceMessageCallParams& params,
+        PP_Resource resource,
         PP_Instance instance,
         const IPC::Message& message)
 {
@@ -71,7 +71,7 @@ scoped_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateResourc
             return scoped_ptr<ppapi::host::ResourceHost>(
                         new PepperFlashRendererHostQt(host_,
                                                       instance,
-                                                      params.pp_resource()));
+                                                      resource));
 
     return scoped_ptr<ppapi::host::ResourceHost>();
 }

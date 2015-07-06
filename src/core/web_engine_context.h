@@ -41,6 +41,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/values.h"
+#include "components/devtools_http_handler/devtools_http_handler.h"
 
 #include <QExplicitlySharedDataPointer>
 
@@ -59,7 +61,6 @@ namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
 class ContentMainDelegateQt;
-class DevToolsHttpHandlerDelegateQt;
 class SurfaceFactoryQt;
 } // namespace
 
@@ -81,7 +82,7 @@ private:
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
     QObject* m_globalQObject;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
-    scoped_ptr<QtWebEngineCore::DevToolsHttpHandlerDelegateQt> m_devtools;
+    scoped_ptr<devtools_http_handler::DevToolsHttpHandler> m_devtools;
 };
 
 #endif // WEB_ENGINE_CONTEXT_H

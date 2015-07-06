@@ -51,7 +51,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
 namespace QtWebEngineCore {

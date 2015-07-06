@@ -127,12 +127,4 @@ void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie& cookie
     m_client->d_ptr->onCookieChanged(toQt(cookie), removed);
 }
 
-void CookieMonsterDelegateQt::OnLoaded()
-{
-    if (!m_client)
-        return;
-
-    m_client->d_ptr->onCookieStoreLoaded();
-}
-
 }

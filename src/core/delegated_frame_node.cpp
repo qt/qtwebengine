@@ -76,6 +76,10 @@
 #include <EGL/eglext.h>
 #endif
 
+#ifndef GL_TIMEOUT_IGNORED
+#define GL_TIMEOUT_IGNORED                0xFFFFFFFFFFFFFFFFull
+#endif
+
 namespace QtWebEngineCore {
 
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
@@ -205,7 +209,6 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
 #endif
         break;
     case gfx::TransferableFence::ArbSync:
-#ifdef GL_ARB_sync
         typedef void (QOPENGLF_APIENTRYP WaitSyncPtr)(GLsync sync, GLbitfield flags, GLuint64 timeout);
         static WaitSyncPtr glWaitSync_ = 0;
         if (!glWaitSync_) {
@@ -214,7 +217,6 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
             Q_ASSERT(glWaitSync_);
         }
         glWaitSync_(sync->arb.sync, 0, GL_TIMEOUT_IGNORED);
-#endif
         break;
     }
 }
@@ -250,7 +252,6 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
 #endif
         break;
     case gfx::TransferableFence::ArbSync:
-#ifdef GL_ARB_sync
         typedef void (QOPENGLF_APIENTRYP DeleteSyncPtr)(GLsync sync);
         static DeleteSyncPtr glDeleteSync_ = 0;
         if (!glDeleteSync_) {
@@ -260,7 +261,6 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
         }
         glDeleteSync_(sync->arb.sync);
         sync->reset();
-#endif
         break;
     }
     // If Chromium was able to create a sync, we should have been able to handle its type here too.
@@ -409,7 +409,7 @@ void DelegatedFrameNode::preprocess()
         {
             QMutexLocker lock(&m_mutex);
             base::MessageLoop *gpuMessageLoop = gpu_message_loop();
-            content::SyncPointManager *syncPointManager = sync_point_manager();
+            gpu::SyncPointManager *syncPointManager = sync_point_manager();
 
             Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
                 m_numPendingSyncPoints++;
@@ -442,6 +442,20 @@ void DelegatedFrameNode::preprocess()
         // Proceed with the actual update.
         pair.second->updateTexture();
     }
+}
+
+static YUVVideoMaterial::ColorSpace toQt(cc::YUVVideoDrawQuad::ColorSpace color_space)
+{
+    switch (color_space) {
+    case cc::YUVVideoDrawQuad::REC_601:
+        return YUVVideoMaterial::REC_601;
+    case cc::YUVVideoDrawQuad::REC_709:
+        return YUVVideoMaterial::REC_709;
+    case cc::YUVVideoDrawQuad::JPEG:
+        return YUVVideoMaterial::JPEG;
+    }
+    Q_UNREACHABLE();
+    return YUVVideoMaterial::REC_601;
 }
 
 void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate)
@@ -560,7 +574,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
-                textureNode->setTextureCoordinatesTransform(tquad->flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
+                textureNode->setTextureCoordinatesTransform(tquad->y_flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
                 textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));
@@ -628,7 +642,9 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                     initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
                     initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
                     initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
-                    aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0, toQt(vquad->tex_coord_rect));
+                    aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
+                                                   toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
+                                                   toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), toQt(vquad->color_space));
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;

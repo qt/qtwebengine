@@ -39,7 +39,7 @@
 #ifndef GL_SURFACE_QT_H_
 #define GL_SURFACE_QT_H_
 
-#include "ui/gfx/size.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface.h"
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE

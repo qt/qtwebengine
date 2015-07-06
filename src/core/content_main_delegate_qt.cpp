@@ -72,7 +72,7 @@ void ContentMainDelegateQt::PreSandboxStartup()
     // Suppress info, warning and error messages per default.
     int logLevel = logging::LOG_FATAL;
 
-    CommandLine* parsedCommandLine = CommandLine::ForCurrentProcess();
+    base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
         std::string logLevelValue = parsedCommandLine->GetSwitchValueASCII(switches::kLoggingLevel);
         int level = 0;

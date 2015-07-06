@@ -86,7 +86,6 @@ public:
 
     void onSetCallbackResult(qint64 callbackId, bool success);
     void onCookieChanged(const QNetworkCookie &cookie, bool removed);
-    void onCookieStoreLoaded();
 };
 
 QT_END_NAMESPACE

@@ -39,6 +39,7 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/permission_status.mojom.h"
 
 #include "base/callback.h"
 
@@ -72,13 +73,14 @@ public:
 
     // WebContentsDelegate overrides
     virtual content::WebContents *OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params) Q_DECL_OVERRIDE;
-    virtual void NavigationStateChanged(const content::WebContents* source, content::InvalidateTypes changed_flags) Q_DECL_OVERRIDE;
+    virtual void NavigationStateChanged(content::WebContents* source, content::InvalidateTypes changed_flags) Q_DECL_OVERRIDE;
     virtual void AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked) Q_DECL_OVERRIDE;
     virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
     virtual void LoadProgressChanged(content::WebContents* source, double progress) Q_DECL_OVERRIDE;
     virtual void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) Q_DECL_OVERRIDE;
-    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager() Q_DECL_OVERRIDE;
-    virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents, bool enter_fullscreen) Q_DECL_OVERRIDE;
+    virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) Q_DECL_OVERRIDE;
+    virtual void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) Q_DECL_OVERRIDE;
+    virtual void ExitFullscreenModeForTab(content::WebContents*) Q_DECL_OVERRIDE;
     virtual bool IsFullscreenForTabOrPending(const content::WebContents* web_contents) const Q_DECL_OVERRIDE;
     virtual void RunFileChooser(content::WebContents *, const content::FileChooserParams &params) Q_DECL_OVERRIDE;
     virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const base::string16& message, int32 line_no, const base::string16& source_id) Q_DECL_OVERRIDE;
@@ -101,14 +103,10 @@ public:
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
-    void requestGeolocationPermission(const GURL &requestingFrameOrigin, const base::Callback<void (bool)> &resultCallback);
-    void cancelGeolocationPermissionRequest(const GURL &requestingFrameOrigin);
-    void geolocationPermissionReply(const QUrl&,  bool permission);
+    void requestGeolocationPermission(const QUrl &requestingOrigin);
 
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
-
-    QHash<QUrl, base::Callback<void (bool)> > m_geolocationPermissionRequests;
 
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;

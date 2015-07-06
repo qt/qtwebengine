@@ -40,7 +40,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
-#include "third_party/WebKit/public/platform/WebNotificationPermission.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
@@ -88,7 +88,7 @@ public:
     virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
     virtual content::AccessTokenStore* CreateAccessTokenStore() Q_DECL_OVERRIDE;
     virtual content::QuotaPermissionContext *CreateQuotaPermissionContext() Q_DECL_OVERRIDE;
-    virtual void OverrideWebkitPrefs(content::RenderViewHost *, const GURL &, content::WebPreferences *) Q_DECL_OVERRIDE;
+    virtual void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) Q_DECL_OVERRIDE;
     virtual void AllowCertificateError(
         int render_process_id,
         int render_frame_id,
@@ -101,22 +101,9 @@ public:
         bool expired_previous_decision,
         const base::Callback<void(bool)>& callback,
         content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
-    virtual void RequestPermission(
-        content::PermissionType permission,
-        content::WebContents* web_contents,
-        int bridge_id,
-        const GURL& requesting_frame,
-        bool user_gesture,
-        const base::Callback<void(bool)>& result_callback) Q_DECL_OVERRIDE;
-    virtual void CancelPermissionRequest(content::PermissionType permission,
-                                         content::WebContents* web_contents,
-                                         int bridge_id,
-                                         const GURL& requesting_frame) Q_DECL_OVERRIDE;
     content::LocationProvider* OverrideSystemLocationProvider() Q_DECL_OVERRIDE;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;
-
-    virtual blink::WebNotificationPermission CheckDesktopNotificationPermission(const GURL& source_origin, content::ResourceContext* context, int render_process_id)  Q_DECL_OVERRIDE;
 
     virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
     virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) Q_DECL_OVERRIDE;

@@ -8,6 +8,8 @@
     'dependencies': [
       '<(chromium_src_dir)/base/base.gyp:base',
       '<(chromium_src_dir)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      '<(chromium_src_dir)/components/components.gyp:devtools_discovery',
+      '<(chromium_src_dir)/components/components.gyp:devtools_http_handler',
       '<(chromium_src_dir)/components/components.gyp:error_page_renderer',
       '<(chromium_src_dir)/components/components.gyp:visitedlink_browser',
       '<(chromium_src_dir)/components/components.gyp:visitedlink_renderer',
