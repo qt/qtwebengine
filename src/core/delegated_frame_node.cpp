@@ -76,6 +76,10 @@
 #include <EGL/eglext.h>
 #endif
 
+#ifndef GL_TIMEOUT_IGNORED
+#define GL_TIMEOUT_IGNORED                0xFFFFFFFFFFFFFFFFull
+#endif
+
 namespace QtWebEngineCore {
 
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
