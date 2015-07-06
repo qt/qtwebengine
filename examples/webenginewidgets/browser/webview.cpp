@@ -302,6 +302,23 @@ void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator
     }
 }
 
+void WebPage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int /*lineNumber*/, const QString& sourceID)
+{
+    QUrl url;
+    url.setUrl(sourceID);
+    switch (level) {
+    case InfoMessageLevel:
+        // Ignore these, they can still be found in the inspector.
+        break;
+    case WarningMessageLevel:
+        qInfo() << "JavaScript WARNING:" << url.host() << message;
+        break;
+    case ErrorMessageLevel:
+        qInfo() << "JavaScript ERROR:" << url.host() << message;
+        break;
+    }
+}
+
 WebView::WebView(QWidget* parent)
     : QWebEngineView(parent)
     , m_progress(0)

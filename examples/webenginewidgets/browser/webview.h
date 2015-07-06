@@ -71,6 +71,7 @@ protected:
     QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 #endif
     virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
+    virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)  Q_DECL_OVERRIDE;
 
 private slots:
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
