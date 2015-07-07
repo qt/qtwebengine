@@ -29,12 +29,23 @@ defineTest(runConfigure) {
     }
 
     linux {
-        packagesExist(minizip, zlib): CONFIG += config_system_minizip
-        else: log("System zlib and minizip not found. Using Chromium's copies.$${EOL}")
-        packagesExist(libxml-2.0,libxslt): CONFIG += config_system_libxslt
-        else: log("System libxml2 and libxslt not found. Using Chromium's copies.$${EOL}")
+        packagesExist(minizip, zlib): WEBENGINE_CONFIG += config_system_minizip
+        else: log("System zlib or minizip not found. Using Chromium's copies.$${EOL}")
+        packagesExist(libwebp,libwebpdemux): WEBENGINE_CONFIG += config_system_libwebp
+        else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
+        packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += config_system_libxslt
+        else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
+        for(package, $$list("libevent flac jsoncpp opus speex")) {
+            packagesExist($$package): WEBENGINE_CONFIG += config_system_$$package
+            else: log("System $$package not found. Using Chromium's copy.$${EOL}")
+        }
+        packagesExist("\'vpx >= 1.4\'"): WEBENGINE_CONFIG += config_system_vpx
+        else: log("System vpx >= 1.4 not found. Using Chromium's copy.$${EOL}")
     }
 
-    isEmpty(skipBuildReason):cache(CONFIG, add, $$list(webengine_successfully_configured))
+    isEmpty(skipBuildReason): {
+        cache(CONFIG, add, $$list(webengine_successfully_configured))
+        !isEmpty(WEBENGINE_CONFIG): cache(CONFIG, add, $$list($$WEBENGINE_CONFIG))
+    }
 }
 

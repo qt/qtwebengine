@@ -49,8 +49,15 @@ GYP_CONFIG += \
     v8_use_snapshot=false \
     want_separate_host_toolset=1 \
 
-config_system_libxslt: GYP_CONFIG += use_system_libxml=1
 contains(QT_CONFIG, system-zlib): config_system_minizip: GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 !contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
+config_system_libevent: GYP_CONFIG += use_system_libevent=1
+config_system_libwebp: GYP_CONFIG += use_system_libwebp=1
+config_system_libxslt: GYP_CONFIG += use_system_libxml=1
+config_system_flac: GYP_CONFIG += use_system_flac=1
+config_system_jsoncpp: GYP_CONFIG += use_system_jsoncpp=1
+config_system_opus: GYP_CONFIG += use_system_opus=1
+config_system_speex: GYP_CONFIG += use_system_speex=1
+config_system_vpx: GYP_CONFIG += use_system_libvpx=1
