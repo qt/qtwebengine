@@ -78,6 +78,11 @@
           },
         },
       }],
+      ['qt_os=="win32" and qt_gl=="opengl"', {
+        'include_dirs': [
+          '<(chromium_src_dir)/third_party/khronos',
+        ],
+      }],
       ['OS=="win"', {
         'resource_include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
