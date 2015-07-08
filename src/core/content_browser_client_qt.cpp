@@ -71,6 +71,7 @@
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "user_script_controller_host.h"
 #include "web_contents_delegate_qt.h"
+#include "web_engine_context.h"
 #include "web_engine_library_info.h"
 
 #include <QGuiApplication>
@@ -218,6 +219,9 @@ public:
 
     void PostMainMessageLoopRun()
     {
+        // The BrowserContext's destructor uses the MessageLoop so it should be deleted
+        // right before the RenderProcessHostImpl's destructor destroys it.
+        WebEngineContext::current()->destroyBrowserContext();
     }
 
     int PreCreateThreads() Q_DECL_OVERRIDE

@@ -70,6 +70,9 @@ public:
     QtWebEngineCore::BrowserContextAdapter *defaultBrowserContext();
     QObject *globalQObject();
 
+    void destroyBrowserContext();
+    void destroy();
+
 private:
     friend class base::RefCounted<WebEngineContext>;
     WebEngineContext();
