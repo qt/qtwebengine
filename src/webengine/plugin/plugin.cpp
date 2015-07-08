@@ -77,6 +77,7 @@ public:
             QObject::tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", QObject::tr("Cannot create separate instance of WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", QObject::tr("Cannot create a separate instance of WebEngineSettings"));
+        qmlRegisterUncreatableType<QQuickWebEngineSettings, 1>(uri, 1, 2, "WebEngineSettings", QObject::tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 1, "WebEngine", webEngineSingletonProvider);
         qmlRegisterUncreatableType<QQuickWebEngineHistory>(uri, 1, 1, "NavigationHistory",
             QObject::tr("Cannot create a separate instance of NavigationHistory"));

@@ -221,6 +221,19 @@ bool QQuickWebEngineSettings::pluginsEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::fullscreenSupportEnabled
+    \since QtWebEngine 1.2
+
+    This setting tells the web engine if fullscreen is supported in this application or not.
+
+    It is enabled by default.
+*/
+bool QQuickWebEngineSettings::fullscreenSupportEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::FullscreenSupportEnabled);
+}
+
+/*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
 
     The \a encoding, must be a string describing an encoding such as "utf-8",
@@ -330,6 +343,14 @@ void QQuickWebEngineSettings::setPluginsEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::PluginsEnabled, on);
     if (wasOn != on)
         Q_EMIT pluginsEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setFullscreenSupportEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FullscreenSupportEnabled);
+    d_ptr->setAttribute(WebEngineSettings::FullscreenSupportEnabled, on);
+    if (wasOn != on)
+        Q_EMIT fullscreenSupportEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)
