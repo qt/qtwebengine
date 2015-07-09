@@ -214,16 +214,26 @@ QString libraryDataPath()
 }
 } // namespace
 
+static QString pakResourcesDir()
+{
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+    static QString dir = getResourcesPath(frameworkBundle());
+#else
+    static QString dir = QLibraryInfo::location(QLibraryInfo::DataPath);
+#endif
+    return dir;
+}
+
 base::FilePath WebEngineLibraryInfo::getPath(int key)
 {
     QString directory;
     switch (key) {
     case QT_RESOURCES_PAK:
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-        return toFilePath(getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_resources.pak"));
-#else
-        return toFilePath(QLibraryInfo::location(QLibraryInfo::DataPath) % QDir::separator() %  QLatin1String("qtwebengine_resources.pak"));
-#endif
+        return toFilePath(pakResourcesDir() % QLatin1String("/qtwebengine_resources.pak"));
+    case QT_RESOURCES_100P_PAK:
+        return toFilePath(pakResourcesDir() % QLatin1String("/qtwebengine_resources_100p.pak"));
+    case QT_RESOURCES_200P_PAK:
+        return toFilePath(pakResourcesDir() % QLatin1String("/qtwebengine_resources_200p.pak"));
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
         return toFilePath(subProcessPath());

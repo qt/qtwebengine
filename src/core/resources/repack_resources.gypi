@@ -4,23 +4,13 @@
 {
   'variables': {
     'repack_path': '<(chromium_src_dir)/tools/grit/grit/format/repack.py',
-    'pak_inputs': [
-      '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
-      '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
-    ],
   },
   'inputs': [
     '<(repack_path)',
     '<@(pak_inputs)',
   ],
   'outputs': [
-    '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_resources.pak',
+    '<@(pak_outputs)',
   ],
   'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
 }
