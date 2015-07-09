@@ -51,7 +51,7 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '44.0.2403.47'
+chromium_version = '44.0.2403.80'
 chromium_branch = '2403'
 ninja_version = 'v1.5.3'
 
@@ -92,7 +92,7 @@ def readReleaseChannels():
     return channels
 
 def readSubmodules():
-    git_deps = subprocess.check_output(['git', 'show', chromium_version +':.DEPS.git'])
+    git_deps = subprocess.check_output(['git', 'show', chromium_version +':DEPS'])
 
     parser = GitSubmodule.DEPSParser()
     git_submodules = parser.parse(git_deps)
