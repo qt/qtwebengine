@@ -41,6 +41,8 @@ defineTest(runConfigure) {
         }
         packagesExist("\'vpx >= 1.4\'"): WEBENGINE_CONFIG += config_system_vpx
         else: log("System vpx >= 1.4 not found. Using Chromium's copy.$${EOL}")
+        config_srtp: WEBENGINE_CONFIG += config_system_libsrtp
+        else: log("System libsrtp not found. Using Chromium's copy.$${EOL}")
     }
 
     isEmpty(skipBuildReason): {

@@ -22,6 +22,7 @@ contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 config_system_libevent: GYP_CONFIG += use_system_libevent=1
 config_system_libwebp: GYP_CONFIG += use_system_libwebp=1
+config_system_libsrtp: GYP_CONFIG += use_system_libsrtp=1
 config_system_libxslt: GYP_CONFIG += use_system_libxml=1
 config_system_flac: GYP_CONFIG += use_system_flac=1
 config_system_jsoncpp: GYP_CONFIG += use_system_jsoncpp=1
