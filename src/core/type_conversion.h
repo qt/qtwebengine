@@ -129,6 +129,11 @@ inline QColor toQt(const SkColor &c)
     return QColor(SkColorGetR(c), SkColorGetG(c), SkColorGetB(c), SkColorGetA(c));
 }
 
+inline SkColor toSk(const QColor &c)
+{
+    return c.rgba();
+}
+
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
 {
     QMatrix4x4 qtMatrix(

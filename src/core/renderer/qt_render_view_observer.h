@@ -47,6 +47,7 @@ public:
 private:
     void onFetchDocumentMarkup(quint64 requestId);
     void onFetchDocumentInnerText(quint64 requestId);
+    void onSetBackgroundColor(quint32 color);
 
     void OnFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
 

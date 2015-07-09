@@ -59,6 +59,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     , m_rootNode(new QSGRootNode)
     , m_sgEngine(new QSGEngine)
     , m_isPopup(false)
+    , m_clearColor(Qt::white)
 {
     setFocusPolicy(Qt::StrongFocus);
 
@@ -218,6 +219,19 @@ void RenderWidgetHostViewQtDelegateWidget::setTooltip(const QString &tooltip)
     setToolTip(wrappedTip);
 }
 
+void RenderWidgetHostViewQtDelegateWidget::setClearColor(const QColor &color)
+{
+    m_clearColor = color;
+    // QOpenGLWidget is usually blended by punching holes into widgets
+    // above it to simulate the visual stacking order. If we want it to be
+    // transparent we have to throw away the proper stacking order and always
+    // blend the complete normal widgets backing store under it.
+    bool isTranslucent = color.alpha() < 255;
+    setAttribute(Qt::WA_AlwaysStackOnTop, isTranslucent);
+    setAttribute(Qt::WA_OpaquePaintEvent, !isTranslucent);
+    update();
+}
+
 QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     return m_client->inputMethodQuery(query);
@@ -270,7 +284,7 @@ void RenderWidgetHostViewQtDelegateWidget::initializeGL()
     m_sgEngine->initialize(QOpenGLContext::currentContext());
     m_sgRenderer.reset(m_sgEngine->createRenderer());
     m_sgRenderer->setRootNode(m_rootNode.data());
-    m_sgRenderer->setClearColor(Qt::white);
+    m_sgRenderer->setClearColor(m_clearColor);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::paintGL()

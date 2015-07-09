@@ -78,6 +78,7 @@ public:
     virtual void move(const QPoint &screenPos) Q_DECL_OVERRIDE;
     virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
     virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
+    virtual void setClearColor(const QColor &color) Q_DECL_OVERRIDE;
 
 protected:
     bool event(QEvent *event) Q_DECL_OVERRIDE;
@@ -98,6 +99,7 @@ private:
     QScopedPointer<QSGEngine> m_sgEngine;
     QScopedPointer<QSGAbstractRenderer> m_sgRenderer;
     bool m_isPopup;
+    QColor m_clearColor;
     QList<QMetaObject::Connection> m_windowConnections;
 };
 

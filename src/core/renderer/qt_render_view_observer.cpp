@@ -65,6 +65,11 @@ void QtRenderViewObserver::onFetchDocumentInnerText(quint64 requestId)
         render_view()->GetWebView()->mainFrame()->contentAsText(std::numeric_limits<std::size_t>::max())));
 }
 
+void QtRenderViewObserver::onSetBackgroundColor(quint32 color)
+{
+    render_view()->GetWebView()->setBaseBackgroundColor(color);
+}
+
 void QtRenderViewObserver::OnFirstVisuallyNonEmptyLayout()
 {
     Send(new QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout(routing_id()));
@@ -76,6 +81,7 @@ bool QtRenderViewObserver::OnMessageReceived(const IPC::Message& message)
     IPC_BEGIN_MESSAGE_MAP(QtRenderViewObserver, message)
         IPC_MESSAGE_HANDLER(QtRenderViewObserver_FetchDocumentMarkup, onFetchDocumentMarkup)
         IPC_MESSAGE_HANDLER(QtRenderViewObserver_FetchDocumentInnerText, onFetchDocumentInnerText)
+        IPC_MESSAGE_HANDLER(QtRenderViewObserver_SetBackgroundColor, onSetBackgroundColor)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;

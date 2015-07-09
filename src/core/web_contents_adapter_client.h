@@ -190,6 +190,7 @@ public:
     virtual void selectionChanged() = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
+    virtual QColor backgroundColor() const = 0;
     virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) = 0;
     virtual void loadCommitted() = 0;
     virtual void loadVisuallyCommitted() = 0;

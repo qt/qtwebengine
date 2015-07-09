@@ -92,6 +92,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL)
     Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2)
+    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
@@ -122,6 +123,8 @@ public:
     bool isFullScreen() const;
     qreal zoomFactor() const;
     void setZoomFactor(qreal arg);
+    QColor backgroundColor() const;
+    void setBackgroundColor(const QColor &color);
 
     QQuickWebEngineViewExperimental *experimental() const;
 
@@ -274,6 +277,7 @@ Q_SIGNALS:
     Q_REVISION(1) void profileChanged();
     Q_REVISION(1) void webChannelChanged();
     Q_REVISION(2) void activeFocusOnPressChanged(bool);
+    Q_REVISION(3) void backgroundColorChanged();
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

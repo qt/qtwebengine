@@ -108,6 +108,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_activeFocusOnPress(true)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
+    , m_backgroundColor(Qt::white)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
@@ -363,6 +364,11 @@ QRectF QQuickWebEngineViewPrivate::viewportRect() const
 qreal QQuickWebEngineViewPrivate::dpiScale() const
 {
     return m_dpiScale;
+}
+
+QColor QQuickWebEngineViewPrivate::backgroundColor() const
+{
+    return m_backgroundColor;
 }
 
 void QQuickWebEngineViewPrivate::loadStarted(const QUrl &provisionalUrl, bool isErrorPage)
@@ -928,6 +934,34 @@ qreal QQuickWebEngineView::zoomFactor() const
     return d->adapter->currentZoomFactor();
 }
 
+/*!
+    \qmlproperty bool WebEngineView::backgroundColor
+    \since QtWebEngine 1.3
+
+    Sets this property to change the color of the WebEngineView's background,
+    behing the document's body. You can set it to "transparent" or to a translucent
+    color to see through the document, or you can set this color to match your
+    web content in an hybrid app to prevent the white flashes that may appear
+    during loading.
+
+    The default value is white.
+*/
+QColor QQuickWebEngineView::backgroundColor() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->m_backgroundColor;
+}
+
+void QQuickWebEngineView::setBackgroundColor(const QColor &color)
+{
+    Q_D(QQuickWebEngineView);
+    if (color == d->m_backgroundColor)
+        return;
+    d->m_backgroundColor = color;
+    d->ensureContentsAdapter();
+    d->adapter->backgroundColorChanged();
+    emit backgroundColorChanged();
+}
 
 bool QQuickWebEngineView::isFullScreen() const
 {

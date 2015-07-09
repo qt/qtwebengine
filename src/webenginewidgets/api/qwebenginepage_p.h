@@ -75,6 +75,7 @@ public:
     virtual void selectionChanged() Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
+    virtual QColor backgroundColor() const Q_DECL_OVERRIDE;
     virtual void loadStarted(const QUrl &provisionalUrl, bool isErrorPage = false) Q_DECL_OVERRIDE;
     virtual void loadCommitted() Q_DECL_OVERRIDE;
     virtual void loadVisuallyCommitted() Q_DECL_OVERRIDE { }
@@ -127,6 +128,7 @@ public:
     QtWebEngineCore::WebEngineContextMenuData m_menuData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
+    QColor m_backgroundColor;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

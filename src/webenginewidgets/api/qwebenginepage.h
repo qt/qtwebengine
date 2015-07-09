@@ -68,6 +68,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
     Q_PROPERTY(QUrl iconUrl READ iconUrl)
+    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
 
 public:
     enum WebAction {
@@ -223,6 +224,8 @@ public:
 
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *);
+    QColor backgroundColor() const;
+    void setBackgroundColor(const QColor &color);
 
 Q_SIGNALS:
     void loadStarted();

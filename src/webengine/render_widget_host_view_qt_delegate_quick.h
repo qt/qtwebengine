@@ -70,6 +70,8 @@ public:
     virtual void move(const QPoint&) Q_DECL_OVERRIDE { }
     virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
     virtual void setTooltip(const QString&) Q_DECL_OVERRIDE { }
+    // The QtQuick view doesn't have a backbuffer of its own and doesn't need this
+    virtual void setClearColor(const QColor &) Q_DECL_OVERRIDE { }
 
 protected:
     virtual void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;

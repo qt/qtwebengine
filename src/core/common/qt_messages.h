@@ -31,6 +31,9 @@ IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentMarkup,
 IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentInnerText,
                     uint64 /* requestId */)
 
+IPC_MESSAGE_ROUTED1(QtRenderViewObserver_SetBackgroundColor,
+                    uint32 /* color */)
+
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/)
 
 // User scripts messages

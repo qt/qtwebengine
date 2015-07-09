@@ -36,6 +36,7 @@
 
 #include "render_widget_host_view_qt.h"
 
+#include "common/qt_messages.h"
 #include "browser_accessibility_manager_qt.h"
 #include "browser_accessibility_qt.h"
 #include "chromium_overrides.h"
@@ -411,6 +412,14 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
     gfx::Point p1(floor(p.x() / s), floor(p.y() / s));
     gfx::Point p2(ceil(p.right() /s), ceil(p.bottom() / s));
     return gfx::BoundingRect(p1, p2);
+}
+
+void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color) {
+    RenderWidgetHostViewBase::SetBackgroundColor(color);
+    // Set the background of the compositor if necessary
+    m_delegate->setClearColor(toQt(color));
+    // Set the background of the blink::FrameView
+    m_host->Send(new QtRenderViewObserver_SetBackgroundColor(m_host->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.

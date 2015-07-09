@@ -76,7 +76,7 @@ public:
 
     virtual void SetPageTitle(const base::string16& title) Q_DECL_OVERRIDE { }
 
-    virtual void RenderViewCreated(content::RenderViewHost* host) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual void RenderViewCreated(content::RenderViewHost* host) Q_DECL_OVERRIDE;
 
     virtual void RenderViewSwappedIn(content::RenderViewHost* host) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 

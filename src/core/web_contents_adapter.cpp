@@ -837,6 +837,13 @@ void WebContentsAdapter::dpiScaleChanged()
         impl->NotifyScreenInfoChanged();
 }
 
+void WebContentsAdapter::backgroundColorChanged()
+{
+    Q_D(WebContentsAdapter);
+    if (content::RenderWidgetHostView *rwhv = d->webContents->GetRenderWidgetHostView())
+        rwhv->SetBackgroundColor(toSk(d->adapterClient->backgroundColor()));
+}
+
 content::WebContents *WebContentsAdapter::webContents() const
 {
     Q_D(const WebContentsAdapter);
