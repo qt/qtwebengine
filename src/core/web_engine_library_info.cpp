@@ -152,14 +152,10 @@ QString pluginsPath()
 
     if (!initialized) {
         initialized = true;
-        if (!QFileInfo::exists(potentialPluginsPath)) {
-            qWarning("Installed Qt plugins directory not found at location %s. Trying application directory...", qPrintable(potentialPluginsPath));
+        if (!QFileInfo::exists(potentialPluginsPath))
             potentialPluginsPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine");
-        }
-        if (!QFileInfo::exists(potentialPluginsPath)) {
-            qWarning("Qt WebEngine Plugins directory not found at location %s. Trying fallback directory... Plugins as for example video codecs MAY NOT work.", qPrintable(potentialPluginsPath));
+        if (!QFileInfo::exists(potentialPluginsPath))
             potentialPluginsPath = fallbackDir();
-        }
     }
 
     return potentialPluginsPath;

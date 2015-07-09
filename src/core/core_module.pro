@@ -45,16 +45,7 @@ for(LOC, LOCALE_LIST) {
 }
 resources.files = $$REPACK_DIR/qtwebengine_resources.pak
 
-PLUGIN_EXTENSION = .so
-PLUGIN_PREFIX = lib
-osx: PLUGIN_PREFIX =
-win32 {
-    PLUGIN_EXTENSION = .dll
-    PLUGIN_PREFIX =
-}
 icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
-
-plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION}
 
 !debug_and_release|!build_all|CONFIG(release, debug|release) {
     contains(QT_CONFIG, qt_framework) {
@@ -64,12 +55,10 @@ plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_
         resources.path = Resources
         icu.version = Versions
         icu.path = Resources
-        plugins.version = Versions
-        plugins.path = Libraries
         # No files, this prepares the bundle Helpers symlink, process.pro will create the directories
         qtwebengineprocessplaceholder.version = Versions
         qtwebengineprocessplaceholder.path = Helpers
-        QMAKE_BUNDLE_DATA += icu locales resources plugins qtwebengineprocessplaceholder
+        QMAKE_BUNDLE_DATA += icu locales resources qtwebengineprocessplaceholder
     } else {
         locales.CONFIG += no_check_exist
         locales.path = $$[QT_INSTALL_TRANSLATIONS]/qtwebengine_locales
@@ -77,9 +66,7 @@ plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_
         resources.path = $$[QT_INSTALL_DATA]
         icu.CONFIG += no_check_exist
         icu.path = $$[QT_INSTALL_DATA]
-        plugins.CONFIG += no_check_exist
-        plugins.path = $$[QT_INSTALL_PLUGINS]/qtwebengine
-        INSTALLS += icu locales resources plugins
+        INSTALLS += icu locales resources
     }
 
     !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
@@ -89,15 +76,7 @@ plugins.files = $$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_
         unix: icu_rule.commands = if [ -e $$ICU_FILE ] ; then $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET ; fi
         win32: icu_rule.commands = if exist $$ICU_FILE ( $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET )
 
-        PLUGIN_DIR = $$shell_path($$[QT_INSTALL_PLUGINS/get]/qtwebengine)
-        PLUGIN_TARGET = $$shell_path($$PLUGIN_DIR/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION})
-        PLUGIN_FILE = $$shell_path($$OUT_PWD/$$getConfigDir()/$${PLUGIN_PREFIX}ffmpegsumo$${PLUGIN_EXTENSION})
-        plugins_rule.target = $$PLUGIN_TARGET
-        unix: plugins_rule.commands = $$QMAKE_MKDIR $$PLUGIN_DIR && if [ -e $$PLUGIN_FILE ] ; then $$QMAKE_COPY $$PLUGIN_FILE $$PLUGIN_TARGET ; fi
-        win32: plugins_rule.commands = (if not exist $$PLUGIN_DIR ( $$QMAKE_MKDIR $$PLUGIN_DIR )) && \
-                                        if exist $$PLUGIN_FILE ( $$QMAKE_COPY $$PLUGIN_FILE $$PLUGIN_TARGET )
-
-        QMAKE_EXTRA_TARGETS += icu_rule plugins_rule
-        PRE_TARGETDEPS += $$ICU_TARGET $$PLUGIN_TARGET
+        QMAKE_EXTRA_TARGETS += icu_rule
+        PRE_TARGETDEPS += $$ICU_TARGET
     }
 }
