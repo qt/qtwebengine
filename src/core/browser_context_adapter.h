@@ -47,6 +47,7 @@
 #include <QVector>
 
 #include "api/qwebenginecookiestoreclient.h"
+#include "api/qwebengineurlrequestinterceptor.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
@@ -74,6 +75,9 @@ public:
 
     QWebEngineCookieStoreClient *cookieStoreClient();
     void setCookieStoreClient(QWebEngineCookieStoreClient *client);
+
+    QWebEngineUrlRequestInterceptor* requestInterceptor();
+    void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     QList<BrowserContextAdapterClient*> clients() { return m_clients; }
     void addClient(BrowserContextAdapterClient *adapterClient);
@@ -155,6 +159,7 @@ private:
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserScriptControllerHost> m_userScriptController;
     QPointer<QWebEngineCookieStoreClient> m_cookieStoreClient;
+    QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 
     QString m_dataPath;
     QString m_cachePath;

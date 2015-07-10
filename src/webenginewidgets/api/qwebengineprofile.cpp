@@ -416,6 +416,12 @@ void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client
     d->browserContext()->setCookieStoreClient(client);
 }
 
+void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->setRequestInterceptor(interceptor);
+}
+
 /*!
     Clears all links from the visited links database.
 

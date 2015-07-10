@@ -157,7 +157,7 @@ public:
     };
 
     enum NavigationType {
-        LinkClickedNavigation,
+        LinkNavigation,
         TypedNavigation,
         FormSubmittedNavigation,
         BackForwardNavigation,

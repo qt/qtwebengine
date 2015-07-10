@@ -54,6 +54,7 @@ class QWebEnginePagePrivate;
 class QWebEngineProfilePrivate;
 class QWebEngineSettings;
 class QWebEngineScriptCollection;
+class QWebEngineUrlRequestInterceptor;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineProfile : public QObject {
     Q_OBJECT
@@ -96,6 +97,7 @@ public:
 
     QWebEngineCookieStoreClient* cookieStoreClient();
     void setCookieStoreClient(QWebEngineCookieStoreClient *client);
+    void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     void clearAllVisitedLinks();
     void clearVisitedLinks(const QList<QUrl> &urls);

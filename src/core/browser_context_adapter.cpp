@@ -145,6 +145,16 @@ void BrowserContextAdapter::setCookieStoreClient(QWebEngineCookieStoreClient *cl
         m_browserContext->url_request_getter_->updateStorageSettings();
 }
 
+QWebEngineUrlRequestInterceptor *BrowserContextAdapter::requestInterceptor()
+{
+    return m_requestInterceptor.data();
+}
+
+void BrowserContextAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    m_requestInterceptor = interceptor;
+}
+
 void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
 {
     m_clients.append(adapterClient);

@@ -49,13 +49,13 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 
 #include "cookie_monster_delegate_qt.h"
+#include "network_delegate_qt.h"
 
 #include "qglobal.h"
 #include <qatomic.h>
 
 namespace net {
 class MappedHostResolver;
-class NetworkDelegate;
 class ProxyConfigService;
 }
 
@@ -94,11 +94,12 @@ private:
 
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
     scoped_ptr<net::URLRequestContext> m_urlRequestContext;
-    scoped_ptr<net::NetworkDelegate> m_networkDelegate;
+    scoped_ptr<NetworkDelegateQt> m_networkDelegate;
     scoped_ptr<net::URLRequestContextStorage> m_storage;
     scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
 
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
+    friend class NetworkDelegateQt;
 };
 
 } // namespace QtWebEngineCore

@@ -99,7 +99,7 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
     if (!m_urlRequestContext) {
         m_urlRequestContext.reset(new net::URLRequestContext());
 
-        m_networkDelegate.reset(new NetworkDelegateQt);
+        m_networkDelegate.reset(new NetworkDelegateQt(this));
         m_urlRequestContext->set_network_delegate(m_networkDelegate.get());
 
         generateStorage();

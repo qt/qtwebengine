@@ -480,6 +480,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.base_url_for_data_url = toGurl(baseUrl);
     params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
     params.can_load_local_resources = true;
+    params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
     d->webContents->GetController().LoadURLWithParams(params);
 }
 

@@ -45,10 +45,13 @@
 
 namespace QtWebEngineCore {
 
+class URLRequestContextGetterQt;
 
 class NetworkDelegateQt : public net::NetworkDelegate {
     QSet<net::URLRequest *> m_activeRequests;
+    URLRequestContextGetterQt *m_requestContextGetter;
 public:
+    NetworkDelegateQt(URLRequestContextGetterQt *requestContext);
 
     struct RequestParams {
         QUrl url;
