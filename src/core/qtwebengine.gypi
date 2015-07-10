@@ -44,6 +44,9 @@
       'CHROMIUM_VERSION=\"<!(python <(version_script_location) -f <(chromium_src_dir)/chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")\"',
     ],
     'msvs_settings': {
+      'VCCLCompilerTool': {
+        'RuntimeTypeInfo': 'true',
+      },
       'VCLinkerTool': {
         'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
       },
