@@ -37,24 +37,18 @@
 #ifndef NETWORK_DELEGATE_QT_H
 #define NETWORK_DELEGATE_QT_H
 
-#include "net/base/network_delegate_impl.h"
+#include "net/base/network_delegate.h"
 #include "net/base/net_errors.h"
 
 #include <QUrl>
 #include <QSet>
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
 namespace QtWebEngineCore {
 
-class NetworkDelegateQt : public net::NetworkDelegateImpl {
-public:
-    NetworkDelegateQt() {}
-    virtual ~NetworkDelegateQt() {}
 
-    // net::NetworkDelegate implementation
-    virtual int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* new_url) Q_DECL_OVERRIDE;
-    virtual void OnURLRequestDestroyed(net::URLRequest* request) Q_DECL_OVERRIDE;
-    virtual bool OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const Q_DECL_OVERRIDE { return true; }
+class NetworkDelegateQt : public net::NetworkDelegate {
+    QSet<net::URLRequest *> m_activeRequests;
+public:
 
     struct RequestParams {
         QUrl url;
@@ -72,7 +66,28 @@ public:
                                       int navigationRequestAction,
                                       const net::CompletionCallback &callback);
 
-    QSet<net::URLRequest *> m_activeRequests;
+    // net::NetworkDelegate implementation
+    virtual int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* newUrl) override;
+    virtual void OnURLRequestDestroyed(net::URLRequest* request) override;
+    virtual bool OnCanSetCookie(const net::URLRequest&, const std::string&, net::CookieOptions*) override;
+    virtual void OnResolveProxy(const GURL&, int, const net::ProxyService&, net::ProxyInfo*) override;
+    virtual void OnProxyFallback(const net::ProxyServer&, int) override;
+    virtual int OnBeforeSendHeaders(net::URLRequest*, const net::CompletionCallback&, net::HttpRequestHeaders*) override;
+    virtual void OnBeforeSendProxyHeaders(net::URLRequest*, const net::ProxyInfo&, net::HttpRequestHeaders*) override;
+    virtual void OnSendHeaders(net::URLRequest*, const net::HttpRequestHeaders&) override;
+    virtual int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
+    virtual void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
+    virtual void OnResponseStarted(net::URLRequest*) override;
+    virtual void OnRawBytesRead(const net::URLRequest&, int) override;
+    virtual void OnCompleted(net::URLRequest*, bool) override;
+    virtual void OnPACScriptError(int, const base::string16&) override;
+    virtual net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*) override;
+    virtual bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&) override;
+    virtual bool OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const override;
+    virtual bool OnCanThrottleRequest(const net::URLRequest&) const override;
+    virtual bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
+    virtual bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
+    virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
 };
 
 } // namespace QtWebEngineCore

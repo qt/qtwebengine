@@ -172,4 +172,92 @@ void NetworkDelegateQt::NotifyNavigationRequestedOnUIThread(net::URLRequest *req
                 );
 }
 
+bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
+                                       const std::string& cookie_line,
+                                       net::CookieOptions*)
+{
+    return true;
+}
+
+void NetworkDelegateQt::OnResolveProxy(const GURL&, int, const net::ProxyService&, net::ProxyInfo*)
+{
+}
+
+void NetworkDelegateQt::OnProxyFallback(const net::ProxyServer&, int)
+{
+}
+
+int NetworkDelegateQt::OnBeforeSendHeaders(net::URLRequest*, const net::CompletionCallback&, net::HttpRequestHeaders*)
+{
+    return net::OK;
+}
+
+void NetworkDelegateQt::OnBeforeSendProxyHeaders(net::URLRequest*, const net::ProxyInfo&, net::HttpRequestHeaders*)
+{
+}
+
+void NetworkDelegateQt::OnSendHeaders(net::URLRequest*, const net::HttpRequestHeaders&)
+{
+}
+
+int NetworkDelegateQt::OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*)
+{
+    return net::OK;
+}
+
+void NetworkDelegateQt::OnBeforeRedirect(net::URLRequest*, const GURL&)
+{
+}
+
+void NetworkDelegateQt::OnResponseStarted(net::URLRequest*)
+{
+}
+
+void NetworkDelegateQt::OnRawBytesRead(const net::URLRequest&, int)
+{
+}
+
+void NetworkDelegateQt::OnCompleted(net::URLRequest*, bool)
+{
+}
+
+void NetworkDelegateQt::OnPACScriptError(int, const base::string16&)
+{
+}
+
+net::NetworkDelegate::AuthRequiredResponse NetworkDelegateQt::OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*)
+{
+    return AUTH_REQUIRED_RESPONSE_NO_ACTION;
+}
+
+bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest&, const net::CookieList&)
+{
+    return true;
+}
+
+bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const
+{
+    return true;
+}
+
+bool NetworkDelegateQt::OnCanThrottleRequest(const net::URLRequest&) const
+{
+    return false;
+}
+
+bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL&, const GURL&) const
+{
+    return false;
+}
+
+bool NetworkDelegateQt::OnFirstPartyOnlyCookieExperimentEnabled() const
+{
+    return false;
+}
+
+bool NetworkDelegateQt::OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const
+{
+    return false;
+}
+
 } // namespace QtWebEngineCore
