@@ -213,6 +213,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyLinkToClipboard); });
         ui()->addMenuItem(item, QObject::tr("Copy Link URL"));
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadLinkToDisk); });
+        ui()->addMenuItem(item, QObject::tr("Save Link..."));
     }
     if (contextMenuData.mediaUrl.isValid()) {
         switch (contextMenuData.mediaType) {
@@ -223,6 +226,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
             ui()->addMenuItem(item, QObject::tr("Copy Image"));
+            item = new MenuItemHandler(menu);
+            QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadImageToDisk); });
+            ui()->addMenuItem(item, QObject::tr("Save Image"));
             break;
         case WebEngineContextMenuData::MediaTypeCanvas:
             Q_UNREACHABLE();    // mediaUrl is invalid for canvases
@@ -232,6 +238,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyMediaUrlToClipboard); });
             ui()->addMenuItem(item, QObject::tr("Copy Media URL"));
+            item = new MenuItemHandler(menu);
+            QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadMediaToDisk); });
+            ui()->addMenuItem(item, QObject::tr("Download Media"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaPlayPause); });
             ui()->addMenuItem(item, QObject::tr("Toggle Play/Pause"));
@@ -1198,6 +1207,10 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
             qApp->clipboard()->setMimeData(data);
         }
         break;
+    case DownloadLinkToDisk:
+        if (d->contextMenuData.linkUrl.isValid())
+            d->adapter->download(d->contextMenuData.linkUrl, d->contextMenuData.suggestedFileName);
+        break;
     case CopyImageToClipboard:
         if (d->contextMenuData.hasImageContent &&
                 (d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeImage ||
@@ -1219,6 +1232,11 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
             data->setUrls(QList<QUrl>() << d->contextMenuData.mediaUrl);
             qApp->clipboard()->setMimeData(data);
         }
+        break;
+    case DownloadImageToDisk:
+    case DownloadMediaToDisk:
+        if (d->contextMenuData.mediaUrl.isValid())
+            d->adapter->download(d->contextMenuData.mediaUrl, d->contextMenuData.suggestedFileName);
         break;
     case CopyMediaUrlToClipboard:
         if (d->contextMenuData.mediaUrl.isValid() &&
