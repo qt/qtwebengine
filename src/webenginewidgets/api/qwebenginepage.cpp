@@ -894,9 +894,10 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         case WebEngineContextMenuData::MediaTypeImage:
             menu->addAction(QWebEnginePage::action(DownloadImageToDisk));
             menu->addAction(QWebEnginePage::action(CopyImageUrlToClipboard));
-            // no break
-        case WebEngineContextMenuData::MediaTypeCanvas:
             menu->addAction(QWebEnginePage::action(CopyImageToClipboard));
+            break;
+        case WebEngineContextMenuData::MediaTypeCanvas:
+            Q_UNREACHABLE();    // mediaUrl is invalid for canvases
             break;
         case WebEngineContextMenuData::MediaTypeAudio:
         case WebEngineContextMenuData::MediaTypeVideo:
@@ -912,6 +913,8 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         default:
             break;
         }
+    } else if (contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas) {
+        menu->addAction(QWebEnginePage::action(CopyImageToClipboard));
     }
 
     return menu;

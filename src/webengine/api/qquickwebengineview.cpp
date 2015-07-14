@@ -219,11 +219,12 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageUrlToClipboard); });
             ui()->addMenuItem(item, QObject::tr("Copy Image URL"));
-            // no break
-        case WebEngineContextMenuData::MediaTypeCanvas:
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
             ui()->addMenuItem(item, QObject::tr("Copy Image"));
+            break;
+        case WebEngineContextMenuData::MediaTypeCanvas:
+            Q_UNREACHABLE();    // mediaUrl is invalid for canvases
             break;
         case WebEngineContextMenuData::MediaTypeAudio:
         case WebEngineContextMenuData::MediaTypeVideo:
@@ -250,6 +251,10 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         default:
             break;
         }
+    } else if (contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas) {
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
+        ui()->addMenuItem(item, QObject::tr("Copy Image"));
     }
 
     // FIXME: expose the context menu data as an attached property to make this more useful
