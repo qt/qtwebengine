@@ -16,7 +16,9 @@ load(default_pre)
 load(functions)
 
 # Check platform support and run config tests early enough to bail
-equals(_PRO_FILE_, "$$QTWEBENGINE_ROOT/qtwebengine.pro"): isPlatformSupported() {
+equals(_PRO_FILE_, "$$QTWEBENGINE_ROOT/qtwebengine.pro"): CONFIG += root_project_file
+
+root_project_file:isPlatformSupported() {
    load(configure)
    runConfigure()
 }

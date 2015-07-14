@@ -43,7 +43,6 @@ GYP_CONFIG += \
     use_ozone=1 \
     use_pango=0 \
     use_system_fontconfig=1 \
-    use_system_icu=1 \
     icu_use_data_file_flag=0 \
     use_x11=0 \
     v8_use_snapshot=false \
@@ -62,3 +61,5 @@ config_system_jsoncpp: GYP_CONFIG += use_system_jsoncpp=1
 config_system_opus: GYP_CONFIG += use_system_opus=1
 config_system_speex: GYP_CONFIG += use_system_speex=1
 config_system_vpx: GYP_CONFIG += use_system_libvpx=1
+
+contains(WEBENGINE_CONFIG, use_system_icu): GYP_CONFIG += use_system_icu=1

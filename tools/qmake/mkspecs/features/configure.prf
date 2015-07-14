@@ -51,3 +51,25 @@ defineTest(runConfigure) {
     }
 }
 
+# This is called from default_post, at which point we've also parsed
+# command line options
+defineTest(finalizeConfigure) {
+    linux {
+        contains(WEBENGINE_CONFIG, use_system_icu) {
+            packagesExist("icu-uc icu-i18n") {
+                log("ICU............................... Using system version$${EOL}")
+            } else {
+                log("ICU............................... System ICU not found$${EOL}")
+                skipBuild("Unmet dependencies: icu-uc, icu-i18n")
+            }
+        } else {
+            log("ICU............................... Using internal copy (Default, force system ICU with WEBENGINE_CONFIG += use_system_icu)$${EOL}")
+        }
+    }
+    contains(WEBENGINE_CONFIG, use_proprietary_codecs) {
+        log("Proprietary codecs (H264, MP3).... Enabled$${EOL}")
+    } else {
+        log("Proprietary codecs (H264, MP3).... Not enabled         (Default, enable with WEBENGINE_CONFIG += use_proprietary_codecs)$${EOL}")
+    }
+}
+

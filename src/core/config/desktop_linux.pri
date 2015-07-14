@@ -30,4 +30,6 @@ config_system_opus: GYP_CONFIG += use_system_opus=1
 config_system_speex: GYP_CONFIG += use_system_speex=1
 config_system_vpx: GYP_CONFIG += use_system_libvpx=1
 
+contains(WEBENGINE_CONFIG, use_system_icu): GYP_CONFIG += use_system_icu=1
+
 !contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0

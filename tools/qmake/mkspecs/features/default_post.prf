@@ -1,4 +1,7 @@
 load(default_post)
+load(functions)
+
+root_project_file:isPlatformSupported(): finalizeConfigure()
 
 !isEmpty(skipBuildReason) {
     SUBDIRS =
