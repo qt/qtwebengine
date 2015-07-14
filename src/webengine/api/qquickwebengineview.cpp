@@ -420,7 +420,10 @@ void QQuickWebEngineViewPrivate::loadCommitted()
 
 void QQuickWebEngineViewPrivate::loadVisuallyCommitted()
 {
-    Q_EMIT e->loadVisuallyCommitted();
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    if (m_testSupport)
+        Q_EMIT m_testSupport->loadVisuallyCommitted();
+#endif
 }
 
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<int>(QQuickWebEngineView::NoErrorDomain));
