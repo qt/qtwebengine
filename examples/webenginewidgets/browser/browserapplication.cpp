@@ -283,9 +283,7 @@ void BrowserApplication::loadSettings()
     defaultSettings->setAttribute(QWebEngineSettings::JavascriptEnabled, settings.value(QLatin1String("enableJavascript"), true).toBool());
     defaultSettings->setAttribute(QWebEngineSettings::ScrollAnimatorEnabled, settings.value(QLatin1String("enableScrollAnimator"), true).toBool());
 
-#if defined(QTWEBENGINE_PLUGINS)
     defaultSettings->setAttribute(QWebEngineSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
-#endif
 
     QString css = settings.value(QLatin1String("userStyleSheet")).toString();
     setUserStyleSheet(defaultProfile, css, mainWindow());

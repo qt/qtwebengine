@@ -82,9 +82,7 @@ void SettingsDialog::loadDefaults()
     downloadsLocation->setText(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation));
 
     enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
-#if defined(QTWEBENGINE_PLUGINS)
     enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
-#endif
 
     enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
 
