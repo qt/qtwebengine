@@ -151,6 +151,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/android_')
         or file_path.startswith('third_party/apache-win32')
         or file_path.startswith('third_party/apple_sample_code')
+        or file_path.startswith('third_party/ashmem')
         or file_path.startswith('third_party/binutils')
         or file_path.startswith('third_party/bison')
         or (file_path.startswith('third_party/cacheinvalidation') and
@@ -169,11 +170,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/gtk+')
         or file_path.startswith('third_party/google_appengine_cloudstorage')
         or file_path.startswith('third_party/google_toolbox_for_mac')
-        or file_path.startswith('third_party/guava/src')
-        or file_path.startswith('third_party/httpcomponents-client')
-        or file_path.startswith('third_party/httpcomponents-core')
-        or file_path.startswith('third_party/hunspell')
         or file_path.startswith('third_party/hunspell_dictionaries')
+        or file_path.startswith('third_party/hunspell_new')
         or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
@@ -193,13 +191,13 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/perl')
         or file_path.startswith('third_party/pdfium')
         or file_path.startswith('third_party/psyco_win32')
-        or file_path.startswith('third_party/python_26')
         or file_path.startswith('third_party/scons-2.0.1')
-        or file_path.startswith('third_party/webgl')
         or file_path.startswith('third_party/trace-viewer')
-        or file_path.startswith('third_party/xulrunner-sdk')
+        or file_path.startswith('third_party/undoview')
+        or file_path.startswith('third_party/webgl')
         or (file_path.startswith('tools') and
            not file_path.startswith('tools/clang') and
+           not file_path.startswith('tools/compile_test') and
            not file_path.startswith('tools/generate_library_loader') and
            not file_path.startswith('tools/generate_shim_headers') and
            not file_path.startswith('tools/generate_stubs') and
