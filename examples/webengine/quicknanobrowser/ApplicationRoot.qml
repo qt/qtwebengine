@@ -39,7 +39,7 @@
 ****************************************************************************/
 
 import QtQuick 2.1
-import QtWebEngine 1.1
+import QtWebEngine 1.2
 
 QtObject {
     id: root

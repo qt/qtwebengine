@@ -86,7 +86,7 @@ void tst_InspectorServer::prepareWebViewComponent()
     m_component.reset(new QQmlComponent(engine, this));
 
     m_component->setData(QByteArrayLiteral("import QtQuick 2.0\n"
-                                           "import QtWebEngine 1.1\n"
+                                           "import QtWebEngine 1.2\n"
                                            "WebEngineView { }")
                         , QUrl());
 }

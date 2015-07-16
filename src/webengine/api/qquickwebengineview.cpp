@@ -945,7 +945,7 @@ qreal QQuickWebEngineView::zoomFactor() const
 
 /*!
     \qmlproperty bool WebEngineView::backgroundColor
-    \since QtWebEngine 1.3
+    \since QtWebEngine 1.2
 
     Sets this property to change the color of the WebEngineView's background,
     behing the document's body. You can set it to "transparent" or to a translucent
