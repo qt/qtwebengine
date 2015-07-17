@@ -50,8 +50,8 @@
 
     The title of an HTML page can be accessed with the title() property.
     Additionally, a page may also specify an icon, which can be accessed
-    using the icon() property. If the title or the icon changes, the
-    corresponding titleChanged() and iconChanged() signals will be emitted.
+    using the iconUrl() property. If the title or the icon changes, the
+    corresponding titleChanged() and iconUrlChanged() signals will be emitted.
     The zoomFactor() property can be used to change the overall size
     of the content displayed in the page.
 
