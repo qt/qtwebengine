@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QWebEngineCertificateError
     \brief The QWebEngineCertificateError class provides information about a certificate error.
-
+    \since 5.4
     \inmodule QtWebEngineWidgets
 
     QWebEngineCertificateError holds known information about a certificate error to be used to determine whether to allow it or not, and to be reported to the user.

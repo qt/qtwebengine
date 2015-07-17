@@ -27,7 +27,7 @@
 /*!
     \class QWebEnginePage
     \brief The QWebEnginePage class provides an object to view and edit web documents.
-
+    \since 5.4
     \inmodule QtWebEngineWidgets
 
     QWebEnginePage holds a main frame responsible for web content, the history

@@ -25,7 +25,7 @@
 /*!
     \class QWebEngineHistoryItem
     \brief The QWebEngineHistoryItem class represents one item in the history of a QWebEnginePage
-
+    \since 5.4
     \inmodule QtWebEngineWidgets
 
     Each QWebEngineHistoryItem instance represents an entry in the history stack of a Web page,
@@ -100,7 +100,7 @@
 /*!
     \class QWebEngineHistory
     \brief The QWebEngineHistory class represents the history of a QWebEnginePage
-
+    \since 5.4
     \inmodule QtWebEngineWidgets
 
     Each QWebEnginePage instance contains a history of visited pages that can be accessed

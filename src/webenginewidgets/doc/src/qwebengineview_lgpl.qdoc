@@ -28,6 +28,7 @@
     \class QWebEngineView
     \brief The QWebEngineView class provides a widget that is used to view and edit
     web documents.
+    \since 5.4
     \ingroup advanced
 
     \inmodule QtWebEngineWidgets
