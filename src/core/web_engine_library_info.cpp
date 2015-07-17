@@ -145,25 +145,30 @@ QString subProcessPath()
 QString pluginsPath()
 {
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-    return getPath(frameworkBundle()) % QLatin1String("/Libraries");
+    static QString pluginsPath = getPath(frameworkBundle()) % QLatin1String("/Libraries");
 #else
     static bool initialized = false;
-    static QString potentialPluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath) % QDir::separator() % QLatin1String("qtwebengine");
+    static QString pluginsPath;
 
     if (!initialized) {
         initialized = true;
-        if (!QFileInfo::exists(potentialPluginsPath)) {
-            qWarning("Installed Qt plugins directory not found at location %s. Trying application directory...", qPrintable(potentialPluginsPath));
-            potentialPluginsPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine");
+
+        const QStringList directories = QCoreApplication::libraryPaths();
+        Q_FOREACH (const QString &dir, directories) {
+            const QString candidate = dir % "/" % QLatin1String("qtwebengine");
+            if (QFileInfo(candidate).exists()) {
+                pluginsPath = candidate;
+                break;
+            }
         }
-        if (!QFileInfo::exists(potentialPluginsPath)) {
-            qWarning("Qt WebEngine Plugins directory not found at location %s. Trying fallback directory... Plugins as for example video codecs MAY NOT work.", qPrintable(potentialPluginsPath));
-            potentialPluginsPath = fallbackDir();
+
+        if (pluginsPath.isEmpty()) {
+            qWarning("Qt WebEngine Plugins directory not found. Trying fallback directory... Plugins as for example video codecs MAY NOT work.");
+            pluginsPath = fallbackDir();
         }
     }
-
-    return potentialPluginsPath;
 #endif
+    return pluginsPath;
 }
 
 QString localesPath()
