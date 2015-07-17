@@ -335,12 +335,10 @@ void tst_QQuickWebEngineView::titleUpdate()
     webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/file_that_does_not_exist.html")));
     QVERIFY(waitForLoadFailed(webEngineView()));
     QCOMPARE(titleSpy.size(), 0);
-
 }
 
 void tst_QQuickWebEngineView::transparentWebEngineViews()
 {
-
     showWebEngineView();
 
     // This should not crash.
@@ -348,13 +346,10 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
     webEngineView1->setParentItem(m_window->contentItem());
     QScopedPointer<QQuickWebEngineView> webEngineView2(newWebEngineView());
     webEngineView2->setParentItem(m_window->contentItem());
-#if !defined(QQUICKWEBENGINEVIEW_EXPERIMENTAL_TRANSPARENTBACKGROUND)
-    QWARN("QQUICKWEBENGINEVIEW_EXPERIMENTAL_TRANSPARENTBACKGROUND");
-#else
-    QVERIFY(!webEngineView1->experimental()->transparentBackground());
-    webEngineView2->experimental()->setTransparentBackground(true);
-    QVERIFY(webEngineView2->experimental()->transparentBackground());
-#endif
+
+    QVERIFY(webEngineView1->backgroundColor() != Qt::transparent);
+    webEngineView2->setBackgroundColor(Qt::transparent);
+    QVERIFY(webEngineView2->backgroundColor() == Qt::transparent);
 
     webEngineView1->setSize(QSizeF(300, 400));
     webEngineView1->loadHtml("<html><body bgcolor=\"red\"></body></html>");
@@ -367,7 +362,24 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
     webEngineView2->setVisible(true);
 
     QTest::qWait(200);
-    // FIXME: test actual rendering results; https://bugs.webkit.org/show_bug.cgi?id=80609.
+
+    // Result image: black text on red background.
+    QImage grabbedWindow = m_window->grabWindow();
+
+    QSet<int> redComponents;
+    for (int i = 0, width = grabbedWindow.width(); i < width; i++) {
+        for (int j = 0, height = grabbedWindow.height(); j < height; j++) {
+            QColor color(grabbedWindow.pixel(i, j));
+            redComponents.insert(color.red());
+            // There are no green or blue components between red and black.
+            QVERIFY(color.green() == 0);
+            QVERIFY(color.blue() == 0);
+        }
+    }
+
+    QVERIFY(redComponents.count() > 1);
+    QVERIFY(redComponents.contains(0));     // black
+    QVERIFY(redComponents.contains(255));   // red
 }
 
 void tst_QQuickWebEngineView::inputMethod()
