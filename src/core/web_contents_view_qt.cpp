@@ -53,8 +53,10 @@ void WebContentsViewQt::initialize(WebContentsAdapterClient* client)
     m_factoryClient = client;
 
     // Check if a RWHV was created before the initialization.
-    if (m_webContents->GetRenderWidgetHostView())
-        static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())->setAdapterClient(client);
+    if (auto rwhv = static_cast<RenderWidgetHostViewQt *>(m_webContents->GetRenderWidgetHostView())) {
+        rwhv->setAdapterClient(client);
+        rwhv->SetBackgroundColor(toSk(client->backgroundColor()));
+    }
 }
 
 content::RenderWidgetHostViewBase* WebContentsViewQt::CreateViewForWidget(content::RenderWidgetHost* render_widget_host, bool is_guest_view_hack)
@@ -86,7 +88,8 @@ void WebContentsViewQt::RenderViewCreated(content::RenderViewHost* host)
 {
     // The render process is done creating the RenderView and it's ready to be routed
     // messages at this point.
-    host->GetView()->SetBackgroundColor(toSk(m_client->backgroundColor()));
+    if (m_client)
+        host->GetView()->SetBackgroundColor(toSk(m_client->backgroundColor()));
 }
 
 void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
