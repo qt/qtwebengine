@@ -9,6 +9,8 @@ QMAKE_INFO_PLIST = Info_mac.plist
     error("Could not find the linking information that gyp should have generated.")
 }
 
+QMAKE_DOCS = $$PWD/doc/qtwebenginecore.qdocconf
+
 load(qt_module)
 
 api_library_name = qtwebenginecoreapi

@@ -1,0 +1,32 @@
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
+
+project                 = QtWebEngineCore
+description             = Qt WebEngineCore Reference Documentation
+version                 = $QT_VERSION
+
+qhp.projects            = QtWebEngineCore
+
+qhp.QtWebEngineCore.file                = qtwebenginecore.qhp
+qhp.QtWebEngineCore.namespace           = org.qt-project.qtwebenginecore.$QT_VERSION_TAG
+qhp.QtWebEngineCore.virtualFolder       = qtwebenginecore
+qhp.QtWebEngineCore.indexTitle          = Qt WebEngine Core
+qhp.QtWebEngineCore.indexRoot           =
+
+qhp.QtWebEngineCore.filterAttributes    = qtwebenginecore $QT_VERSION qtrefdoc
+qhp.QtWebEngineCore.customFilters.Qt.name = QtWebEngineCore $QT_VERSION
+qhp.QtWebEngineCore.customFilters.Qt.filterAttributes = qtwebenginecore $QT_VERSION
+qhp.QtWebEngineCore.subprojects         = classes
+qhp.QtWebEngineCore.subprojects.classes.title = C++ Classes
+qhp.QtWebEngineCore.subprojects.classes.indexTitle = Qt WebEngine Core C++ Classes
+qhp.QtWebEngineCore.subprojects.classes.selectors = class fake:headerfile
+qhp.QtWebEngineCore.subprojects.classes.sortPages = true
+
+depends += qtcore qtdoc qmake
+
+headerdirs  += ../api
+sourcedirs  += ../api src
+
+exampledirs += snippets
+
+navigation.landingpage = "Qt WebEngine Core"
+navigation.cppclassespage = "Qt WebEngine Core C++ Class Types"
