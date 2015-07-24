@@ -40,10 +40,10 @@
 #include "qtwebenginecoreglobal.h"
 #include "qwebenginecallback.h"
 
-#include <QObject>
-#include <QScopedPointer>
-#include <QNetworkCookie>
-#include <QUrl>
+#include <QtCore/qobject.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qurl.h>
+#include <QtNetwork/qnetworkcookie.h>
 
 namespace QtWebEngineCore {
 class CookieMonsterDelegateQt;

@@ -40,9 +40,9 @@
 #include "qtwebenginecoreglobal.h"
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
-#include <QExplicitlySharedDataPointer>
-#include <QString>
-#include <QVariant>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
 
 namespace QtWebEngineCore {
 class CallbackDirectory;

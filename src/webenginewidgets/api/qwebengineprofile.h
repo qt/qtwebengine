@@ -37,11 +37,11 @@
 #ifndef QWEBENGINEPROFILE_H
 #define QWEBENGINEPROFILE_H
 
-#include "qtwebenginewidgetsglobal.h"
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
-#include <QObject>
-#include <QScopedPointer>
-#include <QString>
+#include <QtCore/qobject.h>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 

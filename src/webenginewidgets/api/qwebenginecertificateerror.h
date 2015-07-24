@@ -37,10 +37,10 @@
 #ifndef QWEBENGINECERTIFICATEERROR_H
 #define QWEBENGINECERTIFICATEERROR_H
 
-#include "qtwebenginewidgetsglobal.h"
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
-#include <QtCore/QScopedPointer>
-#include <QtCore/QUrl>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 

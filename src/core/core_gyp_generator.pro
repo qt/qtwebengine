@@ -136,7 +136,6 @@ HEADERS = \
         proxy_resolver_qt.h \
         qrc_protocol_handler_qt.h \
         qt_render_view_observer_host.h \
-        qtwebenginecoreglobal.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \

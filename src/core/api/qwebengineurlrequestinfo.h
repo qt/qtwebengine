@@ -39,8 +39,8 @@
 
 #include "qtwebenginecoreglobal.h"
 
-#include <QScopedPointer>
-#include <QUrl>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
 class NetworkDelegateQt;

@@ -37,12 +37,12 @@
 #ifndef QWEBENGINESCRIPTCOLLECTION_H
 #define QWEBENGINESCRIPTCOLLECTION_H
 
-#include "qtwebenginewidgetsglobal.h"
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineWidgets/qwebenginescript.h>
 
-#include "qwebenginescript.h"
-#include <QtCore/QScopedPointer>
-#include <QtCore/QList>
-#include <QtCore/QSet>
+#include <QtCore/qscopedpointer.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollectionPrivate;

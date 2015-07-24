@@ -36,10 +36,11 @@
 
 #ifndef QWEBENGINESCRIPT_H
 #define QWEBENGINESCRIPT_H
-#include "qtwebenginewidgetsglobal.h"
 
-#include <QtCore/QSharedDataPointer>
-#include <QtCore/QString>
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+
+#include <QtCore/qshareddata.h>
+#include <QtCore/qstring.h>
 
 namespace QtWebEngineCore {
 class UserScript;

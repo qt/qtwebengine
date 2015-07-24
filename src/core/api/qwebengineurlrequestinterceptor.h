@@ -38,12 +38,12 @@
 #define QWEBENINGEURLREQUESTINTERCEPTOR_H
 
 #include "qtwebenginecoreglobal.h"
-
 #include "qwebengineurlrequestinfo.h"
-#include <QByteArray>
-#include <QHash>
-#include <QObject>
-#include <QUrl>
+
+#include <QtCore/qbytearray.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 

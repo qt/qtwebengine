@@ -37,9 +37,9 @@
 #ifndef QWEBENGINEDOWNLOADITEM_H
 #define QWEBENGINEDOWNLOADITEM_H
 
-#include "qtwebenginewidgetsglobal.h"
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 
-#include <QObject>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
