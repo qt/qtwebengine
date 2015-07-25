@@ -67,6 +67,21 @@ defineTest(finalizeConfigure) {
         } else {
             log("ICU............................... Using internal copy (Default, force system ICU with WEBENGINE_CONFIG += use_system_icu)$${EOL}")
         }
+        contains(WEBENGINE_CONFIG, use_system_ffmpeg) {
+            packagesExist("libavcodec libavformat libavutil") {
+                packagesExist("libwebp, libwebpdemux, opus, \'vpx >= 1.4\'"){
+                    log("FFMPEG............................ Using system version$${EOL}")
+                } else {
+                    log("FFMPEG............................ Conflicting FFMPEG dependencies$${EOL}")
+                    skipBuild("Unmet dependencies: opus, vpx, libwebp, libwebpdemux")
+                }
+            } else {
+                log("FFMPEG............................ System FFMPEG not found$${EOL}")
+                skipBuild("Unmet dependencies: libavcodec, libavformat, libavutil")
+            }
+        } else {
+            log("FFMPEG............................ Using internal copy (Default, force system FFMPEG with WEBENGINE_CONFIG += use_system_ffmpeg)$${EOL}")
+        }
     }
     contains(WEBENGINE_CONFIG, use_proprietary_codecs) {
         log("Proprietary codecs (H264, MP3).... Enabled$${EOL}")
