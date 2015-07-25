@@ -43,6 +43,8 @@ defineTest(runConfigure) {
         else: log("System vpx >= 1.4 not found. Using Chromium's copy.$${EOL}")
         config_srtp: WEBENGINE_CONFIG += config_system_libsrtp
         else: log("System libsrtp not found. Using Chromium's copy.$${EOL}")
+        config_snappy: WEBENGINE_CONFIG += config_system_snappy
+        else: log("System snappy not found. Using Chromium's copy.$${EOL}")
     }
 
     isEmpty(skipBuildReason): {

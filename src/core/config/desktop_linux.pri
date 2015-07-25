@@ -27,6 +27,7 @@ config_system_libxslt: GYP_CONFIG += use_system_libxml=1
 config_system_flac: GYP_CONFIG += use_system_flac=1
 config_system_jsoncpp: GYP_CONFIG += use_system_jsoncpp=1
 config_system_opus: GYP_CONFIG += use_system_opus=1
+config_system_snappy: GYP_CONFIG += use_system_snappy=1
 config_system_speex: GYP_CONFIG += use_system_speex=1
 config_system_vpx: GYP_CONFIG += use_system_libvpx=1
 
