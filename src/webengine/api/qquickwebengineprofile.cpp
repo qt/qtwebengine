@@ -399,6 +399,28 @@ void QQuickWebEngineProfile::setHttpCacheMaximumSize(int maximumSize)
     emit httpCacheMaximumSizeChanged();
 }
 
+/*!
+    \qmlproperty QString WebEngineProfile::httpAcceptLanguage
+
+    The value of the Accept-Language HTTP request-header field.
+
+    \since QtWebEngine 1.2
+*/
+QString QQuickWebEngineProfile::httpAcceptLanguage() const
+{
+    Q_D(const QQuickWebEngineProfile);
+    return d->browserContext()->httpAcceptLanguage();
+}
+
+void QQuickWebEngineProfile::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
+{
+    Q_D(QQuickWebEngineProfile);
+    if (d->browserContext()->httpAcceptLanguage() == httpAcceptLanguage)
+        return;
+    d->browserContext()->setHttpAcceptLanguage(httpAcceptLanguage);
+    emit httpAcceptLanguageChanged();
+}
+
 QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
 {
     static QQuickWebEngineProfile *profile = new QQuickWebEngineProfile(

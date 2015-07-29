@@ -355,6 +355,28 @@ void QWebEngineProfile::setHttpCacheType(QWebEngineProfile::HttpCacheType httpCa
 }
 
 /*!
+    Sets the value of the Accept-Language HTTP request-header field.
+
+    \since 5.6
+ */
+void QWebEngineProfile::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->setHttpAcceptLanguage(httpAcceptLanguage);
+}
+
+/*!
+    Returns the value of the Accept-Language HTTP request-header field.
+
+    \since 5.6
+ */
+QString QWebEngineProfile::httpAcceptLanguage() const
+{
+    Q_D(const QWebEngineProfile);
+    return d->browserContext()->httpAcceptLanguage();
+}
+
+/*!
     Returns the current policy for persistent cookies.
 
     If the profile is off-the-record NoPersistentCookies is returned.

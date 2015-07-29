@@ -422,6 +422,11 @@ std::string ContentBrowserClientQt::GetApplicationLocale()
     return WebEngineLibraryInfo::getApplicationLocale();
 }
 
+std::string ContentBrowserClientQt::GetAcceptLangs(content::BrowserContext *context)
+{
+    return static_cast<BrowserContextQt*>(context)->adapter()->httpAcceptLanguage().toStdString();
+}
+
 void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id)
 {
     Q_UNUSED(child_process_id);

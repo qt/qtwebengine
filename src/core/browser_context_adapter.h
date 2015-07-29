@@ -151,6 +151,9 @@ public:
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
 
+    QString httpAcceptLanguage() const;
+    void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
+
 private:
     QString m_name;
     bool m_offTheRecord;
@@ -165,6 +168,7 @@ private:
     QString m_cachePath;
     QString m_httpUserAgent;
     HttpCacheType m_httpCacheType;
+    QString m_httpAcceptLanguage;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
     QVector<CustomUrlSchemeHandler*> m_customUrlSchemeHandlers;

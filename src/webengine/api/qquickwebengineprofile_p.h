@@ -63,6 +63,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QString cachePath READ cachePath WRITE setCachePath NOTIFY cachePathChanged FINAL)
     Q_PROPERTY(QString httpUserAgent READ httpUserAgent WRITE setHttpUserAgent NOTIFY httpUserAgentChanged FINAL)
     Q_PROPERTY(HttpCacheType httpCacheType READ httpCacheType WRITE setHttpCacheType NOTIFY httpCacheTypeChanged FINAL)
+    Q_PROPERTY(QString httpAcceptLanguage READ httpAcceptLanguage WRITE setHttpAcceptLanguage NOTIFY httpAcceptLanguageChanged FINAL)
     Q_PROPERTY(PersistentCookiesPolicy persistentCookiesPolicy READ persistentCookiesPolicy WRITE setPersistentCookiesPolicy NOTIFY persistentCookiesPolicyChanged FINAL)
     Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
 public:
@@ -104,6 +105,9 @@ public:
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
 
+    Q_REVISION(2) QString httpAcceptLanguage() const;
+    Q_REVISION(2) void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
+
     static QQuickWebEngineProfile *defaultProfile();
 
 signals:
@@ -115,6 +119,7 @@ signals:
     void httpCacheTypeChanged();
     void persistentCookiesPolicyChanged();
     void httpCacheMaximumSizeChanged();
+    Q_REVISION(2) void httpAcceptLanguageChanged();
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);

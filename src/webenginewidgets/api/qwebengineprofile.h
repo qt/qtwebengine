@@ -89,6 +89,9 @@ public:
     HttpCacheType httpCacheType() const;
     void setHttpCacheType(QWebEngineProfile::HttpCacheType);
 
+    void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
+    QString httpAcceptLanguage() const;
+
     PersistentCookiesPolicy persistentCookiesPolicy() const;
     void setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy);
 

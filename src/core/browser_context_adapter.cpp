@@ -368,4 +368,14 @@ void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, Permissio
     static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
 }
 
+QString BrowserContextAdapter::httpAcceptLanguage() const
+{
+    return m_httpAcceptLanguage;
+}
+
+void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
+{
+    m_httpAcceptLanguage = httpAcceptLanguage;
+}
+
 } // namespace QtWebEngineCore
