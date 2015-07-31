@@ -570,6 +570,10 @@
 
     Sets the permission for the web site identified by \a securityOrigin to use \a feature to \a policy.
 
+    \note Call this method on featurePermissionRequested() signal, as it is
+    meant to serve pending feature requests only. Setting feature permissions
+    ahead of a request has no effect.
+
     \sa featurePermissionRequested(), featurePermissionRequestCanceled()
 */
 
