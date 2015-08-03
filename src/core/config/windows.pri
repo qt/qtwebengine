@@ -28,3 +28,17 @@ contains(QT_CONFIG, angle) {
     GYP_ARGS += "-D qt_gl=\"opengl\""
 }
 
+msvc {
+    equals(MSVC_VER, 12.0) {
+        MSVS_VERSION = 2013
+    } else:equals(MSVC_VER, 14.0) {
+        MSVS_VERSION = 2015
+    } else {
+        fatal("Visual Studio compiler version \"$$MSVC_VER\" is not supported by Qt WebEngine")
+    }
+
+    GYP_ARGS += "-G msvs_version=$$MSVS_VERSION"
+
+} else {
+    fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
+}
