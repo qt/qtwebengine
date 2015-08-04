@@ -46,9 +46,8 @@ using QtWebEngineCore::UserScript;
     \inmodule QtWebEngineWidgets
     \since 5.5
     \brief The QWebEngineScript class encapsulates a JavaScript program.
-    \preliminary
 
-    QWebEngineScript allows the programatic injection of so called "user scripts" in the
+    QWebEngineScript allows the programmatic injection of so called "user scripts" in the
     javascript engine at different points, determined by injectionPoint(), during the loading of web contents.
 
     Scripts can be executed either in the main javascript world, along with the rest of the JavaScript coming
