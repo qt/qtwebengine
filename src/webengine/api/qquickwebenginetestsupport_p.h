@@ -67,6 +67,9 @@ public:
     QQuickWebEngineTestSupport();
     QQuickWebEngineErrorPage *errorPage() const;
 
+Q_SIGNALS:
+    void validationMessageShown(const QString &mainText, const QString &subText);
+
 private:
     QScopedPointer<QQuickWebEngineErrorPage> m_errorPage;
 };

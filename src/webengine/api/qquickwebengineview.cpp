@@ -868,6 +868,11 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
 }
 void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText)
 {
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    if (m_testSupport)
+        Q_EMIT m_testSupport->validationMessageShown(mainText, subText);
+#endif
+
     ui()->showMessageBubble(anchor, mainText, subText);
 }
 
