@@ -289,6 +289,7 @@ void BrowserApplication::loadSettings()
     setUserStyleSheet(defaultProfile, css, mainWindow());
 
     defaultProfile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
+    defaultProfile->setHttpAcceptLanguage(settings.value(QLatin1String("httpAcceptLanguage")).toString());
     settings.endGroup();
     settings.beginGroup(QLatin1String("cookies"));
 

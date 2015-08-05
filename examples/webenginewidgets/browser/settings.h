@@ -65,6 +65,8 @@ private slots:
     void chooseFont();
     void chooseFixedFont();
 
+    void on_httpAcceptLanguage_editingFinished();
+
 private:
     QFont standardFont;
     QFont fixedFont;

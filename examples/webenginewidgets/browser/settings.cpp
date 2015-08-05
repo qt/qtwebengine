@@ -50,6 +50,7 @@
 #include "networkaccessmanager.h"
 #include "webview.h"
 
+#include <QtCore/QLocale>
 #include <QtCore/QSettings>
 #include <QtWidgets/QtWidgets>
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
@@ -64,6 +65,21 @@ SettingsDialog::SettingsDialog(QWidget *parent)
 
     loadDefaults();
     loadFromSettings();
+}
+
+static QString defaultAcceptLanguage()
+{
+    const QStringList langs = QLocale().uiLanguages();
+    if (langs.isEmpty())
+        return QString();
+    QString str = langs.first();
+    const float qstep = 1.0f / float(langs.count());
+    float q = 1.0f - qstep;
+    for (int i = 1; i < langs.count(); ++i) {
+        str += QStringLiteral(", ") + langs.at(i) + QStringLiteral(";q=") + QString::number(q, 'f', 2);
+        q -= qstep;
+    }
+    return str;
 }
 
 void SettingsDialog::loadDefaults()
@@ -89,6 +105,7 @@ void SettingsDialog::loadDefaults()
     persistentDataPath->setText(QWebEngineProfile::defaultProfile()->persistentStoragePath());
     sessionCookiesCombo->setCurrentIndex(QWebEngineProfile::defaultProfile()->persistentCookiesPolicy());
     httpUserAgent->setText(QWebEngineProfile::defaultProfile()->httpUserAgent());
+    httpAcceptLanguage->setText(defaultAcceptLanguage());
 }
 
 void SettingsDialog::loadFromSettings()
@@ -138,6 +155,7 @@ void SettingsDialog::loadFromSettings()
     userStyleSheet->setPlainText(settings.value(QLatin1String("userStyleSheet")).toString());
     enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
     httpUserAgent->setText(settings.value(QLatin1String("httpUserAgent"), httpUserAgent->text()).toString());
+    httpAcceptLanguage->setText(settings.value(QLatin1String("httpAcceptLanguage"), httpAcceptLanguage->text()).toString());
     settings.endGroup();
 
     // Privacy
@@ -196,6 +214,7 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked());
     settings.setValue(QLatin1String("userStyleSheet"), userStyleSheet->toPlainText());
     settings.setValue(QLatin1String("httpUserAgent"), httpUserAgent->text());
+    settings.setValue(QLatin1String("httpAcceptLanguage"), httpAcceptLanguage->text());
     settings.endGroup();
 
     //Privacy
@@ -267,6 +286,11 @@ void SettingsDialog::chooseFixedFont()
         fixedFont = font;
         fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(font.family()).arg(font.pointSize()));
     }
+}
+
+void SettingsDialog::on_httpAcceptLanguage_editingFinished()
+{
+    QWebEngineProfile::defaultProfile()->setHttpAcceptLanguage(httpAcceptLanguage->text());
 }
 
 void SettingsDialog::setHomeToCurrentPage()
