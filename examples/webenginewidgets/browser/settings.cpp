@@ -288,6 +288,11 @@ void SettingsDialog::chooseFixedFont()
     }
 }
 
+void SettingsDialog::on_httpUserAgent_editingFinished()
+{
+    QWebEngineProfile::defaultProfile()->setHttpUserAgent(httpUserAgent->text());
+}
+
 void SettingsDialog::on_httpAcceptLanguage_editingFinished()
 {
     QWebEngineProfile::defaultProfile()->setHttpAcceptLanguage(httpAcceptLanguage->text());

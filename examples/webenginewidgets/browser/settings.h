@@ -65,6 +65,7 @@ private slots:
     void chooseFont();
     void chooseFixedFont();
 
+    void on_httpUserAgent_editingFinished();
     void on_httpAcceptLanguage_editingFinished();
 
 private:
