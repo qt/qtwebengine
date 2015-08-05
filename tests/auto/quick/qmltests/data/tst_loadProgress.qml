@@ -48,15 +48,32 @@ TestWebEngineView {
     width: 400
     height: 300
 
+    property var loadProgressArray: []
+
+    onLoadProgressChanged: {
+        loadProgressArray.push(webEngineView.loadProgress)
+    }
+
     TestCase {
         name: "WebEngineViewLoadProgress"
 
         function test_loadProgress() {
             compare(webEngineView.loadProgress, 0)
+            loadProgressArray = []
+
             webEngineView.url = Qt.resolvedUrl("test1.html")
-            compare(webEngineView.loadProgress, 0)
             verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.loadProgress, 100)
+
+            // Test whether the chromium emits progress numbers in ascending order
+            var loadProgressMin = 0
+            for (var i in loadProgressArray) {
+                var loadProgress = loadProgressArray[i]
+                verify(loadProgressMin <= loadProgress)
+                loadProgressMin = loadProgress
+            }
+
+            // The progress must be 100% at the end
+            compare(loadProgressArray[loadProgressArray.length - 1], 100)
         }
     }
 }
