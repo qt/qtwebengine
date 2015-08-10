@@ -209,7 +209,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<content::NavigationEntry*> *entries, content::BrowserContext *browserContext)
+static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, ScopedVector<content::NavigationEntry> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
@@ -250,13 +250,13 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         // If we couldn't unpack the entry successfully, abort everything.
         if (input.status() != QDataStream::Ok) {
             *currentIndex = -1;
-            Q_FOREACH (content::NavigationEntry *entry, *entries)
+            for (content::NavigationEntry *entry : *entries)
                 delete entry;
             entries->clear();
             return;
         }
 
-        content::NavigationEntry *entry = content::NavigationController::CreateNavigationEntry(
+        scoped_ptr<content::NavigationEntry> entry = content::NavigationController::CreateNavigationEntry(
             toGurl(virtualUrl),
             content::Referrer(toGurl(referrerUrl), static_cast<blink::WebReferrerPolicy>(referrerPolicy)),
             // Use a transition type of reload so that we don't incorrectly
@@ -275,7 +275,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
         entry->SetTimestamp(base::Time::FromInternalValue(timestamp));
         entry->SetHttpStatusCode(httpStatusCode);
-        entries->push_back(entry);
+        entries->push_back(entry.release());
     }
 }
 
@@ -320,7 +320,7 @@ WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
-    std::vector<content::NavigationEntry*> entries;
+    ScopedVector<content::NavigationEntry> entries;
     deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
@@ -395,7 +395,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true);
+        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, content::FrameReplicationState(), true);
 }
 
 void WebContentsAdapter::reattachRWHV()

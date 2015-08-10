@@ -62,7 +62,6 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/socket/stream_listen_socket.h"
 #include "net/socket/tcp_server_socket.h"
 
 using namespace content;

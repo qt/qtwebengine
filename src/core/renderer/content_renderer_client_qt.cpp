@@ -111,7 +111,7 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame *frame, const blink::WebURLRequest &failedRequest, const blink::WebURLError &error, std::string *errorHtml, base::string16 *errorDescription)
 {
     Q_UNUSED(frame)
-    const bool isPost = EqualsASCII(failedRequest.httpMethod(), "POST");
+    const bool isPost = base::EqualsASCII(failedRequest.httpMethod(), "POST");
 
     if (errorHtml) {
         // Use a local error page.

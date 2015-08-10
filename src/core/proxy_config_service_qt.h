@@ -72,7 +72,7 @@ private:
     void RegisterObserver();
 
     scoped_ptr<net::ProxyConfigService> m_baseService;
-    ObserverList<net::ProxyConfigService::Observer, true> m_observers;
+    base::ObserverList<net::ProxyConfigService::Observer, true> m_observers;
 
     // Keep the last QNetworkProxy::applicationProxy state around.
     QNetworkProxy m_qtApplicationProxy;

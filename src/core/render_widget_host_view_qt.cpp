@@ -806,7 +806,7 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    m_gestureProvider.OnAsyncTouchEventAck(eventConsumed);
+    m_gestureProvider.OnTouchEventAck(touch.event.uniqueTouchEventId, eventConsumed);
 }
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()

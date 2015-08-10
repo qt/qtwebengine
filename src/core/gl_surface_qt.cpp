@@ -439,11 +439,11 @@ bool GLSurfaceQt::IsOffscreen()
     return true;
 }
 
-bool GLSurfaceQt::SwapBuffers()
+gfx::SwapResult GLSurfaceQt::SwapBuffers()
 {
     LOG(ERROR) << "Attempted to call SwapBuffers on a pbuffer.";
     Q_UNREACHABLE();
-    return false;
+    return gfx::SwapResult::SWAP_FAILED;
 }
 
 gfx::Size GLSurfaceQt::GetSize()

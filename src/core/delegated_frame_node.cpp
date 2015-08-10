@@ -165,9 +165,9 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
         layerChain->appendChildNode(clipNode);
         layerChain = clipNode;
     }
-    if (!layerState->content_to_target_transform.IsIdentity()) {
+    if (!layerState->quad_to_target_transform.IsIdentity()) {
         QSGTransformNode *transformNode = new QSGTransformNode;
-        transformNode->setMatrix(toQt(layerState->content_to_target_transform.matrix()));
+        transformNode->setMatrix(toQt(layerState->quad_to_target_transform.matrix()));
         layerChain->appendChildNode(transformNode);
         layerChain = transformNode;
     }
@@ -571,7 +571,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
+                ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
                 textureNode->setTextureCoordinatesTransform(tquad->y_flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
@@ -619,7 +619,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 break;
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(tquad->resource_id, resourceCandidates);
+                ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
 
                 QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
                 textureNode->setRect(toQt(quad->rect));
@@ -630,13 +630,13 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 break;
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
                 const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
-                ResourceHolder *yResource = findAndHoldResource(vquad->y_plane_resource_id, resourceCandidates);
-                ResourceHolder *uResource = findAndHoldResource(vquad->u_plane_resource_id, resourceCandidates);
-                ResourceHolder *vResource = findAndHoldResource(vquad->v_plane_resource_id, resourceCandidates);
+                ResourceHolder *yResource = findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
+                ResourceHolder *uResource = findAndHoldResource(vquad->u_plane_resource_id(), resourceCandidates);
+                ResourceHolder *vResource = findAndHoldResource(vquad->v_plane_resource_id(), resourceCandidates);
                 ResourceHolder *aResource = 0;
                 // This currently requires --enable-vp8-alpha-playback and needs a video with alpha data to be triggered.
-                if (vquad->a_plane_resource_id)
-                    aResource = findAndHoldResource(vquad->a_plane_resource_id, resourceCandidates);
+                if (vquad->a_plane_resource_id())
+                    aResource = findAndHoldResource(vquad->a_plane_resource_id(), resourceCandidates);
 
                 YUVVideoNode *videoNode = new YUVVideoNode(
                     initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
@@ -651,7 +651,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
 #ifdef GL_OES_EGL_image_external
             } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(squad->resource_id, resourceCandidates);
+                ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
                 MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
                 texture->setTarget(GL_TEXTURE_EXTERNAL_OES); // since this is not default TEXTURE_2D type
 

@@ -285,11 +285,6 @@ bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest& request, const ba
     return true;
 }
 
-bool NetworkDelegateQt::OnCanThrottleRequest(const net::URLRequest&) const
-{
-    return false;
-}
-
 bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL&, const GURL&) const
 {
     return false;

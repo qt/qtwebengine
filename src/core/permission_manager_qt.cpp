@@ -36,7 +36,10 @@
 
 #include "permission_manager_qt.h"
 
+#include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 #include "type_conversion.h"
@@ -90,7 +93,7 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
 }
 
 void PermissionManagerQt::RequestPermission(content::PermissionType permission,
-                                            content::WebContents* web_contents,
+                                            content::RenderFrameHost *frameHost,
                                             int request_id,
                                             const GURL& requesting_origin,
                                             bool user_gesture,
@@ -103,7 +106,8 @@ void PermissionManagerQt::RequestPermission(content::PermissionType permission,
         return;
     }
 
-    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(web_contents->GetDelegate());
+    content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents();
+    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     Q_ASSERT(contentsDelegate);
     Request request = {
         request_id,
@@ -117,11 +121,11 @@ void PermissionManagerQt::RequestPermission(content::PermissionType permission,
 }
 
 void PermissionManagerQt::CancelPermissionRequest(content::PermissionType permission,
-                                                  content::WebContents* web_contents,
+                                                  content::RenderFrameHost *frameHost,
                                                   int request_id,
                                                   const GURL& requesting_origin)
 {
-    Q_UNUSED(web_contents);
+    Q_UNUSED(frameHost);
     const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
     if (permissionType == BrowserContextAdapter::UnsupportedPermission)
         return;
