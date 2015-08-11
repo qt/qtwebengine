@@ -273,6 +273,9 @@ void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *aut
     if (dialog.exec() == QDialog::Accepted) {
         auth->setUser(passwordDialog.userNameLineEdit->text());
         auth->setPassword(passwordDialog.passwordLineEdit->text());
+    } else {
+        // Set authenticator null if dialog is cancelled
+        *auth = QAuthenticator();
     }
 }
 
@@ -298,6 +301,9 @@ void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator
     if (dialog.exec() == QDialog::Accepted) {
         auth->setUser(proxyDialog.userNameLineEdit->text());
         auth->setPassword(proxyDialog.passwordLineEdit->text());
+    } else {
+        // Set authenticator null if dialog is cancelled
+        *auth = QAuthenticator();
     }
 }
 

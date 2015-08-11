@@ -90,9 +90,8 @@ void ResourceDispatcherHostLoginDelegateQt::triggerDialog()
     // to avoid crashing in the OnRequestCancelled case if we want to allow the credentials to
     // come back asynchronously in the QtQuick API.
     QString user, password;
-    client->authenticationRequired(m_url , m_realm , m_isProxy , m_host, &user, &password);
+    bool success = client->authenticationRequired(m_url , m_realm , m_isProxy , m_host, &user, &password);
 
-    bool success = !user.isEmpty() || !password.isEmpty();
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester, this, success, user, password));

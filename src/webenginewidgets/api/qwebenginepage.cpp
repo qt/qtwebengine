@@ -249,7 +249,7 @@ void QWebEnginePagePrivate::passOnFocus(bool reverse)
         view->focusNextPrevChild(!reverse);
 }
 
-void QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword)
+bool QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword)
 {
     Q_Q(QWebEnginePage);
     QAuthenticator networkAuth;
@@ -259,8 +259,14 @@ void QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const
         Q_EMIT q->proxyAuthenticationRequired(requestUrl, &networkAuth, challengingHost);
     else
         Q_EMIT q->authenticationRequired(requestUrl, &networkAuth);
+
+    // Authentication has been cancelled
+    if (networkAuth.isNull())
+        return false;
+
     *outUser = networkAuth.user();
     *outPassword = networkAuth.password();
+    return true;
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
