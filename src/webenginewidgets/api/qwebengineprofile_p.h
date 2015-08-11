@@ -79,18 +79,13 @@ public:
     void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
     void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
 
-    QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &);
-    void installUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
-    void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
-    void clearUrlSchemeHandlers();
-
 private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
-    QMap<QByteArray, QPointer<QWebEngineUrlSchemeHandler> > m_urlSchemeHandlers;
+    QMap<QByteArray, QWebEngineUrlSchemeHandler *> m_urlSchemeHandlers;
 };
 
 QT_END_NAMESPACE

@@ -34,36 +34,28 @@
 **
 ****************************************************************************/
 
+#include "qwebengineurlschemehandler.h"
 #include "qwebengineurlschemehandler_p.h"
-#include "qwebengineurlschemehandler_p_p.h"
 
-#include "qwebengineprofile.h"
-#include "qwebengineprofile_p.h"
-#include "qwebengineurlrequestjob_p.h"
+#include "qwebengineurlrequestjob.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
     \class QWebEngineUrlSchemeHandler
-    \brief The QWebEngineUrlSchemeHandler Base class for handling custom URL schemes.
-    \since 5.5
-    \internal
+    \brief The QWebEngineUrlSchemeHandler base class for handling custom URL schemes.
+    \since 5.6
 
     To implement a custom URL scheme for QtWebEngine you must write a class derived from this class,
     and reimplement requestStarted().
 
-    To install a custom URL scheme handler into a QtWebProfile, you only need to call the constructor
-    with the correct profile. Each instance of a QWebEngineUrlSchemeHandler can only handle requests
-    from a single profile.
-
-    \inmodule QtWebEngineWidgets
+    \inmodule QtWebEngineCore
 
 */
 
-QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme, QWebEngineUrlSchemeHandler *q, QWebEngineProfile *profile)
+QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme, QWebEngineUrlSchemeHandler *q)
     : CustomUrlSchemeHandler(scheme)
     , q_ptr(q)
-    , m_profile(profile)
 {
 }
 
@@ -81,20 +73,18 @@ bool QWebEngineUrlSchemeHandlerPrivate::handleJob(QtWebEngineCore::URLRequestCus
 /*!
     Constructs a new URL scheme handler.
 
-    The handler is created for \a scheme and for the \a profile.
+    The handler is created for \a scheme with the parent \a parent.
 
   */
-QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme, QWebEngineProfile *profile, QObject *parent)
+QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineUrlSchemeHandlerPrivate(scheme, this, profile))
+    , d_ptr(new QWebEngineUrlSchemeHandlerPrivate(scheme, this))
 {
-    profile->d_func()->installUrlSchemeHandler(this);
 }
 
 QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
-    if (d_ptr->m_profile)
-        d_ptr->m_profile->d_func()->removeUrlSchemeHandler(this);
+    delete d_ptr;
 }
 
 /*!
@@ -108,7 +98,7 @@ QByteArray QWebEngineUrlSchemeHandler::scheme() const
 /*!
     \fn void QWebEngineUrlSchemeHandler::requestStarted(QWebEngineUrlRequestJob *request)
 
-    This method is called whenever a request for the registered scheme is started.
+    This method is called whenever a request \a request for the registered scheme is started.
 
     This method must be reimplemented by all custom URL scheme handlers.
     The request is asynchronous and does not need to be handled right away.

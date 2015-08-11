@@ -42,7 +42,7 @@
 #include "qwebenginepage.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginesettings.h"
-#include "qwebengineurlschemehandler_p_p.h"
+#include "qwebengineurlschemehandler_p.h"
 #include "qwebenginescriptcollection_p.h"
 
 #include "browser_context_adapter.h"
@@ -536,10 +536,16 @@ QWebEngineSettings *QWebEngineProfile::settings() const
     return d->settings();
 }
 
-QWebEngineUrlSchemeHandler *QWebEngineProfilePrivate::urlSchemeHandler(const QByteArray &protocol)
+/*!
+    \since 5.6
+
+    Returns the custom URL scheme handler register for the URL scheme \a scheme.
+*/
+const QWebEngineUrlSchemeHandler *QWebEngineProfile::urlSchemeHandler(const QByteArray &scheme) const
 {
-    if (m_urlSchemeHandlers.contains(protocol))
-        return m_urlSchemeHandlers.value(protocol);
+    const Q_D(QWebEngineProfile);
+    if (d->m_urlSchemeHandlers.contains(scheme))
+        return d->m_urlSchemeHandlers.value(scheme);
     return 0;
 }
 
@@ -553,8 +559,14 @@ static bool checkInternalScheme(const QByteArray &scheme)
     return internalSchemes.contains(scheme);
 }
 
-void QWebEngineProfilePrivate::installUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+/*!
+    \since 5.6
+
+    Installs the custom URL scheme handler \a handler in the profile.
+*/
+void QWebEngineProfile::installUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
+    Q_D(QWebEngineProfile);
     Q_ASSERT(handler);
     QByteArray scheme = handler->scheme();
     if (checkInternalScheme(scheme)) {
@@ -562,29 +574,51 @@ void QWebEngineProfilePrivate::installUrlSchemeHandler(QWebEngineUrlSchemeHandle
         return;
     }
 
-    if (m_urlSchemeHandlers.contains(scheme)) {
+    if (d->m_urlSchemeHandlers.contains(scheme)) {
         qWarning() << "URL scheme handler already installed for the scheme: " << scheme;
         return;
     }
-    m_urlSchemeHandlers.insert(scheme, handler);
-    browserContext()->customUrlSchemeHandlers().append(handler->d_func());
-    browserContext()->updateCustomUrlSchemeHandlers();
+    d->m_urlSchemeHandlers.insert(scheme, handler);
+    d->browserContext()->customUrlSchemeHandlers().append(handler->d_func());
+    d->browserContext()->updateCustomUrlSchemeHandlers();
+    connect(handler, SIGNAL(destroyed(QObject*)), this, SLOT(destroyedUrlSchemeHandler(QObject*)));
 }
 
-void QWebEngineProfilePrivate::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+/*!
+    \since 5.6
+
+    Removes the custom URL scheme handler \a handler from the profile
+*/
+void QWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
-    int count = m_urlSchemeHandlers.remove(handler->scheme());
+    Q_D(QWebEngineProfile);
+    Q_ASSERT(handler);
+    if (!handler)
+        return;
+    int count = d->m_urlSchemeHandlers.remove(handler->scheme());
     if (!count)
         return;
-    browserContext()->customUrlSchemeHandlers().removeOne(handler->d_func());
-    browserContext()->updateCustomUrlSchemeHandlers();
+    disconnect(handler, SIGNAL(destroyed(QObject*)), this, SLOT(destroyedUrlSchemeHandler(QObject*)));
+    d->browserContext()->removeCustomUrlSchemeHandler(handler->d_func());
+    d->browserContext()->updateCustomUrlSchemeHandlers();
 }
 
-void QWebEngineProfilePrivate::clearUrlSchemeHandlers()
+/*!
+    \since 5.6
+
+    Removes all custom URL scheme handlers installed in the profile.
+*/
+void QWebEngineProfile::clearUrlSchemeHandlers()
 {
-    m_urlSchemeHandlers.clear();
-    browserContext()->customUrlSchemeHandlers().clear();
-    browserContext()->updateCustomUrlSchemeHandlers();
+    Q_D(QWebEngineProfile);
+    d->m_urlSchemeHandlers.clear();
+    d->browserContext()->customUrlSchemeHandlers().clear();
+    d->browserContext()->updateCustomUrlSchemeHandlers();
+}
+
+void QWebEngineProfile::destroyedUrlSchemeHandler(QObject *obj)
+{
+    removeUrlSchemeHandler(qobject_cast<QWebEngineUrlSchemeHandler*>(obj));
 }
 
 QT_END_NAMESPACE

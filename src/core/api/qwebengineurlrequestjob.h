@@ -34,80 +34,61 @@
 **
 ****************************************************************************/
 
-#include "qwebengineurlrequestjob_p.h"
+#ifndef QWEBENGINEURLREQUESTJOB_H
+#define QWEBENGINEURLREQUESTJOB_H
 
-#include "qwebengineprofile.h"
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "url_request_custom_job_delegate.h"
+#include "qtwebenginecoreglobal.h"
 
-using QtWebEngineCore::URLRequestCustomJobDelegate;
+#include <QtCore/qbytearray.h>
+#include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
+
+namespace QtWebEngineCore {
+class URLRequestCustomJobDelegate;
+} // namespace
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \class QWebEngineUrlRequestJob
-    \brief The QWebEngineUrlRequestJob class represents a custom URL request.
-    \since 5.5
-    \internal
+class QIODevice;
 
-    A QWebEngineUrlRequestJob is given to QWebEngineUrlSchemeHandler::requestStarted() and must
-    be handled by the derived implementations of class.
+class QWEBENGINE_EXPORT QWebEngineUrlRequestJob : public QObject {
+    Q_OBJECT
+public:
+    ~QWebEngineUrlRequestJob();
 
-    A job can be handled by calling either setReply(), redirect() or setError().
+    enum Error {
+        NoError = 0,
+        UrlNotFound,
+        UrlInvalid,
+        RequestAborted,
+        RequestDenied,
+        RequestFailed
+    };
+    Q_ENUM(Error)
 
-    The class is owned by QtWebEngine and does not need to be deleted. Note QtWebEngine may delete
-    the job when it is no longer needed, so the signal QObject::destroyed() must be monitored if
-    a pointer to the object is stored.
+    QUrl requestUrl() const;
+    void setReply(const QByteArray &contentType, QIODevice *device);
+    void setError(Error error);
+    void setRedirect(const QUrl &url);
 
-    \inmodule QtWebEngineWidgets
-*/
+private:
+    QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
+    friend class QWebEngineUrlSchemeHandlerPrivate;
 
-/*!
-    \internal
- */
-QWebEngineUrlRequestJob::QWebEngineUrlRequestJob(URLRequestCustomJobDelegate * p)
-    : QObject(p) // owned by the jobdelegate and deleted when the job is done
-    , d_ptr(p)
-{
-}
-
-/*!
-    \internal
- */
-QWebEngineUrlRequestJob::~QWebEngineUrlRequestJob()
-{
-}
-
-/*!
-    Returns the url requested.
- */
-QUrl QWebEngineUrlRequestJob::requestUrl() const
-{
-    return d_ptr->url();
-}
-
-/*!
-    Sets the reply for the request to \a device with the mime-type \a contentType.
- */
-void QWebEngineUrlRequestJob::setReply(const QByteArray &contentType, QIODevice *device)
-{
-    d_ptr->setReply(contentType, device);
-}
-
-/*!
-    Fails the request with error \a error.
- */
-void QWebEngineUrlRequestJob::setError(Error r)
-{
-    d_ptr->fail((URLRequestCustomJobDelegate::Error)r);
-}
-
-/*!
-    Tell the request is redirected to \a url.
- */
-void QWebEngineUrlRequestJob::setRedirect(const QUrl &url)
-{
-    d_ptr->redirect(url);
-}
+    QtWebEngineCore::URLRequestCustomJobDelegate* d_ptr;
+};
 
 QT_END_NAMESPACE
+
+#endif // QWEBENGINEURLREQUESTJOB_H

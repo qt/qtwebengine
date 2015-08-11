@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEURLSCHEMEHANDLER_H
-#define QWEBENGINEURLSCHEMEHANDLER_H
+#ifndef QWEBENGINEURLSCHEMEHANDLER_P_H
+#define QWEBENGINEURLSCHEMEHANDLER_P_H
 
 //
 //  W A R N I N G
@@ -48,36 +48,29 @@
 // We mean it.
 //
 
-#include "qtwebenginewidgetsglobal.h"
+#include "qwebengineurlschemehandler.h"
 
-#include <QtCore/QByteArray>
-#include <QtCore/QIODevice>
-#include <QtCore/QObject>
-#include <QtCore/QScopedPointer>
-#include <QtCore/QUrl>
+#include "custom_url_scheme_handler.h"
 
 QT_BEGIN_NAMESPACE
 
 class QWebEngineProfile;
 class QWebEngineUrlRequestJob;
-class QWebEngineUrlSchemeHandlerPrivate;
+class QWebEngineUrlSchemeHandler;
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineUrlSchemeHandler : public QObject {
-    Q_OBJECT
+class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandlerPrivate : public QtWebEngineCore::CustomUrlSchemeHandler {
 public:
-    QWebEngineUrlSchemeHandler(const QByteArray &scheme, QWebEngineProfile *profile, QObject *parent = 0);
-    virtual ~QWebEngineUrlSchemeHandler();
+    Q_DECLARE_PUBLIC(QWebEngineUrlSchemeHandler)
 
-    QByteArray scheme() const;
+    QWebEngineUrlSchemeHandlerPrivate(const QByteArray &, QWebEngineUrlSchemeHandler *);
+    virtual ~QWebEngineUrlSchemeHandlerPrivate();
 
-    virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
+    virtual bool handleJob(QtWebEngineCore::URLRequestCustomJobDelegate*) Q_DECL_OVERRIDE;
 
 private:
-    Q_DECLARE_PRIVATE(QWebEngineUrlSchemeHandler)
-    friend class QWebEngineProfilePrivate;
-    QScopedPointer<QWebEngineUrlSchemeHandlerPrivate> d_ptr;
+    QWebEngineUrlSchemeHandler *q_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEURLSCHEMEHANDLER_H
+#endif // QWEBENGINEURLSCHEMEHANDLER_P_H

@@ -147,6 +147,7 @@ public:
 
     QVector<CustomUrlSchemeHandler*> &customUrlSchemeHandlers();
     void updateCustomUrlSchemeHandlers();
+    void removeCustomUrlSchemeHandler(CustomUrlSchemeHandler*);
     UserScriptControllerHost *userScriptController();
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);

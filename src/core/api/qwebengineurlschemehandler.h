@@ -34,60 +34,37 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEURLREQUESTJOB_H
-#define QWEBENGINEURLREQUESTJOB_H
+#ifndef QWEBENGINEURLSCHEMEHANDLER_H
+#define QWEBENGINEURLSCHEMEHANDLER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include "qtwebenginecoreglobal.h"
 
-#include "qtwebenginewidgetsglobal.h"
-
-#include <QtCore/QByteArray>
-#include <QtCore/QObject>
-#include <QtCore/QUrl>
-
-namespace QtWebEngineCore {
-class URLRequestCustomJobDelegate;
-} // namespace
+#include <QtCore/qbytearray.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
-class QIODevice;
+class QWebEngineUrlRequestJob;
+class QWebEngineUrlSchemeHandlerPrivate;
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineUrlRequestJob : public QObject {
+class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandler : public QObject {
     Q_OBJECT
 public:
-    ~QWebEngineUrlRequestJob();
+    QWebEngineUrlSchemeHandler(const QByteArray &scheme, QObject *parent = 0);
+    ~QWebEngineUrlSchemeHandler();
 
-    enum Error {
-        NoError = 0,
-        UrlNotFound,
-        UrlInvalid,
-        RequestAborted,
-        RequestDenied,
-        RequestFailed
-    };
+    QByteArray scheme() const;
 
-    QUrl requestUrl() const;
-    void setReply(const QByteArray &contentType, QIODevice *device);
-    void setError(Error error);
-    void setRedirect(const QUrl &url);
+    virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
 
 private:
-    QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
-    friend class QWebEngineUrlSchemeHandlerPrivate;
-
-    QtWebEngineCore::URLRequestCustomJobDelegate* d_ptr;
+    Q_DISABLE_COPY(QWebEngineUrlSchemeHandler)
+    Q_DECLARE_PRIVATE(QWebEngineUrlSchemeHandler)
+    friend class QWebEngineProfile;
+    friend class QQuickWebEngineProfile;
+    QWebEngineUrlSchemeHandlerPrivate *d_ptr;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEURLREQUESTJOB_H
+#endif // QWEBENGINEURLSCHEMEHANDLER_H

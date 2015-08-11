@@ -358,6 +358,12 @@ void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
         m_browserContext->url_request_getter_->updateStorageSettings();
 }
 
+void BrowserContextAdapter::removeCustomUrlSchemeHandler(CustomUrlSchemeHandler *handler)
+{
+    m_customUrlSchemeHandlers.removeOne(handler);
+    Q_ASSERT(!m_customUrlSchemeHandlers.contains(handler));
+}
+
 UserScriptControllerHost *BrowserContextAdapter::userScriptController()
 {
     if (!m_userScriptController)

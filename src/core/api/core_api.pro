@@ -37,8 +37,13 @@ HEADERS = \
     qwebenginecookiestoreclient_p.h \
     qwebengineurlrequestinterceptor.h \
     qwebengineurlrequestinfo.h \
-    qwebengineurlrequestinfo_p.h
+    qwebengineurlrequestinfo_p.h \
+    qwebengineurlrequestjob.h \
+    qwebengineurlschemehandler.h \
+    qwebengineurlschemehandler_p.h
 
 SOURCES = \
     qwebenginecookiestoreclient.cpp \
-    qwebengineurlrequestinfo.cpp
+    qwebengineurlrequestinfo.cpp \
+    qwebengineurlrequestjob.cpp \
+    qwebengineurlschemehandler.cpp

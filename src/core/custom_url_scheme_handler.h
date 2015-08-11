@@ -53,7 +53,7 @@ class URLRequestCustomJobDelegate;
 class QWEBENGINE_EXPORT CustomUrlSchemeHandler {
 public:
     explicit CustomUrlSchemeHandler(const QByteArray &);
-    ~CustomUrlSchemeHandler();
+    virtual ~CustomUrlSchemeHandler() { }
 
     QByteArray scheme() const;
     void setScheme(const QByteArray &);

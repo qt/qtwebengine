@@ -44,10 +44,6 @@ CustomUrlSchemeHandler::CustomUrlSchemeHandler(const QByteArray &scheme)
 {
 }
 
-CustomUrlSchemeHandler::~CustomUrlSchemeHandler()
-{
-}
-
 QByteArray CustomUrlSchemeHandler::scheme() const
 {
     return m_scheme;
