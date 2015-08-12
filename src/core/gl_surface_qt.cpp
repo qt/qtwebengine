@@ -324,13 +324,7 @@ bool GLSurfaceQtEGL::InitializeOneOff()
     if (initialized)
         return true;
 
-#if defined(USE_X11)
-    EGLNativeDisplayType nativeDisplay = reinterpret_cast<EGLNativeDisplayType>(GLContextHelper::getXDisplay());
-    g_display = eglGetDisplay(nativeDisplay);
-#else
     g_display = GLContextHelper::getEGLDisplay();
-#endif
-
     if (!g_display) {
         LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
         return false;
