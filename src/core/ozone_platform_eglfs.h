@@ -62,6 +62,8 @@ class OzonePlatformEglfs : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override;
   virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
+  virtual ui::InputController* GetInputController() override;
+  virtual scoped_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
 
  private:
   virtual void InitializeUI() override;
@@ -74,6 +76,7 @@ class OzonePlatformEglfs : public OzonePlatform {
 
   scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  scoped_ptr<InputController> input_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformEglfs);
 };

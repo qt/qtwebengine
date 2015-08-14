@@ -86,6 +86,11 @@ if __name__ == '__main__':
   if 'qt_cross_compile=1' in sys.argv:
     os.environ['GYP_CROSSCOMPILE'] = '1'
 
+  sysroot = 'sysroot='
+  for opt in sys.argv:
+    if opt.startswith(sysroot):
+        os.environ['PKG_CONFIG_SYSROOT_DIR'] = opt[len(sysroot):]
+
   gyp_helper.apply_chromium_gyp_env()
 
   # This could give false positives since it doesn't actually do real option

@@ -95,6 +95,7 @@ public:
     void Restore() override { }
     void SetCursor(PlatformCursor) override { }
     void MoveCursorTo(const gfx::Point&) override { }
+    void ConfineCursorToBounds(const gfx::Rect&) override { }
 
     // PlatformEventDispatcher:
     bool CanDispatchEvent(const PlatformEvent& event) override;
@@ -160,6 +161,14 @@ scoped_ptr<PlatformWindow> OzonePlatformEglfs::CreatePlatformWindow(
                           bounds));
 }
 
+ui::InputController* OzonePlatformEglfs::GetInputController() {
+    return input_controller_.get();
+}
+
+scoped_ptr<ui::SystemInputInjector> OzonePlatformEglfs::CreateSystemInputInjector() {
+    return nullptr;  // no input injection support.
+}
+
 scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
 {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
@@ -170,8 +179,9 @@ OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }
 void OzonePlatformEglfs::InitializeUI() {
   device_manager_ = CreateDeviceManager();
   cursor_factory_ozone_.reset(new CursorFactoryOzone());
-  event_factory_ozone_.reset(new EventFactoryEvdev(NULL, device_manager_.get()));
+  event_factory_ozone_.reset(new EventFactoryEvdev(NULL, device_manager_.get(), NULL));
   gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+  input_controller_ = CreateStubInputController();
 }
 
 void OzonePlatformEglfs::InitializeGPU() {
