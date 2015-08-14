@@ -73,7 +73,6 @@
 #include "content_client_qt.h"
 #include "network_delegate_qt.h"
 #include "proxy_config_service_qt.h"
-#include "proxy_resolver_qt.h"
 #include "qrc_protocol_handler_qt.h"
 #include "qwebenginecookiestoreclient.h"
 #include "qwebenginecookiestoreclient_p.h"
@@ -165,21 +164,17 @@ void URLRequestContextGetterQt::generateStorage()
 
     // The System Proxy Resolver has issues on Windows with unconfigured network cards,
     // which is why we want to use the v8 one
-    if (ProxyResolverQt::useProxyResolverQt()) {
-        scoped_ptr<ProxyResolverFactoryQt> factory(new ProxyResolverFactoryQt(false));
-        m_storage->set_proxy_service(new net::ProxyService(proxyConfigService, factory.Pass(), nullptr));
-    } else {
-        if (!m_dhcpProxyScriptFetcherFactory)
-            m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
+    if (!m_dhcpProxyScriptFetcherFactory)
+        m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
 
-        m_storage->set_proxy_service(net::CreateProxyServiceUsingV8ProxyResolver(
-                                         proxyConfigService,
-                                         new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
-                                         m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
-                                         host_resolver.get(),
-                                         NULL /* NetLog */,
-                                         m_networkDelegate.get()));
-    }
+    m_storage->set_proxy_service(net::CreateProxyServiceUsingV8ProxyResolver(
+                                     proxyConfigService,
+                                     new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
+                                     m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
+                                     host_resolver.get(),
+                                     NULL /* NetLog */,
+                                     m_networkDelegate.get()));
+
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     m_storage->set_transport_security_state(new net::TransportSecurityState());
 
