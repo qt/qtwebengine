@@ -171,6 +171,38 @@ void QWebEngineCookieStoreClientPrivate::onCookieChanged(const QNetworkCookie &c
         Q_EMIT q->cookieAdded(cookie);
 }
 
+/*!
+    \class QWebEngineCookieStoreClient
+    \inmodule QtWebEngineCore
+    \since 5.6
+    \brief The QWebEngineCookieStoreClient class provides access to Chromium's cookies.
+
+    By subclassing the QWebEngineCookieStoreClient and installing it on the profile, the user can
+    access HTTP cookies of Chromium.
+    It can be used to synchronize cookies of Chromium and the QNetworkAccessManager, as well as
+    to set, delete, and intercept cookies during navigation.
+    Because cookie operations are asynchronous, the user can choose to provide a callback function
+    to get notified about the success of the operation.
+    The signal handlers for removal and addition should not be used to execute heavy tasks,
+    because they might block the IO thread in case of a blocking connection.
+*/
+
+/*!
+    \fn void QWebEngineCookieStoreClient::cookieAdded(const QNetworkCookie &cookie)
+
+    This signal is emitted whenever a new \a cookie is added to the cookie store.
+*/
+
+/*!
+    \fn void QWebEngineCookieStoreClient::cookieRemoved(const QNetworkCookie &cookie)
+
+    This signal is emitted whenever a \a cookie is deleted from the cookie store.
+*/
+
+/*!
+    Creates a new QWebEngineCookieStoreClient object with \a parent.
+*/
+
 QWebEngineCookieStoreClient::QWebEngineCookieStoreClient(QObject *parent)
     : QObject(parent)
     , d_ptr(new QWebEngineCookieStoreClientPrivate(this))
@@ -178,10 +210,25 @@ QWebEngineCookieStoreClient::QWebEngineCookieStoreClient(QObject *parent)
 
 }
 
+/*!
+    Destroys this QWebEngineCookieStoreClient object.
+*/
+
 QWebEngineCookieStoreClient::~QWebEngineCookieStoreClient()
 {
 
 }
+
+/*!
+    \fn void setCookieWithCallback(const QNetworkCookie &cookie, FunctorOrLambda resultCallback, const QUrl &origin = QUrl())
+
+    Adds \a cookie to the cookie store. When the operation finishes, \a resultCallback will be executed
+    on the caller thread.
+    It is possible to provide an optional \a origin URL argument to limit the scope of the cookie.
+    The provided URL should also include the scheme.
+
+    \sa setCookie()
+*/
 
 void QWebEngineCookieStoreClient::setCookieWithCallback(const QNetworkCookie &cookie, const QWebEngineCallback<bool> &resultCallback, const QUrl &origin)
 {
@@ -189,16 +236,42 @@ void QWebEngineCookieStoreClient::setCookieWithCallback(const QNetworkCookie &co
     d->setCookie(resultCallback, cookie, origin);
 }
 
+/*!
+    Adds \a cookie to the cookie store. This function is provided for convenience and is
+    equivalent to calling setCookieWithCallback() with an empty callback.
+    It is possible to provide an optional \a origin URL argument to limit the scope of the cookie.
+    The provided URL should also include the scheme.
+
+    \sa setCookieWithCallback()
+*/
+
 void QWebEngineCookieStoreClient::setCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
     setCookieWithCallback(cookie, QWebEngineCallback<bool>(), origin);
 }
+
+/*!
+    Deletes \a cookie from the cookie store.
+    It is possible to provide an optional \a origin URL argument to limit the scope of the
+    cookie to be deleted.
+    The provided URL should also include the scheme.
+*/
 
 void QWebEngineCookieStoreClient::deleteCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
     Q_D(QWebEngineCookieStoreClient);
     d->deleteCookie(cookie, origin);
 }
+
+/*!
+    \fn void QWebEngineCookieStoreClient::getAllCookies(FunctorOrLambda resultCallback)
+
+    Requests all the cookies in the cookie store. When the asynchronous operation finishes,
+    \a resultCallback will be called with a QByteArray as the argument containing the cookies.
+    This QByteArray can be parsed using QNetworkCookie::parseCookies().
+
+    \sa deleteCookie()
+*/
 
 void QWebEngineCookieStoreClient::getAllCookies(const QWebEngineCallback<const QByteArray&> &resultCallback)
 {
@@ -211,6 +284,15 @@ void QWebEngineCookieStoreClient::getAllCookies(const QWebEngineCallback<const Q
     d->getAllCookies();
 }
 
+/*!
+    \fn void QWebEngineCookieStoreClient::deleteSessionCookiesWithCallback(FunctorOrLambda resultCallback)
+
+    Deletes all the session cookies in the cookie store. Session cookies do not have an
+    expiration date assigned to them.
+    When the asynchronous operation finishes, \a resultCallback will be called with the
+    number of cookies deleted as the argument.
+*/
+
 void QWebEngineCookieStoreClient::deleteSessionCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
 {
     Q_D(QWebEngineCookieStoreClient);
@@ -221,6 +303,15 @@ void QWebEngineCookieStoreClient::deleteSessionCookiesWithCallback(const QWebEng
     d->callbackDirectory.registerCallback(CallbackDirectory::DeleteSessionCookiesCallbackId, resultCallback);
     d->deleteSessionCookies();
 }
+
+/*!
+    \fn void QWebEngineCookieStoreClient::deleteAllCookiesWithCallback(FunctorOrLambda resultCallback)
+
+    Deletes all the cookies in the cookie store. When the asynchronous operation finishes,
+    \a resultCallback will be called with the number of cookies deleted as the argument.
+
+    \sa deleteSessionCookiesWithCallback(), getAllCookies()
+*/
 
 void QWebEngineCookieStoreClient::deleteAllCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
 {
@@ -233,10 +324,22 @@ void QWebEngineCookieStoreClient::deleteAllCookiesWithCallback(const QWebEngineC
     d->deleteAllCookies();
 }
 
+/*!
+    Deletes all the session cookies in the cookie store.
+
+    \sa deleteSessionCookiesWithCallback()
+*/
+
 void QWebEngineCookieStoreClient::deleteSessionCookies()
 {
     deleteSessionCookiesWithCallback(QWebEngineCallback<int>());
 }
+
+/*!
+    Deletes all the cookies in the cookie store.
+
+    \sa deleteAllCookiesWithCallback(), getAllCookies()
+*/
 
 void QWebEngineCookieStoreClient::deleteAllCookies()
 {

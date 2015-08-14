@@ -434,8 +434,9 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 }
 
 /*!
-    Returns the cookie store client for this browser.
+    Returns the cookie store client singleton, if one has been set.
 */
+
 QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
 {
     Q_D(QWebEngineProfile);
@@ -443,8 +444,13 @@ QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
 }
 
 /*!
-    Sets the cookie store client to \a client.
+    Registers a cookie store client singleton \a client to access Chromium's cookies.
+
+    The profile does not take ownership of the pointer.
+
+    \sa QtWebEngineCore::QWebEngineCookieStoreClient
 */
+
 void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client)
 {
     Q_D(QWebEngineProfile);
@@ -452,8 +458,13 @@ void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client
 }
 
 /*!
-    Sets the request interceptor to \a interceptor.
- */
+    Registers a request interceptor singleton \a interceptor to intercept URL requests.
+
+    The profile does not take ownership of the pointer.
+
+    \sa QtWebEngineCore::QWebEngineUrlRequestInfo
+*/
+
 void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     Q_D(QWebEngineProfile);
