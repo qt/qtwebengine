@@ -171,6 +171,12 @@ void QWebEngineCookieStoreClientPrivate::onCookieChanged(const QNetworkCookie &c
         Q_EMIT q->cookieAdded(cookie);
 }
 
+bool QWebEngineCookieStoreClientPrivate::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
+{
+    Q_Q(QWebEngineCookieStoreClient);
+    return q->acceptCookie(firstPartyUrl, cookieLine, url);
+}
+
 /*!
     \class QWebEngineCookieStoreClient
     \inmodule QtWebEngineCore
@@ -344,6 +350,23 @@ void QWebEngineCookieStoreClient::deleteSessionCookies()
 void QWebEngineCookieStoreClient::deleteAllCookies()
 {
     deleteAllCookiesWithCallback(QWebEngineCallback<int>());
+}
+
+/*!
+    This virtual function is called before a new cookie is added to the cookie store.
+    By overriding this function and returning \c false the user can decide to deny
+    from \a firstPartyUrl the cookie \a cookieLine with the source \a cookieSource.
+    The request's \a firstPartyUrl can be used to identify a third-party cookie.
+    This function should not be used to execute heavy tasks since it is running on the
+    IO thread and therefore blocks the Chromium networking.
+*/
+
+bool QWebEngineCookieStoreClient::acceptCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &cookieSource)
+{
+    Q_UNUSED(firstPartyUrl);
+    Q_UNUSED(cookieLine);
+    Q_UNUSED(cookieSource);
+    return true;
 }
 
 QT_END_NAMESPACE

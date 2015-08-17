@@ -74,6 +74,8 @@ public:
     void deleteSessionCookies();
     void deleteAllCookies();
 
+    virtual bool acceptCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &cookieSource);
+
 Q_SIGNALS:
     void cookieAdded(const QNetworkCookie &cookie);
     void cookieRemoved(const QNetworkCookie &cookie);

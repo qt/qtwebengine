@@ -90,6 +90,8 @@ public:
     void deleteAllCookies();
     void getAllCookies();
 
+    bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
+
     void onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList);
     void onSetCallbackResult(qint64 callbackId, bool success);
     void onDeleteCallbackResult(qint64 callbackId, int numCookies);

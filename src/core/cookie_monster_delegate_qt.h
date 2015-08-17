@@ -80,6 +80,7 @@ public:
     void setCookieMonster(net::CookieMonster* monster);
     void setClient(QWebEngineCookieStoreClient *client);
 
+    bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
     void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause) override;
 };
 

@@ -158,6 +158,14 @@ void CookieMonsterDelegateQt::setClient(QWebEngineCookieStoreClient *client)
         m_client->d_func()->processPendingUserCookies();
 }
 
+bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
+{
+    if (!m_client)
+        return true;
+
+    return m_client->d_ptr->canSetCookie(firstPartyUrl, cookieLine, url);
+}
+
 void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause)
 {
     if (!m_client)
