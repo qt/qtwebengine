@@ -923,14 +923,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             if (preeditString.isEmpty())
                 break;
 
-            QTextCharFormat textCharFormat = attribute.value.value<QTextFormat>().toCharFormat();
-            QColor qcolor = textCharFormat.underlineColor();
-            QColor qBackgroundColor = textCharFormat.background().color();
-            blink::WebColor color = SkColorSetARGB(qcolor.alpha(), qcolor.red(), qcolor.green(), qcolor.blue());
-            blink::WebColor backgroundColor = SkColorSetARGB(qBackgroundColor.alpha(), qBackgroundColor.red(), qBackgroundColor.green(), qBackgroundColor.blue());
             int start = qMin(attribute.start, (attribute.start + attribute.length));
             int end = qMax(attribute.start, (attribute.start + attribute.length));
-            underlines.push_back(blink::WebCompositionUnderline(start, end, color, false, backgroundColor));
+            underlines.push_back(blink::WebCompositionUnderline(start, end, /*color*/ SK_ColorBLACK, /*thick*/ false, /*backgroundColor*/ SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:
