@@ -91,6 +91,10 @@ scoped_refptr<WebEngineContext> sContext;
 
 void destroyContext()
 {
+    // Destroy WebEngineContext before its static pointer is zeroed and destructor called.
+    // Before destroying MessageLoop via destroying BrowserMainRunner destructor
+    // WebEngineContext's pointer is used.
+    sContext->destroy();
     sContext = 0;
 }
 
@@ -136,9 +140,13 @@ bool usingQtQuick2DRenderer()
 
 } // namespace
 
-WebEngineContext::~WebEngineContext()
+void WebEngineContext::destroyBrowserContext()
 {
     m_defaultBrowserContext = 0;
+}
+
+void WebEngineContext::destroy()
+{
     delete m_globalQObject;
     m_globalQObject = 0;
     base::MessagePump::Delegate *delegate = m_runLoop->loop_;
@@ -146,6 +154,15 @@ WebEngineContext::~WebEngineContext()
     while (delegate->DoWork()) { }
     GLContextHelper::destroy();
     m_runLoop->AfterRun();
+
+    // Force to destroy RenderProcessHostImpl by destroying BrowserMainRunner.
+    // RenderProcessHostImpl should be destroyed before WebEngineContext since
+    // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
+    m_browserRunner.reset(0);
+}
+
+WebEngineContext::~WebEngineContext()
+{
 }
 
 scoped_refptr<WebEngineContext> WebEngineContext::current()

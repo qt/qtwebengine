@@ -34,6 +34,8 @@ contains(QT_CONFIG, qt_framework) {
     QT_PRIVATE += webenginecore
 }
 
+msvc: QMAKE_LFLAGS *= /LARGEADDRESSAWARE
+
 INCLUDEPATH += ../core
 
 SOURCES = main.cpp

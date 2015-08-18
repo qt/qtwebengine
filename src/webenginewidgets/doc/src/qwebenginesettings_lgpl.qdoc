@@ -32,7 +32,7 @@
 
 /*!
     \class QWebEngineSettings
-    \since QtWebEngine 1.0
+    \since 5.4
     \brief The QWebEngineSettings class provides an object to store the settings used
     by QWebEnginePage
 

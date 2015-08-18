@@ -28,6 +28,7 @@
     \class QWebEngineView
     \brief The QWebEngineView class provides a widget that is used to view and edit
     web documents.
+    \since 5.4
     \ingroup advanced
 
     \inmodule QtWebEngineWidgets
@@ -58,8 +59,8 @@
 
     The title of an HTML document can be accessed with the title() property.
     Additionally, a web site may also specify an icon, which can be accessed
-    using the icon() property. If the title or the icon changes, the corresponding
-    titleChanged() and iconChanged() signals will be emitted. The
+    using the iconUrl() property. If the title or the icon changes, the corresponding
+    titleChanged() and iconUrlChanged() signals will be emitted. The
     textSizeMultiplier() property can be used to change the overall size of
     the text displayed in the web view.
 

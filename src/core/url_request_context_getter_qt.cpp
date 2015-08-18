@@ -36,11 +36,13 @@
 
 #include "url_request_context_getter_qt.h"
 
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -49,7 +51,11 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
+#include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/proxy/proxy_service_v8.h"
+#include "net/proxy/proxy_resolver_v8.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -154,17 +160,29 @@ void URLRequestContextGetterQt::generateStorage()
         base::WorkerPool::GetTaskRunner(true))));
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
-    net::ProxyService *proxyService = nullptr;
+
+    scoped_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
+
+    // The System Proxy Resolver has issues on Windows with unconfigured network cards,
+    // which is why we want to use the v8 one
     if (ProxyResolverQt::useProxyResolverQt()) {
         scoped_ptr<ProxyResolverFactoryQt> factory(new ProxyResolverFactoryQt(false));
-        proxyService = new net::ProxyService(proxyConfigService, factory.Pass(), nullptr);
-    } else
-        proxyService = net::ProxyService::CreateUsingSystemProxyResolver(proxyConfigService, /*num_pac_threads = */0 /*default*/, NULL);
-    m_storage->set_proxy_service(proxyService);
+        m_storage->set_proxy_service(new net::ProxyService(proxyConfigService, factory.Pass(), nullptr));
+    } else {
+        if (!m_dhcpProxyScriptFetcherFactory)
+            m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
+
+        m_storage->set_proxy_service(net::CreateProxyServiceUsingV8ProxyResolver(
+                                         proxyConfigService,
+                                         new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
+                                         m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
+                                         host_resolver.get(),
+                                         NULL /* NetLog */,
+                                         m_networkDelegate.get()));
+    }
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     m_storage->set_transport_security_state(new net::TransportSecurityState());
 
-    scoped_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
     m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
     m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 

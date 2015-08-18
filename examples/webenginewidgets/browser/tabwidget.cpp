@@ -73,11 +73,8 @@ TabBar::TabBar(QWidget *parent)
             this, SLOT(contextMenuRequested(QPoint)));
 
     QString ctrl = QLatin1String("Ctrl+%1");
-    for (int i = 1; i <= 10; ++i) {
-        int key = i;
-        if (key == 10)
-            key = 0;
-        QShortcut *shortCut = new QShortcut(ctrl.arg(key), this);
+    for (int i = 1; i < 10; ++i) {
+        QShortcut *shortCut = new QShortcut(ctrl.arg(i), this);
         m_tabShortcuts.append(shortCut);
         connect(shortCut, SIGNAL(activated()), this, SLOT(selectTabAction()));
     }
@@ -92,8 +89,6 @@ void TabBar::selectTabAction()
 {
     if (QShortcut *shortCut = qobject_cast<QShortcut*>(sender())) {
         int index = m_tabShortcuts.indexOf(shortCut);
-        if (index == 0)
-            index = 10;
         setCurrentIndex(index);
     }
 }

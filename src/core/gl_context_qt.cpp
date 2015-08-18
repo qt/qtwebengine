@@ -60,7 +60,11 @@ namespace {
 
 inline void *resourceForContext(const QByteArray &resource)
 {
-    return qApp->platformNativeInterface()->nativeResourceForContext(resource, qt_gl_global_share_context());
+    QOpenGLContext *shareContext = qt_gl_global_share_context();
+    if (!shareContext) {
+        qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QtWebEngine::initialize() in your main() function.");
+    }
+    return qApp->platformNativeInterface()->nativeResourceForContext(resource, shareContext);
 }
 
 inline void *resourceForIntegration(const QByteArray &resource)

@@ -27,7 +27,7 @@
 /*!
     \class QWebEnginePage
     \brief The QWebEnginePage class provides an object to view and edit web documents.
-
+    \since 5.4
     \inmodule QtWebEngineWidgets
 
     QWebEnginePage holds a main frame responsible for web content, the history
@@ -50,8 +50,8 @@
 
     The title of an HTML page can be accessed with the title() property.
     Additionally, a page may also specify an icon, which can be accessed
-    using the icon() property. If the title or the icon changes, the
-    corresponding titleChanged() and iconChanged() signals will be emitted.
+    using the iconUrl() property. If the title or the icon changes, the
+    corresponding titleChanged() and iconUrlChanged() signals will be emitted.
     The zoomFactor() property can be used to change the overall size
     of the content displayed in the page.
 
@@ -585,6 +585,10 @@
     \fn void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy)
 
     Sets the permission for the web site identified by \a securityOrigin to use \a feature to \a policy.
+
+    \note Call this method on featurePermissionRequested() signal, as it is
+    meant to serve pending feature requests only. Setting feature permissions
+    ahead of a request has no effect.
 
     \sa featurePermissionRequested(), featurePermissionRequestCanceled()
 */

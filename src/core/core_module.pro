@@ -45,7 +45,9 @@ LOCALE_LIST = am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr g
 for(LOC, LOCALE_LIST) {
     locales.files += $$REPACK_DIR/qtwebengine_locales/$${LOC}.pak
 }
-resources.files = $$REPACK_DIR/qtwebengine_resources.pak
+resources.files = $$REPACK_DIR/qtwebengine_resources.pak \
+    $$REPACK_DIR/qtwebengine_resources_100p.pak \
+    $$REPACK_DIR/qtwebengine_resources_200p.pak
 
 icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
 
