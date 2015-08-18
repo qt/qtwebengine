@@ -214,7 +214,7 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
     m_attributes.insert(ScrollAnimatorEnabled, false);
     m_attributes.insert(ErrorPageEnabled, true);
     m_attributes.insert(PluginsEnabled, false);
-    m_attributes.insert(FullscreenSupportEnabled, false);
+    m_attributes.insert(FullScreenSupportEnabled, false);
 
     // Default fonts
     QFont defaultFont;
@@ -280,7 +280,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->enable_scroll_animator = testAttribute(ScrollAnimatorEnabled);
     prefs->enable_error_page = testAttribute(ErrorPageEnabled);
     prefs->plugins_enabled = testAttribute(PluginsEnabled);
-    prefs->fullscreen_supported = testAttribute(FullscreenSupportEnabled);
+    prefs->fullscreen_supported = testAttribute(FullScreenSupportEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));

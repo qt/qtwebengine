@@ -228,9 +228,9 @@ bool QQuickWebEngineSettings::pluginsEnabled() const
 
     Enabled by default.
 */
-bool QQuickWebEngineSettings::fullscreenSupportEnabled() const
+bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::FullscreenSupportEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::FullScreenSupportEnabled);
 }
 
 /*!
@@ -345,12 +345,12 @@ void QQuickWebEngineSettings::setPluginsEnabled(bool on)
         Q_EMIT pluginsEnabledChanged();
 }
 
-void QQuickWebEngineSettings::setFullscreenSupportEnabled(bool on)
+void QQuickWebEngineSettings::setFullScreenSupportEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FullscreenSupportEnabled);
-    d_ptr->setAttribute(WebEngineSettings::FullscreenSupportEnabled, on);
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FullScreenSupportEnabled);
+    d_ptr->setAttribute(WebEngineSettings::FullScreenSupportEnabled, on);
     if (wasOn != on)
-        Q_EMIT fullscreenSupportEnabledChanged();
+        Q_EMIT fullScreenSupportEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

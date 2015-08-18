@@ -97,8 +97,8 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) Q_DECL_OVERRIDE;
-    virtual void requestFullScreen(bool) Q_DECL_OVERRIDE { }
-    virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; }
+    virtual void requestFullScreen(bool) Q_DECL_OVERRIDE;
+    virtual bool isFullScreen() const Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(QtWebEngineCore::FilePickerController *controller) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) Q_DECL_OVERRIDE;
@@ -139,6 +139,7 @@ public:
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
     QColor m_backgroundColor;
+    bool m_fullscreenRequested;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

@@ -88,6 +88,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , isLoading(false)
     , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter.data()))
     , m_backgroundColor(Qt::white)
+    , m_fullscreenRequested(false)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -826,6 +827,18 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
     navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
 }
 
+void QWebEnginePagePrivate::requestFullScreen(bool fullScreen)
+{
+    Q_Q(QWebEnginePage);
+    m_fullscreenRequested = fullScreen;
+    Q_EMIT q->fullScreenRequested(fullScreen);
+}
+
+bool QWebEnginePagePrivate::isFullScreen() const
+{
+    return m_fullscreenRequested && q_ptr->isFullScreen();
+}
+
 void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> controller)
 {
     Q_Q(QWebEnginePage);
@@ -1205,6 +1218,12 @@ bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType typ
     Q_UNUSED(type);
     Q_UNUSED(isMainFrame);
     return true;
+}
+
+bool QWebEnginePage::isFullScreen()
+{
+    Q_D(const QWebEnginePage);
+    return d->view ? d->view->isFullScreen() : false;
 }
 
 QT_END_NAMESPACE

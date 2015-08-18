@@ -72,7 +72,7 @@ public:
         ScrollAnimatorEnabled,
         ErrorPageEnabled,
         PluginsEnabled,
-        FullscreenSupportEnabled,
+        FullScreenSupportEnabled,
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

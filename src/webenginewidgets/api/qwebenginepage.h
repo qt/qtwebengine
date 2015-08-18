@@ -236,6 +236,7 @@ Q_SIGNALS:
 
     void linkHovered(const QString &url);
     void selectionChanged();
+    void fullScreenRequested(bool fullScreen);
     void geometryChangeRequested(const QRect& geom);
     void windowCloseRequested();
 
@@ -260,7 +261,7 @@ protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool certificateError(const QWebEngineCertificateError &certificateError);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
-
+    virtual bool isFullScreen();
 private:
     Q_DISABLE_COPY(QWebEnginePage)
     Q_DECLARE_PRIVATE(QWebEnginePage)
