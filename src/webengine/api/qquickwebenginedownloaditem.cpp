@@ -227,7 +227,7 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
     The download path can only be set in the \c WebEngineProfile.onDownloadRequested
     handler before the download is accepted.
 
-    \sa WebEngineProfile::downloadRequested(WebEngineDownloadItem download), WebEngineDownloadItem::accept()
+    \sa WebEngineProfile::downloadRequested(), accept()
 */
 
 QString QQuickWebEngineDownloadItem::path() const

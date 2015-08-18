@@ -37,7 +37,7 @@
     Go backward within the browser's session history, if possible.
     This function is equivalent to the \c{window.history.back()} DOM method.
 
-    \sa WebEngineView::canGoBack
+    \sa canGoBack
 */
 
 /*!
@@ -55,7 +55,7 @@
     pages in the current session history. If offset is negative, it goes
     back. If the offset is invalid, the page is not changed.
 
-    \sa WebEngineView::goBack, WebEngineView::goForward
+    \sa goBack(), goForward()
 */
 
 /*!
@@ -70,7 +70,7 @@
     Reloads the current page. This function is equivalent to the
     \c{window.location.reload()} DOM method.
 
-    \sa WebEngineView::reloadAndBypassCache
+    \sa reloadAndBypassCache()
 */
 
 /*!
@@ -78,7 +78,7 @@
 
     Reloads the current page, ignoring any cached content.
 
-    \sa WebEngineView::reload
+    \sa reload()
 */
 
 /*!
@@ -88,7 +88,7 @@
     property offers the main interface to load a page into a web view.
     It functions the same as the \c{window.location} DOM property.
 
-    \sa WebEngineView::loadHtml()
+    \sa loadHtml()
 */
 
 /*!
@@ -158,7 +158,7 @@
 
     Returns \c{true} if the web view is in fullscreen mode, \c{false} otherwise.
 
-    \sa WebEngineView::fullScreenRequested, WebEngineView::fullScreenCancelled
+    \sa fullScreenRequested(), fullScreenCancelled()
 */
 
 /*!
@@ -232,7 +232,7 @@
     is the base url, then an image referenced with the relative url, \c diagram.png,
     should be at \c{http://www.example.com/documents/diagram.png}.
 
-    \sa WebEngineView::url
+    \sa url
 */
 
 /*!
@@ -288,12 +288,13 @@
 */
 
 /*!
-    \qmlmethod WebEngineView::grantFeaturePermission(url securityOrigin, Feature feature, bool granted)
+    \qmlmethod void WebEngineView::grantFeaturePermission(url securityOrigin, Feature feature, bool granted)
     \since QtWebEngine 1.1
 
-    Sets the permission for the web site identified by \a securityOrigin to use \a feature.
+    Sets or unsets the permission, depending on \a granted, for the web site
+    identified by \a securityOrigin to use \a feature.
 
-    \sa WebEngineView::featurePermissionRequested
+    \sa featurePermissionRequested()
 */
 
 
@@ -318,16 +319,16 @@
     }
     \endcode
 
-    \sa WebEngineView::isFullScreen, WebEngineView::fullScreenRequested
+    \sa isFullScreen, fullScreenRequested()
 */
 
 /*!
     \qmlsignal WebEngineView::featurePermissionRequested(url securityOrigin, Feature feature)
 
-    This is signal is emitted when the web site identified by \a securityOrigin requests
+    This signal is emitted when the web site identified by \a securityOrigin requests
     to make use of the resource or device identified by \a feature.
 
-    \sa WebEngineView::grantFeaturePermission
+    \sa grantFeaturePermission()
 */
 
 /*!
@@ -366,7 +367,7 @@
         \l{WebEngineView::ErrorDomain} for the full list.
     \endtable
 
-    \sa WebEngineView::loading
+    \sa loading
 */
 
 /*!
@@ -432,7 +433,7 @@
 
     The corresponding handler is onNewViewRequested.
 
-    \sa WebEngineNewViewRequest, WebEngineView::NewViewDestination, {WebEngine Quick Nano Browser}
+    \sa WebEngineNewViewRequest, NewViewDestination, {WebEngine Quick Nano Browser}
 */
 
 /*!
@@ -444,7 +445,7 @@
 
     The corresponding handler is onFullScreenRequested.
 
-    \sa WebEngineFullScreenRequest, WebEngineView::isFullScreen
+    \sa WebEngineFullScreenRequest, isFullScreen
 */
 
 /*!
@@ -546,7 +547,7 @@
     \value FindCaseSensitively By default findText() works case insensitive. Specifying
             this option changes the behavior to a case sensitive find operation.
 
-    \sa WebEngineView::findText()
+    \sa findText()
 */
 
 /*!
@@ -559,8 +560,7 @@
     \value MediaVideoCapture Video devices, e.g. cameras
     \value MediaAudioVideoCapture Both Audio and Video capture devices.
 
-    \sa WebEngineView::featurePermissionRequested, WebEngineView::grantFeaturePermission
-
+    \sa featurePermissionRequested(), grantFeaturePermission()
 */
 
 /*!
@@ -569,9 +569,9 @@
     \inqmlmodule QtWebEngine 1.1
     \since QtWebEngine 1.1
 
-    \brief A utility class for the WebEngineView::fullScreenRequested signal.
+    \brief A utility class for the WebEngineView::fullScreenRequested() signal.
 
-    \sa WebEngineView::fullScreenRequested
+    \sa WebEngineView::fullScreenRequested()
 */
 
 /*!
@@ -581,7 +581,7 @@
 
     Returns \c{true} if the application should toggle fullscreen mode on, \c{false} otherwise.
 
-    \sa WebEngineFullScreenRequest::accept()
+    \sa accept()
 */
 
 /*!
@@ -589,7 +589,7 @@
     \since QtWebEngine 1.1
 
     Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
-    property to be equal to WebEngineFullScreenRequest::toggleOn.
+    property to be equal to toggleOn.
 
     \code
     ApplicationWindow {
@@ -606,5 +606,5 @@
     }
     \endcode
 
-    \sa WebEngineFullScreenRequest::toggleOn
+    \sa toggleOn
 */
