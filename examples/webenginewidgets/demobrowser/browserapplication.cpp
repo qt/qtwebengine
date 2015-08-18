@@ -63,6 +63,7 @@
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
 #include <QtNetwork/QNetworkProxy>
+#include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QSslSocket>
 
 #include <QWebEngineProfile>
@@ -491,6 +492,10 @@ QNetworkAccessManager *BrowserApplication::networkAccessManager()
 {
     if (!s_networkAccessManager) {
         s_networkAccessManager = new QNetworkAccessManager();
+        connect(s_networkAccessManager, &QNetworkAccessManager::authenticationRequired,
+                BrowserApplication::instance(), &BrowserApplication::authenticationRequired);
+        connect(s_networkAccessManager, &QNetworkAccessManager::proxyAuthenticationRequired,
+                BrowserApplication::instance(), &BrowserApplication::proxyAuthenticationRequired);
     }
     return s_networkAccessManager;
 }
@@ -548,4 +553,69 @@ void BrowserApplication::setPrivateBrowsing(bool privateBrowsing)
         }
     }
     emit privateBrowsingChanged(privateBrowsing);
+}
+
+void BrowserApplication::setLastAuthenticator(QAuthenticator *authenticator)
+{
+    m_lastAuthenticator = QAuthenticator(*authenticator);
+}
+
+void BrowserApplication::setLastProxyAuthenticator(QAuthenticator *authenticator)
+{
+    m_lastProxyAuthenticator = QAuthenticator(*authenticator);
+}
+
+void BrowserApplication::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator)
+{
+    if (m_lastAuthenticator.isNull())
+        return;
+
+
+    Q_ASSERT(m_lastAuthenticator.option("key").isValid());
+    QByteArray lastKey = m_lastAuthenticator.option("key").toByteArray();
+    QByteArray key = BrowserApplication::authenticationKey(reply->url(), authenticator->realm());
+
+    if (lastKey == key)
+        *authenticator = m_lastAuthenticator;
+}
+
+void BrowserApplication::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator)
+{
+    if (m_lastProxyAuthenticator.isNull())
+        return;
+
+    QNetworkProxy::ProxyType proxyType = proxy.type();
+    if (proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy)
+        return;
+
+    Q_ASSERT(m_lastProxyAuthenticator.option("host").isValid());
+    QByteArray lastKey = m_lastProxyAuthenticator.option("key").toByteArray();
+    QByteArray key = BrowserApplication::proxyAuthenticationKey(proxy, authenticator->realm());
+
+    if (lastKey == key)
+        *authenticator = m_lastAuthenticator;
+}
+
+// TODO: Remove these functions (QTBUG-47967)
+QByteArray BrowserApplication::authenticationKey(const QUrl &url, const QString &realm)
+{
+    QUrl copy = url;
+    copy.setFragment(realm);
+    return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
+}
+
+QByteArray BrowserApplication::proxyAuthenticationKey(const QNetworkProxy &proxy, const QString &realm)
+{
+    QString host = QString("%1:%2").arg(proxy.hostName()).arg(proxy.port());
+    return BrowserApplication::proxyAuthenticationKey(proxy.user(), host, realm);
+}
+
+QByteArray BrowserApplication::proxyAuthenticationKey(const QString &user, const QString &host, const QString &realm)
+{
+    QUrl key;
+    key.setScheme(QLatin1String("proxy-http"));
+    key.setUserName(user);
+    key.setHost(host);
+    key.setFragment(realm);
+    return "auth:" + key.toEncoded();
 }

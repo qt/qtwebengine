@@ -271,8 +271,11 @@ void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *aut
     passwordDialog.introLabel->setWordWrap(true);
 
     if (dialog.exec() == QDialog::Accepted) {
+        QByteArray key = BrowserApplication::authenticationKey(requestUrl, auth->realm());
         auth->setUser(passwordDialog.userNameLineEdit->text());
         auth->setPassword(passwordDialog.passwordLineEdit->text());
+        auth->setOption("key", key);
+        BrowserApplication::instance()->setLastAuthenticator(auth);
     } else {
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
@@ -299,8 +302,12 @@ void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator
     proxyDialog.introLabel->setWordWrap(true);
 
     if (dialog.exec() == QDialog::Accepted) {
-        auth->setUser(proxyDialog.userNameLineEdit->text());
+        QString user = proxyDialog.userNameLineEdit->text();
+        QByteArray key = BrowserApplication::proxyAuthenticationKey(user, proxyHost, auth->realm());
+        auth->setUser(user);
         auth->setPassword(proxyDialog.passwordLineEdit->text());
+        auth->setOption("key", key);
+        BrowserApplication::instance()->setLastProxyAuthenticator(auth);
     } else {
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
