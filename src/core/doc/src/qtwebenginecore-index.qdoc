@@ -26,83 +26,39 @@
 ****************************************************************************/
 
 /*!
-    \module QtWebEngineWidgets
-    \title Qt WebEngine Widgets C++ Classes
-    \qtvariable webenginewidgets
-    \brief Provides a web browser engine as well as C++ classes to render and
-    interact with web content
-
-    To include the definitions of the module's classes, use the
-    following directive:
-
-    \snippet snippets/qtwebengine_build_snippet.qdoc 1
-
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
-
-    \snippet snippets/qtwebengine_build_snippet.qdoc 0
-*/
-
-/*!
-    \page qtwebenginewidgets-index.html
-    \title Qt WebEngine Widgets
+    \page qtwebenginecore-index.html
+    \title Qt WebEngine Core
     \ingroup modules
 
-    \brief The Qt WebEngine Widgets module provides a web browser engine as
-    well as C++ classes to display and interact with web content.
+    \brief Provides common API shared by Qt WebEngine and Qt WebEngine Widgets.
 
-    Qt WebEngine Widgets gives you a Web browser engine that you can use to
-    embed content easily from the World Wide Web into your Qt application.
+    Qt WebEngine Core provides API shared by \l {Qt WebEngine} and \l {Qt WebEngine Widgets}.
 
-    Qt WebEngine Widgets lets you display HyperText Markup Language version 5
-    (HTML5), Extensible HyperText Markup Language (XHTML) and Scalable Vector
-    Graphics (SVG) documents, styled using Cascading Style Sheets (CSS) and
-    scripted with JavaScript.
-
-    HTML and XHTML documents can also be made fully editable to the user by
-    using the \c{contenteditable} attribute on HTML elements.
-
-    Qt WebEngine is based on the Chromium project. See the
-    \l{http://www.chromium.org}{Chromium Project} Web site for more information.
-
-    \section1 Including In Your Project
+    \section1 Getting Started
 
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet snippets/qtwebengine_build_snippet.qdoc 1
+    \snippet qtwebenginecore_build_snippet.qdoc 1
 
-    To link against the module, add this line to your \l qmake \c
-    .pro file:
+    To link against the module, add this line to your qmake project file:
 
-    \snippet snippets/qtwebengine_build_snippet.qdoc 0
+    \snippet qtwebenginecore_build_snippet.qdoc 0
 
-    \section1 Architecture
-
-    Use the QWebEngineView class to display web pages in the simplest way.
-    Because it's a widget, you can embed QWebEngineView into your forms and use
-    its convenience functions to download and display web sites.
-
-    \snippet snippets/simple/main.cpp Using QWebEngineView
-
-    An instance of QWebEngineView has one QWebEnginePage. QWebEnginePage
-    provides access to the page's navigation history, ability to run JavaScript
-    code in the context of the page's main frame, and enables customization of
-    handlers for specific events like showing custom authentication dialogs.
-
-    \section1 Reference Documentation
+    \section1 Articles and Guides
 
     \list
-        \li \l {Qt WebEngine Widgets C++ Classes}
+        \li \l{Qt WebEngine Overview}
     \endlist
 
-    \section1 Examples
+    \section1 API Reference
 
     \list
-        \li \l {Qt WebEngine Widgets Examples}
+        \li \l{Qt WebEngine Core C++ Classes}
     \endlist
 
     \section1 License Information
+
     This is a snapshot of the integration of Chromium into Qt.
 
     Qt Commercial Edition licensees that wish to distribute applications that
@@ -145,18 +101,4 @@
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
     \endlegalese
-*/
-
-/*!
-    \group webengine-widgetexamples
-    \title Qt WebEngine Widgets Examples
-    \brief Examples demonstrating the Qt WebEngine Widgets usage
-    \ingroup all-examples
-
-    Qt provides an integrated Web browser component based on Chromium, the popular
-    open source browser engine.
-
-    These examples and demonstrations show a range of different uses for Qt WebEngine,
-    from displaying Web pages within a Qt user interface to an implementation of
-    a basic function Web browser.
 */

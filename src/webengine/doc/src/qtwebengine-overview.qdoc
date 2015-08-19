@@ -1,0 +1,171 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qtwebengine-overview.html
+    \title Qt WebEngine Overview
+
+    The Qt WebEngine module provides a web browser engine that makes it easy to embed content from
+    the World Wide Web into your Qt application on platforms that do not have a native web engine.
+    The web engine is not intended to function as a \e {Web Runtime}; to display web content in a
+    QML application by using APIs native to the platform, use the \l{Qt WebView} module, instead.
+
+    Qt WebEngine provides C++ classes and QML types for rendering HTML, XHTML, and SVG documents,
+    styled using Cascading Style Sheets (CSS) and scripted with JavaScript. HTML documents can be
+    made fully editable by the user through the use of the \c{contenteditable} attribute on HTML
+    elements.
+
+    Qt WebEngine supercedes the \l{Qt WebKit Widgets}{Qt WebKit} module, which is based on the
+    WebKit project, but has not been actively synchronized with the upstream WebKit code since
+    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
+    application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}. For new
+    applications, we recommend using Qt Quick and the WebEngineView QML type.
+
+    \section1 Qt WebEngine Architecture
+
+    \image qtwebengine-architecture.png
+
+    The functionality in Qt WebEngine is divided into the following modules:
+
+    \list
+        \li \l{Qt WebEngine Widgets}, which provides a web browser engine and C++ classes to render
+            web content and to interact with it
+        \li \l{Qt WebEngine}, which provides QML types for rendering web content within a QML
+            application
+        \li \l{Qt WebEngine Core}, which provides common API used by Qt WebEngine and
+            Qt WebEngine Widgets
+    \endlist
+
+    The Qt WebEngine core is based on the \l{http://www.chromium.org}{Chromium Project}. Chromium
+    provides its own network and painting engines and is developed tightly together with its
+    dependent modules, and therefore Qt WebEngine provides better and more reliable support for the
+    latest HTML5 specification than Qt WebKit. However, Qt WebEngine is thus heavier than Qt WebKit
+    and does not provide direct access to the network stack and the HTML document through C++ APIs.
+
+    Chromium is tightly integrated to the \l{Qt Quick Scene Graph}{Qt Quick scene graph}, which is
+    based on OpenGL ES 2.0 or OpenGL 2.0 for its rendering. This provides you with one-pass
+    compositing of web content and all the Qt Quick UI. The integration to Chromium is transparent
+    to developers, who just work with Qt and JavaScript.
+
+    To expose QObjects to JavaScript, developers can use the \l {Qt WebChannel} module.
+
+    \section1 Embedding Web Content into Widget Based Applications
+
+    Use the QWebEngineView class to display web pages in the simplest way. Because it is a widget,
+    you can embed QWebEngineView into your forms and use its convenience functions to download and
+    display web sites.
+
+    \code
+    QWebEngineView *view = new QWebEngineView(parent);
+    view->load(QUrl("http://www.qt.io/"));
+    view->show();
+    \endcode
+
+    An instance of QWebEngineView has one QWebEnginePage. QWebEnginePage provides access to the
+    page's navigation history and the ability to run JavaScript code in the context of the page's
+    main frame and enables customization of handlers for specific events like showing custom
+    authentication dialogs.
+
+    \section1 Embedding Web Content into Qt Quick Applications
+
+    The WebEngineView QML type allows QML applications to render regions of dynamic web content. A
+    \e{WebEngineView} type may share the screen with other QML types or encompass the full screen
+    as specified within the QML application.
+
+    An application can load pages into the WebEngineView, using either an URL or HTML string, and
+    navigate within session history. By default, links to different pages load within the same
+    WebEngineView object, but web sites may request them to be opened as a new tab, window, or
+    dialog.
+
+    The following sample QML application loads a web page and responds to session history context:
+
+    \code
+    import QtQuick 2.1
+    import QtQuick.Controls 1.1
+    import QtWebEngine 1.0
+
+    ApplicationWindow {
+        width: 1280
+        height: 720
+        visible: true
+        WebEngineView {
+            id: webview
+            url: "http://www.qt.io"
+            anchors.fill: parent
+        }
+    }
+    \endcode
+
+    \section1 Using WebEngine Core
+
+    Qt WebEngine Core provides an API shared by Qt WebEngine and Qt WebEngine Widgets.
+
+    \section1 License Information
+
+    Qt WebEngine module is a snapshot of the integration of Chromium into Qt.
+
+    Qt Commercial Edition licensees that wish to distribute applications that
+    use the Qt WebEngine module need to be aware of their obligations under the
+    GNU Library General Public License (LGPLv2).
+
+    Developers using the Open Source Edition can choose to redistribute
+    the module under the GNU LGPLv3 or GPLv2 and up.
+
+    \legalese
+
+    Chromium is licensed under the following license:
+
+    Copyright (c) 2013 The Chromium Authors. All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are
+    met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following disclaimer
+      in the documentation and/or other materials provided with the
+      distribution.
+    * Neither the name of Google Inc. nor the names of its
+    contributors may be used to endorse or promote products derived from
+    this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    \endlegalese
+*/

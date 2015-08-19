@@ -25,35 +25,46 @@
 **
 ****************************************************************************/
 
-
 /*!
-    \module QtWebEngineCore
-    \title Qt WebEngine Core C++ Classes
-    \brief Provides public API shared by both QtWebEngine and QtWebEngineWidgets
-    \since 5.6
+    \page qtwebenginewidgets-index.html
+    \title Qt WebEngine Widgets
+    \ingroup modules
+
+    \brief Provides a web browser engine as well as C++ classes to render  web content and interact
+    with it.
+
+    \section1 Getting Started
 
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet qtwebenginecore_build_snippet.qdoc 1
+    \snippet qtwebengine_build_snippet.qdoc 1
 
-    If you use qmake to build your projects, Qt WebEngine Core is usually
-    indirectly included through the \l[QtWebEngine]{Qt WebEngine} or
-    \l[QtWebEngineWidgets]{Qt WebEngine Widgets} modules.
-*/
+    To link against the module, add this line to your qmake project file:
 
-/*!
-    \page qtwebenginecore-index.html
-    \title Qt WebEngine Core
-    \ingroup modules
+    \snippet qtwebengine_build_snippet.qdoc 0
 
-    \brief Common API shared by both Qt WebEngine and Qt WebEngine Widgets.
+    \section1 Articles and Guides
 
-    Qt WebEngine Core provides API shared by both Qt WebEngine and
-    Qt WebEngine Widgets.
+    \list
+        \li \l{Qt WebEngine Overview}
+        \li \l{Porting from Qt WebKit to Qt WebEngine}
+    \endlist
 
+    \section1 Examples
+
+    \list
+        \li \l {Qt WebEngine Widgets Examples}
+    \endlist
+
+    \section1 API Reference
+
+    \list
+        \li \l {Qt WebEngine Widgets C++ Classes}
+    \endlist
 
     \section1 License Information
+
     This is a snapshot of the integration of Chromium into Qt.
 
     Qt Commercial Edition licensees that wish to distribute applications that

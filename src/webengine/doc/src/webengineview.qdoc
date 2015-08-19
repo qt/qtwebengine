@@ -25,54 +25,6 @@
 // placed inline in the code as usual.
 
 /*!
-    \page qtwebengine-index.html
-    \title Qt WebEngine
-
-    The Qt WebEngine module provides the WebEngineView API which allows QML applications
-    to render regions of dynamic web content. A \e{WebEngineView} component may share
-    the screen with other QML components or encompass the full screen as
-    specified within the QML application.
-
-    It allows an application to load pages into the WebEngineView, either by URL or with
-    an HTML string, and navigate within session history. By default,
-    links to different pages load within the same WebEngineView, but web sites may
-    request them to be opened as a new tab, window or dialog.
-
-    The following sample QML application loads a web page, responds to session
-    history context.
-
-    \code
-    import QtQuick 2.1
-    import QtQuick.Controls 1.1
-    import QtWebEngine 1.0
-
-    ApplicationWindow {
-        width: 1280
-        height: 720
-        visible: true
-        WebEngineView {
-            id: webview
-            url: "http://www.qt-project.org"
-            anchors.fill: parent
-        }
-    }
-    \endcode
-
-    \section1 API References
-
-    \list
-    \li \l{Qt WebEngine QML Types}{QML Types}
-    \endlist
-
-    \section1 Examples
-
-    There are several Qt WebEngine examples located in the
-    \l{Qt WebEngine Examples} page.
-
-*/
-
-
-/*!
     \qmltype WebEngineView
     \instantiates QQuickWebEngineView
     \inqmlmodule QtWebEngine 1.0

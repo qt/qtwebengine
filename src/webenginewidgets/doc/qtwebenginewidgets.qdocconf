@@ -32,8 +32,10 @@ tagfile                 = ../../../doc/qtwebenginewidgets/qtwebenginewidgets.tag
 depends += qtwebengine qtcore qtnetwork qtgui qtwidgets qtwebkit qtdoc
 
 headerdirs  += ../api
-sourcedirs  += ../api
-exampledirs +=  ../../../examples/webenginewidgets .
+sourcedirs  += ../api src
+
+exampledirs += ../../../examples/webenginewidgets \
+               snippets
 
 navigation.landingpage = "Qt WebEngine Widgets"
 navigation.cppclassespage = "Qt WebEngine Widgets C++ Classes"

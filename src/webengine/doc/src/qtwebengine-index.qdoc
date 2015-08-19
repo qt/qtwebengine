@@ -1,0 +1,89 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qtwebengine-index.html
+    \title Qt WebEngine
+    \ingroup modules
+
+    \brief Provides functionality for rendering regions of dynamic web content.
+
+    \e {Qt WebEngine} provides functionality for rendering regions of dynamic web content.
+
+    The functionality in Qt WebEngine is divided into the following modules:
+
+    \annotatedlist qtwebengine-modules
+
+    For Qt Quick applications, Qt WebEngine provides the following QML modules:
+
+    \annotatedlist qtwebengine-qmlmodules
+
+    \section1 Getting Started
+
+    To include the definitions of the Qt WebEngineCore and Qt WebEngineWidgets modules' classes, use
+    the following directives:
+
+    \badcode
+    #include <QtWebEngineCore>
+    #include <QtWebEngineWidgets>
+    \endcode
+
+    To import the Qt WebEngine module's QML types, add the following import statement to your .qml
+    file:
+
+    \badcode
+    import QtWebEngine 1.2
+    \endcode
+
+    To link against the modules, add QT variables to your qmake .pro file:
+
+    \badcode
+    QT += webengine webenginecore webenginewidgets
+    \endcode
+
+    \section1 Articles and Guides
+
+    \list
+        \li \l{Qt WebEngine Overview}
+        \li \l{Porting from Qt WebKit to Qt WebEngine}
+    \endlist
+
+    \section1 Examples
+
+    \list
+        \li \l{Qt WebEngine Examples}
+        \li \l{Qt WebEngine Widgets Examples}
+    \endlist
+
+    \section1 API References
+
+    \list
+        \li \l{Qt WebEngine Core C++ Classes}
+        \li \l{Qt WebEngine Widgets C++ Classes}
+        \li \l{Qt WebEngine QML Types}
+    \endlist
+*/
