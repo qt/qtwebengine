@@ -377,6 +377,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
     rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
     rendererPrefs->user_agent_override = d->browserContextAdapter->httpUserAgent().toStdString();
+    rendererPrefs->accept_languages = d->browserContextAdapter->httpAcceptLanguageWithoutQualities().toStdString();
     d->webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     // Create and attach observers to the WebContents.

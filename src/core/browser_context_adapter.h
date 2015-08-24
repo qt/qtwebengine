@@ -151,6 +151,7 @@ public:
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
 
+    QString httpAcceptLanguageWithoutQualities() const;
     QString httpAcceptLanguage() const;
     void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
 
