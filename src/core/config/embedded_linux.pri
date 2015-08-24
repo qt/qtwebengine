@@ -54,6 +54,7 @@ GYP_CONFIG += \
 contains(QT_CONFIG, system-zlib): config_system_minizip: GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
+contains(QT_CONFIG, system-harfbuzz): GYP_CONFIG += use_system_harfbuzz=1
 !contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
 config_system_libevent: GYP_CONFIG += use_system_libevent=1
 config_system_libwebp: GYP_CONFIG += use_system_libwebp=1
