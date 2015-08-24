@@ -211,9 +211,9 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::pluginsEnabled
 
-    This setting enables general support for plugins.
+    Enables support for Pepper plugins, such as the Flash player.
 
-    It is disabled by default.
+    Disabled by default.
 */
 bool QQuickWebEngineSettings::pluginsEnabled() const
 {
@@ -224,9 +224,9 @@ bool QQuickWebEngineSettings::pluginsEnabled() const
     \qmlproperty bool WebEngineSettings::fullscreenSupportEnabled
     \since QtWebEngine 1.2
 
-    This setting tells the web engine if fullscreen is supported in this application or not.
+    Tells the web engine whether fullscreen is supported in this application or not.
 
-    It is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::fullscreenSupportEnabled() const
 {

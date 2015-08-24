@@ -116,6 +116,8 @@
     \value HyperlinkAuditingEnabled This setting enables support for the ping attribute for hyperlinks. It is disabled by default.
     \value ScrollAnimatorEnabled This setting enables animated scrolling. It is disabled by default.
     \value ErrorPageEnabled This setting enables built-in error pages of Chromium. It is enabled by default.
+    \value  PluginsEnabled
+            Enables support for Pepper plugins, such as the Flash player. Disabled by default.
 */
 
 /*!
