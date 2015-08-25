@@ -595,6 +595,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case InspectElement:
         text = tr("Inspect Element");
         break;
+    case ExitFullScreen:
+        text = tr("Exit Full Screen Mode");
+        break;
     default:
         break;
     }
@@ -761,6 +764,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case InspectElement:
         d->adapter->inspectElementAt(d->m_menuData.pos);
+        break;
+    case ExitFullScreen:
+        d->adapter->exitFullScreen();
         break;
     default:
         Q_UNREACHABLE();
@@ -968,6 +974,8 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     } else if (contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas) {
         menu->addAction(QWebEnginePage::action(CopyImageToClipboard));
     }
+    if (d->isFullScreen())
+        menu->addAction(QWebEnginePage::action(ExitFullScreen));
 
     return menu;
 }

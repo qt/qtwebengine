@@ -266,6 +266,11 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
         ui()->addMenuItem(item, QObject::tr("Copy Image"));
     }
+    if (isFullScreen()) {
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ExitFullScreen); });
+        ui()->addMenuItem(item, QObject::tr("Exit Full Screen Mode"));
+    }
 
     // FIXME: expose the context menu data as an attached property to make this more useful
     if (contextMenuExtraItems) {
@@ -1291,6 +1296,9 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case InspectElement:
         d->adapter->inspectElementAt(d->contextMenuData.pos);
+        break;
+    case ExitFullScreen:
+        d->adapter->exitFullScreen();
         break;
     default:
         Q_UNREACHABLE();

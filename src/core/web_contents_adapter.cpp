@@ -800,6 +800,12 @@ void WebContentsAdapter::inspectElementAt(const QPoint &location)
     }
 }
 
+void WebContentsAdapter::exitFullScreen()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->ExitFullscreen();
+}
+
 void WebContentsAdapter::wasShown()
 {
     Q_D(WebContentsAdapter);

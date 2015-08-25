@@ -224,6 +224,7 @@ public:
         DownloadMediaToDisk,
 
         InspectElement,
+        ExitFullScreen,
 
         WebActionCount
     };
