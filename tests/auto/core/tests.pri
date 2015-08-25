@@ -13,6 +13,3 @@ INCLUDEPATH += $$PWD
 
 QT += testlib network webenginewidgets widgets
 osx: CONFIG -= app_bundle
-
-# This define is used by some tests to look up resources in the source tree
-DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"
