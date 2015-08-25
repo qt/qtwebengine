@@ -591,6 +591,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case DownloadMediaToDisk:
         text = tr("Download Media");
         break;
+    case InspectElement:
+        text = tr("Inspect Element");
+        break;
     default:
         break;
     }
@@ -754,6 +757,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             bool enable = (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
             d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
+        break;
+    case InspectElement:
+        d->adapter->inspectElementAt(d->m_menuData.pos);
         break;
     default:
         Q_UNREACHABLE();

@@ -58,6 +58,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include <content/public/browser/download_manager.h>
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
@@ -789,6 +790,14 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
     Q_D(WebContentsAdapter);
     blink::WebMediaPlayerAction blinkAction((blink::WebMediaPlayerAction::Type)action, enable);
     d->webContents->GetRenderViewHost()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
+}
+
+void WebContentsAdapter::inspectElementAt(const QPoint &location)
+{
+    Q_D(WebContentsAdapter);
+    if (content::DevToolsAgentHost::HasFor(d->webContents.get())) {
+        content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->InspectElement(location.x(), location.y());
+    }
 }
 
 void WebContentsAdapter::wasShown()

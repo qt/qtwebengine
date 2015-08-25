@@ -1289,6 +1289,9 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
             d->adapter->executeMediaPlayerActionAt(d->contextMenuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
         break;
+    case InspectElement:
+        d->adapter->inspectElementAt(d->contextMenuData.pos);
+        break;
     default:
         Q_UNREACHABLE();
     }

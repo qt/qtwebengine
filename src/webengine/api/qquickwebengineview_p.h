@@ -223,6 +223,8 @@ public:
         ToggleMediaMute,
         DownloadMediaToDisk,
 
+        InspectElement,
+
         WebActionCount
     };
 
