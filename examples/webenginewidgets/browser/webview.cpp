@@ -44,7 +44,6 @@
 #include "cookiejar.h"
 #include "downloadmanager.h"
 #include "featurepermissionbar.h"
-#include "networkaccessmanager.h"
 #include "ui_passworddialog.h"
 #include "ui_proxy.h"
 #include "tabwidget.h"

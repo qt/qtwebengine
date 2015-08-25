@@ -62,11 +62,6 @@ SOURCES += \
 
 RESOURCES += data/data.qrc htmls/htmls.qrc
 
-contains(DEFINES, QWEBENGINEPAGE_SETNETWORKACCESSMANAGER) {
-    HEADERS += cookiejar.h networkaccessmanager.h
-    SOURCES += cookiejar.cpp networkaccessmanager.cpp
-}
-
 build_all:!build_pass {
     CONFIG -= build_all
     CONFIG += release
