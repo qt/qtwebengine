@@ -116,8 +116,8 @@ public:
     int httpCacheMaximumSize() const;
     void setHttpCacheMaximumSize(int maxSize);
 
-    Q_REVISION(2) QString httpAcceptLanguage() const;
-    Q_REVISION(2) void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
+    Q_REVISION(1) QString httpAcceptLanguage() const;
+    Q_REVISION(1) void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
 
     static QQuickWebEngineProfile *defaultProfile();
 
@@ -130,7 +130,7 @@ signals:
     void httpCacheTypeChanged();
     void persistentCookiesPolicyChanged();
     void httpCacheMaximumSizeChanged();
-    Q_REVISION(2) void httpAcceptLanguageChanged();
+    Q_REVISION(1) void httpAcceptLanguageChanged();
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);

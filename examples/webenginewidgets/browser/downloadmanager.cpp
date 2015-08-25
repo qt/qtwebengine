@@ -43,7 +43,6 @@
 
 #include "autosaver.h"
 #include "browserapplication.h"
-#include "networkaccessmanager.h"
 
 #include <math.h>
 

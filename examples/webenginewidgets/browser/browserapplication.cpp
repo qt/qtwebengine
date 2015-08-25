@@ -46,7 +46,6 @@
 #include "cookiejar.h"
 #include "downloadmanager.h"
 #include "history.h"
-#include "networkaccessmanager.h"
 #include "tabwidget.h"
 #include "webview.h"
 
@@ -299,6 +298,21 @@ void BrowserApplication::loadSettings()
     defaultProfile->setPersistentStoragePath(pdataPath);
 
     settings.endGroup();
+
+    settings.beginGroup(QLatin1String("proxy"));
+    QNetworkProxy proxy;
+    if (settings.value(QLatin1String("enabled"), false).toBool()) {
+        if (settings.value(QLatin1String("type"), 0).toInt() == 0)
+            proxy = QNetworkProxy::Socks5Proxy;
+        else
+            proxy = QNetworkProxy::HttpProxy;
+        proxy.setHostName(settings.value(QLatin1String("hostName")).toString());
+        proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
+        proxy.setUser(settings.value(QLatin1String("userName")).toString());
+        proxy.setPassword(settings.value(QLatin1String("password")).toString());
+    }
+    QNetworkProxy::setApplicationProxy(proxy);
+    settings.endGroup();
 }
 
 QList<BrowserMainWindow*> BrowserApplication::mainWindows()
@@ -474,18 +488,10 @@ DownloadManager *BrowserApplication::downloadManager()
 
 QNetworkAccessManager *BrowserApplication::networkAccessManager()
 {
-#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    if (!s_networkAccessManager) {
-        s_networkAccessManager = new NetworkAccessManager();
-        s_networkAccessManager->setCookieJar(new CookieJar);
-    }
-    return s_networkAccessManager;
-#else
     if (!s_networkAccessManager) {
         s_networkAccessManager = new QNetworkAccessManager();
     }
     return s_networkAccessManager;
-#endif
 }
 
 HistoryManager *BrowserApplication::historyManager()
