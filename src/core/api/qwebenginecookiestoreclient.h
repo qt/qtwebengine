@@ -80,7 +80,7 @@ Q_SIGNALS:
 
 private:
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
-
+    Q_DISABLE_COPY(QWebEngineCookieStoreClient)
     Q_DECLARE_PRIVATE(QWebEngineCookieStoreClient)
     QScopedPointer<QWebEngineCookieStoreClientPrivate> d_ptr;
 };

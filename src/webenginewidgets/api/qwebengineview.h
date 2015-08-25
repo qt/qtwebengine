@@ -120,6 +120,7 @@ protected:
     virtual bool event(QEvent*) Q_DECL_OVERRIDE;
 
 private:
+    Q_DISABLE_COPY(QWebEngineView)
     Q_DECLARE_PRIVATE(QWebEngineView)
     QScopedPointer<QWebEngineViewPrivate> d_ptr;
 

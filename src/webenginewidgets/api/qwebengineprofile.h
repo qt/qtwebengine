@@ -115,6 +115,7 @@ Q_SIGNALS:
     void downloadRequested(QWebEngineDownloadItem *download);
 
 private:
+    Q_DISABLE_COPY(QWebEngineProfile)
     Q_DECLARE_PRIVATE(QWebEngineProfile)
     QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = 0);
 
