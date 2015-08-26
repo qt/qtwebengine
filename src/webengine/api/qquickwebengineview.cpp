@@ -266,6 +266,11 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
         ui()->addMenuItem(item, QObject::tr("Copy Image"));
     }
+    if (adapter->hasInspector()) {
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::InspectElement); });
+        ui()->addMenuItem(item, QObject::tr("Inspect Element"));
+    }
     if (isFullScreen()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ExitFullScreen); });

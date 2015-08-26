@@ -114,6 +114,8 @@
     \value DownloadImageToDisk Download the highlighted image to the disk. (Added in Qt 5.6)
     \value DownloadMediaToDisk Download the hovered audio or video to the disk. (Added in Qt 5.6)
 
+    \value InspectElement Triggers any attached Web Inspector to inspect the highlighed element. (Added in Qt 5.6)
+
     \omitvalue WebActionCount
 
 */

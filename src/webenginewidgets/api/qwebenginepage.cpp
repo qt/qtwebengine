@@ -974,6 +974,10 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     } else if (contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas) {
         menu->addAction(QWebEnginePage::action(CopyImageToClipboard));
     }
+
+    if (d->adapter->hasInspector())
+        menu->addAction(QWebEnginePage::action(InspectElement));
+
     if (d->isFullScreen())
         menu->addAction(QWebEnginePage::action(ExitFullScreen));
 

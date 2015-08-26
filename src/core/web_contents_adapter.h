@@ -126,6 +126,7 @@ public:
     void executeMediaPlayerActionAt(const QPoint &location, MediaPlayerAction action, bool enable);
 
     void inspectElementAt(const QPoint &location);
+    bool hasInspector() const;
     void exitFullScreen();
 
     void wasShown();

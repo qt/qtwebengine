@@ -800,6 +800,14 @@ void WebContentsAdapter::inspectElementAt(const QPoint &location)
     }
 }
 
+bool WebContentsAdapter::hasInspector() const
+{
+    const Q_D(WebContentsAdapter);
+    if (content::DevToolsAgentHost::HasFor(d->webContents.get()))
+        return content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->IsAttached();
+    return false;
+}
+
 void WebContentsAdapter::exitFullScreen()
 {
     Q_D(WebContentsAdapter);
