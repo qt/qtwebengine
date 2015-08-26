@@ -55,7 +55,8 @@
     F(ConfirmDialog, confirmDialog) SEPARATOR \
     F(PromptDialog, promptDialog) SEPARATOR \
     F(FilePicker, filePicker) SEPARATOR \
-    F(MessageBubble, messageBubble) SEPARATOR
+    F(MessageBubble, messageBubble) SEPARATOR \
+    F(AuthenticationDialog, authenticationDialog) SEPARATOR
 
 #define COMMA_SEPARATOR ,
 #define SEMICOLON_SEPARATOR ;
@@ -72,6 +73,7 @@ class QQuickWebEngineView;
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
+class AuthenticationDialogController;
 class JavaScriptDialogController;
 class FilePickerController;
 
@@ -102,6 +104,7 @@ public:
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
     void showDialog(QSharedPointer<JavaScriptDialogController>);
+    void showDialog(QSharedPointer<AuthenticationDialogController>);
     void showFilePicker(FilePickerController *controller);
     void showMessageBubble(const QRect &anchor, const QString &mainText, const QString &subText);
     void hideMessageBubble();

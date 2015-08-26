@@ -37,6 +37,7 @@
 #include "ui_delegates_manager.h"
 
 #include "api/qquickwebengineview_p.h"
+#include "authentication_dialog_controller.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 
@@ -315,6 +316,46 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QObject::connect(dialogController.data(), &JavaScriptDialogController::dialogCloseRequested, dialog, &QObject::deleteLater);
 
     QMetaObject::invokeMethod(dialog, "open");
+}
+
+void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogController> dialogController)
+{
+    Q_ASSERT(!dialogController.isNull());
+
+    if (!ensureComponentLoaded(AuthenticationDialog)) {
+        // Let the controller know it couldn't be loaded
+        qWarning("Failed to load authentication dialog, rejecting.");
+        dialogController->reject();
+        return;
+    }
+
+    QQmlContext *context = qmlContext(m_view);
+    QObject *authenticationDialog = authenticationDialogComponent->beginCreate(context);
+    authenticationDialog->setParent(m_view);
+
+    QString introMessage;
+    if (dialogController->isProxy()) {
+        introMessage = QObject::tr("Connect to proxy \"%1\" using:");
+        introMessage = introMessage.arg(dialogController->host().toHtmlEscaped());
+    } else {
+        introMessage = QObject::tr("Enter username and password for \"%1\" at %2");
+        introMessage = introMessage.arg(dialogController->realm()).arg(dialogController->url().toString().toHtmlEscaped());
+    }
+    QQmlProperty textProp(authenticationDialog, QStringLiteral("text"));
+    textProp.write(introMessage);
+
+    QQmlProperty acceptSignal(authenticationDialog, QStringLiteral("onAccepted"));
+    QQmlProperty rejectSignal(authenticationDialog, QStringLiteral("onRejected"));
+    CHECK_QML_SIGNAL_PROPERTY(acceptSignal, authenticationDialogComponent->url());
+    CHECK_QML_SIGNAL_PROPERTY(rejectSignal, authenticationDialogComponent->url());
+
+    static int acceptIndex = dialogController->metaObject()->indexOfSlot("accept(QString,QString)");
+    QObject::connect(authenticationDialog, acceptSignal.method(), dialogController.data(), dialogController->metaObject()->method(acceptIndex));
+    static int rejectIndex = dialogController->metaObject()->indexOfSlot("reject()");
+    QObject::connect(authenticationDialog, rejectSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));
+
+    authenticationDialogComponent->completeCreate();
+    QMetaObject::invokeMethod(authenticationDialog, "open");
 }
 
 void UIDelegatesManager::showFilePicker(FilePickerController *controller)
