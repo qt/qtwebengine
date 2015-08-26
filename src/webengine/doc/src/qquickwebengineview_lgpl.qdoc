@@ -21,8 +21,7 @@
  */
 
 // The documentation in this file was imported from QtWebKit and is thus constrained
-// by its LGPL license. Documentation written from scratch for new methods should be
-// placed inline in the code as usual.
+// by its LGPL license.
 
 /*!
     \page qtwebengine-index.html
@@ -97,6 +96,17 @@
 */
 
 /*!
+    \qmlmethod void WebEngineView::goBackOrForward(int offset)
+    \since QtWebEngine 1.1
+
+    If \a offset is positive, goes forward the specified number of offset
+    pages in the current session history. If offset is negative, it goes
+    back. If the offset is invalid, the page is not changed.
+
+    \sa WebEngineView::goBack, WebEngineView::goForward
+*/
+
+/*!
     \qmlmethod void WebEngineView::stop()
 
     Stops loading the current page.
@@ -107,6 +117,16 @@
 
     Reloads the current page. This function is equivalent to the
     \c{window.location.reload()} DOM method.
+
+    \sa WebEngineView::reloadAndBypassCache
+*/
+
+/*!
+    \qmlmethod void WebEngineView::reloadAndBypassCache()
+
+    Reloads the current page, ignoring any cached content.
+
+    \sa WebEngineView::reload
 */
 
 /*!
@@ -142,6 +162,7 @@
 
 /*!
     \qmlproperty int WebEngineView::loadProgress
+    \readonly
 
     This property holds the amount of the page that has been loaded, expressed
     as an integer percentage in the range from \c{0} to \c{100}.
@@ -149,6 +170,7 @@
 
 /*!
     \qmlproperty bool WebEngineView::canGoBack
+    \readonly
 
     Returns \c{true} if there are prior session history entries, \c{false}
     otherwise.
@@ -156,6 +178,7 @@
 
 /*!
     \qmlproperty bool WebEngineView::canGoForward
+    \readonly
 
     Returns \c{true} if there are subsequent session history entries,
     \c{false} otherwise.
@@ -163,6 +186,7 @@
 
 /*!
     \qmlproperty bool WebEngineView::loading
+    \readonly
 
     Returns \c{true} if the HTML page is currently loading, \c{false} otherwise.
 */
@@ -182,7 +206,65 @@
 
     Returns \c{true} if the web view is in fullscreen mode, \c{false} otherwise.
 
-    \sa WebEngineView::fullScreenRequested(), WebEngineView::fullScreenCancelled()
+    \sa WebEngineView::fullScreenRequested, WebEngineView::fullScreenCancelled
+*/
+
+/*!
+    \qmlproperty WebEngineHistory WebEngineView::navigationHistory
+    \since QtWebEngine 1.1
+    \readonly
+
+    The navigation history of the current view.
+
+    \sa WebEngineHistory
+*/
+
+/*!
+    \qmlproperty QQmlWebChannel WebEngineView::webChannel
+    \since QtWebEngine 1.1
+
+    The web channel instance used by this view.
+    This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
+    and exposed in the javascript context of the page it is rendering as \c qt.webChannelTransport.
+    This transport object is used when instantiating the JavaScript counterpart of QWebChannel using
+    the \l{Qt WebChannel JavaScript API}.
+
+    \note The view does not take ownership for an assigned webChannel object.
+*/
+
+/*!
+    \qmlproperty WebEngineProfile WebEngineView::profile
+    \since QtWebEngine 1.1
+
+    The current profile used for the view.
+
+    \sa WebEngineProfile
+*/
+
+/*!
+    \qmlproperty WebEngineSettings WebEngineView::settings
+    \readonly
+    \since QtWebEngine 1.1
+
+    Settings used by this view.
+
+    \sa WebEngineSettings
+*/
+
+
+/*!
+    \qmlproperty list<WebEngineScript> WebEngineView::userScripts
+    \readonly
+
+    List of script objects attached to the view.
+*/
+
+/*!
+    \qmlproperty real WebEngineView::zoomFactor
+    \since QtWebEngine 1.1
+
+    Zoom factor for the view. Valid values are within the range from \c{0.25}
+    to \c{5.0}. The default factor is \c{1.0}.
 */
 
 /*!
@@ -200,7 +282,6 @@
 
     \sa WebEngineView::url
 */
-
 
 /*!
     \qmlmethod void WebEngineView::runJavaScript(string script, variant callback)
@@ -255,12 +336,14 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::grantFeaturePermission(url securityOrigin, WebEngineView::Feature feature, bool granted)
+    \qmlmethod WebEngineView::grantFeaturePermission(url securityOrigin, Feature feature, bool granted)
+    \since QtWebEngine 1.1
 
     Sets the permission for the web site identified by \a securityOrigin to use \a feature.
 
-    \sa featurePermissionRequested()
+    \sa WebEngineView::featurePermissionRequested
 */
+
 
 /*!
     \qmlmethod void WebEngineView::fullScreenCancelled()
@@ -283,16 +366,16 @@
     }
     \endcode
 
-    \sa WebEngineView::isFullScreen, WebEngineView::fullScreenRequested()
+    \sa WebEngineView::isFullScreen, WebEngineView::fullScreenRequested
 */
 
 /*!
-    \qmlsignal void WebEngineView::featurePermissionRequested(url securityOrigin, WebEngineView::Feature feature)
+    \qmlsignal WebEngineView::featurePermissionRequested(url securityOrigin, Feature feature)
 
     This is signal is emitted when the web site identified by \a securityOrigin requests
     to make use of the resource or device identified by \a feature.
 
-    \sa grantFeaturePermission()
+    \sa WebEngineView::grantFeaturePermission
 */
 
 /*!
@@ -336,6 +419,7 @@
 
 /*!
     \qmlsignal WebEngineView::certificateError(error)
+    \since QtWebEngine 1.1
 
     This signal is emitted when an invalid certificate error is raised while loading a given request.
 
@@ -380,6 +464,7 @@
 
 /*!
     \qmlsignal WebEngineView::newViewRequested(request)
+    \since QtWebEngine 1.1
 
     This signal is emitted when a page load is requested to happen in a separate
     WebEngineView. This can either be because the current page requested it explicitly
@@ -399,7 +484,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::fullScreenRequested(request)
+    \qmlsignal WebEngineView::fullScreenRequested(WebEngineFullScreenRequest request)
     \since QtWebEngine 1.1
 
     This signal is emitted when the web page requests fullscreen mode through the
@@ -415,7 +500,7 @@
 
     This enumeration details various high-level error types.
 
-    \value NoErrorDomain
+    \value WebEngineView::NoErrorDomain
     \value WebEngineView::InternalErrorDomain
             Content fails to be interpreted by Qt WebEngine.
     \value WebEngineView::ConnectionErrorDomain
@@ -522,7 +607,7 @@
     \value MediaVideoCapture Video devices, e.g. cameras
     \value MediaAudioVideoCapture Both Audio and Video capture devices.
 
-    \sa featurePermissionRequested(), grantFeaturePermission()
+    \sa WebEngineView::featurePermissionRequested, WebEngineView::grantFeaturePermission
 
 */
 
@@ -569,5 +654,5 @@
     }
     \endcode
 
-    \sa WebEngineFullScreenRequest::toggleOn()
+    \sa WebEngineFullScreenRequest::toggleOn
 */

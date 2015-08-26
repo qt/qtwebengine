@@ -705,15 +705,6 @@ void QQuickWebEngineView::setProfile(QQuickWebEngineProfile *profile)
     Q_D(QQuickWebEngineView);
     d->setProfile(profile);
 }
-/*!
- * \qmlproperty WebEngineSettings QQuickWebEngineView::settings
- * \readonly settings
- * \since QtWebEngine 1.1
- *
- * The \a settings property holds the settings used by this view.
- *
- * \sa WebEngineSettings
- */
 
 QQuickWebEngineSettings *QQuickWebEngineView::settings() const
 {
@@ -902,19 +893,6 @@ QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
     Q_D(const QQuickWebEngineView);
     return d->m_history.data();
 }
-
-/*!
- * \qmlproperty QQmlWebChannel WebEngineView::webChannel
- * \since QtWebEngine 1.1
- *
- * The web channel instance used by this view.
- * This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
- * and exposed in the javascript context of the page it is rendering as \c qt.webChannelTransport.
- * This transport object is used when instantiating the JavaScript counterpart of QWebChannel using
- * the \l{Qt WebChannel JavaScript API}.
- *
- * \note The view does not take ownership when explicitly setting a webChannel object.
- */
 
 QQmlWebChannel *QQuickWebEngineView::webChannel()
 {
