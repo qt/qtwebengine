@@ -193,8 +193,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/pdfium')
         or file_path.startswith('third_party/psyco_win32')
         or file_path.startswith('third_party/scons-2.0.1')
-        or file_path.startswith('third_party/trace-viewer/tracing/test_data')
-        or file_path.startswith('third_party/trace-viewer/tracing/third_party/v8')
+        or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
         or file_path.startswith('third_party/webgl')
         or (file_path.startswith('tools') and
