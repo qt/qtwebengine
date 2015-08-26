@@ -11,7 +11,7 @@ TARGET = tst_$$TARGET
 SOURCES += $${TARGET}.cpp
 INCLUDEPATH += $$PWD
 
-exists($${TARGET}.qrc): RESOURCES += $${TARGET}.qrc
+exists($$_PRO_FILE_PWD_/$${TARGET}.qrc): RESOURCES += $${TARGET}.qrc
 
 QT += testlib network webenginewidgets widgets
 macx: CONFIG -= app_bundle
