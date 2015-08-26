@@ -46,21 +46,19 @@
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
 
+#include "authentication_dialog_controller.h"
+#include "authentication_dialog_controller_p.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
 
 namespace QtWebEngineCore {
 
 ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request)
-    : m_request(request)
+    : m_authInfo(authInfo)
+    , m_request(request)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     content::ResourceRequestInfo::GetRenderFrameForRequest(request, &m_renderProcessId,  &m_renderFrameId);
-
-    m_url = toQt(request->url());
-    m_realm = QString::fromStdString(authInfo->realm);
-    m_isProxy = authInfo->is_proxy;
-    m_host = QString::fromStdString(authInfo->challenger.ToString());
 
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
@@ -69,13 +67,34 @@ ResourceDispatcherHostLoginDelegateQt::ResourceDispatcherHostLoginDelegateQt(net
 
 ResourceDispatcherHostLoginDelegateQt::~ResourceDispatcherHostLoginDelegateQt()
 {
+    Q_ASSERT(m_dialogController.isNull());
     // We must have called ClearLoginDelegateForRequest if we didn't receive an OnRequestCancelled.
     Q_ASSERT(!m_request);
 }
 
 void ResourceDispatcherHostLoginDelegateQt::OnRequestCancelled()
 {
-    m_request = 0;
+    destroy();
+}
+
+QUrl ResourceDispatcherHostLoginDelegateQt::url() const
+{
+    return toQt(m_request->url());
+}
+
+QString ResourceDispatcherHostLoginDelegateQt::realm() const
+{
+    return QString::fromStdString(m_authInfo->realm);
+}
+
+QString ResourceDispatcherHostLoginDelegateQt::host() const
+{
+    return QString::fromStdString(m_authInfo->challenger.ToString());
+}
+
+bool ResourceDispatcherHostLoginDelegateQt::isProxy() const
+{
+    return m_authInfo->is_proxy;
 }
 
 void ResourceDispatcherHostLoginDelegateQt::triggerDialog()
@@ -85,16 +104,9 @@ void ResourceDispatcherHostLoginDelegateQt::triggerDialog()
     content::WebContentsImpl *webContents = static_cast<content::WebContentsImpl *>(content::WebContents::FromRenderViewHost(renderViewHost));
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
 
-    // The widgets API will ask for credentials synchronouly, keep it simple for now.
-    // We'll have to figure out a mechanism to keep a ref to the ResourceDispatcherHostLoginDelegateQt
-    // to avoid crashing in the OnRequestCancelled case if we want to allow the credentials to
-    // come back asynchronously in the QtQuick API.
-    QString user, password;
-    bool success = client->authenticationRequired(m_url , m_realm , m_isProxy , m_host, &user, &password);
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester, this, success, user, password));
+    AuthenticationDialogControllerPrivate *dialogControllerData = new AuthenticationDialogControllerPrivate(this);
+    m_dialogController.reset(new AuthenticationDialogController(dialogControllerData));
+    client->authenticationRequired(m_dialogController);
 }
 
 void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, const QString &user, const QString &password)
@@ -109,6 +121,12 @@ void ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester(bool success, co
         m_request->CancelAuth();
     content::ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(m_request);
 
+    destroy();
+}
+
+void ResourceDispatcherHostLoginDelegateQt::destroy()
+{
+    m_dialogController.reset();
     m_request = 0;
 }
 

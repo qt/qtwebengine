@@ -23,6 +23,7 @@
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
+#include "authentication_dialog_controller.h"
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
@@ -249,24 +250,24 @@ void QWebEnginePagePrivate::passOnFocus(bool reverse)
         view->focusNextPrevChild(!reverse);
 }
 
-bool QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword)
+void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)
 {
     Q_Q(QWebEnginePage);
     QAuthenticator networkAuth;
-    networkAuth.setRealm(realm);
+    networkAuth.setRealm(controller->realm());
 
-    if (isProxy)
-        Q_EMIT q->proxyAuthenticationRequired(requestUrl, &networkAuth, challengingHost);
+    if (controller->isProxy())
+        Q_EMIT q->proxyAuthenticationRequired(controller->url(), &networkAuth, controller->host());
     else
-        Q_EMIT q->authenticationRequired(requestUrl, &networkAuth);
+        Q_EMIT q->authenticationRequired(controller->url(), &networkAuth);
 
     // Authentication has been cancelled
-    if (networkAuth.isNull())
-        return false;
+    if (networkAuth.isNull()) {
+        controller->reject();
+        return;
+    }
 
-    *outUser = networkAuth.user();
-    *outPassword = networkAuth.password();
-    return true;
+    controller->accept(networkAuth.user(), networkAuth.password());
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)

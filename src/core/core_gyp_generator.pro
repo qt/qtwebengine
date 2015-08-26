@@ -29,6 +29,7 @@ INCLUDEPATH += $$PWD $$PWD/api
 
 SOURCES = \
         access_token_store_qt.cpp \
+        authentication_dialog_controller.cpp \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_adapter.cpp \
@@ -98,6 +99,8 @@ SOURCES = \
 
 HEADERS = \
         access_token_store_qt.h \
+        authentication_dialog_controller_p.h \
+        authentication_dialog_controller.h \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_adapter.h \

@@ -34,61 +34,38 @@
 **
 ****************************************************************************/
 
-#ifndef RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
-#define RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#ifndef AUTHENTICATION_DIALOG_CONTROLLER_H
+#define AUTHENTICATION_DIALOG_CONTROLLER_H
 
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "qtwebenginecoreglobal.h"
 
-#include "web_contents_adapter_client.h"
+#include <QObject>
 
 namespace QtWebEngineCore {
 
-class AuthenticationDialogController;
+class AuthenticationDialogControllerPrivate;
 
-class ResourceDispatcherHostLoginDelegateQt : public content::ResourceDispatcherHostLoginDelegate {
+class QWEBENGINE_EXPORT AuthenticationDialogController : public QObject {
+    Q_OBJECT
 public:
-    ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request);
-    ~ResourceDispatcherHostLoginDelegateQt();
-
-    // ResourceDispatcherHostLoginDelegate implementation
-    virtual void OnRequestCancelled();
+    ~AuthenticationDialogController();
 
     QUrl url() const;
     QString realm() const;
     QString host() const;
     bool isProxy() const;
 
-    void sendAuthToRequester(bool success, const QString &user, const QString &password);
+public Q_SLOTS:
+    void accept(const QString &user, const QString &password);
+    void reject();
 
 private:
-    void triggerDialog();
-    void destroy();
+    AuthenticationDialogController(AuthenticationDialogControllerPrivate *);
 
-    QUrl m_url;
-    QString m_realm;
-    bool m_isProxy;
-    QString m_host;
-
-    int m_renderProcessId;
-    int m_renderFrameId;
-
-    net::AuthChallengeInfo *m_authInfo;
-
-    // The request that wants login data.
-    // Must only be accessed on the IO thread.
-    net::URLRequest *m_request;
-
-    // This member is used to keep authentication dialog controller alive until
-    // authorization is sent or cancelled.
-    QSharedPointer<AuthenticationDialogController> m_dialogController;
-};
-
-class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate {
-public:
-    virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) Q_DECL_OVERRIDE;
+    QScopedPointer<AuthenticationDialogControllerPrivate> d;
+    friend class ResourceDispatcherHostLoginDelegateQt;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#endif // AUTHENTICATION_DIALOG_CONTROLLER_H

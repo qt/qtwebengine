@@ -34,61 +34,63 @@
 **
 ****************************************************************************/
 
-#ifndef RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
-#define RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
+#include "authentication_dialog_controller.h"
+#include "authentication_dialog_controller_p.h"
 
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/resource_dispatcher_host_login_delegate.h"
-
-#include "web_contents_adapter_client.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace QtWebEngineCore {
 
-class AuthenticationDialogController;
+AuthenticationDialogControllerPrivate::AuthenticationDialogControllerPrivate(ResourceDispatcherHostLoginDelegateQt *loginDelegate)
+    : loginDelegate(loginDelegate)
+{
+}
 
-class ResourceDispatcherHostLoginDelegateQt : public content::ResourceDispatcherHostLoginDelegate {
-public:
-    ResourceDispatcherHostLoginDelegateQt(net::AuthChallengeInfo *authInfo, net::URLRequest *request);
-    ~ResourceDispatcherHostLoginDelegateQt();
+void AuthenticationDialogControllerPrivate::dialogFinished(bool accepted, const QString &user, const QString &password)
+{
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&ResourceDispatcherHostLoginDelegateQt::sendAuthToRequester, loginDelegate, accepted, user, password));
+}
 
-    // ResourceDispatcherHostLoginDelegate implementation
-    virtual void OnRequestCancelled();
+AuthenticationDialogController::AuthenticationDialogController(AuthenticationDialogControllerPrivate *dd)
+{
+    Q_ASSERT(dd);
+    d.reset(dd);
+}
 
-    QUrl url() const;
-    QString realm() const;
-    QString host() const;
-    bool isProxy() const;
+AuthenticationDialogController::~AuthenticationDialogController()
+{
+}
 
-    void sendAuthToRequester(bool success, const QString &user, const QString &password);
+QUrl AuthenticationDialogController::url() const
+{
+    return d->loginDelegate->url();
+}
 
-private:
-    void triggerDialog();
-    void destroy();
+QString AuthenticationDialogController::realm() const
+{
+    return d->loginDelegate->realm();
+}
 
-    QUrl m_url;
-    QString m_realm;
-    bool m_isProxy;
-    QString m_host;
+QString AuthenticationDialogController::host() const
+{
+    return d->loginDelegate->host();
+}
 
-    int m_renderProcessId;
-    int m_renderFrameId;
+bool AuthenticationDialogController::isProxy() const
+{
+    return d->loginDelegate->isProxy();
+}
 
-    net::AuthChallengeInfo *m_authInfo;
+void AuthenticationDialogController::accept(const QString &user, const QString &password)
+{
+    d->dialogFinished(true, user, password);
+}
 
-    // The request that wants login data.
-    // Must only be accessed on the IO thread.
-    net::URLRequest *m_request;
-
-    // This member is used to keep authentication dialog controller alive until
-    // authorization is sent or cancelled.
-    QSharedPointer<AuthenticationDialogController> m_dialogController;
-};
-
-class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate {
-public:
-    virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) Q_DECL_OVERRIDE;
-};
+void AuthenticationDialogController::reject()
+{
+    d->dialogFinished(false);
+}
 
 } // namespace QtWebEngineCore
-
-#endif // RESOURCE_DISPATCHER_HOST_DELEGATE_QT_H
