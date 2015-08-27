@@ -45,6 +45,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
@@ -169,6 +170,10 @@ scoped_ptr<ui::SystemInputInjector> OzonePlatformEglfs::CreateSystemInputInjecto
     return nullptr;  // no input injection support.
 }
 
+ui::OverlayManagerOzone* OzonePlatformEglfs::GetOverlayManager() {
+    return overlay_manager_.get();
+}
+
 scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
 {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
@@ -177,6 +182,7 @@ scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDel
 OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }
 
 void OzonePlatformEglfs::InitializeUI() {
+  overlay_manager_.reset(new StubOverlayManager());
   device_manager_ = CreateDeviceManager();
   cursor_factory_ozone_.reset(new CursorFactoryOzone());
   event_factory_ozone_.reset(new EventFactoryEvdev(NULL, device_manager_.get(), NULL));
