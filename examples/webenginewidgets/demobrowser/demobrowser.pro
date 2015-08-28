@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = browser
+TARGET = demobrowser
 QT += webenginewidgets network widgets printsupport
 
 qtHaveModule(uitools):!embedded: QT += uitools
@@ -68,7 +68,7 @@ build_all:!build_pass {
 }
 
 win32 {
-   RC_FILE = browser.rc
+   RC_FILE = demobrowser.rc
 }
 
 mac {
@@ -77,8 +77,8 @@ mac {
     TARGET = Browser
 }
 
-EXAMPLE_FILES = Info_mac.plist browser.icns browser.ico browser.rc
+EXAMPLE_FILES = Info_mac.plist demobrowser.icns demobrowser.ico demobrowser.rc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/browser
+target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/demobrowser
 INSTALLS += target

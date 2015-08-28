@@ -26,12 +26,12 @@
 ****************************************************************************/
 
 /*!
-    \example browser
-    \title WebEngine Tab Browser Example
+    \example demobrowser
+    \title WebEngine Demo Browser Example
     \ingroup webengine-widgetexamples
     \brief The QtWebKit browser example ported to use QtWebEngine
 
-    The Tab Browser example shows the \l{Qt WebEngine Widgets} module in action,
+    The Demo Browser example shows the \l{Qt WebEngine Widgets} module in action,
     providing a little Web browser application with support for tabs.
 
     \image browser-demo.png
