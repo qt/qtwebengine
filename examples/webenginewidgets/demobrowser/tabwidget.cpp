@@ -213,6 +213,7 @@ TabWidget::TabWidget(QWidget *parent)
     , m_lineEdits(0)
     , m_tabBar(new TabBar(this))
     , m_profile(QWebEngineProfile::defaultProfile())
+    , m_fullScreenView(0)
 {
     setElideMode(Qt::ElideRight);
 
@@ -315,6 +316,8 @@ void TabWidget::currentChanged(int index)
                 this, SIGNAL(loadProgress(int)));
         disconnect(oldWebView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
                 this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
+        disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(bool)),
+                this, SLOT(fullScreenRequested(bool)));
     }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
@@ -327,6 +330,8 @@ void TabWidget::currentChanged(int index)
             this, SIGNAL(loadProgress(int)));
     connect(webView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
             this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
+    connect(webView->page(), SIGNAL(fullScreenRequested(bool)),
+            this, SLOT(fullScreenRequested(bool)));
 
     for (int i = 0; i < m_actions.count(); ++i) {
         WebActionMapper *mapper = m_actions[i];
@@ -340,6 +345,28 @@ void TabWidget::currentChanged(int index)
         m_lineEdits->currentWidget()->setFocus();
     else
         webView->setFocus();
+}
+
+void TabWidget::fullScreenRequested(bool fullscreen)
+{
+    if (fullscreen) {
+        if (!m_fullScreenView)
+            m_fullScreenView = new QWebEngineView();
+        WebPage *webPage = qobject_cast<WebPage*>(sender());
+        webPage->setView(m_fullScreenView);
+        m_fullScreenView->showFullScreen();
+        m_fullScreenView->raise();
+    } else {
+        if (!m_fullScreenView)
+            return;
+        WebPage *webPage = qobject_cast<WebPage*>(sender());
+        WebView *oldWebView = this->webView(m_lineEdits->currentIndex());
+        webPage->setView(oldWebView);
+        raise();
+        m_fullScreenView->hide();
+        delete m_fullScreenView;
+        m_fullScreenView = 0;
+    }
 }
 
 QAction *TabWidget::newTabAction() const

@@ -284,6 +284,8 @@ void BrowserApplication::loadSettings()
 
     defaultSettings->setAttribute(QWebEngineSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
 
+    defaultSettings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+
     QString css = settings.value(QLatin1String("userStyleSheet")).toString();
     setUserStyleSheet(defaultProfile, css, mainWindow());
 

@@ -49,6 +49,7 @@
 QT_BEGIN_NAMESPACE
 class QWebEngineDownloadItem;
 class QWebEngineProfile;
+class QWebEngineView;
 QT_END_NAMESPACE
 
 /*
@@ -213,6 +214,7 @@ private slots:
     void lineEditReturnPressed();
     void windowCloseRequested();
     void moveTab(int fromIndex, int toIndex);
+    void fullScreenRequested(bool);
 
 private:
     QAction *m_recentlyClosedTabsAction;
@@ -230,6 +232,7 @@ private:
     QStackedWidget *m_lineEdits;
     TabBar *m_tabBar;
     QWebEngineProfile *m_profile;
+    QWebEngineView *m_fullScreenView;
 };
 
 #endif // TABWIDGET_H
