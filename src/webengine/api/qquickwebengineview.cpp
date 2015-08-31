@@ -216,7 +216,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Link URL"));
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadLinkToDisk); });
-        ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Link..."));
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Link"));
     }
     if (contextMenuData.mediaUrl.isValid()) {
         switch (contextMenuData.mediaType) {
@@ -241,7 +241,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
             ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Media URL"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadMediaToDisk); });
-            ui()->addMenuItem(item, QQuickWebEngineView::tr("Download Media"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Media"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaPlayPause); });
             ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Play/Pause"));

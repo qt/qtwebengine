@@ -570,7 +570,7 @@ QAction *QWebEnginePage::action(WebAction action) const
         text = tr("Copy Link URL");
         break;
     case DownloadLinkToDisk:
-        text = tr("Save Link...");
+        text = tr("Save Link");
         break;
     case CopyImageToClipboard:
         text = tr("Copy Image");
@@ -597,7 +597,7 @@ QAction *QWebEnginePage::action(WebAction action) const
         text = tr("Toggle Mute");
         break;
     case DownloadMediaToDisk:
-        text = tr("Download Media");
+        text = tr("Save Media");
         break;
     case InspectElement:
         text = tr("Inspect Element");
