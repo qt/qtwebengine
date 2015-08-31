@@ -3685,41 +3685,115 @@ void tst_QWebEnginePage::cssMediaTypePageSetting()
 #endif
 }
 
-class JavaScriptCallback
+class JavaScriptCallbackBase
+{
+public:
+    JavaScriptCallbackBase()
+    {
+        if (watcher)
+            QMetaObject::invokeMethod(watcher, "add");
+    }
+
+    void operator() (const QVariant &result)
+    {
+        check(result);
+        if (watcher)
+            QMetaObject::invokeMethod(watcher, "notify");
+    }
+
+protected:
+    virtual void check(const QVariant &result) = 0;
+
+private:
+    friend class JavaScriptCallbackWatcher;
+    static QPointer<QObject> watcher;
+};
+
+QPointer<QObject> JavaScriptCallbackBase::watcher = 0;
+
+class JavaScriptCallback : public JavaScriptCallbackBase
 {
 public:
     JavaScriptCallback() { }
     JavaScriptCallback(const QVariant& _expected) : expected(_expected) { }
-    virtual void operator() (const QVariant& result) {
+
+    void check(const QVariant& result) Q_DECL_OVERRIDE
+    {
         QVERIFY(result.isValid());
         QCOMPARE(result, expected);
     }
+
 private:
     QVariant expected;
 };
 
-class JavaScriptCallbackNull
+class JavaScriptCallbackNull : public JavaScriptCallbackBase
 {
 public:
-    virtual void operator() (const QVariant& result) {
+    void check(const QVariant& result) Q_DECL_OVERRIDE
+    {
         QVERIFY(result.isNull());
 // FIXME: Returned null values are currently invalid QVariants.
 //        QVERIFY(result.isValid());
     }
 };
 
-class JavaScriptCallbackUndefined
+class JavaScriptCallbackUndefined : public JavaScriptCallbackBase
 {
 public:
-    virtual void operator() (const QVariant& result) {
+    void check(const QVariant& result) Q_DECL_OVERRIDE
+    {
         QVERIFY(result.isNull());
         QVERIFY(!result.isValid());
     }
 };
 
+class JavaScriptCallbackWatcher : public QObject
+{
+    Q_OBJECT
+public:
+    JavaScriptCallbackWatcher()
+    {
+        Q_ASSERT(!JavaScriptCallbackBase::watcher);
+        JavaScriptCallbackBase::watcher = this;
+    }
+
+    Q_INVOKABLE void add()
+    {
+        available++;
+    }
+
+    Q_INVOKABLE void notify()
+    {
+        called++;
+        if (called == available)
+            emit allCalled();
+    }
+
+    bool wait(int maxSeconds = 30)
+    {
+        if (called == available)
+            return true;
+
+        QTestEventLoop loop;
+        connect(this, SIGNAL(allCalled()), &loop, SLOT(exitLoop()));
+        loop.enterLoop(maxSeconds);
+        return !loop.timeout();
+    }
+
+signals:
+    void allCalled();
+
+private:
+    int available = 0;
+    int called = 0;
+};
+
+
 void tst_QWebEnginePage::runJavaScript()
 {
     TestPage page;
+    JavaScriptCallbackWatcher watcher;
 
     JavaScriptCallback callbackBool(QVariant(false));
     page.runJavaScript("false", QWebEngineCallback<const QVariant&>(callbackBool));
@@ -3748,7 +3822,7 @@ void tst_QWebEnginePage::runJavaScript()
     JavaScriptCallbackUndefined callbackUndefined;
     page.runJavaScript("undefined", QWebEngineCallback<const QVariant&>(callbackUndefined));
 
-    QTest::qWait(100);
+    QVERIFY(watcher.wait());
 }
 
 class FullScreenPage : public QWebEnginePage {
@@ -3771,6 +3845,7 @@ protected:
 
 void tst_QWebEnginePage::fullScreenRequested()
 {
+    JavaScriptCallbackWatcher watcher;
     FullScreenPage* page = new FullScreenPage;
     QWebEngineView* view = new QWebEngineView;
     view->setPage(page);
@@ -3784,19 +3859,20 @@ void tst_QWebEnginePage::fullScreenRequested()
 
     page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
     page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
+    QVERIFY(watcher.wait());
 
     // FullscreenRequest must be a user gesture
     QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
     QTest::qWait(100);
     page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(true));
-    page->runJavaScript("document.webkitExitFullscreen()");
-    QTest::qWait(100);
+    page->runJavaScript("document.webkitExitFullscreen()", JavaScriptCallbackUndefined());
+    QVERIFY(watcher.wait());
     page->setIsFullScreen(false);
     page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
     QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
-    QTest::qWait(100);
+    QVERIFY(watcher.wait());
     page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
-    QTest::qWait(100);
+    QVERIFY(watcher.wait());
 
     delete view;
     delete page;
