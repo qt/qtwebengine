@@ -38,7 +38,5 @@
 
 int main(int, char **)
 {
-    const khronos_boolean_enum_t kfalse = KHRONOS_FALSE;
-    const khronos_boolean_enum_t ktrue = KHRONOS_TRUE;
-    return kfalse == ktrue;
+    return 0;
 }
