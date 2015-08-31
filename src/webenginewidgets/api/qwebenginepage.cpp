@@ -651,6 +651,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case ExitFullScreen:
         text = tr("Exit Full Screen Mode");
         break;
+    case Unselect:
+        text = tr("Unselect");
+        break;
     default:
         break;
     }
@@ -707,6 +710,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case PasteAndMatchStyle:
         d->adapter->pasteAndMatchStyle();
+        break;
+    case Unselect:
+        d->adapter->unselect();
         break;
     case OpenLinkInThisWindow:
         if (d->m_menuData.linkUrl.isValid())
@@ -1003,6 +1009,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         menu->addAction(action);
     } else {
         menu->addAction(QWebEnginePage::action(Copy));
+        menu->addAction(QWebEnginePage::action(Unselect));
     }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {

@@ -208,6 +208,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::Copy); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy"));
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::Unselect); });
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Unselect"));
     }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
@@ -1191,6 +1194,9 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case PasteAndMatchStyle:
         d->adapter->pasteAndMatchStyle();
+        break;
+    case Unselect:
+        d->adapter->unselect();
         break;
     case OpenLinkInThisWindow:
         if (d->contextMenuData.linkUrl.isValid())

@@ -90,6 +90,7 @@ public:
     void paste();
     void pasteAndMatchStyle();
     void selectAll();
+    void unselect();
 
     void navigateToIndex(int);
     void navigateToOffset(int);

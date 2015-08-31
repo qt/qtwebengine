@@ -110,6 +110,7 @@ public:
 
         InspectElement,
         ExitFullScreen,
+        Unselect,
 
         WebActionCount
     };

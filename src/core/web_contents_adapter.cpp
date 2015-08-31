@@ -576,6 +576,12 @@ void WebContentsAdapter::selectAll()
     d->webContents->SelectAll();
 }
 
+void WebContentsAdapter::unselect()
+{
+    Q_D(const WebContentsAdapter);
+    d->webContents->Unselect();
+}
+
 void WebContentsAdapter::navigateToIndex(int offset)
 {
     Q_D(WebContentsAdapter);
