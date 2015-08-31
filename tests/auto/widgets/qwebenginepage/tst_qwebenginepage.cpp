@@ -3735,7 +3735,7 @@ void tst_QWebEnginePage::runJavaScript()
     JavaScriptCallbackNull callbackNull;
     page.runJavaScript("null", QWebEngineCallback<const QVariant&>(callbackNull));
 
-    JavaScriptCallbackNull callbackUndefined;
+    JavaScriptCallbackUndefined callbackUndefined;
     page.runJavaScript("undefined", QWebEngineCallback<const QVariant&>(callbackUndefined));
 
     QTest::qWait(100);
