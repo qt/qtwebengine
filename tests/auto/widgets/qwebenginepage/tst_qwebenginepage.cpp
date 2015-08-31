@@ -1177,6 +1177,10 @@ public:
     int isSelectionCollapsed() {
         return evaluateJavaScriptSync(this, "window.getSelection().getRangeAt(0).collapsed").toBool();
     }
+    bool hasSelection()
+    {
+        return !selectedText().isEmpty();
+    }
 };
 
 void tst_QWebEnginePage::cursorMovements()
@@ -1381,17 +1385,19 @@ void tst_QWebEnginePage::cursorMovements()
 
 void tst_QWebEnginePage::textSelection()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
-    CursorTrackedPage* page = new CursorTrackedPage;
+    QWebEngineView *view = new QWebEngineView;
+    CursorTrackedPage *page = new CursorTrackedPage;
     QString content("<html><body><p id=one>The quick brown fox</p>" \
         "<p id=two>jumps over the lazy dog</p>" \
         "<p>May the source<br/>be with you!</p></body></html>");
+    page->setView(view);
+    QSignalSpy loadSpy(view, SIGNAL(loadFinished(bool)));
     page->setHtml(content);
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     // these actions must exist
     QVERIFY(page->action(QWebEnginePage::SelectAll) != 0);
+#if defined(QWEBENGINEPAGE_SELECTACTIONS)
     QVERIFY(page->action(QWebEnginePage::SelectNextChar) != 0);
     QVERIFY(page->action(QWebEnginePage::SelectPreviousChar) != 0);
     QVERIFY(page->action(QWebEnginePage::SelectNextWord) != 0);
@@ -1419,6 +1425,7 @@ void tst_QWebEnginePage::textSelection()
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfBlock)->isEnabled(), false);
     QCOMPARE(page->action(QWebEnginePage::SelectStartOfDocument)->isEnabled(), false);
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfDocument)->isEnabled(), false);
+#endif
 
     // ..but SelectAll is awalys enabled
     QCOMPARE(page->action(QWebEnginePage::SelectAll)->isEnabled(), true);
@@ -1433,13 +1440,15 @@ void tst_QWebEnginePage::textSelection()
         "getSelection().addRange(range);";
     evaluateJavaScriptSync(page, selectScript);
     QCOMPARE(page->selectedText().trimmed(), QString::fromLatin1("The quick brown fox"));
+#if defined(QWEBENGINEPAGE_SELECTEDHTML)
     QRegExp regExp(" style=\".*\"");
     regExp.setMinimal(true);
     QCOMPARE(page->selectedHtml().trimmed().replace(regExp, ""), QString::fromLatin1("<p id=\"one\">The quick brown fox</p>"));
-
+#endif
     // Make sure hasSelection returns true, since there is selected text now...
     QCOMPARE(page->hasSelection(), true);
 
+#if defined(QWEBENGINEPAGE_SELECTACTIONS)
     // here the actions are enabled after a selection has been created
     QCOMPARE(page->action(QWebEnginePage::SelectNextChar)->isEnabled(), true);
     QCOMPARE(page->action(QWebEnginePage::SelectPreviousChar)->isEnabled(), true);
@@ -1475,9 +1484,10 @@ void tst_QWebEnginePage::textSelection()
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfBlock)->isEnabled(), true);
     QCOMPARE(page->action(QWebEnginePage::SelectStartOfDocument)->isEnabled(), true);
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfDocument)->isEnabled(), true);
+#endif
 
     delete page;
-#endif
+    delete view;
 }
 
 void tst_QWebEnginePage::textEditing()
