@@ -484,6 +484,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.can_load_local_resources = true;
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
     d->webContents->GetController().LoadURLWithParams(params);
+    d->webContents->Focus();
 }
 
 QUrl WebContentsAdapter::activeUrl() const

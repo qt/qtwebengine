@@ -3120,13 +3120,16 @@ void tst_QWebEnginePage::testStopScheduledPageRefresh()
 
 void tst_QWebEnginePage::findText()
 {
-    m_view->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
-#if defined(QWEBENGINEPAGE_TRIGGERACTION_SELECTALL)
+    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
     m_page->triggerAction(QWebEnginePage::SelectAll);
-    QVERIFY(!m_page->selectedText().isEmpty());
+    QTRY_COMPARE(m_page->hasSelection(), true);
+#if defined(QWEBENGINEPAGE_SELECTEDHTML)
     QVERIFY(!m_page->selectedHtml().isEmpty());
 #endif
     m_page->findText("");
+    QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
     QVERIFY(m_page->selectedText().isEmpty());
 #if defined(QWEBENGINEPAGE_SELECTEDHTML)
     QVERIFY(m_page->selectedHtml().isEmpty());
@@ -3140,6 +3143,7 @@ void tst_QWebEnginePage::findText()
         QVERIFY(m_page->selectedHtml().contains(subString));
 #endif
         m_page->findText("");
+        QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
         QVERIFY(m_page->selectedText().isEmpty());
 #if defined(QWEBENGINEPAGE_SELECTEDHTML)
         QVERIFY(m_page->selectedHtml().isEmpty());
