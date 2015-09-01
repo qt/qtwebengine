@@ -153,6 +153,7 @@ void WebEngineContext::destroy()
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
     GLContextHelper::destroy();
+    m_devtools.reset(0);
     m_runLoop->AfterRun();
 
     // Force to destroy RenderProcessHostImpl by destroying BrowserMainRunner.
