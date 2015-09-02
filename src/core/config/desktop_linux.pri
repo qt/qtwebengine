@@ -13,9 +13,10 @@ GYP_CONFIG += \
     use_gnome_keyring=0 \
     use_kerberos=0 \
     use_pango=0 \
-    host_clang=0 \
-    clang=0 \
     enable_plugins=1 \
+
+linux-clang: GYP_CONFIG += clang=1 host_clang=1 clang_use_chrome_plugins=0 make_clang_dir=/usr
+else: GYP_CONFIG += clang=0 host_clang=0
 
 contains(QT_CONFIG, system-zlib): config_system_minizip: GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
