@@ -58,7 +58,7 @@ static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int sta
     }
 }
 
-QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfilePrivate *p)
+QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfile *p)
     : profile(p)
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
@@ -69,7 +69,8 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
 
 QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
 {
-    profile->downloadDestroyed(downloadId);
+    if (profile)
+        profile->d_ptr->downloadDestroyed(downloadId);
 }
 
 /*!
@@ -150,8 +151,10 @@ void QQuickWebEngineDownloadItem::cancel()
 
     // We directly cancel the download if the user cancels before
     // it even started, so no need to notify the profile here.
-    if (state == QQuickWebEngineDownloadItem::DownloadInProgress)
-        d->profile->cancelDownload(d->downloadId);
+    if (state == QQuickWebEngineDownloadItem::DownloadInProgress) {
+        if (d->profile)
+            d->profile->d_ptr->cancelDownload(d->downloadId);
+    }
 }
 
 /*!

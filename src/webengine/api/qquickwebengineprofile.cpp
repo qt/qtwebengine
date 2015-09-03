@@ -85,7 +85,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     Q_Q(QQuickWebEngineProfile);
 
     Q_ASSERT(!m_ongoingDownloads.contains(info.id));
-    QQuickWebEngineDownloadItemPrivate *itemPrivate = new QQuickWebEngineDownloadItemPrivate(this);
+    QQuickWebEngineDownloadItemPrivate *itemPrivate = new QQuickWebEngineDownloadItemPrivate(q);
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadRequested;
     itemPrivate->totalBytes = info.totalBytes;
