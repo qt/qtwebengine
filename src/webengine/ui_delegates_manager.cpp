@@ -248,15 +248,15 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     switch (dialogController->type()) {
     case WebContentsAdapterClient::AlertDialog:
         dialogComponentType = AlertDialog;
-        title = QObject::tr("Javascript Alert - %1").arg(m_view->url().toString());
+        title = QCoreApplication::translate("UIDelegatesManager", "Javascript Alert - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::ConfirmDialog:
         dialogComponentType = ConfirmDialog;
-        title = QObject::tr("Javascript Confirm - %1").arg(m_view->url().toString());
+        title = QCoreApplication::translate("UIDelegatesManager", "Javascript Confirm - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::PromptDialog:
         dialogComponentType = PromptDialog;
-        title = QObject::tr("Javascript Prompt - %1").arg(m_view->url().toString());
+        title = QCoreApplication::translate("UIDelegatesManager", "Javascript Prompt - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::InternalAuthorizationDialog:
         dialogComponentType = ConfirmDialog;

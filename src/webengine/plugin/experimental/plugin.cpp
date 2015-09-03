@@ -63,9 +63,9 @@ public:
 
         qmlRegisterExtendedType<QQuickWebEngineView, QQuickWebEngineViewExperimentalExtension>(uri, 1, 0, "WebEngineView");
         qmlRegisterUncreatableType<QQuickWebEngineViewExperimental>(uri, 1, 0, "WebEngineViewExperimental",
-            QObject::tr("Cannot create a separate instance of WebEngineViewExperimental"));
+            tr("Cannot create a separate instance of WebEngineViewExperimental"));
         qmlRegisterUncreatableType<QQuickWebEngineViewport>(uri, 1, 0, "WebEngineViewport",
-            QObject::tr("Cannot create a separate instance of WebEngineViewport"));
+            tr("Cannot create a separate instance of WebEngineViewport"));
 
         // Use the latest revision of QQuickWebEngineView when importing QtWebEngine.experimental 1.0
         qmlRegisterRevision<QQuickWebEngineView, LATEST_WEBENGINEVIEW_REVISION>(uri, 1, 0);
