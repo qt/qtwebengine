@@ -209,10 +209,10 @@ QWebEngineUrlRequestInfo::NavigationType QWebEngineUrlRequestInfo::navigationTyp
 }
 
 /*!
-    Returns the request URL.
+    Returns the requested URL.
 */
 
-const QUrl &QWebEngineUrlRequestInfo::url() const
+QUrl QWebEngineUrlRequestInfo::requestUrl() const
 {
     Q_D(const QWebEngineUrlRequestInfo);
     return d->url;
@@ -223,7 +223,7 @@ const QUrl &QWebEngineUrlRequestInfo::url() const
     Returns the HTTP method of the request (for example, GET or POST).
 */
 
-const QByteArray &QWebEngineUrlRequestInfo::method() const
+QByteArray QWebEngineUrlRequestInfo::requestMethod() const
 {
     Q_D(const QWebEngineUrlRequestInfo);
     return d->method;
@@ -234,7 +234,7 @@ const QByteArray &QWebEngineUrlRequestInfo::method() const
     It is only possible to redirect requests that do not have payload data, such as GET requests.
 */
 
-void QWebEngineUrlRequestInfo::redirectTo(const QUrl &url)
+void QWebEngineUrlRequestInfo::redirect(const QUrl &url)
 {
     Q_D(QWebEngineUrlRequestInfo);
     d->url = url;
@@ -246,7 +246,7 @@ void QWebEngineUrlRequestInfo::redirectTo(const QUrl &url)
     This function can be used to prevent navigating away from a given domain, for example.
 */
 
-void QWebEngineUrlRequestInfo::blockRequest(bool shouldBlock)
+void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 {
     Q_D(QWebEngineUrlRequestInfo);
     d->shouldBlockRequest = shouldBlock;

@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     A QWebEngineUrlRequestJob is given to QWebEngineUrlSchemeHandler::requestStarted() and must
     be handled by the derived implementations of the class.
 
-    A job can be handled by calling either setReply(), redirect() or setError().
+    A job can be handled by calling either reply(), redirect() or fail().
 
     The class is owned by QtWebEngine and does not need to be deleted. Note QtWebEngine may delete
     the job when it is no longer needed, so the signal QObject::destroyed() must be monitored if
@@ -76,17 +76,25 @@ QWebEngineUrlRequestJob::~QWebEngineUrlRequestJob()
 }
 
 /*!
-    Returns the url requested.
- */
+    Returns the requested URL.
+*/
 QUrl QWebEngineUrlRequestJob::requestUrl() const
 {
     return d_ptr->url();
 }
 
 /*!
-    Sets the reply for the request to \a device with the mime-type \a contentType.
+    Returns the HTTP method of the request (for example, GET or POST).
+*/
+QByteArray QWebEngineUrlRequestJob::requestMethod() const
+{
+    return d_ptr->method();
+}
+
+/*!
+    Replies the request with \a device with the mime-type \a contentType.
  */
-void QWebEngineUrlRequestJob::setReply(const QByteArray &contentType, QIODevice *device)
+void QWebEngineUrlRequestJob::reply(const QByteArray &contentType, QIODevice *device)
 {
     d_ptr->setReply(contentType, device);
 }
@@ -94,7 +102,7 @@ void QWebEngineUrlRequestJob::setReply(const QByteArray &contentType, QIODevice 
 /*!
     Fails the request with error \a error.
  */
-void QWebEngineUrlRequestJob::setError(Error r)
+void QWebEngineUrlRequestJob::fail(Error r)
 {
     d_ptr->fail((URLRequestCustomJobDelegate::Error)r);
 }
@@ -102,7 +110,7 @@ void QWebEngineUrlRequestJob::setError(Error r)
 /*!
     Tell the request is redirected to \a url.
  */
-void QWebEngineUrlRequestJob::setRedirect(const QUrl &url)
+void QWebEngineUrlRequestJob::redirect(const QUrl &url)
 {
     d_ptr->redirect(url);
 }

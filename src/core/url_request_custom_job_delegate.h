@@ -63,6 +63,7 @@ public:
     };
 
     QUrl url() const;
+    QByteArray method() const;
 
     void setReply(const QByteArray &contentType, QIODevice *device);
     void redirect(const QUrl& url);

@@ -58,6 +58,11 @@ QUrl URLRequestCustomJobDelegate::url() const
     return toQt(m_job->request()->url());
 }
 
+QByteArray URLRequestCustomJobDelegate::method() const
+{
+    return QByteArray::fromStdString(m_job->request()->method());
+}
+
 void URLRequestCustomJobDelegate::setReply(const QByteArray &contentType, QIODevice *device)
 {
     m_job->setReplyMimeType(contentType.toStdString());

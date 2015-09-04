@@ -78,9 +78,11 @@ public:
     Q_ENUM(Error)
 
     QUrl requestUrl() const;
-    void setReply(const QByteArray &contentType, QIODevice *device);
-    void setError(Error error);
-    void setRedirect(const QUrl &url);
+    QByteArray requestMethod() const;
+
+    void reply(const QByteArray &contentType, QIODevice *device);
+    void fail(Error error);
+    void redirect(const QUrl &url);
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
