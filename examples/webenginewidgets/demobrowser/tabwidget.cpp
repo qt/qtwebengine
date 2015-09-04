@@ -85,6 +85,11 @@ TabBar::TabBar(QWidget *parent)
     setMovable(true);
 }
 
+TabWidget::~TabWidget()
+{
+    delete m_fullScreenView;
+}
+
 void TabBar::selectTabAction()
 {
     if (QShortcut *shortCut = qobject_cast<QShortcut*>(sender())) {
@@ -364,8 +369,6 @@ void TabWidget::fullScreenRequested(bool fullscreen)
         webPage->setView(oldWebView);
         raise();
         m_fullScreenView->hide();
-        delete m_fullScreenView;
-        m_fullScreenView = 0;
     }
 }
 

@@ -165,6 +165,7 @@ signals:
 
 public:
     TabWidget(QWidget *parent = 0);
+    ~TabWidget();
     void clear();
     void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
 
