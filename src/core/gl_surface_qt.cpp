@@ -535,12 +535,7 @@ GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window)
 
 std::string DriverEGL::GetPlatformExtensions()
 {
-#if defined(USE_X11)
-    EGLNativeDisplayType nativeDisplay = reinterpret_cast<EGLNativeDisplayType>(GLContextHelper::getXDisplay());
-    EGLDisplay display = eglGetDisplay(nativeDisplay);
-#else
     EGLDisplay display = GLContextHelper::getEGLDisplay();
-#endif
     if (display == EGL_NO_DISPLAY)
         return "";
 
