@@ -900,4 +900,36 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel)
     channel->connectTo(d->webChannelTransport.get());
 }
 
+WebContentsAdapterClient::RenderProcessTerminationStatus
+WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
+    auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);
+    switch (terminationStatus) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+        status = WebContentsAdapterClient::NormalTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+        status = WebContentsAdapterClient::AbnormalTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+#endif
+        status = WebContentsAdapterClient::KilledTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
+        status = WebContentsAdapterClient::CrashedTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+    case base::TERMINATION_STATUS_MAX_ENUM:
+        // should be unreachable since Chromium asserts status != TERMINATION_STATUS_STILL_RUNNING
+        // before calling this method
+        break;
+    }
+
+    return status;
+}
+
 } // namespace QtWebEngineCore

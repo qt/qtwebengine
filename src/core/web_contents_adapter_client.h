@@ -172,6 +172,13 @@ public:
         Error
     };
 
+    enum RenderProcessTerminationStatus {
+        NormalTerminationStatus = 0,
+        AbnormalTerminationStatus,
+        CrashedTerminationStatus,
+        KilledTerminationStatus
+    };
+
     enum MediaRequestFlag {
         MediaNone = 0,
         MediaAudioCapture = 0x01,
@@ -225,6 +232,8 @@ public:
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) = 0;
     virtual void hideValidationMessage() = 0;
     virtual void moveValidationMessage(const QRect &anchor) = 0;
+    RenderProcessTerminationStatus renderProcessExitStatus(int);
+    virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
 
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
 

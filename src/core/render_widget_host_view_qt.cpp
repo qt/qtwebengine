@@ -567,8 +567,11 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus, int)
+void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus terminationStatus,
+                                               int exitCode)
 {
+    m_adapterClient->renderProcessTerminated(
+                m_adapterClient->renderProcessExitStatus(terminationStatus), exitCode);
     Destroy();
 }
 

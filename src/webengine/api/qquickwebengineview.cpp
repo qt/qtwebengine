@@ -893,6 +893,14 @@ void QQuickWebEngineViewPrivate::moveValidationMessage(const QRect &anchor)
     ui()->moveMessageBubble(anchor);
 }
 
+void QQuickWebEngineViewPrivate::renderProcessTerminated(
+        RenderProcessTerminationStatus terminationStatus, int exitCode)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->renderProcessTerminated(static_cast<QQuickWebEngineView::RenderProcessTerminationStatus>(
+                                      renderProcessExitStatus(terminationStatus)), exitCode);
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);

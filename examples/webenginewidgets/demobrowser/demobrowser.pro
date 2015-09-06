@@ -1,6 +1,7 @@
 TEMPLATE = app
 TARGET = demobrowser
 QT += webenginewidgets network widgets printsupport
+CONFIG += c++11
 
 qtHaveModule(uitools):!embedded: QT += uitools
 else: DEFINES += QT_NO_UITOOLS

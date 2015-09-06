@@ -66,6 +66,7 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QBuffer>
+#include <QtCore/QTimer>
 
 WebPage::WebPage(QWebEngineProfile *profile, QObject *parent)
     : QWebEnginePage(profile, parent)
@@ -341,6 +342,27 @@ WebView::WebView(QWidget* parent)
             this, SLOT(setProgress(int)));
     connect(this, SIGNAL(loadFinished(bool)),
             this, SLOT(loadFinished(bool)));
+    connect(this, &QWebEngineView::renderProcessTerminated,
+            [=](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+        const char *status = "";
+        switch (termStatus) {
+        case QWebEnginePage::NormalTerminationStatus:
+            status = "(normal exit)";
+            break;
+        case QWebEnginePage::AbnormalTerminationStatus:
+            status = "(abnormal exit)";
+            break;
+        case QWebEnginePage::CrashedTerminationStatus:
+            status = "(crashed)";
+            break;
+        case QWebEnginePage::KilledTerminationStatus:
+            status = "(killed)";
+            break;
+        }
+
+        qInfo() << "Render process exited with code" << statusCode << status;
+        QTimer::singleShot(0, [this] { reload(); });
+    });
 }
 
 void WebView::setPage(WebPage *_page)

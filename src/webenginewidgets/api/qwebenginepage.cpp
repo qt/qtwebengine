@@ -921,6 +921,14 @@ void QWebEnginePagePrivate::moveValidationMessage(const QRect &anchor)
 #endif
 }
 
+void QWebEnginePagePrivate::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
+                                                int exitCode)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->renderProcessTerminated(static_cast<QWebEnginePage::RenderProcessTerminationStatus>(
+                                      terminationStatus), exitCode);
+}
+
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);

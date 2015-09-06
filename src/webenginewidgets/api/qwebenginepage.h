@@ -165,6 +165,14 @@ public:
         ErrorMessageLevel
     };
 
+    // must match WebContentsAdapterClient::RenderProcessTerminationStatus
+    enum RenderProcessTerminationStatus {
+        NormalTerminationStatus = 0,
+        AbnormalTerminationStatus,
+        CrashedTerminationStatus,
+        KilledTerminationStatus
+    };
+
     explicit QWebEnginePage(QObject *parent = 0);
     QWebEnginePage(QWebEngineProfile *profile, QObject *parent = 0);
     ~QWebEnginePage();
@@ -246,6 +254,8 @@ Q_SIGNALS:
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
+
+    void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
 
     // Ex-QWebFrame signals
     void titleChanged(const QString &title);

@@ -167,6 +167,8 @@ public:
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) Q_DECL_OVERRIDE;
     virtual void hideValidationMessage() Q_DECL_OVERRIDE;
     virtual void moveValidationMessage(const QRect &anchor) Q_DECL_OVERRIDE;
+    virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
+                                     int exitCode) Q_DECL_OVERRIDE;
 
     virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 

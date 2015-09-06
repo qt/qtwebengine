@@ -113,6 +113,8 @@ Q_SIGNALS:
     void selectionChanged();
     void urlChanged(const QUrl&);
     void iconUrlChanged(const QUrl&);
+    void renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus,
+                             int exitCode);
 
 protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
