@@ -72,7 +72,7 @@ win32 {
 }
 
 mac {
-    ICON = browser.icns
+    ICON = demobrowser.icns
     QMAKE_INFO_PLIST = Info_mac.plist
     TARGET = Browser
 }
