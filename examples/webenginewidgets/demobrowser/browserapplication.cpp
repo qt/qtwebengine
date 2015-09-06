@@ -190,25 +190,24 @@ BrowserApplication::~BrowserApplication()
     delete s_bookmarksManager;
 }
 
-#if defined(Q_OS_OSX)
 void BrowserApplication::lastWindowClosed()
 {
+#if defined(Q_OS_OSX)
     clean();
     BrowserMainWindow *mw = new BrowserMainWindow;
     mw->slotHome();
     m_mainWindows.prepend(mw);
-}
 #endif
+}
 
 BrowserApplication *BrowserApplication::instance()
 {
     return (static_cast<BrowserApplication *>(QCoreApplication::instance()));
 }
 
-#if defined(Q_OS_OSX)
-#include <QtWidgets/QMessageBox>
 void BrowserApplication::quitBrowser()
 {
+#if defined(Q_OS_OSX)
     clean();
     int tabCount = 0;
     for (int i = 0; i < m_mainWindows.count(); ++i) {
@@ -226,8 +225,8 @@ void BrowserApplication::quitBrowser()
     }
 
     exit(0);
-}
 #endif
+}
 
 /*!
     Any actions that can be delayed until the window is visible

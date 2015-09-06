@@ -93,10 +93,8 @@ public:
 public slots:
     BrowserMainWindow *newMainWindow();
     void restoreLastSession();
-#if defined(Q_OS_OSX)
     void lastWindowClosed();
     void quitBrowser();
-#endif
     void setPrivateBrowsing(bool);
 
 signals:
