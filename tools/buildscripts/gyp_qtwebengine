@@ -139,11 +139,6 @@ if __name__ == '__main__':
   args.extend(['-D', 'qtwebengine_root=' + purifyGypVarPath(qtwebengine_root)])
   args.extend(['-D', 'chromium_src_dir=' + purifyGypVarPath(chrome_src)])
 
-  # linux_use_bundled_gold currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
-  # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
-  args.extend(['-D', 'linux_use_bundled_gold=0'])
-  args.extend(['-D', 'linux_use_bundled_binutils=0'])
-  args.extend(['-D', 'linux_use_gold_flags=0'])
   args.extend(['-D', 'clang_use_chrome_plugins=0'])
   # We do not want to ship more external binary blobs, so let v8 embed its startup data.
   args.extend(['-D', 'v8_use_external_startup_data=0'])
