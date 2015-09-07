@@ -96,11 +96,11 @@ public:
 
     bool interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
-        info.blockRequest(info.method() != QByteArrayLiteral("GET"));
-        if (info.url().toString().endsWith(QLatin1String("__placeholder__")))
-            info.redirectTo(QUrl("qrc:///resources/content.html"));
+        info.block(info.requestMethod() != QByteArrayLiteral("GET"));
+        if (info.requestUrl().toString().endsWith(QLatin1String("__placeholder__")))
+            info.redirect(QUrl("qrc:///resources/content.html"));
 
-        observedUrls.append(info.url());
+        observedUrls.append(info.requestUrl());
         return shouldIntercept;
     }
     TestRequestInterceptor(bool intercept)
