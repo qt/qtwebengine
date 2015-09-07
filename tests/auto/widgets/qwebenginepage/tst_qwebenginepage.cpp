@@ -108,6 +108,7 @@ private Q_SLOTS:
     void contextMenuPopulatedOnce();
     void acceptNavigationRequest();
     void acceptNavigationRequestNavigationType();
+    void geolocationRequestJS_data();
     void geolocationRequestJS();
     void loadFinished();
     void actionStates();
@@ -279,7 +280,6 @@ void tst_QWebEnginePage::acceptNavigationRequest()
     m_view->setPage(0);
 }
 
-#if defined(QWEBENGINEPAGE_SETFEATUREPERMISSION)
 class JSTestPage : public QWebEnginePage
 {
 Q_OBJECT
@@ -292,12 +292,12 @@ public:
         return true;
     }
 public Q_SLOTS:
-    void requestPermission(QWebEngineFrame* frame, QWebEnginePage::Feature feature)
+    void requestPermission(const QUrl &origin, QWebEnginePage::Feature feature)
     {
         if (m_allowGeolocation)
-            setFeaturePermission(frame, feature, PermissionGrantedByUser);
+            setFeaturePermission(origin, feature, PermissionGrantedByUser);
         else
-            setFeaturePermission(frame, feature, PermissionDeniedByUser);
+            setFeaturePermission(origin, feature, PermissionDeniedByUser);
     }
 
 public:
@@ -309,7 +309,6 @@ public:
 private:
     bool m_allowGeolocation;
 };
-#endif
 
 // [Qt] tst_QWebEnginePage::infiniteLoopJS() timeouts with DFG JIT
 // https://bugs.webkit.org/show_bug.cgi?id=79040
@@ -324,40 +323,38 @@ void tst_QWebEnginePage::infiniteLoopJS()
 }
 */
 
+void tst_QWebEnginePage::geolocationRequestJS_data()
+{
+    QTest::addColumn<bool>("allowed");
+    QTest::addColumn<int>("errorCode");
+    QTest::newRow("allowed") << true << 0;
+    QTest::newRow("not allowed") << false << 1;
+}
+
 void tst_QWebEnginePage::geolocationRequestJS()
 {
-#if !defined(QWEBENGINEPAGE_SETFEATUREPERMISSION)
-    QSKIP("QWEBENGINEPAGE_SETFEATUREPERMISSION");
-#else
-    JSTestPage* newPage = new JSTestPage(m_view);
+    QFETCH(bool, allowed);
+    QFETCH(int, errorCode);
+    QWebEngineView *view = new QWebEngineView;
+    JSTestPage *newPage = new JSTestPage(view);
+    newPage->setView(view);
+    newPage->setGeolocationPermission(allowed);
 
+    connect(newPage, SIGNAL(featurePermissionRequested(const QUrl&, QWebEnginePage::Feature)),
+            newPage, SLOT(requestPermission(const QUrl&, QWebEnginePage::Feature)));
+
+    QSignalSpy spyLoadFinished(newPage, SIGNAL(loadFinished(bool)));
+    newPage->setHtml(QString("<html><body>test</body></html>"), QUrl());
+    QTRY_COMPARE(spyLoadFinished.count(), 1);
     if (evaluateJavaScriptSync(newPage, QLatin1String("!navigator.geolocation")).toBool()) {
-        delete newPage;
+        delete view;
         W_QSKIP("Geolocation is not supported.", SkipSingle);
     }
 
-    connect(newPage, SIGNAL(featurePermissionRequested(QWebEngineFrame*, QWebEnginePage::Feature)),
-            newPage, SLOT(requestPermission(QWebEngineFrame*, QWebEnginePage::Feature)));
+    evaluateJavaScriptSync(newPage, "var errorCode = 0; function error(err) { errorCode = err.code; } function success(pos) { } navigator.geolocation.getCurrentPosition(success, error)");
 
-    newPage->setGeolocationPermission(false);
-    m_view->setPage(newPage);
-    m_view->setHtml(QString("<html><body>test</body></html>"), QUrl());
-    evaluateJavaScriptSync(m_view->page(), "var errorCode = 0; function error(err) { errorCode = err.code; } function success(pos) { } navigator.geolocation.getCurrentPosition(success, error)");
-    QTest::qWait(2000);
-    QVariant empty = evaluateJavaScriptSync(m_view->page(), "errorCode");
-
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=102235", Continue);
-    QVERIFY(empty.type() == QVariant::Double && empty.toInt() != 0);
-
-    newPage->setGeolocationPermission(true);
-    evaluateJavaScriptSync(m_view->page(), "errorCode = 0; navigator.geolocation.getCurrentPosition(success, error);");
-    empty = evaluateJavaScriptSync(m_view->page(), "errorCode");
-
-    //http://dev.w3.org/geo/api/spec-source.html#position
-    //PositionError: const unsigned short PERMISSION_DENIED = 1;
-    QVERIFY(empty.type() == QVariant::Double && empty.toInt() != 1);
-    delete newPage;
-#endif
+    QTRY_COMPARE(evaluateJavaScriptSync(newPage, "errorCode").toInt(), errorCode);
+    delete view;
 }
 
 void tst_QWebEnginePage::loadFinished()
