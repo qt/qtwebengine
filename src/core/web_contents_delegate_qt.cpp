@@ -245,24 +245,21 @@ content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogMana
 
 void WebContentsDelegateQt::EnterFullscreenModeForTab(content::WebContents *web_contents, const GURL& origin)
 {
-    Q_UNUSED(origin); // FIXME
-    if (!m_viewClient->isFullScreen()) {
-        m_viewClient->requestFullScreen(true);
-        web_contents->GetRenderViewHost()->WasResized();
-    }
+    Q_UNUSED(web_contents);
+    if (!m_viewClient->isFullScreenMode())
+        m_viewClient->requestFullScreenMode(toQt(origin), true);
 }
 
 void WebContentsDelegateQt::ExitFullscreenModeForTab(content::WebContents *web_contents)
 {
-    if (m_viewClient->isFullScreen()) {
-        m_viewClient->requestFullScreen(false);
-        web_contents->GetRenderViewHost()->WasResized();
-     }
+    if (m_viewClient->isFullScreenMode())
+        m_viewClient->requestFullScreenMode(toQt(web_contents->GetLastCommittedURL().GetOrigin()), false);
 }
 
 bool WebContentsDelegateQt::IsFullscreenForTabOrPending(const content::WebContents* web_contents) const
 {
-    return m_viewClient->isFullScreen();
+    Q_UNUSED(web_contents);
+    return m_viewClient->isFullScreenMode();
 }
 
 ASSERT_ENUMS_MATCH(FilePickerController::Open, content::FileChooserParams::Open)

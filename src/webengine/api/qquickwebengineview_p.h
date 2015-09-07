@@ -71,17 +71,21 @@ class QQuickWebEngineTestSupport;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFullScreenRequest {
     Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin)
     Q_PROPERTY(bool toggleOn READ toggleOn)
 public:
     QQuickWebEngineFullScreenRequest();
-    QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, bool toggleOn);
+    QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, const QUrl &origin, bool toggleOn);
 
     Q_INVOKABLE void accept();
-    bool toggleOn() { return m_toggleOn; }
+    Q_INVOKABLE void reject();
+    QUrl origin() const { return m_origin; }
+    bool toggleOn() const { return m_toggleOn; }
 
 private:
     QQuickWebEngineViewPrivate *viewPrivate;
-    bool m_toggleOn;
+    const QUrl m_origin;
+    const bool m_toggleOn;
 };
 
 #define LATEST_WEBENGINEVIEW_REVISION 2

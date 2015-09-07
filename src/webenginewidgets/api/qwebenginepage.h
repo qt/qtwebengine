@@ -37,9 +37,9 @@
 #ifndef QWEBENGINEPAGE_H
 #define QWEBENGINEPAGE_H
 
-#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
-#include <QtWebEngineWidgets/qwebenginecertificateerror.h>
-#include <QtWebEngineCore/qwebenginecallback.h>
+#include <qtwebenginewidgetsglobal.h>
+#include <qwebenginecertificateerror.h>
+#include <qwebenginecallback.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -50,6 +50,7 @@
 QT_BEGIN_NAMESPACE
 class QMenu;
 class QWebChannel;
+class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
@@ -246,12 +247,12 @@ Q_SIGNALS:
 
     void linkHovered(const QString &url);
     void selectionChanged();
-    void fullScreenRequested(bool fullScreen);
     void geometryChangeRequested(const QRect& geom);
     void windowCloseRequested();
 
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
+    void fullScreenRequested(const QWebEngineFullScreenRequest &fullScreenRequest);
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
@@ -273,7 +274,7 @@ protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool certificateError(const QWebEngineCertificateError &certificateError);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
-    virtual bool isFullScreen();
+
 private:
     Q_DISABLE_COPY(QWebEnginePage)
     Q_DECLARE_PRIVATE(QWebEnginePage)

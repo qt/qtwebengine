@@ -823,6 +823,12 @@ void WebContentsAdapter::exitFullScreen()
     d->webContents->ExitFullscreen();
 }
 
+void WebContentsAdapter::changedFullScreen()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->NotifyFullscreenChanged();
+}
+
 void WebContentsAdapter::wasShown()
 {
     Q_D(WebContentsAdapter);
