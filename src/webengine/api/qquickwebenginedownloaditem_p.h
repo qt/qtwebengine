@@ -71,7 +71,7 @@ public:
     };
     Q_ENUMS(DownloadState)
 
-    Q_PROPERTY(quint32 id READ id() CONSTANT FINAL)
+    Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
     Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged)
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)

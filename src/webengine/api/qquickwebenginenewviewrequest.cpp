@@ -45,9 +45,9 @@
     \inqmlmodule QtWebEngine 1.1
     \since QtWebEngine 1.1
 
-    \brief A utility class for the WebEngineView::newViewRequested signal.
+    \brief A utility type for the WebEngineView::newViewRequested signal.
 
-    This class contains information about the request of a page to open a new window.
+    Contains information about a request to load a page in a separate web engine view.
 
     \sa WebEngineView::newViewRequested
 */
@@ -61,7 +61,7 @@ QQuickWebEngineNewViewRequest::~QQuickWebEngineNewViewRequest()
 
 /*!
     \qmlproperty WebEngineView::NewViewDestination WebEngineNewViewRequest::destination
-    \brief The type of view that is requested by the page.
+    The type of the view that is requested by the page.
  */
 QQuickWebEngineView::NewViewDestination QQuickWebEngineNewViewRequest::destination() const
 {
@@ -70,9 +70,9 @@ QQuickWebEngineView::NewViewDestination QQuickWebEngineNewViewRequest::destinati
 
 /*!
     \qmlproperty bool WebEngineNewViewRequest::isUserInitiated
-    \brief Whether this window request was directly triggered as the result of a keyboard or mouse event.
+    Whether this window request was directly triggered as the result of a keyboard or mouse event.
 
-    Use this property to block possibly unwanted "popups".
+    Use this property to block possibly unwanted \e popups.
  */
 bool QQuickWebEngineNewViewRequest::isUserInitiated() const
 {
@@ -82,9 +82,8 @@ bool QQuickWebEngineNewViewRequest::isUserInitiated() const
 /*!
     \qmlmethod WebEngineNewViewRequest::openIn(WebEngineView view)
 
-    Call this method to fulfill the request and determine which WebEngineView
-    should be used to contain the new page. Any state, history or loaded page
-    within \a view will be lost as result of this.
+    Opens the requested page in the new web engine view \a view. State and history of the
+    view and the page possibly loaded in it will be lost.
 
     \sa WebEngineView::newViewRequested
   */

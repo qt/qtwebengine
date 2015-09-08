@@ -169,6 +169,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.zoomFactor --> double"
     << "QQuickWebEngineView.zoomFactorChanged(double) --> void"
     << "QQuickWebEngineView.profile --> QQuickWebEngineProfile*"
+    << "QQuickWebEngineView.profileChanged() --> void"
     << "QQuickWebEngineView.navigationHistory --> QQuickWebEngineHistory*"
     << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
     << "QQuickWebEngineView.userScripts --> QQmlListProperty<QQuickWebEngineScript>"
