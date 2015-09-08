@@ -24,7 +24,7 @@
 */
 
 /*!
-    \qmlmodule QtWebEngine 1.0
+    \qmlmodule QtWebEngine 1.1
     \title Qt WebEngine QML Types
     \brief Provides QML types for rendering web content within a QML application
     \ingroup qtwebengine-qmlmodules
@@ -34,6 +34,6 @@
 
     \code
     import QtQuick 2.0
-    import QtWebEngine 1.0
+    import QtWebEngine 1.1
     \endcode
 */

@@ -153,7 +153,7 @@ void QWebEngineDownloadItem::cancel()
 }
 
 /*!
-    Returns the download item's id.
+    Returns the download item's ID.
 */
 
 quint32 QWebEngineDownloadItem::id() const
@@ -190,13 +190,14 @@ quint32 QWebEngineDownloadItem::id() const
 /*!
     \enum QWebEngineDownloadItem::DownloadState
 
-    This enum describes the state in which the download is in.
+    This enum describes the state of the download:
 
-    \value DownloadRequested The download has been requested, but has not been accepted yet.
-    \value DownloadInProgress The download is in progress.
-    \value DownloadCompleted The download completed successfully.
-    \value DownloadCancelled The download has been cancelled.
-    \value DownloadInterrupted The download has been interrupted (by the server or because of lost connectivity).
+    \value DownloadRequested Download has been requested, but has not been accepted yet.
+    \value DownloadInProgress Download is in progress.
+    \value DownloadCompleted Download completed successfully.
+    \value DownloadCancelled Download has been cancelled.
+    \value DownloadInterrupted Download has been interrupted (by the server or because of lost
+            connectivity).
 */
 
 /*!
@@ -212,9 +213,9 @@ QWebEngineDownloadItem::DownloadState QWebEngineDownloadItem::state() const
 }
 
 /*!
-    Returns the download's total size in bytes.
+    Returns the the total amount of data to download in bytes.
 
-    -1 means the size is unknown.
+    \c -1 means the size is unknown.
 */
 
 qint64 QWebEngineDownloadItem::totalBytes() const
@@ -224,9 +225,9 @@ qint64 QWebEngineDownloadItem::totalBytes() const
 }
 
 /*!
-    Returns the download's bytes that have been received so far.
+    Returns the amount of data in bytes that has been downloaded so far.
 
-    -1 means the size is unknown.
+    \c -1 means the size is unknown.
 */
 
 qint64 QWebEngineDownloadItem::receivedBytes() const
@@ -236,7 +237,7 @@ qint64 QWebEngineDownloadItem::receivedBytes() const
 }
 
 /*!
-    Returns the download's origin url.
+    Returns the download's origin URL.
 */
 
 QUrl QWebEngineDownloadItem::url() const
@@ -246,7 +247,7 @@ QUrl QWebEngineDownloadItem::url() const
 }
 
 /*!
-    Returns the download's full target path where it is being downloaded to.
+    Returns the full target path where data is being downloaded to.
 
     The path includes the file name. The default suggested path is the standard download location
     and file name is deduced not to overwrite already existing files.
@@ -259,11 +260,11 @@ QString QWebEngineDownloadItem::path() const
 }
 
 /*!
-    Sets the download's full target path, where the file should be downloaded to.
+    Sets the full target path to download the file to.
 
     The \a path should also include the file name. The download path can only be set in response
     to the QWebEngineProfile::downloadRequested() signal before the download is accepted.
-    Past that point this function has no effect on the download item's state.
+    Past that point, this function has no effect on the download item's state.
 */
 void QWebEngineDownloadItem::setPath(QString path)
 {

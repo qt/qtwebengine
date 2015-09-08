@@ -49,7 +49,7 @@
 //
 
 #include <QObject>
-#include <qtwebengineglobal_p.h>
+#include "qtwebengineglobal_p.h"
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineProfile;

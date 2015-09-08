@@ -38,8 +38,17 @@ import QtQuick 2.5
 import QtQuick.Controls 1.4 as Controls
 
 Controls.Menu {
+    id: menu
     signal done()
 
     // Use private API for now
-    onAboutToHide: done();
+    onAboutToHide: doneTimer.start();
+
+    // WORKAROUND On Mac the Menu may be destroyed before the MenuItem
+    // is actually triggered (see qtbase commit 08cc9b9991ae9ab51)
+    Timer {
+        id: doneTimer
+        interval: 100
+        onTriggered: menu.done()
+    }
 }

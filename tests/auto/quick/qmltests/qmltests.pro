@@ -17,6 +17,7 @@ OTHER_FILES += \
     $$PWD/data/favicon.png \
     $$PWD/data/favicon2.html \
     $$PWD/data/forms.html \
+    $$PWD/data/geolocation.html \
     $$PWD/data/javascript.html \
     $$PWD/data/link.html \
     $$PWD/data/prompt.html \
@@ -35,6 +36,7 @@ OTHER_FILES += \
     $$PWD/data/tst_favIconLoad.qml \
     $$PWD/data/tst_filePicker.qml \
     $$PWD/data/tst_formValidation.qml \
+    $$PWD/data/tst_geopermission.qml \
     $$PWD/data/tst_javaScriptDialogs.qml \
     $$PWD/data/tst_linkHovered.qml \
     $$PWD/data/tst_loadFail.qml \
