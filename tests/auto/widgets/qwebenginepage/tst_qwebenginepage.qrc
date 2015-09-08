@@ -11,5 +11,11 @@
     <file>resources/fullscreen.html</file>
     <file>resources/script.html</file>
     <file>resources/user.css</file>
+    <file>resources/image.png</file>
+    <file>resources/style.css</file>
+    <file>resources/test1.html</file>
+    <file>resources/test2.html</file>
+    <file>resources/testiframe.html</file>
+    <file>resources/testiframe2.html</file>
 </qresource>
 </RCC>
