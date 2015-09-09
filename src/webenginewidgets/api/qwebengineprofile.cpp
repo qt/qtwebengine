@@ -448,7 +448,7 @@ QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
 
     The profile does not take ownership of the pointer.
 
-    \sa QtWebEngineCore::QWebEngineCookieStoreClient
+    \sa QWebEngineCookieStoreClient
 */
 
 void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client)
@@ -462,7 +462,7 @@ void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client
 
     The profile does not take ownership of the pointer.
 
-    \sa QtWebEngineCore::QWebEngineUrlRequestInfo
+    \sa QWebEngineUrlRequestInfo
 */
 
 void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
