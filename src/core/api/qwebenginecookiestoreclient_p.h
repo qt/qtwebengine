@@ -50,7 +50,6 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
-#include "cookie_monster_delegate_qt.h"
 #include "qwebenginecallback_p.h"
 #include "qwebenginecookiestoreclient.h"
 
@@ -58,6 +57,10 @@
 #include <QMap>
 #include <QNetworkCookie>
 #include <QUrl>
+
+namespace QtWebEngineCore {
+class CookieMonsterDelegateQt;
+}
 
 QT_BEGIN_NAMESPACE
 

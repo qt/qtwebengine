@@ -37,6 +37,8 @@
 #include "qwebenginecookiestoreclient.h"
 #include "qwebenginecookiestoreclient_p.h"
 
+#include <cookie_monster_delegate_qt.h>
+
 #include <QByteArray>
 #include <QUrl>
 
