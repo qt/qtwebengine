@@ -13,6 +13,8 @@
       '<(chromium_src_dir)/components/components.gyp:error_page_renderer',
       '<(chromium_src_dir)/components/components.gyp:visitedlink_browser',
       '<(chromium_src_dir)/components/components.gyp:visitedlink_renderer',
+      '<(chromium_src_dir)/components/components.gyp:web_cache_browser',
+      '<(chromium_src_dir)/components/components.gyp:web_cache_renderer',
       '<(chromium_src_dir)/content/content.gyp:content',
       '<(chromium_src_dir)/content/content.gyp:content_app_browser',
       '<(chromium_src_dir)/content/content.gyp:content_browser',

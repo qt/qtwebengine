@@ -51,12 +51,14 @@
 #include "web_engine_settings.h"
 #include "web_engine_visited_links_manager.h"
 
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_params.h"
@@ -313,6 +315,11 @@ void WebContentsDelegateQt::DidNavigateAnyFrame(content::RenderFrameHost* render
     if (!params.should_update_history || !m_viewClient->browserContextAdapter()->trackVisitedLinks())
         return;
     m_viewClient->browserContextAdapter()->visitedLinksManager()->addUrl(params.url);
+}
+
+void WebContentsDelegateQt::WasShown()
+{
+    web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetRenderProcessHost()->GetID());
 }
 
 void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
