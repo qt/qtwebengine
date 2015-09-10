@@ -143,6 +143,11 @@ void WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const co
         m_viewClient->unhandledKeyEvent(reinterpret_cast<QKeyEvent *>(event.os_event));
 }
 
+void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
+{
+    m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
+}
+
 void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc)
 {
     if (is_error_page) {

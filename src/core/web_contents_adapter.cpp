@@ -330,6 +330,8 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
 
 WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 {
+    // Destroy the WebContents first
+    webContents.reset();
 }
 
 QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
