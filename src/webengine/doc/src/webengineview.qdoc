@@ -248,6 +248,10 @@
     runJavaScript("document.title", function(result) { console.log(result); });
     \endcode
 
+    The script will run in the same \e world as other scripts that are
+    part of the loaded site.
+
+    See WebEngineView::userScripts for an alternative API to inject scripts.
 */
 
 /*!

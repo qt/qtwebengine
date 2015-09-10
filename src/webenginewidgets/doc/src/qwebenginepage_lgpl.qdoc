@@ -596,16 +596,27 @@
 
 /*!
     \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
-    Runs the JavaScript code contained in \a scriptSource.
+    \overload runJavaScript()
+
+    This convenience function runs the JavaScript code contained in \a scriptSource.
 */
 
 /*!
     \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
+
     Runs the JavaScript code contained in \a scriptSource.
 
-    When the script has been executed, \a resultCallback is called with the result of the last executed statement.
+    The script will run in the same \e world as other scripts that are part of the loaded site.
 
-    \note \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a QVariant parameter.
+    When the script has been executed, \a resultCallback is called with the result of the last executed statement.
+    \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a
+    QVariant parameter. For example:
+
+    \code
+    page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
+    \endcode
+
+    See scripts() for an alternative API to inject scripts.
 */
 
 /*!
