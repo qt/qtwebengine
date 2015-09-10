@@ -121,6 +121,8 @@
             Enables displaying the built-in error pages of Chromium. Enabled by default.
     \value  PluginsEnabled
             Enables support for Pepper plugins, such as the Flash player. Disabled by default.
+    \value  FullScreenSupportEnabled
+            Enables fullscreen support in an application. Disabled by default.
 */
 
 /*!
