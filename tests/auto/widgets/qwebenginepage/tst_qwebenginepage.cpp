@@ -5004,20 +5004,16 @@ void tst_QWebEnginePage::setUrlThenLoads()
 
 void tst_QWebEnginePage::loadFinishedAfterNotFoundError()
 {
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
     QWebEnginePage page;
-
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
-    FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
-    page.setNetworkAccessManager(networkManager);
 
-    page.setUrl(FakeReply::urlFor404ErrorWithoutContents);
+    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+    page.setUrl(QUrl("http://non.existent/url"));
     QTRY_COMPARE(spy.count(), 1);
-    const bool wasLoadOk = spy.at(0).at(0).toBool();
-    QVERIFY(!wasLoadOk);
-#endif
+
+    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
+    page.setUrl(QUrl("http://another.non.existent/url"));
+    QTRY_COMPARE(spy.count(), 2);
 }
 
 class URLSetter : public QObject {
