@@ -136,7 +136,6 @@ private Q_SLOTS:
     void textSelection();
     void textEditing();
     void backActionUpdate();
-    void frameAt();
     void protectBindingsRuntimeObjectsFromCollector();
     void localURLSchemes();
     void testOptionalJSObjects();
@@ -149,8 +148,6 @@ private Q_SLOTS:
     void inputMethodsTextFormat();
     void defaultTextEncoding();
     void errorPageExtension();
-    void errorPageExtensionInIFrames();
-    void errorPageExtensionInFrameset();
     void errorPageExtensionLoadFinished();
     void userAgentApplicationName();
     void userAgentNewlineStripping();
@@ -170,7 +167,6 @@ private Q_SLOTS:
     void unacceleratedWebGLScreenshotWithoutView();
 #endif
 
-    void originatingObjectInNetworkRequests();
     void networkReplyParentDidntChange();
     void destroyQNAMBeforeAbortDoesntCrash();
     void testJSPrompt();
@@ -225,8 +221,6 @@ private Q_SLOTS:
     void hitTestContent();
     void baseUrl_data();
     void baseUrl();
-    void hasSetFocus();
-    void renderGeometry();
     void renderHints();
     void scrollPosition();
     void scrollToAnchor();
@@ -1694,39 +1688,6 @@ void tst_QWebEnginePage::backActionUpdate()
     QVERIFY(action->isEnabled());
 }
 
-#if defined(QWEBENGINEFRAME)
-void frameAtHelper(QWebEnginePage* webPage, QWebEngineFrame* webFrame, QPoint framePosition)
-{
-    if (!webFrame)
-        return;
-
-    framePosition += QPoint(webFrame->pos());
-    QList<QWebEngineFrame*> children = webFrame->childFrames();
-    for (int i = 0; i < children.size(); ++i) {
-        if (children.at(i)->childFrames().size() > 0)
-            frameAtHelper(webPage, children.at(i), framePosition);
-
-        QRect frameRect(children.at(i)->pos() + framePosition, children.at(i)->geometry().size());
-        QVERIFY(children.at(i) == webPage->frameAt(frameRect.topLeft()));
-    }
-}
-#endif
-
-void tst_QWebEnginePage::frameAt()
-{
-#if !defined(QWEBENGINEFRAME)
-    QSKIP("QWEBENGINEFRAME");
-#else
-    QWebEngineView webView;
-    QWebEnginePage* webPage = webView.page();
-    QSignalSpy loadSpy(webPage, SIGNAL(loadFinished(bool)));
-    QUrl url = QUrl("qrc:///resources/iframe.html");
-    webPage->load(url);
-    QTRY_COMPARE(loadSpy.count(), 1);
-    frameAtHelper(webPage, webPage->mainFrame(), webPage->mainFrame()->pos());
-#endif
-}
-
 void tst_QWebEnginePage::inputMethods_data()
 {
     QTest::addColumn<QString>("viewType");
@@ -2799,47 +2760,6 @@ void tst_QWebEnginePage::errorPageExtension()
 #endif
 }
 
-void tst_QWebEnginePage::errorPageExtensionInIFrames()
-{
-#if !defined(QWEBENGINEFRAME)
-    QSKIP("QWEBENGINEFRAME");
-#else
-    ErrorPage page;
-    m_view->setPage(&page);
-
-    m_view->page()->load(QUrl(
-        "data:text/html,"
-        "<h1>h1</h1>"
-        "<iframe src='data:text/html,<p/>p'></iframe>"
-        "<iframe src='http://non.existent/url'></iframe>"));
-    QSignalSpy spyLoadFinished(m_view, SIGNAL(loadFinished(bool)));
-    QTRY_COMPARE(spyLoadFinished.count(), 1);
-
-    QCOMPARE(page.mainFrame()->childFrames()[1]->toPlainText(), QString("error"));
-
-    m_view->setPage(0);
-#endif
-}
-
-void tst_QWebEnginePage::errorPageExtensionInFrameset()
-{
-#if !defined(QWEBENGINEFRAME)
-    QSKIP("QWEBENGINEFRAME");
-#else
-    ErrorPage page;
-    m_view->setPage(&page);
-
-    m_view->load(QUrl("qrc:///resources/index.html"));
-
-    QSignalSpy spyLoadFinished(m_view, SIGNAL(loadFinished(bool)));
-    QTRY_COMPARE(spyLoadFinished.count(), 1);
-    QCOMPARE(page.mainFrame()->childFrames().count(), 2);
-    QCOMPARE(page.mainFrame()->childFrames()[1]->toPlainText(), QString("error"));
-
-    m_view->setPage(0);
-#endif
-}
-
 void tst_QWebEnginePage::errorPageExtensionLoadFinished()
 {
 #if !defined(QWEBENGINEPAGE_ERRORPAGEEXTENSION)
@@ -3023,31 +2943,6 @@ void tst_QWebEnginePage::unacceleratedWebGLScreenshotWithoutView()
     webGLScreenshotWithoutView(false);
 }
 #endif
-
-void tst_QWebEnginePage::originatingObjectInNetworkRequests()
-{
-#if !defined(QWEBENGINEFRAME)
-    QSKIP("QWEBENGINEFRAME");
-#else
-    TestNetworkManager* networkManager = new TestNetworkManager(m_page);
-    m_page->setNetworkAccessManager(networkManager);
-    networkManager->requests.clear();
-
-    m_view->setHtml(QString("<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
-                            "<head><meta http-equiv='refresh' content='1'></head>foo \">"
-                            "<frame src=\"data:text/html,bar\"></frameset>"), QUrl());
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
-
-    QCOMPARE(networkManager->requests.count(), 2);
-
-    QList<QWebEngineFrame*> childFrames = m_page->mainFrame()->childFrames();
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118660", Continue);
-    QCOMPARE(childFrames.count(), 2);
-
-    for (int i = 0; i < 2; ++i)
-        QVERIFY(qobject_cast<QWebEngineFrame*>(networkManager->requests.at(i).originatingObject()) == childFrames.at(i));
-#endif
-}
 
 void tst_QWebEnginePage::networkReplyParentDidntChange()
 {
@@ -4579,93 +4474,6 @@ void tst_QWebEnginePage::baseUrl()
     QCOMPARE(baseUrlSync(m_page), baseUrl);
 }
 
-void tst_QWebEnginePage::hasSetFocus()
-{
-#if !defined(QWEBENGINEFRAME)
-    QSKIP("QWEBENGINEFRAME");
-#else
-    QString html("<html><body><p>top</p>" \
-                    "<iframe width='80%' height='30%'/>" \
-                 "</body></html>");
-
-    QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
-    m_page->setHtml(html);
-
-    waitForSignal(m_page, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(loadSpy.size(), 1);
-
-    QList<QWebEngineFrame*> children = m_page->childFrames();
-    QWebEngineFrame* frame = children.at(0);
-    QString innerHtml("<html><body><p>another iframe</p>" \
-                        "<iframe width='80%' height='30%'/>" \
-                      "</body></html>");
-    frame->setHtml(innerHtml);
-
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(loadSpy.size(), 2);
-
-    m_page->setFocus();
-    QTRY_VERIFY(m_page->hasFocus());
-
-    for (int i = 0; i < children.size(); ++i) {
-        children.at(i)->setFocus();
-        QTRY_VERIFY(children.at(i)->hasFocus());
-        QVERIFY(!m_page->hasFocus());
-    }
-
-    m_page->setFocus();
-    QTRY_VERIFY(m_page->hasFocus());
-#endif
-}
-
-void tst_QWebEnginePage::renderGeometry()
-{
-#if !defined(QWEBENGINEFRAME)
-    QSKIP("QWEBENGINEFRAME");
-#else
-    QString html("<html>" \
-                    "<head><style>" \
-                       "body, iframe { margin: 0px; border: none; }" \
-                    "</style></head>" \
-                    "<body><iframe width='100px' height='100px'/></body>" \
-                 "</html>");
-
-    QWebEnginePage page;
-    page.setHtml(html);
-
-    QList<QWebEngineFrame*> frames = page.childFrames();
-    QWebEngineFrame *frame = frames.at(0);
-    QString innerHtml("<body style='margin: 0px;'><img src='qrc:/image.png'/></body>");
-
-    // By default, only security origins of local files can load local resources.
-    // So we should specify baseUrl to be a local file in order to get a proper origin.
-    frame->setHtml(innerHtml, QUrl("file:///path/to/file"));
-    waitForSignal(frame, SIGNAL(loadFinished(bool)), 200);
-
-    QPicture picture;
-
-    QSize size = page.contentsSize();
-    page.setViewportSize(size);
-
-    // render contents layer only (the iframe is smaller than the image, so it will have scrollbars)
-    QPainter painter1(&picture);
-    frame->render(&painter1, QWebEngineFrame::ContentsLayer);
-    painter1.end();
-
-    QCOMPARE(size.width(), picture.boundingRect().width() + frame->scrollBarGeometry(Qt::Vertical).width());
-    QCOMPARE(size.height(), picture.boundingRect().height() + frame->scrollBarGeometry(Qt::Horizontal).height());
-
-    // render everything, should be the size of the iframe
-    QPainter painter2(&picture);
-    frame->render(&painter2, QWebEngineFrame::AllLayers);
-    painter2.end();
-
-    QCOMPARE(size.width(), picture.boundingRect().width());   // width: 100px
-    QCOMPARE(size.height(), picture.boundingRect().height()); // height: 100px
-#endif
-}
-
-
 class DummyPaintEngine: public QPaintEngine {
 public:
 
@@ -5104,7 +4912,7 @@ void tst_QWebEnginePage::setUrlToInvalid()
     QVERIFY(!invalidUrl.isEmpty());
     QVERIFY(invalidUrl != QUrl());
 
-    // QWebEngineFrame will do its best to accept the URL, possible converting it to a valid equivalent URL.
+    // QWebEnginePage will do its best to accept the URL, possible converting it to a valid equivalent URL.
     const QUrl validUrl("http://example.com/");
     page.setUrl(invalidUrl);
     QCOMPARE(page.url(), validUrl);
