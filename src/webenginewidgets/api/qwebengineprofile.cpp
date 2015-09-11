@@ -60,8 +60,9 @@ using QtWebEngineCore::BrowserContextAdapter;
 
     \inmodule QtWebEngineWidgets
 
-    QWebEngineProfile contains settings and history shared by all web engine pages that belong
-    to the profile.
+    QWebEngineProfile contains settings, scripts, and the list of visited links shared by all
+    web engine pages that belong to the profile. As such, profiles can be used to isolate pages
+    from each other. A typical use case is a dedicated profile for a 'private browsing' mode.
 
     The default profile is a built-in profile that all web pages not specifically created with
     another profile belong to.

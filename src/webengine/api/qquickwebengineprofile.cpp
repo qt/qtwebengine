@@ -135,10 +135,11 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
     \instantiates QQuickWebEngineProfile
     \inqmlmodule QtWebEngine 1.1
     \since QtWebEngine 1.1
-    \brief Contains common settings for multiple web engine views.
+    \brief Contains settings, scripts, and visited links common to multiple web engine views.
 
-    Contains settings and history shared by all the web engine views that belong
-    to the profile.
+    WebEngineProfile contains settings, scripts, and the list of visited links shared by all
+    views that belong to the profile. As such, profiles can be used to isolate views
+    from each other. A typical use case is a dedicated profile for a 'private browsing' mode.
 
     Each web engine view has an associated profile. Views that do not have a specific profile set
     share a common default one.
