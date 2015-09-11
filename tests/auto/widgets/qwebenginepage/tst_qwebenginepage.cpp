@@ -198,7 +198,6 @@ private Q_SLOTS:
     void symmetricUrl();
     void progressSignal();
     void urlChange();
-    void requestedUrl();
     void requestedUrlAfterSetAndLoadFailures();
     void javaScriptWindowObjectCleared_data();
     void javaScriptWindowObjectCleared();
@@ -210,7 +209,6 @@ private Q_SLOTS:
     void setHtmlWithStylesheetResource();
     void setHtmlWithBaseURL();
     void setHtmlWithJSAlert();
-    void ipv6HostEncoding();
     void metaData();
 #if !defined(QT_NO_COMBOBOX)
     void popupFocus();
@@ -232,7 +230,6 @@ private Q_SLOTS:
     void setUrlToInvalid();
     void setUrlHistory();
     void setUrlUsingStateObject();
-    void setUrlSameUrl();
     void setUrlThenLoads_data();
     void setUrlThenLoads();
     void loadFinishedAfterNotFoundError();
@@ -3972,50 +3969,6 @@ protected:
     }
 };
 
-void tst_QWebEnginePage::requestedUrl()
-{
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
-    QWebEnginePage page;
-
-    // in few seconds, the image should be completely loaded
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
-    FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
-    page.setNetworkAccessManager(networkManager);
-
-    page.setUrl(QUrl("qrc:/test1.html"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(spy.count(), 1);
-    QCOMPARE(page.requestedUrl(), QUrl("qrc:/test1.html"));
-    QCOMPARE(page.url(), QUrl("qrc:/test2.html"));
-
-    page.setUrl(QUrl("qrc:/non-existent.html"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(spy.count(), 2);
-    QCOMPARE(page.requestedUrl(), QUrl("qrc:/non-existent.html"));
-    QCOMPARE(page.url(), QUrl("qrc:/non-existent.html"));
-
-    page.setUrl(QUrl("http://abcdef.abcdef"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(spy.count(), 3);
-    QCOMPARE(page.requestedUrl(), QUrl("http://abcdef.abcdef/"));
-    QCOMPARE(page.url(), QUrl("http://abcdef.abcdef/"));
-
-#ifndef QT_NO_OPENSSL
-    qRegisterMetaType<QList<QSslError> >("QList<QSslError>");
-    qRegisterMetaType<QNetworkReply* >("QNetworkReply*");
-
-    QSignalSpy spy2(page.networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)));
-    page.setUrl(QUrl("qrc:/fake-ssl-error.html"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
-    QCOMPARE(spy2.count(), 1);
-    QCOMPARE(page.requestedUrl(), QUrl("qrc:/fake-ssl-error.html"));
-    QCOMPARE(page.url(), QUrl("qrc:/fake-ssl-error.html"));
-#endif
-#endif
-}
-
 void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 {
     QWebEnginePage page;
@@ -4228,44 +4181,6 @@ void tst_QWebEnginePage::setHtmlWithJSAlert()
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(page.alerts, 1);
     QCOMPARE(toHtmlSync(&page), html);
-}
-
-#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-class TestNetworkManager : public QNetworkAccessManager
-{
-public:
-    TestNetworkManager(QObject* parent) : QNetworkAccessManager(parent) {}
-
-    QList<QUrl> requestedUrls;
-
-protected:
-    virtual QNetworkReply* createRequest(Operation op, const QNetworkRequest &request, QIODevice* outgoingData) {
-        requestedUrls.append(request.url());
-        QNetworkRequest redirectedRequest = request;
-        redirectedRequest.setUrl(QUrl("data:text/html,<p>hello"));
-        return QNetworkAccessManager::createRequest(op, redirectedRequest, outgoingData);
-    }
-};
-#endif
-
-void tst_QWebEnginePage::ipv6HostEncoding()
-{
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
-    TestNetworkManager* networkManager = new TestNetworkManager(m_page);
-    m_page->setNetworkAccessManager(networkManager);
-    networkManager->requestedUrls.clear();
-
-    QUrl baseUrl = QUrl::fromEncoded("http://[::1]/index.html");
-    m_view->setHtml("<p>Hi", baseUrl);
-    m_view->page()->evaluateJavaScript("var r = new XMLHttpRequest();"
-            "r.open('GET', 'http://[::1]/test.xml', false);"
-            "r.send(null);"
-            );
-    QCOMPARE(networkManager->requestedUrls.count(), 1);
-    QCOMPARE(networkManager->requestedUrls.at(0), QUrl::fromEncoded("http://[::1]/test.xml"));
-#endif
 }
 
 void tst_QWebEnginePage::metaData()
@@ -5019,48 +4934,6 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
     QCOMPARE(m_page->url(), QUrl("qrc:/resources/test1.html"));
     QVERIFY(m_page->history()->canGoForward());
     QVERIFY(!m_page->history()->canGoBack());
-}
-
-void tst_QWebEnginePage::setUrlSameUrl()
-{
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
-    const QUrl url1("qrc:/resources/test1.html");
-    const QUrl url2("qrc:/resources/test2.html");
-
-    QWebEnginePage page;
-    FakeNetworkManager* networkManager = new FakeNetworkManager(&page);
-    page.setNetworkAccessManager(networkManager);
-
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
-
-    page.setUrl(url1);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
-    QVERIFY(page.url() != url1); // Nota bene: our QNAM redirects url1 to url2
-    QCOMPARE(page.url(), url2);
-    QCOMPARE(spy.count(), 1);
-
-    page.setUrl(url1);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
-    QVERIFY(page.url() != url1);
-    QCOMPARE(page.url(), url2);
-    QCOMPARE(spy.count(), 2);
-
-    // Now a case without redirect. The existing behavior we have for setUrl()
-    // is more like a "clear(); load()", so the page will be loaded again, even
-    // if urlToBeLoaded == url(). This test should be changed if we want to
-    // make setUrl() early return in this case.
-    page.setUrl(url2);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
-    QCOMPARE(page.url(), url2);
-    QCOMPARE(spy.count(), 3);
-
-    page.setUrl(url1);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
-    QCOMPARE(page.url(), url2);
-    QCOMPARE(spy.count(), 4);
-#endif
 }
 
 static inline QUrl extractBaseUrl(const QUrl& url)
