@@ -167,8 +167,6 @@ private Q_SLOTS:
     void unacceleratedWebGLScreenshotWithoutView();
 #endif
 
-    void networkReplyParentDidntChange();
-    void destroyQNAMBeforeAbortDoesntCrash();
     void testJSPrompt();
     void testStopScheduledPageRefresh();
     void findText();
@@ -2943,40 +2941,6 @@ void tst_QWebEnginePage::unacceleratedWebGLScreenshotWithoutView()
     webGLScreenshotWithoutView(false);
 }
 #endif
-
-void tst_QWebEnginePage::networkReplyParentDidntChange()
-{
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
-    TestNetworkManager* networkManager = new TestNetworkManager(m_page);
-    m_page->setNetworkAccessManager(networkManager);
-    networkManager->requests.clear();
-
-    // Trigger a load and check that pending QNetworkReplies haven't been reparented before returning to the event loop.
-    m_view->load(QUrl("qrc:///resources/content.html"));
-
-    QVERIFY(networkManager->requests.count() > 0);
-    QVERIFY(networkManager->findChildren<QNetworkReply*>().size() > 0);
-#endif
-}
-
-void tst_QWebEnginePage::destroyQNAMBeforeAbortDoesntCrash()
-{
-#if !defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_SETNETWORKACCESSMANAGER");
-#else
-    QNetworkAccessManager* networkManager = new QNetworkAccessManager;
-    m_page->setNetworkAccessManager(networkManager);
-
-    m_view->load(QUrl("qrc:///resources/content.html"));
-    delete networkManager;
-    // This simulates what PingLoader does with its QNetworkReply when it times out.
-    // PingLoader isn't attached to a QWebEnginePage and can be kept alive
-    // for 60000 seconds (~16.7 hours) to then cancel its ResourceHandle.
-    m_view->stop();
-#endif
-}
 
 /**
  * Test fixups for https://bugs.webkit.org/show_bug.cgi?id=30914
