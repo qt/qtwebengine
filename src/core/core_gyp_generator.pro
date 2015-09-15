@@ -178,18 +178,3 @@ qtHaveModule(positioning) {
     HEADERS += location_provider_qt.h
     DEFINES += QT_USE_POSITIONING=1
 }
-
-win32:msvc {
-    EXPORTS_CPP = $$OUT_PWD/api/public_exports.cpp
-    !build_pass {
-        API_HEADERS = $$files($$PWD/api/*.h)
-        CONTENT = "// Dummy C++ file to make sure API symbols are exported."
-        for(f, API_HEADERS) {
-            CONTENT += "$${LITERAL_HASH}include <$$basename(f)>"
-        }
-        write_file($$EXPORTS_CPP, CONTENT)
-        unset(API_HEADERS)
-        unset(CONTENT)
-    }
-    SOURCES += $$EXPORTS_CPP
-}

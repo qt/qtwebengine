@@ -19,8 +19,11 @@ LIBS_PRIVATE += -L$$api_library_path
 CONFIG *= no_smart_library_merge
 osx {
     LIBS_PRIVATE += -Wl,-force_load,$${api_library_path}$${QMAKE_DIR_SEP}lib$${api_library_name}.a
-} else:win32-msvc* {
-    LIBS_PRIVATE += /OPT:REF -l$$api_library_name
+} else:msvc {
+    # Simulate -whole-archive by passing the list of object files that belong to the public
+    # API library as response file to the linker.
+    LIBS_PRIVATE += /OPT:REF
+    QMAKE_LFLAGS += @$${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib.objects
 } else {
     LIBS_PRIVATE += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive
 }
