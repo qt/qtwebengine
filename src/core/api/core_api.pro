@@ -1,4 +1,4 @@
-TARGET = qtwebenginecoreapi
+TARGET = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 DESTDIR = $$OUT_PWD/$$getConfigDir()
 
 TEMPLATE = lib

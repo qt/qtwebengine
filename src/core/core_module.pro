@@ -11,8 +11,10 @@ QMAKE_INFO_PLIST = Info_mac.plist
 
 load(qt_module)
 
-api_library_name = qtwebenginecoreapi
+api_library_name = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 api_library_path = $$OUT_PWD/api/$$getConfigDir()
+
+
 LIBS_PRIVATE += -L$$api_library_path
 CONFIG *= no_smart_library_merge
 osx {
