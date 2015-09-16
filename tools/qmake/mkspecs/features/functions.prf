@@ -17,7 +17,7 @@ defineTest(isPlatformSupported) {
   linux-g++*|linux-clang|win32-msvc2013|macx-clang: return(true)
   boot2qt: return(true)
 
-  skipBuild("Qt WebEngine can currently only be built for Linux (GCC), Windows (MSVC 2013), OS X (XCode 5.1+) or Qt for Device Creation.")
+  skipBuild("Qt WebEngine can currently only be built for Linux (GCC/clang), Windows (MSVC 2013), OS X (XCode 5.1+) or Qt for Device Creation.")
   return(false)
 }
 
