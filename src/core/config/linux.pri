@@ -18,6 +18,12 @@ GYP_CONFIG += \
     use_kerberos=0 \
     use_pango=0
 
+!config_system_nss {
+    GYP_CONFIG += use_nss_certs=0 \
+        use_openssl=1 \
+        use_openssl_certs=1
+}
+
 contains(QT_CONFIG, system-zlib): config_system_minizip: GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1

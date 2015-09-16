@@ -30,7 +30,7 @@ defineTest(runConfigure) {
         contains(QT_CONFIG, pulseaudio): REQUIRED_PACKAGES += libpulse
         contains(QT_CONFIG, system-png): REQUIRED_PACKAGES += libpng
         contains(QT_CONFIG, system-harfbuzz): REQUIRED_PACKAGES += harfbuzz
-        !cross_compile: REQUIRED_PACKAGES += libpci nss
+        !cross_compile: REQUIRED_PACKAGES += libpci
 
         for(package, $$list($$REQUIRED_PACKAGES)) {
             !packagesExist($$package):skipBuild("Unmet dependency: $$package")
@@ -51,18 +51,31 @@ defineTest(runConfigure) {
         else: log("System libsrtp not found. Using Chromium's copy.$${EOL}")
         config_snappy: WEBENGINE_CONFIG += config_system_snappy
         else: log("System snappy not found. Using Chromium's copy.$${EOL}")
+
+        # Optional dependencies
+        packagesExist(nss): WEBENGINE_CONFIG += config_system_nss
+        else: log("System NSS not found, BoringSSL will be used.$${EOL}")
     }
 
     isEmpty(skipBuildReason): {
         cache(CONFIG, add, $$list(webengine_successfully_configured))
-        !isEmpty(WEBENGINE_CONFIG): cache(CONFIG, add, $$list($$WEBENGINE_CONFIG))
+        !isEmpty(WEBENGINE_CONFIG) {
+            CONFIG += $$WEBENGINE_CONFIG
+            cache(CONFIG, add, $$list($$WEBENGINE_CONFIG))
+        }
     }
+    export(CONFIG)
 }
 
 # This is called from default_post, at which point we've also parsed
 # command line options
 defineTest(finalizeConfigure) {
     linux {
+        config_system_nss {
+            log("SSL............................... Using system NSS$${EOL}")
+        } else {
+            log("SSL............................... Using bundled BoringSSL$${EOL}")
+        }
         contains(WEBENGINE_CONFIG, use_system_icu) {
             packagesExist("icu-uc icu-i18n") {
                 log("ICU............................... Using system version$${EOL}")
