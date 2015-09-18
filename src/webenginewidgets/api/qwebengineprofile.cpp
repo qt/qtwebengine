@@ -150,6 +150,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = QWebEngineDownloadItem::DownloadRequested;
     itemPrivate->downloadPath = info.path;
+    itemPrivate->mimeType = info.mimeType;
 
     QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 

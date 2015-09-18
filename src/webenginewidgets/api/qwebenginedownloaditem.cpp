@@ -247,6 +247,18 @@ QUrl QWebEngineDownloadItem::url() const
 }
 
 /*!
+    \since 5.6
+
+    Returns the MIME type of the download.
+*/
+
+QString QWebEngineDownloadItem::mimeType() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->mimeType;
+}
+
+/*!
     Returns the full target path where data is being downloaded to.
 
     The path includes the file name. The default suggested path is the standard download location

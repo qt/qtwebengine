@@ -66,6 +66,7 @@ public:
     qint64 totalBytes() const;
     qint64 receivedBytes() const;
     QUrl url() const;
+    QString mimeType() const;
     QString path() const;
     void setPath(QString path);
     bool isFinished() const;

@@ -70,6 +70,7 @@ public:
     QWebEngineDownloadItem::DownloadState downloadState;
     QString downloadPath;
     const QUrl downloadUrl;
+    QString mimeType;
 
     qint64 totalBytes;
     qint64 receivedBytes;

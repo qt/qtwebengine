@@ -46,6 +46,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QMap>
+#include <QMimeDatabase>
 #include <QStandardPaths>
 
 #include "browser_context_adapter.h"
@@ -102,23 +103,28 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
         return true;
     }
 
-    std::string suggestedFilename = item->GetSuggestedFilename();
+    QString suggestedFilename = toQt(item->GetSuggestedFilename());
+    QString mimeTypeString = toQt(item->GetMimeType());
 
-    if (suggestedFilename.empty())
-        suggestedFilename = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).filename();
+    if (suggestedFilename.isEmpty())
+        suggestedFilename = toQt(net::HttpContentDisposition(item->GetContentDisposition(), std::string()).filename());
 
-    if (suggestedFilename.empty())
-        suggestedFilename = item->GetTargetFilePath().AsUTF8Unsafe();
+    if (suggestedFilename.isEmpty())
+        suggestedFilename = toQt(item->GetTargetFilePath().AsUTF8Unsafe());
 
-    if (suggestedFilename.empty())
-        suggestedFilename = item->GetURL().ExtractFileName();
+    if (suggestedFilename.isEmpty())
+        suggestedFilename = toQt(item->GetURL().ExtractFileName());
 
-    if (suggestedFilename.empty())
-        suggestedFilename = "qwe_download";
+    if (suggestedFilename.isEmpty()) {
+        suggestedFilename = QStringLiteral("qwe_download");
+        QMimeType mimeType = QMimeDatabase().mimeTypeForName(mimeTypeString);
+        if (mimeType.isValid() && !mimeType.preferredSuffix().isEmpty())
+            suggestedFilename += QStringLiteral(".") + mimeType.preferredSuffix();
+    }
 
     QDir defaultDownloadDirectory = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
 
-    QFileInfo suggestedFile(defaultDownloadDirectory.absoluteFilePath(QString::fromStdString(suggestedFilename)));
+    QFileInfo suggestedFile(defaultDownloadDirectory.absoluteFilePath(suggestedFilename));
     QString suggestedFilePath = suggestedFile.absoluteFilePath();
     QString tmpFileBase = QString("%1%2%3").arg(suggestedFile.absolutePath()).arg(QDir::separator()).arg(suggestedFile.baseName());
 
@@ -139,6 +145,7 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             item->GetState(),
             item->GetTotalBytes(),
             item->GetReceivedBytes(),
+            mimeTypeString,
             suggestedFilePath,
             false /* accepted */
         };
@@ -191,6 +198,7 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             download->GetState(),
             download->GetTotalBytes(),
             download->GetReceivedBytes(),
+            toQt(download->GetMimeType()),
             QString(),
             true /* accepted */
         };

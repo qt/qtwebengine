@@ -75,6 +75,7 @@ public:
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
     Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged)
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)
+    Q_PROPERTY(QString mimeType READ mimeType NOTIFY mimeTypeChanged REVISION 1)
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
 
     Q_INVOKABLE void accept();
@@ -84,6 +85,7 @@ public:
     DownloadState state() const;
     qint64 totalBytes() const;
     qint64 receivedBytes() const;
+    QString mimeType() const;
     QString path() const;
     void setPath(QString path);
 
@@ -91,6 +93,7 @@ Q_SIGNALS:
     void stateChanged();
     void receivedBytesChanged();
     void totalBytesChanged();
+    void mimeTypeChanged();
     void pathChanged();
 
 private:

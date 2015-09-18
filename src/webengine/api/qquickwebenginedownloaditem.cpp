@@ -217,6 +217,18 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
 }
 
 /*!
+    \qmlproperty QString WebEngineDownloadItem::mimeType
+
+    Holds the MIME type of the download.
+*/
+
+QString QQuickWebEngineDownloadItem::mimeType() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->mimeType;
+}
+
+/*!
     \qmlproperty QString WebEngineDownloadItem::path
 
     Holds the full target path where data is being downloaded to.

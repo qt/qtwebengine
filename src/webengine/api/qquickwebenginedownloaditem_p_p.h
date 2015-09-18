@@ -71,6 +71,7 @@ public:
     QQuickWebEngineDownloadItem::DownloadState downloadState;
     qint64 totalBytes;
     qint64 receivedBytes;
+    QString mimeType;
     QString downloadPath;
 
     void update(const QtWebEngineCore::BrowserContextAdapterClient::DownloadItemInfo &info);
