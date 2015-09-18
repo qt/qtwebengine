@@ -409,7 +409,7 @@ void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::Persistent
 }
 
 /*!
-    Returns the maximum size of the HTTP size.
+    Returns the maximum size of the HTTP cache in bytes.
 
     Will return \c 0 if the size is automatically controlled by QtWebEngine.
 
@@ -422,7 +422,7 @@ int QWebEngineProfile::httpCacheMaximumSize() const
 }
 
 /*!
-    Sets the maximum size of the HTTP cache to \a maxSize.
+    Sets the maximum size of the HTTP cache to \a maxSize bytes.
 
     Setting it to \c 0 means the size will be controlled automatically by QtWebEngine.
 
