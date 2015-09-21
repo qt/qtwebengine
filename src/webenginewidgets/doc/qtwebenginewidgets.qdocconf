@@ -29,7 +29,7 @@ qhp.QtWebEngineWidgets.subprojects.examples.sortPages = true
 
 tagfile                 = ../../../doc/qtwebenginewidgets/qtwebenginewidgets.tags
 
-depends += qtwebengine qtcore qtnetwork qtgui qtwidgets qtwebkit qtdoc
+depends += qtwebengine qtcore qtnetwork qtgui qtwidgets qtwebkit qtdoc qtwebchannel
 
 headerdirs  += ../api
 sourcedirs  += ../api src
