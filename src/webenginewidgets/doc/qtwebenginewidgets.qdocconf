@@ -39,3 +39,5 @@ exampledirs += ../../../examples/webenginewidgets \
 
 navigation.landingpage = "Qt WebEngine Widgets"
 navigation.cppclassespage = "Qt WebEngine Widgets C++ Classes"
+
+Cpp.ignoretokens += QWEBENGINEWIDGETS_EXPORT

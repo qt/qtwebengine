@@ -24,23 +24,12 @@
 
 /*!
     \class QWebEngineHistoryItem
-    \brief The QWebEngineHistoryItem class represents one item in the history of a QWebEnginePage
+    \brief The QWebEngineHistoryItem class represents one item in the history of a web engine page.
     \since 5.4
     \inmodule QtWebEngineWidgets
 
-    Each QWebEngineHistoryItem instance represents an entry in the history stack of a Web page,
-    containing information about the page, its location, and when it was last visited.
-
-    The following table shows the properties of the page held by the history item, and
-    the functions used to access them.
-
-    \table
-    \header \li Function      \li Description
-    \row    \li title()       \li The page title.
-    \row    \li url()         \li The location of the page.
-    \row    \li originalUrl() \li The URL used to access the page.
-    \row    \li lastVisited() \li The date and time of the user's last visit to the page.
-    \endtable
+    Each web engine history item represents an entry in the history stack of a web page,
+    containing information about the page, its location, and the time when it was last visited.
 
     \sa QWebEngineHistory, QWebEnginePage::history()
 */
@@ -87,7 +76,7 @@
 
 /*!
     \fn QDateTime QWebEngineHistoryItem::lastVisited() const
-    Returns the date and time that the page associated with the item was last visited.
+    Returns the date and time when the page associated with the item was last visited.
 
     \sa title(), url()
 */
@@ -99,13 +88,12 @@
 
 /*!
     \class QWebEngineHistory
-    \brief The QWebEngineHistory class represents the history of a QWebEnginePage
+    \brief The QWebEngineHistory class represents the history of a web engine page.
     \since 5.4
     \inmodule QtWebEngineWidgets
 
-    Each QWebEnginePage instance contains a history of visited pages that can be accessed
-    by QWebEnginePage::history(). QWebEngineHistory represents this history and makes it possible
-    to navigate it.
+    Each web engine page contains a history of visited pages that can be accessed
+    by QWebEnginePage::history().
 
     The history uses the concept of a \e{current item}, dividing the pages visited
     into those that can be visited by navigating \e back and \e forward using the
@@ -161,23 +149,23 @@
 
 /*!
     \fn bool QWebEngineHistory::canGoBack() const
-    Returns true if there is an item preceding the current item in the history;
-    otherwise returns false.
+    Returns \c true if there is an item preceding the current item in the history;
+    otherwise returns \c false.
 
     \sa canGoForward()
 */
 
 /*!
     \fn bool QWebEngineHistory::canGoForward() const
-    Returns true if we have an item to go forward to; otherwise returns false.
+    Returns \c true if we have an item to go forward to; otherwise returns \c false.
 
     \sa canGoBack()
 */
 
 /*!
     \fn void QWebEngineHistory::back()
-    Set the current item to be the previous item in the history and goes to the
-    corresponding page; i.e., goes back one history item.
+    Sets the current item to be the previous item in the history and goes to the
+    corresponding page; that is, goes back one history item.
 
     \sa forward(), goToItem()
 */
@@ -185,7 +173,7 @@
 /*!
     \fn void QWebEngineHistory::forward()
     Sets the current item to be the next item in the history and goes to the
-    corresponding page; i.e., goes forward one history item.
+    corresponding page; that is, goes forward one history item.
 
     \sa back(), goToItem()
 */
@@ -231,9 +219,7 @@
     \fn QDataStream& operator<<(QDataStream& stream, const QWebEngineHistory& history)
     \relates QWebEngineHistory
 
-    \brief The operator<< function streams a history into a data stream.
-
-    It saves the \a history into the specified \a stream.
+    Saves the web engine history \a history into \a stream.
 */
 
 
@@ -241,7 +227,5 @@
     \fn QDataStream& operator>>(QDataStream& stream, QWebEngineHistory& history)
     \relates QWebEngineHistory
 
-    \brief The operator>> function loads a history from a data stream.
-
-    Loads a QWebEngineHistory from the specified \a stream into the given \a history.
+    Loads the web engine history from \a stream into \a history.
 */
