@@ -29,7 +29,7 @@
     \example demobrowser
     \title WebEngine Demo Browser Example
     \ingroup webengine-widgetexamples
-    \brief The QtWebKit browser example ported to use QtWebEngine
+    \brief A demo browser based on Qt WebEngine Widgets
 
     The Demo Browser example shows the \l{Qt WebEngine Widgets} module in action,
     providing a little Web browser application with support for tabs.
