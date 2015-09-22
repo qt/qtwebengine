@@ -130,6 +130,35 @@ void ResourceDispatcherHostLoginDelegateQt::destroy()
     m_request = 0;
 }
 
+static void LaunchURL(const GURL& url, int render_process_id, int render_view_id,
+                      ui::PageTransition page_transition, bool is_main_frame)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    content::RenderViewHost *render_view_host = content::RenderViewHost::FromID(render_process_id, render_view_id);
+    if (!render_view_host)
+        return;
+    content::WebContents* webContents = content::WebContents::FromRenderViewHost(render_view_host);
+    if (!webContents)
+        return;
+    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame);
+}
+
+bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, int child_id, int route_id,
+                                                              bool is_main_frame, ui::PageTransition page_transition, bool has_user_gesture)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    // We don't want to launch external applications unless it is based on a user action
+    if (!has_user_gesture)
+        return false;
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&LaunchURL, url, child_id, route_id, page_transition, is_main_frame));
+    return true;
+}
+
 content::ResourceDispatcherHostLoginDelegate *ResourceDispatcherHostDelegateQt::CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request)
 {
     // ResourceDispatcherHostLoginDelegateQt is ref-counted and will be released after we called ClearLoginDelegateForRequest.

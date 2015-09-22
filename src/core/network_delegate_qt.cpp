@@ -55,7 +55,7 @@
 
 namespace QtWebEngineCore {
 
-static int pageTransitionToNavigationType(ui::PageTransition transition)
+int pageTransitionToNavigationType(ui::PageTransition transition)
 {
     int32 qualifier = ui::PageTransitionGetQualifier(transition);
 

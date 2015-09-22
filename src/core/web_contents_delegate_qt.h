@@ -107,6 +107,7 @@ public:
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
     void requestGeolocationPermission(const QUrl &requestingOrigin);
+    void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame);
 
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
