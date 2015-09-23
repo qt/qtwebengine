@@ -37,46 +37,48 @@ force_debug_info {
 
 cross_compile {
     TOOLCHAIN_SYSROOT = $$[QT_SYSROOT]
-
     !isEmpty(TOOLCHAIN_SYSROOT): GYP_CONFIG += sysroot=\"$${TOOLCHAIN_SYSROOT}\"
-
-    contains(QT_ARCH, "arm") {
-        GYP_CONFIG += target_arch=arm
-
-        # Extract ARM specific compiler options that we have to pass to gyp,
-        # but let gyp figure out a default if an option is not present.
-        MARCH = $$extractCFlag("-march=.*")
-        !isEmpty(MARCH): GYP_CONFIG += arm_arch=\"$$MARCH\"
-
-        MTUNE = $$extractCFlag("-mtune=.*")
-        GYP_CONFIG += arm_tune=\"$$MTUNE\"
-
-        MFLOAT = $$extractCFlag("-mfloat-abi=.*")
-        !isEmpty(MFLOAT): GYP_CONFIG += arm_float_abi=\"$$MFLOAT\"
-
-        MARMV = $$replace(MARCH, "armv",)
-        !isEmpty(MARMV) {
-            MARMV = $$split(MARMV,)
-            MARMV = $$member(MARMV, 0)
-            lessThan(MARMV, 6): error("$$MARCH architecture is not supported")
-            GYP_CONFIG += arm_version=\"$$MARMV\"
-        }
-
-        MFPU = $$extractCFlag("-mfpu=.*")
-        !isEmpty(MFPU) {
-            # If the toolchain does not explicitly specify to use NEON instructions
-            # we use arm_neon_optional for ARMv7 and newer and let chromium decide
-            # about the mfpu option.
-            contains(MFPU, "neon")|contains(MFPU, "neon-vfpv4"): GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=1
-            else:!lessThan(MARMV, 7): GYP_CONFIG += arm_neon=0 arm_neon_optional=1
-            else: GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=0 arm_neon_optional=0
-        }
-
-        contains(QMAKE_CFLAGS, "-mthumb"): GYP_CONFIG += arm_thumb=1
-    }
 
     # Needed for v8, see chromium/v8/build/toolchain.gypi
     GYP_CONFIG += CXX=\"$$which($$QMAKE_CXX)\"
+}
+
+contains(QT_ARCH, "arm") {
+    # Chromium will set a default sysroot on arm unless we give it one.
+    !cross_compile: GYP_CONFIG += sysroot=\"\"
+
+    GYP_CONFIG += target_arch=arm
+
+    # Extract ARM specific compiler options that we have to pass to gyp,
+    # but let gyp figure out a default if an option is not present.
+    MARCH = $$extractCFlag("-march=.*")
+    !isEmpty(MARCH): GYP_CONFIG += arm_arch=\"$$MARCH\"
+
+    MTUNE = $$extractCFlag("-mtune=.*")
+    !isEmpty(MTUNE): GYP_CONFIG += arm_tune=\"$$MTUNE\"
+
+    MFLOAT = $$extractCFlag("-mfloat-abi=.*")
+    !isEmpty(MFLOAT): GYP_CONFIG += arm_float_abi=\"$$MFLOAT\"
+
+    MARMV = $$replace(MARCH, "armv",)
+    !isEmpty(MARMV) {
+        MARMV = $$split(MARMV,)
+        MARMV = $$member(MARMV, 0)
+        lessThan(MARMV, 6): error("$$MARCH architecture is not supported")
+        GYP_CONFIG += arm_version=\"$$MARMV\"
+    }
+
+    MFPU = $$extractCFlag("-mfpu=.*")
+    !isEmpty(MFPU) {
+        # If the toolchain does not explicitly specify to use NEON instructions
+        # we use arm_neon_optional for ARMv7 and newer and let chromium decide
+        # about the mfpu option.
+        contains(MFPU, "neon")|contains(MFPU, "neon-vfpv4"): GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=1
+        else:!lessThan(MARMV, 7): GYP_CONFIG += arm_neon=0 arm_neon_optional=1
+        else: GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=0 arm_neon_optional=0
+    }
+
+    contains(QMAKE_CFLAGS, "-mthumb"): GYP_CONFIG += arm_thumb=1
 }
 
 contains(QT_ARCH, "x86_64"): GYP_CONFIG += target_arch=x64
