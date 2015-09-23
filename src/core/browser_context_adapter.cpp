@@ -36,6 +36,7 @@
 
 #include "browser_context_adapter.h"
 
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "browser_context_qt.h"
 #include "content_client_qt.h"
@@ -230,6 +231,12 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
     if (m_httpUserAgent == userAgent)
         return;
     m_httpUserAgent = userAgent;
+
+    std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
+    Q_FOREACH (content::WebContentsImpl *web_contents, list)
+        if (web_contents->GetBrowserContext() == m_browserContext.data())
+            web_contents->SetUserAgentOverride(userAgent.toStdString());
+
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateUserAgent();
 }
