@@ -305,7 +305,10 @@ def exportChromium():
 commandNotFound = subprocess.call(['which', 'dos2unix'])
 
 if not commandNotFound:
-    dos2unixVersion = StrictVersion(subprocess.Popen(['dos2unix', '-V', '| true'], stdout=subprocess.PIPE).communicate()[0].splitlines()[0].split()[1])
+    dos2unixVersion , err = subprocess.Popen(['dos2unix', '-V', '| true'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    if not dos2unixVersion:
+        raise Exception("You need dos2unix version 6.0.6 minimum.")
+    dos2unixVersion = StrictVersion(dos2unixVersion.splitlines()[0].split()[1])
 
 if commandNotFound or dos2unixVersion < StrictVersion('6.0.6'):
     raise Exception("You need dos2unix version 6.0.6 minimum.")
