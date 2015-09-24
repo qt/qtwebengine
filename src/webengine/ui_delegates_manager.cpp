@@ -259,6 +259,10 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
         dialogComponentType = PromptDialog;
         title = QCoreApplication::translate("UIDelegatesManager", "Javascript Prompt - %1").arg(m_view->url().toString());
         break;
+    case WebContentsAdapterClient::UnloadDialog:
+        dialogComponentType = ConfirmDialog;
+        title = QCoreApplication::translate("UIDelegatesManager", "Are you sure you want to leave this page?");
+        break;
     case WebContentsAdapterClient::InternalAuthorizationDialog:
         dialogComponentType = ConfirmDialog;
         title = dialogController->title();

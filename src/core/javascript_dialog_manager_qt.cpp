@@ -67,6 +67,12 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
     runDialogForContents(webContents, dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl), callback);
 }
 
+void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webContents, const base::string16 &messageText,
+                                                    bool isReload, const content::JavaScriptDialogManager::DialogClosedCallback &callback) {
+    Q_UNUSED(isReload);
+    runDialogForContents(webContents, WebContentsAdapterClient::UnloadDialog, toQt(messageText).toHtmlEscaped(), QString() , QUrl(), callback);
+}
+
 bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *contents, bool accept, const base::string16 *promptOverride)
 {
     QSharedPointer<JavaScriptDialogController> dialog = m_activeDialogs.value(contents);

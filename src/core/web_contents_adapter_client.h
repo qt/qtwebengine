@@ -147,6 +147,7 @@ public:
         AlertDialog,
         ConfirmDialog,
         PromptDialog,
+        UnloadDialog,
         // Leave room for potential new specs
         InternalAuthorizationDialog = 0x10,
     };
