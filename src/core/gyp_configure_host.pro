@@ -10,7 +10,7 @@ GYPI_CONTENTS = "{" \
                 "    ['CXX.host', '$$which($$QMAKE_CXX)']," \
                 "    ['LD.host', '$$which($$QMAKE_LINK)'],"
 
-GYPI_FILE = $$absolute_path('qmake_extras.gypi')
+GYPI_FILE = $$OUT_PWD/qmake_extras.gypi
 !build_pass {
     write_file($$GYPI_FILE, GYPI_CONTENTS)
 }

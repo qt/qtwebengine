@@ -9,7 +9,6 @@ src/core/api/Release
 src/core/api/Debug
 src/core/core_generated.gyp
 src/core/gypfiles
-src/core/qmake_extras.gypi
 examples/webengine/quicknanobrowser/quicknanobrowser
 examples/webengine/quicknanobrowser/quicknanobrowser.app
 examples/webenginewidgets/browser/browser

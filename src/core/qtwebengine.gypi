@@ -114,5 +114,8 @@
           '<(chromium_src_dir)/build/linux/system.gyp:fontconfig',
         ],
       }],
+      ['OS=="mac"', {
+        'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
+      }],
     ],
 }

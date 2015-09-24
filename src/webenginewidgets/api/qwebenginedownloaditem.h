@@ -76,7 +76,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void finished();
-    void stateChanged(DownloadState state);
+    void stateChanged(QWebEngineDownloadItem::DownloadState state);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
 
 private:
