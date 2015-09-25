@@ -93,8 +93,4 @@ private:
 
 } // namespace QtWebEngineCore
 
-QT_BEGIN_NAMESPACE
-uint qHash(const QtWebEngineCore::UserScript &, uint seed = 0);
-QT_END_NAMESPACE
-
 #endif // USER_SCRIPT_H

@@ -64,7 +64,7 @@ public:
     bool removeUserScript(const UserScript &script, WebContentsAdapter *adapter);
     void clearAllScripts(WebContentsAdapter *adapter);
     void reserve(WebContentsAdapter *adapter, int count);
-    const QSet<UserScript> registeredScripts(WebContentsAdapter *adapter) const;
+    const QList<UserScript> registeredScripts(WebContentsAdapter *adapter) const;
 
     void renderProcessStartedWithHost(content::RenderProcessHost *renderer);
 
@@ -75,8 +75,8 @@ private:
 
     void webContentsDestroyed(content::WebContents *);
 
-    QSet<UserScript> m_profileWideScripts;
-    typedef QHash<content::WebContents *, QSet<UserScript>> ContentsScriptsMap;
+    QList<UserScript> m_profileWideScripts;
+    typedef QHash<content::WebContents *, QList<UserScript>> ContentsScriptsMap;
     ContentsScriptsMap m_perContentsScripts;
     QSet<content::RenderProcessHost *> m_observedProcesses;
     QScopedPointer<RenderProcessObserverHelper> m_renderProcessObserver;
