@@ -28,9 +28,6 @@ force_debug_info {
     else: GYP_CONFIG += release_extra_cflags=-g
 }
 
-# Append additional platform options defined in GYP_CONFIG
-for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
-
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
@@ -40,57 +37,62 @@ for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
 cross_compile {
     TOOLCHAIN_SYSROOT = $$[QT_SYSROOT]
-
-    !isEmpty(TOOLCHAIN_SYSROOT): GYP_ARGS += "-D sysroot=\"$${TOOLCHAIN_SYSROOT}\""
-
-    contains(QT_ARCH, "arm") {
-        GYP_ARGS += "-D target_arch=arm"
-
-        # Extract ARM specific compiler options that we have to pass to gyp,
-        # but let gyp figure out a default if an option is not present.
-        MARCH = $$extractCFlag("-march=.*")
-        !isEmpty(MARCH): GYP_ARGS += "-D arm_arch=\"$$MARCH\""
-
-        MTUNE = $$extractCFlag("-mtune=.*")
-        GYP_ARGS += "-D arm_tune=\"$$MTUNE\""
-
-        MFLOAT = $$extractCFlag("-mfloat-abi=.*")
-        !isEmpty(MFLOAT): GYP_ARGS += "-D arm_float_abi=\"$$MFLOAT\""
-
-        MARMV = $$replace(MARCH, "armv",)
-        !isEmpty(MARMV) {
-            MARMV = $$split(MARMV,)
-            MARMV = $$member(MARMV, 0)
-            lessThan(MARMV, 6): error("$$MARCH architecture is not supported")
-            GYP_ARGS += "-D arm_version=\"$$MARMV\""
-        }
-
-        MFPU = $$extractCFlag("-mfpu=.*")
-        !isEmpty(MFPU) {
-            # If the toolchain does not explicitly specify to use NEON instructions
-            # we use arm_neon_optional for ARMv7 and newer and let chromium decide
-            # about the mfpu option.
-            contains(MFPU, "neon")|contains(MFPU, "neon-vfpv4"): GYP_ARGS += "-D arm_fpu=\"$$MFPU\" -D arm_neon=1"
-            else:!lessThan(MARMV, 7): GYP_ARGS += "-D arm_neon=0 -D arm_neon_optional=1"
-            else: GYP_ARGS += "-D arm_fpu=\"$$MFPU\" -D arm_neon=0 -D arm_neon_optional=0"
-        }
-
-        contains(QMAKE_CFLAGS, "-mthumb"): GYP_ARGS += "-D arm_thumb=1"
-    }
+    !isEmpty(TOOLCHAIN_SYSROOT): GYP_CONFIG += sysroot=\"$${TOOLCHAIN_SYSROOT}\"
 
     # Needed for v8, see chromium/v8/build/toolchain.gypi
-    GYP_ARGS += "-D CXX=\"$$which($$QMAKE_CXX)\""
+    GYP_CONFIG += CXX=\"$$which($$QMAKE_CXX)\"
 }
 
-contains(QT_ARCH, "x86_64"): GYP_ARGS += "-D target_arch=x64"
-contains(QT_ARCH, "i386"): GYP_ARGS += "-D target_arch=ia32"
+contains(QT_ARCH, "arm") {
+    # Chromium will set a default sysroot on arm unless we give it one.
+    !cross_compile: GYP_CONFIG += sysroot=\"\"
 
-contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_ARGS += "-Dproprietary_codecs=1 -Dffmpeg_branding=Chrome -Duse_system_ffmpeg=0"
+    GYP_CONFIG += target_arch=arm
+
+    # Extract ARM specific compiler options that we have to pass to gyp,
+    # but let gyp figure out a default if an option is not present.
+    MARCH = $$extractCFlag("-march=.*")
+    !isEmpty(MARCH): GYP_CONFIG += arm_arch=\"$$MARCH\"
+
+    MTUNE = $$extractCFlag("-mtune=.*")
+    !isEmpty(MTUNE): GYP_CONFIG += arm_tune=\"$$MTUNE\"
+
+    MFLOAT = $$extractCFlag("-mfloat-abi=.*")
+    !isEmpty(MFLOAT): GYP_CONFIG += arm_float_abi=\"$$MFLOAT\"
+
+    MARMV = $$replace(MARCH, "armv",)
+    !isEmpty(MARMV) {
+        MARMV = $$split(MARMV,)
+        MARMV = $$member(MARMV, 0)
+        lessThan(MARMV, 6): error("$$MARCH architecture is not supported")
+        GYP_CONFIG += arm_version=\"$$MARMV\"
+    }
+
+    MFPU = $$extractCFlag("-mfpu=.*")
+    !isEmpty(MFPU) {
+        # If the toolchain does not explicitly specify to use NEON instructions
+        # we use arm_neon_optional for ARMv7 and newer and let chromium decide
+        # about the mfpu option.
+        contains(MFPU, "neon")|contains(MFPU, "neon-vfpv4"): GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=1
+        else:!lessThan(MARMV, 7): GYP_CONFIG += arm_neon=0 arm_neon_optional=1
+        else: GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=0 arm_neon_optional=0
+    }
+
+    contains(QMAKE_CFLAGS, "-mthumb"): GYP_CONFIG += arm_thumb=1
+}
+
+contains(QT_ARCH, "x86_64"): GYP_CONFIG += target_arch=x64
+contains(QT_ARCH, "i386"): GYP_CONFIG += target_arch=ia32
+
+contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_codecs=1 ffmpeg_branding=Chrome
 
 !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
-    GYP_ARGS += "-D qt_install_data=\"$$[QT_INSTALL_DATA/get]\""
-    GYP_ARGS += "-D qt_install_translations=\"$$[QT_INSTALL_TRANSLATIONS/get]\""
+    GYP_CONFIG += qt_install_data=\"$$[QT_INSTALL_DATA/get]\"
+    GYP_CONFIG += qt_install_translations=\"$$[QT_INSTALL_TRANSLATIONS/get]\"
 }
+
+# Append additional platform options defined in GYP_CONFIG
+for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
 !build_pass {
     message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")

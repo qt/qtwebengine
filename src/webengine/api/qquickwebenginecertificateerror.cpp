@@ -69,7 +69,7 @@ public:
     This class contains information about a certificate error that happened and provides a way to accept or
     deny a certificate exception.
 
-    \sa WebEngineCertificateError::certificateError
+    \sa WebEngineView::certificateError
 */
 QQuickWebEngineCertificateError::QQuickWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller, QObject *parent)
     : QObject(parent)

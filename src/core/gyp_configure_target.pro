@@ -26,7 +26,7 @@ GYPI_CONTENTS += "        ]," \
 
 GYPI_CONTENTS += "}"
 
-GYPI_FILE = $$absolute_path('qmake_extras.gypi')
+GYPI_FILE = $$OUT_PWD/qmake_extras.gypi
 
 !exists($$GYPI_FILE): error("-- $$GYPI_FILE not found --")
 

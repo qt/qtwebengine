@@ -1,5 +1,7 @@
 GYP_ARGS += "-D qt_os=\"embedded_linux\" -I config/embedded_linux.gypi"
 
+include(linux.pri)
+
 GYP_CONFIG += \
     clang=0 \
     desktop_linux=0 \
@@ -23,45 +25,20 @@ GYP_CONFIG += \
     gtest_target_type=none \
     host_clang=0 \
     notifications=0 \
+    ozone_auto_platforms=0 \
     ozone_platform_dri=0 \
     ozone_platform_test=0 \
     p2p_apis=0 \
     safe_browsing=0 \
     toolkit_views=1 \
-    use_ash=0 \
-    use_aura=1 \
-    use_cairo=0 \
-    use_clipboard_aurax11=0 \
-    use_cups=0 \
     use_custom_freetype=0 \
-    use_gconf=0 \
-    use_gio=0 \
-    use_gnome_keyring=0 \
-    use_kerberos=0 \
     use_libpci=0 \
+    use_nss_certs=0 \
     use_openssl=1 \
+    use_openssl_certs=1 \
     use_ozone=1 \
-    use_pango=0 \
     use_system_fontconfig=1 \
     icu_use_data_file_flag=0 \
     use_x11=0 \
     v8_use_snapshot=false \
     want_separate_host_toolset=1 \
-
-contains(QT_CONFIG, system-zlib): config_system_minizip: GYP_CONFIG += use_system_zlib=1
-contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
-contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
-!contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
-config_system_libevent: GYP_CONFIG += use_system_libevent=1
-config_system_libwebp: GYP_CONFIG += use_system_libwebp=1
-config_system_libsrtp: GYP_CONFIG += use_system_libsrtp=1
-config_system_libxslt: GYP_CONFIG += use_system_libxml=1
-config_system_flac: GYP_CONFIG += use_system_flac=1
-config_system_jsoncpp: GYP_CONFIG += use_system_jsoncpp=1
-config_system_opus: GYP_CONFIG += use_system_opus=1
-config_system_snappy: GYP_CONFIG += use_system_snappy=1
-config_system_speex: GYP_CONFIG += use_system_speex=1
-config_system_vpx: GYP_CONFIG += use_system_libvpx=1
-
-contains(WEBENGINE_CONFIG, use_system_icu): GYP_CONFIG += use_system_icu=1
-contains(WEBENGINE_CONFIG, use_system_ffmpeg): GYP_CONFIG += use_system_ffmpeg=1

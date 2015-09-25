@@ -50,7 +50,6 @@
 
 #include "qtwebenginecoreglobal_p.h"
 
-#include "cookie_monster_delegate_qt.h"
 #include "qwebenginecallback_p.h"
 #include "qwebenginecookiestoreclient.h"
 
@@ -58,6 +57,10 @@
 #include <QMap>
 #include <QNetworkCookie>
 #include <QUrl>
+
+namespace QtWebEngineCore {
+class CookieMonsterDelegateQt;
+}
 
 QT_BEGIN_NAMESPACE
 
@@ -89,6 +92,8 @@ public:
     void deleteSessionCookies();
     void deleteAllCookies();
     void getAllCookies();
+
+    bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
 
     void onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList);
     void onSetCallbackResult(qint64 callbackId, bool success);

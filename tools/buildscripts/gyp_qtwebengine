@@ -57,9 +57,15 @@ def additional_include_files(args=[]):
   # Always include common.gypi.
   AddInclude(os.path.join(script_dir, 'common.gypi'))
 
-  # Include extra gypi files for additional build tweaks such as file exclusions,
-  # common stuff we generate and extract from qmake and platform specific drop-in files.
+  # Include extra gypi files for additional build tweaks such as file exclusions
+  # and platform specific drop-in files.
   build_extras = glob.glob(os.path.join(qtwebengine_root, 'src', 'core', '*_extras.gypi'))
+  for build in build_extras:
+    print "Using extra options found in " + build
+    AddInclude(build)
+
+  # Include extra gypi files for common stuff we generate and extract from qmake.
+  build_extras = glob.glob(os.path.join(output_dir, '*_extras.gypi'))
   for build in build_extras:
     print "Using extra options found in " + build
     AddInclude(build)
@@ -85,6 +91,11 @@ if __name__ == '__main__':
 
   if 'qt_cross_compile=1' in sys.argv:
     os.environ['GYP_CROSSCOMPILE'] = '1'
+
+  sysroot = 'sysroot='
+  for opt in sys.argv:
+    if opt.startswith(sysroot):
+        os.environ['PKG_CONFIG_SYSROOT_DIR'] = opt[len(sysroot):]
 
   gyp_helper.apply_chromium_gyp_env()
 
@@ -134,11 +145,6 @@ if __name__ == '__main__':
   args.extend(['-D', 'qtwebengine_root=' + purifyGypVarPath(qtwebengine_root)])
   args.extend(['-D', 'chromium_src_dir=' + purifyGypVarPath(chrome_src)])
 
-  # linux_use_bundled_gold currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
-  # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
-  args.extend(['-D', 'linux_use_bundled_gold=0'])
-  args.extend(['-D', 'linux_use_bundled_binutils=0'])
-  args.extend(['-D', 'linux_use_gold_flags=0'])
   args.extend(['-D', 'clang_use_chrome_plugins=0'])
   # We do not want to ship more external binary blobs, so let v8 embed its startup data.
   args.extend(['-D', 'v8_use_external_startup_data=0'])

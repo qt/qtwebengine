@@ -144,6 +144,11 @@ void WebContentsDelegateQt::HandleKeyboardEvent(content::WebContents *, const co
         m_viewClient->unhandledKeyEvent(reinterpret_cast<QKeyEvent *>(event.os_event));
 }
 
+void WebContentsDelegateQt::RenderFrameDeleted(content::RenderFrameHost *render_frame_host)
+{
+    m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
+}
+
 void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host, const GURL& validated_url, bool is_error_page, bool is_iframe_srcdoc)
 {
     if (is_error_page) {
@@ -172,13 +177,14 @@ void WebContentsDelegateQt::DidCommitProvisionalLoadForFrame(content::RenderFram
     m_viewClient->loadCommitted();
 }
 
-void WebContentsDelegateQt::DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
+void WebContentsDelegateQt::DidFailProvisionalLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
 {
-    DidFailLoad(render_frame_host, validated_url, error_code, error_description);
+    DidFailLoad(render_frame_host, validated_url, error_code, error_description, was_ignored_by_handler);
 }
 
-void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description)
+void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
 {
+    Q_UNUSED(was_ignored_by_handler);
     if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID()) || render_frame_host->GetParent())
         return;
 

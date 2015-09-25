@@ -44,8 +44,10 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "content/public/common/web_preferences.h"
@@ -60,6 +62,7 @@
 namespace QtWebEngineCore {
 
 static const char kHttpErrorDomain[] = "http";
+static const char kQrcSchemeQt[] = "qrc";
 
 ContentRendererClientQt::ContentRendererClientQt()
 {
@@ -76,6 +79,9 @@ void ContentRendererClientQt::RenderThreadStarted()
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     renderThread->AddObserver(m_visitedLinkSlave.data());
     renderThread->AddObserver(UserScriptController::instance());
+
+    // mark qrc as a secure scheme (avoids deprecation warnings)
+    blink::WebSecurityPolicy::registerURLSchemeAsSecure(blink::WebString::fromLatin1(kQrcSchemeQt));
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
@@ -111,7 +117,7 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame *frame, const blink::WebURLRequest &failedRequest, const blink::WebURLError &error, std::string *errorHtml, base::string16 *errorDescription)
 {
     Q_UNUSED(frame)
-    const bool isPost = EqualsASCII(failedRequest.httpMethod(), "POST");
+    const bool isPost = base::EqualsASCII(failedRequest.httpMethod(), "POST");
 
     if (errorHtml) {
         // Use a local error page.

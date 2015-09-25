@@ -19,16 +19,23 @@ defineTest(runConfigure) {
         test ~= s/\\.pro$//
         qtCompileTest($$test)
     }
-    # libcap-dev package doesn't ship .pc files on Ubuntu.
-    linux:!config_libcap:skipBuild("libcap development package appears to be missing")
-    linux:!config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
-    contains(QT_CONFIG, xcb) {
-        for(package, $$list("libdrm xcomposite xi xrandr xscrnsaver")) {
-            !packagesExist($$package):skipBuild("Unmet dependency: $$package")
-        }
-    }
 
     linux {
+        # libcap-dev package doesn't ship .pc files on Ubuntu.
+        !config_libcap:skipBuild("libcap development package appears to be missing")
+        !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
+
+        REQUIRED_PACKAGES = dbus-1 fontconfig
+        contains(QT_CONFIG, xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
+        contains(QT_CONFIG, pulseaudio): REQUIRED_PACKAGES += libpulse
+        contains(QT_CONFIG, system-png): REQUIRED_PACKAGES += libpng
+        contains(QT_CONFIG, system-jpeg): REQUIRED_PACKAGES += libjpeg
+        contains(QT_CONFIG, system-harfbuzz): REQUIRED_PACKAGES += harfbuzz
+        !cross_compile: REQUIRED_PACKAGES += libpci nss
+
+        for(package, $$list($$REQUIRED_PACKAGES)) {
+            !packagesExist($$package):skipBuild("Unmet dependency: $$package")
+        }
         packagesExist(minizip, zlib): WEBENGINE_CONFIG += config_system_minizip
         else: log("System zlib or minizip not found. Using Chromium's copies.$${EOL}")
         packagesExist(libwebp,libwebpdemux): WEBENGINE_CONFIG += config_system_libwebp

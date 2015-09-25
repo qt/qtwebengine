@@ -92,6 +92,11 @@ QDateTime QWebEngineHistoryItem::lastVisited() const
     return d->page ? d->page->webContents()->getNavigationEntryTimestamp(d->index) : QDateTime();
 }
 
+/*!
+    Returns the URL of the icon associated with the history item.
+
+    \sa url(), originalUrl(), title()
+*/
 QUrl QWebEngineHistoryItem::iconUrl() const
 {
     Q_D(const QWebEngineHistoryItem);

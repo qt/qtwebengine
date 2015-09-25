@@ -37,6 +37,17 @@
 #ifndef QQUICKWEBENGINESETTINGS_P_H
 #define QQUICKWEBENGINESETTINGS_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <private/qtwebengineglobal_p.h>
 #include <QObject>
 #include <QScopedPointer>
@@ -61,7 +72,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool hyperlinkAuditingEnabled READ hyperlinkAuditingEnabled WRITE setHyperlinkAuditingEnabled NOTIFY hyperlinkAuditingEnabledChanged)
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
-    Q_PROPERTY(bool fullscreenSupportEnabled READ fullscreenSupportEnabled WRITE setFullscreenSupportEnabled NOTIFY fullscreenSupportEnabledChanged REVISION 1)
+    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
 
 public:
@@ -79,7 +90,7 @@ public:
     bool hyperlinkAuditingEnabled() const;
     bool errorPageEnabled() const;
     bool pluginsEnabled() const;
-    bool fullscreenSupportEnabled() const;
+    bool fullScreenSupportEnabled() const;
     QString defaultTextEncoding() const;
 
     void setAutoLoadImages(bool on);
@@ -94,7 +105,7 @@ public:
     void setHyperlinkAuditingEnabled(bool on);
     void setErrorPageEnabled(bool on);
     void setPluginsEnabled(bool on);
-    void setFullscreenSupportEnabled(bool on);
+    void setFullScreenSupportEnabled(bool on);
     void setDefaultTextEncoding(QString encoding);
 
 signals:
@@ -110,7 +121,7 @@ signals:
     void hyperlinkAuditingEnabledChanged();
     void errorPageEnabledChanged();
     void pluginsEnabledChanged();
-    Q_REVISION(1) void fullscreenSupportEnabledChanged();
+    Q_REVISION(1) void fullScreenSupportEnabledChanged();
     void defaultTextEncodingChanged();
 
 private:

@@ -1,6 +1,8 @@
 TARGETPATH = QtWebEngine/UIDelegates
 
 QML_FILES += \
+    # Authentication Dialog
+    AuthenticationDialog.qml \
     # JS Dialogs
     AlertDialog.qml \
     ConfirmDialog.qml \

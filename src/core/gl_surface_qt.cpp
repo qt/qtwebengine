@@ -324,13 +324,7 @@ bool GLSurfaceQtEGL::InitializeOneOff()
     if (initialized)
         return true;
 
-#if defined(USE_X11)
-    EGLNativeDisplayType nativeDisplay = reinterpret_cast<EGLNativeDisplayType>(GLContextHelper::getXDisplay());
-    g_display = eglGetDisplay(nativeDisplay);
-#else
     g_display = GLContextHelper::getEGLDisplay();
-#endif
-
     if (!g_display) {
         LOG(ERROR) << "GLContextHelper::getEGLDisplay() failed.";
         return false;
@@ -445,11 +439,11 @@ bool GLSurfaceQt::IsOffscreen()
     return true;
 }
 
-bool GLSurfaceQt::SwapBuffers()
+gfx::SwapResult GLSurfaceQt::SwapBuffers()
 {
     LOG(ERROR) << "Attempted to call SwapBuffers on a pbuffer.";
     Q_UNREACHABLE();
-    return false;
+    return gfx::SwapResult::SWAP_FAILED;
 }
 
 gfx::Size GLSurfaceQt::GetSize()
@@ -541,12 +535,7 @@ GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window)
 
 std::string DriverEGL::GetPlatformExtensions()
 {
-#if defined(USE_X11)
-    EGLNativeDisplayType nativeDisplay = reinterpret_cast<EGLNativeDisplayType>(GLContextHelper::getXDisplay());
-    EGLDisplay display = eglGetDisplay(nativeDisplay);
-#else
     EGLDisplay display = GLContextHelper::getEGLDisplay();
-#endif
     if (display == EGL_NO_DISPLAY)
         return "";
 

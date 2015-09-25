@@ -125,6 +125,10 @@ public:
     void copyImageAt(const QPoint &location);
     void executeMediaPlayerActionAt(const QPoint &location, MediaPlayerAction action, bool enable);
 
+    void inspectElementAt(const QPoint &location);
+    bool hasInspector() const;
+    void exitFullScreen();
+
     void wasShown();
     void wasHidden();
     void grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags);

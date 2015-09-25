@@ -93,10 +93,13 @@ public:
     virtual void MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view) Q_DECL_OVERRIDE;
 
     // WebContentsObserver overrides
+    virtual void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) Q_DECL_OVERRIDE;
     virtual void DidStartProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &validated_url, bool is_error_page, bool is_iframe_srcdoc) Q_DECL_OVERRIDE;
     virtual void DidCommitProvisionalLoadForFrame(content::RenderFrameHost *render_frame_host, const GURL &url, ui::PageTransition transition_type) Q_DECL_OVERRIDE;
-    virtual void DidFailProvisionalLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url, int error_code, const base::string16 &error_description) Q_DECL_OVERRIDE;
-    virtual void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url, int error_code, const base::string16 &error_description) Q_DECL_OVERRIDE;
+    virtual void DidFailProvisionalLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
+                                        int error_code, const base::string16 &error_description, bool was_ignored_by_handler) Q_DECL_OVERRIDE;
+    virtual void DidFailLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url,
+                             int error_code, const base::string16 &error_description, bool was_ignored_by_handler) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) Q_DECL_OVERRIDE;
     virtual void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) Q_DECL_OVERRIDE;

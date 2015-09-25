@@ -42,7 +42,7 @@
 #include "qwebenginepage.h"
 #include "qwebengineprofile_p.h"
 #include "qwebenginesettings.h"
-#include "qwebengineurlschemehandler_p_p.h"
+#include "qwebengineurlschemehandler_p.h"
 #include "qwebenginescriptcollection_p.h"
 
 #include "browser_context_adapter.h"
@@ -60,30 +60,37 @@ using QtWebEngineCore::BrowserContextAdapter;
 
     \inmodule QtWebEngineWidgets
 
-    QWebEngineProfile contains settings and history shared by all QWebEnginePages that belong
-    to the profile.
+    QWebEngineProfile contains settings, scripts, and the list of visited links shared by all
+    web engine pages that belong to the profile. As such, profiles can be used to isolate pages
+    from each other. A typical use case is a dedicated profile for a 'private browsing' mode.
 
-    A default profile is built-in that all web pages not specifically created with another profile
-    belongs to.
+    The default profile is a built-in profile that all web pages not specifically created with
+    another profile belong to.
 */
 
 /*!
     \enum QWebEngineProfile::HttpCacheType
 
-    This enum describes the HTTP cache types QtWebEngine can be configured to use.
+    This enum describes the HTTP cache type:
 
-    \value MemoryHttpCache Use a in-memory cache. This is the only setting possible if off-the-record is set or no cache path is available.
+    \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
+    \c off-the-record is set or no cache path is available.
     \value DiskHttpCache Use a disk cache. This is the default.
 */
 
 /*!
     \enum QWebEngineProfile::PersistentCookiesPolicy
 
-    This enum describes policy for cookie persistency.
+    This enum describes policy for cookie persistency:
 
-    \value NoPersistentCookies Both session and persistent cookies are stored in memory. This is the only setting possible if off-the-record is set or no persistent data path is available.
-    \value AllowPersistentCookies Cookies marked persistent are save and restored from disk, session cookies are only stored to disk for crash recovery. This is the default setting.
-    \value ForcePersistentCookies Both session and persistent cookies are save and restored from disk.
+    \value  NoPersistentCookies
+            Both session and persistent cookies are stored in memory. This is the only setting
+            possible if \c off-the-record is set or no persistent data path is available.
+    \value  AllowPersistentCookies
+            Cookies marked persistent are saved to and restored from disk, whereas session cookies
+            are only stored to disk for crash recovery. This is the default setting.
+    \value  ForcePersistentCookies
+            Both session and persistent cookies are saved to and restored from disk.
 */
 
 /*!
@@ -93,12 +100,11 @@ using QtWebEngineCore::BrowserContextAdapter;
 
   This signal is emitted whenever a download has been triggered.
   The \a download argument holds the state of the download.
-  The \a download either has to be explicitly accepted with
-  QWebEngineDownloadItem::accept(), else the download will be
+  The download has to be explicitly accepted with QWebEngineDownloadItem::accept() or it will be
   cancelled by default.
-  The download item is parented by the profile, but if not accepted
+  The download item is parented by the profile. If it is not accepted, it
   will be deleted immediately after the signal emission.
-  This signal can not be used with a queued connection.
+  This signal cannot be used with a queued connection.
 
   \sa QWebEngineDownloadItem
 */
@@ -184,10 +190,10 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 }
 
 /*!
-    Constructs a new off-the-record profile.
+    Constructs a new off-the-record profile with the parent \a parent.
 
     An off-the-record profile leaves no record on the local machine, and has no persistent data or cache.
-    Thus, the HTTP cache can only be in memory and the cookies only be non-persistent, trying to change
+    Thus, the HTTP cache can only be in memory and the cookies can only be non-persistent. Trying to change
     these settings will have no effect.
 
     \sa isOffTheRecord()
@@ -200,7 +206,7 @@ QWebEngineProfile::QWebEngineProfile(QObject *parent)
 }
 
 /*!
-    Constructs a new profile with storage name \a storageName.
+    Constructs a new profile with the storage name \a storageName and parent \a parent.
 
     The storage name must be unique.
 
@@ -243,7 +249,7 @@ QString QWebEngineProfile::storageName() const
 }
 
 /*!
-    Returns true if this is an off-the-record profile that leaves no record on the computer.
+    Returns \c true if this is an off-the-record profile that leaves no record on the computer.
 
     This will force cookies and HTTP cache to be in memory, but also force all other normally
     persistent data to be stored in memory.
@@ -257,9 +263,10 @@ bool QWebEngineProfile::isOffTheRecord() const
 /*!
     Returns the path used to store persistent data for the browser and web content.
 
-    Persistent data includes persistent cookies, HTML5 local storage and visited links.
+    Persistent data includes persistent cookies, HTML5 local storage, and visited links.
 
-    By default this is below QStandardPaths::writableLocation(QStandardPaths::DataLocation) in a storage name specific directory.
+    By default, this is below QStandardPaths::writableLocation() in a storage name specific
+    directory.
 
     \sa setPersistentStoragePath(), storageName(), QStandardPaths::writableLocation()
 */
@@ -272,7 +279,7 @@ QString QWebEngineProfile::persistentStoragePath() const
 /*!
     Overrides the default path used to store persistent web engine data.
 
-    If set to the null string, the default path is restored.
+    If \a path is set to the null string, the default path is restored.
 
     \sa persistentStoragePath()
 */
@@ -285,7 +292,8 @@ void QWebEngineProfile::setPersistentStoragePath(const QString &path)
 /*!
     Returns the path used for caches.
 
-    By default this is below QStandardPaths::writableLocation(QStandardPaths::CacheLocation) in a storage name specific directory.
+    By default, this is below QStandardPaths::writableLocation() in a storage name specific
+    directory.
 
     \sa setCachePath(), storageName(), QStandardPaths::writableLocation()
 */
@@ -296,7 +304,7 @@ QString QWebEngineProfile::cachePath() const
 }
 
 /*!
-    Overrides the default path used for disk caches.
+    Overrides the default path used for disk caches, setting it to \a path.
 
     If set to the null string, the default path is restored.
 
@@ -309,7 +317,7 @@ void QWebEngineProfile::setCachePath(const QString &path)
 }
 
 /*!
-    Returns the user-agent string send with HTTP to identify the browser.
+    Returns the user-agent string sent with HTTP to identify the browser.
 
     \sa setHttpUserAgent()
 */
@@ -333,7 +341,7 @@ void QWebEngineProfile::setHttpUserAgent(const QString &userAgent)
 /*!
     Returns the type of HTTP cache used.
 
-    If the profile is off-the-record MemoryHttpCache is returned.
+    If the profile is off-the-record, MemoryHttpCache is returned.
 
     \sa setHttpCacheType(), cachePath()
 */
@@ -355,7 +363,7 @@ void QWebEngineProfile::setHttpCacheType(QWebEngineProfile::HttpCacheType httpCa
 }
 
 /*!
-    Sets the value of the Accept-Language HTTP request-header field.
+    Sets the value of the Accept-Language HTTP request-header field to \a httpAcceptLanguage.
 
     \since 5.6
  */
@@ -379,7 +387,7 @@ QString QWebEngineProfile::httpAcceptLanguage() const
 /*!
     Returns the current policy for persistent cookies.
 
-    If the profile is off-the-record NoPersistentCookies is returned.
+    If the profile is off-the-record, NoPersistentCookies is returned.
 
     \sa setPersistentCookiesPolicy()
 */
@@ -401,9 +409,9 @@ void QWebEngineProfile::setPersistentCookiesPolicy(QWebEngineProfile::Persistent
 }
 
 /*!
-    Returns the maximum size of the HTTP size.
+    Returns the maximum size of the HTTP cache in bytes.
 
-    Will return 0 if the size is automatically controlled by QtWebEngine.
+    Will return \c 0 if the size is automatically controlled by QtWebEngine.
 
     \sa setHttpCacheMaximumSize(), httpCacheType()
 */
@@ -414,9 +422,9 @@ int QWebEngineProfile::httpCacheMaximumSize() const
 }
 
 /*!
-    Sets the maximum size of the HTTP cache to \a maxSize.
+    Sets the maximum size of the HTTP cache to \a maxSize bytes.
 
-    Setting it to 0 means the size will be controlled automatically by QtWebEngine.
+    Setting it to \c 0 means the size will be controlled automatically by QtWebEngine.
 
     \sa httpCacheMaximumSize(), setHttpCacheType()
 */
@@ -426,17 +434,37 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
     d->browserContext()->setHttpCacheMaxSize(maxSize);
 }
 
+/*!
+    Returns the cookie store client singleton, if one has been set.
+*/
+
 QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
 {
     Q_D(QWebEngineProfile);
     return d->browserContext()->cookieStoreClient();
 }
 
+/*!
+    Registers a cookie store client singleton \a client to access Chromium's cookies.
+
+    The profile does not take ownership of the pointer.
+
+    \sa QWebEngineCookieStoreClient
+*/
+
 void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client)
 {
     Q_D(QWebEngineProfile);
     d->browserContext()->setCookieStoreClient(client);
 }
+
+/*!
+    Registers a request interceptor singleton \a interceptor to intercept URL requests.
+
+    The profile does not take ownership of the pointer.
+
+    \sa QWebEngineUrlRequestInfo
+*/
 
 void QWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
@@ -467,7 +495,7 @@ void QWebEngineProfile::clearVisitedLinks(const QList<QUrl> &urls)
 }
 
 /*!
-    Returns true if \a url is considered a visited link by this profile.
+    Returns \c true if \a url is considered a visited link by this profile.
 */
 bool QWebEngineProfile::visitedLinksContainsUrl(const QUrl &url) const
 {
@@ -509,10 +537,16 @@ QWebEngineSettings *QWebEngineProfile::settings() const
     return d->settings();
 }
 
-QWebEngineUrlSchemeHandler *QWebEngineProfilePrivate::urlSchemeHandler(const QByteArray &protocol)
+/*!
+    \since 5.6
+
+    Returns the custom URL scheme handler register for the URL scheme \a scheme.
+*/
+const QWebEngineUrlSchemeHandler *QWebEngineProfile::urlSchemeHandler(const QByteArray &scheme) const
 {
-    if (m_urlSchemeHandlers.contains(protocol))
-        return m_urlSchemeHandlers.value(protocol);
+    const Q_D(QWebEngineProfile);
+    if (d->m_urlSchemeHandlers.contains(scheme))
+        return d->m_urlSchemeHandlers.value(scheme);
     return 0;
 }
 
@@ -526,8 +560,14 @@ static bool checkInternalScheme(const QByteArray &scheme)
     return internalSchemes.contains(scheme);
 }
 
-void QWebEngineProfilePrivate::installUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+/*!
+    \since 5.6
+
+    Installs the custom URL scheme handler \a handler in the profile.
+*/
+void QWebEngineProfile::installUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
+    Q_D(QWebEngineProfile);
     Q_ASSERT(handler);
     QByteArray scheme = handler->scheme();
     if (checkInternalScheme(scheme)) {
@@ -535,29 +575,51 @@ void QWebEngineProfilePrivate::installUrlSchemeHandler(QWebEngineUrlSchemeHandle
         return;
     }
 
-    if (m_urlSchemeHandlers.contains(scheme)) {
+    if (d->m_urlSchemeHandlers.contains(scheme)) {
         qWarning() << "URL scheme handler already installed for the scheme: " << scheme;
         return;
     }
-    m_urlSchemeHandlers.insert(scheme, handler);
-    browserContext()->customUrlSchemeHandlers().append(handler->d_func());
-    browserContext()->updateCustomUrlSchemeHandlers();
+    d->m_urlSchemeHandlers.insert(scheme, handler);
+    d->browserContext()->customUrlSchemeHandlers().append(handler->d_func());
+    d->browserContext()->updateCustomUrlSchemeHandlers();
+    connect(handler, SIGNAL(destroyed(QObject*)), this, SLOT(destroyedUrlSchemeHandler(QObject*)));
 }
 
-void QWebEngineProfilePrivate::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+/*!
+    \since 5.6
+
+    Removes the custom URL scheme handler \a handler from the profile
+*/
+void QWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
-    int count = m_urlSchemeHandlers.remove(handler->scheme());
+    Q_D(QWebEngineProfile);
+    Q_ASSERT(handler);
+    if (!handler)
+        return;
+    int count = d->m_urlSchemeHandlers.remove(handler->scheme());
     if (!count)
         return;
-    browserContext()->customUrlSchemeHandlers().removeOne(handler->d_func());
-    browserContext()->updateCustomUrlSchemeHandlers();
+    disconnect(handler, SIGNAL(destroyed(QObject*)), this, SLOT(destroyedUrlSchemeHandler(QObject*)));
+    d->browserContext()->removeCustomUrlSchemeHandler(handler->d_func());
+    d->browserContext()->updateCustomUrlSchemeHandlers();
 }
 
-void QWebEngineProfilePrivate::clearUrlSchemeHandlers()
+/*!
+    \since 5.6
+
+    Removes all custom URL scheme handlers installed in the profile.
+*/
+void QWebEngineProfile::clearUrlSchemeHandlers()
 {
-    m_urlSchemeHandlers.clear();
-    browserContext()->customUrlSchemeHandlers().clear();
-    browserContext()->updateCustomUrlSchemeHandlers();
+    Q_D(QWebEngineProfile);
+    d->m_urlSchemeHandlers.clear();
+    d->browserContext()->customUrlSchemeHandlers().clear();
+    d->browserContext()->updateCustomUrlSchemeHandlers();
+}
+
+void QWebEngineProfile::destroyedUrlSchemeHandler(QObject *obj)
+{
+    removeUrlSchemeHandler(qobject_cast<QWebEngineUrlSchemeHandler*>(obj));
 }
 
 QT_END_NAMESPACE

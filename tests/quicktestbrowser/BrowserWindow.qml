@@ -77,6 +77,7 @@ ApplicationWindow {
         property alias javaScriptEnabled: javaScriptEnabled.checked;
         property alias errorPageEnabled: errorPageEnabled.checked;
         property alias pluginsEnabled: pluginsEnabled.checked;
+        property alias thirdPartyCookiesEnabled: thirdPartyCookiesEnabled.checked;
     }
 
     // Make sure the Qt.WindowFullscreenButtonHint is set on OS X.
@@ -250,6 +251,13 @@ ApplicationWindow {
                             text: "Plugins On"
                             checkable: true
                             checked: true
+                        }
+                        MenuItem {
+                            id: thirdPartyCookiesEnabled
+                            text: "Third party cookies enabled"
+                            checkable: true
+                            checked: true
+                            onToggled: applicationRoot.thirdPartyCookiesEnabled = checked
                         }
                         MenuItem {
                             id: offTheRecordEnabled

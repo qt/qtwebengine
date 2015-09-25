@@ -37,6 +37,17 @@
 #ifndef QQUICKWEBENGINEDOWNLOADITEM_P_H
 #define QQUICKWEBENGINEDOWNLOADITEM_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <private/qtwebengineglobal_p.h>
 #include <QObject>
 #include <QScopedPointer>
@@ -60,7 +71,7 @@ public:
     };
     Q_ENUMS(DownloadState)
 
-    Q_PROPERTY(quint32 id READ id() CONSTANT FINAL)
+    Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
     Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged)
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)

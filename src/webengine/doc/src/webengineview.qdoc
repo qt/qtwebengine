@@ -1,0 +1,610 @@
+/*
+ * Copyright (C) 2015 The Qt Company Ltd.
+ * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (c) 2012 Hewlett-Packard Development Company, L.P.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this program; see the file COPYING.LIB.  If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ *
+ */
+
+// The documentation in this file was imported from QtWebKit and is thus constrained
+// by its LGPL license.
+
+/*!
+    \qmltype WebEngineView
+    \instantiates QQuickWebEngineView
+    \inqmlmodule QtWebEngine 1.1
+    \since QtWebEngine 1.0
+    \brief A WebEngineView renders web content within a QML application.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::goBack()
+
+    Go backward within the browser's session history, if possible.
+    This function is equivalent to the \c{window.history.back()} DOM method.
+
+    \sa canGoBack
+*/
+
+/*!
+    \qmlmethod void WebEngineView::goForward()
+
+    Go forward within the browser's session history, if possible.
+    This function is equivalent to the \c{window.history.forward()} DOM method.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::goBackOrForward(int offset)
+    \since QtWebEngine 1.1
+
+    If \a offset is positive, goes forward the specified number of offset
+    pages in the current session history. If offset is negative, it goes
+    back. If the offset is invalid, the page is not changed.
+
+    \sa goBack(), goForward()
+*/
+
+/*!
+    \qmlmethod void WebEngineView::stop()
+
+    Stops loading the current page.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::reload()
+
+    Reloads the current page. This function is equivalent to the
+    \c{window.location.reload()} DOM method.
+
+    \sa reloadAndBypassCache()
+*/
+
+/*!
+    \qmlmethod void WebEngineView::reloadAndBypassCache()
+
+    Reloads the current page, ignoring any cached content.
+
+    \sa reload()
+*/
+
+/*!
+    \qmlproperty url WebEngineView::url
+
+    The location of the currently displaying HTML page. This writable
+    property offers the main interface to load a page into a web view.
+    It functions the same as the \c{window.location} DOM property.
+
+    \sa loadHtml()
+*/
+
+/*!
+    \qmlproperty url WebEngineView::icon
+    \readonly
+
+    This property holds the location of the currently displaying web site icon,
+    also known as favicon or shortcut icon. This read-only URL corresponds to
+    the image used within a mobile browser application to represent a
+    bookmarked page on the device's home screen.
+
+    The following snippet uses the \c{icon} property to build an \c{Image}
+    component:
+
+    \code
+    Image {
+        id: appIcon
+        source: webView.icon != "" ? webView.icon : "fallbackFavIcon.png";
+        ...
+    }
+    \endcode
+*/
+
+/*!
+    \qmlproperty int WebEngineView::loadProgress
+    \readonly
+
+    This property holds the amount of the page that has been loaded, expressed
+    as an integer percentage in the range from \c{0} to \c{100}.
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::canGoBack
+    \readonly
+
+    Returns \c{true} if there are prior session history entries, \c{false}
+    otherwise.
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::canGoForward
+    \readonly
+
+    Returns \c{true} if there are subsequent session history entries,
+    \c{false} otherwise.
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::loading
+    \readonly
+
+    Returns \c{true} if the HTML page is currently loading, \c{false} otherwise.
+*/
+
+/*!
+    \qmlproperty string WebEngineView::title
+    \readonly
+
+    This property holds the title of the currently displaying HTML page, a
+    read-only value that reflects the contents of the \c{<title>} tag.
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::isFullScreen
+    \since QtWebEngine 1.1
+    \readonly
+
+    Returns \c{true} if the web view is in fullscreen mode, \c{false} otherwise.
+
+    \sa fullScreenRequested(), fullScreenCancelled()
+*/
+
+/*!
+    \qmlproperty WebEngineHistory WebEngineView::navigationHistory
+    \since QtWebEngine 1.1
+    \readonly
+
+    The navigation history of the current view.
+
+    \sa WebEngineHistory
+*/
+
+/*!
+    \qmlproperty QQmlWebChannel WebEngineView::webChannel
+    \since QtWebEngine 1.1
+
+    The web channel instance used by this view.
+    This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
+    and exposed in the javascript context of the page it is rendering as \c qt.webChannelTransport.
+    This transport object is used when instantiating the JavaScript counterpart of QWebChannel using
+    the \l{Qt WebChannel JavaScript API}.
+
+    \note The view does not take ownership for an assigned webChannel object.
+*/
+
+/*!
+    \qmlproperty WebEngineProfile WebEngineView::profile
+    \since QtWebEngine 1.1
+
+    The current profile used for the view.
+
+    \sa WebEngineProfile
+*/
+
+/*!
+    \qmlproperty WebEngineSettings WebEngineView::settings
+    \readonly
+    \since QtWebEngine 1.1
+
+    Settings used by this view.
+
+    \sa WebEngineSettings
+*/
+
+
+/*!
+    \qmlproperty list<WebEngineScript> WebEngineView::userScripts
+    \readonly
+
+    List of script objects attached to the view.
+*/
+
+/*!
+    \qmlproperty real WebEngineView::zoomFactor
+    \since QtWebEngine 1.1
+
+    Zoom factor for the view. Valid values are within the range from \c{0.25}
+    to \c{5.0}. The default factor is \c{1.0}.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl)
+    \brief Loads the specified \a html as the content of the web view.
+
+    This method offers a lower-level alternative to the \c{url} property,
+    which references HTML pages via URL.
+
+    External objects such as stylesheets or images referenced in the HTML
+    document should be located relative to \a baseUrl. For example, if \a html
+    is retrieved from \c http://www.example.com/documents/overview.html, which
+    is the base url, then an image referenced with the relative url, \c diagram.png,
+    should be at \c{http://www.example.com/documents/diagram.png}.
+
+    \sa url
+*/
+
+/*!
+    \qmlmethod void WebEngineView::runJavaScript(string script, variant callback)
+    \brief Runs the specified \a script in the content of the web view.
+
+    In case a callback function is provided it will be invoked after the script
+    finished running.
+
+    \code
+    runJavaScript("document.title", function(result) { console.log(result); });
+    \endcode
+
+*/
+
+/*!
+    \qmlmethod void WebEngineView::findText(string subString)
+    \since QtWebEngine 1.1
+    Finds the specified string, \a subString, in the page.
+
+    To clear the selection, just pass an empty string.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::findText(string subString, FindFlags options)
+    \since QtWebEngine 1.1
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    To clear the selection, just pass an empty string.
+
+    \code
+    findText("Qt", WebEngineView.FindBackward | WebEngineView.FindCaseSensitively);
+    \endcode
+*/
+
+/*!
+    \qmlmethod void WebEngineView::findText(string subString, FindFlags options, variant resultCallback)
+    \since QtWebEngine 1.1
+    Finds the specified string, \a subString, in the page, using the given \a options.
+
+    To clear the selection, just pass an empty string.
+
+    The \a resultCallback must take a boolean parameter. It will be called with
+    a value of true if the \a subString was found; otherwise the callback value
+    will be false.
+
+    \code
+    findText("Qt", WebEngineView.FindCaseSensitively, function(success) {
+        if (success)
+            console.log("Qt was found!");
+    });
+    \endcode
+*/
+
+/*!
+    \qmlmethod void WebEngineView::grantFeaturePermission(url securityOrigin, Feature feature, bool granted)
+    \since QtWebEngine 1.1
+
+    Sets or unsets the permission, depending on \a granted, for the web site
+    identified by \a securityOrigin to use \a feature.
+
+    \sa featurePermissionRequested()
+*/
+
+
+/*!
+    \qmlmethod void WebEngineView::fullScreenCancelled()
+    \since QtWebEngine 1.1
+
+    Immediately sets \c{isFullScreen} property to \c{false}. It can be used to notify the
+    browser engine when the windowing system forces the application to leave fullscreen mode.
+
+    \code
+    ApplicationWindow {
+        onVisibilityChanged: {
+            if (webEngineView.isFullScreen && visibility != Window.FullScreen)
+                webEngineView.fullScreenCancelled()
+        }
+
+        WebEngineView {
+            id: webEngineView
+            ...
+        }
+    }
+    \endcode
+
+    \sa isFullScreen, fullScreenRequested()
+*/
+
+/*!
+    \qmlsignal WebEngineView::featurePermissionRequested(url securityOrigin, Feature feature)
+
+    This signal is emitted when the web site identified by \a securityOrigin requests
+    to make use of the resource or device identified by \a feature.
+
+    \sa grantFeaturePermission()
+*/
+
+/*!
+    \qmlsignal WebEngineView::loadingChanged(loadRequest)
+
+    This signal is emitted when a page load begins, ends, or fails.
+    The corresponding handler is onLoadingChanged.
+
+    When handling the signal with onLoadingChanged, various read-only
+    parameters are available on the \a loadRequest:
+
+    \table
+    \header
+        \li Property
+        \li Description
+    \row
+        \li url
+        \li The location of the resource that is loading.
+    \row
+        \li status
+        \li Reflects one of four load states:
+        \c{WebEngineView::LoadStartedStatus}, \c{WebEngineView::LoadStoppedStatus},
+        \c{WebEngineView::LoadSucceededStatus}, or \c{WebEngineView::LoadFailedStatus}.
+        See WebEngineLoadRequest::status and WebEngineView::LoadStatus.
+    \row
+        \li errorString
+        \li The description of load error.
+    \row
+        \li errorCode
+        \li The HTTP error code.
+    \row
+        \li errorDomain
+        \li The high-level error types, one of
+        \c{WebEngineView::ConnectionErrorDomain}, \c{WebEngineView::HttpErrorDomain}, \c{WebEngineView::InternalErrorDomain},
+        \c{WebEngineView::DownloadErrorDomain}, or \c{WebEngineView::NoErrorDomain}.  See
+        \l{WebEngineView::ErrorDomain} for the full list.
+    \endtable
+
+    \sa loading
+*/
+
+/*!
+    \qmlsignal WebEngineView::certificateError(error)
+    \since QtWebEngine 1.1
+
+    This signal is emitted when an invalid certificate error is raised while loading a given request.
+
+    The certificate error can be rejected by calling WebEngineCertificateError::rejectCertificate,
+    which will stop loading the request.
+
+    The certificate error can be ignored  by calling WebEngineCertificateError::ignoreCertificateError
+    which will resume loading the request.
+
+    It is possible to defer the decision of rejecting the given certificate by calling
+    WebEngineCertificateError::defer, which is useful when waiting for user input.
+    By default the invalid certificate will be automatically rejected.
+
+    The corresponding handler is onCertificateError.
+
+    \sa WebEngineCertificateError
+*/
+
+/*!
+    \qmlsignal WebEngineView::linkHovered(hoveredUrl)
+
+    Within a mouse-driven interface, this signal is emitted when a mouse
+    pointer passes over a link, corresponding to the \c{mouseover} DOM
+    event. This event may also occur in touch interfaces for \c{mouseover}
+    events that are not cancelled with \c{preventDefault()}. \a{hoveredUrl}
+    provides the link's location.
+
+    The corresponding handler is onLinkHovered.
+*/
+
+/*!
+    \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, message, lineNumber, sourceID)
+    This signal is emitted when a JavaScript program tries to print a \a message to the web browser's console.
+
+    For example in case of evaluation errors the source URL may be provided in \a sourceID as well as the \a lineNumber.
+
+    \a level indicates the severity of the event that triggered the message, i.e. if it
+    was triggered by an error or a less severe event.
+
+    The corresponding handler is onJavaScriptConsoleMessage.
+*/
+
+/*!
+    \qmlsignal WebEngineView::newViewRequested(request)
+    \since QtWebEngine 1.1
+
+    This signal is emitted when a page load is requested to happen in a separate
+    WebEngineView. This can either be because the current page requested it explicitly
+    through a JavaScript call to window.open, or because the user clicked on a link
+    while holding Shift, Ctrl or a built-in combination that triggers the page to open
+    in a new window.
+
+    If this signal isn't handled the requested load will fail.
+
+    An example implementation:
+
+    \snippet snippets/qtwebengine_webengineview_newviewrequested.qml 0
+
+    The corresponding handler is onNewViewRequested.
+
+    \sa WebEngineNewViewRequest, NewViewDestination, {WebEngine Quick Nano Browser}
+*/
+
+/*!
+    \qmlsignal WebEngineView::fullScreenRequested(WebEngineFullScreenRequest request)
+    \since QtWebEngine 1.1
+
+    This signal is emitted when the web page requests fullscreen mode through the
+    JavaScript API.
+
+    The corresponding handler is onFullScreenRequested.
+
+    \sa WebEngineFullScreenRequest, isFullScreen
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::ErrorDomain
+
+    This enumeration details various high-level error types.
+
+    \value WebEngineView::NoErrorDomain
+    \value WebEngineView::InternalErrorDomain
+            Content fails to be interpreted by Qt WebEngine.
+    \value WebEngineView::ConnectionErrorDomain
+            Error results from faulty network connection.
+    \value WebEngineView::CertificateErrorDomain
+            Error related to the SSL/TLS certficate.
+    \value WebEngineView::HttpErrorDomain
+            Error related to the HTTP connection.
+    \value WebEngineView::FtpErrorDomain
+            Error related to the FTP connection.
+    \value WebEngineView::DnsErrorDomain
+            Error related to the DNS connection.
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::JavaScriptConsoleMessageLevel
+
+    Indicates the severity of a JavaScript console message.
+
+    \table
+
+    \header
+    \li Constant
+    \li Description
+
+    \row
+    \li InfoMessageLevel
+    \li Message is purely informative and should be safe to ignore.
+
+    \row
+    \li WarningMessageLevel
+    \li Message indicates there might be a problem that may need attention.
+
+    \row
+    \li ErrorMessageLevel
+    \li Message indicates there has been an error.
+
+    \endtable
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::LoadStatus
+
+    Reflects a page's load status.
+
+    \table
+
+    \header
+    \li Constant
+    \li Description
+
+    \row
+    \li LoadStartedStatus
+    \li Page is currently loading.
+
+    \row
+    \li LoadSucceededStatus
+    \li Page has successfully loaded, and is not currently loading.
+
+    \row
+    \li LoadFailedStatus
+    \li Page has failed to load, and is not currently loading.
+
+    \endtable
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::NewViewDestination
+
+    This enumeration details the format in which a new view request should be opened.
+
+    \value WebEngineView::NewViewInWindow
+            The page expects to be opened in a separate Window.
+    \value WebEngineView::NewViewInTab
+            The page expects to be opened in a tab of the same window.
+    \value WebEngineView::NewViewInDialog
+            The page expects to be opened in a Window without any tab, tool or URL bar.
+    \value WebEngineView::NewViewInBackgroundTab
+            The page expects to be opened in a tab of the same window, without hiding the currently visible WebEngineView.
+
+    \sa WebEngineNewViewRequest::destination
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::FindFlags
+
+    This enum describes the options available to the findText() function. The options
+    can be OR-ed together from the following list:
+
+    \value FindBackward Searches backwards instead of forwards.
+    \value FindCaseSensitively By default findText() works case insensitive. Specifying
+            this option changes the behavior to a case sensitive find operation.
+
+    \sa findText()
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::Feature
+
+    This enum describes the platform feature access categories that the user may be asked to grant or deny access to.
+
+    \value Geolocation Access to location hardware or service
+    \value MediaAudioCapture Audio capture devices such a microphones
+    \value MediaVideoCapture Video devices, e.g. cameras
+    \value MediaAudioVideoCapture Both Audio and Video capture devices.
+
+    \sa featurePermissionRequested(), grantFeaturePermission()
+*/
+
+/*!
+    \qmltype WebEngineFullScreenRequest
+    \instantiates QQuickWebEngineFullScreenRequest
+    \inqmlmodule QtWebEngine 1.1
+    \since QtWebEngine 1.1
+
+    \brief A utility class for the WebEngineView::fullScreenRequested() signal.
+
+    \sa WebEngineView::fullScreenRequested()
+*/
+
+/*!
+    \qmlproperty bool WebEngineFullScreenRequest::toggleOn
+    \since QtWebEngine 1.1
+    \readonly
+
+    Returns \c{true} if the application should toggle fullscreen mode on, \c{false} otherwise.
+
+    \sa accept()
+*/
+
+/*!
+    \qmlmethod void WebEngineFullScreenRequest::accept()
+    \since QtWebEngine 1.1
+
+    Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
+    property to be equal to toggleOn.
+
+    \code
+    ApplicationWindow {
+        id: window
+        WebEngineView {
+            onFullScreenRequested: {
+                if (request.toggleOn)
+                    window.showFullScreen()
+                else
+                    window.showNormal()
+                request.accept()
+            }
+        }
+    }
+    \endcode
+
+    \sa toggleOn
+*/

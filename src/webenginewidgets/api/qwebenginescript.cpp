@@ -46,26 +46,28 @@ using QtWebEngineCore::UserScript;
     \inmodule QtWebEngineWidgets
     \since 5.5
     \brief The QWebEngineScript class encapsulates a JavaScript program.
-    \preliminary
 
-    QWebEngineScript allows the programatic injection of so called "user scripts" in the
-    javascript engine at different points, determined by injectionPoint(), during the loading of web contents.
 
-    Scripts can be executed either in the main javascript world, along with the rest of the JavaScript coming
-    from the web contents, or in their own isolated world. While the DOM of the page can be accessed from any world,
-    JavaScript variables a function defined in one world are not accessible from a different one.
-    ScriptWorldId provides some predefined ids for this purpose.
+    QWebEngineScript enables the programmatic injection of so called \e {user scripts} in the
+    JavaScript engine at different points, determined by injectionPoint(), during the loading of web
+    contents.
+
+    Scripts can be executed either in the main JavaScript \e world, along with the rest of the
+    JavaScript coming from the web contents, or in their own isolated world. While the DOM of the
+    page can be accessed from any world, JavaScript variables of a function defined in one world are
+    not accessible from a different one. ScriptWorldId provides some predefined IDs for this
+    purpose.
 
 */
 /*!
     \enum QWebEngineScript::InjectionPoint
 
-    This enum describes the timing for when the script injection should happen.
+    This enum describes the timing of the script injection:
 
     \value DocumentCreation The script will be executed as soon as the document is created. This is not suitable for
     any DOM operation.
-    \value DocumentReady The script will run as soon as the DOM is ready. This is equivalent to the DOMContentLoaded
-    event firing in JavaScript.
+    \value DocumentReady The script will run as soon as the DOM is ready. This is equivalent to the
+    \c DOMContentLoaded event firing in JavaScript.
     \value Deferred The script will run when the page load finishes, or 500ms after the document is ready, whichever
     comes first.
 
@@ -73,20 +75,30 @@ using QtWebEngineCore::UserScript;
 /*!
     \enum QWebEngineScript::ScriptWorldId
 
-    This enum provides pre defined world ids for isolating user scripts into different worlds.
+    This enum provides pre-defined world IDs for isolating user scripts into different worlds:
 
     \value MainWorld The world used by the page's web contents. It can be useful in order to expose custom functionality
     to web contents in certain scenarios.
     \value ApplicationWorld The default isolated world used for application level functionality implemented in JavaScript.
     \value UserWorld The first isolated world to be used by scripts set by users if the application is not making use
-    of more worlds. As a rule of thumbs, if that functionality is exposed to the application users, each individual script
+    of more worlds. As a rule of thumb, if that functionality is exposed to the application users, each individual script
     should probably get its own isolated world.
 
 */
 
 /*!
- * \brief QWebEngineScript::QWebEngineScript
- *
+    \fn QWebEngineScript::operator!=(const QWebEngineScript &other) const
+
+    Returns \c true if the script is not equal to \a other, otherwise returns \c false.
+*/
+
+/*!
+    \fn QWebEngineScript::swap(QWebEngineScript &other)
+
+     Swaps the contents of the script with the contents of \a other.
+*/
+
+/*!
  * Constructs a null script.
  */
 
@@ -94,34 +106,42 @@ QWebEngineScript::QWebEngineScript()
     : d(new UserScript)
 {
 }
-/*!
- * \brief QWebEngineScript::isNull
- * \return \c true is the script is null, \c false otherwise.
- */
 
+/*!
+ * Constructs a user script using the contents of \a other.
+ */
 QWebEngineScript::QWebEngineScript(const QWebEngineScript &other)
     : d(other.d)
 {
 }
 
+/*!
+    Destroys a script.
+*/
 QWebEngineScript::~QWebEngineScript()
 {
 }
 
+/*!
+    Assigns \a other to the script.
+*/
 QWebEngineScript &QWebEngineScript::operator=(const QWebEngineScript &other)
 {
     d = other.d;
     return *this;
 }
 
+/*!
+    Returns \c true is the script is null; otherwise returns \c false.
+*/
 bool QWebEngineScript::isNull() const
 {
     return d->isNull();
 }
 
 /*!
- * \brief QWebEngineScript::name
- * \return The name of the script. Can be useful to retrieve a given script from a QWebEngineScriptCollection.
+ * Returns the name of the script. Can be useful to retrieve a particular script from a
+ * QWebEngineScriptCollection.
  *
  * \sa QWebEngineScriptCollection::findScript(), QWebEngineScriptCollection::findScripts()
  */
@@ -132,9 +152,6 @@ QString QWebEngineScript::name() const
 }
 
 /*!
- * \brief QWebEngineScript::setName
- * \param scriptName
- *
  * Sets the script name to \a scriptName.
  */
 void QWebEngineScript::setName(const QString &scriptName)
@@ -145,8 +162,7 @@ void QWebEngineScript::setName(const QString &scriptName)
 }
 
 /*!
- * \brief QWebEngineScript::sourceCode
- * \return the source of the script.
+    Returns the source of the script.
  */
 QString QWebEngineScript::sourceCode() const
 {
@@ -154,8 +170,6 @@ QString QWebEngineScript::sourceCode() const
 }
 
 /*!
- * \brief QWebEngineScript::setSourceCode
- * \param scriptSource
  * Sets the script source to \a scriptSource.
  */
 void QWebEngineScript::setSourceCode(const QString &scriptSource)
@@ -170,8 +184,7 @@ ASSERT_ENUMS_MATCH(QWebEngineScript::DocumentReady, UserScript::DocumentLoadFini
 ASSERT_ENUMS_MATCH(QWebEngineScript::DocumentCreation, UserScript::DocumentElementCreation)
 
 /*!
- * \brief QWebEngineScript::injectionPoint
- * \return the point in the loading process at which the script will be executed.
+ * Returns the point in the loading process at which the script will be executed.
  * The default value is QWebEngineScript::Deferred.
  *
  * \sa setInjectionPoint
@@ -181,9 +194,7 @@ QWebEngineScript::InjectionPoint QWebEngineScript::injectionPoint() const
     return static_cast<QWebEngineScript::InjectionPoint>(d->injectionPoint());
 }
 /*!
- * \brief QWebEngineScript::setInjectionPoint
- * \param p
- * Sets the point at which to execute the script to be \p.
+ * Sets the point at which to execute the script to be \a p.
  *
  * \sa QWebEngineScript::InjectionPoint
  */
@@ -195,8 +206,7 @@ void QWebEngineScript::setInjectionPoint(QWebEngineScript::InjectionPoint p)
 }
 
 /*!
- * \brief QWebEngineScript::worldId
- * \return the world id defining which world the script is executed in.
+    Returns the world ID defining which world the script is executed in.
  */
 quint32 QWebEngineScript::worldId() const
 {
@@ -204,9 +214,7 @@ quint32 QWebEngineScript::worldId() const
 }
 
 /*!
- * \brief QWebEngineScript::setWorldId
- * \param id
- * Sets the world id of the isolated world to use when running this script.
+    Sets the world ID of the isolated world to \a id when running this script.
  */
 void QWebEngineScript::setWorldId(quint32 id)
 {
@@ -216,8 +224,8 @@ void QWebEngineScript::setWorldId(quint32 id)
 }
 
 /*!
- * \brief QWebEngineScript::runsOnSubFrames
- * \return \c true if the script is executed on every frame in the page, \c false if it is only ran for the main frame.
+    Returns \c true if the script is executed on every frame in the page, or \c false if it is only
+    ran for the main frame.
  */
 bool QWebEngineScript::runsOnSubFrames() const
 {
@@ -225,9 +233,7 @@ bool QWebEngineScript::runsOnSubFrames() const
 }
 
 /*!
- * \brief QWebEngineScript::setRunsOnSubFrames
- * \param on
- * Sets whether or not the script is executed on sub frames in addition to the main frame.
+ * Executes the script on sub frames in addition to the main frame if \a on returns \c true.
  */
 void QWebEngineScript::setRunsOnSubFrames(bool on)
 {
@@ -237,9 +243,7 @@ void QWebEngineScript::setRunsOnSubFrames(bool on)
 }
 
 /*!
- * \brief QWebEngineScript::operator ==
- * \param other
- * \return \c true if this QWebEngineScript is equal to \a other, otherwise returns \c false.
+    Returns \c true if the script is equal to \a other, otherwise returns \c false.
  */
 bool QWebEngineScript::operator==(const QWebEngineScript &other) const
 {

@@ -39,8 +39,6 @@
 
 #include "proxy_config_service_qt.h"
 
-#include "proxy_resolver_qt.h"
-
 #include "base/bind.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -107,15 +105,9 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
         return CONFIG_VALID;
     }
     m_qtApplicationProxy = qtProxy;
-    m_qtProxyConfig = (systemAvailability == CONFIG_VALID) ? systemConfig : net::ProxyConfig();
-    const bool useProxyResolver = ProxyResolverQt::useProxyResolverQt();
-
+    m_qtProxyConfig = net::ProxyConfig();
     if (qtProxy.type() == QNetworkProxy::NoProxy) {
         *config = systemConfig;
-        if (useProxyResolver) {
-            config->set_auto_detect(true);
-            config->set_pac_mandatory(true);
-        }
         return systemAvailability;
     }
 
@@ -140,10 +132,6 @@ net::ProxyConfigService::ConfigAvailability ProxyConfigServiceQt::GetLatestProxy
     }
 
     m_qtProxyConfig.proxy_rules() = qtRules;
-    if (useProxyResolver) {
-        m_qtProxyConfig.set_pac_mandatory(true);
-        m_qtProxyConfig.set_auto_detect(true);
-    }
     *config = m_qtProxyConfig;
     return CONFIG_VALID;
 }

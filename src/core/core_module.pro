@@ -9,18 +9,21 @@ QMAKE_INFO_PLIST = Info_mac.plist
     error("Could not find the linking information that gyp should have generated.")
 }
 
-QMAKE_DOCS = $$PWD/doc/qtwebenginecore.qdocconf
-
 load(qt_module)
 
-api_library_name = qtwebenginecoreapi
+api_library_name = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 api_library_path = $$OUT_PWD/api/$$getConfigDir()
+
+
 LIBS_PRIVATE += -L$$api_library_path
 CONFIG *= no_smart_library_merge
 osx {
     LIBS_PRIVATE += -Wl,-force_load,$${api_library_path}$${QMAKE_DIR_SEP}lib$${api_library_name}.a
-} else:win32-msvc* {
-    LIBS_PRIVATE += /OPT:REF -l$$api_library_name
+} else:msvc {
+    # Simulate -whole-archive by passing the list of object files that belong to the public
+    # API library as response file to the linker.
+    LIBS_PRIVATE += /OPT:REF
+    QMAKE_LFLAGS += @$${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib.objects
 } else {
     LIBS_PRIVATE += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive
 }
@@ -45,7 +48,9 @@ LOCALE_LIST = am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr g
 for(LOC, LOCALE_LIST) {
     locales.files += $$REPACK_DIR/qtwebengine_locales/$${LOC}.pak
 }
-resources.files = $$REPACK_DIR/qtwebengine_resources.pak
+resources.files = $$REPACK_DIR/qtwebengine_resources.pak \
+    $$REPACK_DIR/qtwebengine_resources_100p.pak \
+    $$REPACK_DIR/qtwebengine_resources_200p.pak
 
 icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
 

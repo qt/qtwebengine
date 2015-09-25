@@ -85,11 +85,11 @@ public:
     ResourceType resourceType() const;
     NavigationType navigationType() const;
 
-    const QUrl &url() const;
-    const QByteArray &method() const;
+    QUrl requestUrl() const;
+    QByteArray requestMethod() const;
 
-    void blockRequest(bool shouldBlock);
-    void redirectTo(const QUrl &url);
+    void block(bool shouldBlock);
+    void redirect(const QUrl &url);
     void setExtraHeader(const QByteArray &name, const QByteArray &value);
 
 private:

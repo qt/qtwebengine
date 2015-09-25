@@ -68,6 +68,57 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::BackForwardNavigat
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::ReloadNavigation, QWebEngineUrlRequestInfo::NavigationTypeReload)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, QWebEngineUrlRequestInfo::NavigationTypeOther)
 
+/*!
+    \class QWebEngineUrlRequestInfo
+    \inmodule QtWebEngineCore
+    \since 5.6
+    \brief The QWebEngineUrlRequestInfo class provides information about URL requests.
+
+    The QWebEngineUrlRequestInfo is useful for setting extra header fields for requests
+    or for redirecting certain requests without payload data to another URL.
+    This class cannot be instantiated or copied by the user, instead it will
+    be created by Qt WebEngine and sent through the virtual function
+    QWebEngineUrlRequestInterceptor::interceptRequest() if an interceptor has been set.
+*/
+
+/*!
+    \class QWebEngineUrlRequestInterceptor
+    \inmodule QtWebEngineCore
+    \since 5.6
+    \brief The QWebEngineUrlRequestInterceptor class provides an abstract base class for URL interception.
+
+    Implementing the \l{QWebEngineUrlRequestInterceptor} interface and installing the
+    interceptor on the profile enables intercepting, blocking, and modifying URL requests
+    before they reach the networking stack of Chromium.
+
+    \sa QWebEngineUrlRequestInterceptor::interceptRequest, QWebEngineUrlRequestInfo
+*/
+
+/*!
+    \fn QWebEngineUrlRequestInterceptor::QWebEngineUrlRequestInterceptor(QObject * p = 0)
+
+    Creates a new QWebEngineUrlRequestInterceptor object with \a p as parent.
+*/
+
+/*!
+    \fn QWebEngineUrlRequestInterceptor::~QWebEngineUrlRequestInterceptor()
+
+    Destroys this QWebEngineUrlRequestInterceptor object.
+*/
+
+/*!
+    \fn bool QWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
+
+    Reimplementing this virtual function and setting the interceptor on a profile makes
+    it possible to intercept URL requests. This function is executed on the IO thread,
+    and therefore running long tasks here will block networking.
+    If this function is only used for inspection, it should return \c false, in which
+    case any modification to \a info will be ignored.
+
+    \sa QWebEngineProfile::setRequestInterceptor
+*/
+
+
 QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource, QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QByteArray &m)
     : resourceType(resource)
     , navigationType(navigation)
@@ -77,10 +128,18 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRe
 {
 }
 
+/*!
+    \internal
+*/
+
 QWebEngineUrlRequestInfo::~QWebEngineUrlRequestInfo()
 {
 
 }
+
+/*!
+    \internal
+*/
 
 QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPrivate *p)
     : d_ptr(p)
@@ -88,11 +147,60 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     d_ptr->q_ptr = this;
 }
 
+/*!
+    \enum QWebEngineUrlRequestInfo::ResourceType
+
+    This enum type holds the type of the requested resource:
+
+    \value ResourceTypeMainFrame Top level page.
+    \value ResourceTypeSubFrame  Frame or iframe.
+    \value ResourceTypeStylesheet  A CSS stylesheet.
+    \value ResourceTypeScript  An external script.
+    \value ResourceTypeImage  An image (JPG, GIF, PNG, and so on).
+    \value ResourceTypeFontResource  A font.
+    \value ResourceTypeSubResource  An "other" subresource.
+    \value ResourceTypeObject  An object (or embed) tag for a plugin or a resource that a plugin requested.
+    \value ResourceTypeMedia  A media resource.
+    \value ResourceTypeWorker  The main resource of a dedicated worker.
+    \value ResourceTypeSharedWorker  The main resource of a shared worker.
+    \value ResourceTypePrefetch  An explicitly requested prefetch.
+    \value ResourceTypeFavicon  A favicon.
+    \value ResourceTypeXhr  An XMLHttpRequest.
+    \value ResourceTypePing  A ping request for <a ping>.
+    \value ResourceTypeServiceWorker  The main resource of a service worker.
+    \value ResourceTypeUnknown  Unknown request type.
+*/
+
+/*!
+    Returns the resource type of the request.
+
+    \sa QWebEngineUrlRequestInfo::ResourceType
+*/
+
 QWebEngineUrlRequestInfo::ResourceType QWebEngineUrlRequestInfo::resourceType() const
 {
     Q_D(const QWebEngineUrlRequestInfo);
     return d->resourceType;
 }
+
+/*!
+    \enum QWebEngineUrlRequestInfo::NavigationType
+
+    This enum type describes the navigation type of the request:
+
+    \value NavigationTypeLink Navigation initiated by clicking a link.
+    \value NavigationTypeTyped Navigation explicitly initiated by typing a URL.
+    \value NavigationTypeFormSubmitted Navigation submits a form.
+    \value NavigationTypeBackForward Navigation initiated by a history action.
+    \value NavigationTypeReload Navigation initiated by refreshing the page.
+    \value NavigationTypeOther None of the above.
+*/
+
+/*!
+    Returns the navigation type of the request.
+
+    \sa QWebEngineUrlRequestInfo::NavigationType
+*/
 
 QWebEngineUrlRequestInfo::NavigationType QWebEngineUrlRequestInfo::navigationType() const
 {
@@ -100,29 +208,53 @@ QWebEngineUrlRequestInfo::NavigationType QWebEngineUrlRequestInfo::navigationTyp
     return d->navigationType;
 }
 
-const QUrl &QWebEngineUrlRequestInfo::url() const
+/*!
+    Returns the requested URL.
+*/
+
+QUrl QWebEngineUrlRequestInfo::requestUrl() const
 {
     Q_D(const QWebEngineUrlRequestInfo);
     return d->url;
 }
 
-const QByteArray &QWebEngineUrlRequestInfo::method() const
+
+/*!
+    Returns the HTTP method of the request (for example, GET or POST).
+*/
+
+QByteArray QWebEngineUrlRequestInfo::requestMethod() const
 {
     Q_D(const QWebEngineUrlRequestInfo);
     return d->method;
 }
 
-void QWebEngineUrlRequestInfo::redirectTo(const QUrl &url)
+/*!
+    Redirects this request to \a url.
+    It is only possible to redirect requests that do not have payload data, such as GET requests.
+*/
+
+void QWebEngineUrlRequestInfo::redirect(const QUrl &url)
 {
     Q_D(QWebEngineUrlRequestInfo);
     d->url = url;
 }
 
-void QWebEngineUrlRequestInfo::blockRequest(bool shouldBlock)
+/*!
+    Blocks this request if \a shouldBlock is true, so that it will not proceed.
+
+    This function can be used to prevent navigating away from a given domain, for example.
+*/
+
+void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 {
     Q_D(QWebEngineUrlRequestInfo);
     d->shouldBlockRequest = shouldBlock;
 }
+
+/*!
+    Sets an extra request header for this request with \a name and \a value.
+*/
 
 void QWebEngineUrlRequestInfo::setExtraHeader(const QByteArray &name, const QByteArray &value)
 {

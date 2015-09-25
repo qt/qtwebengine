@@ -58,7 +58,7 @@ static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int sta
     }
 }
 
-QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfilePrivate *p)
+QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfile *p)
     : profile(p)
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
@@ -69,7 +69,8 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
 
 QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
 {
-    profile->downloadDestroyed(downloadId);
+    if (profile)
+        profile->d_ptr->downloadDestroyed(downloadId);
 }
 
 /*!
@@ -77,11 +78,11 @@ QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
     \instantiates QQuickWebEngineDownloadItem
     \inqmlmodule QtWebEngine 1.1
     \since QtWebEngine 1.1
-    \brief A WebEngineDownloadItem provides information about a download.
+    \brief Provides information about a download.
 
-    WebEngineDownloadItem stores the state of a download to be used to manage requested downloads.
+    Stores the state of a download to be used to manage requested downloads.
 
-    By default the download is rejected unless the user explicitly accepts it with
+    By default, the download is rejected unless the user explicitly accepts it with
     WebEngineDownloadItem::accept().
 */
 
@@ -150,14 +151,16 @@ void QQuickWebEngineDownloadItem::cancel()
 
     // We directly cancel the download if the user cancels before
     // it even started, so no need to notify the profile here.
-    if (state == QQuickWebEngineDownloadItem::DownloadInProgress)
-        d->profile->cancelDownload(d->downloadId);
+    if (state == QQuickWebEngineDownloadItem::DownloadInProgress) {
+        if (d->profile)
+            d->profile->d_ptr->cancelDownload(d->downloadId);
+    }
 }
 
 /*!
     \qmlproperty quint32 WebEngineDownloadItem::id
 
-    The download item's id.
+    Holds the download item's ID.
 */
 
 quint32 QQuickWebEngineDownloadItem::id() const
@@ -169,33 +172,16 @@ quint32 QQuickWebEngineDownloadItem::id() const
 /*!
     \qmlproperty enumeration WebEngineDownloadItem::state
 
-    This property describes the state in which the download is in.
+    Describes the state of the download:
 
-    The state can be one of:
-
-    \table
-
-    \header
-    \li Constant
-    \li Description
-
-    \row
-    \li DownloadRequested
-    \li The download has been requested, but has not been accepted yet.
-
-    \row
-    \li DownloadInProgress
-    \li The download is in progress.
-
-    \row
-    \li DownloadCompleted
-    \li The download completed successfully.
-
-    \row
-    \li DownloadInterrupted
-    \li The download has been interrupted (by the server or because of lost connectivity).
-
-    \endtable
+    \value  DownloadRequested
+            Download has been requested, but it has not been accepted yet.
+    \value  DownloadInProgress
+            Download is in progress.
+    \value  DownloadCompleted
+            Download completed successfully.
+    \value  DownloadInterrupted
+            Download has been interrupted (by the server or because of lost connectivity).
 */
 
 QQuickWebEngineDownloadItem::DownloadState QQuickWebEngineDownloadItem::state() const
@@ -207,9 +193,9 @@ QQuickWebEngineDownloadItem::DownloadState QQuickWebEngineDownloadItem::state() 
 /*!
     \qmlproperty int WebEngineDownloadItem::totalBytes
 
-    The download's total size in bytes.
+    Holds the total amount of data to download in bytes.
 
-    -1 means the total size is unknown.
+    \c -1 means the total size is unknown.
 */
 
 qint64 QQuickWebEngineDownloadItem::totalBytes() const
@@ -221,7 +207,7 @@ qint64 QQuickWebEngineDownloadItem::totalBytes() const
 /*!
     \qmlproperty int WebEngineDownloadItem::receivedBytes
 
-    The download's bytes that have been received so far.
+    Holds the amount of data in bytes that has been downloaded so far.
 */
 
 qint64 QQuickWebEngineDownloadItem::receivedBytes() const
@@ -233,7 +219,7 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
 /*!
     \qmlproperty QString WebEngineDownloadItem::path
 
-    The download item's full target path where it is being downloaded to.
+    Holds the full target path where data is being downloaded to.
 
     The path includes the file name. The default suggested path is the standard
     download location and file name is deduced not to overwrite already existing files.
@@ -241,7 +227,7 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
     The download path can only be set in the \c WebEngineProfile.onDownloadRequested
     handler before the download is accepted.
 
-    \sa WebEngineProfile::downloadRequested(WebEngineDownloadItem download), WebEngineDownloadItem::accept()
+    \sa WebEngineProfile::downloadRequested(), accept()
 */
 
 QString QQuickWebEngineDownloadItem::path() const

@@ -71,13 +71,13 @@ base::NativeLibrary LoadLibrary(const base::FilePath& filename) {
 bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library, SetGLGetProcAddressProcCallback set_gl_get_proc_address)
 {
     base::FilePath libEGLPath = QtWebEngineCore::toFilePath(QT_LIBDIR_EGL);
-    libEGLPath = libEGLPath.Append("libEGL.so");
+    libEGLPath = libEGLPath.Append("libEGL.so.1");
     base::NativeLibrary eglLibrary = LoadLibrary(libEGLPath);
     if (!eglLibrary)
         return false;
 
     base::FilePath libGLES2Path = QtWebEngineCore::toFilePath(QT_LIBDIR_GLES2);
-    libGLES2Path = libGLES2Path.Append("libGLESv2.so");
+    libGLES2Path = libGLES2Path.Append("libGLESv2.so.2");
     base::NativeLibrary gles2Library = LoadLibrary(libGLES2Path);
     if (!gles2Library)
         return false;

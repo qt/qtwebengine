@@ -59,7 +59,8 @@ public:
         HyperlinkAuditingEnabled,
         ScrollAnimatorEnabled,
         ErrorPageEnabled,
-        PluginsEnabled
+        PluginsEnabled,
+        FullScreenSupportEnabled
     };
 
     enum FontSize {

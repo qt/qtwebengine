@@ -106,6 +106,9 @@ public:
         ToggleMediaMute,
         DownloadMediaToDisk,
 
+        InspectElement,
+        ExitFullScreen,
+
         WebActionCount
     };
 
@@ -160,6 +163,14 @@ public:
         InfoMessageLevel = 0,
         WarningMessageLevel,
         ErrorMessageLevel
+    };
+
+    // must match WebContentsAdapterClient::RenderProcessTerminationStatus
+    enum RenderProcessTerminationStatus {
+        NormalTerminationStatus = 0,
+        AbnormalTerminationStatus,
+        CrashedTerminationStatus,
+        KilledTerminationStatus
     };
 
     explicit QWebEnginePage(QObject *parent = 0);
@@ -234,6 +245,7 @@ Q_SIGNALS:
 
     void linkHovered(const QString &url);
     void selectionChanged();
+    void fullScreenRequested(bool fullScreen);
     void geometryChangeRequested(const QRect& geom);
     void windowCloseRequested();
 
@@ -242,6 +254,8 @@ Q_SIGNALS:
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
+
+    void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
 
     // Ex-QWebFrame signals
     void titleChanged(const QString &title);
@@ -258,8 +272,9 @@ protected:
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID);
     virtual bool certificateError(const QWebEngineCertificateError &certificateError);
     virtual bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
-
+    virtual bool isFullScreen();
 private:
+    Q_DISABLE_COPY(QWebEnginePage)
     Q_DECLARE_PRIVATE(QWebEnginePage)
     QScopedPointer<QWebEnginePagePrivate> d_ptr;
 #ifndef QT_NO_ACTION

@@ -59,6 +59,84 @@ BrowserAccessibilityQt::BrowserAccessibilityQt()
     QAccessible::registerAccessibleInterface(this);
 }
 
+// This function is taken from chromium/content/browser/accessibility/browser_accessibility_win.cc
+// see also http://www.w3.org/TR/html-aapi
+void BrowserAccessibilityQt::OnDataChanged()
+{
+    BrowserAccessibility::OnDataChanged();
+
+    // The calculation of the accessible name of an element has been
+    // standardized in the HTML to Platform Accessibility APIs Implementation
+    // Guide (http://www.w3.org/TR/html-aapi/). In order to return the
+    // appropriate accessible name on Windows, we need to apply some logic
+    // to the fields we get from WebKit.
+    //
+    // TODO(dmazzoni): move most of this logic into WebKit.
+    //
+    // WebKit gives us:
+    //
+    //   name: the default name, e.g. inner text
+    //   title ui element: a reference to a <label> element on the same
+    //       page that labels this node.
+    //   description: accessible labels that override the default name:
+    //       aria-label or aria-labelledby or aria-describedby
+    //   help: the value of the "title" attribute
+    //
+    // On Windows, the logic we apply lets some fields take precedence and
+    // always returns the primary name in "name" and the secondary name,
+    // if any, in "description".
+
+    int title_elem_id = GetIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT);
+    base::string16 name = GetString16Attribute(ui::AX_ATTR_NAME);
+    base::string16 description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
+    base::string16 help = GetString16Attribute(ui::AX_ATTR_HELP);
+    base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
+
+    // WebKit annoyingly puts the title in the description if there's no other
+    // description, which just confuses the rest of the logic. Put it back.
+    // Now "help" is always the value of the "title" attribute, if present.
+    base::string16 title_attr;
+    if (GetHtmlAttribute("title", &title_attr) &&
+        description == title_attr &&
+        help.empty()) {
+        help = description;
+        description.clear();
+    }
+
+    // Now implement the main logic: the descripion should become the name if
+    // it's nonempty, and the help should become the description if
+    // there's no description - or the name if there's no name or description.
+    if (!description.empty()) {
+        name = description;
+        description.clear();
+    }
+    if (!help.empty() && description.empty()) {
+        description = help;
+        help.clear();
+    }
+    if (!description.empty() && name.empty() && !title_elem_id) {
+        name = description;
+        description.clear();
+    }
+
+    // If it's a text field, also consider the placeholder.
+    base::string16 placeholder;
+    if (GetRole() == ui::AX_ROLE_TEXT_FIELD &&
+        HasState(ui::AX_STATE_FOCUSABLE) &&
+        GetHtmlAttribute("placeholder", &placeholder)) {
+        if (name.empty() && !title_elem_id) {
+            name = placeholder;
+        } else if (description.empty()) {
+            description = placeholder;
+        }
+    }
+
+    m_name = toQt(name);
+    m_description = toQt(description);
+    m_help = toQt(help);
+    m_value = toQt(value);
+}
+
 bool BrowserAccessibilityQt::isValid() const
 {
     return true;
@@ -151,13 +229,13 @@ QString BrowserAccessibilityQt::text(QAccessible::Text t) const
 {
     switch (t) {
     case QAccessible::Name:
-        return toQt(GetStringAttribute(ui::AX_ATTR_NAME));
+        return name();
     case QAccessible::Description:
-        return toQt(GetStringAttribute(ui::AX_ATTR_DESCRIPTION));
+        return description();
     case QAccessible::Help:
-        return toQt(GetStringAttribute(ui::AX_ATTR_HELP));
+        return help();
     case QAccessible::Value:
-        return toQt(GetStringAttribute(ui::AX_ATTR_VALUE));
+        return value();
     case QAccessible::Accelerator:
         return toQt(GetStringAttribute(ui::AX_ATTR_SHORTCUT));
     default:

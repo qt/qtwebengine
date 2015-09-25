@@ -113,6 +113,8 @@ void WebContentsViewQt::GetContainerBounds(gfx::Rect* out) const
 
 void WebContentsViewQt::Focus()
 {
+    if (content::RenderWidgetHostView *rwhv = m_webContents->GetRenderWidgetHostView())
+        rwhv->Focus();
     m_client->focusContainer();
 }
 

@@ -567,8 +567,11 @@ void RenderWidgetHostViewQt::ImeCompositionRangeChanged(const gfx::Range&, const
     QT_NOT_YET_IMPLEMENTED
 }
 
-void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus, int)
+void RenderWidgetHostViewQt::RenderProcessGone(base::TerminationStatus terminationStatus,
+                                               int exitCode)
 {
+    m_adapterClient->renderProcessTerminated(
+                m_adapterClient->renderProcessExitStatus(terminationStatus), exitCode);
     Destroy();
 }
 
@@ -806,7 +809,7 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
 void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) {
     Q_UNUSED(touch);
     const bool eventConsumed = ack_result == content::INPUT_EVENT_ACK_STATE_CONSUMED;
-    m_gestureProvider.OnAsyncTouchEventAck(eventConsumed);
+    m_gestureProvider.OnTouchEventAck(touch.event.uniqueTouchEventId, eventConsumed);
 }
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
@@ -923,14 +926,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             if (preeditString.isEmpty())
                 break;
 
-            QTextCharFormat textCharFormat = attribute.value.value<QTextFormat>().toCharFormat();
-            QColor qcolor = textCharFormat.underlineColor();
-            QColor qBackgroundColor = textCharFormat.background().color();
-            blink::WebColor color = SkColorSetARGB(qcolor.alpha(), qcolor.red(), qcolor.green(), qcolor.blue());
-            blink::WebColor backgroundColor = SkColorSetARGB(qBackgroundColor.alpha(), qBackgroundColor.red(), qBackgroundColor.green(), qBackgroundColor.blue());
             int start = qMin(attribute.start, (attribute.start + attribute.length));
             int end = qMax(attribute.start, (attribute.start + attribute.length));
-            underlines.push_back(blink::WebCompositionUnderline(start, end, color, false, backgroundColor));
+            underlines.push_back(blink::WebCompositionUnderline(start, end, /*color*/ SK_ColorBLACK, /*thick*/ false, /*backgroundColor*/ SK_ColorTRANSPARENT));
             break;
         }
         case QInputMethodEvent::Cursor:

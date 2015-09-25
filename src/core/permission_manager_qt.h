@@ -58,7 +58,7 @@ public:
     // content::PermissionManager implementation:
     void RequestPermission(
         content::PermissionType permission,
-        content::WebContents* web_contents,
+        content::RenderFrameHost* render_frame_host,
         int request_id,
         const GURL& requesting_origin,
         bool user_gesture,
@@ -66,7 +66,7 @@ public:
 
     void CancelPermissionRequest(
         content::PermissionType permission,
-        content::WebContents* web_contents,
+        content::RenderFrameHost* render_frame_host,
         int request_id,
         const GURL& requesting_origin) override;
 

@@ -23,6 +23,7 @@
 #include "qwebenginepage.h"
 #include "qwebenginepage_p.h"
 
+#include "authentication_dialog_controller.h"
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
@@ -88,6 +89,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , isLoading(false)
     , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter.data()))
     , m_backgroundColor(Qt::white)
+    , m_fullscreenRequested(false)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -248,18 +250,24 @@ void QWebEnginePagePrivate::passOnFocus(bool reverse)
         view->focusNextPrevChild(!reverse);
 }
 
-void QWebEnginePagePrivate::authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword)
+void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)
 {
     Q_Q(QWebEnginePage);
     QAuthenticator networkAuth;
-    networkAuth.setRealm(realm);
+    networkAuth.setRealm(controller->realm());
 
-    if (isProxy)
-        Q_EMIT q->proxyAuthenticationRequired(requestUrl, &networkAuth, challengingHost);
+    if (controller->isProxy())
+        Q_EMIT q->proxyAuthenticationRequired(controller->url(), &networkAuth, controller->host());
     else
-        Q_EMIT q->authenticationRequired(requestUrl, &networkAuth);
-    *outUser = networkAuth.user();
-    *outPassword = networkAuth.password();
+        Q_EMIT q->authenticationRequired(controller->url(), &networkAuth);
+
+    // Authentication has been cancelled
+    if (networkAuth.isNull()) {
+        controller->reject();
+        return;
+    }
+
+    controller->accept(networkAuth.user(), networkAuth.password());
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
@@ -374,10 +382,44 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 }
 
 /*!
-    Constructs an empty QWebEnginePage in the QWebEngineProfile \a profile with parent \a parent.
+    \enum QWebEnginePage::RenderProcessTerminationStatus
 
-    If the profile is not the default profile the caller must ensure the profile is alive for as
-    long as the page is.
+    This enum describes the status with which the render process terminated:
+
+    \value  NormalTerminationStatus
+            The render process terminated normally.
+    \value  AbnormalTerminationStatus
+            The render process terminated with with a non-zero exit status.
+    \value  CrashedTerminationStatus
+            The render process crashed, for example because of a segmentation fault.
+    \value  KilledTerminationStatus
+            The render process was killed, for example by \c SIGKILL or task manager kill.
+*/
+
+/*!
+    \fn QWebEnginePage::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode)
+
+    This signal is emitted when the render process is terminated with a non-zero exit status.
+    \a terminationStatus is the termination status of the process and \a exitCode is the status code
+    with which the process terminated.
+*/
+
+/*!
+    \fn QWebEnginePage::fullScreenRequested(bool fullScreen)
+
+    This signal is emitted when the web page issues the request to enter or exit fullscreen mode.
+    If \a fullScreen is \c true, the page wants to enter the mode and if it is \c false, the page
+    wants to exit the mode.
+
+    \sa isFullScreen(), QWebEngineSettings::FullScreenSupportEnabled
+*/
+
+/*!
+    Constructs an empty web engine page in the web engine profile \a profile with the parent
+    \a parent.
+
+    If the profile is not the default profile, the caller must ensure that the profile stays alive
+    for as long as the page does.
 
     \since 5.5
 */
@@ -409,12 +451,12 @@ QWebEngineSettings *QWebEnginePage::settings() const
 }
 
 /*!
- * Returns a pointer to the web channel instance used by this page, or a null pointer if none was set.
- * This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
- * and exposed in the javascript context of this page as  \c qt.webChannelTransport
+ * Returns a pointer to the web channel instance used by this page or a null pointer if none was set.
+ * This channel automatically uses the internal web engine transport mechanism over Chromium IPC
+ * that is exposed in the JavaScript context of this page as \c qt.webChannelTransport.
  *
  * \since 5.5
- * \sa {QtWebChannel::QWebChannel}{QWebChannel}
+ * \sa QWebChannel
  */
 QWebChannel *QWebEnginePage::webChannel() const
 {
@@ -423,14 +465,14 @@ QWebChannel *QWebEnginePage::webChannel() const
 }
 
 /*!
- * Sets the web channel instance to be used by this page and connects it to QtWebEngine's transport
- * using Chromium IPC messages. That transport is exposed in the javascript context of this page as
+ * Sets the web channel instance to be used by this page to \a channel and connects it to
+ * web engine's transport using Chromium IPC messages. The transport is exposed in the JavaScript
+ * context of this page as
  * \c qt.webChannelTransport, which should be used when using the \l{Qt WebChannel JavaScript API}.
  *
- * \note The page does not take ownership of the \a channel object.
+ * \note The page does not take ownership of the channel object.
  *
  * \since 5.5
- * \param channel
  */
 
 void QWebEnginePage::setWebChannel(QWebChannel *channel)
@@ -441,12 +483,12 @@ void QWebEnginePage::setWebChannel(QWebChannel *channel)
 
 /*!
     \property QWebEnginePage::backgroundColor
-    \brief the page's background color, behing the document's body.
+    \brief the page's background color behind the document's body.
     \since 5.6
 
-    You can set it to Qt::transparent or to a translucent
-    color to see through the document, or you can set this color to match your
-    web content in an hybrid app to prevent the white flashes that may appear
+    You can set the background color to Qt::transparent or to a translucent
+    color to see through the document, or you can set it to match your
+    web content in a hybrid application to prevent the white flashes that may appear
     during loading.
 
     The default value is white.
@@ -478,7 +520,7 @@ QWidget *QWebEnginePage::view() const
 }
 
 /*!
-    Returns the QWebEngineProfile the page belongs to.
+    Returns the web engine profile the page belongs to.
     \since 5.5
 */
 QWebEngineProfile *QWebEnginePage::profile() const
@@ -562,7 +604,7 @@ QAction *QWebEnginePage::action(WebAction action) const
         text = tr("Copy Link URL");
         break;
     case DownloadLinkToDisk:
-        text = tr("Save Link...");
+        text = tr("Save Link");
         break;
     case CopyImageToClipboard:
         text = tr("Copy Image");
@@ -589,7 +631,13 @@ QAction *QWebEnginePage::action(WebAction action) const
         text = tr("Toggle Mute");
         break;
     case DownloadMediaToDisk:
-        text = tr("Download Media");
+        text = tr("Save Media");
+        break;
+    case InspectElement:
+        text = tr("Inspect Element");
+        break;
+    case ExitFullScreen:
+        text = tr("Exit Full Screen Mode");
         break;
     default:
         break;
@@ -755,6 +803,12 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
             d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
         break;
+    case InspectElement:
+        d->adapter->inspectElementAt(d->m_menuData.pos);
+        break;
+    case ExitFullScreen:
+        d->adapter->exitFullScreen();
+        break;
     default:
         Q_UNREACHABLE();
     }
@@ -818,6 +872,18 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
     Q_Q(QWebEnginePage);
     bool accepted = q->acceptNavigationRequest(url, static_cast<QWebEnginePage::NavigationType>(navigationType), isMainFrame);
     navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
+}
+
+void QWebEnginePagePrivate::requestFullScreen(bool fullScreen)
+{
+    Q_Q(QWebEnginePage);
+    m_fullscreenRequested = fullScreen;
+    Q_EMIT q->fullScreenRequested(fullScreen);
+}
+
+bool QWebEnginePagePrivate::isFullScreen() const
+{
+    return m_fullscreenRequested && q_ptr->isFullScreen();
 }
 
 void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> controller)
@@ -889,6 +955,14 @@ void QWebEnginePagePrivate::moveValidationMessage(const QRect &anchor)
 #endif
 }
 
+void QWebEnginePagePrivate::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
+                                                int exitCode)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->renderProcessTerminated(static_cast<QWebEnginePage::RenderProcessTerminationStatus>(
+                                      terminationStatus), exitCode);
+}
+
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
@@ -949,6 +1023,12 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     } else if (contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas) {
         menu->addAction(QWebEnginePage::action(CopyImageToClipboard));
     }
+
+    if (d->adapter->hasInspector())
+        menu->addAction(QWebEnginePage::action(InspectElement));
+
+    if (d->isFullScreen())
+        menu->addAction(QWebEnginePage::action(ExitFullScreen));
 
     return menu;
 }
@@ -1199,6 +1279,15 @@ bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType typ
     Q_UNUSED(type);
     Q_UNUSED(isMainFrame);
     return true;
+}
+
+/*!
+    Returns \c true if the web view is in fullscreen mode, \c false otherwise.
+*/
+bool QWebEnginePage::isFullScreen()
+{
+    Q_D(const QWebEnginePage);
+    return d->view ? d->view->isFullScreen() : false;
 }
 
 QT_END_NAMESPACE

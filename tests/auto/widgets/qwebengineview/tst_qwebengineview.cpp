@@ -25,6 +25,7 @@
 #include <qpainter.h>
 #include <qwebengineview.h>
 #include <qwebenginepage.h>
+#include <qwebenginesettings.h>
 #include <qnetworkrequest.h>
 #include <qdiriterator.h>
 
@@ -148,9 +149,7 @@ void tst_QWebEngineView::reusePage()
     QWebEngineView* view1 = new QWebEngineView;
     QPointer<QWebEnginePage> page = new QWebEnginePage;
     view1->setPage(page.data());
-#if defined(QWEBENGINESETTINGS)
     page.data()->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
-#endif
     page->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
     if (html.contains("</embed>")) {
         // some reasonable time for the PluginStream to feed test.swf to flash and start painting

@@ -37,6 +37,17 @@
 #ifndef QWEBENGINEPROFILE_P_H
 #define QWEBENGINEPROFILE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "browser_context_adapter_client.h"
 #include "qwebengineprofile.h"
 #include "qwebengineurlschemehandler_p.h"
@@ -68,18 +79,13 @@ public:
     void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
     void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
 
-    QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &);
-    void installUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
-    void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
-    void clearUrlSchemeHandlers();
-
 private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
-    QMap<QByteArray, QPointer<QWebEngineUrlSchemeHandler> > m_urlSchemeHandlers;
+    QMap<QByteArray, QWebEngineUrlSchemeHandler *> m_urlSchemeHandlers;
 };
 
 QT_END_NAMESPACE

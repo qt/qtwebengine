@@ -56,7 +56,7 @@ public:
     virtual void* GetDisplay() Q_DECL_OVERRIDE;
     virtual void* GetConfig() Q_DECL_OVERRIDE;
     virtual bool IsOffscreen() Q_DECL_OVERRIDE;
-    virtual bool SwapBuffers() Q_DECL_OVERRIDE;
+    virtual gfx::SwapResult SwapBuffers() Q_DECL_OVERRIDE;
     virtual gfx::Size GetSize() Q_DECL_OVERRIDE;
 
 protected:

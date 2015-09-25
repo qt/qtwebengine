@@ -37,6 +37,17 @@
 #ifndef JAVASCRIPT_DIALOG_CONTROLLER_P_H
 #define JAVASCRIPT_DIALOG_CONTROLLER_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "web_contents_adapter_client.h"
 #include <QString>

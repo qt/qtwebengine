@@ -56,8 +56,8 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
     \since QtWebEngine 1.1
     \brief WebEngineSettings allows configuration of browser properties and attributes.
 
-    WebEngineSettings allows configuration of browser properties and generic attributes like for example
-    JavaScript, focus behavior and access to remote content.
+    WebEngineSettings allows configuration of browser properties and generic attributes, such as
+    JavaScript support, focus behavior, and access to remote content.
 
     Each WebEngineView can have individual settings.
 
@@ -70,9 +70,9 @@ QQuickWebEngineSettings::~QQuickWebEngineSettings()
 /*!
     \qmlproperty bool WebEngineSettings::autoLoadImages
 
-    Specifies whether images are automatically loaded in web pages.
+    Automatically loads images on web pages.
 
-    This is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::autoLoadImages() const
 {
@@ -82,9 +82,9 @@ bool QQuickWebEngineSettings::autoLoadImages() const
 /*!
     \qmlproperty bool WebEngineSettings::javascriptEnabled
 
-    Enables or disables the running of JavaScript programs.
+    Enables the running of JavaScript programs.
 
-    This is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::javascriptEnabled() const
 {
@@ -94,9 +94,9 @@ bool QQuickWebEngineSettings::javascriptEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::javascriptCanOpenWindows
 
-    Specifies whether JavaScript programs can open new windows.
+    Allows JavaScript programs to open new windows.
 
-    This is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 {
@@ -106,9 +106,9 @@ bool QQuickWebEngineSettings::javascriptCanOpenWindows() const
 /*!
     \qmlproperty bool WebEngineSettings::javascriptCanAccessClipboard
 
-    Specifies whether JavaScript programs can read or write to the clipboard.
+    Allows JavaScript programs to read from or write to the clipboard.
 
-    This is disabled by default.
+    Disabled by default.
 */
 bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
 {
@@ -118,9 +118,9 @@ bool QQuickWebEngineSettings::javascriptCanAccessClipboard() const
 /*!
     \qmlproperty bool WebEngineSettings::linksIncludedInFocusChain
 
-    Specifies whether hyperlinks should be included in the keyboard focus chain.
+    Includes hyperlinks in the keyboard focus chain.
 
-    This is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::linksIncludedInFocusChain() const
 {
@@ -130,9 +130,9 @@ bool QQuickWebEngineSettings::linksIncludedInFocusChain() const
 /*!
     \qmlproperty bool WebEngineSettings::localStorageEnabled
 
-    Specifies whether support for the HTML 5 local storage feature is enabled or not.
+    Enables support for the HTML 5 local storage feature.
 
-    This is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::localStorageEnabled() const
 {
@@ -142,10 +142,9 @@ bool QQuickWebEngineSettings::localStorageEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::localContentCanAccessRemoteUrls
 
-    Specifies whether locally loaded documents are allowed to access remote urls.
-    For more information about security origins and local vs. remote content see QWebEngineSecurityOrigin.
+    Allows locally loaded documents to access remote URLs.
 
-    This is disabled by default.
+    Disabled by default.
 */
 bool QQuickWebEngineSettings::localContentCanAccessRemoteUrls() const
 {
@@ -155,15 +154,14 @@ bool QQuickWebEngineSettings::localContentCanAccessRemoteUrls() const
 /*!
     \qmlproperty bool WebEngineSettings::spatialNavigationEnabled
 
-    Enables or disables the Spatial Navigation feature, which consists in the
-    ability to navigate between focusable elements in a Web page, such as hyperlinks
-    and form controls, by using Left, Right, Up and Down arrow keys.
+    Enables the Spatial Navigation feature, which means the ability to navigate between focusable
+    elements, such as hyperlinks and form controls, on a web page by using the Left, Right, Up and
+    Down arrow keys.
 
-    For example, if a user presses the Right key, heuristics determine whether there
-    is an element they might be trying to reach towards the right and which element
-    they probably want.
+    For example, if a user presses the Right key, heuristics determine whether there is an element
+    they might be trying to reach towards the right and which element they probably want.
 
-    This is disabled by default.
+    Disabled by default.
 
 */
 bool QQuickWebEngineSettings::spatialNavigationEnabled() const
@@ -174,10 +172,9 @@ bool QQuickWebEngineSettings::spatialNavigationEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::localContentCanAccessFileUrls
 
-    Specifies whether locally loaded documents are allowed to access other local urls.
-    For more information about security origins and local vs. remote content see QWebEngineSecurityOrigin.
+    Allows locally loaded documents to access other local URLs.
 
-    This is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::localContentCanAccessFileUrls() const
 {
@@ -187,9 +184,9 @@ bool QQuickWebEngineSettings::localContentCanAccessFileUrls() const
 /*!
     \qmlproperty bool WebEngineSettings::hyperlinkAuditingEnabled
 
-    This setting enables support for the ping attribute for hyperlinks.
+    Enables support for the \c ping attribute for hyperlinks.
 
-    It is disabled by default.
+    Disabled by default.
 */
 bool QQuickWebEngineSettings::hyperlinkAuditingEnabled() const
 {
@@ -199,9 +196,9 @@ bool QQuickWebEngineSettings::hyperlinkAuditingEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::errorPageEnabled
 
-    This setting enables built-in error pages of Chromium.
+    Enables displaying the built-in error pages of Chromium.
 
-    It is enabled by default.
+    Enabled by default.
 */
 bool QQuickWebEngineSettings::errorPageEnabled() const
 {
@@ -211,9 +208,9 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::pluginsEnabled
 
-    This setting enables general support for plugins.
+    Enables support for Pepper plugins, such as the Flash player.
 
-    It is disabled by default.
+    Disabled by default.
 */
 bool QQuickWebEngineSettings::pluginsEnabled() const
 {
@@ -224,22 +221,22 @@ bool QQuickWebEngineSettings::pluginsEnabled() const
     \qmlproperty bool WebEngineSettings::fullscreenSupportEnabled
     \since QtWebEngine 1.2
 
-    This setting tells the web engine if fullscreen is supported in this application or not.
+    Tells the web engine whether fullscreen is supported in this application or not.
 
-    It is enabled by default.
+    Enabled by default.
 */
-bool QQuickWebEngineSettings::fullscreenSupportEnabled() const
+bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 {
-    return d_ptr->testAttribute(WebEngineSettings::FullscreenSupportEnabled);
+    return d_ptr->testAttribute(WebEngineSettings::FullScreenSupportEnabled);
 }
 
 /*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
 
-    The \a encoding, must be a string describing an encoding such as "utf-8",
-    "iso-8859-1", etc.
+    Sets the default encoding. The value must be a string describing an encoding such as "utf-8" or
+    "iso-8859-1".
 
-    If left empty a default value will be used.
+    If left empty, a default value will be used.
 */
 QString QQuickWebEngineSettings::defaultTextEncoding() const
 {
@@ -345,12 +342,12 @@ void QQuickWebEngineSettings::setPluginsEnabled(bool on)
         Q_EMIT pluginsEnabledChanged();
 }
 
-void QQuickWebEngineSettings::setFullscreenSupportEnabled(bool on)
+void QQuickWebEngineSettings::setFullScreenSupportEnabled(bool on)
 {
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FullscreenSupportEnabled);
-    d_ptr->setAttribute(WebEngineSettings::FullscreenSupportEnabled, on);
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FullScreenSupportEnabled);
+    d_ptr->setAttribute(WebEngineSettings::FullScreenSupportEnabled, on);
     if (wasOn != on)
-        Q_EMIT fullscreenSupportEnabledChanged();
+        Q_EMIT fullScreenSupportEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

@@ -37,6 +37,17 @@
 #ifndef QQUICKWEBENGINEPROFILE_P_H
 #define QQUICKWEBENGINEPROFILE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <private/qtwebengineglobal_p.h>
 
 #include <QObject>
@@ -52,6 +63,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineSettings;
+class QWebEngineCookieStoreClient;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_OBJECT
@@ -110,6 +122,8 @@ public:
 
     static QQuickWebEngineProfile *defaultProfile();
 
+    Q_REVISION(1) Q_INVOKABLE void setCookieStoreClient(QWebEngineCookieStoreClient* client);
+
 signals:
     void storageNameChanged();
     void offTheRecordChanged();
@@ -132,6 +146,8 @@ private:
     friend class QQuickWebEngineSettings;
     friend class QQuickWebEngineSingleton;
     friend class QQuickWebEngineViewPrivate;
+    friend class QQuickWebEngineDownloadItem;
+    friend class QQuickWebEngineDownloadItemPrivate;
     QScopedPointer<QQuickWebEngineProfilePrivate> d_ptr;
 };
 

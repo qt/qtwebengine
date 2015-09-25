@@ -163,6 +163,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/cros_system_api')
         or file_path.startswith('third_party/cygwin')
         or file_path.startswith('third_party/cython')
+        or file_path.startswith('third_party/deqp')
         or file_path.startswith('third_party/elfutils')
         or file_path.startswith('third_party/google_input_tools')
         or file_path.startswith('third_party/gperf')
@@ -171,7 +172,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/google_appengine_cloudstorage')
         or file_path.startswith('third_party/google_toolbox_for_mac')
         or file_path.startswith('third_party/hunspell_dictionaries')
-        or file_path.startswith('third_party/hunspell_new')
+        or file_path.startswith('third_party/hunspell')
         or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
@@ -185,7 +186,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/mingw-w64')
         or file_path.startswith('third_party/nacl_sdk_binaries')
         or (file_path.startswith('third_party/polymer') and
-            not file_path.startswith('third_party/polymer/components-chromium/'))
+            not file_path.startswith('third_party/polymer/v1_0/components-chromium/'))
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')
@@ -209,9 +210,12 @@ def isInChromiumBlacklist(file_path):
            not file_path.startswith('tools/protoc_wrapper'))
         or file_path.startswith('ui/android/java')
         or file_path.startswith('ui/app_list')
+        or file_path.startswith('ui/base/ime/chromeos')
         or file_path.startswith('ui/chromeos')
         or file_path.startswith('ui/display/chromeos')
+        or file_path.startswith('ui/events/ozone/chromeos')
         or file_path.startswith('ui/file_manager')
+        or file_path.startswith('ui/gfx/chromeos')
 
         ):
             return True
@@ -301,7 +305,10 @@ def exportChromium():
 commandNotFound = subprocess.call(['which', 'dos2unix'])
 
 if not commandNotFound:
-    dos2unixVersion = StrictVersion(subprocess.Popen(['dos2unix', '-V', '| true'], stdout=subprocess.PIPE).communicate()[0].splitlines()[0].split()[1])
+    dos2unixVersion , err = subprocess.Popen(['dos2unix', '-V', '| true'], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    if not dos2unixVersion:
+        raise Exception("You need dos2unix version 6.0.6 minimum.")
+    dos2unixVersion = StrictVersion(dos2unixVersion.splitlines()[0].split()[1])
 
 if commandNotFound or dos2unixVersion < StrictVersion('6.0.6'):
     raise Exception("You need dos2unix version 6.0.6 minimum.")

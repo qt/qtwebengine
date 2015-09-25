@@ -52,6 +52,7 @@ QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
 namespace QtWebEngineCore {
 
+class AuthenticationDialogController;
 class BrowserContextAdapter;
 class FilePickerController;
 class JavaScriptDialogController;
@@ -171,6 +172,13 @@ public:
         Error
     };
 
+    enum RenderProcessTerminationStatus {
+        NormalTerminationStatus = 0,
+        AbnormalTerminationStatus,
+        CrashedTerminationStatus,
+        KilledTerminationStatus
+    };
+
     enum MediaRequestFlag {
         MediaNone = 0,
         MediaAudioCapture = 0x01,
@@ -216,7 +224,7 @@ public:
     virtual QObject *accessibilityParentObject() = 0;
 #endif // QT_NO_ACCESSIBILITY
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) = 0;
-    virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) = 0;
+    virtual void authenticationRequired(QSharedPointer<AuthenticationDialogController>) = 0;
     virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
@@ -224,6 +232,8 @@ public:
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) = 0;
     virtual void hideValidationMessage() = 0;
     virtual void moveValidationMessage(const QRect &anchor) = 0;
+    RenderProcessTerminationStatus renderProcessExitStatus(int);
+    virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
 
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
 

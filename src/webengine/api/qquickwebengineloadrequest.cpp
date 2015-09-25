@@ -62,10 +62,10 @@ public:
     \inqmlmodule QtWebEngine 1.0
     \since QtWebEngine 1.0
 
-    \brief A utility class for the WebEngineView::loadingChanged signal.
+    \brief A utility type for the WebEngineView::loadingChanged signal.
 
-    This class contains information about a requested load of a web page, such as the URL and
-    current loading status (started, finished, failed).
+    Contains information about a request for loading a web page, such as the URL and
+    current loading status (started, succeeded, failed).
 
     \sa WebEngineView::loadingChanged
 */
@@ -81,7 +81,7 @@ QQuickWebEngineLoadRequest::~QQuickWebEngineLoadRequest()
 
 /*!
     \qmlproperty url WebEngineLoadRequest::url
-    \brief The URL of the load request.
+    \brief Holds the URL of the load request.
  */
 QUrl QQuickWebEngineLoadRequest::url() const
 {
@@ -92,11 +92,11 @@ QUrl QQuickWebEngineLoadRequest::url() const
 /*!
     \qmlproperty enumeration WebEngineLoadRequest::status
 
-    This enumeration represents the load status of a web page load request.
+    This enumeration represents the load status of a web page load request:
 
-    \value WebEngineView::LoadStartedStatus The page is currently loading.
-    \value WebEngineView::LoadSucceededStatus The page has been loaded with success.
-    \value WebEngineView::LoadFailedStatus The page has failed loading.
+    \value WebEngineView::LoadStartedStatus Page is currently loading.
+    \value WebEngineView::LoadSucceededStatus Page has been loaded with success.
+    \value WebEngineView::LoadFailedStatus Page could not be loaded.
 
     \sa WebEngineView::loadingChanged
 */
@@ -108,6 +108,7 @@ QQuickWebEngineView::LoadStatus QQuickWebEngineLoadRequest::status() const
 
 /*!
     \qmlproperty string WebEngineLoadRequest::errorString
+    \brief Holds the error message.
 */
 QString QQuickWebEngineLoadRequest::errorString() const
 {
@@ -123,6 +124,7 @@ QQuickWebEngineView::ErrorDomain QQuickWebEngineLoadRequest::errorDomain() const
 
 /*!
     \qmlproperty int WebEngineLoadRequest::errorCode
+    \brief Holds the error code.
 */
 int QQuickWebEngineLoadRequest::errorCode() const
 {

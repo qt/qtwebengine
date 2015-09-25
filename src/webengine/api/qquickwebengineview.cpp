@@ -37,6 +37,7 @@
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
 
+#include "authentication_dialog_controller.h"
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
@@ -188,47 +189,47 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     if (!data.linkText.isEmpty() && data.linkUrl.isValid()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::OpenLinkInThisWindow); });
-        ui()->addMenuItem(item, QObject::tr("Follow Link"));
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Follow Link"));
     }
 
     if (data.selectedText.isEmpty()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::goBack);
-        ui()->addMenuItem(item, QObject::tr("Back"), QStringLiteral("go-previous"), q->canGoBack());
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Back"), QStringLiteral("go-previous"), q->canGoBack());
 
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::goForward);
-        ui()->addMenuItem(item, QObject::tr("Forward"), QStringLiteral("go-next"), q->canGoForward());
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Forward"), QStringLiteral("go-next"), q->canGoForward());
 
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::reload);
-        ui()->addMenuItem(item, QObject::tr("Reload"), QStringLiteral("view-refresh"));
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Reload"), QStringLiteral("view-refresh"));
     } else {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::Copy); });
-        ui()->addMenuItem(item, QObject::tr("Copy"));
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy"));
     }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyLinkToClipboard); });
-        ui()->addMenuItem(item, QObject::tr("Copy Link URL"));
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Link URL"));
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadLinkToDisk); });
-        ui()->addMenuItem(item, QObject::tr("Save Link..."));
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Link"));
     }
     if (contextMenuData.mediaUrl.isValid()) {
         switch (contextMenuData.mediaType) {
         case WebEngineContextMenuData::MediaTypeImage:
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageUrlToClipboard); });
-            ui()->addMenuItem(item, QObject::tr("Copy Image URL"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Image URL"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
-            ui()->addMenuItem(item, QObject::tr("Copy Image"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Image"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadImageToDisk); });
-            ui()->addMenuItem(item, QObject::tr("Save Image"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Image"));
             break;
         case WebEngineContextMenuData::MediaTypeCanvas:
             Q_UNREACHABLE();    // mediaUrl is invalid for canvases
@@ -237,25 +238,25 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         case WebEngineContextMenuData::MediaTypeVideo:
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyMediaUrlToClipboard); });
-            ui()->addMenuItem(item, QObject::tr("Copy Media URL"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Media URL"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadMediaToDisk); });
-            ui()->addMenuItem(item, QObject::tr("Download Media"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Media"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaPlayPause); });
-            ui()->addMenuItem(item, QObject::tr("Toggle Play/Pause"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Play/Pause"));
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaLoop); });
-            ui()->addMenuItem(item, QObject::tr("Toggle Looping"));
+            ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Looping"));
             if (contextMenuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
                 item = new MenuItemHandler(menu);
                 QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaMute); });
-                ui()->addMenuItem(item, QObject::tr("Toggle Mute"));
+                ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Mute"));
             }
             if (contextMenuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
                 item = new MenuItemHandler(menu);
                 QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaControls); });
-                ui()->addMenuItem(item, QObject::tr("Toggle Media Controls"));
+                ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Media Controls"));
             }
             break;
         default:
@@ -264,7 +265,17 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     } else if (contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
-        ui()->addMenuItem(item, QObject::tr("Copy Image"));
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Image"));
+    }
+    if (adapter->hasInspector()) {
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::InspectElement); });
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Inspect Element"));
+    }
+    if (isFullScreen()) {
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ExitFullScreen); });
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Exit Full Screen Mode"));
     }
 
     // FIXME: expose the context menu data as an attached property to make this more useful
@@ -512,6 +523,11 @@ void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessa
 {
     Q_Q(QQuickWebEngineView);
     Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
+}
+
+void QQuickWebEngineViewPrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)
+{
+    ui()->showDialog(controller);
 }
 
 void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
@@ -775,15 +791,6 @@ void QQuickWebEngineView::setProfile(QQuickWebEngineProfile *profile)
     Q_D(QQuickWebEngineView);
     d->setProfile(profile);
 }
-/*!
- * \qmlproperty WebEngineSettings QQuickWebEngineView::settings
- * \readonly settings
- * \since QtWebEngine 1.1
- *
- * The \a settings property holds the settings used by this view.
- *
- * \sa WebEngineSettings
- */
 
 QQuickWebEngineSettings *QQuickWebEngineView::settings() const
 {
@@ -884,6 +891,14 @@ void QQuickWebEngineViewPrivate::hideValidationMessage()
 void QQuickWebEngineViewPrivate::moveValidationMessage(const QRect &anchor)
 {
     ui()->moveMessageBubble(anchor);
+}
+
+void QQuickWebEngineViewPrivate::renderProcessTerminated(
+        RenderProcessTerminationStatus terminationStatus, int exitCode)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->renderProcessTerminated(static_cast<QQuickWebEngineView::RenderProcessTerminationStatus>(
+                                      renderProcessExitStatus(terminationStatus)), exitCode);
 }
 
 bool QQuickWebEngineView::isLoading() const
@@ -1020,19 +1035,6 @@ QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
     Q_D(const QQuickWebEngineView);
     return d->m_history.data();
 }
-
-/*!
- * \qmlproperty QQmlWebChannel WebEngineView::webChannel
- * \since QtWebEngine 1.1
- *
- * The web channel instance used by this view.
- * This channel is automatically using the internal QtWebEngine transport mechanism over Chromium IPC,
- * and exposed in the javascript context of the page it is rendering as \c qt.webChannelTransport.
- * This transport object is used when instantiating the JavaScript counterpart of QWebChannel using
- * the \l{Qt WebChannel JavaScript API}.
- *
- * \note The view does not take ownership when explicitly setting a webChannel object.
- */
 
 QQmlWebChannel *QQuickWebEngineView::webChannel()
 {
@@ -1288,6 +1290,12 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
             bool enable = (d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
             d->adapter->executeMediaPlayerActionAt(d->contextMenuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
+        break;
+    case InspectElement:
+        d->adapter->inspectElementAt(d->contextMenuData.pos);
+        break;
+    case ExitFullScreen:
+        d->adapter->exitFullScreen();
         break;
     default:
         Q_UNREACHABLE();

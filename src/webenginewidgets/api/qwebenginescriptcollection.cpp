@@ -49,18 +49,32 @@ using QtWebEngineCore::UserScript;
 
 */
 
+/*!
+    \fn QWebEngineScriptCollection::isEmpty() const
+
+    Returns \c true if the collection is empty; otherwise returns \c false.
+*/
+
+/*!
+    \fn QWebEngineScriptCollection::size() const
+
+    Returns the number of elements in the collection.
+*/
+
 QWebEngineScriptCollection::QWebEngineScriptCollection(QWebEngineScriptCollectionPrivate *collectionPrivate)
     :d(collectionPrivate)
 {
 }
 
+/*!
+    Destroys the collection.
+*/
 QWebEngineScriptCollection::~QWebEngineScriptCollection()
 {
 }
 
 /*!
- * \brief QWebEngineScriptCollection::count
- * \return the number of elements in the collection.
+    Returns the number of elements in the collection.
  */
 
 int QWebEngineScriptCollection::count() const
@@ -69,9 +83,8 @@ int QWebEngineScriptCollection::count() const
 }
 
 /*!
- * \brief QWebEngineScriptCollection::contains
- * \param value
- * \return \c true if the collection contains an occurrence of \a value; otherwise returns false.
+    Returns \c true if the collection contains an occurrence of \a value; otherwise returns
+    \c false.
  */
 
 bool QWebEngineScriptCollection::contains(const QWebEngineScript &value) const
@@ -80,11 +93,10 @@ bool QWebEngineScriptCollection::contains(const QWebEngineScript &value) const
 }
 
 /*!
- * \brief QWebEngineScriptCollection::findScript
- * \param name
- * \return the first script found in collection the name property of which is \a name, or a null QWebEngineScript if none was found.
- * \note the order in which the script collection is traversed is undefined, which means this should be used when the unicity is
- * guaranteed at the application level.
+ * Returns the first script found in the collection with the name \a name, or a null
+ * QWebEngineScript if none was found.
+ * \note The order in which the script collection is traversed is undefined, which means this should
+ * be used when the unicity is guaranteed at the application level.
  * \sa findScripts()
  */
 
@@ -94,9 +106,8 @@ QWebEngineScript QWebEngineScriptCollection::findScript(const QString &name) con
 }
 
 /*!
- * \brief QWebEngineScriptCollection::findScripts
- * \param name
- * \return the list of scripts in the collection the name property of which is \a name, or an empty list if none was found.
+    Returns the list of scripts in the collection with the name \a name, or an empty list if none
+    was found.
  */
 
 QList<QWebEngineScript> QWebEngineScriptCollection::findScripts(const QString &name) const
@@ -104,20 +115,14 @@ QList<QWebEngineScript> QWebEngineScriptCollection::findScripts(const QString &n
     return d->toList(name);
 }
 /*!
- * \brief QWebEngineScriptCollection::insert
- * \param s
- *
- * Inserts script \c s into the collection.
+    Inserts the script \a s into the collection.
  */
 void QWebEngineScriptCollection::insert(const QWebEngineScript &s)
 {
     d->insert(s);
 }
 /*!
- * \brief QWebEngineScriptCollection::insert
- * \param list
- *
- * Inserts scripts \c list into the collection.
+    Inserts scripts from the list \a list into the collection.
  */
 void QWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
 {
@@ -127,10 +132,10 @@ void QWebEngineScriptCollection::insert(const QList<QWebEngineScript> &list)
 }
 
 /*!
- * \brief QWebEngineScriptCollection::remove
- * \param script
- * Removes \a script from the collection, if it is present.
- * \return \c true if the script was found and successfully removed from the collection, \c false otherwise.
+    Removes \a script from the collection.
+
+    Returns \c true if the script was found and successfully removed from the collection; otherwise
+    returns \c false.
  */
 bool QWebEngineScriptCollection::remove(const QWebEngineScript &script)
 {
@@ -138,7 +143,6 @@ bool QWebEngineScriptCollection::remove(const QWebEngineScript &script)
 }
 
 /*!
- * \brief QWebEngineScriptCollection::clear
  * Removes all scripts from this collection.
  */
 void QWebEngineScriptCollection::clear()
@@ -147,8 +151,7 @@ void QWebEngineScriptCollection::clear()
 }
 
 /*!
- * \brief QWebEngineScriptCollection::toList
- * \return a QList with the values of the scripts used in this collection.
+    Returns a list with the values of the scripts used in this collection.
  */
 QList<QWebEngineScript> QWebEngineScriptCollection::toList() const
 {

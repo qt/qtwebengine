@@ -74,17 +74,21 @@ public:
     void deleteSessionCookies();
     void deleteAllCookies();
 
+    virtual bool acceptCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &cookieSource);
+
 Q_SIGNALS:
     void cookieAdded(const QNetworkCookie &cookie);
     void cookieRemoved(const QNetworkCookie &cookie);
 
 private:
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
-
+    Q_DISABLE_COPY(QWebEngineCookieStoreClient)
     Q_DECLARE_PRIVATE(QWebEngineCookieStoreClient)
     QScopedPointer<QWebEngineCookieStoreClientPrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QWebEngineCookieStoreClient*)
 
 #endif // QWEBENGINECOOKIESTORECLIENT_H

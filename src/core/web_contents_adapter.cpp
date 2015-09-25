@@ -58,6 +58,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include <content/public/browser/download_manager.h>
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"
@@ -209,7 +210,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<content::NavigationEntry*> *entries, content::BrowserContext *browserContext)
+static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, ScopedVector<content::NavigationEntry> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
@@ -250,13 +251,13 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         // If we couldn't unpack the entry successfully, abort everything.
         if (input.status() != QDataStream::Ok) {
             *currentIndex = -1;
-            Q_FOREACH (content::NavigationEntry *entry, *entries)
+            for (content::NavigationEntry *entry : *entries)
                 delete entry;
             entries->clear();
             return;
         }
 
-        content::NavigationEntry *entry = content::NavigationController::CreateNavigationEntry(
+        scoped_ptr<content::NavigationEntry> entry = content::NavigationController::CreateNavigationEntry(
             toGurl(virtualUrl),
             content::Referrer(toGurl(referrerUrl), static_cast<blink::WebReferrerPolicy>(referrerPolicy)),
             // Use a transition type of reload so that we don't incorrectly
@@ -275,7 +276,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
         entry->SetTimestamp(base::Time::FromInternalValue(timestamp));
         entry->SetHttpStatusCode(httpStatusCode);
-        entries->push_back(entry);
+        entries->push_back(entry.release());
     }
 }
 
@@ -315,12 +316,14 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
 
 WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 {
+    // Destroy the WebContents first
+    webContents.reset();
 }
 
 QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
-    std::vector<content::NavigationEntry*> entries;
+    ScopedVector<content::NavigationEntry> entries;
     deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
@@ -377,6 +380,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     const int qtCursorFlashTime = QGuiApplication::styleHints()->cursorFlashTime();
     rendererPrefs->caret_blink_interval = 0.5 * static_cast<double>(qtCursorFlashTime) / 1000;
     rendererPrefs->user_agent_override = d->browserContextAdapter->httpUserAgent().toStdString();
+    rendererPrefs->accept_languages = d->browserContextAdapter->httpAcceptLanguageWithoutQualities().toStdString();
     d->webContents->GetRenderViewHost()->SyncRendererPrefs();
 
     // Create and attach observers to the WebContents.
@@ -394,7 +398,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     if (!rvh->IsRenderViewLive())
-        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, true);
+        static_cast<content::WebContentsImpl*>(d->webContents.get())->CreateRenderViewForRenderManager(rvh, MSG_ROUTING_NONE, MSG_ROUTING_NONE, content::FrameReplicationState(), true);
 }
 
 void WebContentsAdapter::reattachRWHV()
@@ -482,6 +486,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.can_load_local_resources = true;
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
     d->webContents->GetController().LoadURLWithParams(params);
+    d->webContents->Focus();
 }
 
 QUrl WebContentsAdapter::activeUrl() const
@@ -790,6 +795,28 @@ void WebContentsAdapter::executeMediaPlayerActionAt(const QPoint &location, Medi
     d->webContents->GetRenderViewHost()->ExecuteMediaPlayerActionAtLocation(toGfx(location), blinkAction);
 }
 
+void WebContentsAdapter::inspectElementAt(const QPoint &location)
+{
+    Q_D(WebContentsAdapter);
+    if (content::DevToolsAgentHost::HasFor(d->webContents.get())) {
+        content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->InspectElement(location.x(), location.y());
+    }
+}
+
+bool WebContentsAdapter::hasInspector() const
+{
+    const Q_D(WebContentsAdapter);
+    if (content::DevToolsAgentHost::HasFor(d->webContents.get()))
+        return content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->IsAttached();
+    return false;
+}
+
+void WebContentsAdapter::exitFullScreen()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->ExitFullscreen();
+}
+
 void WebContentsAdapter::wasShown()
 {
     Q_D(WebContentsAdapter);
@@ -873,6 +900,38 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel)
         return;
     }
     channel->connectTo(d->webChannelTransport.get());
+}
+
+WebContentsAdapterClient::RenderProcessTerminationStatus
+WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
+    auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);
+    switch (terminationStatus) {
+    case base::TERMINATION_STATUS_NORMAL_TERMINATION:
+        status = WebContentsAdapterClient::NormalTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
+        status = WebContentsAdapterClient::AbnormalTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
+#if defined(OS_CHROMEOS)
+    case base::TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM:
+#endif
+        status = WebContentsAdapterClient::KilledTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_PROCESS_CRASHED:
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
+        status = WebContentsAdapterClient::CrashedTerminationStatus;
+        break;
+    case base::TERMINATION_STATUS_STILL_RUNNING:
+    case base::TERMINATION_STATUS_MAX_ENUM:
+        // should be unreachable since Chromium asserts status != TERMINATION_STATUS_STILL_RUNNING
+        // before calling this method
+        break;
+    }
+
+    return status;
 }
 
 } // namespace QtWebEngineCore

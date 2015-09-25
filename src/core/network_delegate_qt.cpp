@@ -221,7 +221,8 @@ bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
                                        const std::string& cookie_line,
                                        net::CookieOptions*)
 {
-    return true;
+    Q_ASSERT(m_requestContextGetter);
+    return m_requestContextGetter->m_cookieDelegate->canSetCookie(toQt(request.first_party_for_cookies()), QByteArray::fromStdString(cookie_line), toQt(request.url()));
 }
 
 void NetworkDelegateQt::OnResolveProxy(const GURL&, int, const net::ProxyService&, net::ProxyInfo*)
@@ -283,11 +284,6 @@ bool NetworkDelegateQt::OnCanGetCookies(const net::URLRequest&, const net::Cooki
 bool NetworkDelegateQt::OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const
 {
     return true;
-}
-
-bool NetworkDelegateQt::OnCanThrottleRequest(const net::URLRequest&) const
-{
-    return false;
 }
 
 bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL&, const GURL&) const

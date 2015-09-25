@@ -37,6 +37,17 @@
 #ifndef QWEBENGINEPAGE_P_H
 #define QWEBENGINEPAGE_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qwebenginepage.h"
 
 #include "qwebenginecallback_p.h"
@@ -86,8 +97,8 @@ public:
     virtual void close() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) Q_DECL_OVERRIDE;
-    virtual void requestFullScreen(bool) Q_DECL_OVERRIDE { }
-    virtual bool isFullScreen() const Q_DECL_OVERRIDE { return false; }
+    virtual void requestFullScreen(bool) Q_DECL_OVERRIDE;
+    virtual bool isFullScreen() const Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) Q_DECL_OVERRIDE;
     virtual void runFileChooser(QtWebEngineCore::FilePickerController *controller) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) Q_DECL_OVERRIDE;
@@ -96,7 +107,7 @@ public:
     virtual void didFindText(quint64 requestId, int matchCount) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
-    virtual void authenticationRequired(const QUrl &requestUrl, const QString &realm, bool isProxy, const QString &challengingHost, QString *outUser, QString *outPassword) Q_DECL_OVERRIDE;
+    virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
@@ -108,6 +119,8 @@ public:
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) Q_DECL_OVERRIDE;
     virtual void hideValidationMessage() Q_DECL_OVERRIDE;
     virtual void moveValidationMessage(const QRect &anchor) Q_DECL_OVERRIDE;
+    virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
+                                     int exitCode) Q_DECL_OVERRIDE;
 
     virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 
@@ -128,6 +141,7 @@ public:
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
     QColor m_backgroundColor;
+    bool m_fullscreenRequested;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

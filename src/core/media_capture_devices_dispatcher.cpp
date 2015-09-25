@@ -304,8 +304,8 @@ void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::W
                                                                                  base::Unretained(this), base::Unretained(webContents));
 
       QUrl securityOrigin(toQt(request.security_origin));
-      QString message = QObject::tr("Do you want %1 to share your screen?").arg(securityOrigin.toString());
-      QString title = QObject::tr("%1 Screen Sharing request").arg(securityOrigin.toString());
+      QString message = QCoreApplication::translate("MediaCaptureDevicesDispatcher", "Do you want %1 to share your screen?").arg(securityOrigin.toString());
+      QString title = QCoreApplication::translate("MediaCaptureDevicesDispatcher", "%1 Screen Sharing request").arg(securityOrigin.toString());
       JavaScriptDialogManagerQt::GetInstance()->runDialogForContents(webContents, WebContentsAdapterClient::InternalAuthorizationDialog, message
                                                                      , QString(), securityOrigin, dialogCallback, title);
   } else

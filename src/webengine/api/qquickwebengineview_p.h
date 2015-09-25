@@ -37,6 +37,17 @@
 #ifndef QQUICKWEBENGINEVIEW_P_H
 #define QQUICKWEBENGINEVIEW_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include <private/qtwebengineglobal_p.h>
 #include "qquickwebenginescript_p.h"
 #include <QQuickItem>
@@ -90,7 +101,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
     Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
-    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL)
+    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 1)
     Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2)
 
@@ -105,6 +116,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_ENUMS(NewViewDestination);
     Q_ENUMS(Feature);
     Q_ENUMS(JavaScriptConsoleMessageLevel);
+    Q_ENUMS(RenderProcessTerminationStatus);
     Q_FLAGS(FindFlags);
     Q_ENUMS(WebAction);
 
@@ -212,6 +224,9 @@ public:
         ToggleMediaMute,
         DownloadMediaToDisk,
 
+        InspectElement,
+        ExitFullScreen,
+
         WebActionCount
     };
 
@@ -220,6 +235,14 @@ public:
         InfoMessageLevel = 0,
         WarningMessageLevel,
         ErrorMessageLevel
+    };
+
+    // must match WebContentsAdapterClient::RenderProcessTerminationStatus
+    enum RenderProcessTerminationStatus {
+        NormalTerminationStatus = 0,
+        AbnormalTerminationStatus,
+        CrashedTerminationStatus,
+        KilledTerminationStatus
     };
 
     enum FindFlag {
@@ -252,9 +275,9 @@ public Q_SLOTS:
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void goBack();
     void goForward();
-    void goBackOrForward(int index);
+    Q_REVISION(1) void goBackOrForward(int index);
     void reload();
-    void reloadAndBypassCache();
+    Q_REVISION(1) void reloadAndBypassCache();
     void stop();
     Q_REVISION(1) void findText(const QString &subString, FindFlags options = 0, const QJSValue &callback = QJSValue());
     Q_REVISION(1) void fullScreenCancelled();
@@ -281,6 +304,7 @@ Q_SIGNALS:
     Q_REVISION(1) void webChannelChanged();
     Q_REVISION(2) void activeFocusOnPressChanged(bool);
     Q_REVISION(2) void backgroundColorChanged();
+    Q_REVISION(2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

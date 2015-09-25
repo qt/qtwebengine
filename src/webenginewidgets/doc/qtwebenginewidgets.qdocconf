@@ -29,11 +29,15 @@ qhp.QtWebEngineWidgets.subprojects.examples.sortPages = true
 
 tagfile                 = ../../../doc/qtwebenginewidgets/qtwebenginewidgets.tags
 
-depends += qtwebengine qtcore qtnetwork qtgui qtwidgets qtwebkit qtdoc
+depends += qtwebengine qtcore qtnetwork qtgui qtwidgets qtwebkit qtdoc qtwebchannel
 
 headerdirs  += ../api
-sourcedirs  += ../api
-exampledirs +=  ../../../examples/webenginewidgets .
+sourcedirs  += ../api src
+
+exampledirs += ../../../examples/webenginewidgets \
+               snippets
 
 navigation.landingpage = "Qt WebEngine Widgets"
 navigation.cppclassespage = "Qt WebEngine Widgets C++ Classes"
+
+Cpp.ignoretokens += QWEBENGINEWIDGETS_EXPORT

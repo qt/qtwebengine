@@ -6,6 +6,6 @@ qtHaveModule(webengine) {
 
 qtHaveModule(webenginewidgets) {
     SUBDIRS += \
-        webenginewidgets/browser \
+        webenginewidgets/demobrowser \
         webenginewidgets/fancybrowser
 }

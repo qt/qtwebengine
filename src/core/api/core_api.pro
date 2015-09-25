@@ -1,4 +1,4 @@
-TARGET = qtwebenginecoreapi
+TARGET = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 DESTDIR = $$OUT_PWD/$$getConfigDir()
 
 TEMPLATE = lib
@@ -37,8 +37,21 @@ HEADERS = \
     qwebenginecookiestoreclient_p.h \
     qwebengineurlrequestinterceptor.h \
     qwebengineurlrequestinfo.h \
-    qwebengineurlrequestinfo_p.h
+    qwebengineurlrequestinfo_p.h \
+    qwebengineurlrequestjob.h \
+    qwebengineurlschemehandler.h \
+    qwebengineurlschemehandler_p.h
 
 SOURCES = \
     qwebenginecookiestoreclient.cpp \
-    qwebengineurlrequestinfo.cpp
+    qwebengineurlrequestinfo.cpp \
+    qwebengineurlrequestjob.cpp \
+    qwebengineurlschemehandler.cpp
+
+msvc {
+    # Create a list of object files that can be used as response file for the linker.
+    # This is done to simulate -whole-archive on MSVC.
+    QMAKE_POST_LINK = \
+        "if exist $(DESTDIR_TARGET).objects del $(DESTDIR_TARGET).objects$$escape_expand(\\n\\t)" \
+        "for %%a in ($(OBJECTS)) do echo $$shell_quote($$shell_path($$OUT_PWD))\\%%a >> $(DESTDIR_TARGET).objects"
+}

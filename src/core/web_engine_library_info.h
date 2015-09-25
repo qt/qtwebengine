@@ -41,7 +41,9 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 enum {
-    QT_RESOURCES_PAK = 5000
+    QT_RESOURCES_PAK = 5000,
+    QT_RESOURCES_100P_PAK = 5001,
+    QT_RESOURCES_200P_PAK = 5002
 };
 
 class WebEngineLibraryInfo {

@@ -1,0 +1,56 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page qtwebengine-devtools.html
+    \title Qt WebEngine Web Developer Tools
+
+    The Qt WebEngine module provides web developer tools that make it easy
+    to inspect and debug layout and performance issues of any web content.
+
+    The developer tools are accessed as a local web page using a Chromium or
+    Qt WebEngine based browser, such as the Chrome browser.
+
+    To activate the developer tools, start an application that uses Qt
+    WebEngine with the command-line arguments:
+    \code
+    --remote-debugging-port=<port_number>
+    \endcode
+    Where \c <port_number> refers to a local network port. The web developer
+    tools can then be accessed by launching a browser at the address
+    \c http://localhost:<port_number>.
+
+    Alternatively, the environment variable QTWEBENGINE_REMOTE_DEBUGGING
+    can be set. It can be set as either just a port working similarly to
+    \c --remote-debugging-port or given both a host address and a port. The
+    latter can be used to control which network interface to export the
+    interface on, so that you can access the developer tools from a remote
+    device.
+
+    For a detailed explanation of the capabilities of developer tools, see the
+    \l{https://developers.google.com/web/tools/chrome-devtools}{Chrome DevTools page}.
+*/

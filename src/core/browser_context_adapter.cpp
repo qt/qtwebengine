@@ -36,6 +36,7 @@
 
 #include "browser_context_adapter.h"
 
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "browser_context_qt.h"
 #include "content_client_qt.h"
@@ -53,6 +54,8 @@
 #include <QString>
 #include <QStringBuilder>
 #include <QStandardPaths>
+
+#include <numeric>
 
 namespace {
 inline QString buildLocationFromStandardPath(const QString &standardPath, const QString &name) {
@@ -253,6 +256,12 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
     if (m_httpUserAgent == userAgent)
         return;
     m_httpUserAgent = userAgent;
+
+    std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
+    Q_FOREACH (content::WebContentsImpl *web_contents, list)
+        if (web_contents->GetBrowserContext() == m_browserContext.data())
+            web_contents->SetUserAgentOverride(userAgent.toStdString());
+
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateUserAgent();
 }
@@ -356,6 +365,12 @@ void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
         m_browserContext->url_request_getter_->updateStorageSettings();
 }
 
+void BrowserContextAdapter::removeCustomUrlSchemeHandler(CustomUrlSchemeHandler *handler)
+{
+    m_customUrlSchemeHandlers.removeOne(handler);
+    Q_ASSERT(!m_customUrlSchemeHandlers.contains(handler));
+}
+
 UserScriptControllerHost *BrowserContextAdapter::userScriptController()
 {
     if (!m_userScriptController)
@@ -366,6 +381,16 @@ UserScriptControllerHost *BrowserContextAdapter::userScriptController()
 void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
 {
     static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
+}
+
+QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
+{
+    const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
+    return std::accumulate(list.constBegin(), list.constEnd(), QString(),
+                    [](const QString &r, const QString &e) {
+        return (r.isEmpty() ? r : r + QString(QLatin1Char(',')))
+                + e.split(QLatin1Char(';')).first();
+    });
 }
 
 QString BrowserContextAdapter::httpAcceptLanguage() const

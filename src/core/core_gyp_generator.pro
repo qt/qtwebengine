@@ -29,6 +29,7 @@ INCLUDEPATH += $$PWD $$PWD/api
 
 SOURCES = \
         access_token_store_qt.cpp \
+        authentication_dialog_controller.cpp \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_adapter.cpp \
@@ -61,7 +62,6 @@ SOURCES = \
         permission_manager_qt.cpp \
         process_main.cpp \
         proxy_config_service_qt.cpp \
-        proxy_resolver_qt.cpp \
         qrc_protocol_handler_qt.cpp \
         qt_render_view_observer_host.cpp \
         render_widget_host_view_qt.cpp \
@@ -99,6 +99,8 @@ SOURCES = \
 
 HEADERS = \
         access_token_store_qt.h \
+        authentication_dialog_controller_p.h \
+        authentication_dialog_controller.h \
         browser_accessibility_manager_qt.h \
         browser_accessibility_qt.h \
         browser_context_adapter.h \
@@ -133,7 +135,6 @@ HEADERS = \
         permission_manager_qt.h \
         process_main.h \
         proxy_config_service_qt.h \
-        proxy_resolver_qt.h \
         qrc_protocol_handler_qt.h \
         qt_render_view_observer_host.h \
         render_widget_host_view_qt.h \

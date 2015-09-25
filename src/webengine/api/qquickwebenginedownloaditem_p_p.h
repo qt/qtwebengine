@@ -37,21 +37,34 @@
 #ifndef QQUICKWEBENGINEDOWNLOADITEM_P_P_H
 #define QQUICKWEBENGINEDOWNLOADITEM_P_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "browser_context_adapter_client.h"
 #include "qquickwebenginedownloaditem_p.h"
+#include "qquickwebengineprofile_p.h"
 #include <private/qtwebengineglobal_p.h>
 #include <QString>
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 class QQuickWebEngineProfilePrivate;
 
 class QQuickWebEngineDownloadItemPrivate {
     QQuickWebEngineDownloadItem *q_ptr;
-    QQuickWebEngineProfilePrivate* profile;
+    QPointer<QQuickWebEngineProfile> profile;
     friend class QQuickWebEngineProfilePrivate;
 public:
     Q_DECLARE_PUBLIC(QQuickWebEngineDownloadItem)
-    QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfilePrivate *p);
+    QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfile *p);
     ~QQuickWebEngineDownloadItemPrivate();
 
     quint32 downloadId;

@@ -37,6 +37,17 @@
 #ifndef QQUICKWEBENGINEVIEW_P_P_H
 #define QQUICKWEBENGINEVIEW_P_P_H
 
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
 #include "qquickwebengineview_p.h"
 #include "web_contents_adapter_client.h"
 
@@ -144,7 +155,7 @@ public:
     virtual void didFindText(quint64, int) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
-    virtual void authenticationRequired(const QUrl&, const QString&, bool, const QString&, QString*, QString*) Q_DECL_OVERRIDE { }
+    virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
 #ifndef QT_NO_ACCESSIBILITY
@@ -156,6 +167,8 @@ public:
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) Q_DECL_OVERRIDE;
     virtual void hideValidationMessage() Q_DECL_OVERRIDE;
     virtual void moveValidationMessage(const QRect &anchor) Q_DECL_OVERRIDE;
+    virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
+                                     int exitCode) Q_DECL_OVERRIDE;
 
     virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 

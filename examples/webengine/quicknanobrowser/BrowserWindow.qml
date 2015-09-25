@@ -393,6 +393,35 @@ ApplicationWindow {
                     }
                     request.accept()
                 }
+
+                onRenderProcessTerminated: {
+                    var status = ""
+                    switch (terminationStatus) {
+                    case WebEngineView.NormalTerminationStatus:
+                        status = "(normal exit)"
+                        break;
+                    case WebEngineView.AbnormalTerminationStatus:
+                        status = "(abnormal exit)"
+                        break;
+                    case WebEngineView.CrashedTerminationStatus:
+                        status = "(crashed)"
+                        break;
+                    case WebEngineView.KilledTerminationStatus:
+                        status = "(killed)"
+                        break;
+                    }
+
+                    print("Render process exited with code " + exitCode + " " + status)
+                    reloadTimer.running = true
+                }
+
+                Timer {
+                    id: reloadTimer
+                    interval: 0
+                    running: false
+                    repeat: false
+                    onTriggered: currentWebView.reload()
+                }
             }
         }
     }

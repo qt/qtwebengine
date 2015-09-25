@@ -44,6 +44,7 @@
 #include <QtWebEngineCore/qwebengineurlrequestinterceptor.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
+#include <QtWebEngineWidgets/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
 
 class tst_QWebEngineUrlRequestInterceptor : public QObject
@@ -62,6 +63,9 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void interceptRequest();
+    void ipv6HostEncoding();
+    void requestedUrl();
+    void setUrlSameUrl();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -88,7 +92,7 @@ void tst_QWebEngineUrlRequestInterceptor::cleanupTestCase()
 {
 }
 
-class TestRequestInterceptor: public QWebEngineUrlRequestInterceptor
+class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 {
 public:
     QList<QUrl> observedUrls;
@@ -96,11 +100,11 @@ public:
 
     bool interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
-        info.blockRequest(info.method() != QByteArrayLiteral("GET"));
-        if (info.url().toString().endsWith(QLatin1String("__placeholder__")))
-            info.redirectTo(QUrl("qrc:///resources/content.html"));
+        info.block(info.requestMethod() != QByteArrayLiteral("GET"));
+        if (info.requestUrl().toString().endsWith(QLatin1String("__placeholder__")))
+            info.redirect(QUrl("qrc:///resources/content.html"));
 
-        observedUrls.append(info.url());
+        observedUrls.append(info.requestUrl());
         return shouldIntercept;
     }
     TestRequestInterceptor(bool intercept)
@@ -149,6 +153,104 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
     // Since we do not intercept, loading an invalid path should not succeed.
     QVERIFY(!success.toBool());
     QCOMPARE(observer.observedUrls.count(), 1);
+}
+
+class LocalhostContentProvider : public QWebEngineUrlRequestInterceptor
+{
+public:
+    LocalhostContentProvider() { }
+
+    bool interceptRequest(QWebEngineUrlRequestInfo &info) override
+    {
+        requestedUrls.append(info.requestUrl());
+        info.redirect(QUrl("data:text/html,<p>hello"));
+        return true;
+    }
+
+    QList<QUrl> requestedUrls;
+};
+
+void tst_QWebEngineUrlRequestInterceptor::ipv6HostEncoding()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+    LocalhostContentProvider contentProvider;
+    QSignalSpy spyLoadFinished(page, SIGNAL(loadFinished(bool)));
+
+    page->profile()->setRequestInterceptor(&contentProvider);
+
+    page->setHtml("<p>Hi", QUrl::fromEncoded("http://[::1]/index.html"));
+    QTRY_COMPARE(spyLoadFinished.count(), 1);
+    QCOMPARE(contentProvider.requestedUrls.count(), 0);
+
+    evaluateJavaScriptSync(page, "var r = new XMLHttpRequest();"
+            "r.open('GET', 'http://[::1]/test.xml', false);"
+            "r.send(null);"
+            );
+
+    QCOMPARE(contentProvider.requestedUrls.count(), 1);
+    QCOMPARE(contentProvider.requestedUrls.at(0), QUrl::fromEncoded("http://[::1]/test.xml"));
+}
+
+void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
+{
+    QWebEnginePage page;
+    page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
+
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    TestRequestInterceptor interceptor(/* intercept */ true);
+    page.profile()->setRequestInterceptor(&interceptor);
+
+    page.setUrl(QUrl("qrc:///resources/__placeholder__"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(interceptor.observedUrls.at(0), QUrl("qrc:///resources/content.html"));
+    QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
+    QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+
+    page.setUrl(QUrl("qrc:/non-existent.html"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(interceptor.observedUrls.at(2), QUrl("qrc:/non-existent.html"));
+    QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
+    QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+
+    page.setUrl(QUrl("http://abcdef.abcdef"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(spy.count(), 3);
+    QCOMPARE(interceptor.observedUrls.at(3), QUrl("http://abcdef.abcdef/"));
+    QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
+    QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+}
+
+void tst_QWebEngineUrlRequestInterceptor::setUrlSameUrl()
+{
+    QWebEnginePage page;
+    TestRequestInterceptor interceptor(/* intercept */ true);
+    page.profile()->setRequestInterceptor(&interceptor);
+
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+
+    page.setUrl(QUrl("qrc:///resources/__placeholder__"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+    QCOMPARE(spy.count(), 1);
+
+    page.setUrl(QUrl("qrc:///resources/__placeholder__"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+    QCOMPARE(spy.count(), 2);
+
+    // Now a case without redirect.
+    page.setUrl(QUrl("qrc:///resources/content.html"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+    QCOMPARE(spy.count(), 3);
+
+    page.setUrl(QUrl("qrc:///resources/__placeholder__"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
+    QCOMPARE(spy.count(), 4);
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)

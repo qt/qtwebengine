@@ -55,6 +55,7 @@ class QWebEngineProfilePrivate;
 class QWebEngineSettings;
 class QWebEngineScriptCollection;
 class QWebEngineUrlRequestInterceptor;
+class QWebEngineUrlSchemeHandler;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineProfile : public QObject {
     Q_OBJECT
@@ -109,12 +110,21 @@ public:
     QWebEngineSettings *settings() const;
     QWebEngineScriptCollection *scripts() const;
 
+    const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
+    void installUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
+    void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
+    void clearUrlSchemeHandlers();
+
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:
     void downloadRequested(QWebEngineDownloadItem *download);
 
+private Q_SLOTS:
+    void destroyedUrlSchemeHandler(QObject *obj);
+
 private:
+    Q_DISABLE_COPY(QWebEngineProfile)
     Q_DECLARE_PRIVATE(QWebEngineProfile)
     QWebEngineProfile(QWebEngineProfilePrivate *, QObject *parent = 0);
 
