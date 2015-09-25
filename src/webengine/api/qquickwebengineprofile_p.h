@@ -122,7 +122,7 @@ public:
 
     static QQuickWebEngineProfile *defaultProfile();
 
-    Q_REVISION(1) Q_INVOKABLE void setCookieStoreClient(QWebEngineCookieStoreClient* client);
+    Q_REVISION(1) Q_INVOKABLE QWebEngineCookieStoreClient *cookieStoreClient() const;
 
 signals:
     void storageNameChanged();

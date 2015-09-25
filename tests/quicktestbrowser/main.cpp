@@ -69,24 +69,6 @@ static QUrl startupUrl()
     return QUrl(QStringLiteral("http://qt.io/"));
 }
 
-class CookieClient: public QWebEngineCookieStoreClient
-{
-    QMetaProperty m_settingProperty;
-    const QObject *m_object;
-public:
-    CookieClient(const QObject *object)
-        : m_object(object)
-    {
-        const QMetaObject *rootMeta = object->metaObject();
-        int index = rootMeta->indexOfProperty("thirdPartyCookiesEnabled");
-        Q_ASSERT(index != -1);
-        m_settingProperty = rootMeta->property(index);
-    }
-    virtual bool acceptCookieFromUrl(const QByteArray &, const QUrl &) {
-        return m_settingProperty.read(m_object).toBool();
-    }
-};
-
 int main(int argc, char **argv)
 {
     Application app(argc, argv);
@@ -110,10 +92,15 @@ int main(int argc, char **argv)
                                         "}")
                       , QUrl());
     QObject *profile = component.create();
-    CookieClient client(rootObject);
-    QMetaObject::invokeMethod(profile, "setCookieStoreClient", Q_ARG(QWebEngineCookieStoreClient*, &client));
     const QMetaObject *rootMeta = rootObject->metaObject();
-    int index = rootMeta->indexOfProperty("testProfile");
+    QWebEngineCookieStoreClient *client = 0;
+    QMetaObject::invokeMethod(profile, "cookieStoreClient", Q_RETURN_ARG(QWebEngineCookieStoreClient*, client));
+    int index = rootMeta->indexOfProperty("thirdPartyCookiesEnabled");
+    Q_ASSERT(index != -1);
+    QMetaProperty thirdPartyCookiesProperty = rootMeta->property(index);
+    client->setCookieFilter([rootObject,&thirdPartyCookiesProperty](const QWebEngineCookieStoreClient::FilterRequest&){ return thirdPartyCookiesProperty.read(rootObject).toBool(); });
+
+    index = rootMeta->indexOfProperty("testProfile");
     Q_ASSERT(index != -1);
     QMetaProperty profileProperty = rootMeta->property(index);
     profileProperty.write(rootObject, qVariantFromValue(profile));

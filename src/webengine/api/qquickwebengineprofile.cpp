@@ -419,16 +419,16 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
     return profile;
 }
 
+QWebEngineCookieStoreClient *QQuickWebEngineProfile::cookieStoreClient() const
+{
+    const Q_D(QQuickWebEngineProfile);
+    return d->browserContext()->cookieStoreClient();
+}
+
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 {
     const Q_D(QQuickWebEngineProfile);
     return d->settings();
-}
-
-void QQuickWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient* client)
-{
-    Q_D(QQuickWebEngineProfile);
-    d->browserContext()->setCookieStoreClient(client);
 }
 
 QT_END_NAMESPACE

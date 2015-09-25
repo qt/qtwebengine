@@ -443,19 +443,6 @@ QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
     return d->browserContext()->cookieStoreClient();
 }
 
-/*!
-    Registers a cookie store client singleton \a client to access Chromium's cookies.
-
-    The profile does not take ownership of the pointer.
-
-    \sa QWebEngineCookieStoreClient
-*/
-
-void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client)
-{
-    Q_D(QWebEngineProfile);
-    d->browserContext()->setCookieStoreClient(client);
-}
 
 /*!
     Registers a request interceptor singleton \a interceptor to intercept URL requests.

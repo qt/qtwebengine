@@ -100,7 +100,6 @@ public:
     void setHttpCacheMaximumSize(int maxSize);
 
     QWebEngineCookieStoreClient* cookieStoreClient();
-    void setCookieStoreClient(QWebEngineCookieStoreClient *client);
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     void clearAllVisitedLinks();

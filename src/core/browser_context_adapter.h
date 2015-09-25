@@ -74,7 +74,6 @@ public:
     DownloadManagerDelegateQt *downloadManagerDelegate();
 
     QWebEngineCookieStoreClient *cookieStoreClient();
-    void setCookieStoreClient(QWebEngineCookieStoreClient *client);
 
     QWebEngineUrlRequestInterceptor* requestInterceptor();
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
@@ -165,7 +164,7 @@ private:
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserScriptControllerHost> m_userScriptController;
-    QPointer<QWebEngineCookieStoreClient> m_cookieStoreClient;
+    QScopedPointer<QWebEngineCookieStoreClient> m_cookieStoreClient;
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 
     QString m_dataPath;
