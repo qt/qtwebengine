@@ -47,6 +47,7 @@
 #include <QVariant>
 #include <type_traits>
 
+// keep in sync with Q_DECLARE_SHARED... in qwebenginecallback.h
 #define FOR_EACH_TYPE(F) \
     F(bool) \
     F(int) \
@@ -226,6 +227,11 @@ void CallbackDirectory::CallbackSharedDataPointer<T>::invokeEmpty()
     Q_ASSERT(parent);
     parent->invokeEmptyInternal(callback);
 }
+
+#define CHECK_RELOCATABLE(x) \
+  Q_STATIC_ASSERT((QTypeInfoQuery<QWebEngineCallback< x > >::isRelocatable));
+FOR_EACH_TYPE(CHECK_RELOCATABLE)
+#undef CHECK_RELOCATABLE
 
 } // namespace QtWebEngineCore
 

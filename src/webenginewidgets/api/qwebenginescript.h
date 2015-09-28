@@ -99,7 +99,7 @@ private:
     QSharedDataPointer<QtWebEngineCore::UserScript> d;
 };
 
-Q_DECLARE_SHARED(QWebEngineScript)
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineScript)
 
 #ifndef QT_NO_DEBUG_STREAM
 QWEBENGINEWIDGETS_EXPORT QDebug operator<<(QDebug, const QWebEngineScript &);

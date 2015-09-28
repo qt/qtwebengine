@@ -60,4 +60,10 @@ struct UserScriptData {
     uint64 scriptId;
 };
 
+QT_BEGIN_NAMESPACE
+
+Q_DECLARE_TYPEINFO(UserScriptData, Q_MOVABLE_TYPE);
+
+QT_END_NAMESPACE
+
 #endif // USER_SCRIPT_DATA_H

@@ -70,7 +70,7 @@ class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStoreClientPrivate {
         QNetworkCookie cookie;
         QUrl origin;
     };
-
+    friend class QTypeInfo<CookieData>;
 public:
     Q_DECLARE_PUBLIC(QWebEngineCookieStoreClient)
     QtWebEngineCore::CallbackDirectory callbackDirectory;
@@ -101,6 +101,8 @@ public:
     void onDeleteCallbackResult(qint64 callbackId, int numCookies);
     void onCookieChanged(const QNetworkCookie &cookie, bool removed);
 };
+
+Q_DECLARE_TYPEINFO(QWebEngineCookieStoreClientPrivate::CookieData, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
