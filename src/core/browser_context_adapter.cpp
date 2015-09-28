@@ -255,12 +255,12 @@ void BrowserContextAdapter::setHttpUserAgent(const QString &userAgent)
 {
     if (m_httpUserAgent == userAgent)
         return;
-    m_httpUserAgent = userAgent;
+    m_httpUserAgent = userAgent.simplified();
 
     std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
     Q_FOREACH (content::WebContentsImpl *web_contents, list)
         if (web_contents->GetBrowserContext() == m_browserContext.data())
-            web_contents->SetUserAgentOverride(userAgent.toStdString());
+            web_contents->SetUserAgentOverride(m_httpUserAgent.toStdString());
 
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateUserAgent();

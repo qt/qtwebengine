@@ -40,6 +40,7 @@
 #include <qpa/qplatforminputcontext.h>
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
+#include <qwebengineprofile.h>
 #include <qwebenginesettings.h>
 #include <qwebengineview.h>
 #include <qimagewriter.h>
@@ -2810,28 +2811,16 @@ void tst_QWebEnginePage::userAgentApplicationName()
 #endif
 }
 
-class CustomUserAgentWebPage : public QWebEnginePage
-{
-public:
-    static const QLatin1String filteredUserAgent;
-protected:
-    virtual QString userAgentForUrl(const QUrl& url) const
-    {
-        Q_UNUSED(url);
-        return QString("My User Agent\nX-New-Http-Header: Oh Noes!");
-    }
-};
-const QLatin1String CustomUserAgentWebPage::filteredUserAgent("My User AgentX-New-Http-Header: Oh Noes!");
-
 void tst_QWebEnginePage::userAgentNewlineStripping()
 {
-#if !defined(QWEBENGINEPAGE_USERAGENTFORURL)
-    QSKIP("QWEBENGINEPAGE_USERAGENTFORURL");
-#else
-    CustomUserAgentWebPage page;
-    page.setHtml("<html><body></body></html>");
-    QCOMPARE(evaluateJavaScriptSync(&page, "navigator.userAgent").toString(), CustomUserAgentWebPage::filteredUserAgent);
-#endif
+    QWebEngineProfile profile;
+    QWebEnginePage page(&profile);
+
+    profile.setHttpUserAgent(QStringLiteral("My User Agent\nX-New-Http-Header: Oh Noes!"));
+    // The user agent will be updated after a page load.
+    page.load(QUrl("about:blank"));
+
+    QCOMPARE(evaluateJavaScriptSync(&page, "navigator.userAgent").toString(), QStringLiteral("My User Agent X-New-Http-Header: Oh Noes!"));
 }
 
 void tst_QWebEnginePage::crashTests_LazyInitializationOfMainFrame()
