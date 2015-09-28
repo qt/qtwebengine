@@ -75,7 +75,7 @@ win32 {
 mac {
     ICON = demobrowser.icns
     QMAKE_INFO_PLIST = Info_mac.plist
-    TARGET = Browser
+    TARGET = Demobrowser
 }
 
 EXAMPLE_FILES = Info_mac.plist demobrowser.icns demobrowser.ico demobrowser.rc
