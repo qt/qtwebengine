@@ -49,7 +49,7 @@
 namespace QtWebEngineCore {
 
 static GURL sourceUrlForCookie(const QNetworkCookie &cookie) {
-    QString urlFragment = QString("%1%2").arg(cookie.domain()).arg(cookie.path());
+    QString urlFragment = QStringLiteral("%1%2").arg(cookie.domain()).arg(cookie.path());
     return net::cookie_util::CookieOriginToURL(urlFragment.toStdString(), /* is_https */ cookie.isSecure());
 }
 
