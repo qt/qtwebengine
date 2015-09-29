@@ -57,6 +57,9 @@ public:
 
     virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
 
+Q_SIGNALS:
+    void destroyed(QWebEngineUrlSchemeHandler*);
+
 private:
     Q_DISABLE_COPY(QWebEngineUrlSchemeHandler)
     Q_DECLARE_PRIVATE(QWebEngineUrlSchemeHandler)

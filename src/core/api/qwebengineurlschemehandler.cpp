@@ -84,6 +84,7 @@ QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme,
 
 QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
+    Q_EMIT destroyed(this);
     delete d_ptr;
 }
 
