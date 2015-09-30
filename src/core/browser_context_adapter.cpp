@@ -354,7 +354,7 @@ void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
         m_browserContext->url_request_getter_->updateHttpCache();
 }
 
-QVector<CustomUrlSchemeHandler*> &BrowserContextAdapter::customUrlSchemeHandlers()
+QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUrlSchemeHandlers()
 {
     return m_customUrlSchemeHandlers;
 }
@@ -365,10 +365,9 @@ void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
         m_browserContext->url_request_getter_->updateStorageSettings();
 }
 
-void BrowserContextAdapter::removeCustomUrlSchemeHandler(CustomUrlSchemeHandler *handler)
+void BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
-    m_customUrlSchemeHandlers.removeOne(handler);
-    Q_ASSERT(!m_customUrlSchemeHandlers.contains(handler));
+    m_customUrlSchemeHandlers.remove(handler->scheme());
 }
 
 UserScriptControllerHost *BrowserContextAdapter::userScriptController()

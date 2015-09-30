@@ -53,21 +53,9 @@ QT_BEGIN_NAMESPACE
 
 */
 
-QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme, QWebEngineUrlSchemeHandler *q)
-    : CustomUrlSchemeHandler(scheme)
-    , q_ptr(q)
+QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme)
+    : m_scheme(scheme)
 {
-}
-
-QWebEngineUrlSchemeHandlerPrivate::~QWebEngineUrlSchemeHandlerPrivate()
-{
-}
-
-bool QWebEngineUrlSchemeHandlerPrivate::handleJob(QtWebEngineCore::URLRequestCustomJobDelegate *job)
-{
-    QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(job);
-    q_ptr->requestStarted(requestJob);
-    return true;
 }
 
 /*!
@@ -78,7 +66,7 @@ bool QWebEngineUrlSchemeHandlerPrivate::handleJob(QtWebEngineCore::URLRequestCus
   */
 QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineUrlSchemeHandlerPrivate(scheme, this))
+    , d_ptr(new QWebEngineUrlSchemeHandlerPrivate(scheme))
 {
 }
 

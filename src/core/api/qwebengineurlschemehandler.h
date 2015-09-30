@@ -42,6 +42,10 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qobject.h>
 
+namespace QtWebEngineCore {
+class URLRequestContextGetterQt;
+}
+
 QT_BEGIN_NAMESPACE
 
 class QWebEngineUrlRequestJob;
@@ -63,8 +67,6 @@ Q_SIGNALS:
 private:
     Q_DISABLE_COPY(QWebEngineUrlSchemeHandler)
     Q_DECLARE_PRIVATE(QWebEngineUrlSchemeHandler)
-    friend class QWebEngineProfile;
-    friend class QQuickWebEngineProfile;
     QWebEngineUrlSchemeHandlerPrivate *d_ptr;
 };
 

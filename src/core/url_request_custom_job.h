@@ -45,16 +45,16 @@
 #include <QtCore/QPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
+QT_FORWARD_DECLARE_CLASS(QWebEngineUrlSchemeHandler)
 
 namespace QtWebEngineCore {
 
-class CustomUrlSchemeHandler;
 class URLRequestCustomJobDelegate;
 
 // A request job that handles reading custom URL schemes
 class URLRequestCustomJob : public net::URLRequestJob {
 public:
-    URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, CustomUrlSchemeHandler *schemeHandler);
+    URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, QWebEngineUrlSchemeHandler *schemeHandler);
     virtual void Start() Q_DECL_OVERRIDE;
     virtual void Kill() Q_DECL_OVERRIDE;
     virtual bool ReadRawData(net::IOBuffer *buf, int bufSize, int *bytesRead) Q_DECL_OVERRIDE;
@@ -81,7 +81,7 @@ private:
     QMutex m_mutex;
     QPointer<QIODevice> m_device;
     QPointer<URLRequestCustomJobDelegate> m_delegate;
-    CustomUrlSchemeHandler *m_schemeHandler;
+    QWebEngineUrlSchemeHandler *m_schemeHandler;
     std::string m_mimeType;
     std::string m_charset;
     int m_error;

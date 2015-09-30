@@ -55,6 +55,7 @@
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
+class URLRequestCustomJob;
 class URLRequestCustomJobDelegate;
 } // namespace
 
@@ -86,7 +87,7 @@ public:
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
-    friend class QWebEngineUrlSchemeHandlerPrivate;
+    friend class QtWebEngineCore::URLRequestCustomJob;
 
     QtWebEngineCore::URLRequestCustomJobDelegate* d_ptr;
 };
