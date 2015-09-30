@@ -151,7 +151,6 @@ private Q_SLOTS:
     void defaultTextEncoding();
     void errorPageExtension();
     void errorPageExtensionLoadFinished();
-    void userAgentApplicationName();
     void userAgentNewlineStripping();
     void undoActionHaveCustomText();
     void renderWidgetHostViewNotShowTopLevel();
@@ -2787,28 +2786,6 @@ void tst_QWebEnginePage::errorPageExtensionLoadFinished()
     QVERIFY(nonExistantFrameLoadSucceded);
 
     m_view->setPage(0);
-#endif
-}
-
-class FriendlyWebPage : public QWebEnginePage
-{
-public:
-    friend class tst_QWebEnginePage;
-};
-
-void tst_QWebEnginePage::userAgentApplicationName()
-{
-#if !defined(QWEBENGINEPAGE_USERAGENTFORURL)
-    QSKIP("QWEBENGINEPAGE_USERAGENTFORURL");
-#else
-    const QString oldApplicationName = QCoreApplication::applicationName();
-    FriendlyWebPage page;
-
-    const QString applicationNameMarker = QString::fromUtf8("StrangeName\342\210\236");
-    QCoreApplication::setApplicationName(applicationNameMarker);
-    QVERIFY(page.userAgentForUrl(QUrl()).contains(applicationNameMarker));
-
-    QCoreApplication::setApplicationName(oldApplicationName);
 #endif
 }
 
