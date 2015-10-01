@@ -75,6 +75,7 @@
 
 /*!
     \qmlmethod void WebEngineView::reloadAndBypassCache()
+    \since QtWebEngine 1.1
 
     Reloads the current page, ignoring any cached content.
 
@@ -207,6 +208,7 @@
 /*!
     \qmlproperty list<WebEngineScript> WebEngineView::userScripts
     \readonly
+    \since QtWebEngine 1.1
 
     List of script objects attached to the view.
 */
@@ -324,6 +326,7 @@
 
 /*!
     \qmlsignal WebEngineView::featurePermissionRequested(url securityOrigin, Feature feature)
+    \since QtWebEngine 1.1
 
     This signal is emitted when the web site identified by \a securityOrigin requests
     to make use of the resource or device identified by \a feature.
