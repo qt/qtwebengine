@@ -305,6 +305,7 @@ Q_SIGNALS:
     Q_REVISION(2) void activeFocusOnPressChanged(bool);
     Q_REVISION(2) void backgroundColorChanged();
     Q_REVISION(2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    Q_REVISION(2) void windowCloseRequested();
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

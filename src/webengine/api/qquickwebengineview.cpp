@@ -504,7 +504,8 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
 
 void QQuickWebEngineViewPrivate::close()
 {
-    // Not implemented yet.
+    Q_Q(QQuickWebEngineView);
+    emit q->windowCloseRequested();
 }
 
 void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
