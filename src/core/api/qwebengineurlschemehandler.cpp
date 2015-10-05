@@ -43,14 +43,20 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QWebEngineUrlSchemeHandler
-    \brief The QWebEngineUrlSchemeHandler base class for handling custom URL schemes.
+    \brief The QWebEngineUrlSchemeHandler is a base class for handling custom URL schemes.
     \since 5.6
 
-    To implement a custom URL scheme for QtWebEngine you must write a class derived from this class,
+    To implement a custom URL scheme for QtWebEngine, you must write a class derived from this class,
     and reimplement requestStarted().
 
     \inmodule QtWebEngineCore
 
+*/
+
+/*!
+    \fn QWebEngineUrlSchemeHandler::destroyed(QWebEngineUrlSchemeHandler*)
+
+    This signal is emitted when a custom URL scheme handler is deleted.
 */
 
 QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme)
@@ -70,6 +76,9 @@ QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme,
 {
 }
 
+/*!
+    Deletes a custom URL scheme handler.
+*/
 QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
     Q_EMIT destroyed(this);
