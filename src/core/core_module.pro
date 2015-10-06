@@ -22,7 +22,7 @@ osx {
 } else:msvc {
     # Simulate -whole-archive by passing the list of object files that belong to the public
     # API library as response file to the linker.
-    LIBS_PRIVATE += /OPT:REF
+    QMAKE_LFLAGS += /OPT:REF
     QMAKE_LFLAGS += @$${api_library_path}$${QMAKE_DIR_SEP}$${api_library_name}.lib.objects
 } else {
     LIBS_PRIVATE += -Wl,-whole-archive -l$$api_library_name -Wl,-no-whole-archive
