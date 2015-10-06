@@ -26,13 +26,13 @@
 ****************************************************************************/
 
 /*!
-    \example demobrowser
+    \example webenginewidgets/demobrowser
     \title WebEngine Demo Browser Example
     \ingroup webengine-widgetexamples
     \brief A demo browser based on Qt WebEngine Widgets
 
-    The Demo Browser example shows the \l{Qt WebEngine Widgets} module in action,
-    providing a little Web browser application with support for tabs.
+    \e {Demo Browser} demonstrates how to use the \l{Qt WebEngine Widgets C++ Classes}
+    {Qt WebEngine C++ classes} to develop a small Web browser application with support for tabs.
 
     \image browser-demo.png
 

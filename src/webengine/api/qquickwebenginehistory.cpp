@@ -234,7 +234,7 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     The data models can also be used to create a menu, as illustrated by the following code
     snippet:
 
-    \quotefromfile quicknanobrowser/browserwindow.qml
+    \quotefromfile webengine/quicknanobrowser/browserwindow.qml
     \skipto ToolBar
     \printuntil onObjectRemoved
     \printuntil }

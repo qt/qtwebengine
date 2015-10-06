@@ -4,7 +4,7 @@ project                 = QtWebEngine
 description             = Qt WebEngine Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = webengine
+examplesinstallpath     =
 
 qhp.projects            = QtWebEngine
 
@@ -44,21 +44,24 @@ depends += qtcore \
            qtquickcontrols \
            qtdoc \
            qtwebchannel \
-           qtwebenginewidgets
+           qtwidgets
 
-headerdirs  += . \
-               ../api \
-               ../../core/api
+headerdirs  += .. \
+               ../../core \
+               ../../webenginewidgets
 
-sourcedirs  += . \
-               ../api \
-               ../../core/api \
-               ../../core/doc/src
+sourcedirs  += .. \
+                ../../core/ \
+               ../../webenginewidgets \
 
 exampledirs +=  . \
-                ../../../examples/webengine \
+                ../../../examples \
                 snippets \
-                ../../core/doc/snippets
+                ../../core/doc/snippets \
+                ../../webenginewidgets/doc/snippets
+
+
+imagedirs += images
 
 navigation.landingpage = "Qt WebEngine"
 navigation.cppclassespage = "Qt WebEngine C++ Classes"

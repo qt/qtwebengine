@@ -6,8 +6,6 @@ DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 QT += webengine webenginecore widgets network quick
 QT_PRIVATE += quick-private gui-private core-private
 
-QMAKE_DOCS = $$PWD/doc/qtwebenginewidgets.qdocconf
-
 INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 
 SOURCES = \
