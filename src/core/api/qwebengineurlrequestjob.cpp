@@ -48,15 +48,33 @@ QT_BEGIN_NAMESPACE
     \since 5.6
 
     A QWebEngineUrlRequestJob is given to QWebEngineUrlSchemeHandler::requestStarted() and must
-    be handled by the derived implementations of the class.
+    be handled by the derived implementations of the class. The job can be handled by calling
+    either reply(), redirect(), or fail().
 
-    A job can be handled by calling either reply(), redirect() or fail().
-
-    The class is owned by QtWebEngine and does not need to be deleted. Note QtWebEngine may delete
-    the job when it is no longer needed, so the signal QObject::destroyed() must be monitored if
-    a pointer to the object is stored.
+    The class is owned by the web engine and does not need to be deleted. However, the web engine
+    may delete the job when it is no longer needed, and therefore the signal QObject::destroyed()
+    must be monitored if a pointer to the object is stored.
 
     \inmodule QtWebEngineCore
+*/
+
+/*!
+    \enum QWebEngineUrlRequestJob::Error
+
+    This enum type holds the type of the error that occurred:
+
+    \value  NoError
+            The request was successful.
+    \value  UrlNotFound
+            The requested URL was not found.
+    \value  UrlInvalid
+            The requested URL is invalid.
+    \value  RequestAborted
+            The request was canceled.
+    \value  RequestDenied
+            The request was denied.
+    \value  RequestFailed
+            The request failed.
 */
 
 /*!
@@ -92,7 +110,7 @@ QByteArray QWebEngineUrlRequestJob::requestMethod() const
 }
 
 /*!
-    Replies the request with \a device with the mime-type \a contentType.
+    Replies to the request with \a device and the MIME type \a contentType.
  */
 void QWebEngineUrlRequestJob::reply(const QByteArray &contentType, QIODevice *device)
 {
@@ -100,7 +118,9 @@ void QWebEngineUrlRequestJob::reply(const QByteArray &contentType, QIODevice *de
 }
 
 /*!
-    Fails the request with error \a error.
+    Fails the request with the error \a r.
+
+    \sa Error
  */
 void QWebEngineUrlRequestJob::fail(Error r)
 {
@@ -108,7 +128,7 @@ void QWebEngineUrlRequestJob::fail(Error r)
 }
 
 /*!
-    Tell the request is redirected to \a url.
+    Redirects the request to \a url.
  */
 void QWebEngineUrlRequestJob::redirect(const QUrl &url)
 {
