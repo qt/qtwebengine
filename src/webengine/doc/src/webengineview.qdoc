@@ -325,6 +325,26 @@
 */
 
 /*!
+    \qmlmethod void WebEngineView::setActiveFocusOnPress(bool arg)
+    \since QtWebEngine 1.2
+
+    Sets active focus to a clicked web engine view if \a arg is \c true. By setting it to \c false,
+    a web engine view can be used to create a UI element that should not get focus. This can be
+    useful in a hybrid UI.
+
+    \sa activeFocusOnPressChanged()
+*/
+
+/*!
+    \qmlmethod void WebEngineView::triggerWebAction(WebAction action)
+    \since QtWebEngine 1.2
+
+    Triggers the web action \a action.
+
+    \sa WebAction
+*/
+
+/*!
     \qmlsignal WebEngineView::featurePermissionRequested(url securityOrigin, Feature feature)
     \since QtWebEngine 1.1
 
@@ -447,6 +467,35 @@
 */
 
 /*!
+    \qmlsignal WebEngineView::activeFocusOnPressChanged(bool)
+    \since QtWebEngine 1.2
+
+    This signal is emitted when the ability of the web engine view to get focus when clicked
+    changes.
+
+    \sa setActiveFocusOnPress()
+*/
+
+/*!
+    \qmlsignal WebEngineView::backgroundColorChanged()
+    \since QtWebEngine 1.2
+
+    This signal is emitted when the web engine view background color changes.
+*/
+
+/*!
+    \qmlsignal WebEngineView::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode)
+
+    \since QtWebEngine 1.2
+
+    This signal is emitted when the render process is terminated with a non-zero exit status.
+    \a terminationStatus is the termination status of the process and \a exitCode is the status code
+    with which the process terminated.
+
+    \sa RenderProcessTerminationStatus
+*/
+
+/*!
     \qmlproperty enumeration WebEngineView::ErrorDomain
 
     Describes various high-level error types:
@@ -520,6 +569,93 @@
             this option changes the behavior to a case sensitive find operation.
 
     \sa findText()
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::RenderProcessTerminationStatus
+    \since QtWebEngine 1.2
+
+    Describes the status with which the render process terminated:
+
+    \value  NormalTerminationStatus
+            The render process terminated normally.
+    \value  AbnormalTerminationStatus
+            The render process terminated with a non-zero exit status.
+    \value  CrashedTerminationStatus
+            The render process crashed, for example because of a segmentation fault.
+    \value  KilledTerminationStatus
+            The render process was killed, for example by \c SIGKILL or task manager kill.
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::WebAction
+    \since QtWebEngine 1.2
+
+    Describes the types of action that can be performed on a web page:
+
+    \value  NoWebAction
+            No action is triggered.
+    \value  Back
+            Navigate back in the history of navigated links.
+    \value  Forward
+            Navigate forward in the history of navigated links.
+    \value  Stop
+            Stop loading the current page.
+    \value  Reload
+            Reload the current page.
+    \value  ReloadAndBypassCache
+            Reload the current page, but do not use any local cache.
+    \value  Cut
+            Cut the content currently selected into the clipboard.
+    \value  Copy
+            Copy the content currently selected into the clipboard.
+    \value  Paste
+            Paste content from the clipboard.
+    \value  Undo
+            Undo the last editing action.
+    \value  Redo
+            Redo the last editing action.
+    \value  SelectAll
+            Select all content.
+    \value  PasteAndMatchStyle
+            Paste content from the clipboard with current style.
+    \value  OpenLinkInThisWindow
+            Open the current link in the current window. (Added in Qt 5.6)
+    \value  OpenLinkInNewWindow
+            Open the current link in a new window. (Added in Qt 5.6)
+    \value  OpenLinkInNewTab
+            Open the current link in a new tab. (Added in Qt 5.6)
+    \value  CopyLinkToClipboard
+            Copy the current link to the clipboard. (Added in Qt 5.6)
+    \value  CopyImageToClipboard
+            Copy the clicked image to the clipboard. (Added in Qt 5.6)
+    \value  CopyImageUrlToClipboard
+            Copy the clicked image's URL to the clipboard. (Added in Qt 5.6)
+    \value  CopyMediaUrlToClipboard
+            Copy the hovered audio or video's URL to the clipboard. (Added in Qt 5.6)
+    \value  ToggleMediaControls
+            Toggle between showing and hiding the controls for the hovered audio or video element.
+            (Added in Qt 5.6)
+    \value  ToggleMediaLoop
+            Toggle whether the hovered audio or video should loop on completetion or not.
+           (Added in Qt 5.6)
+    \value  ToggleMediaPlayPause
+            Toggle the play/pause state of the hovered audio or video element. (Added in Qt 5.6)
+    \value  ToggleMediaMute
+            Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
+    \value  DownloadLinkToDisk
+            Download the current link to the disk. (Added in Qt 5.6)
+    \value  DownloadImageToDisk
+            Download the highlighted image to the disk. (Added in Qt 5.6)
+    \value  DownloadMediaToDisk
+            Download the hovered audio or video to the disk. (Added in Qt 5.6)
+    \value  InspectElement
+            Trigger any attached Web Inspector to inspect the highlighed element.
+           (Added in Qt 5.6)
+    \value  ExitFullScreen
+            Exit the fullscreen mode. (Added in Qt 5.6)
+
+    \omitvalue WebActionCount
 */
 
 /*!
