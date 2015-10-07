@@ -108,6 +108,14 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
 #endif // QT_NO_ACCESSIBILITY
 }
 
+/*!
+    \fn QWebEngineView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
+
+    This signal is emitted when the render process is terminated with a non-zero exit status.
+    \a terminationStatus is the termination status of the process and \a exitCode is the status code
+    with which the process terminated.
+*/
+
 QWebEngineView::QWebEngineView(QWidget *parent)
     : QWidget(parent)
     , d_ptr(new QWebEngineViewPrivate)
