@@ -54,9 +54,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QWebEngineUrlSchemeHandler::destroyed(QWebEngineUrlSchemeHandler*)
+    \fn QWebEngineUrlSchemeHandler::destroyed(QWebEngineUrlSchemeHandler *handler)
 
-    This signal is emitted when a custom URL scheme handler is deleted.
+    This signal is emitted when the custom URL scheme handler \a handler is deleted.
 */
 
 QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme)
