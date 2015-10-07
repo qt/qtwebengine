@@ -39,7 +39,8 @@
     made fully editable by the user through the use of the \c{contenteditable} attribute on HTML
     elements.
 
-    Qt WebEngine supercedes the \l{Qt WebKit Widgets}{Qt WebKit} module, which is based on the
+    Qt WebEngine supercedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
+    module, which is based on the
     WebKit project, but has not been actively synchronized with the upstream WebKit code since
     Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
     application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}. For new
