@@ -118,6 +118,26 @@ int QQuickWebEngineForwardHistoryListModelPrivate::offsetForIndex(int index) con
     return index + 1;
 }
 
+/*!
+    \qmltype WebEngineHistoryListModel
+    \instantiates QQuickWebEngineHistoryListModel
+    \inqmlmodule QtWebEngine 1.1
+    \since QtWebEngine 1.1
+
+    \brief A data model that represents the history of a web engine page.
+
+    The WebEngineHistoryListModel type exposes the \e title, \e url, and \e offset roles. The
+    \e title and \e url specify the title and URL of the visited page. The \e offset specifies
+    the position of the page in respect to the current page (0). A positive number indicates that
+    the page was visited after the current page, whereas a negative number indicates that the page
+    was visited before the current page.
+
+    This type is uncreatable, but it can be accessed by using the
+    \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
+
+    \sa WebEngineHistory
+*/
+
 QQuickWebEngineHistoryListModel::QQuickWebEngineHistoryListModel()
     : QAbstractListModel()
 {
@@ -191,12 +211,12 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     \inqmlmodule QtWebEngine 1.1
     \since QtWebEngine 1.1
 
-    \brief Data models that represent the history of a web engine page.
+    \brief Provides data models that represent the history of a web engine page.
 
-    The uncreatable WebEngineHistory type can be accessed by using the
+    The WebEngineHistory type can be accessed by using the
     \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
 
-    The WebEngineHistory type provides the following data models:
+    The WebEngineHistory type providess the following WebEngineHistoryListModel data model objects:
 
     \list
         \li \c backItems, which contains the URLs of visited pages.
@@ -226,7 +246,7 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     format of the list items. The appearance of each item of the list in the delegate can be defined
     separately (it is not web engine specific).
 
-    The model roles \c title and \c url specify the title and URL of the visited page. The \c offset
+    The model roles \e title and \e url specify the title and URL of the visited page. The \e offset
     role specifies the position of the page in respect to the current page (0). A positive number
     indicates that the page was visited after the current page, whereas a negative number indicates
     that the page was visited before the current page.
@@ -242,6 +262,8 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     \printuntil }
 
     For the complete example, see \l{WebEngine Quick Nano Browser}.
+
+    \sa WebEngineHistoryListModel
 */
 
 QQuickWebEngineHistory::QQuickWebEngineHistory(QQuickWebEngineViewPrivate *view)
