@@ -570,12 +570,12 @@ void QWebEngineProfile::installUrlSchemeHandler(QWebEngineUrlSchemeHandler *hand
     Q_ASSERT(handler);
     QByteArray scheme = handler->scheme();
     if (checkInternalScheme(scheme)) {
-        qWarning() << "Can not install a URL scheme handler overriding internal scheme: " << scheme;
+        qWarning("Can not install a URL scheme handler overriding internal scheme: %s", scheme.constData());
         return;
     }
 
     if (d->browserContext()->customUrlSchemeHandlers().contains(scheme)) {
-        qWarning() << "URL scheme handler already installed for the scheme: " << scheme;
+        qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
         return;
     }
     d->browserContext()->customUrlSchemeHandlers().insert(scheme, handler);
