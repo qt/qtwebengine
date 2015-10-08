@@ -39,7 +39,7 @@
 
 #include "web_contents_view_qt.h"
 
-#include "browser_context_qt.h"
+#include "browser_context_adapter.h"
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
@@ -162,12 +162,27 @@ static WebEngineContextMenuData fromParams(const content::ContextMenuParams &par
     ret.hasImageContent = params.has_image_contents;
     ret.mediaFlags = params.media_flags;
     ret.suggestedFileName = toQt(params.suggested_filename.data());
+#if defined(ENABLE_SPELLCHECK)
+    ret.isEditable = params.is_editable;
+    ret.misspelledWord = toQt(params.misspelled_word);
+    ret.spellCheckerSuggestions = fromVector(params.dictionary_suggestions);
+#endif
     return ret;
 }
 
 void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData contextMenuData(fromParams(params));
+#if defined(ENABLE_SPELLCHECK)
+    // Do not use params.spellcheck_enabled, since it is never
+    // correctly initialized for chrome asynchronous spellchecking.
+    // Even fixing the initialization in ContextMenuClientImpl::showContextMenu
+    // will not work. By default SpellCheck::spellcheck_enabled_
+    // must be initialized to true due to the way how the initialization sequence
+    // in SpellCheck works ie. typing the first word triggers the creation
+    // of the SpellcheckService. Use user preference store instead.
+    contextMenuData.isSpellCheckerEnabled = m_client->browserContextAdapter()->isSpellCheckEnabled();
+#endif
     m_client->contextMenuRequested(contextMenuData);
 }
 

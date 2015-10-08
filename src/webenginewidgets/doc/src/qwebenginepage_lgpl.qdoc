@@ -125,6 +125,11 @@
     \value Unselect Clear the current selection. (Added in Qt 5.7)
     \value SavePage Save the current page to disk. MHTML is the default format that is used to store
            the web page on disk. (Added in Qt 5.7)
+    \value ToggleSpellcheck Enable or disable the spell checker. (Added in Qt 5.7)
+    \value ReplaceMisspelledWord_1 Replace a misspelled word. (Added in Qt 5.7)
+    \value ReplaceMisspelledWord_2 Replace a misspelled word. (Added in Qt 5.7)
+    \value ReplaceMisspelledWord_3 Replace a misspelled word. (Added in Qt 5.7)
+    \value ReplaceMisspelledWord_4 Replace a misspelled word. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
 

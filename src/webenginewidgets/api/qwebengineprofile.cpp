@@ -530,6 +530,70 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
     return profile;
 }
 
+#if !defined(QT_NO_SPELLCHECK)
+/*!
+    \since 5.7
+
+    Returns the subset of \a acceptLanguages supported by the spell checker.
+
+    Checks whether the spell checker dictionary is installed for the specified
+    language from the \a acceptLanguages list. If the dictionary file is missing
+    or corrupted, the language is removed from the returned list.
+
+    \sa setSpellCheckLanguage()
+*/
+QStringList QWebEngineProfile::spellCheckLanguages(const QStringList &acceptLanguages)
+{
+    const Q_D(QWebEngineProfile);
+    return d->browserContext()->spellCheckLanguages(acceptLanguages);
+}
+
+/*!
+    \since 5.7
+
+    Sets the current \a language for the spell checker.
+*/
+void QWebEngineProfile::setSpellCheckLanguage(const QString &language)
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->setSpellCheckLanguage(language);
+}
+
+/*!
+    \since 5.7
+
+    Returns the language used by the spell checker.
+*/
+QString QWebEngineProfile::spellCheckLanguage() const
+{
+    const Q_D(QWebEngineProfile);
+    return d->browserContext()->spellCheckLanguage();
+}
+
+/*!
+    \since 5.7
+
+    Enables spell checker if \a enable is \c true, otherwise disables it.
+    \sa isSpellCheckEnabled()
+ */
+void QWebEngineProfile::setSpellCheckEnabled(bool enable)
+{
+     Q_D(QWebEngineProfile);
+     d->browserContext()->setSpellCheckEnabled(enable);
+}
+/*!
+    \since 5.7
+
+    Returns \c true if the spell checker is enabled; otherwise returns \c false.
+    \sa setSpellCheckEnabled()
+ */
+bool QWebEngineProfile::isSpellCheckEnabled() const
+{
+     const Q_D(QWebEngineProfile);
+     return d->browserContext()->isSpellCheckEnabled();
+}
+#endif
+
 /*!
     Returns the default settings for all pages in this profile.
 */

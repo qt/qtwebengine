@@ -79,6 +79,10 @@ public:
         : mediaType(MediaTypeNone)
         , hasImageContent(false)
         , mediaFlags(0)
+#if defined(ENABLE_SPELLCHECK)
+        , isEditable(false)
+        , isSpellCheckerEnabled(false)
+#endif
     {
     }
 
@@ -124,11 +128,14 @@ public:
     bool hasImageContent;
     uint mediaFlags;
     QString suggestedFileName;
+#if defined(ENABLE_SPELLCHECK)
+    bool isEditable;
+    bool isSpellCheckerEnabled;
+    QString misspelledWord;
+    QStringList spellCheckerSuggestions;
+#endif
 // Some likely candidates for future additions as we add support for the related actions:
 //    bool isImageBlocked;
-//    bool isEditable;
-//    bool isSpellCheckingEnabled;
-//    QStringList spellCheckingSuggestions;
 //    <enum tbd> mediaType;
 //    ...
 };

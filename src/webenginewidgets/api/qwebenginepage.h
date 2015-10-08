@@ -118,7 +118,13 @@ public:
         RequestClose,
         Unselect,
         SavePage,
-
+#if !defined(QT_NO_SPELLCHECK)
+        ToggleSpellcheck,
+        ReplaceMisspelledWord_1,
+        ReplaceMisspelledWord_2,
+        ReplaceMisspelledWord_3,
+        ReplaceMisspelledWord_4,
+#endif
         WebActionCount
     };
 

@@ -205,6 +205,32 @@ QString localesPath()
 #endif
 }
 
+#if defined(ENABLE_SPELLCHECK)
+QString dictionariesPath()
+{
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+    return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_dictionaries");
+#else
+    static bool initialized = false;
+    static QString potentialDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath) % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialDictionariesPath)) {
+            qWarning("Installed Qt WebEngine dictionaries directory not found at location %s. Trying application directory...", qPrintable(potentialDictionariesPath));
+            potentialDictionariesPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+        }
+        if (!QFileInfo::exists(potentialDictionariesPath)) {
+            qWarning("Qt WebEngine dictionaries directory not found at location %s. Trying fallback directory... Spellcheck MAY NOT work.", qPrintable(potentialDictionariesPath));
+            potentialDictionariesPath = fallbackDir();
+        }
+    }
+
+    return potentialDictionariesPath;
+#endif
+}
+#endif // ENABLE_SPELLCHECK
+
 QString icuDataPath()
 {
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
@@ -292,6 +318,10 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(pluginsPath());
     case ui::DIR_LOCALES:
         return toFilePath(localesPath());
+#if defined(ENABLE_SPELLCHECK)
+    case base::DIR_APP_DICTIONARIES:
+        return toFilePath(dictionariesPath());
+#endif
     default:
         // Note: the path system expects this function to override the default
         // behavior. So no need to log an error if we don't support a given

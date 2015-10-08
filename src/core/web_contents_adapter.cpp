@@ -1162,6 +1162,19 @@ void WebContentsAdapter::initUpdateDragCursorMessagePollingTimer()
     });
 }
 
+#if defined(ENABLE_SPELLCHECK)
+void WebContentsAdapter::replaceMisspelling(const QString &word)
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->ReplaceMisspelling(toString16(word));
+}
+
+void WebContentsAdapter::toogleSpellCheckEnabled()
+{
+    browserContext()->setSpellCheckEnabled(!browserContext()->isSpellCheckEnabled());
+}
+#endif
+
 WebContentsAdapterClient::RenderProcessTerminationStatus
 WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     auto status = WebContentsAdapterClient::RenderProcessTerminationStatus(-1);

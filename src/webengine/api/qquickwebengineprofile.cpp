@@ -592,7 +592,97 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
     return profile;
 }
 
+#if !defined(QT_NO_SPELLCHECK)
 /*!
+    \qmlmethod void QQuickWebEngineProfile::spellCheckLanguages()
+
+    Returns the subset of \a acceptLanguages supported by the spell checker.
+    Checks whether the spell checker dictionary is installed for the specified
+    language from the \a acceptLanguages list. If the dictionary file is missing
+    or corrupted, the language is removed from the returned list.
+
+    \since QtWebEngine 1.3
+*/
+
+/*!
+    Returns the subset of \a acceptLanguages supported by the spell checker.
+    Checks whether the spell checker dictionary is installed for the specified
+    language from the \a acceptLanguages list. If the dictionary file is missing
+    or corrupted, the language is removed from the returned list.
+
+    \since QtWebEngine 1.3
+*/
+QStringList QQuickWebEngineProfile::spellCheckLanguages(const QStringList &acceptLanguages)
+{
+    const Q_D(QQuickWebEngineProfile);
+    return d->browserContext()->spellCheckLanguages(acceptLanguages);
+}
+
+/*!
+    \property QQuickWebEngineProfile::spellCheckLanguage
+    \brief the language used by the spell checker.
+
+    \since QtWebEngine 1.3
+*/
+
+/*!
+    \qmlproperty QString WebEngineProfile::spellCheckLanguage
+
+    This property holds the language used by the spell checker.
+
+    \since QtWebEngine 1.3
+*/
+void QQuickWebEngineProfile::setSpellCheckLanguage(const QString &language)
+{
+    Q_D(QQuickWebEngineProfile);
+    if (language != d->browserContext()->spellCheckLanguage()) {
+        d->browserContext()->setSpellCheckLanguage(language);
+        emit spellCheckLanguageChanged();
+    }
+}
+
+/*!
+    \since 5.7
+
+    Returns the language used by the spell checker.
+*/
+QString QQuickWebEngineProfile::spellCheckLanguage() const
+{
+    const Q_D(QQuickWebEngineProfile);
+    return d->browserContext()->spellCheckLanguage();
+}
+
+/*!
+    \property QQuickWebEngineProfile::spellCheckEnabled
+    \brief whether the web engine spell checker is enabled.
+
+    \since QtWebEngine 1.3
+*/
+
+/*!
+    \qmlproperty QString WebEngineProfile::spellCheckEnabled
+
+    This property holds whether the web engine spell checker is enabled.
+
+    \since QtWebEngine 1.3
+*/
+void QQuickWebEngineProfile::setSpellCheckEnabled(bool enable)
+{
+     Q_D(QQuickWebEngineProfile);
+    if (enable != isSpellCheckEnabled()) {
+        d->browserContext()->setSpellCheckEnabled(enable);
+        emit spellCheckEnabledChanged();
+    }
+}
+
+bool QQuickWebEngineProfile::isSpellCheckEnabled() const
+{
+     const Q_D(QQuickWebEngineProfile);
+     return d->browserContext()->isSpellCheckEnabled();
+}
+#endif
+/*!
+
     Returns the cookie store singleton, if one has been set.
 */
 QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const

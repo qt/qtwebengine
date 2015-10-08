@@ -55,4 +55,11 @@ isQMLTestSupportApiEnabled() {
     DEFINES += ENABLE_QML_TESTSUPPORT_API
 }
 
+no_spellcheck {
+    DEFINES += QT_NO_SPELLCHECK
+    MODULE_DEFINES += QT_NO_SPELLCHECK
+} else {
+    DEFINES += ENABLE_SPELLCHECK
+}
+
 load(qt_module)

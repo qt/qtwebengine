@@ -166,7 +166,8 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
     if (!prop.isSignalProperty()) \
         qWarning("%s is missing %s signal property.\n", qPrintable(location.toString()), qPrintable(prop.name()));
 
-void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName, bool enabled)
+void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName, bool enabled,
+                                     bool checkable, bool checked)
 {
     Q_ASSERT(menuItemHandler);
     if (!ensureComponentLoaded(MenuItem))
@@ -176,6 +177,8 @@ void UIDelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QSt
     QQmlProperty(it, QStringLiteral("text")).write(text);
     QQmlProperty(it, QStringLiteral("iconName")).write(iconName);
     QQmlProperty(it, QStringLiteral("enabled")).write(enabled);
+    QQmlProperty(it, QStringLiteral("checkable")).write(checkable);
+    QQmlProperty(it, QStringLiteral("checked")).write(checked);
 
     QQmlProperty signal(it, QStringLiteral("onTriggered"));
     CHECK_QML_SIGNAL_PROPERTY(signal, menuItemComponent->url());

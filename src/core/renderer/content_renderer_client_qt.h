@@ -52,6 +52,8 @@ namespace web_cache {
 class WebCacheRenderProcessObserver;
 }
 
+class SpellCheck;
+
 namespace QtWebEngineCore {
 
 class ContentRendererClientQt : public content::ContentRendererClient {
@@ -73,6 +75,9 @@ public:
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheRenderProcessObserver> m_webCacheObserver;
+#if defined(ENABLE_SPELLCHECK)
+    QScopedPointer<SpellCheck> m_spellCheck;
+#endif
 };
 
 } // namespace

@@ -103,7 +103,8 @@ public:
 
     UIDelegatesManager(QQuickWebEngineView *);
 
-    void addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName = QString(), bool enabled = true);
+    void addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName = QString(),
+                     bool enabled = true, bool checkable = false, bool checked = true);
     void addMenuSeparator(QObject *menu);
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);

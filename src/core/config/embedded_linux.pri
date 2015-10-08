@@ -18,7 +18,6 @@ GYP_CONFIG += \
     enable_plugins=0 \
     enable_printing=0 \
     enable_session_service=0 \
-    enable_spellcheck=0 \
     enable_task_manager=0 \
     enable_themes=0 \
     enable_webrtc=0 \

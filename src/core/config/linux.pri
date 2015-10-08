@@ -24,6 +24,9 @@ GYP_CONFIG += \
         use_openssl_certs=1
 }
 
+no_spellcheck: GYP_CONFIG += enable_spellcheck=0
+else: GYP_CONFIG += enable_spellcheck=1
+
 contains(QT_CONFIG, system-zlib): use?(system_minizip): GYP_CONFIG += use_system_zlib=1
 contains(QT_CONFIG, system-png): GYP_CONFIG += use_system_libpng=1
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1

@@ -41,6 +41,9 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
+#if defined(ENABLE_SPELLCHECK)
+#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#endif
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -352,10 +355,14 @@ content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const 
 void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost* host)
 {
     // FIXME: Add a settings variable to enable/disable the file scheme.
-    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), url::kFileScheme);
+    const int id = host->GetID();
+    content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
     static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userScriptController()->renderProcessStartedWithHost(host);
 #if defined(ENABLE_PEPPER_CDMS)
-    host->AddFilter(new BrowserMessageFilterQt(host->GetID()));
+    host->AddFilter(new BrowserMessageFilterQt(id));
+#endif
+#if defined(ENABLE_SPELLCHECK)
+    host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
 }
 

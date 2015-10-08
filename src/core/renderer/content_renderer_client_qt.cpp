@@ -44,6 +44,10 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/localized_error.h"
+#if defined(ENABLE_SPELLCHECK)
+#include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/renderer/spellchecker/spellcheck_provider.h"
+#endif
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
@@ -93,6 +97,10 @@ void ContentRendererClientQt::RenderThreadStarted()
 
     // mark qrc as a secure scheme (avoids deprecation warnings)
     blink::WebSecurityPolicy::registerURLSchemeAsSecure(blink::WebString::fromLatin1(kQrcSchemeQt));
+#if defined(ENABLE_SPELLCHECK)
+    m_spellCheck.reset(new SpellCheck());
+    renderThread->AddObserver(m_spellCheck.data());
+#endif
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
@@ -101,6 +109,9 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     new RenderViewObserverQt(render_view, m_webCacheObserver.data());
     new WebChannelIPCTransport(render_view);
     UserScriptController::instance()->renderViewCreated(render_view);
+#if defined(ENABLE_SPELLCHECK)
+    new SpellCheckProvider(render_view, m_spellCheck.data());
+#endif
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)

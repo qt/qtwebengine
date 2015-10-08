@@ -250,6 +250,17 @@ inline std::vector<T> toVector(const QStringList &fileList)
 
 int flagsFromModifiers(Qt::KeyboardModifiers modifiers);
 
+#if defined(ENABLE_SPELLCHECK)
+inline QStringList fromVector(const std::vector<base::string16> &vector)
+{
+    QStringList result;
+    for (auto s: vector) {
+      result.append(toQt(s));
+    }
+    return result;
+}
+#endif
+
 } // namespace QtWebEngineCore
 
 #endif // TYPE_CONVERSION_H

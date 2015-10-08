@@ -193,7 +193,17 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
 
     // Populate our menu
     MenuItemHandler *item = 0;
-
+#if !defined(QT_NO_SPELLCHECK)
+    if (contextMenuData.isEditable && !contextMenuData.spellCheckerSuggestions.isEmpty()) {
+        for (int i=0; i < contextMenuData.spellCheckerSuggestions.count() && i < 4; i++) {
+            item = new MenuItemHandler(menu);
+            int index = QQuickWebEngineView::ReplaceMisspelledWord_1 + i;
+            QObject::connect(item, &MenuItemHandler::triggered, [q,index] { q->triggerWebAction(static_cast<QQuickWebEngineView::WebAction>(index)); });
+            ui()->addMenuItem(item, contextMenuData.spellCheckerSuggestions.at(i));
+        }
+        ui()->addMenuSeparator(menu);
+    }
+#endif
     if (!data.linkText.isEmpty() && data.linkUrl.isValid()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::OpenLinkInThisWindow); });
@@ -296,7 +306,13 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ExitFullScreen); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Exit Full Screen Mode"));
     }
-
+#if !defined(QT_NO_SPELLCHECK)
+    if (contextMenuData.isEditable) {
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleSpellcheck); });
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Check Spelling"), QString(), true, true, contextMenuData.isSpellCheckerEnabled);
+    }
+#endif
     // FIXME: expose the context menu data as an attached property to make this more useful
     if (contextMenuExtraItems) {
         ui()->addMenuSeparator(menu);
@@ -1525,6 +1541,23 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case SavePage:
         d->adapter->save();
         break;
+#if !defined(QT_NO_SPELLCHECK)
+    case ToggleSpellcheck:
+        d->adapter->toogleSpellCheckEnabled();
+        break;
+    case ReplaceMisspelledWord_1:
+        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(0));
+        break;
+    case ReplaceMisspelledWord_2:
+        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(1));
+        break;
+    case ReplaceMisspelledWord_3:
+        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(2));
+        break;
+    case ReplaceMisspelledWord_4:
+        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(3));
+        break;
+#endif
     default:
         Q_UNREACHABLE();
     }
