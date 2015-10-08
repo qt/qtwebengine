@@ -106,6 +106,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
         QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType)
                                                                                            , static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType)
                                                                                            , qUrl
+                                                                                           , toQt(request->first_party_for_cookies())
                                                                                            , QByteArray::fromStdString(request->method()));
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
         if (interceptor->interceptRequest(requestInfo)) {

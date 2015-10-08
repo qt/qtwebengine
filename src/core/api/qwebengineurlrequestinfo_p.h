@@ -58,6 +58,7 @@ public:
     QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource
                                     , QWebEngineUrlRequestInfo::NavigationType navigation
                                     , const QUrl &u
+                                    , const QUrl &fpu
                                     , const QByteArray &m);
 
     QWebEngineUrlRequestInfo::ResourceType resourceType;
@@ -65,6 +66,7 @@ public:
     bool shouldBlockRequest;
 
     QUrl url;
+    QUrl firstPartyUrl;
     const QByteArray method;
     QHash<QByteArray, QByteArray> extraHeaders;
 

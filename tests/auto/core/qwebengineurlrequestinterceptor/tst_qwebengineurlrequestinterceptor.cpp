@@ -66,6 +66,7 @@ private Q_SLOTS:
     void ipv6HostEncoding();
     void requestedUrl();
     void setUrlSameUrl();
+    void firstPartyUrl();
 };
 
 tst_QWebEngineUrlRequestInterceptor::tst_QWebEngineUrlRequestInterceptor()
@@ -96,6 +97,7 @@ class TestRequestInterceptor : public QWebEngineUrlRequestInterceptor
 {
 public:
     QList<QUrl> observedUrls;
+    QList<QUrl> firstPartyUrls;
     bool shouldIntercept;
 
     bool interceptRequest(QWebEngineUrlRequestInfo &info) override
@@ -105,6 +107,7 @@ public:
             info.redirect(QUrl("qrc:///resources/content.html"));
 
         observedUrls.append(info.requestUrl());
+        firstPartyUrls.append(info.firstPartyUrl());
         return shouldIntercept;
     }
     TestRequestInterceptor(bool intercept)
@@ -251,6 +254,23 @@ void tst_QWebEngineUrlRequestInterceptor::setUrlSameUrl()
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
     QCOMPARE(spy.count(), 4);
+}
+
+void tst_QWebEngineUrlRequestInterceptor::firstPartyUrl()
+{
+    QWebEnginePage page;
+    TestRequestInterceptor interceptor(/* intercept */ false);
+    page.profile()->setRequestInterceptor(&interceptor);
+
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+
+    page.setUrl(QUrl("qrc:///resources/firstparty.html"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(interceptor.observedUrls.at(0), QUrl("qrc:///resources/firstparty.html"));
+    QCOMPARE(interceptor.observedUrls.at(1), QUrl("qrc:///resources/content.html"));
+    QCOMPARE(interceptor.firstPartyUrls.at(0), QUrl("qrc:///resources/firstparty.html"));
+    QCOMPARE(interceptor.firstPartyUrls.at(1), QUrl("qrc:///resources/firstparty.html"));
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QWebEngineUrlRequestInterceptor)

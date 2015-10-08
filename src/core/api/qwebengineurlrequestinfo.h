@@ -86,6 +86,7 @@ public:
     NavigationType navigationType() const;
 
     QUrl requestUrl() const;
+    QUrl firstPartyUrl() const;
     QByteArray requestMethod() const;
 
     void block(bool shouldBlock);
