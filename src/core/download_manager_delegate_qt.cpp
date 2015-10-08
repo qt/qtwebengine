@@ -40,6 +40,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/save_page_type.h"
 #include "content/public/browser/web_contents.h"
+#include "net/http/http_content_disposition.h"
 
 #include <QDir>
 #include <QFile>
@@ -102,6 +103,9 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
     }
 
     std::string suggestedFilename = item->GetSuggestedFilename();
+
+    if (suggestedFilename.empty())
+        suggestedFilename = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).filename();
 
     if (suggestedFilename.empty())
         suggestedFilename = item->GetTargetFilePath().AsUTF8Unsafe();
