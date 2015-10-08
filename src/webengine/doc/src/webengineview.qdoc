@@ -104,13 +104,13 @@
     The following snippet uses the \c{icon} property to build an \c{Image}
     component:
 
-    \code
+    \qml
     Image {
         id: appIcon
         source: webView.icon != "" ? webView.icon : "fallbackFavIcon.png";
-        ...
+        // ...
     }
-    \endcode
+    \endqml
 */
 
 /*!
@@ -311,7 +311,7 @@
     Immediately sets \c{isFullScreen} property to \c{false}. It can be used to notify the
     browser engine when the windowing system forces the application to leave fullscreen mode.
 
-    \code
+    \qml
     ApplicationWindow {
         onVisibilityChanged: {
             if (webEngineView.isFullScreen && visibility != Window.FullScreen)
@@ -320,10 +320,10 @@
 
         WebEngineView {
             id: webEngineView
-            ...
+            // ...
         }
     }
-    \endcode
+    \endqml
 
     \sa isFullScreen, fullScreenRequested()
 */
@@ -708,7 +708,7 @@
     Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
     property to be equal to toggleOn.
 
-    \code
+    \qml
     ApplicationWindow {
         id: window
         WebEngineView {
@@ -721,7 +721,7 @@
             }
         }
     }
-    \endcode
+    \endqml
 
     \sa toggleOn
 */
