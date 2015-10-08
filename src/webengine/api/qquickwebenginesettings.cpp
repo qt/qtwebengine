@@ -59,7 +59,7 @@ QQuickWebEngineSettings::QQuickWebEngineSettings(QQuickWebEngineSettings *parent
     The WebEngineSettings type can be used to configure browser properties and generic
     attributes, such as JavaScript support, focus behavior, and access to remote content. This type
     is uncreatable, but the default settings for all web engine views can be accessed by using
-    the \l{WebEngine::settings}{WebEngine.settings} property.
+    the \l [QML] {WebEngine::settings}{WebEngine.settings} property.
 
     Each web engine view can have individual settings that can be accessed by using the
     \l{WebEngineView::settings}{WebEngineView.settings} property.
