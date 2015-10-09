@@ -436,6 +436,8 @@
 
     The corresponding handler is \c onJavaScriptConsoleMessage. If no handler is specified,
     the view will log the messages into a \c js \l{QLoggingCategory}{logging category}.
+
+    \sa{Console Logging}
 */
 
 /*!

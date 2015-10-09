@@ -264,6 +264,8 @@
 
     Since Qt 5.6, the default implementation logs the messages in a \c js
     \l{QLoggingCategory}{logging category}.
+
+    \sa{Console Logging}
 */
 
 /*!
