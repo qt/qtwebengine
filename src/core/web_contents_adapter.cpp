@@ -829,6 +829,14 @@ void WebContentsAdapter::wasHidden()
     d->webContents->WasHidden();
 }
 
+QPointF WebContentsAdapter::lastScrollOffset() const
+{
+    Q_D(const WebContentsAdapter);
+    if (content::RenderWidgetHostView *rwhv = d->webContents->GetRenderWidgetHostView())
+        return toQt(rwhv->GetLastScrollOffset());
+    return QPointF();
+}
+
 void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags)
 {
     Q_D(WebContentsAdapter);

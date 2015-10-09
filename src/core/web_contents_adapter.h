@@ -143,6 +143,8 @@ public:
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *);
 
+    QPointF lastScrollOffset() const;
+
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;
 

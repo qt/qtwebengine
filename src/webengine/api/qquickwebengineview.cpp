@@ -893,6 +893,12 @@ void QQuickWebEngineViewPrivate::moveValidationMessage(const QRect &anchor)
     ui()->moveMessageBubble(anchor);
 }
 
+void QQuickWebEngineViewPrivate::updateScrollPosition(const QPointF &position)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->scrollPositionChanged(position);
+}
+
 void QQuickWebEngineViewPrivate::renderProcessTerminated(
         RenderProcessTerminationStatus terminationStatus, int exitCode)
 {
@@ -1300,6 +1306,12 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     default:
         Q_UNREACHABLE();
     }
+}
+
+QPointF QQuickWebEngineView::scrollPosition() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->adapter->lastScrollOffset();
 }
 
 void QQuickWebEngineViewPrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)

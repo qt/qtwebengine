@@ -628,6 +628,7 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
 
 void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
 {
+    bool scrollOffsetChanged = (m_lastScrollOffset != frame->metadata.root_scroll_offset);
     m_lastScrollOffset = frame->metadata.root_scroll_offset;
     Q_ASSERT(!m_needsDelegatedFrameAck);
     m_needsDelegatedFrameAck = true;
@@ -648,6 +649,9 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, sco
         m_adapterClient->loadVisuallyCommitted();
         m_didFirstVisuallyNonEmptyLayout = false;
     }
+
+    if (scrollOffsetChanged)
+        m_adapterClient->updateScrollPosition(toQt(m_lastScrollOffset));
 }
 
 void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)

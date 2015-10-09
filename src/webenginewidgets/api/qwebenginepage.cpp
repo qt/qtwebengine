@@ -367,6 +367,12 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
     }
 }
 
+void QWebEnginePagePrivate::updateScrollPosition(const QPointF &position)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->scrollPositionChanged(position);
+}
+
 BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
 {
     return profile->d_ptr->browserContext();
@@ -1288,6 +1294,17 @@ bool QWebEnginePage::isFullScreen()
 {
     Q_D(const QWebEnginePage);
     return d->view ? d->view->isFullScreen() : false;
+}
+
+/*!
+    \since 5.7
+
+    Returns the scroll position of the page contents.
+*/
+QPointF QWebEnginePage::scrollPosition() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->lastScrollOffset();
 }
 
 QT_END_NAMESPACE

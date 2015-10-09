@@ -236,6 +236,7 @@ public:
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
 
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
+    virtual void updateScrollPosition(const QPointF &position) = 0;
 
     virtual BrowserContextAdapter* browserContextAdapter() = 0;
 

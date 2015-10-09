@@ -69,6 +69,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
     Q_PROPERTY(QUrl iconUrl READ iconUrl)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
+    Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
 
 public:
     enum WebAction {
@@ -224,6 +225,8 @@ public:
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);
 
+    QPointF scrollPosition() const;
+
     void runJavaScript(const QString& scriptSource);
 #ifdef Q_QDOC
     void runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback);
@@ -262,6 +265,8 @@ Q_SIGNALS:
     void urlChanged(const QUrl &url);
     // Was iconChanged() in QWebFrame
     void iconUrlChanged(const QUrl &url);
+
+    void scrollPositionChanged(const QPointF &position);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);
