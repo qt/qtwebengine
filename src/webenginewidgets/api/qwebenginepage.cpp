@@ -55,6 +55,7 @@
 #include <QIcon>
 #include <QInputDialog>
 #include <QLayout>
+#include <QLoggingCategory>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
@@ -1303,10 +1304,24 @@ bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString 
 
 void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {
-    Q_UNUSED(level);
-    Q_UNUSED(message);
-    Q_UNUSED(lineNumber);
-    Q_UNUSED(sourceID);
+    static QLoggingCategory loggingCategory("js", QtWarningMsg);
+    static QByteArray file = sourceID.toUtf8();
+    QMessageLogger logger(file.constData(), lineNumber, nullptr, loggingCategory.categoryName());
+
+    switch (level) {
+    case JavaScriptConsoleMessageLevel::InfoMessageLevel:
+        if (loggingCategory.isInfoEnabled())
+            logger.info().noquote() << message;
+        break;
+    case JavaScriptConsoleMessageLevel::WarningMessageLevel:
+        if (loggingCategory.isWarningEnabled())
+            logger.warning().noquote() << message;
+        break;
+    case JavaScriptConsoleMessageLevel::ErrorMessageLevel:
+        if (loggingCategory.isCriticalEnabled())
+            logger.critical().noquote() << message;
+        break;
+    }
 }
 
 bool QWebEnginePage::certificateError(const QWebEngineCertificateError &)

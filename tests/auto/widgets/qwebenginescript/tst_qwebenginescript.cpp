@@ -25,18 +25,6 @@
 #include <qwebengineview.h>
 #include "../util.h"
 
-//#define DEBUG_SCRIPT_MESSAGES
-#ifdef DEBUG_SCRIPT_MESSAGES
-class WebEnginePage : public QWebEnginePage {
-    void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID) {
-        qDebug() << level << message << lineNumber << sourceID;
-    }
-
-};
-#else
-typedef QWebEnginePage WebEnginePage;
-#endif
-
 class tst_QWebEngineScript: public QObject {
     Q_OBJECT
 
@@ -49,10 +37,9 @@ private Q_SLOTS:
 
 };
 
-
 void tst_QWebEngineScript::domEditing()
 {
-    WebEnginePage page;
+    QWebEnginePage page;
     QWebEngineView view;
     view.setPage(&page);
     QWebEngineScript s;
@@ -88,7 +75,7 @@ void tst_QWebEngineScript::injectionPoint()
     s.setSourceCode("var foo = \"foobar\";");
     s.setInjectionPoint(static_cast<QWebEngineScript::InjectionPoint>(injectionPoint));
     s.setWorldId(QWebEngineScript::MainWorld);
-    WebEnginePage page;
+    QWebEnginePage page;
     page.scripts().insert(s);
     page.setHtml(QStringLiteral("<html><head><script> var contents;") + testScript
                  + QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {\
@@ -119,7 +106,7 @@ void tst_QWebEngineScript::injectionPoint_data()
 
 void tst_QWebEngineScript::scriptWorld()
 {
-    WebEnginePage page;
+    QWebEnginePage page;
     QWebEngineScript script;
     script.setInjectionPoint(QWebEngineScript::DocumentCreation);
     script.setWorldId(QWebEngineScript::MainWorld);
@@ -138,7 +125,7 @@ void tst_QWebEngineScript::scriptWorld()
 
 void tst_QWebEngineScript::scriptModifications()
 {
-    WebEnginePage page;
+    QWebEnginePage page;
     QWebEngineScript script;
     script.setName(QStringLiteral("String1"));
     script.setInjectionPoint(QWebEngineScript::DocumentCreation);

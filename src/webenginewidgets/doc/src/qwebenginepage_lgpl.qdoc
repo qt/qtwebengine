@@ -262,7 +262,8 @@
     \a level indicates the severity of the event that triggered the message. That is, whether it
     was triggered by an error or a less severe event.
 
-    The default implementation prints nothing.
+    Since Qt 5.6, the default implementation logs the messages in a \c js
+    \l{QLoggingCategory}{logging category}.
 */
 
 /*!

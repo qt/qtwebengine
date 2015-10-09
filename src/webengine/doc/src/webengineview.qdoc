@@ -434,7 +434,8 @@
     \a level indicates the severity of the event that triggered the message, that is, whether it
     was triggered by an error or a less severe event.
 
-    The corresponding handler is \c onJavaScriptConsoleMessage.
+    The corresponding handler is \c onJavaScriptConsoleMessage. If no handler is specified,
+    the view will log the messages into a \c js \l{QLoggingCategory}{logging category}.
 */
 
 /*!
