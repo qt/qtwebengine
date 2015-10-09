@@ -591,21 +591,6 @@ void TabWidget::closeTab(int index)
 
     bool hasFocus = false;
     if (WebView *tab = webView(index)) {
-#if defined(QWEBENGINEPAGE_ISMODIFIED)
-        if (tab->isModified()) {
-            QMessageBox closeConfirmation(tab);
-            closeConfirmation.setWindowFlags(Qt::Sheet);
-            closeConfirmation.setWindowTitle(tr("Do you really want to close this page?"));
-            closeConfirmation.setInformativeText(tr("You have modified this page and when closing it you would lose the modification.\n"
-                                                     "Do you really want to close this page?\n"));
-            closeConfirmation.setIcon(QMessageBox::Question);
-            closeConfirmation.addButton(QMessageBox::Yes);
-            closeConfirmation.addButton(QMessageBox::No);
-            closeConfirmation.setEscapeButton(QMessageBox::No);
-            if (closeConfirmation.exec() == QMessageBox::No)
-                return;
-        }
-#endif
         hasFocus = tab->hasFocus();
 
         if (m_profile == QWebEngineProfile::defaultProfile()) {
