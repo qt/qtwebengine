@@ -223,7 +223,7 @@ TabWidget::TabWidget(QWidget *parent)
     setElideMode(Qt::ElideRight);
 
     connect(m_tabBar, SIGNAL(newTab()), this, SLOT(newTab()));
-    connect(m_tabBar, SIGNAL(closeTab(int)), this, SLOT(closeTab(int)));
+    connect(m_tabBar, SIGNAL(closeTab(int)), this, SLOT(requestCloseTab(int)));
     connect(m_tabBar, SIGNAL(cloneTab(int)), this, SLOT(cloneTab(int)));
     connect(m_tabBar, SIGNAL(closeOtherTabs(int)), this, SLOT(closeOtherTabs(int)));
     connect(m_tabBar, SIGNAL(reloadTab(int)), this, SLOT(reloadTab(int)));
@@ -241,7 +241,7 @@ TabWidget::TabWidget(QWidget *parent)
     m_closeTabAction = new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this);
     m_closeTabAction->setShortcuts(QKeySequence::Close);
     m_closeTabAction->setIconVisibleInMenu(false);
-    connect(m_closeTabAction, SIGNAL(triggered()), this, SLOT(closeTab()));
+    connect(m_closeTabAction, SIGNAL(triggered()), this, SLOT(requestCloseTab()));
 
     m_nextTabAction = new QAction(tr("Show Next Tab"), this);
     QList<QKeySequence> shortcuts;
@@ -552,12 +552,8 @@ void TabWidget::windowCloseRequested()
     WebPage *webPage = qobject_cast<WebPage*>(sender());
     WebView *webView = qobject_cast<WebView*>(webPage->view());
     int index = webViewIndex(webView);
-    if (index >= 0) {
-        if (count() == 1)
-            webView->webPage()->mainWindow()->close();
-        else
-            closeTab(index);
-    }
+    if (index >= 0)
+        closeTab(index);
 }
 
 void TabWidget::closeOtherTabs(int index)
@@ -582,10 +578,20 @@ void TabWidget::cloneTab(int index)
 }
 
 // When index is -1 index chooses the current tab
-void TabWidget::closeTab(int index)
+void TabWidget::requestCloseTab(int index)
 {
     if (index < 0)
         index = currentIndex();
+    if (index < 0 || index >= count())
+        return;
+    WebView *tab = webView(index);
+    if (!tab)
+        return;
+    tab->page()->triggerAction(QWebEnginePage::RequestClose);
+}
+
+void TabWidget::closeTab(int index)
+{
     if (index < 0 || index >= count())
         return;
 

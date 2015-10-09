@@ -80,6 +80,7 @@ public:
 
 Q_SIGNALS:
     void validationMessageShown(const QString &mainText, const QString &subText);
+    void windowCloseRejected();
 
 private:
     QScopedPointer<QQuickWebEngineErrorPage> m_errorPage;

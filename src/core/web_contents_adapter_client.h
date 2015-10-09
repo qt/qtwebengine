@@ -208,6 +208,7 @@ public:
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
     virtual void close() = 0;
+    virtual void windowCloseRejected() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) = 0;
     virtual void requestFullScreen(bool) = 0;

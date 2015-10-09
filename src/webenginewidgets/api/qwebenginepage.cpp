@@ -224,6 +224,11 @@ void QWebEnginePagePrivate::close()
     Q_EMIT q->windowCloseRequested();
 }
 
+void QWebEnginePagePrivate::windowCloseRejected()
+{
+    // Do nothing for now.
+}
+
 void QWebEnginePagePrivate::didRunJavaScript(quint64 requestId, const QVariant& result)
 {
     m_callbacks.invoke(requestId, result);
@@ -639,6 +644,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case ExitFullScreen:
         text = tr("Exit Full Screen Mode");
         break;
+    case RequestClose:
+        text = tr("Close Page");
+        break;
     default:
         break;
     }
@@ -808,6 +816,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case ExitFullScreen:
         d->adapter->exitFullScreen();
+        break;
+    case RequestClose:
+        d->adapter->requestClose();
         break;
     default:
         Q_UNREACHABLE();

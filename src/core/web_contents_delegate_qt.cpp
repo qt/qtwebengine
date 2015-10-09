@@ -390,4 +390,13 @@ void WebContentsDelegateQt::MoveValidationMessage(content::WebContents *web_cont
     m_viewClient->moveValidationMessage(toQt(anchor_in_root_view));
 }
 
+void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool proceed, bool *proceed_to_fire_unload)
+{
+    Q_UNUSED(tab);
+    Q_ASSERT(proceed_to_fire_unload);
+    *proceed_to_fire_unload = proceed;
+    if (!proceed)
+        m_viewClient->windowCloseRejected();
+}
+
 } // namespace QtWebEngineCore

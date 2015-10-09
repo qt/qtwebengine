@@ -119,6 +119,9 @@
     \value InspectElement Trigger any attached Web Inspector to inspect the highlighed element.
            (Added in Qt 5.6)
     \value ExitFullScreen Exit the fullscreen mode. (Added in Qt 5.6)
+    \value RequestClose Request to close the web page. If defined, the \c{window.onbeforeunload}
+           handler is run, and the user can confirm or reject to close the page. If the close
+           request is confirmed, \c windowCloseRequested is emitted. (Added in Qt 5.6)
 
     \omitvalue WebActionCount
 
@@ -482,6 +485,8 @@
 
     This signal is emitted whenever the page requests the web browser window to be closed,
     for example through the JavaScript \c{window.close()} call.
+
+    \sa QWebEnginePage::RequestClose
 */
 
 /*!

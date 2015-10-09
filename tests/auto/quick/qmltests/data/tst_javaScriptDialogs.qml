@@ -42,10 +42,25 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.2
+import QtWebEngine.testsupport 1.0
 import "../mock-delegates/TestParams" 1.0
 
 TestWebEngineView {
     id: webEngineView
+
+    testSupport: WebEngineTestSupport {
+        property bool windowCloseRejectedSignalEmitted: false
+
+        function waitForWindowCloseRejected() {
+            return _waitFor(function () {
+                    return testSupport.windowCloseRejectedSignalEmitted;
+                });
+        }
+
+        onWindowCloseRejected: {
+            windowCloseRejectedSignalEmitted = true;
+        }
+    }
 
     TestCase {
         id: test
@@ -78,6 +93,24 @@ TestWebEngineView {
             compare(JSDialogParams.dialogCount, 2)
             compare(webEngineView.title, "REJECTED")
 
+        }
+
+        function test_confirmClose() {
+            webEngineView.url = Qt.resolvedUrl("confirmclose.html");
+            verify(webEngineView.waitForLoadSucceeded());
+            webEngineView.windowCloseRequestedSignalEmitted = false;
+            JSDialogParams.shouldAcceptDialog = true;
+            webEngineView.triggerWebAction(WebEngineView.RequestClose);
+            verify(webEngineView.waitForWindowCloseRequested());
+        }
+
+        function test_rejectClose() {
+            webEngineView.url = Qt.resolvedUrl("confirmclose.html");
+            verify(webEngineView.waitForLoadSucceeded());
+            webEngineView.testSupport.windowCloseRejectedSignalEmitted = false;
+            JSDialogParams.shouldAcceptDialog = false;
+            webEngineView.triggerWebAction(WebEngineView.RequestClose);
+            verify(webEngineView.testSupport.waitForWindowCloseRejected());
         }
 
         function test_prompt() {

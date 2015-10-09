@@ -108,6 +108,7 @@ public:
 
         InspectElement,
         ExitFullScreen,
+        RequestClose,
 
         WebActionCount
     };
