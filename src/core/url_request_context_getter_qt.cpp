@@ -336,11 +336,13 @@ void URLRequestContextGetterQt::generateJobFactory()
     Q_ASSERT(!m_jobFactory);
     m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
 
-    // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
-    content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
-    Q_ASSERT(it != m_protocolHandlers.end());
-    m_jobFactory->SetProtocolHandler(it->first, it->second.release());
-    m_protocolHandlers.clear();
+    {
+        // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
+        content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
+        Q_ASSERT(it != m_protocolHandlers.end());
+        m_jobFactory->SetProtocolHandler(it->first, it->second.release());
+        m_protocolHandlers.clear();
+    }
 
     m_jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
     m_jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
@@ -350,9 +352,10 @@ void URLRequestContextGetterQt::generateJobFactory()
     m_jobFactory->SetProtocolHandler(url::kFtpScheme,
         new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
 
-    Q_FOREACH (QWebEngineUrlSchemeHandler *handler, m_browserContext->customUrlSchemeHandlers()) {
-        m_jobFactory->SetProtocolHandler(handler->scheme().toStdString(), new CustomProtocolHandler(handler));
-    }
+    QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator it = m_browserContext->customUrlSchemeHandlers().constBegin();
+    const QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator end = m_browserContext->customUrlSchemeHandlers().constEnd();
+    for (; it != end; ++it)
+        m_jobFactory->SetProtocolHandler(it.key().toStdString(), new CustomProtocolHandler(it.value()));
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }

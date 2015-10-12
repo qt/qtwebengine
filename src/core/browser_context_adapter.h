@@ -147,7 +147,9 @@ public:
 
     QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers();
     void updateCustomUrlSchemeHandlers();
-    void removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
+    void addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
+    bool removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
+    QWebEngineUrlSchemeHandler *takeCustomUrlSchemeHandler(const QByteArray &);
     UserScriptControllerHost *userScriptController();
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);

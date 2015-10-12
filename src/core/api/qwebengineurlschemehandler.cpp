@@ -35,7 +35,6 @@
 ****************************************************************************/
 
 #include "qwebengineurlschemehandler.h"
-#include "qwebengineurlschemehandler_p.h"
 
 #include "qwebengineurlrequestjob.h"
 
@@ -59,20 +58,14 @@ QT_BEGIN_NAMESPACE
     This signal is emitted when the custom URL scheme handler \a handler is deleted.
 */
 
-QWebEngineUrlSchemeHandlerPrivate::QWebEngineUrlSchemeHandlerPrivate(const QByteArray &scheme)
-    : m_scheme(scheme)
-{
-}
-
 /*!
     Constructs a new URL scheme handler.
 
-    The handler is created for \a scheme with the parent \a parent.
+    The handler is created with the parent \a parent.
 
   */
-QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(const QByteArray &scheme, QObject *parent)
+QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineUrlSchemeHandlerPrivate(scheme))
 {
 }
 
@@ -83,14 +76,6 @@ QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
     Q_EMIT destroyed(this);
     delete d_ptr;
-}
-
-/*!
-    Returns the custom URL scheme handled.
-*/
-QByteArray QWebEngineUrlSchemeHandler::scheme() const
-{
-    return d_ptr->scheme();
 }
 
 /*!

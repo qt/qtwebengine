@@ -39,7 +39,6 @@
 
 #include "qtwebenginecoreglobal.h"
 
-#include <QtCore/qbytearray.h>
 #include <QtCore/qobject.h>
 
 namespace QtWebEngineCore {
@@ -54,10 +53,8 @@ class QWebEngineUrlSchemeHandlerPrivate;
 class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandler : public QObject {
     Q_OBJECT
 public:
-    QWebEngineUrlSchemeHandler(const QByteArray &scheme, QObject *parent = 0);
+    QWebEngineUrlSchemeHandler(QObject *parent = 0);
     ~QWebEngineUrlSchemeHandler();
-
-    QByteArray scheme() const;
 
     virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
 
