@@ -29,7 +29,6 @@ defineTest(runConfigure) {
         contains(QT_CONFIG, xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
         contains(QT_CONFIG, pulseaudio): REQUIRED_PACKAGES += libpulse
         contains(QT_CONFIG, system-png): REQUIRED_PACKAGES += libpng
-        contains(QT_CONFIG, system-jpeg): REQUIRED_PACKAGES += libjpeg
         contains(QT_CONFIG, system-harfbuzz): REQUIRED_PACKAGES += harfbuzz
         !cross_compile: REQUIRED_PACKAGES += libpci nss
 
