@@ -837,6 +837,14 @@ QPointF WebContentsAdapter::lastScrollOffset() const
     return QPointF();
 }
 
+QSizeF WebContentsAdapter::lastContentsSize() const
+{
+    Q_D(const WebContentsAdapter);
+    if (RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt *>(d->webContents->GetRenderWidgetHostView()))
+        return toQt(rwhv->lastContentsSize());
+    return QSizeF();
+}
+
 void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags)
 {
     Q_D(WebContentsAdapter);

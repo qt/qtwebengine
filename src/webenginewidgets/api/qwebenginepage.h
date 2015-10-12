@@ -69,6 +69,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
     Q_PROPERTY(QUrl iconUrl READ iconUrl)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
+    Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
 
 public:
@@ -226,6 +227,7 @@ public:
     void setZoomFactor(qreal factor);
 
     QPointF scrollPosition() const;
+    QSizeF contentsSize() const;
 
     void runJavaScript(const QString& scriptSource);
 #ifdef Q_QDOC
@@ -267,6 +269,7 @@ Q_SIGNALS:
     void iconUrlChanged(const QUrl &url);
 
     void scrollPositionChanged(const QPointF &position);
+    void contentsSizeChanged(const QSizeF &size);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

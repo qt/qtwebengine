@@ -373,6 +373,12 @@ void QWebEnginePagePrivate::updateScrollPosition(const QPointF &position)
     Q_EMIT q->scrollPositionChanged(position);
 }
 
+void QWebEnginePagePrivate::updateContentsSize(const QSizeF &size)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->contentsSizeChanged(size);
+}
+
 BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
 {
     return profile->d_ptr->browserContext();
@@ -1305,6 +1311,17 @@ QPointF QWebEnginePage::scrollPosition() const
 {
     Q_D(const QWebEnginePage);
     return d->adapter->lastScrollOffset();
+}
+
+/*!
+    \since 5.7
+
+    Returns the size of the page contents.
+*/
+QSizeF QWebEnginePage::contentsSize() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->lastContentsSize();
 }
 
 QT_END_NAMESPACE

@@ -202,6 +202,8 @@ public:
 #endif // QT_NO_ACCESSIBILITY
     void didFirstVisuallyNonEmptyLayout();
 
+    gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
+
 private:
     void sendDelegatedFrameAck();
     void processMotionEvent(const ui::MotionEvent &motionEvent);
@@ -235,6 +237,7 @@ private:
     bool m_initPending;
 
     gfx::Vector2dF m_lastScrollOffset;
+    gfx::SizeF m_lastContentsSize;
 };
 
 } // namespace QtWebEngineCore

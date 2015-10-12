@@ -104,6 +104,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 1)
     Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2)
+    Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
@@ -138,6 +139,7 @@ public:
     void setZoomFactor(qreal arg);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
+    QSizeF contentsSize() const;
     QPointF scrollPosition() const;
 
     QQuickWebEngineViewExperimental *experimental() const;
@@ -307,6 +309,7 @@ Q_SIGNALS:
     Q_REVISION(2) void activeFocusOnPressChanged(bool);
     Q_REVISION(2) void backgroundColorChanged();
     Q_REVISION(2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    Q_REVISION(3) void contentsSizeChanged(const QSizeF& size);
     Q_REVISION(3) void scrollPositionChanged(const QPointF& position);
 
 protected:

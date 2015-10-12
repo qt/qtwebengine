@@ -237,6 +237,7 @@ public:
 
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
     virtual void updateScrollPosition(const QPointF &position) = 0;
+    virtual void updateContentsSize(const QSizeF &size) = 0;
 
     virtual BrowserContextAdapter* browserContextAdapter() = 0;
 
