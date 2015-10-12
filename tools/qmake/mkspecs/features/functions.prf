@@ -149,6 +149,11 @@ defineReplace(which) {
   return($$out)
 }
 
+defineTest(use?) {
+    contains(WEBENGINE_CONFIG, use_$$lower($$1)): return(true)
+    return(false)
+}
+
 defineReplace(findOrBuildNinja) {
     # If NINJA_PATH env var is set, prefer that.
     # Fallback to locating our own bootstrapped ninja.

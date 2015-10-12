@@ -35,48 +35,47 @@ defineTest(runConfigure) {
         for(package, $$list($$REQUIRED_PACKAGES)) {
             !packagesExist($$package):skipBuild("Unmet dependency: $$package")
         }
-        packagesExist(minizip, zlib): WEBENGINE_CONFIG += config_system_minizip
+        packagesExist(minizip, zlib): WEBENGINE_CONFIG += use_system_minizip
         else: log("System zlib or minizip not found. Using Chromium's copies.$${EOL}")
-        packagesExist(libwebp,libwebpdemux): WEBENGINE_CONFIG += config_system_libwebp
+        packagesExist(libwebp,libwebpdemux): WEBENGINE_CONFIG += use_system_libwebp
         else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
-        packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += config_system_libxslt
+        packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
         for(package, $$list("libevent flac jsoncpp opus speex")) {
-            packagesExist($$package): WEBENGINE_CONFIG += config_system_$$package
+            packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
             else: log("System $$package not found. Using Chromium's copy.$${EOL}")
         }
-        packagesExist("\'vpx >= 1.4\'"): WEBENGINE_CONFIG += config_system_vpx
+        packagesExist("\'vpx >= 1.4\'"): WEBENGINE_CONFIG += use_system_vpx
         else: log("System vpx >= 1.4 not found. Using Chromium's copy.$${EOL}")
-        config_srtp: WEBENGINE_CONFIG += config_system_libsrtp
+        config_srtp: WEBENGINE_CONFIG += use_system_libsrtp
         else: log("System libsrtp not found. Using Chromium's copy.$${EOL}")
-        config_snappy: WEBENGINE_CONFIG += config_system_snappy
+        config_snappy: WEBENGINE_CONFIG += use_system_snappy
         else: log("System snappy not found. Using Chromium's copy.$${EOL}")
 
         # Optional dependencies
-        packagesExist(nss): WEBENGINE_CONFIG += config_system_nss
+        packagesExist(nss): WEBENGINE_CONFIG += use_nss
         else: log("System NSS not found, BoringSSL will be used.$${EOL}")
     }
 
     isEmpty(skipBuildReason): {
         cache(CONFIG, add, $$list(webengine_successfully_configured))
         !isEmpty(WEBENGINE_CONFIG) {
-            CONFIG += $$WEBENGINE_CONFIG
-            cache(CONFIG, add, $$list($$WEBENGINE_CONFIG))
+            cache(WEBENGINE_CONFIG, add, $$list($$WEBENGINE_CONFIG))
+            export(WEBENGINE_CONFIG)
         }
     }
-    export(CONFIG)
 }
 
 # This is called from default_post, at which point we've also parsed
 # command line options
 defineTest(finalizeConfigure) {
     linux {
-        config_system_nss {
+        use?(nss) {
             log("SSL............................... Using system NSS$${EOL}")
         } else {
             log("SSL............................... Using bundled BoringSSL$${EOL}")
         }
-        contains(WEBENGINE_CONFIG, use_system_icu) {
+        use?(system_icu) {
             packagesExist("icu-uc icu-i18n") {
                 log("ICU............................... Using system version$${EOL}")
             } else {
@@ -86,7 +85,7 @@ defineTest(finalizeConfigure) {
         } else {
             log("ICU............................... Using internal copy (Default, force system ICU with WEBENGINE_CONFIG += use_system_icu)$${EOL}")
         }
-        contains(WEBENGINE_CONFIG, use_system_ffmpeg) {
+        use?(system_ffmpeg) {
             packagesExist("libavcodec libavformat libavutil") {
                 packagesExist("libwebp, libwebpdemux, opus, \'vpx >= 1.4\'"){
                     log("FFMPEG............................ Using system version$${EOL}")
@@ -102,7 +101,7 @@ defineTest(finalizeConfigure) {
             log("FFMPEG............................ Using internal copy (Default, force system FFMPEG with WEBENGINE_CONFIG += use_system_ffmpeg)$${EOL}")
         }
     }
-    contains(WEBENGINE_CONFIG, use_proprietary_codecs) {
+    use?(proprietary_codecs) {
         log("Proprietary codecs (H264, MP3).... Enabled$${EOL}")
     } else {
         log("Proprietary codecs (H264, MP3).... Not enabled         (Default, enable with WEBENGINE_CONFIG += use_proprietary_codecs)$${EOL}")
