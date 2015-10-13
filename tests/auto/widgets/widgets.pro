@@ -6,8 +6,9 @@ SUBDIRS += \
     qwebengineaccessibility \
     qwebengineframe \
     qwebenginepage \
-    qwebenginehistoryinterface \
-    qwebengineview \
     qwebenginehistory \
+    qwebenginehistoryinterface \
     qwebengineinspector \
+    qwebengineprofile \
     qwebenginescript \
+    qwebengineview
