@@ -4,7 +4,7 @@ project                 = QtWebEngine
 description             = Qt WebEngine Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     =
+examplesinstallpath     = qtwebengine
 
 qhp.projects            = QtWebEngine
 
