@@ -14,7 +14,8 @@ OTHER_FILES += ApplicationRoot.qml \
                ButtonWithMenu.qml \
                ContextMenuExtras.qml \
                DownloadView.qml \
-               FeaturePermissionBar.qml
+               FeaturePermissionBar.qml \
+               FullScreenNotification.qml
 
 RESOURCES += resources.qrc
 

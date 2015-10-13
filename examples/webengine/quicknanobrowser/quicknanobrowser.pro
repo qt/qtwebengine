@@ -9,7 +9,8 @@ SOURCES = main.cpp
 OTHER_FILES += ApplicationRoot.qml \
                BrowserDialog.qml \
                BrowserWindow.qml \
-               DownloadView.qml
+               DownloadView.qml \
+               FullScreenNotification.qml
 
 RESOURCES += resources.qrc
 
