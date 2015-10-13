@@ -168,7 +168,7 @@ void URLRequestContextGetterQt::generateStorage()
         m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
 
     m_storage->set_proxy_service(net::CreateProxyServiceUsingV8ProxyResolver(
-                                     proxyConfigService,
+                                     scoped_ptr<net::ProxyConfigService>(proxyConfigService),
                                      new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
                                      m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
                                      host_resolver.get(),
@@ -176,7 +176,7 @@ void URLRequestContextGetterQt::generateStorage()
                                      m_networkDelegate.get()));
 
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-    m_storage->set_transport_security_state(new net::TransportSecurityState());
+    m_storage->set_transport_security_state(scoped_ptr<net::TransportSecurityState>(new net::TransportSecurityState()));
 
     m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
     m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
@@ -274,7 +274,7 @@ void URLRequestContextGetterQt::generateUserAgent()
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    m_storage->set_http_user_agent_settings(new HttpUserAgentSettingsQt(m_browserContext));
+    m_storage->set_http_user_agent_settings(scoped_ptr<net::HttpUserAgentSettings>(new HttpUserAgentSettingsQt(m_browserContext)));
 }
 
 void URLRequestContextGetterQt::updateHttpCache()
@@ -327,7 +327,7 @@ void URLRequestContextGetterQt::generateHttpCache()
     network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
     network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
 
-    m_storage->set_http_transaction_factory(new net::HttpCache(network_session_params, main_backend));
+    m_storage->set_http_transaction_factory(scoped_ptr<net::HttpCache>(new net::HttpCache(network_session_params, main_backend)));
 }
 
 void URLRequestContextGetterQt::generateJobFactory()
@@ -340,22 +340,22 @@ void URLRequestContextGetterQt::generateJobFactory()
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
-        m_jobFactory->SetProtocolHandler(it->first, it->second.release());
+        m_jobFactory->SetProtocolHandler(it->first, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
         m_protocolHandlers.clear();
     }
 
-    m_jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
-    m_jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
+    m_jobFactory->SetProtocolHandler(url::kDataScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
+    m_jobFactory->SetProtocolHandler(url::kFileScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FileProtocolHandler(
         content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
-    m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
+    m_jobFactory->SetProtocolHandler(kQrcSchemeQt, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
     m_jobFactory->SetProtocolHandler(url::kFtpScheme,
-        new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
+        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver()))));
 
     QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator it = m_browserContext->customUrlSchemeHandlers().constBegin();
     const QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator end = m_browserContext->customUrlSchemeHandlers().constEnd();
     for (; it != end; ++it)
-        m_jobFactory->SetProtocolHandler(it.key().toStdString(), new CustomProtocolHandler(it.value()));
+        m_jobFactory->SetProtocolHandler(it.key().toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(it.value())));
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }

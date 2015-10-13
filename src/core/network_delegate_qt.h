@@ -81,7 +81,9 @@ public:
     virtual int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
     virtual void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
     virtual void OnResponseStarted(net::URLRequest*) override;
-    virtual void OnRawBytesRead(const net::URLRequest&, int) override;
+    virtual void OnNetworkBytesReceived(const net::URLRequest&, int64_t) override;
+    virtual void OnNetworkBytesSent(const net::URLRequest&, int64_t) override;
+    virtual void OnURLRequestJobOrphaned(net::URLRequest*) override;
     virtual void OnCompleted(net::URLRequest*, bool) override;
     virtual void OnPACScriptError(int, const base::string16&) override;
     virtual net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*) override;

@@ -54,6 +54,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/audio/audio_manager_base.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -187,7 +188,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
 
 MediaCaptureDevicesDispatcher *MediaCaptureDevicesDispatcher::GetInstance()
 {
-    return Singleton<MediaCaptureDevicesDispatcher>::get();
+    return base::Singleton<MediaCaptureDevicesDispatcher>::get();
 }
 
 MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
@@ -295,7 +296,7 @@ void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::W
   // FIXME: expose through the settings once we have them
   const bool screenCaptureEnabled = !qgetenv("QT_WEBENGINE_USE_EXPERIMENTAL_SCREEN_CAPTURE").isNull();
 
-  const bool originIsSecure = request.security_origin.SchemeIsSecure();
+  const bool originIsSecure = content::IsOriginSecure(request.security_origin);
 
   if (screenCaptureEnabled && originIsSecure) {
 

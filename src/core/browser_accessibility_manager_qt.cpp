@@ -44,12 +44,12 @@ using namespace blink;
 namespace content {
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-      const ui::AXTreeUpdate& initial_tree,
+      const SimpleAXTreeUpdate& initialTree,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory)
 {
 #ifndef QT_NO_ACCESSIBILITY
-        return new BrowserAccessibilityManagerQt(0, initial_tree, delegate);
+        return new BrowserAccessibilityManagerQt(0, initialTree, delegate);
 #else
         return 0;
 #endif // QT_NO_ACCESSIBILITY
@@ -67,7 +67,7 @@ BrowserAccessibility *BrowserAccessibilityFactoryQt::Create()
 #ifndef QT_NO_ACCESSIBILITY
 BrowserAccessibilityManagerQt::BrowserAccessibilityManagerQt(
     QObject* parentObject,
-    const ui::AXTreeUpdate& initialTree,
+    const SimpleAXTreeUpdate& initialTree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory)

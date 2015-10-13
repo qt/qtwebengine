@@ -132,22 +132,23 @@ public:
     virtual void MovePluginWindows(const std::vector<content::WebPluginGeometry>&) Q_DECL_OVERRIDE;
     virtual void UpdateCursor(const content::WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
-    virtual void TextInputTypeChanged(ui::TextInputType type, ui::TextInputMode mode, bool can_compose_inline, int flags) Q_DECL_OVERRIDE;
+    virtual void TextInputStateChanged(const ViewHostMsg_TextInputState_Params&) Q_DECL_OVERRIDE;
     virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
     virtual void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
     virtual void SetTooltipText(const base::string16 &tooltip_text) Q_DECL_OVERRIDE;
     virtual void SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params&) Q_DECL_OVERRIDE;
-    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, content::ReadbackRequestCallback& callback, const SkColorType color_type) Q_DECL_OVERRIDE;
+    virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType preferred_color_type) Q_DECL_OVERRIDE;
     virtual void CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback) Q_DECL_OVERRIDE;
     virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
     virtual void OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
     virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
-    virtual gfx::GLSurfaceHandle GetCompositingSurface() Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
+    virtual void ClearCompositorFrame() Q_DECL_OVERRIDE;
+    virtual bool GetScreenColorProfile(std::vector<char>*) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewBase.
     virtual void SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;

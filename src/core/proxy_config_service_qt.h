@@ -54,7 +54,7 @@ public:
 
     static net::ProxyServer fromQNetworkProxy(const QNetworkProxy &);
 
-    explicit ProxyConfigServiceQt(net::ProxyConfigService *baseService);
+    explicit ProxyConfigServiceQt(scoped_ptr<ProxyConfigService> baseService);
     ~ProxyConfigServiceQt() override;
 
     // ProxyConfigService implementation:

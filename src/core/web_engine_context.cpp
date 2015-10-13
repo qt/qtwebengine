@@ -83,11 +83,9 @@
 #include <QVector>
 #include <qpa/qplatformnativeinterface.h>
 
-using namespace QtWebEngineCore;
-
 namespace {
 
-scoped_refptr<WebEngineContext> sContext;
+scoped_refptr<QtWebEngineCore::WebEngineContext> sContext;
 
 void destroyContext()
 {
@@ -139,6 +137,8 @@ bool usingQtQuick2DRenderer()
 }
 
 } // namespace
+
+namespace QtWebEngineCore {
 
 void WebEngineContext::destroyBrowserContext()
 {
@@ -216,9 +216,12 @@ WebEngineContext::WebEngineContext()
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
     parsedCommandLine->AppendSwitch(switches::kNoSandbox);
-    parsedCommandLine->AppendSwitch(switches::kEnableDelegatedRenderer);
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
+    // These are currently only default on OS X, and we don't support them:
+    parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
+    parsedCommandLine->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
+    parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
 
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
@@ -274,3 +277,5 @@ WebEngineContext::WebEngineContext()
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
 }
+
+} // namespace

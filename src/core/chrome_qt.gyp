@@ -13,7 +13,10 @@
         './',
         '<(chromium_src_dir)',
         '<(chromium_src_dir)/skia/config',
-        '<(SHARED_INTERMEDIATE_DIR)/chrome', # Needed to include grit-generated files in localized_error.cc
+        '<(chromium_src_dir)/third_party/skia/include/core',
+         # Needed to include grit-generated files in localized_error.cc:
+        '<(SHARED_INTERMEDIATE_DIR)/chrome',
+        '<(SHARED_INTERMEDIATE_DIR)/components/strings',
       ],
       'sources': [
         '<(chromium_src_dir)/chrome/browser/media/desktop_streams_registry.cc',

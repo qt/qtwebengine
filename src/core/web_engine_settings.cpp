@@ -262,7 +262,6 @@ void WebEngineSettings::doApply()
 void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *prefs)
 {
     // Override for now
-    prefs->java_enabled = false;
     prefs->touch_enabled = isTouchScreenAvailable();
 
     // Attributes mapping.

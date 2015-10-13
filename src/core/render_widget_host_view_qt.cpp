@@ -373,7 +373,6 @@ content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAcces
 // Set focus to the associated View component.
 void RenderWidgetHostViewQt::Focus()
 {
-    m_host->SetInputMethodActive(true);
     if (!IsPopup())
         m_delegate->setKeyboardFocus();
     m_host->Focus();
@@ -547,13 +546,10 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputTypeChanged(ui::TextInputType type, ui::TextInputMode mode, bool can_compose_inline, int flags)
+void RenderWidgetHostViewQt::TextInputStateChanged(const ViewHostMsg_TextInputState_Params &params)
 {
-    Q_UNUSED(mode);
-    Q_UNUSED(can_compose_inline);
-    Q_UNUSED(flags);
-    m_currentInputType = type;
-    m_delegate->inputMethodStateChanged(static_cast<bool>(type));
+    m_currentInputType = params.type;
+    m_delegate->inputMethodStateChanged(params.type != ui::TEXT_INPUT_TYPE_NONE);
 }
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
@@ -601,7 +597,7 @@ void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionB
     m_cursorRect = QRect(caretRect.x(), caretRect.y(), caretRect.width(), caretRect.height());
 }
 
-void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, content::ReadbackRequestCallback& callback, const SkColorType color_type)
+void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_subrect, const gfx::Size& dst_size, const content::ReadbackRequestCallback& callback, const SkColorType color_type)
 {
     NOTIMPLEMENTED();
     Q_UNUSED(src_subrect);
@@ -678,9 +674,13 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
     return gfx::Rect(r.x(), r.y(), r.width(), r.height());
 }
 
-gfx::GLSurfaceHandle RenderWidgetHostViewQt::GetCompositingSurface()
+void RenderWidgetHostViewQt::ClearCompositorFrame()
 {
-    return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
+}
+
+bool RenderWidgetHostViewQt::GetScreenColorProfile(std::vector<char>*)
+{
+    return false;
 }
 
 void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range)

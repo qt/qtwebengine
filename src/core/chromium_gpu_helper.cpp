@@ -87,7 +87,7 @@ gpu::SyncPointManager *sync_point_manager()
 void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, gpu::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
 {
     // We need to set our callback from the GPU thread, where the SyncPointManager lives.
-    gpuMessageLoop->PostTask(FROM_HERE, base::Bind(&addSyncPointCallbackDelegate, make_scoped_refptr(syncPointManager), sync_point, callback));
+    gpuMessageLoop->PostTask(FROM_HERE, base::Bind(&addSyncPointCallbackDelegate, syncPointManager, sync_point, callback));
 }
 
 gpu::gles2::MailboxManager *mailbox_manager()

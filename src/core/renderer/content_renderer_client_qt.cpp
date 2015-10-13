@@ -117,7 +117,7 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame *frame, const blink::WebURLRequest &failedRequest, const blink::WebURLError &error, std::string *errorHtml, base::string16 *errorDescription)
 {
     Q_UNUSED(frame)
-    const bool isPost = base::EqualsASCII(failedRequest.httpMethod(), "POST");
+    const bool isPost = QByteArray::fromStdString(failedRequest.httpMethod().utf8()) == QByteArrayLiteral("POST");
 
     if (errorHtml) {
         // Use a local error page.
@@ -128,7 +128,7 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* ren
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
         LocalizedError::GetStrings(error.reason, error.domain.utf8(), error.unreachableURL, isPost
-                                   , error.staleCopyInCache && !isPost, locale, renderView->GetAcceptLanguages()
+                                   , error.staleCopyInCache && !isPost, false, locale, renderView->GetAcceptLanguages()
                                    , scoped_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 

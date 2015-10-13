@@ -41,6 +41,7 @@
 #include <net/ssl/ssl_info.h>
 #include <ui/base/l10n/l10n_util.h>
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "type_conversion.h"
 
 QT_BEGIN_NAMESPACE
@@ -125,7 +126,7 @@ QString CertificateErrorController::errorString() const
     // formatted text.
     switch (d->certError) {
     case SslPinnedKeyNotInCertificateChain:
-        return getQStringForMessageId(IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE);
+        return getQStringForMessageId(IDS_CERT_ERROR_SUMMARY_PINNING_FAILURE_DETAILS);
     case CertificateCommonNameInvalid:
         return getQStringForMessageId(IDS_CERT_ERROR_COMMON_NAME_INVALID_DESCRIPTION);
     case CertificateDateInvalid:

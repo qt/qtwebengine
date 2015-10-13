@@ -56,6 +56,10 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
     case content::PermissionType::MIDI_SYSEX:
     case content::PermissionType::PUSH_MESSAGING:
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
+    case content::PermissionType::MIDI:
+    case content::PermissionType::DURABLE_STORAGE:
+    case content::PermissionType::AUDIO_CAPTURE:
+    case content::PermissionType::VIDEO_CAPTURE:
     case content::PermissionType::NUM:
         break;
     }
@@ -64,7 +68,8 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
 
 PermissionManagerQt::PermissionManagerQt(BrowserContextAdapter *contextAdapter)
     : m_contextAdapter(contextAdapter)
-    , m_subscriberCount(0)
+    , m_requestIdCount(0)
+    , m_subscriberIdCount(0)
 {
 }
 
@@ -86,61 +91,44 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
         } else
             ++it;
     }
-    Q_FOREACH (const Subscriber &subscriber, m_subscribers) {
+    Q_FOREACH (const RequestOrSubscription &subscriber, m_subscribers) {
         if (subscriber.origin == origin && subscriber.type == type)
             subscriber.callback.Run(status);
     }
 }
 
-void PermissionManagerQt::RequestPermission(content::PermissionType permission,
+int PermissionManagerQt::RequestPermission(content::PermissionType permission,
                                             content::RenderFrameHost *frameHost,
-                                            int request_id,
                                             const GURL& requesting_origin,
                                             bool user_gesture,
                                             const base::Callback<void(content::PermissionStatus)>& callback)
 {
     Q_UNUSED(user_gesture);
+    int request_id = ++m_requestIdCount;
     BrowserContextAdapter::PermissionType permissionType = toQt(permission);
     if (permissionType == BrowserContextAdapter::UnsupportedPermission) {
         callback.Run(content::PERMISSION_STATUS_DENIED);
-        return;
+        return request_id;
     }
 
     content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents();
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     Q_ASSERT(contentsDelegate);
-    Request request = {
-        request_id,
+    RequestOrSubscription request = {
         permissionType,
         toQt(requesting_origin),
         callback
     };
-    m_requests.append(request);
+    m_requests.insert(request_id, request);
     if (permissionType == BrowserContextAdapter::GeolocationPermission)
         contentsDelegate->requestGeolocationPermission(request.origin);
+    return request_id;
 }
 
-void PermissionManagerQt::CancelPermissionRequest(content::PermissionType permission,
-                                                  content::RenderFrameHost *frameHost,
-                                                  int request_id,
-                                                  const GURL& requesting_origin)
+void PermissionManagerQt::CancelPermissionRequest(int request_id)
 {
-    Q_UNUSED(frameHost);
-    const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
-    if (permissionType == BrowserContextAdapter::UnsupportedPermission)
-        return;
-
     // Should we add API to cancel permissions in the UI level?
-    const QUrl origin = toQt(requesting_origin);
-    auto it = m_requests.begin();
-    const auto end = m_requests.end();
-    while (it != end) {
-        if (it->id == request_id && it->type == permissionType && it->origin == origin) {
-            m_requests.erase(it);
-            return;
-        }
-    }
-    qWarning() << "PermissionManagerQt::CancelPermissionRequest called on unknown request" << request_id << origin << permissionType;
+    m_requests.remove(request_id);
 }
 
 content::PermissionStatus PermissionManagerQt::GetPermissionStatus(
@@ -187,25 +175,20 @@ int PermissionManagerQt::SubscribePermissionStatusChange(
     const GURL& /*embedding_origin*/,
     const base::Callback<void(content::PermissionStatus)>& callback)
 {
-    Subscriber subscriber = {
-        m_subscriberCount++,
+    int subscriber_id = ++m_subscriberIdCount;
+    RequestOrSubscription subscriber = {
         toQt(permission),
         toQt(requesting_origin),
         callback
     };
-    m_subscribers.append(subscriber);
-    return subscriber.id;
+    m_subscribers.insert(subscriber_id, subscriber);
+    return subscriber_id;
 }
 
 void PermissionManagerQt::UnsubscribePermissionStatusChange(int subscription_id)
 {
-    for (int i = 0; i < m_subscribers.count(); i++) {
-        if (m_subscribers[i].id == subscription_id) {
-            m_subscribers.removeAt(i);
-            return;
-        }
-    }
-    qWarning() << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
+    if (!m_subscribers.remove(subscription_id))
+        qWarning() << "PermissionManagerQt::UnsubscribePermissionStatusChange called on unknown subscription id" << subscription_id;
 }
 
 } // namespace QtWebEngineCore

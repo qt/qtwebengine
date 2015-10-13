@@ -57,8 +57,6 @@
 
 QT_FORWARD_DECLARE_CLASS(QWebChannel)
 
-class WebEngineContext;
-
 namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
@@ -67,6 +65,7 @@ class UserScriptControllerHost;
 class WebChannelIPCTransportHost;
 class WebContentsAdapterClient;
 class WebContentsDelegateQt;
+class WebEngineContext;
 
 class WebContentsAdapterPrivate {
 public:

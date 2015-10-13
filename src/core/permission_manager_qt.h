@@ -56,19 +56,14 @@ public:
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
 
     // content::PermissionManager implementation:
-    void RequestPermission(
+    int RequestPermission(
         content::PermissionType permission,
         content::RenderFrameHost* render_frame_host,
-        int request_id,
         const GURL& requesting_origin,
         bool user_gesture,
         const base::Callback<void(content::PermissionStatus)>& callback) override;
 
-    void CancelPermissionRequest(
-        content::PermissionType permission,
-        content::RenderFrameHost* render_frame_host,
-        int request_id,
-        const GURL& requesting_origin) override;
+    void CancelPermissionRequest(int request_id) override;
 
     content::PermissionStatus GetPermissionStatus(
         content::PermissionType permission,
@@ -96,21 +91,15 @@ public:
 private:
     BrowserContextAdapter *m_contextAdapter;
     QHash<QPair<QUrl, PermissionType>, bool> m_permissions;
-    struct Request {
-        int id;
+    struct RequestOrSubscription {
         PermissionType type;
         QUrl origin;
         base::Callback<void(content::PermissionStatus)> callback;
     };
-    QList<Request> m_requests;
-    struct Subscriber {
-        int id;
-        PermissionType type;
-        QUrl origin;
-        base::Callback<void(content::PermissionStatus)> callback;
-    };
-    int m_subscriberCount;
-    QList<Subscriber> m_subscribers;
+    QHash<int, RequestOrSubscription> m_requests;
+    QHash<int, RequestOrSubscription> m_subscribers;
+    int m_requestIdCount;
+    int m_subscriberIdCount;
 
 };
 

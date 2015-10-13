@@ -44,12 +44,12 @@ defineTest(runConfigure) {
         else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
         packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
-        for(package, $$list("libevent flac jsoncpp opus speex")) {
+        for(package, $$list("libevent flac jsoncpp opus")) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
             else: log("System $$package not found. Using Chromium's copy.$${EOL}")
         }
-        packagesExist("\'vpx >= 1.4\'"): WEBENGINE_CONFIG += use_system_vpx
-        else: log("System vpx >= 1.4 not found. Using Chromium's copy.$${EOL}")
+        packagesExist("\'vpx >= 1.5\'"): WEBENGINE_CONFIG += use_system_vpx
+        else: log("System vpx >= 1.5 not found. Using Chromium's copy.$${EOL}")
         config_srtp: WEBENGINE_CONFIG += use_system_libsrtp
         else: log("System libsrtp not found. Using Chromium's copy.$${EOL}")
         config_snappy: WEBENGINE_CONFIG += use_system_snappy

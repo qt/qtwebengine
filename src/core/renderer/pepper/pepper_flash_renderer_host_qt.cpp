@@ -65,8 +65,8 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPoint.h"
-#include "third_party/skia/include/core/SkTemplates.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/private/SkTemplates.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -278,7 +278,7 @@ int32_t PepperFlashRendererHostQt::OnNavigate(
     bool rejected = false;
     while (header_iter.GetNext()) {
         std::string lower_case_header_name =
-                base::StringToLowerASCII(header_iter.name());
+                base::ToLowerASCII(header_iter.name());
         if (!IsSimpleHeader(lower_case_header_name, header_iter.values())) {
             rejected = true;
 

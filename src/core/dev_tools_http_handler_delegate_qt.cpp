@@ -247,6 +247,11 @@ std::string DevToolsHttpHandlerDelegateQt::GetFrontendResource(const std::string
     return content::DevToolsFrontendHost::GetFrontendResource(path).as_string();
 }
 
+content::DevToolsExternalAgentProxyDelegate* DevToolsHttpHandlerDelegateQt::HandleWebSocketConnection(const std::string&)
+{
+    return 0;
+}
+
 base::DictionaryValue* DevToolsManagerDelegateQt::HandleCommand(DevToolsAgentHost *, base::DictionaryValue *)
 {
     return 0;

@@ -103,6 +103,7 @@ def isInChromiumBlacklist(file_path):
             not 'media/desktop_streams_registry.' in file_path and
             not 'common/chrome_switches.' in file_path and
             not 'common/localized_error.' in file_path and
+            not '/spellchecker/' in file_path and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
             not file_path.endswith('.grd') and
@@ -116,15 +117,21 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('components/device_event_log') and
             not file_path.startswith('components/devtools_') and
             not file_path.startswith('components/error_page') and
+            not file_path.startswith('components/keyed_service') and
             not file_path.startswith('components/mime_util') and
+            not file_path.startswith('components/pref_registry') and
             not file_path.startswith('components/printing') and
             not file_path.startswith('components/resources') and
             not file_path.startswith('components/scheduler') and
+            not file_path.startswith('components/security_interstitials') and
             not file_path.startswith('components/strings') and
             not file_path.startswith('components/tracing') and
+            not file_path.startswith('components/url_formatter') and
+            not file_path.startswith('components/user_prefs') and
             not file_path.startswith('components/visitedlink') and
             not file_path.startswith('components/web_cache') and
             not file_path.startswith('components/webcrypto') and
+            not file_path.endswith('.grd') and
             not file_path.endswith('.grdp') and
             not 'components_strings' in file_path)
         or file_path.startswith('content/public/android/java')
@@ -157,6 +164,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/bison')
         or (file_path.startswith('third_party/cacheinvalidation') and
             not file_path.endswith('isolate'))
+        or file_path.startswith('third_party/catapult')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
@@ -173,7 +181,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/google_appengine_cloudstorage')
         or file_path.startswith('third_party/google_toolbox_for_mac')
         or file_path.startswith('third_party/hunspell_dictionaries')
-        or file_path.startswith('third_party/hunspell')
         or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
@@ -194,6 +201,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/pdfium')
         or file_path.startswith('third_party/psyco_win32')
         or file_path.startswith('third_party/scons-2.0.1')
+        or file_path.startswith('third_party/sfntly/src/cpp/data/fonts')
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
         or file_path.startswith('third_party/webgl')

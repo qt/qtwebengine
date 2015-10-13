@@ -69,6 +69,8 @@ public:
     std::string GetFrontendResource(const std::string&)  Q_DECL_OVERRIDE;
     std::string GetPageThumbnailData(const GURL &url) Q_DECL_OVERRIDE;
 
+    content::DevToolsExternalAgentProxyDelegate* HandleWebSocketConnection(const std::string&) Q_DECL_OVERRIDE;
+
 private:
     QString m_bindAddress;
     int m_port;

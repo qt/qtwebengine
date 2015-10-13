@@ -260,7 +260,15 @@ void NetworkDelegateQt::OnResponseStarted(net::URLRequest*)
 {
 }
 
-void NetworkDelegateQt::OnRawBytesRead(const net::URLRequest&, int)
+void NetworkDelegateQt::OnNetworkBytesReceived(const net::URLRequest&, int64_t)
+{
+}
+
+void NetworkDelegateQt::OnNetworkBytesSent(const net::URLRequest&, int64_t)
+{
+}
+
+void NetworkDelegateQt::OnURLRequestJobOrphaned(net::URLRequest*)
 {
 }
 

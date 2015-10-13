@@ -17,6 +17,7 @@
       '<(chromium_src_dir)/content/app/strings/content_strings.gyp:content_strings',
       '<(chromium_src_dir)/blink/public/blink_resources.gyp:blink_resources',
       '<(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
+      '<(chromium_src_dir)/components/components_strings.gyp:components_strings',
       '../chrome_qt.gyp:chrome_resources',
   ],
   'targets': [

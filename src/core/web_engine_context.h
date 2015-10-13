@@ -62,7 +62,6 @@ namespace QtWebEngineCore {
 class BrowserContextAdapter;
 class ContentMainDelegateQt;
 class SurfaceFactoryQt;
-} // namespace
 
 class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
@@ -80,12 +79,14 @@ private:
     ~WebEngineContext();
 
     scoped_ptr<base::RunLoop> m_runLoop;
-    scoped_ptr<QtWebEngineCore::ContentMainDelegateQt> m_mainDelegate;
+    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
     scoped_ptr<content::ContentMainRunner> m_contentRunner;
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
     QObject* m_globalQObject;
-    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
+    QExplicitlySharedDataPointer<BrowserContextAdapter> m_defaultBrowserContext;
     scoped_ptr<devtools_http_handler::DevToolsHttpHandler> m_devtools;
 };
+
+} // namespace
 
 #endif // WEB_ENGINE_CONTEXT_H

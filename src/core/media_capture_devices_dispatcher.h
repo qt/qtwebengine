@@ -84,7 +84,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   DesktopStreamsRegistry *getDesktopStreamsRegistry();
 
  private:
-  friend struct DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
+  friend struct base::DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
 
   struct PendingAccessRequest {
     PendingAccessRequest(const content::MediaStreamRequest &request,

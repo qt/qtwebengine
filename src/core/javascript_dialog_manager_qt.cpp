@@ -49,7 +49,7 @@ Q_STATIC_ASSERT_X(static_cast<int>(content::JAVASCRIPT_MESSAGE_TYPE_PROMPT) == s
 
 JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
 {
-    return Singleton<JavaScriptDialogManagerQt>::get();
+    return base::Singleton<JavaScriptDialogManagerQt>::get();
 }
 
 void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)

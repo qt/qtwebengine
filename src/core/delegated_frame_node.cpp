@@ -54,7 +54,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/bind.h"
 #include "cc/output/delegated_frame_data.h"
-#include "cc/quads/checkerboard_draw_quad.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -546,15 +545,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             }
 
             switch (quad->material) {
-            case cc::DrawQuad::CHECKERBOARD: {
-                const cc::CheckerboardDrawQuad *cbquad = cc::CheckerboardDrawQuad::MaterialCast(quad);
-                QSGSimpleRectNode *rectangleNode = new QSGSimpleRectNode;
-
-                rectangleNode->setRect(toQt(quad->rect));
-                rectangleNode->setColor(toQt(cbquad->color));
-                currentLayerChain->appendChildNode(rectangleNode);
-                break;
-            } case cc::DrawQuad::RENDER_PASS: {
+            case cc::DrawQuad::RENDER_PASS: {
                 const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
                 QSGTexture *layer = findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
                 // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes.

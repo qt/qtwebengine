@@ -58,7 +58,7 @@ class BrowserAccessibilityManagerQt : public BrowserAccessibilityManager
 public:
     BrowserAccessibilityManagerQt(
         QObject* parentObject,
-        const ui::AXTreeUpdate& initialTree,
+        const SimpleAXTreeUpdate& initialTree,
         BrowserAccessibilityDelegate* delegate,
         BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactoryQt());
 
