@@ -2,5 +2,6 @@
 <qresource>
     <file>resources/index.html</file>
     <file>resources/content.html</file>
+    <file>resources/firstparty.html</file>
 </qresource>
 </RCC>

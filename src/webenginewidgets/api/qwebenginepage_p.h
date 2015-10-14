@@ -95,6 +95,7 @@ public:
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(QtWebEngineCore::WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
+    virtual void windowCloseRejected() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) Q_DECL_OVERRIDE;
     virtual void requestFullScreen(bool) Q_DECL_OVERRIDE;

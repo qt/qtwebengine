@@ -37,17 +37,6 @@
 #ifndef QWEBENGINEURLREQUESTJOB_H
 #define QWEBENGINEURLREQUESTJOB_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
 #include "qtwebenginecoreglobal.h"
 
 #include <QtCore/qbytearray.h>
@@ -55,6 +44,7 @@
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
+class URLRequestCustomJob;
 class URLRequestCustomJobDelegate;
 } // namespace
 
@@ -86,7 +76,7 @@ public:
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
-    friend class QWebEngineUrlSchemeHandlerPrivate;
+    friend class QtWebEngineCore::URLRequestCustomJob;
 
     QtWebEngineCore::URLRequestCustomJobDelegate* d_ptr;
 };

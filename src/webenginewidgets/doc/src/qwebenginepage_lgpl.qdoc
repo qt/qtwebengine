@@ -119,6 +119,9 @@
     \value InspectElement Trigger any attached Web Inspector to inspect the highlighed element.
            (Added in Qt 5.6)
     \value ExitFullScreen Exit the fullscreen mode. (Added in Qt 5.6)
+    \value RequestClose Request to close the web page. If defined, the \c{window.onbeforeunload}
+           handler is run, and the user can confirm or reject to close the page. If the close
+           request is confirmed, \c windowCloseRequested is emitted. (Added in Qt 5.6)
 
     \omitvalue WebActionCount
 
@@ -264,11 +267,11 @@
 
 /*!
     \fn bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+    \since 5.5
     This function is called upon receiving a request to navigate to the specified \a url by means of
     the specified navigation type \a type. \a isMainFrame indicates whether the request corresponds
     to the main frame or a sub frame. If the function returns \c true, the navigation request is
-    accepted and Chromium continues to load the page. Otherwise, the request is ignored. The default
-    implementation accepts the navigation request.
+    accepted and \c url is loaded. The default implementation accepts all navigation requests.
 */
 
 
@@ -482,6 +485,8 @@
 
     This signal is emitted whenever the page requests the web browser window to be closed,
     for example through the JavaScript \c{window.close()} call.
+
+    \sa QWebEnginePage::RequestClose
 */
 
 /*!
@@ -596,16 +601,27 @@
 
 /*!
     \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
-    Runs the JavaScript code contained in \a scriptSource.
+    \overload runJavaScript()
+
+    This convenience function runs the JavaScript code contained in \a scriptSource.
 */
 
 /*!
     \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
+
     Runs the JavaScript code contained in \a scriptSource.
 
-    When the script has been executed, \a resultCallback is called with the result of the last executed statement.
+    The script will run in the same \e world as other scripts that are part of the loaded site.
 
-    \note \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a QVariant parameter.
+    When the script has been executed, \a resultCallback is called with the result of the last executed statement.
+    \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a
+    QVariant parameter. For example:
+
+    \code
+    page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
+    \endcode
+
+    See scripts() for an alternative API to inject scripts.
 */
 
 /*!

@@ -75,6 +75,7 @@
 
 /*!
     \qmlmethod void WebEngineView::reloadAndBypassCache()
+    \since QtWebEngine 1.1
 
     Reloads the current page, ignoring any cached content.
 
@@ -84,7 +85,7 @@
 /*!
     \qmlproperty url WebEngineView::url
 
-    The location of the currently displaying HTML page. This writable
+    The location of the currently displayed HTML page. This writable
     property offers the main interface to load a page into a web view.
     It functions the same as the \c{window.location} DOM property.
 
@@ -95,7 +96,7 @@
     \qmlproperty url WebEngineView::icon
     \readonly
 
-    This property holds the location of the currently displaying web site icon,
+    The location of the currently displayed web site icon,
     also known as favicon or shortcut icon. This read-only URL corresponds to
     the image used within a mobile browser application to represent a
     bookmarked page on the device's home screen.
@@ -103,20 +104,20 @@
     The following snippet uses the \c{icon} property to build an \c{Image}
     component:
 
-    \code
+    \qml
     Image {
         id: appIcon
         source: webView.icon != "" ? webView.icon : "fallbackFavIcon.png";
-        ...
+        // ...
     }
-    \endcode
+    \endqml
 */
 
 /*!
     \qmlproperty int WebEngineView::loadProgress
     \readonly
 
-    This property holds the amount of the page that has been loaded, expressed
+    The amount of data from the page that has been loaded, expressed
     as an integer percentage in the range from \c{0} to \c{100}.
 */
 
@@ -147,7 +148,7 @@
     \qmlproperty string WebEngineView::title
     \readonly
 
-    This property holds the title of the currently displaying HTML page, a
+    The title of the currently displayed HTML page. This is a
     read-only value that reflects the contents of the \c{<title>} tag.
 */
 
@@ -207,6 +208,7 @@
 /*!
     \qmlproperty list<WebEngineScript> WebEngineView::userScripts
     \readonly
+    \since QtWebEngine 1.1
 
     List of script objects attached to the view.
 */
@@ -221,15 +223,15 @@
 
 /*!
     \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl)
-    \brief Loads the specified \a html as the content of the web view.
+    Loads the specified \a html as the content of the web view.
 
     This method offers a lower-level alternative to the \c{url} property,
     which references HTML pages via URL.
 
-    External objects such as stylesheets or images referenced in the HTML
-    document should be located relative to \a baseUrl. For example, if \a html
+    External objects, such as stylesheets or images referenced in the HTML
+    document, should be located relative to \a baseUrl. For example, if \a html
     is retrieved from \c http://www.example.com/documents/overview.html, which
-    is the base url, then an image referenced with the relative url, \c diagram.png,
+    is the base URL, then an image referenced with the relative URL, \c diagram.png,
     should be at \c{http://www.example.com/documents/diagram.png}.
 
     \sa url
@@ -237,15 +239,19 @@
 
 /*!
     \qmlmethod void WebEngineView::runJavaScript(string script, variant callback)
-    \brief Runs the specified \a script in the content of the web view.
+    Runs the specified \a script in the content of the web view.
 
-    In case a callback function is provided it will be invoked after the script
-    finished running.
+    In case a callback function is provided, it will be invoked after the script
+    finishes running.
 
     \code
     runJavaScript("document.title", function(result) { console.log(result); });
     \endcode
 
+    The script will run in the same \e world as other scripts that are
+    part of the loaded site.
+
+    See WebEngineView::userScripts for an alternative API to inject scripts.
 */
 
 /*!
@@ -305,7 +311,7 @@
     Immediately sets \c{isFullScreen} property to \c{false}. It can be used to notify the
     browser engine when the windowing system forces the application to leave fullscreen mode.
 
-    \code
+    \qml
     ApplicationWindow {
         onVisibilityChanged: {
             if (webEngineView.isFullScreen && visibility != Window.FullScreen)
@@ -314,16 +320,37 @@
 
         WebEngineView {
             id: webEngineView
-            ...
+            // ...
         }
     }
-    \endcode
+    \endqml
 
     \sa isFullScreen, fullScreenRequested()
 */
 
 /*!
+    \qmlmethod void WebEngineView::setActiveFocusOnPress(bool arg)
+    \since QtWebEngine 1.2
+
+    Sets active focus to a clicked web engine view if \a arg is \c true. By setting it to \c false,
+    a web engine view can be used to create a UI element that should not get focus. This can be
+    useful in a hybrid UI.
+
+    \sa activeFocusOnPressChanged()
+*/
+
+/*!
+    \qmlmethod void WebEngineView::triggerWebAction(WebAction action)
+    \since QtWebEngine 1.2
+
+    Triggers the web action \a action.
+
+    \sa WebAction
+*/
+
+/*!
     \qmlsignal WebEngineView::featurePermissionRequested(url securityOrigin, Feature feature)
+    \since QtWebEngine 1.1
 
     This signal is emitted when the web site identified by \a securityOrigin requests
     to make use of the resource or device identified by \a feature.
@@ -335,9 +362,9 @@
     \qmlsignal WebEngineView::loadingChanged(loadRequest)
 
     This signal is emitted when a page load begins, ends, or fails.
-    The corresponding handler is onLoadingChanged.
+    The corresponding handler is \c onLoadingChanged.
 
-    When handling the signal with onLoadingChanged, various read-only
+    When handling the signal with \c onLoadingChanged, various read-only
     parameters are available on the \a loadRequest:
 
     \table
@@ -349,10 +376,7 @@
         \li The location of the resource that is loading.
     \row
         \li status
-        \li Reflects one of four load states:
-        \c{WebEngineView::LoadStartedStatus}, \c{WebEngineView::LoadStoppedStatus},
-        \c{WebEngineView::LoadSucceededStatus}, or \c{WebEngineView::LoadFailedStatus}.
-        See WebEngineLoadRequest::status and WebEngineView::LoadStatus.
+        \li The \l{LoadStatus}{load status} of the page.
     \row
         \li errorString
         \li The description of load error.
@@ -361,13 +385,10 @@
         \li The HTTP error code.
     \row
         \li errorDomain
-        \li The high-level error types, one of
-        \c{WebEngineView::ConnectionErrorDomain}, \c{WebEngineView::HttpErrorDomain}, \c{WebEngineView::InternalErrorDomain},
-        \c{WebEngineView::DownloadErrorDomain}, or \c{WebEngineView::NoErrorDomain}.  See
-        \l{WebEngineView::ErrorDomain} for the full list.
+        \li The high-level \l{ErrorDomain}{error type}.
     \endtable
 
-    \sa loading
+    \sa loading, LoadStatus, ErrorDomain
 */
 
 /*!
@@ -379,14 +400,14 @@
     The certificate error can be rejected by calling WebEngineCertificateError::rejectCertificate,
     which will stop loading the request.
 
-    The certificate error can be ignored  by calling WebEngineCertificateError::ignoreCertificateError
-    which will resume loading the request.
+    The certificate error can be ignored  by calling
+    WebEngineCertificateError::ignoreCertificateError, which will resume loading the request.
 
     It is possible to defer the decision of rejecting the given certificate by calling
     WebEngineCertificateError::defer, which is useful when waiting for user input.
-    By default the invalid certificate will be automatically rejected.
+    By default, the invalid certificate will be automatically rejected.
 
-    The corresponding handler is onCertificateError.
+    The corresponding handler is \c onCertificateError.
 
     \sa WebEngineCertificateError
 */
@@ -400,19 +421,20 @@
     events that are not cancelled with \c{preventDefault()}. \a{hoveredUrl}
     provides the link's location.
 
-    The corresponding handler is onLinkHovered.
+    The corresponding handler is \c onLinkHovered.
 */
 
 /*!
     \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, message, lineNumber, sourceID)
     This signal is emitted when a JavaScript program tries to print a \a message to the web browser's console.
 
-    For example in case of evaluation errors the source URL may be provided in \a sourceID as well as the \a lineNumber.
+    For example, in case of evaluation errors the source URL may be provided in \a sourceID as well
+    as the \a lineNumber.
 
-    \a level indicates the severity of the event that triggered the message, i.e. if it
+    \a level indicates the severity of the event that triggered the message, that is, whether it
     was triggered by an error or a less severe event.
 
-    The corresponding handler is onJavaScriptConsoleMessage.
+    The corresponding handler is \c onJavaScriptConsoleMessage.
 */
 
 /*!
@@ -420,18 +442,18 @@
     \since QtWebEngine 1.1
 
     This signal is emitted when a page load is requested to happen in a separate
-    WebEngineView. This can either be because the current page requested it explicitly
-    through a JavaScript call to window.open, or because the user clicked on a link
-    while holding Shift, Ctrl or a built-in combination that triggers the page to open
+    web engine view. This can either be because the current page requested it explicitly
+    through a JavaScript call to \c window.open, or because the user clicked on a link
+    while holding Shift, Ctrl, or a built-in combination that triggers the page to open
     in a new window.
 
-    If this signal isn't handled the requested load will fail.
+    If this signal is not handled, the requested load will fail.
 
     An example implementation:
 
     \snippet snippets/qtwebengine_webengineview_newviewrequested.qml 0
 
-    The corresponding handler is onNewViewRequested.
+    The corresponding handler is \c onNewViewRequested.
 
     \sa WebEngineNewViewRequest, NewViewDestination, {WebEngine Quick Nano Browser}
 */
@@ -443,15 +465,54 @@
     This signal is emitted when the web page requests fullscreen mode through the
     JavaScript API.
 
-    The corresponding handler is onFullScreenRequested.
+    The corresponding handler is \c onFullScreenRequested.
 
     \sa WebEngineFullScreenRequest, isFullScreen
 */
 
 /*!
+    \qmlsignal WebEngineView::activeFocusOnPressChanged(bool)
+    \since QtWebEngine 1.2
+
+    This signal is emitted when the ability of the web engine view to get focus when clicked
+    changes.
+
+    \sa setActiveFocusOnPress()
+*/
+
+/*!
+    \qmlsignal WebEngineView::backgroundColorChanged()
+    \since QtWebEngine 1.2
+
+    This signal is emitted when the web engine view background color changes.
+*/
+
+/*!
+    \qmlsignal WebEngineView::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode)
+
+    \since QtWebEngine 1.2
+
+    This signal is emitted when the render process is terminated with a non-zero exit status.
+    \a terminationStatus is the termination status of the process and \a exitCode is the status code
+    with which the process terminated.
+
+    \sa RenderProcessTerminationStatus
+*/
+
+/*!
+    \qmlsignal WebEngineView::windowCloseRequested()
+    \since QtWebEngine 1.2
+
+    This signal is emitted whenever the page requests the web browser window to be closed,
+    for example through the JavaScript \c{window.close()} call.
+
+    The corresponding handler is \c onWindowCloseRequested.
+*/
+
+/*!
     \qmlproperty enumeration WebEngineView::ErrorDomain
 
-    This enumeration details various high-level error types.
+    Describes various high-level error types:
 
     \value WebEngineView::NoErrorDomain
     \value WebEngineView::InternalErrorDomain
@@ -471,68 +532,42 @@
 /*!
     \qmlproperty enumeration WebEngineView::JavaScriptConsoleMessageLevel
 
-    Indicates the severity of a JavaScript console message.
+    Indicates the severity of a JavaScript console message:
 
-    \table
-
-    \header
-    \li Constant
-    \li Description
-
-    \row
-    \li InfoMessageLevel
-    \li Message is purely informative and should be safe to ignore.
-
-    \row
-    \li WarningMessageLevel
-    \li Message indicates there might be a problem that may need attention.
-
-    \row
-    \li ErrorMessageLevel
-    \li Message indicates there has been an error.
-
-    \endtable
+    \value  InfoMessageLevel
+            Message is purely informative and can safely be ignored.
+    \value  WarningMessageLevel
+            Message indicates there might be a problem that may need attention.
+    \value  ErrorMessageLevel
+            Message indicates there has been an error.
 */
 
 /*!
     \qmlproperty enumeration WebEngineView::LoadStatus
 
-    Reflects a page's load status.
+    Reflects a page's load status:
 
-    \table
-
-    \header
-    \li Constant
-    \li Description
-
-    \row
-    \li LoadStartedStatus
-    \li Page is currently loading.
-
-    \row
-    \li LoadSucceededStatus
-    \li Page has successfully loaded, and is not currently loading.
-
-    \row
-    \li LoadFailedStatus
-    \li Page has failed to load, and is not currently loading.
-
-    \endtable
+    \value  LoadStartedStatus
+            Page is currently loading.
+    \value  LoadSucceededStatus
+            Page has successfully loaded, and is not currently loading.
+    \value  LoadFailedStatus
+            Page has failed to load, and is not currently loading.
 */
 
 /*!
     \qmlproperty enumeration WebEngineView::NewViewDestination
 
-    This enumeration details the format in which a new view request should be opened.
+    Describes how to open a new view:
 
     \value WebEngineView::NewViewInWindow
-            The page expects to be opened in a separate Window.
+            In a separate Window.
     \value WebEngineView::NewViewInTab
-            The page expects to be opened in a tab of the same window.
+            In a tab of the same window.
     \value WebEngineView::NewViewInDialog
-            The page expects to be opened in a Window without any tab, tool or URL bar.
+            In a Window without a tab bar, toolbar, or URL bar.
     \value WebEngineView::NewViewInBackgroundTab
-            The page expects to be opened in a tab of the same window, without hiding the currently visible WebEngineView.
+            In a tab of the same window, without hiding the currently visible web engine view.
 
     \sa WebEngineNewViewRequest::destination
 */
@@ -540,7 +575,7 @@
 /*!
     \qmlproperty enumeration WebEngineView::FindFlags
 
-    This enum describes the options available to the findText() function. The options
+    Describes the options available to the findText() function. The options
     can be OR-ed together from the following list:
 
     \value FindBackward Searches backwards instead of forwards.
@@ -551,14 +586,106 @@
 */
 
 /*!
+    \qmlproperty enumeration WebEngineView::RenderProcessTerminationStatus
+    \since QtWebEngine 1.2
+
+    Describes the status with which the render process terminated:
+
+    \value  NormalTerminationStatus
+            The render process terminated normally.
+    \value  AbnormalTerminationStatus
+            The render process terminated with a non-zero exit status.
+    \value  CrashedTerminationStatus
+            The render process crashed, for example because of a segmentation fault.
+    \value  KilledTerminationStatus
+            The render process was killed, for example by \c SIGKILL or task manager kill.
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::WebAction
+    \since QtWebEngine 1.2
+
+    Describes the types of action that can be performed on a web page:
+
+    \value  NoWebAction
+            No action is triggered.
+    \value  Back
+            Navigate back in the history of navigated links.
+    \value  Forward
+            Navigate forward in the history of navigated links.
+    \value  Stop
+            Stop loading the current page.
+    \value  Reload
+            Reload the current page.
+    \value  ReloadAndBypassCache
+            Reload the current page, but do not use any local cache.
+    \value  Cut
+            Cut the content currently selected into the clipboard.
+    \value  Copy
+            Copy the content currently selected into the clipboard.
+    \value  Paste
+            Paste content from the clipboard.
+    \value  Undo
+            Undo the last editing action.
+    \value  Redo
+            Redo the last editing action.
+    \value  SelectAll
+            Select all content.
+    \value  PasteAndMatchStyle
+            Paste content from the clipboard with current style.
+    \value  OpenLinkInThisWindow
+            Open the current link in the current window. (Added in Qt 5.6)
+    \value  OpenLinkInNewWindow
+            Open the current link in a new window. (Added in Qt 5.6)
+    \value  OpenLinkInNewTab
+            Open the current link in a new tab. (Added in Qt 5.6)
+    \value  CopyLinkToClipboard
+            Copy the current link to the clipboard. (Added in Qt 5.6)
+    \value  CopyImageToClipboard
+            Copy the clicked image to the clipboard. (Added in Qt 5.6)
+    \value  CopyImageUrlToClipboard
+            Copy the clicked image's URL to the clipboard. (Added in Qt 5.6)
+    \value  CopyMediaUrlToClipboard
+            Copy the hovered audio or video's URL to the clipboard. (Added in Qt 5.6)
+    \value  ToggleMediaControls
+            Toggle between showing and hiding the controls for the hovered audio or video element.
+            (Added in Qt 5.6)
+    \value  ToggleMediaLoop
+            Toggle whether the hovered audio or video should loop on completetion or not.
+           (Added in Qt 5.6)
+    \value  ToggleMediaPlayPause
+            Toggle the play/pause state of the hovered audio or video element. (Added in Qt 5.6)
+    \value  ToggleMediaMute
+            Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
+    \value  DownloadLinkToDisk
+            Download the current link to the disk. (Added in Qt 5.6)
+    \value  DownloadImageToDisk
+            Download the highlighted image to the disk. (Added in Qt 5.6)
+    \value  DownloadMediaToDisk
+            Download the hovered audio or video to the disk. (Added in Qt 5.6)
+    \value  InspectElement
+            Trigger any attached Web Inspector to inspect the highlighed element.
+           (Added in Qt 5.6)
+    \value  ExitFullScreen
+            Exit the fullscreen mode. (Added in Qt 5.6)
+
+    \omitvalue WebActionCount
+*/
+
+/*!
     \qmlproperty enumeration WebEngineView::Feature
 
-    This enum describes the platform feature access categories that the user may be asked to grant or deny access to.
+    Describes the platform feature access categories that the user may be asked to grant or deny
+    access to:
 
-    \value Geolocation Access to location hardware or service
-    \value MediaAudioCapture Audio capture devices such a microphones
-    \value MediaVideoCapture Video devices, e.g. cameras
-    \value MediaAudioVideoCapture Both Audio and Video capture devices.
+    \value  Geolocation
+            Location hardware or service.
+    \value  MediaAudioCapture
+            Audio capture devices, such as microphones.
+    \value  MediaVideoCapture
+            Video devices, such as cameras.
+    \value  MediaAudioVideoCapture
+            Both audio and video capture devices.
 
     \sa featurePermissionRequested(), grantFeaturePermission()
 */
@@ -569,7 +696,7 @@
     \inqmlmodule QtWebEngine 1.1
     \since QtWebEngine 1.1
 
-    \brief A utility class for the WebEngineView::fullScreenRequested() signal.
+    \brief A utility type for the WebEngineView::fullScreenRequested() signal.
 
     \sa WebEngineView::fullScreenRequested()
 */
@@ -591,7 +718,7 @@
     Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
     property to be equal to toggleOn.
 
-    \code
+    \qml
     ApplicationWindow {
         id: window
         WebEngineView {
@@ -604,7 +731,7 @@
             }
         }
     }
-    \endcode
+    \endqml
 
     \sa toggleOn
 */

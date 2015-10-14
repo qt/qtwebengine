@@ -129,6 +129,7 @@ public:
     void inspectElementAt(const QPoint &location);
     bool hasInspector() const;
     void exitFullScreen();
+    void requestClose();
 
     void wasShown();
     void wasHidden();

@@ -37,9 +37,11 @@
 
     To activate the developer tools, start an application that uses Qt
     WebEngine with the command-line arguments:
-    \code
+
+    \badcode
     --remote-debugging-port=<port_number>
     \endcode
+
     Where \c <port_number> refers to a local network port. The web developer
     tools can then be accessed by launching a browser at the address
     \c http://localhost:<port_number>.
@@ -52,5 +54,5 @@
     device.
 
     For a detailed explanation of the capabilities of developer tools, see the
-    \l{https://developers.google.com/web/tools/chrome-devtools}{Chrome DevTools page}.
+    \l {Chrome DevTools} page.
 */

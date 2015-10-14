@@ -507,7 +507,16 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
 
 void QQuickWebEngineViewPrivate::close()
 {
-    // Not implemented yet.
+    Q_Q(QQuickWebEngineView);
+    emit q->windowCloseRequested();
+}
+
+void QQuickWebEngineViewPrivate::windowCloseRejected()
+{
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    if (m_testSupport)
+        Q_EMIT m_testSupport->windowCloseRejected();
+#endif
 }
 
 void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
@@ -1314,6 +1323,9 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case ExitFullScreen:
         d->adapter->exitFullScreen();
+        break;
+    case RequestClose:
+        d->adapter->requestClose();
         break;
     default:
         Q_UNREACHABLE();

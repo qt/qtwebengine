@@ -91,6 +91,7 @@ public:
     virtual void ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text) Q_DECL_OVERRIDE;
     virtual void HideValidationMessage(content::WebContents *web_contents) Q_DECL_OVERRIDE;
     virtual void MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view) Q_DECL_OVERRIDE;
+    void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) Q_DECL_OVERRIDE;
 
     // WebContentsObserver overrides
     virtual void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) Q_DECL_OVERRIDE;
@@ -107,6 +108,7 @@ public:
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
     void requestGeolocationPermission(const QUrl &requestingOrigin);
+    void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame);
 
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);

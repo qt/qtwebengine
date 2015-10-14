@@ -121,7 +121,7 @@ Q_SIGNALS:
     void downloadRequested(QWebEngineDownloadItem *download);
 
 private Q_SLOTS:
-    void destroyedUrlSchemeHandler(QObject *obj);
+    void destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj);
 
 private:
     Q_DISABLE_COPY(QWebEngineProfile)

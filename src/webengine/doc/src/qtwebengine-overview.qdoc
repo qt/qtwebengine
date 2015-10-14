@@ -39,7 +39,8 @@
     made fully editable by the user through the use of the \c{contenteditable} attribute on HTML
     elements.
 
-    Qt WebEngine supercedes the \l{Qt WebKit Widgets}{Qt WebKit} module, which is based on the
+    Qt WebEngine supercedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
+    module, which is based on the
     WebKit project, but has not been actively synchronized with the upstream WebKit code since
     Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
     application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}. For new
@@ -60,11 +61,11 @@
             Qt WebEngine Widgets
     \endlist
 
-    The Qt WebEngine core is based on the \l{http://www.chromium.org}{Chromium Project}. Chromium
-    provides its own network and painting engines and is developed tightly together with its
-    dependent modules, and therefore Qt WebEngine provides better and more reliable support for the
-    latest HTML5 specification than Qt WebKit. However, Qt WebEngine is thus heavier than Qt WebKit
-    and does not provide direct access to the network stack and the HTML document through C++ APIs.
+    The Qt WebEngine core is based on the \l {Chromium Project}. Chromium provides its own network
+    and painting engines and is developed tightly together with its dependent modules, and
+    therefore Qt WebEngine provides better and more reliable support for the latest HTML5
+    specification than Qt WebKit. However, Qt WebEngine is thus heavier than Qt WebKit and does
+    not provide direct access to the network stack and the HTML document through C++ APIs.
 
     Chromium is tightly integrated to the \l{Qt Quick Scene Graph}{Qt Quick scene graph}, which is
     based on OpenGL ES 2.0 or OpenGL 2.0 for its rendering. This provides you with one-pass
@@ -103,7 +104,7 @@
 
     The following sample QML application loads a web page and responds to session history context:
 
-    \code
+    \qml
     import QtQuick 2.1
     import QtQuick.Controls 1.1
     import QtWebEngine 1.1
@@ -118,7 +119,7 @@
             anchors.fill: parent
         }
     }
-    \endcode
+    \endqml
 
     \section1 Using WebEngine Core
 

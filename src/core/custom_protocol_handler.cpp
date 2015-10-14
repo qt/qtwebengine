@@ -43,7 +43,7 @@
 
 namespace QtWebEngineCore {
 
-CustomProtocolHandler::CustomProtocolHandler(CustomUrlSchemeHandler *schemeHandler)
+CustomProtocolHandler::CustomProtocolHandler(QWebEngineUrlSchemeHandler *schemeHandler)
     : m_schemeHandler(schemeHandler)
 {
 }

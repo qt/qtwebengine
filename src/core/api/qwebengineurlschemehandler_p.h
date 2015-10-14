@@ -48,27 +48,18 @@
 // We mean it.
 //
 
-#include "qwebengineurlschemehandler.h"
-
-#include "custom_url_scheme_handler.h"
+#include <QtCore/qbytearray.h>
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineProfile;
-class QWebEngineUrlRequestJob;
-class QWebEngineUrlSchemeHandler;
-
-class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandlerPrivate : public QtWebEngineCore::CustomUrlSchemeHandler {
+class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandlerPrivate {
 public:
-    Q_DECLARE_PUBLIC(QWebEngineUrlSchemeHandler)
+    QWebEngineUrlSchemeHandlerPrivate(const QByteArray &);
 
-    QWebEngineUrlSchemeHandlerPrivate(const QByteArray &, QWebEngineUrlSchemeHandler *);
-    virtual ~QWebEngineUrlSchemeHandlerPrivate();
-
-    virtual bool handleJob(QtWebEngineCore::URLRequestCustomJobDelegate*) Q_DECL_OVERRIDE;
+    const QByteArray &scheme() const { return m_scheme; }
 
 private:
-    QWebEngineUrlSchemeHandler *q_ptr;
+    QByteArray m_scheme;
 };
 
 QT_END_NAMESPACE

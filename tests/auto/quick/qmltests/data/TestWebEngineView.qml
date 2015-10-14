@@ -47,6 +47,7 @@ import QtWebEngine.experimental 1.0
 WebEngineView {
     property var loadStatus: null
     property var viewportReady: false
+    property bool windowCloseRequestedSignalEmitted: false
 
     function waitForLoadSucceeded() {
         var success = _waitFor(function() { return loadStatus == WebEngineView.LoadSucceededStatus })
@@ -69,6 +70,9 @@ WebEngineView {
         loadStatus = null
         return stop
     }
+    function waitForWindowCloseRequested() {
+        return _waitFor(function() { return windowCloseRequestedSignalEmitted; });
+    }
     function _waitFor(predicate) {
         var timeout = 5000
         var i = 0
@@ -87,5 +91,8 @@ WebEngineView {
             viewportReady = false
     }
 
+    onWindowCloseRequested: {
+        windowCloseRequestedSignalEmitted = true;
+    }
 }
 

@@ -123,6 +123,7 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('components/strings') and
             not file_path.startswith('components/tracing') and
             not file_path.startswith('components/visitedlink') and
+            not file_path.startswith('components/web_cache') and
             not file_path.startswith('components/webcrypto') and
             not file_path.endswith('.grdp') and
             not 'components_strings' in file_path)

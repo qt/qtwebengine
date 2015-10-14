@@ -37,7 +37,8 @@
 #include "url_request_custom_job.h"
 #include "url_request_custom_job_delegate.h"
 
-#include "custom_url_scheme_handler.h"
+#include "api/qwebengineurlrequestjob.h"
+#include "api/qwebengineurlschemehandler.h"
 #include "type_conversion.h"
 
 #include "content/public/browser/browser_thread.h"
@@ -53,7 +54,7 @@ using namespace net;
 
 namespace QtWebEngineCore {
 
-URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *networkDelegate, CustomUrlSchemeHandler *schemeHandler)
+URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *networkDelegate, QWebEngineUrlSchemeHandler *schemeHandler)
     : URLRequestJob(request, networkDelegate)
     , m_device(0)
     , m_schemeHandler(schemeHandler)
@@ -236,7 +237,8 @@ void URLRequestCustomJob::startAsync()
     QMutexLocker lock(&m_mutex);
     m_delegate = new URLRequestCustomJobDelegate(this);
     lock.unlock();
-    m_schemeHandler->handleJob(m_delegate);
+    QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(m_delegate);
+    m_schemeHandler->requestStarted(requestJob);
 }
 
 } // namespace

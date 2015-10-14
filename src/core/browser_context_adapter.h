@@ -48,6 +48,7 @@
 
 #include "api/qwebenginecookiestoreclient.h"
 #include "api/qwebengineurlrequestinterceptor.h"
+#include "api/qwebengineurlschemehandler.h"
 
 QT_FORWARD_DECLARE_CLASS(QObject)
 
@@ -55,7 +56,6 @@ namespace QtWebEngineCore {
 
 class BrowserContextAdapterClient;
 class BrowserContextQt;
-class CustomUrlSchemeHandler;
 class DownloadManagerDelegateQt;
 class UserScriptControllerHost;
 class WebEngineVisitedLinksManager;
@@ -145,9 +145,9 @@ public:
     bool trackVisitedLinks() const;
     bool persistVisitedLinks() const;
 
-    QVector<CustomUrlSchemeHandler*> &customUrlSchemeHandlers();
+    QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers();
     void updateCustomUrlSchemeHandlers();
-    void removeCustomUrlSchemeHandler(CustomUrlSchemeHandler*);
+    void removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     UserScriptControllerHost *userScriptController();
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
@@ -173,7 +173,7 @@ private:
     QString m_httpAcceptLanguage;
     PersistentCookiesPolicy m_persistentCookiesPolicy;
     VisitedLinksPolicy m_visitedLinksPolicy;
-    QVector<CustomUrlSchemeHandler*> m_customUrlSchemeHandlers;
+    QHash<QByteArray, QWebEngineUrlSchemeHandler *> m_customUrlSchemeHandlers;
     QList<BrowserContextAdapterClient*> m_clients;
     int m_httpCacheMaxSize;
 

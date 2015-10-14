@@ -26,16 +26,27 @@
 ****************************************************************************/
 
 /*!
-    \example webengine/quicknanobrowser
-    \title WebEngine Quick Nano Browser
-    \ingroup webengine-examples
-    \brief A web browser implemented using the WebEngineView QML type.
+    \page qtwebengine-platform-notes.html
+    \title Qt WebEngine Platform Notes
 
-    The Quick Nano Browser demo shows the \l{Qt WebEngine} module in action,
-    providing a little QML web browser with support for tabs and keyboard
-    shortcuts.
+    \brief Contains information about issues that are specific to the Qt WebEngine module.
 
-    \image quicknanobrowser-demo.jpg
+    \section1 Building Qt WebEngine from Source
 
-    \include examples-run.qdocinc
+    The requirements for building Qt 5 modules from source are listed separately for each supported
+    platform:
+
+    \list
+        \li \l{Qt for Windows - Requirements}
+        \li \l{Qt for X11 Requirements}
+        \li \l{Qt for OS X - Requirements}
+    \endlist
+
+    In addition, the following tools are required for building the \l {Qt WebEngine} module:
+
+    \list
+        \li Windows: Visual Studio 2013 or Visual Studio 2013 Express
+        \li Linux: Clang or GCC version 4.7 or later
+        \li OS X: Xcode version 5.1 or later
+    \endlist
 */

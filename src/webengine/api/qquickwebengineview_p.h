@@ -230,6 +230,7 @@ public:
 
         InspectElement,
         ExitFullScreen,
+        RequestClose,
         Unselect,
 
         WebActionCount
@@ -310,6 +311,7 @@ Q_SIGNALS:
     Q_REVISION(2) void activeFocusOnPressChanged(bool);
     Q_REVISION(2) void backgroundColorChanged();
     Q_REVISION(2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
+    Q_REVISION(2) void windowCloseRequested();
     Q_REVISION(3) void contentsSizeChanged(const QSizeF& size);
     Q_REVISION(3) void scrollPositionChanged(const QPointF& position);
 

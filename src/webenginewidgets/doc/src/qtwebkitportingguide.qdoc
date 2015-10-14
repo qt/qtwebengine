@@ -31,8 +31,10 @@
     \brief This guide gives an overview of the differences between the Qt WebKit
            and Qt WebEngine APIs in applications.
 
-    This provides rough steps to follow when porting an application using
-    Qt WebKit's QWebView API to use Qt WebEngine's QWebEngineView.
+    This guide provides rough steps to follow when porting an application that uses the
+    \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
+    \l{http://doc.qt.io/archives/qt-5.3/qml-qtwebkit-webview.html}{QWebView API} to use the
+    \l{Qt WebEngine} QWebEngineView.
 
 
     \section1 Class Names

@@ -576,6 +576,12 @@ void WebContentsAdapter::selectAll()
     d->webContents->SelectAll();
 }
 
+void WebContentsAdapter::requestClose()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->DispatchBeforeUnload(false);
+}
+
 void WebContentsAdapter::unselect()
 {
     Q_D(const WebContentsAdapter);

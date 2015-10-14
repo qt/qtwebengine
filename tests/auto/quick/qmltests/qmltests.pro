@@ -12,6 +12,7 @@ OTHER_FILES += \
     $$PWD/data/change-document-title.js \
     $$PWD/data/download.zip \
     $$PWD/data/confirm.html \
+    $$PWD/data/confirmclose.html \
     $$PWD/data/directoryupload.html \
     $$PWD/data/favicon.html \
     $$PWD/data/favicon.png \

@@ -50,7 +50,6 @@
 
 #include "browser_context_adapter_client.h"
 #include "qwebengineprofile.h"
-#include "qwebengineurlschemehandler_p.h"
 #include "qwebenginescriptcollection.h"
 #include <QMap>
 #include <QPointer>
@@ -85,7 +84,6 @@ private:
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
     QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
-    QMap<QByteArray, QWebEngineUrlSchemeHandler *> m_urlSchemeHandlers;
 };
 
 QT_END_NAMESPACE

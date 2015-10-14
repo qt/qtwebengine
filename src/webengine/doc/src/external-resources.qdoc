@@ -26,16 +26,23 @@
 ****************************************************************************/
 
 /*!
-    \example webengine/quicknanobrowser
-    \title WebEngine Quick Nano Browser
-    \ingroup webengine-examples
-    \brief A web browser implemented using the WebEngineView QML type.
+    \externalpage http://www.chromium.org
+    \title Chromium Project
+*/
 
-    The Quick Nano Browser demo shows the \l{Qt WebEngine} module in action,
-    providing a little QML web browser with support for tabs and keyboard
-    shortcuts.
+/*!
+    \externalpage https://developers.google.com/web/tools/chrome-devtools
+    \title Chrome DevTools
+*/
 
-    \image quicknanobrowser-demo.jpg
-
-    \include examples-run.qdocinc
+/*
+    This prevents autolinking of each occurrence of 'WebEngine'
+    To link to the WebEngine QML type, use explicit linking:
+        \l [QML] WebEngine
+        \sa {QtWebEngine::}{WebEngine}
+*/
+/*!
+    \externalpage nolink
+    \title WebEngine
+    \internal
 */

@@ -43,6 +43,7 @@
 #include "browser_context_adapter.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
+#include "network_delegate_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter_p.h"
@@ -63,6 +64,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "ui/events/latency_info.h"
+
+#include <QDesktopServices>
 
 namespace QtWebEngineCore {
 
@@ -357,6 +360,18 @@ void WebContentsDelegateQt::requestGeolocationPermission(const QUrl &requestingO
     m_viewClient->runGeolocationPermissionRequest(requestingOrigin);
 }
 
+extern int pageTransitionToNavigationType(ui::PageTransition transition);
+
+void WebContentsDelegateQt::launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame)
+{
+    int navigationRequestAction = WebContentsAdapterClient::AcceptRequest;
+    m_viewClient->navigationRequested(pageTransitionToNavigationType(page_transition), url, navigationRequestAction, is_main_frame);
+#ifndef QT_NO_DESKTOPSERVICES
+    if (navigationRequestAction == WebContentsAdapterClient::AcceptRequest)
+        QDesktopServices::openUrl(url);
+#endif
+}
+
 void WebContentsDelegateQt::ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text)
 {
     Q_UNUSED(web_contents);
@@ -373,6 +388,15 @@ void WebContentsDelegateQt::MoveValidationMessage(content::WebContents *web_cont
 {
     Q_UNUSED(web_contents);
     m_viewClient->moveValidationMessage(toQt(anchor_in_root_view));
+}
+
+void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool proceed, bool *proceed_to_fire_unload)
+{
+    Q_UNUSED(tab);
+    Q_ASSERT(proceed_to_fire_unload);
+    *proceed_to_fire_unload = proceed;
+    if (!proceed)
+        m_viewClient->windowCloseRejected();
 }
 
 } // namespace QtWebEngineCore

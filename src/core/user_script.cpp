@@ -168,14 +168,3 @@ UserScriptData &UserScript::data() const
 }
 
 } // namespace QtWebEngineCore
-
-QT_BEGIN_NAMESPACE
-uint qHash(const QtWebEngineCore::UserScript &script, uint seed)
-{
-    if (script.isNull())
-        return 0;
-    return qHash(script.sourceCode(), seed) ^ qHash(script.name(), seed)
-           ^ (script.injectionPoint() | (script.runsOnSubFrames() << 4))
-           ^ script.worldId();
-}
-QT_END_NAMESPACE

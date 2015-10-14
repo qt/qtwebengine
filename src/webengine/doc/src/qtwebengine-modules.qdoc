@@ -26,16 +26,17 @@
 ****************************************************************************/
 
 /*!
-    \example webengine/quicknanobrowser
-    \title WebEngine Quick Nano Browser
-    \ingroup webengine-examples
-    \brief A web browser implemented using the WebEngineView QML type.
+    \page qtwebengine-modules.html
+    \title Qt WebEngine C++ Classes
+    \brief Provides functionality for rendering regions of dynamic web content.
 
-    The Quick Nano Browser demo shows the \l{Qt WebEngine} module in action,
-    providing a little QML web browser with support for tabs and keyboard
-    shortcuts.
+    \e {Qt WebEngine} provides functionality for rendering regions of dynamic web content.
 
-    \image quicknanobrowser-demo.jpg
+    \section1 Classes
 
-    \include examples-run.qdocinc
+    \section2 Qt WebEngineCore Module
+    \generatelist {classesbymodule QtWebEngineCore}
+
+    \section2 Qt WebEngineWidgets Module
+    \generatelist {classesbymodule QtWebEngineWidgets}
 */

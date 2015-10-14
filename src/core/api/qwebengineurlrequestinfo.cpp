@@ -119,11 +119,12 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
 */
 
 
-QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource, QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QByteArray &m)
+QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRequestInfo::ResourceType resource, QWebEngineUrlRequestInfo::NavigationType navigation, const QUrl &u, const QUrl &fpu, const QByteArray &m)
     : resourceType(resource)
     , navigationType(navigation)
     , shouldBlockRequest(false)
     , url(u)
+    , firstPartyUrl(fpu)
     , method(m)
 {
 }
@@ -216,6 +217,17 @@ QUrl QWebEngineUrlRequestInfo::requestUrl() const
 {
     Q_D(const QWebEngineUrlRequestInfo);
     return d->url;
+}
+
+/*!
+    Returns the first party URL of the request.
+    The first party URL is the URL of the page that issued the request.
+*/
+
+QUrl QWebEngineUrlRequestInfo::firstPartyUrl() const
+{
+    Q_D(const QWebEngineUrlRequestInfo);
+    return d->firstPartyUrl;
 }
 
 

@@ -45,7 +45,6 @@ SOURCES = \
         content_main_delegate_qt.cpp \
         cookie_monster_delegate_qt.cpp \
         custom_protocol_handler.cpp \
-        custom_url_scheme_handler.cpp \
         delegated_frame_node.cpp \
         desktop_screen_qt.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
@@ -117,7 +116,6 @@ HEADERS = \
         content_main_delegate_qt.h \
         cookie_monster_delegate_qt.h \
         custom_protocol_handler.h \
-        custom_url_scheme_handler.h \
         delegated_frame_node.h \
         desktop_screen_qt.h \
         dev_tools_http_handler_delegate_qt.h \

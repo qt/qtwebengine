@@ -224,6 +224,11 @@ void QWebEnginePagePrivate::close()
     Q_EMIT q->windowCloseRequested();
 }
 
+void QWebEnginePagePrivate::windowCloseRejected()
+{
+    // Do nothing for now.
+}
+
 void QWebEnginePagePrivate::didRunJavaScript(quint64 requestId, const QVariant& result)
 {
     m_callbacks.invoke(requestId, result);
@@ -651,6 +656,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case ExitFullScreen:
         text = tr("Exit Full Screen Mode");
         break;
+    case RequestClose:
+        text = tr("Close Page");
+        break;
     case Unselect:
         text = tr("Unselect");
         break;
@@ -827,6 +835,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case ExitFullScreen:
         d->adapter->exitFullScreen();
         break;
+    case RequestClose:
+        d->adapter->requestClose();
+        break;
     default:
         Q_UNREACHABLE();
     }
@@ -921,6 +932,9 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
         accepted = q->javaScriptPrompt(controller->securityOrigin(), controller->message(), controller->defaultPrompt(), &promptResult);
         if (accepted)
             controller->textProvided(promptResult);
+        break;
+    case UnloadDialog:
+        accepted = (QMessageBox::information(view, QCoreApplication::translate("QWebEnginePage", "Are you sure you want to leave this page?"), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);
         break;
     case InternalAuthorizationDialog:
         accepted = (QMessageBox::question(view, controller->title(), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);

@@ -118,10 +118,7 @@ ApplicationWindow {
     Action {
         shortcut: StandardKey.Close
         onTriggered: {
-            if (tabs.count == 1)
-                browserWindow.close()
-            else
-                tabs.removeTab(tabs.currentIndex)
+            currentWebView.triggerWebAction(WebEngineView.RequestClose);
         }
     }
     Action {
@@ -413,6 +410,13 @@ ApplicationWindow {
 
                     print("Render process exited with code " + exitCode + " " + status)
                     reloadTimer.running = true
+                }
+
+                onWindowCloseRequested: {
+                    if (tabs.count == 1)
+                        browserWindow.close()
+                    else
+                        tabs.removeTab(tabs.currentIndex)
                 }
 
                 Timer {
