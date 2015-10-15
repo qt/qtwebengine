@@ -32,6 +32,9 @@
 
     \e {Qt WebEngine} provides functionality for rendering regions of dynamic web content.
 
+    \section1 Namespaces
+    \annotatedlist qtwebengine-namespaces
+
     \section1 Classes
 
     \section2 Qt WebEngineCore Module
