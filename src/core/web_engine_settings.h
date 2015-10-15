@@ -73,7 +73,10 @@ public:
         ErrorPageEnabled,
         PluginsEnabled,
         FullScreenSupportEnabled,
-        ScreenCaptureEnabled
+        ScreenCaptureEnabled,
+        WebGLEnabled,
+        WebAudioEnabled,
+        Accelerated2dCanvasEnabled
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

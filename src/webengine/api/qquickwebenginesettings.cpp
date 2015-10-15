@@ -246,6 +246,46 @@ bool QQuickWebEngineSettings::screenCaptureEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::webGLEnabled
+    \since QtWebEngine 1.3
+
+    Enables support for HTML 5 WebGL.
+
+    Enabled by default if available.
+*/
+bool QQuickWebEngineSettings::webGLEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::WebGLEnabled);
+}
+
+/*!
+    \qmlproperty bool WebEngineSettings::webAudioEnabled
+    \since QtWebEngine 1.3
+
+    Enables support for HTML 5 WebAudio.
+
+    Disabled by default.
+*/
+bool QQuickWebEngineSettings::webAudioEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::WebAudioEnabled);
+}
+
+/*!
+    \qmlproperty bool WebEngineSettings::accelerated2dCanvasEnabled
+    \since QtWebEngine 1.3
+
+    Specifies whether the HTML 5 2D canvas should be a OpenGL framebuffer.
+    This makes many painting operations faster, but slows down pixel access.
+
+    Enabled by default if available.
+*/
+bool QQuickWebEngineSettings::accelerated2dCanvasEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::Accelerated2dCanvasEnabled);
+}
+
+/*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
 
     Sets the default encoding. The value must be a string describing an encoding such as "utf-8" or
@@ -371,6 +411,30 @@ void QQuickWebEngineSettings::setScreenCaptureEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::ScreenCaptureEnabled, on);
     if (wasOn != on)
         Q_EMIT screenCaptureEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setWebGLEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::WebGLEnabled);
+    d_ptr->setAttribute(WebEngineSettings::WebGLEnabled, on);
+    if (wasOn != on)
+        Q_EMIT webGLEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setWebAudioEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::WebAudioEnabled);
+    d_ptr->setAttribute(WebEngineSettings::WebAudioEnabled, on);
+    if (wasOn != on)
+        Q_EMIT webAudioEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setAccelerated2dCanvasEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::Accelerated2dCanvasEnabled);
+    d_ptr->setAttribute(WebEngineSettings::Accelerated2dCanvasEnabled, on);
+    if (wasOn != on)
+        Q_EMIT accelerated2dCanvasEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

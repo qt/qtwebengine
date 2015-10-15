@@ -61,7 +61,10 @@ public:
         ErrorPageEnabled,
         PluginsEnabled,
         FullScreenSupportEnabled,
-        ScreenCaptureEnabled
+        ScreenCaptureEnabled,
+        WebGLEnabled,
+        WebAudioEnabled,
+        Accelerated2dCanvasEnabled
     };
 
     enum FontSize {

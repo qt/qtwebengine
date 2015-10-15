@@ -76,6 +76,9 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged)
     // FIXME: add back REVISION when QTBUG-40043 has been fixed.
     Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged /* REVISION 2 */)
+    Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged /* REVISION 2 */)
+    Q_PROPERTY(bool webAudioEnabled READ webAudioEnabled WRITE setWebAudioEnabled NOTIFY webAudioEnabledChanged /* REVISION 2 */)
+    Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged /* REVISION 2 */)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
 
 public:
@@ -95,6 +98,9 @@ public:
     bool pluginsEnabled() const;
     bool fullScreenSupportEnabled() const;
     bool screenCaptureEnabled() const;
+    bool webGLEnabled() const;
+    bool webAudioEnabled() const;
+    bool accelerated2dCanvasEnabled() const;
     QString defaultTextEncoding() const;
 
     void setAutoLoadImages(bool on);
@@ -111,6 +117,9 @@ public:
     void setPluginsEnabled(bool on);
     void setFullScreenSupportEnabled(bool on);
     void setScreenCaptureEnabled(bool on);
+    void setWebGLEnabled(bool on);
+    void setWebAudioEnabled(bool on);
+    void setAccelerated2dCanvasEnabled(bool on);
     void setDefaultTextEncoding(QString encoding);
 
 signals:
@@ -130,6 +139,9 @@ signals:
     void fullScreenSupportEnabledChanged();
     // FIXME: add back Q_REVISION when QTBUG-40043 has been fixed.
     void screenCaptureEnabledChanged();
+    void webGLEnabledChanged();
+    void webAudioEnabledChanged();
+    void accelerated2dCanvasEnabledChanged();
     void defaultTextEncodingChanged();
 
 private:

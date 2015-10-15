@@ -38,6 +38,9 @@
 #include "web_contents_adapter.h"
 #include "type_conversion.h"
 
+#include "base/command_line.h"
+#include "content/browser/gpu/gpu_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 
 #include <QFont>
@@ -230,6 +233,16 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         m_defaultAttributes.insert(PluginsEnabled, false);
         m_defaultAttributes.insert(FullScreenSupportEnabled, false);
         m_defaultAttributes.insert(ScreenCaptureEnabled, false);
+        // The following defaults matches logic in render_view_host_impl.cc:
+        base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
+        bool webGL = content::GpuProcessHost::gpu_enabled() &&
+                !commandLine->HasSwitch(switches::kDisable3DAPIs) &&
+                !commandLine->HasSwitch(switches::kDisableExperimentalWebGL);
+        bool accelerated2dCanvas = content::GpuProcessHost::gpu_enabled() &&
+                !commandLine->HasSwitch(switches::kDisableAccelerated2dCanvas);
+        m_defaultAttributes.insert(WebGLEnabled, webGL);
+        m_defaultAttributes.insert(WebAudioEnabled, false);
+        m_defaultAttributes.insert(Accelerated2dCanvasEnabled, accelerated2dCanvas);
     }
     m_attributes = m_defaultAttributes;
 
@@ -303,6 +316,9 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->enable_error_page = testAttribute(ErrorPageEnabled);
     prefs->plugins_enabled = testAttribute(PluginsEnabled);
     prefs->fullscreen_supported = testAttribute(FullScreenSupportEnabled);
+    prefs->accelerated_2d_canvas_enabled = testAttribute(Accelerated2dCanvasEnabled);
+    prefs->webaudio_enabled = testAttribute(WebAudioEnabled);
+    prefs->experimental_webgl_enabled = testAttribute(WebGLEnabled);
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));

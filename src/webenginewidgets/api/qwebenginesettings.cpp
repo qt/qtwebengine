@@ -78,6 +78,12 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::FullScreenSupportEnabled;
     case QWebEngineSettings::ScreenCaptureEnabled:
         return WebEngineSettings::ScreenCaptureEnabled;
+    case QWebEngineSettings::WebGLEnabled:
+        return WebEngineSettings::WebGLEnabled;
+    case QWebEngineSettings::WebAudioEnabled:
+        return WebEngineSettings::WebAudioEnabled;
+    case QWebEngineSettings::Accelerated2dCanvasEnabled:
+        return WebEngineSettings::Accelerated2dCanvasEnabled;
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }
