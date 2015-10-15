@@ -107,6 +107,9 @@ void initialize()
     shareContext->create();
     qAddPostRoutine(deleteShareContext);
     qt_gl_set_global_share_context(shareContext);
+
+    // Classes like QOpenGLWidget check for the attribute
+    app->setAttribute(Qt::AA_ShareOpenGLContexts);
 }
 } // namespace QtWebEngine
 
