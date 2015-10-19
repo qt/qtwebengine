@@ -136,7 +136,7 @@ private:
     QSGGeometry m_geometry;
 };
 
-static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPassId &id, const QList<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > &list)
+static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPassId &id, const QVector<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > &list)
 {
     typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
     Q_FOREACH (const Pair &pair, list)

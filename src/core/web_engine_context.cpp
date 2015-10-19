@@ -199,7 +199,7 @@ WebEngineContext::WebEngineContext()
     , m_browserRunner(content::BrowserMainRunner::Create())
     , m_globalQObject(new QObject())
 {
-    QList<QByteArray> args;
+    QVector<QByteArray> args;
     Q_FOREACH (const QString& arg, QCoreApplication::arguments())
         args << arg.toUtf8();
 

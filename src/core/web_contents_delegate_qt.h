@@ -44,6 +44,7 @@
 #include "base/callback.h"
 
 #include "javascript_dialog_manager_qt.h"
+#include <QtCore/qvector.h>
 #include <QtCore/qcompilerdetection.h>
 
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
@@ -117,7 +118,7 @@ private:
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
     int m_lastReceivedFindReply;
-    QList<int64> m_loadingErrorFrameList;
+    QVector<int64> m_loadingErrorFrameList;
 };
 
 } // namespace QtWebEngineCore

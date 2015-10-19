@@ -90,9 +90,9 @@ private:
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     struct SGObjects {
-        QList<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > renderPassLayers;
-        QList<QSharedPointer<QSGRootNode> > renderPassRootNodes;
-        QList<QSharedPointer<QSGTexture> > textureStrongRefs;
+        QVector<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > renderPassLayers;
+        QVector<QSharedPointer<QSGRootNode> > renderPassRootNodes;
+        QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
     } m_sgObjects;
     int m_numPendingSyncPoints;
     QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;

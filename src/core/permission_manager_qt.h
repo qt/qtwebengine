@@ -102,7 +102,7 @@ private:
         QUrl origin;
         base::Callback<void(content::PermissionStatus)> callback;
     };
-    QList<Request> m_requests;
+    QVector<Request> m_requests;
     struct Subscriber {
         int id;
         PermissionType type;
@@ -110,7 +110,7 @@ private:
         base::Callback<void(content::PermissionStatus)> callback;
     };
     int m_subscriberCount;
-    QList<Subscriber> m_subscribers;
+    QVector<Subscriber> m_subscribers;
 
 };
 
