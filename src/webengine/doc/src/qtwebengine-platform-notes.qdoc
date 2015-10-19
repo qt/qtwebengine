@@ -45,7 +45,7 @@
     In addition, the following tools are required for building the \l {Qt WebEngine} module:
 
     \list
-        \li Windows: Visual Studio 2013 or Visual Studio 2013 Express
+        \li Windows: Visual Studio 2013 or Visual Studio 2015
         \li Linux: Clang or GCC version 4.7 or later
         \li OS X: Xcode version 5.1 or later
     \endlist

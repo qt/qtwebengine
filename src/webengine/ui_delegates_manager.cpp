@@ -60,7 +60,7 @@ namespace QtWebEngineCore {
 #if defined(Q_OS_WIN)
 #define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
     case UIDelegatesManager::TYPE:\
-        return QStringLiteral(#TYPE L ##".qml");
+        return QString::fromLatin1(#TYPE ##".qml");
 #else
 #define FILE_NAME_CASE_STATEMENT(TYPE, COMPONENT) \
     case UIDelegatesManager::TYPE:\
