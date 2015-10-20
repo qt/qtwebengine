@@ -100,7 +100,10 @@ bool ResourceDispatcherHostLoginDelegateQt::isProxy() const
 void ResourceDispatcherHostLoginDelegateQt::triggerDialog()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    content::RenderViewHost* renderViewHost = content::RenderFrameHost::FromID(m_renderProcessId, m_renderFrameId)->GetRenderViewHost();
+    content::RenderFrameHost *renderFrameHost = content::RenderFrameHost::FromID(m_renderProcessId, m_renderFrameId);
+    if (!renderFrameHost)
+        return;
+    content::RenderViewHost *renderViewHost = renderFrameHost->GetRenderViewHost();
     content::WebContentsImpl *webContents = static_cast<content::WebContentsImpl *>(content::WebContents::FromRenderViewHost(renderViewHost));
     WebContentsAdapterClient *client = WebContentsViewQt::from(webContents->GetView())->client();
 
