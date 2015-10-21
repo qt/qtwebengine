@@ -83,6 +83,7 @@ ApplicationWindow {
         property alias javaScriptEnabled: javaScriptEnabled.checked;
         property alias errorPageEnabled: errorPageEnabled.checked;
         property alias pluginsEnabled: pluginsEnabled.checked;
+        property alias fullScreenSupportEnabled: fullScreenSupportEnabled.checked;
     }
 
     Action {
@@ -268,7 +269,13 @@ ApplicationWindow {
                             id: pluginsEnabled
                             text: "Plugins On"
                             checkable: true
-                            checked: true
+                            checked: WebEngine.settings.pluginsEnabled
+                        }
+                        MenuItem {
+                            id: fullScreenSupportEnabled
+                            text: "FullScreen On"
+                            checkable: true
+                            checked: WebEngine.settings.fullScreenSupportEnabled
                         }
                         MenuItem {
                             id: offTheRecordEnabled
@@ -354,6 +361,7 @@ ApplicationWindow {
                 settings.javascriptEnabled: appSettings.javaScriptEnabled
                 settings.errorPageEnabled: appSettings.errorPageEnabled
                 settings.pluginsEnabled: appSettings.pluginsEnabled
+                settings.fullScreenSupportEnabled: appSettings.fullScreenSupportEanbled
 
                 onCertificateError: {
                     error.defer()
