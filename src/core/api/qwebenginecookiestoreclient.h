@@ -77,7 +77,7 @@ public:
     void deleteSessionCookiesWithCallback(const QWebEngineCallback<int> &resultCallback);
     void deleteAllCookiesWithCallback(const QWebEngineCallback<int> &resultCallback);
     void getAllCookies(const QWebEngineCallback<const QByteArray&> &resultCallback);
-    void setCookieFilter(const QWebEngineCallback<const FilterRequest&> &filterCallback);
+    void setCookieFilter(const QWebEngineCallback<FilterRequest&> &filterCallback);
 #endif
     void setCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());

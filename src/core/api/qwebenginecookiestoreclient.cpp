@@ -181,7 +181,7 @@ bool QWebEngineCookieStoreClientPrivate::canSetCookie(const QUrl &firstPartyUrl,
         request.firstPartyUrl = firstPartyUrl;
         request.cookieLine = cookieLine;
         request.cookieSource = url;
-        callbackDirectory.invokeDirectly<const QWebEngineCookieStoreClient::FilterRequest&>(filterCallback, request);
+        callbackDirectory.invokeDirectly<QWebEngineCookieStoreClient::FilterRequest&>(filterCallback, request);
         return request.accepted;
     }
     return true;
@@ -394,7 +394,7 @@ void QWebEngineCookieStoreClient::deleteAllCookies()
 
     \sa deleteAllCookiesWithCallback(), getAllCookies()
 */
-void QWebEngineCookieStoreClient::setCookieFilter(const QWebEngineCallback<const QWebEngineCookieStoreClient::FilterRequest&> &filter)
+void QWebEngineCookieStoreClient::setCookieFilter(const QWebEngineCallback<QWebEngineCookieStoreClient::FilterRequest&> &filter)
 {
     Q_D(QWebEngineCookieStoreClient);
     d->filterCallback = filter;
