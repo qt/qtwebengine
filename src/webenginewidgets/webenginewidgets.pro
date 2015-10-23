@@ -12,6 +12,7 @@ SOURCES = \
         api/qtwebenginewidgetsglobal.cpp \
         api/qwebenginecertificateerror.cpp \
         api/qwebenginedownloaditem.cpp \
+        api/qwebenginefullscreenrequest.cpp \
         api/qwebenginehistory.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineprofile.cpp \
@@ -26,6 +27,7 @@ HEADERS = \
         api/qwebenginedownloaditem.h \
         api/qwebenginedownloaditem_p.h \
         api/qwebenginecertificateerror.h \
+        api/qwebenginefullscreenrequest.h \
         api/qwebenginehistory.h \
         api/qwebenginepage.h \
         api/qwebenginepage_p.h \

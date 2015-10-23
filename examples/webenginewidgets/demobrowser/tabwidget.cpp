@@ -48,10 +48,11 @@
 #include "urllineedit.h"
 #include "webview.h"
 
+#include <QWebEngineDownloadItem>
+#include <QWebEngineProfile>
+#include <QWebEngineFullScreenRequest>
 #include <QtCore/QMimeData>
 #include <QtGui/QClipboard>
-#include <QtWebEngineWidgets/QWebEngineDownloadItem>
-#include <QtWebEngineWidgets/QWebEngineProfile>
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QListView>
 #include <QtWidgets/QMenu>
@@ -321,8 +322,8 @@ void TabWidget::currentChanged(int index)
                 this, SIGNAL(loadProgress(int)));
         disconnect(oldWebView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
                 this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
-        disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(bool)),
-                this, SLOT(fullScreenRequested(bool)));
+        disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(const QWebEngineFullScreenRequest&)),
+                this, SLOT(fullScreenRequested(const QWebEngineFullScreenRequest&)));
     }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
@@ -335,8 +336,8 @@ void TabWidget::currentChanged(int index)
             this, SIGNAL(loadProgress(int)));
     connect(webView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
             this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
-    connect(webView->page(), SIGNAL(fullScreenRequested(bool)),
-            this, SLOT(fullScreenRequested(bool)));
+    connect(webView->page(), SIGNAL(fullScreenRequested(const QWebEngineFullScreenRequest&)),
+            this, SLOT(fullScreenRequested(const QWebEngineFullScreenRequest&)));
 
     for (int i = 0; i < m_actions.count(); ++i) {
         WebActionMapper *mapper = m_actions[i];
@@ -352,13 +353,14 @@ void TabWidget::currentChanged(int index)
         webView->setFocus();
 }
 
-void TabWidget::fullScreenRequested(bool fullscreen)
+void TabWidget::fullScreenRequested(const QWebEngineFullScreenRequest &request)
 {
-    if (fullscreen) {
+    if (request.toggleOn()) {
         if (!m_fullScreenView)
             m_fullScreenView = new QWebEngineView();
         WebPage *webPage = qobject_cast<WebPage*>(sender());
         webPage->setView(m_fullScreenView);
+        request.accept();
         m_fullScreenView->showFullScreen();
         m_fullScreenView->raise();
     } else {
@@ -367,6 +369,7 @@ void TabWidget::fullScreenRequested(bool fullscreen)
         WebPage *webPage = qobject_cast<WebPage*>(sender());
         WebView *oldWebView = this->webView(m_lineEdits->currentIndex());
         webPage->setView(oldWebView);
+        request.accept();
         raise();
         m_fullScreenView->hide();
     }

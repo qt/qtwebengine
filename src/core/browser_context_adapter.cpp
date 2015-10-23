@@ -138,14 +138,9 @@ DownloadManagerDelegateQt *BrowserContextAdapter::downloadManagerDelegate()
 
 QWebEngineCookieStoreClient *BrowserContextAdapter::cookieStoreClient()
 {
+    if (!m_cookieStoreClient)
+        m_cookieStoreClient.reset(new QWebEngineCookieStoreClient);
     return m_cookieStoreClient.data();
-}
-
-void BrowserContextAdapter::setCookieStoreClient(QWebEngineCookieStoreClient *client)
-{
-    m_cookieStoreClient = client;
-    if (m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateStorageSettings();
 }
 
 QWebEngineUrlRequestInterceptor *BrowserContextAdapter::requestInterceptor()
@@ -365,9 +360,35 @@ void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
         m_browserContext->url_request_getter_->updateStorageSettings();
 }
 
-void BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+bool BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
-    m_customUrlSchemeHandlers.remove(handler->scheme());
+    bool removedOneOrMore = false;
+    auto it = m_customUrlSchemeHandlers.begin();
+    auto end = m_customUrlSchemeHandlers.end();
+    for (; it != end; ++it) {
+        if (it.value() == handler) {
+            it = m_customUrlSchemeHandlers.erase(it);
+            removedOneOrMore = true;
+            continue;
+        }
+    }
+    if (removedOneOrMore)
+        updateCustomUrlSchemeHandlers();
+    return removedOneOrMore;
+}
+
+QWebEngineUrlSchemeHandler *BrowserContextAdapter::takeCustomUrlSchemeHandler(const QByteArray &scheme)
+{
+    QWebEngineUrlSchemeHandler *handler = m_customUrlSchemeHandlers.take(scheme);
+    if (handler)
+        updateCustomUrlSchemeHandlers();
+    return handler;
+}
+
+void BrowserContextAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
+{
+    m_customUrlSchemeHandlers.insert(scheme, handler);
+    updateCustomUrlSchemeHandlers();
 }
 
 UserScriptControllerHost *BrowserContextAdapter::userScriptController()

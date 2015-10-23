@@ -4,7 +4,7 @@ project                 = QtWebEngine
 description             = Qt WebEngine Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     =
+examplesinstallpath     = qtwebengine
 
 qhp.projects            = QtWebEngine
 
@@ -67,4 +67,4 @@ navigation.landingpage = "Qt WebEngine"
 navigation.cppclassespage = "Qt WebEngine C++ Classes"
 navigation.qmltypespage = "Qt WebEngine QML Types"
 
-Cpp.ignoretokens += QWEBENGINEWIDGETS_EXPORT
+Cpp.ignoretokens += Q_WEBENGINE_EXPORT QWEBENGINEWIDGETS_EXPORT

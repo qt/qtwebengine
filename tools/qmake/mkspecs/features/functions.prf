@@ -1,5 +1,5 @@
 defineTest(isPlatformSupported) {
-  !win32-msvc2013: !contains(QT_CONFIG, c++11) {
+  !contains(QT_CONFIG, c++11) {
     skipBuild("C++11 support is required in order to build chromium.")
     return(false)
   }
@@ -7,17 +7,25 @@ defineTest(isPlatformSupported) {
     skipBuild("Static builds of QtWebEngine aren't supported.")
     return(false)
   }
-  osx:lessThan(QMAKE_XCODE_VERSION, 5.1) {
-    skipBuild("Using xcode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
-    return(false)
+  osx {
+    lessThan(QMAKE_XCODE_VERSION, 5.1) {
+      skipBuild("Using xcode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
+      return(false)
+    }
+    # We require OS X 10.9 (darwin version 13.0.0) or newer
+    darwin_major_version = $$section(QMAKE_HOST.version, ., 0, 0)
+    lessThan(darwin_major_version, 13) {
+      skipBuild("OS X version 10.9 or newer is required to build Qt WebEngine.")
+      return(false)
+    }
   }
 
   linux-g++*:!isGCCVersionSupported(): return(false)
   !isPythonVersionSupported(): return(false)
-  linux-g++*|linux-clang|win32-msvc2013|macx-clang*: return(true)
+  linux-g++*|linux-clang|win32-msvc2013*|win32-msvc2015*|macx-clang*: return(true)
   boot2qt: return(true)
 
-  skipBuild("Qt WebEngine can currently only be built for Linux (GCC/clang), Windows (MSVC 2013), OS X (XCode 5.1+) or Qt for Device Creation.")
+  skipBuild("Qt WebEngine can currently only be built for Linux (GCC/clang), Windows (MSVC 2013 or 2015), OS X (10.9/XCode 5.1+) or Qt for Device Creation.")
   return(false)
 }
 

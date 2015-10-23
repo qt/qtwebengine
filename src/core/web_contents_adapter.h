@@ -130,6 +130,7 @@ public:
     bool hasInspector() const;
     void exitFullScreen();
     void requestClose();
+    void changedFullScreen();
 
     void wasShown();
     void wasHidden();

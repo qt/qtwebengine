@@ -46,6 +46,7 @@
 #include <QtNetwork/qnetworkcookie.h>
 
 namespace QtWebEngineCore {
+class BrowserContextAdapter;
 class CookieMonsterDelegateQt;
 }
 
@@ -54,8 +55,15 @@ QT_BEGIN_NAMESPACE
 class QWebEngineCookieStoreClientPrivate;
 class QWEBENGINE_EXPORT QWebEngineCookieStoreClient : public QObject {
     Q_OBJECT
+
 public:
-    explicit QWebEngineCookieStoreClient(QObject *parent = 0);
+    struct FilterRequest {
+        bool accepted;
+
+        QUrl firstPartyUrl;
+        QByteArray cookieLine;
+        QUrl cookieSource;
+    };
     virtual ~QWebEngineCookieStoreClient();
 
 #ifdef Q_QDOC
@@ -63,24 +71,26 @@ public:
     void deleteSessionCookiesWithCallback(FunctorOrLambda resultCallback);
     void deleteAllCookiesWithCallback(FunctorOrLambda resultCallback);
     void getAllCookies(FunctorOrLambda resultCallback);
+    void setCookieFilter(FunctorOrLambda filterCallback);
 #else
     void setCookieWithCallback(const QNetworkCookie &cookie, const QWebEngineCallback<bool> &resultCallback, const QUrl &origin = QUrl());
     void deleteSessionCookiesWithCallback(const QWebEngineCallback<int> &resultCallback);
     void deleteAllCookiesWithCallback(const QWebEngineCallback<int> &resultCallback);
     void getAllCookies(const QWebEngineCallback<const QByteArray&> &resultCallback);
+    void setCookieFilter(const QWebEngineCallback<const FilterRequest&> &filterCallback);
 #endif
     void setCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteSessionCookies();
     void deleteAllCookies();
 
-    virtual bool acceptCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &cookieSource);
-
 Q_SIGNALS:
     void cookieAdded(const QNetworkCookie &cookie);
     void cookieRemoved(const QNetworkCookie &cookie);
 
 private:
+    explicit QWebEngineCookieStoreClient(QObject *parent = 0);
+    friend class QtWebEngineCore::BrowserContextAdapter;
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
     Q_DISABLE_COPY(QWebEngineCookieStoreClient)
     Q_DECLARE_PRIVATE(QWebEngineCookieStoreClient)

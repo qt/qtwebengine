@@ -34,39 +34,35 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEURLSCHEMEHANDLER_H
-#define QWEBENGINEURLSCHEMEHANDLER_H
+#ifndef QWEBENGINEFULLSCREENREQUEST_H
+#define QWEBENGINEFULLSCREENREQUEST_H
 
-#include "qtwebenginecoreglobal.h"
-
-#include <QtCore/qobject.h>
-
-namespace QtWebEngineCore {
-class URLRequestContextGetterQt;
-}
+#include <qtwebenginewidgetsglobal.h>
+#include <qwebenginepage.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
+class QWebEnginePagePrivate;
 
-class QWebEngineUrlRequestJob;
-class QWebEngineUrlSchemeHandlerPrivate;
-
-class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandler : public QObject {
-    Q_OBJECT
+class QWEBENGINEWIDGETS_EXPORT QWebEngineFullScreenRequest {
+    Q_GADGET
+    Q_PROPERTY(bool toggleOn READ toggleOn)
+    Q_PROPERTY(QUrl origin READ origin)
 public:
-    QWebEngineUrlSchemeHandler(QObject *parent = 0);
-    ~QWebEngineUrlSchemeHandler();
-
-    virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
-
-Q_SIGNALS:
-    void destroyed(QWebEngineUrlSchemeHandler*);
+    Q_INVOKABLE void reject() const;
+    Q_INVOKABLE void accept() const;
+    bool toggleOn() const { return m_toggleOn; }
+    const QUrl &origin() const { return m_origin; }
 
 private:
-    Q_DISABLE_COPY(QWebEngineUrlSchemeHandler)
-    Q_DECLARE_PRIVATE(QWebEngineUrlSchemeHandler)
-    QWebEngineUrlSchemeHandlerPrivate *d_ptr;
+    Q_DISABLE_COPY(QWebEngineFullScreenRequest)
+    QWebEngineFullScreenRequest(QWebEnginePagePrivate *pagePrivate, const QUrl &origin, bool toggleOn);
+    QWebEnginePagePrivate *m_pagePrivate;
+    const QUrl m_origin;
+    const bool m_toggleOn;
+    friend class QWebEnginePagePrivate;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINEURLSCHEMEHANDLER_H
+#endif

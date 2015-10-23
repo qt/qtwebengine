@@ -123,7 +123,20 @@
 
     \section1 Using WebEngine Core
 
-    Qt WebEngine Core provides an API shared by Qt WebEngine and Qt WebEngine Widgets.
+    Qt WebEngine Core provides an API shared by Qt WebEngine and Qt WebEngine Widgets for handling
+    URL requests issued for the networking stack of Chromium and for accessing its HTTP cookies.
+
+    Implementing the QWebEngineUrlRequestInterceptor interface and installing the interceptor on a
+    profile enables intercepting, blocking, and modifying URL requests (QWebEngineUrlRequestInfo)
+    before they reach the networking stack of Chromium.
+
+    A QWebEngineUrlSchemeHandler can be registered for a profile to add support for custom URL
+    schemes. Requests for the scheme are then issued to QWebEngineUrlSchemeHandler::requestStarted()
+    as QWebEngineUrlRequestJob objects.
+
+    The QWebEngineCookieStoreClient class provides functions for accessing HTTP cookies of Chromium.
+    The functions can be used to synchronize cookies with QNetworkAccessManager, as well as to set,
+    delete, and intercept cookies during navigation.
 
     \section1 License Information
 

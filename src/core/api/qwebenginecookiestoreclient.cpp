@@ -175,8 +175,16 @@ void QWebEngineCookieStoreClientPrivate::onCookieChanged(const QNetworkCookie &c
 
 bool QWebEngineCookieStoreClientPrivate::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
 {
-    Q_Q(QWebEngineCookieStoreClient);
-    return q->acceptCookie(firstPartyUrl, cookieLine, url);
+    if (filterCallback) {
+        QWebEngineCookieStoreClient::FilterRequest request;
+        request.accepted = true;
+        request.firstPartyUrl = firstPartyUrl;
+        request.cookieLine = cookieLine;
+        request.cookieSource = url;
+        callbackDirectory.invokeDirectly<const QWebEngineCookieStoreClient::FilterRequest&>(filterCallback, request);
+        return request.accepted;
+    }
+    return true;
 }
 
 /*!
@@ -185,8 +193,7 @@ bool QWebEngineCookieStoreClientPrivate::canSetCookie(const QUrl &firstPartyUrl,
     \since 5.6
     \brief The QWebEngineCookieStoreClient class provides access to Chromium's cookies.
 
-    By subclassing the QWebEngineCookieStoreClient and installing it on the profile, the user can
-    access HTTP cookies of Chromium.
+    The class allows to access HTTP cookies of Chromium for a specific profile.
     It can be used to synchronize cookies of Chromium and the QNetworkAccessManager, as well as
     to set, delete, and intercept cookies during navigation.
     Because cookie operations are asynchronous, the user can choose to provide a callback function
@@ -194,6 +201,27 @@ bool QWebEngineCookieStoreClientPrivate::canSetCookie(const QUrl &firstPartyUrl,
     The signal handlers for removal and addition should not be used to execute heavy tasks,
     because they might block the IO thread in case of a blocking connection.
 */
+
+/*!
+    \class QWebEngineCookieStoreClient::FilterRequest
+    \inmodule QtWebEngineCore
+    \since 5.6
+
+    The structure specifies properties of a cookie, and whether it should accepted or not. It is
+    used as an argument to a filter installed via setCookieFilter().
+*/
+
+/*!
+    \variable QWebEngineCookieStoreClient::FilterRequest::accepted
+    Whether the cookie shall be accepted. The default is \c true.
+    \variable QWebEngineCookieStoreClient::FilterRequest::firstPartyUrl
+    URL of page that triggered the setting of the cookie.
+    \variable QWebEngineCookieStoreClient::FilterRequest::cookieLine
+    Content of the cookie.
+    \variable QWebEngineCookieStoreClient::FilterRequest::cookieSource
+    URL of site that sets the cookie.
+*/
+
 
 /*!
     \fn void QWebEngineCookieStoreClient::cookieAdded(const QNetworkCookie &cookie)
@@ -355,20 +383,21 @@ void QWebEngineCookieStoreClient::deleteAllCookies()
 }
 
 /*!
-    This virtual function is called before a new cookie is added to the cookie store.
-    By overriding this function and returning \c false the user can decide to deny
-    from \a firstPartyUrl the cookie \a cookieLine with the source \a cookieSource.
-    The request's \a firstPartyUrl can be used to identify a third-party cookie.
-    This function should not be used to execute heavy tasks since it is running on the
-    IO thread and therefore blocks the Chromium networking.
-*/
+  \fn void QWebEngineCookieStoreClient::setCookieFilter(FunctorOrLambda filterCallback)
 
-bool QWebEngineCookieStoreClient::acceptCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &cookieSource)
+    Installs a cookie filter that can reject cookies before they are added to the cookie store.
+    The \a filterCallback must be a lambda or functor taking FilterRequest structure. If the
+    cookie is to be rejected, the filter can set FilterRequest::accepted to \c false.
+
+    The callback should not be used to execute heavy tasks since it is running on the
+    IO thread and therefore blocks the Chromium networking.
+
+    \sa deleteAllCookiesWithCallback(), getAllCookies()
+*/
+void QWebEngineCookieStoreClient::setCookieFilter(const QWebEngineCallback<const QWebEngineCookieStoreClient::FilterRequest&> &filter)
 {
-    Q_UNUSED(firstPartyUrl);
-    Q_UNUSED(cookieLine);
-    Q_UNUSED(cookieSource);
-    return true;
+    Q_D(QWebEngineCookieStoreClient);
+    d->filterCallback = filter;
 }
 
 QT_END_NAMESPACE

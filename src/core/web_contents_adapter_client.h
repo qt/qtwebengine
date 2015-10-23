@@ -211,8 +211,8 @@ public:
     virtual void windowCloseRejected() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) = 0;
-    virtual void requestFullScreen(bool) = 0;
-    virtual bool isFullScreen() const = 0;
+    virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
+    virtual bool isFullScreenMode() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
     virtual void runFileChooser(FilePickerController *controller) = 0;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;

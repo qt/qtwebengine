@@ -28,6 +28,7 @@
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
+#include "qwebenginefullscreenrequest.h"
 #include "qwebenginehistory.h"
 #include "qwebenginehistory_p.h"
 #include "qwebengineprofile.h"
@@ -89,7 +90,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , isLoading(false)
     , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter.data()))
     , m_backgroundColor(Qt::white)
-    , m_fullscreenRequested(false)
+    , fullscreenMode(false)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -384,6 +385,14 @@ void QWebEnginePagePrivate::updateContentsSize(const QSizeF &size)
     Q_EMIT q->contentsSizeChanged(size);
 }
 
+void QWebEnginePagePrivate::setFullScreenMode(bool fullscreen)
+{
+    if (fullscreenMode != fullscreen) {
+        fullscreenMode = fullscreen;
+        adapter->changedFullScreen();
+    }
+}
+
 BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
 {
     return profile->d_ptr->browserContext();
@@ -422,13 +431,18 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::fullScreenRequested(bool fullScreen)
+    \fn QWebEnginePage::fullScreenRequested(const QWebEngineFullScreenRequest &request)
 
-    This signal is emitted when the web page issues the request to enter or exit fullscreen mode.
-    If \a fullScreen is \c true, the page wants to enter the mode and if it is \c false, the page
-    wants to exit the mode.
+    This signal is emitted when the web page issues the request to enter fullscreen mode for
+    a web-element, usually a video element.
 
-    \sa isFullScreen(), QWebEngineSettings::FullScreenSupportEnabled
+    The request object \a request can be used to accept or reject the request.
+
+    If the request is accepted the element requesting fullscreen will fill the viewport,
+    but it is up to the application to make the view fullscreen or move the page to a view
+    that is fullscreen.
+
+    \sa QWebEngineSettings::FullScreenSupportEnabled
 */
 
 /*!
@@ -903,16 +917,16 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
     navigationRequestAction = accepted ? WebContentsAdapterClient::AcceptRequest : WebContentsAdapterClient::IgnoreRequest;
 }
 
-void QWebEnginePagePrivate::requestFullScreen(bool fullScreen)
+void QWebEnginePagePrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QWebEnginePage);
-    m_fullscreenRequested = fullScreen;
-    Q_EMIT q->fullScreenRequested(fullScreen);
+    QWebEngineFullScreenRequest request(this, origin, fullscreen);
+    Q_EMIT q->fullScreenRequested(request);
 }
 
-bool QWebEnginePagePrivate::isFullScreen() const
+bool QWebEnginePagePrivate::isFullScreenMode() const
 {
-    return m_fullscreenRequested && q_ptr->isFullScreen();
+    return fullscreenMode;
 }
 
 void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> controller)
@@ -1060,7 +1074,7 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     if (d->adapter->hasInspector())
         menu->addAction(QWebEnginePage::action(InspectElement));
 
-    if (d->isFullScreen())
+    if (d->isFullScreenMode())
         menu->addAction(QWebEnginePage::action(ExitFullScreen));
 
     return menu;
@@ -1312,15 +1326,6 @@ bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType typ
     Q_UNUSED(type);
     Q_UNUSED(isMainFrame);
     return true;
-}
-
-/*!
-    Returns \c true if the web view is in fullscreen mode, \c false otherwise.
-*/
-bool QWebEnginePage::isFullScreen()
-{
-    Q_D(const QWebEnginePage);
-    return d->view ? d->view->isFullScreen() : false;
 }
 
 /*!

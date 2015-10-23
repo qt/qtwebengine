@@ -98,6 +98,12 @@ public:
     FOR_EACH_TYPE(DEFINE_INVOKE_FOR_TYPE)
 #undef DEFINE_INVOKE_FOR_TYPE
 
+    template <typename A>
+    void invokeDirectly(const QWebEngineCallback<A> &callback, const A &argument)
+    {
+        return callback.d.data()->operator()(std::forward<const A&>(argument));
+    }
+
 private:
     struct CallbackSharedDataPointerBase {
         virtual ~CallbackSharedDataPointerBase() { }

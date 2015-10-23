@@ -443,19 +443,6 @@ QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
     return d->browserContext()->cookieStoreClient();
 }
 
-/*!
-    Registers a cookie store client singleton \a client to access Chromium's cookies.
-
-    The profile does not take ownership of the pointer.
-
-    \sa QWebEngineCookieStoreClient
-*/
-
-void QWebEngineProfile::setCookieStoreClient(QWebEngineCookieStoreClient *client)
-{
-    Q_D(QWebEngineProfile);
-    d->browserContext()->setCookieStoreClient(client);
-}
 
 /*!
     Registers a request interceptor singleton \a interceptor to intercept URL requests.
@@ -562,43 +549,56 @@ static bool checkInternalScheme(const QByteArray &scheme)
 /*!
     \since 5.6
 
-    Installs the custom URL scheme handler \a handler in the profile.
+    Registers a handler \a handler for custom URL scheme \a scheme in the profile.
 */
-void QWebEngineProfile::installUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
     Q_D(QWebEngineProfile);
     Q_ASSERT(handler);
-    QByteArray scheme = handler->scheme();
     if (checkInternalScheme(scheme)) {
-        qWarning("Can not install a URL scheme handler overriding internal scheme: %s", scheme.constData());
+        qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
         return;
     }
 
     if (d->browserContext()->customUrlSchemeHandlers().contains(scheme)) {
-        qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
+        if (d->browserContext()->customUrlSchemeHandlers().value(scheme) != handler)
+            qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
         return;
     }
-    d->browserContext()->customUrlSchemeHandlers().insert(scheme, handler);
-    d->browserContext()->updateCustomUrlSchemeHandlers();
+    d->browserContext()->addCustomUrlSchemeHandler(scheme, handler);
     connect(handler, SIGNAL(destroyed(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 
 /*!
     \since 5.6
 
-    Removes the custom URL scheme handler \a handler from the profile
+    Removes the custom URL scheme handler \a handler from the profile.
+
+    \sa removeUrlScheme()
 */
 void QWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
 {
     Q_D(QWebEngineProfile);
     Q_ASSERT(handler);
-    if (!handler)
-        return;
-    int count = d->browserContext()->customUrlSchemeHandlers().remove(handler->scheme());
-    if (!count)
+    if (!d->browserContext()->removeCustomUrlSchemeHandler(handler))
         return;
     disconnect(handler, SIGNAL(destroyed(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
-    d->browserContext()->updateCustomUrlSchemeHandlers();
+}
+
+/*!
+    \since 5.6
+
+    Removes the custom URL scheme \a scheme from the profile.
+
+    \sa removeUrlSchemeHandler()
+*/
+void QWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
+{
+    Q_D(QWebEngineProfile);
+    QWebEngineUrlSchemeHandler *handler = d->browserContext()->takeCustomUrlSchemeHandler(scheme);
+    if (!handler)
+        return;
+    disconnect(handler, SIGNAL(destroyed(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 
 /*!
@@ -606,7 +606,7 @@ void QWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handl
 
     Removes all custom URL scheme handlers installed in the profile.
 */
-void QWebEngineProfile::clearUrlSchemeHandlers()
+void QWebEngineProfile::removeAllUrlSchemeHandlers()
 {
     Q_D(QWebEngineProfile);
     d->browserContext()->customUrlSchemeHandlers().clear();

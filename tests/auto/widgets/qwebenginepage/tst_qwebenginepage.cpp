@@ -38,6 +38,7 @@
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
 #include <qpa/qplatforminputcontext.h>
+#include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
@@ -3736,28 +3737,10 @@ void tst_QWebEnginePage::runJavaScript()
     QVERIFY(watcher.wait());
 }
 
-class FullScreenPage : public QWebEnginePage {
-    Q_OBJECT
-public:
-    FullScreenPage(QObject* parent = 0)
-        : QWebEnginePage(parent)
-        , m_isFullScreen(true)
-    { }
-
-    void setIsFullScreen(bool b) { m_isFullScreen = b; }
-
-protected:
-    bool isFullScreen() override
-    {
-        return m_isFullScreen;
-    }
-    bool m_isFullScreen;
-};
-
 void tst_QWebEnginePage::fullScreenRequested()
 {
     JavaScriptCallbackWatcher watcher;
-    FullScreenPage* page = new FullScreenPage;
+    QWebEnginePage* page = new QWebEnginePage;
     QWebEngineView* view = new QWebEngineView;
     view->setPage(page);
     view->show();
@@ -3773,12 +3756,20 @@ void tst_QWebEnginePage::fullScreenRequested()
     QVERIFY(watcher.wait());
 
     // FullscreenRequest must be a user gesture
+    bool acceptRequest = true;
+    connect(page, &QWebEnginePage::fullScreenRequested,
+        [&acceptRequest](const QWebEngineFullScreenRequest &request) {
+        if (acceptRequest) request.accept(); else request.reject();
+    });
+
     QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
     QTest::qWait(100);
     page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(true));
     page->runJavaScript("document.webkitExitFullscreen()", JavaScriptCallbackUndefined());
     QVERIFY(watcher.wait());
-    page->setIsFullScreen(false);
+
+    acceptRequest = false;
+
     page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
     QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
     QVERIFY(watcher.wait());

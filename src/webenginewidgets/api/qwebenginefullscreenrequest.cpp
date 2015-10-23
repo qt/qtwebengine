@@ -34,34 +34,26 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINEURLSCHEMEHANDLER_P_H
-#define QWEBENGINEURLSCHEMEHANDLER_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qbytearray.h>
+#include "qwebenginefullscreenrequest.h"
+#include "qwebenginepage_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandlerPrivate {
-public:
-    QWebEngineUrlSchemeHandlerPrivate(const QByteArray &);
+QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(QWebEnginePagePrivate *pagePrivate, const QUrl &origin, bool fullscreen)
+    : m_pagePrivate(pagePrivate)
+    , m_origin(origin)
+    , m_toggleOn(fullscreen)
+{
+}
 
-    const QByteArray &scheme() const { return m_scheme; }
+void QWebEngineFullScreenRequest::reject() const
+{
+    m_pagePrivate->setFullScreenMode(!m_toggleOn);
+}
 
-private:
-    QByteArray m_scheme;
-};
+void QWebEngineFullScreenRequest::accept() const
+{
+    m_pagePrivate->setFullScreenMode(m_toggleOn);
+}
 
 QT_END_NAMESPACE
-
-#endif // QWEBENGINEURLSCHEMEHANDLER_P_H

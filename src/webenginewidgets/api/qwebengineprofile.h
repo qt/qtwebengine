@@ -100,7 +100,6 @@ public:
     void setHttpCacheMaximumSize(int maxSize);
 
     QWebEngineCookieStoreClient* cookieStoreClient();
-    void setCookieStoreClient(QWebEngineCookieStoreClient *client);
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
 
     void clearAllVisitedLinks();
@@ -111,9 +110,10 @@ public:
     QWebEngineScriptCollection *scripts() const;
 
     const QWebEngineUrlSchemeHandler *urlSchemeHandler(const QByteArray &) const;
-    void installUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
+    void installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *);
+    void removeUrlScheme(const QByteArray &scheme);
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
-    void clearUrlSchemeHandlers();
+    void removeAllUrlSchemeHandlers();
 
     static QWebEngineProfile *defaultProfile();
 

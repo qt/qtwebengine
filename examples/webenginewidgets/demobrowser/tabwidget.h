@@ -216,7 +216,7 @@ private slots:
     void lineEditReturnPressed();
     void windowCloseRequested();
     void moveTab(int fromIndex, int toIndex);
-    void fullScreenRequested(bool);
+    void fullScreenRequested(const QWebEngineFullScreenRequest& request);
 
 private:
     QAction *m_recentlyClosedTabsAction;

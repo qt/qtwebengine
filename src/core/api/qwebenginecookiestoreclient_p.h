@@ -74,6 +74,7 @@ class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStoreClientPrivate {
 public:
     Q_DECLARE_PUBLIC(QWebEngineCookieStoreClient)
     QtWebEngineCore::CallbackDirectory callbackDirectory;
+    QWebEngineCallback<const QWebEngineCookieStoreClient::FilterRequest&> filterCallback;
     QList<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
     bool m_deleteSessionCookiesPending;

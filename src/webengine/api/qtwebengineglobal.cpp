@@ -47,6 +47,17 @@ Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 
 namespace QtWebEngine {
 
+/*!
+    \namespace QtWebEngine
+    \inmodule QtWebEngine
+    \ingroup qtwebengine-namespaces
+    \keyword QtWebEngine Namespace
+
+    \brief Helper functions for the Qt WebEngine (Qt Quick) module
+
+    The \l[CPP]{QtWebEngine} namespace is part of the Qt WebEngine module.
+*/
+
 static QOpenGLContext *shareContext;
 
 static void deleteShareContext()
@@ -59,6 +70,16 @@ static void deleteShareContext()
 // QtWebEngine::initialize was introduced first and meant to be called
 // after the QGuiApplication creation, when AA_ShareOpenGLContexts fills
 // the same need but the flag has to be set earlier.
+
+/*!
+    \fn QtWebEngine::initialize()
+
+    Sets up an OpenGL Context that can be shared between processes. This has to be done after
+    QGuiApplication is created, but before a Qt Quick window is created.
+
+    This has the same effect as passing Qt::AA_ShareOpenGLContexts to the QGuiApplication
+    constructor.
+*/
 void initialize()
 {
 #ifdef Q_OS_WIN32
@@ -71,11 +92,11 @@ void initialize()
 
     QCoreApplication *app = QCoreApplication::instance();
     if (!app) {
-        qFatal("QWebEngine(Widgets)::initialize() must be called after the construction of the application object.");
+        qFatal("QtWebEngine::initialize() must be called after the construction of the application object.");
         return;
     }
     if (app->thread() != QThread::currentThread()) {
-        qFatal("QWebEngine(Widgets)::initialize() must be called from the Qt gui thread.");
+        qFatal("QtWebEngine::initialize() must be called from the Qt gui thread.");
         return;
     }
 
@@ -86,6 +107,9 @@ void initialize()
     shareContext->create();
     qAddPostRoutine(deleteShareContext);
     qt_gl_set_global_share_context(shareContext);
+
+    // Classes like QOpenGLWidget check for the attribute
+    app->setAttribute(Qt::AA_ShareOpenGLContexts);
 }
 } // namespace QtWebEngine
 

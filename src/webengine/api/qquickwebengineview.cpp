@@ -275,7 +275,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::InspectElement); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Inspect Element"));
     }
-    if (isFullScreen()) {
+    if (isFullScreenMode()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ExitFullScreen); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Exit Full Screen Mode"));
@@ -519,14 +519,14 @@ void QQuickWebEngineViewPrivate::windowCloseRejected()
 #endif
 }
 
-void QQuickWebEngineViewPrivate::requestFullScreen(bool fullScreen)
+void QQuickWebEngineViewPrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QQuickWebEngineView);
-    QQuickWebEngineFullScreenRequest request(this, fullScreen);
+    QQuickWebEngineFullScreenRequest request(this, origin, fullscreen);
     Q_EMIT q->fullScreenRequested(request);
 }
 
-bool QQuickWebEngineViewPrivate::isFullScreen() const
+bool QQuickWebEngineViewPrivate::isFullScreenMode() const
 {
     return m_isFullScreen;
 }
@@ -1392,8 +1392,9 @@ QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest()
 {
 }
 
-QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, bool toggleOn)
+QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, const QUrl &origin, bool toggleOn)
     : viewPrivate(viewPrivate)
+    , m_origin(origin)
     , m_toggleOn(toggleOn)
 {
 }
@@ -1402,7 +1403,15 @@ void QQuickWebEngineFullScreenRequest::accept()
 {
     if (viewPrivate && viewPrivate->m_isFullScreen != m_toggleOn) {
         viewPrivate->m_isFullScreen = m_toggleOn;
+        viewPrivate->adapter->changedFullScreen();
         Q_EMIT viewPrivate->q_ptr->isFullScreenChanged();
+    }
+}
+
+void QQuickWebEngineFullScreenRequest::reject()
+{
+    if (viewPrivate) {
+        viewPrivate->adapter->changedFullScreen();
     }
 }
 
