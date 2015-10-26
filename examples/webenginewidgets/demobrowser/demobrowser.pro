@@ -28,6 +28,7 @@ HEADERS += \
     edittableview.h \
     edittreeview.h \
     featurepermissionbar.h\
+    fullscreennotification.h \
     history.h \
     modelmenu.h \
     searchlineedit.h \
@@ -49,6 +50,7 @@ SOURCES += \
     edittableview.cpp \
     edittreeview.cpp \
     featurepermissionbar.cpp\
+    fullscreennotification.cpp \
     history.cpp \
     modelmenu.cpp \
     searchlineedit.cpp \

@@ -44,6 +44,7 @@
 #include "browserapplication.h"
 #include "browsermainwindow.h"
 #include "downloadmanager.h"
+#include "fullscreennotification.h"
 #include "history.h"
 #include "urllineedit.h"
 #include "webview.h"
@@ -88,6 +89,7 @@ TabBar::TabBar(QWidget *parent)
 
 TabWidget::~TabWidget()
 {
+    delete m_fullScreenNotification;
     delete m_fullScreenView;
 }
 
@@ -220,6 +222,7 @@ TabWidget::TabWidget(QWidget *parent)
     , m_tabBar(new TabBar(this))
     , m_profile(QWebEngineProfile::defaultProfile())
     , m_fullScreenView(0)
+    , m_fullScreenNotification(0)
 {
     setElideMode(Qt::ElideRight);
 
@@ -355,23 +358,33 @@ void TabWidget::currentChanged(int index)
 
 void TabWidget::fullScreenRequested(const QWebEngineFullScreenRequest &request)
 {
+    WebPage *webPage = qobject_cast<WebPage*>(sender());
     if (request.toggleOn()) {
-        if (!m_fullScreenView)
+        if (!m_fullScreenView) {
             m_fullScreenView = new QWebEngineView();
-        WebPage *webPage = qobject_cast<WebPage*>(sender());
+            m_fullScreenNotification = new FullScreenNotification(m_fullScreenView);
+
+            QAction *exitFullScreenAction = new QAction(m_fullScreenView);
+            exitFullScreenAction->setShortcut(Qt::Key_Escape);
+            connect(exitFullScreenAction, &QAction::triggered, [webPage] {
+                webPage->triggerAction(QWebEnginePage::ExitFullScreen);
+            });
+            m_fullScreenView->addAction(exitFullScreenAction);
+        }
         webPage->setView(m_fullScreenView);
         request.accept();
         m_fullScreenView->showFullScreen();
         m_fullScreenView->raise();
+        m_fullScreenNotification->show();
     } else {
         if (!m_fullScreenView)
             return;
-        WebPage *webPage = qobject_cast<WebPage*>(sender());
         WebView *oldWebView = this->webView(m_lineEdits->currentIndex());
         webPage->setView(oldWebView);
         request.accept();
         raise();
         m_fullScreenView->hide();
+        m_fullScreenNotification->hide();
     }
 }
 

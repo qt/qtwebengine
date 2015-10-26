@@ -129,6 +129,7 @@ private:
 #include <QtCore/QUrl>
 #include <QtWidgets/QTabWidget>
 QT_BEGIN_NAMESPACE
+class FullScreenNotification;
 class QCompleter;
 class QLineEdit;
 class QMenu;
@@ -235,6 +236,7 @@ private:
     TabBar *m_tabBar;
     QWebEngineProfile *m_profile;
     QWebEngineView *m_fullScreenView;
+    FullScreenNotification *m_fullScreenNotification;
 };
 
 #endif // TABWIDGET_H
