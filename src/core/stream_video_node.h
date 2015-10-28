@@ -40,9 +40,9 @@
 #include <QtQuick/qsgmaterial.h>
 #include <QtQuick/qsgnode.h>
 
-QT_BEGIN_NAMESPACE
-class QSGTexture;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QSGTexture)
+
+namespace QtWebEngineCore {
 
 // These classes duplicate, QtQuick style, the logic of GLRenderer::DrawStreamVideoQuad.
 // Their behavior should stay as close as possible to GLRenderer.
@@ -52,7 +52,8 @@ class StreamVideoMaterial : public QSGMaterial
 public:
     StreamVideoMaterial(QSGTexture *texture);
 
-    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE{
+    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
+    {
         static QSGMaterialType theType;
         return &theType;
     }
@@ -74,5 +75,7 @@ private:
     QSGGeometry m_geometry;
     StreamVideoMaterial *m_material;
 };
+
+} // namespace
 
 #endif // STREAM_VIDEO_NODE_H

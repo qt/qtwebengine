@@ -38,6 +38,8 @@
 
 #include <QtQuick/qsgtexture.h>
 
+namespace QtWebEngineCore {
+
 class StreamVideoMaterialShader : public QSGMaterialShader
 {
 public:
@@ -141,3 +143,5 @@ void StreamVideoNode::setTextureMatrix(const QMatrix4x4 &matrix)
 {
     m_material->m_texMatrix = matrix;
 }
+
+} // namespace
