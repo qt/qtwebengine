@@ -38,6 +38,8 @@ SOURCES = \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         clipboard_qt.cpp \
+        color_chooser_qt.cpp \
+        color_chooser_controller.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
         content_client_qt.cpp \
@@ -109,6 +111,9 @@ HEADERS = \
         certificate_error_controller.h \
         chromium_overrides.h \
         clipboard_qt.h \
+        color_chooser_qt.h \
+        color_chooser_controller_p.h \
+        color_chooser_controller.h \
         common/qt_messages.h \
         common/user_script_data.h \
         content_client_qt.h \

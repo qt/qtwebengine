@@ -331,6 +331,11 @@ void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url
     Q_EMIT q->featurePermissionRequested(url, QQuickWebEngineView::Geolocation);
 }
 
+void QQuickWebEngineViewPrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
+{
+    ui()->showColorDialog(controller);
+}
+
 void QQuickWebEngineViewPrivate::runFileChooser(FilePickerController* controller)
 {
     ui()->showFilePicker(controller);

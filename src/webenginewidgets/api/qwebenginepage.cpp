@@ -26,6 +26,7 @@
 #include "authentication_dialog_controller.h"
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
+#include "color_chooser_controller.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginefullscreenrequest.h"
@@ -49,6 +50,7 @@
 #include <QApplication>
 #include <QAuthenticator>
 #include <QClipboard>
+#include <QColorDialog>
 #include <QContextMenuEvent>
 #include <QFileDialog>
 #include <QKeyEvent>
@@ -275,6 +277,20 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
     }
 
     controller->accept(networkAuth.user(), networkAuth.password());
+}
+
+void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
+{
+    QColorDialog *dialog = new QColorDialog(controller.data()->initialColor(), view);
+
+    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), controller.data(), SLOT(accept(QColor)));
+    QColorDialog::connect(dialog, SIGNAL(rejected()), controller.data(), SLOT(reject()));
+
+    // Delete when done
+    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), dialog, SLOT(deleteLater()));
+    QColorDialog::connect(dialog, SIGNAL(rejected()), dialog, SLOT(deleteLater()));
+
+    dialog->open();
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)

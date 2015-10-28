@@ -41,6 +41,8 @@
 #include "web_contents_delegate_qt.h"
 
 #include "browser_context_adapter.h"
+#include "color_chooser_qt.h"
+#include "color_chooser_controller.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "network_delegate_qt.h"
@@ -240,6 +242,14 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     }
 }
 
+content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)
+{
+    Q_UNUSED(suggestion);
+    ColorChooserQt *colorChooser = new ColorChooserQt(source, toQt(color));
+    m_viewClient->showColorDialog(colorChooser->controller());
+
+    return colorChooser;
+}
 content::JavaScriptDialogManager *WebContentsDelegateQt::GetJavaScriptDialogManager(content::WebContents *)
 {
     return JavaScriptDialogManagerQt::GetInstance();

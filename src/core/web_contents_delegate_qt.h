@@ -40,9 +40,11 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/permission_status.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 #include "base/callback.h"
 
+#include "color_chooser_controller.h"
 #include "javascript_dialog_manager_qt.h"
 #include <QtCore/qvector.h>
 #include <QtCore/qcompilerdetection.h>
@@ -51,11 +53,13 @@ QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
 namespace content {
     class BrowserContext;
+    class ColorChooser;
     class SiteInstance;
     class RenderViewHost;
     class JavaScriptDialogManager;
     class WebContents;
     struct WebPreferences;
+    struct ColorSuggestion;
 }
 
 namespace QtWebEngineCore {
@@ -79,6 +83,7 @@ public:
     virtual void CloseContents(content::WebContents *source) Q_DECL_OVERRIDE;
     virtual void LoadProgressChanged(content::WebContents* source, double progress) Q_DECL_OVERRIDE;
     virtual void HandleKeyboardEvent(content::WebContents *source, const content::NativeWebKeyboardEvent &event) Q_DECL_OVERRIDE;
+    virtual content::ColorChooser *OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion) Q_DECL_OVERRIDE;
     virtual content::JavaScriptDialogManager *GetJavaScriptDialogManager(content::WebContents *source) Q_DECL_OVERRIDE;
     virtual void EnterFullscreenModeForTab(content::WebContents* web_contents, const GURL& origin) Q_DECL_OVERRIDE;
     virtual void ExitFullscreenModeForTab(content::WebContents*) Q_DECL_OVERRIDE;
