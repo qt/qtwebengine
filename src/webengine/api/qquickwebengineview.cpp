@@ -573,6 +573,10 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     if (qmlWebChannel)
         adapter->setWebChannel(qmlWebChannel);
 
+    // re-bind the userscrips to the new adapter
+    Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
+        script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
+
     // Emit signals for values that might be different from the previous WebContentsAdapter.
     emit q->titleChanged();
     emit q->urlChanged();
