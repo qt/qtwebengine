@@ -43,6 +43,7 @@ namespace QtWebEngineCore {
 class StreamVideoMaterialShader : public QSGMaterialShader
 {
 public:
+    StreamVideoMaterialShader(TextureTarget target) : m_target(target) { }
     virtual void updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial);
 
     virtual char const *const *attributeNames() const Q_DECL_OVERRIDE {
@@ -57,7 +58,7 @@ public:
 protected:
     virtual const char *vertexShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::VertexShaderVideoTransform
-        const char *shader =
+        static const char *shader =
         "attribute highp vec4 a_position;\n"
         "attribute mediump vec2 a_texCoord;\n"
         "uniform highp mat4 matrix;\n"
@@ -72,7 +73,7 @@ protected:
 
     virtual const char *fragmentShader() const Q_DECL_OVERRIDE {
         // Keep in sync with cc::FragmentShaderRGBATexAlpha
-        static const char *shader =
+        static const char *shaderExternal  =
         "#extension GL_OES_EGL_image_external : require\n"
         "varying mediump vec2 v_texCoord;\n"
         "uniform samplerExternalOES s_texture;\n"
@@ -81,7 +82,19 @@ protected:
         "  lowp vec4 texColor = texture2D(s_texture, v_texCoord);\n"
         "  gl_FragColor = texColor * alpha;\n"
         "}";
-        return shader;
+        static const char *shader2DRect =
+        "#extension GL_ARB_texture_rectangle : require\n"
+        "varying mediump vec2 v_texCoord;\n"
+        "uniform sampler2DRect s_texture;\n"
+        "uniform lowp float alpha;\n"
+        "void main() {\n"
+        "  lowp vec4 texColor = texture2DRect(s_texture, v_texCoord);\n"
+        "  gl_FragColor = texColor * alpha;\n"
+        "}";
+        if (m_target == ExternalTarget)
+            return shaderExternal;
+        else
+            return shader2DRect;
     }
 
     virtual void initialize() {
@@ -95,6 +108,7 @@ protected:
     int m_id_texMatrix;
     int m_id_sTexture;
     int m_id_opacity;
+    TextureTarget m_target;
 };
 
 void StreamVideoMaterialShader::updateState(const RenderState &state, QSGMaterial *newMaterial, QSGMaterial *oldMaterial)
@@ -115,28 +129,33 @@ void StreamVideoMaterialShader::updateState(const RenderState &state, QSGMateria
     program()->setUniformValue(m_id_texMatrix, mat->m_texMatrix);
 }
 
-StreamVideoMaterial::StreamVideoMaterial(QSGTexture *texture)
+StreamVideoMaterial::StreamVideoMaterial(QSGTexture *texture, TextureTarget target)
     : m_texture(texture)
+    , m_target(target)
 {
 }
 
 QSGMaterialShader *StreamVideoMaterial::createShader() const
 {
-    return new StreamVideoMaterialShader;
+    return new StreamVideoMaterialShader(m_target);
 }
 
-StreamVideoNode::StreamVideoNode(QSGTexture *texture)
+StreamVideoNode::StreamVideoNode(QSGTexture *texture, bool flip, TextureTarget target)
     : m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
+    , m_flip(flip)
 {
     setGeometry(&m_geometry);
     setFlag(QSGNode::OwnsMaterial);
-    m_material = new StreamVideoMaterial(texture);
+    m_material = new StreamVideoMaterial(texture, target);
     setMaterial(m_material);
 }
 
 void StreamVideoNode::setRect(const QRectF &rect)
 {
-    QSGGeometry::updateTexturedRectGeometry(geometry(), rect, QRectF(0, 0, 1, 1));
+    if (m_flip)
+        QSGGeometry::updateTexturedRectGeometry(geometry(), rect, QRectF(0, 1, 1, -1));
+    else
+        QSGGeometry::updateTexturedRectGeometry(geometry(), rect, QRectF(0, 0, 1, 1));
 }
 
 void StreamVideoNode::setTextureMatrix(const QMatrix4x4 &matrix)
