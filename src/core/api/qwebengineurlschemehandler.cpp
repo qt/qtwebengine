@@ -75,7 +75,6 @@ QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(QObject *parent)
 QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
     Q_EMIT destroyed(this);
-    delete d_ptr;
 }
 
 /*!
