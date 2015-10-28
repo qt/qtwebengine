@@ -363,7 +363,7 @@ ApplicationWindow {
                 settings.javascriptEnabled: appSettings.javaScriptEnabled
                 settings.errorPageEnabled: appSettings.errorPageEnabled
                 settings.pluginsEnabled: appSettings.pluginsEnabled
-                settings.fullScreenSupportEnabled: appSettings.fullScreenSupportEanbled
+                settings.fullScreenSupportEnabled: appSettings.fullScreenSupportEnabled
 
                 onCertificateError: {
                     error.defer()
