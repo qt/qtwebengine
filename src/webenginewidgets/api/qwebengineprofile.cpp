@@ -199,7 +199,7 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 */
 QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(false)))
+    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(true)))
 {
     d_ptr->q_ptr = this;
 }
