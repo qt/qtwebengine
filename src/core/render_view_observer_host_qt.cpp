@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-#include "qt_render_view_observer_host.h"
+#include "render_view_observer_host_qt.h"
 
 #include "common/qt_messages.h"
 #include "content/public/browser/web_contents.h"
@@ -44,31 +44,31 @@
 
 namespace QtWebEngineCore {
 
-QtRenderViewObserverHost::QtRenderViewObserverHost(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
+RenderViewObserverHostQt::RenderViewObserverHostQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : content::WebContentsObserver(webContents)
     , m_adapterClient(adapterClient)
 {
 }
 
-void QtRenderViewObserverHost::fetchDocumentMarkup(quint64 requestId)
+void RenderViewObserverHostQt::fetchDocumentMarkup(quint64 requestId)
 {
-    Send(new QtRenderViewObserver_FetchDocumentMarkup(routing_id(), requestId));
+    Send(new RenderViewObserverQt_FetchDocumentMarkup(routing_id(), requestId));
 }
 
-void QtRenderViewObserverHost::fetchDocumentInnerText(quint64 requestId)
+void RenderViewObserverHostQt::fetchDocumentInnerText(quint64 requestId)
 {
-    Send(new QtRenderViewObserver_FetchDocumentInnerText(routing_id(), requestId));
+    Send(new RenderViewObserverQt_FetchDocumentInnerText(routing_id(), requestId));
 }
 
-bool QtRenderViewObserverHost::OnMessageReceived(const IPC::Message& message)
+bool RenderViewObserverHostQt::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(QtRenderViewObserverHost, message)
-        IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFetchDocumentMarkup,
+    IPC_BEGIN_MESSAGE_MAP(RenderViewObserverHostQt, message)
+        IPC_MESSAGE_HANDLER(RenderViewObserverHostQt_DidFetchDocumentMarkup,
                             onDidFetchDocumentMarkup)
-        IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFetchDocumentInnerText,
+        IPC_MESSAGE_HANDLER(RenderViewObserverHostQt_DidFetchDocumentInnerText,
                             onDidFetchDocumentInnerText)
-        IPC_MESSAGE_HANDLER(QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout,
+        IPC_MESSAGE_HANDLER(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout,
                             onDidFirstVisuallyNonEmptyLayout)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
@@ -76,17 +76,17 @@ bool QtRenderViewObserverHost::OnMessageReceived(const IPC::Message& message)
 
 }
 
-void QtRenderViewObserverHost::onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup)
+void RenderViewObserverHostQt::onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup)
 {
     m_adapterClient->didFetchDocumentMarkup(requestId, toQt(markup));
 }
 
-void QtRenderViewObserverHost::onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText)
+void RenderViewObserverHostQt::onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText)
 {
     m_adapterClient->didFetchDocumentInnerText(requestId, toQt(innerText));
 }
 
-void QtRenderViewObserverHost::onDidFirstVisuallyNonEmptyLayout()
+void RenderViewObserverHostQt::onDidFirstVisuallyNonEmptyLayout()
 {
     RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView());
     if (rwhv)

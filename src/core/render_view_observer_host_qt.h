@@ -33,35 +33,38 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QT_RENDER_VIEW_OBSERVER_H
-#define QT_RENDER_VIEW_OBSERVER_H
 
-#include "content/public/renderer/render_view_observer.h"
+#ifndef RENDER_VIEW_OBSERVER_HOST_QT_H
+#define RENDER_VIEW_OBSERVER_HOST_QT_H
+
+#include "content/public/browser/web_contents_observer.h"
 
 #include <QtGlobal>
 
-namespace web_cache {
-class WebCacheRenderProcessObserver;
+namespace content {
+    class WebContents;
 }
 
-class QtRenderViewObserver : public content::RenderViewObserver {
+namespace QtWebEngineCore {
+
+class WebContentsAdapterClient;
+
+class RenderViewObserverHostQt : public content::WebContentsObserver
+{
 public:
-    QtRenderViewObserver(content::RenderView* render_view,
-                         web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer);
+    RenderViewObserverHostQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
+    void fetchDocumentMarkup(quint64 requestId);
+    void fetchDocumentInnerText(quint64 requestId);
 
 private:
-    void onFetchDocumentMarkup(quint64 requestId);
-    void onFetchDocumentInnerText(quint64 requestId);
-    void onSetBackgroundColor(quint32 color);
+    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
+    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
+    void onDidFirstVisuallyNonEmptyLayout();
 
-    void OnFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
-
-    virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
-    virtual void Navigate(const GURL& url) Q_DECL_OVERRIDE;
-
-    web_cache::WebCacheRenderProcessObserver* m_web_cache_render_process_observer;
-
-    DISALLOW_COPY_AND_ASSIGN(QtRenderViewObserver);
+    WebContentsAdapterClient *m_adapterClient;
 };
 
-#endif // QT_RENDER_VIEW_OBSERVER_H
+} // namespace QtWebEngineCore
+
+#endif // RENDER_VIEW_OBSERVER_HOST_QT_H

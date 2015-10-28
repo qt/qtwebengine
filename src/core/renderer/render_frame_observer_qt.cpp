@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-#include "qt_render_frame_observer.h"
+#include "render_frame_observer_qt.h"
 
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
@@ -44,17 +44,17 @@
 
 namespace QtWebEngineCore {
 
-QtRenderFrameObserver::QtRenderFrameObserver(content::RenderFrame* render_frame)
+RenderFrameObserverQt::RenderFrameObserverQt(content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame)
 {
 }
 
-QtRenderFrameObserver::~QtRenderFrameObserver()
+RenderFrameObserverQt::~RenderFrameObserverQt()
 {
 }
 
 #if defined(ENABLE_PLUGINS)
-void QtRenderFrameObserver::DidCreatePepperPlugin(content::RendererPpapiHost* host)
+void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost* host)
 {
     host->GetPpapiHost()->AddHostFactoryFilter(
         scoped_ptr<ppapi::host::HostFactory>(

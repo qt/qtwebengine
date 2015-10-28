@@ -416,12 +416,13 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
     return gfx::BoundingRect(p1, p2);
 }
 
-void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color) {
+void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color)
+{
     RenderWidgetHostViewBase::SetBackgroundColor(color);
     // Set the background of the compositor if necessary
     m_delegate->setClearColor(toQt(color));
     // Set the background of the blink::FrameView
-    m_host->Send(new QtRenderViewObserver_SetBackgroundColor(m_host->GetRoutingID(), color));
+    m_host->Send(new RenderViewObserverQt_SetBackgroundColor(m_host->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.

@@ -62,15 +62,15 @@ SOURCES = \
         process_main.cpp \
         proxy_config_service_qt.cpp \
         qrc_protocol_handler_qt.cpp \
-        qt_render_view_observer_host.cpp \
+        render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
         renderer/pepper/pepper_flash_browser_host_qt.cpp \
         renderer/pepper/pepper_flash_renderer_host_qt.cpp \
         renderer/pepper/pepper_host_factory_qt.cpp \
         renderer/pepper/pepper_renderer_host_factory_qt.cpp \
-        renderer/qt_render_frame_observer.cpp \
-        renderer/qt_render_view_observer.cpp \
+        renderer/render_frame_observer_qt.cpp \
+        renderer/render_view_observer_qt.cpp \
         renderer/user_script_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
         resource_bundle_qt.cpp \
@@ -134,7 +134,7 @@ HEADERS = \
         process_main.h \
         proxy_config_service_qt.h \
         qrc_protocol_handler_qt.h \
-        qt_render_view_observer_host.h \
+        render_view_observer_host_qt.h \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
@@ -142,8 +142,8 @@ HEADERS = \
         renderer/pepper/pepper_flash_renderer_host_qt.h \
         renderer/pepper/pepper_host_factory_qt.h \
         renderer/pepper/pepper_renderer_host_factory_qt.h \
-        renderer/qt_render_frame_observer.h \
-        renderer/qt_render_view_observer.h \
+        renderer/render_frame_observer_qt.h \
+        renderer/render_view_observer_qt.h \
         renderer/user_script_controller.h \
         renderer/web_channel_ipc_transport.h \
         resource_context_qt.h \

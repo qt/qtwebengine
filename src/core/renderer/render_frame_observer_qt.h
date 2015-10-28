@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QT_RENDER_FRAME_OBSERVER_H
-#define QT_RENDER_FRAME_OBSERVER_H
+#ifndef RENDER_FRAME_OBSERVER_QT_H
+#define RENDER_FRAME_OBSERVER_QT_H
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -48,19 +48,19 @@ class RenderFrame;
 
 namespace QtWebEngineCore {
 
-class QtRenderFrameObserver : public content::RenderFrameObserver {
+class RenderFrameObserverQt : public content::RenderFrameObserver {
 public:
-    explicit QtRenderFrameObserver(content::RenderFrame* render_frame);
-    ~QtRenderFrameObserver();
+    explicit RenderFrameObserverQt(content::RenderFrame* render_frame);
+    ~RenderFrameObserverQt();
 
 #if defined(ENABLE_PLUGINS)
     void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 #endif
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(QtRenderFrameObserver);
+    DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QT_RENDER_FRAME_OBSERVER_H
+#endif // RENDER_FRAME_OBSERVER_QT_H

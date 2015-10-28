@@ -62,7 +62,7 @@ class WebEngineContext;
 namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
-class QtRenderViewObserverHost;
+class RenderViewObserverHostQt;
 class UserScriptControllerHost;
 class WebChannelIPCTransportHost;
 class WebContentsAdapterClient;
@@ -76,7 +76,7 @@ public:
     QExplicitlySharedDataPointer<BrowserContextAdapter> browserContextAdapter;
     scoped_ptr<content::WebContents> webContents;
     scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<QtRenderViewObserverHost> renderViewObserverHost;
+    scoped_ptr<RenderViewObserverHostQt> renderViewObserverHost;
     scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
     QWebChannel *webChannel;
     WebContentsAdapterClient *adapterClient;

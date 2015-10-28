@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-#include "renderer/qt_render_view_observer.h"
+#include "renderer/render_view_observer_qt.h"
 
 #include "common/qt_messages.h"
 
@@ -45,7 +45,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-QtRenderViewObserver::QtRenderViewObserver(
+RenderViewObserverQt::RenderViewObserverQt(
         content::RenderView* render_view,
         web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer)
     : content::RenderViewObserver(render_view)
@@ -53,45 +53,45 @@ QtRenderViewObserver::QtRenderViewObserver(
 {
 }
 
-void QtRenderViewObserver::onFetchDocumentMarkup(quint64 requestId)
+void RenderViewObserverQt::onFetchDocumentMarkup(quint64 requestId)
 {
-    Send(new QtRenderViewObserverHost_DidFetchDocumentMarkup(
+    Send(new RenderViewObserverHostQt_DidFetchDocumentMarkup(
         routing_id(),
         requestId,
         render_view()->GetWebView()->mainFrame()->contentAsMarkup()));
 }
 
-void QtRenderViewObserver::onFetchDocumentInnerText(quint64 requestId)
+void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
 {
-    Send(new QtRenderViewObserverHost_DidFetchDocumentInnerText(
+    Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(
         routing_id(),
         requestId,
         render_view()->GetWebView()->mainFrame()->contentAsText(std::numeric_limits<std::size_t>::max())));
 }
 
-void QtRenderViewObserver::onSetBackgroundColor(quint32 color)
+void RenderViewObserverQt::onSetBackgroundColor(quint32 color)
 {
     render_view()->GetWebView()->setBaseBackgroundColor(color);
 }
 
-void QtRenderViewObserver::OnFirstVisuallyNonEmptyLayout()
+void RenderViewObserverQt::OnFirstVisuallyNonEmptyLayout()
 {
-    Send(new QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout(routing_id()));
+    Send(new RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout(routing_id()));
 }
 
-bool QtRenderViewObserver::OnMessageReceived(const IPC::Message& message)
+bool RenderViewObserverQt::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(QtRenderViewObserver, message)
-        IPC_MESSAGE_HANDLER(QtRenderViewObserver_FetchDocumentMarkup, onFetchDocumentMarkup)
-        IPC_MESSAGE_HANDLER(QtRenderViewObserver_FetchDocumentInnerText, onFetchDocumentInnerText)
-        IPC_MESSAGE_HANDLER(QtRenderViewObserver_SetBackgroundColor, onSetBackgroundColor)
+    IPC_BEGIN_MESSAGE_MAP(RenderViewObserverQt, message)
+        IPC_MESSAGE_HANDLER(RenderViewObserverQt_FetchDocumentMarkup, onFetchDocumentMarkup)
+        IPC_MESSAGE_HANDLER(RenderViewObserverQt_FetchDocumentInnerText, onFetchDocumentInnerText)
+        IPC_MESSAGE_HANDLER(RenderViewObserverQt_SetBackgroundColor, onSetBackgroundColor)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
 }
 
-void QtRenderViewObserver::Navigate(const GURL &)
+void RenderViewObserverQt::Navigate(const GURL &)
 {
     if (m_web_cache_render_process_observer)
         m_web_cache_render_process_observer->ExecutePendingClearCache();

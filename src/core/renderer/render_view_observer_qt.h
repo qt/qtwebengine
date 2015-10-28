@@ -33,38 +33,35 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef RENDER_VIEW_OBSERVER_QT_H
+#define RENDER_VIEW_OBSERVER_QT_H
 
-#ifndef QT_RENDER_VIEW_OBSERVER_HOST_H
-#define QT_RENDER_VIEW_OBSERVER_HOST_H
-
-#include "content/public/browser/web_contents_observer.h"
+#include "content/public/renderer/render_view_observer.h"
 
 #include <QtGlobal>
 
-namespace content {
-    class WebContents;
+namespace web_cache {
+class WebCacheRenderProcessObserver;
 }
 
-namespace QtWebEngineCore {
-
-class WebContentsAdapterClient;
-
-class QtRenderViewObserverHost : public content::WebContentsObserver
-{
+class RenderViewObserverQt : public content::RenderViewObserver {
 public:
-    QtRenderViewObserverHost(content::WebContents*, WebContentsAdapterClient *adapterClient);
-    void fetchDocumentMarkup(quint64 requestId);
-    void fetchDocumentInnerText(quint64 requestId);
+    RenderViewObserverQt(content::RenderView* render_view,
+                         web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer);
 
 private:
-    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
-    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
-    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
-    void onDidFirstVisuallyNonEmptyLayout();
+    void onFetchDocumentMarkup(quint64 requestId);
+    void onFetchDocumentInnerText(quint64 requestId);
+    void onSetBackgroundColor(quint32 color);
 
-    WebContentsAdapterClient *m_adapterClient;
+    void OnFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
+
+    virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    virtual void Navigate(const GURL& url) Q_DECL_OVERRIDE;
+
+    web_cache::WebCacheRenderProcessObserver* m_web_cache_render_process_observer;
+
+    DISALLOW_COPY_AND_ASSIGN(RenderViewObserverQt);
 };
 
-} // namespace QtWebEngineCore
-
-#endif // QT_RENDER_VIEW_OBSERVER_HOST_H
+#endif // RENDER_VIEW_OBSERVER_QT_H

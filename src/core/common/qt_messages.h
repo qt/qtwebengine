@@ -25,13 +25,13 @@ IPC_STRUCT_TRAITS_END()
 // RenderView messages
 // These are messages sent from the browser to the renderer process.
 
-IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentMarkup,
+IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentMarkup,
                     uint64 /* requestId */)
 
-IPC_MESSAGE_ROUTED1(QtRenderViewObserver_FetchDocumentInnerText,
+IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
                     uint64 /* requestId */)
 
-IPC_MESSAGE_ROUTED1(QtRenderViewObserver_SetBackgroundColor,
+IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
                     uint32 /* color */)
 
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Message, std::vector<char> /*binaryJSON*/)
@@ -51,14 +51,14 @@ IPC_MESSAGE_CONTROL0(UserScriptController_ClearScripts)
 // WebContents messages
 // These are messages sent from the renderer back to the browser process.
 
-IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentMarkup,
+IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentMarkup,
                     uint64 /* requestId */,
                     base::string16 /* markup */)
 
-IPC_MESSAGE_ROUTED2(QtRenderViewObserverHost_DidFetchDocumentInnerText,
+IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentInnerText,
                     uint64 /* requestId */,
                     base::string16 /* innerText */)
 
-IPC_MESSAGE_ROUTED0(QtRenderViewObserverHost_DidFirstVisuallyNonEmptyLayout)
+IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
 
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransportHost_SendMessage, std::vector<char> /*binaryJSON*/)
