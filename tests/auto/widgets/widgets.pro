@@ -5,8 +5,9 @@ CONFIG += ordered
 SUBDIRS += \
     qwebengineaccessibility \
     qwebenginepage \
-    qwebenginehistoryinterface \
-    qwebengineview \
     qwebenginehistory \
+    qwebenginehistoryinterface \
     qwebengineinspector \
+    qwebengineprofile \
     qwebenginescript \
+    qwebengineview

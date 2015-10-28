@@ -69,7 +69,7 @@ QQuickWebEngineView::NewViewDestination QQuickWebEngineNewViewRequest::destinati
 }
 
 /*!
-    \qmlproperty bool WebEngineNewViewRequest::isUserInitiated
+    \qmlproperty bool WebEngineNewViewRequest::userInitiated
     Whether this window request was directly triggered as the result of a keyboard or mouse event.
 
     Use this property to block possibly unwanted \e popups.
