@@ -146,10 +146,16 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, G
 {
 #if defined(OS_WIN)
     scoped_refptr<GLContext> context;
-    if (GetGLImplementation() == kGLImplementationDesktopGL)
+    if (GetGLImplementation() == kGLImplementationDesktopGL) {
         context = new GLContextWGL(share_group);
-    else
+        if (!context->Initialize(compatible_surface, gpu_preference)) {
+            delete context;
+            return nullptr;
+        }
+        return context;
+    } else {
         context = new GLContextEGL(share_group);
+    }
 #else
     scoped_refptr<GLContext> context = new GLContextEGL(share_group);
 #endif
