@@ -53,7 +53,7 @@ import git_submodule as GitSubmodule
 
 chromium_version = '45.0.2454.101'
 chromium_branch = '2454'
-ninja_version = 'v1.5.3'
+ninja_version = 'v1.6.0'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 
