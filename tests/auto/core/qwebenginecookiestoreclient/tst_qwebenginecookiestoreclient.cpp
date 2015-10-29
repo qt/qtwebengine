@@ -121,6 +121,7 @@ void tst_QWebEngineCookieStoreClient::cookieSignals()
 
 void tst_QWebEngineCookieStoreClient::setAndDeleteCookie()
 {
+    QTest::qWait(500);  // remove, when QTBUG-47946 is fixed!
     QWebEngineView view;
     QWebEngineCookieStoreClient *client = view.page()->profile()->cookieStoreClient();
 
@@ -158,6 +159,7 @@ void tst_QWebEngineCookieStoreClient::setAndDeleteCookie()
 
 void tst_QWebEngineCookieStoreClient::batchCookieTasks()
 {
+    QTest::qWait(500);  // remove, when QTBUG-47946 is fixed!
     QWebEngineView view;
     QWebEngineCookieStoreClient *client = view.page()->profile()->cookieStoreClient();
 
