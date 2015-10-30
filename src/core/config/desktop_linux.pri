@@ -19,3 +19,5 @@ GYP_CONFIG += \
 contains(QT_CONFIG, system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 
 !contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
+
+!contains(QT_CONFIG, system-harfbuzz): GYP_CONFIG += use_system_harfbuzz=0
