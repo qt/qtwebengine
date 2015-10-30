@@ -8,6 +8,7 @@
       'type': 'static_library',
       'dependencies': [
           'chrome_resources',
+          '<(chromium_src_dir)/components/components_strings.gyp:components_strings',
       ],
       'include_dirs': [
         './',

@@ -59,6 +59,9 @@ chrome_src = utils.getChromiumSrcDir()
 sys.path.append(os.path.join(chrome_src, 'tools', 'grit'))
 from grit.format import data_pack
 
+# The gyp "branding" variable.
+BRANDING = 'chromium'
+
 # Some build paths defined by gyp.
 SHARE_INT_DIR = None
 INT_DIR = None
@@ -83,6 +86,19 @@ def calc_output(locale):
 def calc_inputs(locale):
   """Determine the files that need processing for the given locale."""
   inputs = []
+
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_strings_da.pak',
+  inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
+                'components_strings_%s.pak' % locale))
+
+  #e.g. '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_chromium_strings_da.pak'
+  #     or
+  #     '<(SHARED_INTERMEDIATE_DIR)/components/strings/
+  # components_google_chrome_strings_da.pak',
+  inputs.append(os.path.join(SHARE_INT_DIR, 'components', 'strings',
+                'components_%s_strings_%s.pak' % (BRANDING, locale)))
 
   if OS != 'ios':
     #e.g. '<(SHARED_INTERMEDIATE_DIR)/content/app/strings/content_strings_en-US.pak'
