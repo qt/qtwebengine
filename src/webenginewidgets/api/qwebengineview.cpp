@@ -294,6 +294,24 @@ void QWebEngineView::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
+/*!
+ * \reimp
+ */
+void QWebEngineView::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+    page()->d_ptr->wasShown();
+}
+
+/*!
+ * \reimp
+ */
+void QWebEngineView::hideEvent(QHideEvent *event)
+{
+    QWidget::hideEvent(event);
+    page()->d_ptr->wasHidden();
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 int QWebEngineViewAccessible::childCount() const
 {

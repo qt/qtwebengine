@@ -129,6 +129,9 @@ public:
     void updateNavigationActions();
     void _q_webActionTriggered(bool checked);
 
+    void wasShown();
+    void wasHidden();
+
     QtWebEngineCore::WebContentsAdapter *webContents() { return adapter.data(); }
     void recreateFromSerializedHistory(QDataStream &input);
 

@@ -859,6 +859,16 @@ bool QWebEnginePage::event(QEvent *e)
     return QObject::event(e);
 }
 
+void QWebEnginePagePrivate::wasShown()
+{
+    adapter->wasShown();
+}
+
+void QWebEnginePagePrivate::wasHidden()
+{
+    adapter->wasHidden();
+}
+
 bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
     if (!view || !view->d_func()->m_pendingContextMenuEvent)

@@ -84,6 +84,7 @@ protected:
     bool event(QEvent *event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *resizeEvent) Q_DECL_OVERRIDE;
     void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
+    void hideEvent(QHideEvent *) Q_DECL_OVERRIDE;
     void initializeGL() Q_DECL_OVERRIDE;
     void paintGL() Q_DECL_OVERRIDE;
 

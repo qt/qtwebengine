@@ -139,14 +139,12 @@ void RenderWidgetHostViewQtDelegateWidget::show()
     // want to show anything else than popups as top-level.
     if (parent() || m_isPopup) {
         QOpenGLWidget::show();
-        m_client->notifyShown();
     }
 }
 
 void RenderWidgetHostViewQtDelegateWidget::hide()
 {
     QOpenGLWidget::hide();
-    m_client->notifyHidden();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::isVisible() const
@@ -257,6 +255,13 @@ void RenderWidgetHostViewQtDelegateWidget::showEvent(QShowEvent *event)
         m_windowConnections.append(connect(w, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
     }
     m_client->windowChanged();
+    m_client->notifyShown();
+}
+
+void RenderWidgetHostViewQtDelegateWidget::hideEvent(QHideEvent *event)
+{
+    QOpenGLWidget::hideEvent(event);
+    m_client->notifyHidden();
 }
 
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
