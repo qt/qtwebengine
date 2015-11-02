@@ -88,6 +88,7 @@ public:
     void Show() override { }
     void Hide() override { }
     void Close() override { }
+    void SetTitle(const base::string16&) override { }
     void SetCapture() override { }
     void ReleaseCapture() override { }
     void ToggleFullscreen() override { }
@@ -97,7 +98,7 @@ public:
     void SetCursor(PlatformCursor) override { }
     void MoveCursorTo(const gfx::Point&) override { }
     void ConfineCursorToBounds(const gfx::Rect&) override { }
-
+    PlatformImeController* GetPlatformImeController() override { return nullptr; }
     // PlatformEventDispatcher:
     bool CanDispatchEvent(const PlatformEvent& event) override;
     uint32_t DispatchEvent(const PlatformEvent& event) override;
@@ -177,6 +178,11 @@ ui::OverlayManagerOzone* OzonePlatformEglfs::GetOverlayManager() {
 scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
 {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+}
+
+base::ScopedFD OzonePlatformEglfs::OpenClientNativePixmapDevice()
+{
+    return base::ScopedFD();
 }
 
 OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }
