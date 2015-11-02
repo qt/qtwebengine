@@ -157,3 +157,16 @@ OSExchangeData::Provider* OSExchangeData::CreateProvider()
 } // namespace ui
 
 #endif // defined(USE_AURA) && !defined(USE_OZONE)
+
+#if defined(USE_OPENSSL_CERTS)
+namespace net {
+class SSLPrivateKey { };
+class X509Certificate;
+
+scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate, scoped_refptr<base::SequencedTaskRunner> task_runner)
+{
+    return scoped_ptr<SSLPrivateKey>();
+}
+
+}  // namespace net
+#endif

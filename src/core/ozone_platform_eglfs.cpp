@@ -45,6 +45,7 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/ozone/common/stub_client_native_pixmap_factory.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -186,6 +187,10 @@ base::ScopedFD OzonePlatformEglfs::OpenClientNativePixmapDevice()
 }
 
 OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }
+
+ClientNativePixmapFactory* CreateClientNativePixmapFactoryEglfs() {
+  return CreateStubClientNativePixmapFactory();
+}
 
 void OzonePlatformEglfs::InitializeUI() {
   overlay_manager_.reset(new StubOverlayManager());
