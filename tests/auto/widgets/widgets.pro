@@ -9,3 +9,8 @@ SUBDIRS += \
     qwebengineprofile \
     qwebenginescript \
     qwebengineview
+
+qtHaveModule(positioning) {
+    SUBDIRS += positionplugin
+    qwebenginepage.depends = positionplugin
+}

@@ -288,6 +288,15 @@ void tst_QWebEnginePage::cleanupFiles()
 void tst_QWebEnginePage::initTestCase()
 {
     cleanupFiles(); // In case there are old files from previous runs
+
+    // Set custom path since the CI doesn't install test plugins.
+    // Stolen from qtlocation/tests/auto/positionplugintest.
+    QString searchPath = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_WIN
+    searchPath += QStringLiteral("/..");
+#endif
+    searchPath += QStringLiteral("/../../../plugins");
+    QCoreApplication::addLibraryPath(searchPath);
 }
 
 void tst_QWebEnginePage::cleanupTestCase()
