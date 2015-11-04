@@ -653,10 +653,24 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     }
 
     Q_Q(QQuickWebEngineView);
+
+    // memorize what webChannel we had for the previous adapter
+    QQmlWebChannel *qmlWebChannel = NULL;
+    if (adapter)
+        qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
+
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
     adapter = webContents;
     adapter->initialize(this);
+
+    // associate the webChannel with the new adapter
+    if (qmlWebChannel)
+        adapter->setWebChannel(qmlWebChannel);
+
+    // re-bind the userscrips to the new adapter
+    Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
+        script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
 
     // Emit signals for values that might be different from the previous WebContentsAdapter.
     emit q->titleChanged();
