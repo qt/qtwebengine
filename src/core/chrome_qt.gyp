@@ -16,13 +16,13 @@
         '<(SHARED_INTERMEDIATE_DIR)/chrome', # Needed to include grit-generated files in localized_error.cc
       ],
       'sources': [
-        '<(chromium_src_dir)/chrome/browser/media/desktop_streams_registry.cc',
-        '<(chromium_src_dir)/chrome/browser/media/desktop_streams_registry.h',
-        '<(chromium_src_dir)/chrome/browser/media/desktop_media_list.h',
-        '<(chromium_src_dir)/chrome/common/chrome_switches.cc',
-        '<(chromium_src_dir)/chrome/common/chrome_switches.h',
-        '<(chromium_src_dir)/chrome/common/localized_error.cc',
-        '<(chromium_src_dir)/chrome/common/localized_error.h',
+        '<(DEPTH)/chrome/browser/media/desktop_streams_registry.cc',
+        '<(DEPTH)/chrome/browser/media/desktop_streams_registry.h',
+        '<(DEPTH)/chrome/browser/media/desktop_media_list.h',
+        '<(DEPTH)/chrome/common/chrome_switches.cc',
+        '<(DEPTH)/chrome/common/chrome_switches.h',
+        '<(DEPTH)/chrome/common/localized_error.cc',
+        '<(DEPTH)/chrome/common/localized_error.h',
       ],
     },
     {
