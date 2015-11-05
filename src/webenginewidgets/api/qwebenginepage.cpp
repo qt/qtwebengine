@@ -861,7 +861,7 @@ bool QWebEnginePage::event(QEvent *e)
 
 bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
-    if (!view)
+    if (!view || !view->d_func()->m_pendingContextMenuEvent)
         return false;
 
     m_menuData = WebEngineContextMenuData();
@@ -887,7 +887,6 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
         return false;
         break;
     }
-    Q_ASSERT(view->d_func()->m_pendingContextMenuEvent);
     view->d_func()->m_pendingContextMenuEvent = false;
     return true;
 }
