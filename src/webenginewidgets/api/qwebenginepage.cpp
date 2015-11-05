@@ -1210,8 +1210,12 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngine
 }
 
 /*!
-    Returns the script collection used by this page.
-    \sa QWebEngineScriptCollection
+    Returns the collection of scripts that are injected into the page.
+
+    In addition, a page might also execute scripts
+    added through QWebEngineProfile::scripts().
+
+    \sa QWebEngineScriptCollection, QWebEngineScript
 */
 
 QWebEngineScriptCollection &QWebEnginePage::scripts()
