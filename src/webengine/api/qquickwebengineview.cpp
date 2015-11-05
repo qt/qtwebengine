@@ -1461,5 +1461,3 @@ void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
 
 QT_END_NAMESPACE
 
-#include "moc_qquickwebengineview_p.cpp"
-#include "moc_qquickwebengineview_p_p.cpp"
