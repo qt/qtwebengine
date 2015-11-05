@@ -177,6 +177,7 @@ public:
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
     void ensureContentsAdapter();
+    void setFullScreenMode(bool);
 
     // QQmlListPropertyHelpers
     static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
@@ -198,7 +199,7 @@ public:
     QUrl explicitUrl;
     QUrl icon;
     int loadProgress;
-    bool m_isFullScreen;
+    bool m_fullscreenMode;
     bool isLoading;
     bool m_activeFocusOnPress;
     qreal devicePixelRatio;

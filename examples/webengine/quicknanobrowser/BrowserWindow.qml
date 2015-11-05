@@ -54,18 +54,6 @@ ApplicationWindow {
     property Item currentWebView: tabs.currentIndex < tabs.count ? tabs.getTab(tabs.currentIndex).item : null
     property int previousVisibility: Window.Windowed
 
-    property bool isFullScreen: visibility == Window.FullScreen
-    onIsFullScreenChanged: {
-        // This is for the case where the system forces us to leave fullscreen.
-        if (currentWebView && !isFullScreen) {
-            currentWebView.state = ""
-            if (currentWebView.isFullScreen) {
-                currentWebView.fullScreenCancelled()
-                fullScreenNotification.hide()
-            }
-        }
-    }
-
     width: 1300
     height: 900
     visible: true
@@ -127,8 +115,11 @@ ApplicationWindow {
     Action {
         shortcut: "Escape"
         onTriggered: {
-            if (browserWindow.isFullScreen)
+            if (currentWebView.state == "FullScreen") {
                 browserWindow.visibility = browserWindow.previousVisibility
+                fullScreenNotification.hide()
+                currentWebView.triggerWebAction(WebEngineView.ExitFullScreen);
+            }
         }
     }
     Action {

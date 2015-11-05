@@ -105,7 +105,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
 #endif
     , contextMenuExtraItems(0)
     , loadProgress(0)
-    , m_isFullScreen(false)
+    , m_fullscreenMode(false)
     , isLoading(false)
     , m_activeFocusOnPress(true)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
@@ -528,7 +528,7 @@ void QQuickWebEngineViewPrivate::requestFullScreenMode(const QUrl &origin, bool 
 
 bool QQuickWebEngineViewPrivate::isFullScreenMode() const
 {
-    return m_isFullScreen;
+    return m_fullscreenMode;
 }
 
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -751,6 +751,16 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
         // push down the page's user scripts
         Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
             script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
+    }
+}
+
+void QQuickWebEngineViewPrivate::setFullScreenMode(bool fullscreen)
+{
+    Q_Q(QQuickWebEngineView);
+    if (m_fullscreenMode != fullscreen) {
+        m_fullscreenMode = fullscreen;
+        adapter->changedFullScreen();
+        Q_EMIT q->isFullScreenChanged();
     }
 }
 
@@ -1061,7 +1071,7 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
 bool QQuickWebEngineView::isFullScreen() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->m_isFullScreen;
+    return d->m_fullscreenMode;
 }
 
 void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlComponent *contextMenuExtras)
@@ -1179,10 +1189,7 @@ void QQuickWebEngineView::goBackOrForward(int offset)
 void QQuickWebEngineView::fullScreenCancelled()
 {
     Q_D(QQuickWebEngineView);
-    if (d->m_isFullScreen) {
-        d->m_isFullScreen = false;
-        Q_EMIT isFullScreenChanged();
-    }
+    d->adapter->exitFullScreen();
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -1414,13 +1421,13 @@ void QQuickWebEngineView::componentComplete()
 }
 
 QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest()
-    : viewPrivate(0)
+    : m_viewPrivate(0)
     , m_toggleOn(false)
 {
 }
 
 QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, const QUrl &origin, bool toggleOn)
-    : viewPrivate(viewPrivate)
+    : m_viewPrivate(viewPrivate)
     , m_origin(origin)
     , m_toggleOn(toggleOn)
 {
@@ -1428,18 +1435,14 @@ QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngi
 
 void QQuickWebEngineFullScreenRequest::accept()
 {
-    if (viewPrivate && viewPrivate->m_isFullScreen != m_toggleOn) {
-        viewPrivate->m_isFullScreen = m_toggleOn;
-        viewPrivate->adapter->changedFullScreen();
-        Q_EMIT viewPrivate->q_ptr->isFullScreenChanged();
-    }
+    if (m_viewPrivate)
+        m_viewPrivate->setFullScreenMode(m_toggleOn);
 }
 
 void QQuickWebEngineFullScreenRequest::reject()
 {
-    if (viewPrivate) {
-        viewPrivate->adapter->changedFullScreen();
-    }
+    if (m_viewPrivate)
+        m_viewPrivate->setFullScreenMode(!m_toggleOn);
 }
 
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)
