@@ -60,7 +60,8 @@ public:
         ScrollAnimatorEnabled,
         ErrorPageEnabled,
         PluginsEnabled,
-        FullScreenSupportEnabled
+        FullScreenSupportEnabled,
+        ScreenCaptureEnabled
     };
 
     enum FontSize {

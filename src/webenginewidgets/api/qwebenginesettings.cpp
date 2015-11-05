@@ -76,6 +76,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::PluginsEnabled;
     case QWebEngineSettings::FullScreenSupportEnabled:
         return WebEngineSettings::FullScreenSupportEnabled;
+    case QWebEngineSettings::ScreenCaptureEnabled:
+        return WebEngineSettings::ScreenCaptureEnabled;
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }

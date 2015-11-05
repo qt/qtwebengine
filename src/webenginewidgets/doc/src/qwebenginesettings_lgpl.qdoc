@@ -123,6 +123,8 @@
             Enables support for Pepper plugins, such as the Flash player. Disabled by default.
     \value  FullScreenSupportEnabled
             Enables fullscreen support in an application. Disabled by default.
+    \value  ScreenCaptureEnabled
+            Enables screen capture in an application. Disabled by default.
 */
 
 /*!

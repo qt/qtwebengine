@@ -233,6 +233,19 @@ bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 }
 
 /*!
+    \qmlproperty bool WebEngineSettings::screenCaptureEnabled
+    \since QtWebEngine 1.3
+
+    Tells the web engine whether screen capture is supported in this application or not.
+
+    Disabled by default.
+*/
+bool QQuickWebEngineSettings::screenCaptureEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
+}
+
+/*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
 
     Sets the default encoding. The value must be a string describing an encoding such as "utf-8" or
@@ -350,6 +363,14 @@ void QQuickWebEngineSettings::setFullScreenSupportEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::FullScreenSupportEnabled, on);
     if (wasOn != on)
         Q_EMIT fullScreenSupportEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setScreenCaptureEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
+    d_ptr->setAttribute(WebEngineSettings::ScreenCaptureEnabled, on);
+    if (wasOn != on)
+        Q_EMIT screenCaptureEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

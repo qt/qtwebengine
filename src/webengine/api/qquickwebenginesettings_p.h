@@ -73,6 +73,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
     Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1)
+    // FIXME: add back REVISION when QTBUG-40043 has been fixed.
+    Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged /* REVISION 2 */)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
 
 public:
@@ -91,6 +93,7 @@ public:
     bool errorPageEnabled() const;
     bool pluginsEnabled() const;
     bool fullScreenSupportEnabled() const;
+    bool screenCaptureEnabled() const;
     QString defaultTextEncoding() const;
 
     void setAutoLoadImages(bool on);
@@ -106,6 +109,7 @@ public:
     void setErrorPageEnabled(bool on);
     void setPluginsEnabled(bool on);
     void setFullScreenSupportEnabled(bool on);
+    void setScreenCaptureEnabled(bool on);
     void setDefaultTextEncoding(QString encoding);
 
 signals:
@@ -122,6 +126,8 @@ signals:
     void errorPageEnabledChanged();
     void pluginsEnabledChanged();
     Q_REVISION(1) void fullScreenSupportEnabledChanged();
+    // FIXME: add back Q_REVISION when QTBUG-40043 has been fixed.
+    void screenCaptureEnabledChanged();
     void defaultTextEncodingChanged();
 
 private:

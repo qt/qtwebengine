@@ -44,6 +44,7 @@
 #include "javascript_dialog_manager_qt.h"
 #include "type_conversion.h"
 #include "web_contents_view_qt.h"
+#include "web_engine_settings.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
@@ -293,8 +294,8 @@ void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::W
 {
   DCHECK_EQ(request.video_type, content::MEDIA_DESKTOP_VIDEO_CAPTURE);
 
-  // FIXME: expose through the settings once we have them
-  const bool screenCaptureEnabled = !qgetenv("QT_WEBENGINE_USE_EXPERIMENTAL_SCREEN_CAPTURE").isNull();
+  WebContentsAdapterClient *adapterClient = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
+  const bool screenCaptureEnabled = adapterClient->webEngineSettings()->testAttribute(WebEngineSettings::ScreenCaptureEnabled);
 
   const bool originIsSecure = content::IsOriginSecure(request.security_origin);
 

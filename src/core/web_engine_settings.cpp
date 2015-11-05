@@ -215,6 +215,7 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
     m_attributes.insert(ErrorPageEnabled, true);
     m_attributes.insert(PluginsEnabled, false);
     m_attributes.insert(FullScreenSupportEnabled, false);
+    m_attributes.insert(ScreenCaptureEnabled, false);
 
     // Default fonts
     QFont defaultFont;

@@ -73,6 +73,7 @@ public:
         ErrorPageEnabled,
         PluginsEnabled,
         FullScreenSupportEnabled,
+        ScreenCaptureEnabled
     };
 
     // Must match the values from the public API in qwebenginesettings.h.
