@@ -88,12 +88,15 @@ QtPositioningHelper::~QtPositioningHelper()
     m_locationProvider->m_positioningHelper = 0;
 }
 
+static bool isHighAccuracySource(const QGeoPositionInfoSource *source)
+{
+    return source->supportedPositioningMethods().testFlag(
+                QGeoPositionInfoSource::SatellitePositioningMethods);
+}
+
 void QtPositioningHelper::start(bool highAccuracy)
 {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    Q_UNUSED(highAccuracy);
-    // FIXME: go through availableSources until one supports QGeoPositionInfoSource::SatellitePositioningMethods
-    // for the highAccuracy case.
     m_positionInfoSource = QGeoPositionInfoSource::createDefaultSource(this);
     if (!m_positionInfoSource) {
         qWarning("Failed to initialize location provider: The system either has no default "
@@ -101,6 +104,23 @@ void QtPositioningHelper::start(bool highAccuracy)
                  "the right permissions.");
         error(QGeoPositionInfoSource::UnknownSourceError);
         return;
+    }
+
+    // Find high accuracy source if the default source is not already one.
+    if (highAccuracy && !isHighAccuracySource(m_positionInfoSource)) {
+        Q_FOREACH (const QString &name, QGeoPositionInfoSource::availableSources()) {
+            if (name == m_positionInfoSource->sourceName())
+                continue;
+            QGeoPositionInfoSource *source = QGeoPositionInfoSource::createSource(name, this);
+            if (source && isHighAccuracySource(source)) {
+                delete m_positionInfoSource;
+                m_positionInfoSource = source;
+                break;
+            }
+            delete source;
+        }
+        m_positionInfoSource->setPreferredPositioningMethods(
+                    QGeoPositionInfoSource::SatellitePositioningMethods);
     }
 
     connect(m_positionInfoSource, &QGeoPositionInfoSource::positionUpdated, this, &QtPositioningHelper::updatePosition);
