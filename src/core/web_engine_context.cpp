@@ -52,6 +52,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -207,6 +208,9 @@ WebEngineContext::WebEngineContext()
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
     useEmbeddedSwitches = !args.removeAll("--disable-embedded-switches");
 #endif
+
+    // Allow us to inject javascript like any webview toolkit.
+    content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
     QVector<const char*> argv(args.size());
     for (int i = 0; i < args.size(); ++i)
