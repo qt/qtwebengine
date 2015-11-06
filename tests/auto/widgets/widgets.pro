@@ -8,6 +8,7 @@ SUBDIRS += \
     qwebengineinspector \
     qwebengineprofile \
     qwebenginescript \
+    qwebenginesettings \
     qwebengineview
 
 qtHaveModule(positioning) {
