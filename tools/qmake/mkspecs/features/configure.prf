@@ -52,9 +52,10 @@ defineTest(runConfigure) {
         config_snappy: WEBENGINE_CONFIG += use_system_snappy
         else: log("System snappy not found. Using Chromium's copy.$${EOL}")
 
-        # Optional dependencies
-        packagesExist(nss): WEBENGINE_CONFIG += use_nss
-        else: log("System NSS not found, BoringSSL will be used.$${EOL}")
+        !cross_compile {
+            packagesExist(nss): WEBENGINE_CONFIG += use_nss
+            else: log("System NSS not found, BoringSSL will be used.$${EOL}")
+        }
     }
 
     isEmpty(skipBuildReason): {
