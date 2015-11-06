@@ -44,7 +44,6 @@
 #include <QAbstractListModel>
 #include <QClipboard>
 #include <QFileInfo>
-#include <QGuiApplication>
 #include <QMimeData>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -249,19 +248,19 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     switch (dialogController->type()) {
     case WebContentsAdapterClient::AlertDialog:
         dialogComponentType = AlertDialog;
-        title = QCoreApplication::translate("UIDelegatesManager", "Javascript Alert - %1").arg(m_view->url().toString());
+        title = tr("Javascript Alert - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::ConfirmDialog:
         dialogComponentType = ConfirmDialog;
-        title = QCoreApplication::translate("UIDelegatesManager", "Javascript Confirm - %1").arg(m_view->url().toString());
+        title = tr("Javascript Confirm - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::PromptDialog:
         dialogComponentType = PromptDialog;
-        title = QCoreApplication::translate("UIDelegatesManager", "Javascript Prompt - %1").arg(m_view->url().toString());
+        title = tr("Javascript Prompt - %1").arg(m_view->url().toString());
         break;
     case WebContentsAdapterClient::UnloadDialog:
         dialogComponentType = ConfirmDialog;
-        title = QCoreApplication::translate("UIDelegatesManager", "Are you sure you want to leave this page?");
+        title = tr("Are you sure you want to leave this page?");
         break;
     case WebContentsAdapterClient::InternalAuthorizationDialog:
         dialogComponentType = ConfirmDialog;
@@ -339,10 +338,10 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
 
     QString introMessage;
     if (dialogController->isProxy()) {
-        introMessage = QObject::tr("Connect to proxy \"%1\" using:");
+        introMessage = tr("Connect to proxy \"%1\" using:");
         introMessage = introMessage.arg(dialogController->host().toHtmlEscaped());
     } else {
-        introMessage = QObject::tr("Enter username and password for \"%1\" at %2");
+        introMessage = tr("Enter username and password for \"%1\" at %2");
         introMessage = introMessage.arg(dialogController->realm()).arg(dialogController->url().toString().toHtmlEscaped());
     }
     QQmlProperty textProp(authenticationDialog, QStringLiteral("text"));
