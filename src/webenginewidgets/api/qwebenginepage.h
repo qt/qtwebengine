@@ -252,7 +252,7 @@ Q_SIGNALS:
 
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
-    void fullScreenRequested(const QWebEngineFullScreenRequest &fullScreenRequest);
+    void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);
@@ -283,6 +283,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_webActionTriggered(bool checked))
 #endif
 
+    friend class QWebEngineFullScreenRequest;
     friend class QWebEngineView;
     friend class QWebEngineViewPrivate;
 #ifndef QT_NO_ACCESSIBILITY

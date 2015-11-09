@@ -325,8 +325,8 @@ void TabWidget::currentChanged(int index)
                 this, SIGNAL(loadProgress(int)));
         disconnect(oldWebView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
                 this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
-        disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(const QWebEngineFullScreenRequest&)),
-                this, SLOT(fullScreenRequested(const QWebEngineFullScreenRequest&)));
+        disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)),
+                this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
     }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
@@ -339,8 +339,8 @@ void TabWidget::currentChanged(int index)
             this, SIGNAL(loadProgress(int)));
     connect(webView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem*)),
             this, SLOT(downloadRequested(QWebEngineDownloadItem*)));
-    connect(webView->page(), SIGNAL(fullScreenRequested(const QWebEngineFullScreenRequest&)),
-            this, SLOT(fullScreenRequested(const QWebEngineFullScreenRequest&)));
+    connect(webView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)),
+            this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
 
     for (int i = 0; i < m_actions.count(); ++i) {
         WebActionMapper *mapper = m_actions[i];
@@ -356,7 +356,7 @@ void TabWidget::currentChanged(int index)
         webView->setFocus();
 }
 
-void TabWidget::fullScreenRequested(const QWebEngineFullScreenRequest &request)
+void TabWidget::fullScreenRequested(QWebEngineFullScreenRequest request)
 {
     WebPage *webPage = qobject_cast<WebPage*>(sender());
     if (request.toggleOn()) {

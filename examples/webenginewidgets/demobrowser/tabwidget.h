@@ -42,8 +42,8 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
+#include <QtWebEngineWidgets/QWebEngineFullScreenRequest>
 #include <QtWidgets/QTabBar>
-
 #include <QtWidgets/QShortcut>
 
 QT_BEGIN_NAMESPACE
@@ -217,7 +217,7 @@ private slots:
     void lineEditReturnPressed();
     void windowCloseRequested();
     void moveTab(int fromIndex, int toIndex);
-    void fullScreenRequested(const QWebEngineFullScreenRequest& request);
+    void fullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
     QAction *m_recentlyClosedTabsAction;

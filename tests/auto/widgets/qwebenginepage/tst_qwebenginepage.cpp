@@ -3744,7 +3744,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     // FullscreenRequest must be a user gesture
     bool acceptRequest = true;
     connect(page, &QWebEnginePage::fullScreenRequested,
-        [&acceptRequest](const QWebEngineFullScreenRequest &request) {
+        [&acceptRequest](QWebEngineFullScreenRequest request) {
         if (acceptRequest) request.accept(); else request.reject();
     });
 

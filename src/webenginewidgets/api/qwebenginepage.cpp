@@ -420,7 +420,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::fullScreenRequested(const QWebEngineFullScreenRequest &request)
+    \fn QWebEnginePage::fullScreenRequested(QWebEngineFullScreenRequest request)
 
     This signal is emitted when the web page issues the request to enter fullscreen mode for
     a web-element, usually a video element.
@@ -912,7 +912,7 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
 void QWebEnginePagePrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QWebEnginePage);
-    QWebEngineFullScreenRequest request(this, origin, fullscreen);
+    QWebEngineFullScreenRequest request(q, origin, fullscreen);
     Q_EMIT q->fullScreenRequested(request);
 }
 
