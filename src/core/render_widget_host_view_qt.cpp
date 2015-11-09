@@ -75,6 +75,7 @@
 #include <QTextFormat>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QPixmap>
 #include <QScreen>
 #include <QStyleHints>
 #include <QVariant>
@@ -535,7 +536,12 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
         shape = Qt::ClosedHandCursor;
         break;
     case blink::WebCursorInfo::TypeCustom:
-        // FIXME: Extract from the CursorInfo.
+        if (cursorInfo.custom_image.colorType() == SkColorType::kN32_SkColorType) {
+            QImage cursor = toQImage(cursorInfo.custom_image, QImage::Format_ARGB32);
+            m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor)));
+            return;
+        }
+        // Use arrow cursor as fallback in case the Chromium implementation changes.
         shape = Qt::ArrowCursor;
         break;
     default:
