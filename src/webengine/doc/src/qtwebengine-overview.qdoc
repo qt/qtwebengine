@@ -67,6 +67,12 @@
     specification than Qt WebKit. However, Qt WebEngine is thus heavier than Qt WebKit and does
     not provide direct access to the network stack and the HTML document through C++ APIs.
 
+    Please note that Qt WebEngine is based on Chromium, but does not contain or use any services
+    or add-ons that might be part of the Chrome browser that is built and delivered by Google.
+    You can find more detailed information about the differences between Chromium and Chrome in this
+    \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
+    that is part of the documentation in the \l {Chromium Project} upstream source tree.
+
     Chromium is tightly integrated to the \l{Qt Quick Scene Graph}{Qt Quick scene graph}, which is
     based on OpenGL ES 2.0 or OpenGL 2.0 for its rendering. This provides you with one-pass
     compositing of web content and all the Qt Quick UI. The integration to Chromium is transparent
