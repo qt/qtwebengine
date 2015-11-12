@@ -138,6 +138,18 @@
     The functions can be used to synchronize cookies with QNetworkAccessManager, as well as to set,
     delete, and intercept cookies during navigation.
 
+    \section1 Deploying Qt WebEngine Applications
+
+    Qt WebEngine takes advantage of the multi process model that the Chromium project offers.
+    The multi process model requires the QtWebEngineProcess executable to be deployed alongside your application.
+    To do this, we recommend the use of Qt’s cross-platform deployment tools.
+
+    Alternatively, if you are carrying out manual deployment, you will find the QtWebEngineProcess executable in the
+    libexec directory of your Qt installation.
+    On Windows, QtWebEngineProcess.exe is located in the bin directory of your Qt application.
+
+    For more information on deploying Qt applications, please see \l {Deploying Qt Applications}.
+
     \section1 License Information
 
     Qt WebEngine module is a snapshot of the integration of Chromium into Qt.
