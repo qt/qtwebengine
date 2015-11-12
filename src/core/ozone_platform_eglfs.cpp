@@ -181,7 +181,7 @@ scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDel
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
 }
 
-base::ScopedFD OzonePlatformEglfs::OpenClientNativePixmapDevice()
+base::ScopedFD OzonePlatformEglfs::OpenClientNativePixmapDevice() const
 {
     return base::ScopedFD();
 }
