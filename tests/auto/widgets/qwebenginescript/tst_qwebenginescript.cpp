@@ -83,8 +83,7 @@ void tst_QWebEngineScript::injectionPoint()
                                    }, 550));\
                                    </script></head><body></body></html>"));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
-    QTest::qWait(550);
-    QCOMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
+    QTRY_COMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
 }
 
 void tst_QWebEngineScript::injectionPoint_data()
@@ -95,9 +94,10 @@ void tst_QWebEngineScript::injectionPoint_data()
                                       << QStringLiteral("var contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";");
     QTest::newRow("DocumentReady") << static_cast<int>(QWebEngineScript::DocumentReady)
     // use a zero timeout to make sure the user script got a chance to run as the order is undefined.
-                                   << QStringLiteral("document.addEventListener(\"DOMContentLoaded\", setTimeout(function(event) {\
+                                   << QStringLiteral("document.addEventListener(\"DOMContentLoaded\", function() {\
+                                                      setTimeout(function() {\
                                                       contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
-                                                      }, 0));");
+                                                      }, 0)});");
     QTest::newRow("Deferred") << static_cast<int>(QWebEngineScript::Deferred)
                               << QStringLiteral("document.addEventListener(\"load\", setTimeout(function(event) {\
                                                  contents = (typeof(foo) == \"undefined\")? \"FAILURE\" : \"SUCCESS\";\
