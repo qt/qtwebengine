@@ -37,19 +37,15 @@
 #include "ui_delegates_manager.h"
 
 #include "api/qquickwebengineview_p.h"
-#include "authentication_dialog_controller.h"
-#include "file_picker_controller.h"
-#include "javascript_dialog_controller.h"
+#include <authentication_dialog_controller.h>
+#include <file_picker_controller.h>
+#include <javascript_dialog_controller.h>
+#include <web_contents_adapter_client.h>
 
-#include <QAbstractListModel>
-#include <QClipboard>
 #include <QFileInfo>
-#include <QGuiApplication>
-#include <QMimeData>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlProperty>
-#include <QStringBuilder>
 
 // Uncomment for QML debugging
 //#define UI_DELEGATES_DEBUG

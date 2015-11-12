@@ -37,15 +37,9 @@
 #ifndef UI_DELEGATES_MANAGER_H
 #define UI_DELEGATES_MANAGER_H
 
-#include "qglobal.h"
-#include "web_contents_adapter.h"
-#include "web_contents_adapter_client.h"
-
-#include <QExplicitlySharedDataPointer>
+#include <QObject>
 #include <QPoint>
-#include <QQmlComponent>
 #include <QSharedPointer>
-#include <QUrl>
 
 #define FOR_EACH_COMPONENT_TYPE(F, SEPARATOR) \
     F(Menu, menu) SEPARATOR \
@@ -66,8 +60,8 @@
     QQmlComponent *COMPONENT##Component
 
 QT_BEGIN_NAMESPACE
-class QObject;
 class QQmlContext;
+class QQmlComponent;
 class QQuickItem;
 class QQuickWebEngineView;
 QT_END_NAMESPACE
