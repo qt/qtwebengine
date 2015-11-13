@@ -59,8 +59,6 @@ class QQuickWebEngineView;
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineScript : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(InjectionPoint)
-    Q_ENUMS(ScriptWorldId)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl NOTIFY sourceUrlChanged)
     Q_PROPERTY(QString sourceCode READ sourceCode WRITE setSourceCode NOTIFY sourceCodeChanged)
@@ -75,12 +73,14 @@ public:
         DocumentReady,
         DocumentCreation
     };
+    Q_ENUM(InjectionPoint)
 
     enum ScriptWorldId {
         MainWorld = 0,
         ApplicationWorld,
         UserWorld
     };
+    Q_ENUM(ScriptWorldId)
 
     QQuickWebEngineScript();
     ~QQuickWebEngineScript();

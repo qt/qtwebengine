@@ -62,7 +62,6 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineCertificateError : public QObject {
     Q_PROPERTY(Error error READ error)
     Q_PROPERTY(QString description READ description)
     Q_PROPERTY(bool overridable READ overridable)
-    Q_ENUMS(Error)
 
 public:
 
@@ -82,6 +81,7 @@ public:
         CertificateWeakKey = -211,
         CertificateNameConstraintViolation = -212,
     };
+    Q_ENUM(Error)
 
     QQuickWebEngineCertificateError(const QSharedPointer<CertificateErrorController> &controller, QObject *parent = 0);
     ~QQuickWebEngineCertificateError();

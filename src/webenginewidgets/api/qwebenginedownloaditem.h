@@ -59,7 +59,7 @@ public:
         DownloadCancelled,
         DownloadInterrupted
     };
-    Q_ENUMS(DownloadState)
+    Q_ENUM(DownloadState)
 
     quint32 id() const;
     DownloadState state() const;

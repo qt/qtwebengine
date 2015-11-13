@@ -113,16 +113,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
 #endif
 
-    Q_ENUMS(NavigationRequestAction);
-    Q_ENUMS(NavigationType);
-    Q_ENUMS(LoadStatus);
-    Q_ENUMS(ErrorDomain);
-    Q_ENUMS(NewViewDestination);
-    Q_ENUMS(Feature);
-    Q_ENUMS(JavaScriptConsoleMessageLevel);
-    Q_ENUMS(RenderProcessTerminationStatus);
     Q_FLAGS(FindFlags);
-    Q_ENUMS(WebAction);
 
 public:
     QQuickWebEngineView(QQuickItem *parent = 0);
@@ -151,6 +142,7 @@ public:
         // we can expose extra actions in experimental.
         IgnoreRequest = 0xFF
     };
+    Q_ENUM(NavigationRequestAction)
 
     // must match WebContentsAdapterClient::NavigationType
     enum NavigationType {
@@ -161,6 +153,7 @@ public:
         ReloadNavigation,
         OtherNavigation
     };
+    Q_ENUM(NavigationType)
 
     enum LoadStatus {
         LoadStartedStatus,
@@ -168,6 +161,7 @@ public:
         LoadSucceededStatus,
         LoadFailedStatus
     };
+    Q_ENUM(LoadStatus)
 
     enum ErrorDomain {
          NoErrorDomain,
@@ -178,6 +172,7 @@ public:
          FtpErrorDomain,
          DnsErrorDomain
     };
+    Q_ENUM(ErrorDomain)
 
     enum NewViewDestination {
         NewViewInWindow,
@@ -185,6 +180,7 @@ public:
         NewViewInDialog,
         NewViewInBackgroundTab
     };
+    Q_ENUM(NewViewDestination)
 
     enum Feature {
         MediaAudioCapture,
@@ -192,6 +188,7 @@ public:
         MediaAudioVideoCapture,
         Geolocation
     };
+    Q_ENUM(Feature)
 
     enum WebAction {
         NoWebAction = - 1,
@@ -234,6 +231,7 @@ public:
 
         WebActionCount
     };
+    Q_ENUM(WebAction)
 
     // must match WebContentsAdapterClient::JavaScriptConsoleMessageLevel
     enum JavaScriptConsoleMessageLevel {
@@ -241,6 +239,7 @@ public:
         WarningMessageLevel,
         ErrorMessageLevel
     };
+    Q_ENUM(JavaScriptConsoleMessageLevel)
 
     // must match WebContentsAdapterClient::RenderProcessTerminationStatus
     enum RenderProcessTerminationStatus {
@@ -249,6 +248,7 @@ public:
         CrashedTerminationStatus,
         KilledTerminationStatus
     };
+    Q_ENUM(RenderProcessTerminationStatus)
 
     enum FindFlag {
         FindBackward = 1,
