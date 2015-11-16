@@ -13,8 +13,8 @@ examples/webengine/quicknanobrowser/quicknanobrowser
 examples/webengine/quicknanobrowser/quicknanobrowser.app
 examples/webenginewidgets/browser/browser
 examples/webenginewidgets/browser/browser.app
-examples/webenginewidgets/fancybrowser/fancybrowser
-examples/webenginewidgets/fancybrowser/fancybrowser.app
+examples/webenginewidgets/contentmanipulation/contentmanipulation
+examples/webenginewidgets/contentmanipulation/contentmanipulation.app
 tests/quicktestbrowser/quicktestbrowser
 
 tests/**/tst_*
