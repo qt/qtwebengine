@@ -671,6 +671,8 @@
            (Added in Qt 5.6)
     \value  ExitFullScreen
             Exit the fullscreen mode. (Added in Qt 5.6)
+    \value  SavePage
+            Save the current web page to disk. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
 */

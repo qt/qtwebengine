@@ -123,6 +123,8 @@
            handler is run, and the user can confirm or reject to close the page. If the close
            request is confirmed, \c windowCloseRequested is emitted. (Added in Qt 5.6)
     \value Unselect Clear the current selection. (Added in Qt 5.7)
+    \value SavePage Save the current page to disk. MHTML is the default format that is used to store
+           the web page on disk. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
 

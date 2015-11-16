@@ -61,6 +61,14 @@ public:
     };
     Q_ENUM(DownloadState)
 
+    enum SavePageFormat {
+        UnknownSaveFormat = -1,
+        SingleHtmlSaveFormat,
+        CompleteHtmlSaveFormat,
+        MimeHtmlSaveFormat
+    };
+    Q_ENUM(SavePageFormat)
+
     quint32 id() const;
     DownloadState state() const;
     qint64 totalBytes() const;
@@ -69,6 +77,8 @@ public:
     QString path() const;
     void setPath(QString path);
     bool isFinished() const;
+    SavePageFormat savePageFormat() const;
+    void setSavePageFormat(SavePageFormat format);
 
 public Q_SLOTS:
     void accept();

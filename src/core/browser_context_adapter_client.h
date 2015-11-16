@@ -58,6 +58,14 @@ public:
         DownloadInterrupted
     };
 
+    // Keep in sync with content::SavePageType
+    enum SavePageFormat {
+        UnknownSavePageFormat = -1,
+        SingleHtmlSaveFormat,
+        CompleteHtmlSaveFormat,
+        MimeHtmlSaveFormat
+    };
+
     struct DownloadItemInfo {
         const quint32 id;
         const QUrl url;
@@ -66,6 +74,7 @@ public:
         const qint64 receivedBytes;
 
         QString path;
+        int savePageFormat;
         bool accepted;
     };
 

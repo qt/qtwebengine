@@ -62,6 +62,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     : profile(p)
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
+    , savePageFormat(QQuickWebEngineDownloadItem::UnknownSaveFormat)
     , totalBytes(-1)
     , receivedBytes(0)
 {
@@ -246,6 +247,34 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
     if (d->downloadPath != path) {
         d->downloadPath = path;
         Q_EMIT pathChanged();
+    }
+}
+
+/*!
+    \qmlproperty enumeration WebEngineDownloadItem::savePageFormat
+
+    Describes the format that is used to save a web page.
+
+    \value UnknownSaveFormat This is not a request for downloading a complete web page.
+    \value SingleHtmlSaveFormat The page is saved as a single HTML page. Resources such as images
+           are not saved.
+    \value CompleteHtmlSaveFormat The page is saved as a complete HTML page, for example a directory
+            containing the single HTML page and the resources.
+    \value MimeHtmlSaveFormat The page is saved as a complete web page in the MIME HTML format.
+*/
+
+QQuickWebEngineDownloadItem::SavePageFormat QQuickWebEngineDownloadItem::savePageFormat() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->savePageFormat;
+}
+
+void QQuickWebEngineDownloadItem::setSavePageFormat(QQuickWebEngineDownloadItem::SavePageFormat format)
+{
+    Q_D(QQuickWebEngineDownloadItem);
+    if (d->savePageFormat != format) {
+        d->savePageFormat = format;
+        Q_EMIT savePageFormatChanged();
     }
 }
 

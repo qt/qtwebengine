@@ -38,6 +38,7 @@
 #define DOWNLOAD_MANAGER_DELEGATE_QT_H
 
 #include "content/public/browser/download_manager_delegate.h"
+#include <base/memory/weak_ptr.h>
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
@@ -72,6 +73,12 @@ public:
                     base::FilePath* website_save_dir,
                     base::FilePath* download_save_dir,
                     bool* skip_dir_check) Q_DECL_OVERRIDE;
+    void ChooseSavePath(content::WebContents *web_contents,
+                        const base::FilePath &suggested_path,
+                        const base::FilePath::StringType &default_extension,
+                        bool can_save_as_complete,
+                        const content::SavePackagePathPickedCallback &callback) Q_DECL_OVERRIDE;
+
 
     void cancelDownload(quint32 downloadId);
 
@@ -81,9 +88,11 @@ public:
 
 private:
     void cancelDownload(const content::DownloadTargetCallback& callback);
+    void savePackageDownloadCreated(content::DownloadItem *download);
     BrowserContextAdapter *m_contextAdapter;
 
     uint64 m_currentId;
+    base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
 
     friend class DownloadManagerDelegateInstance;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);

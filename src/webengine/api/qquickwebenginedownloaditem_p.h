@@ -71,8 +71,17 @@ public:
     };
     Q_ENUM(DownloadState)
 
+    enum SavePageFormat {
+        UnknownSaveFormat = -1,
+        SingleHtmlSaveFormat,
+        CompleteHtmlSaveFormat,
+        MimeHtmlSaveFormat
+    };
+    Q_ENUM(SavePageFormat)
+
     Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
+    Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged)
     Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged)
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
@@ -86,9 +95,12 @@ public:
     qint64 receivedBytes() const;
     QString path() const;
     void setPath(QString path);
+    SavePageFormat savePageFormat() const;
+    void setSavePageFormat(SavePageFormat format);
 
 Q_SIGNALS:
     void stateChanged();
+    void savePageFormatChanged();
     void receivedBytesChanged();
     void totalBytesChanged();
     void pathChanged();

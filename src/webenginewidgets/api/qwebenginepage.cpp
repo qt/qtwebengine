@@ -707,6 +707,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case Unselect:
         text = tr("Unselect");
         break;
+    case SavePage:
+        text = tr("Save &Page");
+        break;
     default:
         break;
     }
@@ -882,6 +885,9 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case RequestClose:
         d->adapter->requestClose();
+        break;
+    case SavePage:
+        d->adapter->save();
         break;
     default:
         Q_UNREACHABLE();
@@ -1075,6 +1081,9 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         action = new QAction(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("&Reload"), menu);
         connect(action, &QAction::triggered, d->view, &QWebEngineView::reload);
         menu->addAction(action);
+
+        if (!contextMenuData.linkUrl.isValid())
+            menu->addAction(QWebEnginePage::action(SavePage));
     } else {
         menu->addAction(QWebEnginePage::action(Copy));
         menu->addAction(QWebEnginePage::action(Unselect));

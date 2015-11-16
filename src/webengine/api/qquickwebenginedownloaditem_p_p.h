@@ -69,6 +69,7 @@ public:
 
     quint32 downloadId;
     QQuickWebEngineDownloadItem::DownloadState downloadState;
+    QQuickWebEngineDownloadItem::SavePageFormat savePageFormat;
     qint64 totalBytes;
     qint64 receivedBytes;
     QString downloadPath;

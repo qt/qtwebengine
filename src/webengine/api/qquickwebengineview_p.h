@@ -233,6 +233,7 @@ public:
         ExitFullScreen,
         RequestClose,
         Unselect,
+        SavePage,
 
         WebActionCount
     };

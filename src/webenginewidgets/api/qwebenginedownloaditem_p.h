@@ -68,6 +68,7 @@ public:
     bool downloadFinished;
     quint32 downloadId;
     QWebEngineDownloadItem::DownloadState downloadState;
+    QWebEngineDownloadItem::SavePageFormat savePageFormat;
     QString downloadPath;
     const QUrl downloadUrl;
 

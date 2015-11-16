@@ -44,6 +44,7 @@
 #include "browser_accessibility_qt.h"
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
+#include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
 #include "qwebenginecallback_p.h"
 #include "render_view_observer_host_qt.h"
@@ -487,6 +488,12 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->Focus();
+}
+
+void WebContentsAdapter::save()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->OnSavePage();
 }
 
 QUrl WebContentsAdapter::activeUrl() const

@@ -45,11 +45,17 @@
 #include <QQmlEngine>
 
 #include "browser_context_adapter.h"
+#include <qtwebenginecoreglobal.h>
 #include "web_engine_settings.h"
 
 using QtWebEngineCore::BrowserContextAdapter;
 
 QT_BEGIN_NAMESPACE
+
+ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::UnknownSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::UnknownSavePageFormat)
+ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::SingleHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::CompleteHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::MimeHtmlSaveFormat)
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
         : m_settings(new QQuickWebEngineSettings())
@@ -94,6 +100,8 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadRequested;
     itemPrivate->totalBytes = info.totalBytes;
     itemPrivate->downloadPath = info.path;
+    itemPrivate->savePageFormat = static_cast<QQuickWebEngineDownloadItem::SavePageFormat>(
+                info.savePageFormat);
 
     QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
 
@@ -104,6 +112,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 
     QQuickWebEngineDownloadItem::DownloadState state = download->state();
     info.path = download->path();
+    info.savePageFormat = itemPrivate->savePageFormat;
     info.accepted = state != QQuickWebEngineDownloadItem::DownloadCancelled
                       && state != QQuickWebEngineDownloadItem::DownloadRequested;
 }

@@ -45,10 +45,16 @@
 #include "qwebenginescriptcollection_p.h"
 
 #include "browser_context_adapter.h"
+#include <qtwebenginecoreglobal.h>
 #include "web_engine_visited_links_manager.h"
 #include "web_engine_settings.h"
 
 QT_BEGIN_NAMESPACE
+
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::UnknownSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::UnknownSavePageFormat)
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::SingleHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::CompleteHtmlSaveFormat)
+ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::MimeHtmlSaveFormat)
 
 using QtWebEngineCore::BrowserContextAdapter;
 
@@ -150,6 +156,7 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = QWebEngineDownloadItem::DownloadRequested;
     itemPrivate->downloadPath = info.path;
+    itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(info.savePageFormat);
 
     QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 
@@ -160,6 +167,8 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QWebEngineDownloadItem::DownloadState state = download->state();
 
     info.path = download->path();
+    info.savePageFormat = static_cast<QtWebEngineCore::BrowserContextAdapterClient::SavePageFormat>(
+                download->savePageFormat());
     info.accepted = state != QWebEngineDownloadItem::DownloadCancelled;
 
     if (state == QWebEngineDownloadItem::DownloadRequested) {
