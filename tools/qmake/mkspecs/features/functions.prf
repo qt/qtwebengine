@@ -150,17 +150,30 @@ defineReplace(which) {
 }
 
 defineReplace(findOrBuildNinja) {
-    # If NINJA_PATH env var is set, prefer that.
-    # Fallback to locating our own bootstrapped ninja.
-    out = $(NINJA_PATH)
-    !exists($$out) {
-      out = $$absolute_path("$${getChromiumSrcDir()}/../ninja/ninja", "$$QTWEBENGINE_ROOT")
-      win32: out = $$system_path($${out}.exe)
+  # If NINJA_PATH env var is set, prefer that.
+  # Fallback to locating our own bootstrapped ninja.
+  out = $(NINJA_PATH)
+  !exists($$out) {
+    src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
 
-      # If we did not find ninja, then we bootstrap it.
-      !exists($$out): system("cd $$dirname(out) && python configure.py --bootstrap")
+    out = $$shadowed($$absolute_path("ninja/ninja", "$$src_3rd_party_dir"))
+    win32: out = $${out}.exe
+
+    out = $$system_path($$out)
+    # If we did not find ninja, then we bootstrap it.
+    !exists($$out) {
+      # If we are making a shadow build, copy the ninja sources to the build directory.
+      !equals(PWD, $${OUT_PWD}) {
+        log("Build directory is different from source directory - copying ninja sources to the build tree...")
+        shadow_3rd_party_path = $$system_path($$shadowed($$src_3rd_party_dir))
+
+        !exists($$dirname(out)): mkpath($$shadow_3rd_party_path)
+        system("$$QMAKE_COPY_DIR $$system_quote($$system_path($$absolute_path("ninja", "$$src_3rd_party_dir"))) $$system_quote($$shadow_3rd_party_path)")
+      }
+      system("cd $$system_quote($$dirname(out)) && python configure.py --bootstrap")
     }
-    return($$out)
+  }
+  return($$out)
 }
 
 defineTest(skipBuild) {
