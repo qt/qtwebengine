@@ -122,6 +122,20 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
         m_viewClient->titleChanged(toQt(source->GetTitle()));
 }
 
+bool WebContentsDelegateQt::ShouldPreserveAbortedURLs(content::WebContents *source)
+{
+    Q_UNUSED(source)
+
+    // Allow failed URLs to stick around in the URL bar, but only when the error-page is enabled.
+    WebEngineSettings *settings = m_viewClient->webEngineSettings();
+    bool isErrorPageEnabled = settings->testAttribute(settings->Attribute::ErrorPageEnabled);
+
+    if (isErrorPageEnabled)
+        return true;
+
+    return false;
+}
+
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
 {
     Q_UNUSED(source)
