@@ -78,8 +78,7 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
     m_permissions[key] = reply;
     content::PermissionStatus status = reply ? content::PERMISSION_STATUS_GRANTED : content::PERMISSION_STATUS_DENIED;
     auto it = m_requests.begin();
-    const auto end = m_requests.end();
-    while (it != end) {
+    while (it != m_requests.end()) {
         if (it->origin == origin && it->type == type) {
             it->callback.Run(status);
             it = m_requests.erase(it);
@@ -133,8 +132,7 @@ void PermissionManagerQt::CancelPermissionRequest(content::PermissionType permis
     // Should we add API to cancel permissions in the UI level?
     const QUrl origin = toQt(requesting_origin);
     auto it = m_requests.begin();
-    const auto end = m_requests.end();
-    while (it != end) {
+    while (it != m_requests.end()) {
         if (it->id == request_id && it->type == permissionType && it->origin == origin) {
             m_requests.erase(it);
             return;
