@@ -37,6 +37,7 @@
 #include "qquickwebenginescript_p.h"
 #include "qquickwebenginescript_p_p.h"
 
+#include <QQmlFile>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QStringBuilder>
@@ -178,7 +179,7 @@ void QQuickWebEngineScript::setSourceUrl(QUrl arg)
     d->m_sourceUrl = arg;
     Q_EMIT sourceUrlChanged(d->m_sourceUrl);
 
-    QFile f(arg.toLocalFile());
+    QFile f(QQmlFile::urlToLocalFileOrQrc(arg));
     if (!f.open(QIODevice::ReadOnly)) {
         qWarning() << "Can't open user script " << arg;
         return;
