@@ -165,6 +165,8 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 QQuickWebEngineProfile::QQuickWebEngineProfile()
     : d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false)))
 {
+    // Sets up the global WebEngineContext
+    QQuickWebEngineProfile::defaultProfile();
     d_ptr->q_ptr = this;
 }
 
