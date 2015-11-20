@@ -26,8 +26,24 @@
 ****************************************************************************/
 
 /*!
-    \page qtwebengine-devtools.html
-    \title Qt WebEngine Web Developer Tools
+    \page qtwebengine-debugging.html
+    \title Qt WebEngine Debugging and Profiling
+
+    \section1 Console Logging
+
+    JavaScript executed inside Qt WebEngine can use the
+    \l{Chrome console API} to log information to a console. The logging messages
+    are forwarded to Qt's logging facilities inside a \c js
+    \l{QLoggingCategory}{logging category}. However, only warning and fatal
+    messages are printed by default. To change this, you either have to set custom
+    rules for the \c js category, or provide custom message handlers
+    by reimplementing \l{QWebEnginePage::javaScriptConsoleMessage()}, or
+    connecting to \l{WebEngineView::javaScriptConsoleMessage()}.
+
+    All messages can also be accessed through the Qt WebEngine developer
+    tools.
+
+    \section1 Qt WebEngine Developer Tools
 
     The Qt WebEngine module provides web developer tools that make it easy
     to inspect and debug layout and performance issues of any web content.

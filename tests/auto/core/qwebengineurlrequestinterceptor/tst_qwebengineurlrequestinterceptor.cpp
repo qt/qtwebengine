@@ -146,7 +146,6 @@ void tst_QWebEngineUrlRequestInterceptor::interceptRequest()
     loadSpy.clear();
     QCOMPARE(interceptor.observedUrls.count(), 4);
 
-
     // Make sure that registering an observer does not modify the request.
     TestRequestInterceptor observer(/* intercept */ false);
     view.page()->profile()->setRequestInterceptor(&observer);

@@ -53,8 +53,7 @@
 #include "qwebenginecallback_p.h"
 #include "qwebenginecookiestoreclient.h"
 
-#include <QList>
-#include <QMap>
+#include <QVector>
 #include <QNetworkCookie>
 #include <QUrl>
 
@@ -70,12 +69,12 @@ class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStoreClientPrivate {
         QNetworkCookie cookie;
         QUrl origin;
     };
-
+    friend class QTypeInfo<CookieData>;
 public:
     Q_DECLARE_PUBLIC(QWebEngineCookieStoreClient)
     QtWebEngineCore::CallbackDirectory callbackDirectory;
-    QWebEngineCallback<const QWebEngineCookieStoreClient::FilterRequest&> filterCallback;
-    QList<CookieData> m_pendingUserCookies;
+    QWebEngineCallback<QWebEngineCookieStoreClient::FilterRequest&> filterCallback;
+    QVector<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
     bool m_deleteSessionCookiesPending;
     bool m_deleteAllCookiesPending;
@@ -101,6 +100,8 @@ public:
     void onDeleteCallbackResult(qint64 callbackId, int numCookies);
     void onCookieChanged(const QNetworkCookie &cookie, bool removed);
 };
+
+Q_DECLARE_TYPEINFO(QWebEngineCookieStoreClientPrivate::CookieData, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 

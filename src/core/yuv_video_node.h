@@ -40,9 +40,9 @@
 #include <QtQuick/qsgmaterial.h>
 #include <QtQuick/qsgnode.h>
 
-QT_BEGIN_NAMESPACE
-class QSGTexture;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QSGTexture)
+
+namespace QtWebEngineCore {
 
 // These classes duplicate, QtQuick style, the logic of GLRenderer::DrawYUVVideoQuad.
 // Their behavior should stay as close as possible to GLRenderer.
@@ -59,7 +59,8 @@ public:
                      const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
                      ColorSpace colorspace);
 
-    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE {
+    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
+    {
         static QSGMaterialType theType;
         return &theType;
     }
@@ -85,7 +86,8 @@ public:
                       const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
                       ColorSpace colorspace);
 
-    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE{
+    virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
+    {
         static QSGMaterialType theType;
         return &theType;
     }
@@ -108,5 +110,7 @@ private:
     QSGGeometry m_geometry;
     YUVVideoMaterial *m_material;
 };
+
+} // namespace
 
 #endif // YUV_VIDEO_NODE_H

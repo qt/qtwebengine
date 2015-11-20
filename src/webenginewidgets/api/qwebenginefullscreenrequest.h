@@ -38,26 +38,25 @@
 #define QWEBENGINEFULLSCREENREQUEST_H
 
 #include <qtwebenginewidgetsglobal.h>
-#include <qwebenginepage.h>
-#include <QtCore/qurl.h>
+#include <qurl.h>
+#include <qpointer.h>
 
 QT_BEGIN_NAMESPACE
-class QWebEnginePagePrivate;
+class QWebEnginePage;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineFullScreenRequest {
     Q_GADGET
     Q_PROPERTY(bool toggleOn READ toggleOn)
     Q_PROPERTY(QUrl origin READ origin)
 public:
-    Q_INVOKABLE void reject() const;
-    Q_INVOKABLE void accept() const;
+    Q_INVOKABLE void reject();
+    Q_INVOKABLE void accept();
     bool toggleOn() const { return m_toggleOn; }
     const QUrl &origin() const { return m_origin; }
 
 private:
-    Q_DISABLE_COPY(QWebEngineFullScreenRequest)
-    QWebEngineFullScreenRequest(QWebEnginePagePrivate *pagePrivate, const QUrl &origin, bool toggleOn);
-    QWebEnginePagePrivate *m_pagePrivate;
+    QWebEngineFullScreenRequest(QWebEnginePage *page, const QUrl &origin, bool toggleOn);
+    QPointer<QWebEnginePage> m_page;
     const QUrl m_origin;
     const bool m_toggleOn;
     friend class QWebEnginePagePrivate;

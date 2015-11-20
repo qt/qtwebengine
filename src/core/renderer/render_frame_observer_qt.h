@@ -34,32 +34,33 @@
 **
 ****************************************************************************/
 
-#include "qt_render_frame_observer.h"
+#ifndef RENDER_FRAME_OBSERVER_QT_H
+#define RENDER_FRAME_OBSERVER_QT_H
 
-#include "content/public/renderer/renderer_ppapi_host.h"
-#include "ppapi/host/ppapi_host.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "content/public/renderer/render_frame_observer.h"
 
-#include "renderer/pepper/pepper_renderer_host_factory_qt.h"
-#include "renderer/pepper/pepper_flash_renderer_host_qt.h"
+
+namespace content {
+class RenderFrame;
+}
 
 namespace QtWebEngineCore {
 
-QtRenderFrameObserver::QtRenderFrameObserver(content::RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame)
-{
-}
-
-QtRenderFrameObserver::~QtRenderFrameObserver()
-{
-}
+class RenderFrameObserverQt : public content::RenderFrameObserver {
+public:
+    explicit RenderFrameObserverQt(content::RenderFrame* render_frame);
+    ~RenderFrameObserverQt();
 
 #if defined(ENABLE_PLUGINS)
-void QtRenderFrameObserver::DidCreatePepperPlugin(content::RendererPpapiHost* host)
-{
-    host->GetPpapiHost()->AddHostFactoryFilter(
-        scoped_ptr<ppapi::host::HostFactory>(
-            new PepperRendererHostFactoryQt(host)));
-}
+    void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 #endif
 
+private:
+    DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);
+};
+
 } // namespace QtWebEngineCore
+
+#endif // RENDER_FRAME_OBSERVER_QT_H

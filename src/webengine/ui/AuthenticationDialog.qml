@@ -35,71 +35,88 @@
 ****************************************************************************/
 
 // FIXME: authentication missing in Qt Quick Dialogs atm. Make our own for now.
+import QtQuick 2.5
 import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.0
-import QtQuick 2.5
+import QtQuick.Window 2.2
 
-ApplicationWindow {
+Window {
     signal accepted(string user, string password);
     signal rejected;
-    property alias text: message.text;
+    property alias text: message.text
 
-    width: 350
-    height: 100
+    title: qsTr("Authentication Required")
     flags: Qt.Dialog
+    modality: Qt.WindowModal
 
-    title: "Authentication Required"
+    width: minimumWidth
+    height: minimumHeight
+    minimumWidth: rootLayout.implicitWidth + rootLayout.doubleMargins
+    minimumHeight: rootLayout.implicitHeight + rootLayout.doubleMargins
+
+    SystemPalette { id: palette; colorGroup: SystemPalette.Active }
+    color: palette.window
 
     function open() {
         show();
     }
 
+    function acceptDialog() {
+        accepted(userField.text, passwordField.text);
+        close();
+    }
+
     ColumnLayout {
-        anchors.fill: parent;
-        anchors.margins: 4;
+        id: rootLayout
+        anchors.fill: parent
+        anchors.margins: 4
+        property int doubleMargins: anchors.margins * 2
         Text {
             id: message;
-            Layout.fillWidth: true;
+            color: palette.windowText
         }
-        RowLayout {
+        GridLayout {
+            columns: 2
             Label {
-                text: "Username:"
+                text: qsTr("Username:")
+                color: palette.windowText
             }
             TextField {
-                id: userField;
-                Layout.fillWidth: true;
+                id: userField
+                focus: true
+                Layout.fillWidth: true
+                onAccepted: acceptDialog()
             }
-        }
-        RowLayout {
             Label {
-                text: "Password:"
+                text: qsTr("Password:")
+                color: palette.windowText
             }
             TextField {
-                id: passwordField;
-                Layout.fillWidth: true;
-                echoMode: TextInput.Password;
+                id: passwordField
+                Layout.fillWidth: true
+                echoMode: TextInput.Password
+                onAccepted: acceptDialog()
             }
+        }
+        Item {
+            Layout.fillHeight: true
         }
         RowLayout {
             Layout.alignment: Qt.AlignRight
-            spacing: 8;
+            spacing: 8
             Button {
-                text: "Log In"
-                onClicked: {
-                    accepted(userField.text, passwordField.text);
-                    close();
-                    destroy();
-                }
-            }
-            Button {
-                text: "Cancel"
+                id: cancelButton
+                text: qsTr("&Cancel")
                 onClicked: {
                     rejected();
                     close();
-                    destroy();
                 }
+            }
+            Button {
+                text: qsTr("&Log In")
+                isDefault: true
+                onClicked: acceptDialog()
             }
         }
     }
-
 }

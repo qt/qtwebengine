@@ -72,7 +72,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool hyperlinkAuditingEnabled READ hyperlinkAuditingEnabled WRITE setHyperlinkAuditingEnabled NOTIFY hyperlinkAuditingEnabledChanged)
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
-    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1)
+    // FIXME(QTBUG-40043): Mark fullScreenSupportEnabled with REVISION 1
+    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged)
     // FIXME: add back REVISION when QTBUG-40043 has been fixed.
     Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged /* REVISION 2 */)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
@@ -125,7 +126,8 @@ signals:
     void hyperlinkAuditingEnabledChanged();
     void errorPageEnabledChanged();
     void pluginsEnabledChanged();
-    Q_REVISION(1) void fullScreenSupportEnabledChanged();
+    // FIXME(QTBUG-40043): Mark fullScreenSupportEnabledChanged with Q_REVISION(1)
+    void fullScreenSupportEnabledChanged();
     // FIXME: add back Q_REVISION when QTBUG-40043 has been fixed.
     void screenCaptureEnabledChanged();
     void defaultTextEncodingChanged();

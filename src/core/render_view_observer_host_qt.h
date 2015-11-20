@@ -34,33 +34,37 @@
 **
 ****************************************************************************/
 
-#ifndef QT_RENDER_FRAME_OBSERVER_H
-#define QT_RENDER_FRAME_OBSERVER_H
+#ifndef RENDER_VIEW_OBSERVER_HOST_QT_H
+#define RENDER_VIEW_OBSERVER_HOST_QT_H
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#include "content/public/renderer/render_frame_observer.h"
+#include "content/public/browser/web_contents_observer.h"
 
+#include <QtGlobal>
 
 namespace content {
-class RenderFrame;
+    class WebContents;
 }
 
 namespace QtWebEngineCore {
 
-class QtRenderFrameObserver : public content::RenderFrameObserver {
-public:
-    explicit QtRenderFrameObserver(content::RenderFrame* render_frame);
-    ~QtRenderFrameObserver();
+class WebContentsAdapterClient;
 
-#if defined(ENABLE_PLUGINS)
-    void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
-#endif
+class RenderViewObserverHostQt : public content::WebContentsObserver
+{
+public:
+    RenderViewObserverHostQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
+    void fetchDocumentMarkup(quint64 requestId);
+    void fetchDocumentInnerText(quint64 requestId);
 
 private:
-    DISALLOW_COPY_AND_ASSIGN(QtRenderFrameObserver);
+    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
+    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
+    void onDidFirstVisuallyNonEmptyLayout();
+
+    WebContentsAdapterClient *m_adapterClient;
 };
 
 } // namespace QtWebEngineCore
 
-#endif // QT_RENDER_FRAME_OBSERVER_H
+#endif // RENDER_VIEW_OBSERVER_HOST_QT_H

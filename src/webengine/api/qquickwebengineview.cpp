@@ -67,6 +67,7 @@
 
 #include <QClipboard>
 #include <QGuiApplication>
+#include <QLoggingCategory>
 #include <QMimeData>
 #include <QQmlComponent>
 #include <QQmlContext>
@@ -534,7 +535,29 @@ bool QQuickWebEngineViewPrivate::isFullScreenMode() const
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
 {
     Q_Q(QQuickWebEngineView);
-    Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
+    if (q->receivers(SIGNAL(javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString))) > 0) {
+        Q_EMIT q->javaScriptConsoleMessage(static_cast<QQuickWebEngineView::JavaScriptConsoleMessageLevel>(level), message, lineNumber, sourceID);
+        return;
+    }
+
+    static QLoggingCategory loggingCategory("js", QtWarningMsg);
+    const QByteArray file = sourceID.toUtf8();
+    QMessageLogger logger(file.constData(), lineNumber, nullptr, loggingCategory.categoryName());
+
+    switch (level) {
+    case JavaScriptConsoleMessageLevel::Info:
+        if (loggingCategory.isInfoEnabled())
+            logger.info().noquote() << message;
+        break;
+    case JavaScriptConsoleMessageLevel::Warning:
+        if (loggingCategory.isWarningEnabled())
+            logger.warning().noquote() << message;
+        break;
+    case JavaScriptConsoleMessageLevel::Error:
+        if (loggingCategory.isCriticalEnabled())
+            logger.critical().noquote() << message;
+        break;
+    }
 }
 
 void QQuickWebEngineViewPrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)
@@ -656,10 +679,24 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     }
 
     Q_Q(QQuickWebEngineView);
+
+    // memorize what webChannel we had for the previous adapter
+    QQmlWebChannel *qmlWebChannel = NULL;
+    if (adapter)
+        qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
+
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
     adapter = webContents;
     adapter->initialize(this);
+
+    // associate the webChannel with the new adapter
+    if (qmlWebChannel)
+        adapter->setWebChannel(qmlWebChannel);
+
+    // re-bind the userscrips to the new adapter
+    Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
+        script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
 
     // Emit signals for values that might be different from the previous WebContentsAdapter.
     emit q->titleChanged();
@@ -1454,5 +1491,3 @@ void QQuickWebEngineViewport::setDevicePixelRatio(qreal devicePixelRatio)
 
 QT_END_NAMESPACE
 
-#include "moc_qquickwebengineview_p.cpp"
-#include "moc_qquickwebengineview_p_p.cpp"

@@ -65,6 +65,9 @@ public:
     QUrl iconUrl() const;
 
     bool isValid() const;
+
+    void swap(QWebEngineHistoryItem &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
+
 private:
     QWebEngineHistoryItem(QWebEngineHistoryItemPrivate *priv);
     Q_DECLARE_PRIVATE_D(d.data(), QWebEngineHistoryItem)
@@ -73,6 +76,7 @@ private:
     friend class QWebEngineHistoryPrivate;
 };
 
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineHistoryItem)
 
 class QWebEngineHistoryPrivate;
 class QWEBENGINEWIDGETS_EXPORT QWebEngineHistory {

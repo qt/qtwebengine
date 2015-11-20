@@ -44,6 +44,7 @@
 #include "base/callback.h"
 
 #include "javascript_dialog_manager_qt.h"
+#include <QtCore/qvector.h>
 #include <QtCore/qcompilerdetection.h>
 
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
@@ -104,6 +105,7 @@ public:
     virtual void DidFinishLoad(content::RenderFrameHost *render_frame_host, const GURL &validated_url) Q_DECL_OVERRIDE;
     virtual void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) Q_DECL_OVERRIDE;
     virtual void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) Q_DECL_OVERRIDE;
+    virtual void WasShown() Q_DECL_OVERRIDE;
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
@@ -116,7 +118,7 @@ private:
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;
     int m_lastReceivedFindReply;
-    QList<int64> m_loadingErrorFrameList;
+    QVector<int64> m_loadingErrorFrameList;
 };
 
 } // namespace QtWebEngineCore

@@ -40,6 +40,7 @@
 #include "chrome/common/localized_error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
+#include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -53,8 +54,8 @@
 #include "content/public/common/web_preferences.h"
 
 #include "renderer/web_channel_ipc_transport.h"
-#include "renderer/qt_render_frame_observer.h"
-#include "renderer/qt_render_view_observer.h"
+#include "renderer/render_frame_observer_qt.h"
+#include "renderer/render_view_observer_qt.h"
 #include "renderer/user_script_controller.h"
 
 #include "grit/renderer_resources.h"
@@ -77,7 +78,9 @@ void ContentRendererClientQt::RenderThreadStarted()
     content::RenderThread *renderThread = content::RenderThread::Get();
     renderThread->RegisterExtension(WebChannelIPCTransport::getV8Extension());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
+    m_webCacheObserver.reset(new web_cache::WebCacheRenderProcessObserver());
     renderThread->AddObserver(m_visitedLinkSlave.data());
+    renderThread->AddObserver(m_webCacheObserver.data());
     renderThread->AddObserver(UserScriptController::instance());
 
     // mark qrc as a secure scheme (avoids deprecation warnings)
@@ -87,14 +90,14 @@ void ContentRendererClientQt::RenderThreadStarted()
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
 {
     // RenderViewObservers destroy themselves with their RenderView.
-    new QtRenderViewObserver(render_view);
+    new RenderViewObserverQt(render_view, m_webCacheObserver.data());
     new WebChannelIPCTransport(render_view);
     UserScriptController::instance()->renderViewCreated(render_view);
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)
 {
-    new QtWebEngineCore::QtRenderFrameObserver(render_frame);
+    new QtWebEngineCore::RenderFrameObserverQt(render_frame);
 }
 
 bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)

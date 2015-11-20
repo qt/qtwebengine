@@ -61,8 +61,10 @@ ApplicationWindow {
         // This is for the case where the system forces us to leave fullscreen.
         if (currentWebView && !isFullScreen) {
             currentWebView.state = ""
-            if (currentWebView.isFullScreen)
+            if (currentWebView.isFullScreen) {
                 currentWebView.fullScreenCancelled()
+                fullScreenNotification.hide()
+            }
         }
     }
 
@@ -397,9 +399,11 @@ ApplicationWindow {
                             webEngineView.state = "FullScreen"
                             browserWindow.previousVisibility = browserWindow.visibility
                             browserWindow.showFullScreen()
+                            fullScreenNotification.show()
                         } else {
                             webEngineView.state = ""
                             browserWindow.visibility = browserWindow.previousVisibility
+                            fullScreenNotification.hide()
                         }
                         request.accept()
                     }
@@ -500,6 +504,10 @@ ApplicationWindow {
         function presentError(){
             visible = certErrors.length > 0
         }
+    }
+
+    FullScreenNotification {
+        id: fullScreenNotification
     }
 
     DownloadView {

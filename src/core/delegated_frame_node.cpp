@@ -56,6 +56,7 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -77,6 +78,10 @@
 
 #ifndef GL_TIMEOUT_IGNORED
 #define GL_TIMEOUT_IGNORED                0xFFFFFFFFFFFFFFFFull
+#endif
+
+#ifndef GL_TEXTURE_RECTANGLE
+#define GL_TEXTURE_RECTANGLE              0x84F5
 #endif
 
 namespace QtWebEngineCore {
@@ -130,7 +135,7 @@ private:
     QSGGeometry m_geometry;
 };
 
-static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPassId &id, const QList<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > &list)
+static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPassId &id, const QVector<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > &list)
 {
     typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
     Q_FOREACH (const Pair &pair, list)
@@ -646,13 +651,29 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
                 texture->setTarget(GL_TEXTURE_EXTERNAL_OES); // since this is not default TEXTURE_2D type
 
-                StreamVideoNode *svideoNode = new StreamVideoNode(texture);
+                StreamVideoNode *svideoNode = new StreamVideoNode(texture, false, ExternalTarget);
                 svideoNode->setRect(toQt(squad->rect));
                 svideoNode->setTextureMatrix(toQt(squad->matrix.matrix()));
                 currentLayerChain->appendChildNode(svideoNode);
                 break;
 #endif
-            } default:
+            }
+            case cc::DrawQuad::IO_SURFACE_CONTENT: {
+                const cc::IOSurfaceDrawQuad *ioquad = cc::IOSurfaceDrawQuad::MaterialCast(quad);
+                ResourceHolder *resource = findAndHoldResource(ioquad->io_surface_resource_id(), resourceCandidates);
+                MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
+                texture->setTarget(GL_TEXTURE_RECTANGLE);
+
+                bool flip = ioquad->orientation != cc::IOSurfaceDrawQuad::FLIPPED;
+                StreamVideoNode *svideoNode = new StreamVideoNode(texture, flip, RectangleTarget);
+                QMatrix4x4 matrix;
+                matrix.scale(ioquad->io_surface_size.width(), ioquad->io_surface_size.height());
+                svideoNode->setRect(toQt(ioquad->rect));
+                svideoNode->setTextureMatrix(matrix);
+                currentLayerChain->appendChildNode(svideoNode);
+                break;
+            }
+            default:
                 qWarning("Unimplemented quad material: %d", quad->material);
             }
         }

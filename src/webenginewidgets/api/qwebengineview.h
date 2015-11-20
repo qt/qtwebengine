@@ -120,6 +120,8 @@ protected:
     virtual QWebEngineView *createWindow(QWebEnginePage::WebWindowType type);
     virtual void contextMenuEvent(QContextMenuEvent*) Q_DECL_OVERRIDE;
     virtual bool event(QEvent*) Q_DECL_OVERRIDE;
+    virtual void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
+    virtual void hideEvent(QHideEvent *) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QWebEngineView)

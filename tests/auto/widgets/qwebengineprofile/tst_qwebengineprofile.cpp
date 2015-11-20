@@ -34,37 +34,43 @@
 **
 ****************************************************************************/
 
-#ifndef QT_RENDER_VIEW_OBSERVER_HOST_H
-#define QT_RENDER_VIEW_OBSERVER_HOST_H
+#include "../util.h"
+#include <QtTest/QtTest>
+#include <qwebengineprofile.h>
 
-#include "content/public/browser/web_contents_observer.h"
-
-#include <QtGlobal>
-
-namespace content {
-    class WebContents;
-}
-
-namespace QtWebEngineCore {
-
-class WebContentsAdapterClient;
-
-class QtRenderViewObserverHost : public content::WebContentsObserver
+class tst_QWebEngineProfile : public QObject
 {
-public:
-    QtRenderViewObserverHost(content::WebContents*, WebContentsAdapterClient *adapterClient);
-    void fetchDocumentMarkup(quint64 requestId);
-    void fetchDocumentInnerText(quint64 requestId);
+    Q_OBJECT
 
-private:
-    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
-    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
-    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
-    void onDidFirstVisuallyNonEmptyLayout();
-
-    WebContentsAdapterClient *m_adapterClient;
+private Q_SLOTS:
+    void defaultProfile();
+    void profileConstructors();
 };
 
-} // namespace QtWebEngineCore
+void tst_QWebEngineProfile::defaultProfile()
+{
+    QWebEngineProfile *profile = QWebEngineProfile::defaultProfile();
+    QVERIFY(profile);
+    QVERIFY(!profile->isOffTheRecord());
+    QCOMPARE(profile->storageName(), QStringLiteral("Default"));
+    QCOMPARE(profile->httpCacheType(), QWebEngineProfile::DiskHttpCache);
+    QCOMPARE(profile->persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
+}
 
-#endif // QT_RENDER_VIEW_OBSERVER_HOST_H
+void tst_QWebEngineProfile::profileConstructors()
+{
+    QWebEngineProfile otrProfile;
+    QWebEngineProfile diskProfile(QStringLiteral("Test"));
+
+    QVERIFY(otrProfile.isOffTheRecord());
+    QVERIFY(!diskProfile.isOffTheRecord());
+    QCOMPARE(diskProfile.storageName(), QStringLiteral("Test"));
+    QCOMPARE(otrProfile.httpCacheType(), QWebEngineProfile::MemoryHttpCache);
+    QCOMPARE(diskProfile.httpCacheType(), QWebEngineProfile::DiskHttpCache);
+    QCOMPARE(otrProfile.persistentCookiesPolicy(), QWebEngineProfile::NoPersistentCookies);
+    QCOMPARE(diskProfile.persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
+
+}
+
+QTEST_MAIN(tst_QWebEngineProfile)
+#include "tst_qwebengineprofile.moc"

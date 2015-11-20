@@ -37,7 +37,12 @@
 #ifndef UI_DELEGATES_MANAGER_H
 #define UI_DELEGATES_MANAGER_H
 
-#include <QObject>
+#include "qglobal.h"
+#include "web_contents_adapter.h"
+#include "web_contents_adapter_client.h"
+
+#include <QCoreApplication>
+#include <QExplicitlySharedDataPointer>
 #include <QPoint>
 #include <QSharedPointer>
 
@@ -82,8 +87,9 @@ Q_SIGNALS:
     void triggered();
 };
 
-class UIDelegatesManager {
-
+class UIDelegatesManager
+{
+    Q_DECLARE_TR_FUNCTIONS(UIDelegatesManager)
 public:
     enum ComponentType {
         Invalid = -1,

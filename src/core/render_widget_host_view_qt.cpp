@@ -186,13 +186,14 @@ static inline int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
 static uint32 s_eventId = 0;
 class MotionEventQt : public ui::MotionEvent {
 public:
-    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, int index = -1)
+    MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, float dpiScale, int index = -1)
         : touchPoints(touchPoints)
         , eventTime(eventTime)
         , action(action)
         , eventId(++s_eventId)
         , flags(flagsFromModifiers(modifiers))
         , index(index)
+        , dpiScale(dpiScale)
     {
         // ACTION_DOWN and ACTION_UP must be accesssed through pointer_index 0
         Q_ASSERT((action != ACTION_DOWN && action != ACTION_UP) || index == 0);
@@ -203,8 +204,8 @@ public:
     virtual int GetActionIndex() const Q_DECL_OVERRIDE { return index; }
     virtual size_t GetPointerCount() const Q_DECL_OVERRIDE { return touchPoints.size(); }
     virtual int GetPointerId(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).id(); }
-    virtual float GetX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().x(); }
-    virtual float GetY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().y(); }
+    virtual float GetX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().x() / dpiScale; }
+    virtual float GetY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pos().y() / dpiScale; }
     virtual float GetRawX(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().x(); }
     virtual float GetRawY(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).screenPos().y(); }
     virtual float GetTouchMajor(size_t pointer_index) const Q_DECL_OVERRIDE
@@ -240,6 +241,7 @@ private:
     const uint32 eventId;
     int flags;
     int index;
+    float dpiScale;
 };
 
 RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget)
@@ -413,12 +415,13 @@ gfx::Rect RenderWidgetHostViewQt::GetViewBounds() const
     return gfx::BoundingRect(p1, p2);
 }
 
-void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color) {
+void RenderWidgetHostViewQt::SetBackgroundColor(SkColor color)
+{
     RenderWidgetHostViewBase::SetBackgroundColor(color);
     // Set the background of the compositor if necessary
     m_delegate->setClearColor(toQt(color));
     // Set the background of the blink::FrameView
-    m_host->Send(new QtRenderViewObserver_SetBackgroundColor(m_host->GetRoutingID(), color));
+    m_host->Send(new RenderViewObserverQt_SetBackgroundColor(m_host->GetRoutingID(), color));
 }
 
 // Return value indicates whether the mouse is locked successfully or not.
@@ -997,7 +1000,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
     QList<QTouchEvent::TouchPoint> touchPoints = mapTouchPointIds(ev->touchPoints());
 
     if (ev->type() == QEvent::TouchCancel) {
-        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL, ev->modifiers());
+        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL, ev->modifiers(), dpiScale());
         processMotionEvent(cancelEvent);
         return;
     }
@@ -1030,7 +1033,7 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             continue;
         }
 
-        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), i);
+        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), dpiScale(), i);
         processMotionEvent(motionEvent);
     }
 }

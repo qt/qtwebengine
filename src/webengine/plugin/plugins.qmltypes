@@ -488,8 +488,10 @@ Module {
         exports: ["QtWebEngine/FullScreenRequest 1.1"]
         isCreatable: false
         exportMetaObjectRevisions: [0]
+        Property { name: "origin"; type: "QUrl"; isReadonly: true }
         Property { name: "toggleOn"; type: "bool"; isReadonly: true }
         Method { name: "accept" }
+        Method { name: "reject" }
     }
     Component {
         name: "QQuickWebEngineHistory"
@@ -609,11 +611,7 @@ Module {
             name: "downloadFinished"
             Parameter { name: "download"; type: "QQuickWebEngineDownloadItem"; isPointer: true }
         }
-        Method {
-            name: "setCookieStoreClient"
-            revision: 1
-            Parameter { name: "client"; type: "QWebEngineCookieStoreClient"; isPointer: true }
-        }
+        Method { name: "cookieStoreClient"; revision: 1; type: "QWebEngineCookieStoreClient*" }
     }
     Component {
         name: "QQuickWebEngineScript"
@@ -832,7 +830,8 @@ Module {
                 "DownloadMediaToDisk": 25,
                 "InspectElement": 26,
                 "ExitFullScreen": 27,
-                "WebActionCount": 28
+                "RequestClose": 28,
+                "WebActionCount": 29
             }
         }
         Enum {
@@ -953,6 +952,7 @@ Module {
             Parameter { name: "terminationStatus"; type: "RenderProcessTerminationStatus" }
             Parameter { name: "exitCode"; type: "int" }
         }
+        Signal { name: "windowCloseRequested"; revision: 2 }
         Method {
             name: "runJavaScript"
             Parameter { type: "string" }

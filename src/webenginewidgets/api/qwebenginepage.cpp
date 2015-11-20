@@ -55,6 +55,7 @@
 #include <QIcon>
 #include <QInputDialog>
 #include <QLayout>
+#include <QLoggingCategory>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
@@ -431,7 +432,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn QWebEnginePage::fullScreenRequested(const QWebEngineFullScreenRequest &request)
+    \fn QWebEnginePage::fullScreenRequested(QWebEngineFullScreenRequest request)
 
     This signal is emitted when the web page issues the request to enter fullscreen mode for
     a web-element, usually a video element.
@@ -877,9 +878,19 @@ bool QWebEnginePage::event(QEvent *e)
     return QObject::event(e);
 }
 
+void QWebEnginePagePrivate::wasShown()
+{
+    adapter->wasShown();
+}
+
+void QWebEnginePagePrivate::wasHidden()
+{
+    adapter->wasHidden();
+}
+
 bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
-    if (!view)
+    if (!view || !view->d_func()->m_pendingContextMenuEvent)
         return false;
 
     m_menuData = WebEngineContextMenuData();
@@ -905,7 +916,6 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
         return false;
         break;
     }
-    Q_ASSERT(view->d_func()->m_pendingContextMenuEvent);
     view->d_func()->m_pendingContextMenuEvent = false;
     return true;
 }
@@ -920,7 +930,7 @@ void QWebEnginePagePrivate::navigationRequested(int navigationType, const QUrl &
 void QWebEnginePagePrivate::requestFullScreenMode(const QUrl &origin, bool fullscreen)
 {
     Q_Q(QWebEnginePage);
-    QWebEngineFullScreenRequest request(this, origin, fullscreen);
+    QWebEngineFullScreenRequest request(q, origin, fullscreen);
     Q_EMIT q->fullScreenRequested(request);
 }
 
@@ -1230,8 +1240,12 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngine
 }
 
 /*!
-    Returns the script collection used by this page.
-    \sa QWebEngineScriptCollection
+    Returns the collection of scripts that are injected into the page.
+
+    In addition, a page might also execute scripts
+    added through QWebEngineProfile::scripts().
+
+    \sa QWebEngineScriptCollection, QWebEngineScript
 */
 
 QWebEngineScriptCollection &QWebEnginePage::scripts()
@@ -1309,10 +1323,24 @@ bool QWebEnginePage::javaScriptPrompt(const QUrl &securityOrigin, const QString 
 
 void QWebEnginePage::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString &message, int lineNumber, const QString &sourceID)
 {
-    Q_UNUSED(level);
-    Q_UNUSED(message);
-    Q_UNUSED(lineNumber);
-    Q_UNUSED(sourceID);
+    static QLoggingCategory loggingCategory("js", QtWarningMsg);
+    static QByteArray file = sourceID.toUtf8();
+    QMessageLogger logger(file.constData(), lineNumber, nullptr, loggingCategory.categoryName());
+
+    switch (level) {
+    case JavaScriptConsoleMessageLevel::InfoMessageLevel:
+        if (loggingCategory.isInfoEnabled())
+            logger.info().noquote() << message;
+        break;
+    case JavaScriptConsoleMessageLevel::WarningMessageLevel:
+        if (loggingCategory.isWarningEnabled())
+            logger.warning().noquote() << message;
+        break;
+    case JavaScriptConsoleMessageLevel::ErrorMessageLevel:
+        if (loggingCategory.isCriticalEnabled())
+            logger.critical().noquote() << message;
+        break;
+    }
 }
 
 bool QWebEnginePage::certificateError(const QWebEngineCertificateError &)

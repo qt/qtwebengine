@@ -47,6 +47,11 @@ using QtWebEngineCore::UserScript;
     \since 5.5
     \brief The QWebEngineScriptCollection class represents a collection of user scripts.
 
+    QWebEngineScriptCollection manages a set of user scripts.
+
+    Use QWebEnginePage::scripts() and QWebEngineProfile::scripts() to access
+    the collection of scripts associated with a single page or a
+    number of pages sharing the same profile.
 */
 
 /*!

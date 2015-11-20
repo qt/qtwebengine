@@ -199,7 +199,7 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 */
 QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(false)))
+    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(true)))
 {
     d_ptr->q_ptr = this;
 }
@@ -490,8 +490,10 @@ bool QWebEngineProfile::visitedLinksContainsUrl(const QUrl &url) const
 }
 
 /*!
-    Returns the script collection used by this profile.
-    \sa QWebEngineScriptCollection
+    Returns the collection of scripts that are injected into all pages that share
+    this profile.
+
+    \sa QWebEngineScriptCollection, QWebEngineScript, QWebEnginePage::scripts()
 */
 QWebEngineScriptCollection *QWebEngineProfile::scripts() const
 {

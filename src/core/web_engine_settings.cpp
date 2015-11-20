@@ -46,6 +46,10 @@
 
 namespace QtWebEngineCore {
 
+QHash<WebEngineSettings::Attribute, bool> WebEngineSettings::m_defaultAttributes;
+QHash<WebEngineSettings::FontFamily, QString> WebEngineSettings::m_defaultFontFamilies;
+QHash<WebEngineSettings::FontSize, int> WebEngineSettings::m_defaultFontSizes;
+
 static const int batchTimerTimeout = 0;
 
 class BatchTimer : public QTimer {
@@ -132,9 +136,12 @@ bool WebEngineSettings::testAttribute(WebEngineSettings::Attribute attr) const
 
 void WebEngineSettings::resetAttribute(WebEngineSettings::Attribute attr)
 {
-    if (!parentSettings) // FIXME: Set initial defaults.
-        return;
-    m_attributes.remove(attr);
+    if (!parentSettings) {
+        Q_ASSERT(m_defaultAttributes.contains(attr));
+        m_attributes.insert(attr, m_defaultAttributes.value(attr));
+    } else {
+        m_attributes.remove(attr);
+    }
     scheduleApplyRecursively();
 }
 
@@ -155,9 +162,12 @@ QString WebEngineSettings::fontFamily(WebEngineSettings::FontFamily which)
 
 void WebEngineSettings::resetFontFamily(WebEngineSettings::FontFamily which)
 {
-    if (!parentSettings) // FIXME: Set initial defaults.
-        return;
-    m_fontFamilies.remove(which);
+    if (!parentSettings) {
+        Q_ASSERT(m_defaultFontFamilies.contains(which));
+        m_fontFamilies.insert(which, m_defaultFontFamilies.value(which));
+    } else {
+        m_fontFamilies.remove(which);
+    }
     scheduleApplyRecursively();
 }
 
@@ -178,9 +188,12 @@ int WebEngineSettings::fontSize(WebEngineSettings::FontSize type) const
 
 void WebEngineSettings::resetFontSize(WebEngineSettings::FontSize type)
 {
-    if (!parentSettings) // FIXME: Set initial defaults.
-        return;
-    m_fontSizes.remove(type);
+    if (!parentSettings) {
+        Q_ASSERT(m_defaultFontSizes.contains(type));
+        m_fontSizes.insert(type, m_defaultFontSizes.value(type));
+    } else {
+        m_fontSizes.remove(type);
+    }
     scheduleApplyRecursively();
 }
 
@@ -199,46 +212,55 @@ QString WebEngineSettings::defaultTextEncoding() const
 
 void WebEngineSettings::initDefaults(bool offTheRecord)
 {
-    // Initialize the default settings.
-    m_attributes.insert(AutoLoadImages, true);
-    m_attributes.insert(JavascriptEnabled, true);
-    m_attributes.insert(JavascriptCanOpenWindows, true);
-    m_attributes.insert(JavascriptCanAccessClipboard, false);
-    m_attributes.insert(LinksIncludedInFocusChain, true);
-    m_attributes.insert(LocalStorageEnabled, !offTheRecord);
-    m_attributes.insert(LocalContentCanAccessRemoteUrls, false);
-    m_attributes.insert(XSSAuditingEnabled, false);
-    m_attributes.insert(SpatialNavigationEnabled, false);
-    m_attributes.insert(LocalContentCanAccessFileUrls, true);
-    m_attributes.insert(HyperlinkAuditingEnabled, false);
-    m_attributes.insert(ScrollAnimatorEnabled, false);
-    m_attributes.insert(ErrorPageEnabled, true);
-    m_attributes.insert(PluginsEnabled, false);
-    m_attributes.insert(FullScreenSupportEnabled, false);
-    m_attributes.insert(ScreenCaptureEnabled, false);
+    if (m_defaultAttributes.isEmpty()) {
+        // Initialize the default settings.
+        m_defaultAttributes.insert(AutoLoadImages, true);
+        m_defaultAttributes.insert(JavascriptEnabled, true);
+        m_defaultAttributes.insert(JavascriptCanOpenWindows, true);
+        m_defaultAttributes.insert(JavascriptCanAccessClipboard, false);
+        m_defaultAttributes.insert(LinksIncludedInFocusChain, true);
+        m_defaultAttributes.insert(LocalStorageEnabled, !offTheRecord);
+        m_defaultAttributes.insert(LocalContentCanAccessRemoteUrls, false);
+        m_defaultAttributes.insert(XSSAuditingEnabled, false);
+        m_defaultAttributes.insert(SpatialNavigationEnabled, false);
+        m_defaultAttributes.insert(LocalContentCanAccessFileUrls, true);
+        m_defaultAttributes.insert(HyperlinkAuditingEnabled, false);
+        m_defaultAttributes.insert(ScrollAnimatorEnabled, false);
+        m_defaultAttributes.insert(ErrorPageEnabled, true);
+        m_defaultAttributes.insert(PluginsEnabled, false);
+        m_defaultAttributes.insert(FullScreenSupportEnabled, false);
+        m_defaultAttributes.insert(ScreenCaptureEnabled, false);
+    }
+    m_attributes = m_defaultAttributes;
 
-    // Default fonts
-    QFont defaultFont;
-    defaultFont.setStyleHint(QFont::Serif);
-    m_fontFamilies.insert(StandardFont, defaultFont.defaultFamily());
-    m_fontFamilies.insert(SerifFont, defaultFont.defaultFamily());
+    if (m_defaultFontFamilies.isEmpty()) {
+        // Default fonts
+        QFont defaultFont;
+        defaultFont.setStyleHint(QFont::Serif);
+        m_defaultFontFamilies.insert(StandardFont, defaultFont.defaultFamily());
+        m_defaultFontFamilies.insert(SerifFont, defaultFont.defaultFamily());
 
-    defaultFont.setStyleHint(QFont::Fantasy);
-    m_fontFamilies.insert(FantasyFont, defaultFont.defaultFamily());
+        defaultFont.setStyleHint(QFont::Fantasy);
+        m_defaultFontFamilies.insert(FantasyFont, defaultFont.defaultFamily());
 
-    defaultFont.setStyleHint(QFont::Cursive);
-    m_fontFamilies.insert(CursiveFont, defaultFont.defaultFamily());
+        defaultFont.setStyleHint(QFont::Cursive);
+        m_defaultFontFamilies.insert(CursiveFont, defaultFont.defaultFamily());
 
-    defaultFont.setStyleHint(QFont::SansSerif);
-    m_fontFamilies.insert(SansSerifFont, defaultFont.defaultFamily());
+        defaultFont.setStyleHint(QFont::SansSerif);
+        m_defaultFontFamilies.insert(SansSerifFont, defaultFont.defaultFamily());
 
-    defaultFont.setStyleHint(QFont::Monospace);
-    m_fontFamilies.insert(FixedFont, defaultFont.defaultFamily());
+        defaultFont.setStyleHint(QFont::Monospace);
+        m_defaultFontFamilies.insert(FixedFont, defaultFont.defaultFamily());
+    }
+    m_fontFamilies = m_defaultFontFamilies;
 
-    m_fontSizes.insert(MinimumFontSize, 0);
-    m_fontSizes.insert(MinimumLogicalFontSize, 6);
-    m_fontSizes.insert(DefaultFixedFontSize, 13);
-    m_fontSizes.insert(DefaultFontSize, 16);
+    if (m_defaultFontSizes.isEmpty()) {
+        m_defaultFontSizes.insert(MinimumFontSize, 0);
+        m_defaultFontSizes.insert(MinimumLogicalFontSize, 6);
+        m_defaultFontSizes.insert(DefaultFixedFontSize, 13);
+        m_defaultFontSizes.insert(DefaultFontSize, 16);
+    }
+    m_fontSizes = m_defaultFontSizes;
 
     m_defaultEncoding = QStringLiteral("ISO-8859-1");
 }

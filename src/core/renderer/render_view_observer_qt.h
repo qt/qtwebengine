@@ -33,16 +33,21 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QT_RENDER_VIEW_OBSERVER_H
-#define QT_RENDER_VIEW_OBSERVER_H
+#ifndef RENDER_VIEW_OBSERVER_QT_H
+#define RENDER_VIEW_OBSERVER_QT_H
 
 #include "content/public/renderer/render_view_observer.h"
 
 #include <QtGlobal>
 
-class QtRenderViewObserver : public content::RenderViewObserver {
+namespace web_cache {
+class WebCacheRenderProcessObserver;
+}
+
+class RenderViewObserverQt : public content::RenderViewObserver {
 public:
-    QtRenderViewObserver(content::RenderView* render_view);
+    RenderViewObserverQt(content::RenderView* render_view,
+                         web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer);
 
 private:
     void onFetchDocumentMarkup(quint64 requestId);
@@ -52,8 +57,11 @@ private:
     void OnFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
 
     virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+    virtual void Navigate(const GURL& url) Q_DECL_OVERRIDE;
 
-    DISALLOW_COPY_AND_ASSIGN(QtRenderViewObserver);
+    web_cache::WebCacheRenderProcessObserver* m_web_cache_render_process_observer;
+
+    DISALLOW_COPY_AND_ASSIGN(RenderViewObserverQt);
 };
 
-#endif // QT_RENDER_VIEW_OBSERVER_H
+#endif // RENDER_VIEW_OBSERVER_QT_H

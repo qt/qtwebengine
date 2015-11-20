@@ -48,7 +48,6 @@ class URLRequestContextGetterQt;
 QT_BEGIN_NAMESPACE
 
 class QWebEngineUrlRequestJob;
-class QWebEngineUrlSchemeHandlerPrivate;
 
 class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandler : public QObject {
     Q_OBJECT
@@ -63,8 +62,6 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QWebEngineUrlSchemeHandler)
-    Q_DECLARE_PRIVATE(QWebEngineUrlSchemeHandler)
-    QWebEngineUrlSchemeHandlerPrivate *d_ptr;
 };
 
 QT_END_NAMESPACE

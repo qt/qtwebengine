@@ -39,21 +39,31 @@
 
 QT_BEGIN_NAMESPACE
 
-QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(QWebEnginePagePrivate *pagePrivate, const QUrl &origin, bool fullscreen)
-    : m_pagePrivate(pagePrivate)
+QWebEngineFullScreenRequest::QWebEngineFullScreenRequest(QWebEnginePage *page, const QUrl &origin, bool fullscreen)
+    : m_page(page)
     , m_origin(origin)
     , m_toggleOn(fullscreen)
 {
 }
 
-void QWebEngineFullScreenRequest::reject() const
+void QWebEngineFullScreenRequest::reject()
 {
-    m_pagePrivate->setFullScreenMode(!m_toggleOn);
+    if (!m_page) {
+        qWarning("Cannot reject QWebEngineFullScreenRequest: Originating page is already deleted");
+        return;
+    }
+
+    m_page->d_func()->setFullScreenMode(!m_toggleOn);
 }
 
-void QWebEngineFullScreenRequest::accept() const
+void QWebEngineFullScreenRequest::accept()
 {
-    m_pagePrivate->setFullScreenMode(m_toggleOn);
+    if (!m_page) {
+        qWarning("Cannot accept QWebEngineFullScreenRequest: Originating page is already deleted");
+        return;
+    }
+
+    m_page->d_func()->setFullScreenMode(m_toggleOn);
 }
 
 QT_END_NAMESPACE

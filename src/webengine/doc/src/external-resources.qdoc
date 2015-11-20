@@ -35,6 +35,11 @@
     \title Chrome DevTools
 */
 
+/*!
+    \externalpage https://developers.google.com/web/tools/javascript/console/console-write
+    \title Chrome console API
+*/
+
 /*
     This prevents autolinking of each occurrence of 'WebEngine'
     To link to the WebEngine QML type, use explicit linking:

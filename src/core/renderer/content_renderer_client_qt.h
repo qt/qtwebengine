@@ -45,6 +45,10 @@ namespace visitedlink {
 class VisitedLinkSlave;
 }
 
+namespace web_cache {
+class WebCacheRenderProcessObserver;
+}
+
 namespace QtWebEngineCore {
 
 class ContentRendererClientQt : public content::ContentRendererClient {
@@ -64,6 +68,7 @@ public:
 
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
+    QScopedPointer<web_cache::WebCacheRenderProcessObserver> m_webCacheObserver;
 };
 
 } // namespace

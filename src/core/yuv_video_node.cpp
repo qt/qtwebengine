@@ -40,6 +40,8 @@
 #include <QtGui/qopenglfunctions.h>
 #include <QtQuick/qsgtexture.h>
 
+namespace QtWebEngineCore {
+
 class YUVVideoMaterialShader : public QSGMaterialShader
 {
 public:
@@ -369,3 +371,5 @@ void YUVVideoNode::setRect(const QRectF &rect)
 {
     QSGGeometry::updateTexturedRectGeometry(geometry(), rect, QRectF(0, 0, 1, 1));
 }
+
+} // namespace

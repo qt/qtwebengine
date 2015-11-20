@@ -59,8 +59,10 @@ ApplicationWindow {
         // This is for the case where the system forces us to leave fullscreen.
         if (currentWebView && !isFullScreen) {
             currentWebView.state = ""
-            if (currentWebView.isFullScreen)
+            if (currentWebView.isFullScreen) {
                 currentWebView.fullScreenCancelled()
+                fullScreenNotification.hide()
+            }
         }
     }
 
@@ -83,6 +85,7 @@ ApplicationWindow {
         property alias javaScriptEnabled: javaScriptEnabled.checked;
         property alias errorPageEnabled: errorPageEnabled.checked;
         property alias pluginsEnabled: pluginsEnabled.checked;
+        property alias fullScreenSupportEnabled: fullScreenSupportEnabled.checked;
     }
 
     Action {
@@ -268,7 +271,13 @@ ApplicationWindow {
                             id: pluginsEnabled
                             text: "Plugins On"
                             checkable: true
-                            checked: true
+                            checked: WebEngine.settings.pluginsEnabled
+                        }
+                        MenuItem {
+                            id: fullScreenSupportEnabled
+                            text: "FullScreen On"
+                            checkable: true
+                            checked: WebEngine.settings.fullScreenSupportEnabled
                         }
                         MenuItem {
                             id: offTheRecordEnabled
@@ -354,6 +363,7 @@ ApplicationWindow {
                 settings.javascriptEnabled: appSettings.javaScriptEnabled
                 settings.errorPageEnabled: appSettings.errorPageEnabled
                 settings.pluginsEnabled: appSettings.pluginsEnabled
+                settings.fullScreenSupportEnabled: appSettings.fullScreenSupportEnabled
 
                 onCertificateError: {
                     error.defer()
@@ -384,9 +394,11 @@ ApplicationWindow {
                         webEngineView.state = "FullScreen"
                         browserWindow.previousVisibility = browserWindow.visibility
                         browserWindow.showFullScreen()
+                        fullScreenNotification.show()
                     } else {
                         webEngineView.state = ""
                         browserWindow.visibility = browserWindow.previousVisibility
+                        fullScreenNotification.hide()
                     }
                     request.accept()
                 }
@@ -460,6 +472,11 @@ ApplicationWindow {
             visible = certErrors.length > 0
         }
     }
+
+    FullScreenNotification {
+        id: fullScreenNotification
+    }
+
     DownloadView {
         id: downloadView
         visible: false

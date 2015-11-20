@@ -151,7 +151,6 @@ private Q_SLOTS:
     void defaultTextEncoding();
     void errorPageExtension();
     void errorPageExtensionLoadFinished();
-    void userAgentApplicationName();
     void userAgentNewlineStripping();
     void undoActionHaveCustomText();
     void renderWidgetHostViewNotShowTopLevel();
@@ -289,6 +288,15 @@ void tst_QWebEnginePage::cleanupFiles()
 void tst_QWebEnginePage::initTestCase()
 {
     cleanupFiles(); // In case there are old files from previous runs
+
+    // Set custom path since the CI doesn't install test plugins.
+    // Stolen from qtlocation/tests/auto/positionplugintest.
+    QString searchPath = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_WIN
+    searchPath += QStringLiteral("/..");
+#endif
+    searchPath += QStringLiteral("/../../../plugins");
+    QCoreApplication::addLibraryPath(searchPath);
 }
 
 void tst_QWebEnginePage::cleanupTestCase()
@@ -2790,28 +2798,6 @@ void tst_QWebEnginePage::errorPageExtensionLoadFinished()
 #endif
 }
 
-class FriendlyWebPage : public QWebEnginePage
-{
-public:
-    friend class tst_QWebEnginePage;
-};
-
-void tst_QWebEnginePage::userAgentApplicationName()
-{
-#if !defined(QWEBENGINEPAGE_USERAGENTFORURL)
-    QSKIP("QWEBENGINEPAGE_USERAGENTFORURL");
-#else
-    const QString oldApplicationName = QCoreApplication::applicationName();
-    FriendlyWebPage page;
-
-    const QString applicationNameMarker = QString::fromUtf8("StrangeName\342\210\236");
-    QCoreApplication::setApplicationName(applicationNameMarker);
-    QVERIFY(page.userAgentForUrl(QUrl()).contains(applicationNameMarker));
-
-    QCoreApplication::setApplicationName(oldApplicationName);
-#endif
-}
-
 void tst_QWebEnginePage::userAgentNewlineStripping()
 {
     QWebEngineProfile profile;
@@ -3758,7 +3744,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     // FullscreenRequest must be a user gesture
     bool acceptRequest = true;
     connect(page, &QWebEnginePage::fullScreenRequested,
-        [&acceptRequest](const QWebEngineFullScreenRequest &request) {
+        [&acceptRequest](QWebEngineFullScreenRequest request) {
         if (acceptRequest) request.accept(); else request.reject();
     });
 

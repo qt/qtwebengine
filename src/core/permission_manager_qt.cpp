@@ -83,8 +83,7 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
     m_permissions[key] = reply;
     content::PermissionStatus status = reply ? content::PERMISSION_STATUS_GRANTED : content::PERMISSION_STATUS_DENIED;
     auto it = m_requests.begin();
-    const auto end = m_requests.end();
-    while (it != end) {
+    while (it != m_requests.end()) {
         if (it->origin == origin && it->type == type) {
             it->callback.Run(status);
             it = m_requests.erase(it);

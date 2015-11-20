@@ -67,8 +67,6 @@ class QWebEngineCookieStoreClient;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_OBJECT
-    Q_ENUMS(HttpCacheType);
-    Q_ENUMS(PersistentCookiesPolicy);
     Q_PROPERTY(QString storageName READ storageName WRITE setStorageName NOTIFY storageNameChanged FINAL)
     Q_PROPERTY(bool offTheRecord READ isOffTheRecord WRITE setOffTheRecord NOTIFY offTheRecordChanged FINAL)
     Q_PROPERTY(QString persistentStoragePath READ persistentStoragePath WRITE setPersistentStoragePath NOTIFY persistentStoragePathChanged FINAL)
@@ -86,12 +84,14 @@ public:
         MemoryHttpCache,
         DiskHttpCache
     };
+    Q_ENUM(HttpCacheType)
 
     enum PersistentCookiesPolicy {
         NoPersistentCookies,
         AllowPersistentCookies,
         ForcePersistentCookies
     };
+    Q_ENUM(PersistentCookiesPolicy)
 
     QString storageName() const;
     void setStorageName(const QString &name);

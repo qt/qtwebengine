@@ -47,7 +47,6 @@ QT_WARNING_DISABLE_CLANG("-Wunused-parameter")
 #include "net/cookies/cookie_monster.h"
 QT_WARNING_POP
 
-#include <QList>
 #include <QNetworkCookie>
 #include <QPointer>
 

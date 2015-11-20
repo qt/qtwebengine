@@ -69,7 +69,7 @@ public:
         DownloadCancelled,
         DownloadInterrupted
     };
-    Q_ENUMS(DownloadState)
+    Q_ENUM(DownloadState)
 
     Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)

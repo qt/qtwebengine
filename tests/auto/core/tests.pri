@@ -1,8 +1,6 @@
 TEMPLATE = app
 
-# FIXME: Re-enable once we want to run tests on the CI
-# CONFIG += testcase
-
+CONFIG += testcase
 CONFIG += c++11
 
 VPATH += $$_PRO_FILE_PWD_

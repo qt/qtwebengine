@@ -81,11 +81,18 @@ public:
         : d(new QtWebEnginePrivate::QWebEngineCallbackPrivate<T, F>(f))
     { }
     QWebEngineCallback() { }
+    void swap(QWebEngineCallback &other) Q_DECL_NOTHROW { qSwap(d, other.d); }
     operator bool() const { return d; }
 private:
     friend class QtWebEngineCore::CallbackDirectory;
     QExplicitlySharedDataPointer<QtWebEnginePrivate::QWebEngineCallbackPrivateBase<T> > d;
 };
+
+Q_DECLARE_SHARED(QWebEngineCallback<int>)
+Q_DECLARE_SHARED(QWebEngineCallback<const QByteArray &>)
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineCallback<bool>)
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineCallback<const QString &>)
+Q_DECLARE_SHARED_NOT_MOVABLE_UNTIL_QT6(QWebEngineCallback<const QVariant &>)
 
 QT_END_NAMESPACE
 

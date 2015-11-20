@@ -45,8 +45,8 @@
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
 #include "media_capture_devices_dispatcher.h"
-#include "qt_render_view_observer_host.h"
 #include "qwebenginecallback_p.h"
+#include "render_view_observer_host_qt.h"
 #include "type_conversion.h"
 #include "web_channel_ipc_transport_host.h"
 #include "web_contents_adapter_client.h"
@@ -385,7 +385,7 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 
     // Create and attach observers to the WebContents.
     d->webContentsDelegate.reset(new WebContentsDelegateQt(d->webContents.get(), adapterClient));
-    d->renderViewObserverHost.reset(new QtRenderViewObserverHost(d->webContents.get(), adapterClient));
+    d->renderViewObserverHost.reset(new RenderViewObserverHostQt(d->webContents.get(), adapterClient));
 
     // Let the WebContent's view know about the WebContentsAdapterClient.
     WebContentsViewQt* contentsView = static_cast<WebContentsViewQt*>(static_cast<content::WebContentsImpl*>(d->webContents.get())->GetView());
