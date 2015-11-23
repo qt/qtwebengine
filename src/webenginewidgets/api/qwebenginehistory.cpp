@@ -42,6 +42,11 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    \fn QWebEngineHistoryItem::swap(QWebEngineHistoryItem &other)
+    Swaps the history item with the \a other item.
+*/
+
 QWebEngineHistoryItemPrivate::QWebEngineHistoryItemPrivate(QWebEnginePagePrivate *page, int index)
     : page(page)
     , index(index)
