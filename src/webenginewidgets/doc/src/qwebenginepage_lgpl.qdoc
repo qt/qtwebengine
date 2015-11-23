@@ -540,9 +540,11 @@
 
 /*!
     \property QWebEnginePage::requestedUrl
-    \brief the URL requested to be loaded by the frame currently viewed
+    \brief the URL that was originally requested to be loaded by the frame
+    that is currently viewed
 
-    The URL may differ from the one returned by url() if a DNS resolution or a redirection occurs.
+    \note The URL may differ from the one returned by url(), which is the actual
+    URL that results from DNS resolution or redirection.
 
     \sa url(), setUrl()
 */
