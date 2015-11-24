@@ -763,8 +763,12 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         QUrl activeUrl = adapter->activeUrl();
+        QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
         adapter = 0;
         ensureContentsAdapter();
+        if (qmlWebChannel)
+            adapter->setWebChannel(qmlWebChannel);
+
         if (!explicitUrl.isValid() && activeUrl.isValid())
             adapter->load(activeUrl);
     }
