@@ -56,9 +56,6 @@ public:
         : QObject (p)
     {
     }
-    virtual ~QWebEngineUrlRequestInterceptor()
-    {
-    }
 
     virtual bool interceptRequest(QWebEngineUrlRequestInfo &info) = 0;
 };
