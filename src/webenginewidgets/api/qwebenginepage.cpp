@@ -447,6 +447,20 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
+    \property QWebEnginePage::scrollPosition
+    \since 5.7
+
+    \brief The scroll position of the page contents.
+*/
+
+/*!
+    \property QWebEnginePage::contentsSize
+    \since 5.7
+
+    The size of the page contents.
+*/
+
+/*!
     Constructs an empty web engine page in the web engine profile \a profile with the parent
     \a parent.
 
@@ -1356,22 +1370,12 @@ bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType typ
     return true;
 }
 
-/*!
-    \since 5.7
-
-    Returns the scroll position of the page contents.
-*/
 QPointF QWebEnginePage::scrollPosition() const
 {
     Q_D(const QWebEnginePage);
     return d->adapter->lastScrollOffset();
 }
 
-/*!
-    \since 5.7
-
-    Returns the size of the page contents.
-*/
 QSizeF QWebEnginePage::contentsSize() const
 {
     Q_D(const QWebEnginePage);
