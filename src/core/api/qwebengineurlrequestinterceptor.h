@@ -57,7 +57,7 @@ public:
     {
     }
 
-    virtual bool interceptRequest(QWebEngineUrlRequestInfo &info) = 0;
+    virtual void interceptRequest(QWebEngineUrlRequestInfo &info) = 0;
 };
 
 QT_END_NAMESPACE

@@ -126,6 +126,7 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRe
     , url(u)
     , firstPartyUrl(fpu)
     , method(m)
+    , changed(false)
 {
 }
 
@@ -241,6 +242,12 @@ QByteArray QWebEngineUrlRequestInfo::requestMethod() const
     return d->method;
 }
 
+bool QWebEngineUrlRequestInfo::changed() const
+{
+    Q_D(const QWebEngineUrlRequestInfo);
+    return d->changed;
+}
+
 /*!
     Redirects this request to \a url.
     It is only possible to redirect requests that do not have payload data, such as GET requests.
@@ -249,6 +256,7 @@ QByteArray QWebEngineUrlRequestInfo::requestMethod() const
 void QWebEngineUrlRequestInfo::redirect(const QUrl &url)
 {
     Q_D(QWebEngineUrlRequestInfo);
+    d->changed = true;
     d->url = url;
 }
 
@@ -261,6 +269,7 @@ void QWebEngineUrlRequestInfo::redirect(const QUrl &url)
 void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 {
     Q_D(QWebEngineUrlRequestInfo);
+    d->changed = true;
     d->shouldBlockRequest = shouldBlock;
 }
 
@@ -271,6 +280,7 @@ void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 void QWebEngineUrlRequestInfo::setExtraHeader(const QByteArray &name, const QByteArray &value)
 {
     Q_D(QWebEngineUrlRequestInfo);
+    d->changed = true;
     d->extraHeaders.insert(name, value);
 }
 

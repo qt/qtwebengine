@@ -88,6 +88,7 @@ public:
     QUrl requestUrl() const;
     QUrl firstPartyUrl() const;
     QByteArray requestMethod() const;
+    bool changed() const;
 
     void block(bool shouldBlock);
     void redirect(const QUrl &url);

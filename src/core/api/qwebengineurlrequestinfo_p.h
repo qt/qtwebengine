@@ -68,6 +68,7 @@ public:
     QUrl url;
     QUrl firstPartyUrl;
     const QByteArray method;
+    bool changed;
     QHash<QByteArray, QByteArray> extraHeaders;
 
     QWebEngineUrlRequestInfo *q_ptr;

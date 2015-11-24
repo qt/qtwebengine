@@ -100,15 +100,14 @@ public:
     QList<QUrl> firstPartyUrls;
     bool shouldIntercept;
 
-    bool interceptRequest(QWebEngineUrlRequestInfo &info) override
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
         info.block(info.requestMethod() != QByteArrayLiteral("GET"));
-        if (info.requestUrl().toString().endsWith(QLatin1String("__placeholder__")))
+        if (shouldIntercept && info.requestUrl().toString().endsWith(QLatin1String("__placeholder__")))
             info.redirect(QUrl("qrc:///resources/content.html"));
 
         observedUrls.append(info.requestUrl());
         firstPartyUrls.append(info.firstPartyUrl());
-        return shouldIntercept;
     }
     TestRequestInterceptor(bool intercept)
         : shouldIntercept(intercept)
@@ -162,11 +161,10 @@ class LocalhostContentProvider : public QWebEngineUrlRequestInterceptor
 public:
     LocalhostContentProvider() { }
 
-    bool interceptRequest(QWebEngineUrlRequestInfo &info) override
+    void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
         requestedUrls.append(info.requestUrl());
         info.redirect(QUrl("data:text/html,<p>hello"));
-        return true;
     }
 
     QList<QUrl> requestedUrls;
