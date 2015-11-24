@@ -122,6 +122,7 @@
     \value RequestClose Request to close the web page. If defined, the \c{window.onbeforeunload}
            handler is run, and the user can confirm or reject to close the page. If the close
            request is confirmed, \c windowCloseRequested is emitted. (Added in Qt 5.6)
+    \value Unselect Clear the current selection. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
 
