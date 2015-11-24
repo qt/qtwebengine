@@ -543,6 +543,18 @@ QAccessible::State QQuickWebEngineViewAccessible::state() const
 }
 #endif // QT_NO_ACCESSIBILITY
 
+class WebContentsAdapterOwner : public QObject
+{
+public:
+    typedef QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> AdapterPtr;
+    WebContentsAdapterOwner(const AdapterPtr &ptr)
+        : adapter(ptr)
+    {}
+
+private:
+    AdapterPtr adapter;
+};
+
 void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContents)
 {
     if (!webContents) {
@@ -566,6 +578,8 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
+    WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter);
+    adapterOwner->deleteLater();
     adapter = webContents;
     adapter->initialize(this);
 
