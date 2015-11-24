@@ -92,7 +92,7 @@ public:
 
     void block(bool shouldBlock);
     void redirect(const QUrl &url);
-    void setExtraHeader(const QByteArray &name, const QByteArray &value);
+    void setHttpHeader(const QByteArray &name, const QByteArray &value);
 
 private:
     friend class QtWebEngineCore::NetworkDelegateQt;

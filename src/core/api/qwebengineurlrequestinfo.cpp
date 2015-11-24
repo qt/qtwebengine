@@ -274,10 +274,10 @@ void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 }
 
 /*!
-    Sets an extra request header for this request with \a name and \a value.
+    Sets the request header \a name to \a value for this request.
 */
 
-void QWebEngineUrlRequestInfo::setExtraHeader(const QByteArray &name, const QByteArray &value)
+void QWebEngineUrlRequestInfo::setHttpHeader(const QByteArray &name, const QByteArray &value)
 {
     Q_D(QWebEngineUrlRequestInfo);
     d->changed = true;
