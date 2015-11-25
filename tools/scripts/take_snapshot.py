@@ -103,6 +103,7 @@ def isInChromiumBlacklist(file_path):
             not 'media/desktop_streams_registry.' in file_path and
             not 'common/chrome_switches.' in file_path and
             not 'common/localized_error.' in file_path and
+            not 'common/spellcheck_' in file_path and
             not '/spellchecker/' in file_path and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
