@@ -84,7 +84,6 @@ public:
     QWebEngineCookieStore *q_ptr;
 
     QWebEngineCookieStorePrivate(QWebEngineCookieStore *q);
-    ~QWebEngineCookieStorePrivate();
 
     void processPendingUserCookies();
     void setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin);

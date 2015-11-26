@@ -56,11 +56,6 @@ QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate(QWebEngineCookieStore
 {
 }
 
-QWebEngineCookieStorePrivate::~QWebEngineCookieStorePrivate()
-{
-
-}
-
 void QWebEngineCookieStorePrivate::processPendingUserCookies()
 {
     Q_ASSERT(delegate);
