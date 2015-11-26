@@ -152,7 +152,7 @@ void CookieMonsterDelegateQt::setClient(QWebEngineCookieStore *client)
     if (!m_client)
         return;
 
-    m_client->d_ptr->delegate = this;
+    m_client->d_func()->delegate = this;
 
     if (hasCookieMonster())
         m_client->d_func()->processPendingUserCookies();
@@ -163,14 +163,14 @@ bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByt
     if (!m_client)
         return true;
 
-    return m_client->d_ptr->canSetCookie(firstPartyUrl, cookieLine, url);
+    return m_client->d_func()->canSetCookie(firstPartyUrl, cookieLine, url);
 }
 
 void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause)
 {
     if (!m_client)
         return;
-    m_client->d_ptr->onCookieChanged(toQt(cookie), removed);
+    m_client->d_func()->onCookieChanged(toQt(cookie), removed);
 }
 
 }
