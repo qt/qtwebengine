@@ -4,7 +4,7 @@ DESTDIR = $$OUT_PWD/$$getConfigDir()
 TEMPLATE = lib
 
 CONFIG += staticlib c++11
-QT += network
+QT += network core-private
 
 # Don't create .prl file for this intermediate library because
 # their contents get used when linking against them, breaking
