@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINECOOKIESTORECLIENT_P_H
-#define QWEBENGINECOOKIESTORECLIENT_P_H
+#ifndef QWEBENGINECOOKIESTORE_P_H
+#define QWEBENGINECOOKIESTORE_P_H
 
 //
 //  W A R N I N G
@@ -51,7 +51,7 @@
 #include "qtwebenginecoreglobal_p.h"
 
 #include "qwebenginecallback_p.h"
-#include "qwebenginecookiestoreclient.h"
+#include "qwebenginecookiestore.h"
 
 #include <QVector>
 #include <QNetworkCookie>
@@ -63,7 +63,7 @@ class CookieMonsterDelegateQt;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStoreClientPrivate {
+class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStorePrivate {
     struct CookieData {
         quint64 callbackId;
         QNetworkCookie cookie;
@@ -71,9 +71,9 @@ class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStoreClientPrivate {
     };
     friend class QTypeInfo<CookieData>;
 public:
-    Q_DECLARE_PUBLIC(QWebEngineCookieStoreClient)
+    Q_DECLARE_PUBLIC(QWebEngineCookieStore)
     QtWebEngineCore::CallbackDirectory callbackDirectory;
-    QWebEngineCallback<QWebEngineCookieStoreClient::FilterRequest&> filterCallback;
+    QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> filterCallback;
     QVector<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
     bool m_deleteSessionCookiesPending;
@@ -81,10 +81,10 @@ public:
     bool m_getAllCookiesPending;
 
     QtWebEngineCore::CookieMonsterDelegateQt *delegate;
-    QWebEngineCookieStoreClient *q_ptr;
+    QWebEngineCookieStore *q_ptr;
 
-    QWebEngineCookieStoreClientPrivate(QWebEngineCookieStoreClient *q);
-    ~QWebEngineCookieStoreClientPrivate();
+    QWebEngineCookieStorePrivate(QWebEngineCookieStore *q);
+    ~QWebEngineCookieStorePrivate();
 
     void processPendingUserCookies();
     void setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin);
@@ -101,8 +101,8 @@ public:
     void onCookieChanged(const QNetworkCookie &cookie, bool removed);
 };
 
-Q_DECLARE_TYPEINFO(QWebEngineCookieStoreClientPrivate::CookieData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(QWebEngineCookieStorePrivate::CookieData, Q_MOVABLE_TYPE);
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINECOOKIESTORECLIENT_P_H
+#endif // QWEBENGINECOOKIESTORE_P_H

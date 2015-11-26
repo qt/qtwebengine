@@ -46,7 +46,7 @@
 #include <QString>
 #include <QVector>
 
-#include "api/qwebenginecookiestoreclient.h"
+#include "api/qwebenginecookiestore.h"
 #include "api/qwebengineurlrequestinterceptor.h"
 #include "api/qwebengineurlschemehandler.h"
 
@@ -73,7 +73,7 @@ public:
     WebEngineVisitedLinksManager *visitedLinksManager();
     DownloadManagerDelegateQt *downloadManagerDelegate();
 
-    QWebEngineCookieStoreClient *cookieStoreClient();
+    QWebEngineCookieStore *cookieStore();
 
     QWebEngineUrlRequestInterceptor* requestInterceptor();
     void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
@@ -164,7 +164,7 @@ private:
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
     QScopedPointer<UserScriptControllerHost> m_userScriptController;
-    QScopedPointer<QWebEngineCookieStoreClient> m_cookieStoreClient;
+    QScopedPointer<QWebEngineCookieStore> m_cookieStore;
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 
     QString m_dataPath;

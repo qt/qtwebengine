@@ -36,7 +36,7 @@
 
 #include "qwebengineprofile.h"
 
-#include "qwebenginecookiestoreclient.h"
+#include "qwebenginecookiestore.h"
 #include "qwebenginedownloaditem.h"
 #include "qwebenginedownloaditem_p.h"
 #include "qwebenginepage.h"
@@ -434,13 +434,13 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 }
 
 /*!
-    Returns the cookie store client singleton, if one has been set.
+    Returns the cookie store singleton, if one has been set.
 */
 
-QWebEngineCookieStoreClient* QWebEngineProfile::cookieStoreClient()
+QWebEngineCookieStore* QWebEngineProfile::cookieStore()
 {
     Q_D(QWebEngineProfile);
-    return d->browserContext()->cookieStoreClient();
+    return d->browserContext()->cookieStore();
 }
 
 

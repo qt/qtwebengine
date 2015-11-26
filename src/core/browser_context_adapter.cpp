@@ -136,11 +136,11 @@ DownloadManagerDelegateQt *BrowserContextAdapter::downloadManagerDelegate()
     return m_downloadManagerDelegate.data();
 }
 
-QWebEngineCookieStoreClient *BrowserContextAdapter::cookieStoreClient()
+QWebEngineCookieStore *BrowserContextAdapter::cookieStore()
 {
-    if (!m_cookieStoreClient)
-        m_cookieStoreClient.reset(new QWebEngineCookieStoreClient);
-    return m_cookieStoreClient.data();
+    if (!m_cookieStore)
+        m_cookieStore.reset(new QWebEngineCookieStore);
+    return m_cookieStore.data();
 }
 
 QWebEngineUrlRequestInterceptor *BrowserContextAdapter::requestInterceptor()

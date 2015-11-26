@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineSettings;
-class QWebEngineCookieStoreClient;
+class QWebEngineCookieStore;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_OBJECT
@@ -122,7 +122,7 @@ public:
 
     static QQuickWebEngineProfile *defaultProfile();
 
-    Q_REVISION(1) Q_INVOKABLE QWebEngineCookieStoreClient *cookieStoreClient() const;
+    Q_REVISION(1) Q_INVOKABLE QWebEngineCookieStore *cookieStore() const;
 
 signals:
     void storageNameChanged();

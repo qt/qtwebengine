@@ -40,8 +40,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/cookies/cookie_util.h"
 
-#include "api/qwebenginecookiestoreclient.h"
-#include "api/qwebenginecookiestoreclient_p.h"
+#include "api/qwebenginecookiestore.h"
+#include "api/qwebenginecookiestore_p.h"
 #include "type_conversion.h"
 
 #include <QStringBuilder>
@@ -53,15 +53,15 @@ static GURL sourceUrlForCookie(const QNetworkCookie &cookie) {
     return net::cookie_util::CookieOriginToURL(urlFragment.toStdString(), /* is_https */ cookie.isSecure());
 }
 
-static void onSetCookieCallback(QWebEngineCookieStoreClientPrivate *client, qint64 callbackId, bool success) {
+static void onSetCookieCallback(QWebEngineCookieStorePrivate *client, qint64 callbackId, bool success) {
     client->onSetCallbackResult(callbackId, success);
 }
 
-static void onDeleteCookiesCallback(QWebEngineCookieStoreClientPrivate *client, qint64 callbackId, int numCookies) {
+static void onDeleteCookiesCallback(QWebEngineCookieStorePrivate *client, qint64 callbackId, int numCookies) {
     client->onDeleteCallbackResult(callbackId, numCookies);
 }
 
-static void onGetAllCookiesCallback(QWebEngineCookieStoreClientPrivate *client, qint64 callbackId, const net::CookieList& cookies) {
+static void onGetAllCookiesCallback(QWebEngineCookieStorePrivate *client, qint64 callbackId, const net::CookieList& cookies) {
     QByteArray rawCookies;
     for (auto&& cookie: cookies)
         rawCookies += toQt(cookie).toRawForm() % QByteArrayLiteral("\n");
@@ -145,7 +145,7 @@ void CookieMonsterDelegateQt::setCookieMonster(net::CookieMonster* monster)
         m_client->d_func()->processPendingUserCookies();
 }
 
-void CookieMonsterDelegateQt::setClient(QWebEngineCookieStoreClient *client)
+void CookieMonsterDelegateQt::setClient(QWebEngineCookieStore *client)
 {
     m_client = client;
 

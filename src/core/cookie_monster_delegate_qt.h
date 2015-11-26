@@ -50,7 +50,7 @@ QT_WARNING_POP
 #include <QNetworkCookie>
 #include <QPointer>
 
-QT_FORWARD_DECLARE_CLASS(QWebEngineCookieStoreClient)
+QT_FORWARD_DECLARE_CLASS(QWebEngineCookieStore)
 
 namespace QtWebEngineCore {
 
@@ -62,7 +62,7 @@ static const char* const kCookieableSchemes[] =
     { "http", "https", "qrc", "ws", "wss" };
 
 class QWEBENGINE_EXPORT CookieMonsterDelegateQt: public net::CookieMonsterDelegate {
-    QPointer<QWebEngineCookieStoreClient> m_client;
+    QPointer<QWebEngineCookieStore> m_client;
     scoped_refptr<net::CookieMonster> m_cookieMonster;
 public:
     CookieMonsterDelegateQt();
@@ -77,7 +77,7 @@ public:
     void deleteAllCookies(quint64 callbackId);
 
     void setCookieMonster(net::CookieMonster* monster);
-    void setClient(QWebEngineCookieStoreClient *client);
+    void setClient(QWebEngineCookieStore *client);
 
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
     void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause) override;

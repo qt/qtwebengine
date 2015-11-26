@@ -42,18 +42,18 @@
 #include "../../widgets/util.h"
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebenginecallback.h>
-#include <QtWebEngineCore/qwebenginecookiestoreclient.h>
+#include <QtWebEngineCore/qwebenginecookiestore.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebengineprofile.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
 
-class tst_QWebEngineCookieStoreClient : public QObject
+class tst_QWebEngineCookieStore : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QWebEngineCookieStoreClient();
-    ~tst_QWebEngineCookieStoreClient();
+    tst_QWebEngineCookieStore();
+    ~tst_QWebEngineCookieStore();
 
 public Q_SLOTS:
     void init();
@@ -67,34 +67,34 @@ private Q_SLOTS:
     void batchCookieTasks();
 };
 
-tst_QWebEngineCookieStoreClient::tst_QWebEngineCookieStoreClient()
+tst_QWebEngineCookieStore::tst_QWebEngineCookieStore()
 {
 }
 
-tst_QWebEngineCookieStoreClient::~tst_QWebEngineCookieStoreClient()
+tst_QWebEngineCookieStore::~tst_QWebEngineCookieStore()
 {
 }
 
-void tst_QWebEngineCookieStoreClient::init()
+void tst_QWebEngineCookieStore::init()
 {
 }
 
-void tst_QWebEngineCookieStoreClient::cleanup()
+void tst_QWebEngineCookieStore::cleanup()
 {
 }
 
-void tst_QWebEngineCookieStoreClient::initTestCase()
+void tst_QWebEngineCookieStore::initTestCase()
 {
 }
 
-void tst_QWebEngineCookieStoreClient::cleanupTestCase()
+void tst_QWebEngineCookieStore::cleanupTestCase()
 {
 }
 
-void tst_QWebEngineCookieStoreClient::cookieSignals()
+void tst_QWebEngineCookieStore::cookieSignals()
 {
     QWebEngineView view;
-    QWebEngineCookieStoreClient *client = view.page()->profile()->cookieStoreClient();
+    QWebEngineCookieStore *client = view.page()->profile()->cookieStore();
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
@@ -119,11 +119,11 @@ void tst_QWebEngineCookieStoreClient::cookieSignals()
     QTRY_COMPARE(cookieRemovedSpy.count(), 1);
 }
 
-void tst_QWebEngineCookieStoreClient::setAndDeleteCookie()
+void tst_QWebEngineCookieStore::setAndDeleteCookie()
 {
     QTest::qWait(500);  // remove, when QTBUG-47946 is fixed!
     QWebEngineView view;
-    QWebEngineCookieStoreClient *client = view.page()->profile()->cookieStoreClient();
+    QWebEngineCookieStore *client = view.page()->profile()->cookieStore();
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
@@ -157,11 +157,11 @@ void tst_QWebEngineCookieStoreClient::setAndDeleteCookie()
     QTRY_COMPARE(cookieRemovedSpy.count(), 2);
 }
 
-void tst_QWebEngineCookieStoreClient::batchCookieTasks()
+void tst_QWebEngineCookieStore::batchCookieTasks()
 {
     QTest::qWait(500);  // remove, when QTBUG-47946 is fixed!
     QWebEngineView view;
-    QWebEngineCookieStoreClient *client = view.page()->profile()->cookieStoreClient();
+    QWebEngineCookieStore *client = view.page()->profile()->cookieStore();
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
@@ -206,5 +206,5 @@ void tst_QWebEngineCookieStoreClient::batchCookieTasks()
     QTRY_COMPARE(capture, 3);
 }
 
-QTEST_MAIN(tst_QWebEngineCookieStoreClient)
-#include "tst_qwebenginecookiestoreclient.moc"
+QTEST_MAIN(tst_QWebEngineCookieStore)
+#include "tst_qwebenginecookiestore.moc"

@@ -89,7 +89,7 @@ static QStringList hardcodedTypes = QStringList()
     // Ignore the testSupport types without making a fuss.
     << "QQuickWebEngineTestSupport*"
     << "QQuickWebEngineErrorPage*"
-    << "QWebEngineCookieStoreClient*"
+    << "QWebEngineCookieStore*"
     ;
 
 static QStringList expectedAPI = QStringList()
@@ -289,7 +289,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.httpAcceptLanguageChanged() --> void"
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
-    << "QQuickWebEngineProfile.setCookieStoreClient(QWebEngineCookieStoreClient*) --> void"
+    << "QQuickWebEngineProfile.setCookieStore(QWebEngineCookieStore*) --> void"
     << "QQuickWebEngineScript.Deferred --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentReady --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentCreation --> InjectionPoint"

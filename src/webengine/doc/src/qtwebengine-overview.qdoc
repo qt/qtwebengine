@@ -140,7 +140,7 @@
     schemes. Requests for the scheme are then issued to QWebEngineUrlSchemeHandler::requestStarted()
     as QWebEngineUrlRequestJob objects.
 
-    The QWebEngineCookieStoreClient class provides functions for accessing HTTP cookies of Chromium.
+    The QWebEngineCookieStore class provides functions for accessing HTTP cookies of Chromium.
     The functions can be used to synchronize cookies with QNetworkAccessManager, as well as to set,
     delete, and intercept cookies during navigation.
 

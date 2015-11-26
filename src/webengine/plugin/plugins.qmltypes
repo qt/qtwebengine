@@ -611,7 +611,7 @@ Module {
             name: "downloadFinished"
             Parameter { name: "download"; type: "QQuickWebEngineDownloadItem"; isPointer: true }
         }
-        Method { name: "cookieStoreClient"; revision: 1; type: "QWebEngineCookieStoreClient*" }
+        Method { name: "cookieStore"; revision: 1; type: "QWebEngineCookieStore*" }
     }
     Component {
         name: "QQuickWebEngineScript"
