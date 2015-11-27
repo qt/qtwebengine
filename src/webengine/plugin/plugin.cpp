@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include <QtQml/qqmlextensionplugin.h>
+#include <QtWebEngine/QQuickWebEngineProfile>
 
 #include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebenginedownloaditem_p.h"
@@ -42,7 +43,6 @@
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
-#include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginesingleton_p.h"
 #include "qquickwebengineview_p.h"

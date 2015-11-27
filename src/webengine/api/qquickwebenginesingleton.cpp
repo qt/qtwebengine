@@ -37,7 +37,7 @@
 #include "qquickwebenginesingleton_p.h"
 
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebengineprofile_p.h"
+#include <QtWebEngine/QQuickWebEngineProfile>
 
 QT_BEGIN_NAMESPACE
 

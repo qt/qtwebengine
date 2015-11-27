@@ -50,7 +50,7 @@
 
 #include "browser_context_adapter_client.h"
 #include "qquickwebenginedownloaditem_p.h"
-#include "qquickwebengineprofile_p.h"
+#include "qquickwebengineprofile.h"
 #include <private/qtwebengineglobal_p.h>
 #include <QString>
 #include <QPointer>

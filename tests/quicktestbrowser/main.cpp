@@ -52,6 +52,7 @@ typedef QGuiApplication Application;
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlComponent>
 #include <QtWebEngine/qtwebengineglobal.h>
+#include <QtWebEngine/QQuickWebEngineProfile>
 #include <QtWebEngineCore/qwebenginecookiestore.h>
 
 static QUrl startupUrl()
@@ -84,17 +85,10 @@ int main(int argc, char **argv)
     appEngine.load(QUrl("qrc:/ApplicationRoot.qml"));
     QObject *rootObject = appEngine.rootObjects().first();
 
-    QQmlComponent component(&appEngine);
-    component.setData(QByteArrayLiteral("import QtQuick 2.0\n"
-                                        "import QtWebEngine 1.1\n"
-                                        "WebEngineProfile {\n"
-                                        "storageName: \"Test\"\n"
-                                        "}")
-                      , QUrl());
-    QObject *profile = component.create();
+    QQuickWebEngineProfile *profile = new QQuickWebEngineProfile(rootObject);
+    QWebEngineCookieStore *client = profile->cookieStore();
+
     const QMetaObject *rootMeta = rootObject->metaObject();
-    QWebEngineCookieStore *client = 0;
-    QMetaObject::invokeMethod(profile, "cookieStore", Q_RETURN_ARG(QWebEngineCookieStore*, client));
     int index = rootMeta->indexOfProperty("thirdPartyCookiesEnabled");
     Q_ASSERT(index != -1);
     QMetaProperty thirdPartyCookiesProperty = rootMeta->property(index);

@@ -48,7 +48,6 @@
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
-#include "qquickwebengineprofile_p_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p_p.h"
 
@@ -74,6 +73,7 @@
 #include <QQmlEngine>
 #include <QQmlProperty>
 #include <QQmlWebChannel>
+#include <QQuickWebEngineProfile>
 #include <QScreen>
 #include <QStringBuilder>
 #include <QUrl>

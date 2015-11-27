@@ -48,107 +48,40 @@
 // We mean it.
 //
 
-#include <private/qtwebengineglobal_p.h>
+#include "browser_context_adapter_client.h"
+#include "qquickwebengineprofile_p.h"
+#include "browser_context_adapter.h"
 
-#include <QObject>
-#include <QScopedPointer>
-#include <QString>
-
-namespace QtWebEngineCore {
-class BrowserContextAdapter;
-}
+#include <QExplicitlySharedDataPointer>
+#include <QMap>
+#include <QPointer>
 
 QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadItem;
-class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineSettings;
-class QWebEngineCookieStore;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineProfile : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QString storageName READ storageName WRITE setStorageName NOTIFY storageNameChanged FINAL)
-    Q_PROPERTY(bool offTheRecord READ isOffTheRecord WRITE setOffTheRecord NOTIFY offTheRecordChanged FINAL)
-    Q_PROPERTY(QString persistentStoragePath READ persistentStoragePath WRITE setPersistentStoragePath NOTIFY persistentStoragePathChanged FINAL)
-    Q_PROPERTY(QString cachePath READ cachePath WRITE setCachePath NOTIFY cachePathChanged FINAL)
-    Q_PROPERTY(QString httpUserAgent READ httpUserAgent WRITE setHttpUserAgent NOTIFY httpUserAgentChanged FINAL)
-    Q_PROPERTY(HttpCacheType httpCacheType READ httpCacheType WRITE setHttpCacheType NOTIFY httpCacheTypeChanged FINAL)
-    Q_PROPERTY(QString httpAcceptLanguage READ httpAcceptLanguage WRITE setHttpAcceptLanguage NOTIFY httpAcceptLanguageChanged FINAL REVISION 1)
-    Q_PROPERTY(PersistentCookiesPolicy persistentCookiesPolicy READ persistentCookiesPolicy WRITE setPersistentCookiesPolicy NOTIFY persistentCookiesPolicyChanged FINAL)
-    Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
+class QQuickWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
-    QQuickWebEngineProfile();
-    ~QQuickWebEngineProfile();
+    Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
+    QQuickWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter* browserContext);
+    ~QQuickWebEngineProfilePrivate();
 
-    enum HttpCacheType {
-        MemoryHttpCache,
-        DiskHttpCache
-    };
-    Q_ENUM(HttpCacheType)
+    QtWebEngineCore::BrowserContextAdapter *browserContext() const { return m_browserContextRef.data(); }
+    QQuickWebEngineSettings *settings() const { return m_settings.data(); }
 
-    enum PersistentCookiesPolicy {
-        NoPersistentCookies,
-        AllowPersistentCookies,
-        ForcePersistentCookies
-    };
-    Q_ENUM(PersistentCookiesPolicy)
+    void cancelDownload(quint32 downloadId);
+    void downloadDestroyed(quint32 downloadId);
 
-    QString storageName() const;
-    void setStorageName(const QString &name);
-
-    bool isOffTheRecord() const;
-    void setOffTheRecord(bool offTheRecord);
-
-    QString persistentStoragePath() const;
-    void setPersistentStoragePath(const QString &path);
-
-    QString cachePath() const;
-    void setCachePath(const QString &path);
-
-    QString httpUserAgent() const;
-    void setHttpUserAgent(const QString &userAgent);
-
-    HttpCacheType httpCacheType() const;
-    void setHttpCacheType(QQuickWebEngineProfile::HttpCacheType);
-
-    PersistentCookiesPolicy persistentCookiesPolicy() const;
-    void setPersistentCookiesPolicy(QQuickWebEngineProfile::PersistentCookiesPolicy);
-
-    int httpCacheMaximumSize() const;
-    void setHttpCacheMaximumSize(int maxSize);
-
-    QString httpAcceptLanguage() const;
-    void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
-
-    static QQuickWebEngineProfile *defaultProfile();
-
-    Q_REVISION(1) Q_INVOKABLE QWebEngineCookieStore *cookieStore() const;
-
-signals:
-    void storageNameChanged();
-    void offTheRecordChanged();
-    void persistentStoragePathChanged();
-    void cachePathChanged();
-    void httpUserAgentChanged();
-    void httpCacheTypeChanged();
-    void persistentCookiesPolicyChanged();
-    void httpCacheMaximumSizeChanged();
-    Q_REVISION(1) void httpAcceptLanguageChanged();
-
-    void downloadRequested(QQuickWebEngineDownloadItem *download);
-    void downloadFinished(QQuickWebEngineDownloadItem *download);
+    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
+    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
 
 private:
-    Q_DECLARE_PRIVATE(QQuickWebEngineProfile)
-    QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = 0);
-    QQuickWebEngineSettings *settings() const;
-
-    friend class QQuickWebEngineSettings;
-    friend class QQuickWebEngineSingleton;
     friend class QQuickWebEngineViewPrivate;
-    friend class QQuickWebEngineDownloadItem;
-    friend class QQuickWebEngineDownloadItemPrivate;
-    QScopedPointer<QQuickWebEngineProfilePrivate> d_ptr;
+    QQuickWebEngineProfile *q_ptr;
+    QScopedPointer<QQuickWebEngineSettings> m_settings;
+    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
+    QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
 };
 
 QT_END_NAMESPACE
