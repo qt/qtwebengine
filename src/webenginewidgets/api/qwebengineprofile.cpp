@@ -568,7 +568,7 @@ void QWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEn
         return;
     }
     d->browserContext()->addCustomUrlSchemeHandler(scheme, handler);
-    connect(handler, SIGNAL(destroyed(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+    connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 
 /*!
@@ -584,7 +584,7 @@ void QWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handl
     Q_ASSERT(handler);
     if (!d->browserContext()->removeCustomUrlSchemeHandler(handler))
         return;
-    disconnect(handler, SIGNAL(destroyed(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 
 /*!
@@ -600,7 +600,7 @@ void QWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
     QWebEngineUrlSchemeHandler *handler = d->browserContext()->takeCustomUrlSchemeHandler(scheme);
     if (!handler)
         return;
-    disconnect(handler, SIGNAL(destroyed(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
 }
 
 /*!
