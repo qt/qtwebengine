@@ -42,29 +42,6 @@
 
     \annotatedlist qtwebengine-qmlmodules
 
-    \section1 Getting Started
-
-    To include the definitions of the Qt WebEngineCore and Qt WebEngineWidgets modules' classes, use
-    the following directives:
-
-    \badcode
-    #include <QtWebEngineCore>
-    #include <QtWebEngineWidgets>
-    \endcode
-
-    To import the Qt WebEngine module's QML types, add the following import statement to your .qml
-    file:
-
-    \badcode
-    import QtWebEngine 1.2
-    \endcode
-
-    To link against the modules, add QT variables to your qmake .pro file:
-
-    \badcode
-    QT += webengine webenginecore webenginewidgets
-    \endcode
-
     \section1 Articles and Guides
 
     \list

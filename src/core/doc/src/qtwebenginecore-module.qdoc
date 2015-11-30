@@ -39,6 +39,12 @@
     \snippet qtwebenginecore_build_snippet.qdoc 1
 
     If you use qmake to build your projects, Qt WebEngine Core is usually
-    indirectly included through the \l[QtWebEngine]{Qt WebEngine} or
-    \l[QtWebEngineWidgets]{Qt WebEngine Widgets} modules.
+    indirectly included through the \l{Qt WebEngine QML Types}{Qt WebEngine} or
+    \l{Qt WebEngine Widgets C++ Classes}{Qt WebEngine Widgets} modules.
+
+    To link against the module, add this line to your qmake project file:
+
+    \snippet qtwebenginecore_build_snippet.qdoc 0
+
+    However, \c webenginecore is implied by adding \c webengine or \c webenginewidgets.
 */

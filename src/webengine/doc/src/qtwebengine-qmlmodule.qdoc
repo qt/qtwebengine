@@ -36,4 +36,11 @@
     import QtQuick 2.0
     import QtWebEngine 1.1
     \endcode
+
+    To link against the module, add the following QT variable to your qmake .pro
+    file:
+
+    \badcode
+    QT += webengine
+    \endcode
 */
