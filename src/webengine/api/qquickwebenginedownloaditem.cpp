@@ -76,7 +76,7 @@ QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
 /*!
     \qmltype WebEngineDownloadItem
     \instantiates QQuickWebEngineDownloadItem
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Provides information about a download.
 

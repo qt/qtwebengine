@@ -59,7 +59,7 @@ public:
 /*!
     \qmltype WebEngineLoadRequest
     \instantiates QQuickWebEngineLoadRequest
-    \inqmlmodule QtWebEngine 1.0
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
 
     \brief A utility type for the WebEngineView::loadingChanged signal.

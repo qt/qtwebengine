@@ -134,7 +134,7 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 /*!
     \qmltype WebEngineProfile
     \instantiates QQuickWebEngineProfile
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Contains settings, scripts, and visited links common to multiple web engine views.
 

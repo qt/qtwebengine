@@ -61,7 +61,7 @@ public:
 /*!
     \qmltype WebEngineCertificateError
     \instantiates QQuickWebEngineCertificateError
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 
     \brief A utility type for ignoring certificate errors or rejecting erroneous certificates.
