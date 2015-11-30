@@ -98,6 +98,7 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserConte
 
 URLRequestContextGetterQt::~URLRequestContextGetterQt()
 {
+    m_cookieDelegate->setCookieMonster(0); // this will let CookieMonsterDelegateQt be deleted
     delete m_proxyConfigService.fetchAndStoreAcquire(0);
 }
 
