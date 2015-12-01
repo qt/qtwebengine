@@ -46,6 +46,8 @@
 #include "browser_context_adapter.h"
 #include "color_chooser_qt.h"
 #include "color_chooser_controller.h"
+#include "favicon_manager.h"
+#include "favicon_manager_p.h"
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "network_delegate_qt.h"
@@ -89,6 +91,7 @@ static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptCo
 WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, WebContentsAdapterClient *adapterClient)
     : m_viewClient(adapterClient)
     , m_lastReceivedFindReply(0)
+    , m_faviconManager(new FaviconManager(new FaviconManagerPrivate(webContents, adapterClient)))
 {
     webContents->SetDelegate(this);
     Observe(webContents);
@@ -175,8 +178,10 @@ void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrame
         m_loadingErrorFrameList.append(render_frame_host->GetRoutingID());
 
         // Trigger LoadStarted signal for main frame's error page only.
-        if (!render_frame_host->GetParent())
+        if (!render_frame_host->GetParent()) {
+            m_faviconManager->resetCandidates();
             m_viewClient->loadStarted(toQt(validated_url), true);
+        }
 
         return;
     }
@@ -185,6 +190,7 @@ void WebContentsDelegateQt::DidStartProvisionalLoadForFrame(content::RenderFrame
         return;
 
     m_loadingErrorFrameList.clear();
+    m_faviconManager->resetCandidates();
     m_viewClient->loadStarted(toQt(validated_url));
 }
 
@@ -208,6 +214,7 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
     if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID()) || render_frame_host->GetParent())
         return;
 
+    m_viewClient->iconChanged(QUrl());
     m_viewClient->loadFinished(false /* success */ , toQt(validated_url), false /* isErrorPage */, error_code, toQt(error_description));
     m_viewClient->loadProgressChanged(0);
 }
@@ -230,28 +237,31 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
 
     m_viewClient->loadFinished(true, toQt(validated_url));
 
-    content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
+    content::NavigationEntry *entry = web_contents()->GetController().GetVisibleEntry();
     if (!entry)
         return;
-    content::FaviconStatus &favicon = entry->GetFavicon();
-    if (favicon.valid)
-        m_viewClient->iconChanged(toQt(favicon.url));
-    else
+
+    // No available icon for the current entry
+    if (!entry->GetFavicon().valid && !m_faviconManager->hasAvailableCandidateIcon())
         m_viewClient->iconChanged(QUrl());
 }
 
-void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL>& candidates)
+void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)
 {
+    QList<FaviconInfo> faviconCandidates;
     Q_FOREACH (content::FaviconURL candidate, candidates) {
-        if (candidate.icon_type == content::FaviconURL::FAVICON && !candidate.icon_url.is_empty()) {
-            content::NavigationEntry *entry = web_contents()->GetController().GetActiveEntry();
-            if (!entry)
-                continue;
-            content::FaviconStatus &favicon = entry->GetFavicon();
-            favicon.url = candidate.icon_url;
-            favicon.valid = toQt(candidate.icon_url).isValid();
-            break;
-        }
+        // Store invalid candidates too for later debugging via API
+        faviconCandidates.append(toFaviconInfo(candidate));
+    }
+
+    m_faviconManager->update(faviconCandidates);
+
+    content::NavigationEntry *entry = web_contents()->GetController().GetVisibleEntry();
+    if (entry) {
+        FaviconInfo proposedFaviconInfo = m_faviconManager->getProposedFaviconInfo();
+        content::FaviconStatus &favicon = entry->GetFavicon();
+        favicon.url = toGurl(proposedFaviconInfo.url);
+        favicon.valid = proposedFaviconInfo.isValid();
     }
 }
 
@@ -424,6 +434,11 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
     *proceed_to_fire_unload = proceed;
     if (!proceed)
         m_viewClient->windowCloseRejected();
+}
+
+FaviconManager *WebContentsDelegateQt::faviconManager()
+{
+    return m_faviconManager.data();
 }
 
 } // namespace QtWebEngineCore

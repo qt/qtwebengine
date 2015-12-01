@@ -53,6 +53,7 @@ SOURCES = \
         desktop_screen_qt.cpp \
         dev_tools_http_handler_delegate_qt.cpp \
         download_manager_delegate_qt.cpp \
+        favicon_manager.cpp \
         file_picker_controller.cpp \
         gl_context_qt.cpp \
         gl_surface_qt.cpp \
@@ -130,6 +131,8 @@ HEADERS = \
         dev_tools_http_handler_delegate_qt.h \
         download_manager_delegate_qt.h \
         chromium_gpu_helper.h \
+        favicon_manager_p.h \
+        favicon_manager.h \
         file_picker_controller.h \
         gl_context_qt.h \
         gl_surface_qt.h \

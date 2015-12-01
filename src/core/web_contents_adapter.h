@@ -65,6 +65,7 @@ namespace QtWebEngineCore {
 class BrowserContextQt;
 class MessagePassingInterface;
 class WebContentsAdapterPrivate;
+class FaviconManager;
 
 class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
 public:
@@ -154,6 +155,7 @@ public:
     BrowserContextAdapter* browserContextAdapter();
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *, uint worldId);
+    FaviconManager *faviconManager();
 
     QPointF lastScrollOffset() const;
     QSizeF lastContentsSize() const;

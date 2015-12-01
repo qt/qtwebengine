@@ -48,6 +48,7 @@
 #include "base/callback.h"
 
 #include "color_chooser_controller.h"
+#include "favicon_manager.h"
 #include "javascript_dialog_manager_qt.h"
 #include <QtCore/qvector.h>
 #include <QtCore/qcompilerdetection.h>
@@ -119,6 +120,7 @@ public:
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;
     void requestGeolocationPermission(const QUrl &requestingOrigin);
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame);
+    FaviconManager *faviconManager();
 
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
@@ -127,6 +129,7 @@ private:
     QString m_lastSearchedString;
     int m_lastReceivedFindReply;
     QVector<int64> m_loadingErrorFrameList;
+    QScopedPointer<FaviconManager> m_faviconManager;
 };
 
 } // namespace QtWebEngineCore

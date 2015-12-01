@@ -43,6 +43,7 @@
 #include <QColor>
 #include <QDateTime>
 #include <QDir>
+#include <QIcon>
 #include <QImage>
 #include <QMatrix4x4>
 #include <QNetworkCookie>
@@ -53,6 +54,8 @@
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/public/common/file_chooser_file_info.h"
+#include "content/public/common/favicon_url.h"
+#include "favicon_manager.h"
 #include "net/cookies/canonical_cookie.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -164,6 +167,7 @@ inline QImage toQImage(const SkBitmap &bitmap, QImage::Format format)
 
 QImage toQImage(const SkBitmap &bitmap);
 QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep);
+QIcon toQIcon(const std::vector<SkBitmap> &bitmaps);
 
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
 {
@@ -260,6 +264,8 @@ inline QStringList fromVector(const std::vector<base::string16> &vector)
     return result;
 }
 #endif
+
+FaviconInfo toFaviconInfo(const content::FaviconURL &);
 
 } // namespace QtWebEngineCore
 

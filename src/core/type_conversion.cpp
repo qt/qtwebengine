@@ -128,6 +128,23 @@ QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep)
     return image;
 }
 
+QIcon toQIcon(const std::vector<SkBitmap> &bitmaps)
+{
+    if (!bitmaps.size())
+        return QIcon();
+
+    QIcon icon;
+
+    for (unsigned i = 0; i < bitmaps.size(); ++i) {
+        SkBitmap bitmap = bitmaps[i];
+        QImage image = toQImage(bitmap);
+
+        icon.addPixmap(QPixmap::fromImage(image).copy());
+    }
+
+    return icon;
+}
+
 int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
 {
     int modifierFlags = ui::EF_NONE;
@@ -150,6 +167,34 @@ int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
     if ((modifiers & Qt::AltModifier) != 0)
         modifierFlags |= ui::EF_ALT_DOWN;
     return modifierFlags;
+}
+
+FaviconInfo toFaviconInfo(const content::FaviconURL &favicon_url)
+{
+    FaviconInfo info;
+
+    info.url = toQt(favicon_url.icon_url);
+
+    switch (favicon_url.icon_type) {
+    case content::FaviconURL::FAVICON:
+        info.type = FaviconInfo::Favicon;
+        break;
+    case content::FaviconURL::TOUCH_ICON:
+        info.type = FaviconInfo::TouchIcon;
+        break;
+    case content::FaviconURL::TOUCH_PRECOMPOSED_ICON:
+        info.type = FaviconInfo::TouchPrecomposedIcon;
+        break;
+    default:
+        info.type = FaviconInfo::InvalidIcon;
+        break;
+    }
+
+    // TODO: Add support for rel sizes attribute (favicon_url.icon_sizes):
+    // http://www.w3schools.com/tags/att_link_sizes.asp
+    info.size = QSize(0, 0);
+
+    return info;
 }
 
 

@@ -150,6 +150,9 @@ public:
 
     void interceptRequest(QWebEngineUrlRequestInfo &info) override
     {
+        if (info.resourceType() == QWebEngineUrlRequestInfo::ResourceTypeFavicon)
+            return;
+
         requestedUrls.append(info.requestUrl());
         info.redirect(QUrl("data:text/html,<p>hello"));
     }

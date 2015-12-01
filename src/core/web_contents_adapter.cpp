@@ -1207,4 +1207,10 @@ WebContentsAdapterClient::renderProcessExitStatus(int terminationStatus) {
     return status;
 }
 
+FaviconManager *WebContentsAdapter::faviconManager()
+{
+    Q_D(WebContentsAdapter);
+    return d->webContentsDelegate->faviconManager();
+}
+
 } // namespace QtWebEngineCore

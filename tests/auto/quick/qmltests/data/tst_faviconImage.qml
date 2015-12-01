@@ -28,7 +28,7 @@
 
 import QtQuick 2.0
 import QtTest 1.0
-import QtWebEngine 1.2
+import QtWebEngine 1.3
 
 TestWebEngineView {
     id: webEngineView
@@ -36,25 +36,19 @@ TestWebEngineView {
     height: 400
 
     SignalSpy {
-        id: spy
+        id: iconChangedSpy
         target: webEngineView
         signalName: "iconChanged"
     }
 
-    // FIXME: This test is flaky if the loading of the icon image is asynchronous,
-    // because the iconChanged signal is emitted before the image has been downloaded.
-    // We can set this property to true after we have some kind of favicon downloading
-    // logic in the WebEngine.
-
     Image {
-        id: favicon
-        asynchronous: false
+        id: faviconImage
         source: webEngineView.icon
     }
 
     TestCase {
         id: test
-        name: "WebEngineViewLoadFavIcon"
+        name: "WebEngineFaviconImage"
         when: windowShown
 
         function init() {
@@ -62,31 +56,70 @@ TestWebEngineView {
                 // If this is not the first test, then load a blank page without favicon, restoring the initial state.
                 webEngineView.url = 'about:blank'
                 verify(webEngineView.waitForLoadSucceeded())
-                spy.wait()
+                iconChangedSpy.wait()
             }
-            spy.clear()
+
+            iconChangedSpy.clear()
         }
 
-        function test_favIconLoad() {
-            compare(spy.count, 0)
+        function test_faviconImageLoad() {
+            compare(iconChangedSpy.count, 0)
+
             var url = Qt.resolvedUrl("favicon.html")
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
-            spy.wait()
-            compare(spy.count, 1)
-            compare(favicon.width, 48)
-            compare(favicon.height, 48)
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            compare(faviconImage.width, 48)
+            compare(faviconImage.height, 48)
         }
 
-        function test_favIconLoadEncodedUrl() {
-            compare(spy.count, 0)
+        function test_faviconImageLoadEncodedUrl() {
+            compare(iconChangedSpy.count, 0)
+
             var url = Qt.resolvedUrl("favicon2.html?favicon=load should work with#whitespace!")
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
-            spy.wait()
-            compare(spy.count, 1)
-            compare(favicon.width, 16)
-            compare(favicon.height, 16)
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            compare(faviconImage.width, 16)
+            compare(faviconImage.height, 16)
+        }
+
+        function test_bestFaviconImage() {
+            compare(iconChangedSpy.count, 0)
+            var url, iconUrl
+
+            url = Qt.resolvedUrl("favicon-misc.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            iconUrl = webEngineView.icon
+            // Touch icon is ignored
+            compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
+            compare(faviconImage.width, 32)
+            compare(faviconImage.height, 32)
+
+            iconChangedSpy.clear()
+
+            url = Qt.resolvedUrl("favicon-shortcut.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            iconUrl = webEngineView.icon
+            compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))
+            compare(faviconImage.width, 144)
+            compare(faviconImage.height, 144)
         }
     }
 }
