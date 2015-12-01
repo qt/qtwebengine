@@ -23,6 +23,7 @@ private slots:
     void loadAfterClose();
     void closeOnDestroy();
     void passwordClearedOnClose();
+    void metaData();
 };
 
 struct TemporaryPdf: public QTemporaryFile
@@ -200,6 +201,33 @@ void tst_QPdfDocument::passwordClearedOnClose()
     doc.load(&tempPdf);
     doc.close(); // signal is not emitted if password didn't change
     QCOMPARE(passwordChangedSpy.count(), 0);
+}
+
+void tst_QPdfDocument::metaData()
+{
+    QPdfDocument doc;
+
+    // a closed document does not return any meta data
+    QCOMPARE(doc.metaData(QPdfDocument::Title).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::Subject).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::Author).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::Keywords).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::Producer).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::Creator).toString(), QString());
+    QCOMPARE(doc.metaData(QPdfDocument::CreationDate).toDateTime(), QDateTime());
+    QCOMPARE(doc.metaData(QPdfDocument::ModificationDate).toDateTime(), QDateTime());
+
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.metadata.pdf")), QPdfDocument::NoError);
+
+    // check for proper meta data from sample document
+    QCOMPARE(doc.metaData(QPdfDocument::Title).toString(), QString::fromLatin1("Qt PDF Unit Test Document"));
+    QCOMPARE(doc.metaData(QPdfDocument::Subject).toString(), QString::fromLatin1("A test for meta data access"));
+    QCOMPARE(doc.metaData(QPdfDocument::Author).toString(), QString::fromLatin1("John Doe"));
+    QCOMPARE(doc.metaData(QPdfDocument::Keywords).toString(), QString::fromLatin1("meta data keywords"));
+    QCOMPARE(doc.metaData(QPdfDocument::Producer).toString(), QString::fromLatin1("LibreOffice 5.1"));
+    QCOMPARE(doc.metaData(QPdfDocument::Creator).toString(), QString::fromLatin1("Writer"));
+    QCOMPARE(doc.metaData(QPdfDocument::CreationDate).toDateTime(), QDateTime(QDate(2016, 8, 7), QTime(7, 3, 6), Qt::UTC));
+    QCOMPARE(doc.metaData(QPdfDocument::ModificationDate).toDateTime(), QDateTime(QDate(2016, 8, 8), QTime(8, 3, 6), Qt::UTC));
 }
 
 QTEST_MAIN(tst_QPdfDocument)

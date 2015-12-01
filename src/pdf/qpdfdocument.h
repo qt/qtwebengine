@@ -49,6 +49,19 @@ public:
         IncorrectPasswordError,
         UnsupportedSecuritySchemeError
     };
+    Q_ENUM(Error)
+
+    enum MetaDataField {
+        Title,
+        Subject,
+        Author,
+        Keywords,
+        Producer,
+        Creator,
+        CreationDate,
+        ModificationDate
+    };
+    Q_ENUM(MetaDataField)
 
     explicit QPdfDocument(QObject *parent = Q_NULLPTR);
     ~QPdfDocument();
@@ -60,6 +73,8 @@ public:
     void load(QIODevice *device);
     void setPassword(const QString &password);
     QString password() const;
+
+    QVariant metaData(MetaDataField field) const;
 
     Error error() const;
 

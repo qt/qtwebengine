@@ -20,8 +20,9 @@
 ******************************************************************************/
 
 #include "qpdfdocument.h"
-
 #include "qpdfdocument_p.h"
+
+#include "public/fpdf_doc.h"
 
 #include <QFile>
 #include <QMutex>
@@ -300,6 +301,99 @@ void QPdfDocument::setPassword(const QString &password)
 QString QPdfDocument::password() const
 {
     return QString::fromUtf8(d->password);
+}
+
+/*!
+    \enum QPdfDocument::MetaDataField
+
+    This enum describes the available fields of meta data.
+
+    \value Title The document's title as QString.
+    \value Author The name of the person who created the document as QString.
+    \value Subject The subject of the document as QString.
+    \value Keywords Keywords associated with the document as QString.
+    \value Creator If the document was converted to PDF from another format,
+                   the name of the conforming product that created the original document
+                   from which it was converted as QString.
+    \value Producer If the document was converted to PDF from another format,
+                    the name of the conforming product that converted it to PDF as QString.
+    \value CreationDate The date and time the document was created as QDateTime.
+    \value ModificationDate The date and time the document was most recently modified as QDateTime.
+
+    \sa QPdfDocument::metaData()
+*/
+
+/*!
+    Returns the meta data of the document for the given field.
+*/
+QVariant QPdfDocument::metaData(MetaDataField field) const
+{
+    const QMutexLocker lock(pdfMutex());
+
+    if (!d->doc)
+        return QString();
+
+    QByteArray fieldName;
+    switch (field) {
+    case Title:
+        fieldName = "Title";
+        break;
+    case Subject:
+        fieldName = "Subject";
+        break;
+    case Author:
+        fieldName = "Author";
+        break;
+    case Keywords:
+        fieldName = "Keywords";
+        break;
+    case Producer:
+        fieldName = "Producer";
+        break;
+    case Creator:
+        fieldName = "Creator";
+        break;
+    case CreationDate:
+        fieldName = "CreationDate";
+        break;
+    case ModificationDate:
+        fieldName = "ModDate";
+        break;
+    }
+
+    const unsigned long len = FPDF_GetMetaText(d->doc, fieldName.constData(), Q_NULLPTR, 0);
+
+    QVector<ushort> buf(len);
+    FPDF_GetMetaText(d->doc, fieldName.constData(), buf.data(), buf.length());
+
+    QString text = QString::fromUtf16(buf.data());
+
+    switch (field) {
+    case Title: // fall through
+    case Subject:
+    case Author:
+    case Keywords:
+    case Producer:
+    case Creator:
+        return text;
+    case CreationDate: // fall through
+    case ModificationDate:
+        // convert a "D:YYYYMMDDHHmmSSOHH'mm'" into "YYYY-MM-DDTHH:mm:ss+HH:mm"
+        if (text.startsWith(QLatin1String("D:")))
+            text = text.mid(2);
+        text.insert(4, QLatin1Char('-'));
+        text.insert(7, QLatin1Char('-'));
+        text.insert(10, QLatin1Char('T'));
+        text.insert(13, QLatin1Char(':'));
+        text.insert(16, QLatin1Char(':'));
+        text.replace(QLatin1Char('\''), QLatin1Char(':'));
+        if (text.endsWith(QLatin1Char(':')))
+            text.chop(1);
+
+        return QDateTime::fromString(text, Qt::ISODate);
+    }
+
+    return QVariant();
 }
 
 QPdfDocument::Error QPdfDocument::error() const
