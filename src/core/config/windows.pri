@@ -28,6 +28,25 @@ contains(QT_CONFIG, angle) {
     GYP_ARGS += "-D qt_gl=\"opengl\""
 }
 
+defineTest(usingMSVC32BitCrossCompiler) {
+    CL_DIR =
+    for(dir, QMAKE_PATH_ENV) {
+        exists($$dir/cl.exe) {
+            CL_DIR = $$dir
+            break()
+        }
+    }
+    isEmpty(CL_DIR): {
+        warning(Cannot determine location of cl.exe.)
+        return(false)
+    }
+    CL_DIR = $$system_path($$CL_DIR)
+    CL_DIR = $$split(CL_DIR, \\)
+    CL_PLATFORM = $$last(CL_DIR)
+    equals(CL_PLATFORM, amd64_x86): return(true)
+    return(false)
+}
+
 msvc {
     equals(MSVC_VER, 12.0) {
         MSVS_VERSION = 2013
@@ -44,6 +63,11 @@ msvc {
     # is building for, not the system's actual architecture.
     PROGRAM_FILES_X86 = $$(ProgramW6432)
     isEmpty(PROGRAM_FILES_X86): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/8.1\""
+
+    contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
+        # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
+        GYP_CONFIG += fastbuild=2
+    }
 } else {
     fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
 }
