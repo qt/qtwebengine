@@ -101,12 +101,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
 */
 
 /*!
-    \fn QWebEngineUrlRequestInterceptor::~QWebEngineUrlRequestInterceptor()
-
-    Destroys this QWebEngineUrlRequestInterceptor object.
-*/
-
-/*!
     \fn bool QWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
 
     Reimplementing this virtual function and setting the interceptor on a profile makes
