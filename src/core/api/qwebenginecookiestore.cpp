@@ -201,22 +201,33 @@ bool QWebEngineCookieStorePrivate::canSetCookie(const QUrl &firstPartyUrl, const
     \class QWebEngineCookieStore::FilterRequest
     \inmodule QtWebEngineCore
     \since 5.6
+    \brief The FilterRequest class specifies the properties of a cookie.
 
-    The structure specifies properties of a cookie, and whether it should accepted or not. It is
-    used as an argument to a filter installed via setCookieFilter().
+    The class specifies the properties of a cookie and determines whether the cookie should be
+    accepted. The class is used as an argument to a filter installed via setCookieFilter().
 */
 
 /*!
     \variable QWebEngineCookieStore::FilterRequest::accepted
-    Whether the cookie shall be accepted. The default is \c true.
-    \variable QWebEngineCookieStore::FilterRequest::firstPartyUrl
-    URL of page that triggered the setting of the cookie.
-    \variable QWebEngineCookieStore::FilterRequest::cookieLine
-    Content of the cookie.
-    \variable QWebEngineCookieStore::FilterRequest::cookieSource
-    URL of site that sets the cookie.
+    \brief Whether the cookie shall be accepted.
+
+    The default is \c true.
 */
 
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::firstPartyUrl
+    \brief The URL of the page that triggered the setting of the cookie.
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::cookieLine
+    \brief The content of the cookie.
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::cookieSource
+    \brief The URL of the site that sets the cookie.
+*/
 
 /*!
     \fn void QWebEngineCookieStore::cookieAdded(const QNetworkCookie &cookie)
