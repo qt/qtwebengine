@@ -28,10 +28,9 @@
 /*!
     \page qtwebenginewidgets-qtwebkitportingguide.html
     \title Porting from Qt WebKit to Qt WebEngine
-    \brief This guide gives an overview of the differences between the Qt WebKit
-           and Qt WebEngine APIs in applications.
+    \brief Overview of the differences between the Qt WebKit and Qt WebEngine API.
 
-    This guide provides rough steps to follow when porting an application that uses the
+    The following sections contain information about porting an application that uses the
     \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
     \l{http://doc.qt.io/archives/qt-5.3/qml-qtwebkit-webview.html}{QWebView API} to use the
     \l{Qt WebEngine} QWebEngineView.
@@ -94,7 +93,7 @@
     \endcode
 
 
-    \section1 QWebFrame has been Merged into QWebEnginePage
+    \section1 QWebFrame Has Been Merged into QWebEnginePage
 
     It is not possible to access sub-frames. Methods of the main QWebFrame are
     now available directly through the QWebEnginePage itself.
@@ -113,12 +112,12 @@
     \endcode
 
 
-    \section1 Some methods now return their result asynchronously
+    \section1 Some Methods Now Return Their Result Asynchronously
 
-    Since Qt WebEngine uses a multi-process architecture, applications needs
-    to return to the event loop where the result will be received asynchronously
-    from Qt WebEngine's render process. A function pointer, a functor or a lambda
-    expression must be provided to handle the result when it is available.
+    Because Qt WebEngine uses a multi-process architecture, calls to some methods from applications
+    will return immediately, while the results should be received asynchronously via a callback
+    mechanism. A function pointer, a functor, or a lambda expression must be provided to handle the
+    results when they become available.
 
     \b {Qt WebKit}
     \code
@@ -178,14 +177,14 @@
     \endcode
 
 
-    \section1 Qt WebEngine does not Interact with QNetworkAccessManager
+    \section1 Qt WebEngine Does Not Interact with QNetworkAccessManager
 
     Some classes of Qt Network such as QAuthenticator were reused for their interface
-    but, unlike Qt WebKit, Qt WebEngine has its own HTTP implementation and can't
+    but, unlike Qt WebKit, Qt WebEngine has its own HTTP implementation and cannot
     go through a QNetworkAccessManager.
 
-    Signals and methods of QNetworkAccessManager that are still supported were
-    moved to QWebEnginePage directly.
+    The signals and methods of QNetworkAccessManager that are still supported were
+    moved to the QWebEnginePage class.
 
     \b {Qt WebKit}
     \code
@@ -201,11 +200,11 @@
     \endcode
 
 
-    \section1 Notes about Individual Methods
+    \section1 Notes About Individual Methods
 
     \section2 evaluateJavaScript
 
-    QWebFrame::evaluateJavaScript was renamed and moved as QWebEnginePage::runJavaScript.
+    QWebFrame::evaluateJavaScript was moved and renamed as QWebEnginePage::runJavaScript.
     It is currently only possible to run JavaScript on the main frame of a page and the
     result is returned asynchronously to the provided functor.
 
@@ -243,15 +242,15 @@
     \endcode
 
 
-    \section1 Unavailable Qt WebKit APIs
+    \section1 Unavailable Qt WebKit API
 
-    Qt WebKit classes and methods in this list will not be available in Qt WebEngine.
+    The Qt WebKit classes and methods in this list will not be available in Qt WebEngine.
 
     \table
     \row
         \li QGraphicsWebView
-        \li Qt WebEngine requires hardware acceleration. Since we couldn't support
-            a web view class in a QGraphicsView unless it is attached to a QGLWidget
+        \li Qt WebEngine is designed for being used with hardware acceleration. Because we could not
+            support a web view class in a QGraphicsView unless it would be attached to a QGLWidget
             viewport, this feature is out of scope.
     \row
         \li QWebElement
@@ -266,7 +265,7 @@
             was dropped from the HTML5 standard.
     \row
         \li QWebPluginFactory, QWebPage::setPalette, QWebView::setRenderHints
-        \li Qt WebEngine renders web pages using Skia and isn't using QPainter
+        \li Qt WebEngine renders web pages using Skia and is not using QPainter
             or Qt for this purpose. The HTML5 standard also now offers much
             better alternatives that were not available when native controls
             plugins were introduced in Qt WebKit.
