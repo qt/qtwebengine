@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINECOOKIESTORECLIENT_H
-#define QWEBENGINECOOKIESTORECLIENT_H
+#ifndef QWEBENGINECOOKIESTORE_H
+#define QWEBENGINECOOKIESTORE_H
 
 #include "qtwebenginecoreglobal.h"
 #include "qwebenginecallback.h"
@@ -52,8 +52,8 @@ class CookieMonsterDelegateQt;
 
 QT_BEGIN_NAMESPACE
 
-class QWebEngineCookieStoreClientPrivate;
-class QWEBENGINE_EXPORT QWebEngineCookieStoreClient : public QObject {
+class QWebEngineCookieStorePrivate;
+class QWEBENGINE_EXPORT QWebEngineCookieStore : public QObject {
     Q_OBJECT
 
 public:
@@ -64,7 +64,7 @@ public:
         QByteArray cookieLine;
         QUrl cookieSource;
     };
-    virtual ~QWebEngineCookieStoreClient();
+    virtual ~QWebEngineCookieStore();
 
 #ifdef Q_QDOC
     void setCookieWithCallback(const QNetworkCookie &cookie, FunctorOrLambda resultCallback, const QUrl &origin = QUrl());
@@ -89,16 +89,16 @@ Q_SIGNALS:
     void cookieRemoved(const QNetworkCookie &cookie);
 
 private:
-    explicit QWebEngineCookieStoreClient(QObject *parent = 0);
+    explicit QWebEngineCookieStore(QObject *parent = 0);
     friend class QtWebEngineCore::BrowserContextAdapter;
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
-    Q_DISABLE_COPY(QWebEngineCookieStoreClient)
-    Q_DECLARE_PRIVATE(QWebEngineCookieStoreClient)
-    QScopedPointer<QWebEngineCookieStoreClientPrivate> d_ptr;
+    Q_DISABLE_COPY(QWebEngineCookieStore)
+    Q_DECLARE_PRIVATE(QWebEngineCookieStore)
+    QScopedPointer<QWebEngineCookieStorePrivate> d_ptr;
 };
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QWebEngineCookieStoreClient*)
+Q_DECLARE_METATYPE(QWebEngineCookieStore*)
 
-#endif // QWEBENGINECOOKIESTORECLIENT_H
+#endif // QWEBENGINECOOKIESTORE_H

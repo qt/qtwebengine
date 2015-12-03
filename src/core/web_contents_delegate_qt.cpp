@@ -107,6 +107,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     load_url_params.extra_headers = params.extra_headers;
     load_url_params.should_replace_current_entry = params.should_replace_current_entry;
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
+    load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
 
     if (params.transferred_global_request_id != content::GlobalRequestID())
         load_url_params.transferred_global_request_id = params.transferred_global_request_id;

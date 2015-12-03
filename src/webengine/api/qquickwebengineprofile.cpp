@@ -40,7 +40,7 @@
 #include "qquickwebenginedownloaditem_p_p.h"
 #include "qquickwebengineprofile_p_p.h"
 #include "qquickwebenginesettings_p.h"
-#include "qwebenginecookiestoreclient.h"
+#include "qwebenginecookiestore.h"
 
 #include <QQmlEngine>
 
@@ -165,6 +165,8 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 QQuickWebEngineProfile::QQuickWebEngineProfile()
     : d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false)))
 {
+    // Sets up the global WebEngineContext
+    QQuickWebEngineProfile::defaultProfile();
     d_ptr->q_ptr = this;
 }
 
@@ -419,10 +421,10 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
     return profile;
 }
 
-QWebEngineCookieStoreClient *QQuickWebEngineProfile::cookieStoreClient() const
+QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
 {
     const Q_D(QQuickWebEngineProfile);
-    return d->browserContext()->cookieStoreClient();
+    return d->browserContext()->cookieStore();
 }
 
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const

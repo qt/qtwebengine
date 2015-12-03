@@ -49,4 +49,34 @@
         \li Linux: Clang or GCC version 4.7 or later
         \li OS X: Xcode version 5.1 or later
     \endlist
+
+    \section1 Adobe Flash Player Plugin Support
+
+    Qt WebEngine supports the Adobe Flash player plugin that is a Pepper Plugin API (PPAPI)
+    plugin. The plugin must be installed in one of the following locations, depending on the
+    platform:
+
+    \list
+        \li Windows
+            \code
+            C:\Windows\SysWOW64\Macromed\Flash\pepflashplayer*.dll
+            C:\Windows\System32\Macromed\Flash\pepflashplayer*.dll
+            \endcode
+        \li OS X
+            \code
+            /Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin
+            \endcode
+        \li Linux
+            \code
+            /usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so
+            /usr/lib/PepperFlash/libpepflashplayer.so
+            /usr/lib64/chromium/PepperFlash/libpepflashplayer.so
+            \endcode
+    \endlist
+
+    You can also load the Flash player from a specific location by using command line arguments:
+
+    \code
+    --ppapi-flash-path=./libpepflashplayer.so
+    \endcode
 */

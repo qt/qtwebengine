@@ -149,7 +149,7 @@ void DownloadWidget::stop()
 
 void DownloadWidget::open()
 {
-    QUrl url = QUrl::fromLocalFile(m_file.absolutePath());
+    QUrl url = QUrl::fromLocalFile(m_file.absoluteFilePath());
     QDesktopServices::openUrl(url);
 }
 

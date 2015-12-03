@@ -40,6 +40,7 @@
 #include <QColor>
 #include <QDateTime>
 #include <QDir>
+#include <QImage>
 #include <QMatrix4x4>
 #include <QNetworkCookie>
 #include <QRect>
@@ -49,8 +50,10 @@
 #include "base/time/time.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "net/cookies/canonical_cookie.h"
-#include "third_party/skia/include/utils/SkMatrix44.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
@@ -138,6 +141,12 @@ inline QColor toQt(const SkColor &c)
 inline SkColor toSk(const QColor &c)
 {
     return c.rgba();
+}
+
+inline QImage toQImage(const SkBitmap &bitmap, QImage::Format format)
+{
+    SkPixelRef *pixelRef = bitmap.pixelRef();
+    return QImage((uchar *)pixelRef->pixels(), bitmap.width(), bitmap.height(), format);
 }
 
 inline QMatrix4x4 toQt(const SkMatrix44 &m)

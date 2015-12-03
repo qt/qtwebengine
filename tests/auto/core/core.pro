@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    qwebenginecookiestoreclient \
+    qwebenginecookiestore \
     qwebengineurlrequestinterceptor \

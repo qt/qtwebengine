@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#include "qwebenginecookiestoreclient.h"
-#include "qwebenginecookiestoreclient_p.h"
+#include "qwebenginecookiestore.h"
+#include "qwebenginecookiestore_p.h"
 
 #include <cookie_monster_delegate_qt.h>
 
@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
 
-QWebEngineCookieStoreClientPrivate::QWebEngineCookieStoreClientPrivate(QWebEngineCookieStoreClient* q)
+QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate(QWebEngineCookieStore* q)
     : m_nextCallbackId(CallbackDirectory::ReservedCallbackIdsEnd)
     , m_deleteSessionCookiesPending(false)
     , m_deleteAllCookiesPending(false)
@@ -56,12 +56,7 @@ QWebEngineCookieStoreClientPrivate::QWebEngineCookieStoreClientPrivate(QWebEngin
 {
 }
 
-QWebEngineCookieStoreClientPrivate::~QWebEngineCookieStoreClientPrivate()
-{
-
-}
-
-void QWebEngineCookieStoreClientPrivate::processPendingUserCookies()
+void QWebEngineCookieStorePrivate::processPendingUserCookies()
 {
     Q_ASSERT(delegate);
     Q_ASSERT(delegate->hasCookieMonster());
@@ -94,7 +89,7 @@ void QWebEngineCookieStoreClientPrivate::processPendingUserCookies()
     m_pendingUserCookies.clear();
 }
 
-void QWebEngineCookieStoreClientPrivate::setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin)
+void QWebEngineCookieStorePrivate::setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin)
 {
     const quint64 currentCallbackId = callback ? m_nextCallbackId++ : static_cast<quint64>(CallbackDirectory::NoCallbackId);
 
@@ -109,7 +104,7 @@ void QWebEngineCookieStoreClientPrivate::setCookie(const QWebEngineCallback<bool
     delegate->setCookie(currentCallbackId, cookie, origin);
 }
 
-void QWebEngineCookieStoreClientPrivate::deleteCookie(const QNetworkCookie &cookie, const QUrl &url)
+void QWebEngineCookieStorePrivate::deleteCookie(const QNetworkCookie &cookie, const QUrl &url)
 {
     if (!delegate || !delegate->hasCookieMonster()) {
         m_pendingUserCookies.append(CookieData{ CallbackDirectory::DeleteCookieCallbackId, cookie, url });
@@ -119,7 +114,7 @@ void QWebEngineCookieStoreClientPrivate::deleteCookie(const QNetworkCookie &cook
     delegate->deleteCookie(cookie, url);
 }
 
-void QWebEngineCookieStoreClientPrivate::deleteSessionCookies()
+void QWebEngineCookieStorePrivate::deleteSessionCookies()
 {
     if (!delegate || !delegate->hasCookieMonster()) {
         m_deleteSessionCookiesPending = true;
@@ -129,7 +124,7 @@ void QWebEngineCookieStoreClientPrivate::deleteSessionCookies()
     delegate->deleteSessionCookies(CallbackDirectory::DeleteSessionCookiesCallbackId);
 }
 
-void QWebEngineCookieStoreClientPrivate::deleteAllCookies()
+void QWebEngineCookieStorePrivate::deleteAllCookies()
 {
     if (!delegate || !delegate->hasCookieMonster()) {
         m_deleteAllCookiesPending = true;
@@ -140,7 +135,7 @@ void QWebEngineCookieStoreClientPrivate::deleteAllCookies()
     delegate->deleteAllCookies(CallbackDirectory::DeleteAllCookiesCallbackId);
 }
 
-void QWebEngineCookieStoreClientPrivate::getAllCookies()
+void QWebEngineCookieStorePrivate::getAllCookies()
 {
     if (!delegate || !delegate->hasCookieMonster()) {
         m_getAllCookiesPending = true;
@@ -150,48 +145,48 @@ void QWebEngineCookieStoreClientPrivate::getAllCookies()
     delegate->getAllCookies(CallbackDirectory::GetAllCookiesCallbackId);
 }
 
-void QWebEngineCookieStoreClientPrivate::onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList)
+void QWebEngineCookieStorePrivate::onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList)
 {
     callbackDirectory.invoke(callbackId, cookieList);
 }
-void QWebEngineCookieStoreClientPrivate::onSetCallbackResult(qint64 callbackId, bool success)
+void QWebEngineCookieStorePrivate::onSetCallbackResult(qint64 callbackId, bool success)
 {
     callbackDirectory.invoke(callbackId, success);
 }
 
-void QWebEngineCookieStoreClientPrivate::onDeleteCallbackResult(qint64 callbackId, int numCookies)
+void QWebEngineCookieStorePrivate::onDeleteCallbackResult(qint64 callbackId, int numCookies)
 {
     callbackDirectory.invoke(callbackId, numCookies);
 }
 
-void QWebEngineCookieStoreClientPrivate::onCookieChanged(const QNetworkCookie &cookie, bool removed)
+void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie, bool removed)
 {
-    Q_Q(QWebEngineCookieStoreClient);
+    Q_Q(QWebEngineCookieStore);
     if (removed)
         Q_EMIT q->cookieRemoved(cookie);
     else
         Q_EMIT q->cookieAdded(cookie);
 }
 
-bool QWebEngineCookieStoreClientPrivate::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
+bool QWebEngineCookieStorePrivate::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
 {
     if (filterCallback) {
-        QWebEngineCookieStoreClient::FilterRequest request;
+        QWebEngineCookieStore::FilterRequest request;
         request.accepted = true;
         request.firstPartyUrl = firstPartyUrl;
         request.cookieLine = cookieLine;
         request.cookieSource = url;
-        callbackDirectory.invokeDirectly<QWebEngineCookieStoreClient::FilterRequest&>(filterCallback, request);
+        callbackDirectory.invokeDirectly<QWebEngineCookieStore::FilterRequest&>(filterCallback, request);
         return request.accepted;
     }
     return true;
 }
 
 /*!
-    \class QWebEngineCookieStoreClient
+    \class QWebEngineCookieStore
     \inmodule QtWebEngineCore
     \since 5.6
-    \brief The QWebEngineCookieStoreClient class provides access to Chromium's cookies.
+    \brief The QWebEngineCookieStore class provides access to Chromium's cookies.
 
     The class allows to access HTTP cookies of Chromium for a specific profile.
     It can be used to synchronize cookies of Chromium and the QNetworkAccessManager, as well as
@@ -203,54 +198,65 @@ bool QWebEngineCookieStoreClientPrivate::canSetCookie(const QUrl &firstPartyUrl,
 */
 
 /*!
-    \class QWebEngineCookieStoreClient::FilterRequest
+    \class QWebEngineCookieStore::FilterRequest
     \inmodule QtWebEngineCore
     \since 5.6
+    \brief The FilterRequest class specifies the properties of a cookie.
 
-    The structure specifies properties of a cookie, and whether it should accepted or not. It is
-    used as an argument to a filter installed via setCookieFilter().
+    The class specifies the properties of a cookie and determines whether the cookie should be
+    accepted. The class is used as an argument to a filter installed via setCookieFilter().
 */
 
 /*!
-    \variable QWebEngineCookieStoreClient::FilterRequest::accepted
-    Whether the cookie shall be accepted. The default is \c true.
-    \variable QWebEngineCookieStoreClient::FilterRequest::firstPartyUrl
-    URL of page that triggered the setting of the cookie.
-    \variable QWebEngineCookieStoreClient::FilterRequest::cookieLine
-    Content of the cookie.
-    \variable QWebEngineCookieStoreClient::FilterRequest::cookieSource
-    URL of site that sets the cookie.
+    \variable QWebEngineCookieStore::FilterRequest::accepted
+    \brief Whether the cookie shall be accepted.
+
+    The default is \c true.
 */
 
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::firstPartyUrl
+    \brief The URL of the page that triggered the setting of the cookie.
+*/
 
 /*!
-    \fn void QWebEngineCookieStoreClient::cookieAdded(const QNetworkCookie &cookie)
+    \variable QWebEngineCookieStore::FilterRequest::cookieLine
+    \brief The content of the cookie.
+*/
+
+/*!
+    \variable QWebEngineCookieStore::FilterRequest::cookieSource
+    \brief The URL of the site that sets the cookie.
+*/
+
+/*!
+    \fn void QWebEngineCookieStore::cookieAdded(const QNetworkCookie &cookie)
 
     This signal is emitted whenever a new \a cookie is added to the cookie store.
 */
 
 /*!
-    \fn void QWebEngineCookieStoreClient::cookieRemoved(const QNetworkCookie &cookie)
+    \fn void QWebEngineCookieStore::cookieRemoved(const QNetworkCookie &cookie)
 
     This signal is emitted whenever a \a cookie is deleted from the cookie store.
 */
 
 /*!
-    Creates a new QWebEngineCookieStoreClient object with \a parent.
+    Creates a new QWebEngineCookieStore object with \a parent.
 */
 
-QWebEngineCookieStoreClient::QWebEngineCookieStoreClient(QObject *parent)
+QWebEngineCookieStore::QWebEngineCookieStore(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineCookieStoreClientPrivate(this))
+    , d_ptr(new QWebEngineCookieStorePrivate(this))
 {
 
 }
 
 /*!
-    Destroys this QWebEngineCookieStoreClient object.
+    Destroys this QWebEngineCookieStore object.
 */
 
-QWebEngineCookieStoreClient::~QWebEngineCookieStoreClient()
+QWebEngineCookieStore::~QWebEngineCookieStore()
 {
 
 }
@@ -266,9 +272,9 @@ QWebEngineCookieStoreClient::~QWebEngineCookieStoreClient()
     \sa setCookie()
 */
 
-void QWebEngineCookieStoreClient::setCookieWithCallback(const QNetworkCookie &cookie, const QWebEngineCallback<bool> &resultCallback, const QUrl &origin)
+void QWebEngineCookieStore::setCookieWithCallback(const QNetworkCookie &cookie, const QWebEngineCallback<bool> &resultCallback, const QUrl &origin)
 {
-    Q_D(QWebEngineCookieStoreClient);
+    Q_D(QWebEngineCookieStore);
     d->setCookie(resultCallback, cookie, origin);
 }
 
@@ -281,7 +287,7 @@ void QWebEngineCookieStoreClient::setCookieWithCallback(const QNetworkCookie &co
     \sa setCookieWithCallback()
 */
 
-void QWebEngineCookieStoreClient::setCookie(const QNetworkCookie &cookie, const QUrl &origin)
+void QWebEngineCookieStore::setCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
     setCookieWithCallback(cookie, QWebEngineCallback<bool>(), origin);
 }
@@ -293,14 +299,14 @@ void QWebEngineCookieStoreClient::setCookie(const QNetworkCookie &cookie, const 
     The provided URL should also include the scheme.
 */
 
-void QWebEngineCookieStoreClient::deleteCookie(const QNetworkCookie &cookie, const QUrl &origin)
+void QWebEngineCookieStore::deleteCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
-    Q_D(QWebEngineCookieStoreClient);
+    Q_D(QWebEngineCookieStore);
     d->deleteCookie(cookie, origin);
 }
 
 /*!
-    \fn void QWebEngineCookieStoreClient::getAllCookies(FunctorOrLambda resultCallback)
+    \fn void QWebEngineCookieStore::getAllCookies(FunctorOrLambda resultCallback)
 
     Requests all the cookies in the cookie store. When the asynchronous operation finishes,
     \a resultCallback will be called with a QByteArray as the argument containing the cookies.
@@ -309,9 +315,9 @@ void QWebEngineCookieStoreClient::deleteCookie(const QNetworkCookie &cookie, con
     \sa deleteCookie()
 */
 
-void QWebEngineCookieStoreClient::getAllCookies(const QWebEngineCallback<const QByteArray&> &resultCallback)
+void QWebEngineCookieStore::getAllCookies(const QWebEngineCallback<const QByteArray&> &resultCallback)
 {
-    Q_D(QWebEngineCookieStoreClient);
+    Q_D(QWebEngineCookieStore);
     if (d->m_getAllCookiesPending) {
         d->callbackDirectory.invokeEmpty(resultCallback);
         return;
@@ -321,7 +327,7 @@ void QWebEngineCookieStoreClient::getAllCookies(const QWebEngineCallback<const Q
 }
 
 /*!
-    \fn void QWebEngineCookieStoreClient::deleteSessionCookiesWithCallback(FunctorOrLambda resultCallback)
+    \fn void QWebEngineCookieStore::deleteSessionCookiesWithCallback(FunctorOrLambda resultCallback)
 
     Deletes all the session cookies in the cookie store. Session cookies do not have an
     expiration date assigned to them.
@@ -329,9 +335,9 @@ void QWebEngineCookieStoreClient::getAllCookies(const QWebEngineCallback<const Q
     number of cookies deleted as the argument.
 */
 
-void QWebEngineCookieStoreClient::deleteSessionCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
+void QWebEngineCookieStore::deleteSessionCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
 {
-    Q_D(QWebEngineCookieStoreClient);
+    Q_D(QWebEngineCookieStore);
     if (d->m_deleteAllCookiesPending || d->m_deleteSessionCookiesPending) {
         d->callbackDirectory.invokeEmpty(resultCallback);
         return;
@@ -341,7 +347,7 @@ void QWebEngineCookieStoreClient::deleteSessionCookiesWithCallback(const QWebEng
 }
 
 /*!
-    \fn void QWebEngineCookieStoreClient::deleteAllCookiesWithCallback(FunctorOrLambda resultCallback)
+    \fn void QWebEngineCookieStore::deleteAllCookiesWithCallback(FunctorOrLambda resultCallback)
 
     Deletes all the cookies in the cookie store. When the asynchronous operation finishes,
     \a resultCallback will be called with the number of cookies deleted as the argument.
@@ -349,9 +355,9 @@ void QWebEngineCookieStoreClient::deleteSessionCookiesWithCallback(const QWebEng
     \sa deleteSessionCookiesWithCallback(), getAllCookies()
 */
 
-void QWebEngineCookieStoreClient::deleteAllCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
+void QWebEngineCookieStore::deleteAllCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
 {
-    Q_D(QWebEngineCookieStoreClient);
+    Q_D(QWebEngineCookieStore);
     if (d->m_deleteAllCookiesPending) {
         d->callbackDirectory.invokeEmpty(resultCallback);
         return;
@@ -366,7 +372,7 @@ void QWebEngineCookieStoreClient::deleteAllCookiesWithCallback(const QWebEngineC
     \sa deleteSessionCookiesWithCallback()
 */
 
-void QWebEngineCookieStoreClient::deleteSessionCookies()
+void QWebEngineCookieStore::deleteSessionCookies()
 {
     deleteSessionCookiesWithCallback(QWebEngineCallback<int>());
 }
@@ -377,13 +383,13 @@ void QWebEngineCookieStoreClient::deleteSessionCookies()
     \sa deleteAllCookiesWithCallback(), getAllCookies()
 */
 
-void QWebEngineCookieStoreClient::deleteAllCookies()
+void QWebEngineCookieStore::deleteAllCookies()
 {
     deleteAllCookiesWithCallback(QWebEngineCallback<int>());
 }
 
 /*!
-  \fn void QWebEngineCookieStoreClient::setCookieFilter(FunctorOrLambda filterCallback)
+  \fn void QWebEngineCookieStore::setCookieFilter(FunctorOrLambda filterCallback)
 
     Installs a cookie filter that can reject cookies before they are added to the cookie store.
     The \a filterCallback must be a lambda or functor taking FilterRequest structure. If the
@@ -394,9 +400,9 @@ void QWebEngineCookieStoreClient::deleteAllCookies()
 
     \sa deleteAllCookiesWithCallback(), getAllCookies()
 */
-void QWebEngineCookieStoreClient::setCookieFilter(const QWebEngineCallback<QWebEngineCookieStoreClient::FilterRequest&> &filter)
+void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> &filter)
 {
-    Q_D(QWebEngineCookieStoreClient);
+    Q_D(QWebEngineCookieStore);
     d->filterCallback = filter;
 }
 

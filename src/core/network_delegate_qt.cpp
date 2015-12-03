@@ -109,7 +109,8 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
                                                                                            , toQt(request->first_party_for_cookies())
                                                                                            , QByteArray::fromStdString(request->method()));
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
-        if (interceptor->interceptRequest(requestInfo)) {
+        interceptor->interceptRequest(requestInfo);
+        if (requestInfo.changed()) {
             int result = infoPrivate->shouldBlockRequest ? net::ERR_ABORTED : net::OK;
 
             if (qUrl != infoPrivate->url)

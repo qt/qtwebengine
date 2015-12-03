@@ -52,7 +52,7 @@ typedef QGuiApplication Application;
 #include <QtQml/QQmlContext>
 #include <QtQml/QQmlComponent>
 #include <QtWebEngine/qtwebengineglobal.h>
-#include <QtWebEngineCore/qwebenginecookiestoreclient.h>
+#include <QtWebEngineCore/qwebenginecookiestore.h>
 
 static QUrl startupUrl()
 {
@@ -93,12 +93,12 @@ int main(int argc, char **argv)
                       , QUrl());
     QObject *profile = component.create();
     const QMetaObject *rootMeta = rootObject->metaObject();
-    QWebEngineCookieStoreClient *client = 0;
-    QMetaObject::invokeMethod(profile, "cookieStoreClient", Q_RETURN_ARG(QWebEngineCookieStoreClient*, client));
+    QWebEngineCookieStore *client = 0;
+    QMetaObject::invokeMethod(profile, "cookieStore", Q_RETURN_ARG(QWebEngineCookieStore*, client));
     int index = rootMeta->indexOfProperty("thirdPartyCookiesEnabled");
     Q_ASSERT(index != -1);
     QMetaProperty thirdPartyCookiesProperty = rootMeta->property(index);
-    client->setCookieFilter([rootObject,&thirdPartyCookiesProperty](const QWebEngineCookieStoreClient::FilterRequest&){ return thirdPartyCookiesProperty.read(rootObject).toBool(); });
+    client->setCookieFilter([rootObject,&thirdPartyCookiesProperty](const QWebEngineCookieStore::FilterRequest&){ return thirdPartyCookiesProperty.read(rootObject).toBool(); });
 
     index = rootMeta->indexOfProperty("testProfile");
     Q_ASSERT(index != -1);

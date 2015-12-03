@@ -74,8 +74,8 @@
 #include "network_delegate_qt.h"
 #include "proxy_config_service_qt.h"
 #include "qrc_protocol_handler_qt.h"
-#include "qwebenginecookiestoreclient.h"
-#include "qwebenginecookiestoreclient_p.h"
+#include "qwebenginecookiestore.h"
+#include "qwebenginecookiestore_p.h"
 #include "type_conversion.h"
 
 namespace QtWebEngineCore {
@@ -204,7 +204,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     // Unset it first to get a chance to destroy and flush the old cookie store before before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
-    m_cookieDelegate->setClient(m_browserContext->cookieStoreClient());
+    m_cookieDelegate->setClient(m_browserContext->cookieStore());
 
     net::CookieStore* cookieStore = 0;
     switch (m_browserContext->persistentCookiesPolicy()) {

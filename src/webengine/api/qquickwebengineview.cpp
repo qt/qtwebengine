@@ -669,6 +669,18 @@ QAccessible::State QQuickWebEngineViewAccessible::state() const
 }
 #endif // QT_NO_ACCESSIBILITY
 
+class WebContentsAdapterOwner : public QObject
+{
+public:
+    typedef QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> AdapterPtr;
+    WebContentsAdapterOwner(const AdapterPtr &ptr)
+        : adapter(ptr)
+    {}
+
+private:
+    AdapterPtr adapter;
+};
+
 void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContents)
 {
     if (!webContents) {
@@ -692,6 +704,8 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
+    WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter);
+    adapterOwner->deleteLater();
     adapter = webContents;
     adapter->initialize(this);
 
@@ -875,8 +889,12 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         QUrl activeUrl = adapter->activeUrl();
+        QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
         adapter = 0;
         ensureContentsAdapter();
+        if (qmlWebChannel)
+            adapter->setWebChannel(qmlWebChannel);
+
         if (!explicitUrl.isValid() && activeUrl.isValid())
             adapter->load(activeUrl);
     }

@@ -101,12 +101,6 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
 */
 
 /*!
-    \fn QWebEngineUrlRequestInterceptor::~QWebEngineUrlRequestInterceptor()
-
-    Destroys this QWebEngineUrlRequestInterceptor object.
-*/
-
-/*!
     \fn bool QWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
 
     Reimplementing this virtual function and setting the interceptor on a profile makes
@@ -126,6 +120,7 @@ QWebEngineUrlRequestInfoPrivate::QWebEngineUrlRequestInfoPrivate(QWebEngineUrlRe
     , url(u)
     , firstPartyUrl(fpu)
     , method(m)
+    , changed(false)
 {
 }
 
@@ -241,6 +236,12 @@ QByteArray QWebEngineUrlRequestInfo::requestMethod() const
     return d->method;
 }
 
+bool QWebEngineUrlRequestInfo::changed() const
+{
+    Q_D(const QWebEngineUrlRequestInfo);
+    return d->changed;
+}
+
 /*!
     Redirects this request to \a url.
     It is only possible to redirect requests that do not have payload data, such as GET requests.
@@ -249,6 +250,7 @@ QByteArray QWebEngineUrlRequestInfo::requestMethod() const
 void QWebEngineUrlRequestInfo::redirect(const QUrl &url)
 {
     Q_D(QWebEngineUrlRequestInfo);
+    d->changed = true;
     d->url = url;
 }
 
@@ -261,16 +263,18 @@ void QWebEngineUrlRequestInfo::redirect(const QUrl &url)
 void QWebEngineUrlRequestInfo::block(bool shouldBlock)
 {
     Q_D(QWebEngineUrlRequestInfo);
+    d->changed = true;
     d->shouldBlockRequest = shouldBlock;
 }
 
 /*!
-    Sets an extra request header for this request with \a name and \a value.
+    Sets the request header \a name to \a value for this request.
 */
 
-void QWebEngineUrlRequestInfo::setExtraHeader(const QByteArray &name, const QByteArray &value)
+void QWebEngineUrlRequestInfo::setHttpHeader(const QByteArray &name, const QByteArray &value)
 {
     Q_D(QWebEngineUrlRequestInfo);
+    d->changed = true;
     d->extraHeaders.insert(name, value);
 }
 

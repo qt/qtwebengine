@@ -83,6 +83,7 @@ contains(QT_ARCH, "arm") {
 
 contains(QT_ARCH, "x86_64"): GYP_CONFIG += target_arch=x64
 contains(QT_ARCH, "i386"): GYP_CONFIG += target_arch=ia32
+contains(QT_ARCH, "arm64"): GYP_CONFIG += target_arch=arm64
 
 contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_codecs=1 ffmpeg_branding=Chrome
 

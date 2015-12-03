@@ -53,12 +53,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QWebEngineUrlSchemeHandler::destroyed(QWebEngineUrlSchemeHandler *handler)
-
-    This signal is emitted when the custom URL scheme handler \a handler is deleted.
-*/
-
-/*!
     Constructs a new URL scheme handler.
 
     The handler is created with the parent \a parent.
@@ -74,7 +68,7 @@ QWebEngineUrlSchemeHandler::QWebEngineUrlSchemeHandler(QObject *parent)
 */
 QWebEngineUrlSchemeHandler::~QWebEngineUrlSchemeHandler()
 {
-    Q_EMIT destroyed(this);
+    Q_EMIT _q_destroyedUrlSchemeHandler(this);
 }
 
 /*!

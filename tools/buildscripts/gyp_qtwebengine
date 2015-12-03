@@ -132,6 +132,14 @@ if __name__ == '__main__':
   # list.
   args.append('--no-circular-check')
 
+  # libtool on Mac warns about duplicate basenames in static libraries, so
+  # they're disallowed in general by gyp. We are lax on this point, so disable
+  # this check other than on Mac. GN does not use static libraries as heavily,
+  # so over time this restriction will mostly go away anyway, even on Mac.
+  # https://code.google.com/p/gyp/issues/detail?id=384
+  if sys.platform != 'darwin':
+    args.append('--no-duplicate-basename-check')
+
   args.extend(['-D', 'webkit_src_dir=' + chrome_src + '/third_party/WebKit'])
   # the top_level source directory is the first common ancestor of our module and the chromium source tree for the build to be sane.
   # commonprefix works on a character basis, so it might return a phony common prefix (not the common parent directory we expect),

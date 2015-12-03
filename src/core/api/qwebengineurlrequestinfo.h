@@ -88,10 +88,11 @@ public:
     QUrl requestUrl() const;
     QUrl firstPartyUrl() const;
     QByteArray requestMethod() const;
+    bool changed() const;
 
     void block(bool shouldBlock);
     void redirect(const QUrl &url);
-    void setExtraHeader(const QByteArray &name, const QByteArray &value);
+    void setHttpHeader(const QByteArray &name, const QByteArray &value);
 
 private:
     friend class QtWebEngineCore::NetworkDelegateQt;
