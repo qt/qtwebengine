@@ -236,6 +236,9 @@ QByteArray QWebEngineUrlRequestInfo::requestMethod() const
     return d->method;
 }
 
+/*!
+    \internal
+*/
 bool QWebEngineUrlRequestInfo::changed() const
 {
     Q_D(const QWebEngineUrlRequestInfo);
