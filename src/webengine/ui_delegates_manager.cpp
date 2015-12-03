@@ -210,7 +210,7 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
         return 0;
     QQmlContext *context = qmlContext(m_view);
     QObject *menu = menuComponent->beginCreate(context);
-    // Useful when not using Qt Quick Controls' Menu
+    // set visual parent for non-Window-based menus
     if (QQuickItem* item = qobject_cast<QQuickItem*>(menu))
         item->setParentItem(m_view);
 
@@ -286,6 +286,9 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
 
     QQmlContext *context = qmlContext(m_view);
     QObject *dialog = dialogComponent->beginCreate(context);
+    // set visual parent for non-Window-based dialogs
+    if (QQuickItem* item = qobject_cast<QQuickItem*>(dialog))
+        item->setParentItem(m_view);
     dialog->setParent(m_view);
     QQmlProperty textProp(dialog, QStringLiteral("text"));
     textProp.write(dialogController->message());
@@ -334,6 +337,9 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
 
     QQmlContext *context = qmlContext(m_view);
     QObject *authenticationDialog = authenticationDialogComponent->beginCreate(context);
+    // set visual parent for non-Window-based dialogs
+    if (QQuickItem* item = qobject_cast<QQuickItem*>(authenticationDialog))
+        item->setParentItem(m_view);
     authenticationDialog->setParent(m_view);
 
     QString introMessage;
