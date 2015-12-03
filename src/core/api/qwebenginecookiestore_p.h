@@ -75,7 +75,6 @@ class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStorePrivate : public QObjectPri
     friend class QTypeInfo<CookieData>;
 public:
     QtWebEngineCore::CallbackDirectory callbackDirectory;
-    QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> filterCallback;
     QVector<CookieData> m_pendingUserCookies;
     quint64 m_nextCallbackId;
     bool m_deleteSessionCookiesPending;
@@ -93,8 +92,6 @@ public:
     void deleteSessionCookies();
     void deleteAllCookies();
     void getAllCookies();
-
-    bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
 
     void onGetAllCallbackResult(qint64 callbackId, const QByteArray &cookieList);
     void onSetCallbackResult(qint64 callbackId, bool success);

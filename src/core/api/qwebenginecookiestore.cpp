@@ -175,20 +175,6 @@ void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie,
         Q_EMIT q->cookieAdded(cookie);
 }
 
-bool QWebEngineCookieStorePrivate::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
-{
-    if (filterCallback) {
-        QWebEngineCookieStore::FilterRequest request;
-        request.accepted = true;
-        request.firstPartyUrl = firstPartyUrl;
-        request.cookieLine = cookieLine;
-        request.cookieSource = url;
-        callbackDirectory.invokeDirectly<QWebEngineCookieStore::FilterRequest&>(filterCallback, request);
-        return request.accepted;
-    }
-    return true;
-}
-
 /*!
     \class QWebEngineCookieStore
     \inmodule QtWebEngineCore
@@ -348,24 +334,6 @@ void QWebEngineCookieStore::deleteAllCookies()
         return;
     d->callbackDirectory.registerCallback(CallbackDirectory::DeleteAllCookiesCallbackId, QWebEngineCallback<int>());
     d->deleteAllCookies();
-}
-
-/*!
-  \fn void QWebEngineCookieStore::setCookieFilter(FunctorOrLambda filterCallback)
-
-    Installs a cookie filter that can reject cookies before they are added to the cookie store.
-    The \a filterCallback must be a lambda or functor taking FilterRequest structure. If the
-    cookie is to be rejected, the filter can set FilterRequest::accepted to \c false.
-
-    The callback should not be used to execute heavy tasks since it is running on the
-    IO thread and therefore blocks the Chromium networking.
-
-    \sa deleteAllCookies(), loadAllCookies()
-*/
-void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> &filter)
-{
-    Q_D(QWebEngineCookieStore);
-    d->filterCallback = filter;
 }
 
 QT_END_NAMESPACE

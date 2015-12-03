@@ -57,20 +57,8 @@ class QWEBENGINE_EXPORT QWebEngineCookieStore : public QObject {
     Q_OBJECT
 
 public:
-    struct FilterRequest {
-        bool accepted;
-
-        QUrl firstPartyUrl;
-        QByteArray cookieLine;
-        QUrl cookieSource;
-    };
     virtual ~QWebEngineCookieStore();
 
-#ifdef Q_QDOC
-    void setCookieFilter(FunctorOrLambda filterCallback);
-#else
-    void setCookieFilter(const QWebEngineCallback<FilterRequest&> &filterCallback);
-#endif
     void setCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &origin = QUrl());
     void deleteSessionCookies();
