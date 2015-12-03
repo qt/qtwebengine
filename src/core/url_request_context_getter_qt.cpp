@@ -126,21 +126,28 @@ void URLRequestContextGetterQt::updateStorageSettings()
     }
 }
 
+void URLRequestContextGetterQt::cancelAllUrlRequests()
+{
+    Q_ASSERT(m_urlRequestContext);
+
+    std::set<const net::URLRequest*>* url_requests = m_urlRequestContext->url_requests();
+    std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
+    std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
+    for ( ; it != end; ++it) {
+        net::URLRequest* request = const_cast<net::URLRequest*>(*it);
+        if (request)
+            request->Cancel();
+    }
+
+}
+
 void URLRequestContextGetterQt::generateStorage()
 {
     Q_ASSERT(m_urlRequestContext);
 
-    if (m_storage) {
-        // We must stop all requests before deleting their backends.
-        std::set<const net::URLRequest*>* url_requests = m_urlRequestContext->url_requests();
-        std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
-        std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
-        for ( ; it != end; ++it) {
-            net::URLRequest* request = const_cast<net::URLRequest*>(*it);
-            if (request)
-                request->Cancel();
-        }
-    }
+    // We must stop all requests before deleting their backends.
+    if (m_storage)
+        cancelAllUrlRequests();
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
 
@@ -260,11 +267,56 @@ void URLRequestContextGetterQt::updateHttpCache()
     }
 }
 
+static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first, const net::HttpNetworkSession::Params &second)
+{
+    if (first.transport_security_state != second.transport_security_state)
+        return false;
+    if (first.cert_verifier != second.cert_verifier)
+        return false;
+    if (first.channel_id_service != second.channel_id_service)
+        return false;
+    if (first.proxy_service != second.proxy_service)
+        return false;
+    if (first.ssl_config_service != second.ssl_config_service)
+        return false;
+    if (first.http_auth_handler_factory != second.http_auth_handler_factory)
+        return false;
+    if (first.network_delegate != second.network_delegate)
+        return false;
+    if (first.http_server_properties.get() != second.http_server_properties.get())
+        return false;
+    if (first.ignore_certificate_errors != second.ignore_certificate_errors)
+        return false;
+    if (first.host_resolver != second.host_resolver)
+        return false;
+
+    return true;
+}
+
+net::HttpNetworkSession::Params URLRequestContextGetterQt::generateNetworkSessionParams()
+{
+    Q_ASSERT(m_urlRequestContext);
+
+    net::HttpNetworkSession::Params network_session_params;
+
+    network_session_params.transport_security_state     = m_urlRequestContext->transport_security_state();
+    network_session_params.cert_verifier                = m_urlRequestContext->cert_verifier();
+    network_session_params.channel_id_service           = m_urlRequestContext->channel_id_service();
+    network_session_params.proxy_service                = m_urlRequestContext->proxy_service();
+    network_session_params.ssl_config_service           = m_urlRequestContext->ssl_config_service();
+    network_session_params.http_auth_handler_factory    = m_urlRequestContext->http_auth_handler_factory();
+    network_session_params.network_delegate             = m_networkDelegate.get();
+    network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
+    network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
+    network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
+
+    return network_session_params;
+}
+
 void URLRequestContextGetterQt::generateHttpCache()
 {
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
-    m_updateHttpCache = 0;
 
     net::HttpCache::DefaultBackend* main_backend = 0;
     switch (m_browserContext->httpCacheType()) {
@@ -290,19 +342,21 @@ void URLRequestContextGetterQt::generateHttpCache()
         break;
     }
 
-    net::HttpNetworkSession::Params network_session_params;
-    network_session_params.transport_security_state     = m_urlRequestContext->transport_security_state();
-    network_session_params.cert_verifier                = m_urlRequestContext->cert_verifier();
-    network_session_params.channel_id_service           = m_urlRequestContext->channel_id_service();
-    network_session_params.proxy_service                = m_urlRequestContext->proxy_service();
-    network_session_params.ssl_config_service           = m_urlRequestContext->ssl_config_service();
-    network_session_params.http_auth_handler_factory    = m_urlRequestContext->http_auth_handler_factory();
-    network_session_params.network_delegate             = m_networkDelegate.get();
-    network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
-    network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
-    network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
+    net::HttpCache *cache = 0;
+    net::HttpNetworkSession *network_session = 0;
+    net::HttpNetworkSession::Params network_session_params = generateNetworkSessionParams();
 
-    m_storage->set_http_transaction_factory(new net::HttpCache(network_session_params, main_backend));
+    if (m_urlRequestContext->http_transaction_factory())
+        network_session = m_urlRequestContext->http_transaction_factory()->GetSession();
+
+    if (!network_session || !doNetworkSessionParamsMatch(network_session_params, network_session->params())) {
+        cancelAllUrlRequests();
+        cache = new net::HttpCache(network_session_params, main_backend);
+    } else
+        cache = new net::HttpCache(network_session, main_backend);
+
+    m_storage->set_http_transaction_factory(cache);
+    m_updateHttpCache = 0;
 }
 
 void URLRequestContextGetterQt::generateJobFactory()
