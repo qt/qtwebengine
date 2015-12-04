@@ -268,10 +268,15 @@ void RenderWidgetHostViewQtDelegateQuick::itemChange(ItemChange change, const It
         if (value.window) {
             m_windowConnections.append(connect(value.window, SIGNAL(xChanged(int)), SLOT(onWindowPosChanged())));
             m_windowConnections.append(connect(value.window, SIGNAL(yChanged(int)), SLOT(onWindowPosChanged())));
+            if (!m_isPopup)
+                m_windowConnections.append(connect(value.window, SIGNAL(closing(QQuickCloseEvent *)), SLOT(onHide())));
         }
 
         if (m_initialized)
             m_client->windowChanged();
+    } else if (change == QQuickItem::ItemVisibleHasChanged) {
+        if (!m_isPopup && !value.boolValue)
+            onHide();
     }
 }
 
@@ -283,6 +288,12 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
 void RenderWidgetHostViewQtDelegateQuick::onWindowPosChanged()
 {
     m_client->windowBoundsChanged();
+}
+
+void RenderWidgetHostViewQtDelegateQuick::onHide()
+{
+    QFocusEvent event(QEvent::FocusOut, Qt::OtherFocusReason);
+    m_client->forwardEvent(&event);
 }
 
 } // namespace QtWebEngineCore
