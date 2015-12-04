@@ -461,6 +461,36 @@ int TabWidget::webViewIndex(WebView *webView) const
     return index;
 }
 
+void TabWidget::setupPage(QWebEnginePage* page)
+{
+    connect(page, SIGNAL(windowCloseRequested()),
+            this, SLOT(windowCloseRequested()));
+    connect(page, SIGNAL(geometryChangeRequested(QRect)),
+            this, SIGNAL(geometryChangeRequested(QRect)));
+#if defined(QWEBENGINEPAGE_PRINTREQUESTED)
+    connect(page, SIGNAL(printRequested(QWebEngineFrame*)),
+            this, SIGNAL(printRequested(QWebEngineFrame*)));
+#endif
+#if defined(QWEBENGINEPAGE_MENUBARVISIBILITYCHANGEREQUESTED)
+    connect(page, SIGNAL(menuBarVisibilityChangeRequested(bool)),
+            this, SIGNAL(menuBarVisibilityChangeRequested(bool)));
+#endif
+#if defined(QWEBENGINEPAGE_STATUSBARVISIBILITYCHANGEREQUESTED)
+    connect(page, SIGNAL(statusBarVisibilityChangeRequested(bool)),
+            this, SIGNAL(statusBarVisibilityChangeRequested(bool)));
+#endif
+#if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
+    connect(page, SIGNAL(toolBarVisibilityChangeRequested(bool)),
+            this, SIGNAL(toolBarVisibilityChangeRequested(bool)));
+#endif
+
+    // webview actions
+    for (int i = 0; i < m_actions.count(); ++i) {
+        WebActionMapper *mapper = m_actions[i];
+        mapper->addChild(page->action(mapper->webAction()));
+    }
+}
+
 WebView *TabWidget::newTab(bool makeCurrent)
 {
     // line edit
@@ -508,35 +538,13 @@ WebView *TabWidget::newTab(bool makeCurrent)
             this, SLOT(webViewTitleChanged(QString)));
     connect(webView, SIGNAL(urlChanged(QUrl)),
             this, SLOT(webViewUrlChanged(QUrl)));
-    connect(webView->page(), SIGNAL(windowCloseRequested()),
-            this, SLOT(windowCloseRequested()));
-    connect(webView->page(), SIGNAL(geometryChangeRequested(QRect)),
-            this, SIGNAL(geometryChangeRequested(QRect)));
-#if defined(QWEBENGINEPAGE_PRINTREQUESTED)
-    connect(webView->page(), SIGNAL(printRequested(QWebEngineFrame*)),
-            this, SIGNAL(printRequested(QWebEngineFrame*)));
-#endif
-#if defined(QWEBENGINEPAGE_MENUBARVISIBILITYCHANGEREQUESTED)
-    connect(webView->page(), SIGNAL(menuBarVisibilityChangeRequested(bool)),
-            this, SIGNAL(menuBarVisibilityChangeRequested(bool)));
-#endif
-#if defined(QWEBENGINEPAGE_STATUSBARVISIBILITYCHANGEREQUESTED)
-    connect(webView->page(), SIGNAL(statusBarVisibilityChangeRequested(bool)),
-            this, SIGNAL(statusBarVisibilityChangeRequested(bool)));
-#endif
-#if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
-    connect(webView->page(), SIGNAL(toolBarVisibilityChangeRequested(bool)),
-            this, SIGNAL(toolBarVisibilityChangeRequested(bool)));
-#endif
+
+
     addTab(webView, tr("(Untitled)"));
     if (makeCurrent)
         setCurrentWidget(webView);
 
-    // webview actions
-    for (int i = 0; i < m_actions.count(); ++i) {
-        WebActionMapper *mapper = m_actions[i];
-        mapper->addChild(webView->page()->action(mapper->webAction()));
-    }
+    setupPage(webView->page());
 
     if (count() == 1)
         currentChanged(currentIndex());
@@ -642,6 +650,7 @@ void TabWidget::setProfile(QWebEngineProfile *profile)
         QWidget *tabWidget = widget(i);
         if (WebView *tab = qobject_cast<WebView*>(tabWidget)) {
             WebPage* webPage = new WebPage(m_profile, tab);
+            setupPage(webPage);
             webPage->load(tab->page()->url());
             tab->setPage(webPage);
         }

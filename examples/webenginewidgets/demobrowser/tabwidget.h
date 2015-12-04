@@ -220,6 +220,8 @@ private slots:
     void fullScreenRequested(QWebEngineFullScreenRequest request);
 
 private:
+    void setupPage(QWebEnginePage* page);
+
     QAction *m_recentlyClosedTabsAction;
     QAction *m_newTabAction;
     QAction *m_closeTabAction;
