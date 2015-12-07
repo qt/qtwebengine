@@ -88,6 +88,14 @@ void QWebEngineCookieStorePrivate::processPendingUserCookies()
     m_pendingUserCookies.clear();
 }
 
+void QWebEngineCookieStorePrivate::rejectPendingUserCookies()
+{
+    m_getAllCookiesPending = false;
+    m_deleteAllCookiesPending = false;
+    m_deleteSessionCookiesPending = false;
+    m_pendingUserCookies.clear();
+}
+
 void QWebEngineCookieStorePrivate::setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin)
 {
     const quint64 currentCallbackId = callback ? m_nextCallbackId++ : static_cast<quint64>(CallbackDirectory::NoCallbackId);

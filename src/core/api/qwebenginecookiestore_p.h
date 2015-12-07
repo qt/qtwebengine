@@ -87,6 +87,7 @@ public:
     QWebEngineCookieStorePrivate();
 
     void processPendingUserCookies();
+    void rejectPendingUserCookies();
     void setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin);
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &url);
     void deleteSessionCookies();

@@ -139,10 +139,18 @@ void CookieMonsterDelegateQt::deleteAllCookies(quint64 callbackId)
 
 void CookieMonsterDelegateQt::setCookieMonster(net::CookieMonster* monster)
 {
+    if (!monster && !m_cookieMonster)
+        return;
+
     m_cookieMonster = monster;
 
-    if (m_client)
+    if (!m_client)
+        return;
+
+    if (monster)
         m_client->d_func()->processPendingUserCookies();
+    else
+        m_client->d_func()->rejectPendingUserCookies();
 }
 
 void CookieMonsterDelegateQt::setClient(QWebEngineCookieStore *client)

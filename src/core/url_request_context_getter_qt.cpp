@@ -210,7 +210,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     Q_ASSERT(m_storage);
     m_updateCookieStore = 0;
 
-    // Unset it first to get a chance to destroy and flush the old cookie store before before opening a new on possibly the same file.
+    // Unset it first to get a chance to destroy and flush the old cookie store before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
     m_cookieDelegate->setClient(m_browserContext->cookieStore());
