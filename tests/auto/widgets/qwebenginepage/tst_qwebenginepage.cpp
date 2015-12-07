@@ -3749,8 +3749,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     });
 
     QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
-    QTest::qWait(100);
-    page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(true));
+    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
     page->runJavaScript("document.webkitExitFullscreen()", JavaScriptCallbackUndefined());
     QVERIFY(watcher.wait());
 
@@ -4042,7 +4041,7 @@ void tst_QWebEnginePage::setHtmlWithImageResource()
     QWebEnginePage page;
 
     page.setHtml(html, QUrl(QLatin1String("file:///path/to/file")));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
@@ -4051,7 +4050,7 @@ void tst_QWebEnginePage::setHtmlWithImageResource()
     // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
 
     page.setHtml(html);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 0);
@@ -4113,7 +4112,7 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(spy.count(), 1);
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
@@ -5072,7 +5071,7 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     URLSetter setter(m_page, signal, type, urlForSetter);
 
     m_page->load(url);
-    waitForSignal(&setter, SIGNAL(finished()), 200);
+    waitForSignal(&setter, SIGNAL(finished()));
     QCOMPARE(m_page->url(), urlForSetter);
 }
 
