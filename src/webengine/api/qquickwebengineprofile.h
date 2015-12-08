@@ -54,6 +54,7 @@ class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
 class QQuickWebEngineSettings;
 class QWebEngineCookieStore;
+class QWebEngineUrlRequestInterceptor;
 
 class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_OBJECT
@@ -110,9 +111,11 @@ public:
     QString httpAcceptLanguage() const;
     void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
 
-    static QQuickWebEngineProfile *defaultProfile();
-
     QWebEngineCookieStore *cookieStore() const;
+
+    void setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor);
+
+    static QQuickWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:
     void storageNameChanged();

@@ -588,6 +588,19 @@ QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
     return d->browserContext()->cookieStore();
 }
 
+/*!
+    Registers a request interceptor singleton \a interceptor to intercept URL requests.
+
+    The profile does not take ownership of the pointer.
+
+    \sa QWebEngineUrlRequestInterceptor
+*/
+void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    Q_D(QQuickWebEngineProfile);
+    d->browserContext()->setRequestInterceptor(interceptor);
+}
+
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 {
     const Q_D(QQuickWebEngineProfile);
