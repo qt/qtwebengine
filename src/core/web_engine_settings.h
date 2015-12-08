@@ -140,9 +140,9 @@ private:
     WebEngineSettings *parentSettings;
     QSet<WebEngineSettings *> childSettings;
 
-    static QHash<Attribute, bool> m_defaultAttributes;
-    static QHash<FontFamily, QString> m_defaultFontFamilies;
-    static QHash<FontSize, int> m_defaultFontSizes;
+    static QHash<Attribute, bool> s_defaultAttributes;
+    static QHash<FontFamily, QString> s_defaultFontFamilies;
+    static QHash<FontSize, int> s_defaultFontSizes;
 
     friend class BatchTimer;
     friend class WebContentsAdapter;
