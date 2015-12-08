@@ -215,7 +215,6 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         s_defaultAttributes.insert(SpatialNavigationEnabled, false);
         s_defaultAttributes.insert(LocalContentCanAccessFileUrls, true);
         s_defaultAttributes.insert(HyperlinkAuditingEnabled, false);
-        s_defaultAttributes.insert(ScrollAnimatorEnabled, false);
         s_defaultAttributes.insert(ErrorPageEnabled, true);
         s_defaultAttributes.insert(PluginsEnabled, false);
         s_defaultAttributes.insert(FullScreenSupportEnabled, false);
@@ -225,11 +224,13 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         // But first we must ensure the WebContext has been initialized
         QtWebEngineCore::WebEngineContext::current();
         base::CommandLine* commandLine = base::CommandLine::ForCurrentProcess();
+        bool smoothScrolling = commandLine->HasSwitch(switches::kEnableSmoothScrolling);
         bool webGL = content::GpuProcessHost::gpu_enabled() &&
                 !commandLine->HasSwitch(switches::kDisable3DAPIs) &&
                 !commandLine->HasSwitch(switches::kDisableExperimentalWebGL);
         bool accelerated2dCanvas = content::GpuProcessHost::gpu_enabled() &&
                 !commandLine->HasSwitch(switches::kDisableAccelerated2dCanvas);
+        s_defaultAttributes.insert(ScrollAnimatorEnabled, smoothScrolling);
         s_defaultAttributes.insert(WebGLEnabled, webGL);
         s_defaultAttributes.insert(Accelerated2dCanvasEnabled, accelerated2dCanvas);
     }
