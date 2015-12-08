@@ -238,7 +238,20 @@ WebEngineContext::WebEngineContext()
 
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
-    parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+
+    // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
+    bool disable_sandbox = qEnvironmentVariableIsSet("QTWEBENGINE_DISABLE_SANDBOX");
+    if (!disable_sandbox) {
+#if defined(Q_OS_WIN)
+        parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+#elif defined(Q_OS_LINUX)
+        parsedCommandLine->AppendSwitch(switches::kDisableSetuidSandbox);
+#endif
+    } else {
+        parsedCommandLine->AppendSwitch(switches::kNoSandbox);
+        qInfo() << "Sandboxing disabled by user.";
+    }
+
     parsedCommandLine->AppendSwitch(switches::kEnableThreadedCompositing);
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
     // These are currently only default on OS X, and we don't support them:
