@@ -43,7 +43,8 @@ public:
         SerifFont,
         SansSerifFont,
         CursiveFont,
-        FantasyFont
+        FantasyFont,
+        PictographFont
     };
     enum WebAttribute {
         AutoLoadImages,

@@ -86,7 +86,8 @@ public:
         SerifFont,
         SansSerifFont,
         CursiveFont,
-        FantasyFont
+        FantasyFont,
+        PictographFont
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

@@ -242,6 +242,7 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         defaultFont.setStyleHint(QFont::Serif);
         s_defaultFontFamilies.insert(StandardFont, defaultFont.defaultFamily());
         s_defaultFontFamilies.insert(SerifFont, defaultFont.defaultFamily());
+        s_defaultFontFamilies.insert(PictographFont, defaultFont.defaultFamily());
 
         defaultFont.setStyleHint(QFont::Fantasy);
         s_defaultFontFamilies.insert(FantasyFont, defaultFont.defaultFamily());
@@ -315,8 +316,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->sans_serif_font_family_map[content::kCommonScript] = toString16(fontFamily(SansSerifFont));
     prefs->cursive_font_family_map[content::kCommonScript] = toString16(fontFamily(CursiveFont));
     prefs->fantasy_font_family_map[content::kCommonScript] = toString16(fontFamily(FantasyFont));
-    // FIXME: add pictograph?
-    //    prefs.pictograph_font_family_map[content::kCommonScript] = toString16(fontFamily());
+    prefs->pictograph_font_family_map[content::kCommonScript] = toString16(fontFamily(PictographFont));
     prefs->default_font_size = fontSize(DefaultFontSize);
     prefs->default_fixed_font_size = fontSize(DefaultFixedFontSize);
     prefs->minimum_font_size = fontSize(MinimumFontSize);

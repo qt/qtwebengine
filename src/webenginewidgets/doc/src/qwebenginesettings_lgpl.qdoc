@@ -66,6 +66,8 @@
     \value SansSerifFont
     \value CursiveFont
     \value FantasyFont
+    \value PictographFont
+           (added in Qt 5.7)
 */
 
 /*!

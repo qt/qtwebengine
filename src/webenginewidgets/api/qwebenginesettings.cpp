@@ -123,6 +123,7 @@ ASSERT_ENUMS_MATCH(WebEngineSettings::SerifFont, QWebEngineSettings::SerifFont)
 ASSERT_ENUMS_MATCH(WebEngineSettings::SansSerifFont, QWebEngineSettings::SansSerifFont)
 ASSERT_ENUMS_MATCH(WebEngineSettings::CursiveFont, QWebEngineSettings::CursiveFont)
 ASSERT_ENUMS_MATCH(WebEngineSettings::FantasyFont, QWebEngineSettings::FantasyFont)
+ASSERT_ENUMS_MATCH(WebEngineSettings::PictographFont, QWebEngineSettings::PictographFont)
 
 void QWebEngineSettings::setFontFamily(QWebEngineSettings::FontFamily which, const QString &family)
 {
