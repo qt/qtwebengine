@@ -45,6 +45,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"
+#include "net/http/http_network_session.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/proxy/dhcp_proxy_script_fetcher_factory.h"
@@ -86,6 +87,8 @@ private:
     void generateHttpCache();
     void generateUserAgent();
     void generateJobFactory();
+    void cancelAllUrlRequests();
+    net::HttpNetworkSession::Params generateNetworkSessionParams();
 
     bool m_ignoreCertificateErrors;
     QAtomicInt m_updateCookieStore;
