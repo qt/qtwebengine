@@ -76,6 +76,7 @@ public:
     void updateUserAgent();
     void updateCookieStore();
     void updateHttpCache();
+    void clearHttpCache();
 
 private:
     virtual ~URLRequestContextGetterQt();
@@ -86,6 +87,7 @@ private:
     void generateHttpCache();
     void generateUserAgent();
     void generateJobFactory();
+    void clearCurrentCacheBackend();
 
     bool m_ignoreCertificateErrors;
     QAtomicInt m_updateCookieStore;

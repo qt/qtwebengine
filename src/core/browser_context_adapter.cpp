@@ -423,4 +423,10 @@ void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLangu
     m_httpAcceptLanguage = httpAcceptLanguage;
 }
 
+void BrowserContextAdapter::clearHttpCache()
+{
+    if (m_browserContext->url_request_getter_.get())
+        m_browserContext->url_request_getter_->clearHttpCache();
+}
+
 } // namespace QtWebEngineCore

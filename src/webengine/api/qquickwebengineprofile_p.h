@@ -123,6 +123,7 @@ public:
     static QQuickWebEngineProfile *defaultProfile();
 
     Q_REVISION(1) Q_INVOKABLE QWebEngineCookieStore *cookieStore() const;
+    Q_REVISION(2) Q_INVOKABLE void clearHttpCache();
 
 signals:
     void storageNameChanged();

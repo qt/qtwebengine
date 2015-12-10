@@ -115,6 +115,8 @@ public:
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     void removeAllUrlSchemeHandlers();
 
+    void clearHttpCache();
+
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:

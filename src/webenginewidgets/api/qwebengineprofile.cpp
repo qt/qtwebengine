@@ -629,4 +629,15 @@ void QWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *ob
     removeUrlSchemeHandler(obj);
 }
 
+/*!
+    \since 5.7
+
+    Removes the profile's cache entries.
+*/
+void QWebEngineProfile::clearHttpCache()
+{
+    Q_D(QWebEngineProfile);
+    d->browserContext()->clearHttpCache();
+}
+
 QT_END_NAMESPACE

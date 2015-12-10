@@ -436,6 +436,20 @@ QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
     return d->browserContext()->cookieStore();
 }
 
+/*!
+    \qmlmethod void WebEngineProfile::clearHttpCache()
+    \since QtWebEngine 1.3
+
+    Removes the profile's cache entries.
+
+    \sa WebEngineProfile::cachePath
+*/
+void QQuickWebEngineProfile::clearHttpCache()
+{
+    Q_D(QQuickWebEngineProfile);
+    d->browserContext()->clearHttpCache();
+}
+
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 {
     const Q_D(QQuickWebEngineProfile);

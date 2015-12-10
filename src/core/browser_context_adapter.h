@@ -157,6 +157,8 @@ public:
     QString httpAcceptLanguage() const;
     void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
 
+    void clearHttpCache();
+
 private:
     QString m_name;
     bool m_offTheRecord;
