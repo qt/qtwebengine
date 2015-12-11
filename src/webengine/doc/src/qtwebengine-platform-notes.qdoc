@@ -50,11 +50,31 @@
         \li OS X: Xcode version 5.1 or later
     \endlist
 
-    \section1 Adobe Flash Player Plugin Support
+    \section1 Pepper Plugin API Support
 
-    Qt WebEngine supports the Adobe Flash player plugin that is a Pepper Plugin API (PPAPI)
-    plugin. The plugin must be installed in one of the following locations, depending on the
-    platform:
+    Qt WebEngine supports loading Pepper Plugin API (PPAPI) plugins. The plugins must be loaded
+    manually using the Chromium command line syntax with the \c --register-pepper-plugins argument.
+    The argument value is a list of entries, separated by commas, that contain the file path and
+    one or several MIME types, separated by semicolons:
+
+    \code
+    <file-path-plugin1>;<mime-type-plugin1>,<file-path-plugin2>;<mime-type1-plugin2>;<mime-type2-plugin2>
+    \endcode
+
+    For example:
+
+    \code
+    --register-pepper-plugins="libppapi_example.so;application/x-ppapi-example"
+    \endcode
+
+    The MIME type is important because it determines which embeds the plugin is used for.
+
+    This process has been automated for the Adobe Flash Player Plugin.
+
+    \section2 Adobe Flash Player Plugin Support
+
+    The Adobe Flash player plugin can be loaded automatically if it is installed in one of the
+    following locations, depending on the platform:
 
     \list
         \li Windows
