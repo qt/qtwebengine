@@ -601,6 +601,91 @@ void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestIntercept
     d->browserContext()->setRequestInterceptor(interceptor);
 }
 
+/*!
+    Returns the custom URL scheme handler register for the URL scheme \a scheme.
+*/
+const QWebEngineUrlSchemeHandler *QQuickWebEngineProfile::urlSchemeHandler(const QByteArray &scheme) const
+{
+    const Q_D(QQuickWebEngineProfile);
+    if (d->browserContext()->customUrlSchemeHandlers().contains(scheme))
+        return d->browserContext()->customUrlSchemeHandlers().value(scheme);
+    return 0;
+}
+
+static bool checkInternalScheme(const QByteArray &scheme)
+{
+    static QSet<QByteArray> internalSchemes;
+    if (internalSchemes.isEmpty()) {
+        internalSchemes << QByteArrayLiteral("qrc") << QByteArrayLiteral("data") << QByteArrayLiteral("blob")
+                        << QByteArrayLiteral("http") << QByteArrayLiteral("ftp") << QByteArrayLiteral("javascript");
+    }
+    return internalSchemes.contains(scheme);
+}
+
+/*!
+    Registers a handler \a handler for custom URL scheme \a scheme in the profile.
+*/
+void QQuickWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
+{
+    Q_D(QQuickWebEngineProfile);
+    Q_ASSERT(handler);
+    if (checkInternalScheme(scheme)) {
+        qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
+        return;
+    }
+
+    if (d->browserContext()->customUrlSchemeHandlers().contains(scheme)) {
+        if (d->browserContext()->customUrlSchemeHandlers().value(scheme) != handler)
+            qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
+        return;
+    }
+    d->browserContext()->addCustomUrlSchemeHandler(scheme, handler);
+    connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+}
+
+/*!
+    Removes the custom URL scheme handler \a handler from the profile.
+
+    \sa removeUrlScheme()
+*/
+void QQuickWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+{
+    Q_D(QQuickWebEngineProfile);
+    Q_ASSERT(handler);
+    if (!d->browserContext()->removeCustomUrlSchemeHandler(handler))
+        return;
+    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+}
+
+/*!
+    Removes the custom URL scheme \a scheme from the profile.
+
+    \sa removeUrlSchemeHandler()
+*/
+void QQuickWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
+{
+    Q_D(QQuickWebEngineProfile);
+    QWebEngineUrlSchemeHandler *handler = d->browserContext()->takeCustomUrlSchemeHandler(scheme);
+    if (!handler)
+        return;
+    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+}
+
+/*!
+    Removes all custom URL scheme handlers installed in the profile.
+*/
+void QQuickWebEngineProfile::removeAllUrlSchemeHandlers()
+{
+    Q_D(QQuickWebEngineProfile);
+    d->browserContext()->customUrlSchemeHandlers().clear();
+    d->browserContext()->updateCustomUrlSchemeHandlers();
+}
+
+void QQuickWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)
+{
+    removeUrlSchemeHandler(obj);
+}
+
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 {
     const Q_D(QQuickWebEngineProfile);
