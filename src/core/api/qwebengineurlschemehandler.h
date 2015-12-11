@@ -37,7 +37,7 @@
 #ifndef QWEBENGINEURLSCHEMEHANDLER_H
 #define QWEBENGINEURLSCHEMEHANDLER_H
 
-#include "qtwebenginecoreglobal.h"
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qobject.h>
 

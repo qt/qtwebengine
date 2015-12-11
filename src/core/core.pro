@@ -1,8 +1,13 @@
 TEMPLATE = subdirs
 
+# core_headers is a dummy module to syncqt the headers so we can
+# use them by later targets
+core_headers.file = core_headers.pro
+
 # core_gyp_generator.pro is a dummy .pro file that is used by qmake
 # to generate our main .gyp file
 core_gyp_generator.file = core_gyp_generator.pro
+core_gyp_generator.depends = core_headers
 
 # gyp_run.pro calls gyp through gyp_qtwebengine on the qmake step, and ninja on the make step.
 gyp_run.file = gyp_run.pro
@@ -31,5 +36,6 @@ SUBDIRS += core_gyp_generator
 }
 
 SUBDIRS += gyp_run \
+           core_headers \
            core_api \
            core_module
