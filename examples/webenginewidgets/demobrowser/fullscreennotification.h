@@ -44,9 +44,11 @@
 
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
 class QLabel;
 class QGridLayout;
 class QPropertyAnimation;
+QT_END_NAMESPACE
 
 class FullScreenNotification : public QWidget
 {
@@ -71,6 +73,5 @@ private:
     int x;
     int y;
 };
-
 
 #endif // FULLSCREENNOTIFICATION_H

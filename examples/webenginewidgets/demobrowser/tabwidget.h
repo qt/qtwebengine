@@ -128,13 +128,16 @@ private:
 
 #include <QtCore/QUrl>
 #include <QtWidgets/QTabWidget>
-QT_BEGIN_NAMESPACE
+
 class FullScreenNotification;
+
+QT_BEGIN_NAMESPACE
 class QCompleter;
 class QLineEdit;
 class QMenu;
 class QStackedWidget;
 QT_END_NAMESPACE
+
 /*!
     TabWidget that contains WebViews and a stack widget of associated line edits.
 
