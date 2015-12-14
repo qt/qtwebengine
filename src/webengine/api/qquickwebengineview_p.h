@@ -110,6 +110,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2)
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION 3)
+    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
@@ -295,6 +296,9 @@ public Q_SLOTS:
     Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
     Q_REVISION(2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(2) void triggerWebAction(WebAction action);
+    Q_REVISION(3) bool isAudioMuted() const;
+    Q_REVISION(3) void setAudioMuted(bool muted);
+    Q_REVISION(3) bool wasRecentlyAudible();
 
 Q_SIGNALS:
     void titleChanged();
@@ -319,6 +323,8 @@ Q_SIGNALS:
     Q_REVISION(2) void windowCloseRequested();
     Q_REVISION(3) void contentsSizeChanged(const QSizeF& size);
     Q_REVISION(3) void scrollPositionChanged(const QPointF& position);
+    Q_REVISION(3) void audioMutedChanged(bool muted);
+    Q_REVISION(3) void wasRecentlyAudibleChanged(bool wasRecentlyAudible);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

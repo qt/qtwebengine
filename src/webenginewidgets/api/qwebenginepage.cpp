@@ -146,6 +146,12 @@ void QWebEnginePagePrivate::selectionChanged()
     Q_EMIT q->selectionChanged();
 }
 
+void QWebEnginePagePrivate::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->wasRecentlyAudibleChanged(wasRecentlyAudible);
+}
+
 QRectF QWebEnginePagePrivate::viewportRect() const
 {
     return view ? view->rect() : QRectF();
@@ -570,6 +576,33 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
     d->adapter->backgroundColorChanged();
 }
 
+/*!
+    \property QWebEnginePage::audioMuted
+    \brief the state of whether the current page audio is muted.
+    \since 5.7
+
+    The default value is false.
+*/
+bool QWebEnginePage::isAudioMuted() const {
+    const Q_D(QWebEnginePage);
+    return d->adapter->isAudioMuted();
+}
+
+void QWebEnginePage::setAudioMuted(bool muted) {
+    Q_D(QWebEnginePage);
+    bool _isAudioMuted = isAudioMuted();
+    d->adapter->setAudioMuted(muted);
+    if (_isAudioMuted != muted) {
+        Q_EMIT audioMutedChanged(muted);
+    }
+}
+
+bool QWebEnginePage::wasRecentlyAudible()
+{
+    Q_D(QWebEnginePage);
+    return d->adapter->wasRecentlyAudible();
+}
+
 void QWebEnginePage::setView(QWidget *view)
 {
     QWebEngineViewPrivate::bind(qobject_cast<QWebEngineView*>(view), this);
@@ -873,7 +906,8 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case ToggleMediaMute:
         if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
-            bool enable = (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
+            // Make sure to negate the value, so that toggling actually works.
+            bool enable = !(d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
             d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
         break;

@@ -126,6 +126,15 @@ void TabBar::contextMenuRequested(const QPoint &position)
         action = menu.addAction(tr("Reload Tab"),
                 this, SLOT(reloadTab()), QKeySequence::Refresh);
         action->setData(index);
+
+        // Audio mute / unmute.
+        action = menu.addAction(tr("Mute tab"),
+                this, SLOT(muteTab()));
+        action->setData(index);
+
+        action = menu.addAction(tr("Unmute tab"),
+                this, SLOT(unmuteTab()));
+        action->setData(index);
     } else {
         menu.addSeparator();
     }
@@ -209,6 +218,22 @@ void TabBar::reloadTab()
     }
 }
 
+void TabBar::muteTab()
+{
+    if (QAction *action = qobject_cast<QAction*>(sender())) {
+        int index = action->data().toInt();
+        emit muteTab(index, true);
+    }
+}
+
+void TabBar::unmuteTab()
+{
+    if (QAction *action = qobject_cast<QAction*>(sender())) {
+        int index = action->data().toInt();
+        emit muteTab(index, false);
+    }
+}
+
 TabWidget::TabWidget(QWidget *parent)
     : QTabWidget(parent)
     , m_recentlyClosedTabsAction(0)
@@ -233,6 +258,7 @@ TabWidget::TabWidget(QWidget *parent)
     connect(m_tabBar, SIGNAL(reloadTab(int)), this, SLOT(reloadTab(int)));
     connect(m_tabBar, SIGNAL(reloadAllTabs()), this, SLOT(reloadAllTabs()));
     connect(m_tabBar, SIGNAL(tabMoved(int,int)), this, SLOT(moveTab(int,int)));
+    connect(m_tabBar, SIGNAL(muteTab(int,bool)), this, SLOT(setAudioMutedForTab(int,bool)));
     setTabBar(m_tabBar);
     setDocumentMode(true);
 
@@ -296,6 +322,18 @@ void TabWidget::moveTab(int fromIndex, int toIndex)
     QWidget *lineEdit = m_lineEdits->widget(fromIndex);
     m_lineEdits->removeWidget(lineEdit);
     m_lineEdits->insertWidget(toIndex, lineEdit);
+}
+
+void TabWidget::setAudioMutedForTab(int index, bool mute)
+{
+    if (index < 0)
+        index = currentIndex();
+    if (index < 0 || index >= count())
+        return;
+
+    QWidget *widget = this->widget(index);
+    if (WebView *tab = qobject_cast<WebView*>(widget))
+        tab->page()->setAudioMuted(mute);
 }
 
 void TabWidget::addWebAction(QAction *action, QWebEnginePage::WebAction webAction)
@@ -506,6 +544,10 @@ WebView *TabWidget::newTab(bool makeCurrent)
             this, SLOT(webViewIconChanged()));
     connect(webView, SIGNAL(titleChanged(QString)),
             this, SLOT(webViewTitleChanged(QString)));
+    connect(webView->page(), SIGNAL(audioMutedChanged(bool)),
+            this, SLOT(webPageMutedOrAudibleChanged()));
+    connect(webView->page(), SIGNAL(wasRecentlyAudibleChanged(bool)),
+            this, SLOT(webPageMutedOrAudibleChanged()));
     connect(webView, SIGNAL(urlChanged(QUrl)),
             this, SLOT(webViewUrlChanged(QUrl)));
     connect(webView->page(), SIGNAL(windowCloseRequested()),
@@ -678,6 +720,23 @@ void TabWidget::webViewTitleChanged(const QString &title)
     if (currentIndex() == index)
         emit setCurrentTitle(title);
     BrowserApplication::historyManager()->updateHistoryItem(webView->url(), title);
+}
+
+void TabWidget::webPageMutedOrAudibleChanged() {
+    QWebEnginePage* webPage = qobject_cast<QWebEnginePage*>(sender());
+    WebView *webView = qobject_cast<WebView*>(webPage->view());
+
+    int index = webViewIndex(webView);
+    if (-1 != index) {
+        QString title = webView->title();
+
+        bool muted = webPage->isAudioMuted();
+        bool audible = webPage->wasRecentlyAudible();
+        if (muted) title += tr(" (muted)");
+        else if (audible) title += tr(" (audible)");
+
+        setTabText(index, title);
+    }
 }
 
 void TabWidget::webViewUrlChanged(const QUrl &url)

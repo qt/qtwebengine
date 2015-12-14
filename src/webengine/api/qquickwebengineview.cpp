@@ -392,6 +392,12 @@ void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
     Q_EMIT q->linkHovered(hoveredUrl);
 }
 
+void QQuickWebEngineViewPrivate::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
+{
+    Q_Q(QQuickWebEngineView);
+    Q_EMIT q->wasRecentlyAudibleChanged(wasRecentlyAudible);
+}
+
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
 {
     Q_Q(const QQuickWebEngineView);
@@ -1082,6 +1088,33 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
     d->ensureContentsAdapter();
     d->adapter->backgroundColorChanged();
     emit backgroundColorChanged();
+}
+
+/*!
+    \property QQuickWebEngineView::audioMuted
+    \brief the state of whether the current page audio is muted.
+    \since 5.7
+
+    The default value is false.
+*/
+bool QQuickWebEngineView::isAudioMuted() const {
+    const Q_D(QQuickWebEngineView);
+    return d->adapter->isAudioMuted();
+
+}
+void QQuickWebEngineView::setAudioMuted(bool muted) {
+    Q_D(QQuickWebEngineView);
+    bool _isAudioMuted = isAudioMuted();
+    d->adapter->setAudioMuted(muted);
+    if (_isAudioMuted != muted) {
+        Q_EMIT audioMutedChanged(muted);
+    }
+}
+
+bool QQuickWebEngineView::wasRecentlyAudible()
+{
+    Q_D(QQuickWebEngineView);
+    return d->adapter->wasRecentlyAudible();
 }
 
 bool QQuickWebEngineView::isFullScreen() const

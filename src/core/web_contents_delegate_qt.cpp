@@ -122,6 +122,15 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
         m_viewClient->urlChanged(toQt(source->GetVisibleURL()));
     if (changed_flags & content::INVALIDATE_TYPE_TITLE)
         m_viewClient->titleChanged(toQt(source->GetTitle()));
+
+    // NavigationStateChanged gets called with INVALIDATE_TYPE_TAB by AudioStateProvider::Notify,
+    // whenever an audio sound gets played or stopped, this is the only way to actually figure out
+    // if there was a recently played audio sound.
+    // Make sure to only emit the signal when loading isn't in progress, because it causes multiple
+    // false signals to be emitted.
+    if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
+        m_viewClient->wasRecentlyAudibleChanged(source->WasRecentlyAudible());
+    }
 }
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)

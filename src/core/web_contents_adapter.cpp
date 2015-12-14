@@ -795,6 +795,24 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     dlm->DownloadUrl(params.Pass());
 }
 
+bool WebContentsAdapter::isAudioMuted() const
+{
+    const Q_D(WebContentsAdapter);
+    return d->webContents->IsAudioMuted();
+}
+
+void WebContentsAdapter::setAudioMuted(bool muted)
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->SetAudioMuted(muted);
+}
+
+bool WebContentsAdapter::wasRecentlyAudible()
+{
+    Q_D(WebContentsAdapter);
+    return d->webContents->WasRecentlyAudible();
+}
+
 void WebContentsAdapter::copyImageAt(const QPoint &location)
 {
     Q_D(WebContentsAdapter);

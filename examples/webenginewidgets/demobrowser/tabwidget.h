@@ -65,6 +65,7 @@ signals:
     void closeTab(int index);
     void closeOtherTabs(int index);
     void reloadTab(int index);
+    void muteTab(int index, bool mute);
     void reloadAllTabs();
     void tabMoveRequested(int fromIndex, int toIndex);
 
@@ -81,6 +82,8 @@ private slots:
     void closeTab();
     void closeOtherTabs();
     void reloadTab();
+    void muteTab();
+    void unmuteTab();
     void contextMenuRequested(const QPoint &position);
 
 private:
@@ -204,6 +207,7 @@ public slots:
     void reloadAllTabs();
     void nextTab();
     void previousTab();
+    void setAudioMutedForTab(int index, bool mute);
 
 private slots:
     void currentChanged(int index);
@@ -218,6 +222,7 @@ private slots:
     void windowCloseRequested();
     void moveTab(int fromIndex, int toIndex);
     void fullScreenRequested(QWebEngineFullScreenRequest request);
+    void webPageMutedOrAudibleChanged();
 
 private:
     QAction *m_recentlyClosedTabsAction;

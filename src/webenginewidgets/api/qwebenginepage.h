@@ -72,6 +72,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
+    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged)
 
 public:
     enum WebAction {
@@ -247,6 +248,10 @@ public:
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
 
+    bool isAudioMuted() const;
+    void setAudioMuted(bool muted);
+    bool wasRecentlyAudible();
+
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);
@@ -274,6 +279,8 @@ Q_SIGNALS:
 
     void scrollPositionChanged(const QPointF &position);
     void contentsSizeChanged(const QSizeF &size);
+    void audioMutedChanged(bool muted);
+    void wasRecentlyAudibleChanged(bool wasRecentlyAudible);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

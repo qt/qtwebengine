@@ -114,6 +114,9 @@ public:
     void stopFinding();
     void updateWebPreferences(const content::WebPreferences &webPreferences);
     void download(const QUrl &url, const QString &suggestedFileName);
+    bool isAudioMuted() const;
+    void setAudioMuted(bool mute);
+    bool wasRecentlyAudible();
 
     // Must match blink::WebMediaPlayerAction::Type.
     enum MediaPlayerAction {
