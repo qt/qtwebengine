@@ -178,7 +178,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
 {
     Q_Q(QQuickWebEngineView);
 
-    QObject *menu = ui()->addMenu(0, QString(), data.pos);
+    // Assign the WebEngineView as the parent of the menu, so mouse events are properly propagated
+    // on OSX.
+    QObject *menu = ui()->addMenu(q, QString(), data.pos);
     if (!menu)
         return false;
 
