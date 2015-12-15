@@ -67,7 +67,7 @@ class BrowserContextAdapter;
 
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
-    explicit URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers);
+    explicit URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors);
 
     virtual net::URLRequestContext *GetURLRequestContext() Q_DECL_OVERRIDE;
     virtual scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner() const Q_DECL_OVERRIDE;
@@ -100,9 +100,11 @@ private:
     scoped_ptr<net::URLRequestContext> m_urlRequestContext;
     scoped_ptr<NetworkDelegateQt> m_networkDelegate;
     scoped_ptr<net::URLRequestContextStorage> m_storage;
-    scoped_ptr<net::URLRequestJobFactoryImpl> m_jobFactory;
+    scoped_ptr<net::URLRequestJobFactory> m_jobFactory;
     scoped_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
+    content::URLRequestInterceptorScopedVector m_requestInterceptors;
+
     friend class NetworkDelegateQt;
 };
 

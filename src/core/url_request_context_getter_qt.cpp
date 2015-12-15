@@ -64,6 +64,7 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
+#include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/ftp/ftp_network_layer.h"
 
 #include "api/qwebengineurlschemehandler.h"
@@ -84,10 +85,11 @@ static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers)
+URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
     : m_ignoreCertificateErrors(false)
     , m_browserContext(browserContext)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
+    , m_requestInterceptors(request_interceptors.Pass())
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
@@ -388,28 +390,39 @@ void URLRequestContextGetterQt::generateJobFactory()
 {
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(!m_jobFactory);
-    m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
+
+    scoped_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
-        m_jobFactory->SetProtocolHandler(it->first, it->second.release());
+        jobFactory->SetProtocolHandler(it->first, it->second.release());
         m_protocolHandlers.clear();
     }
 
-    m_jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
-    m_jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
+    jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
+    jobFactory->SetProtocolHandler(url::kFileScheme, new net::FileProtocolHandler(
         content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
-    m_jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
-    m_jobFactory->SetProtocolHandler(url::kFtpScheme,
+    jobFactory->SetProtocolHandler(kQrcSchemeQt, new QrcProtocolHandlerQt());
+    jobFactory->SetProtocolHandler(url::kFtpScheme,
         new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
 
     QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator it = m_browserContext->customUrlSchemeHandlers().constBegin();
     const QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator end = m_browserContext->customUrlSchemeHandlers().constEnd();
     for (; it != end; ++it)
-        m_jobFactory->SetProtocolHandler(it.key().toStdString(), new CustomProtocolHandler(it.value()));
+        jobFactory->SetProtocolHandler(it.key().toStdString(), new CustomProtocolHandler(it.value()));
+
+    // Set up interceptors in the reverse order.
+    scoped_ptr<net::URLRequestJobFactory> topJobFactory = jobFactory.Pass();
+
+    for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
+        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(topJobFactory.Pass(), make_scoped_ptr(*i)));
+
+    m_requestInterceptors.weak_clear();
+
+    m_jobFactory = topJobFactory.Pass();
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }

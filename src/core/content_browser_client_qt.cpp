@@ -384,7 +384,7 @@ content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
 
 net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers);
+    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers, request_interceptors.Pass());
 }
 
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
