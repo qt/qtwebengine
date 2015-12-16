@@ -421,6 +421,11 @@ BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
     return profile->d_ptr->browserContext();
 }
 
+WebContentsAdapter *QWebEnginePagePrivate::webContentsAdapter()
+{
+    return adapter.data();
+}
+
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(parent)
     , d_ptr(new QWebEnginePagePrivate())
@@ -1087,6 +1092,13 @@ void QWebEnginePagePrivate::renderProcessTerminated(RenderProcessTerminationStat
     Q_Q(QWebEnginePage);
     Q_EMIT q->renderProcessTerminated(static_cast<QWebEnginePage::RenderProcessTerminationStatus>(
                                       terminationStatus), exitCode);
+}
+
+void QWebEnginePagePrivate::startDragging(const content::DropData &dropData,
+                                          Qt::DropActions allowedActions, const QPixmap &pixmap,
+                                          const QPoint &offset)
+{
+    adapter->startDragging(view, dropData, allowedActions, pixmap, offset);
 }
 
 QMenu *QWebEnginePage::createStandardContextMenu()

@@ -40,10 +40,14 @@
 #include "content_browser_client_qt.h"
 #include "render_widget_host_view_qt_delegate.h"
 #include "type_conversion.h"
+#include "web_contents_adapter.h"
 #include "web_engine_context.h"
 
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/common/context_menu_params.h"
+#include <ui/gfx/image/image_skia.h>
+
+#include <QtGui/qpixmap.h>
 
 namespace QtWebEngineCore {
 
@@ -164,15 +168,51 @@ void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const conten
     m_client->contextMenuRequested(contextMenuData);
 }
 
-void WebContentsViewQt::StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info)
+Qt::DropActions toQtDropActions(blink::WebDragOperationsMask ops)
 {
-    Q_UNUSED(&drop_data);
-    Q_UNUSED(allowed_ops);
-    Q_UNUSED(&image);
-    Q_UNUSED(&image_offset);
-    Q_UNUSED(&event_info);
-    // Tell the renderer to cancel the drag, see StartDragging's declaration in render_view_host_delegate_view.h for info.
-    m_webContents->SystemDragEnded();
+    Qt::DropActions result;
+    if (ops & blink::WebDragOperationCopy)
+        result |= Qt::CopyAction;
+    if (ops & blink::WebDragOperationLink)
+        result |= Qt::LinkAction;
+    if (ops & blink::WebDragOperationMove || ops & blink::WebDragOperationDelete)
+        result |= Qt::MoveAction;
+    return result;
+}
+
+Qt::DropAction toQt(blink::WebDragOperation op)
+{
+    if (op == blink::WebDragOperationCopy)
+        return Qt::CopyAction;
+    if (op == blink::WebDragOperationLink)
+        return Qt::LinkAction;
+    if (op == blink::WebDragOperationMove || op == blink::WebDragOperationDelete)
+        return Qt::MoveAction;
+    return Qt::IgnoreAction;
+}
+
+void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
+                                      blink::WebDragOperationsMask allowed_ops,
+                                      const gfx::ImageSkia &image,
+                                      const gfx::Vector2d &image_offset,
+                                      const content::DragEventSourceInfo &event_info)
+{
+    Q_UNUSED(event_info);
+
+    QPixmap pixmap;
+    QPoint hotspot;
+    pixmap = QPixmap::fromImage(toQImage(image.GetRepresentation(m_client->dpiScale())));
+    if (!pixmap.isNull()) {
+        hotspot.setX(image_offset.x());
+        hotspot.setY(image_offset.y());
+    }
+
+    m_client->startDragging(drop_data, toQtDropActions(allowed_ops), pixmap, hotspot);
+}
+
+void WebContentsViewQt::UpdateDragCursor(blink::WebDragOperation dragOperation)
+{
+    m_client->webContentsAdapter()->updateDragAction(toQt(dragOperation));
 }
 
 void WebContentsViewQt::TakeFocus(bool reverse)

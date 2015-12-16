@@ -122,6 +122,10 @@ protected:
     virtual bool event(QEvent*) Q_DECL_OVERRIDE;
     virtual void showEvent(QShowEvent *) Q_DECL_OVERRIDE;
     virtual void hideEvent(QHideEvent *) Q_DECL_OVERRIDE;
+    void dragEnterEvent(QDragEnterEvent *e) Q_DECL_OVERRIDE;
+    void dragLeaveEvent(QDragLeaveEvent *e) Q_DECL_OVERRIDE;
+    void dragMoveEvent(QDragMoveEvent *e) Q_DECL_OVERRIDE;
+    void dropEvent(QDropEvent *e) Q_DECL_OVERRIDE;
 
 private:
     Q_DISABLE_COPY(QWebEngineView)

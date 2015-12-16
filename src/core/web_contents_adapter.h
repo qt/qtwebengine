@@ -52,6 +52,8 @@ struct WebPreferences;
 
 QT_BEGIN_NAMESPACE
 class QAccessibleInterface;
+class QDragEnterEvent;
+class QDragMoveEvent;
 class QWebChannel;
 QT_END_NAMESPACE
 
@@ -152,6 +154,15 @@ public:
 
     QPointF lastScrollOffset() const;
     QSizeF lastContentsSize() const;
+
+    void startDragging(QObject *dragSource, const content::DropData &dropData,
+                       Qt::DropActions allowedActions, const QPixmap &pixmap, const QPoint &offset);
+    void enterDrag(QDragEnterEvent *e, const QPoint &screenPos);
+    Qt::DropAction updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos);
+    void updateDragAction(Qt::DropAction action);
+    void finishDragUpdate();
+    void endDragging(const QPoint &clientPos, const QPoint &screenPos);
+    void leaveDrag();
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;

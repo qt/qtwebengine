@@ -104,7 +104,11 @@ public:
 
     virtual gfx::Rect GetViewBounds() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return gfx::Rect(); }
 
-    virtual void StartDragging(const content::DropData& drop_data, blink::WebDragOperationsMask allowed_ops, const gfx::ImageSkia& image, const gfx::Vector2d& image_offset, const content::DragEventSourceInfo& event_info) Q_DECL_OVERRIDE;
+    void StartDragging(const content::DropData &drop_data, blink::WebDragOperationsMask allowed_ops,
+                       const gfx::ImageSkia &image,  const gfx::Vector2d &image_offset,
+                       const content::DragEventSourceInfo &event_info) Q_DECL_OVERRIDE;
+
+    void UpdateDragCursor(blink::WebDragOperation dragOperation) Q_DECL_OVERRIDE;
 
     virtual void ShowContextMenu(content::RenderFrameHost *, const content::ContextMenuParams &params) Q_DECL_OVERRIDE;
 

@@ -55,6 +55,7 @@
 #include "web_engine_context.h"
 #include "web_engine_settings.h"
 
+#include <base/run_loop.h>
 #include "base/values.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -65,6 +66,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
+#include <content/public/common/drop_data.h>
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
@@ -77,7 +79,10 @@
 #include <QStringList>
 #include <QStyleHints>
 #include <QVariant>
+#include <QtCore/qmimedata.h>
 #include <QtGui/qaccessible.h>
+#include <QtGui/qdrag.h>
+#include <QtGui/qpixmap.h>
 #include <QtWebChannel/QWebChannel>
 
 namespace QtWebEngineCore {
@@ -312,6 +317,9 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     , adapterClient(0)
     , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
+    , currentDropData(nullptr)
+    , currentDropAction(Qt::IgnoreAction)
+    , inDragUpdateLoop(false)
 {
 }
 
@@ -959,6 +967,154 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel)
         return;
     }
     channel->connectTo(d->webChannelTransport.get());
+}
+
+static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
+{
+    QMimeData *mimeData = new QMimeData();
+    if (!dropData.text.is_null()) {
+        mimeData->setText(toQt(dropData.text.string()));
+        return mimeData;
+    }
+    if (!dropData.html.is_null()) {
+        mimeData->setHtml(toQt(dropData.html.string()));
+        return mimeData;
+    }
+    if (dropData.url.is_valid()) {
+        mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
+        return mimeData;
+    }
+    return mimeData;
+}
+
+void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropData &dropData,
+                                       Qt::DropActions allowedActions, const QPixmap &pixmap,
+                                       const QPoint &offset)
+{
+    Q_D(WebContentsAdapter);
+
+    if (d->currentDropData)
+        return;
+
+    // Clear certain fields of the drop data to not run into DCHECKs
+    // of DropDataToWebDragData in render_view_impl.cc.
+    content::DropData fixedDropData = dropData;
+    fixedDropData.download_metadata.clear();
+    fixedDropData.file_contents.clear();
+    fixedDropData.file_description_filename.clear();
+
+    d->currentDropAction = Qt::IgnoreAction;
+    d->currentDropData = &fixedDropData;
+    QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
+    drag->setMimeData(mimeDataFromDropData(fixedDropData));
+    if (!pixmap.isNull()) {
+        drag->setPixmap(pixmap);
+        drag->setHotSpot(offset);
+    }
+
+    {
+        base::MessageLoop::ScopedNestableTaskAllower allow(base::MessageLoop::current());
+        drag->exec(allowedActions);
+    }
+
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragSourceSystemDragEnded();
+    d->currentDropData = nullptr;
+}
+
+static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
+{
+    int result = blink::WebDragOperationNone;
+    if (action & Qt::CopyAction)
+        result |= blink::WebDragOperationCopy;
+    if (action & Qt::LinkAction)
+        result |= blink::WebDragOperationLink;
+    if (action & Qt::MoveAction)
+        result |= blink::WebDragOperationMove;
+    return static_cast<blink::WebDragOperationsMask>(result);
+}
+
+static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeData *mimeData)
+{
+    if (mimeData->hasText())
+        dropData->text = toNullableString16(mimeData->text());
+    if (mimeData->hasHtml())
+        dropData->html = toNullableString16(mimeData->html());
+    Q_FOREACH (const QUrl &url, mimeData->urls()) {
+        if (url.isLocalFile()) {
+            ui::FileInfo uifi;
+            uifi.path = toFilePath(url.toLocalFile());
+            dropData->filenames.push_back(uifi);
+        }
+    }
+}
+
+void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
+{
+    Q_D(WebContentsAdapter);
+
+    scoped_ptr<content::DropData> ownedDropData;
+    const content::DropData *rvhDropData = d->currentDropData;
+    if (!rvhDropData) {
+        // The drag originated outside the WebEngineView.
+        ownedDropData.reset(new content::DropData);
+        fillDropDataFromMimeData(ownedDropData.get(), e->mimeData());
+        rvhDropData = ownedDropData.get();
+    }
+
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDragEnter(*rvhDropData, toGfx(e->pos()), toGfx(screenPos),
+                             toWeb(e->possibleActions()),
+                             flagsFromModifiers(e->keyboardModifiers()));
+}
+
+Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos)
+{
+    Q_D(WebContentsAdapter);
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDragOver(toGfx(e->pos()), toGfx(screenPos), toWeb(e->possibleActions()),
+                            blink::WebInputEvent::LeftButtonDown);
+
+    // Wait until we get notified via RenderViewHostDelegateView::UpdateDragCursor. This calls
+    // WebContentsAdapter::updateDragAction that will eventually quit the nested loop.
+    base::RunLoop loop;
+    d->inDragUpdateLoop = true;
+    d->dragUpdateLoopQuitClosure = loop.QuitClosure();
+    loop.Run();
+
+    return d->currentDropAction;
+}
+
+void WebContentsAdapter::updateDragAction(Qt::DropAction action)
+{
+    Q_D(WebContentsAdapter);
+    d->currentDropAction = action;
+    finishDragUpdate();
+}
+
+void WebContentsAdapter::finishDragUpdate()
+{
+    Q_D(WebContentsAdapter);
+    if (d->inDragUpdateLoop) {
+        d->dragUpdateLoopQuitClosure.Run();
+        d->inDragUpdateLoop = false;
+    }
+}
+
+void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &screenPos)
+{
+    Q_D(WebContentsAdapter);
+    finishDragUpdate();
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDrop(toGfx(clientPos), toGfx(screenPos), 0);
+}
+
+void WebContentsAdapter::leaveDrag()
+{
+    Q_D(WebContentsAdapter);
+    finishDragUpdate();
+    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->DragTargetDragLeave();
 }
 
 WebContentsAdapterClient::RenderProcessTerminationStatus

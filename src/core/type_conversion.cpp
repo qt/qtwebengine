@@ -37,6 +37,7 @@
 #include "type_conversion.h"
 
 #include <ui/events/event_constants.h>
+#include <ui/gfx/image/image_skia.h>
 #include <QtCore/qcoreapplication.h>
 
 namespace QtWebEngineCore {
@@ -116,6 +117,14 @@ QImage toQImage(const SkBitmap &bitmap)
     return image;
 }
 
+QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep)
+{
+    QImage image = toQImage(imageSkiaRep.sk_bitmap());
+    if (!image.isNull() && imageSkiaRep.scale() != 1.0f)
+        image.setDevicePixelRatio(imageSkiaRep.scale());
+    return image;
+}
+
 int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
 {
     int modifierFlags = ui::EF_NONE;
@@ -139,5 +148,6 @@ int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
         modifierFlags |= ui::EF_ALT_DOWN;
     return modifierFlags;
 }
+
 
 } // namespace QtWebEngineCore

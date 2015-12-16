@@ -122,6 +122,7 @@ QWebEngineView::QWebEngineView(QWidget *parent)
 {
     Q_D(QWebEngineView);
     d->q_ptr = this;
+    setAcceptDrops(true);
 
     // This causes the child RenderWidgetHostViewQtDelegateWidgets to fill this widget.
     setLayout(new QStackedLayout);
@@ -310,6 +311,40 @@ void QWebEngineView::hideEvent(QHideEvent *event)
 {
     QWidget::hideEvent(event);
     page()->d_ptr->wasHidden();
+}
+
+void QWebEngineView::dragEnterEvent(QDragEnterEvent *e)
+{
+    Q_D(QWebEngineView);
+    e->accept();
+    d->page->d_ptr->adapter->enterDrag(e, mapToGlobal(e->pos()));
+}
+
+void QWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
+{
+    Q_D(QWebEngineView);
+    e->accept();
+    d->page->d_ptr->adapter->leaveDrag();
+}
+
+void QWebEngineView::dragMoveEvent(QDragMoveEvent *e)
+{
+    Q_D(QWebEngineView);
+    QtWebEngineCore::WebContentsAdapter *adapter = d->page->d_ptr->adapter.data();
+    Qt::DropAction dropAction = adapter->updateDragPosition(e, mapToGlobal(e->pos()));
+    if (Qt::IgnoreAction == dropAction) {
+        e->ignore();
+    } else {
+        e->setDropAction(dropAction);
+        e->accept();
+    }
+}
+
+void QWebEngineView::dropEvent(QDropEvent *e)
+{
+    Q_D(QWebEngineView);
+    e->accept();
+    d->page->d_ptr->adapter->endDragging(e->pos(), mapToGlobal(e->pos()));
 }
 
 #ifndef QT_NO_ACCESSIBILITY

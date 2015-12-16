@@ -50,6 +50,10 @@ QT_FORWARD_DECLARE_CLASS(QKeyEvent)
 QT_FORWARD_DECLARE_CLASS(QVariant)
 QT_FORWARD_DECLARE_CLASS(CertificateErrorController)
 
+namespace content {
+struct DropData;
+}
+
 namespace QtWebEngineCore {
 
 class AuthenticationDialogController;
@@ -243,9 +247,11 @@ public:
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
     virtual void updateScrollPosition(const QPointF &position) = 0;
     virtual void updateContentsSize(const QSizeF &size) = 0;
+    virtual void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
+                               const QPixmap &pixmap, const QPoint &offset) = 0;
 
     virtual BrowserContextAdapter* browserContextAdapter() = 0;
-
+    virtual WebContentsAdapter* webContentsAdapter() = 0;
 };
 
 } // namespace QtWebEngineCore

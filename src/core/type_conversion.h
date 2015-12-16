@@ -46,6 +46,7 @@
 #include <QRect>
 #include <QString>
 #include <QUrl>
+#include <base/strings/nullable_string16.h>
 #include "base/files/file_path.h"
 #include "base/time/time.h"
 #include "content/public/common/file_chooser_file_info.h"
@@ -57,6 +58,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
+
+namespace gfx {
+class ImageSkiaRep;
+}
 
 namespace QtWebEngineCore {
 
@@ -81,6 +86,11 @@ inline base::string16 toString16(const QString &qString)
 #else
     return base::string16(qString.utf16());
 #endif
+}
+
+inline base::NullableString16 toNullableString16(const QString &qString)
+{
+    return base::NullableString16(toString16(qString), qString.isNull());
 }
 
 inline QUrl toQt(const GURL &url)
@@ -150,6 +160,7 @@ inline QImage toQImage(const SkBitmap &bitmap, QImage::Format format)
 }
 
 QImage toQImage(const SkBitmap &bitmap);
+QImage toQImage(const gfx::ImageSkiaRep &imageSkiaRep);
 
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
 {

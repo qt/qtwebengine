@@ -126,8 +126,11 @@ public:
                                      int exitCode) Q_DECL_OVERRIDE;
     virtual void updateScrollPosition(const QPointF &position) Q_DECL_OVERRIDE;
     virtual void updateContentsSize(const QSizeF &size) Q_DECL_OVERRIDE;
+    void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
+                       const QPixmap &pixmap, const QPoint &offset) Q_DECL_OVERRIDE;
 
     virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
+    QtWebEngineCore::WebContentsAdapter *webContentsAdapter() Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();
