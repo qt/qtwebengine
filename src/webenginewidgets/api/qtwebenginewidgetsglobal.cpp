@@ -36,7 +36,7 @@
 
 #include "qtwebenginewidgetsglobal.h"
 
-#include <QGuiApplication>
+#include <QCoreApplication>
 
 namespace QtWebEngineCore
 {
@@ -46,13 +46,18 @@ namespace QtWebEngineCore
 QT_BEGIN_NAMESPACE
 static void initialize()
 {
-    // Bail out silently if the user did not construct a QGuiApplication.
-    if (!qobject_cast<QGuiApplication *>(QCoreApplication::instance()))
+    //On window/ANGLE, calling QtWebEngine::initialize from DllMain will result in a crash.
+    //To ensure it doesn't, we check that when loading the library
+    //QCoreApplication is not yet instantiated, ensuring the call will be deferred
+#if defined(Q_OS_WIN)
+    if (QCoreApplication::instance()
+            && QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
         return;
-
-    QtWebEngineCore::initialize();
+    }
+#endif
+    qAddPreRoutine(QtWebEngineCore::initialize);
 }
 
-Q_COREAPP_STARTUP_FUNCTION(initialize)
+Q_CONSTRUCTOR_FUNCTION(initialize)
 
 QT_END_NAMESPACE

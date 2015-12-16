@@ -75,6 +75,11 @@ QWEBENGINE_PRIVATE_EXPORT void initialize()
         qFatal("QtWebEngine::initialize() must be called after the construction of the application object.");
         return;
     }
+
+    // Bail out silently if the user did not construct a QGuiApplication.
+    if (!qobject_cast<QGuiApplication *>(app))
+        return;
+
     if (app->thread() != QThread::currentThread()) {
         qFatal("QtWebEngine::initialize() must be called from the Qt gui thread.");
         return;
