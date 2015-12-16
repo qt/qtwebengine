@@ -221,8 +221,13 @@ QString BrowserContextAdapter::cookiesPath() const
     if (m_offTheRecord)
         return QString();
     QString basePath = dataPath();
-    if (!basePath.isEmpty())
-        return basePath % QLatin1String("/Coookies");
+    if (!basePath.isEmpty()) {
+        // This is a typo fix. We still need the old path in order to avoid breaking migration.
+        QDir coookiesFolder(basePath % QLatin1String("/Coookies"));
+        if (coookiesFolder.exists())
+            return coookiesFolder.path();
+        return basePath % QLatin1String("/Cookies");
+    }
     return QString();
 }
 
