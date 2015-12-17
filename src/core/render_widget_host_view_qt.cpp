@@ -160,30 +160,6 @@ static inline bool compareTouchPoints(const QTouchEvent::TouchPoint &lhs, const 
     return lhs.state() < rhs.state();
 }
 
-static inline int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
-{
-    int modifierFlags = ui::EF_NONE;
-#if defined(Q_OS_OSX)
-    if (!qApp->testAttribute(Qt::AA_MacDontSwapCtrlAndMeta)) {
-        if ((modifiers & Qt::ControlModifier) != 0)
-            modifierFlags |= ui::EF_COMMAND_DOWN;
-        if ((modifiers & Qt::MetaModifier) != 0)
-            modifierFlags |= ui::EF_CONTROL_DOWN;
-    } else
-#endif
-    {
-        if ((modifiers & Qt::ControlModifier) != 0)
-            modifierFlags |= ui::EF_CONTROL_DOWN;
-        if ((modifiers & Qt::MetaModifier) != 0)
-            modifierFlags |= ui::EF_COMMAND_DOWN;
-    }
-    if ((modifiers & Qt::ShiftModifier) != 0)
-        modifierFlags |= ui::EF_SHIFT_DOWN;
-    if ((modifiers & Qt::AltModifier) != 0)
-        modifierFlags |= ui::EF_ALT_DOWN;
-    return modifierFlags;
-}
-
 static uint32 s_eventId = 0;
 class MotionEventQt : public ui::MotionEvent {
 public:
