@@ -99,4 +99,21 @@
     \code
     --ppapi-flash-path=./libpepflashplayer.so
     \endcode
+
+    \section1 Audio and Video Codec Support
+
+    Qt WebEngine supports the MPEG-4 Part 14 (MP4) file format only if the required proprietary
+    audio and video codecs, such as H.264 and MPEG layer-3 (MP3), have been enabled. Proprietary
+    codecs can be enabled by passing the following option to qmake:
+
+    \code
+    qmake WEBENGINE_CONFIG += use_proprietary_codecs
+    \endcode
+
+    \warning When distributing proprietary codec libraries, you must acquire licenses for them.
+
+    \l FFmpeg is a cross-platform solution to record, convert, and stream audio and video. It can
+    be configured for use with several codecs, which rises licensing issues during distribution
+    with the codec libraries. For some codecs, open source implementations, such as \l {OpenH264},
+    are available.
 */
