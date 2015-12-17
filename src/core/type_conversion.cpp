@@ -41,6 +41,81 @@
 
 namespace QtWebEngineCore {
 
+QImage toQImage(const SkBitmap &bitmap)
+{
+    QImage image;
+    switch (bitmap.colorType()) {
+    case kUnknown_SkColorType:
+        break;
+    case kAlpha_8_SkColorType:
+        image = toQImage(bitmap, QImage::Format_Alpha8);
+        break;
+    case kRGB_565_SkColorType:
+        image = toQImage(bitmap, QImage::Format_RGB16);
+        break;
+    case kARGB_4444_SkColorType:
+        switch (bitmap.alphaType()) {
+        case kUnknown_SkAlphaType:
+            break;
+        case kUnpremul_SkAlphaType:
+            // not supported - treat as opaque
+        case kOpaque_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_RGB444);
+            break;
+        case kPremul_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_ARGB4444_Premultiplied);
+            break;
+        }
+        break;
+    case kRGBA_8888_SkColorType:
+        switch (bitmap.alphaType()) {
+        case kUnknown_SkAlphaType:
+            break;
+        case kOpaque_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_RGBX8888);
+            break;
+        case kPremul_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_RGBA8888_Premultiplied);
+            break;
+        case kUnpremul_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_RGBA8888);
+            break;
+        }
+        break;
+    case kBGRA_8888_SkColorType:
+        // we are assuming little-endian arch here.
+        switch (bitmap.alphaType()) {
+        case kUnknown_SkAlphaType:
+            break;
+        case kOpaque_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_RGB32);
+            break;
+        case kPremul_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_ARGB32_Premultiplied);
+            break;
+        case kUnpremul_SkAlphaType:
+            image = toQImage(bitmap, QImage::Format_ARGB32);
+            break;
+        }
+        break;
+    case kIndex_8_SkColorType: {
+        image = toQImage(bitmap, QImage::Format_Indexed8);
+        SkColorTable *skTable = bitmap.getColorTable();
+        if (skTable) {
+            QVector<QRgb> qTable(skTable->count());
+            for (int i = 0; i < skTable->count(); ++i)
+                qTable[i] = (*skTable)[i];
+            image.setColorTable(qTable);
+        }
+        break;
+    }
+    case kGray_8_SkColorType:
+        image = toQImage(bitmap, QImage::Format_Grayscale8);
+        break;
+    }
+    return image;
+}
+
 int flagsFromModifiers(Qt::KeyboardModifiers modifiers)
 {
     int modifierFlags = ui::EF_NONE;
