@@ -46,6 +46,7 @@
 #include "downloadmanager.h"
 #include "fullscreennotification.h"
 #include "history.h"
+#include "savepagedialog.h"
 #include "urllineedit.h"
 #include "webview.h"
 
@@ -883,6 +884,14 @@ bool TabWidget::restoreState(const QByteArray &state)
 
 void TabWidget::downloadRequested(QWebEngineDownloadItem *download)
 {
+    if (download->savePageFormat() != QWebEngineDownloadItem::UnknownSaveFormat) {
+        SavePageDialog dlg(this, download->savePageFormat(), download->path());
+        if (dlg.exec() != SavePageDialog::Accepted)
+            return;
+        download->setSavePageFormat(dlg.pageFormat());
+        download->setPath(dlg.filePath());
+    }
+
     BrowserApplication::downloadManager()->download(download);
     download->accept();
 }

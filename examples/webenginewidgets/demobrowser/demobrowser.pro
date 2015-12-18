@@ -16,6 +16,7 @@ FORMS += \
     history.ui \
     passworddialog.ui \
     proxy.ui \
+    savepagedialog.ui \
     settings.ui
 
 HEADERS += \
@@ -31,6 +32,7 @@ HEADERS += \
     fullscreennotification.h \
     history.h \
     modelmenu.h \
+    savepagedialog.h \
     searchlineedit.h \
     settings.h \
     squeezelabel.h \
@@ -53,6 +55,7 @@ SOURCES += \
     fullscreennotification.cpp \
     history.cpp \
     modelmenu.cpp \
+    savepagedialog.cpp \
     searchlineedit.cpp \
     settings.cpp \
     squeezelabel.cpp \
