@@ -264,7 +264,8 @@
         \li The Web SQL Database feature that this API was wrapping in Qt WebKit
             was dropped from the HTML5 standard.
     \row
-        \li QWebPluginFactory, QWebPage::setPalette, QWebView::setRenderHints
+        \li QWebPluginDatabase, QWebPluginFactory, QWebPluginInfo, QWebPage::setPalette,
+            QWebView::setRenderHints
         \li Qt WebEngine renders web pages using Skia and is not using QPainter
             or Qt for this purpose. The HTML5 standard also now offers much
             better alternatives that were not available when native controls
@@ -272,5 +273,10 @@
     \row
         \li QWebHistoryInterface
         \li Visited links are persisted automatically by Qt WebEngine.
+    \row
+        \li QWebPage::setContentEditable
+        \li In the latest HTML standard, any document element can be made editable through the
+            \c contentEditable attribute. So \c runJavaScript is all that is needed:
+            \c{page->runJavascript("document.documentElement.contentEditable = true")}
     \endtable
 */
