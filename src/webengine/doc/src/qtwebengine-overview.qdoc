@@ -127,6 +127,17 @@
     }
     \endqml
 
+    \section1 Managing Certificates
+
+    Qt WebEngine uses its own network stack, and therefore QSslConfiguration is not used to
+    open SSL connections. Instead, Qt WebEngine uses the root CA certificates from the operating
+    system to validate the peer's certificate.
+
+    The \l{WebEngineCertificateError::error} and \l{QWebEngineCertificateError::Error} enumerations
+    provide information about the types of certificate errors that might occur. The errors can be
+    handled by using the WebEngineView::certificateError QML method or by reimplementing the
+    QWebEnginePage::certificateError function.
+
     \section1 Using WebEngine Core
 
     Qt WebEngine Core provides an API shared by Qt WebEngine and Qt WebEngine Widgets for handling

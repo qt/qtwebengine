@@ -35,7 +35,6 @@
     \l{http://doc.qt.io/archives/qt-5.3/qml-qtwebkit-webview.html}{QWebView API} to use the
     \l{Qt WebEngine} QWebEngineView.
 
-
     \section1 Class Names
 
     The Qt WebEngine equivalent of Qt WebKit C++ classes are prefixed by
@@ -199,6 +198,8 @@
         connect(&page, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticate(QNetworkReply*,QAuthenticator*)));
     \endcode
 
+    This also affects the way in which certificates are managed. For more information, see
+    \l {Managing Certificates}.
 
     \section1 Notes About Individual Methods
 
