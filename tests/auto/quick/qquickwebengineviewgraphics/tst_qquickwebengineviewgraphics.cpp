@@ -154,13 +154,13 @@ void tst_QQuickWebEngineViewGraphics::showHideShow()
     setHtml(greenSquare);
     QSignalSpy exposeSpy(m_view.data(), SIGNAL(exposeChanged()));
     m_view->show();
-    QVERIFY(exposeSpy.wait(500));
+    QVERIFY(exposeSpy.wait());
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
 
     m_view->hide();
-    QVERIFY(exposeSpy.wait(500));
+    QVERIFY(exposeSpy.wait());
     m_view->show();
-    QVERIFY(exposeSpy.wait(500));
+    QVERIFY(exposeSpy.wait());
     QCOMPARE(m_view->grabWindow(), get150x150GreenReferenceImage());
 }
 
