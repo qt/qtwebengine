@@ -221,6 +221,7 @@ private slots:
     void windowCloseRequested();
     void moveTab(int fromIndex, int toIndex);
     void fullScreenRequested(QWebEngineFullScreenRequest request);
+    void handleTabBarDoubleClicked(int index);
 
 private:
     void setupPage(QWebEnginePage* page);

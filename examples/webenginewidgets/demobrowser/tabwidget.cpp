@@ -161,7 +161,17 @@ void TabBar::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton)
         m_dragStartPos = event->pos();
+
     QTabBar::mousePressEvent(event);
+
+    // Middle click on tab should close it.
+    if (event->button() == Qt::MiddleButton) {
+        const QPoint pos = event->pos();
+        int index = tabAt(pos);
+        if (index != -1) {
+            emit closeTab(index);
+        }
+    }
 }
 
 void TabBar::mouseMoveEvent(QMouseEvent *event)
@@ -233,6 +243,7 @@ TabWidget::TabWidget(QWidget *parent)
     connect(m_tabBar, SIGNAL(reloadTab(int)), this, SLOT(reloadTab(int)));
     connect(m_tabBar, SIGNAL(reloadAllTabs()), this, SLOT(reloadAllTabs()));
     connect(m_tabBar, SIGNAL(tabMoved(int,int)), this, SLOT(moveTab(int,int)));
+    connect(m_tabBar, SIGNAL(tabBarDoubleClicked(int)), this, SLOT(handleTabBarDoubleClicked(int)));
     setTabBar(m_tabBar);
     setDocumentMode(true);
 
@@ -386,6 +397,12 @@ void TabWidget::fullScreenRequested(QWebEngineFullScreenRequest request)
         m_fullScreenView->hide();
         m_fullScreenNotification->hide();
     }
+}
+
+void TabWidget::handleTabBarDoubleClicked(int index)
+{
+    if (index != -1) return;
+    newTab();
 }
 
 QAction *TabWidget::newTabAction() const
