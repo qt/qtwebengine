@@ -4,6 +4,7 @@ GYP_CONFIG += \
     disable_nacl=1 \
     remoting=0 \
     use_ash=0 \
+    enable_widevine=1
 
 # Chromium builds with debug info in release by default but Qt doesn't
 CONFIG(release, debug|release):!force_debug_info: GYP_CONFIG += fastbuild=1

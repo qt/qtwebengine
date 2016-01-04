@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -33,45 +33,39 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef CONTENT_RENDERER_CLIENT_QT_H
-#define CONTENT_RENDERER_CLIENT_QT_H
 
-#include "content/public/renderer/content_renderer_client.h"
+#ifndef BROWSER_MESSAGE_FILTER_QT_H
+#define BROWSER_MESSAGE_FILTER_QT_H
+
+#include "content/public/browser/browser_message_filter.h"
 
 #include <QtGlobal>
-#include <QScopedPointer>
-
-namespace visitedlink {
-class VisitedLinkSlave;
-}
-
-namespace web_cache {
-class WebCacheRenderProcessObserver;
-}
 
 namespace QtWebEngineCore {
 
-class ContentRendererClientQt : public content::ContentRendererClient {
+class BrowserMessageFilterQt : public content::BrowserMessageFilter
+{
 public:
-    ContentRendererClientQt();
-    ~ContentRendererClientQt();
-    virtual void RenderThreadStarted() Q_DECL_OVERRIDE;
-    virtual void RenderViewCreated(content::RenderView *render_view) Q_DECL_OVERRIDE;
-    virtual void RenderFrameCreated(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
-    virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
-    virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
-            , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
-
-    virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
-    virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
-    virtual void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) Q_DECL_OVERRIDE;
+    BrowserMessageFilterQt(int render_process_id);
 
 private:
-    QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
-    QScopedPointer<web_cache::WebCacheRenderProcessObserver> m_webCacheObserver;
+    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
+#if defined(ENABLE_PEPPER_CDMS)
+    // Returns whether any internal plugin supporting |mime_type| is registered
+    // and enabled. Does not determine whether the plugin can actually be
+    // instantiated (e.g. whether it has all its dependencies).
+    // When the returned *|is_available| is true, |additional_param_names| and
+    // |additional_param_values| contain the name-value pairs, if any, specified
+    // for the *first* non-disabled plugin found that is registered for
+    // |mime_type|.
+    void OnIsInternalPluginAvailableForMimeType(
+        const std::string& mime_type,
+        bool* is_available,
+        std::vector<base::string16>* additional_param_names,
+        std::vector<base::string16>* additional_param_values);
+#endif
 };
 
-} // namespace
+} // namespace QtWebEngineCore
 
-#endif // CONTENT_RENDERER_CLIENT_QT_H
+#endif // BROWSER_MESSAGE_FILTER_QT_H

@@ -37,9 +37,11 @@
 #include "content_client_qt.h"
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/layout.h"
@@ -49,10 +51,14 @@
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QLibraryInfo>
+#include <QString>
 
 #if defined(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 static const int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
                                              ppapi::PERMISSION_PRIVATE |
@@ -62,7 +68,29 @@ static const int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
 namespace switches {
 const char kPpapiFlashPath[]    = "ppapi-flash-path";
 const char kPpapiFlashVersion[] = "ppapi-flash-version";
+const char kPpapiWidevinePath[] = "ppapi-widevine-path";
 }
+
+static const base::FilePath::CharType kWidevineCdmBaseDirectory[] = FILE_PATH_LITERAL("WidevineCDM");
+
+static const char kWidevineCdmPluginExtension[] = "";
+
+static const int32 kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV
+                                                 | ppapi::PERMISSION_PRIVATE;
+
+static QString ppapiPluginsPath()
+{
+    // Look for plugins in /plugins/ppapi or application dir.
+    static bool initialized = false;
+    static QString potentialPluginsPath = QLibraryInfo::location(QLibraryInfo::PluginsPath) % QLatin1String("/ppapi");
+    if (!initialized) {
+        initialized = true;
+        if (!QFileInfo::exists(potentialPluginsPath))
+            potentialPluginsPath = QCoreApplication::applicationDirPath();
+    }
+    return potentialPluginsPath;
+}
+
 
 // Adopted from chrome_content_client.cc
 content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path, const std::string& version)
@@ -112,14 +140,17 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
     pluginDir.setFilter(QDir::Files);
     Q_FOREACH (const QFileInfo &info, pluginDir.entryInfoList(QStringList("pepflashplayer*.dll")))
         pluginPaths << info.absoluteFilePath();
+    pluginPaths << ppapiPluginsPath() + QStringLiteral("/pepflashplayer.dll");
 #endif
 #if defined(Q_OS_OSX)
     pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // Mac OS X
+    pluginPaths << ppapiPluginsPath() + QStringLiteral("/PepperFlashPlayer.plugin");
 #endif
 #if defined(Q_OS_LINUX)
     pluginPaths << "/usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so" // Ubuntu
                 << "/usr/lib/PepperFlash/libpepflashplayer.so" // Arch
                 << "/usr/lib64/chromium/PepperFlash/libpepflashplayer.so"; // OpenSuSE
+    pluginPaths << ppapiPluginsPath() + QStringLiteral("/libpepflashplayer.so");
 #endif
     for (auto it = pluginPaths.constBegin(); it != pluginPaths.constEnd(); ++it) {
         if (!QFile(*it).exists())
@@ -139,12 +170,66 @@ void AddPepperFlashFromCommandLine(std::vector<content::PepperPluginInfo>* plugi
     plugins->push_back(CreatePepperFlashInfo(base::FilePath(flash_path), flash_version));
 }
 
+void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
+{
+#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) && !defined(WIDEVINE_CDM_IS_COMPONENT)
+    QStringList pluginPaths;
+    const base::CommandLine::StringType widevine_argument = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kPpapiWidevinePath);
+    if (!widevine_argument.empty())
+        pluginPaths << QtWebEngineCore::toQt(widevine_argument);
+    else {
+        pluginPaths << ppapiPluginsPath() + QStringLiteral("/") + QString::fromLatin1(kWidevineCdmAdapterFileName);
+#if defined(Q_OS_LINUX)
+        pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdmadapter.so") // Google Chrome
+                    << QStringLiteral("/usr/lib/chromium/libwidevinecdmadapter.so"); // Arch
+#endif
+    }
+
+    Q_FOREACH (const QString &pluginPath, pluginPaths) {
+        base::FilePath path = QtWebEngineCore::toFilePath(pluginPath);
+        if (base::PathExists(path)) {
+            content::PepperPluginInfo widevine_cdm;
+            widevine_cdm.is_out_of_process = true;
+            widevine_cdm.path = path;
+            widevine_cdm.name = kWidevineCdmDisplayName;
+            widevine_cdm.description = kWidevineCdmDescription;
+            content::WebPluginMimeType widevine_cdm_mime_type(
+                kWidevineCdmPluginMimeType,
+                kWidevineCdmPluginExtension,
+                kWidevineCdmPluginMimeTypeDescription);
+
+            // Add the supported codecs as if they came from the component manifest.
+            std::vector<std::string> codecs;
+            codecs.push_back(kCdmSupportedCodecVorbis);
+            codecs.push_back(kCdmSupportedCodecVp8);
+            codecs.push_back(kCdmSupportedCodecVp9);
+#if defined(USE_PROPRIETARY_CODECS)
+            codecs.push_back(kCdmSupportedCodecAac);
+            codecs.push_back(kCdmSupportedCodecAvc1);
+#endif  // defined(USE_PROPRIETARY_CODECS)
+            std::string codec_string =
+                base::JoinString(codecs, ",");
+            widevine_cdm_mime_type.additional_param_names.push_back(
+                base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
+            widevine_cdm_mime_type.additional_param_values.push_back(
+                base::ASCIIToUTF16(codec_string));
+
+            widevine_cdm.mime_types.push_back(widevine_cdm_mime_type);
+            widevine_cdm.permissions = kWidevineCdmPluginPermissions;
+            plugins->push_back(widevine_cdm);
+        }
+    }
+#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS) &&
+        // !defined(WIDEVINE_CDM_IS_COMPONENT)
+}
+
 namespace QtWebEngineCore {
 
 void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* plugins)
 {
     AddPepperFlashFromSystem(plugins);
     AddPepperFlashFromCommandLine(plugins);
+    AddPepperWidevine(plugins);
 }
 
 }

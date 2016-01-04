@@ -15,6 +15,7 @@
       '<(chromium_src_dir)/components/components.gyp:visitedlink_renderer',
       '<(chromium_src_dir)/components/components.gyp:web_cache_browser',
       '<(chromium_src_dir)/components/components.gyp:web_cache_renderer',
+      '<(chromium_src_dir)/components/components.gyp:cdm_renderer',
       '<(chromium_src_dir)/content/content.gyp:content',
       '<(chromium_src_dir)/content/content.gyp:content_app_browser',
       '<(chromium_src_dir)/content/content.gyp:content_browser',

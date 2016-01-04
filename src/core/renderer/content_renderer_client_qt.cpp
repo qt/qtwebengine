@@ -36,8 +36,12 @@
 
 #include "renderer/content_renderer_client_qt.h"
 
+#include "common/qt_messages.h"
+
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/localized_error.h"
+#include "components/cdm/renderer/widevine_key_systems.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
@@ -59,6 +63,8 @@
 #include "renderer/user_script_controller.h"
 
 #include "grit/renderer_resources.h"
+
+#include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
 namespace QtWebEngineCore {
 
@@ -154,6 +160,144 @@ unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonica
 bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
 {
     return m_visitedLinkSlave->IsVisited(linkHash);
+}
+
+#if defined(ENABLE_PEPPER_CDMS)
+static bool IsPepperCdmAvailable(const std::string& pepper_type,
+                                 std::vector<base::string16>* additional_param_names,
+                                 std::vector<base::string16>* additional_param_values)
+{
+    bool is_available = false;
+    content::RenderThread::Get()->Send(
+        new QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType(
+            pepper_type,
+            &is_available,
+            additional_param_names,
+            additional_param_values));
+
+    return is_available;
+}
+
+// External Clear Key (used for testing).
+static void AddExternalClearKey(std::vector<media::KeySystemInfo>* concrete_key_systems)
+{
+      static const char kExternalClearKeyKeySystem[] =
+          "org.chromium.externalclearkey";
+      static const char kExternalClearKeyDecryptOnlyKeySystem[] =
+          "org.chromium.externalclearkey.decryptonly";
+      static const char kExternalClearKeyFileIOTestKeySystem[] =
+          "org.chromium.externalclearkey.fileiotest";
+      static const char kExternalClearKeyInitializeFailKeySystem[] =
+          "org.chromium.externalclearkey.initializefail";
+      static const char kExternalClearKeyCrashKeySystem[] =
+          "org.chromium.externalclearkey.crash";
+      static const char kExternalClearKeyPepperType[] =
+          "application/x-ppapi-clearkey-cdm";
+
+    std::vector<base::string16> additional_param_names;
+    std::vector<base::string16> additional_param_values;
+    if (!IsPepperCdmAvailable(kExternalClearKeyPepperType,
+                              &additional_param_names,
+                              &additional_param_values))
+        return;
+
+    media::KeySystemInfo info;
+    info.key_system = kExternalClearKeyKeySystem;
+
+    info.supported_init_data_types =
+        media::kInitDataTypeMaskWebM | media::kInitDataTypeMaskKeyIds;
+    info.supported_codecs = media::EME_CODEC_WEBM_ALL;
+#if defined(USE_PROPRIETARY_CODECS)
+    info.supported_init_data_types |= media::kInitDataTypeMaskCenc;
+    info.supported_codecs |= media::EME_CODEC_MP4_ALL;
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+    info.max_audio_robustness = media::EmeRobustness::EMPTY;
+    info.max_video_robustness = media::EmeRobustness::EMPTY;
+
+    // Persistent sessions are faked.
+    info.persistent_license_support = media::EmeSessionTypeSupport::SUPPORTED;
+    info.persistent_release_message_support =
+        media::EmeSessionTypeSupport::NOT_SUPPORTED;
+    info.persistent_state_support = media::EmeFeatureSupport::REQUESTABLE;
+    info.distinctive_identifier_support = media::EmeFeatureSupport::NOT_SUPPORTED;
+
+    info.pepper_type = kExternalClearKeyPepperType;
+
+    concrete_key_systems->push_back(info);
+
+    // Add support of decrypt-only mode in ClearKeyCdm.
+    info.key_system = kExternalClearKeyDecryptOnlyKeySystem;
+    concrete_key_systems->push_back(info);
+
+    // A key system that triggers FileIO test in ClearKeyCdm.
+    info.key_system = kExternalClearKeyFileIOTestKeySystem;
+    concrete_key_systems->push_back(info);
+
+    // A key system that Chrome thinks is supported by ClearKeyCdm, but actually
+    // will be refused by ClearKeyCdm. This is to test the CDM initialization
+    // failure case.
+    info.key_system = kExternalClearKeyInitializeFailKeySystem;
+    concrete_key_systems->push_back(info);
+
+    // A key system that triggers a crash in ClearKeyCdm.
+    info.key_system = kExternalClearKeyCrashKeySystem;
+    concrete_key_systems->push_back(info);
+}
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+
+static void AddPepperBasedWidevine(std::vector<media::KeySystemInfo>* concrete_key_systems)
+{
+//#if defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
+//    Version glibc_version(gnu_get_libc_version());
+//    DCHECK(glibc_version.IsValid());
+//    if (glibc_version.IsOlderThan(WIDEVINE_CDM_MIN_GLIBC_VERSION))
+//        return;
+//#endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
+
+    std::vector<base::string16> additional_param_names;
+    std::vector<base::string16> additional_param_values;
+    if (!IsPepperCdmAvailable(kWidevineCdmPluginMimeType,
+                              &additional_param_names,
+                              &additional_param_values)) {
+        DVLOG(1) << "Widevine CDM is not currently available.";
+        return;
+    }
+
+    media::SupportedCodecs supported_codecs = media::EME_CODEC_NONE;
+
+    supported_codecs |= media::EME_CODEC_WEBM_OPUS;
+    supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
+    supported_codecs |= media::EME_CODEC_WEBM_VP8;
+    supported_codecs |= media::EME_CODEC_WEBM_VP9;
+#if defined(USE_PROPRIETARY_CODECS)
+    supported_codecs |= media::EME_CODEC_MP4_AVC1;
+    supported_codecs |= media::EME_CODEC_MP4_AAC;
+#endif  // defined(USE_PROPRIETARY_CODECS)
+
+    cdm::AddWidevineWithCodecs(
+        cdm::WIDEVINE, supported_codecs,
+        media::EmeRobustness::SW_SECURE_CRYPTO,       // Maximum audio robustness.
+        media::EmeRobustness::SW_SECURE_DECODE,       // Maximum video robustness.
+        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
+        media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
+        media::EmeFeatureSupport::REQUESTABLE,    // Persistent state.
+        media::EmeFeatureSupport::NOT_SUPPORTED,  // Distinctive identifier.
+        concrete_key_systems);
+}
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+void ContentRendererClientQt::AddKeySystems(std::vector<media::KeySystemInfo>* key_systems_info)
+{
+#if defined(ENABLE_PEPPER_CDMS)
+    AddExternalClearKey(key_systems_info);
+
+#if defined(WIDEVINE_CDM_AVAILABLE)
+    AddPepperBasedWidevine(key_systems_info);
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 }
 
 } // namespace

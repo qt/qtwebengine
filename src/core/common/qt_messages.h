@@ -64,3 +64,21 @@ IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentInnerText,
 IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)
 
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransportHost_SendMessage, std::vector<char> /*binaryJSON*/)
+
+//-----------------------------------------------------------------------------
+// Misc messages
+// These are messages sent from the renderer to the browser process.
+
+#if defined(ENABLE_PEPPER_CDMS)
+// Returns whether any internal plugin supporting |mime_type| is registered and
+// enabled. Does not determine whether the plugin can actually be instantiated
+// (e.g. whether it has all its dependencies).
+// When the returned *|is_available| is true, |additional_param_names| and
+// |additional_param_values| contain the name-value pairs, if any, specified
+// for the *first* non-disabled plugin found that is registered for |mime_type|.
+IPC_SYNC_MESSAGE_CONTROL1_3(QtWebEngineHostMsg_IsInternalPluginAvailableForMimeType,
+                            std::string /* mime_type */,
+                            bool /* is_available */,
+                            std::vector<base::string16> /* additional_param_names */,
+                            std::vector<base::string16> /* additional_param_values */)
+#endif

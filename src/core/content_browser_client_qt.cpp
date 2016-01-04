@@ -61,6 +61,7 @@
 #include "access_token_store_qt.h"
 #include "browser_context_adapter.h"
 #include "browser_context_qt.h"
+#include "browser_message_filter_qt.h"
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
 #include "desktop_screen_qt.h"
@@ -350,6 +351,9 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     // FIXME: Add a settings variable to enable/disable the file scheme.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(host->GetID(), url::kFileScheme);
     static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userScriptController()->renderProcessStartedWithHost(host);
+#if defined(ENABLE_PEPPER_CDMS)
+    host->AddFilter(new BrowserMessageFilterQt(host->GetID()));
+#endif
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()
