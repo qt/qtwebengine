@@ -9,6 +9,7 @@ GYP_CONFIG += \
     embedded=1 \
     enable_autofill_dialog=0 \
     enable_automation=0 \
+    enable_basic_printing=0 \
     enable_captive_portal_detection=0 \
     enable_extensions=0 \
     enable_google_now=0 \

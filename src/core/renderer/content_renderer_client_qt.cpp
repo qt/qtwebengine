@@ -50,6 +50,9 @@
 #endif
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "components/error_page/common/error_page_params.h"
+#if defined (ENABLE_BASIC_PRINTING)
+#include "components/printing/renderer/print_web_view_helper.h"
+#endif // if defined(ENABLE_BASIC_PRINTING)
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
 #include "content/public/renderer/render_frame.h"
@@ -65,6 +68,10 @@
 #include "content/public/common/web_preferences.h"
 
 #include "renderer/web_channel_ipc_transport.h"
+#if defined (ENABLE_BASIC_PRINTING)
+#include "renderer/print_web_view_helper_delegate_qt.h"
+#endif // if defined(ENABLE_BASIC_PRINTING)
+
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/user_script_controller.h"
@@ -112,6 +119,13 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
 #if defined(ENABLE_SPELLCHECK)
     new SpellCheckProvider(render_view, m_spellCheck.data());
 #endif
+
+#if defined(ENABLE_BASIC_PRINTING)
+    new printing::PrintWebViewHelper(
+        render_view,
+        scoped_ptr<printing::PrintWebViewHelper::Delegate>(
+            new PrintWebViewHelperDelegateQt()));
+#endif // defined(ENABLE_BASIC_PRINTING)
 }
 
 void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_frame)

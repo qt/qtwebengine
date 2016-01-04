@@ -76,6 +76,9 @@
 #include "location_provider_qt.h"
 #endif
 #include "media_capture_devices_dispatcher.h"
+#if defined(ENABLE_BASIC_PRINTING)
+#include "printing_message_filter_qt.h"
+#endif // defined(ENABLE_BASIC_PRINTING)
 #include "resource_dispatcher_host_delegate_qt.h"
 #include "user_script_controller_host.h"
 #include "web_contents_delegate_qt.h"
@@ -364,6 +367,9 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
 #if defined(ENABLE_SPELLCHECK)
     host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
+#if defined(ENABLE_BASIC_PRINTING)
+    host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
+#endif // defined(ENABLE_BASIC_PRINTING)
 }
 
 void ContentBrowserClientQt::ResourceDispatcherHostCreated()

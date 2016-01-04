@@ -4,6 +4,7 @@ include(common.pri)
 
 GYP_CONFIG += \
     disable_nacl=1 \
+    enable_basic_printing=0 \
     enable_plugins=0 \
     enable_webrtc=0 \
     use_ash=0 \

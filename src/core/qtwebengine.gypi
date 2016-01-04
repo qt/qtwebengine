@@ -120,5 +120,22 @@
       ['OS=="mac"', {
         'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
       }],
+      ['enable_basic_printing==1 or enable_print_preview==1', {
+        'dependencies': [
+          '<(chromium_src_dir)/components/components.gyp:printing_browser',
+          '<(chromium_src_dir)/components/components.gyp:printing_common',
+          '<(chromium_src_dir)/components/components.gyp:printing_renderer',
+        ],
+        'sources': [
+          'printing_message_filter_qt.cpp',
+          'print_view_manager_base_qt.cpp',
+          'print_view_manager_qt.cpp',
+          'printing_message_filter_qt.h',
+          'print_view_manager_base_qt.h',
+          'print_view_manager_qt.h',
+          'renderer/print_web_view_helper_delegate_qt.cpp',
+          'renderer/print_web_view_helper_delegate_qt.h',
+        ]
+      }],
     ],
 }

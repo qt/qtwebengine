@@ -118,7 +118,29 @@
                 '<(DEPTH)/chrome/renderer/spellchecker/platform_spelling_engine.h',
               ],
             }],
-          ]
+          ],
+        }],
+        ['enable_basic_printing==1 or enable_print_preview==1', {
+          'sources': [
+            '<(DEPTH)/chrome/browser/printing/print_job.cc',
+            '<(DEPTH)/chrome/browser/printing/print_job.h',
+            '<(DEPTH)/chrome/browser/printing/print_job_manager.cc',
+            '<(DEPTH)/chrome/browser/printing/print_job_manager.h',
+            '<(DEPTH)/chrome/browser/printing/print_job_worker.cc',
+            '<(DEPTH)/chrome/browser/printing/print_job_worker.h',
+            '<(DEPTH)/chrome/browser/printing/print_job_worker_owner.cc',
+            '<(DEPTH)/chrome/browser/printing/print_job_worker_owner.h',
+            '<(DEPTH)/chrome/browser/printing/printer_query.cc',
+            '<(DEPTH)/chrome/browser/printing/printer_query.h',
+            '<(DEPTH)/extensions/browser/notification_types.h',
+            '<(DEPTH)/extensions/browser/notification_types.cc',
+          ],
+          'dependencies': [
+            '<(chromium_src_dir)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+          ],
+          'include_dirs': [
+            '<(chromium_src_dir)/extensions',
+          ],
         }],
       ],
     },

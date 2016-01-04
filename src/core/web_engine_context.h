@@ -58,6 +58,12 @@ class BrowserMainRunner;
 class ContentMainRunner;
 }
 
+#if defined(ENABLE_BASIC_PRINTING)
+namespace printing {
+class PrintJobManager;
+}
+#endif // defined(ENABLE_BASIC_PRINTING)
+
 QT_FORWARD_DECLARE_CLASS(QObject)
 
 namespace QtWebEngineCore {
@@ -72,7 +78,9 @@ public:
 
     QtWebEngineCore::BrowserContextAdapter *defaultBrowserContext();
     QObject *globalQObject();
-
+#if defined(ENABLE_BASIC_PRINTING)
+    printing::PrintJobManager* getPrintJobManager();
+#endif // defined(ENABLE_BASIC_PRINTING)
     void destroyBrowserContext();
     void destroy();
 
@@ -88,6 +96,9 @@ private:
     QObject* m_globalQObject;
     QExplicitlySharedDataPointer<BrowserContextAdapter> m_defaultBrowserContext;
     scoped_ptr<devtools_http_handler::DevToolsHttpHandler> m_devtools;
+#if defined(ENABLE_BASIC_PRINTING)
+    scoped_ptr<printing::PrintJobManager> m_printJobManager;
+#endif // defined(ENABLE_BASIC_PRINTING)
 };
 
 } // namespace

@@ -48,6 +48,9 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
+#if defined(ENABLE_BASIC_PRINTING)
+#include "chrome/browser/printing/print_job_manager.h"
+#endif // defined(ENABLE_BASIC_PRINTING)
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"
@@ -287,6 +290,16 @@ WebEngineContext::WebEngineContext()
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
+
+#if defined(ENABLE_BASIC_PRINTING)
+    m_printJobManager.reset(new printing::PrintJobManager());
+#endif // defined(ENABLE_BASIC_PRINTING)
 }
 
+#if defined(ENABLE_BASIC_PRINTING)
+printing::PrintJobManager* WebEngineContext::getPrintJobManager()
+{
+    return m_printJobManager.get();
+}
+#endif // defined(ENABLE_BASIC_PRINTING)
 } // namespace
