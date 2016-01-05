@@ -115,6 +115,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
         or (file_path.startswith('components') and
+            not file_path.startswith('components/cdm') and
             not file_path.startswith('components/device_event_log') and
             not file_path.startswith('components/devtools_') and
             not file_path.startswith('components/error_page') and
