@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
     \code
     Component.onCompleted: {
-        WebEngine.settings.javaScriptEnabled = true;
+        WebEngine.settings.pluginsEnabled = true;
     }
     \endcode
 */
