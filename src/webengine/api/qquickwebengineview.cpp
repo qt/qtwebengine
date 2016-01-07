@@ -1017,8 +1017,7 @@ bool QQuickWebEngineView::canGoForward() const
 void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &callback)
 {
     Q_D(QQuickWebEngineView);
-    if (!d->adapter)
-        return;
+    d->ensureContentsAdapter();
     if (!callback.isUndefined()) {
         quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script);
         d->m_callbacks.insert(requestId, callback);
