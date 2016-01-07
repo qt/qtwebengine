@@ -77,6 +77,7 @@
 #include <QScreen>
 #include <QStringBuilder>
 #include <QUrl>
+#include <QTimer>
 #ifndef QT_NO_ACCESSIBILITY
 #include <private/qquickaccessibleattached_p.h>
 #endif // QT_NO_ACCESSIBILITY
@@ -779,7 +780,7 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
     d->explicitUrl = url;
     if (d->adapter)
         d->adapter->load(url);
-    if (!qmlEngine(this))
+    if (!qmlEngine(this) || isComponentComplete())
         d->ensureContentsAdapter();
 }
 
@@ -793,7 +794,7 @@ void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QQuickWebEngineView);
     d->explicitUrl = QUrl();
-    if (!qmlEngine(this))
+    if (!qmlEngine(this) || isComponentComplete())
         d->ensureContentsAdapter();
     if (d->adapter)
         d->adapter->setContent(html.toUtf8(), QStringLiteral("text/html;charset=UTF-8"), baseUrl);
@@ -1417,6 +1418,12 @@ void QQuickWebEngineView::componentComplete()
 {
     Q_D(QQuickWebEngineView);
     QQuickItem::componentComplete();
+    QTimer::singleShot(0, this, &QQuickWebEngineView::lazyInitialize);
+}
+
+void QQuickWebEngineView::lazyInitialize()
+{
+    Q_D(QQuickWebEngineView);
     d->ensureContentsAdapter();
 }
 

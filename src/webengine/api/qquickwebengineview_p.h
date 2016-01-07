@@ -290,6 +290,9 @@ public Q_SLOTS:
     Q_REVISION(2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(2) void triggerWebAction(WebAction action);
 
+private Q_SLOTS:
+    void lazyInitialize();
+
 Q_SIGNALS:
     void titleChanged();
     void urlChanged();
