@@ -57,7 +57,8 @@ namespace QtWebEngineCore {
 class WebChannelTransport : public gin::Wrappable<WebChannelTransport> {
 public:
     static gin::WrapperInfo kWrapperInfo;
-    static void Install(blink::WebFrame *frame);
+    static void Install(blink::WebFrame *frame, uint worldId);
+    static void Uninstall(blink::WebFrame *frame, uint worldId);
 private:
     content::RenderView *GetRenderView(v8::Isolate *isolate);
     WebChannelTransport() { }
@@ -89,11 +90,15 @@ private:
 
 gin::WrapperInfo WebChannelTransport::kWrapperInfo = { gin::kEmbedderNativeGin };
 
-void WebChannelTransport::Install(blink::WebFrame *frame)
+void WebChannelTransport::Install(blink::WebFrame *frame, uint worldId)
 {
     v8::Isolate *isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+    v8::Handle<v8::Context> context;
+    if (worldId == 0)
+        context = frame->mainWorldScriptContext();
+    else
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
     v8::Context::Scope contextScope(context);
 
     gin::Handle<WebChannelTransport> transport = gin::CreateHandle(isolate, new WebChannelTransport);
@@ -104,6 +109,24 @@ void WebChannelTransport::Install(blink::WebFrame *frame)
         global->Set(gin::StringToV8(isolate, "qt"), qt);
     }
     qt->Set(gin::StringToV8(isolate, "webChannelTransport"), transport.ToV8());
+}
+
+void WebChannelTransport::Uninstall(blink::WebFrame *frame, uint worldId)
+{
+    v8::Isolate *isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context;
+    if (worldId == 0)
+        context = frame->mainWorldScriptContext();
+    else
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
+    v8::Context::Scope contextScope(context);
+
+    v8::Handle<v8::Object> global(context->Global());
+    v8::Handle<v8::Object> qt = global->Get(gin::StringToV8(isolate, "qt"))->ToObject();
+    if (qt.IsEmpty())
+        return;
+    qt->Delete(gin::StringToV8(isolate, "webChannelTransport"));
 }
 
 gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
@@ -130,15 +153,23 @@ WebChannelIPCTransport::WebChannelIPCTransport(content::RenderView *renderView)
 {
 }
 
-void WebChannelIPCTransport::installExtension()
+void WebChannelIPCTransport::installWebChannel(uint worldId)
 {
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
         return;
-    WebChannelTransport::Install(webView->mainFrame());
+    WebChannelTransport::Install(webView->mainFrame(), worldId);
 }
 
-void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJSON)
+void WebChannelIPCTransport::uninstallWebChannel(uint worldId)
+{
+    blink::WebView *webView = render_view()->GetWebView();
+    if (!webView)
+        return;
+    WebChannelTransport::Uninstall(webView->mainFrame(), worldId);
+}
+
+void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId)
 {
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
@@ -151,7 +182,11 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     v8::Isolate *isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
     blink::WebFrame *frame = webView->mainFrame();
-    v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+    v8::Handle<v8::Context> context;
+    if (worldId == 0)
+        context = frame->mainWorldScriptContext();
+    else
+        context = frame->toWebLocalFrame()->isolatedWorldScriptContext(worldId, 0);
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> global(context->Global());
@@ -183,7 +218,8 @@ bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(WebChannelIPCTransport, message)
-        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Install, installExtension)
+        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Install, installWebChannel)
+        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Uninstall, uninstallWebChannel)
         IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Message, dispatchWebChannelMessage)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()

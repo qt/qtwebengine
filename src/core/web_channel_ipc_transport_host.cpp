@@ -46,15 +46,25 @@
 
 namespace QtWebEngineCore {
 
-WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *contents, QObject *parent)
+WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *contents, uint worldId, QObject *parent)
     : QWebChannelAbstractTransport(parent)
     , content::WebContentsObserver(contents)
+    , m_worldId(worldId)
 {
-    Send(new WebChannelIPCTransport_Install(routing_id()));
+    Send(new WebChannelIPCTransport_Install(routing_id(), m_worldId));
 }
 
 WebChannelIPCTransportHost::~WebChannelIPCTransportHost()
 {
+}
+
+void WebChannelIPCTransportHost::setWorldId(uint worldId)
+{
+    if (worldId == m_worldId)
+        return;
+    Send(new WebChannelIPCTransport_Uninstall(routing_id(), m_worldId));
+    m_worldId = worldId;
+    Send(new WebChannelIPCTransport_Install(routing_id(), m_worldId));
 }
 
 void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
@@ -62,7 +72,7 @@ void WebChannelIPCTransportHost::sendMessage(const QJsonObject &message)
     QJsonDocument doc(message);
     int size = 0;
     const char *rawData = doc.rawData(&size);
-    Send(new WebChannelIPCTransport_Message(routing_id(), std::vector<char>(rawData, rawData + size)));
+    Send(new WebChannelIPCTransport_Message(routing_id(), std::vector<char>(rawData, rawData + size), m_worldId));
 }
 
 void WebChannelIPCTransportHost::onWebChannelMessage(const std::vector<char> &message)

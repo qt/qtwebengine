@@ -248,6 +248,7 @@ public:
 
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *);
+    void setWebChannel(QWebChannel *, uint worldId);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
 

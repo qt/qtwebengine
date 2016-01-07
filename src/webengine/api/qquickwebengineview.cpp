@@ -109,9 +109,10 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , isLoading(false)
     , m_activeFocusOnPress(true)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
+    , m_webChannel(0)
+    , m_webChannelWorld(0)
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
-    , m_webChannel(0)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
@@ -733,7 +734,7 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     // associate the webChannel with the new adapter
     if (m_webChannel)
-        adapter->setWebChannel(m_webChannel);
+        adapter->setWebChannel(m_webChannel, m_webChannelWorld);
 
     // set initial background color if non-default
     if (m_backgroundColor != Qt::white)
@@ -782,7 +783,7 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
         if (m_backgroundColor != Qt::white)
             adapter->backgroundColorChanged();
         if (m_webChannel)
-            adapter->setWebChannel(m_webChannel);
+            adapter->setWebChannel(m_webChannel, m_webChannelWorld);
         if (explicitUrl.isValid())
             adapter->load(explicitUrl);
         // push down the page's user scripts
@@ -1209,7 +1210,7 @@ QQmlWebChannel *QQuickWebEngineView::webChannel()
     if (!d->m_webChannel) {
         d->m_webChannel = new QQmlWebChannel(this);
         if (d->adapter)
-            d->adapter->setWebChannel(d->m_webChannel);
+            d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
     }
 
     return d->m_webChannel;
@@ -1222,8 +1223,25 @@ void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
         return;
     d->m_webChannel = webChannel;
     if (d->adapter)
-        d->adapter->setWebChannel(webChannel);
+        d->adapter->setWebChannel(webChannel, d->m_webChannelWorld);
     Q_EMIT webChannelChanged();
+}
+
+uint QQuickWebEngineView::webChannelWorld() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->m_webChannelWorld;
+}
+
+void QQuickWebEngineView::setWebChannelWorld(uint webChannelWorld)
+{
+    Q_D(QQuickWebEngineView);
+    if (d->m_webChannelWorld == webChannelWorld)
+        return;
+    d->m_webChannelWorld = webChannelWorld;
+    if (d->adapter)
+        d->adapter->setWebChannel(d->m_webChannel, d->m_webChannelWorld);
+    Q_EMIT webChannelWorldChanged(webChannelWorld);
 }
 
 void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature feature, bool granted)

@@ -24,6 +24,7 @@
 #include <qwebenginescriptcollection.h>
 #include <qwebengineview.h>
 #include "../util.h"
+#include <QWebChannel>
 
 class tst_QWebEngineScript: public QObject {
     Q_OBJECT
@@ -34,7 +35,8 @@ private Q_SLOTS:
     void injectionPoint_data();
     void scriptWorld();
     void scriptModifications();
-
+    void webChannel_data();
+    void webChannel();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -148,6 +150,72 @@ void tst_QWebEngineScript::scriptModifications()
     QWebEngineScript s = page.scripts().findScript(QStringLiteral("String1"));
     QVERIFY(page.scripts().remove(s));
     QVERIFY(page.scripts().count() == 0);
+}
+
+class TestObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+public:
+    TestObject(QObject *parent = 0) : QObject(parent) { }
+
+    void setText(const QString &text)
+    {
+        if (text == m_text)
+            return;
+        m_text = text;
+        emit textChanged(text);
+    }
+
+    QString text() const { return m_text; }
+
+signals:
+    void textChanged(const QString &text);
+
+private:
+    QString m_text;
+};
+
+
+void tst_QWebEngineScript::webChannel_data()
+{
+    QTest::addColumn<int>("worldId");
+    QTest::newRow("MainWorld") << static_cast<int>(QWebEngineScript::MainWorld);
+    QTest::newRow("ApplicationWorld") << static_cast<int>(QWebEngineScript::ApplicationWorld);
+}
+
+void tst_QWebEngineScript::webChannel()
+{
+    QFETCH(int, worldId);
+    QWebEnginePage page;
+    TestObject testObject;
+    QScopedPointer<QWebChannel> channel(new QWebChannel(this));
+    channel->registerObject(QStringLiteral("object"), &testObject);
+    page.setWebChannel(channel.data(), worldId);
+
+    QFile qwebchanneljs(":/qwebchannel.js");
+    QVERIFY(qwebchanneljs.exists());
+    qwebchanneljs.open(QFile::ReadOnly);
+    QByteArray scriptSrc = qwebchanneljs.readAll();
+    qwebchanneljs.close();
+    QWebEngineScript script;
+    script.setInjectionPoint(QWebEngineScript::DocumentCreation);
+    script.setWorldId(worldId);
+    script.setSourceCode(QString::fromLatin1(scriptSrc));
+    page.scripts().insert(script);
+    page.setHtml(QStringLiteral("<html><body></body></html>"));
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    page.runJavaScript(QLatin1String(
+                                "new QWebChannel(qt.webChannelTransport,"
+                                "  function(channel) {"
+                                "    channel.objects.object.text = 'test';"
+                                "  }"
+                                ");"), worldId);
+    waitForSignal(&testObject, SIGNAL(textChanged(QString)));
+    QCOMPARE(testObject.text(), QStringLiteral("test"));
+
+    if (worldId != QWebEngineScript::MainWorld)
+        QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
 }
 
 QTEST_MAIN(tst_QWebEngineScript)

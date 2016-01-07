@@ -85,6 +85,7 @@ public:
     scoped_ptr<RenderViewObserverHostQt> renderViewObserverHost;
     scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
     QWebChannel *webChannel;
+    unsigned int webChannelWorld;
     WebContentsAdapterClient *adapterClient;
     quint64 nextRequestId;
     int lastFindRequestId;

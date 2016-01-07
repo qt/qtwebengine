@@ -150,7 +150,7 @@ public:
     BrowserContextQt* browserContext();
     BrowserContextAdapter* browserContextAdapter();
     QWebChannel *webChannel() const;
-    void setWebChannel(QWebChannel *);
+    void setWebChannel(QWebChannel *, uint worldId);
 
     QPointF lastScrollOffset() const;
     QSizeF lastContentsSize() const;

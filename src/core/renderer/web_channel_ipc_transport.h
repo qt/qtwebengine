@@ -52,8 +52,9 @@ public:
     WebChannelIPCTransport(content::RenderView *);
 
 private:
-    void dispatchWebChannelMessage(const std::vector<char> &binaryJSON);
-    void installExtension();
+    void dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId);
+    void installWebChannel(uint worldId);
+    void uninstallWebChannel(uint worldId);
     virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
 };
 

@@ -315,6 +315,7 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     // This has to be the first thing we create, and the last we destroy.
     : engineContext(WebEngineContext::current())
     , webChannel(0)
+    , webChannelWorld(0)
     , adapterClient(0)
     , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
@@ -961,17 +962,23 @@ QWebChannel *WebContentsAdapter::webChannel() const
     return d->webChannel;
 }
 
-void WebContentsAdapter::setWebChannel(QWebChannel *channel)
+void WebContentsAdapter::setWebChannel(QWebChannel *channel, uint worldId)
 {
     Q_D(WebContentsAdapter);
-    if (d->webChannel == channel)
+    if (d->webChannel == channel && d->webChannelWorld == worldId)
         return;
+
     if (!d->webChannelTransport.get())
-        d->webChannelTransport.reset(new WebChannelIPCTransportHost(d->webContents.get()));
-    else
-        d->webChannel->disconnectFrom(d->webChannelTransport.get());
+        d->webChannelTransport.reset(new WebChannelIPCTransportHost(d->webContents.get(), worldId));
+    else {
+        if (d->webChannel != channel)
+            d->webChannel->disconnectFrom(d->webChannelTransport.get());
+        if (d->webChannelWorld != worldId)
+            d->webChannelTransport->setWorldId(worldId);
+    }
 
     d->webChannel = channel;
+    d->webChannelWorld = worldId;
     if (!channel) {
         d->webChannelTransport.reset();
         return;

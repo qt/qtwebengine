@@ -111,6 +111,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION 3)
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged REVISION 3)
+    Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
@@ -274,6 +275,8 @@ public:
     QQmlWebChannel *webChannel();
     void setWebChannel(QQmlWebChannel *);
     QQuickWebEngineHistory *navigationHistory() const;
+    uint webChannelWorld() const;
+    void setWebChannelWorld(uint);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     QQuickWebEngineTestSupport *testSupport() const;
@@ -329,6 +332,7 @@ Q_SIGNALS:
     Q_REVISION(3) void scrollPositionChanged(const QPointF& position);
     Q_REVISION(3) void audioMutedChanged(bool muted);
     Q_REVISION(3) void wasRecentlyAudibleChanged(bool wasRecentlyAudible);
+    Q_REVISION(3) void webChannelWorldChanged(uint);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);

@@ -52,15 +52,19 @@ class WebChannelIPCTransportHost : public QWebChannelAbstractTransport
         , public content::WebContentsObserver
 {
 public:
-    WebChannelIPCTransportHost(content::WebContents *, QObject *parent = 0);
+    WebChannelIPCTransportHost(content::WebContents *, uint worldId = 0, QObject *parent = 0);
     virtual ~WebChannelIPCTransportHost();
 
     // QWebChannelAbstractTransport
     virtual void sendMessage(const QJsonObject &message) Q_DECL_OVERRIDE;
 
+    void setWorldId(uint worldId);
+    uint worldId() const { return m_worldId; }
+
 private:
     bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
     void onWebChannelMessage(const std::vector<char> &message);
+    uint m_worldId;
 };
 
 } // namespace

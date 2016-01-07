@@ -551,7 +551,7 @@ QWebEngineSettings *QWebEnginePage::settings() const
  * that is exposed in the JavaScript context of this page as \c qt.webChannelTransport.
  *
  * \since 5.5
- * \sa QWebChannel
+ * \sa setWebChannel
  */
 QWebChannel *QWebEnginePage::webChannel() const
 {
@@ -560,20 +560,41 @@ QWebChannel *QWebEnginePage::webChannel() const
 }
 
 /*!
- * Sets the web channel instance to be used by this page to \a channel and connects it to
- * web engine's transport using Chromium IPC messages. The transport is exposed in the JavaScript
- * context of this page as
- * \c qt.webChannelTransport, which should be used when using the \l{Qt WebChannel JavaScript API}.
+ * \overload
  *
- * \note The page does not take ownership of the channel object.
+ * Sets the web channel instance to be used by this page to \a channel and installs
+ * it in the main JavaScript world.
+ *
+ * With this method the web channel can be accessed by web page content. If the content
+ * is not under your control and might be hostile, this could be a security issue and
+ * you should consider installing it in a private JavaScript world.
  *
  * \since 5.5
+ * \sa QWebEngineScript::MainWorld
  */
 
 void QWebEnginePage::setWebChannel(QWebChannel *channel)
 {
+    setWebChannel(channel, QWebEngineScript::MainWorld);
+}
+
+/*!
+ * Sets the web channel instance to be used by this page to \a channel and connects it to
+ * web engine's transport using Chromium IPC messages. The transport is exposed in the JavaScript
+ * world \a worldId as
+ * \c qt.webChannelTransport, which should be used when using the \l{Qt WebChannel JavaScript API}.
+ *
+ * \note The page does not take ownership of the channel object.
+ * \note Only one web channel can be installed per page, setting one even in another JavaScript
+ *       world uninstalls any already installed web channel.
+ *
+ * \since 5.7
+ * \sa QWebEngineScript::ScriptWorldId
+ */
+void QWebEnginePage::setWebChannel(QWebChannel *channel, uint worldId)
+{
     Q_D(QWebEnginePage);
-    d->adapter->setWebChannel(channel);
+    d->adapter->setWebChannel(channel, worldId);
 }
 
 /*!
