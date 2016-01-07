@@ -262,7 +262,7 @@ ApplicationWindow {
                             id: pluginsEnabled
                             text: "Plugins On"
                             checkable: true
-                            checked: WebEngine.settings.pluginsEnabled
+                            checked: true
                         }
                         MenuItem {
                             id: fullScreenSupportEnabled
