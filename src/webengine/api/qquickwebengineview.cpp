@@ -111,6 +111,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
+    , m_webChannel(0)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
@@ -691,11 +692,6 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     Q_Q(QQuickWebEngineView);
 
-    // memorize what webChannel we had for the previous adapter
-    QQmlWebChannel *qmlWebChannel = NULL;
-    if (adapter)
-        qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
-
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
     WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter);
@@ -704,8 +700,9 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     adapter->initialize(this);
 
     // associate the webChannel with the new adapter
-    if (qmlWebChannel)
-        adapter->setWebChannel(qmlWebChannel);
+    if (m_webChannel)
+        adapter->setWebChannel(m_webChannel);
+
     // set initial background color if non-default
     if (m_backgroundColor != Qt::white)
         adapter->backgroundColorChanged();
@@ -751,6 +748,8 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
         adapter->initialize(this);
         if (m_backgroundColor != Qt::white)
             adapter->backgroundColorChanged();
+        if (m_webChannel)
+            adapter->setWebChannel(m_webChannel);
         if (explicitUrl.isValid())
             adapter->load(explicitUrl);
         // push down the page's user scripts
@@ -898,11 +897,8 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         QUrl activeUrl = adapter->activeUrl();
-        QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
         adapter = 0;
         ensureContentsAdapter();
-        if (qmlWebChannel)
-            adapter->setWebChannel(qmlWebChannel);
 
         if (!explicitUrl.isValid() && activeUrl.isValid())
             adapter->load(activeUrl);
@@ -1119,23 +1115,24 @@ QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
 QQmlWebChannel *QQuickWebEngineView::webChannel()
 {
     Q_D(QQuickWebEngineView);
-    d->ensureContentsAdapter();
-    QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(d->adapter->webChannel());
-    Q_ASSERT(!d->adapter->webChannel() || qmlWebChannel);
-    if (!qmlWebChannel) {
-        qmlWebChannel = new QQmlWebChannel(this);
-        d->adapter->setWebChannel(qmlWebChannel);
+    if (!d->m_webChannel) {
+        d->m_webChannel = new QQmlWebChannel(this);
+        if (d->adapter)
+            d->adapter->setWebChannel(d->m_webChannel);
     }
-    return qmlWebChannel;
+
+    return d->m_webChannel;
 }
 
 void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
 {
     Q_D(QQuickWebEngineView);
-    bool notify = (d->adapter->webChannel() == webChannel);
-    d->adapter->setWebChannel(webChannel);
-    if (notify)
-        Q_EMIT webChannelChanged();
+    if (d->m_webChannel == webChannel)
+        return;
+    d->m_webChannel = webChannel;
+    if (d->adapter)
+        d->adapter->setWebChannel(webChannel);
+    Q_EMIT webChannelChanged();
 }
 
 void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature feature, bool granted)
