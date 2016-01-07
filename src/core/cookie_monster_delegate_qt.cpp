@@ -44,8 +44,6 @@
 #include "api/qwebenginecookiestore_p.h"
 #include "type_conversion.h"
 
-#include <QStringBuilder>
-
 namespace QtWebEngineCore {
 
 static GURL sourceUrlForCookie(const QNetworkCookie &cookie) {

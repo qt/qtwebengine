@@ -48,7 +48,6 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QQmlProperty>
-#include <QStringBuilder>
 
 // Uncomment for QML debugging
 //#define UI_DELEGATES_DEBUG

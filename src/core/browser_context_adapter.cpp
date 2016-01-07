@@ -52,7 +52,6 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QString>
-#include <QStringBuilder>
 #include <QStandardPaths>
 
 #include <numeric>

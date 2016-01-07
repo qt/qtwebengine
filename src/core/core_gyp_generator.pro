@@ -11,6 +11,7 @@ include(core_common.pri)
 
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
+           QT_USE_QSTRINGBUILDER \
            Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS \
            QTWEBENGINEPROCESS_NAME=\\\"$$QTWEBENGINEPROCESS_NAME\\\" \
            QTWEBENGINECORE_VERSION_STR=\\\"$$MODULE_VERSION\\\" \

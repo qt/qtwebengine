@@ -49,7 +49,6 @@
 
 #include <QCoreApplication>
 #include <QFile>
-#include <QStringBuilder>
 
 #if defined(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
@@ -153,7 +152,6 @@ void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* p
 #endif
 
 #include <QCoreApplication>
-#include <QStringBuilder>
 
 namespace QtWebEngineCore {
 

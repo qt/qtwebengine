@@ -52,7 +52,6 @@
 #include <QLibraryInfo>
 #include <QStandardPaths>
 #include <QString>
-#include <QStringBuilder>
 
 #ifndef QTWEBENGINEPROCESS_NAME
 #error "No name defined for QtWebEngine's process"

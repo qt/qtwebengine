@@ -75,7 +75,6 @@
 #include <QQmlWebChannel>
 #include <QQuickWebEngineProfile>
 #include <QScreen>
-#include <QStringBuilder>
 #include <QUrl>
 #include <QTimer>
 #ifndef QT_NO_ACCESSIBILITY
