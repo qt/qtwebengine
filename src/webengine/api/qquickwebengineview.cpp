@@ -707,6 +707,9 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     // associate the webChannel with the new adapter
     if (qmlWebChannel)
         adapter->setWebChannel(qmlWebChannel);
+    // set initial background color if non-default
+    if (m_backgroundColor != Qt::white)
+        adapter->backgroundColorChanged();
 
     // re-bind the userscrips to the new adapter
     Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
@@ -747,6 +750,8 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
     if (!adapter) {
         adapter = new WebContentsAdapter();
         adapter->initialize(this);
+        if (m_backgroundColor != Qt::white)
+            adapter->backgroundColorChanged();
         if (explicitUrl.isValid())
             adapter->load(explicitUrl);
         // push down the page's user scripts
@@ -1063,8 +1068,8 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
     if (color == d->m_backgroundColor)
         return;
     d->m_backgroundColor = color;
-    d->ensureContentsAdapter();
-    d->adapter->backgroundColorChanged();
+    if (d->adapter)
+        d->adapter->backgroundColorChanged();
     emit backgroundColorChanged();
 }
 
