@@ -156,6 +156,13 @@ static inline QVariant evaluateJavaScriptSync(QWebEnginePage *page, const QStrin
     return spy.waitForResult();
 }
 
+static inline QVariant evaluateJavaScriptSyncInWorld(QWebEnginePage *page, const QString &script, int worldId)
+{
+    CallbackSpy<QVariant> spy;
+    page->runJavaScript(script, worldId, spy.ref());
+    return spy.waitForResult();
+}
+
 static inline QUrl baseUrlSync(QWebEnginePage *page)
 {
     CallbackSpy<QVariant> spy;

@@ -284,6 +284,7 @@ public:
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
+    Q_REVISION(3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void goBack();
     void goForward();

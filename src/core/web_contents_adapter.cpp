@@ -170,7 +170,8 @@ static QVariant fromJSValue(const base::Value *result)
 
 static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint64 requestId, const base::Value *result)
 {
-    adapterClient->didRunJavaScript(requestId, fromJSValue(result));
+    if (requestId)
+        adapterClient->didRunJavaScript(requestId, fromJSValue(result));
 }
 
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
@@ -719,21 +720,30 @@ QAccessibleInterface *WebContentsAdapter::browserAccessible()
 }
 #endif // QT_NO_ACCESSIBILITY
 
-void WebContentsAdapter::runJavaScript(const QString &javaScript)
+void WebContentsAdapter::runJavaScript(const QString &javaScript, quint32 worldId)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
-    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript));
+    if (worldId == 0) {
+        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript));
+        return;
+    }
+
+    content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, CallbackDirectory::NoCallbackId);
+    rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), callback, worldId);
 }
 
-quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript)
+quint64 WebContentsAdapter::runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId)
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
     content::RenderFrameHost::JavaScriptResultCallback callback = base::Bind(&callbackOnEvaluateJS, d->adapterClient, d->nextRequestId);
-    rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
+    if (worldId == 0)
+        rvh->GetMainFrame()->ExecuteJavaScript(toString16(javaScript), callback);
+    else
+        rvh->GetMainFrame()->ExecuteJavaScriptInIsolatedWorld(toString16(javaScript), callback, worldId);
     return d->nextRequestId++;
 }
 

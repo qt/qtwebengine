@@ -235,10 +235,13 @@ public:
     QSizeF contentsSize() const;
 
     void runJavaScript(const QString& scriptSource);
+    void runJavaScript(const QString& scriptSource, quint32 worldId);
 #ifdef Q_QDOC
     void runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback);
+    void runJavaScript(const QString& scriptSource, quint32 worldId, FunctorOrLambda resultCallback);
 #else
     void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
+    void runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback);
 #endif
     QWebEngineScriptCollection &scripts();
     QWebEngineSettings *settings() const;

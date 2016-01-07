@@ -115,12 +115,14 @@ void tst_QWebEngineScript::scriptWorld()
     page.load(QUrl("about:blank"));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;"), QVariant::fromValue(true));
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) == \"undefined\"", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
     script.setWorldId(QWebEngineScript::ApplicationWorld);
     page.scripts().clear();
     page.scripts().insert(script);
     page.load(QUrl("about:blank"));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) == \"undefined\""), QVariant::fromValue(true));
+    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
 }
 
 void tst_QWebEngineScript::scriptModifications()

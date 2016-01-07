@@ -92,7 +92,7 @@ void UserScriptController::RenderViewObserverHelper::runScripts(UserScriptData::
             continue;
         blink::WebScriptSource source(blink::WebString::fromUTF8(script.source), script.url);
         if (script.worldId)
-            frame->executeScriptInIsolatedWorld(script.worldId, &source, /*numSources = */1, /*contentScriptExtentsionGroup = */ 1);
+            frame->executeScriptInIsolatedWorld(script.worldId, &source, /*numSources = */1, /*contentScriptExtentsionGroup = */ 0);
         else
             frame->executeScript(source);
     }

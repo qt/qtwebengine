@@ -108,8 +108,8 @@ public:
     void serializeNavigationHistory(QDataStream &output);
     void setZoomFactor(qreal);
     qreal currentZoomFactor() const;
-    void runJavaScript(const QString &javaScript);
-    quint64 runJavaScriptCallbackResult(const QString &javaScript);
+    void runJavaScript(const QString &javaScript, quint32 worldId);
+    quint64 runJavaScriptCallbackResult(const QString &javaScript, quint32 worldId);
     quint64 fetchDocumentMarkup();
     quint64 fetchDocumentInnerText();
     quint64 findText(const QString &subString, bool caseSensitively, bool findBackward);
