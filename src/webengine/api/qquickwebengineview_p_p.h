@@ -171,6 +171,7 @@ public:
     virtual void moveValidationMessage(const QRect &anchor) Q_DECL_OVERRIDE;
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
                                      int exitCode) Q_DECL_OVERRIDE;
+    virtual void requestGeometryChange(const QRect &geometry) Q_DECL_OVERRIDE { Q_UNUSED(geometry); }
 
     virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
 

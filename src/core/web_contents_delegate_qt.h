@@ -87,6 +87,8 @@ public:
     virtual bool AddMessageToConsole(content::WebContents* source, int32 level, const base::string16& message, int32 line_no, const base::string16& source_id) Q_DECL_OVERRIDE;
     virtual void FindReply(content::WebContents *source, int request_id, int number_of_matches, const gfx::Rect& selection_rect, int active_match_ordinal, bool final_update) Q_DECL_OVERRIDE;
     virtual void RequestMediaAccessPermission(content::WebContents* web_contents, const content::MediaStreamRequest& request, const content::MediaResponseCallback& callback) Q_DECL_OVERRIDE;
+    virtual void MoveContents(content::WebContents *source, const gfx::Rect &pos) Q_DECL_OVERRIDE;
+    virtual bool IsPopupOrPanel(const content::WebContents *source) const Q_DECL_OVERRIDE;
     virtual void UpdateTargetURL(content::WebContents* source, const GURL& url) Q_DECL_OVERRIDE;
     virtual void RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target) Q_DECL_OVERRIDE;
     virtual void ShowValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view, const base::string16 &main_text, const base::string16 &sub_text) Q_DECL_OVERRIDE;

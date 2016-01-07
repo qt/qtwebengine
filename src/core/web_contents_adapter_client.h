@@ -237,7 +237,7 @@ public:
     virtual void moveValidationMessage(const QRect &anchor) = 0;
     RenderProcessTerminationStatus renderProcessExitStatus(int);
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
-
+    virtual void requestGeometryChange(const QRect &geometry) = 0;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
 
     virtual BrowserContextAdapter* browserContextAdapter() = 0;

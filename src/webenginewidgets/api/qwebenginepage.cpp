@@ -1037,6 +1037,12 @@ void QWebEnginePagePrivate::renderProcessTerminated(RenderProcessTerminationStat
                                       terminationStatus), exitCode);
 }
 
+void QWebEnginePagePrivate::requestGeometryChange(const QRect &geometry)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->geometryChangeRequested(geometry);
+}
+
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
