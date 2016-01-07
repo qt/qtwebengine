@@ -106,7 +106,7 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path, cons
 void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
 {
     QStringList pluginPaths;
-#if defined(Q_OS_WIN) && defined(Q_PROCESSOR_X86_32)
+#if defined(Q_OS_WIN)
     QString winDir = QDir::fromNativeSeparators(qgetenv("WINDIR"));
     if (winDir.isEmpty())
         winDir = QString::fromLatin1("C:/Windows");
@@ -133,7 +133,6 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
         if (!QFile(*it).exists())
             continue;
         plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), std::string()));
-        return;
     }
 }
 
