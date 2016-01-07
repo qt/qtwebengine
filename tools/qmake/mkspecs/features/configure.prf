@@ -45,8 +45,8 @@ defineTest(runConfigure) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
             else: log("System $$package not found. Using Chromium's copy.$${EOL}")
         }
-        packagesExist("\'vpx >= 1.5\'"): WEBENGINE_CONFIG += use_system_vpx
-        else: log("System vpx >= 1.5 not found. Using Chromium's copy.$${EOL}")
+        config_libvpx: WEBENGINE_CONFIG += use_system_vpx
+        else: log("Compatible system libvpx not found. Using Chromium's copy.$${EOL}")
         config_srtp: WEBENGINE_CONFIG += use_system_libsrtp
         else: log("System libsrtp not found. Using Chromium's copy.$${EOL}")
         config_snappy: WEBENGINE_CONFIG += use_system_snappy
