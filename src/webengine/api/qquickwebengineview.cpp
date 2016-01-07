@@ -505,6 +505,11 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
     Q_EMIT q->newViewRequested(&request);
 }
 
+bool QQuickWebEngineViewPrivate::isBeingAdopted()
+{
+    return false;
+}
+
 void QQuickWebEngineViewPrivate::close()
 {
     Q_Q(QQuickWebEngineView);
