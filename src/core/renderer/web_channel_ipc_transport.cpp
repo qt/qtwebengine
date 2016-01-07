@@ -42,6 +42,10 @@
 #include "common/qt_messages.h"
 
 #include "content/public/renderer/render_view.h"
+#include "gin/arguments.h"
+#include "gin/handle.h"
+#include "gin/object_template_builder.h"
+#include "gin/wrappable.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -50,34 +54,22 @@
 
 namespace QtWebEngineCore {
 
-static const char kWebChannelTransportExtensionName[] = "v8/WebChannelTransport";
-
-static const char kWebChannelTransportApi[] =
-        "if (typeof(qt) === 'undefined')" \
-        "  qt = {};" \
-        "if (typeof(qt.webChannelTransport) === 'undefined')" \
-        "  qt.webChannelTransport = {};" \
-        "qt.webChannelTransport.send = function(message) {" \
-        "  native function NativeQtSendMessage();" \
-        "  NativeQtSendMessage(message);" \
-        "};";
-
-class WebChannelTransportExtension : public v8::Extension {
+class WebChannelTransport : public gin::Wrappable<WebChannelTransport> {
 public:
-    static content::RenderView *GetRenderView();
+    static gin::WrapperInfo kWrapperInfo;
+    static void Install(blink::WebFrame *frame);
+private:
+    content::RenderView *GetRenderView(v8::Isolate *isolate);
+    WebChannelTransport() { }
+    virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate *isolate) override;
 
-    WebChannelTransportExtension() : v8::Extension(kWebChannelTransportExtensionName, kWebChannelTransportApi)
+    void NativeQtSendMessage(gin::Arguments *args)
     {
-    }
-
-    virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(v8::Isolate* isolate, v8::Handle<v8::String> name) Q_DECL_OVERRIDE;
-
-    static void NativeQtSendMessage(const v8::FunctionCallbackInfo<v8::Value>& args)
-    {
-        content::RenderView *renderView = GetRenderView();
-        if (!renderView || args.Length() != 1)
+        content::RenderView *renderView = GetRenderView(args->isolate());
+        if (!renderView || args->Length() != 1)
             return;
-        v8::Handle<v8::Value> val = args[0];
+        v8::Handle<v8::Value> val;
+        args->GetNext(&val);
         if (!val->IsString() && !val->IsStringObject())
             return;
         v8::String::Utf8Value utf8(val->ToString());
@@ -91,11 +83,37 @@ public:
         const char *rawData = doc.rawData(&size);
         renderView->Send(new WebChannelIPCTransportHost_SendMessage(renderView->GetRoutingID(), std::vector<char>(rawData, rawData + size)));
     }
+
+    DISALLOW_COPY_AND_ASSIGN(WebChannelTransport);
 };
 
-content::RenderView *WebChannelTransportExtension::GetRenderView()
+gin::WrapperInfo WebChannelTransport::kWrapperInfo = { gin::kEmbedderNativeGin };
+
+void WebChannelTransport::Install(blink::WebFrame *frame)
 {
-    blink::WebLocalFrame *webframe = blink::WebLocalFrame::frameForCurrentContext();
+    v8::Isolate *isolate = v8::Isolate::GetCurrent();
+    v8::HandleScope handleScope(isolate);
+    v8::Handle<v8::Context> context = frame->mainWorldScriptContext();
+    v8::Context::Scope contextScope(context);
+
+    gin::Handle<WebChannelTransport> transport = gin::CreateHandle(isolate, new WebChannelTransport);
+    v8::Handle<v8::Object> global = context->Global();
+    v8::Handle<v8::Object> qt = global->Get(gin::StringToV8(isolate, "qt"))->ToObject();
+    if (qt.IsEmpty()) {
+        qt = v8::Object::New(isolate);
+        global->Set(gin::StringToV8(isolate, "qt"), qt);
+    }
+    qt->Set(gin::StringToV8(isolate, "webChannelTransport"), transport.ToV8());
+}
+
+gin::ObjectTemplateBuilder WebChannelTransport::GetObjectTemplateBuilder(v8::Isolate *isolate)
+{
+    return gin::Wrappable<WebChannelTransport>::GetObjectTemplateBuilder(isolate).SetMethod("send", &WebChannelTransport::NativeQtSendMessage);
+}
+
+content::RenderView *WebChannelTransport::GetRenderView(v8::Isolate *isolate)
+{
+    blink::WebLocalFrame *webframe = blink::WebLocalFrame::frameForContext(isolate->GetCurrentContext());
     DCHECK(webframe) << "There should be an active frame since we just got a native function called.";
     if (!webframe)
         return 0;
@@ -107,17 +125,17 @@ content::RenderView *WebChannelTransportExtension::GetRenderView()
     return content::RenderView::FromWebView(webview);
 }
 
-v8::Handle<v8::FunctionTemplate> WebChannelTransportExtension::GetNativeFunctionTemplate(v8::Isolate *isolate, v8::Handle<v8::String> name)
-{
-    if (name->Equals(v8::String::NewFromUtf8(isolate, "NativeQtSendMessage")))
-        return v8::FunctionTemplate::New(isolate, NativeQtSendMessage);
-
-    return v8::Handle<v8::FunctionTemplate>();
-}
-
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderView *renderView)
     : content::RenderViewObserver(renderView)
 {
+}
+
+void WebChannelIPCTransport::installExtension()
+{
+    blink::WebView *webView = render_view()->GetWebView();
+    if (!webView)
+        return;
+    WebChannelTransport::Install(webView->mainFrame());
 }
 
 void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJSON)
@@ -137,13 +155,13 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     v8::Context::Scope contextScope(context);
 
     v8::Handle<v8::Object> global(context->Global());
-    v8::Handle<v8::Value> qtObjectValue(global->Get(v8::String::NewFromUtf8(isolate, "qt")));
+    v8::Handle<v8::Value> qtObjectValue(global->Get(gin::StringToV8(isolate, "qt")));
     if (!qtObjectValue->IsObject())
         return;
-    v8::Handle<v8::Value> webChannelObjectValue(qtObjectValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "webChannelTransport")));
+    v8::Handle<v8::Value> webChannelObjectValue(qtObjectValue->ToObject()->Get(gin::StringToV8(isolate, "webChannelTransport")));
     if (!webChannelObjectValue->IsObject())
         return;
-    v8::Handle<v8::Value> onmessageCallbackValue(webChannelObjectValue->ToObject()->Get(v8::String::NewFromUtf8(isolate, "onmessage")));
+    v8::Handle<v8::Value> onmessageCallbackValue(webChannelObjectValue->ToObject()->Get(gin::StringToV8(isolate, "onmessage")));
     if (!onmessageCallbackValue->IsFunction()) {
         qWarning("onmessage is not a callable property of qt.webChannelTransport. Some things might not work as expected.");
         return;
@@ -161,15 +179,11 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     frame->callFunctionEvenIfScriptDisabled(callback, webChannelObjectValue->ToObject(), argc, argv);
 }
 
-v8::Extension *WebChannelIPCTransport::getV8Extension()
-{
-    return new WebChannelTransportExtension;
-}
-
 bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(WebChannelIPCTransport, message)
+        IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Install, installExtension)
         IPC_MESSAGE_HANDLER(WebChannelIPCTransport_Message, dispatchWebChannelMessage)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()

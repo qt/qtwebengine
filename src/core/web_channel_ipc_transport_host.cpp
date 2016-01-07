@@ -50,6 +50,7 @@ WebChannelIPCTransportHost::WebChannelIPCTransportHost(content::WebContents *con
     : QWebChannelAbstractTransport(parent)
     , content::WebContentsObserver(contents)
 {
+    Send(new WebChannelIPCTransport_Install(routing_id()));
 }
 
 WebChannelIPCTransportHost::~WebChannelIPCTransportHost()

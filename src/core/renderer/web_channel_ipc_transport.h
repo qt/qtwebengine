@@ -49,12 +49,11 @@ namespace QtWebEngineCore {
 
 class WebChannelIPCTransport : public content::RenderViewObserver {
 public:
-    static v8::Extension* getV8Extension();
-
     WebChannelIPCTransport(content::RenderView *);
 
 private:
     void dispatchWebChannelMessage(const std::vector<char> &binaryJSON);
+    void installExtension();
     virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
 };
 

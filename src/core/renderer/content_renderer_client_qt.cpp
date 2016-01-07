@@ -76,7 +76,6 @@ ContentRendererClientQt::~ContentRendererClientQt()
 void ContentRendererClientQt::RenderThreadStarted()
 {
     content::RenderThread *renderThread = content::RenderThread::Get();
-    renderThread->RegisterExtension(WebChannelIPCTransport::getV8Extension());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheObserver.reset(new web_cache::WebCacheRenderProcessObserver());
     renderThread->AddObserver(m_visitedLinkSlave.data());
