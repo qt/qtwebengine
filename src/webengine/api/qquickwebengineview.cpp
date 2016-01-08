@@ -1415,7 +1415,6 @@ void QQuickWebEngineViewPrivate::userScripts_clear(QQmlListProperty<QQuickWebEng
 
 void QQuickWebEngineView::componentComplete()
 {
-    Q_D(QQuickWebEngineView);
     QQuickItem::componentComplete();
     QTimer::singleShot(0, this, &QQuickWebEngineView::lazyInitialize);
 }
