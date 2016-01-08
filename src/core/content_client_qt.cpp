@@ -110,16 +110,10 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
     QString winDir = QDir::fromNativeSeparators(qgetenv("WINDIR"));
     if (winDir.isEmpty())
         winDir = QString::fromLatin1("C:/Windows");
-
-    const QStringList pluginDirs  = { winDir + "/SysWOW64/Macromed/Flash",
-                                      winDir + "/System32/Macromed/Flash" };
-    const QStringList nameFilters("pepflashplayer*.dll");
-    Q_FOREACH (const QString &dirPath, pluginDirs) {
-        QDir pluginDir(dirPath);
-        pluginDir.setFilter(QDir::Files);
-        Q_FOREACH (const QFileInfo &info, pluginDir.entryInfoList(nameFilters))
-            pluginPaths << info.absoluteFilePath();
-    }
+    QDir pluginDir(winDir + "/System32/Macromed/Flash");
+    pluginDir.setFilter(QDir::Files);
+    Q_FOREACH (const QFileInfo &info, pluginDir.entryInfoList(QStringList("pepflashplayer*.dll")))
+        pluginPaths << info.absoluteFilePath();
 #endif
 #if defined(Q_OS_OSX)
     pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // Mac OS X
