@@ -3799,7 +3799,10 @@ void tst_QWebEnginePage::symmetricUrl()
     QTRY_VERIFY(loadFinishedSpy.count() >= 2);
     QTRY_COMPARE(loadFinishedSpy.count(), 3);
 
-    QCOMPARE(view.history()->count(), 2);
+    // setUrl(dataUrl3) might stop Chromium from adding a navigation entry for dataUrl2,
+    // depending on whether the load of dataUrl2 could be completed in time.
+    QVERIFY(view.history()->count() >= 2);
+    QVERIFY(view.history()->count() <= 3);
 
     QCOMPARE(toPlainTextSync(view.page()), QString("Test3"));
 }
