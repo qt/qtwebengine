@@ -70,6 +70,7 @@
 #include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
+#include <QtGui/QOffscreenSurface>
 #include <private/qsgadaptationlayer_p.h>
 
 #if !defined(QT_NO_EGL)
@@ -110,6 +111,7 @@ private:
 #ifdef Q_OS_QNX
     EGLStreamData m_eglStreamData;
 #endif
+    friend class DelegatedFrameNode;
 };
 
 class ResourceHolder {
@@ -425,12 +427,69 @@ void DelegatedFrameNode::preprocess()
             m_mailboxGLFences.swap(transferredFences);
         }
 
-        // Tell GL to wait until Chromium is done generating resource textures on the GPU thread
-        // for each mailbox. We can safely start referencing those textures onto geometries afterward.
-        Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
-            gfx::TransferableFence fence = transferredFences.take(mailboxTexture->mailboxHolder().sync_point);
-            waitChromiumSync(&fence);
-            deleteChromiumSync(&fence);
+#if defined(USE_X11)
+        // Workaround when context is not shared QTBUG-48969
+        // Make slow copy between two contexts.
+        QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+        QOpenGLContext *sharedContext = qt_gl_global_share_context();
+        if (!QOpenGLContext::areSharing(currentContext,sharedContext)) {
+            static bool allowNotSharedContextWarningShown = true;
+            if (allowNotSharedContextWarningShown) {
+                allowNotSharedContextWarningShown = false;
+                qWarning("Context is not shared, textures will be copied between contexts.");
+            }
+
+            Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
+                gfx::TransferableFence fence = transferredFences.take(mailboxTexture->mailboxHolder().sync_point);
+                waitChromiumSync(&fence);
+                deleteChromiumSync(&fence);
+
+                QSurface *surface = currentContext->surface();
+                // Read texture into QImage from shared context.
+                // Switch to shared context.
+                QOffscreenSurface offsurface;
+                offsurface.create();
+                sharedContext->makeCurrent(&offsurface);
+                QOpenGLFunctions *funcs = sharedContext->functions();
+                QImage img(mailboxTexture->textureSize(), QImage::Format_RGBA8888_Premultiplied);
+                GLuint fbo = 0;
+                funcs->glGenFramebuffers(1, &fbo);
+                funcs->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mailboxTexture->m_textureId, 0);
+                GLenum status = funcs->glCheckFramebufferStatus(GL_FRAMEBUFFER);
+                if (status != GL_FRAMEBUFFER_COMPLETE) {
+                    qWarning("fbo error, skipping slow copy...");
+                    continue;
+                }
+
+                funcs->glReadPixels(0, 0, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+                funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+                // Restore current context.
+                currentContext->makeCurrent(surface);
+                // Create texture from QImage in current context.
+                GLuint texture = 0;
+                funcs = currentContext->functions();
+                funcs->glGenTextures(1, &texture);
+                funcs->glBindTexture(GL_TEXTURE_2D, texture);
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                funcs->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), 0,
+                                    GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+                mailboxTexture->m_textureId = texture;
+            }
+        } else
+#endif
+        {
+            // Tell GL to wait until Chromium is done generating resource textures on the GPU thread
+            // for each mailbox. We can safely start referencing those textures onto geometries afterward.
+            Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
+                gfx::TransferableFence fence = transferredFences.take(mailboxTexture->mailboxHolder().sync_point);
+                waitChromiumSync(&fence);
+                deleteChromiumSync(&fence);
+            }
         }
         // We transferred all sync point fences from Chromium,
         // destroy all the ones not referenced by one of our mailboxes without waiting.
