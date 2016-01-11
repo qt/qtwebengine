@@ -202,26 +202,30 @@ QString localesPath()
 #endif
 }
 
-QString libraryDataPath()
+QString icuDataPath()
 {
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getResourcesPath(frameworkBundle());
 #else
     static bool initialized = false;
-    static QString potentialDataPath = QLibraryInfo::location(QLibraryInfo::DataPath);
+    static QString potentialResourcesPath = QLibraryInfo::location(QLibraryInfo::DataPath) % QLatin1String("/resources");
     if (!initialized) {
         initialized = true;
-        if (!QFileInfo::exists(potentialDataPath)) {
-            qWarning("Qt WebEngine data directory not found at location %s. Trying application directory...", qPrintable(potentialDataPath));
-            potentialDataPath = QCoreApplication::applicationDirPath();
+        if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/icudtl.dat"))) {
+            qWarning("Qt WebEngine ICU data not found at %s. Trying parent directory...", qPrintable(potentialResourcesPath));
+            potentialResourcesPath = QLibraryInfo::location(QLibraryInfo::DataPath);
         }
-        if (!QFileInfo::exists(potentialDataPath)) {
-            qWarning("Qt WebEngine data directory not found at location %s. Trying fallback directory... The application MAY NOT work.", qPrintable(potentialDataPath));
-            potentialDataPath = fallbackDir();
+        if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/icudtl.dat"))) {
+            qWarning("Qt WebEngine ICU data not found at %s. Trying application directory...", qPrintable(potentialResourcesPath));
+            potentialResourcesPath = QCoreApplication::applicationDirPath();
+        }
+        if (!QFileInfo::exists(potentialResourcesPath % QLatin1String("/icudtl.dat"))) {
+            qWarning("Qt WebEngine ICU data not found at %s. Trying fallback directory... The application MAY NOT work.", qPrintable(potentialResourcesPath));
+            potentialResourcesPath = fallbackDir();
         }
     }
 
-    return potentialDataPath;
+    return potentialResourcesPath;
 #endif
 }
 
@@ -278,7 +282,7 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         directory = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
         break;
     case base::DIR_QT_LIBRARY_DATA:
-        return toFilePath(libraryDataPath());
+        return toFilePath(icuDataPath());
     case content::DIR_MEDIA_LIBS:
         return toFilePath(pluginsPath());
     case ui::DIR_LOCALES:

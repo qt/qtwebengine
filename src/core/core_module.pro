@@ -72,12 +72,12 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         resources.CONFIG += no_check_exist
         resources.path = $$[QT_INSTALL_DATA]/resources
         icu.CONFIG += no_check_exist
-        icu.path = $$[QT_INSTALL_DATA]
+        icu.path = $$[QT_INSTALL_DATA]/resources
         INSTALLS += icu locales resources
     }
 
     !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
-        ICU_TARGET = $$shell_path($$[QT_INSTALL_DATA/get]/icudtl.dat)
+        ICU_TARGET = $$shell_path($$[QT_INSTALL_DATA/get]/resources/icudtl.dat)
         ICU_FILE = $$shell_path($$OUT_PWD/$$getConfigDir()/icudtl.dat)
         icu_rule.target = $$ICU_TARGET
         unix: icu_rule.commands = if [ -e $$ICU_FILE ] ; then $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET ; fi
