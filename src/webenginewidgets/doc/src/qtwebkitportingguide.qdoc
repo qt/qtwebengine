@@ -279,5 +279,12 @@
         \li In the latest HTML standard, any document element can be made editable through the
             \c contentEditable attribute. So \c runJavaScript is all that is needed:
             \c{page->runJavascript("document.documentElement.contentEditable = true")}
+    \row
+        \li QWebPage::setLinkDelegationPolicy
+        \li There is no way to connect a signal to run C++ code when a link is clicked. However,
+            link clicks can be delegated to the Qt application instead of having the HTML handler
+            engine process them by overloading the QWebEnginePage::acceptNavigationRequest()
+            function. This is necessary when an HTML document is used as part of the user interface,
+            and not to display external data, for example, when displaying a list of results.
     \endtable
 */
