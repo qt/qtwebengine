@@ -406,7 +406,7 @@ QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
 {
     const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
     return std::accumulate(list.constBegin(), list.constEnd(), QString(),
-                    [](const QString &r, const QString &e) {
+                    [](const QString &r, const QString &e) -> QString {
         return (r.isEmpty() ? r : r + QString(QLatin1Char(',')))
                 + e.split(QLatin1Char(';')).first();
     });
