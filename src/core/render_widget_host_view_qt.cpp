@@ -755,6 +755,10 @@ bool RenderWidgetHostViewQt::forwardEvent(QEvent *event)
         Focus(); // Fall through.
     case QEvent::MouseButtonRelease:
     case QEvent::MouseMove:
+        // Skip second MouseMove event when a window is being adopted, so that Chromium
+        // can properly handle further move events.
+        if (m_adapterClient->isBeingAdopted())
+            return false;
         handleMouseEvent(static_cast<QMouseEvent*>(event));
         break;
     case QEvent::KeyPress:
