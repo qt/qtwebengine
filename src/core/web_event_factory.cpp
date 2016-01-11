@@ -264,9 +264,10 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
         case Qt::Key_Help:
             return VK_HELP; // (2F) HELP key
         case Qt::Key_0:
-        case Qt::Key_ParenLeft:
+        case Qt::Key_ParenRight:
             return VK_0; // (30) 0) key
         case Qt::Key_1:
+        case Qt::Key_Exclam:
             return VK_1; // (31) 1 ! key
         case Qt::Key_2:
         case Qt::Key_At:
@@ -290,7 +291,7 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
         case Qt::Key_Asterisk:
             return VK_8; // (38) 8 key  '*'
         case Qt::Key_9:
-        case Qt::Key_ParenRight:
+        case Qt::Key_ParenLeft:
             return VK_9; // (39) 9 key '('
         case Qt::Key_A:
             return VK_A; // (41) A key case 'a': case 'A': return 0x41;
@@ -428,6 +429,7 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
         case Qt::Key_BraceRight:
             return VK_OEM_6; // case ']': case '}': return 0xDD;
             // VK_OEM_7 (DE) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the 'single-quote/double-quote' key
+        case Qt::Key_Apostrophe:
         case Qt::Key_QuoteDbl:
             return VK_OEM_7; // case '\'': case '"': return 0xDE;
             // VK_OEM_8 (DF) Used for miscellaneous characters; it can vary by keyboard.
