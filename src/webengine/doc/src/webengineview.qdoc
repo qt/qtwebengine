@@ -251,6 +251,9 @@
     The script will run in the same \e world as other scripts that are
     part of the loaded site.
 
+    \warning Do not execute lengthy routines in the callback function, because it might block the
+    rendering of the web content.
+
     See WebEngineView::userScripts for an alternative API to inject scripts.
 */
 

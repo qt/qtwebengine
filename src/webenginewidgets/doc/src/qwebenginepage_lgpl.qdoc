@@ -635,6 +635,9 @@
     page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
     \endcode
 
+    \warning Do not execute lengthy routines in the callback function, because it might block the
+    rendering of the web engine page.
+
     See scripts() for an alternative API to inject scripts.
 */
 
