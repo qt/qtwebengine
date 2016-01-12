@@ -66,23 +66,26 @@ TestWebEngineView {
         signalName: "downloadFinished"
     }
 
+    Connections {
+        id: downloadItemConnections
+        onStateChanged: downloadState.push(target.state)
+    }
+
     WebEngineProfile {
         id: testDownloadProfile
 
         onDownloadRequested: {
             downloadState.push(download.state)
+            downloadItemConnections.target = download
             if (cancelDownload) {
                 download.cancel()
-                downloadState.push(download.state)
             } else {
                 totalBytes = download.totalBytes
                 download.path = "testfile.zip"
                 download.accept()
-                downloadState.push(download.state)
             }
         }
         onDownloadFinished: {
-            downloadState.push(download.state)
             receivedBytes = download.receivedBytes;
         }
     }
@@ -96,6 +99,7 @@ TestWebEngineView {
             totalBytes = 0
             receivedBytes = 0
             cancelDownload = false
+            downloadItemConnections.target = null
             downloadState = []
         }
 
@@ -133,7 +137,7 @@ TestWebEngineView {
             downLoadRequestedSpy.wait()
             compare(downLoadRequestedSpy.count, 1)
             compare(downloadFinishedSpy.count, 1)
-            compare(downloadState[2], WebEngineDownloadItem.DownloadCancelled)
+            compare(downloadState[1], WebEngineDownloadItem.DownloadCancelled)
         }
     }
 }

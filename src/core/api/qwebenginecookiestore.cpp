@@ -46,13 +46,12 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
 
-QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate(QWebEngineCookieStore* q)
+QWebEngineCookieStorePrivate::QWebEngineCookieStorePrivate()
     : m_nextCallbackId(CallbackDirectory::ReservedCallbackIdsEnd)
     , m_deleteSessionCookiesPending(false)
     , m_deleteAllCookiesPending(false)
     , m_getAllCookiesPending(false)
     , delegate(0)
-    , q_ptr(q)
 {
 }
 
@@ -86,6 +85,14 @@ void QWebEngineCookieStorePrivate::processPendingUserCookies()
             delegate->setCookie(cookieData.callbackId, cookieData.cookie, cookieData.origin);
     }
 
+    m_pendingUserCookies.clear();
+}
+
+void QWebEngineCookieStorePrivate::rejectPendingUserCookies()
+{
+    m_getAllCookiesPending = false;
+    m_deleteAllCookiesPending = false;
+    m_deleteSessionCookiesPending = false;
     m_pendingUserCookies.clear();
 }
 
@@ -246,8 +253,7 @@ bool QWebEngineCookieStorePrivate::canSetCookie(const QUrl &firstPartyUrl, const
 */
 
 QWebEngineCookieStore::QWebEngineCookieStore(QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QWebEngineCookieStorePrivate(this))
+    : QObject(*new QWebEngineCookieStorePrivate, parent)
 {
 
 }

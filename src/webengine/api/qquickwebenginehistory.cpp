@@ -121,7 +121,7 @@ int QQuickWebEngineForwardHistoryListModelPrivate::offsetForIndex(int index) con
 /*!
     \qmltype WebEngineHistoryListModel
     \instantiates QQuickWebEngineHistoryListModel
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 
     \brief A data model that represents the history of a web engine page.
@@ -208,7 +208,7 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
 /*!
     \qmltype WebEngineHistory
     \instantiates QQuickWebEngineHistory
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 
     \brief Provides data models that represent the history of a web engine page.

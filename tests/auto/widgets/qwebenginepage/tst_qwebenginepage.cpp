@@ -3479,16 +3479,16 @@ void tst_QWebEnginePage::getUserMediaRequest()
 
     QVERIFY(evaluateJavaScriptSync(page, QStringLiteral("!!navigator.webkitGetUserMedia")).toBool());
     evaluateJavaScriptSync(page, QStringLiteral("navigator.webkitGetUserMedia({audio: true}, function() {}, function(){})"));
-    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioCapture), 100);
+    QTRY_VERIFY(page->gotFeatureRequest(QWebEnginePage::MediaAudioCapture));
     // Might end up failing due to the lack of physical media devices deeper in the content layer, so the JS callback is not guaranteed to be called,
     // but at least we go through that code path, potentially uncovering failing assertions.
     page->acceptPendingRequest();
 
     page->runJavaScript(QStringLiteral("errorCallbackCalled = false;"));
     evaluateJavaScriptSync(page, QStringLiteral("navigator.webkitGetUserMedia({audio: true, video: true}, function() {}, function(){errorCallbackCalled = true;})"));
-    QTRY_VERIFY_WITH_TIMEOUT(page->gotFeatureRequest(QWebEnginePage::MediaAudioVideoCapture), 100);
+    QTRY_VERIFY(page->gotFeatureRequest(QWebEnginePage::MediaAudioVideoCapture));
     page->rejectPendingRequest(); // Should always end up calling the error callback in JS.
-    QTRY_VERIFY_WITH_TIMEOUT(evaluateJavaScriptSync(page, QStringLiteral("errorCallbackCalled;")).toBool(), 100);
+    QTRY_VERIFY(evaluateJavaScriptSync(page, QStringLiteral("errorCallbackCalled;")).toBool());
     delete page;
 }
 
@@ -3749,8 +3749,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     });
 
     QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
-    QTest::qWait(100);
-    page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(true));
+    QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
     page->runJavaScript("document.webkitExitFullscreen()", JavaScriptCallbackUndefined());
     QVERIFY(watcher.wait());
 
@@ -3797,10 +3796,14 @@ void tst_QWebEnginePage::symmetricUrl()
 
     QCOMPARE(view.url(), dataUrl3);
 
+    // setUrl(dataUrl3) might override the pending load for dataUrl2. Or not.
     QTRY_VERIFY(loadFinishedSpy.count() >= 2);
-    QTRY_COMPARE(loadFinishedSpy.count(), 3);
+    QTRY_VERIFY(loadFinishedSpy.count() <= 3);
 
-    QCOMPARE(view.history()->count(), 2);
+    // setUrl(dataUrl3) might stop Chromium from adding a navigation entry for dataUrl2,
+    // depending on whether the load of dataUrl2 could be completed in time.
+    QVERIFY(view.history()->count() >= 2);
+    QVERIFY(view.history()->count() <= 3);
 
     QCOMPARE(toPlainTextSync(view.page()), QString("Test3"));
 }
@@ -4042,7 +4045,7 @@ void tst_QWebEnginePage::setHtmlWithImageResource()
     QWebEnginePage page;
 
     page.setHtml(html, QUrl(QLatin1String("file:///path/to/file")));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
@@ -4051,7 +4054,7 @@ void tst_QWebEnginePage::setHtmlWithImageResource()
     // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
 
     page.setHtml(html);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 0);
@@ -4113,7 +4116,7 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(spy.count(), 1);
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
@@ -5072,7 +5075,7 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     URLSetter setter(m_page, signal, type, urlForSetter);
 
     m_page->load(url);
-    waitForSignal(&setter, SIGNAL(finished()), 200);
+    waitForSignal(&setter, SIGNAL(finished()));
     QCOMPARE(m_page->url(), urlForSetter);
 }
 

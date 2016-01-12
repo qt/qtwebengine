@@ -26,7 +26,7 @@
 /*!
     \qmltype WebEngineView
     \instantiates QQuickWebEngineView
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
     \brief A WebEngineView renders web content within a QML application.
 */
@@ -698,7 +698,7 @@
 /*!
     \qmltype WebEngineFullScreenRequest
     \instantiates QQuickWebEngineFullScreenRequest
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
 
     \brief A utility type for the WebEngineView::fullScreenRequested() signal.

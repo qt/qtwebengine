@@ -28,6 +28,8 @@ force_debug_info {
     else: GYP_CONFIG += release_extra_cflags=-g
 }
 
+!warnings_are_errors: GYP_CONFIG += disable_fatal_linker_warnings=1
+
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {

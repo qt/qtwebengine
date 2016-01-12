@@ -147,9 +147,9 @@ content::PermissionManager *BrowserContextQt::GetPermissionManager()
     return permissionManager.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers)
+net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers);
+    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers, request_interceptors.Pass());
     return url_request_getter_.get();
 }
 

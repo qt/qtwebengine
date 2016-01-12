@@ -37,7 +37,7 @@
 #ifndef QWEBENGINECALLBACK_H
 #define QWEBENGINECALLBACK_H
 
-#include "qtwebenginecoreglobal.h"
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 #include <QtCore/qshareddata.h>

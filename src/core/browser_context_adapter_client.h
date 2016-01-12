@@ -72,6 +72,7 @@ public:
         const int state;
         const qint64 totalBytes;
         const qint64 receivedBytes;
+        const QString mimeType;
 
         QString path;
         int savePageFormat;

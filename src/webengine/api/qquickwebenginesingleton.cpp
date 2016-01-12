@@ -37,14 +37,14 @@
 #include "qquickwebenginesingleton_p.h"
 
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebengineprofile_p.h"
+#include <QtWebEngine/QQuickWebEngineProfile>
 
 QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype WebEngine
     \instantiates QQuickWebEngineSingleton
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Provides access to the default settings and profiles shared by all web engine views.
 

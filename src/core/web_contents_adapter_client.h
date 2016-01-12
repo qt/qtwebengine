@@ -213,6 +213,7 @@ public:
     virtual void focusContainer() = 0;
     virtual void unhandledKeyEvent(QKeyEvent *event) = 0;
     virtual void adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect & initialGeometry) = 0;
+    virtual bool isBeingAdopted() = 0;
     virtual void close() = 0;
     virtual void windowCloseRejected() = 0;
     virtual bool contextMenuRequested(const WebEngineContextMenuData&) = 0;

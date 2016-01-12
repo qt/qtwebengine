@@ -72,7 +72,7 @@ public:
     virtual storage::SpecialStoragePolicy *GetSpecialStoragePolicy() Q_DECL_OVERRIDE;
     virtual content::PushMessagingService* GetPushMessagingService() Q_DECL_OVERRIDE;
     virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() Q_DECL_OVERRIDE;
-    net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers);
+    net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors);
     virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
     virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
 

@@ -34,11 +34,11 @@
 **
 ****************************************************************************/
 
-#include "qquickwebengineprofile_p.h"
+#include "qquickwebengineprofile.h"
 
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
-#include "qquickwebengineprofile_p_p.h"
+#include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qwebenginecookiestore.h"
 
@@ -56,6 +56,67 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::UnknownSaveFormat, QtWebEngineCo
 ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::SingleHtmlSaveFormat)
 ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::CompleteHtmlSaveFormat)
 ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::MimeHtmlSaveFormat)
+
+/*!
+    \class QQuickWebEngineProfile
+    \brief The QQuickWebEngineProfile class provides a web-engine profile shared by multiple pages.
+    \since 5.6
+
+    \inmodule QtWebEngine
+
+    QQuickWebEngineProfile contains settings, scripts, and the list of visited links shared by all
+    web engine pages that belong to the profile. As such, profiles can be used to isolate pages
+    from each other. A typical use case is a dedicated profile for a 'private browsing' mode.
+
+    The default profile is a built-in profile that all web pages not specifically created with
+    another profile belong to.
+*/
+
+/*!
+    \enum QQuickWebEngineProfile::HttpCacheType
+
+    This enum describes the HTTP cache type:
+
+    \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
+    \c off-the-record is set or no cache path is available.
+    \value DiskHttpCache Use a disk cache. This is the default.
+*/
+
+/*!
+    \enum QQuickWebEngineProfile::PersistentCookiesPolicy
+
+    This enum describes policy for cookie persistency:
+
+    \value  NoPersistentCookies
+            Both session and persistent cookies are stored in memory. This is the only setting
+            possible if \c off-the-record is set or no persistent data path is available.
+    \value  AllowPersistentCookies
+            Cookies marked persistent are saved to and restored from disk, whereas session cookies
+            are only stored to disk for crash recovery. This is the default setting.
+    \value  ForcePersistentCookies
+            Both session and persistent cookies are saved to and restored from disk.
+*/
+
+/*!
+  \fn QQuickWebEngineProfile::downloadRequested(QQuickWebEngineDownloadItem *download)
+
+  This signal is emitted whenever a download has been triggered.
+  The \a download argument holds the state of the download.
+  The download has to be explicitly accepted with
+  \c{QQuickWebEngineDownloadItem::accept()} or it will be
+  cancelled by default.
+  The download item is parented by the profile. If it is not accepted, it
+  will be deleted immediately after the signal emission.
+  This signal cannot be used with a queued connection.
+*/
+
+/*!
+  \fn QQuickWebEngineProfile::downloadFinished(QQuickWebEngineDownloadItem *download)
+
+  This signal is emitted whenever downloading stops, because it finished successfully, was
+  cancelled, or was interrupted (for example, because connectivity was lost).
+  The \a download argument holds the state of the finished download instance.
+*/
 
 QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
         : m_settings(new QQuickWebEngineSettings())
@@ -99,6 +160,7 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadId = info.id;
     itemPrivate->downloadState = QQuickWebEngineDownloadItem::DownloadRequested;
     itemPrivate->totalBytes = info.totalBytes;
+    itemPrivate->mimeType = info.mimeType;
     itemPrivate->downloadPath = info.path;
     itemPrivate->savePageFormat = static_cast<QQuickWebEngineDownloadItem::SavePageFormat>(
                 info.savePageFormat);
@@ -142,7 +204,7 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 /*!
     \qmltype WebEngineProfile
     \instantiates QQuickWebEngineProfile
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Contains settings, scripts, and visited links common to multiple web engine views.
 
@@ -171,8 +233,12 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
     The \a download argument holds the state of the finished download instance.
 */
 
-QQuickWebEngineProfile::QQuickWebEngineProfile()
-    : d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false)))
+/*!
+    Constructs a new profile with the parent \a parent.
+*/
+QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
+    : QObject(parent),
+      d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false)))
 {
     // Sets up the global WebEngineContext
     QQuickWebEngineProfile::defaultProfile();
@@ -186,6 +252,9 @@ QQuickWebEngineProfile::QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *pr
     d_ptr->q_ptr = this;
 }
 
+/*!
+   \internal
+*/
 QQuickWebEngineProfile::~QQuickWebEngineProfile()
 {
 }
@@ -197,6 +266,15 @@ QQuickWebEngineProfile::~QQuickWebEngineProfile()
     the disk for storing persistent data and cache.
 
     \sa WebEngineProfile::persistentStoragePath, WebEngineProfile::cachePath
+*/
+
+/*!
+    \property QQuickWebEngineProfile::storageName
+
+    The storage name that is used to create separate subdirectories for each profile that uses
+    the disk for storing persistent data and cache.
+
+    \sa QQuickWebEngineProfile::persistentStoragePath, QQuickWebEngineProfile::cachePath
 */
 
 QString QQuickWebEngineProfile::storageName() const
@@ -229,6 +307,16 @@ void QQuickWebEngineProfile::setStorageName(const QString &name)
     An off-the-record profile forces cookies, the HTTP cache, and other normally persistent data
     to be stored only in memory.
 */
+
+
+/*!
+    \property QQuickWebEngineProfile::offTheRecord
+
+    Whether the web engine profile is \e off-the-record.
+    An off-the-record profile forces cookies, the HTTP cache, and other normally persistent data
+    to be stored only in memory.
+*/
+
 bool QQuickWebEngineProfile::isOffTheRecord() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -260,6 +348,18 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
     QStandardPaths::writableLocation(QStandardPaths::DataLocation) in a directory named using
     storageName.
 */
+
+/*!
+    \property QQuickWebEngineProfile::persistentStoragePath
+
+    The path to the location where the persistent data for the browser and web content are
+    stored. Persistent data includes persistent cookies, HTML5 local storage, and visited links.
+
+    By default, the storage is located below
+    QStandardPaths::writableLocation(QStandardPaths::DataLocation) in a directory named using
+    storageName.
+*/
+
 QString QQuickWebEngineProfile::persistentStoragePath() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -284,6 +384,17 @@ void QQuickWebEngineProfile::setPersistentStoragePath(const QString &path)
     below QStandardPaths::writableLocation(QStandardPaths::CacheLocation) in a directory named using
     storageName.
 */
+
+/*!
+    \property QQuickWebEngineProfile::cachePath
+
+    The path to the location where the profile's caches are stored, in particular the HTTP cache.
+
+    By default, the caches are stored
+    below QStandardPaths::writableLocation(QStandardPaths::CacheLocation) in a directory named using
+    storageName.
+*/
+
 QString QQuickWebEngineProfile::cachePath() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -304,6 +415,13 @@ void QQuickWebEngineProfile::setCachePath(const QString &path)
 
     The user-agent string sent with HTTP to identify the browser.
 */
+
+/*!
+    \property QQuickWebEngineProfile::httpUserAgent
+
+    The user-agent string sent with HTTP to identify the browser.
+*/
+
 QString QQuickWebEngineProfile::httpUserAgent() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -330,6 +448,14 @@ void QQuickWebEngineProfile::setHttpUserAgent(const QString &userAgent)
             no persistentStoragePath is available.
     \value  DiskHttpCache
             Uses a disk cache. This is the default value.
+*/
+
+/*!
+    \property QQuickWebEngineProfile::httpCacheType
+
+    This enumeration describes the type of the HTTP cache.
+
+    If the profile is off-the-record, MemoryHttpCache is returned.
 */
 
 QQuickWebEngineProfile::HttpCacheType QQuickWebEngineProfile::httpCacheType() const
@@ -362,6 +488,13 @@ void QQuickWebEngineProfile::setHttpCacheType(QQuickWebEngineProfile::HttpCacheT
             Both session and persistent cookies are saved to and restored from disk.
 */
 
+/*!
+    \property QQuickWebEngineProfile::persistentCookiesPolicy
+
+    This enumeration describes the policy of cookie persistency.
+    If the profile is off-the-record, NoPersistentCookies is returned.
+*/
+
 QQuickWebEngineProfile::PersistentCookiesPolicy QQuickWebEngineProfile::persistentCookiesPolicy() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -385,6 +518,16 @@ void QQuickWebEngineProfile::setPersistentCookiesPolicy(QQuickWebEngineProfile::
 
     \sa httpCacheType
 */
+
+/*!
+    \property QQuickWebEngineProfile::httpCacheMaximumSize
+
+    The maximum size of the HTTP cache. If \c 0, the size will be controlled automatically by
+    QtWebEngine. The default value is \c 0.
+
+    \sa httpCacheType
+*/
+
 int QQuickWebEngineProfile::httpCacheMaximumSize() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -407,6 +550,13 @@ void QQuickWebEngineProfile::setHttpCacheMaximumSize(int maximumSize)
 
     \since QtWebEngine 1.2
 */
+
+/*!
+    \property QQuickWebEngineProfile::httpAcceptLanguage
+
+    The value of the Accept-Language HTTP request-header field.
+*/
+
 QString QQuickWebEngineProfile::httpAcceptLanguage() const
 {
     Q_D(const QQuickWebEngineProfile);
@@ -422,6 +572,13 @@ void QQuickWebEngineProfile::setHttpAcceptLanguage(const QString &httpAcceptLang
     emit httpAcceptLanguageChanged();
 }
 
+/*!
+    Returns the default profile.
+
+    The default profile uses the storage name "Default".
+
+    \sa storageName()
+*/
 QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
 {
     static QQuickWebEngineProfile *profile = new QQuickWebEngineProfile(
@@ -430,6 +587,9 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
     return profile;
 }
 
+/*!
+    Returns the cookie store singleton, if one has been set.
+*/
 QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
 {
     const Q_D(QQuickWebEngineProfile);
@@ -444,10 +604,117 @@ QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
 
     \sa WebEngineProfile::cachePath
 */
+
+/*!
+    \since 5.7
+
+    Removes the profile's cache entries.
+
+    \sa WebEngineProfile::clearHttpCache
+*/
 void QQuickWebEngineProfile::clearHttpCache()
 {
     Q_D(QQuickWebEngineProfile);
     d->browserContext()->clearHttpCache();
+}
+
+
+/*!
+    Registers a request interceptor singleton \a interceptor to intercept URL requests.
+
+    The profile does not take ownership of the pointer.
+
+    \sa QWebEngineUrlRequestInterceptor
+*/
+void QQuickWebEngineProfile::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
+{
+    Q_D(QQuickWebEngineProfile);
+    d->browserContext()->setRequestInterceptor(interceptor);
+}
+
+/*!
+    Returns the custom URL scheme handler register for the URL scheme \a scheme.
+*/
+const QWebEngineUrlSchemeHandler *QQuickWebEngineProfile::urlSchemeHandler(const QByteArray &scheme) const
+{
+    const Q_D(QQuickWebEngineProfile);
+    if (d->browserContext()->customUrlSchemeHandlers().contains(scheme))
+        return d->browserContext()->customUrlSchemeHandlers().value(scheme);
+    return 0;
+}
+
+static bool checkInternalScheme(const QByteArray &scheme)
+{
+    static QSet<QByteArray> internalSchemes;
+    if (internalSchemes.isEmpty()) {
+        internalSchemes << QByteArrayLiteral("qrc") << QByteArrayLiteral("data") << QByteArrayLiteral("blob")
+                        << QByteArrayLiteral("http") << QByteArrayLiteral("ftp") << QByteArrayLiteral("javascript");
+    }
+    return internalSchemes.contains(scheme);
+}
+
+/*!
+    Registers a handler \a handler for custom URL scheme \a scheme in the profile.
+*/
+void QQuickWebEngineProfile::installUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
+{
+    Q_D(QQuickWebEngineProfile);
+    Q_ASSERT(handler);
+    if (checkInternalScheme(scheme)) {
+        qWarning("Cannot install a URL scheme handler overriding internal scheme: %s", scheme.constData());
+        return;
+    }
+
+    if (d->browserContext()->customUrlSchemeHandlers().contains(scheme)) {
+        if (d->browserContext()->customUrlSchemeHandlers().value(scheme) != handler)
+            qWarning("URL scheme handler already installed for the scheme: %s", scheme.constData());
+        return;
+    }
+    d->browserContext()->addCustomUrlSchemeHandler(scheme, handler);
+    connect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+}
+
+/*!
+    Removes the custom URL scheme handler \a handler from the profile.
+
+    \sa removeUrlScheme()
+*/
+void QQuickWebEngineProfile::removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)
+{
+    Q_D(QQuickWebEngineProfile);
+    Q_ASSERT(handler);
+    if (!d->browserContext()->removeCustomUrlSchemeHandler(handler))
+        return;
+    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+}
+
+/*!
+    Removes the custom URL scheme \a scheme from the profile.
+
+    \sa removeUrlSchemeHandler()
+*/
+void QQuickWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
+{
+    Q_D(QQuickWebEngineProfile);
+    QWebEngineUrlSchemeHandler *handler = d->browserContext()->takeCustomUrlSchemeHandler(scheme);
+    if (!handler)
+        return;
+    disconnect(handler, SIGNAL(_q_destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)), this, SLOT(destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler*)));
+}
+
+/*!
+    Removes all custom URL scheme handlers installed in the profile.
+*/
+void QQuickWebEngineProfile::removeAllUrlSchemeHandlers()
+{
+    Q_D(QQuickWebEngineProfile);
+    d->browserContext()->customUrlSchemeHandlers().clear();
+    d->browserContext()->updateCustomUrlSchemeHandlers();
+}
+
+void QQuickWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)
+{
+    removeUrlSchemeHandler(obj);
 }
 
 QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const

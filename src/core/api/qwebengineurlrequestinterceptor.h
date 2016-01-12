@@ -37,8 +37,8 @@
 #ifndef QWEBENINGEURLREQUESTINTERCEPTOR_H
 #define QWEBENINGEURLREQUESTINTERCEPTOR_H
 
-#include "qtwebenginecoreglobal.h"
-#include "qwebengineurlrequestinfo.h"
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtWebEngineCore/qwebengineurlrequestinfo.h>
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qhash.h>

@@ -65,6 +65,7 @@
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/ftp_protocol_handler.h"
+#include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/ftp/ftp_network_layer.h"
 
 #include "api/qwebengineurlschemehandler.h"
@@ -85,10 +86,11 @@ static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers)
+URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
     : m_ignoreCertificateErrors(false)
     , m_browserContext(browserContext)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
+    , m_requestInterceptors(request_interceptors.Pass())
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
@@ -131,21 +133,28 @@ void URLRequestContextGetterQt::updateStorageSettings()
     }
 }
 
+void URLRequestContextGetterQt::cancelAllUrlRequests()
+{
+    Q_ASSERT(m_urlRequestContext);
+
+    std::set<const net::URLRequest*>* url_requests = m_urlRequestContext->url_requests();
+    std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
+    std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
+    for ( ; it != end; ++it) {
+        net::URLRequest* request = const_cast<net::URLRequest*>(*it);
+        if (request)
+            request->Cancel();
+    }
+
+}
+
 void URLRequestContextGetterQt::generateStorage()
 {
     Q_ASSERT(m_urlRequestContext);
 
-    if (m_storage) {
-        // We must stop all requests before deleting their backends.
-        std::set<const net::URLRequest*>* url_requests = m_urlRequestContext->url_requests();
-        std::set<const net::URLRequest*>::const_iterator it = url_requests->begin();
-        std::set<const net::URLRequest*>::const_iterator end = url_requests->end();
-        for ( ; it != end; ++it) {
-            net::URLRequest* request = const_cast<net::URLRequest*>(*it);
-            if (request)
-                request->Cancel();
-        }
-    }
+    // We must stop all requests before deleting their backends.
+    if (m_storage)
+        cancelAllUrlRequests();
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
 
@@ -202,7 +211,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     Q_ASSERT(m_storage);
     m_updateCookieStore = 0;
 
-    // Unset it first to get a chance to destroy and flush the old cookie store before before opening a new on possibly the same file.
+    // Unset it first to get a chance to destroy and flush the old cookie store before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
     m_cookieDelegate->setClient(m_browserContext->cookieStore());
@@ -286,11 +295,56 @@ void URLRequestContextGetterQt::updateHttpCache()
     }
 }
 
+static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first, const net::HttpNetworkSession::Params &second)
+{
+    if (first.transport_security_state != second.transport_security_state)
+        return false;
+    if (first.cert_verifier != second.cert_verifier)
+        return false;
+    if (first.channel_id_service != second.channel_id_service)
+        return false;
+    if (first.proxy_service != second.proxy_service)
+        return false;
+    if (first.ssl_config_service != second.ssl_config_service)
+        return false;
+    if (first.http_auth_handler_factory != second.http_auth_handler_factory)
+        return false;
+    if (first.network_delegate != second.network_delegate)
+        return false;
+    if (first.http_server_properties.get() != second.http_server_properties.get())
+        return false;
+    if (first.ignore_certificate_errors != second.ignore_certificate_errors)
+        return false;
+    if (first.host_resolver != second.host_resolver)
+        return false;
+
+    return true;
+}
+
+net::HttpNetworkSession::Params URLRequestContextGetterQt::generateNetworkSessionParams()
+{
+    Q_ASSERT(m_urlRequestContext);
+
+    net::HttpNetworkSession::Params network_session_params;
+
+    network_session_params.transport_security_state     = m_urlRequestContext->transport_security_state();
+    network_session_params.cert_verifier                = m_urlRequestContext->cert_verifier();
+    network_session_params.channel_id_service           = m_urlRequestContext->channel_id_service();
+    network_session_params.proxy_service                = m_urlRequestContext->proxy_service();
+    network_session_params.ssl_config_service           = m_urlRequestContext->ssl_config_service();
+    network_session_params.http_auth_handler_factory    = m_urlRequestContext->http_auth_handler_factory();
+    network_session_params.network_delegate             = m_networkDelegate.get();
+    network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
+    network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
+    network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
+
+    return network_session_params;
+}
+
 void URLRequestContextGetterQt::generateHttpCache()
 {
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
-    m_updateHttpCache = 0;
 
     net::HttpCache::DefaultBackend* main_backend = 0;
     switch (m_browserContext->httpCacheType()) {
@@ -316,19 +370,21 @@ void URLRequestContextGetterQt::generateHttpCache()
         break;
     }
 
-    net::HttpNetworkSession::Params network_session_params;
-    network_session_params.transport_security_state     = m_urlRequestContext->transport_security_state();
-    network_session_params.cert_verifier                = m_urlRequestContext->cert_verifier();
-    network_session_params.channel_id_service           = m_urlRequestContext->channel_id_service();
-    network_session_params.proxy_service                = m_urlRequestContext->proxy_service();
-    network_session_params.ssl_config_service           = m_urlRequestContext->ssl_config_service();
-    network_session_params.http_auth_handler_factory    = m_urlRequestContext->http_auth_handler_factory();
-    network_session_params.network_delegate             = m_networkDelegate.get();
-    network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
-    network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
-    network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
+    net::HttpCache *cache = 0;
+    net::HttpNetworkSession *network_session = 0;
+    net::HttpNetworkSession::Params network_session_params = generateNetworkSessionParams();
 
-    m_storage->set_http_transaction_factory(scoped_ptr<net::HttpCache>(new net::HttpCache(network_session_params, main_backend)));
+    if (m_urlRequestContext->http_transaction_factory())
+        network_session = m_urlRequestContext->http_transaction_factory()->GetSession();
+
+    if (!network_session || !doNetworkSessionParamsMatch(network_session_params, network_session->params())) {
+        cancelAllUrlRequests();
+        cache = new net::HttpCache(network_session_params, main_backend);
+    } else
+        cache = new net::HttpCache(network_session, main_backend);
+
+    m_storage->set_http_transaction_factory(scoped_ptr<net::HttpCache>(cache));
+    m_updateHttpCache = 0;
 }
 
 void URLRequestContextGetterQt::clearHttpCache()
@@ -352,28 +408,39 @@ void URLRequestContextGetterQt::generateJobFactory()
 {
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(!m_jobFactory);
-    m_jobFactory.reset(new net::URLRequestJobFactoryImpl());
+
+    scoped_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
-        m_jobFactory->SetProtocolHandler(it->first, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
+        jobFactory->SetProtocolHandler(it->first, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
         m_protocolHandlers.clear();
     }
 
-    m_jobFactory->SetProtocolHandler(url::kDataScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
-    m_jobFactory->SetProtocolHandler(url::kFileScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FileProtocolHandler(
+    jobFactory->SetProtocolHandler(url::kDataScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
+    jobFactory->SetProtocolHandler(url::kFileScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FileProtocolHandler(
         content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
-    m_jobFactory->SetProtocolHandler(kQrcSchemeQt, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
-    m_jobFactory->SetProtocolHandler(url::kFtpScheme,
+    jobFactory->SetProtocolHandler(kQrcSchemeQt, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
+    jobFactory->SetProtocolHandler(url::kFtpScheme,
         scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver()))));
 
     QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator it = m_browserContext->customUrlSchemeHandlers().constBegin();
     const QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator end = m_browserContext->customUrlSchemeHandlers().constEnd();
     for (; it != end; ++it)
-        m_jobFactory->SetProtocolHandler(it.key().toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(it.value())));
+        jobFactory->SetProtocolHandler(it.key().toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(it.value())));
+
+    // Set up interceptors in the reverse order.
+    scoped_ptr<net::URLRequestJobFactory> topJobFactory = jobFactory.Pass();
+
+    for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
+        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(topJobFactory.Pass(), make_scoped_ptr(*i)));
+
+    m_requestInterceptors.weak_clear();
+
+    m_jobFactory = topJobFactory.Pass();
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }

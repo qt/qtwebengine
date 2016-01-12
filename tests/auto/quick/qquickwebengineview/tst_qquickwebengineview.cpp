@@ -61,7 +61,9 @@ private Q_SLOTS:
 private:
     inline QQuickWebEngineView *newWebEngineView();
     inline QQuickWebEngineView *webEngineView() const;
+    QUrl urlFromTestPath(const char *localFilePath);
     void runJavaScript(const QString &script);
+    QString m_testSourceDirPath;
     QScopedPointer<TestWindow> m_window;
     QScopedPointer<QQmlComponent> m_component;
 };
@@ -69,6 +71,10 @@ private:
 tst_QQuickWebEngineView::tst_QQuickWebEngineView()
 {
     QtWebEngine::initialize();
+
+    m_testSourceDirPath = QString::fromLocal8Bit(TESTS_SOURCE_DIR);
+    if (!m_testSourceDirPath.endsWith(QLatin1Char('/')))
+        m_testSourceDirPath.append(QLatin1Char('/'));
 
     static QQmlEngine *engine = new QQmlEngine(this);
     m_component.reset(new QQmlComponent(engine, this));
@@ -100,6 +106,11 @@ inline QQuickWebEngineView *tst_QQuickWebEngineView::webEngineView() const
     return static_cast<QQuickWebEngineView*>(m_window->webEngineView.data());
 }
 
+QUrl tst_QQuickWebEngineView::urlFromTestPath(const char *localFilePath)
+{
+    return QUrl::fromLocalFile(m_testSourceDirPath + QString::fromUtf8(localFilePath));
+}
+
 void tst_QQuickWebEngineView::runJavaScript(const QString &script)
 {
     webEngineView()->runJavaScript(script);
@@ -119,7 +130,7 @@ void tst_QQuickWebEngineView::stopEnabledAfterLoadStarted()
     QCOMPARE(webEngineView()->isLoading(), false);
 
     LoadStartedCatcher catcher(webEngineView());
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "/html/basic_page.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     waitForSignal(&catcher, SIGNAL(finished()));
 
     QCOMPARE(webEngineView()->isLoading(), true);
@@ -149,7 +160,7 @@ void tst_QQuickWebEngineView::loadEmptyPageViewHidden()
 {
     QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QQuickWebEngineLoadRequest*)));
 
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
     QCOMPARE(loadSpy.size(), 2);
@@ -159,7 +170,7 @@ void tst_QQuickWebEngineView::loadNonexistentFileUrl()
 {
     QSignalSpy loadSpy(webEngineView(), SIGNAL(loadingChanged(QQuickWebEngineLoadRequest*)));
 
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/file_that_does_not_exist.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/file_that_does_not_exist.html"));
     QVERIFY(waitForLoadFailed(webEngineView()));
 
     QCOMPARE(loadSpy.size(), 2);
@@ -167,46 +178,46 @@ void tst_QQuickWebEngineView::loadNonexistentFileUrl()
 
 void tst_QQuickWebEngineView::backAndForward()
 {
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QCOMPARE(webEngineView()->url().path(), QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html"));
+    QCOMPARE(webEngineView()->url(), urlFromTestPath("html/basic_page.html"));
 
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page2.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page2.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QCOMPARE(webEngineView()->url().path(), QLatin1String(TESTS_SOURCE_DIR "html/basic_page2.html"));
+    QCOMPARE(webEngineView()->url(), urlFromTestPath("html/basic_page2.html"));
 
     webEngineView()->goBack();
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QCOMPARE(webEngineView()->url().path(), QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html"));
+    QCOMPARE(webEngineView()->url(), urlFromTestPath("html/basic_page.html"));
 
     webEngineView()->goForward();
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QCOMPARE(webEngineView()->url().path(), QLatin1String(TESTS_SOURCE_DIR "html/basic_page2.html"));
+    QCOMPARE(webEngineView()->url(), urlFromTestPath("html/basic_page2.html"));
 }
 
 void tst_QQuickWebEngineView::reload()
 {
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QCOMPARE(webEngineView()->url().path(), QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html"));
+    QCOMPARE(webEngineView()->url(), urlFromTestPath("html/basic_page.html"));
 
     webEngineView()->reload();
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QCOMPARE(webEngineView()->url().path(), QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html"));
+    QCOMPARE(webEngineView()->url(), urlFromTestPath("html/basic_page.html"));
 }
 
 void tst_QQuickWebEngineView::stop()
 {
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QCOMPARE(webEngineView()->url().path(), QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html"));
+    QCOMPARE(webEngineView()->url(), urlFromTestPath("html/basic_page.html"));
 
     webEngineView()->stop();
 }
@@ -215,7 +226,7 @@ void tst_QQuickWebEngineView::loadProgress()
 {
     QCOMPARE(webEngineView()->loadProgress(), 0);
 
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
     QSignalSpy loadProgressChangedSpy(webEngineView(), SIGNAL(loadProgressChanged()));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
@@ -234,7 +245,7 @@ void tst_QQuickWebEngineView::show()
 
 void tst_QQuickWebEngineView::showWebEngineView()
 {
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/direct-image-compositing.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/direct-image-compositing.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
     m_window->show();
     // This should not crash.
@@ -268,12 +279,12 @@ void tst_QQuickWebEngineView::multipleWebEngineViewWindows()
     QQuickWebEngineView *webEngineView2 = newWebEngineView();
     QScopedPointer<TestWindow> window2(new TestWindow(webEngineView2));
 
-    webEngineView1->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/scroll.html")));
+    webEngineView1->setUrl(urlFromTestPath("html/scroll.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView1));
     window1->show();
     webEngineView1->setVisible(true);
 
-    webEngineView2->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html")));
+    webEngineView2->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView2));
     window2->show();
     webEngineView2->setVisible(true);
@@ -291,12 +302,12 @@ void tst_QQuickWebEngineView::multipleWebEngineViews()
     webEngineView2->setParentItem(m_window->contentItem());
 
     webEngineView1->setSize(QSizeF(300, 400));
-    webEngineView1->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/scroll.html")));
+    webEngineView1->setUrl(urlFromTestPath("html/scroll.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView1.data()));
     webEngineView1->setVisible(true);
 
     webEngineView2->setSize(QSizeF(300, 400));
-    webEngineView2->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page.html")));
+    webEngineView2->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView2.data()));
     webEngineView2->setVisible(true);
     QTest::qWait(200);
@@ -325,14 +336,14 @@ void tst_QQuickWebEngineView::titleUpdate()
     QSignalSpy titleSpy(webEngineView(), SIGNAL(titleChanged()));
 
     // Load page with no title
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/basic_page2.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/basic_page2.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
     QCOMPARE(titleSpy.size(), 1);
 
     titleSpy.clear();
 
     // No titleChanged signal for failed load
-    webEngineView()->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/file_that_does_not_exist.html")));
+    webEngineView()->setUrl(urlFromTestPath("html/file_that_does_not_exist.html"));
     QVERIFY(waitForLoadFailed(webEngineView()));
     QCOMPARE(titleSpy.size(), 0);
 }
@@ -357,7 +368,7 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
     webEngineView1->setVisible(true);
 
     webEngineView2->setSize(QSizeF(300, 400));
-    webEngineView2->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "/html/basic_page.html")));
+    webEngineView2->setUrl(urlFromTestPath("/html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView2.data()));
     webEngineView2->setVisible(true);
 
@@ -388,7 +399,7 @@ void tst_QQuickWebEngineView::inputMethod()
     QSKIP("QQUICKWEBENGINEVIEW_ITEMACCEPTSINPUTMETHOD");
 #else
     QQuickWebEngineView *view = webEngineView();
-    view->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/inputmethod.html")));
+    view->setUrl(urlFromTestPath("html/inputmethod.html"));
     QVERIFY(waitForLoadSucceeded(view));
 
     QVERIFY(!view->flags().testFlag(QQuickItem::ItemAcceptsInputMethod));
@@ -406,7 +417,7 @@ void tst_QQuickWebEngineView::inputMethodHints()
 #else
     QQuickWebEngineView *view = webEngineView();
 
-    view->setUrl(QUrl::fromLocalFile(QLatin1String(TESTS_SOURCE_DIR "html/inputmethod.html")));
+    view->setUrl(urlFromTestPath("html/inputmethod.html"));
     QVERIFY(waitForLoadSucceeded(view));
 
     // Setting focus on an input element results in an element in its shadow tree becoming the focus node.

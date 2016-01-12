@@ -49,7 +49,6 @@
 
 #include <QCoreApplication>
 #include <QFile>
-#include <QStringBuilder>
 
 #if defined(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"
@@ -105,20 +104,14 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path, cons
 void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
 {
     QStringList pluginPaths;
-#if defined(Q_OS_WIN) && defined(Q_PROCESSOR_X86_32)
+#if defined(Q_OS_WIN)
     QString winDir = QDir::fromNativeSeparators(qgetenv("WINDIR"));
     if (winDir.isEmpty())
         winDir = QString::fromLatin1("C:/Windows");
-
-    const QStringList pluginDirs  = { winDir + "/SysWOW64/Macromed/Flash",
-                                      winDir + "/System32/Macromed/Flash" };
-    const QStringList nameFilters("pepflashplayer*.dll");
-    Q_FOREACH (const QString &dirPath, pluginDirs) {
-        QDir pluginDir(dirPath);
-        pluginDir.setFilter(QDir::Files);
-        Q_FOREACH (const QFileInfo &info, pluginDir.entryInfoList(nameFilters))
-            pluginPaths << info.absoluteFilePath();
-    }
+    QDir pluginDir(winDir + "/System32/Macromed/Flash");
+    pluginDir.setFilter(QDir::Files);
+    Q_FOREACH (const QFileInfo &info, pluginDir.entryInfoList(QStringList("pepflashplayer*.dll")))
+        pluginPaths << info.absoluteFilePath();
 #endif
 #if defined(Q_OS_OSX)
     pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // Mac OS X
@@ -132,7 +125,6 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
         if (!QFile(*it).exists())
             continue;
         plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), std::string()));
-        return;
     }
 }
 
@@ -159,7 +151,6 @@ void ContentClientQt::AddPepperPlugins(std::vector<content::PepperPluginInfo>* p
 #endif
 
 #include <QCoreApplication>
-#include <QStringBuilder>
 
 namespace QtWebEngineCore {
 

@@ -36,7 +36,7 @@
 
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
-#include "qquickwebengineprofile_p_p.h"
+#include "qquickwebengineprofile_p.h"
 
 using QtWebEngineCore::BrowserContextAdapterClient;
 
@@ -77,7 +77,7 @@ QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
 /*!
     \qmltype WebEngineDownloadItem
     \instantiates QQuickWebEngineDownloadItem
-    \inqmlmodule QtWebEngine 1.1
+    \inqmlmodule QtWebEngine
     \since QtWebEngine 1.1
     \brief Provides information about a download.
 
@@ -215,6 +215,18 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
 {
     Q_D(const QQuickWebEngineDownloadItem);
     return d->receivedBytes;
+}
+
+/*!
+    \qmlproperty QString WebEngineDownloadItem::mimeType
+
+    Holds the MIME type of the download.
+*/
+
+QString QQuickWebEngineDownloadItem::mimeType() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->mimeType;
 }
 
 /*!

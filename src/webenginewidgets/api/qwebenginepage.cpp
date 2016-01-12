@@ -92,6 +92,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , view(0)
     , isLoading(false)
     , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter.data()))
+    , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , fullscreenMode(false)
 {
@@ -218,7 +219,20 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(userGesture);
+
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
+
+    // Mark the new page as being in the process of being adopted, so that a second mouse move event
+    // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
+    // The first mouse move event is being sent by q->createWindow(). This is necessary because
+    // Chromium does not get a mouse move acknowledgment message between the two events, and
+    // InputRouterImpl::ProcessMouseAck is not executed, thus all subsequent mouse move events
+    // get coalesced together, and don't get processed at all.
+    // The mouse move events are actually sent as a result of show() being called on
+    // RenderWidgetHostViewQtDelegateWidget, both when creating the window and when initialize is
+    // called.
+    newPage->d_func()->m_isBeingAdopted = true;
+
     // Overwrite the new page's WebContents with ours.
     if (newPage && newPage->d_func() != this) {
         newPage->d_func()->adapter = newWebContents;
@@ -226,6 +240,14 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
         if (!initialGeometry.isEmpty())
             emit newPage->geometryChangeRequested(initialGeometry);
     }
+
+    // Page has finished the adoption process.
+    newPage->d_func()->m_isBeingAdopted = false;
+}
+
+bool QWebEnginePagePrivate::isBeingAdopted()
+{
+    return m_isBeingAdopted;
 }
 
 void QWebEnginePagePrivate::close()

@@ -45,7 +45,7 @@
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QStyle>
-#include <QtWidgets/QStyleOptionFrameV2>
+#include <QtWidgets/QStyleOptionFrame>
 
 ClearButton::ClearButton(QWidget *parent)
   : QAbstractButton(parent)
@@ -181,7 +181,7 @@ void SearchLineEdit::paintEvent(QPaintEvent *event)
 {
     if (lineEdit()->text().isEmpty() && !hasFocus() && !m_inactiveText.isEmpty()) {
         ExLineEdit::paintEvent(event);
-        QStyleOptionFrameV2 panel;
+        QStyleOptionFrame panel;
         initStyleOption(&panel);
         QRect r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
         QFontMetrics fm = fontMetrics();

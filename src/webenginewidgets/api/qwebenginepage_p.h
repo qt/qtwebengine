@@ -95,6 +95,7 @@ public:
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(QtWebEngineCore::WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
+    virtual bool isBeingAdopted() Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual void windowCloseRejected() Q_DECL_OVERRIDE;
     virtual bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &data) Q_DECL_OVERRIDE;
@@ -153,6 +154,7 @@ public:
     QtWebEngineCore::WebEngineContextMenuData m_menuData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
+    bool m_isBeingAdopted;
     QColor m_backgroundColor;
     bool fullscreenMode;
 

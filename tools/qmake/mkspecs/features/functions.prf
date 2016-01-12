@@ -180,8 +180,12 @@ defineReplace(findOrBuildNinja) {
         log("Build directory is different from source directory - copying ninja sources to the build tree...")
         shadow_3rd_party_path = $$system_path($$shadowed($$src_3rd_party_dir))
 
-        !exists($$dirname(out)): mkpath($$shadow_3rd_party_path)
-        system("$$QMAKE_COPY_DIR $$system_quote($$system_path($$absolute_path("ninja", "$$src_3rd_party_dir"))) $$system_quote($$shadow_3rd_party_path)")
+        !exists($$dirname(out)): mkpath($$dirname(out))
+        copy_dir_files {
+          system("$$QMAKE_COPY_DIR $$system_quote($$system_path($$absolute_path("ninja", "$$src_3rd_party_dir"))) $$system_quote($$dirname(out))")
+        } else {
+          system("$$QMAKE_COPY_DIR $$system_quote($$system_path($$absolute_path("ninja", "$$src_3rd_party_dir"))) $$system_quote($$shadow_3rd_party_path)")
+        }
       }
       system("cd $$system_quote($$dirname(out)) && python configure.py --bootstrap")
     }

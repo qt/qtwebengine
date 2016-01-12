@@ -83,7 +83,7 @@ public:
     bool toggleOn() const { return m_toggleOn; }
 
 private:
-    QQuickWebEngineViewPrivate *viewPrivate;
+    QQuickWebEngineViewPrivate *m_viewPrivate;
     const QUrl m_origin;
     const bool m_toggleOn;
 };
@@ -300,6 +300,9 @@ public Q_SLOTS:
     Q_REVISION(3) bool isAudioMuted() const;
     Q_REVISION(3) void setAudioMuted(bool muted);
     Q_REVISION(3) bool wasRecentlyAudible();
+
+private Q_SLOTS:
+    void lazyInitialize();
 
 Q_SIGNALS:
     void titleChanged();
