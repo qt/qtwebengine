@@ -144,6 +144,8 @@ TestWebEngineView {
             var dataUrl = "data:text/html,foo"
             webEngineView.url = dataUrl
             compare(webEngineView.url, dataUrl)
+            verify(webEngineView.waitForLoadSucceeded()) // data:text/html,foo is loaded
+            compare(webEngineView.url, dataUrl)
 
             var redirectUrl = Qt.resolvedUrl("redirect.html")
             webEngineView.url = redirectUrl

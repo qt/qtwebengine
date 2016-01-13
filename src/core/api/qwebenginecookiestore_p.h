@@ -56,6 +56,7 @@
 #include <QVector>
 #include <QNetworkCookie>
 #include <QUrl>
+#include <QtCore/private/qobject_p.h>
 
 namespace QtWebEngineCore {
 class CookieMonsterDelegateQt;
@@ -63,7 +64,9 @@ class CookieMonsterDelegateQt;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStorePrivate {
+class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStorePrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QWebEngineCookieStore)
     struct CookieData {
         quint64 callbackId;
         QNetworkCookie cookie;
@@ -71,7 +74,6 @@ class QWEBENGINE_PRIVATE_EXPORT QWebEngineCookieStorePrivate {
     };
     friend class QTypeInfo<CookieData>;
 public:
-    Q_DECLARE_PUBLIC(QWebEngineCookieStore)
     QtWebEngineCore::CallbackDirectory callbackDirectory;
     QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> filterCallback;
     QVector<CookieData> m_pendingUserCookies;
@@ -81,11 +83,11 @@ public:
     bool m_getAllCookiesPending;
 
     QtWebEngineCore::CookieMonsterDelegateQt *delegate;
-    QWebEngineCookieStore *q_ptr;
 
-    QWebEngineCookieStorePrivate(QWebEngineCookieStore *q);
+    QWebEngineCookieStorePrivate();
 
     void processPendingUserCookies();
+    void rejectPendingUserCookies();
     void setCookie(const QWebEngineCallback<bool> &callback, const QNetworkCookie &cookie, const QUrl &origin);
     void deleteCookie(const QNetworkCookie &cookie, const QUrl &url);
     void deleteSessionCookies();

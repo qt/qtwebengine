@@ -290,6 +290,12 @@ void RenderWidgetHostViewQtDelegateWidget::initializeGL()
     m_sgRenderer.reset(m_sgEngine->createRenderer());
     m_sgRenderer->setRootNode(m_rootNode.data());
     m_sgRenderer->setClearColor(m_clearColor);
+
+    // When RenderWidgetHostViewQt::GetScreenInfo is called for the first time, the associated
+    // QWindow is NULL, and the screen device pixel ratio can not be queried.
+    // Re-initialize the screen information after the QWindow handle is available,
+    // so Chromium receives the correct device pixel ratio.
+    m_client->windowChanged();
 }
 
 void RenderWidgetHostViewQtDelegateWidget::paintGL()

@@ -48,7 +48,6 @@
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
-#include "qquickwebengineprofile_p_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p_p.h"
 
@@ -74,9 +73,10 @@
 #include <QQmlEngine>
 #include <QQmlProperty>
 #include <QQmlWebChannel>
+#include <QQuickWebEngineProfile>
 #include <QScreen>
-#include <QStringBuilder>
 #include <QUrl>
+#include <QTimer>
 #ifndef QT_NO_ACCESSIBILITY
 #include <private/qquickaccessibleattached_p.h>
 #endif // QT_NO_ACCESSIBILITY
@@ -105,12 +105,13 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
 #endif
     , contextMenuExtraItems(0)
     , loadProgress(0)
-    , m_isFullScreen(false)
+    , m_fullscreenMode(false)
     , isLoading(false)
     , m_activeFocusOnPress(true)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
+    , m_webChannel(0)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
@@ -178,7 +179,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
 {
     Q_Q(QQuickWebEngineView);
 
-    QObject *menu = ui()->addMenu(0, QString(), data.pos);
+    // Assign the WebEngineView as the parent of the menu, so mouse events are properly propagated
+    // on OSX.
+    QObject *menu = ui()->addMenu(q, QString(), data.pos);
     if (!menu)
         return false;
 
@@ -525,6 +528,11 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebConten
     Q_EMIT q->newViewRequested(&request);
 }
 
+bool QQuickWebEngineViewPrivate::isBeingAdopted()
+{
+    return false;
+}
+
 void QQuickWebEngineViewPrivate::close()
 {
     Q_Q(QQuickWebEngineView);
@@ -548,7 +556,7 @@ void QQuickWebEngineViewPrivate::requestFullScreenMode(const QUrl &origin, bool 
 
 bool QQuickWebEngineViewPrivate::isFullScreenMode() const
 {
-    return m_isFullScreen;
+    return m_fullscreenMode;
 }
 
 void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID)
@@ -716,11 +724,6 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     Q_Q(QQuickWebEngineView);
 
-    // memorize what webChannel we had for the previous adapter
-    QQmlWebChannel *qmlWebChannel = NULL;
-    if (adapter)
-        qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
-
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
     WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter);
@@ -729,8 +732,12 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     adapter->initialize(this);
 
     // associate the webChannel with the new adapter
-    if (qmlWebChannel)
-        adapter->setWebChannel(qmlWebChannel);
+    if (m_webChannel)
+        adapter->setWebChannel(m_webChannel);
+
+    // set initial background color if non-default
+    if (m_backgroundColor != Qt::white)
+        adapter->backgroundColorChanged();
 
     // re-bind the userscrips to the new adapter
     Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
@@ -772,11 +779,25 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
     if (!adapter) {
         adapter = new WebContentsAdapter();
         adapter->initialize(this);
+        if (m_backgroundColor != Qt::white)
+            adapter->backgroundColorChanged();
+        if (m_webChannel)
+            adapter->setWebChannel(m_webChannel);
         if (explicitUrl.isValid())
             adapter->load(explicitUrl);
         // push down the page's user scripts
         Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
             script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
+    }
+}
+
+void QQuickWebEngineViewPrivate::setFullScreenMode(bool fullscreen)
+{
+    Q_Q(QQuickWebEngineView);
+    if (m_fullscreenMode != fullscreen) {
+        m_fullscreenMode = fullscreen;
+        adapter->changedFullScreen();
+        Q_EMIT q->isFullScreenChanged();
     }
 }
 
@@ -795,7 +816,7 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
     d->explicitUrl = url;
     if (d->adapter)
         d->adapter->load(url);
-    if (!qmlEngine(this))
+    if (!qmlEngine(this) || isComponentComplete())
         d->ensureContentsAdapter();
 }
 
@@ -809,7 +830,7 @@ void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QQuickWebEngineView);
     d->explicitUrl = QUrl();
-    if (!qmlEngine(this))
+    if (!qmlEngine(this) || isComponentComplete())
         d->ensureContentsAdapter();
     if (d->adapter)
         d->adapter->setContent(html.toUtf8(), QStringLiteral("text/html;charset=UTF-8"), baseUrl);
@@ -909,11 +930,8 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         QUrl activeUrl = adapter->activeUrl();
-        QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(adapter->webChannel());
         adapter = 0;
         ensureContentsAdapter();
-        if (qmlWebChannel)
-            adapter->setWebChannel(qmlWebChannel);
 
         if (!explicitUrl.isValid() && activeUrl.isValid())
             adapter->load(activeUrl);
@@ -1051,8 +1069,7 @@ bool QQuickWebEngineView::canGoForward() const
 void QQuickWebEngineView::runJavaScript(const QString &script, const QJSValue &callback)
 {
     Q_D(QQuickWebEngineView);
-    if (!d->adapter)
-        return;
+    d->ensureContentsAdapter();
     if (!callback.isUndefined()) {
         quint64 requestId = d_ptr->adapter->runJavaScriptCallbackResult(script, QQuickWebEngineScript::MainWorld);
         d->m_callbacks.insert(requestId, callback);
@@ -1110,8 +1127,8 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
     if (color == d->m_backgroundColor)
         return;
     d->m_backgroundColor = color;
-    d->ensureContentsAdapter();
-    d->adapter->backgroundColorChanged();
+    if (d->adapter)
+        d->adapter->backgroundColorChanged();
     emit backgroundColorChanged();
 }
 
@@ -1145,7 +1162,7 @@ bool QQuickWebEngineView::wasRecentlyAudible()
 bool QQuickWebEngineView::isFullScreen() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->m_isFullScreen;
+    return d->m_fullscreenMode;
 }
 
 void QQuickWebEngineViewExperimental::setExtraContextMenuEntriesComponent(QQmlComponent *contextMenuExtras)
@@ -1189,23 +1206,24 @@ QQuickWebEngineHistory *QQuickWebEngineView::navigationHistory() const
 QQmlWebChannel *QQuickWebEngineView::webChannel()
 {
     Q_D(QQuickWebEngineView);
-    d->ensureContentsAdapter();
-    QQmlWebChannel *qmlWebChannel = qobject_cast<QQmlWebChannel *>(d->adapter->webChannel());
-    Q_ASSERT(!d->adapter->webChannel() || qmlWebChannel);
-    if (!qmlWebChannel) {
-        qmlWebChannel = new QQmlWebChannel(this);
-        d->adapter->setWebChannel(qmlWebChannel);
+    if (!d->m_webChannel) {
+        d->m_webChannel = new QQmlWebChannel(this);
+        if (d->adapter)
+            d->adapter->setWebChannel(d->m_webChannel);
     }
-    return qmlWebChannel;
+
+    return d->m_webChannel;
 }
 
 void QQuickWebEngineView::setWebChannel(QQmlWebChannel *webChannel)
 {
     Q_D(QQuickWebEngineView);
-    bool notify = (d->adapter->webChannel() == webChannel);
-    d->adapter->setWebChannel(webChannel);
-    if (notify)
-        Q_EMIT webChannelChanged();
+    if (d->m_webChannel == webChannel)
+        return;
+    d->m_webChannel = webChannel;
+    if (d->adapter)
+        d->adapter->setWebChannel(webChannel);
+    Q_EMIT webChannelChanged();
 }
 
 void QQuickWebEngineView::grantFeaturePermission(const QUrl &securityOrigin, QQuickWebEngineView::Feature feature, bool granted)
@@ -1263,10 +1281,7 @@ void QQuickWebEngineView::goBackOrForward(int offset)
 void QQuickWebEngineView::fullScreenCancelled()
 {
     Q_D(QQuickWebEngineView);
-    if (d->m_isFullScreen) {
-        d->m_isFullScreen = false;
-        Q_EMIT isFullScreenChanged();
-    }
+    d->adapter->exitFullScreen();
 }
 
 void QQuickWebEngineView::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
@@ -1543,19 +1558,24 @@ void QQuickWebEngineViewPrivate::userScripts_clear(QQmlListProperty<QQuickWebEng
 
 void QQuickWebEngineView::componentComplete()
 {
-    Q_D(QQuickWebEngineView);
     QQuickItem::componentComplete();
+    QTimer::singleShot(0, this, &QQuickWebEngineView::lazyInitialize);
+}
+
+void QQuickWebEngineView::lazyInitialize()
+{
+    Q_D(QQuickWebEngineView);
     d->ensureContentsAdapter();
 }
 
 QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest()
-    : viewPrivate(0)
+    : m_viewPrivate(0)
     , m_toggleOn(false)
 {
 }
 
 QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, const QUrl &origin, bool toggleOn)
-    : viewPrivate(viewPrivate)
+    : m_viewPrivate(viewPrivate)
     , m_origin(origin)
     , m_toggleOn(toggleOn)
 {
@@ -1563,18 +1583,14 @@ QQuickWebEngineFullScreenRequest::QQuickWebEngineFullScreenRequest(QQuickWebEngi
 
 void QQuickWebEngineFullScreenRequest::accept()
 {
-    if (viewPrivate && viewPrivate->m_isFullScreen != m_toggleOn) {
-        viewPrivate->m_isFullScreen = m_toggleOn;
-        viewPrivate->adapter->changedFullScreen();
-        Q_EMIT viewPrivate->q_ptr->isFullScreenChanged();
-    }
+    if (m_viewPrivate)
+        m_viewPrivate->setFullScreenMode(m_toggleOn);
 }
 
 void QQuickWebEngineFullScreenRequest::reject()
 {
-    if (viewPrivate) {
-        viewPrivate->adapter->changedFullScreen();
-    }
+    if (m_viewPrivate)
+        m_viewPrivate->setFullScreenMode(!m_toggleOn);
 }
 
 QQuickWebEngineViewExperimental::QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate *viewPrivate)

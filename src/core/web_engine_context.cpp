@@ -84,6 +84,12 @@
 #include <QVector>
 #include <qpa/qplatformnativeinterface.h>
 
+using namespace QtWebEngineCore;
+
+QT_BEGIN_NAMESPACE
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+QT_END_NAMESPACE
+
 namespace {
 
 scoped_refptr<QtWebEngineCore::WebEngineContext> sContext;
@@ -100,7 +106,7 @@ void destroyContext()
 bool usingANGLE()
 {
 #if defined(Q_OS_WIN)
-    return QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
+    return qt_gl_global_share_context()->isOpenGLES();
 #else
     return false;
 #endif
@@ -246,14 +252,12 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     } else {
         const char *glType = 0;
-        switch (QOpenGLContext::openGLModuleType()) {
-        case QOpenGLContext::LibGL:
-            glType = gfx::kGLImplementationDesktopName;
-            break;
-        case QOpenGLContext::LibGLES:
+        if (qt_gl_global_share_context()->isOpenGLES()) {
             glType = gfx::kGLImplementationEGLName;
-            break;
+        } else {
+            glType = gfx::kGLImplementationDesktopName;
         }
+
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
     }
 

@@ -37,8 +37,8 @@
 #ifndef QWEBENGINECOOKIESTORE_H
 #define QWEBENGINECOOKIESTORE_H
 
-#include "qtwebenginecoreglobal.h"
-#include "qwebenginecallback.h"
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
+#include <QtWebEngineCore/qwebenginecallback.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qscopedpointer.h>
@@ -94,7 +94,6 @@ private:
     friend class QtWebEngineCore::CookieMonsterDelegateQt;
     Q_DISABLE_COPY(QWebEngineCookieStore)
     Q_DECLARE_PRIVATE(QWebEngineCookieStore)
-    QScopedPointer<QWebEngineCookieStorePrivate> d_ptr;
 };
 
 QT_END_NAMESPACE

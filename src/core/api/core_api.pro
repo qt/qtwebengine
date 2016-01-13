@@ -5,6 +5,7 @@ TEMPLATE = lib
 
 CONFIG += staticlib c++11
 QT += network core-private
+QT_PRIVATE += webenginecoreheaders-private
 
 # Don't create .prl file for this intermediate library because
 # their contents get used when linking against them, breaking
@@ -42,6 +43,7 @@ HEADERS = \
     qwebengineurlschemehandler.h
 
 SOURCES = \
+    qtwebenginecoreglobal.cpp \
     qwebenginecookiestore.cpp \
     qwebengineurlrequestinfo.cpp \
     qwebengineurlrequestjob.cpp \

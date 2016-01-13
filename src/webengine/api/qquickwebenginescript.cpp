@@ -40,7 +40,6 @@
 #include <QQmlFile>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
-#include <QtCore/QStringBuilder>
 #include <QtCore/QTimerEvent>
 #include "user_script_controller_host.h"
 

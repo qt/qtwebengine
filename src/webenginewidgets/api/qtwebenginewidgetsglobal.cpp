@@ -36,9 +36,13 @@
 
 #include "qtwebenginewidgetsglobal.h"
 
-#include "qtwebengineglobal.h"
 #include <QCoreApplication>
 #include <QOpenGLContext>
+
+namespace QtWebEngineCore
+{
+    extern void initialize();
+}
 
 QT_BEGIN_NAMESPACE
 static void initialize()
@@ -52,7 +56,7 @@ static void initialize()
         return;
     }
 #endif
-    qAddPreRoutine(QtWebEngine::initialize);
+    qAddPreRoutine(QtWebEngineCore::initialize);
 }
 
 Q_CONSTRUCTOR_FUNCTION(initialize)

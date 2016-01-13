@@ -34,55 +34,61 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINEPROFILE_P_P_H
-#define QQUICKWEBENGINEPROFILE_P_P_H
+#include "qtwebenginecoreglobal_p.h"
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "browser_context_adapter_client.h"
-#include "qquickwebengineprofile_p.h"
-
-#include <QExplicitlySharedDataPointer>
-#include <QMap>
-#include <QPointer>
+#include <QGuiApplication>
+#include <QOpenGLContext>
+#include <QThread>
 
 QT_BEGIN_NAMESPACE
-
-class QQuickWebEngineDownloadItem;
-class QQuickWebEngineSettings;
-
-class QQuickWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
-public:
-    Q_DECLARE_PUBLIC(QQuickWebEngineProfile)
-    QQuickWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter* browserContext);
-    ~QQuickWebEngineProfilePrivate();
-
-    QtWebEngineCore::BrowserContextAdapter *browserContext() const { return m_browserContextRef.data(); }
-    QQuickWebEngineSettings *settings() const { return m_settings.data(); }
-
-    void cancelDownload(quint32 downloadId);
-    void downloadDestroyed(quint32 downloadId);
-
-    void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
-    void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
-
-private:
-    friend class QQuickWebEngineViewPrivate;
-    QQuickWebEngineProfile *q_ptr;
-    QScopedPointer<QQuickWebEngineSettings> m_settings;
-    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
-    QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
-};
-
+Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
 
-#endif // QQUICKWEBENGINEPROFILE_P_P_H
+namespace QtWebEngineCore {
+
+static QOpenGLContext *shareContext;
+
+static void deleteShareContext()
+{
+    delete shareContext;
+    shareContext = 0;
+}
+
+// ### Qt 6: unify this logic and Qt::AA_ShareOpenGLContexts.
+// QtWebEngine::initialize was introduced first and meant to be called
+// after the QGuiApplication creation, when AA_ShareOpenGLContexts fills
+// the same need but the flag has to be set earlier.
+
+QWEBENGINE_PRIVATE_EXPORT void initialize()
+{
+#ifdef Q_OS_WIN32
+    qputenv("QT_D3DCREATE_MULTITHREADED", "1");
+#endif
+
+    // No need to override the shared context if QApplication already set one (e.g with Qt::AA_ShareOpenGLContexts).
+    if (qt_gl_global_share_context())
+        return;
+
+    QCoreApplication *app = QCoreApplication::instance();
+    if (!app) {
+        qFatal("QtWebEngine::initialize() must be called after the construction of the application object.");
+        return;
+    }
+    if (app->thread() != QThread::currentThread()) {
+        qFatal("QtWebEngine::initialize() must be called from the Qt gui thread.");
+        return;
+    }
+
+    if (shareContext)
+        return;
+
+    shareContext = new QOpenGLContext;
+    shareContext->create();
+    qAddPostRoutine(deleteShareContext);
+    qt_gl_set_global_share_context(shareContext);
+
+    // Classes like QOpenGLWidget check for the attribute
+    app->setAttribute(Qt::AA_ShareOpenGLContexts);
+}
+} // namespace QtWebEngineCore

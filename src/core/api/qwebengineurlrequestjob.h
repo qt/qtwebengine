@@ -37,7 +37,7 @@
 #ifndef QWEBENGINEURLREQUESTJOB_H
 #define QWEBENGINEURLREQUESTJOB_H
 
-#include "qtwebenginecoreglobal.h"
+#include <QtWebEngineCore/qtwebenginecoreglobal.h>
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qobject.h>

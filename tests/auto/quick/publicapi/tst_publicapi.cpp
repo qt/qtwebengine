@@ -46,6 +46,7 @@
 #include <QMetaType>
 #include <QQmlListProperty>
 #include <QtTest/QtTest>
+#include <QtWebEngine/QQuickWebEngineProfile>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
@@ -53,7 +54,6 @@
 #include <private/qquickwebengineloadrequest_p.h>
 #include <private/qquickwebenginenavigationrequest_p.h>
 #include <private/qquickwebenginenewviewrequest_p.h>
-#include <private/qquickwebengineprofile_p.h>
 #include <private/qquickwebenginescript_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
@@ -149,6 +149,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.DownloadMediaToDisk --> WebAction"
     << "QQuickWebEngineView.InspectElement --> WebAction"
     << "QQuickWebEngineView.ExitFullScreen --> WebAction"
+    << "QQuickWebEngineView.RequestClose --> WebAction"
     << "QQuickWebEngineView.WebActionCount --> WebAction"
     << "QQuickWebEngineView.InfoMessageLevel --> JavaScriptConsoleMessageLevel"
     << "QQuickWebEngineView.WarningMessageLevel --> JavaScriptConsoleMessageLevel"
@@ -195,6 +196,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.activeFocusOnPressChanged(bool) --> void"
     << "QQuickWebEngineView.backgroundColorChanged() --> void"
     << "QQuickWebEngineView.renderProcessTerminated(RenderProcessTerminationStatus,int) --> void"
+    << "QQuickWebEngineView.windowCloseRequested() --> void"
     << "QQuickWebEngineView.runJavaScript(QString,QJSValue) --> void"
     << "QQuickWebEngineView.runJavaScript(QString) --> void"
     << "QQuickWebEngineView.loadHtml(QString,QUrl) --> void"
@@ -289,7 +291,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.httpAcceptLanguageChanged() --> void"
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
-    << "QQuickWebEngineProfile.setCookieStore(QWebEngineCookieStore*) --> void"
+    << "QQuickWebEngineProfile.cookieStore() --> QWebEngineCookieStore*"
     << "QQuickWebEngineScript.Deferred --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentReady --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentCreation --> InjectionPoint"
@@ -343,8 +345,10 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.pluginsEnabledChanged() --> void"
     << "QQuickWebEngineSettings.fullScreenSupportEnabledChanged() --> void"
     << "QQuickWebEngineSettings.defaultTextEncodingChanged() --> void"
+    << "QQuickWebEngineFullScreenRequest.origin --> QUrl"
     << "QQuickWebEngineFullScreenRequest.toggleOn --> bool"
     << "QQuickWebEngineFullScreenRequest.accept() --> void"
+    << "QQuickWebEngineFullScreenRequest.reject() --> void"
     << "QQuickWebEngineSingleton.settings --> QQuickWebEngineSettings*"
     << "QQuickWebEngineSingleton.defaultProfile --> QQuickWebEngineProfile*"
     ;

@@ -143,6 +143,7 @@ public:
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(QtWebEngineCore::WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &) Q_DECL_OVERRIDE;
+    virtual bool isBeingAdopted() Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual void windowCloseRejected() Q_DECL_OVERRIDE;
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) Q_DECL_OVERRIDE;
@@ -184,6 +185,7 @@ public:
     void adoptWebContents(QtWebEngineCore::WebContentsAdapter *webContents);
     void setProfile(QQuickWebEngineProfile *profile);
     void ensureContentsAdapter();
+    void setFullScreenMode(bool);
 
     // QQmlListPropertyHelpers
     static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
@@ -205,12 +207,13 @@ public:
     QUrl explicitUrl;
     QUrl icon;
     int loadProgress;
-    bool m_isFullScreen;
+    bool m_fullscreenMode;
     bool isLoading;
     bool m_activeFocusOnPress;
     qreal devicePixelRatio;
     QMap<quint64, QJSValue> m_callbacks;
     QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;
+    QQmlWebChannel *m_webChannel;
 
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;
