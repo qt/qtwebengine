@@ -52,12 +52,19 @@
 class TestView : public QQuickView {
     Q_OBJECT
 public:
+    TestView()
+    {
+        connect(this, &TestView::_q_exposeChanged, this, &TestView::exposeChanged,
+                Qt::QueuedConnection);
+    }
+
     virtual void exposeEvent(QExposeEvent *e) Q_DECL_OVERRIDE {
         QQuickView::exposeEvent(e);
-        emit exposeChanged();
+        emit _q_exposeChanged();
     }
 
 Q_SIGNALS:
+    void _q_exposeChanged();
     void exposeChanged();
 };
 
