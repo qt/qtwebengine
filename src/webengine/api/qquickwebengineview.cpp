@@ -109,9 +109,9 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , isLoading(false)
     , m_activeFocusOnPress(true)
     , devicePixelRatio(QGuiApplication::primaryScreen()->devicePixelRatio())
+    , m_webChannel(0)
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
-    , m_webChannel(0)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
