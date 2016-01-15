@@ -74,6 +74,7 @@ private:
     QGeoPositionInfoSource *m_positionInfoSource;
 
     void postToLocationProvider(const base::Closure &task);
+    friend class LocationProviderQt;
 };
 
 QtPositioningHelper::QtPositioningHelper(LocationProviderQt *provider)
@@ -85,7 +86,8 @@ QtPositioningHelper::QtPositioningHelper(LocationProviderQt *provider)
 
 QtPositioningHelper::~QtPositioningHelper()
 {
-    m_locationProvider->m_positioningHelper = 0;
+    if (m_locationProvider)
+        m_locationProvider->m_positioningHelper = 0;
 }
 
 static bool isHighAccuracySource(const QGeoPositionInfoSource *source)
@@ -223,7 +225,10 @@ LocationProviderQt::LocationProviderQt()
 
 LocationProviderQt::~LocationProviderQt()
 {
-    m_positioningHelper->deleteLater();
+    if (m_positioningHelper) {
+        m_positioningHelper->m_locationProvider = 0;
+        m_positioningHelper->deleteLater();
+    }
 }
 
 bool LocationProviderQt::StartProvider(bool highAccuracy)
