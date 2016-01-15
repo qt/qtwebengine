@@ -54,8 +54,6 @@
 #include <QString>
 #include <QStandardPaths>
 
-#include <numeric>
-
 namespace {
 inline QString buildLocationFromStandardPath(const QString &standardPath, const QString &name) {
     QString location = standardPath;
@@ -405,11 +403,13 @@ void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, Permissio
 QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
 {
     const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
-    return std::accumulate(list.constBegin(), list.constEnd(), QString(),
-                    [](const QString &r, const QString &e) -> QString {
-        return (r.isEmpty() ? r : r + QString(QLatin1Char(',')))
-                + e.split(QLatin1Char(';')).first();
-    });
+    QString out;
+    Q_FOREACH (const QString& str, list) {
+        if (!out.isEmpty())
+            out.append(QLatin1Char(','));
+        out.append(str.split(QLatin1Char(';')).first());
+    }
+    return out;
 }
 
 QString BrowserContextAdapter::httpAcceptLanguage() const
