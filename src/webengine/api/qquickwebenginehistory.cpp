@@ -54,7 +54,7 @@ QQuickWebEngineHistoryListModelPrivate::~QQuickWebEngineHistoryListModelPrivate(
 int QQuickWebEngineHistoryListModelPrivate::count() const
 {
     if (!adapter())
-        return -1;
+        return 0;
     return adapter()->navigationEntryCount();
 }
 
@@ -65,6 +65,8 @@ int QQuickWebEngineHistoryListModelPrivate::index(int index) const
 
 int QQuickWebEngineHistoryListModelPrivate::offsetForIndex(int index) const
 {
+    if (!adapter())
+        return index;
     return index - adapter()->currentNavigationEntryIndex();
 }
 
@@ -81,7 +83,7 @@ QQuickWebEngineBackHistoryListModelPrivate::QQuickWebEngineBackHistoryListModelP
 int QQuickWebEngineBackHistoryListModelPrivate::count() const
 {
     if (!adapter())
-        return -1;
+        return 0;
     return adapter()->currentNavigationEntryIndex();
 }
 
@@ -104,12 +106,14 @@ QQuickWebEngineForwardHistoryListModelPrivate::QQuickWebEngineForwardHistoryList
 int QQuickWebEngineForwardHistoryListModelPrivate::count() const
 {
     if (!adapter())
-        return -1;
+        return 0;
     return adapter()->navigationEntryCount() - adapter()->currentNavigationEntryIndex() - 1;
 }
 
 int QQuickWebEngineForwardHistoryListModelPrivate::index(int i) const
 {
+    if (!adapter())
+        return i + 1;
     return adapter()->currentNavigationEntryIndex() + i + 1;
 }
 
