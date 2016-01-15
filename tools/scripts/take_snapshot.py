@@ -80,8 +80,10 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('build/android/')
         or (file_path.startswith('chrome/') and
             not file_path.startswith('chrome/VERSION') and
+            not file_path.startswith('chrome/browser/chrome_notification_types.h') and
             not '/app/theme/' in file_path and
             not '/app/resources/' in file_path and
+            not '/browser/printing/' in file_path and
             not '/browser/resources/' in file_path and
             not '/renderer/resources/' in file_path and
             not 'repack_locales' in file_path and
@@ -129,7 +131,9 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('courgette')
         or (file_path.startswith('extensions') and
             not 'browser/extension_function_registry.h' in file_path and
-            not 'browser/extension_function_histogram_value.h' in file_path)
+            not 'browser/extension_function_histogram_value.h' in file_path and
+            not 'browser/notification_types.cc' in file_path and
+            not 'browser/notification_types.h' in file_path)
         or file_path.startswith('google_update')
         or file_path.startswith('ios')
         or file_path.startswith('media/base/android/java')
