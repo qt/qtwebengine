@@ -146,6 +146,13 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     view.load(url);
     QVERIFY(loadFinishedSpy.wait());
     QVERIFY(toPlainTextSync(view.page()) != url.toString());
+
+    // Install a handler that is owned by the view. Make sure this doesn't crash on shutdown.
+    profile.installUrlSchemeHandler("aviancarrier", new ReplyingUrlSchemeHandler(&view));
+    url = QUrl(QStringLiteral("aviancarrier:inspector.mortensen@politistyrke.dk"));
+    view.load(url);
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(toPlainTextSync(view.page()), url.toString());
 }
 
 class FailingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
