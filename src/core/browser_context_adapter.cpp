@@ -361,13 +361,13 @@ bool BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHand
 {
     bool removedOneOrMore = false;
     auto it = m_customUrlSchemeHandlers.begin();
-    auto end = m_customUrlSchemeHandlers.end();
-    for (; it != end; ++it) {
+    while (it != m_customUrlSchemeHandlers.end()) {
         if (it.value() == handler) {
             it = m_customUrlSchemeHandlers.erase(it);
             removedOneOrMore = true;
             continue;
         }
+        ++it;
     }
     if (removedOneOrMore)
         updateCustomUrlSchemeHandlers();
