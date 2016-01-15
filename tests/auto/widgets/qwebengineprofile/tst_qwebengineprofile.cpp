@@ -35,7 +35,11 @@
 ****************************************************************************/
 
 #include "../util.h"
+#include <QtCore/qbuffer.h>
 #include <QtTest/QtTest>
+#include <QtWebEngineCore/qwebengineurlrequestjob.h>
+#include <QtWebEngineCore/qwebengineurlschemehandler.h>
+#include <QtWebEngineWidgets/qwebengineview.h>
 #include <qwebengineprofile.h>
 
 class tst_QWebEngineProfile : public QObject
@@ -45,6 +49,7 @@ class tst_QWebEngineProfile : public QObject
 private Q_SLOTS:
     void defaultProfile();
     void profileConstructors();
+    void urlSchemeHandlers();
 };
 
 void tst_QWebEngineProfile::defaultProfile()
@@ -70,6 +75,76 @@ void tst_QWebEngineProfile::profileConstructors()
     QCOMPARE(otrProfile.persistentCookiesPolicy(), QWebEngineProfile::NoPersistentCookies);
     QCOMPARE(diskProfile.persistentCookiesPolicy(), QWebEngineProfile::AllowPersistentCookies);
 
+}
+
+class RedirectingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    void requestStarted(QWebEngineUrlRequestJob *job)
+    {
+        job->redirect(QUrl(QStringLiteral("data:text/plain;charset=utf-8,")
+                           + job->requestUrl().fileName()));
+    }
+};
+
+class ReplyingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+    QBuffer m_buffer;
+    QByteArray m_bufferData;
+public:
+    ReplyingUrlSchemeHandler(QObject *parent = nullptr)
+        : QWebEngineUrlSchemeHandler(parent)
+    {
+        m_buffer.setBuffer(&m_bufferData);
+    }
+
+    void requestStarted(QWebEngineUrlRequestJob *job)
+    {
+        m_bufferData = job->requestUrl().toString().toUtf8();
+        job->reply("text/plain;charset=utf-8", &m_buffer);
+    }
+};
+
+void tst_QWebEngineProfile::urlSchemeHandlers()
+{
+    RedirectingUrlSchemeHandler mailtoHandler;
+    QWebEngineProfile profile(QStringLiteral("urlSchemeHandlers"));
+    profile.installUrlSchemeHandler("mailto", &mailtoHandler);
+    QWebEngineView view;
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setPage(new QWebEnginePage(&profile, &view));
+    QString emailAddress = QStringLiteral("egon@olsen-banden.dk");
+    view.load(QUrl(QStringLiteral("mailto:") + emailAddress));
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(toPlainTextSync(view.page()), emailAddress);
+
+    // Install a gopher handler after the view has been fully initialized.
+    ReplyingUrlSchemeHandler gopherHandler;
+    profile.installUrlSchemeHandler("gopher", &gopherHandler);
+    QUrl url = QUrl(QStringLiteral("gopher://olsen-banden.dk/benny"));
+    view.load(url);
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(toPlainTextSync(view.page()), url.toString());
+
+    // Remove the mailto scheme, and check whether it is not handled anymore.
+    profile.removeUrlScheme("mailto");
+    emailAddress = QStringLiteral("kjeld@olsen-banden.dk");
+    view.load(QUrl(QStringLiteral("mailto:") + emailAddress));
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(toPlainTextSync(view.page()) != emailAddress);
+
+    // Check if gopher is still working after removing mailto.
+    url = QUrl(QStringLiteral("gopher://olsen-banden.dk/yvonne"));
+    view.load(url);
+    QVERIFY(loadFinishedSpy.wait());
+    QCOMPARE(toPlainTextSync(view.page()), url.toString());
+
+    // Does removeAll work?
+    profile.removeAllUrlSchemeHandlers();
+    url = QUrl(QStringLiteral("gopher://olsen-banden.dk/harry"));
+    view.load(url);
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(toPlainTextSync(view.page()) != url.toString());
 }
 
 QTEST_MAIN(tst_QWebEngineProfile)
