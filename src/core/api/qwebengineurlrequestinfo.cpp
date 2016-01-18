@@ -101,13 +101,11 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
 */
 
 /*!
-    \fn bool QWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
+    \fn void QWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
 
     Reimplementing this virtual function and setting the interceptor on a profile makes
     it possible to intercept URL requests. This function is executed on the IO thread,
     and therefore running long tasks here will block networking.
-    If this function is only used for inspection, it should return \c false, in which
-    case any modification to \a info will be ignored.
 
     \sa QWebEngineProfile::setRequestInterceptor
 */
