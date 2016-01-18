@@ -166,10 +166,8 @@ void CookieMonsterDelegateQt::setClient(QWebEngineCookieStore *client)
 
 bool CookieMonsterDelegateQt::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
 {
-    if (!m_client)
-        return true;
-
-    return m_client->d_func()->canSetCookie(firstPartyUrl, cookieLine, url);
+    // TODO: should be used for FilterRequest implementation
+    return true;
 }
 
 void CookieMonsterDelegateQt::OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause)

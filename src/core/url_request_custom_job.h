@@ -87,7 +87,8 @@ private:
     int m_error;
     GURL m_redirect;
     bool m_started;
-    base::WeakPtrFactory<URLRequestCustomJob> m_weakFactory;
+    base::WeakPtrFactory<URLRequestCustomJob> m_weakFactoryIO;
+    base::WeakPtrFactory<URLRequestCustomJob> m_weakFactoryUI;
 
     friend class URLRequestCustomJobDelegate;
 

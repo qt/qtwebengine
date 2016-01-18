@@ -95,6 +95,7 @@ void tst_QWebEngineCookieStore::cookieSignals()
 {
     QWebEngineView view;
     QWebEngineCookieStore *client = view.page()->profile()->cookieStore();
+    client->deleteAllCookies();
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
@@ -110,6 +111,7 @@ void tst_QWebEngineCookieStore::cookieSignals()
     // try whether updating a cookie to be expired results in that cookie being removed.
     QNetworkCookie expiredCookie(QNetworkCookie::parseCookies(QByteArrayLiteral("SessionCookie=delete; expires=Thu, 01-Jan-1970 00:00:00 GMT; path=///resources")).first());
     client->setCookie(expiredCookie, QUrl("qrc:///resources/index.html"));
+
     QTRY_COMPARE(cookieRemovedSpy.count(), 1);
     cookieRemovedSpy.clear();
 
@@ -123,6 +125,7 @@ void tst_QWebEngineCookieStore::setAndDeleteCookie()
 {
     QWebEngineView view;
     QWebEngineCookieStore *client = view.page()->profile()->cookieStore();
+    client->deleteAllCookies();
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
@@ -134,8 +137,10 @@ void tst_QWebEngineCookieStore::setAndDeleteCookie()
     QNetworkCookie expiredCookie3(QNetworkCookie::parseCookies(QByteArrayLiteral("SessionCookie=delete; expires=Thu, 01-Jan-1970 00:00:00 GMT; path=///resources")).first());
 
     // check if pending cookies are set and removed
-    client->setCookieWithCallback(cookie1, [](bool success) { QVERIFY(success); });
-    client->setCookieWithCallback(cookie2, [](bool success) { QVERIFY(success); });
+    client->setCookie(cookie1);
+    QTRY_COMPARE(cookieAddedSpy.count(),1);
+    client->setCookie(cookie2);
+    QTRY_COMPARE(cookieAddedSpy.count(),2);
     client->deleteCookie(cookie1);
 
     view.load(QUrl("qrc:///resources/content.html"));
@@ -148,9 +153,10 @@ void tst_QWebEngineCookieStore::setAndDeleteCookie()
     cookieAddedSpy.clear();
     cookieRemovedSpy.clear();
 
-    client->setCookieWithCallback(cookie3, [](bool success) { QVERIFY(success); });
+    client->setCookie(cookie3);
+    QTRY_COMPARE(cookieAddedSpy.count(), 1);
     // updating a cookie with an expired 'expires' field should remove the cookie with the same name
-    client->setCookieWithCallback(expiredCookie3, [](bool success) { QVERIFY(success); });
+    client->setCookie(expiredCookie3);
     client->deleteCookie(cookie2);
     QTRY_COMPARE(cookieAddedSpy.count(), 1);
     QTRY_COMPARE(cookieRemovedSpy.count(), 2);
@@ -160,6 +166,7 @@ void tst_QWebEngineCookieStore::batchCookieTasks()
 {
     QWebEngineView view;
     QWebEngineCookieStore *client = view.page()->profile()->cookieStore();
+    client->deleteAllCookies();
 
     QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
     QSignalSpy cookieAddedSpy(client, SIGNAL(cookieAdded(const QNetworkCookie &)));
@@ -168,10 +175,10 @@ void tst_QWebEngineCookieStore::batchCookieTasks()
     QNetworkCookie cookie1(QNetworkCookie::parseCookies(QByteArrayLiteral("khaos=I9GX8CWI; Domain=.example.com; Path=/docs")).first());
     QNetworkCookie cookie2(QNetworkCookie::parseCookies(QByteArrayLiteral("Test%20Cookie=foobar; domain=example.com; Path=/")).first());
 
-    int capture = 0;
-
-    client->setCookieWithCallback(cookie1, [&capture](bool success) { QVERIFY(success); ++capture; });
-    client->setCookieWithCallback(cookie2, [&capture](bool success) { QVERIFY(success); ++capture; });
+    client->setCookie(cookie1);
+    QTRY_COMPARE(cookieAddedSpy.count(), 1);
+    client->setCookie(cookie2);
+    QTRY_COMPARE(cookieAddedSpy.count(), 2);
 
     view.load(QUrl("qrc:///resources/index.html"));
 
@@ -180,28 +187,15 @@ void tst_QWebEngineCookieStore::batchCookieTasks()
     QVERIFY(success.toBool());
     QTRY_COMPARE(cookieAddedSpy.count(), 4);
     QTRY_COMPARE(cookieRemovedSpy.count(), 0);
-    QTRY_COMPARE(capture, 2);
-    capture = 0;
 
     cookieAddedSpy.clear();
     cookieRemovedSpy.clear();
 
-    client->getAllCookies([&capture](const QByteArray& cookieLine) {
-        ++capture;
-        QCOMPARE(QNetworkCookie::parseCookies(cookieLine).count(), 4);
-    });
+    client->deleteSessionCookies();
+    QTRY_COMPARE(cookieRemovedSpy.count(), 3);
 
-    client->deleteSessionCookiesWithCallback([&capture](int numDeleted) {
-        ++capture;
-        QCOMPARE(numDeleted, 3);
-    });
-
-    client->deleteAllCookiesWithCallback([&capture](int numDeleted) {
-        ++capture;
-        QCOMPARE(numDeleted, 1);
-    });
-
-    QTRY_COMPARE(capture, 3);
+    client->deleteAllCookies();
+    QTRY_COMPARE(cookieRemovedSpy.count(), 4);
 }
 
 QTEST_MAIN(tst_QWebEngineCookieStore)

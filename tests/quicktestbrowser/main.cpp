@@ -86,15 +86,9 @@ int main(int argc, char **argv)
     QObject *rootObject = appEngine.rootObjects().first();
 
     QQuickWebEngineProfile *profile = new QQuickWebEngineProfile(rootObject);
-    QWebEngineCookieStore *client = profile->cookieStore();
 
     const QMetaObject *rootMeta = rootObject->metaObject();
-    int index = rootMeta->indexOfProperty("thirdPartyCookiesEnabled");
-    Q_ASSERT(index != -1);
-    QMetaProperty thirdPartyCookiesProperty = rootMeta->property(index);
-    client->setCookieFilter([rootObject,&thirdPartyCookiesProperty](const QWebEngineCookieStore::FilterRequest&){ return thirdPartyCookiesProperty.read(rootObject).toBool(); });
-
-    index = rootMeta->indexOfProperty("testProfile");
+    int index = rootMeta->indexOfProperty("testProfile");
     Q_ASSERT(index != -1);
     QMetaProperty profileProperty = rootMeta->property(index);
     profileProperty.write(rootObject, qVariantFromValue(profile));

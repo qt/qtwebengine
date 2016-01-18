@@ -382,8 +382,9 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
         introMessage = tr("Connect to proxy \"%1\" using:");
         introMessage = introMessage.arg(dialogController->host().toHtmlEscaped());
     } else {
-        introMessage = tr("Enter username and password for \"%1\" at %2");
-        introMessage = introMessage.arg(dialogController->realm()).arg(dialogController->url().toString().toHtmlEscaped());
+        const QUrl url = dialogController->url();
+        introMessage = tr("Enter username and password for \"%1\" at %2://%3");
+        introMessage = introMessage.arg(dialogController->realm(), url.scheme(), url.host());
     }
     QQmlProperty textProp(authenticationDialog, QStringLiteral("text"));
     textProp.write(introMessage);

@@ -175,20 +175,6 @@ void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie,
         Q_EMIT q->cookieAdded(cookie);
 }
 
-bool QWebEngineCookieStorePrivate::canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url)
-{
-    if (filterCallback) {
-        QWebEngineCookieStore::FilterRequest request;
-        request.accepted = true;
-        request.firstPartyUrl = firstPartyUrl;
-        request.cookieLine = cookieLine;
-        request.cookieSource = url;
-        callbackDirectory.invokeDirectly<QWebEngineCookieStore::FilterRequest&>(filterCallback, request);
-        return request.accepted;
-    }
-    return true;
-}
-
 /*!
     \class QWebEngineCookieStore
     \inmodule QtWebEngineCore
@@ -268,41 +254,26 @@ QWebEngineCookieStore::~QWebEngineCookieStore()
 }
 
 /*!
-    \fn void setCookieWithCallback(const QNetworkCookie &cookie, FunctorOrLambda resultCallback, const QUrl &origin = QUrl())
-
-    Adds \a cookie to the cookie store. When the operation finishes, \a resultCallback will be executed
-    on the caller thread.
+    Adds \a cookie to the cookie store.
     It is possible to provide an optional \a origin URL argument to limit the scope of the cookie.
     The provided URL should also include the scheme.
 
-    \sa setCookie()
-*/
-
-void QWebEngineCookieStore::setCookieWithCallback(const QNetworkCookie &cookie, const QWebEngineCallback<bool> &resultCallback, const QUrl &origin)
-{
-    Q_D(QWebEngineCookieStore);
-    d->setCookie(resultCallback, cookie, origin);
-}
-
-/*!
-    Adds \a cookie to the cookie store. This function is provided for convenience and is
-    equivalent to calling setCookieWithCallback() with an empty callback.
-    It is possible to provide an optional \a origin URL argument to limit the scope of the cookie.
-    The provided URL should also include the scheme.
-
-    \sa setCookieWithCallback()
+    \note This operation is asynchronous.
 */
 
 void QWebEngineCookieStore::setCookie(const QNetworkCookie &cookie, const QUrl &origin)
 {
-    setCookieWithCallback(cookie, QWebEngineCallback<bool>(), origin);
+    //TODO: use callbacks or delete dummy ones
+    Q_D(QWebEngineCookieStore);
+    d->setCookie(QWebEngineCallback<bool>(), cookie, origin);
 }
 
 /*!
     Deletes \a cookie from the cookie store.
     It is possible to provide an optional \a origin URL argument to limit the scope of the
     cookie to be deleted.
-    The provided URL should also include the scheme.
+
+    \note This operation is asynchronous.
 */
 
 void QWebEngineCookieStore::deleteCookie(const QNetworkCookie &cookie, const QUrl &origin)
@@ -312,104 +283,57 @@ void QWebEngineCookieStore::deleteCookie(const QNetworkCookie &cookie, const QUr
 }
 
 /*!
-    \fn void QWebEngineCookieStore::getAllCookies(FunctorOrLambda resultCallback)
+    Loads all the cookies into the cookie store. The cookieAdded() signal is emitted on every
+    loaded cookie. Cookies are loaded automatically when the store gets initialized, which
+    in most cases happens on loading the first URL. However, calling this function is useful
+    if cookies should be listed before entering the web content.
 
-    Requests all the cookies in the cookie store. When the asynchronous operation finishes,
-    \a resultCallback will be called with a QByteArray as the argument containing the cookies.
-    This QByteArray can be parsed using QNetworkCookie::parseCookies().
-
-    \sa deleteCookie()
+    \note This operation is asynchronous.
 */
 
-void QWebEngineCookieStore::getAllCookies(const QWebEngineCallback<const QByteArray&> &resultCallback)
+void QWebEngineCookieStore::loadAllCookies()
 {
+    //TODO: use callbacks or delete dummy ones
     Q_D(QWebEngineCookieStore);
-    if (d->m_getAllCookiesPending) {
-        d->callbackDirectory.invokeEmpty(resultCallback);
+    if (d->m_getAllCookiesPending)
         return;
-    }
-    d->callbackDirectory.registerCallback(CallbackDirectory::GetAllCookiesCallbackId, resultCallback);
+    d->callbackDirectory.registerCallback(CallbackDirectory::GetAllCookiesCallbackId, QWebEngineCallback<const QByteArray&>());
+    //this will trigger cookieAdded signal
     d->getAllCookies();
 }
 
 /*!
-    \fn void QWebEngineCookieStore::deleteSessionCookiesWithCallback(FunctorOrLambda resultCallback)
-
     Deletes all the session cookies in the cookie store. Session cookies do not have an
     expiration date assigned to them.
-    When the asynchronous operation finishes, \a resultCallback will be called with the
-    number of cookies deleted as the argument.
-*/
 
-void QWebEngineCookieStore::deleteSessionCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
-{
-    Q_D(QWebEngineCookieStore);
-    if (d->m_deleteAllCookiesPending || d->m_deleteSessionCookiesPending) {
-        d->callbackDirectory.invokeEmpty(resultCallback);
-        return;
-    }
-    d->callbackDirectory.registerCallback(CallbackDirectory::DeleteSessionCookiesCallbackId, resultCallback);
-    d->deleteSessionCookies();
-}
-
-/*!
-    \fn void QWebEngineCookieStore::deleteAllCookiesWithCallback(FunctorOrLambda resultCallback)
-
-    Deletes all the cookies in the cookie store. When the asynchronous operation finishes,
-    \a resultCallback will be called with the number of cookies deleted as the argument.
-
-    \sa deleteSessionCookiesWithCallback(), getAllCookies()
-*/
-
-void QWebEngineCookieStore::deleteAllCookiesWithCallback(const QWebEngineCallback<int> &resultCallback)
-{
-    Q_D(QWebEngineCookieStore);
-    if (d->m_deleteAllCookiesPending) {
-        d->callbackDirectory.invokeEmpty(resultCallback);
-        return;
-    }
-    d->callbackDirectory.registerCallback(CallbackDirectory::DeleteAllCookiesCallbackId, resultCallback);
-    d->deleteAllCookies();
-}
-
-/*!
-    Deletes all the session cookies in the cookie store.
-
-    \sa deleteSessionCookiesWithCallback()
+    \note This operation is asynchronous.
+    \sa loadAllCookies()
 */
 
 void QWebEngineCookieStore::deleteSessionCookies()
 {
-    deleteSessionCookiesWithCallback(QWebEngineCallback<int>());
+    //TODO: use callbacks or delete dummy ones
+    Q_D(QWebEngineCookieStore);
+    if (d->m_deleteAllCookiesPending || d->m_deleteSessionCookiesPending)
+        return;
+    d->callbackDirectory.registerCallback(CallbackDirectory::DeleteSessionCookiesCallbackId, QWebEngineCallback<int>());
+    d->deleteSessionCookies();
 }
 
 /*!
     Deletes all the cookies in the cookie store.
-
-    \sa deleteAllCookiesWithCallback(), getAllCookies()
+    \note This operation is asynchronous.
+    \sa loadAllCookies()
 */
 
 void QWebEngineCookieStore::deleteAllCookies()
 {
-    deleteAllCookiesWithCallback(QWebEngineCallback<int>());
-}
-
-/*!
-  \fn void QWebEngineCookieStore::setCookieFilter(FunctorOrLambda filterCallback)
-
-    Installs a cookie filter that can reject cookies before they are added to the cookie store.
-    The \a filterCallback must be a lambda or functor taking FilterRequest structure. If the
-    cookie is to be rejected, the filter can set FilterRequest::accepted to \c false.
-
-    The callback should not be used to execute heavy tasks since it is running on the
-    IO thread and therefore blocks the Chromium networking.
-
-    \sa deleteAllCookiesWithCallback(), getAllCookies()
-*/
-void QWebEngineCookieStore::setCookieFilter(const QWebEngineCallback<QWebEngineCookieStore::FilterRequest&> &filter)
-{
+    //TODO: use callbacks or delete dummy ones
     Q_D(QWebEngineCookieStore);
-    d->filterCallback = filter;
+    if (d->m_deleteAllCookiesPending)
+        return;
+    d->callbackDirectory.registerCallback(CallbackDirectory::DeleteAllCookiesCallbackId, QWebEngineCallback<int>());
+    d->deleteAllCookies();
 }
 
 QT_END_NAMESPACE
