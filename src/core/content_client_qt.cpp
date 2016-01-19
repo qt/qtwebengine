@@ -123,7 +123,7 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
                 << "/usr/lib64/chromium/PepperFlash/libpepflashplayer.so"; // OpenSuSE
 #endif
     for (auto it = pluginPaths.constBegin(); it != pluginPaths.constEnd(); ++it) {
-        if (!QFile(*it).exists())
+        if (!QFile::exists(*it))
             continue;
         plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), std::string()));
     }
@@ -132,7 +132,7 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
 void AddPepperFlashFromCommandLine(std::vector<content::PepperPluginInfo>* plugins)
 {
     const base::CommandLine::StringType flash_path = base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(switches::kPpapiFlashPath);
-    if (flash_path.empty() || !QFile(QtWebEngineCore::toQt(flash_path)).exists())
+    if (flash_path.empty() || !QFile::exists(QtWebEngineCore::toQt(flash_path)))
         return;
 
     // Read pepper flash plugin version from command-line. (e.g. 16.0.0.235)
