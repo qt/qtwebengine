@@ -191,38 +191,6 @@ void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie,
 */
 
 /*!
-    \class QWebEngineCookieStore::FilterRequest
-    \inmodule QtWebEngineCore
-    \since 5.6
-    \brief The FilterRequest class specifies the properties of a cookie.
-
-    The class specifies the properties of a cookie and determines whether the cookie should be
-    accepted. The class is used as an argument to a filter installed via setCookieFilter().
-*/
-
-/*!
-    \variable QWebEngineCookieStore::FilterRequest::accepted
-    \brief Whether the cookie shall be accepted.
-
-    The default is \c true.
-*/
-
-/*!
-    \variable QWebEngineCookieStore::FilterRequest::firstPartyUrl
-    \brief The URL of the page that triggered the setting of the cookie.
-*/
-
-/*!
-    \variable QWebEngineCookieStore::FilterRequest::cookieLine
-    \brief The content of the cookie.
-*/
-
-/*!
-    \variable QWebEngineCookieStore::FilterRequest::cookieSource
-    \brief The URL of the site that sets the cookie.
-*/
-
-/*!
     \fn void QWebEngineCookieStore::cookieAdded(const QNetworkCookie &cookie)
 
     This signal is emitted whenever a new \a cookie is added to the cookie store.
