@@ -294,6 +294,13 @@ void URLRequestContextGetterQt::updateHttpCache()
     }
 }
 
+void URLRequestContextGetterQt::updateJobFactory()
+{
+    Q_ASSERT(m_jobFactory);
+
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
+}
+
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first, const net::HttpNetworkSession::Params &second)
 {
     if (first.transport_security_state != second.transport_security_state)
@@ -389,8 +396,8 @@ void URLRequestContextGetterQt::generateHttpCache()
 void URLRequestContextGetterQt::generateJobFactory()
 {
     Q_ASSERT(m_urlRequestContext);
-    Q_ASSERT(!m_jobFactory);
 
+    m_jobFactory.reset();
     scoped_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
@@ -398,7 +405,6 @@ void URLRequestContextGetterQt::generateJobFactory()
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         jobFactory->SetProtocolHandler(it->first, it->second.release());
-        m_protocolHandlers.clear();
     }
 
     jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());

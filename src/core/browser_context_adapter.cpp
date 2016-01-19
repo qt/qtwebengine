@@ -354,7 +354,7 @@ QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUr
 void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
 {
     if (m_browserContext->url_request_getter_.get())
-        m_browserContext->url_request_getter_->updateStorageSettings();
+        m_browserContext->url_request_getter_->updateJobFactory();
 }
 
 bool BrowserContextAdapter::removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *handler)

@@ -77,6 +77,7 @@ public:
     void updateUserAgent();
     void updateCookieStore();
     void updateHttpCache();
+    void updateJobFactory();
 
 private:
     virtual ~URLRequestContextGetterQt();
