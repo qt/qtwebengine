@@ -118,7 +118,8 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
     pluginPaths << "/Library/Internet Plug-Ins/PepperFlashPlayer/PepperFlashPlayer.plugin"; // Mac OS X
 #endif
 #if defined(Q_OS_LINUX)
-    pluginPaths << "/usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so" // Ubuntu
+    pluginPaths << "/opt/google/chrome/PepperFlash/libpepflashplayer.so" // Google Chrome
+                << "/usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so" // Ubuntu
                 << "/usr/lib/PepperFlash/libpepflashplayer.so" // Arch
                 << "/usr/lib64/chromium/PepperFlash/libpepflashplayer.so"; // OpenSuSE
 #endif
