@@ -78,6 +78,7 @@
 #include <QGuiApplication>
 #include <QStringList>
 #include <QStyleHints>
+#include <QTimer>
 #include <QVariant>
 #include <QtCore/qmimedata.h>
 #include <QtGui/qaccessible.h>
@@ -322,6 +323,7 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     , currentDropData(nullptr)
     , currentDropAction(Qt::IgnoreAction)
     , inDragUpdateLoop(false)
+    , updateDragCursorMessagePollingTimer(new QTimer)
 {
 }
 
@@ -364,6 +366,7 @@ WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
 {
     Q_D(WebContentsAdapter);
     d->webContents.reset(webContents);
+    initUpdateDragCursorMessagePollingTimer();
 }
 
 WebContentsAdapter::~WebContentsAdapter()
@@ -1097,7 +1100,10 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     base::RunLoop loop;
     d->inDragUpdateLoop = true;
     d->dragUpdateLoopQuitClosure = loop.QuitClosure();
+
+    d->updateDragCursorMessagePollingTimer->start();
     loop.Run();
+    d->updateDragCursorMessagePollingTimer->stop();
 
     return d->currentDropAction;
 }
@@ -1132,6 +1138,25 @@ void WebContentsAdapter::leaveDrag()
     finishDragUpdate();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     rvh->DragTargetDragLeave();
+}
+
+void WebContentsAdapter::initUpdateDragCursorMessagePollingTimer()
+{
+    Q_D(WebContentsAdapter);
+    // Poll for drag cursor updated message 60 times per second. In practice, the timer is fired
+    // at most twice, after which it is stopped.
+    d->updateDragCursorMessagePollingTimer->setInterval(16);
+    d->updateDragCursorMessagePollingTimer->setSingleShot(false);
+
+    QObject::connect(d->updateDragCursorMessagePollingTimer.data(), &QTimer::timeout, [](){
+        base::MessagePump::Delegate *delegate = base::MessageLoop::current();
+        DCHECK(delegate);
+
+        // Execute Chromium tasks if there are any present. Specifically we are interested to handle
+        // the RenderViewHostImpl::OnUpdateDragCursor message, that gets sent from the render
+        // process.
+        while (delegate->DoWork()) {}
+    });
 }
 
 WebContentsAdapterClient::RenderProcessTerminationStatus

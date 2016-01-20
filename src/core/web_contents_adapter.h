@@ -163,6 +163,7 @@ public:
     void finishDragUpdate();
     void endDragging(const QPoint &clientPos, const QPoint &screenPos);
     void leaveDrag();
+    void initUpdateDragCursorMessagePollingTimer();
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;

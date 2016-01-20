@@ -55,7 +55,9 @@
 #include "base/memory/scoped_ptr.h"
 
 #include <QExplicitlySharedDataPointer>
+#include <QScopedPointer>
 
+QT_FORWARD_DECLARE_CLASS(QTimer)
 QT_FORWARD_DECLARE_CLASS(QWebChannel)
 
 class WebEngineContext;
@@ -93,6 +95,7 @@ public:
     Qt::DropAction currentDropAction;
     bool inDragUpdateLoop;
     base::Closure dragUpdateLoopQuitClosure;
+    QScopedPointer<QTimer> updateDragCursorMessagePollingTimer;
 };
 
 } // namespace QtWebEngineCore
