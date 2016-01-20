@@ -46,6 +46,27 @@
 
 using QtWebEngineCore::UserScript;
 
+/*!
+    \qmltype WebEngineScript
+    \instantiates QQuickWebEngineScript
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.1
+    \brief Enables the programmatic injection of scripts in the JavaScript engine.
+
+    The WebEngineScript type enables the programmatic injection of so called \e {user scripts} in
+    the JavaScript engine at different points, determined by injectionPoint, during the loading of
+    web content.
+
+    Scripts can be executed either in the main JavaScript \e world, along with the rest of the
+    JavaScript coming from the web contents, or in their own isolated world. While the DOM of the
+    page can be accessed from any world, JavaScript variables of a function defined in one world are
+    not accessible from a different one. The worldId property provides some predefined IDs for this
+    purpose.
+
+    Use \l{WebEngineView::userScripts}{WebEngineView.userScripts} to access a list of scripts
+    attached to the web view.
+*/
+
 QQuickWebEngineScript::QQuickWebEngineScript()
     : d_ptr(new QQuickWebEngineScriptPrivate)
 {
@@ -79,6 +100,12 @@ QString QQuickWebEngineScript::toString() const
     return ret;
 }
 
+/*!
+    \qmlproperty QString WebEngineScript::name
+
+    The name of the script. Can be useful to retrieve a particular script from
+    \l{WebEngineView::userScripts}{WebEngineView.userScripts}.
+*/
 QString QQuickWebEngineScript::name() const
 {
     Q_D(const QQuickWebEngineScript);
@@ -91,7 +118,7 @@ QString QQuickWebEngineScript::name() const
     This property holds the remote source location of the user script (if any).
 
     Unlike \l sourceCode, this property allows referring to user scripts that
-    are not already loaded in memory, for instance,  when stored on disk.
+    are not already loaded in memory, for instance, when stored on disk.
 
     Setting this property will change the \l sourceCode of the script.
 
@@ -122,20 +149,57 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineScript::Deferred, UserScript::AfterLoad)
 ASSERT_ENUMS_MATCH(QQuickWebEngineScript::DocumentReady, UserScript::DocumentLoadFinished)
 ASSERT_ENUMS_MATCH(QQuickWebEngineScript::DocumentCreation, UserScript::DocumentElementCreation)
 
+/*!
+    \qmlproperty enumeration WebEngineScript::injectionPoint
+
+    The point in the loading process at which the script will be executed.
+    The default value is \c Deferred.
+
+    \value DocumentCreation
+           The script will be executed as soon as the document is created. This is not suitable for
+           any DOM operation.
+    \value DocumentReady
+           The script will run as soon as the DOM is ready. This is equivalent to the
+           \c DOMContentLoaded event firing in JavaScript.
+    \value Deferred
+           The script will run when the page load finishes, or 500 ms after the document is ready,
+           whichever comes first.
+*/
 QQuickWebEngineScript::InjectionPoint QQuickWebEngineScript::injectionPoint() const
 {
     Q_D(const QQuickWebEngineScript);
     return static_cast<QQuickWebEngineScript::InjectionPoint>(d->coreScript.injectionPoint());
 }
 
+/*!
+    \qmlproperty enumeration WebEngineScript::worldId
 
+    The world ID defining which isolated world the script is executed in.
+
+    \value MainWorld
+           The world used by the page's web contents. It can be useful in order to expose custom
+           functionality to web contents in certain scenarios.
+    \value ApplicationWorld
+           The default isolated world used for application level functionality implemented in
+           JavaScript.
+    \value UserWorld
+           The first isolated world to be used by scripts set by users if the application is not
+           making use of more worlds. As a rule of thumb, if that functionality is exposed to the
+           application users, each individual script should probably get its own isolated world.
+*/
 QQuickWebEngineScript::ScriptWorldId QQuickWebEngineScript::worldId() const
 {
     Q_D(const QQuickWebEngineScript);
     return static_cast<QQuickWebEngineScript::ScriptWorldId>(d->coreScript.worldId());
 }
 
+/*!
+    \qmlproperty int WebEngineScript::runOnSubframes
 
+    Set this property to \c true if the script is executed on every frame in the page, or \c false
+    if it is only ran for the main frame.
+    The default value is \c{false}.
+ */
 bool QQuickWebEngineScript::runOnSubframes() const
 {
     Q_D(const QQuickWebEngineScript);

@@ -257,6 +257,8 @@
     \readonly
 
     List of script objects attached to the view.
+
+    \sa WebEngineScript
 */
 
 /*!
