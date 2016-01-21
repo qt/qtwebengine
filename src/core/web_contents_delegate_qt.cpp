@@ -79,7 +79,7 @@
 namespace QtWebEngineCore {
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
-static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32 messageLevel) {
+static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel) {
     if (messageLevel < 1)
         return WebContentsAdapterClient::Info;
     else if (messageLevel > 1)
@@ -114,9 +114,6 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     load_url_params.should_replace_current_entry = params.should_replace_current_entry;
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
-
-    if (params.transferred_global_request_id != content::GlobalRequestID())
-        load_url_params.transferred_global_request_id = params.transferred_global_request_id;
 
     target->GetController().LoadURLWithParams(load_url_params);
     return target;
@@ -323,7 +320,7 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
     m_viewClient->runFileChooser(controller);
 }
 
-bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const base::string16 &message, int32 line_no, const base::string16 &source_id)
+bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(level), toQt(message), static_cast<int>(line_no), toQt(source_id));

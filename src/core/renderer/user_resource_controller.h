@@ -76,10 +76,10 @@ private:
     void onRemoveScript(const UserScriptData &);
     void onClearScripts();
 
-    typedef QSet<uint64> UserScriptSet;
+    typedef QSet<uint64_t> UserScriptSet;
     typedef QHash<const content::RenderView *, UserScriptSet> ViewUserScriptMap;
     ViewUserScriptMap m_viewUserScriptMap;
-    QHash<uint64, UserScriptData> m_scripts;
+    QHash<uint64_t, UserScriptData> m_scripts;
 };
 
 #endif // USER_RESOURCE_CONTROLLER_H

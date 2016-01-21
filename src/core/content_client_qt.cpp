@@ -63,10 +63,10 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-static const int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
-                                             ppapi::PERMISSION_PRIVATE |
-                                             ppapi::PERMISSION_BYPASS_USER_GESTURE |
-                                             ppapi::PERMISSION_FLASH;
+static const int32_t kPepperFlashPermissions = ppapi::PERMISSION_DEV |
+                                               ppapi::PERMISSION_PRIVATE |
+                                               ppapi::PERMISSION_BYPASS_USER_GESTURE |
+                                               ppapi::PERMISSION_FLASH;
 
 namespace switches {
 const char kPpapiFlashPath[]    = "ppapi-flash-path";
@@ -78,8 +78,8 @@ static const base::FilePath::CharType kWidevineCdmBaseDirectory[] = FILE_PATH_LI
 
 static const char kWidevineCdmPluginExtension[] = "";
 
-static const int32 kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV
-                                                 | ppapi::PERMISSION_PRIVATE;
+static const int32_t kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV
+                                                   | ppapi::PERMISSION_PRIVATE;
 
 static QString ppapiPluginsPath()
 {

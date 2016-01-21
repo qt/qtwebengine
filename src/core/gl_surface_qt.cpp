@@ -99,7 +99,7 @@ public:
     virtual bool Initialize() Q_DECL_OVERRIDE;
     virtual void Destroy() Q_DECL_OVERRIDE;
     virtual void* GetHandle() Q_DECL_OVERRIDE;
-    virtual bool Resize(const gfx::Size &size) Q_DECL_OVERRIDE;
+    virtual bool Resize(const gfx::Size& size, float scale_factor, bool has_alpha) Q_DECL_OVERRIDE;
 
 protected:
     ~GLSurfaceQtEGL();
@@ -378,6 +378,16 @@ bool GLSurfaceEGL::IsCreateContextRobustnessSupported()
     return false;
 }
 
+const char* GLSurfaceEGL::GetEGLExtensions()
+{
+    return g_extensions;
+}
+
+bool GLSurfaceEGL::HasEGLExtension(const char* name)
+{
+    return ExtensionsContain(GetEGLExtensions(), name);
+}
+
 GLSurfaceQt::GLSurfaceQt(const gfx::Size& size)
     : m_size(size)
 {
@@ -454,7 +464,8 @@ gfx::Size GLSurfaceQt::GetSize()
     return m_size;
 }
 
-bool GLSurfaceQtEGL::Resize(const gfx::Size& size)
+
+bool GLSurfaceQtEGL::Resize(const gfx::Size& size, float scale_factor, bool has_alpha)
 {
     if (size == m_size)
         return true;

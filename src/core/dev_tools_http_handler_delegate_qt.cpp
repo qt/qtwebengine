@@ -187,7 +187,7 @@ scoped_ptr<DevToolsHttpHandler> createDevToolsHttpHandler()
     }
     scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory(delegate->bindAddress().toStdString(), delegate->port(), 1));
     // Ownership of the delegate is taken over the devtools http handler.
-    scoped_ptr<DevToolsHttpHandler> handler(new DevToolsHttpHandler(factory.Pass(), std::string(), delegate, base::FilePath(), base::FilePath(), std::string(), std::string()));
+    scoped_ptr<DevToolsHttpHandler> handler(new DevToolsHttpHandler(std::move(factory), std::string(), delegate, base::FilePath(), base::FilePath(), std::string(), std::string()));
     DevToolsDiscoveryManager::GetInstance()->AddProvider(scoped_ptr<DevToolsDiscoveryManager::Provider>(new DevToolsDiscoveryProviderQt()));
     return handler;
 }

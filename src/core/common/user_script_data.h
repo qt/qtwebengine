@@ -42,7 +42,6 @@
 
 #include <QtCore/QHash>
 #include <string>
-#include "base/basictypes.h"
 #include "ipc/ipc_message_utils.h"
 #include "url/gurl.h"
 
@@ -57,10 +56,10 @@ struct UserScriptData {
 
     std::string source;
     GURL url;
-    /*InjectionPoint*/uint8 injectionPoint;
+    /*InjectionPoint*/uint8_t injectionPoint;
     bool injectForSubframes;
     uint worldId;
-    uint64 scriptId;
+    uint64_t scriptId;
 };
 
 QT_BEGIN_NAMESPACE

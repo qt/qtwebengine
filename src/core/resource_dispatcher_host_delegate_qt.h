@@ -89,8 +89,10 @@ private:
 
 class ResourceDispatcherHostDelegateQt : public content::ResourceDispatcherHostDelegate {
 public:
-    virtual bool HandleExternalProtocol(const GURL& url, int child_id, int route_id,
-                                        bool is_main_frame, ui::PageTransition page_transition, bool has_user_gesture) Q_DECL_OVERRIDE;
+    virtual bool HandleExternalProtocol(const GURL& url,int child_id,
+                                        const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+                                        bool is_main_frame, ui::PageTransition page_transition, bool has_user_gesture)
+    Q_DECL_OVERRIDE;
 
     virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(net::AuthChallengeInfo *authInfo, net::URLRequest *request) Q_DECL_OVERRIDE;
 };

@@ -101,7 +101,7 @@ scoped_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::MediaStr
         media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
   }
 
-  return ui.Pass();
+  return std::move(ui);
 }
 
 WebContentsAdapterClient::MediaRequestFlags mediaRequestFlagsForRequest(const content::MediaStreamRequest &request)
@@ -161,7 +161,7 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
         (request.video_type && authorizationFlags & WebContentsAdapterClient::MediaVideoCapture);
     if (securityOriginsMatch && (microphoneRequested || webcamRequested)) {
         switch (request.request_type) {
-        case content::MEDIA_OPEN_DEVICE:
+        case content::MEDIA_OPEN_DEVICE_PEPPER_ONLY:
             Q_UNREACHABLE(); // only speculative as this is for Pepper
             getDefaultDevices("", "", microphoneRequested, webcamRequested, &devices);
             break;
@@ -248,7 +248,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
   scoped_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
 
@@ -277,7 +277,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
 
   // Received invalid device id.
   if (mediaId.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, std::move(ui));
     return;
   }
 
@@ -289,7 +289,7 @@ void MediaCaptureDevicesDispatcher::processDesktopCaptureAccessRequest(content::
       devices, mediaId, capture_audio, true,
       getContentsUrl(webContents));
 
-  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, ui.Pass());
+  callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 void MediaCaptureDevicesDispatcher::processScreenCaptureAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request
@@ -339,7 +339,7 @@ void MediaCaptureDevicesDispatcher::handleScreenCaptureAccessRequest(content::We
     content::MediaResponseCallback callback = queue.front().callback;
     queue.pop_front();
 
-    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, ui.Pass());
+    callback.Run(devices, devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE : content::MEDIA_DEVICE_OK, std::move(ui));
 }
 
 void MediaCaptureDevicesDispatcher::enqueueMediaAccessRequest(content::WebContents *webContents, const content::MediaStreamRequest &request

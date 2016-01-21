@@ -40,7 +40,6 @@
 #ifndef PROXY_CONFIG_SERVICE_QT_H
 #define PROXY_CONFIG_SERVICE_QT_H
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"

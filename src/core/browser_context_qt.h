@@ -86,6 +86,7 @@ public:
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors);
     virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
     virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
+    virtual content::BackgroundSyncController* GetBackgroundSyncController() Q_DECL_OVERRIDE;
 
     BrowserContextAdapter *adapter() { return m_adapter; }
 

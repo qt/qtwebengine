@@ -70,7 +70,7 @@
 #include "ui/gl/gl_switches.h"
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
-#include "content/public/app/startup_helper_win.h"
+#include "content/public/app/sandbox_helper_win.h"
 #endif // OS_WIN
 
 #include "browser_context_adapter.h"

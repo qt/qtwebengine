@@ -61,7 +61,7 @@ static int request_id = 0;
 static const qreal kMicronsToMillimeter = 1000.0f;
 
 static scoped_refptr<base::RefCountedBytes>
-GetDataFromHandle(base::SharedMemoryHandle handle, uint32 data_size) {
+GetDataFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
     scoped_ptr<base::SharedMemory> shared_buf(
                 new base::SharedMemory(handle, true));
 
@@ -103,7 +103,7 @@ static void applyQPageLayoutSettingsToDictionary(const QPageLayout& pageLayout, 
     scoped_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
     sizeDict->SetInteger(printing::kSettingMediaSizeWidthMicrons, pageSizeInMilimeter.width() * kMicronsToMillimeter);
     sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMilimeter.height() * kMicronsToMillimeter);
-    print_settings.Set(printing::kSettingMediaSize, sizeDict.Pass());
+    print_settings.Set(printing::kSettingMediaSize, std::move(sizeDict));
 
     print_settings.SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
 

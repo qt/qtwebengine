@@ -26,13 +26,13 @@ IPC_STRUCT_TRAITS_END()
 // These are messages sent from the browser to the renderer process.
 
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentMarkup,
-                    uint64 /* requestId */)
+                    uint64_t /* requestId */)
 
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_FetchDocumentInnerText,
-                    uint64 /* requestId */)
+                    uint64_t /* requestId */)
 
 IPC_MESSAGE_ROUTED1(RenderViewObserverQt_SetBackgroundColor,
-                    uint32 /* color */)
+                    uint32_t /* color */)
 
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Install, uint /* worldId */)
 IPC_MESSAGE_ROUTED1(WebChannelIPCTransport_Uninstall, uint /* worldId */)
@@ -54,11 +54,11 @@ IPC_MESSAGE_CONTROL0(UserResourceController_ClearScripts)
 // These are messages sent from the renderer back to the browser process.
 
 IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentMarkup,
-                    uint64 /* requestId */,
+                    uint64_t /* requestId */,
                     base::string16 /* markup */)
 
 IPC_MESSAGE_ROUTED2(RenderViewObserverHostQt_DidFetchDocumentInnerText,
-                    uint64 /* requestId */,
+                    uint64_t /* requestId */,
                     base::string16 /* innerText */)
 
 IPC_MESSAGE_ROUTED0(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout)

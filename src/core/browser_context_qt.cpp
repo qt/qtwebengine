@@ -86,7 +86,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     registry->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
     registry->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck, false);
     registry->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, false);
-    m_prefService = factory.Create(registry.get()).Pass();
+    m_prefService = factory.Create(std::move(registry.get()));
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 }
 #else
@@ -180,6 +180,11 @@ scoped_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate
     return nullptr;
 }
 
+content::BackgroundSyncController* BrowserContextQt::GetBackgroundSyncController()
+{
+    return nullptr;
+}
+
 content::PermissionManager *BrowserContextQt::GetPermissionManager()
 {
     if (!permissionManager)
@@ -189,7 +194,7 @@ content::PermissionManager *BrowserContextQt::GetPermissionManager()
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers, request_interceptors.Pass());
+    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers, std::move(request_interceptors));
     return url_request_getter_.get();
 }
 

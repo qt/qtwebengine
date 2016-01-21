@@ -136,21 +136,21 @@ void ResourceDispatcherHostLoginDelegateQt::destroy()
     m_request = 0;
 }
 
-static void LaunchURL(const GURL& url, int render_process_id, int render_view_id,
+static void LaunchURL(const GURL& url, int render_process_id,
+                      const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
                       ui::PageTransition page_transition, bool is_main_frame)
 {
+    Q_UNUSED(render_process_id);
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    content::RenderViewHost *render_view_host = content::RenderViewHost::FromID(render_process_id, render_view_id);
-    if (!render_view_host)
-        return;
-    content::WebContents* webContents = content::WebContents::FromRenderViewHost(render_view_host);
+    content::WebContents* webContents = web_contents_getter.Run();
     if (!webContents)
         return;
     WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
     contentsDelegate->launchExternalURL(toQt(url), page_transition, is_main_frame);
 }
 
-bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, int child_id, int route_id,
+bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, int child_id,
+                                                              const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
                                                               bool is_main_frame, ui::PageTransition page_transition, bool has_user_gesture)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -161,7 +161,7 @@ bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, i
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&LaunchURL, url, child_id, route_id, page_transition, is_main_frame));
+        base::Bind(&LaunchURL, url, child_id, web_contents_getter, page_transition, is_main_frame));
     return true;
 }
 

@@ -403,7 +403,7 @@ content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
 
 net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers, request_interceptors.Pass());
+    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers, std::move(request_interceptors));
 }
 
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
@@ -411,21 +411,22 @@ content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionCo
     return new QuotaPermissionContextQt;
 }
 
-void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int render_frame_id, int cert_error,
-                                                   const net::SSLInfo& ssl_info, const GURL& request_url,
-                                                   content::ResourceType resource_type,
-                                                   bool overridable, bool strict_enforcement,
-                                                   bool expired_previous_decision,
-                                                   const base::Callback<void(bool)>& callback,
-                                                   content::CertificateRequestResultType* result)
+
+void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webContents,
+                                   int cert_error,
+                                   const net::SSLInfo& ssl_info,
+                                   const GURL& request_url,
+                                   content::ResourceType resource_type,
+                                   bool overridable,
+                                   bool strict_enforcement,
+                                   bool expired_previous_decision,
+                                   const base::Callback<void(bool)>& callback,
+                                   content::CertificateRequestResultType* result)
 {
     // We leave the result with its default value.
     Q_UNUSED(result);
 
-    content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-    WebContentsDelegateQt* contentsDelegate = 0;
-    if (content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents())
-        contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
+    WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
     QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);

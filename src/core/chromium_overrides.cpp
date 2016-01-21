@@ -131,7 +131,7 @@ scoped_ptr<base::ListValue> GetFontList_SlowBlocking()
          // TODO: Support localized family names.
          font_list->Append(font_item);
      }
-    return font_list.Pass();
+    return std::move(font_list);
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -166,7 +166,7 @@ namespace net {
 class SSLPrivateKey { };
 class X509Certificate;
 
-scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate, scoped_refptr<base::SequencedTaskRunner> task_runner)
+scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate)
 {
     return scoped_ptr<SSLPrivateKey>();
 }

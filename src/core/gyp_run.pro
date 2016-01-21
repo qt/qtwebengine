@@ -44,11 +44,11 @@ cross_compile {
     # Needed for v8, see chromium/v8/build/toolchain.gypi
     GYP_CONFIG += CXX=\"$$which($$QMAKE_CXX)\"
 }
+else {
+    GYP_CONFIG += sysroot=\"\"
+}
 
 contains(QT_ARCH, "arm") {
-    # Chromium will set a default sysroot on arm unless we give it one.
-    !cross_compile: GYP_CONFIG += sysroot=\"\"
-
     GYP_CONFIG += target_arch=arm
 
     # Extract ARM specific compiler options that we have to pass to gyp,

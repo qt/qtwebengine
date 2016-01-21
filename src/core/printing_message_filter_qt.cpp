@@ -217,7 +217,7 @@ void PrintingMessageFilterQt::OnUpdatePrintSettings(
     printer_query = queue_->CreatePrinterQuery(host_id, routing_id);
   }
   printer_query->SetSettings(
-      new_settings.Pass(),
+      std::move(new_settings),
       base::Bind(&PrintingMessageFilterQt::OnUpdatePrintSettingsReply, this,
                  printer_query, reply_msg));
 }
@@ -251,7 +251,7 @@ void PrintingMessageFilterQt::OnUpdatePrintSettingsReply(
   }
 }
 
-void PrintingMessageFilterQt::OnCheckForCancel(int32 preview_ui_id,
+void PrintingMessageFilterQt::OnCheckForCancel(int32_t preview_ui_id,
                                              int preview_request_id,
                                              bool* cancel) {
   *cancel = false;

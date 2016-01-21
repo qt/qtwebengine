@@ -122,7 +122,7 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
                                   IPC::Message* reply_msg);
 
   // Check to see if print preview has been cancelled.
-  void OnCheckForCancel(int32 preview_ui_id,
+  void OnCheckForCancel(int32_t preview_ui_id,
                         int preview_request_id,
                         bool* cancel);
 

@@ -307,7 +307,7 @@ void ClipboardQt::ReadAsciiText(ui::ClipboardType type, std::string* result) con
     *result = mimeData->text().toStdString();
 }
 
-void ClipboardQt::ReadHTML(ui::ClipboardType type, base::string16* markup, std::string* src_url, uint32* fragment_start, uint32* fragment_end) const
+void ClipboardQt::ReadHTML(ui::ClipboardType type, base::string16* markup, std::string* src_url, uint32_t* fragment_start, uint32_t* fragment_end) const
 {
     markup->clear();
     if (src_url)
@@ -317,7 +317,7 @@ void ClipboardQt::ReadHTML(ui::ClipboardType type, base::string16* markup, std::
 
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
     *markup = toString16(mimeData->html());
-    *fragment_end = static_cast<uint32>(markup->length());
+    *fragment_end = static_cast<uint32_t>(markup->length());
 }
 
 void ClipboardQt::ReadRTF(ui::ClipboardType type, std::string* result) const
@@ -364,7 +364,7 @@ void ClipboardQt::ReadData(const FormatType& format, std::string* result) const
     *result = std::string(byteArray.constData(), byteArray.length());
 }
 
-uint64 ClipboardQt::GetSequenceNumber(ui::ClipboardType type) const
+uint64_t ClipboardQt::GetSequenceNumber(ui::ClipboardType type) const
 {
     return clipboardChangeObserver()->getSequenceNumber(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
 }

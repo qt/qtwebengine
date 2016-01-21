@@ -62,6 +62,8 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFavicon, content::RESOU
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeXhr, content::RESOURCE_TYPE_XHR)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, content::RESOURCE_TYPE_PING)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, content::RESOURCE_TYPE_SERVICE_WORKER)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, content::RESOURCE_TYPE_CSP_REPORT)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, content::RESOURCE_TYPE_PLUGIN_RESOURCE)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeUnknown, content::RESOURCE_TYPE_LAST_TYPE)
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)

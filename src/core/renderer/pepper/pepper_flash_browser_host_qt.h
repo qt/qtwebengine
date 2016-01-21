@@ -40,7 +40,6 @@
 #ifndef PEPPER_FLASH_BROWSER_HOST_QT_H
 #define PEPPER_FLASH_BROWSER_HOST_QT_H
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/host/host_message_context.h"

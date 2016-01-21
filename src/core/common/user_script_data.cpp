@@ -44,6 +44,6 @@ UserScriptData::UserScriptData() : injectionPoint(AfterLoad)
   , injectForSubframes(false)
   , worldId(1)
 {
-    static uint64 idCount = 0;
+    static uint64_t idCount = 0;
     scriptId = idCount++;
 }

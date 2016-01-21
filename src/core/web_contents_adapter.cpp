@@ -223,7 +223,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, ScopedVector<content::NavigationEntry> *entries, content::BrowserContext *browserContext)
+static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<scoped_ptr<content::NavigationEntry>> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
@@ -264,8 +264,10 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         // If we couldn't unpack the entry successfully, abort everything.
         if (input.status() != QDataStream::Ok) {
             *currentIndex = -1;
-            for (content::NavigationEntry *entry : *entries)
-                delete entry;
+            auto it = entries->begin();
+            auto end = entries->end();
+            for (; it != end; ++it)
+                it->reset();
             entries->clear();
             return;
         }
@@ -289,7 +291,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
         entry->SetTimestamp(base::Time::FromInternalValue(timestamp));
         entry->SetHttpStatusCode(httpStatusCode);
-        entries->push_back(entry.release());
+        entries->push_back(std::move(entry));
     }
 }
 
@@ -341,7 +343,7 @@ WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
-    ScopedVector<content::NavigationEntry> entries;
+    std::vector<scoped_ptr<content::NavigationEntry>> entries;
     deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
@@ -560,7 +562,7 @@ QString WebContentsAdapter::pageTitle() const
 QString WebContentsAdapter::selectedText() const
 {
     Q_D(const WebContentsAdapter);
-    return toQt(d->webContents->GetRenderViewHost()->GetView()->GetSelectedText());
+    return toQt(d->webContents->GetRenderWidgetHostView()->GetSelectedText());
 }
 
 void WebContentsAdapter::undo()
@@ -823,7 +825,7 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     scoped_ptr<content::DownloadUrlParameters> params(
             content::DownloadUrlParameters::FromWebContents(webContents(), toGurl(url)));
     params->set_suggested_name(toString16(suggestedFileName));
-    dlm->DownloadUrl(params.Pass());
+    dlm->DownloadUrl(std::move(params));
 }
 
 bool WebContentsAdapter::isAudioMuted() const
@@ -957,7 +959,7 @@ void WebContentsAdapter::dpiScaleChanged()
     Q_D(WebContentsAdapter);
     content::RenderWidgetHostImpl* impl = NULL;
     if (d->webContents->GetRenderViewHost())
-        impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost());
+        impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost()->GetWidget());
     if (impl)
         impl->NotifyScreenInfoChanged();
 }

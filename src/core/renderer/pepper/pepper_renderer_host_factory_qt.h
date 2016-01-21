@@ -40,8 +40,6 @@
 #ifndef PEPPER_RENDERER_HOST_FACTORY_QT_H
 #define PEPPER_RENDERER_HOST_FACTORY_QT_H
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "ppapi/host/host_factory.h"
 #include "content/public/renderer/render_frame_observer.h"
 

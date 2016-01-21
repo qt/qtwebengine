@@ -40,7 +40,6 @@
 #ifndef RENDER_FRAME_OBSERVER_QT_H
 #define RENDER_FRAME_OBSERVER_QT_H
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_frame_observer.h"
 
