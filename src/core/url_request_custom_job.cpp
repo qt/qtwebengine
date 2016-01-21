@@ -222,13 +222,17 @@ void URLRequestCustomJob::fail(int error)
 void URLRequestCustomJob::notifyFailure()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    QMutexLocker lock(&m_mutex);
+    m_mutex.lock();
     if (m_device)
         m_device->close();
-    if (m_started)
-        NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, m_error));
+    const URLRequestStatus status(URLRequestStatus::FAILED, m_error);
+    const bool started = m_started;
+    m_mutex.unlock();
+
+    if (started)
+        NotifyDone(status);
     else
-        NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED, m_error));
+        NotifyStartError(status);
 }
 
 void URLRequestCustomJob::startAsync()

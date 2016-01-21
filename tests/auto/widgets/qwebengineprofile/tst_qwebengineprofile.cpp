@@ -50,6 +50,7 @@ private Q_SLOTS:
     void defaultProfile();
     void profileConstructors();
     void urlSchemeHandlers();
+    void urlSchemeHandlerFailRequest();
 };
 
 void tst_QWebEngineProfile::defaultProfile()
@@ -145,6 +146,28 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     view.load(url);
     QVERIFY(loadFinishedSpy.wait());
     QVERIFY(toPlainTextSync(view.page()) != url.toString());
+}
+
+class FailingUrlSchemeHandler : public QWebEngineUrlSchemeHandler
+{
+public:
+    void requestStarted(QWebEngineUrlRequestJob *job) override
+    {
+        job->fail(QWebEngineUrlRequestJob::RequestFailed);
+    }
+};
+
+void tst_QWebEngineProfile::urlSchemeHandlerFailRequest()
+{
+    FailingUrlSchemeHandler handler;
+    QWebEngineProfile profile;
+    profile.installUrlSchemeHandler("foo", &handler);
+    QWebEngineView view;
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setPage(new QWebEnginePage(&profile, &view));
+    view.load(QUrl(QStringLiteral("foo://bar")));
+    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(toPlainTextSync(view.page()).isEmpty());
 }
 
 QTEST_MAIN(tst_QWebEngineProfile)
