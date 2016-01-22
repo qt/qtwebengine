@@ -29,6 +29,22 @@
     \inqmlmodule QtWebEngine
     \since QtWebEngine 1.0
     \brief A WebEngineView renders web content within a QML application.
+
+    The WebEngineView type enables QML applications to render regions of dynamic web content. It
+    may share the screen with other QML types, such as a TabView, or fill the screen, as specified
+    within the QML application.
+
+    \section1 Rendering to OpenGL Surface
+
+    When using a QQuickRenderControl to render a Qt Quick user interface to an OpenGL surface, the
+    WebEngineView type is not rendered correctly. The web engine view attempts to use a global
+    OpenGL context created by \l QtWebEngine::initialize(), but there is no public API for accessing
+    that context in order to share it with the \c QQuickRenderControl context.
+
+    To have the web engine view rendered correctly, it is possible to manually create a new
+    offscreen context that is shared with the \c QQuickRenderControl and to call the non-public
+    function \c qt_gl_set_global_share_context(), rather than calling \c initialize().
+    If \c initialize() is called after setting a global context, it will do nothing.
 */
 
 /*!
