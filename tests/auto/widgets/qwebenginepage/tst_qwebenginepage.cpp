@@ -3392,9 +3392,9 @@ void tst_QWebEnginePage::loadSignalsOrder()
     QFETCH(QUrl, url);
     QWebEnginePage page;
     SpyForLoadSignalsOrder loadSpy(&page);
-    waitForSignal(&loadSpy, SIGNAL(started()));
+    waitForSignal(&loadSpy, SIGNAL(started()), 500);
     page.load(url);
-    QTRY_VERIFY(loadSpy.isFinished());
+    QTRY_VERIFY_WITH_TIMEOUT(loadSpy.isFinished(), 500);
 }
 
 void tst_QWebEnginePage::undoActionHaveCustomText()

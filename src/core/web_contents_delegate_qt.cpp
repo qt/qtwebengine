@@ -241,6 +241,7 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     if (render_frame_host->GetParent())
         return;
 
+    m_viewClient->loadProgressChanged(100);
     m_viewClient->loadFinished(true, toQt(validated_url));
 
     content::NavigationEntry *entry = web_contents()->GetController().GetVisibleEntry();
