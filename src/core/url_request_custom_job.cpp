@@ -60,8 +60,7 @@ URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *n
     , m_schemeHandler(schemeHandler)
     , m_error(0)
     , m_started(false)
-    , m_weakFactoryIO(this)
-    , m_weakFactoryUI(this)
+    , m_weakFactory(this)
 {
 }
 
@@ -79,7 +78,8 @@ URLRequestCustomJob::~URLRequestCustomJob()
 void URLRequestCustomJob::Start()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, base::Bind(&URLRequestCustomJob::startAsync, m_weakFactoryIO.GetWeakPtr()));
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                     base::Bind(&URLRequestCustomJob::startAsync, this));
 }
 
 void URLRequestCustomJob::Kill()
@@ -94,8 +94,7 @@ void URLRequestCustomJob::Kill()
     if (m_device && m_device->isOpen())
         m_device->close();
     m_device = 0;
-    m_weakFactoryIO.InvalidateWeakPtrs();
-    m_weakFactoryUI.InvalidateWeakPtrs();
+    m_weakFactory.InvalidateWeakPtrs();
 
     URLRequestJob::Kill();
 }
@@ -153,7 +152,7 @@ void URLRequestCustomJob::setReplyDevice(QIODevice *device)
         m_device->open(QIODevice::ReadOnly);
 
     if (m_device && m_device->isReadable())
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactoryUI.GetWeakPtr()));
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactory.GetWeakPtr()));
     else
         fail(ERR_INVALID_URL);
 }
@@ -181,7 +180,7 @@ void URLRequestCustomJob::redirect(const GURL &url)
 
     QMutexLocker lock(&m_mutex);
     m_redirect = url;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactoryUI.GetWeakPtr()));
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactory.GetWeakPtr()));
 }
 
 void URLRequestCustomJob::abort()
@@ -191,7 +190,7 @@ void URLRequestCustomJob::abort()
     if (m_device && m_device->isOpen())
         m_device->close();
     m_device = 0;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyCanceled, m_weakFactoryUI.GetWeakPtr()));
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyCanceled, m_weakFactory.GetWeakPtr()));
 }
 
 void URLRequestCustomJob::notifyCanceled()
@@ -216,7 +215,7 @@ void URLRequestCustomJob::fail(int error)
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     QMutexLocker lock(&m_mutex);
     m_error = error;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyFailure, m_weakFactoryUI.GetWeakPtr()));
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyFailure, m_weakFactory.GetWeakPtr()));
 }
 
 void URLRequestCustomJob::notifyFailure()
