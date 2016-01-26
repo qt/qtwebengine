@@ -78,6 +78,14 @@ public:
         const GURL& requesting_origin,
         const GURL& embedding_origin) override;
 
+    int RequestPermissions(
+        const std::vector<content::PermissionType>& permission,
+        content::RenderFrameHost* render_frame_host,
+        const GURL& requesting_origin,
+        bool user_gesture,
+        const base::Callback<void(
+            const std::vector<content::PermissionStatus>&)>& callback) override;
+
     void RegisterPermissionUsage(
         content::PermissionType permission,
         const GURL& requesting_origin,
