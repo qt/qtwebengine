@@ -43,6 +43,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
+#include "gpu/command_buffer/service/sync_point_manager.h"
+#include "ui/gl/gl_fence.h"
 #include <QMutex>
 #include <QSGNode>
 #include <QSharedData>
@@ -83,10 +85,11 @@ public:
     void commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate);
 
 private:
+    void fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch);
     // Making those callbacks static bypasses base::Bind's ref-counting requirement
     // of the this pointer when the callback is a method.
-    static void fetchTexturesAndUnlockQt(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
-    static void syncPointRetired(DelegatedFrameNode *frameNode, QList<MailboxTexture *> *mailboxesToFetch);
+    static void pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *mailbox);
+    static void fenceAndUnlockQt(DelegatedFrameNode *frameNode);
 
     ResourceHolder *findAndHoldResource(unsigned resourceId, QHash<unsigned, QSharedPointer<ResourceHolder> > &candidates);
     QSGTexture *initAndHoldTexture(ResourceHolder *resource, bool quadIsAllOpaque, RenderWidgetHostViewQtDelegate *apiDelegate = 0);
@@ -98,9 +101,10 @@ private:
         QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
     } m_sgObjects;
     int m_numPendingSyncPoints;
-    QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
+    QList<gfx::TransferableFence> m_textureFences;
+    scoped_ptr<gpu::SyncPointClient> m_syncPointClient;
 };
 
 } // namespace QtWebEngineCore

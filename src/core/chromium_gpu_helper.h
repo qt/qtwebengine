@@ -43,9 +43,6 @@
 #include <QtGlobal> // We need this for the Q_OS_QNX define.
 #include <QMap>
 
-#include "base/callback.h"
-#include "ui/gl/gl_fence.h"
-
 namespace base {
 class MessageLoop;
 }
@@ -64,12 +61,10 @@ class Texture;
 // From the outside, types from incompatible headers referenced in these
 // functions should only be forward-declared and considered as opaque types.
 
-QMap<uint32, gfx::TransferableFence> transferFences();
 base::MessageLoop *gpu_message_loop();
 gpu::SyncPointManager *sync_point_manager();
 gpu::gles2::MailboxManager *mailbox_manager();
 
-void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, gpu::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback);
 gpu::gles2::Texture* ConsumeTexture(gpu::gles2::MailboxManager *mailboxManager, unsigned target, const gpu::Mailbox& mailbox);
 unsigned int service_id(gpu::gles2::Texture *tex);
 

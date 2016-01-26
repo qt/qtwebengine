@@ -236,8 +236,7 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kInProcessGPU);
     // These are currently only default on OS X, and we don't support them:
     parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
-    parsedCommandLine->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
-    parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+    parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
 
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
