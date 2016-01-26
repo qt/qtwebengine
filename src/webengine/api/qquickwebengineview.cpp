@@ -70,7 +70,10 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QLoggingCategory>
+#include <QMarginsF>
 #include <QMimeData>
+#include <QPageLayout>
+#include <QPageSize>
 #include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -1177,6 +1180,15 @@ bool QQuickWebEngineView::wasRecentlyAudible()
 {
     Q_D(QQuickWebEngineView);
     return d->adapter->wasRecentlyAudible();
+}
+
+void QQuickWebEngineView::printToPDF(const QString &filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+{
+    Q_D(QQuickWebEngineView);
+    QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
+    QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
+    QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
+    d->adapter->printToPDF(pageLayout, filePath);
 }
 
 bool QQuickWebEngineView::isFullScreen() const

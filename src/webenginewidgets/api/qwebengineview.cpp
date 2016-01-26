@@ -51,6 +51,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QStackedLayout>
+#include <QPageLayout>
 
 QT_BEGIN_NAMESPACE
 
@@ -262,6 +263,10 @@ QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
     return 0;
 }
 
+void QWebEngineView::printToPDF(const QString &filePath, const QPageLayout &pageLayout)
+{
+    page()->d_func()->adapter->printToPDF(pageLayout, filePath);
+}
 
 qreal QWebEngineView::zoomFactor() const
 {

@@ -312,8 +312,12 @@ void BrowserMainWindow::setupMenu()
 #if defined(QWEBENGINEPAGE_PRINT)
     fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
-    fileMenu->addSeparator();
 #endif
+#ifndef QT_NO_PRINTER
+    fileMenu->addAction(tr("&Print to PDF..."), this, SLOT(slotFilePrintToPDF()));
+#endif // ifndef QT_NO_PRINTER
+    fileMenu->addSeparator();
+
     QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
     action->setCheckable(true);
     action->setChecked(BrowserApplication::instance()->privateBrowsing());
@@ -695,6 +699,21 @@ void BrowserMainWindow::slotFilePrint()
         return;
     printRequested(currentTab()->page()->mainFrame());
 #endif
+}
+
+void BrowserMainWindow::slotFilePrintToPDF()
+{
+#ifndef QT_NO_PRINTER
+    if (!currentTab())
+        return;
+    QPrinter printer;
+    QPrintDialog *dialog = new QPrintDialog(&printer, this);
+    dialog->setWindowTitle(tr("Print Document"));
+    if (dialog->exec() != QDialog::Accepted || printer.outputFileName().isEmpty())
+        return;
+
+    currentTab()->printToPDF(printer.outputFileName(), printer.pageLayout());
+#endif // QT_NO_PRINTER
 }
 
 #if defined(QWEBENGINEPAGE_PRINT)

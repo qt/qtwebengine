@@ -43,6 +43,7 @@ tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 depends += qtcore \
            qtgui \
            qtnetwork \
+           qtprintsupport \
            qtqml \
            qtquick \
            qtquickcontrols \

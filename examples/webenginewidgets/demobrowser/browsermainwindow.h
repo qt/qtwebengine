@@ -109,6 +109,7 @@ private slots:
     void slotFileOpen();
     void slotFilePrintPreview();
     void slotFilePrint();
+    void slotFilePrintToPDF();
     void slotPrivateBrowsing();
     void slotFileSaveAs();
     void slotEditFind();

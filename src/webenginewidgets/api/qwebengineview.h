@@ -41,6 +41,7 @@
 #define QWEBENGINEVIEW_H
 
 #include <QtGui/qpainter.h>
+#include <QtGui/qpagelayout.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
@@ -49,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 class QContextMenuEvent;
+class QPageLayout;
+class QString;
 class QUrl;
 class QWebEnginePage;
 class QWebEngineSettings;
@@ -101,6 +104,8 @@ public:
 
     virtual QSize sizeHint() const Q_DECL_OVERRIDE;
     QWebEngineSettings *settings() const;
+
+    void printToPDF(const QString &filePath, const QPageLayout &layout = QPageLayout());
 
 public Q_SLOTS:
     void stop();

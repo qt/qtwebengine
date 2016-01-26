@@ -57,6 +57,8 @@ QT_BEGIN_NAMESPACE
 class QAccessibleInterface;
 class QDragEnterEvent;
 class QDragMoveEvent;
+class QPageLayout;
+class QString;
 class QWebChannel;
 QT_END_NAMESPACE
 
@@ -169,6 +171,7 @@ public:
     void endDragging(const QPoint &clientPos, const QPoint &screenPos);
     void leaveDrag();
     void initUpdateDragCursorMessagePollingTimer();
+    void printToPDF(const QPageLayout&, const QString&);
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;

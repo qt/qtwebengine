@@ -49,6 +49,7 @@
 #include "browser_context_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "print_view_manager_qt.h"
 #include "qwebenginecallback_p.h"
 #include "render_view_observer_host_qt.h"
 #include "type_conversion.h"
@@ -79,6 +80,7 @@
 
 #include <QDir>
 #include <QGuiApplication>
+#include <QPageLayout>
 #include <QStringList>
 #include <QStyleHints>
 #include <QTimer>
@@ -410,6 +412,10 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
     d->webContents->GetController().LoadIfNecessary();
+
+#if defined(ENABLE_BASIC_PRINTING)
+    PrintViewManagerQt::CreateForWebContents(webContents());
+#endif // defined(ENABLE_BASIC_PRINTING)
 
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
@@ -895,6 +901,13 @@ void WebContentsAdapter::wasHidden()
 {
     Q_D(WebContentsAdapter);
     d->webContents->WasHidden();
+}
+
+void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
+{
+#if defined(ENABLE_BASIC_PRINTING)
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDF(pageLayout, filePath);
+#endif // if defined(ENABLE_BASIC_PRINTING)
 }
 
 QPointF WebContentsAdapter::lastScrollOffset() const
