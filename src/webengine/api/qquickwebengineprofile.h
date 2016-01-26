@@ -74,7 +74,8 @@ public:
 
     enum HttpCacheType {
         MemoryHttpCache,
-        DiskHttpCache
+        DiskHttpCache,
+        NoCache
     };
     Q_ENUM(HttpCacheType)
 

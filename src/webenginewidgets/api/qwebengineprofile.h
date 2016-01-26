@@ -66,7 +66,8 @@ public:
 
     enum HttpCacheType {
         MemoryHttpCache,
-        DiskHttpCache
+        DiskHttpCache,
+        NoCache
     };
 
     enum PersistentCookiesPolicy {

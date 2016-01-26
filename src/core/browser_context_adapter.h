@@ -107,7 +107,8 @@ public:
     // KEEP IN SYNC with API or add mapping layer
     enum HttpCacheType {
         MemoryHttpCache = 0,
-        DiskHttpCache
+        DiskHttpCache,
+        NoCache
     };
 
     enum PersistentCookiesPolicy {

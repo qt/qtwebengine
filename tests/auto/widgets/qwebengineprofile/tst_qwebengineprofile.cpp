@@ -47,6 +47,7 @@ private Q_SLOTS:
     void defaultProfile();
     void profileConstructors();
     void clearDataFromCache();
+    void disableCache();
 };
 
 void tst_QWebEngineProfile::defaultProfile()
@@ -108,6 +109,38 @@ void tst_QWebEngineProfile::clearDataFromCache()
 
     cacheDir.refresh();
     QVERIFY(filesBeforeClear > cacheDir.entryList().count());
+
+    cacheDir.removeRecursively();
+}
+
+void tst_QWebEngineProfile::disableCache()
+{
+    QWebEnginePage page;
+    QDir cacheDir("./tst_QWebEngineProfile_cacheDir");
+    if (cacheDir.exists())
+        cacheDir.removeRecursively();
+    cacheDir.mkpath(cacheDir.path());
+
+    QWebEngineProfile *profile = page.profile();
+    profile->setCachePath(cacheDir.path());
+    QVERIFY(!cacheDir.entryList().contains("Cache"));
+
+    profile->setHttpCacheType(QWebEngineProfile::NoCache);
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.load(QUrl("http://qt-project.org"));
+    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(0).at(0).toBool())
+        QSKIP("Couldn't load page from network, skipping test.");
+
+    cacheDir.refresh();
+    QVERIFY(!cacheDir.entryList().contains("Cache"));
+
+    profile->setHttpCacheType(QWebEngineProfile::DiskHttpCache);
+    page.load(QUrl("http://qt-project.org"));
+    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(1).at(0).toBool())
+        QSKIP("Couldn't load page from network, skipping test.");
+
+    cacheDir.refresh();
+    QVERIFY(cacheDir.entryList().contains("Cache"));
 
     cacheDir.removeRecursively();
 }

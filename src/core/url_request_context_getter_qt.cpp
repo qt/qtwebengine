@@ -368,6 +368,9 @@ void URLRequestContextGetterQt::generateHttpCache()
                 BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)
             );
         break;
+    case BrowserContextAdapter::NoCache:
+        // It's safe to not create BackendFactory.
+        break;
     }
 
     net::HttpCache *cache = 0;
