@@ -50,7 +50,8 @@ for(LOC, LOCALE_LIST) {
 }
 resources.files = $$REPACK_DIR/qtwebengine_resources.pak \
     $$REPACK_DIR/qtwebengine_resources_100p.pak \
-    $$REPACK_DIR/qtwebengine_resources_200p.pak
+    $$REPACK_DIR/qtwebengine_resources_200p.pak \
+    $$REPACK_DIR/qtwebengine_devtools_resources.pak
 
 icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
 

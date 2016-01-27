@@ -267,6 +267,8 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         return toFilePath(resourcesDataPath() % QLatin1String("/qtwebengine_resources_100p.pak"));
     case QT_RESOURCES_200P_PAK:
         return toFilePath(resourcesDataPath() % QLatin1String("/qtwebengine_resources_200p.pak"));
+    case QT_RESOURCES_DEVTOOLS_PAK:
+        return toFilePath(resourcesDataPath() % QLatin1String("/qtwebengine_devtools_resources.pak"));
     case base::FILE_EXE:
     case content::CHILD_PROCESS_EXE:
         return toFilePath(subProcessPath());

@@ -30,7 +30,6 @@
         'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
@@ -65,6 +64,18 @@
             ],
             'pak_outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_resources_200p.pak'
+            ]
+        },
+        'includes': [ 'repack_resources.gypi' ],
+      },
+      {
+        'action_name': 'repack_resources_devtools',
+        'variables': {
+            'pak_inputs': [
+              '<(SHARED_INTERMEDIATE_DIR)/blink/devtools_resources.pak',
+            ],
+            'pak_outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_devtools_resources.pak'
             ]
         },
         'includes': [ 'repack_resources.gypi' ],
