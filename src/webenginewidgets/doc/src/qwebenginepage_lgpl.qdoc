@@ -690,37 +690,3 @@
 
     \sa iconUrl()
 */
-
-/*!
-    \property QWebEnginePage::audioMuted
-    \brief the state of whether the current page audio is muted.
-    \since 5.7
-*/
-
-/*!
-    \fn void QWebEnginePage::audioMutedChanged(bool muted)
-    \since 5.7
-
-    This signal is emitted when the page's audio is (un)muted using setAudioMuted method.
-    \note Not to be confused with a specific HTML5 audio / video element being muted.
-*/
-
-/*!
-    \fn bool QWebEnginePage::wasRecentlyAudible()
-    \since 5.7
-    \sa wasRecentlyAudibleChanged()
-
-    Returns the current page's audible state (audio was recently played, or not).
-*/
-
-/*!
-    \fn void QWebEnginePage::wasRecentlyAudibleChanged(bool wasRecentlyAudible);
-    \since 5.7
-
-    This signal is emitted when the page's audible state is changed, due to audio
-    being played or stopped.
-
-    \note The signal is also emitted when calling the setAudioMuted method.
-    Also if the audio is paused, this signal is emitted with an approximate \b{2 second
-    delay}, from the moment the audio is paused.
-*/

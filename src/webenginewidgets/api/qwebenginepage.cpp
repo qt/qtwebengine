@@ -527,6 +527,26 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
+    \fn void QWebEnginePage::audioMutedChanged(bool muted)
+    \since 5.7
+
+    This signal is emitted when the page's \a muted state changes.
+    \note Not to be confused with a specific HTML5 audio or video element being muted.
+*/
+
+/*!
+    \fn void QWebEnginePage::wasRecentlyAudibleChanged(bool wasRecentlyAudible);
+    \since 5.7
+
+    This signal is emitted when the page's audible state, \a wasRecentlyAudible, changes, because
+    the audio is played or stopped.
+
+    \note The signal is also emitted when calling the setAudioMuted() method.
+    Also, if the audio is paused, this signal is emitted with an approximate \e {two-second
+    delay}, from the moment the audio is paused.
+*/
+
+/*!
     Constructs an empty web engine page in the web engine profile \a profile with the parent
     \a parent.
 
@@ -643,10 +663,10 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
 
 /*!
     \property QWebEnginePage::audioMuted
-    \brief the state of whether the current page audio is muted.
+    \brief whether the current page audio is muted.
     \since 5.7
 
-    The default value is false.
+    The default value is \c false.
 */
 bool QWebEnginePage::isAudioMuted() const {
     const Q_D(QWebEnginePage);
@@ -662,6 +682,13 @@ void QWebEnginePage::setAudioMuted(bool muted) {
     }
 }
 
+/*!
+    \since 5.7
+    \sa wasRecentlyAudibleChanged()
+
+    Returns the current page's \e {audible state}, that is, whether audio was recently played
+    or not.
+*/
 bool QWebEnginePage::wasRecentlyAudible()
 {
     Q_D(QWebEnginePage);
