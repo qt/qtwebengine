@@ -29,114 +29,143 @@
     \example webenginewidgets/contentmanipulation
     \title WebEngine Content Manipulation Example
     \ingroup webengine-widgetexamples
-    \brief Demonstrates how to use browse web and manipulate content
-
-    \brief The Content Manipulation example shows how to use JQuery with QtWebEngine to
-    create a web browser with special effects and content
-    manipulation.
+    \brief Demonstrates how to load and manipulate web content.
 
     \image contentmanipulation-example.png
 
-    The application makes use of QWebEnginePage::evaluateJavaScript to
-    evaluate the jQuery JavaScript code. A QMainWindow with a QWebEngineView
-    as central widget builds up the browser itself.
+    \e{Content Manipulation} shows how to use JQuery with \l {Qt WebEngine Widgets} to
+    create a web browser with special effects and content manipulation.
+
+    In the application, we call QWebEnginePage::runJavaScript() to
+    execute jQuery JavaScript code. We implement a QMainWindow with a QWebEngineView
+    as a central widget to build up the browser itself.
 
     \include examples-run.qdocinc
 
     \section1 MainWindow Class Definition
 
     The \c MainWindow class inherits QMainWindow. It implements a number of
-    slots to perform actions on both the application and on the web content.
+    slots to perform actions on both the application and on the web content:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.h 1
+    \quotefromfile webenginewidgets/contentmanipulation/mainwindow.h
+    \skipto class MainWindow :
+    \printuntil /^\}/
 
-    We also declare a QString that contains the jQuery, a QWebView
+    We also declare a QString that contains the jQuery, a QWebEngineView
     that displays the web content, and a QLineEdit that acts as the
     address bar.
 
     \section1 MainWindow Class Implementation
 
-    We start by implementing the constructor.
+    We start by implementing the constructor. The first part of the constructor sets the value of
+    \c progress to 0. This value will be used later in the code to visualize the loading of a
+    web page:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 1
+    \quotefromfile webenginewidgets/contentmanipulation/mainwindow.cpp
+    \skipto MainWindow::MainWindow
+    \printuntil progress
 
-    The first part of the constructor sets the value of \c progress to
-    0. This value will be used later in the code to visualize the
-    loading of a webpage.
-
-    Next, the jQuery library is loaded using a QFile and reading the file
+    Next, the jQuery library is loaded by using a QFile and reading the file
     content. The jQuery library is a JavaScript library that provides different
-    functions for manipulating HTML.
+    functions for manipulating HTML:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 2
+    \printuntil file.close()
 
-    The second part of the constructor creates a QWebView and connects
-    slots to the views signals. Furthermore, we create a QLineEdit as
-    the browsers address bar. We then set the horizontal QSizePolicy
-    to fill the available area in the browser at all times. We add the
-    QLineEdit to a QToolbar together with a set of navigation actions
-    from QWebView::pageAction.
+    The second part of the constructor creates a QWebEngineView and connects
+    slots to the view's signals:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 3
+    \printuntil SLOT(finishLoading
 
-    The third and last part of the constructor implements two QMenus and assigns
-    a set of actions to them. The last line sets the QWebView as the central
-    widget in the QMainWindow.
+    Furthermore, we create a QLineEdit as the browser's address bar. We then set the horizontal
+    QSizePolicy to fill the available area in the browser at all times. We add the
+    QLineEdit to a QToolBar together with a set of navigation actions from
+    QWebEngineView::pageAction():
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 4
+    \printuntil addWidget(locationEdit)
 
-    When the page is loaded, \c adjustLocation() updates the address
-    bar; \c adjustLocation() is triggered by the \c loadFinished()
-    signal in QWebView. In \c changeLocation() we create a QUrl
-    object, and then use it to load the page into the QWebView. When
-    the new web page has finished loading, \c adjustLocation() will be
-    run once more to update the address bar.
+    The third part of the constructor implements two QMenu widgets and assigns
+    a set of actions to them:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 5
+    \printuntil removeEmbeddedElements
 
-    \c adjustTitle() sets the window title and displays the loading
-    progress. This slot is triggered by the \c titleChanged() signal
-    in QWebView.
+    The last line sets the QWebEngineView as the central widget in the QMainWindow:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 6
+    \printuntil }
 
-    When a web page has loaded, \c finishLoading() is triggered by the
-    \c loadFinished() signal in QWebView. \c finishLoading() then updates the
-    progress in the title bar and calls \c evaluateJavaScript()
-    to evaluate the jQuery library. This evaluates the JavaScript against the
-    current web page. What that means is that the JavaScript can be viewed as
-    part of the content loaded into the QWebView, and therefore needs to be
+    When the page is loaded, \c adjustLocation() is triggered by the \c loadFinished() signal in
+    QWebEngineView to update the address bar:
+
+    \skipto adjustLocation()
+    \printuntil }
+
+    In \c changeLocation(), we create a QUrl object, and then use it to load the page into the
+    QWebEngineView. When the new web page has finished loading, \c adjustLocation() will be
+    run once more to update the address bar:
+
+    \printuntil }
+
+    The \c adjustTitle() method sets the window title and displays the loading progress:
+
+    \printuntil }
+    \printuntil }
+
+    This slot is triggered by the \c titleChanged() signal in QWebEngineView.
+
+    When a web page has loaded, the \c finishLoading() method is triggered by the
+    \c loadFinished() signal in QWebEngineView. The method then updates the
+    progress in the title bar and calls \c runJavaScript()
+    to evaluate the jQuery library against the current web page:
+
+    \printuntil }
+
+    This means that the JavaScript can be viewed as a
+    part of the content loaded into the QWebEngineView, and therefore needs to be
     loaded every time a new page is loaded. Once the jQuery library is loaded,
     we can start executing the different jQuery functions in the browser.
 
-    The rotateImages() function is then called explicitely to make sure
+    The \c rotateImages() function is then called explicitly to make sure
     that the images of the newly loaded page respect the state of the toggle
     action.
-
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 7
 
     The first jQuery-based function, \c highlightAllLinks(), is designed to
     highlight all links in the current webpage. The JavaScript code looks
     for web elements named \e {a}, which is the tag for a hyperlink.
     For each such element, the background color is set to be yellow by
-    using CSS.
+    using CSS:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 8
+    \printuntil }
+    \printuntil }
+
+    We append \c undefined after the jQuery call to prevent a possible recursion loop
+    and crash caused by the way the elements returned by the each iterator elements
+    reference each other, which causes problems upon converting them to QVariant.
 
     The \c rotateImages() function rotates the images on the current
-    web page. This JavaScript code relies on CSS transforms and
+    web page. This JavaScript code relies on CSS transforms. It
     looks up all \e {img} elements and rotates the images 180 degrees
-    and then back again.
+    and then back again:
 
-    \snippet webenginewidgets/contentmanipulation/mainwindow.cpp 9
+    \printuntil runJavaScript(code);
+    \printuntil }
 
-    The remaining four methods remove different elements from the current web
-    page. \c removeGifImages() removes all GIF images on the page by looking up
+    The remaining methods remove different elements from the current web
+    page. The \c removeGifImages() removes all GIF images on the page by looking up
     the \e {src} attribute of all the elements on the web page. Any element with
-    a \e {gif} file as its source is removed. \c removeInlineFrames() removes all
-    \e {iframe} or inline elements. \c removeObjectElements() removes all
-    \e {object} elements, and \c removeEmbeddedElements() removes any elements
-    such as plugins embedded on the page using the \e {embed} tag.
+    a \e {gif} file as its source is removed:
 
+    \printuntil }
+
+    The \c removeInlineFrames() method removes all \e {iframe} or inline elements:
+
+    \printuntil }
+
+    The \c removeObjectElements() method removes all \e {object} elements:
+
+    \printuntil }
+
+    The \c removeEmbeddedElements() method removes any elements using the \e {embed} tag, such as
+    plugins embedded on the page:
+
+    \printuntil }
 */
 
