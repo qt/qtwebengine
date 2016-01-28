@@ -64,9 +64,30 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     setFocusPolicy(Qt::StrongFocus);
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 4, 0))
+
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
+
+    QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();
+    if (globalSharedContext) {
+        QSurfaceFormat sharedFormat = globalSharedContext->format();
+
+#ifdef Q_OS_OSX
+        // Check that the default QSurfaceFormat OpenGL profile matches the global OpenGL shared
+        // context profile, otherwise this could lead to a nasty crash.
+        QSurfaceFormat defaultFormat = QSurfaceFormat::defaultFormat();
+        if (defaultFormat.profile() != sharedFormat.profile()) {
+            qFatal("QWebEngine: Default QSurfaceFormat OpenGL profile does not match global shared context OpenGL profile. Please make sure you set a new QSurfaceFormat before the QtGui application instance is created.");
+        }
+#endif
+
+        // Make sure the OpenGL profile of the QOpenGLWidget matches the shared context profile.
+        format.setMajorVersion(sharedFormat.majorVersion());
+        format.setMinorVersion(sharedFormat.minorVersion());
+        format.setProfile(sharedFormat.profile());
+    }
+
     setFormat(format);
 #endif
 
