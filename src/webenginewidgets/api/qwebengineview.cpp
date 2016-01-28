@@ -313,6 +313,9 @@ void QWebEngineView::hideEvent(QHideEvent *event)
     page()->d_ptr->wasHidden();
 }
 
+/*!
+    \reimp
+*/
 void QWebEngineView::dragEnterEvent(QDragEnterEvent *e)
 {
     Q_D(QWebEngineView);
@@ -320,6 +323,9 @@ void QWebEngineView::dragEnterEvent(QDragEnterEvent *e)
     d->page->d_ptr->adapter->enterDrag(e, mapToGlobal(e->pos()));
 }
 
+/*!
+    \reimp
+*/
 void QWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
 {
     Q_D(QWebEngineView);
@@ -327,6 +333,9 @@ void QWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
     d->page->d_ptr->adapter->leaveDrag();
 }
 
+/*!
+    \reimp
+*/
 void QWebEngineView::dragMoveEvent(QDragMoveEvent *e)
 {
     Q_D(QWebEngineView);
@@ -340,6 +349,9 @@ void QWebEngineView::dragMoveEvent(QDragMoveEvent *e)
     }
 }
 
+/*!
+    \reimp
+*/
 void QWebEngineView::dropEvent(QDropEvent *e)
 {
     Q_D(QWebEngineView);
