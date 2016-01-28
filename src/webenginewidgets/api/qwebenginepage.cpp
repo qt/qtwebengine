@@ -227,6 +227,8 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     Q_UNUSED(userGesture);
 
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
+    if (!newPage)
+        return;
 
     // Mark the new page as being in the process of being adopted, so that a second mouse move event
     // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
@@ -240,7 +242,7 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     newPage->d_func()->m_isBeingAdopted = true;
 
     // Overwrite the new page's WebContents with ours.
-    if (newPage && newPage->d_func() != this) {
+    if (newPage->d_func() != this) {
         newPage->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
         if (!initialGeometry.isEmpty())
