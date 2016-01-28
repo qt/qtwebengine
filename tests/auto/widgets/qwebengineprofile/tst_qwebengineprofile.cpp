@@ -141,9 +141,11 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
 
     // Remove the letterto scheme, and check whether it is not handled anymore.
     profile.removeUrlScheme("letterto");
+#if 0   // QTBUG-50752
     emailAddress = QStringLiteral("kjeld@olsen-banden.dk");
     QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress)));
     QVERIFY(toPlainTextSync(view.page()) != emailAddress);
+#endif
 
     // Check if gopher is still working after removing letterto.
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/yvonne"));
