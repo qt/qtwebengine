@@ -327,7 +327,7 @@ QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() 
 }
 
 /*!
-    Sets the format the web page will be saved in if this is a download request for a web page.
+    Sets the \a format the web page will be saved in if this is a download request for a web page.
 
     \sa savePageFormat()
 */
