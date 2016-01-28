@@ -80,7 +80,7 @@
 #include "printing_message_filter_qt.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
 #include "resource_dispatcher_host_delegate_qt.h"
-#include "user_script_controller_host.h"
+#include "user_resource_controller_host.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
@@ -360,7 +360,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     // FIXME: Add a settings variable to enable/disable the file scheme.
     const int id = host->GetID();
     content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(id, url::kFileScheme);
-    static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userScriptController()->renderProcessStartedWithHost(host);
+    static_cast<BrowserContextQt*>(host->GetBrowserContext())->m_adapter->userResourceController()->renderProcessStartedWithHost(host);
 #if defined(ENABLE_PEPPER_CDMS)
     host->AddFilter(new BrowserMessageFilterQt(id));
 #endif

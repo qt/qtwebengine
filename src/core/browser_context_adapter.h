@@ -60,7 +60,7 @@ namespace QtWebEngineCore {
 class BrowserContextAdapterClient;
 class BrowserContextQt;
 class DownloadManagerDelegateQt;
-class UserScriptControllerHost;
+class UserResourceControllerHost;
 class WebEngineVisitedLinksManager;
 
 class QWEBENGINE_EXPORT BrowserContextAdapter : public QSharedData
@@ -160,7 +160,7 @@ public:
     void addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
     bool removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     QWebEngineUrlSchemeHandler *takeCustomUrlSchemeHandler(const QByteArray &);
-    UserScriptControllerHost *userScriptController();
+    UserResourceControllerHost *userResourceController();
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
 
@@ -176,7 +176,7 @@ private:
     QScopedPointer<BrowserContextQt> m_browserContext;
     QScopedPointer<WebEngineVisitedLinksManager> m_visitedLinksManager;
     QScopedPointer<DownloadManagerDelegateQt> m_downloadManagerDelegate;
-    QScopedPointer<UserScriptControllerHost> m_userScriptController;
+    QScopedPointer<UserResourceControllerHost> m_userResourceController;
     QScopedPointer<QWebEngineCookieStore> m_cookieStore;
     QPointer<QWebEngineUrlRequestInterceptor> m_requestInterceptor;
 

@@ -45,9 +45,9 @@ IPC_MESSAGE_ROUTED1(RenderViewObserverHelper_RemoveScript,
                     UserScriptData /* script */)
 IPC_MESSAGE_ROUTED0(RenderViewObserverHelper_ClearScripts)
 
-IPC_MESSAGE_CONTROL1(UserScriptController_AddScript, UserScriptData /* scriptContents */)
-IPC_MESSAGE_CONTROL1(UserScriptController_RemoveScript, UserScriptData /* scriptContents */)
-IPC_MESSAGE_CONTROL0(UserScriptController_ClearScripts)
+IPC_MESSAGE_CONTROL1(UserResourceController_AddScript, UserScriptData /* scriptContents */)
+IPC_MESSAGE_CONTROL1(UserResourceController_RemoveScript, UserScriptData /* scriptContents */)
+IPC_MESSAGE_CONTROL0(UserResourceController_ClearScripts)
 
 //-----------------------------------------------------------------------------
 // WebContents messages

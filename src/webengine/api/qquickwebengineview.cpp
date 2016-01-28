@@ -61,7 +61,7 @@
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
 #include "ui_delegates_manager.h"
-#include "user_script_controller_host.h"
+#include "user_resource_controller_host.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
 #include "web_engine_settings.h"
@@ -761,7 +761,7 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     // re-bind the userscrips to the new adapter
     Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
-        script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
+        script->d_func()->bind(browserContextAdapter()->userResourceController(), adapter.data());
 
     // Emit signals for values that might be different from the previous WebContentsAdapter.
     emit q->titleChanged();
@@ -807,7 +807,7 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
             adapter->load(explicitUrl);
         // push down the page's user scripts
         Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
-            script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
+            script->d_func()->bind(browserContextAdapter()->userResourceController(), adapter.data());
     }
 }
 
@@ -1579,12 +1579,12 @@ void QQuickWebEngineViewPrivate::userScripts_append(QQmlListProperty<QQuickWebEn
 {
     Q_ASSERT(p && p->data);
     QQuickWebEngineViewPrivate *d = static_cast<QQuickWebEngineViewPrivate*>(p->data);
-    UserScriptControllerHost *scriptController = d->browserContextAdapter()->userScriptController();
+    UserResourceControllerHost *resourceController = d->browserContextAdapter()->userResourceController();
     d->m_userScripts.append(script);
     // If the adapter hasn't been instantiated, we'll bind the scripts in ensureContentsAdapter()
     if (!d->adapter)
         return;
-    script->d_func()->bind(scriptController, d->adapter.data());
+    script->d_func()->bind(resourceController, d->adapter.data());
 }
 
 int QQuickWebEngineViewPrivate::userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p)
@@ -1605,8 +1605,8 @@ void QQuickWebEngineViewPrivate::userScripts_clear(QQmlListProperty<QQuickWebEng
 {
     Q_ASSERT(p && p->data);
     QQuickWebEngineViewPrivate *d = static_cast<QQuickWebEngineViewPrivate*>(p->data);
-    UserScriptControllerHost *scriptController = d->browserContextAdapter()->userScriptController();
-    scriptController->clearAllScripts(d->adapter.data());
+    UserResourceControllerHost *resourceController = d->browserContextAdapter()->userResourceController();
+    resourceController->clearAllScripts(d->adapter.data());
     d->m_userScripts.clear();
 }
 

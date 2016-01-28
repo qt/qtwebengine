@@ -76,7 +76,7 @@ SOURCES = \
         renderer/pepper/pepper_renderer_host_factory_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
-        renderer/user_script_controller.cpp \
+        renderer/user_resource_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
@@ -88,8 +88,8 @@ SOURCES = \
         url_request_custom_job.cpp \
         url_request_custom_job_delegate.cpp \
         url_request_qrc_job_qt.cpp \
+        user_resource_controller_host.cpp \
         user_script.cpp \
-        user_script_controller_host.cpp \
         web_channel_ipc_transport_host.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
@@ -156,7 +156,7 @@ HEADERS = \
         renderer/pepper/pepper_renderer_host_factory_qt.h \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
-        renderer/user_script_controller.h \
+        renderer/user_resource_controller.h \
         renderer/web_channel_ipc_transport.h \
         resource_context_qt.h \
         resource_dispatcher_host_delegate_qt.h \
@@ -167,8 +167,8 @@ HEADERS = \
         url_request_custom_job.h \
         url_request_custom_job_delegate.h \
         url_request_qrc_job_qt.h \
+        user_resource_controller_host.h \
         user_script.h \
-        user_script_controller_host.h \
         web_channel_ipc_transport_host.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \

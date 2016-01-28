@@ -37,54 +37,49 @@
 **
 ****************************************************************************/
 
-#ifndef USER_SCRIPT_CONTROLLER_HOST_H
-#define USER_SCRIPT_CONTROLLER_HOST_H
+#ifndef USER_RESOURCE_CONTROLLER_H
+#define USER_RESOURCE_CONTROLLER_H
 
-#include "qtwebenginecoreglobal.h"
+#include "content/public/renderer/render_process_observer.h"
 
+#include "common/user_script_data.h"
+
+#include <QtCore/qcompilerdetection.h>
+#include <QtCore/QHash>
 #include <QtCore/QSet>
-#include <QtCore/QScopedPointer>
-#include "user_script.h"
 
 namespace content {
-class RenderProcessHost;
-class WebContents;
+class RenderView;
 }
 
-namespace QtWebEngineCore {
 
-class WebContentsAdapter;
-class WebContentsAdapterPrivate;
-
-class QWEBENGINE_EXPORT UserScriptControllerHost {
+class UserResourceController : public content::RenderProcessObserver {
 
 public:
-    UserScriptControllerHost();
-    ~UserScriptControllerHost();
-
-    void addUserScript(const UserScript &script, WebContentsAdapter *adapter);
-    bool containsUserScript(const UserScript &script, WebContentsAdapter *adapter);
-    bool removeUserScript(const UserScript &script, WebContentsAdapter *adapter);
-    void clearAllScripts(WebContentsAdapter *adapter);
-    void reserve(WebContentsAdapter *adapter, int count);
-    const QList<UserScript> registeredScripts(WebContentsAdapter *adapter) const;
-
-    void renderProcessStartedWithHost(content::RenderProcessHost *renderer);
+    static UserResourceController *instance();
+    UserResourceController();
+    void renderViewCreated(content::RenderView *);
+    void renderViewDestroyed(content::RenderView *);
+    void addScriptForView(const UserScriptData &, content::RenderView *);
+    void removeScriptForView(const UserScriptData &, content::RenderView *);
+    void clearScriptsForView(content::RenderView *);
 
 private:
-    Q_DISABLE_COPY(UserScriptControllerHost)
-    class WebContentsObserverHelper;
-    class RenderProcessObserverHelper;
+    Q_DISABLE_COPY(UserResourceController)
 
-    void webContentsDestroyed(content::WebContents *);
+    class RenderViewObserverHelper;
 
-    QList<UserScript> m_profileWideScripts;
-    typedef QHash<content::WebContents *, QList<UserScript>> ContentsScriptsMap;
-    ContentsScriptsMap m_perContentsScripts;
-    QSet<content::RenderProcessHost *> m_observedProcesses;
-    QScopedPointer<RenderProcessObserverHelper> m_renderProcessObserver;
+    // RenderProcessObserver implementation.
+    virtual bool OnControlMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
+
+    void onAddScript(const UserScriptData &);
+    void onRemoveScript(const UserScriptData &);
+    void onClearScripts();
+
+    typedef QSet<uint64> UserScriptSet;
+    typedef QHash<const content::RenderView *, UserScriptSet> ViewUserScriptMap;
+    ViewUserScriptMap m_viewUserScriptMap;
+    QHash<uint64, UserScriptData> m_scripts;
 };
 
-} // namespace
-
-#endif // USER_SCRIPT_CONTROLLER_HOST_H
+#endif // USER_RESOURCE_CONTROLLER_H

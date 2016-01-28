@@ -48,7 +48,7 @@
 #include "web_engine_context.h"
 #include "web_engine_visited_links_manager.h"
 #include "url_request_context_getter_qt.h"
-#include "user_script_controller_host.h"
+#include "user_resource_controller_host.h"
 
 #include "net/proxy/proxy_service.h"
 
@@ -391,11 +391,11 @@ void BrowserContextAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, 
     updateCustomUrlSchemeHandlers();
 }
 
-UserScriptControllerHost *BrowserContextAdapter::userScriptController()
+UserResourceControllerHost *BrowserContextAdapter::userResourceController()
 {
-    if (!m_userScriptController)
-        m_userScriptController.reset(new UserScriptControllerHost);
-    return m_userScriptController.data();
+    if (!m_userResourceController)
+        m_userResourceController.reset(new UserResourceControllerHost);
+    return m_userResourceController.data();
 }
 
 void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)

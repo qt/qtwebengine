@@ -120,7 +120,7 @@ using QtWebEngineCore::BrowserContextAdapter;
 
 QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
         : m_settings(new QWebEngineSettings())
-        , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userScriptController())))
+        , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userResourceController())))
         , m_browserContextRef(browserContext)
 {
     m_browserContextRef->addClient(this);

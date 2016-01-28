@@ -74,7 +74,7 @@
 
 #include "renderer/render_frame_observer_qt.h"
 #include "renderer/render_view_observer_qt.h"
-#include "renderer/user_script_controller.h"
+#include "renderer/user_resource_controller.h"
 
 #include "grit/renderer_resources.h"
 
@@ -100,7 +100,7 @@ void ContentRendererClientQt::RenderThreadStarted()
     m_webCacheObserver.reset(new web_cache::WebCacheRenderProcessObserver());
     renderThread->AddObserver(m_visitedLinkSlave.data());
     renderThread->AddObserver(m_webCacheObserver.data());
-    renderThread->AddObserver(UserScriptController::instance());
+    renderThread->AddObserver(UserResourceController::instance());
 
     // mark qrc as a secure scheme (avoids deprecation warnings)
     blink::WebSecurityPolicy::registerURLSchemeAsSecure(blink::WebString::fromLatin1(kQrcSchemeQt));
@@ -115,7 +115,7 @@ void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view
     // RenderViewObservers destroy themselves with their RenderView.
     new RenderViewObserverQt(render_view, m_webCacheObserver.data());
     new WebChannelIPCTransport(render_view);
-    UserScriptController::instance()->renderViewCreated(render_view);
+    UserResourceController::instance()->renderViewCreated(render_view);
 #if defined(ENABLE_SPELLCHECK)
     new SpellCheckProvider(render_view, m_spellCheck.data());
 #endif

@@ -39,7 +39,6 @@
 
 #include "common/user_script_data.h"
 #include "user_script.h"
-#include "user_script_controller_host.h"
 #include "type_conversion.h"
 
 namespace QtWebEngineCore {

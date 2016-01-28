@@ -44,7 +44,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QTimerEvent>
-#include "user_script_controller_host.h"
+#include "user_resource_controller_host.h"
 
 using QtWebEngineCore::UserScript;
 
@@ -302,11 +302,11 @@ void QQuickWebEngineScript::timerEvent(QTimerEvent *e)
     d->m_controllerHost->addUserScript(d->coreScript, d->m_adapter);
 }
 
-void QQuickWebEngineScriptPrivate::bind(QtWebEngineCore::UserScriptControllerHost *scriptController, QtWebEngineCore::WebContentsAdapter *adapter)
+void QQuickWebEngineScriptPrivate::bind(QtWebEngineCore::UserResourceControllerHost *resourceController, QtWebEngineCore::WebContentsAdapter *adapter)
 {
     aboutToUpdateUnderlyingScript();
     m_adapter = adapter;
-    m_controllerHost = scriptController;
+    m_controllerHost = resourceController;
 }
 
 QQuickWebEngineScriptPrivate::QQuickWebEngineScriptPrivate()

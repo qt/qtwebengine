@@ -58,7 +58,7 @@
 #include "web_contents_adapter.h"
 
 namespace QtWebEngineCore {
-class UserScriptControllerHost;
+class UserResourceControllerHost;
 class WebContentsAdapter;
 } // namespace
 
@@ -69,11 +69,11 @@ public:
     Q_DECLARE_PUBLIC(QQuickWebEngineScript)
     QQuickWebEngineScriptPrivate();
     void aboutToUpdateUnderlyingScript();
-    void bind(QtWebEngineCore::UserScriptControllerHost *, QtWebEngineCore::WebContentsAdapter * = 0);
+    void bind(QtWebEngineCore::UserResourceControllerHost *, QtWebEngineCore::WebContentsAdapter * = 0);
 
     QtWebEngineCore::UserScript coreScript;
     QBasicTimer m_basicTimer;
-    QtWebEngineCore::UserScriptControllerHost *m_controllerHost;
+    QtWebEngineCore::UserResourceControllerHost *m_controllerHost;
     QtWebEngineCore::WebContentsAdapter *m_adapter;
     QUrl m_sourceUrl;
 

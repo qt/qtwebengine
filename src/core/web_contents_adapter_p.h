@@ -73,7 +73,6 @@ namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
 class RenderViewObserverHostQt;
-class UserScriptControllerHost;
 class WebChannelIPCTransportHost;
 class WebContentsAdapterClient;
 class WebContentsDelegateQt;

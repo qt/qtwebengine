@@ -51,7 +51,7 @@ struct UserScriptData;
 
 namespace QtWebEngineCore {
 
-class UserScriptControllerHost;
+class UserResourceControllerHost;
 
 class QWEBENGINE_EXPORT UserScript : public QSharedData {
 public:
@@ -88,7 +88,7 @@ public:
 private:
     void initData();
     UserScriptData &data() const;
-    friend class UserScriptControllerHost;
+    friend class UserResourceControllerHost;
 
     QScopedPointer<UserScriptData> scriptData;
     QString m_name;

@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-#include "user_script_controller.h"
+#include "user_resource_controller.h"
 
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -49,14 +49,14 @@
 #include "common/qt_messages.h"
 #include "common/user_script_data.h"
 
-Q_GLOBAL_STATIC(UserScriptController, qt_webengine_userScriptController)
+Q_GLOBAL_STATIC(UserResourceController, qt_webengine_userResourceController)
 
 static content::RenderView * const globalScriptsIndex = 0;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
 static const int afterLoadTimeout = 500;
 
-class UserScriptController::RenderViewObserverHelper : public content::RenderViewObserver
+class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
 {
 public:
     RenderViewObserverHelper(content::RenderView *);
@@ -78,18 +78,18 @@ private:
     QSet<blink::WebLocalFrame *> m_pendingFrames;
 };
 
-void UserScriptController::RenderViewObserverHelper::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
+void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
 {
     if (p == UserScriptData::AfterLoad && !m_pendingFrames.remove(frame))
         return;
     content::RenderView *renderView = content::RenderView::FromWebView(frame->view());
     const bool isMainFrame = (frame == renderView->GetWebView()->mainFrame());
 
-    QList<uint64> scriptsToRun = UserScriptController::instance()->m_viewUserScriptMap.value(globalScriptsIndex).toList();
-    scriptsToRun.append(UserScriptController::instance()->m_viewUserScriptMap.value(renderView).toList());
+    QList<uint64> scriptsToRun = UserResourceController::instance()->m_viewUserScriptMap.value(globalScriptsIndex).toList();
+    scriptsToRun.append(UserResourceController::instance()->m_viewUserScriptMap.value(renderView).toList());
 
     Q_FOREACH (uint64 id, scriptsToRun) {
-        const UserScriptData &script = UserScriptController::instance()->m_scripts.value(id);
+        const UserScriptData &script = UserResourceController::instance()->m_scripts.value(id);
         if (script.injectionPoint != p
                 || (!script.injectForSubframes && !isMainFrame))
             continue;
@@ -102,52 +102,52 @@ void UserScriptController::RenderViewObserverHelper::runScripts(UserScriptData::
 }
 
 
-UserScriptController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *renderView)
+UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *renderView)
     : content::RenderViewObserver(renderView)
 {
 }
 
-void UserScriptController::RenderViewObserverHelper::DidCreateDocumentElement(blink::WebLocalFrame *frame)
+void UserResourceController::RenderViewObserverHelper::DidCreateDocumentElement(blink::WebLocalFrame *frame)
 {
     runScripts(UserScriptData::DocumentElementCreation, frame);
 }
 
-void UserScriptController::RenderViewObserverHelper::DidFinishDocumentLoad(blink::WebLocalFrame *frame)
+void UserResourceController::RenderViewObserverHelper::DidFinishDocumentLoad(blink::WebLocalFrame *frame)
 {
     runScripts(UserScriptData::DocumentLoadFinished, frame);
     m_pendingFrames.insert(frame);
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(&UserScriptController::RenderViewObserverHelper::runScripts,
+    base::MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
                                                                         base::Unretained(this), UserScriptData::AfterLoad, frame),
                                                   base::TimeDelta::FromMilliseconds(afterLoadTimeout));
 }
 
-void UserScriptController::RenderViewObserverHelper::DidFinishLoad(blink::WebLocalFrame *frame)
+void UserResourceController::RenderViewObserverHelper::DidFinishLoad(blink::WebLocalFrame *frame)
 {
     // DidFinishDocumentLoad always comes before this, so frame has already been marked as pending.
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&UserScriptController::RenderViewObserverHelper::runScripts,
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
                                                                  base::Unretained(this), UserScriptData::AfterLoad, frame));
 }
 
-void UserScriptController::RenderViewObserverHelper::DidStartProvisionalLoad(blink::WebLocalFrame *frame)
+void UserResourceController::RenderViewObserverHelper::DidStartProvisionalLoad(blink::WebLocalFrame *frame)
 {
     m_pendingFrames.remove(frame);
 }
 
-void UserScriptController::RenderViewObserverHelper::FrameDetached(blink::WebFrame *frame)
+void UserResourceController::RenderViewObserverHelper::FrameDetached(blink::WebFrame *frame)
 {
     if (frame->isWebLocalFrame())
         m_pendingFrames.remove(frame->toWebLocalFrame());
 }
 
-void UserScriptController::RenderViewObserverHelper::OnDestruct()
+void UserResourceController::RenderViewObserverHelper::OnDestruct()
 {
-    UserScriptController::instance()->renderViewDestroyed(render_view());
+    UserResourceController::instance()->renderViewDestroyed(render_view());
 }
 
-bool UserScriptController::RenderViewObserverHelper::OnMessageReceived(const IPC::Message &message)
+bool UserResourceController::RenderViewObserverHelper::OnMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(UserScriptController::RenderViewObserverHelper, message)
+    IPC_BEGIN_MESSAGE_MAP(UserResourceController::RenderViewObserverHelper, message)
         IPC_MESSAGE_HANDLER(RenderViewObserverHelper_AddScript, onUserScriptAdded)
         IPC_MESSAGE_HANDLER(RenderViewObserverHelper_RemoveScript, onUserScriptRemoved)
         IPC_MESSAGE_HANDLER(RenderViewObserverHelper_ClearScripts, onScriptsCleared)
@@ -156,39 +156,39 @@ bool UserScriptController::RenderViewObserverHelper::OnMessageReceived(const IPC
             return handled;
 }
 
-void UserScriptController::RenderViewObserverHelper::onUserScriptAdded(const UserScriptData &script)
+void UserResourceController::RenderViewObserverHelper::onUserScriptAdded(const UserScriptData &script)
 {
-    UserScriptController::instance()->addScriptForView(script, render_view());
+    UserResourceController::instance()->addScriptForView(script, render_view());
 }
 
-void UserScriptController::RenderViewObserverHelper::onUserScriptRemoved(const UserScriptData &script)
+void UserResourceController::RenderViewObserverHelper::onUserScriptRemoved(const UserScriptData &script)
 {
-    UserScriptController::instance()->removeScriptForView(script, render_view());
+    UserResourceController::instance()->removeScriptForView(script, render_view());
 }
 
-void UserScriptController::RenderViewObserverHelper::onScriptsCleared()
+void UserResourceController::RenderViewObserverHelper::onScriptsCleared()
 {
-    UserScriptController::instance()->clearScriptsForView(render_view());
+    UserResourceController::instance()->clearScriptsForView(render_view());
 }
 
-UserScriptController *UserScriptController::instance()
+UserResourceController *UserResourceController::instance()
 {
-    return qt_webengine_userScriptController();
+    return qt_webengine_userResourceController();
 }
 
-bool UserScriptController::OnControlMessageReceived(const IPC::Message &message)
+bool UserResourceController::OnControlMessageReceived(const IPC::Message &message)
 {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(UserScriptController, message)
-        IPC_MESSAGE_HANDLER(UserScriptController_AddScript, onAddScript)
-        IPC_MESSAGE_HANDLER(UserScriptController_RemoveScript, onRemoveScript)
-        IPC_MESSAGE_HANDLER(UserScriptController_ClearScripts, onClearScripts)
+    IPC_BEGIN_MESSAGE_MAP(UserResourceController, message)
+        IPC_MESSAGE_HANDLER(UserResourceController_AddScript, onAddScript)
+        IPC_MESSAGE_HANDLER(UserResourceController_RemoveScript, onRemoveScript)
+        IPC_MESSAGE_HANDLER(UserResourceController_ClearScripts, onClearScripts)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
 }
 
-UserScriptController::UserScriptController()
+UserResourceController::UserResourceController()
 {
 #if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
     static bool onlyCalledOnce = true;
@@ -197,13 +197,13 @@ UserScriptController::UserScriptController()
 #endif // !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
 }
 
-void UserScriptController::renderViewCreated(content::RenderView *renderView)
+void UserResourceController::renderViewCreated(content::RenderView *renderView)
 {
     // Will destroy itself with their RenderView.
     new RenderViewObserverHelper(renderView);
 }
 
-void UserScriptController::renderViewDestroyed(content::RenderView *renderView)
+void UserResourceController::renderViewDestroyed(content::RenderView *renderView)
 {
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(renderView);
     if (it == m_viewUserScriptMap.end()) // ASSERT maybe?
@@ -214,7 +214,7 @@ void UserScriptController::renderViewDestroyed(content::RenderView *renderView)
     m_viewUserScriptMap.remove(renderView);
 }
 
-void UserScriptController::addScriptForView(const UserScriptData &script, content::RenderView *view)
+void UserResourceController::addScriptForView(const UserScriptData &script, content::RenderView *view)
 {
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
     if (it == m_viewUserScriptMap.end())
@@ -224,7 +224,7 @@ void UserScriptController::addScriptForView(const UserScriptData &script, conten
     m_scripts.insert(script.scriptId, script);
 }
 
-void UserScriptController::removeScriptForView(const UserScriptData &script, content::RenderView *view)
+void UserResourceController::removeScriptForView(const UserScriptData &script, content::RenderView *view)
 {
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
     if (it == m_viewUserScriptMap.end())
@@ -234,7 +234,7 @@ void UserScriptController::removeScriptForView(const UserScriptData &script, con
     m_scripts.remove(script.scriptId);
 }
 
-void UserScriptController::clearScriptsForView(content::RenderView *view)
+void UserResourceController::clearScriptsForView(content::RenderView *view)
 {
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
     if (it == m_viewUserScriptMap.end())
@@ -245,17 +245,17 @@ void UserScriptController::clearScriptsForView(content::RenderView *view)
     m_viewUserScriptMap.remove(view);
 }
 
-void UserScriptController::onAddScript(const UserScriptData &script)
+void UserResourceController::onAddScript(const UserScriptData &script)
 {
     addScriptForView(script, globalScriptsIndex);
 }
 
-void UserScriptController::onRemoveScript(const UserScriptData &script)
+void UserResourceController::onRemoveScript(const UserScriptData &script)
 {
     removeScriptForView(script, globalScriptsIndex);
 }
 
-void UserScriptController::onClearScripts()
+void UserResourceController::onClearScripts()
 {
     clearScriptsForView(globalScriptsIndex);
 }
