@@ -108,14 +108,14 @@ public:
 
 void tst_QWebEngineProfile::urlSchemeHandlers()
 {
-    RedirectingUrlSchemeHandler mailtoHandler;
+    RedirectingUrlSchemeHandler lettertoHandler;
     QWebEngineProfile profile(QStringLiteral("urlSchemeHandlers"));
-    profile.installUrlSchemeHandler("mailto", &mailtoHandler);
+    profile.installUrlSchemeHandler("letterto", &lettertoHandler);
     QWebEngineView view;
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.setPage(new QWebEnginePage(&profile, &view));
     QString emailAddress = QStringLiteral("egon@olsen-banden.dk");
-    view.load(QUrl(QStringLiteral("mailto:") + emailAddress));
+    view.load(QUrl(QStringLiteral("letterto:") + emailAddress));
     QVERIFY(loadFinishedSpy.wait());
     QCOMPARE(toPlainTextSync(view.page()), emailAddress);
 
@@ -127,14 +127,14 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     QVERIFY(loadFinishedSpy.wait());
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 
-    // Remove the mailto scheme, and check whether it is not handled anymore.
-    profile.removeUrlScheme("mailto");
+    // Remove the letterto scheme, and check whether it is not handled anymore.
+    profile.removeUrlScheme("letterto");
     emailAddress = QStringLiteral("kjeld@olsen-banden.dk");
-    view.load(QUrl(QStringLiteral("mailto:") + emailAddress));
+    view.load(QUrl(QStringLiteral("letterto:") + emailAddress));
     QVERIFY(loadFinishedSpy.wait());
     QVERIFY(toPlainTextSync(view.page()) != emailAddress);
 
-    // Check if gopher is still working after removing mailto.
+    // Check if gopher is still working after removing letterto.
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/yvonne"));
     view.load(url);
     QVERIFY(loadFinishedSpy.wait());
