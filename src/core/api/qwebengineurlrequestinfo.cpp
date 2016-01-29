@@ -107,6 +107,9 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     it possible to intercept URL requests. This function is executed on the IO thread,
     and therefore running long tasks here will block networking.
 
+    \a info contains the information about the URL request and will track internally
+    whether its members have been altered.
+
     \sa QWebEngineProfile::setRequestInterceptor
 */
 
