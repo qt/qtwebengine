@@ -36,11 +36,9 @@ use?(system_libevent): GYP_CONFIG += use_system_libevent=1
 use?(system_libwebp):  GYP_CONFIG += use_system_libwebp=1
 use?(system_libsrtp):  GYP_CONFIG += use_system_libsrtp=1
 use?(system_libxslt):  GYP_CONFIG += use_system_libxml=1
-use?(system_flac):     GYP_CONFIG += use_system_flac=1
 use?(system_jsoncpp):  GYP_CONFIG += use_system_jsoncpp=1
 use?(system_opus):     GYP_CONFIG += use_system_opus=1
 use?(system_snappy):   GYP_CONFIG += use_system_snappy=1
-use?(system_speex):    GYP_CONFIG += use_system_speex=1
 use?(system_vpx):      GYP_CONFIG += use_system_libvpx=1
 use?(system_icu):      GYP_CONFIG += use_system_icu=1
 use?(system_ffmpeg):   GYP_CONFIG += use_system_ffmpeg=1
