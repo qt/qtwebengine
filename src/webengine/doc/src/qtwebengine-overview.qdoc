@@ -73,6 +73,9 @@
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
+    This version of Qt WebEngine is based on Chromium snapshot version 45.0.2554.101, with
+    additional security fixes from the 46, 47 and 48 branches of the \l {Chromium Project}.
+
     Chromium is tightly integrated to the \l{Qt Quick Scene Graph}{Qt Quick scene graph}, which is
     based on OpenGL ES 2.0 or OpenGL 2.0 for its rendering. This provides you with one-pass
     compositing of web content and all the Qt Quick UI. The integration to Chromium is transparent
