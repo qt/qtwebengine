@@ -153,11 +153,6 @@ if __name__ == '__main__':
   args.extend(['-D', 'qtwebengine_root=' + purifyGypVarPath(qtwebengine_root)])
   args.extend(['-D', 'chromium_src_dir=' + purifyGypVarPath(chrome_src)])
 
-  args.extend(['-D', 'clang_use_chrome_plugins=0'])
-  # We do not want to ship more external binary blobs, so let v8 embed its startup data.
-  args.extend(['-D', 'v8_use_external_startup_data=0'])
-  # Trigger Qt-specific build conditions.
-  args.extend(['-D', 'use_qt=1'])
   # Tweak the output location and format (hardcode ninja for now if not set)
   args.extend(['--generator-output', '.'])
   args.extend(['-Goutput_dir='+ os.path.relpath(output_dir, qtwebengine_root)])

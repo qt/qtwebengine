@@ -1,5 +1,7 @@
 GYP_ARGS += "-D qt_os=\"win32\" -I config/windows.gypi"
 
+include(common.pri)
+
 GYP_CONFIG += \
     disable_nacl=1 \
     remoting=0 \

@@ -1,3 +1,5 @@
+include(common.pri)
+
 # linux_use_bundled_gold currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
 # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
 GYP_CONFIG += \
