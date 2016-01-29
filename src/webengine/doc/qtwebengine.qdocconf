@@ -45,6 +45,7 @@ depends += qtcore \
            qtquickcontrols \
            qtdoc \
            qtwebchannel \
+           qtwebview \
            qtwidgets
 
 headerdirs  += .. \
