@@ -69,6 +69,8 @@ public:
     QList<QWebEngineScript> toList(const QString &scriptName = QString()) const;
     QWebEngineScript find(const QString & name) const;
 
+    void rebindToContents(QtWebEngineCore::WebContentsAdapter *contents);
+
     void insert(const QWebEngineScript &);
     bool remove(const QWebEngineScript &);
     void clear();
