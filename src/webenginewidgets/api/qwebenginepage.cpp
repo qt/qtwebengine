@@ -107,6 +107,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , fullscreenMode(false)
+    , webChannel(nullptr)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -227,6 +228,8 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     Q_UNUSED(userGesture);
 
     QWebEnginePage *newPage = q->createWindow(toWindowType(disposition));
+    if (!newPage)
+        return;
 
     // Mark the new page as being in the process of being adopted, so that a second mouse move event
     // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
@@ -240,7 +243,7 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     newPage->d_func()->m_isBeingAdopted = true;
 
     // Overwrite the new page's WebContents with ours.
-    if (newPage && newPage->d_func() != this) {
+    if (newPage->d_func() != this) {
         newPage->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
         if (!initialGeometry.isEmpty())
@@ -405,8 +408,14 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
     QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
     if (newWebContents) {
+        // Keep the old adapter referenced so the user-scripts are not
+        // unregistered immediately.
+        QExplicitlySharedDataPointer<WebContentsAdapter> oldWebContents = adapter;
         adapter = newWebContents.data();
         adapter->initialize(this);
+        if (webChannel)
+            adapter->setWebChannel(webChannel);
+        scriptCollection.d->rebindToContents(adapter.data());
     }
 }
 
@@ -517,7 +526,7 @@ QWebEngineSettings *QWebEnginePage::settings() const
 QWebChannel *QWebEnginePage::webChannel() const
 {
     Q_D(const QWebEnginePage);
-    return d->adapter->webChannel();
+    return d->webChannel;
 }
 
 /*!
@@ -534,7 +543,10 @@ QWebChannel *QWebEnginePage::webChannel() const
 void QWebEnginePage::setWebChannel(QWebChannel *channel)
 {
     Q_D(QWebEnginePage);
-    d->adapter->setWebChannel(channel);
+    if (d->webChannel != channel) {
+        d->webChannel = channel;
+        d->adapter->setWebChannel(channel);
+    }
 }
 
 /*!

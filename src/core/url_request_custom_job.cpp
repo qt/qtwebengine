@@ -56,46 +56,33 @@ namespace QtWebEngineCore {
 
 URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *networkDelegate, QWebEngineUrlSchemeHandler *schemeHandler)
     : URLRequestJob(request, networkDelegate)
-    , m_device(0)
     , m_schemeHandler(schemeHandler)
-    , m_error(0)
-    , m_started(false)
-    , m_weakFactoryIO(this)
-    , m_weakFactoryUI(this)
+    , m_shared(new URLRequestCustomJobShared(this))
 {
 }
 
 URLRequestCustomJob::~URLRequestCustomJob()
 {
-    QMutexLocker lock(&m_mutex);
-    if (m_delegate) {
-        m_delegate->m_job = 0;
-        m_delegate->deleteLater();
-    }
-    if (m_device && m_device->isOpen())
-        m_device->close();
+    if (m_shared)
+        m_shared->killJob();
+}
+
+static void startAsync(URLRequestCustomJobShared *shared)
+{
+    shared->startAsync();
 }
 
 void URLRequestCustomJob::Start()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, base::Bind(&URLRequestCustomJob::startAsync, m_weakFactoryIO.GetWeakPtr()));
+    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE, base::Bind(&startAsync, m_shared));
 }
 
 void URLRequestCustomJob::Kill()
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    QMutexLocker lock(&m_mutex);
-    if (m_delegate) {
-        m_delegate->m_job = 0;
-        m_delegate->deleteLater();
-    }
-    m_delegate = 0;
-    if (m_device && m_device->isOpen())
-        m_device->close();
-    m_device = 0;
-    m_weakFactoryIO.InvalidateWeakPtrs();
-    m_weakFactoryUI.InvalidateWeakPtrs();
+    if (m_shared)
+        m_shared->killJob();
+    m_shared = 0;
 
     URLRequestJob::Kill();
 }
@@ -103,8 +90,11 @@ void URLRequestCustomJob::Kill()
 bool URLRequestCustomJob::GetMimeType(std::string *mimeType) const
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (m_mimeType.size() > 0) {
-        *mimeType = m_mimeType;
+    if (!m_shared)
+        return false;
+    QMutexLocker lock(&m_shared->m_mutex);
+    if (m_shared->m_mimeType.size() > 0) {
+        *mimeType = m_shared->m_mimeType;
         return true;
     }
     return false;
@@ -113,8 +103,11 @@ bool URLRequestCustomJob::GetMimeType(std::string *mimeType) const
 bool URLRequestCustomJob::GetCharset(std::string* charset)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (m_charset.size() > 0) {
-        *charset = m_charset;
+    if (!m_shared)
+        return false;
+    QMutexLocker lock(&m_shared->m_mutex);
+    if (m_shared->m_charset.size() > 0) {
+        *charset = m_shared->m_charset;
         return true;
     }
     return false;
@@ -123,47 +116,24 @@ bool URLRequestCustomJob::GetCharset(std::string* charset)
 bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_code)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    QMutexLocker lock(&m_mutex);
-    if (m_redirect.is_valid()) {
-        *location = m_redirect;
+    if (!m_shared)
+        return false;
+    QMutexLocker lock(&m_shared->m_mutex);
+    if (m_shared->m_redirect.is_valid()) {
+        *location = m_shared->m_redirect;
         *http_status_code = 303;
         return true;
     }
     return false;
 }
 
-void URLRequestCustomJob::setReplyMimeType(const std::string &mimeType)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    m_mimeType = mimeType;
-}
-
-void URLRequestCustomJob::setReplyCharset(const std::string &charset)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    m_charset = charset;
-}
-
-void URLRequestCustomJob::setReplyDevice(QIODevice *device)
-{
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    QMutexLocker lock(&m_mutex);
-    m_device = device;
-    if (m_device && !m_device->isReadable())
-        m_device->open(QIODevice::ReadOnly);
-
-    if (m_device && m_device->isReadable())
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactoryUI.GetWeakPtr()));
-    else
-        fail(ERR_INVALID_URL);
-}
-
 bool URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     Q_ASSERT(bytesRead);
-    QMutexLocker lock(&m_mutex);
-    qint64 rv = m_device ? m_device->read(buf->data(), bufSize) : -1;
+    Q_ASSERT(m_shared);
+    QMutexLocker lock(&m_shared->m_mutex);
+    qint64 rv = m_shared->m_device ? m_shared->m_device->read(buf->data(), bufSize) : -1;
     if (rv >= 0) {
         *bytesRead = static_cast<int>(rv);
         return true;
@@ -173,78 +143,196 @@ bool URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead
     return false;
 }
 
-void URLRequestCustomJob::redirect(const GURL &url)
+URLRequestCustomJobShared::URLRequestCustomJobShared(URLRequestCustomJob *job)
+    : m_mutex(QMutex::Recursive)
+    , m_job(job)
+    , m_delegate(0)
+    , m_error(0)
+    , m_started(false)
+    , m_asyncInitialized(false)
+    , m_weakFactory(this)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (m_device || m_error)
-        return;
-
-    QMutexLocker lock(&m_mutex);
-    m_redirect = url;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyStarted, m_weakFactoryUI.GetWeakPtr()));
 }
 
-void URLRequestCustomJob::abort()
+URLRequestCustomJobShared::~URLRequestCustomJobShared()
+{
+    Q_ASSERT(!m_job);
+    Q_ASSERT(!m_delegate);
+}
+
+void URLRequestCustomJobShared::killJob()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    QMutexLocker lock(&m_mutex);
+    m_job = 0;
+    bool doDelete = false;
+    if (m_delegate) {
+        m_delegate->deleteLater();
+    } else {
+        // Do not delete yet if startAsync has not yet run.
+        doDelete = m_asyncInitialized;
+    }
+    if (m_device && m_device->isOpen())
+        m_device->close();
+    m_device = 0;
+    m_weakFactory.InvalidateWeakPtrs();
+    lock.unlock();
+    if (doDelete)
+        delete this;
+}
+
+void URLRequestCustomJobShared::unsetJobDelegate()
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    QMutexLocker lock(&m_mutex);
+    m_delegate = 0;
+    bool doDelete = false;
+    if (m_job)
+        abort();
+    else
+        doDelete = true;
+    lock.unlock();
+    if (doDelete)
+        delete this;
+}
+
+void URLRequestCustomJobShared::setReplyMimeType(const std::string &mimeType)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    QMutexLocker lock(&m_mutex);
+    m_mimeType = mimeType;
+}
+
+void URLRequestCustomJobShared::setReplyCharset(const std::string &charset)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    QMutexLocker lock(&m_mutex);
+    m_charset = charset;
+}
+
+void URLRequestCustomJobShared::setReplyDevice(QIODevice *device)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    QMutexLocker lock(&m_mutex);
+    if (!m_job)
+        return;
+    m_device = device;
+    if (m_device && !m_device->isReadable())
+        m_device->open(QIODevice::ReadOnly);
+
+    if (m_device && m_device->isReadable())
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyStarted, m_weakFactory.GetWeakPtr()));
+    else
+        fail(ERR_INVALID_URL);
+}
+
+void URLRequestCustomJobShared::redirect(const GURL &url)
+{
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    QMutexLocker lock(&m_mutex);
+    if (m_device || m_error)
+        return;
+    if (!m_job)
+        return;
+    m_redirect = url;
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyStarted, m_weakFactory.GetWeakPtr()));
+}
+
+void URLRequestCustomJobShared::abort()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     QMutexLocker lock(&m_mutex);
     if (m_device && m_device->isOpen())
         m_device->close();
     m_device = 0;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyCanceled, m_weakFactoryUI.GetWeakPtr()));
+    if (!m_job)
+        return;
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyCanceled, m_weakFactory.GetWeakPtr()));
 }
 
-void URLRequestCustomJob::notifyCanceled()
+void URLRequestCustomJobShared::notifyCanceled()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    QMutexLocker lock(&m_mutex);
+    if (!m_job)
+        return;
     if (m_started)
-        NotifyDone(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
+        m_job->NotifyDone(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
     else
-        NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
+        m_job->NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
 }
 
-void URLRequestCustomJob::notifyStarted()
+void URLRequestCustomJobShared::notifyStarted()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+    QMutexLocker lock(&m_mutex);
+    if (!m_job)
+        return;
     Q_ASSERT(!m_started);
     m_started = true;
-    NotifyHeadersComplete();
+    m_job->NotifyHeadersComplete();
 }
 
-void URLRequestCustomJob::fail(int error)
+void URLRequestCustomJobShared::fail(int error)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     QMutexLocker lock(&m_mutex);
     m_error = error;
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJob::notifyFailure, m_weakFactoryUI.GetWeakPtr()));
+    if (!m_job)
+        return;
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyFailure, m_weakFactory.GetWeakPtr()));
 }
 
-void URLRequestCustomJob::notifyFailure()
+void URLRequestCustomJobShared::notifyFailure()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    m_mutex.lock();
+    QMutexLocker lock(&m_mutex);
+    if (!m_job)
+        return;
     if (m_device)
         m_device->close();
     const URLRequestStatus status(URLRequestStatus::FAILED, m_error);
     const bool started = m_started;
-    m_mutex.unlock();
 
     if (started)
-        NotifyDone(status);
+        m_job->NotifyDone(status);
     else
-        NotifyStartError(status);
+        m_job->NotifyStartError(status);
 }
 
-void URLRequestCustomJob::startAsync()
+GURL URLRequestCustomJobShared::requestUrl()
+{
+    QMutexLocker lock(&m_mutex);
+    if (!m_job)
+        return GURL();
+    return m_job->request()->url();
+}
+
+std::string URLRequestCustomJobShared::requestMethod()
+{
+    QMutexLocker lock(&m_mutex);
+    if (!m_job)
+        return std::string();
+    return m_job->request()->method();
+}
+
+void URLRequestCustomJobShared::startAsync()
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     Q_ASSERT(!m_started);
     Q_ASSERT(!m_delegate);
     QMutexLocker lock(&m_mutex);
+    if (!m_job) {
+        lock.unlock();
+        delete this;
+        return;
+    }
     m_delegate = new URLRequestCustomJobDelegate(this);
-    lock.unlock();
+    m_asyncInitialized = true;
     QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(m_delegate);
-    m_schemeHandler->requestStarted(requestJob);
+    if (m_job)
+        m_job->m_schemeHandler->requestStarted(requestJob);
 }
 
 } // namespace

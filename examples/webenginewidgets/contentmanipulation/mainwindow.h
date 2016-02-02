@@ -45,7 +45,6 @@ class QWebEngineView;
 class QLineEdit;
 QT_END_NAMESPACE
 
-//! [1]
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -76,5 +75,4 @@ private:
     QLineEdit *locationEdit;
     QAction *rotateAction;
     int progress;
-//! [1]
 };

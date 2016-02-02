@@ -127,8 +127,9 @@ void URLRequestContextGetterQt::updateStorageSettings()
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
         ));
-        if (m_storage)
+        if (m_storage) {
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
+        }
     }
 }
 
@@ -283,7 +284,7 @@ void URLRequestContextGetterQt::generateUserAgent()
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    m_storage->set_http_user_agent_settings(new HttpUserAgentSettingsQt(m_browserContext));
+    m_storage->set_http_user_agent_settings(new HttpUserAgentSettingsQt(m_browserContext.constData()));
 }
 
 void URLRequestContextGetterQt::updateHttpCache()

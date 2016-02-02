@@ -151,6 +151,7 @@ public:
     bool m_isBeingAdopted;
     QColor m_backgroundColor;
     bool fullscreenMode;
+    QWebChannel *webChannel;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

@@ -41,7 +41,7 @@ defineTest(runConfigure) {
         else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
         packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
-        for(package, $$list("libevent flac jsoncpp opus speex")) {
+        for(package, $$list("libevent jsoncpp opus")) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
             else: log("System $$package not found. Using Chromium's copy.$${EOL}")
         }
