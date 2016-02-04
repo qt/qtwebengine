@@ -336,6 +336,17 @@ void WebContentsDelegateQt::RequestMediaAccessPermission(content::WebContents *w
     MediaCaptureDevicesDispatcher::GetInstance()->processMediaAccessRequest(m_viewClient, web_contents, request, callback);
 }
 
+void WebContentsDelegateQt::MoveContents(content::WebContents *source, const gfx::Rect &pos)
+{
+    Q_UNUSED(source)
+    m_viewClient->requestGeometryChange(toQt(pos));
+}
+
+bool WebContentsDelegateQt::IsPopupOrPanel(const content::WebContents *source) const
+{
+    return source->HasOpener();
+}
+
 void WebContentsDelegateQt::UpdateTargetURL(content::WebContents* source, const GURL& url)
 {
     Q_UNUSED(source)

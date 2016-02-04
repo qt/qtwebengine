@@ -75,9 +75,9 @@
     If you want to provide support for web sites that allow the user to open
     new windows, such as pop-up windows, you can subclass QWebEngineView and
     reimplement the createWindow() function.
+
+    \sa {WebEngine Demo Browser Example}, {WebEngine Content Manipulation Example}, {Markdown Editor Example}
 */
-//    FIXME: reintroduce the following when we have proper names for the examples.
-//    \sa {WebEngine Tab Browser Example}, {WebEngine Fancy Browser Example}
 
 
 /*!

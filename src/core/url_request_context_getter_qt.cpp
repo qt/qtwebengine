@@ -131,8 +131,9 @@ void URLRequestContextGetterQt::updateStorageSettings()
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
         ));
-        if (m_storage)
+        if (m_storage) {
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
+        }
     }
 }
 
@@ -287,7 +288,7 @@ void URLRequestContextGetterQt::generateUserAgent()
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    m_storage->set_http_user_agent_settings(scoped_ptr<net::HttpUserAgentSettings>(new HttpUserAgentSettingsQt(m_browserContext)));
+    m_storage->set_http_user_agent_settings(scoped_ptr<net::HttpUserAgentSettings>(new HttpUserAgentSettingsQt(m_browserContext.constData())));
 }
 
 void URLRequestContextGetterQt::updateHttpCache()
@@ -296,6 +297,13 @@ void URLRequestContextGetterQt::updateHttpCache()
         m_updateHttpCache = 1;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateHttpCache, this));
     }
+}
+
+void URLRequestContextGetterQt::updateJobFactory()
+{
+    Q_ASSERT(m_jobFactory);
+
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
 }
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first, const net::HttpNetworkSession::Params &second)
@@ -413,8 +421,8 @@ void URLRequestContextGetterQt::clearCurrentCacheBackend()
 void URLRequestContextGetterQt::generateJobFactory()
 {
     Q_ASSERT(m_urlRequestContext);
-    Q_ASSERT(!m_jobFactory);
 
+    m_jobFactory.reset();
     scoped_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
@@ -422,7 +430,6 @@ void URLRequestContextGetterQt::generateJobFactory()
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         jobFactory->SetProtocolHandler(it->first, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
-        m_protocolHandlers.clear();
     }
 
     jobFactory->SetProtocolHandler(url::kDataScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));

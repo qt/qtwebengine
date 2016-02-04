@@ -47,39 +47,40 @@
 
 namespace QtWebEngineCore {
 
-URLRequestCustomJobDelegate::URLRequestCustomJobDelegate(URLRequestCustomJob *job)
-    : m_job(job)
+URLRequestCustomJobDelegate::URLRequestCustomJobDelegate(URLRequestCustomJobShared *shared)
+    : m_shared(shared)
 {
 }
 
 URLRequestCustomJobDelegate::~URLRequestCustomJobDelegate()
 {
+    m_shared->unsetJobDelegate();
 }
 
 QUrl URLRequestCustomJobDelegate::url() const
 {
-    return toQt(m_job->request()->url());
+    return toQt(m_shared->requestUrl());
 }
 
 QByteArray URLRequestCustomJobDelegate::method() const
 {
-    return QByteArray::fromStdString(m_job->request()->method());
+    return QByteArray::fromStdString(m_shared->requestMethod());
 }
 
 void URLRequestCustomJobDelegate::setReply(const QByteArray &contentType, QIODevice *device)
 {
-    m_job->setReplyMimeType(contentType.toStdString());
-    m_job->setReplyDevice(device);
+    m_shared->setReplyMimeType(contentType.toStdString());
+    m_shared->setReplyDevice(device);
 }
 
 void URLRequestCustomJobDelegate::abort()
 {
-    m_job->abort();
+    m_shared->abort();
 }
 
 void URLRequestCustomJobDelegate::redirect(const QUrl &url)
 {
-    m_job->redirect(toGurl(url));
+    m_shared->redirect(toGurl(url));
 }
 
 void URLRequestCustomJobDelegate::fail(Error error)
@@ -105,7 +106,7 @@ void URLRequestCustomJobDelegate::fail(Error error)
         break;
     }
     if (net_error)
-        m_job->fail(net_error);
+        m_shared->fail(net_error);
 }
 
 } // namespace

@@ -283,8 +283,17 @@
     the specified navigation type \a type. \a isMainFrame indicates whether the request corresponds
     to the main frame or a sub frame. If the function returns \c true, the navigation request is
     accepted and \c url is loaded. The default implementation accepts all navigation requests.
-*/
 
+    This function is called for absolute URLs that are prefixed with \c {http://} or \c {https://}
+    and for unrecognized schemes, such as \c {mailto:}, which will be handled by QDesktopServices
+    if accepted. To have this function called also upon receiving navigation requests to local URLs,
+    prefix the URLs with \c {http://}.
+
+    Navigation requests can be delegated to the Qt application instead of having the HTML handler
+    engine process them by overloading this function. This is necessary when an HTML document is
+    used as part of the user interface, and not to display external data, for example, when
+    displaying a list of results.
+*/
 
 /*!
     \fn void QWebEnginePage::javaScriptAlert(const QUrl &securityOrigin, const QString& msg)
@@ -633,6 +642,9 @@
     \code
     page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
     \endcode
+
+    \warning Do not execute lengthy routines in the callback function, because it might block the
+    rendering of the web engine page.
 
     See scripts() for an alternative API to inject scripts.
 */

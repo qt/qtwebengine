@@ -78,13 +78,22 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
     }
 
     !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
-        ICU_TARGET = $$shell_path($$[QT_INSTALL_DATA/get]/resources/icudtl.dat)
-        ICU_FILE = $$shell_path($$OUT_PWD/$$getConfigDir()/icudtl.dat)
-        icu_rule.target = $$ICU_TARGET
-        unix: icu_rule.commands = if [ -e $$ICU_FILE ] ; then $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET ; fi
-        win32: icu_rule.commands = if exist $$ICU_FILE ( $$QMAKE_COPY $$ICU_FILE $$ICU_TARGET )
+        #
+        # Copy essential files to the qtbase build directory (for non-installed developer builds)
+        #
 
-        QMAKE_EXTRA_TARGETS += icu_rule
-        PRE_TARGETDEPS += $$ICU_TARGET
+        icudt2build.input = icu.files
+        icudt2build.output = $$[QT_INSTALL_DATA/get]/resources/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+        icudt2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+        icudt2build.name = COPY ${QMAKE_FILE_IN}
+        icudt2build.CONFIG = no_link no_clean target_predeps
+
+        resources2build.input = resources.files
+        resources2build.output = $$[QT_INSTALL_DATA/get]/resources/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+        resources2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+        resources2build.name = COPY ${QMAKE_FILE_IN}
+        resources2build.CONFIG = no_link no_clean target_predeps
+
+        QMAKE_EXTRA_COMPILERS += icudt2build resources2build
     }
 }

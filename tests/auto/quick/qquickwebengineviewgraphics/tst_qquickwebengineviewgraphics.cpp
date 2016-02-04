@@ -178,13 +178,14 @@ void tst_QQuickWebEngineViewGraphics::reparentToOtherWindow()
 void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
 {
     QString htmlData = QUrl::toPercentEncoding(html);
-    QString qmlData = QUrl::toPercentEncoding(QStringLiteral("import QtQuick 2.0; import QtWebEngine 1.2; WebEngineView { width: 150; height: 150; url: loadUrl }"));
-    m_view->rootContext()->setContextProperty("loadUrl", QUrl(QStringLiteral("data:text/html,%1").arg(htmlData)));
+    QString qmlData = QUrl::toPercentEncoding(QStringLiteral("import QtQuick 2.0; import QtWebEngine 1.2; WebEngineView { width: 150; height: 150 }"));
     m_view->setSource(QUrl(QStringLiteral("data:text/plain,%1").arg(qmlData)));
     m_view->create();
 
     QQuickWebEngineView *webEngineView = static_cast<QQuickWebEngineView *>(m_view->rootObject());
-    QVERIFY(waitForSignal(reinterpret_cast<QObject *>(webEngineView->experimental()), SIGNAL(loadVisuallyCommitted())));
+    QSignalSpy spy(reinterpret_cast<QObject *>(webEngineView->experimental()), SIGNAL(loadVisuallyCommitted()));
+    webEngineView->setProperty("url", QUrl(QStringLiteral("data:text/html,%1").arg(htmlData)));
+    QVERIFY(!spy.isEmpty() || spy.wait());
     QCOMPARE(m_view->rootObject()->property("loading"), QVariant(false));
 }
 

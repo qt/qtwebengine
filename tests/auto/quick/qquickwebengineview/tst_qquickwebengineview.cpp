@@ -21,9 +21,12 @@
 #include "util.h"
 
 #include <QScopedPointer>
+#include <QtCore/qelapsedtimer.h>
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
 #include <private/qquickwebengineview_p.h>
+
+#include <functional>
 
 class tst_QQuickWebEngineView : public QObject {
     Q_OBJECT
@@ -313,6 +316,21 @@ void tst_QQuickWebEngineView::multipleWebEngineViews()
     QTest::qWait(200);
 }
 
+QImage tryToGrabWindowUntil(QQuickWindow *window, std::function<bool(const QImage &)> checkImage,
+                            int timeout = 5000)
+{
+    QImage grabbed;
+    QElapsedTimer t;
+    t.start();
+    do {
+        QTest::qWait(200);
+        grabbed = window->grabWindow();
+        if (checkImage(grabbed))
+            break;
+    } while (!t.hasExpired(timeout));
+    return grabbed;
+}
+
 void tst_QQuickWebEngineView::basicRenderingSanity()
 {
     showWebEngineView();
@@ -322,9 +340,12 @@ void tst_QQuickWebEngineView::basicRenderingSanity()
 
     // This should not crash.
     webEngineView()->setVisible(true);
-    QTest::qWait(200);
-    QImage grabbedWindow = m_window->grabWindow();
+
     QRgb testColor = qRgba(0, 0xff, 0, 0xff);
+    const QImage grabbedWindow = tryToGrabWindowUntil(m_window.data(),
+                                                      [testColor] (const QImage &image) {
+        return image.pixel(10, 10) == testColor;
+    });
     QVERIFY(grabbedWindow.pixel(10, 10) == testColor);
     QVERIFY(grabbedWindow.pixel(100, 10) == testColor);
     QVERIFY(grabbedWindow.pixel(10, 100) == testColor);
@@ -370,12 +391,11 @@ void tst_QQuickWebEngineView::transparentWebEngineViews()
     webEngineView2->setSize(QSizeF(300, 400));
     webEngineView2->setUrl(urlFromTestPath("/html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(webEngineView2.data()));
-    webEngineView2->setVisible(true);
-
-    QTest::qWait(200);
 
     // Result image: black text on red background.
-    QImage grabbedWindow = m_window->grabWindow();
+    const QImage grabbedWindow = tryToGrabWindowUntil(m_window.data(), [] (const QImage &image) {
+        return image.pixelColor(0, 0) == QColor(Qt::red);
+    });
 
     QSet<int> redComponents;
     for (int i = 0, width = grabbedWindow.width(); i < width; i++) {

@@ -68,8 +68,6 @@ InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(Arg))
     return wrapper;
 }
 
-//! [1]
-
 MainWindow::MainWindow(const QUrl& url)
 {
     progress = 0;
@@ -80,9 +78,7 @@ MainWindow::MainWindow(const QUrl& url)
     jQuery = file.readAll();
     jQuery.append("\nvar qt = { 'jQuery': jQuery.noConflict(true) };");
     file.close();
-//! [1]
 
-//! [2]
     view = new QWebEngineView(this);
     view->load(url);
     connect(view, SIGNAL(loadFinished(bool)), SLOT(adjustLocation()));
@@ -100,14 +96,12 @@ MainWindow::MainWindow(const QUrl& url)
     toolBar->addAction(view->pageAction(QWebEnginePage::Reload));
     toolBar->addAction(view->pageAction(QWebEnginePage::Stop));
     toolBar->addWidget(locationEdit);
-//! [2]
 
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
     QAction* viewSourceAction = new QAction("Page Source", this);
     connect(viewSourceAction, SIGNAL(triggered()), SLOT(viewSource()));
     viewMenu->addAction(viewSourceAction);
 
-//! [3]
     QMenu *effectMenu = menuBar()->addMenu(tr("&Effect"));
     effectMenu->addAction("Highlight all links", this, SLOT(highlightAllLinks()));
 
@@ -126,7 +120,6 @@ MainWindow::MainWindow(const QUrl& url)
 
     setCentralWidget(view);
 }
-//! [3]
 
 void MainWindow::viewSource()
 {
@@ -139,7 +132,6 @@ void MainWindow::viewSource()
     view->page()->toHtml(invoke(textEdit, &QTextEdit::setPlainText));
 }
 
-//! [4]
 void MainWindow::adjustLocation()
 {
     locationEdit->setText(view->url().toString());
@@ -151,9 +143,7 @@ void MainWindow::changeLocation()
     view->load(url);
     view->setFocus();
 }
-//! [4]
 
-//! [5]
 void MainWindow::adjustTitle()
 {
     if (progress <= 0 || progress >= 100)
@@ -167,9 +157,7 @@ void MainWindow::setProgress(int p)
     progress = p;
     adjustTitle();
 }
-//! [5]
 
-//! [6]
 void MainWindow::finishLoading(bool)
 {
     progress = 100;
@@ -178,36 +166,24 @@ void MainWindow::finishLoading(bool)
 
     rotateImages(rotateAction->isChecked());
 }
-//! [6]
 
-//! [7]
 void MainWindow::highlightAllLinks()
 {
-    // We append '; undefined' after the jQuery call here to prevent a possible recursion loop and crash caused by
-    // the way the elements returned by the each iterator elements reference each other, which causes problems upon
-    // converting them to QVariants.
     QString code = "qt.jQuery('a').each( function () { qt.jQuery(this).css('background-color', 'yellow') } ); undefined";
     view->page()->runJavaScript(code);
 }
-//! [7]
 
-//! [8]
 void MainWindow::rotateImages(bool invert)
 {
     QString code;
 
-    // We append '; undefined' after each of the jQuery calls here to prevent a possible recursion loop and crash caused by
-    // the way the elements returned by the each iterator elements reference each other, which causes problems upon
-    // converting them to QVariants.
     if (invert)
         code = "qt.jQuery('img').each( function () { qt.jQuery(this).css('-webkit-transition', '-webkit-transform 2s'); qt.jQuery(this).css('-webkit-transform', 'rotate(180deg)') } ); undefined";
     else
         code = "qt.jQuery('img').each( function () { qt.jQuery(this).css('-webkit-transition', '-webkit-transform 2s'); qt.jQuery(this).css('-webkit-transform', 'rotate(0deg)') } ); undefined";
     view->page()->runJavaScript(code);
 }
-//! [8]
 
-//! [9]
 void MainWindow::removeGifImages()
 {
     QString code = "qt.jQuery('[src*=gif]').remove()";
@@ -231,5 +207,3 @@ void MainWindow::removeEmbeddedElements()
     QString code = "qt.jQuery('embed').remove()";
     view->page()->runJavaScript(code);
 }
-//! [9]
-

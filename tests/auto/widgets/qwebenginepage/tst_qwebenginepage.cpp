@@ -33,6 +33,7 @@
 #include <QStyle>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
+#include <QWebChannel>
 #include <private/qinputmethod_p.h>
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
@@ -42,6 +43,8 @@
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
+#include <qwebenginescript.h>
+#include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
 #include <qwebengineview.h>
 #include <qimagewriter.h>
@@ -236,6 +239,8 @@ private Q_SLOTS:
     void loadFinishedAfterNotFoundError();
     void loadInSignalHandlers_data();
     void loadInSignalHandlers();
+
+    void restoreHistory();
 
 private:
     QWebEngineView* m_view;
@@ -5077,6 +5082,37 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     m_page->load(url);
     waitForSignal(&setter, SIGNAL(finished()));
     QCOMPARE(m_page->url(), urlForSetter);
+}
+
+void tst_QWebEnginePage::restoreHistory()
+{
+    QWebChannel *channel = new QWebChannel;
+    QWebEnginePage *page = new QWebEnginePage;
+    page->setWebChannel(channel);
+
+    QWebEngineScript script;
+    script.setName(QStringLiteral("script"));
+    page->scripts().insert(script);
+
+    QSignalSpy spy(page, SIGNAL(loadFinished(bool)));
+    page->load(QUrl(QStringLiteral("qrc:/resources/test1.html")));
+    QTRY_COMPARE(spy.count(), 1);
+
+    QCOMPARE(page->webChannel(), channel);
+    QVERIFY(page->scripts().contains(script));
+
+    QByteArray data;
+    QDataStream out(&data, QIODevice::ReadWrite);
+    out << *page->history();
+    QDataStream in(&data, QIODevice::ReadOnly);
+    in >> *page->history();
+    QTRY_COMPARE(spy.count(), 2);
+
+    QCOMPARE(page->webChannel(), channel);
+    QVERIFY(page->scripts().contains(script));
+
+    delete page;
+    delete channel;
 }
 
 QTEST_MAIN(tst_QWebEnginePage)

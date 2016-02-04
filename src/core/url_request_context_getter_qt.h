@@ -81,6 +81,7 @@ public:
     void updateCookieStore();
     void updateHttpCache();
     void clearHttpCache();
+    void updateJobFactory();
 
 private:
     virtual ~URLRequestContextGetterQt();
@@ -98,7 +99,7 @@ private:
     bool m_ignoreCertificateErrors;
     QAtomicInt m_updateCookieStore;
     QAtomicInt m_updateHttpCache;
-    BrowserContextAdapter *m_browserContext;
+    QExplicitlySharedDataPointer<BrowserContextAdapter> m_browserContext;
     content::ProtocolHandlerMap m_protocolHandlers;
 
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;

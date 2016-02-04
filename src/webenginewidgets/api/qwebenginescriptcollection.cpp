@@ -223,3 +223,15 @@ void QWebEngineScriptCollectionPrivate::reserve(int capacity)
 {
     m_scriptController->reserve(m_contents, capacity);
 }
+
+void QWebEngineScriptCollectionPrivate::rebindToContents(QtWebEngineCore::WebContentsAdapter *page)
+{
+    Q_ASSERT(m_contents);
+    Q_ASSERT(page);
+    Q_ASSERT(m_contents != page);
+
+    Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents)) {
+        m_scriptController->addUserScript(script, page);
+    }
+    m_contents = page;
+}

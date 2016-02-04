@@ -140,7 +140,7 @@ QString subProcessPath()
         }
 
         Q_FOREACH (const QString &candidate, candidatePaths) {
-            if (QFileInfo(candidate).exists()) {
+            if (QFileInfo::exists(candidate)) {
                 processPath = candidate;
                 break;
             }
@@ -167,7 +167,7 @@ QString pluginsPath()
         const QStringList directories = QCoreApplication::libraryPaths();
         Q_FOREACH (const QString &dir, directories) {
             const QString candidate = dir % "/" % QLatin1String("qtwebengine");
-            if (QFileInfo(candidate).exists()) {
+            if (QFileInfo::exists(candidate)) {
                 pluginsPath = candidate;
                 break;
             }

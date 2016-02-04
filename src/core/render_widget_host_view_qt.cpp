@@ -826,7 +826,9 @@ void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEve
     if (!m_gestureProvider.OnTouchEvent(motionEvent).succeeded)
         return;
 
-    blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent, false);
+    bool causesScrollingIfUncancelled = true;
+    blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent,
+                                                                             causesScrollingIfUncancelled);
     m_host->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
 }
 

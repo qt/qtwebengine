@@ -128,6 +128,7 @@ public:
     virtual void moveValidationMessage(const QRect &anchor) Q_DECL_OVERRIDE;
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
                                      int exitCode) Q_DECL_OVERRIDE;
+    virtual void requestGeometryChange(const QRect &geometry) Q_DECL_OVERRIDE;
     virtual void updateScrollPosition(const QPointF &position) Q_DECL_OVERRIDE;
     virtual void updateContentsSize(const QSizeF &size) Q_DECL_OVERRIDE;
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
@@ -160,6 +161,8 @@ public:
     bool m_isBeingAdopted;
     QColor m_backgroundColor;
     bool fullscreenMode;
+    QWebChannel *webChannel;
+    unsigned int webChannelWorldId;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

@@ -1,3 +1,5 @@
+include(common.pri)
+
 QMAKE_CLANG_DIR = "/usr"
 QMAKE_CLANG_PATH = $$eval(QMAKE_MAC_SDK.macx-clang.$${QMAKE_MAC_SDK}.QMAKE_CXX)
 !isEmpty(QMAKE_CLANG_PATH) {

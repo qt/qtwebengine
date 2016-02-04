@@ -47,8 +47,8 @@
 #include <QtCore/qurl.h>
 
 namespace QtWebEngineCore {
-class URLRequestCustomJob;
 class URLRequestCustomJobDelegate;
+class URLRequestCustomJobShared;
 } // namespace
 
 QT_BEGIN_NAMESPACE
@@ -79,7 +79,7 @@ public:
 
 private:
     QWebEngineUrlRequestJob(QtWebEngineCore::URLRequestCustomJobDelegate *);
-    friend class QtWebEngineCore::URLRequestCustomJob;
+    friend class QtWebEngineCore::URLRequestCustomJobShared;
 
     QtWebEngineCore::URLRequestCustomJobDelegate* d_ptr;
 };
