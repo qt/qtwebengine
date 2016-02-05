@@ -39,8 +39,9 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
+#include <QtWebEngineWidgets/qwebengineprofile.h>
+#include <QtWebEngineWidgets/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include <qwebengineprofile.h>
 
 class tst_QWebEngineProfile : public QObject
 {
@@ -128,6 +129,7 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
     profile.installUrlSchemeHandler("letterto", &lettertoHandler);
     QWebEngineView view;
     view.setPage(new QWebEnginePage(&profile, &view));
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QString emailAddress = QStringLiteral("egon@olsen-banden.dk");
     QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress)));
     QCOMPARE(toPlainTextSync(view.page()), emailAddress);
@@ -141,11 +143,9 @@ void tst_QWebEngineProfile::urlSchemeHandlers()
 
     // Remove the letterto scheme, and check whether it is not handled anymore.
     profile.removeUrlScheme("letterto");
-#if 0   // QTBUG-50752
     emailAddress = QStringLiteral("kjeld@olsen-banden.dk");
     QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress)));
     QVERIFY(toPlainTextSync(view.page()) != emailAddress);
-#endif
 
     // Check if gopher is still working after removing letterto.
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/yvonne"));
