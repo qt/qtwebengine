@@ -191,7 +191,15 @@ void WebContentsDelegateQt::DidFailProvisionalLoad(content::RenderFrameHost* ren
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
 {
     Q_UNUSED(was_ignored_by_handler);
-    if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID()) || render_frame_host->GetParent())
+    if (validated_url.spec() == content::kUnreachableWebDataURL) {
+        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
+        qCritical("Loading error-page failed. This shouldn't happen.");
+        if (!render_frame_host->GetParent())
+            m_viewClient->loadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
+        return;
+    }
+
+    if (render_frame_host->GetParent())
         return;
 
     m_viewClient->loadFinished(false /* success */ , toQt(validated_url), false /* isErrorPage */, error_code, toQt(error_description));
@@ -200,8 +208,9 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
 
 void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url)
 {
-    if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID())) {
-        Q_ASSERT(validated_url.is_valid() && validated_url.spec() == content::kUnreachableWebDataURL);
+    Q_ASSERT(validated_url.is_valid());
+    if (validated_url.spec() == content::kUnreachableWebDataURL) {
+        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
         m_viewClient->iconChanged(QUrl());
 
         // Trigger LoadFinished signal for main frame's error page only.

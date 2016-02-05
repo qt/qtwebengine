@@ -241,6 +241,8 @@ private Q_SLOTS:
     void loadInSignalHandlers();
 
     void restoreHistory();
+    void toPlainTextLoadFinishedRace_data();
+    void toPlainTextLoadFinishedRace();
 
 private:
     QWebEngineView* m_view;
@@ -5113,6 +5115,37 @@ void tst_QWebEnginePage::restoreHistory()
 
     delete page;
     delete channel;
+}
+
+void tst_QWebEnginePage::toPlainTextLoadFinishedRace_data()
+{
+    QTest::addColumn<bool>("enableErrorPage");
+    QTest::newRow("disableErrorPage") << false;
+    QTest::newRow("enableErrorPage") << true;
+}
+
+void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
+{
+    QFETCH(bool, enableErrorPage);
+
+    QWebEnginePage *page = new QWebEnginePage;
+    page->settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, enableErrorPage);
+    QSignalSpy spy(page, SIGNAL(loadFinished(bool)));
+
+    page->load(QUrl("data:text/plain,foobarbaz"));
+    QTRY_VERIFY(spy.count() == 1);
+    QCOMPARE(toPlainTextSync(page), QString("foobarbaz"));
+
+    page->load(QUrl("fail:unknown/scheme"));
+    QTRY_VERIFY(spy.count() == 2);
+    QString s = toPlainTextSync(page);
+    QVERIFY(s.contains("foobarbaz") == !enableErrorPage);
+
+    page->load(QUrl("data:text/plain,lalala"));
+    QTRY_VERIFY(spy.count() == 3);
+    QCOMPARE(toPlainTextSync(page), QString("lalala"));
+    delete page;
+    QVERIFY(spy.count() == 3);
 }
 
 QTEST_MAIN(tst_QWebEnginePage)

@@ -111,7 +111,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
         interceptor->interceptRequest(requestInfo);
         if (requestInfo.changed()) {
-            int result = infoPrivate->shouldBlockRequest ? net::ERR_ABORTED : net::OK;
+            int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
 
             if (qUrl != infoPrivate->url)
                 *newUrl = toGurl(infoPrivate->url);
