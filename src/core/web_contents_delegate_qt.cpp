@@ -249,7 +249,8 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
 void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)
 {
     QList<FaviconInfo> faviconCandidates;
-    Q_FOREACH (content::FaviconURL candidate, candidates) {
+    faviconCandidates.reserve(static_cast<int>(candidates.size()));
+    for (const content::FaviconURL &candidate : candidates) {
         // Store invalid candidates too for later debugging via API
         faviconCandidates.append(toFaviconInfo(candidate));
     }

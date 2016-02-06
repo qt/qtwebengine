@@ -127,14 +127,14 @@ void FaviconManagerPrivate::iconDownloadFinished(int id,
  */
 void FaviconManagerPrivate::downloadPendingRequests()
 {
-    Q_FOREACH (int id, m_pendingRequests.keys()) {
+    for (auto it = m_pendingRequests.cbegin(), end = m_pendingRequests.cend(); it != end; ++it) {
         QIcon icon;
 
-        QUrl requestUrl = m_pendingRequests[id];
+        QUrl requestUrl = it.value();
         if (isResourceUrl(requestUrl) && !m_icons.contains(requestUrl))
             icon = QIcon(requestUrl.toString().remove(0, 3));
 
-        storeIcon(id, icon);
+        storeIcon(it.key(), icon);
     }
 
     m_pendingRequests.clear();
@@ -263,12 +263,13 @@ bool FaviconManager::hasAvailableCandidateIcon() const
     return m_hasDownloadedIcon || !d->m_inProgressCandidateRequests.isEmpty();
 }
 
-void FaviconManager::update(QList<FaviconInfo> &candidates)
+void FaviconManager::update(const QList<FaviconInfo> &candidates)
 {
     Q_D(FaviconManager);
     updateCandidates(candidates);
 
-    Q_FOREACH (FaviconInfo faviconInfo, m_faviconInfoMap.values()) {
+    for (auto it = m_faviconInfoMap.cbegin(), end = m_faviconInfoMap.cend(); it != end; ++it) {
+        const FaviconInfo &faviconInfo = it.value();
         if (!faviconInfo.candidate || faviconInfo.type != FaviconInfo::Favicon)
             continue;
 
@@ -279,9 +280,9 @@ void FaviconManager::update(QList<FaviconInfo> &candidates)
     d->downloadPendingRequests();
 }
 
-void FaviconManager::updateCandidates(QList<FaviconInfo> &candidates)
+void FaviconManager::updateCandidates(const QList<FaviconInfo> &candidates)
 {
-    Q_FOREACH (FaviconInfo candidateFaviconInfo, candidates) {
+    for (FaviconInfo candidateFaviconInfo : candidates) {
         QUrl candidateUrl = candidateFaviconInfo.url;
         if (m_faviconInfoMap.contains(candidateUrl)) {
             m_faviconInfoMap[candidateUrl].candidate = true;
@@ -298,8 +299,8 @@ void FaviconManager::updateCandidates(QList<FaviconInfo> &candidates)
 void FaviconManager::resetCandidates()
 {
     m_hasDownloadedIcon = false;
-    Q_FOREACH (const QUrl key, m_faviconInfoMap.keys())
-        m_faviconInfoMap[key].candidate = false;
+    for (auto it = m_faviconInfoMap.begin(), end = m_faviconInfoMap.end(); it != end; ++it)
+        it->candidate = false;
 }
 
 
@@ -313,7 +314,8 @@ FaviconInfo FaviconManager::getProposedFaviconInfo() const
         return proposedFaviconInfo;
 
     unsigned bestArea = area(proposedFaviconInfo.size);
-    Q_FOREACH (const FaviconInfo faviconInfo, m_faviconInfoMap.values()) {
+    for (auto it = m_faviconInfoMap.cbegin(), end = m_faviconInfoMap.cend(); it != end; ++it) {
+        const FaviconInfo &faviconInfo = it.value();
         if (!faviconInfo.candidate || faviconInfo.type != FaviconInfo::Favicon)
             continue;
 
@@ -328,7 +330,8 @@ FaviconInfo FaviconManager::getProposedFaviconInfo() const
 
 FaviconInfo FaviconManager::getFirstFaviconInfo() const
 {
-    Q_FOREACH (const FaviconInfo faviconInfo, m_faviconInfoMap.values()) {
+    for (auto it = m_faviconInfoMap.cbegin(), end = m_faviconInfoMap.cend(); it != end; ++it) {
+        const FaviconInfo &faviconInfo = it.value();
         if (!faviconInfo.candidate || faviconInfo.type != FaviconInfo::Favicon)
             continue;
 

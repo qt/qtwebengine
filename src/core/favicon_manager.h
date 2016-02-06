@@ -98,8 +98,8 @@ private:
     FaviconManager(FaviconManagerPrivate *);
 
     bool hasAvailableCandidateIcon() const;
-    void update(QList<FaviconInfo> &);
-    void updateCandidates(QList<FaviconInfo> &);
+    void update(const QList<FaviconInfo> &);
+    void updateCandidates(const QList<FaviconInfo> &);
     void resetCandidates();
 
     FaviconInfo getProposedFaviconInfo() const;
