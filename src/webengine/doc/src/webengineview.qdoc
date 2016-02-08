@@ -227,6 +227,8 @@
     \since QtWebEngine 1.1
 
     List of script objects attached to the view.
+
+    \sa WebEngineScript
 */
 
 /*!

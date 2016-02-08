@@ -35,6 +35,9 @@ qhp.QtWebEngine.subprojects.examples.indexTitle = Qt WebEngine Examples
 qhp.QtWebEngine.subprojects.examples.selectors = doc:example
 qhp.QtWebEngine.subprojects.examples.sortPages = true
 
+manifestmeta.highlighted.names += "QtWebEngine/WebEngine Markdown Editor Example" \
+                "QtWebEngine/WebEngine Quick Nano Browser"
+
 tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 
 depends += qtcore \
@@ -45,6 +48,7 @@ depends += qtcore \
            qtquickcontrols \
            qtdoc \
            qtwebchannel \
+           qtwebview \
            qtwidgets
 
 headerdirs  += .. \
