@@ -61,6 +61,14 @@
     have been loaded completely, independent of script execution or page rendering.
     Its argument, either \c true or \c false, indicates whether or not the load
     operation succeeded.
+
+    Scripts can be executed on the web page by using runJavaScript(), either in the main
+    JavaScript \e world, along with the rest of the JavaScript coming from the web contents, or in
+    their own isolated world. While the DOM of the page can be accessed from any world, JavaScript
+    variables of a function defined in one world are not accessible from a different one.
+    QWebEngineScript::ScriptWorldId provides some predefined IDs for this purpose. Using the
+    \c runJavaScript() version without the world ID is the same as running the script in the
+    \c MainWorld.
 */
 
 /*!
@@ -622,22 +630,17 @@
 */
 
 /*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
-    \overload runJavaScript()
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, FunctorOrLambda resultCallback)
+    \since 5.7
 
-    This convenience function runs the JavaScript code contained in \a scriptSource.
-*/
+    Runs the JavaScript code contained in \a scriptSource in the world specified by \a worldId.
+    The world ID values are the same as provided by QWebEngineScript::ScriptWorldId. Using the
+    \e runJavaScript() versions without the world ID is the same as running the script in the
+    \c MainWorld.
 
-/*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
-
-    Runs the JavaScript code contained in \a scriptSource.
-
-    The script will run in the same \e world as other scripts that are part of the loaded site.
-
-    When the script has been executed, \a resultCallback is called with the result of the last executed statement.
-    \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a
-    QVariant parameter. For example:
+    When the script has been executed, \a resultCallback is called with the result of the last
+    executed statement. \c resultCallback can be any of a function pointer, a functor or a lambda,
+    and it is expected to take a QVariant parameter. For example:
 
     \code
     page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
@@ -647,6 +650,41 @@
     rendering of the web engine page.
 
     See scripts() for an alternative API to inject scripts.
+
+    \sa QWebEngineScript::ScriptWorldId
+*/
+
+/*!
+    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
+    \since 5.7
+    \overload runJavaScript()
+
+    This convenience function runs the JavaScript code contained in \a scriptSource in the world
+    specified by \a worldId.
+*/
+
+/*!
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
+    \overload runJavaScript()
+
+    This convenience function runs the JavaScript code contained in \a scriptSource in the same
+    world as other scripts that are part of the loaded site.
+
+    \sa QWebEngineScript::MainWorld
+*/
+
+/*!
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
+    \overload runJavaScript()
+
+    Runs the JavaScript code contained in \a scriptSource.
+
+    The script will run in the same world as other scripts that are part of the loaded site.
+
+    When the script has been executed, \a resultCallback is called with the result of the last
+    executed statement.
+
+    \sa QWebEngineScript::MainWorld
 */
 
 /*!
