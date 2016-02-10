@@ -146,12 +146,11 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     m_localServer = new QLocalServer(this);
     connect(m_localServer, SIGNAL(newConnection()),
             this, SLOT(newLocalSocketConnection()));
-    if (!m_localServer->listen(serverName)) {
-        if (m_localServer->serverError() == QAbstractSocket::AddressInUseError
-            && QFile::exists(m_localServer->serverName())) {
-            QFile::remove(m_localServer->serverName());
-            m_localServer->listen(serverName);
-        }
+    if (!m_localServer->listen(serverName)
+            && m_localServer->serverError() == QAbstractSocket::AddressInUseError) {
+        QLocalServer::removeServer(serverName);
+        if (!m_localServer->listen(serverName))
+            qWarning("Could not create local socket %s.", qPrintable(serverName));
     }
 
 #ifndef QT_NO_OPENSSL
