@@ -20,7 +20,8 @@ core_api.depends = gyp_run
 core_module.file = core_module.pro
 core_module.depends = core_api
 
-SUBDIRS += core_gyp_generator
+SUBDIRS += core_headers \
+           core_gyp_generator
 
 !win32 {
     # gyp_configure_host.pro and gyp_configure_target.pro are phony pro files that
@@ -36,6 +37,5 @@ SUBDIRS += core_gyp_generator
 }
 
 SUBDIRS += gyp_run \
-           core_headers \
            core_api \
            core_module

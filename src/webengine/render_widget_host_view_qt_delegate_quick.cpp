@@ -44,6 +44,7 @@
 #include <QGuiApplication>
 #include <QQuickPaintedItem>
 #include <QQuickWindow>
+#include <QSurfaceFormat>
 #include <QVariant>
 #include <QWindow>
 #include <private/qquickwindow_p.h>
@@ -63,6 +64,20 @@ RenderWidgetHostViewQtDelegateQuick::RenderWidgetHostViewQtDelegateQuick(RenderW
         return;
     setFocus(true);
     setActiveFocusOnTab(true);
+
+#ifdef Q_OS_OSX
+    // Check that the default QSurfaceFormat OpenGL profile matches the global OpenGL shared
+    // context profile, otherwise this could lead to a nasty crash.
+    QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();
+    if (globalSharedContext) {
+        QSurfaceFormat sharedFormat = globalSharedContext->format();
+        QSurfaceFormat defaultFormat = QSurfaceFormat::defaultFormat();
+        if (defaultFormat.profile() != sharedFormat.profile()) {
+            qFatal("QWebEngine: Default QSurfaceFormat OpenGL profile does not match global shared context OpenGL profile. Please make sure you set a new QSurfaceFormat before the QtGui application instance is created.");
+        }
+    }
+#endif
+
 }
 
 void RenderWidgetHostViewQtDelegateQuick::initAsChild(WebContentsAdapterClient* container)

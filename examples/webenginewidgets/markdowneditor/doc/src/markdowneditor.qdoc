@@ -27,7 +27,7 @@
 
 /*!
     \example webenginewidgets/markdowneditor
-    \title Markdown Editor Example
+    \title WebEngine Markdown Editor Example
     \ingroup webengine-widgetexamples
     \brief Demonstrates how to integrate a web engine in a hybrid desktop
     application.

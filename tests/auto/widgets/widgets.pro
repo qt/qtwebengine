@@ -2,6 +2,7 @@ TEMPLATE = subdirs
 
 SUBDIRS += \
     qwebengineaccessibility \
+    qwebenginedefaultsurfaceformat \
     qwebenginefaviconmanager \
     qwebenginepage \
     qwebenginehistory \

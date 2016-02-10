@@ -31,9 +31,10 @@
 #include <QtTest/QtTest>
 #include <QtWebEngineCore/qwebengineurlrequestjob.h>
 #include <QtWebEngineCore/qwebengineurlschemehandler.h>
+#include <QtWebEngineWidgets/qwebengineprofile.h>
+#include <QtWebEngineWidgets/qwebenginepage.h>
+#include <QtWebEngineWidgets/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
-#include <qwebengineprofile.h>
-#include <qwebenginepage.h>
 
 class tst_QWebEngineProfile : public QObject
 {
@@ -171,52 +172,61 @@ public:
     }
 };
 
+static bool loadSync(QWebEngineView *view, const QUrl &url, int timeout = 5000)
+{
+    // Ripped off QTRY_VERIFY.
+    QSignalSpy loadFinishedSpy(view, SIGNAL(loadFinished(bool)));
+    view->load(url);
+    if (loadFinishedSpy.isEmpty())
+        QTest::qWait(0);
+    for (int i = 0; i < timeout; i += 50) {
+        if (!loadFinishedSpy.isEmpty())
+            return true;
+        QTest::qWait(50);
+    }
+    return false;
+}
+
 void tst_QWebEngineProfile::urlSchemeHandlers()
 {
-    RedirectingUrlSchemeHandler mailtoHandler;
+    RedirectingUrlSchemeHandler lettertoHandler;
     QWebEngineProfile profile(QStringLiteral("urlSchemeHandlers"));
-    profile.installUrlSchemeHandler("mailto", &mailtoHandler);
+    profile.installUrlSchemeHandler("letterto", &lettertoHandler);
     QWebEngineView view;
-    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.setPage(new QWebEnginePage(&profile, &view));
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     QString emailAddress = QStringLiteral("egon@olsen-banden.dk");
-    view.load(QUrl(QStringLiteral("mailto:") + emailAddress));
-    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress)));
     QCOMPARE(toPlainTextSync(view.page()), emailAddress);
 
     // Install a gopher handler after the view has been fully initialized.
     ReplyingUrlSchemeHandler gopherHandler;
     profile.installUrlSchemeHandler("gopher", &gopherHandler);
     QUrl url = QUrl(QStringLiteral("gopher://olsen-banden.dk/benny"));
-    view.load(url);
-    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(loadSync(&view, url));
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 
-    // Remove the mailto scheme, and check whether it is not handled anymore.
-    profile.removeUrlScheme("mailto");
+    // Remove the letterto scheme, and check whether it is not handled anymore.
+    profile.removeUrlScheme("letterto");
     emailAddress = QStringLiteral("kjeld@olsen-banden.dk");
-    view.load(QUrl(QStringLiteral("mailto:") + emailAddress));
-    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(loadSync(&view, QUrl(QStringLiteral("letterto:") + emailAddress)));
     QVERIFY(toPlainTextSync(view.page()) != emailAddress);
 
-    // Check if gopher is still working after removing mailto.
+    // Check if gopher is still working after removing letterto.
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/yvonne"));
-    view.load(url);
-    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(loadSync(&view, url));
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 
     // Does removeAll work?
     profile.removeAllUrlSchemeHandlers();
     url = QUrl(QStringLiteral("gopher://olsen-banden.dk/harry"));
-    view.load(url);
-    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(loadSync(&view, url));
     QVERIFY(toPlainTextSync(view.page()) != url.toString());
 
     // Install a handler that is owned by the view. Make sure this doesn't crash on shutdown.
     profile.installUrlSchemeHandler("aviancarrier", new ReplyingUrlSchemeHandler(&view));
     url = QUrl(QStringLiteral("aviancarrier:inspector.mortensen@politistyrke.dk"));
-    view.load(url);
-    QVERIFY(loadFinishedSpy.wait());
+    QVERIFY(loadSync(&view, url));
     QCOMPARE(toPlainTextSync(view.page()), url.toString());
 }
 

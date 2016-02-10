@@ -1,4 +1,4 @@
-## Markdown Editor Example
+## WebEngine Markdown Editor Example
 
 This example uses [QWebEngineView](http://doc.qt.io/qt-5/qwebengineview.html)
 to preview text written using the [Markdown](https://en.wikipedia.org/wiki/Markdown)

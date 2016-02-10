@@ -116,4 +116,14 @@
     be configured for use with several codecs, which rises licensing issues during distribution
     with the codec libraries. For some codecs, open source implementations, such as \l {OpenH264},
     are available.
+
+    \section1 Default QSurfaceFormat OpenGL Profile Support
+
+    If a new default QSurfaceFormat with a modified OpenGL profile has to be set, it should be set
+    before the application instance is declared, to make sure that all created OpenGL contexts use
+    the same OpenGL profile.
+
+    On OS X, if the default QSurfaceFormat is set after the application instance, the application
+    will exit with qFatal(), and print a message that the default QSurfaceFormat should be set
+    before the application instance.
 */
