@@ -99,6 +99,7 @@ public:
         OpenLinkInThisWindow,
         OpenLinkInNewWindow,
         OpenLinkInNewTab,
+        OpenLinkInNewBackgroundTab,
         CopyLinkToClipboard,
         DownloadLinkToDisk,
 
@@ -137,7 +138,8 @@ public:
     enum WebWindowType {
         WebBrowserWindow,
         WebBrowserTab,
-        WebDialog
+        WebDialog,
+        WebBrowserBackgroundTab
     };
 
     enum PermissionPolicy {

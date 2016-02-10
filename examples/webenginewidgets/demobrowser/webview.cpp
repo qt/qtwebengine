@@ -185,6 +185,8 @@ QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type)
 {
     if (type == QWebEnginePage::WebBrowserTab) {
         return mainWindow()->tabWidget()->newTab()->page();
+    } else if (type == QWebEnginePage::WebBrowserBackgroundTab) {
+        return mainWindow()->tabWidget()->newTab(false)->page();
     } else if (type == QWebEnginePage::WebBrowserWindow) {
         BrowserApplication::instance()->newMainWindow();
         BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
@@ -387,6 +389,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
         ++it;
         menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewWindow));
         menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewTab));
+        menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewBackgroundTab));
     }
 
     menu->popup(event->globalPos());

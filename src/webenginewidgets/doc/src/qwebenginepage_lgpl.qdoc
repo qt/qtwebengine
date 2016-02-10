@@ -108,6 +108,7 @@
     \value OpenLinkInThisWindow Open the current link in the current window. (Added in Qt 5.6)
     \value OpenLinkInNewWindow Open the current link in a new window. (Added in Qt 5.6)
     \value OpenLinkInNewTab Open the current link in a new tab. (Added in Qt 5.6)
+    \value OpenLinkInNewBackgroundTab Open the current link in a new background tab. (Added in Qt 5.7)
     \value CopyLinkToClipboard Copy the current link to the clipboard. (Added in Qt 5.6)
 
     \value CopyImageToClipboard Copy the clicked image to the clipboard. (Added in Qt 5.6)
@@ -154,6 +155,8 @@
             A web browser tab.
     \value  WebDialog
             A window without decoration.
+    \value  WebBrowserBackgroundTab
+            A web browser tab without hiding the current visible WebEngineView. (Added in Qt 5.7)
 */
 
 /*!

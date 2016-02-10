@@ -90,8 +90,9 @@ static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::Wind
 {
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
-    case WebContentsAdapterClient::NewBackgroundTabDisposition:
         return QWebEnginePage::WebBrowserTab;
+    case WebContentsAdapterClient::NewBackgroundTabDisposition:
+        return QWebEnginePage::WebBrowserBackgroundTab;
     case WebContentsAdapterClient::NewPopupDisposition:
         return QWebEnginePage::WebDialog;
     case WebContentsAdapterClient::NewWindowDisposition:
@@ -801,6 +802,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case OpenLinkInNewTab:
         text = tr("Open Link in New Tab");
         break;
+    case OpenLinkInNewBackgroundTab:
+        text = tr("Open Link in New Background Tab");
+        break;
     case CopyLinkToClipboard:
         text = tr("Copy Link URL");
         break;
@@ -928,6 +932,13 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case OpenLinkInNewTab:
         if (d->m_menuData.linkUrl.isValid()) {
             QWebEnginePage *newPage = createWindow(WebBrowserTab);
+            if (newPage)
+                newPage->setUrl(d->m_menuData.linkUrl);
+        }
+        break;
+    case OpenLinkInNewBackgroundTab:
+        if (d->m_menuData.linkUrl.isValid()) {
+            QWebEnginePage *newPage = createWindow(WebBrowserBackgroundTab);
             if (newPage)
                 newPage->setUrl(d->m_menuData.linkUrl);
         }
