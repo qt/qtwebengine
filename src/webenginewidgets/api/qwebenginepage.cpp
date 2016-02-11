@@ -878,7 +878,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case ToggleMediaMute:
         if (d->m_menuData.mediaUrl.isValid() && d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
-            bool enable = (d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
+            bool enable = !(d->m_menuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
             d->adapter->executeMediaPlayerActionAt(d->m_menuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
         break;
