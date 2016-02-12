@@ -229,6 +229,7 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
         parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
+        parsedCommandLine->AppendSwitch(switches::kEnableViewportMeta);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
         parsedCommandLine->AppendSwitch(switches::kDisableGpuShaderDiskCache);
