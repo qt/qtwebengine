@@ -253,6 +253,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_needsDelegatedFrameAck(false)
     , m_didFirstVisuallyNonEmptyLayout(false)
     , m_adapterClient(0)
+    , m_imeInProgress(false)
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
@@ -903,6 +904,23 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     if (IsMouseLocked() && ev->key() == Qt::Key_Escape && ev->type() == QEvent::KeyRelease)
         UnlockMouse();
 
+    if (m_imeInProgress) {
+        // IME composition was not finished with a valid commit string.
+        // We're getting the composition result in a key event.
+        if (ev->key() != 0) {
+            // The key event is not a result of an IME composition. Cancel IME.
+            m_host->ImeCancelComposition();
+            m_imeInProgress = false;
+        } else {
+            if (ev->type() == QEvent::KeyRelease) {
+                m_host->ImeConfirmComposition(toString16(ev->text()), gfx::Range::InvalidRange(),
+                                              false);
+                m_imeInProgress = false;
+            }
+            return;
+        }
+    }
+
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
     if (webEvent.type == blink::WebInputEvent::RawKeyDown && !ev->text().isEmpty()) {
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
@@ -959,11 +977,12 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         }
     }
 
-    if (preeditString.isEmpty()) {
+    if (!commitString.isEmpty()) {
         gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
                                                               : gfx::Range::InvalidRange();
         m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
-    } else {
+        m_imeInProgress = false;
+    } else if (!preeditString.isEmpty()) {
         if (!selectionRange.IsValid()) {
             // We did not receive a valid selection range, hence the range is going to mark the cursor position.
             int newCursorPosition = (cursorPositionInPreeditString < 0) ? preeditString.length() : cursorPositionInPreeditString;
@@ -971,6 +990,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             selectionRange.set_end(newCursorPosition);
         }
         m_host->ImeSetComposition(toString16(preeditString), underlines, selectionRange.start(), selectionRange.end());
+        m_imeInProgress = true;
     }
 }
 
