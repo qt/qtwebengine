@@ -54,6 +54,7 @@
 QT_BEGIN_NAMESPACE
 class QMenu;
 class QWebChannel;
+class QWebEngineContextMenuData;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
 class QWebEnginePage;
@@ -274,6 +275,9 @@ public:
 #else
     void printToPdf(const QPageLayout &layout, const QWebEngineCallback<const QByteArray&> &resultCallback);
 #endif
+
+    const QWebEngineContextMenuData &contextMenuData() const;
+
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);

@@ -65,9 +65,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
 
-#if defined(QWEBENGINEPAGE_HITTESTCONTENT)
-#include <QWebEngineHitTestResult>
-#endif
+#include <QWebEngineContextMenuData>
 
 #ifndef QT_NO_UITOOLS
 #include <QtUiTools/QUiLoader>
@@ -381,18 +379,18 @@ void WebView::setPage(WebPage *_page)
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
-    QMenu *menu = page()->createStandardContextMenu();
-    const QList<QAction*> actions = menu->actions();
-    QList<QAction*>::const_iterator it = qFind(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::OpenLinkInThisWindow));
-    if (it != actions.cend()) {
-       (*it)->setText(tr("Open Link in This Window"));
-        ++it;
-        menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewWindow));
-        menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewTab));
-        menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewBackgroundTab));
+    if (page()->contextMenuData().linkUrl().isValid()) {
+        QMenu *menu = new QMenu(this);
+        menu->addAction(page()->action(QWebEnginePage::OpenLinkInThisWindow));
+        menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewWindow));
+        menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewBackgroundTab));
+        menu->addSeparator();
+        menu->addAction(page()->action(QWebEnginePage::DownloadLinkToDisk));
+        menu->addAction(page()->action(QWebEnginePage::CopyLinkToClipboard));
+        menu->popup(event->globalPos());
+        return;
     }
-
-    menu->popup(event->globalPos());
+    QWebEngineView::contextMenuEvent(event);
 }
 
 void WebView::wheelEvent(QWheelEvent *event)

@@ -54,6 +54,7 @@
 #include "qwebenginepage.h"
 
 #include "qwebenginecallback_p.h"
+#include "qwebenginecontextmenudata.h"
 #include "qwebenginescriptcollection.h"
 #include "web_contents_adapter_client.h"
 #include <QtCore/qcompilerdetection.h>
@@ -156,7 +157,7 @@ public:
     QWebEngineSettings *settings;
     QWebEngineView *view;
     QUrl explicitUrl;
-    QtWebEngineCore::WebEngineContextMenuData m_menuData;
+    QWebEngineContextMenuData contextData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
     bool m_isBeingAdopted;
