@@ -168,7 +168,7 @@
 
     Qt WebEngine takes advantage of the multi process model that the Chromium project offers.
     The multi process model requires the QtWebEngineProcess executable to be deployed alongside your application.
-    To do this, we recommend the use of Qt’s cross-platform deployment tools.
+    To do this, we recommend the use of Qt's cross-platform deployment tools.
 
     Alternatively, if you are carrying out manual deployment, you will find the QtWebEngineProcess executable in the
     libexec directory of your Qt installation.
