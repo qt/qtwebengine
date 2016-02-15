@@ -52,6 +52,10 @@
 #include "renderer/content_renderer_client_qt.h"
 #include "web_engine_library_info.h"
 
+#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#include "base/cpu.h"
+#endif
+
 #include <QLocale>
 
 namespace QtWebEngineCore {
@@ -66,6 +70,12 @@ static base::StringPiece PlatformResourceProvider(int key) {
 
 void ContentMainDelegateQt::PreSandboxStartup()
 {
+#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+    // Create an instance of the CPU class to parse /proc/cpuinfo and cache
+    // cpu_brand info.
+    base::CPU cpu_info;
+#endif
+
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(WebEngineLibraryInfo::getApplicationLocale(), 0, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
