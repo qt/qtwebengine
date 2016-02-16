@@ -163,6 +163,7 @@ public:
 
 private:
     void updateCustomUrlSchemeHandlers();
+    void resetVisitedLinksManager();
 
     QString m_name;
     bool m_offTheRecord;

@@ -394,6 +394,12 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
     d->webContents->GetController().LoadIfNecessary();
 
+    // Create an instance of WebEngineVisitedLinksManager to catch the first
+    // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
+    // force to initialize visited links in VisitedLinkSlave.
+    // It must be done before creating a RenderView.
+    d->browserContextAdapter->visitedLinksManager();
+
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
