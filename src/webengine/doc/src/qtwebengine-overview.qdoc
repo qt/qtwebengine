@@ -46,6 +46,10 @@
     application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}. For new
     applications, we recommend using Qt Quick and the WebEngineView QML type.
 
+    For more information about the requirements for building Qt WebEngine from source on the
+    supported platforms and for other platform-specific information, see
+    \l{Qt WebEngine Platform Notes}.
+
     \section1 Qt WebEngine Architecture
 
     \image qtwebengine-architecture.png
