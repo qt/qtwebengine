@@ -68,10 +68,6 @@
       ['qt_os=="embedded_linux"', {
         'configurations': {
           'Debug_Base': {
-            # Reduce the binary size.
-            'variables': {
-              'debug_optimize%': 's',
-            },
             'ldflags': [
               # Only link with needed input sections.
               '-Wl,--gc-sections',

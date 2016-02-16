@@ -89,6 +89,10 @@ contains(QT_ARCH, "arm64"): GYP_CONFIG += target_arch=arm64
 
 contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_codecs=1 ffmpeg_branding=Chrome
 
+# Compiling with -Os makes a huge difference in binary size, and the unwind tables is another big part,
+# but the latter are necessary for useful debug binaries.
+contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s debug_optimize=s release_unwind_tables=0
+
 !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
     GYP_CONFIG += qt_install_data=\"$$[QT_INSTALL_DATA/get]\"
     GYP_CONFIG += qt_install_translations=\"$$[QT_INSTALL_TRANSLATIONS/get]\"
