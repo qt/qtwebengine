@@ -61,7 +61,7 @@
     \section1 API References
 
     \list
-        \li \l{Qt WebEngine C++ Classes}
+        \li \l{Qt WebEngine C++ Classes and Namespaces}
         \li \l{Qt WebEngine QML Types}
     \endlist
 */
