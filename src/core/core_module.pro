@@ -101,6 +101,14 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         resources2build.CONFIG = no_link no_clean target_predeps
 
         QMAKE_EXTRA_COMPILERS += resources2build
+
+        locales2build.input = locales.files
+        locales2build.output = $$[QT_INSTALL_DATA/get]/translations/qtwebengine_locales/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+        locales2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+        locales2build.name = COPY ${QMAKE_FILE_IN}
+        locales2build.CONFIG = no_link no_clean target_predeps
+
+        QMAKE_EXTRA_COMPILERS += locales2build
     }
 }
 

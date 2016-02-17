@@ -75,32 +75,6 @@
         'includes': [ 'repack_locales.gypi' ],
       },
     ],
-    'conditions': [
-      ['qt_install_data != ""', {
-        'copies': [
-          {
-            'destination': '<(qt_install_data)/resources',
-            'files': [ '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_resources.pak' ],
-          },
-          {
-            'destination': '<(qt_install_data)/resources',
-            'files': [ '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_resources_100p.pak' ],
-          },
-          {
-            'destination': '<(qt_install_data)/resources',
-            'files': [ '<(SHARED_INTERMEDIATE_DIR)/repack/qtwebengine_resources_200p.pak' ],
-          },
-          ],
-      }],
-      ['qt_install_translations != ""', {
-        'copies': [
-          {
-            'destination': '<(qt_install_translations)/qtwebengine_locales',
-            'files': [ '<@(locale_files)' ],
-          },
-        ],
-      }],
-    ],
   }
   ]
 }
