@@ -94,10 +94,17 @@ content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClie
     return new ContentRendererClientQt;
 }
 
+// see icu_util.cc
+#define ICU_UTIL_DATA_FILE   0
+#define ICU_UTIL_DATA_SHARED 1
+#define ICU_UTIL_DATA_STATIC 2
+
 bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
 {
     PathService::Override(base::FILE_EXE, WebEngineLibraryInfo::getPath(base::FILE_EXE));
+#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
     PathService::Override(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
+#endif
     PathService::Override(content::DIR_MEDIA_LIBS, WebEngineLibraryInfo::getPath(content::DIR_MEDIA_LIBS));
     PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
 
