@@ -418,15 +418,8 @@
 
     This signal is emitted when an invalid certificate error is raised while loading a given request.
 
-    The certificate error can be rejected by calling WebEngineCertificateError::rejectCertificate,
-    which will stop loading the request.
-
-    The certificate error can be ignored  by calling
-    WebEngineCertificateError::ignoreCertificateError, which will resume loading the request.
-
-    It is possible to defer the decision of rejecting the given certificate by calling
-    WebEngineCertificateError::defer, which is useful when waiting for user input.
-    By default, the invalid certificate will be automatically rejected.
+    The certificate error can be handled by using the methods of the WebEngineCertificateError
+    type.
 
     The corresponding handler is \c onCertificateError.
 
