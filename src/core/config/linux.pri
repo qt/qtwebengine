@@ -45,4 +45,4 @@ use?(system_snappy):   GYP_CONFIG += use_system_snappy=1
 use?(system_vpx):      GYP_CONFIG += use_system_libvpx=1
 use?(system_icu):      GYP_CONFIG += use_system_icu=1
 use?(system_ffmpeg):   GYP_CONFIG += use_system_ffmpeg=1
-
+use?(system_protobuf): GYP_CONFIG += use_system_protobuf=1

@@ -41,9 +41,15 @@ defineTest(runConfigure) {
         else: log("System libwebp or libwebpdemux not found. Using Chromium's copies.$${EOL}")
         packagesExist(libxml-2.0,libxslt): WEBENGINE_CONFIG += use_system_libxslt
         else: log("System libxml2 or libxslt not found. Using Chromium's copies.$${EOL}")
-        for(package, $$list("libevent jsoncpp opus")) {
+        for(package, $$list("libevent jsoncpp opus protobuf")) {
             packagesExist($$package): WEBENGINE_CONFIG += use_system_$$package
             else: log("System $$package not found. Using Chromium's copy.$${EOL}")
+        }
+        use?(system_protobuf) {
+            !system("which protoc > /dev/null") {
+                log("Protobuf compiler not found. Using Chromium's copy of protobuf.$${EOL}")
+                WEBENGINE_CONFIG -= use_system_protobuf
+            }
         }
         config_libvpx: WEBENGINE_CONFIG += use_system_vpx
         else: log("Compatible system libvpx not found. Using Chromium's copy.$${EOL}")
