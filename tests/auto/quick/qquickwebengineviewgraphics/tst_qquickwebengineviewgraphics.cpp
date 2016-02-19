@@ -92,9 +92,7 @@ private Q_SLOTS:
 private:
     void setHtml(const QString &html);
     QScopedPointer<TestView> m_view;
-#ifdef ENABLE_QML_TESTSUPPORT_API
     QScopedPointer<QQuickWebEngineTestSupport> m_testSupport;
-#endif
 };
 
 static const QString greenSquare("<div style=\"background-color: #00ff00; position:absolute; left:50px; top: 50px; width: 50px; height: 50px;\"></div>");
@@ -125,9 +123,7 @@ tst_QQuickWebEngineViewGraphics::~tst_QQuickWebEngineViewGraphics()
 void tst_QQuickWebEngineViewGraphics::initTestCase()
 {
     QtWebEngine::initialize();
-#ifdef ENABLE_QML_TESTSUPPORT_API
     m_testSupport.reset(new QQuickWebEngineTestSupport);
-#endif
 }
 
 void tst_QQuickWebEngineViewGraphics::init()
@@ -204,9 +200,7 @@ void tst_QQuickWebEngineViewGraphics::setHtml(const QString &html)
 
     QQuickWebEngineView *webEngineView = static_cast<QQuickWebEngineView *>(m_view->rootObject());
     webEngineView->setProperty("url", QUrl(QStringLiteral("data:text/html,%1").arg(htmlData)));
-#ifdef ENABLE_QML_TESTSUPPORT_API
     webEngineView->setTestSupport(m_testSupport.data());
-#endif
     QVERIFY(waitForViewportReady(webEngineView));
     QCOMPARE(m_view->rootObject()->property("loading"), QVariant(false));
 }
