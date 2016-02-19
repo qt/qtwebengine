@@ -35,7 +35,6 @@ GYP_CONFIG += \
     use_libpci=0 \
     use_ozone=1 \
     use_system_fontconfig=1 \
-    icu_use_data_file_flag=0 \
     use_x11=0 \
     v8_use_snapshot=false \
     want_separate_host_toolset=1 \
