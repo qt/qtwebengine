@@ -20,14 +20,14 @@ defineTest(isPlatformSupported) {
       return(false)
     }
   } else:osx {
-    lessThan(QMAKE_XCODE_VERSION, 5.1) {
-      skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
+    lessThan(QMAKE_XCODE_VERSION, 7.0) {
+      skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 7.0 is required to build Qt WebEngine.")
       return(false)
     }
-    # We require OS X 10.9 (darwin version 13.0.0) or newer
+    # We require OS X 10.10 (darwin version 14.0.0) or newer
     darwin_major_version = $$section(QMAKE_HOST.version, ., 0, 0)
-    lessThan(darwin_major_version, 13) {
-      skipBuild("Qt WebEngine requires OS X version 10.9 or newer.")
+    lessThan(darwin_major_version, 14) {
+      skipBuild("Qt WebEngine requires OS X version 10.10 or newer.")
       return(false)
     }
   } else {
