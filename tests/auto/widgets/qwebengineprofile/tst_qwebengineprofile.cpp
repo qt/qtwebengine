@@ -247,9 +247,10 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailRequest()
     QWebEngineView view;
     QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
     view.setPage(new QWebEnginePage(&profile, &view));
+    view.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     view.load(QUrl(QStringLiteral("foo://bar")));
     QVERIFY(loadFinishedSpy.wait());
-    QVERIFY(toPlainTextSync(view.page()).isEmpty());
+    QCOMPARE(toPlainTextSync(view.page()), QString());
 }
 
 QTEST_MAIN(tst_QWebEngineProfile)

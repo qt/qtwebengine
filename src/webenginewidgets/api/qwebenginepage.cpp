@@ -213,13 +213,21 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     Q_UNUSED(errorCode);
     Q_UNUSED(errorDescription);
 
-    if (isErrorPage)
+    if (isErrorPage) {
+        Q_ASSERT(settings->testAttribute(QWebEngineSettings::ErrorPageEnabled));
+        Q_ASSERT(success);
+        Q_EMIT q->loadFinished(false);
         return;
+    }
 
     isLoading = false;
     if (success)
         explicitUrl = QUrl();
-    Q_EMIT q->loadFinished(success);
+    // Delay notifying failure until the error-page is done loading.
+    // Error-pages are not loaded on failures due to abort.
+    if (success || errorCode == -3 /* ERR_ABORTED*/ || !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled)) {
+        Q_EMIT q->loadFinished(success);
+    }
     updateNavigationActions();
 }
 
