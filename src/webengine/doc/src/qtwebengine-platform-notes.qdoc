@@ -69,11 +69,11 @@
 
     The MIME type is important because it determines which embeds the plugin is used for.
 
-    This process has been automated for the Adobe Flash Player Plugin.
+    This process has been automated for the Pepper Flash player plugin.
 
-    \section2 Adobe Flash Player Plugin Support
+    \section2 Pepper Flash Player Plugin Support
 
-    The Adobe Flash player plugin can be loaded automatically if it is installed in one of the
+    The Pepper Flash player plugin can be loaded automatically if it is installed in one of the
     following locations, depending on the platform:
 
     \list
@@ -94,7 +94,8 @@
             \endcode
     \endlist
 
-    You can also load the Flash player from a specific location by using command line arguments:
+    You can also load the Pepper Flash player from a specific location by using command line
+    arguments:
 
     \code
     --ppapi-flash-path=./libpepflashplayer.so
