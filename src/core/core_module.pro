@@ -76,9 +76,9 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         INSTALLS += icu locales resources
     }
 
-    !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
+    !contains(QT_CONFIG, qt_framework):!force_independent {
         #
-        # Copy essential files to the qtbase build directory (for non-installed developer builds)
+        # Copy essential files to the qtbase build directory for non-prefix builds
         #
 
         icudt2build.input = icu.files
