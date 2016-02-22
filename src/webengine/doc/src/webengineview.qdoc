@@ -34,11 +34,126 @@
     may share the screen with other QML types, such as a TabView, or fill the screen, as specified
     within the QML application.
 
-    \section1 Rendering to OpenGL Surface
+    \section2 Initializing Web Engine
+
+    For the web engine view to be rendered, the web engine must be initialized by using
+    \l QtWebEngine::initialize in the application main source file, as illustrated by the
+    following code snippet:
+
+    \code
+    int main(int argc, char **argv)
+    {
+        Application app(argc, argv);
+
+        QtWebEngine::initialize();
+
+        QQmlApplicationEngine appEngine;
+        appEngine.load(QUrl("qrc:/main.qml"));
+
+        return app.exec();
+    }
+    \endcode
+
+    \section2 Loading Web Pages
+
+    An application can load pages into the WebEngineView, using either the \l url property or the
+    \l loadHtml method and navigate within the view's session history. The history is represented
+    by a WebEngineHistory data model that is held by the \l navigationHistory property.
+
+    The following sample QML application loads a web page using the \c url property:
+
+    \qml
+    import QtQuick 2.1
+    import QtQuick.Controls 1.1
+    import QtWebEngine 1.1
+
+    ApplicationWindow {
+        width: 1280
+        height: 720
+        visible: true
+        WebEngineView {
+            id: webview
+            url: "http://www.qt.io"
+            anchors.fill: parent
+        }
+    }
+    \endqml
+
+    The \l loadingChanged() signal is emitted when loading a page begins, ends, or fails. The
+    \l loading property holds whether the HTML page is currently loading and the load status is
+    reflected in the \l LoadStatus property.
+
+    The title of an HTML page can be accessed with the \l title property. Additionally, a web
+    page may specify an icon, which can be accessed using the \l icon property. The \l zoomFactor
+    property holds the overall size of the contents of the web page.
+
+    If a certificate error is raised while loading a web page, the \l certificateError() signal is
+    emitted. Certificate errors are handled by using the methods of the WebEngineCertificateError
+    type.
+
+    \section2 Interaction
+
+    By default, links to different pages load within the same WebEngineView object, but web sites
+    may request them to be opened as a new tab, window, or dialog. The \l newViewRequested() signal
+    is emitted when a request to load the page in a separate web engine view is issued. The
+    NewViewDestination property describes how the new view should be opened. In addition, the
+    WebEngineNewViewRequest utility type can be used to load web pages in separate web engine views.
+
+    The \l findText() method can be used to search for a string on a web page, using the options
+    described by \l FindFlags.
+
+    The \l setActiveFocusOnPress() method can be used to create a UI element that should not get
+    focus. This can be useful in a hybrid UI.
+
+    The \l linkHovered() signal is emitted when a mouse pointer passes over a link and thus
+    corresponds to the \c{mouseover} DOM event.
+
+    Actions, such as selecting and editing content, can be performed on a web page by using the
+    \l triggerWebAction() method. The available actions are described by the \l WebAction property.
+
+    The \l backgroundColorChanged() signal is emitted when the web page background color changes.
+
+    \section2 User Scripts
+
+    During the loading of a page, so called \e {user scripts} can be injected in the JavaScript
+    engine at different points. The script objects attached to the web engine view are held by the
+    \l userScripts property and injected by using the WebEngineScript type. Scripts can also be run
+    by using the runJavaScript() method in the same world as other scripts that are part of the
+    loaded site.
+
+    The \l webChannel property can be used to expose a WebChannel instance in the JavaScript context
+    of the page it is rendering as \c qt.webChannelTransport.
+
+    \section2 Fullscreen Mode
+
+    A web page can request through the JavaScript API to be loaded in fullscreen mode. The
+    \l fullScreenRequested() signal is emitted when the web page issues the request. The
+    WebEngineFullScreenRequest utility type can be used to toggle fullscreen requests. The
+    \l fullScreenCancelled method can be used to notify the browser engine when the windowing
+    system forces the application to leave fullscreen mode.
+
+    \section2 Profiles
+
+    Web engine views can be isolated from each other by using the WebEngineProfile type. A profile
+    contains settings, scripts, and the list of visited links shared by all views that belong to the
+    profile. For example, a dedicated profile could be created for a \e {private browsing} mode. The
+    current profile for the view is held by the \l profile property and the current settings are
+    held by the \l settings property. The settings are specified by using the WebEngineSettings
+    type.
+
+    \section2 Platform Features
+
+    Web pages can request access to platform features, such as geolocation or audio and video
+    capture devices. The \l featurePermissionRequested() signal is emitted when a web page requests
+    to make use of a resource. The supported platform features are described by the \l Feature
+    property. If users grant the permission, the \l grantFeaturePermission() method is used to set
+    it to \e granted.
+
+    \section2 Rendering to OpenGL Surface
 
     When using a QQuickRenderControl to render a Qt Quick user interface to an OpenGL surface, the
     WebEngineView type is not rendered correctly. The web engine view attempts to use a global
-    OpenGL context created by \l QtWebEngine::initialize(), but there is no public API for accessing
+    OpenGL context created by \l QtWebEngine::initialize, but there is no public API for accessing
     that context in order to share it with the \c QQuickRenderControl context.
 
     To have the web engine view rendered correctly, it is possible to manually create a new
