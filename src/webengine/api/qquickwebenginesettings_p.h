@@ -75,15 +75,12 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool hyperlinkAuditingEnabled READ hyperlinkAuditingEnabled WRITE setHyperlinkAuditingEnabled NOTIFY hyperlinkAuditingEnabledChanged)
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
-    // FIXME(QTBUG-40043): Mark fullScreenSupportEnabled with REVISION 1
-    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged)
-    // FIXME: add back REVISION when QTBUG-40043 has been fixed.
-    Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
-    // FIXME: Mark the following properties with REVISION 2
-    Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged)
-    Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged)
-    Q_PROPERTY(bool webAudioEnabled READ webAudioEnabled WRITE setWebAudioEnabled NOTIFY webAudioEnabledChanged)
-    Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged)
+    Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1)
+    Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged REVISION 1)
+    Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged REVISION 2)
+    Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged REVISION 2)
+    Q_PROPERTY(bool webAudioEnabled READ webAudioEnabled WRITE setWebAudioEnabled NOTIFY webAudioEnabledChanged REVISION 2)
+    Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION 2)
 
 public:
     ~QQuickWebEngineSettings();
@@ -139,14 +136,12 @@ signals:
     void hyperlinkAuditingEnabledChanged();
     void errorPageEnabledChanged();
     void pluginsEnabledChanged();
-    // FIXME(QTBUG-40043): Mark fullScreenSupportEnabledChanged with Q_REVISION(1)
-    void fullScreenSupportEnabledChanged();
-    // FIXME: add back Q_REVISION when QTBUG-40043 has been fixed.
-    void screenCaptureEnabledChanged();
-    void webGLEnabledChanged();
-    void webAudioEnabledChanged();
-    void accelerated2dCanvasEnabledChanged();
-    void defaultTextEncodingChanged();
+    Q_REVISION(1) void fullScreenSupportEnabledChanged();
+    Q_REVISION(1) void defaultTextEncodingChanged();
+    Q_REVISION(2) void screenCaptureEnabledChanged();
+    Q_REVISION(2) void webGLEnabledChanged();
+    Q_REVISION(2) void webAudioEnabledChanged();
+    Q_REVISION(2) void accelerated2dCanvasEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);
