@@ -96,3 +96,11 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         QMAKE_EXTRA_COMPILERS += icudt2build resources2build
     }
 }
+
+OTHER_FILES = \
+    $$files(../3rdparty/chromium/*.h, true) \
+    $$files(../3rdparty/chromium/*.cc, true) \
+    $$files(../3rdparty/chromium/*.mm, true) \
+    $$files(../3rdparty/chromium/*.py, true) \
+    $$files(../3rdparty/chromium/*.gyp, true) \
+    $$files(../3rdparty/chromium/*.gypi, true)
