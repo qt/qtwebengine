@@ -400,9 +400,6 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
                                                    const base::Callback<void(bool)>& callback,
                                                    content::CertificateRequestResultType* result)
 {
-    // We leave the result with its default value.
-    Q_UNUSED(result);
-
     content::RenderFrameHost *frameHost = content::RenderFrameHost::FromID(render_process_id, render_frame_id);
     WebContentsDelegateQt* contentsDelegate = 0;
     if (content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents())
@@ -410,6 +407,10 @@ void ContentBrowserClientQt::AllowCertificateError(int render_process_id, int re
 
     QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
+
+    // If we don't give the user a chance to allow it, we can reject it right away.
+    if (result && (!overridable || strict_enforcement))
+        *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
 }
 
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()
