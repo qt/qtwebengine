@@ -163,6 +163,7 @@ public:
     bool fullscreenMode;
     QWebChannel *webChannel;
     unsigned int webChannelWorldId;
+    QUrl iconUrl;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

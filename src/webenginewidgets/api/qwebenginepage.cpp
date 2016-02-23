@@ -146,7 +146,10 @@ void QWebEnginePagePrivate::urlChanged(const QUrl &url)
 void QWebEnginePagePrivate::iconChanged(const QUrl &url)
 {
     Q_Q(QWebEnginePage);
-    Q_EMIT q->iconUrlChanged(url);
+    if (iconUrl == url)
+        return;
+    iconUrl = url;
+    Q_EMIT q->iconUrlChanged(iconUrl);
 }
 
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
@@ -1460,7 +1463,7 @@ QUrl QWebEnginePage::requestedUrl() const
 QUrl QWebEnginePage::iconUrl() const
 {
     Q_D(const QWebEnginePage);
-    return d->adapter->iconUrl();
+    return d->iconUrl;
 }
 
 qreal QWebEnginePage::zoomFactor() const
