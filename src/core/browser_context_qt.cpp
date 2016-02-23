@@ -41,6 +41,7 @@
 #include "permission_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "resource_context_qt.h"
+#include "ssl_host_state_delegate_qt.h"
 #include "type_conversion.h"
 #include "url_request_context_getter_qt.h"
 
@@ -132,7 +133,9 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 
 content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
 {
-    return 0;
+    if (!sslHostStateDelegate)
+        sslHostStateDelegate.reset(new SSLHostStateDelegateQt(m_adapter));
+    return sslHostStateDelegate.get();
 }
 
 scoped_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate(const base::FilePath&)
