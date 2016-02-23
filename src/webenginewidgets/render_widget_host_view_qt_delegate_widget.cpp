@@ -86,9 +86,11 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
 #endif
 
         // Make sure the OpenGL profile of the QOpenGLWidget matches the shared context profile.
-        format.setMajorVersion(sharedFormat.majorVersion());
-        format.setMinorVersion(sharedFormat.minorVersion());
-        format.setProfile(sharedFormat.profile());
+        if (sharedFormat.profile() == QSurfaceFormat::CoreProfile) {
+            format.setMajorVersion(sharedFormat.majorVersion());
+            format.setMinorVersion(sharedFormat.minorVersion());
+            format.setProfile(sharedFormat.profile());
+        }
     }
 
     setFormat(format);

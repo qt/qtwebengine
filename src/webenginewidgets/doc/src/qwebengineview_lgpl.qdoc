@@ -134,7 +134,8 @@
     through the \c charset attribute of the HTML script tag. Alternatively, the
     encoding can be specified by the web server.
 
-    This is a convenience function equivalent to setContent(html, "text/html", baseUrl).
+    This is a convenience function equivalent to
+    \c{setContent(html, "text/html;charset=UTF-8", baseUrl)}.
 
     \warning This function works only for HTML. For other MIME types (such as XHTML or SVG),
     setContent() should be used instead.
