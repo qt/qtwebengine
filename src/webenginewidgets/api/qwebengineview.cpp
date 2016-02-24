@@ -263,11 +263,6 @@ QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
     return 0;
 }
 
-void QWebEngineView::printToPDF(const QString &filePath, const QPageLayout &pageLayout)
-{
-    page()->d_func()->adapter->printToPDF(pageLayout, filePath);
-}
-
 qreal QWebEngineView::zoomFactor() const
 {
     return page()->zoomFactor();

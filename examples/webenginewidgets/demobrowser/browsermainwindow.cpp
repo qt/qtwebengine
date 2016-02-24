@@ -712,7 +712,7 @@ void BrowserMainWindow::slotFilePrintToPDF()
     if (dialog->exec() != QDialog::Accepted || printer.outputFileName().isEmpty())
         return;
 
-    currentTab()->printToPDF(printer.outputFileName(), printer.pageLayout());
+    currentTab()->page()->printToPDF(printer.outputFileName(), printer.pageLayout());
 #endif // QT_NO_PRINTER
 }
 

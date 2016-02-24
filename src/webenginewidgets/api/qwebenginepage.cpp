@@ -1633,6 +1633,12 @@ QSizeF QWebEnginePage::contentsSize() const
     return d->adapter->lastContentsSize();
 }
 
+void QWebEnginePage::printToPDF(const QString &filePath, const QPageLayout &pageLayout)
+{
+    Q_D(const QWebEnginePage);
+    d->adapter->printToPDF(pageLayout, filePath);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwebenginepage.cpp"

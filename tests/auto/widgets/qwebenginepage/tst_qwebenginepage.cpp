@@ -244,6 +244,8 @@ private Q_SLOTS:
     void toPlainTextLoadFinishedRace_data();
     void toPlainTextLoadFinishedRace();
 
+    void printToPDF();
+
 private:
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
@@ -5146,6 +5148,21 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
     QCOMPARE(toPlainTextSync(page), QString("lalala"));
     delete page;
     QVERIFY(spy.count() == 3);
+}
+
+void tst_QWebEnginePage::printToPDF()
+{
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    QVERIFY(tempDir.isValid());
+    QWebEnginePage page;
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    page.load(QUrl("qrc:///resources/basic_printing_page.html"));
+    QTRY_VERIFY(spy.count() == 1);
+
+    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
+    QString path = tempDir.path() + "/print_success.pdf";
+    page.printToPDF(path, layout);
+    QTRY_VERIFY(QFile::exists(path));
 }
 
 QTEST_MAIN(tst_QWebEnginePage)

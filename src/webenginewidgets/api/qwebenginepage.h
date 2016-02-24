@@ -47,6 +47,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qpagelayout.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
@@ -266,6 +267,8 @@ public:
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);
     bool wasRecentlyAudible();
+
+    void printToPDF(const QString &filePath, const QPageLayout &layout = QPageLayout());
 
 Q_SIGNALS:
     void loadStarted();

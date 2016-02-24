@@ -61,7 +61,6 @@ private Q_SLOTS:
     void setPalette_data();
     void setPalette();
 #endif
-    void printToPDF();
 };
 
 // This will be called before the first test function is executed.
@@ -530,24 +529,6 @@ void tst_QWebEngineView::setPalette()
 #endif
 }
 #endif
-
-void tst_QWebEngineView::printToPDF()
-{
-    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
-    QVERIFY(tempDir.isValid());
-    QWebEngineView view;
-    QUrl url("qrc:///resources/basic_printing_page.html");
-    view.page()->load(url);
-    QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
-    view.show();
-
-    QTest::qWaitForWindowExposed(&view);
-    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
-    QString path = tempDir.path() + "/print_success.pdf";
-    view.printToPDF(path, layout);
-    QTest::qWait(500);
-    QVERIFY(QFile::exists(path));
-}
 
 void tst_QWebEngineView::renderingAfterMaxAndBack()
 {
