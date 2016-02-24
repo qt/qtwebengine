@@ -50,6 +50,9 @@
     supported platforms and for other platform-specific information, see
     \l{Qt WebEngine Platform Notes}.
 
+    The \l {Qt WebChannel} module can be used to create a bi-directional communication channel
+    between QObject objects on the C++ side and JavaScript on the QML side.
+
     \section1 Qt WebEngine Architecture
 
     \image qtwebengine-architecture.png
@@ -57,13 +60,37 @@
     The functionality in Qt WebEngine is divided into the following modules:
 
     \list
-        \li \l{Qt WebEngine Widgets}, which provides a web browser engine and C++ classes to render
-            web content and to interact with it
-        \li \l{Qt WebEngine}, which provides QML types for rendering web content within a QML
-            application
-        \li \l{Qt WebEngine Core}, which provides common API used by Qt WebEngine and
-            Qt WebEngine Widgets
+        \li \l{Qt WebEngine Widgets} for creating widget-based web applications
+        \li \l{Qt WebEngine} for creating Qt Quick based web applications
+        \li \l{Qt WebEngine Core} for interacting with Chromium
     \endlist
+
+    Page rendering and JavaScript execution are separated from the GUI process into the Qt WebEngine
+    Process. It is a library that must be shipped with the application if the Qt libraries are
+    bundled into the application.
+
+    \section2 Qt WebEngine Widgets
+
+    \image qtwebenginewidgets-model.png
+
+    A \e {web engine view} is the main widget component of the Qt WebEngine module. It can be used
+    in various applications to load web content. Within a view, a \e {web engine page} holds a main
+    frame that is responsible for web content, the \e history of navigated links, and \e actions.
+    The view and page are quite similar, as they provide a set of common functions.
+
+    All pages belong to a \e {web engine profile} that contains shared \e settings, \e scripts, and
+    \e cookies. Profiles can be used to isolate pages from each other. A typical use case is a
+    dedicated profile for a \e {private browsing} mode, where no information is permanently saved.
+
+    \section2 Qt WebEngine
+
+    \image qtwebengine-model.png
+
+    The Qt WebEngine QML implementation contains the same elements as the C++ implementation,
+    except that there is no separately accessible web engine page. The supported page functionality
+    is integrated into the web engine view.
+
+    \section2 Qt WebEngine Core
 
     The Qt WebEngine core is based on the \l {Chromium Project}. Chromium provides its own network
     and painting engines and is developed tightly together with its dependent modules, and
@@ -80,12 +107,29 @@
     This version of Qt WebEngine is based on Chromium snapshot version 45.0.2554.101, with
     additional security fixes from the 46, 47 and 48 branches of the \l {Chromium Project}.
 
+    \section2 Qt WebEngine Process
+
+    The Qt WebEngine Process renders web pages and executes JavaScript.
+
     Chromium is tightly integrated to the \l{Qt Quick Scene Graph}{Qt Quick scene graph}, which is
     based on OpenGL ES 2.0 or OpenGL 2.0 for its rendering. This provides you with one-pass
     compositing of web content and all the Qt Quick UI. The integration to Chromium is transparent
     to developers, who just work with Qt and JavaScript.
 
-    To expose QObjects to JavaScript, developers can use the \l {Qt WebChannel} module.
+    The document object model (DOM) of a page is constructed when the document is ready, typically
+    when the page is completely loaded. Therefore, executing scripts as soon as a document is
+    created is not suitable for DOM operations, where one has to wait until the DOM is ready.
+
+    In addition, an injected script shares the same \e world as the other scripts executed on the
+    page, which might lead to conflicts. To avoid this, the Chromium API for
+    \e{Content Script Extensions} is implemented by \e {web engine script}. It specifies the
+    script to run, the injection point, and the world where the script is run. This enables
+    accessing the DOM to manipulate it within a world.
+
+    Because the render process is separated from the GUI process, they should ideally share an
+    OpenGL context to enable one process to access the resources uploaded by the other, such as
+    images or textures. However, some inter-process communication is needed for safety and
+    reliability, because it enables restarting a crashed process.
 
     \section1 Embedding Web Content into Widget Based Applications
 
@@ -99,23 +143,48 @@
     view->show();
     \endcode
 
-    An instance of QWebEngineView has one QWebEnginePage. QWebEnginePage provides access to the
-    page's navigation history and the ability to run JavaScript code in the context of the page's
-    main frame and enables customization of handlers for specific events like showing custom
-    authentication dialogs.
+    An instance of QWebEngineView has one QWebEnginePage. QWebEnginePage can have a
+    QWebEngineHistory that provides access to the page's navigation history and several QAction
+    objects that apply actions on the web page. In addition, a QWebEnginePage has the ability to
+    run JavaScript code in the context of the page's main frame and to enable customization of
+    handlers for specific events like showing custom authentication dialogs.
+
+    Each QWebEnginePage belongs to a QWebEngineProfile that can have a QWebEngineScriptCollection
+    for specifying page settings, a QWebEngineScriptCollection for running scripts on the page, and
+    a QWebEngineCookieStore for accessing the HTTP cookies of Chromium. A QWebEnginePage can also
+    directly point to a script collection or cookie store.
 
     \section1 Embedding Web Content into Qt Quick Applications
 
-    The WebEngineView QML type allows QML applications to render regions of dynamic web content. A
-    \e{WebEngineView} type may share the screen with other QML types or encompass the full screen
-    as specified within the QML application.
+    The WebEngineView QML type allows Qt Quick applications to render regions of dynamic web
+    content. A \e{WebEngineView} type may share the screen with other QML types or encompass the
+    full screen as specified within the Qt Quick application.
+
+    To make sure that OpenGL context can be shared between the GUI and render processes, the web
+    engine must be initialized by using \l QtWebEngine::initialize in the application main source
+    file, as illustrated by the following code snippet:
+
+    \code
+    int main(int argc, char **argv)
+    {
+        Application app(argc, argv);
+
+        QtWebEngine::initialize();
+
+        QQmlApplicationEngine appEngine;
+        appEngine.load(QUrl("qrc:/main.qml"));
+
+        return app.exec();
+    }
+    \endcode
 
     An application can load pages into the WebEngineView, using either an URL or HTML string, and
     navigate within session history. By default, links to different pages load within the same
     WebEngineView object, but web sites may request them to be opened as a new tab, window, or
     dialog.
 
-    The following sample QML application loads a web page and responds to session history context:
+    The following sample QML application loads a web page using the \l{WebEngineView::}{url}
+    property:
 
     \qml
     import QtQuick 2.1
