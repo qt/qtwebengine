@@ -268,8 +268,12 @@ public:
     void setAudioMuted(bool muted);
     bool wasRecentlyAudible();
 
-    void printToPDF(const QString &filePath, const QPageLayout &layout = QPageLayout());
-
+    void printToPdf(const QString &filePath, const QPageLayout &layout);
+#ifdef Q_QDOC
+    void printToPdf(const QPageLayout &layout, FunctorOrLambda resultCallback);
+#else
+    void printToPdf(const QPageLayout &layout, const QWebEngineCallback<const QByteArray&> &resultCallback);
+#endif
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);

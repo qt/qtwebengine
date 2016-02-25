@@ -255,15 +255,6 @@
 */
 
 /*!
-    \fn void QWebEngineView::printToPDF(const QString &filePath, const QPageLayout &layout)
-    \since 5.7
-    Renders the current contents of the view into a PDF document and saves it in the location specified in \a filePath.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a layout.
-
-    If a file already exists at the provided file path, it will be overwritten.
-*/
-
-/*!
     \fn void QWebEngineView::stop()
     Convenience slot that stops loading the document.
 

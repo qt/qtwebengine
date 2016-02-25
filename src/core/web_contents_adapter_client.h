@@ -237,6 +237,7 @@ public:
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) = 0;
     virtual void didFindText(quint64 requestId, int matchCount) = 0;
+    virtual void didPrintPage(quint64 requestId, const QByteArray &result) = 0;
     virtual void passOnFocus(bool reverse) = 0;
     // returns the last QObject (QWidget/QQuickItem) based object in the accessibility
     // hierarchy before going into the BrowserAccessibility tree

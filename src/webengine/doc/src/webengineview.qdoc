@@ -856,7 +856,7 @@
     \omitvalue NPageSize
     \omitvalue NPaperSize
 
-    \sa WebEngineView::printToPDF()
+    \sa WebEngineView::printToPdf()
 */
 
 /*!
@@ -872,7 +872,7 @@
     \value Landscape
     The document will be created using landscape orientation.
 
-    \sa WebEngineView::printToPDF()
+    \sa WebEngineView::printToPdf()
 */
 
 /*!
@@ -944,12 +944,24 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::printToPDF(const QString &filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+    \qmlmethod void WebEngineView::printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
     \since QtWebEngine 1.3
 
-    Prints the WebEngineView's current contents to a PDF document and stores it under \a filePath. The document's size will be determined
+    Prints the WebEngineView's current content to a PDF document and stores it under \a filePath. The document's size will be determined
     by the value of \a pageSizeId and its orientation will be determined using \a orientation.
 */
+
+/*!
+    \qmlmethod void WebEngineView::printToPdf(PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation, variant resultCallback)
+    \since QtWebEngine 1.3
+
+    Prints the WebEngineView's current content to a PDF document and returns it in a byte array. The document's size will be determined
+    by the value of \a pageSizeId and its orientation will be determined using \a orientation.
+
+    The \a resultCallback must take a string parameter. This string will contain the document's data upon successful printing and an empty
+    string otherwise.
+*/
+
 
 /*!
     \qmlsignal void WebEngineView::wasRecentlyAudibleChanged(bool wasRecentlyAudible)

@@ -1008,6 +1008,15 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
     args.append(QJSValue(matchCount));
     callback.call(args);
 }
+
+void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+{
+    QJSValue callback = m_callbacks.take(requestId);
+    QJSValueList args;
+    args.append(QJSValue(result.data()));
+    callback.call(args);
+}
+
 void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText)
 {
 #ifdef ENABLE_QML_TESTSUPPORT_API
@@ -1184,13 +1193,28 @@ bool QQuickWebEngineView::wasRecentlyAudible()
     return d->adapter->wasRecentlyAudible();
 }
 
-void QQuickWebEngineView::printToPDF(const QString &filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+{
+    Q_D(const QQuickWebEngineView);
+    QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
+    QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
+    QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
+
+    d->adapter->printToPDF(pageLayout, filePath);
+}
+
+void QQuickWebEngineView::printToPdf(PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation, const QJSValue &callback)
 {
     Q_D(QQuickWebEngineView);
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
-    d->adapter->printToPDF(pageLayout, filePath);
+
+    if (callback.isUndefined())
+        return;
+
+    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
+    d->m_callbacks.insert(requestId, callback);
 }
 
 bool QQuickWebEngineView::isFullScreen() const

@@ -314,6 +314,11 @@ void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
     m_callbacks.invoke(requestId, matchCount > 0);
 }
 
+void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+{
+    m_callbacks.invoke(requestId, result);
+}
+
 void QWebEnginePagePrivate::passOnFocus(bool reverse)
 {
     if (view)
@@ -1633,10 +1638,36 @@ QSizeF QWebEnginePage::contentsSize() const
     return d->adapter->lastContentsSize();
 }
 
-void QWebEnginePage::printToPDF(const QString &filePath, const QPageLayout &pageLayout)
+/*!
+    Renders the current content of the page into a PDF document and saves it in the location specified in \a filePath.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+
+    If a file already exists at the provided file path, it will be overwritten.
+    \since 5.7
+*/
+void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &pageLayout)
 {
     Q_D(const QWebEnginePage);
     d->adapter->printToPDF(pageLayout, filePath);
+}
+
+
+/*!
+    \fn void QWebEnginePage::printToPdf(const QPageLayout &pageLayout, FunctorOrLambda resultCallback)
+    Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
+    as parameter to \a resultCallback.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+
+    The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
+    will contain the PDF data, otherwise, the byte array will be empty.
+
+    \since 5.7
+*/
+void QWebEnginePage::printToPdf(const QPageLayout &pageLayout, const QWebEngineCallback<const QByteArray&> &resultCallback)
+{
+    Q_D(QWebEnginePage);
+    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
+    d->m_callbacks.registerCallback(requestId, resultCallback);
 }
 
 QT_END_NAMESPACE

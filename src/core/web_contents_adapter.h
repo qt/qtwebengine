@@ -172,6 +172,7 @@ public:
     void leaveDrag();
     void initUpdateDragCursorMessagePollingTimer();
     void printToPDF(const QPageLayout&, const QString&);
+    quint64 printToPDFCallbackResult(const QPageLayout &);
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;

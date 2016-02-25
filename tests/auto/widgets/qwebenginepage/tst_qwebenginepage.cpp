@@ -20,6 +20,7 @@
 */
 
 #include "../util.h"
+#include <QByteArray>
 #include <QClipboard>
 #include <QDir>
 #include <QGraphicsWidget>
@@ -240,7 +241,7 @@ private Q_SLOTS:
     void toPlainTextLoadFinishedRace_data();
     void toPlainTextLoadFinishedRace();
 
-    void printToPDF();
+    void printToPdf();
 
 private:
     QWebEngineView* m_view;
@@ -5045,7 +5046,7 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
     QVERIFY(spy.count() == 3);
 }
 
-void tst_QWebEnginePage::printToPDF()
+void tst_QWebEnginePage::printToPdf()
 {
     QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
     QVERIFY(tempDir.isValid());
@@ -5055,9 +5056,25 @@ void tst_QWebEnginePage::printToPDF()
     QTRY_VERIFY(spy.count() == 1);
 
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
-    QString path = tempDir.path() + "/print_success.pdf";
-    page.printToPDF(path, layout);
+    QString path = tempDir.path() + "/print_1_success.pdf";
+    page.printToPdf(path, layout);
     QTRY_VERIFY(QFile::exists(path));
+
+#if !defined(Q_OS_WIN)
+    path = tempDir.path() + "/print_//2_failed.pdf";
+#else
+    path = tempDir.path() + "/print_|2_failed.pdf";
+#endif
+    page.printToPdf(path, QPageLayout());
+    QTRY_VERIFY(!QFile::exists(path));
+
+    CallbackSpy<QByteArray> successfulSpy;
+    page.printToPdf(layout, successfulSpy.ref());
+    QTRY_VERIFY(successfulSpy.waitForResult().length() > 0);
+
+    CallbackSpy<QByteArray> failedInvalidLayoutSpy;
+    page.printToPdf(QPageLayout(), failedInvalidLayoutSpy.ref());
+    QTRY_VERIFY(!failedInvalidLayoutSpy.waitForResult().length() > 0);
 }
 
 QTEST_MAIN(tst_QWebEnginePage)

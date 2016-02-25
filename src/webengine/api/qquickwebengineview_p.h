@@ -472,7 +472,8 @@ public Q_SLOTS:
     Q_REVISION(3) bool isAudioMuted() const;
     Q_REVISION(3) void setAudioMuted(bool muted);
     Q_REVISION(3) bool wasRecentlyAudible();
-    Q_REVISION(3) void printToPDF(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
+    Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
+    Q_REVISION(3) void printToPdf(PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait, const QJSValue &callback = QJSValue());
 
 private Q_SLOTS:
     void lazyInitialize();

@@ -701,6 +701,21 @@ void BrowserMainWindow::slotFilePrint()
 #endif
 }
 
+void BrowserMainWindow::slotHandlePdfPrinted(const QByteArray& result)
+{
+    if (!result.size())
+        return;
+
+    QFile file(m_printerOutputFileName);
+
+    m_printerOutputFileName.clear();
+    if (!file.open(QFile::WriteOnly))
+        return;
+
+    file.write(result.data(), result.size());
+    file.close();
+}
+
 void BrowserMainWindow::slotFilePrintToPDF()
 {
 #ifndef QT_NO_PRINTER
@@ -709,10 +724,13 @@ void BrowserMainWindow::slotFilePrintToPDF()
     QPrinter printer;
     QPrintDialog *dialog = new QPrintDialog(&printer, this);
     dialog->setWindowTitle(tr("Print Document"));
-    if (dialog->exec() != QDialog::Accepted || printer.outputFileName().isEmpty())
+    if (dialog->exec() != QDialog::Accepted || printer.outputFileName().isEmpty() || !m_printerOutputFileName.isEmpty())
         return;
 
-    currentTab()->page()->printToPDF(printer.outputFileName(), printer.pageLayout());
+    m_printerOutputFileName = printer.outputFileName();
+
+    currentTab()->page()->printToPdf(printer.pageLayout(), invoke(this, &BrowserMainWindow::slotHandlePdfPrinted));
+
 #endif // QT_NO_PRINTER
 }
 

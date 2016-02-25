@@ -57,17 +57,28 @@
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(QtWebEngineCore::PrintViewManagerQt);
 
 namespace {
-static int request_id = 0;
 static const qreal kMicronsToMillimeter = 1000.0f;
 
-static scoped_refptr<base::RefCountedBytes>
-GetDataFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
+static std::vector<char>
+GetStdVectorFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
     scoped_ptr<base::SharedMemory> shared_buf(
                 new base::SharedMemory(handle, true));
 
     if (!shared_buf->Map(data_size)) {
-        NOTREACHED();
-        return NULL;
+        return std::vector<char>();
+    }
+
+    char* data = static_cast<char*>(shared_buf->memory());
+    return std::vector<char>(data, data + data_size);
+}
+
+static scoped_refptr<base::RefCountedBytes>
+GetBytesFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
+     scoped_ptr<base::SharedMemory> shared_buf(
+                 new base::SharedMemory(handle, true));
+
+    if (!shared_buf->Map(data_size)) {
+       return NULL;
     }
 
     unsigned char* data = static_cast<unsigned char*>(shared_buf->memory());
@@ -77,8 +88,7 @@ GetDataFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
 
 // Write the PDF file to disk.
 static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
-                        const base::FilePath& path,
-                        const base::Callback<void(bool)>& callback) {
+                        const base::FilePath& path) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
     DCHECK_GT(data->size(), 0U);
 
@@ -87,17 +97,17 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
 
     base::File file(path,
                     base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
-    bool ok = file.IsValid() && metafile.SaveTo(&file);
-
-    if (!callback.is_null()) {
-        content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                         FROM_HERE,
-                                         base::Bind(callback, ok));
-    }
+    if (file.IsValid())
+        metafile.SaveTo(&file);
 }
 
 static void applyQPageLayoutSettingsToDictionary(const QPageLayout& pageLayout, base::DictionaryValue& print_settings)
 {
+    // TO DO: Check if we can use the request ID from Qt here somehow.
+    static int internalRequestId = 0;
+
+    print_settings.SetBoolean(printing::kIsFirstRequest, internalRequestId++ == 0);
+    print_settings.SetInteger(printing::kPreviewRequestID, internalRequestId);
     //Set page size attributes, chromium expects these in micrometers
     QSizeF pageSizeInMilimeter = pageLayout.pageSize().size(QPageSize::Millimeter);
     scoped_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
@@ -106,9 +116,6 @@ static void applyQPageLayoutSettingsToDictionary(const QPageLayout& pageLayout, 
     print_settings.Set(printing::kSettingMediaSize, std::move(sizeDict));
 
     print_settings.SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
-
-    print_settings.SetInteger(printing::kPreviewRequestID, request_id++);
-    print_settings.SetBoolean(printing::kIsFirstRequest, request_id != 0);
 
     // The following are standard settings that Chromium expects to be set.
     print_settings.SetBoolean(printing::kSettingPrintToPDF, true);
@@ -144,21 +151,51 @@ PrintViewManagerQt::~PrintViewManagerQt()
 #if defined(ENABLE_BASIC_PRINTING)
 bool PrintViewManagerQt::PrintToPDF(const QPageLayout &pageLayout, const QString &filePath)
 {
-    return PrintToPDFWithCallback(pageLayout, filePath, base::Callback<void(bool)>());
-}
-
-bool PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout, const QString &filePath, base::Callback<void(bool)> callback)
-{
-    // If there already is a pending print in progress, don't try starting another one.
-    if (m_printSettings)
+    if (m_printSettings || !filePath.length())
         return false;
 
+    m_pdfOutputPath = toFilePath(filePath);
+    if (!PrintToPDFInternal(pageLayout)) {
+        resetPdfState();
+        return false;
+    }
+    return true;
+}
+
+bool PrintViewManagerQt::PrintToPDFWithCallback(const QPageLayout &pageLayout, const PrintToPDFCallback& callback)
+{
+    if (callback.is_null())
+        return false;
+
+    // If there already is a pending print in progress, don't try starting another one.
+    if (m_printSettings) {
+            content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                             FROM_HERE,
+                                             base::Bind(callback, std::vector<char>()));
+        return false;
+    }
+
+    m_pdfPrintCallback = callback;
+    if (!PrintToPDFInternal(pageLayout)) {
+        content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                         FROM_HERE,
+                                         base::Bind(callback, std::vector<char>()));
+
+        resetPdfState();
+        return false;
+    }
+    return true;
+}
+
+bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout)
+{
+    if (!pageLayout.isValid())
+        return false;
     m_printSettings.reset(new base::DictionaryValue());
     applyQPageLayoutSettingsToDictionary(pageLayout, *m_printSettings);
-    m_pdfOutputPath = toFilePath(filePath);
-
     return Send(new PrintMsg_InitiatePrintPreview(routing_id(), false));
 }
+
 #endif // defined(ENABLE_BASIC_PRINTING)
 
 // PrintedPagesSource implementation.
@@ -208,24 +245,23 @@ void PrintViewManagerQt::OnMetafileReadyForPrinting(
 {
     StopWorker(params.document_cookie);
 
-    scoped_refptr<base::RefCountedBytes> data_bytes =
-        GetDataFromHandle(params.metafile_data_handle, params.data_size);
-    if (!data_bytes || !data_bytes->size()) {
-      resetPdfState();
-      return;
-    }
-
     // Create local copies so we can reset the state and take a new pdf print job.
-    base::Callback<void(bool)> pdf_print_callback = m_pdfPrintCallback;
+    base::Callback<void(const std::vector<char>&)> pdf_print_callback = m_pdfPrintCallback;
     base::FilePath pdfOutputPath = m_pdfOutputPath;
 
-    // Save the PDF file to disk and then execute the callback.
-    content::BrowserThread::PostTask(content::BrowserThread::FILE,
-        FROM_HERE,
-        base::Bind(&SavePdfFile, data_bytes, pdfOutputPath,
-                   pdf_print_callback));
-
     resetPdfState();
+
+    if (!pdf_print_callback.is_null()) {
+        std::vector<char> data_vector = GetStdVectorFromHandle(params.metafile_data_handle, params.data_size);
+        content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                         FROM_HERE,
+                                         base::Bind(pdf_print_callback, data_vector));
+    } else {
+        scoped_refptr<base::RefCountedBytes> data_bytes = GetBytesFromHandle(params.metafile_data_handle, params.data_size);
+        content::BrowserThread::PostTask(content::BrowserThread::FILE,
+               FROM_HERE,
+               base::Bind(&SavePdfFile, data_bytes, pdfOutputPath));
+    }
 }
 
 void PrintViewManagerQt::OnDidShowPrintDialog()
@@ -241,12 +277,22 @@ void PrintViewManagerQt::DidStartLoading()
 // Cancels the print job.
 void PrintViewManagerQt::NavigationStopped()
 {
+    if (!m_pdfPrintCallback.is_null()) {
+        content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                         FROM_HERE,
+                                         base::Bind(m_pdfPrintCallback, std::vector<char>()));
+    }
     resetPdfState();
 }
 
 void PrintViewManagerQt::RenderProcessGone(base::TerminationStatus status)
 {
     PrintViewManagerBaseQt::RenderProcessGone(status);
+    if (!m_pdfPrintCallback.is_null()) {
+        content::BrowserThread::PostTask(content::BrowserThread::UI,
+                                         FROM_HERE,
+                                         base::Bind(m_pdfPrintCallback, std::vector<char>()));
+    }
     resetPdfState();
 }
 

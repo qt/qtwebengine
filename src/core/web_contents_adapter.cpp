@@ -180,6 +180,13 @@ static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint6
         adapterClient->didRunJavaScript(requestId, fromJSValue(result));
 }
 
+static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient, int requestId, const std::vector<char>& result)
+{
+    if (requestId) {
+        adapterClient->didPrintPage(requestId, QByteArray(result.data(), result.size()));
+    }
+}
+
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
     content::WebContents::CreateParams create_params(browserContext, NULL);
@@ -909,6 +916,18 @@ void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString
 {
 #if defined(ENABLE_BASIC_PRINTING)
     PrintViewManagerQt::FromWebContents(webContents())->PrintToPDF(pageLayout, filePath);
+#endif // if defined(ENABLE_BASIC_PRINTING)
+}
+
+quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout)
+{
+#if defined(ENABLE_BASIC_PRINTING)
+    Q_D(WebContentsAdapter);
+    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished, d->adapterClient, d->nextRequestId);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout, callback);
+    return d->nextRequestId++;
+#else
+    return 0;
 #endif // if defined(ENABLE_BASIC_PRINTING)
 }
 
