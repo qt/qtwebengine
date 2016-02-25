@@ -149,7 +149,7 @@
     run JavaScript code in the context of the page's main frame and to enable customization of
     handlers for specific events like showing custom authentication dialogs.
 
-    Each QWebEnginePage belongs to a QWebEngineProfile that can have a QWebEngineScriptCollection
+    Each QWebEnginePage belongs to a QWebEngineProfile that can have a QWebEngineSettings
     for specifying page settings, a QWebEngineScriptCollection for running scripts on the page, and
     a QWebEngineCookieStore for accessing the HTTP cookies of Chromium. A QWebEnginePage can also
     directly point to a script collection or cookie store.
