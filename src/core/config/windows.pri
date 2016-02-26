@@ -11,9 +11,6 @@ GYP_CONFIG += \
 no_spellcheck: GYP_CONFIG += enable_spellcheck=0
 else: GYP_CONFIG += enable_spellcheck=1
 
-# Chromium builds with debug info in release by default but Qt doesn't
-CONFIG(release, debug|release):!force_debug_info: GYP_CONFIG += fastbuild=1
-
 # Libvpx build needs additional search path on Windows.
 GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$OUT_PWD/$$getConfigDir()/obj/$${getChromiumSrcDir()}\""
 
@@ -53,6 +50,14 @@ defineTest(usingMSVC32BitCrossCompiler) {
     return(false)
 }
 
+msvc:contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
+    # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
+    GYP_CONFIG += fastbuild=2
+} else {
+    # Chromium builds with debug info in release by default but Qt doesn't
+    CONFIG(release, debug|release):!force_debug_info: GYP_CONFIG += fastbuild=1
+}
+
 msvc {
     equals(MSVC_VER, 12.0) {
         MSVS_VERSION = 2013
@@ -70,10 +75,6 @@ msvc {
     PROGRAM_FILES_X86 = $$(ProgramW6432)
     isEmpty(PROGRAM_FILES_X86): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/8.1\""
 
-    contains(QT_ARCH, "i386"):!usingMSVC32BitCrossCompiler() {
-        # The 32 bit MSVC linker runs out of memory if we do not remove all debug information.
-        GYP_CONFIG += fastbuild=2
-    }
 } else {
     fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
 }
