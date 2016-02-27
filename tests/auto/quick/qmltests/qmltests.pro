@@ -39,7 +39,6 @@ OTHER_FILES += \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
     $$PWD/data/tst_favicon.qml \
-    $$PWD/data/tst_faviconImage.qml \
     $$PWD/data/tst_filePicker.qml \
     $$PWD/data/tst_formValidation.qml \
     $$PWD/data/tst_geopermission.qml \

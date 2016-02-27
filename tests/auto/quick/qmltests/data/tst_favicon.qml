@@ -56,6 +56,11 @@ TestWebEngineView {
         signalName: "iconChanged"
     }
 
+    Image {
+        id: favicon
+        source: webEngineView.icon
+    }
+
     TestCase {
         id: test
         name: "WebEngineFavicon"
@@ -70,6 +75,34 @@ TestWebEngineView {
             }
 
             iconChangedSpy.clear()
+        }
+
+        function test_faviconLoad() {
+            compare(iconChangedSpy.count, 0)
+
+            var url = Qt.resolvedUrl("favicon.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            compare(favicon.width, 48)
+            compare(favicon.height, 48)
+        }
+
+        function test_faviconLoadEncodedUrl() {
+            compare(iconChangedSpy.count, 0)
+
+            var url = Qt.resolvedUrl("favicon2.html?favicon=load should work with#whitespace!")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            compare(favicon.width, 16)
+            compare(favicon.height, 16)
         }
 
         function test_noFavicon() {
@@ -105,11 +138,10 @@ TestWebEngineView {
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
 
-            iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
+            compare(iconChangedSpy.count, 0)
 
             var iconUrl = webEngineView.icon
-            compare(iconUrl, Qt.resolvedUrl("icons/unavailable.ico"))
+            compare(iconUrl, Qt.resolvedUrl(""))
         }
 
         function test_errorPageEnabled() {
@@ -140,6 +172,38 @@ TestWebEngineView {
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))
+        }
+
+        function test_bestFavicon() {
+            compare(iconChangedSpy.count, 0)
+            var url, iconUrl
+
+            url = Qt.resolvedUrl("favicon-misc.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            iconUrl = webEngineView.icon
+            // Touch icon is ignored
+            compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
+            compare(favicon.width, 32)
+            compare(favicon.height, 32)
+
+            iconChangedSpy.clear()
+
+            url = Qt.resolvedUrl("favicon-shortcut.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            verify(iconChangedSpy.count >= 1)
+
+            iconUrl = webEngineView.icon
+            compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))
+            compare(favicon.width, 144)
+            compare(favicon.height, 144)
         }
 
         function test_touchIcon() {

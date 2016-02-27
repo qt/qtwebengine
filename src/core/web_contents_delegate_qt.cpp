@@ -60,7 +60,6 @@
 
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -241,16 +240,11 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     if (render_frame_host->GetParent())
         return;
 
+    if (!m_faviconManager->hasCandidate())
+        m_viewClient->iconChanged(QUrl());
+
     m_viewClient->loadProgressChanged(100);
     m_viewClient->loadFinished(true, toQt(validated_url));
-
-    content::NavigationEntry *entry = web_contents()->GetController().GetVisibleEntry();
-    if (!entry)
-        return;
-
-    // No available icon for the current entry
-    if (!entry->GetFavicon().valid && !m_faviconManager->hasAvailableCandidateIcon())
-        m_viewClient->iconChanged(QUrl());
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)
@@ -263,14 +257,6 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     }
 
     m_faviconManager->update(faviconCandidates);
-
-    content::NavigationEntry *entry = web_contents()->GetController().GetVisibleEntry();
-    if (entry) {
-        FaviconInfo proposedFaviconInfo = m_faviconManager->getProposedFaviconInfo();
-        content::FaviconStatus &favicon = entry->GetFavicon();
-        favicon.url = toGurl(proposedFaviconInfo.url);
-        favicon.valid = proposedFaviconInfo.isValid();
-    }
 }
 
 content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)

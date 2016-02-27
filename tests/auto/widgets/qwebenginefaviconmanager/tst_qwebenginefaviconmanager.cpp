@@ -161,7 +161,7 @@ void tst_QWebEngineFaviconManager::aboutBlank()
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 0);
+    QCOMPARE(iconUrlChangedSpy.count(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
 }
@@ -178,11 +178,9 @@ void tst_QWebEngineFaviconManager::unavailableFavicon()
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QCOMPARE(iconUrlChangedSpy.count(), 0);
 
-    QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
-    QCOMPARE(m_page->iconUrl(), iconUrl);
-    QCOMPARE(iconUrl, QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/icons/unavailable.ico")));
+    QVERIFY(m_page->iconUrl().isEmpty());
 }
 
 void tst_QWebEngineFaviconManager::errorPageEnabled()
