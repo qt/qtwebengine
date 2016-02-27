@@ -209,7 +209,7 @@ public:
     QQmlComponent *contextMenuExtraItems;
     QtWebEngineCore::WebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
-    QUrl icon;
+    QUrl iconUrl;
     int loadProgress;
     bool m_fullscreenMode;
     bool isLoading;

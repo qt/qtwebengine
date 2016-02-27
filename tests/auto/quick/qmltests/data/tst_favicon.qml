@@ -79,8 +79,7 @@ TestWebEngineView {
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
 
-            iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
+            compare(iconChangedSpy.count, 0)
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))
@@ -93,8 +92,7 @@ TestWebEngineView {
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
 
-            iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
+            compare(iconChangedSpy.count, 0)
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))
@@ -107,8 +105,7 @@ TestWebEngineView {
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
 
-            iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
+            compare(iconChangedSpy.count, 0)
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl("icons/unavailable.ico"))
@@ -120,14 +117,11 @@ TestWebEngineView {
 
             compare(iconChangedSpy.count, 0)
 
-            var url = Qt.resolvedUrl("http://non.existent/url")
+            var url = Qt.resolvedUrl("invalid://url")
             webEngineView.url = url
             verify(webEngineView.testSupport.waitForErrorPageLoadSucceeded())
 
-            iconChangedSpy.wait()
-            // Icon is reseted at load start.
-            // Load is started twice: once for unavailale page then error page
-            compare(iconChangedSpy.count, 2)
+            compare(iconChangedSpy.count, 0)
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))
@@ -138,12 +132,11 @@ TestWebEngineView {
 
             compare(iconChangedSpy.count, 0)
 
-            var url = Qt.resolvedUrl("http://non.existent/url")
+            var url = Qt.resolvedUrl("invalid://url")
             webEngineView.url = url
             verify(webEngineView.waitForLoadFailed())
 
-            iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
+            compare(iconChangedSpy.count, 0)
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))
@@ -156,8 +149,7 @@ TestWebEngineView {
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
 
-            iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
+            compare(iconChangedSpy.count, 0)
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))

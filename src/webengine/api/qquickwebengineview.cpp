@@ -401,7 +401,9 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
-    icon = url;
+    if (iconUrl == url)
+        return;
+    iconUrl = url;
     Q_EMIT q->iconChanged();
 }
 
@@ -846,7 +848,7 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
 QUrl QQuickWebEngineView::icon() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->icon;
+    return d->iconUrl;
 }
 
 void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl)
