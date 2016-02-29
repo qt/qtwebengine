@@ -213,9 +213,6 @@ private Q_SLOTS:
     void setHtmlWithBaseURL();
     void setHtmlWithJSAlert();
     void metaData();
-#if !defined(QT_NO_COMBOBOX)
-    void popupFocus();
-#endif
     void inputFieldFocus();
     void hitTestContent();
     void baseUrl_data();
@@ -4140,49 +4137,6 @@ void tst_QWebEnginePage::metaData()
     QCOMPARE(metaData.value("nonexistent"), QString());
 #endif
 }
-
-#if !defined(QT_NO_COMBOBOX)
-void tst_QWebEnginePage::popupFocus()
-{
-#if !defined(QWEBENGINEELEMENT)
-    QSKIP("QWEBENGINEELEMENT");
-#else
-    QWebEngineView view;
-    view.setHtml("<html>"
-                 "    <body>"
-                 "        <select name=\"select\">"
-                 "            <option>1</option>"
-                 "            <option>2</option>"
-                 "        </select>"
-                 "        <input type=\"text\"> </input>"
-                 "        <textarea name=\"text_area\" rows=\"3\" cols=\"40\">"
-                 "This test checks whether showing and hiding a popup"
-                 "takes the focus away from the webpage."
-                 "        </textarea>"
-                 "    </body>"
-                 "</html>");
-    view.resize(400, 100);
-    // Call setFocus before show to work around http://bugreports.qt.nokia.com/browse/QTBUG-14762
-    view.setFocus();
-    view.show();
-    QTest::qWaitForWindowExposed(&view);
-    view.activateWindow();
-    QTRY_VERIFY(view.hasFocus());
-
-    // open the popup by clicking. check if focus is on the popup
-    const QWebEngineElement webCombo = view.page()->documentElement().findFirst(QLatin1String("select[name=select]"));
-    QTest::mouseClick(&view, Qt::LeftButton, 0, webCombo.geometry().center());
-
-    QComboBox* combo = view.findChild<QComboBox*>();
-    QVERIFY(combo != 0);
-    QTRY_VERIFY(!view.hasFocus() && combo->view()->hasFocus()); // Focus should be on the popup
-
-    // hide the popup and check if focus is on the page
-    combo->hidePopup();
-    QTRY_VERIFY(view.hasFocus()); // Focus should be back on the WebView
-#endif
-}
-#endif
 
 void tst_QWebEnginePage::inputFieldFocus()
 {
