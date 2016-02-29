@@ -69,11 +69,7 @@ msvc {
 
     GYP_ARGS += "-G msvs_version=$$MSVS_VERSION"
 
-    # The check below is ugly, but necessary, as it seems to be the only reliable way to detect if the host
-    # architecture is 32 bit. QMAKE_HOST.arch does not work as it returns the architecture that the toolchain
-    # is building for, not the system's actual architecture.
-    PROGRAM_FILES_X86 = $$(ProgramW6432)
-    isEmpty(PROGRAM_FILES_X86): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/8.1\""
+    isBuildingOnWin32(): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/8.1\""
 
 } else {
     fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")
