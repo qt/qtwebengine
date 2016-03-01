@@ -249,6 +249,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     : m_host(content::RenderWidgetHostImpl::From(widget))
     , m_gestureProvider(QtGestureProviderConfig(), this)
     , m_sendMotionActionDown(false)
+    , m_touchMotionStarted(false)
     , m_chromiumCompositorData(new ChromiumCompositorData)
     , m_needsDelegatedFrameAck(false)
     , m_didFirstVisuallyNonEmptyLayout(false)
@@ -1009,6 +1010,12 @@ void RenderWidgetHostViewQt::handleWheelEvent(QWheelEvent *ev)
     m_host->ForwardWheelEvent(WebEventFactory::toWebWheelEvent(ev, dpiScale()));
 }
 
+void RenderWidgetHostViewQt::clearPreviousTouchMotionState()
+{
+    m_previousTouchPoints.clear();
+    m_touchMotionStarted = false;
+}
+
 void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 {
     // Chromium expects the touch event timestamps to be comparable to base::TimeTicks::Now().
@@ -1023,19 +1030,46 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
 
     QList<QTouchEvent::TouchPoint> touchPoints = mapTouchPointIds(ev->touchPoints());
 
-    if (ev->type() == QEvent::TouchCancel) {
-        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL, ev->modifiers(), dpiScale());
+    switch (ev->type()) {
+    case QEvent::TouchBegin:
+        m_sendMotionActionDown = true;
+        m_touchMotionStarted = true;
+        break;
+    case QEvent::TouchUpdate:
+        m_touchMotionStarted = true;
+        break;
+    case QEvent::TouchCancel:
+    {
+        // Don't process a TouchCancel event if no motion was started beforehand, or if there are
+        // no touch points in the current event or in the previously processed event.
+        if (!m_touchMotionStarted || (touchPoints.isEmpty() && m_previousTouchPoints.isEmpty())) {
+            clearPreviousTouchMotionState();
+            return;
+        }
+
+        // Use last saved touch points for the cancel event, to get rid of a QList assert,
+        // because Chromium expects a MotionEvent::ACTION_CANCEL instance to contain at least
+        // one touch point, whereas a QTouchCancel may not contain any touch points at all.
+        if (touchPoints.isEmpty())
+            touchPoints = m_previousTouchPoints;
+        clearPreviousTouchMotionState();
+        MotionEventQt cancelEvent(touchPoints, eventTimestamp, ui::MotionEvent::ACTION_CANCEL,
+                                  ev->modifiers(), dpiScale());
         processMotionEvent(cancelEvent);
         return;
     }
-
-    if (ev->type() == QEvent::TouchBegin)
-        m_sendMotionActionDown = true;
+    case QEvent::TouchEnd:
+        clearPreviousTouchMotionState();
+        break;
+    default:
+        break;
+    }
 
     // Make sure that ACTION_POINTER_DOWN is delivered before ACTION_MOVE,
     // and ACTION_MOVE before ACTION_POINTER_UP.
     std::sort(touchPoints.begin(), touchPoints.end(), compareTouchPoints);
 
+    m_previousTouchPoints = touchPoints;
     for (int i = 0; i < touchPoints.size(); ++i) {
         ui::MotionEvent::Action action;
         switch (touchPoints[i].state()) {
@@ -1043,21 +1077,24 @@ void RenderWidgetHostViewQt::handleTouchEvent(QTouchEvent *ev)
             if (m_sendMotionActionDown) {
                 action = ui::MotionEvent::ACTION_DOWN;
                 m_sendMotionActionDown = false;
-            } else
+            } else {
                 action = ui::MotionEvent::ACTION_POINTER_DOWN;
+            }
             break;
         case Qt::TouchPointMoved:
             action = ui::MotionEvent::ACTION_MOVE;
             break;
         case Qt::TouchPointReleased:
-            action = touchPoints.size() > 1 ? ui::MotionEvent::ACTION_POINTER_UP : ui::MotionEvent::ACTION_UP;
+            action = touchPoints.size() > 1 ? ui::MotionEvent::ACTION_POINTER_UP :
+                                              ui::MotionEvent::ACTION_UP;
             break;
         default:
             // Ignore Qt::TouchPointStationary
             continue;
         }
 
-        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), dpiScale(), i);
+        MotionEventQt motionEvent(touchPoints, eventTimestamp, action, ev->modifiers(), dpiScale(),
+                                  i);
         processMotionEvent(motionEvent);
     }
 }

@@ -205,6 +205,7 @@ public:
 private:
     void sendDelegatedFrameAck();
     void processMotionEvent(const ui::MotionEvent &motionEvent);
+    void clearPreviousTouchMotionState();
     QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
     float dpiScale() const;
 
@@ -214,7 +215,9 @@ private:
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
     bool m_sendMotionActionDown;
+    bool m_touchMotionStarted;
     QMap<int, int> m_touchIdMapping;
+    QList<QTouchEvent::TouchPoint> m_previousTouchPoints;
     scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
