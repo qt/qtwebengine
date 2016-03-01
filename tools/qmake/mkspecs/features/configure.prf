@@ -113,5 +113,12 @@ defineTest(finalizeConfigure) {
     } else {
         log("Proprietary codecs (H264, MP3).... Not enabled         (Default, enable with WEBENGINE_CONFIG += use_proprietary_codecs)$${EOL}")
     }
+    osx {
+        use?(appstore_compliant_code) {
+            log("AppStore Compliant ............... Enabled$${EOL}")
+        } else {
+            log("AppStore Compliant ............... Not enabled         (Default, enable with WEBENGINE_CONFIG += use_appstore_compliant_code)$${EOL}")
+        }
+    }
 }
 

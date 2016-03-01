@@ -101,6 +101,7 @@ contains(QT_ARCH, "arm64"): GYP_CONFIG += target_arch=arm64
 contains(QT_ARCH, "mips64"): GYP_CONFIG += target_arch=mips64el
 
 contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_codecs=1 ffmpeg_branding=Chrome
+contains(WEBENGINE_CONFIG, use_appstore_compliant_code): GYP_CONFIG += appstore_compliant_code=1
 
 # Compiling with -Os makes a huge difference in binary size, and the unwind tables is another big part,
 # but the latter are necessary for useful debug binaries.

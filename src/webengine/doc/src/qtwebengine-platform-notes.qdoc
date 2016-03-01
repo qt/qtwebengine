@@ -120,6 +120,25 @@
     with the codec libraries. For some codecs, open source implementations, such as \l {OpenH264},
     are available.
 
+    \section1 Mac App Store Compatibility
+
+    By default, Qt WebEngine uses private OS X API, which might cause an application to be
+    rejected when submitted to the Mac App Store. To configure Qt WebEngine not to use these API
+    calls, Qt WebEngine has to be recompiled:
+
+    \code
+    qmake WEBENGINE_CONFIG += use_appstore_compliant_code
+    \endcode
+
+    However, this will cause some behavioral changes, such as:
+
+    \list
+        \li The OS X Kill Ring functionality will no longer work (emacs-like copy pasting).
+        \li Certain Chromium sandboxing cleanup is not done.
+        \li Text areas will be painted with a different style.
+        \li Text fields might be painted with a different style on Mountain Lion (OS X 10.8).
+    \endlist
+
     \section1 Default QSurfaceFormat OpenGL Profile Support
 
     If a new default QSurfaceFormat with a modified OpenGL profile has to be set, it should be set
