@@ -65,6 +65,19 @@ namespace QtWebEngineCore {
 static const char kHttpErrorDomain[] = "http";
 static const char kQrcSchemeQt[] = "qrc";
 
+class RenderProcessObserverQt : public content::RenderProcessObserver {
+public:
+    void WebKitInitialized() override
+    {
+        // Can only be done after blink is initialized.
+        blink::WebString qrcScheme(base::ASCIIToUTF16(kQrcSchemeQt));
+        // mark qrc as a secure scheme (avoids deprecation warnings)
+        blink::WebSecurityPolicy::registerURLSchemeAsSecure(qrcScheme);
+        // mark qrc as a local scheme (allows local access to qrc)
+        blink::WebSecurityPolicy::registerURLSchemeAsLocal(qrcScheme);
+    }
+};
+
 ContentRendererClientQt::ContentRendererClientQt()
 {
 }
@@ -79,12 +92,11 @@ void ContentRendererClientQt::RenderThreadStarted()
     renderThread->RegisterExtension(WebChannelIPCTransport::getV8Extension());
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheObserver.reset(new web_cache::WebCacheRenderProcessObserver());
+    m_renderProcessObserver.reset(new RenderProcessObserverQt());
     renderThread->AddObserver(m_visitedLinkSlave.data());
     renderThread->AddObserver(m_webCacheObserver.data());
     renderThread->AddObserver(UserScriptController::instance());
-
-    // mark qrc as a secure scheme (avoids deprecation warnings)
-    blink::WebSecurityPolicy::registerURLSchemeAsSecure(blink::WebString::fromLatin1(kQrcSchemeQt));
+    renderThread->AddObserver(m_renderProcessObserver.data());
 }
 
 void ContentRendererClientQt::RenderViewCreated(content::RenderView* render_view)
