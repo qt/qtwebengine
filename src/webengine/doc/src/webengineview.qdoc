@@ -62,7 +62,7 @@
 
     The title of an HTML page can be accessed with the \l title property. Additionally, a web
     page may specify an icon, which can be accessed using the \l icon property. The \l zoomFactor
-    property holds the overall size of the contents of the web page.
+    property enables zooming the contents of the web page by a scale factor.
 
     If a certificate error is raised while loading a web page, the \l certificateError() signal is
     emitted. Certificate errors are handled by using the methods of the WebEngineCertificateError
