@@ -83,9 +83,22 @@ contains(QT_ARCH, "arm") {
     contains(QMAKE_CFLAGS, "-mthumb"): GYP_CONFIG += arm_thumb=1
 }
 
+contains(QT_ARCH, "mips") {
+    !cross_compile: GYP_CONFIG += sysroot=\"\"
+    GYP_CONFIG += target_arch=mipsel
+
+    contains(QMAKE_CFLAGS, "mips32r6"): mips_arch_variant=\"r6\"
+    else: contains(QMAKE_CFLAGS, "mips32r2"): mips_arch_variant=\"r2\"
+    else: contains(QMAKE_CFLAGS, "mips32"): mips_arch_variant=\"r1\"
+
+    contains(QMAKE_CFLAGS, "-mdsp2"): GYP_CONFIG += mips_dsp_rev=2
+    else: contains(QMAKE_CFLAGS, "-mdsp"): GYP_CONFIG += mips_dsp_rev=1
+}
+
 contains(QT_ARCH, "x86_64"): GYP_CONFIG += target_arch=x64
 contains(QT_ARCH, "i386"): GYP_CONFIG += target_arch=ia32
 contains(QT_ARCH, "arm64"): GYP_CONFIG += target_arch=arm64
+contains(QT_ARCH, "mips64"): GYP_CONFIG += target_arch=mips64el
 
 contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_codecs=1 ffmpeg_branding=Chrome
 
