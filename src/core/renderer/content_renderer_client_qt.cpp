@@ -85,6 +85,16 @@ namespace QtWebEngineCore {
 static const char kHttpErrorDomain[] = "http";
 static const char kQrcSchemeQt[] = "qrc";
 
+class RenderProcessObserverQt : public content::RenderProcessObserver {
+public:
+    void WebKitInitialized() override
+    {
+        // mark qrc as a secure scheme (avoids deprecation warnings)
+        // Can only be done after blink is initialized.
+        blink::WebSecurityPolicy::registerURLSchemeAsSecure(blink::WebString::fromLatin1(kQrcSchemeQt));
+    }
+};
+
 ContentRendererClientQt::ContentRendererClientQt()
 {
 }
@@ -98,12 +108,12 @@ void ContentRendererClientQt::RenderThreadStarted()
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheObserver.reset(new web_cache::WebCacheRenderProcessObserver());
+    m_renderProcessObserver.reset(new RenderProcessObserverQt());
     renderThread->AddObserver(m_visitedLinkSlave.data());
     renderThread->AddObserver(m_webCacheObserver.data());
     renderThread->AddObserver(UserResourceController::instance());
+    renderThread->AddObserver(m_renderProcessObserver.data());
 
-    // mark qrc as a secure scheme (avoids deprecation warnings)
-    blink::WebSecurityPolicy::registerURLSchemeAsSecure(blink::WebString::fromLatin1(kQrcSchemeQt));
 #if defined(ENABLE_SPELLCHECK)
     m_spellCheck.reset(new SpellCheck());
     renderThread->AddObserver(m_spellCheck.data());
