@@ -87,6 +87,10 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::WebAudioEnabled;
     case QWebEngineSettings::Accelerated2dCanvasEnabled:
         return WebEngineSettings::Accelerated2dCanvasEnabled;
+    case QWebEngineSettings::AutoLoadIconsForPage:
+        return WebEngineSettings::AutoLoadIconsForPage;
+    case QWebEngineSettings::TouchIconsEnabled:
+        return WebEngineSettings::TouchIconsEnabled;
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }

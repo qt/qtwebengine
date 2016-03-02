@@ -299,6 +299,21 @@ void BrowserApplication::loadSettings()
 
     defaultProfile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
     defaultProfile->setHttpAcceptLanguage(settings.value(QLatin1String("httpAcceptLanguage")).toString());
+
+    switch (settings.value(QLatin1String("faviconDownloadMode"), 1).toInt()) {
+    case 0:
+        defaultSettings->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, false);
+        break;
+    case 1:
+        defaultSettings->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, true);
+        defaultSettings->setAttribute(QWebEngineSettings::TouchIconsEnabled, false);
+        break;
+    case 2:
+        defaultSettings->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, true);
+        defaultSettings->setAttribute(QWebEngineSettings::TouchIconsEnabled, true);
+        break;
+    }
+
     settings.endGroup();
     settings.beginGroup(QLatin1String("cookies"));
 

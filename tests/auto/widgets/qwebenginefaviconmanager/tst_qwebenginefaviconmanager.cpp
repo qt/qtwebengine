@@ -54,6 +54,10 @@ private Q_SLOTS:
     void errorPageDisabled();
     void bestFavicon();
     void touchIcon();
+    void downloadIconsDisabled_data();
+    void downloadIconsDisabled();
+    void downloadTouchIconsEnabled_data();
+    void downloadTouchIconsEnabled();
 
 private:
     QWebEngineView* m_view;
@@ -267,9 +271,66 @@ void tst_QWebEngineFaviconManager::touchIcon()
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 0);
+    QCOMPARE(iconUrlChangedSpy.count(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
+}
+
+void tst_QWebEngineFaviconManager::downloadIconsDisabled_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::newRow("misc") << QUrl("qrc:/resources/favicon-misc.html");
+    QTest::newRow("shortcut") << QUrl("qrc:/resources/favicon-shortcut.html");
+    QTest::newRow("single") << QUrl("qrc:/resources/favicon-single.html");
+    QTest::newRow("touch") << QUrl("qrc:/resources/favicon-touch.html");
+    QTest::newRow("unavailable") << QUrl("qrc:/resources/favicon-unavailable.html");
+}
+
+void tst_QWebEngineFaviconManager::downloadIconsDisabled()
+{
+    QFETCH(QUrl, url);
+
+    m_page->settings()->setAttribute(QWebEngineSettings::AutoLoadIconsForPage, false);
+
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
+
+    m_page->load(url);
+
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(iconUrlChangedSpy.count(), 0);
+
+    QVERIFY(m_page->iconUrl().isEmpty());
+}
+
+void tst_QWebEngineFaviconManager::downloadTouchIconsEnabled_data()
+{
+    QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QUrl>("expectedIconUrl");
+    QTest::newRow("misc") << QUrl("qrc:/resources/favicon-misc.html") << QUrl("qrc:/resources/icons/qt144.png");
+    QTest::newRow("shortcut") << QUrl("qrc:/resources/favicon-shortcut.html") << QUrl("qrc:/resources/icons/qt144.png");
+    QTest::newRow("single") << QUrl("qrc:/resources/favicon-single.html") << QUrl("qrc:/resources/icons/qt32.ico");
+    QTest::newRow("touch") << QUrl("qrc:/resources/favicon-touch.html") << QUrl("qrc:/resources/icons/qt144.png");
+}
+
+void tst_QWebEngineFaviconManager::downloadTouchIconsEnabled()
+{
+    QFETCH(QUrl, url);
+    QFETCH(QUrl, expectedIconUrl);
+
+    m_page->settings()->setAttribute(QWebEngineSettings::TouchIconsEnabled, true);
+
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
+
+    m_page->load(url);
+
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+
+    QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
+    QCOMPARE(m_page->iconUrl(), iconUrl);
+    QCOMPARE(iconUrl, expectedIconUrl);
 }
 
 QTEST_MAIN(tst_QWebEngineFaviconManager)

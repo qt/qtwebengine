@@ -79,7 +79,9 @@ public:
         ScreenCaptureEnabled,
         WebGLEnabled,
         WebAudioEnabled,
-        Accelerated2dCanvasEnabled
+        Accelerated2dCanvasEnabled,
+        AutoLoadIconsForPage,
+        TouchIconsEnabled
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

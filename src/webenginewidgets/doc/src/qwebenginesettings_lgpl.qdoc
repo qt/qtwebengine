@@ -141,6 +141,11 @@
     \value  Accelerated2dCanvasEnabled
             Specifies whether the HTML5 2D canvas should be a OpenGL framebuffer.
             This makes many painting operations faster, but slows down pixel access. Enabled by default if available.
+    \value  AutoLoadIconsForPage
+            Automatically downloads icons for web pages. Enabled by default.
+    \value  TouchIconsEnabled
+            Enables support for touch icons and precomposed touch icons.
+            Disabled by default.
 */
 
 /*!

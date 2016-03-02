@@ -42,6 +42,7 @@
 
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
+#include "web_engine_settings.h"
 
 #include "base/bind.h"
 #include "content/public/browser/favicon_status.h"
@@ -176,12 +177,15 @@ void FaviconManagerPrivate::propagateIcon() const
 {
     Q_Q(const FaviconManager);
 
+    WebEngineSettings *settings = m_viewClient->webEngineSettings();
+    bool touchIconsEnabled = settings->testAttribute(WebEngineSettings::TouchIconsEnabled);
+
     QUrl iconUrl;
     const QList<FaviconInfo> &faviconInfoList = q->getFaviconInfoList(true /* candidates only */);
 
     unsigned bestArea = 0;
     for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
-        if (it->type != FaviconInfo::Favicon)
+        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
             continue;
 
         if (it->isValid() && bestArea < area(it->size)) {
@@ -244,9 +248,17 @@ void FaviconManager::update(const QList<FaviconInfo> &candidates)
     Q_D(FaviconManager);
     updateCandidates(candidates);
 
+    WebEngineSettings *settings = d->m_viewClient->webEngineSettings();
+    if (!settings->testAttribute(WebEngineSettings::AutoLoadIconsForPage)) {
+        d->m_viewClient->iconChanged(QUrl());
+        return;
+    }
+
+    bool touchIconsEnabled = settings->testAttribute(WebEngineSettings::TouchIconsEnabled);
+
     const QList<FaviconInfo> &faviconInfoList = getFaviconInfoList(true /* candidates only */);
     for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
-        if (it->type != FaviconInfo::Favicon)
+        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
             continue;
 
         if (it->isValid())

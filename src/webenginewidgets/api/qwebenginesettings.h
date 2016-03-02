@@ -65,7 +65,9 @@ public:
         ScreenCaptureEnabled,
         WebGLEnabled,
         WebAudioEnabled,
-        Accelerated2dCanvasEnabled
+        Accelerated2dCanvasEnabled,
+        AutoLoadIconsForPage,
+        TouchIconsEnabled
     };
 
     enum FontSize {
