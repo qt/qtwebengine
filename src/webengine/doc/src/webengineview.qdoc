@@ -56,9 +56,8 @@
     \skipto import
     \printuntil /^\}/
 
-    The \l loadingChanged() signal is emitted when loading a page begins, ends, or fails. The
-    \l loading property holds whether the HTML page is currently loading and the load status is
-    reflected in the \l LoadStatus property.
+    The \l loading property holds whether an HTML page is currently loading.
+    The \l loadingChanged() signal is emitted when loading the page begins, ends, or fails.
 
     The title of an HTML page can be accessed with the \l title property. Additionally, a web
     page may specify an icon, which can be accessed using the \l icon property. The \l zoomFactor
