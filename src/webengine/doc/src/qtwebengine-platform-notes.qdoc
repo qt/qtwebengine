@@ -50,6 +50,9 @@
         \li OS X: Xcode version 5.1 or later on OS X 10.9 or later
     \endlist
 
+    \note Qt WebEngine cannot be built for the 32-bit mode of OS X (using the
+    macx-clang-32 mkspec).
+
     \section1 Pepper Plugin API Support
 
     Qt WebEngine supports loading Pepper Plugin API (PPAPI) plugins. The plugins must be loaded
