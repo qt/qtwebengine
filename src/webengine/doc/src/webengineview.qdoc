@@ -40,19 +40,9 @@
     \l QtWebEngine::initialize in the application main source file, as illustrated by the
     following code snippet:
 
-    \code
-    int main(int argc, char **argv)
-    {
-        Application app(argc, argv);
-
-        QtWebEngine::initialize();
-
-        QQmlApplicationEngine appEngine;
-        appEngine.load(QUrl("qrc:/main.qml"));
-
-        return app.exec();
-    }
-    \endcode
+    \quotefromfile webengine/minimal/main.cpp
+    \skipto main
+    \printuntil }
 
     \section2 Loading Web Pages
 
@@ -62,22 +52,9 @@
 
     The following sample QML application loads a web page using the \c url property:
 
-    \qml
-    import QtQuick 2.1
-    import QtQuick.Controls 1.1
-    import QtWebEngine 1.1
-
-    ApplicationWindow {
-        width: 1280
-        height: 720
-        visible: true
-        WebEngineView {
-            id: webview
-            url: "http://www.qt.io"
-            anchors.fill: parent
-        }
-    }
-    \endqml
+    \quotefromfile webengine/minimal/main.qml
+    \skipto import
+    \printuntil /^\}/
 
     The \l loadingChanged() signal is emitted when loading a page begins, ends, or fails. The
     \l loading property holds whether the HTML page is currently loading and the load status is

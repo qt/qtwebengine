@@ -164,19 +164,9 @@
     engine must be initialized by using \l QtWebEngine::initialize in the application main source
     file, as illustrated by the following code snippet:
 
-    \code
-    int main(int argc, char **argv)
-    {
-        Application app(argc, argv);
-
-        QtWebEngine::initialize();
-
-        QQmlApplicationEngine appEngine;
-        appEngine.load(QUrl("qrc:/main.qml"));
-
-        return app.exec();
-    }
-    \endcode
+    \quotefromfile webengine/minimal/main.cpp
+    \skipto main
+    \printuntil }
 
     An application can load pages into the WebEngineView, using either an URL or HTML string, and
     navigate within session history. By default, links to different pages load within the same
@@ -186,22 +176,9 @@
     The following sample QML application loads a web page using the \l{WebEngineView::}{url}
     property:
 
-    \qml
-    import QtQuick 2.1
-    import QtQuick.Controls 1.1
-    import QtWebEngine 1.1
-
-    ApplicationWindow {
-        width: 1280
-        height: 720
-        visible: true
-        WebEngineView {
-            id: webview
-            url: "http://www.qt.io"
-            anchors.fill: parent
-        }
-    }
-    \endqml
+    \quotefromfile webengine/minimal/main.qml
+    \skipto import
+    \printuntil /^\}/
 
     \section1 Managing Certificates
 
