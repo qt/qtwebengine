@@ -54,14 +54,15 @@ private Q_SLOTS:
     void errorPageDisabled();
     void bestFavicon();
     void touchIcon();
+    void multiIcon();
     void downloadIconsDisabled_data();
     void downloadIconsDisabled();
     void downloadTouchIconsEnabled_data();
     void downloadTouchIconsEnabled();
 
 private:
-    QWebEngineView* m_view;
-    QWebEnginePage* m_page;
+    QWebEngineView *m_view;
+    QWebEnginePage *m_page;
 };
 
 
@@ -274,6 +275,25 @@ void tst_QWebEngineFaviconManager::touchIcon()
     QCOMPARE(iconUrlChangedSpy.count(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
+}
+
+void tst_QWebEngineFaviconManager::multiIcon()
+{
+    if (!QDir(TESTS_SOURCE_DIR).exists())
+        W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
+
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
+
+    QUrl url = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/favicon-multi.html"));
+    m_page->load(url);
+
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+
+    QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
+    QCOMPARE(m_page->iconUrl(), iconUrl);
+    QCOMPARE(iconUrl, QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/icons/qtmulti.ico")));
 }
 
 void tst_QWebEngineFaviconManager::downloadIconsDisabled_data()
