@@ -281,8 +281,8 @@ void UrlLineEdit::setWebView(WebView *webView)
     m_iconLabel->m_webView = webView;
     connect(webView, SIGNAL(urlChanged(QUrl)),
         this, SLOT(webViewUrlChanged(QUrl)));
-    connect(webView, SIGNAL(iconChanged()),
-        this, SLOT(webViewIconChanged()));
+    connect(webView, SIGNAL(iconChanged(QIcon)),
+        this, SLOT(webViewIconChanged(QIcon)));
     connect(webView, SIGNAL(loadProgress(int)),
         this, SLOT(update()));
 }
@@ -293,11 +293,10 @@ void UrlLineEdit::webViewUrlChanged(const QUrl &url)
     m_lineEdit->setCursorPosition(0);
 }
 
-void UrlLineEdit::webViewIconChanged()
+void UrlLineEdit::webViewIconChanged(const QIcon &icon)
 {
     Q_ASSERT(m_webView);
-    QPixmap pixmap = m_webView->icon().pixmap(16, 16);
-    m_iconLabel->setPixmap(pixmap);
+    m_iconLabel->setPixmap(icon.pixmap(16, 16));
 }
 
 QLinearGradient UrlLineEdit::generateGradient(const QColor &color) const

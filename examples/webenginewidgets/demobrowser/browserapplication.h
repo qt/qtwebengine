@@ -63,8 +63,6 @@
 QT_BEGIN_NAMESPACE
 class QLocalServer;
 class QNetworkAccessManager;
-class QNetworkProxy;
-class QNetworkReply;
 class QWebEngineProfile;
 QT_END_NAMESPACE
 
@@ -93,14 +91,6 @@ public:
     bool canRestoreSession() const;
     bool privateBrowsing() const { return m_privateBrowsing; }
 
-    void setLastAuthenticator(QAuthenticator *);
-    void setLastProxyAuthenticator(QAuthenticator *);
-
-    // TODO: Remove these functions (QTBUG-47967)
-    static QByteArray authenticationKey(const QUrl &, const QString &);
-    static QByteArray proxyAuthenticationKey(const QNetworkProxy &, const QString &);
-    static QByteArray proxyAuthenticationKey(const QString &, const QString &, const QString &);
-
     static HistoryManager *historyManager();
     static CookieJar *cookieJar();
     static DownloadManager *downloadManager();
@@ -117,8 +107,6 @@ public slots:
     void lastWindowClosed();
     void quitBrowser();
     void setPrivateBrowsing(bool);
-    void authenticationRequired(QNetworkReply *, QAuthenticator *);
-    void proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
 
 signals:
     void privateBrowsingChanged(bool);

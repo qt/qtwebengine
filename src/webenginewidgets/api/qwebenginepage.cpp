@@ -44,6 +44,7 @@
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
 #include "color_chooser_controller.h"
+#include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginefullscreenrequest.h"
@@ -150,6 +151,7 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
         return;
     iconUrl = url;
     Q_EMIT q->iconUrlChanged(iconUrl);
+    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon(iconUrl));
 }
 
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
@@ -573,6 +575,25 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     \note The signal is also emitted when calling the setAudioMuted() method.
     Also, if the audio is paused, this signal is emitted with an approximate \e {two-second
     delay}, from the moment the audio is paused.
+*/
+
+/*!
+    \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
+
+    This signal is emitted when the URL of the icon ("favicon") associated with the
+    page is changed. The new URL is specified by \a url.
+
+    \sa iconUrl(), icon(), iconChanged()
+*/
+
+/*!
+    \fn void QWebEnginePage::iconChanged(const QIcon &icon)
+    \since 5.7
+
+    This signal is emitted when the icon ("favicon") associated with the
+    page is changed. The new icon is specified by \a icon.
+
+    \sa icon(), iconUrl(), iconUrlChanged()
 */
 
 /*!
@@ -1480,10 +1501,37 @@ QUrl QWebEnginePage::requestedUrl() const
     return d->adapter->requestedUrl();
 }
 
+/*!
+    \property QWebEnginePage::iconUrl
+    \brief the URL of the icon associated with the page currently viewed
+
+    By default, this property contains an empty URL.
+
+    \sa iconUrlChanged(), icon(), iconChanged()
+*/
 QUrl QWebEnginePage::iconUrl() const
 {
     Q_D(const QWebEnginePage);
     return d->iconUrl;
+}
+
+/*!
+    \property QWebEnginePage::icon
+    \brief the icon associated with the page currently viewed
+    \since 5.7
+
+    By default, this property contains a null icon.
+
+    \sa iconChanged(), iconUrl(), iconUrlChanged()
+*/
+QIcon QWebEnginePage::icon() const
+{
+    Q_D(const QWebEnginePage);
+
+    if (d->iconUrl.isEmpty())
+        return QIcon();
+
+    return d->adapter->faviconManager()->getIcon(d->iconUrl);
 }
 
 qreal QWebEnginePage::zoomFactor() const

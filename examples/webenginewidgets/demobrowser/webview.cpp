@@ -281,11 +281,8 @@ void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *aut
     passwordDialog.introLabel->setWordWrap(true);
 
     if (dialog.exec() == QDialog::Accepted) {
-        QByteArray key = BrowserApplication::authenticationKey(requestUrl, auth->realm());
         auth->setUser(passwordDialog.userNameLineEdit->text());
         auth->setPassword(passwordDialog.passwordLineEdit->text());
-        auth->setOption("key", key);
-        BrowserApplication::instance()->setLastAuthenticator(auth);
     } else {
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
@@ -312,12 +309,8 @@ void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator
     proxyDialog.introLabel->setWordWrap(true);
 
     if (dialog.exec() == QDialog::Accepted) {
-        QString user = proxyDialog.userNameLineEdit->text();
-        QByteArray key = BrowserApplication::proxyAuthenticationKey(user, proxyHost, auth->realm());
-        auth->setUser(user);
+        auth->setUser(proxyDialog.userNameLineEdit->text());
         auth->setPassword(proxyDialog.passwordLineEdit->text());
-        auth->setOption("key", key);
-        BrowserApplication::instance()->setLastProxyAuthenticator(auth);
     } else {
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
@@ -328,7 +321,6 @@ WebView::WebView(QWidget* parent)
     : QWebEngineView(parent)
     , m_progress(0)
     , m_page(0)
-    , m_iconReply(0)
 {
     connect(this, SIGNAL(loadProgress(int)),
             this, SLOT(setProgress(int)));
@@ -369,8 +361,8 @@ void WebView::setPage(WebPage *_page)
 #endif
     connect(page(), SIGNAL(loadingUrl(QUrl)),
             this, SIGNAL(urlChanged(QUrl)));
-    connect(page(), SIGNAL(iconUrlChanged(QUrl)),
-            this, SLOT(onIconUrlChanged(QUrl)));
+    connect(page(), SIGNAL(iconChanged(QIcon)),
+            this, SLOT(onIconChanged(QIcon)));
     connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     page()->setForwardUnsupportedContent(true);
@@ -457,33 +449,12 @@ QUrl WebView::url() const
     return m_initialUrl;
 }
 
-QIcon WebView::icon() const
+void WebView::onIconChanged(const QIcon &icon)
 {
-    if (!m_icon.isNull())
-        return m_icon;
-    return BrowserApplication::instance()->defaultIcon();
-}
-
-void WebView::onIconUrlChanged(const QUrl &url)
-{
-    QNetworkRequest iconRequest(url);
-    m_iconReply = BrowserApplication::networkAccessManager()->get(iconRequest);
-    m_iconReply->setParent(this);
-    connect(m_iconReply, SIGNAL(finished()), this, SLOT(iconLoaded()));
-}
-
-void WebView::iconLoaded()
-{
-    m_icon = QIcon();
-    if (m_iconReply) {
-        QByteArray data = m_iconReply->readAll();
-        QPixmap pixmap;
-        pixmap.loadFromData(data);
-        m_icon.addPixmap(pixmap);
-        m_iconReply->deleteLater();
-        m_iconReply = 0;
-    }
-    emit iconChanged();
+    if (icon.isNull())
+        emit iconChanged(BrowserApplication::instance()->defaultIcon());
+    else
+        emit iconChanged(icon);
 }
 
 void WebView::mousePressEvent(QMouseEvent *event)

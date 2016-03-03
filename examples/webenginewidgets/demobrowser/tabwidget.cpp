@@ -597,8 +597,8 @@ WebView *TabWidget::newTab(bool makeCurrent)
     urlLineEdit->setWebView(webView);
     connect(webView, SIGNAL(loadStarted()),
             this, SLOT(webViewLoadStarted()));
-    connect(webView, SIGNAL(iconChanged()),
-            this, SLOT(webViewIconChanged()));
+    connect(webView, SIGNAL(iconChanged(QIcon)),
+            this, SLOT(webViewIconChanged(QIcon)));
     connect(webView, SIGNAL(titleChanged(QString)),
             this, SLOT(webViewTitleChanged(QString)));
     connect(webView->page(), SIGNAL(audioMutedChanged(bool)),
@@ -736,14 +736,12 @@ void TabWidget::webViewLoadStarted()
     }
 }
 
-void TabWidget::webViewIconChanged()
+void TabWidget::webViewIconChanged(const QIcon &icon)
 {
     WebView *webView = qobject_cast<WebView*>(sender());
     int index = webViewIndex(webView);
-    if (-1 != index) {
-        QIcon icon = webView->icon();
+    if (-1 != index)
         setTabIcon(index, icon);
-    }
 }
 
 void TabWidget::webViewTitleChanged(const QString &title)

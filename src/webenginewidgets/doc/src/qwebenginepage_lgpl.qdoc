@@ -50,8 +50,9 @@
 
     The title of an HTML page can be accessed with the title() property.
     Additionally, a page may also specify an icon, which can be accessed
-    using the iconUrl() property. If the title or the icon changes, the
-    corresponding titleChanged() and iconUrlChanged() signals will be emitted.
+    using the icon() or its URL using the iconUrl() property.
+    If the title or the icon changes, the corresponding titleChanged(), iconChanged()
+    and iconUrlChanged() signals will be emitted.
     The zoomFactor() property can be used to change the overall size
     of the content displayed in the page.
 
@@ -572,13 +573,6 @@
 */
 
 /*!
-    \property QWebEnginePage::iconUrl
-    \brief the URL of the icon associated with the page currently viewed.
-
-    \sa iconUrlChanged()
-*/
-
-/*!
     \property QWebEnginePage::requestedUrl
     \brief the URL that was originally requested to be loaded by the page
     that is currently viewed
@@ -749,14 +743,4 @@
     received. The new URL is specified by \a url.
 
     \sa url()
-*/
-
-/*!
-    \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
-
-    This signal is emitted when the icon ("favicon") associated with the page is
-    found or changed. The new URL is specified by \a url.
-
-
-    \sa iconUrl()
 */
