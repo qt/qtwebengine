@@ -1,23 +1,9 @@
 TARGET = $$QTWEBENGINEPROCESS_NAME
-TEMPLATE = app
-!build_pass:contains(QT_CONFIG, debug_and_release):contains(QT_CONFIG, build_all): CONFIG += release
+
 # Needed to set LSUIElement=1
 QMAKE_INFO_PLIST = Info_mac.plist
 
 QT += webenginecore
-
-load(qt_build_paths)
-contains(QT_CONFIG, qt_framework) {
-    # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.
-    DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/5/Helpers
-    QMAKE_RPATHDIR += @loader_path/../../../../../../../../Frameworks
-} else {
-    CONFIG -= app_bundle
-    win32: DESTDIR = $$MODULE_BASE_OUTDIR/bin
-    else:  DESTDIR = $$MODULE_BASE_OUTDIR/libexec
-}
-
-msvc: QMAKE_LFLAGS *= /LARGEADDRESSAWARE
 
 INCLUDEPATH += ../core
 
@@ -28,9 +14,20 @@ win32 {
         support_win.cpp
 }
 
+load(qt_app)
+
+contains(QT_CONFIG, qt_framework) {
+    # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.
+    DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/5/Helpers
+} else {
+    CONFIG -= app_bundle
+    win32: DESTDIR = $$MODULE_BASE_OUTDIR/bin
+    else:  DESTDIR = $$MODULE_BASE_OUTDIR/libexec
+}
+msvc: QMAKE_LFLAGS *= /LARGEADDRESSAWARE
+
 contains(QT_CONFIG, qt_framework) {
     target.path = $$[QT_INSTALL_LIBS]/QtWebEngineCore.framework/Versions/5/Helpers
 } else {
     target.path = $$[QT_INSTALL_LIBEXECS]
 }
-INSTALLS += target
