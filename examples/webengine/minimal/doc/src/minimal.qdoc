@@ -67,7 +67,7 @@
 
     In \c main.qml we create the top level window, set a sensible default size
     and make it visible. The window will be filled by a WebEngineView item
-    loading \l{http://www.qt.io}{the Qt homepage}.
+    loading the \l{Qt Homepage}.
 
     \quotefromfile webengine/minimal/main.qml
     \skipto import
@@ -76,7 +76,7 @@
 
     \section1 Requirements
 
-    The example requires a working internet connection to render
-    \l{http://www.qt.io}{the Qt homepage}.
+    The example requires a working internet connection to render the
+    \l{Qt Homepage}.
     An optional system proxy should be picked up automatically.
 */

@@ -55,7 +55,7 @@
     \section1 Requirements
 
     The example requires a working internet connection to render
-    \l{http://www.qt.io}{the Qt homepage}.
+    the \l{Qt Homepage}.
     An optional system proxy should be picked up automatically.
     However, for proxies that require a username or password,
     you need to connect to
