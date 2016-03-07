@@ -58,6 +58,7 @@
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
 #include "content/public/browser/browser_main_runner.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -148,6 +149,12 @@ bool usingQtQuick2DRenderer()
     // This assumes that the plugin is installed and is going to be used by QtQuick.
     return device == QLatin1String("softwarecontext");
 }
+
+#if defined(ENABLE_PLUGINS)
+void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
+{
+}
+#endif
 
 } // namespace
 
@@ -289,6 +296,16 @@ WebEngineContext::WebEngineContext()
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
+
+#if defined(ENABLE_PLUGINS)
+    // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)
+    // might fail unless the page queried the list of available plugins at least once
+    // (which ends up calling PluginService::GetPlugins). Since the plugins list can only
+    // be created from the FILE thread, and that GetPluginInfoArray is synchronous, it
+    // can't loads plugins synchronously from the IO thread to serve the render process' request
+    // and we need to make sure that it happened beforehand.
+    content::PluginService::GetInstance()->GetPlugins(base::Bind(&dummyGetPluginCallback));
+#endif
 
 #if defined(ENABLE_BASIC_PRINTING)
     m_printJobManager.reset(new printing::PrintJobManager());
