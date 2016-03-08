@@ -123,10 +123,6 @@ public:
         SavePage,
 #if !defined(QT_NO_SPELLCHECK)
         ToggleSpellcheck,
-        ReplaceMisspelledWord_1,
-        ReplaceMisspelledWord_2,
-        ReplaceMisspelledWord_3,
-        ReplaceMisspelledWord_4,
 #endif
         WebActionCount
     };
@@ -210,6 +206,10 @@ public:
     QAction *action(WebAction action) const;
 #endif
     virtual void triggerAction(WebAction action, bool checked = false);
+
+#if !defined(QT_NO_SPELLCHECK)
+    void replaceMisspelledWord(const QString &replacement);
+#endif
 
     virtual bool event(QEvent*);
 #ifdef Q_QDOC

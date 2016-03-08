@@ -1068,16 +1068,26 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case ToggleSpellcheck:
         d->adapter->toogleSpellCheckEnabled();
         break;
-    case ReplaceMisspelledWord_1:
-    case ReplaceMisspelledWord_2:
-    case ReplaceMisspelledWord_3:
-    case ReplaceMisspelledWord_4:
-        d->adapter->replaceMisspelling(d->actions[action]->text());
-        break;
 #endif
     default:
         Q_UNREACHABLE();
     }
+}
+
+/*!
+ * \since 5.7
+ * Replace the current misspelled word with \a replacement.
+ *
+ * The current misspelled word can be found in QWebEngineContextMenuData::misspelledWord(),
+ * and suggested replacements in QWebEngineContextMenuData::spellCheckerSuggestions().
+ *
+ * \sa contextMenuData(),
+ */
+
+void QWebEnginePage::replaceMisspelledWord(const QString &replacement)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->replaceMisspelling(replacement);
 }
 
 void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
@@ -1263,10 +1273,12 @@ QMenu *QWebEnginePage::createStandardContextMenu()
 
 #if !defined(QT_NO_SPELLCHECK)
     if (contextMenuData.isEditable && !contextMenuData.spellCheckerSuggestions.isEmpty()) {
+        QPointer<QWebEnginePage> thisRef(this);
         for (int i=0; i < contextMenuData.spellCheckerSuggestions.count() && i < 4; i++) {
-            int index = ReplaceMisspelledWord_1 + i;
-            QAction *action(QWebEnginePage::action(static_cast<QWebEnginePage::WebAction>(index)));
-            action->setText(contextMenuData.spellCheckerSuggestions.at(i));
+            QAction *action = new QAction(menu);
+            QString replacement = contextMenuData.spellCheckerSuggestions.at(i);
+            QObject::connect(action, &QAction::triggered, [thisRef, replacement] { if (thisRef) thisRef->replaceMisspelledWord(replacement); });
+            action->setText(replacement);
             menu->addAction(action);
         }
         menu->addSeparator();
