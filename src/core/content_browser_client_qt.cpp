@@ -423,13 +423,14 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
                                    const base::Callback<void(bool)>& callback,
                                    content::CertificateRequestResultType* result)
 {
-    // We leave the result with its default value.
-    Q_UNUSED(result);
-
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
 
     QSharedPointer<CertificateErrorController> errorController(new CertificateErrorController(new CertificateErrorControllerPrivate(cert_error, ssl_info, request_url, resource_type, overridable, strict_enforcement, callback)));
     contentsDelegate->allowCertificateError(errorController);
+
+    // If we don't give the user a chance to allow it, we can reject it right away.
+    if (result && (!overridable || strict_enforcement))
+        *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
 }
 
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()

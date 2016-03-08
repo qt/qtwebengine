@@ -63,17 +63,39 @@ using QtWebEngineCore::BrowserContextAdapter;
 
 /*!
     \class QWebEngineProfile
-    \brief The QWebEngineProfile class provides a web-engine profile shared by multiple pages.
+    \brief The QWebEngineProfile class provides a web engine profile shared by multiple pages.
     \since 5.5
 
     \inmodule QtWebEngineWidgets
 
-    QWebEngineProfile contains settings, scripts, and the list of visited links shared by all
-    web engine pages that belong to the profile. As such, profiles can be used to isolate pages
-    from each other. A typical use case is a dedicated profile for a 'private browsing' mode.
+    A web engine profile contains settings, scripts, persistent cookie policy, and the list of
+    visited links shared by all web engine pages that belong to the profile.
 
-    The default profile is a built-in profile that all web pages not specifically created with
-    another profile belong to.
+    All pages that belong to the profile share a common QWebEngineSettings instance, which can
+    be accessed with the settings() method. Likewise, the scripts() method provides access
+    to a common QWebEngineScriptCollection instance.
+
+    Information about visited links is stored together with persistent cookies and other persistent
+    data in a storage returned by persistentStoragePath(). The cache can be cleared of links by
+    clearVisitedLinks() or clearAllVisitedLinks(). PersistentCookiesPolicy describes whether
+    session and persistent cookies are saved to and restored from memory or disk.
+
+    Profiles can be used to isolate pages from each other. A typical use case is a dedicated
+    \e {off-the-record profile} for a \e {private browsing} mode. Using QWebEngineProfile() without
+    defining a storage name constructs a new off-the-record profile that leaves no record on the
+    local machine, and has no persistent data or cache. The isOffTheRecord() method can be used
+    to check whether a profile is off-the-record.
+
+    The default profile can be accessed by defaultProfile(). It is a built-in profile that all
+    web pages not specifically created with another profile belong to.
+
+    Implementing the QWebEngineUrlRequestInterceptor interface and registering the interceptor on a
+    profile by setRequestInterceptor() enables intercepting, blocking, and modifying URL
+    requests (QWebEngineUrlRequestInfo) before they reach the networking stack of Chromium.
+
+    A QWebEngineUrlSchemeHandler can be registered for a profile by installUrlSchemeHandler()
+    to add support for custom URL schemes. Requests for the scheme are then issued to
+    QWebEngineUrlSchemeHandler::requestStarted() as QWebEngineUrlRequestJob objects.
 */
 
 /*!

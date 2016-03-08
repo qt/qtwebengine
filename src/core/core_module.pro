@@ -77,9 +77,9 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         INSTALLS += icu locales resources
     }
 
-    !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
+    !contains(QT_CONFIG, qt_framework):!force_independent {
         #
-        # Copy essential files to the qtbase build directory (for non-installed developer builds)
+        # Copy essential files to the qtbase build directory for non-prefix builds
         #
 
         icudt2build.input = icu.files
@@ -97,3 +97,11 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         QMAKE_EXTRA_COMPILERS += icudt2build resources2build
     }
 }
+
+OTHER_FILES = \
+    $$files(../3rdparty/chromium/*.h, true) \
+    $$files(../3rdparty/chromium/*.cc, true) \
+    $$files(../3rdparty/chromium/*.mm, true) \
+    $$files(../3rdparty/chromium/*.py, true) \
+    $$files(../3rdparty/chromium/*.gyp, true) \
+    $$files(../3rdparty/chromium/*.gypi, true)

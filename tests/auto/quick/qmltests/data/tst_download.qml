@@ -114,7 +114,7 @@ TestWebEngineView {
             compare(downloadState[1], WebEngineDownloadItem.DownloadInProgress)
             downloadFinishedSpy.wait()
             compare(totalBytes, receivedBytes)
-            compare(downloadState[2], WebEngineDownloadItem.DownloadCompleted)
+            tryCompare(downloadState, 2, WebEngineDownloadItem.DownloadCompleted)
         }
 
         function test_downloadCancelled() {

@@ -128,7 +128,6 @@ private Q_SLOTS:
     void modified();
     void contextMenuCrash();
     void updatePositionDependentActionsCrash();
-    void database();
     void createPluginWithPluginsEnabled();
     void createPluginWithPluginsDisabled();
     void destroyPlugin_data();
@@ -214,9 +213,6 @@ private Q_SLOTS:
     void setHtmlWithBaseURL();
     void setHtmlWithJSAlert();
     void metaData();
-#if !defined(QT_NO_COMBOBOX)
-    void popupFocus();
-#endif
     void inputFieldFocus();
     void hitTestContent();
     void baseUrl_data();
@@ -791,64 +787,6 @@ void tst_QWebEnginePage::contextMenuCrash()
     }
     QVERIFY(contextMenu);
     delete contextMenu;
-#endif
-}
-
-void tst_QWebEnginePage::database()
-{
-#if !defined(QWEBENGINEDATABASE)
-    QSKIP("QWEBENGINEDATABASE");
-#else
-    QString path = tmpDirPath();
-    m_page->settings()->setOfflineStoragePath(path);
-    QVERIFY(m_page->settings()->offlineStoragePath() == path);
-
-    QWebEngineSettings::setOfflineStorageDefaultQuota(1024 * 1024);
-    QVERIFY(QWebEngineSettings::offlineStorageDefaultQuota() == 1024 * 1024);
-
-    m_page->settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
-    m_page->settings()->setAttribute(QWebEngineSettings::OfflineStorageDatabaseEnabled, true);
-
-    QString dbFileName = path + "Databases.db";
-
-    if (QFile::exists(dbFileName))
-        QFile::remove(dbFileName);
-
-    qRegisterMetaType<QWebEngineFrame*>("QWebEngineFrame*");
-    QSignalSpy spy(m_page, SIGNAL(databaseQuotaExceeded(QWebEngineFrame*,QString)));
-    m_view->setHtml(QString("<html><head><script>var db; db=openDatabase('testdb', '1.0', 'test database API', 50000); </script></head><body><div></div></body></html>"), QUrl("http://www.myexample.com"));
-    QTRY_COMPARE(spy.count(), 1);
-    evaluateJavaScriptSync(m_page, "var db2; db2=openDatabase('testdb', '1.0', 'test database API', 50000);");
-    QTRY_COMPARE(spy.count(),1);
-
-    evaluateJavaScriptSync(m_page, "localStorage.test='This is a test for local storage';");
-    m_view->setHtml(QString("<html><body id='b'>text</body></html>"), QUrl("http://www.myexample.com"));
-
-    QVariant s1 = evaluateJavaScriptSync(m_page, "localStorage.test");
-    QCOMPARE(s1.toString(), QString("This is a test for local storage"));
-
-    evaluateJavaScriptSync(m_page, "sessionStorage.test='This is a test for session storage';");
-    m_view->setHtml(QString("<html><body id='b'>text</body></html>"), QUrl("http://www.myexample.com"));
-    QVariant s2 = evaluateJavaScriptSync(m_page, "sessionStorage.test");
-    QCOMPARE(s2.toString(), QString("This is a test for session storage"));
-
-    m_view->setHtml(QString("<html><head></head><body><div></div></body></html>"), QUrl("http://www.myexample.com"));
-    evaluateJavaScriptSync(m_page, "var db3; db3=openDatabase('testdb', '1.0', 'test database API', 50000);db3.transaction(function(tx) { tx.executeSql('CREATE TABLE IF NOT EXISTS Test (text TEXT)', []); }, function(tx, result) { }, function(tx, error) { });");
-    QTest::qWait(200);
-
-    // Remove all databases.
-    QWebEngineSecurityOrigin origin = m_page->mainFrame()->securityOrigin();
-    QList<QWebEngineDatabase> dbs = origin.databases();
-    for (int i = 0; i < dbs.count(); i++) {
-        QString fileName = dbs[i].fileName();
-        QVERIFY(QFile::exists(fileName));
-        QWebEngineDatabase::removeDatabase(dbs[i]);
-        QVERIFY(!QFile::exists(fileName));
-    }
-    QVERIFY(!origin.databases().size());
-    // Remove removed test :-)
-    QWebEngineDatabase::removeAllDatabases();
-    QVERIFY(!origin.databases().size());
 #endif
 }
 
@@ -4201,49 +4139,6 @@ void tst_QWebEnginePage::metaData()
     QCOMPARE(metaData.value("nonexistent"), QString());
 #endif
 }
-
-#if !defined(QT_NO_COMBOBOX)
-void tst_QWebEnginePage::popupFocus()
-{
-#if !defined(QWEBENGINEELEMENT)
-    QSKIP("QWEBENGINEELEMENT");
-#else
-    QWebEngineView view;
-    view.setHtml("<html>"
-                 "    <body>"
-                 "        <select name=\"select\">"
-                 "            <option>1</option>"
-                 "            <option>2</option>"
-                 "        </select>"
-                 "        <input type=\"text\"> </input>"
-                 "        <textarea name=\"text_area\" rows=\"3\" cols=\"40\">"
-                 "This test checks whether showing and hiding a popup"
-                 "takes the focus away from the webpage."
-                 "        </textarea>"
-                 "    </body>"
-                 "</html>");
-    view.resize(400, 100);
-    // Call setFocus before show to work around http://bugreports.qt.nokia.com/browse/QTBUG-14762
-    view.setFocus();
-    view.show();
-    QTest::qWaitForWindowExposed(&view);
-    view.activateWindow();
-    QTRY_VERIFY(view.hasFocus());
-
-    // open the popup by clicking. check if focus is on the popup
-    const QWebEngineElement webCombo = view.page()->documentElement().findFirst(QLatin1String("select[name=select]"));
-    QTest::mouseClick(&view, Qt::LeftButton, 0, webCombo.geometry().center());
-
-    QComboBox* combo = view.findChild<QComboBox*>();
-    QVERIFY(combo != 0);
-    QTRY_VERIFY(!view.hasFocus() && combo->view()->hasFocus()); // Focus should be on the popup
-
-    // hide the popup and check if focus is on the page
-    combo->hidePopup();
-    QTRY_VERIFY(view.hasFocus()); // Focus should be back on the WebView
-#endif
-}
-#endif
 
 void tst_QWebEnginePage::inputFieldFocus()
 {
