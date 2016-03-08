@@ -94,6 +94,7 @@ def isInChromiumBlacklist(file_path):
             not 'common/localized_error.' in file_path and
             not 'common/spellcheck_' in file_path and
             not '/spellchecker/' in file_path and
+            not '/tools/convert_dict/' in file_path and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
             not file_path.endswith('.grd') and
