@@ -105,14 +105,14 @@ TestWebEngineView {
             webEngineView.url = url
             verify(webEngineView.waitForLoadSucceeded())
 
-            compare(iconChangedSpy.count, 0)
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl("icons/unavailable.ico"))
         }
 
         function test_errorPageEnabled() {
-            skip("Error page does not work properly: QTBUG-48995")
             WebEngine.settings.errorPageEnabled = true
 
             compare(iconChangedSpy.count, 0)

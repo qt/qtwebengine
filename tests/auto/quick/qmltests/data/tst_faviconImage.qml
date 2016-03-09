@@ -114,7 +114,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded())
 
             iconChangedSpy.wait()
-            compare(iconChangedSpy.count, 1)
+            verify(iconChangedSpy.count >= 1)
 
             iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))

@@ -44,6 +44,7 @@ TestWebEngineView {
     TestCase {
         name: "WebEngineViewRunJavaScript"
         function test_runJavaScript() {
+            skip("runJavaScript bug: QTBUG-51746")
             var testTitle = "Title to test runJavaScript";
             runJavaScript("document.title = \"" + testTitle +"\"");
             _waitFor(function() { spy.count > 0; });
