@@ -103,6 +103,14 @@
     --ppapi-flash-path=./libpepflashplayer.so
     \endcode
 
+    By default, the Flash version is set to \c{11.2.999.999}. You can use the
+    \c{ppapi-flash-version=} argument to set another Flash version in the
+    in the format \c{major.minor.build.revision}:
+
+    \code
+    --ppapi-flash-version=16.0.0.235
+    \endcode
+
     \section1 Audio and Video Codec Support
 
     Qt WebEngine supports the MPEG-4 Part 14 (MP4) file format only if the required proprietary
