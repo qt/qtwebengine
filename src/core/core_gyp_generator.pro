@@ -81,6 +81,7 @@ SOURCES = \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
         resource_dispatcher_host_delegate_qt.cpp \
+        ssl_host_state_delegate_qt.cpp \
         stream_video_node.cpp \
         surface_factory_qt.cpp \
         type_conversion.cpp \
@@ -160,6 +161,7 @@ HEADERS = \
         renderer/web_channel_ipc_transport.h \
         resource_context_qt.h \
         resource_dispatcher_host_delegate_qt.h \
+        ssl_host_state_delegate_qt.h \
         stream_video_node.h \
         surface_factory_qt.h \
         type_conversion.h \

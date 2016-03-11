@@ -51,6 +51,7 @@ void QQuickWebEngineErrorPage::loadFinished(bool success, const QUrl &url)
 {
     // Loading of the error page should not fail.
     Q_ASSERT(success);
+    Q_UNUSED(success);
 
     QQuickWebEngineLoadRequest loadRequest(url, QQuickWebEngineView::LoadSucceededStatus);
     Q_EMIT loadingChanged(&loadRequest);

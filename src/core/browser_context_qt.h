@@ -59,6 +59,7 @@ namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
 class PermissionManagerQt;
+class SSLHostStateDelegateQt;
 class URLRequestContextGetterQt;
 
 class BrowserContextQt : public content::BrowserContext
@@ -104,6 +105,7 @@ private:
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
     scoped_ptr<PermissionManagerQt> permissionManager;
+    scoped_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
     BrowserContextAdapter *m_adapter;
 #if defined(ENABLE_SPELLCHECK)
     scoped_refptr<TestingPrefStore> m_prefStore;
