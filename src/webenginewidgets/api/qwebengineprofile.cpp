@@ -106,7 +106,7 @@ using QtWebEngineCore::BrowserContextAdapter;
     \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
     \c off-the-record is set or no cache path is available.
     \value DiskHttpCache Use a disk cache. This is the default.
-    \value NoCache Disable both in-memory and disk caching.
+    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 
 /*!
