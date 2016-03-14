@@ -158,8 +158,6 @@ private Q_SLOTS:
     void renderWidgetHostViewNotShowTopLevel();
     void getUserMediaRequest();
 
-    void viewModes();
-
     void crashTests_LazyInitializationOfMainFrame();
 
     void screenshot_data();
@@ -663,25 +661,6 @@ void tst_QWebEnginePage::loadHtml5Video()
     QCOMPARE(mUrl.toEncoded(), url);
 #else
     W_QSKIP("This test requires Qt Multimedia", SkipAll);
-#endif
-}
-
-void tst_QWebEnginePage::viewModes()
-{
-#if !defined(QWEBENGINEPAGE_VIEW_MODES)
-    QSKIP("QWEBENGINEPAGE_VIEW_MODES");
-#else
-    m_view->setHtml("<body></body>");
-    m_page->setProperty("_q_viewMode", "minimized");
-
-    QVariant empty = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode)\")");
-    QVERIFY(empty.type() == QVariant::Bool && empty.toBool());
-
-    QVariant minimized = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode: minimized)\")");
-    QVERIFY(minimized.type() == QVariant::Bool && minimized.toBool());
-
-    QVariant maximized = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode: maximized)\")");
-    QVERIFY(maximized.type() == QVariant::Bool && !maximized.toBool());
 #endif
 }
 
