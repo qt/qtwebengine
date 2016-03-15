@@ -143,7 +143,6 @@ private Q_SLOTS:
     void textEditing();
     void backActionUpdate();
     void protectBindingsRuntimeObjectsFromCollector();
-    void localURLSchemes();
     void testOptionalJSObjects();
     void testLocalStorageVisibility();
     void testEnablePersistentStorage();
@@ -2457,34 +2456,6 @@ void tst_QWebEnginePage::protectBindingsRuntimeObjectsFromCollector()
 
     // don't crash!
     evaluateJavaScriptSync(newPage, "testme('bar')");
-#endif
-}
-
-void tst_QWebEnginePage::localURLSchemes()
-{
-#if !defined(QWEBENGINESECURITYORIGIN)
-    QSKIP("QWEBENGINESECURITYORIGIN");
-#else
-    int i = QWebEngineSecurityOrigin::localSchemes().size();
-
-    QWebEngineSecurityOrigin::removeLocalScheme("file");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-    QWebEngineSecurityOrigin::addLocalScheme("file");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-
-    QWebEngineSecurityOrigin::removeLocalScheme("qrc");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i - 1);
-    QWebEngineSecurityOrigin::addLocalScheme("qrc");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-
-    QString myscheme = "myscheme";
-    QWebEngineSecurityOrigin::addLocalScheme(myscheme);
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i + 1);
-    QVERIFY(QWebEngineSecurityOrigin::localSchemes().contains(myscheme));
-    QWebEngineSecurityOrigin::removeLocalScheme(myscheme);
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-    QWebEngineSecurityOrigin::removeLocalScheme(myscheme);
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
 #endif
 }
 
