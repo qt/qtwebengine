@@ -145,6 +145,7 @@ TestWebEngineView {
         }
 
         function test_errorPageEnabled() {
+            skip("Error page does not work properly: QTBUG-48995")
             WebEngine.settings.errorPageEnabled = true
 
             compare(iconChangedSpy.count, 0)
