@@ -76,7 +76,7 @@ contains(QT_ARCH, "arm") {
         # If the toolchain does not explicitly specify to use NEON instructions
         # we use arm_neon_optional for ARMv7 and newer and let chromium decide
         # about the mfpu option.
-        contains(MFPU, "neon")|contains(MFPU, "neon-vfpv4"): GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=1
+        contains(MFPU, ".*neon.*"): GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=1
         else:!lessThan(MARMV, 7): GYP_CONFIG += arm_neon=0 arm_neon_optional=1
         else: GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=0 arm_neon_optional=0
     } else {
