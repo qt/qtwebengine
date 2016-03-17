@@ -43,6 +43,7 @@
 
 #include <QFile>
 #include <QFileDialog>
+#include <QFontDatabase>
 #include <QMessageBox>
 #include <QTextStream>
 #include <QWebChannel>
@@ -52,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->editor->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
     PreviewPage *page = new PreviewPage(this);
     ui->preview->setPage(page);
@@ -82,6 +84,19 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::openFile(const QString &path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly)) {
+        QMessageBox::warning(this, windowTitle(),
+                             tr("Could not open file %1: %2").arg(
+                                 QDir::toNativeSeparators(path), f.errorString()));
+        return;
+    }
+    m_filePath = path;
+    ui->editor->setPlainText(f.readAll());
 }
 
 bool MainWindow::isModified() const
@@ -117,15 +132,7 @@ void MainWindow::onFileOpen()
     if (path.isEmpty())
         return;
 
-    QFile f(path);
-    if (!f.open(QIODevice::ReadOnly)) {
-        QMessageBox::warning(this, windowTitle(),
-                             tr("Could not open file %1: %2").arg(
-                                 QDir::toNativeSeparators(path), f.errorString()));
-        return;
-    }
-    m_filePath = path;
-    ui->editor->setPlainText(f.readAll());
+    openFile(path);
 }
 
 void MainWindow::onFileSave()
