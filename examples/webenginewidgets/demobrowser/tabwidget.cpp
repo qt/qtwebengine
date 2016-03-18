@@ -714,6 +714,9 @@ void TabWidget::webViewUrlChanged(const QUrl &url)
     int index = webViewIndex(webView);
     if (-1 != index) {
         m_tabBar->setTabData(index, url);
+        HistoryManager *manager = BrowserApplication::historyManager();
+        if (url.isValid())
+            manager->addHistoryEntry(url.toString());
     }
     emit tabsChanged();
 }

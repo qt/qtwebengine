@@ -93,14 +93,16 @@ public:
     ~HistoryManager();
 
     bool historyContains(const QString &url) const;
+
     void addHistoryEntry(const QString &url);
+    void removeHistoryEntry(const QString &url);
 
     void updateHistoryItem(const QUrl &url, const QString &title);
 
     int historyLimit() const;
     void setHistoryLimit(int limit);
 
-    QList<HistoryItem> history() const;
+    QList<HistoryItem>& history();
     void setHistory(const QList<HistoryItem> &history, bool loadedAndSorted = false);
 
     // History manager keeps around these models for use by the completer and other classes
@@ -118,6 +120,7 @@ private slots:
 
 protected:
     void addHistoryItem(const HistoryItem &item);
+    void removeHistoryItem(const HistoryItem &item);
 
 private:
     void load();
@@ -139,7 +142,8 @@ class HistoryModel : public QAbstractTableModel
 
 public slots:
     void historyReset();
-    void entryAdded();
+    void entryAdded(const HistoryItem &item);
+    void entryRemoved(const HistoryItem &item);
     void entryUpdated(int offset);
 
 public:
@@ -175,7 +179,6 @@ public:
 
     inline bool historyContains(const QString &url) const
         { load(); return m_historyHash.contains(url); }
-    int historyLocation(const QString &url) const;
 
     QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
     QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
@@ -186,7 +189,6 @@ public:
     QModelIndex index(int, int, const QModelIndex& = QModelIndex()) const;
     QModelIndex parent(const QModelIndex& index= QModelIndex()) const;
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
 private slots:
     void sourceReset();
@@ -304,7 +306,8 @@ private slots:
     void sourceReset();
     void sourceRowsInserted(const QModelIndex &parent, int start, int end);
     void sourceRowsRemoved(const QModelIndex &parent, int start, int end);
-
+    void sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight,
+                           const QVector<int> roles);
 private:
     int sourceDateRow(int row) const;
     mutable QList<int> m_sourceRowCache;
