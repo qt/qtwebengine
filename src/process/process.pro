@@ -4,19 +4,17 @@ TEMPLATE = app
 # Needed to set LSUIElement=1
 QMAKE_INFO_PLIST = Info_mac.plist
 
+QT += webenginecore
+
 load(qt_build_paths)
 contains(QT_CONFIG, qt_framework) {
     # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.
     DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/5/Helpers
-
-    QT += webenginecore
     QMAKE_RPATHDIR += @loader_path/../../../../../../../../Frameworks
 } else {
     CONFIG -= app_bundle
     win32: DESTDIR = $$MODULE_BASE_OUTDIR/bin
     else:  DESTDIR = $$MODULE_BASE_OUTDIR/libexec
-
-    QT_PRIVATE += webenginecore
 }
 
 msvc: QMAKE_LFLAGS *= /LARGEADDRESSAWARE
