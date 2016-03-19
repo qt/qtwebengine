@@ -200,8 +200,15 @@ TestWebEngineView {
 
             iconChangedSpy.wait()
             verify(iconChangedSpy.count >= 1)
-
             iconUrl = webEngineView.icon
+
+            // If the icon URL is empty we have to wait for
+            // the second iconChanged signal that propagates the expected URL
+            if (iconUrl == Qt.resolvedUrl("")) {
+                tryCompare(iconChangedSpy, "count", 2)
+                iconUrl = webEngineView.icon
+            }
+
             compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))
             compare(favicon.width, 144)
             compare(favicon.height, 144)

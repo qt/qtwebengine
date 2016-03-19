@@ -244,6 +244,14 @@ void tst_QWebEngineFaviconManager::bestFavicon()
     QTRY_VERIFY(iconUrlChangedSpy.count() >= 1);
 
     iconUrl = iconUrlChangedSpy.last().at(0).toString();
+
+    // If the icon URL is empty we have to wait for
+    // the second iconChanged signal that propagates the expected URL
+    if (iconUrl.isEmpty()) {
+        QTRY_COMPARE(iconUrlChangedSpy.count(), 2);
+        iconUrl = iconUrlChangedSpy.last().at(0).toString();
+    }
+
     QCOMPARE(iconUrl, QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/icons/qt144.png")));
 }
 
