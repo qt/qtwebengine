@@ -19,6 +19,9 @@ load(functions)
 equals(_PRO_FILE_, "$$QTWEBENGINE_ROOT/qtwebengine.pro"): CONFIG += root_project_file
 
 root_project_file:isPlatformSupported() {
+   !exists($$QTWEBENGINE_ROOT/src/3rdparty/chromium) {
+       error("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
+   }
    load(configure)
    runConfigure()
 }

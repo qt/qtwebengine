@@ -12,5 +12,6 @@ qtHaveModule(webenginewidgets) {
         webenginewidgets/contentmanipulation \
         webenginewidgets/cookiebrowser \
         webenginewidgets/demobrowser \
-        webenginewidgets/markdowneditor
+        webenginewidgets/markdowneditor \
+        webenginewidgets/simplebrowser \
 }

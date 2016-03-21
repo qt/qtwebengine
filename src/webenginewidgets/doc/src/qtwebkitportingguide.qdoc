@@ -94,8 +94,17 @@
 
     \section1 QWebFrame Has Been Merged into QWebEnginePage
 
-    It is not possible to access sub-frames. Methods of the main QWebFrame are
-    now available directly through the QWebEnginePage itself.
+    HTML frames can be used to divide web pages into several areas where the content can be
+    represented individually.
+
+    In Qt WebKit, QWebFrame represents a frame inside a web page. Each QWebPage object contains at
+    least one frame, the main frame, obtained using QWebPage::mainFrame(). Additional frames will
+    be created for the HTML \c <frame> element, which defines the appearance and contents of a
+    single frame, or the \c <iframe> element, which inserts a frame within a block of text.
+
+    In Qt WebEngine, frame handling has been merged into the QWebEnginePage class. All child frames
+    are now considered part of the content, and only accessible through JavaScript. Methods of the
+    QWebFrame class, such as \c load() are now available directly through the QWebEnginePage itself.
 
     \b {Qt WebKit}
     \code

@@ -70,7 +70,7 @@ exampledirs +=  . \
 imagedirs += images
 
 navigation.landingpage = "Qt WebEngine"
-navigation.cppclassespage = "Qt WebEngine C++ Classes"
+navigation.cppclassespage = "Qt WebEngine C++ Classes and Namespaces"
 navigation.qmltypespage = "Qt WebEngine QML Types"
 
 Cpp.ignoretokens += Q_WEBENGINE_EXPORT QWEBENGINEWIDGETS_EXPORT

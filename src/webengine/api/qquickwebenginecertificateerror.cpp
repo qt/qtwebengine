@@ -69,8 +69,19 @@ public:
 
     \brief A utility type for ignoring certificate errors or rejecting erroneous certificates.
 
-    This QML type contains information about a certificate error that occurred and provides a way
-    to ignore the error or reject the certificate.
+    This QML type contains information about a certificate error that occurred. The \l error
+    property holds the reason that the error occurred and the \l description property holds a
+    short localized description of the error. The \l url property holds the URL that triggered
+    the error.
+
+    The certificate can be rejected by calling \l rejectCertificate, which will stop loading the
+    web engine request. By default, an invalid certificate will be automatically rejected.
+
+    The certificate error can be ignored by calling \l ignoreCertificateError, which will
+    resume loading the request.
+
+    It is possible to defer the decision of rejecting a certificate by calling \l defer,
+    which is useful when waiting for user input.
 
     \sa WebEngineView::certificateError
 */

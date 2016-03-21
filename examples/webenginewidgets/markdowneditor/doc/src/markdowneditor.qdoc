@@ -116,7 +116,8 @@
     \printto connect
 
     The constructor first calls \c setupUi to construct the widgets and menu
-    actions according to the UI file. It then makes sure our custom
+    actions according to the UI file. The text editor font is set to one
+    with a fixed character width. It then makes sure our custom
     \c PreviewPage is used by the QWebEngineView instance in \c{ui->preview}.
 
     \printto ui->preview

@@ -156,10 +156,11 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
                 << "/usr/lib64/chromium/PepperFlash/libpepflashplayer.so"; // OpenSuSE
     pluginPaths << ppapiPluginsPath() + QStringLiteral("/libpepflashplayer.so");
 #endif
+    std::string flash_version = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kPpapiFlashVersion);
     for (auto it = pluginPaths.constBegin(); it != pluginPaths.constEnd(); ++it) {
         if (!QFile::exists(*it))
             continue;
-        plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), std::string()));
+        plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), flash_version));
     }
 }
 
