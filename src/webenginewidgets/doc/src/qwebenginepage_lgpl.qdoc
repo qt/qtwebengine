@@ -30,8 +30,8 @@
     \since 5.4
     \inmodule QtWebEngineWidgets
 
-    A web engine page holds a main frame responsible for web content, the history
-    of navigated links, and actions.
+    A \e {web engine page} holds the contents of an HTML document, the history of navigated
+    links, and actions.
 
     QWebEnginePage's API is very similar to QWebEngineView, as you are still provided with
     common functions like action() (known as
@@ -42,7 +42,7 @@
     the HTML content readily available, you can use setHtml().
 
     The QWebEnginePage class also offers methods to retrieve both the URL currently
-    loaded by its main frame (see url()) as well as the URL originally requested
+    loaded by the page (see url()) as well as the URL originally requested
     to be loaded (see requestedUrl()). These methods make possible the retrieval
     of the URL before and after a DNS resolution or a redirection occurs during
     the load process. The requestedUrl() also matches to the URL added to the
@@ -61,6 +61,22 @@
     have been loaded completely, independent of script execution or page rendering.
     Its argument, either \c true or \c false, indicates whether or not the load
     operation succeeded.
+
+    An HTML document is loaded in a \e {main frame} within the web page. If it references
+    \e {child frames} (as defined by the \c  <frame> or \c <iframe> elements), they are considered
+    part of the content. Child frames are individually accessible only through JavaScript.
+
+    Web sites define \e {security origin} for safely accessing each other's resources for
+    client-side scripting or databases. An origin consist of a host name, a scheme, and a port
+    number. For example, the sites \c http://www.example.com/my/page.html and
+    \c http://www.example.com/my/overview.html are allowed to share the same database or access
+    each other's documents when used in HTML frame sets and JavaScript. At the same time,
+    \c http://www.malicious.com/evil.html is prevented from accessing the resources of
+    \c http://www.example.com/, because they are of a different security origin.
+    By default, local schemes like \c file:// and \c qrc:// are considered to be in the same
+    security origin, and can access each other's resources. Local resources are by default
+    restricted from accessing remote content, which means that \c file:// will not be able to
+    access \c http://domain.com/foo.html.
 */
 
 /*!
@@ -273,7 +289,7 @@
     \since 5.5
     This function is called upon receiving a request to navigate to the specified \a url by means of
     the specified navigation type \a type. \a isMainFrame indicates whether the request corresponds
-    to the main frame or a sub frame. If the function returns \c true, the navigation request is
+    to the main frame or a child frame. If the function returns \c true, the navigation request is
     accepted and \c url is loaded. The default implementation accepts all navigation requests.
 
     This function is called for absolute URLs that are prefixed with \c {http://} or \c {https://}
@@ -524,14 +540,14 @@
 
 /*!
     \property QWebEnginePage::title
-    \brief the title of the frame as defined by the HTML &lt;title&gt; element
+    \brief the title of the page as defined by the HTML \c <title> element
 
     \sa titleChanged()
 */
 
 /*!
     \property QWebEnginePage::url
-    \brief the URL of the frame currently viewed
+    \brief the URL of the page currently viewed
 
     Setting this property clears the view and loads the URL.
 
@@ -542,14 +558,14 @@
 
 /*!
     \property QWebEnginePage::iconUrl
-    \brief the URL of the icon associated with the frame currently viewed.
+    \brief the URL of the icon associated with the page currently viewed.
 
     \sa iconUrlChanged()
 */
 
 /*!
     \property QWebEnginePage::requestedUrl
-    \brief the URL that was originally requested to be loaded by the frame
+    \brief the URL that was originally requested to be loaded by the page
     that is currently viewed
 
     \note The URL may differ from the one returned by url(), which is the actual
@@ -560,7 +576,7 @@
 
 /*!
     \fn void QWebEnginePage::load(const QUrl &url)
-    Loads \a url into this frame.
+    Loads \a url into this page.
 
     \note The view remains the same until enough data has arrived to display the new URL.
 
@@ -569,7 +585,7 @@
 
 /*!
     \fn void QWebEnginePage::setHtml(const QString &html, const QUrl &baseUrl)
-    Sets the content of this page's main frame to \a html. \a baseUrl is optional and used to resolve relative
+    Sets the content of this page to \a html. \a baseUrl is optional and used to resolve relative
     URLs in the document, such as referenced images or stylesheets.
 
     The \a html is loaded immediately; external objects are loaded asynchronously.
@@ -585,7 +601,7 @@
 
     This is a convenience function equivalent to setContent(html, "text/html", baseUrl).
 
-    \note This method will not affect session or global history for the frame.
+    \note This method will not affect session or global history for the page.
 
     \warning This function works only for HTML, for other mime types (such as XHTML and SVG)
     setContent() should be used instead.
@@ -595,7 +611,7 @@
 
 /*!
     \fn void QWebEnginePage::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
-    Sets the content of this page's main frame to the specified content \a data. If the \a mimeType argument
+    Sets the content of this page to \a data. If the \a mimeType argument
     is empty, it is currently assumed that the content is HTML but in future versions we may introduce
     auto-detection.
 
@@ -603,14 +619,14 @@
 
     The \a data is loaded immediately; external objects are loaded asynchronously.
 
-    \note This method will not affect session or global history for the frame.
+    \note This method will not affect session or global history for the page.
 
     \sa toHtml(), setHtml()
 */
 
 /*!
     \property QWebEnginePage::zoomFactor
-    \brief the zoom factor for the main frame
+    \brief the zoom factor for the page content
 */
 
 /*!
@@ -675,7 +691,7 @@
 /*!
     \fn void QWebEnginePage::titleChanged(const QString &title)
 
-    This signal is emitted whenever the title of the main frame changes.
+    This signal is emitted whenever the title of the page changes.
     The \a title string specifies the new title.
 
     \sa title()
@@ -684,7 +700,7 @@
 /*!
     \fn void QWebEnginePage::urlChanged(const QUrl &url)
 
-    This signal is emitted with the URL of the main frame when the main frame's title is
+    This signal is emitted with the URL of the page when the page title is
     received. The new URL is specified by \a url.
 
     \sa url()
@@ -693,7 +709,7 @@
 /*!
     \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
 
-    This signal is emitted when the icon ("favicon") associated with the main frame is
+    This signal is emitted when the icon ("favicon") associated with the page is
     found or changed. The new URL is specified by \a url.
 
 
