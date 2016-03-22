@@ -21,7 +21,7 @@ information about a particular change.
 
  - Chromium Snapshot:
    * The Chromium version has been updated to 45.0.2554.101.
-   * In addition security fixes from Chromium 46, 47 and 48 have been merged.
+   * In addition security fixes from Chromium 46 - 49 have been merged.
 
  - General:
    * The WebEngineCore module now contains shared C++ API.

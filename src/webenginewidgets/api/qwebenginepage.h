@@ -40,9 +40,9 @@
 #ifndef QWEBENGINEPAGE_H
 #define QWEBENGINEPAGE_H
 
-#include <qtwebenginewidgetsglobal.h>
-#include <qwebenginecertificateerror.h>
-#include <qwebenginecallback.h>
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineWidgets/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginecallback.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>

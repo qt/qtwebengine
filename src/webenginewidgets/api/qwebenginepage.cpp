@@ -503,6 +503,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 
 /*!
     \enum QWebEnginePage::RenderProcessTerminationStatus
+    \since 5.6
 
     This enum describes the status with which the render process terminated:
 
@@ -518,6 +519,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 
 /*!
     \fn QWebEnginePage::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode)
+    \since 5.6
 
     This signal is emitted when the render process is terminated with a non-zero exit status.
     \a terminationStatus is the termination status of the process and \a exitCode is the status code

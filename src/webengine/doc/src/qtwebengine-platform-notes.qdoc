@@ -31,6 +31,19 @@
 
     \brief Contains information about issues that are specific to the Qt WebEngine module.
 
+    \section1 Target Platforms
+
+    Qt WebEngine does try to support all \l{Supported Platforms} of Qt. However, due to
+    different requirements of Chromium this is not always possible. Known limitations are:
+
+    \list
+        \li Qt WebEngine currently supports only Windows, Linux, and OS X.
+
+        \li On Windows, Qt WebEngine only supports Windows Vista or newer as target platform.
+            Due to use of newer API in Chromium, Windows XP is not supported. WinRT is
+            not supported, either.
+    \endlist
+
     \section1 Building Qt WebEngine from Source
 
     The requirements for building Qt 5 modules from source are listed separately for each supported
@@ -72,11 +85,11 @@
 
     The MIME type is important because it determines which embeds the plugin is used for.
 
-    This process has been automated for the Adobe Flash Player Plugin.
+    This process has been automated for the Pepper Flash player plugin.
 
-    \section2 Adobe Flash Player Plugin Support
+    \section2 Pepper Flash Player Plugin Support
 
-    The Adobe Flash player plugin can be loaded automatically if it is installed in one of the
+    The Pepper Flash player plugin can be loaded automatically if it is installed in one of the
     following locations, depending on the platform:
 
     \list
@@ -97,10 +110,19 @@
             \endcode
     \endlist
 
-    You can also load the Flash player from a specific location by using command line arguments:
+    You can also load the Pepper Flash player from a specific location by using command line
+    arguments:
 
     \code
     --ppapi-flash-path=./libpepflashplayer.so
+    \endcode
+
+    By default, the Flash version is set to \c{11.2.999.999}. You can use the
+    \c{ppapi-flash-version=} argument to set another Flash version in the
+    in the format \c{major.minor.build.revision}:
+
+    \code
+    --ppapi-flash-version=16.0.0.235
     \endcode
 
     \section1 Audio and Video Codec Support

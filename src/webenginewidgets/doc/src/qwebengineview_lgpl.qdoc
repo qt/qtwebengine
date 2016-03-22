@@ -311,7 +311,7 @@
 /*!
     \fn void QWebEngineView::titleChanged(const QString &title)
 
-    This signal is emitted whenever the \a title of the main frame changes.
+    This signal is emitted whenever the \a title of the view changes.
 
     \sa title()
 */
@@ -360,10 +360,9 @@
 /*!
     \fn void QWebEngineView::loadProgress(int progress)
 
-    This signal is emitted every time an element in the web page
-    completes loading and the overall loading progress advances.
-
-    This signal tracks the progress of all child frames.
+    This signal is emitted every time an element in the web view
+    completes loading, such as an embedded image or a script. Therefore, it
+    tracks the collective progress of loading the web view.
 
     The current value is provided by \a progress and scales from 0 to 100,
     which is the default range of QProgressBar.

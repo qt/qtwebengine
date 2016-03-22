@@ -159,8 +159,6 @@ private Q_SLOTS:
     void renderWidgetHostViewNotShowTopLevel();
     void getUserMediaRequest();
 
-    void viewModes();
-
     void crashTests_LazyInitializationOfMainFrame();
 
     void screenshot_data();
@@ -213,7 +211,6 @@ private Q_SLOTS:
     void setHtmlWithStylesheetResource();
     void setHtmlWithBaseURL();
     void setHtmlWithJSAlert();
-    void metaData();
     void inputFieldFocus();
     void hitTestContent();
     void baseUrl_data();
@@ -667,25 +664,6 @@ void tst_QWebEnginePage::loadHtml5Video()
     QCOMPARE(mUrl.toEncoded(), url);
 #else
     W_QSKIP("This test requires Qt Multimedia", SkipAll);
-#endif
-}
-
-void tst_QWebEnginePage::viewModes()
-{
-#if !defined(QWEBENGINEPAGE_VIEW_MODES)
-    QSKIP("QWEBENGINEPAGE_VIEW_MODES");
-#else
-    m_view->setHtml("<body></body>");
-    m_page->setProperty("_q_viewMode", "minimized");
-
-    QVariant empty = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode)\")");
-    QVERIFY(empty.type() == QVariant::Bool && empty.toBool());
-
-    QVariant minimized = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode: minimized)\")");
-    QVERIFY(minimized.type() == QVariant::Bool && minimized.toBool());
-
-    QVariant maximized = evaluateJavaScriptSync(m_page, "window.styleMedia.matchMedium(\"(-webengine-view-mode: maximized)\")");
-    QVERIFY(maximized.type() == QVariant::Bool && !maximized.toBool());
 #endif
 }
 
@@ -4098,47 +4076,6 @@ void tst_QWebEnginePage::setHtmlWithJSAlert()
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(page.alerts, 1);
     QCOMPARE(toHtmlSync(&page), html);
-}
-
-void tst_QWebEnginePage::metaData()
-{
-#if !defined(QWEBENGINEPAGE_METADATA)
-    QSKIP("QWEBENGINEPAGE_METADATA");
-#else
-    m_view->setHtml("<html>"
-                    "    <head>"
-                    "        <meta name=\"description\" content=\"Test description\">"
-                    "        <meta name=\"keywords\" content=\"HTML, JavaScript, Css\">"
-                    "    </head>"
-                    "</html>");
-
-    QMultiMap<QString, QString> metaData = m_view->page()->metaData();
-
-    QCOMPARE(metaData.count(), 2);
-
-    QCOMPARE(metaData.value("description"), QString("Test description"));
-    QCOMPARE(metaData.value("keywords"), QString("HTML, JavaScript, Css"));
-    QCOMPARE(metaData.value("nonexistent"), QString());
-
-    m_view->setHtml("<html>"
-                    "    <head>"
-                    "        <meta name=\"samekey\" content=\"FirstValue\">"
-                    "        <meta name=\"samekey\" content=\"SecondValue\">"
-                    "    </head>"
-                    "</html>");
-
-    metaData = m_view->page()->metaData();
-
-    QCOMPARE(metaData.count(), 2);
-
-    QStringList values = metaData.values("samekey");
-    QCOMPARE(values.count(), 2);
-
-    QVERIFY(values.contains("FirstValue"));
-    QVERIFY(values.contains("SecondValue"));
-
-    QCOMPARE(metaData.value("nonexistent"), QString());
-#endif
 }
 
 void tst_QWebEnginePage::inputFieldFocus()

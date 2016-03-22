@@ -27,7 +27,7 @@
 
 /*!
     \page qtwebengine-modules.html
-    \title Qt WebEngine C++ Classes
+    \title Qt WebEngine C++ Classes and Namespaces
     \brief Provides functionality for rendering regions of dynamic web content.
 
     \e {Qt WebEngine} provides functionality for rendering regions of dynamic web content.

@@ -72,9 +72,13 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         locales.path = $$[QT_INSTALL_TRANSLATIONS]/qtwebengine_locales
         resources.CONFIG += no_check_exist
         resources.path = $$[QT_INSTALL_DATA]/resources
-        icu.CONFIG += no_check_exist
-        icu.path = $$[QT_INSTALL_DATA]/resources
-        INSTALLS += icu locales resources
+        INSTALLS += locales resources
+
+        !use?(system_icu) {
+            icu.CONFIG += no_check_exist
+            icu.path = $$[QT_INSTALL_DATA]/resources
+            INSTALLS += icu
+        }
     }
 
     !contains(QT_CONFIG, qt_framework):!force_independent {
@@ -82,11 +86,14 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         # Copy essential files to the qtbase build directory for non-prefix builds
         #
 
-        icudt2build.input = icu.files
-        icudt2build.output = $$[QT_INSTALL_DATA/get]/resources/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
-        icudt2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
-        icudt2build.name = COPY ${QMAKE_FILE_IN}
-        icudt2build.CONFIG = no_link no_clean target_predeps
+        !use?(system_icu) {
+            icudt2build.input = icu.files
+            icudt2build.output = $$[QT_INSTALL_DATA/get]/resources/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
+            icudt2build.commands = $$QMAKE_COPY ${QMAKE_FILE_IN} ${QMAKE_FILE_OUT}
+            icudt2build.name = COPY ${QMAKE_FILE_IN}
+            icudt2build.CONFIG = no_link no_clean target_predeps
+            QMAKE_EXTRA_COMPILERS += icudt2build
+        }
 
         resources2build.input = resources.files
         resources2build.output = $$[QT_INSTALL_DATA/get]/resources/${QMAKE_FILE_BASE}${QMAKE_FILE_EXT}
@@ -94,7 +101,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         resources2build.name = COPY ${QMAKE_FILE_IN}
         resources2build.CONFIG = no_link no_clean target_predeps
 
-        QMAKE_EXTRA_COMPILERS += icudt2build resources2build
+        QMAKE_EXTRA_COMPILERS += resources2build
     }
 }
 
