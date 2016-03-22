@@ -15,6 +15,7 @@ SOURCES = \
         api/qquickwebenginecontextmenudata.cpp \
         api/qquickwebenginedownloaditem.cpp \
         api/qquickwebenginehistory.cpp \
+        api/qquickwebenginefaviconprovider.cpp \
         api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenavigationrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
@@ -36,6 +37,7 @@ HEADERS = \
         api/qquickwebenginedownloaditem_p.h \
         api/qquickwebenginedownloaditem_p_p.h \
         api/qquickwebenginehistory_p.h \
+        api/qquickwebenginefaviconprovider_p_p.h \
         api/qquickwebengineloadrequest_p.h \
         api/qquickwebenginenavigationrequest_p.h \
         api/qquickwebenginenewviewrequest_p.h \

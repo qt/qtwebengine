@@ -47,6 +47,7 @@
 #include "javascript_dialog_controller.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginecertificateerror_p.h"
+#include "qquickwebenginefaviconprovider_p_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
@@ -112,6 +113,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_testSupport(0)
 #endif
     , contextMenuExtraItems(0)
+    , faviconProvider(0)
     , loadProgress(0)
     , m_fullscreenMode(false)
     , isLoading(false)
@@ -389,9 +391,19 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
-    if (iconUrl == url)
+
+    if (iconUrl == QQuickWebEngineFaviconProvider::faviconProviderUrl(url))
         return;
-    iconUrl = url;
+
+    if (!faviconProvider) {
+        QQmlEngine *engine = qmlEngine(q);
+        Q_ASSERT(engine);
+        faviconProvider = static_cast<QQuickWebEngineFaviconProvider *>(
+                    engine->imageProvider(QQuickWebEngineFaviconProvider::identifier()));
+        Q_ASSERT(faviconProvider);
+    }
+
+    iconUrl = faviconProvider->attach(q, url);
     Q_EMIT q->iconChanged();
 }
 
@@ -788,6 +800,9 @@ QQuickWebEngineView::QQuickWebEngineView(QQuickItem *parent)
 
 QQuickWebEngineView::~QQuickWebEngineView()
 {
+    Q_D(QQuickWebEngineView);
+    if (d->faviconProvider)
+        d->faviconProvider->detach(this);
 }
 
 void QQuickWebEngineViewPrivate::ensureContentsAdapter()

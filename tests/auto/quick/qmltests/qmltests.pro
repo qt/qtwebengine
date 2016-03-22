@@ -18,6 +18,7 @@ OTHER_FILES += \
     $$PWD/data/favicon2.html \
     $$PWD/data/favicon-misc.html \
     $$PWD/data/favicon-multi.html \
+    $$PWD/data/favicon-multi-gray.html \
     $$PWD/data/favicon-single.html \
     $$PWD/data/favicon-shortcut.html \
     $$PWD/data/favicon-touch.html \
@@ -62,6 +63,7 @@ OTHER_FILES += \
     $$PWD/data/tst_webchannel.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
     $$PWD/data/icons/favicon.png \
+    $$PWD/data/icons/grayicons.ico \
     $$PWD/data/icons/small-favicon.png \
     $$PWD/data/icons/qt144.png \
     $$PWD/data/icons/qt32.ico \

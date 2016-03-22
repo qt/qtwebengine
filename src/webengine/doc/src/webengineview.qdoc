@@ -203,10 +203,11 @@
     \qmlproperty url WebEngineView::icon
     \readonly
 
-    The location of the currently displayed web site icon,
-    also known as favicon or shortcut icon. This read-only URL corresponds to
-    the image used within a mobile browser application to represent a
-    bookmarked page on the device's home screen.
+    An internal URL for accessing the currently displayed web site icon,
+    also known as favicon or shortcut icon. The icon is already downloaded
+    and stored by the Qt WebEngine's favicon manager.
+    This read-only URL corresponds to the image used within a mobile browser
+    application to represent a bookmarked page on the device's home screen.
 
     The following snippet uses the \c{icon} property to build an \c{Image}
     component:
@@ -214,7 +215,7 @@
     \qml
     Image {
         id: appIcon
-        source: webView.icon != "" ? webView.icon : "fallbackFavIcon.png";
+        source: webView.icon != "" ? webView.icon : "fallbackFavicon.png";
         // ...
     }
     \endqml

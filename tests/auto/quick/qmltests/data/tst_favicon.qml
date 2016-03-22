@@ -50,6 +50,10 @@ TestWebEngineView {
         }
     }
 
+    function removeFaviconProviderPrefix(url) {
+        return url.toString().substring(16)
+    }
+
     SignalSpy {
         id: iconChangedSpy
         target: webEngineView
@@ -64,6 +68,7 @@ TestWebEngineView {
     TestCase {
         id: test
         name: "WebEngineFavicon"
+        when: windowShown
 
         function init() {
             if (webEngineView.icon != '') {
@@ -185,7 +190,7 @@ TestWebEngineView {
             iconChangedSpy.wait()
             compare(iconChangedSpy.count, 1)
 
-            iconUrl = webEngineView.icon
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
             // Touch icon is ignored
             compare(iconUrl, Qt.resolvedUrl("icons/qt32.ico"))
             compare(favicon.width, 32)
@@ -199,13 +204,13 @@ TestWebEngineView {
 
             iconChangedSpy.wait()
             verify(iconChangedSpy.count >= 1)
-            iconUrl = webEngineView.icon
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
 
             // If the icon URL is empty we have to wait for
             // the second iconChanged signal that propagates the expected URL
             if (iconUrl == Qt.resolvedUrl("")) {
                 tryCompare(iconChangedSpy, "count", 2)
-                iconUrl = webEngineView.icon
+                iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
             }
 
             compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))
@@ -224,6 +229,21 @@ TestWebEngineView {
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))
+            compare(favicon.width, 0)
+            compare(favicon.height, 0)
+
+            WebEngine.settings.touchIconsEnabled = true
+
+            url = Qt.resolvedUrl("favicon-touch.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
+            compare(iconUrl, Qt.resolvedUrl("icons/qt144.png"))
+            compare(iconChangedSpy.count, 1)
+            compare(favicon.width, 144)
+            compare(favicon.height, 144)
         }
 
         function test_multiIcon() {
@@ -235,11 +255,69 @@ TestWebEngineView {
 
             iconChangedSpy.wait()
             compare(iconChangedSpy.count, 1)
+            compare(favicon.width, 64)
+            compare(favicon.height, 64)
+        }
 
-            // Image QML type does not support multi-sized icons thus
-            // chooses the first size
-            compare(favicon.width, 16)
-            compare(favicon.height, 16)
+        function test_faviconProvider_data() {
+            return [
+                   { tag: "8x8", size: 8, value: 16 },
+                   { tag: "16x16", size: 16, value: 16 },
+                   { tag: "17x17", size: 17, value: 32 },
+                   { tag: "31x31", size: 31, value: 32 },
+                   { tag: "32x32", size: 32, value: 32 },
+                   { tag: "33x33", size: 33, value: 64 },
+                   { tag: "64x64", size: 64, value: 64 },
+                   { tag: "128x128", size: 128, value: 128 },
+                   { tag: "255x255", size: 255, value: 255 },
+                   { tag: "256x256", size: 256, value: 255 },
+            ];
+        }
+
+        function test_faviconProvider(row) {
+            var faviconImage = Qt.createQmlObject("
+                    import QtQuick 2.5\n
+                    Image { sourceSize: Qt.size(width, height) }", test)
+            var grabImage = Qt.createQmlObject("
+                    import QtQuick 2.5\n
+                    Image { }", test)
+            var faviconCanvas = Qt.createQmlObject("
+                    import QtQuick 2.5\n
+                    Canvas { }", test)
+
+            compare(iconChangedSpy.count, 0)
+
+            var url = Qt.resolvedUrl("favicon-multi-gray.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            faviconImage.width = row.size
+            faviconImage.height = row.size
+            faviconImage.source = webEngineView.icon
+            verify(_waitFor(function() { return faviconImage.status == Image.Ready } ))
+
+            faviconImage.grabToImage(function(result) {
+                    grabImage.source = result.url
+                })
+            verify(_waitFor(function() { return grabImage.status == Image.Ready } ))
+
+            faviconCanvas.width = faviconImage.width
+            faviconCanvas.height = faviconImage.height
+            var ctx = faviconCanvas.getContext("2d")
+            ctx.drawImage(grabImage, 0, 0, grabImage.width, grabImage.height)
+
+            var center = Math.round(row.size/2)
+            var imageData = ctx.getImageData(center, center, center, center)
+            var pixel = imageData.data
+
+            compare(pixel[0], row.value)
+
+            faviconImage.destroy()
+            grabImage.destroy()
+            faviconCanvas.destroy()
         }
     }
 }

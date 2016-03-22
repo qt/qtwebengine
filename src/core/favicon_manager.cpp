@@ -220,11 +220,15 @@ FaviconManager::~FaviconManager()
 QIcon FaviconManager::getIcon(const QUrl &url) const
 {
     Q_D(const FaviconManager);
+    if (!d->m_icons.contains(url))
+        return QIcon();
+
     return d->m_icons[url];
 }
 
 FaviconInfo FaviconManager::getFaviconInfo(const QUrl &url) const
 {
+    Q_ASSERT(m_faviconInfoMap.contains(url));
     return m_faviconInfoMap[url];
 }
 

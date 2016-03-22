@@ -71,6 +71,7 @@ class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
 class QQuickWebEngineSettings;
+class QQuickWebEngineFaviconProvider;
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 class QQuickWebEngineTestSupport;
@@ -215,6 +216,7 @@ public:
     QQuickWebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
     QUrl iconUrl;
+    QQuickWebEngineFaviconProvider *faviconProvider;
     int loadProgress;
     bool m_fullscreenMode;
     bool isLoading;
