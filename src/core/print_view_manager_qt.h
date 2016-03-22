@@ -80,11 +80,11 @@ class PrintViewManagerQt
 {
 public:
     ~PrintViewManagerQt() override;
-
+    typedef base::Callback<void(const std::vector<char> &result)> PrintToPDFCallback;
 #if defined(ENABLE_BASIC_PRINTING)
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.
     bool PrintToPDF(const QPageLayout& pageLayout, const QString& filePath);
-    bool PrintToPDFWithCallback(const QPageLayout& pageLayout, const QString& filePath, base::Callback<void(bool)> callback);
+    bool PrintToPDFWithCallback(const QPageLayout& pageLayout, const PrintToPDFCallback& callback);
 #endif  // ENABLE_BASIC_PRINTING
 
     // PrintedPagesSource implementation.
@@ -108,8 +108,12 @@ protected:
     void OnRequestPrintPreview(const PrintHostMsg_RequestPrintPreview_Params&);
     void OnMetafileReadyForPrinting(const PrintHostMsg_DidPreviewDocument_Params& params);
 
+#if defined(ENABLE_BASIC_PRINTING)
+    bool PrintToPDFInternal(const QPageLayout &);
+#endif //
+
     base::FilePath m_pdfOutputPath;
-    base::Callback<void(bool)> m_pdfPrintCallback;
+    PrintToPDFCallback m_pdfPrintCallback;
 
 private:
     friend class content::WebContentsUserData<PrintViewManagerQt>;

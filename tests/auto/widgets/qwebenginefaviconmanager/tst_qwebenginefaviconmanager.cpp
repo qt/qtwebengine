@@ -105,7 +105,7 @@ void tst_QWebEngineFaviconManager::faviconLoadFromResources()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
 
-    QUrl url = QUrl("qrc:/resources/favicon-single.html");
+    QUrl url("qrc:/resources/favicon-single.html");
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
@@ -124,7 +124,7 @@ void tst_QWebEngineFaviconManager::faviconLoadEncodedUrl()
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
 
     QString urlString = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/favicon-single.html")).toString();
-    QUrl url = QUrl(urlString + QLatin1String("?favicon=load should work with#whitespace!"));
+    QUrl url(urlString + QLatin1String("?favicon=load should work with#whitespace!"));
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
@@ -157,11 +157,11 @@ void tst_QWebEngineFaviconManager::aboutBlank()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
 
-    QUrl url = QUrl("about:blank");
+    QUrl url("about:blank");
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 0);
+    QCOMPARE(iconUrlChangedSpy.count(), 0);
 
     QVERIFY(m_page->iconUrl().isEmpty());
 }
@@ -178,11 +178,9 @@ void tst_QWebEngineFaviconManager::unavailableFavicon()
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
-    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QCOMPARE(iconUrlChangedSpy.count(), 0);
 
-    QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
-    QCOMPARE(m_page->iconUrl(), iconUrl);
-    QCOMPARE(iconUrl, QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/icons/unavailable.ico")));
+    QVERIFY(m_page->iconUrl().isEmpty());
 }
 
 void tst_QWebEngineFaviconManager::errorPageEnabled()
@@ -192,7 +190,7 @@ void tst_QWebEngineFaviconManager::errorPageEnabled()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
 
-    QUrl url = QUrl(QUrl("http://non.existent/url"));
+    QUrl url("invalid://url");
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
@@ -208,7 +206,7 @@ void tst_QWebEngineFaviconManager::errorPageDisabled()
     QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
     QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
 
-    QUrl url = QUrl(QUrl("http://non.existent/url"));
+    QUrl url("invalid://url");
     m_page->load(url);
 
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
@@ -246,6 +244,14 @@ void tst_QWebEngineFaviconManager::bestFavicon()
     QTRY_VERIFY(iconUrlChangedSpy.count() >= 1);
 
     iconUrl = iconUrlChangedSpy.last().at(0).toString();
+
+    // If the icon URL is empty we have to wait for
+    // the second iconChanged signal that propagates the expected URL
+    if (iconUrl.isEmpty()) {
+        QTRY_COMPARE(iconUrlChangedSpy.count(), 2);
+        iconUrl = iconUrlChangedSpy.last().at(0).toString();
+    }
+
     QCOMPARE(iconUrl, QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/icons/qt144.png")));
 }
 

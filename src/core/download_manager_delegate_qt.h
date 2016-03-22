@@ -94,7 +94,7 @@ private:
     void savePackageDownloadCreated(content::DownloadItem *download);
     BrowserContextAdapter *m_contextAdapter;
 
-    uint64 m_currentId;
+    uint64_t m_currentId;
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
 
     friend class DownloadManagerDelegateInstance;

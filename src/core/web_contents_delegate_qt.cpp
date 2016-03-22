@@ -60,7 +60,6 @@
 
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
@@ -79,7 +78,7 @@
 namespace QtWebEngineCore {
 
 // Maps the LogSeverity defines in base/logging.h to the web engines message levels.
-static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32 messageLevel) {
+static WebContentsAdapterClient::JavaScriptConsoleMessageLevel mapToJavascriptConsoleMessageLevel(int32_t messageLevel) {
     if (messageLevel < 1)
         return WebContentsAdapterClient::Info;
     else if (messageLevel > 1)
@@ -114,9 +113,6 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     load_url_params.should_replace_current_entry = params.should_replace_current_entry;
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
-
-    if (params.transferred_global_request_id != content::GlobalRequestID())
-        load_url_params.transferred_global_request_id = params.transferred_global_request_id;
 
     target->GetController().LoadURLWithParams(load_url_params);
     return target;
@@ -211,7 +207,15 @@ void WebContentsDelegateQt::DidFailProvisionalLoad(content::RenderFrameHost* ren
 void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url, int error_code, const base::string16& error_description, bool was_ignored_by_handler)
 {
     Q_UNUSED(was_ignored_by_handler);
-    if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID()) || render_frame_host->GetParent())
+    if (validated_url.spec() == content::kUnreachableWebDataURL) {
+        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
+        qCritical("Loading error-page failed. This shouldn't happen.");
+        if (!render_frame_host->GetParent())
+            m_viewClient->loadFinished(false /* success */, toQt(validated_url), true /* isErrorPage */);
+        return;
+    }
+
+    if (render_frame_host->GetParent())
         return;
 
     m_viewClient->iconChanged(QUrl());
@@ -221,8 +225,9 @@ void WebContentsDelegateQt::DidFailLoad(content::RenderFrameHost* render_frame_h
 
 void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame_host, const GURL& validated_url)
 {
-    if (m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID())) {
-        Q_ASSERT(validated_url.is_valid() && validated_url.spec() == content::kUnreachableWebDataURL);
+    Q_ASSERT(validated_url.is_valid());
+    if (validated_url.spec() == content::kUnreachableWebDataURL) {
+        m_loadingErrorFrameList.removeOne(render_frame_host->GetRoutingID());
         m_viewClient->iconChanged(QUrl());
 
         // Trigger LoadFinished signal for main frame's error page only.
@@ -235,15 +240,11 @@ void WebContentsDelegateQt::DidFinishLoad(content::RenderFrameHost* render_frame
     if (render_frame_host->GetParent())
         return;
 
-    m_viewClient->loadFinished(true, toQt(validated_url));
-
-    content::NavigationEntry *entry = web_contents()->GetController().GetVisibleEntry();
-    if (!entry)
-        return;
-
-    // No available icon for the current entry
-    if (!entry->GetFavicon().valid && !m_faviconManager->hasAvailableCandidateIcon())
+    if (!m_faviconManager->hasCandidate())
         m_viewClient->iconChanged(QUrl());
+
+    m_viewClient->loadProgressChanged(100);
+    m_viewClient->loadFinished(true, toQt(validated_url));
 }
 
 void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates)
@@ -256,14 +257,6 @@ void WebContentsDelegateQt::DidUpdateFaviconURL(const std::vector<content::Favic
     }
 
     m_faviconManager->update(faviconCandidates);
-
-    content::NavigationEntry *entry = web_contents()->GetController().GetVisibleEntry();
-    if (entry) {
-        FaviconInfo proposedFaviconInfo = m_faviconManager->getProposedFaviconInfo();
-        content::FaviconStatus &favicon = entry->GetFavicon();
-        favicon.url = toGurl(proposedFaviconInfo.url);
-        favicon.valid = proposedFaviconInfo.isValid();
-    }
 }
 
 content::ColorChooser *WebContentsDelegateQt::OpenColorChooser(content::WebContents *source, SkColor color, const std::vector<content::ColorSuggestion> &suggestion)
@@ -314,7 +307,7 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
     m_viewClient->runFileChooser(controller);
 }
 
-bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32 level, const base::string16 &message, int32 line_no, const base::string16 &source_id)
+bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)
 {
     Q_UNUSED(source)
     m_viewClient->javaScriptConsoleMessage(mapToJavascriptConsoleMessageLevel(level), toQt(message), static_cast<int>(line_no), toQt(source_id));

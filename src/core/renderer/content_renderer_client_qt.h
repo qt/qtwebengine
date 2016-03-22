@@ -44,6 +44,10 @@
 #include <QtGlobal>
 #include <QScopedPointer>
 
+namespace content {
+class RenderProcessObserver;
+}
+
 namespace visitedlink {
 class VisitedLinkSlave;
 }
@@ -65,7 +69,7 @@ public:
     virtual void RenderFrameCreated(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
     virtual bool ShouldSuppressErrorPage(content::RenderFrame *, const GURL &) Q_DECL_OVERRIDE;
     virtual bool HasErrorPage(int httpStatusCode, std::string *errorDomain) Q_DECL_OVERRIDE;
-    virtual void GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame* frame, const blink::WebURLRequest& failedRequest
+    virtual void GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest& failedRequest
             , const blink::WebURLError& error, std::string* errorHtml, base::string16* errorDescription) Q_DECL_OVERRIDE;
 
     virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
@@ -75,6 +79,7 @@ public:
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheRenderProcessObserver> m_webCacheObserver;
+    QScopedPointer<content::RenderProcessObserver> m_renderProcessObserver;
 #if defined(ENABLE_SPELLCHECK)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif

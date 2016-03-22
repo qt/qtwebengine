@@ -44,6 +44,7 @@
 #include "permission_manager_qt.h"
 #include "qtwebenginecoreglobal_p.h"
 #include "resource_context_qt.h"
+#include "ssl_host_state_delegate_qt.h"
 #include "type_conversion.h"
 #include "url_request_context_getter_qt.h"
 
@@ -86,7 +87,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     registry->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
     registry->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck, false);
     registry->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, false);
-    m_prefService = factory.Create(registry.get()).Pass();
+    m_prefService = factory.Create(std::move(registry.get()));
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 }
 #else
@@ -172,10 +173,17 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 
 content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
 {
-    return 0;
+    if (!sslHostStateDelegate)
+        sslHostStateDelegate.reset(new SSLHostStateDelegateQt(m_adapter));
+    return sslHostStateDelegate.get();
 }
 
 scoped_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate(const base::FilePath&)
+{
+    return nullptr;
+}
+
+content::BackgroundSyncController* BrowserContextQt::GetBackgroundSyncController()
 {
     return nullptr;
 }
@@ -189,7 +197,7 @@ content::PermissionManager *BrowserContextQt::GetPermissionManager()
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers, request_interceptors.Pass());
+    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers, std::move(request_interceptors));
     return url_request_getter_.get();
 }
 

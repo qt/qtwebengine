@@ -110,7 +110,7 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
     BrowserContextAdapter::PermissionType permissionType = toQt(permission);
     if (permissionType == BrowserContextAdapter::UnsupportedPermission) {
         callback.Run(content::PERMISSION_STATUS_DENIED);
-        return request_id;
+        return kNoPendingOperation;
     }
 
     content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents();
@@ -125,6 +125,35 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
     if (permissionType == BrowserContextAdapter::GeolocationPermission)
         contentsDelegate->requestGeolocationPermission(request.origin);
     return request_id;
+}
+
+int PermissionManagerQt::RequestPermissions(const std::vector<content::PermissionType>& permissions,
+                                            content::RenderFrameHost* frameHost,
+                                            const GURL& requesting_origin,
+                                            bool user_gesture,
+                                            const base::Callback<void(const std::vector<content::PermissionStatus>&)>& callback)
+{
+    NOTIMPLEMENTED() << "RequestPermissions has not been implemented in QtWebEngine";
+    Q_UNUSED(user_gesture);
+    Q_UNUSED(frameHost);
+
+    std::vector<content::PermissionStatus> result(permissions.size());
+    for (content::PermissionType permission : permissions) {
+        const BrowserContextAdapter::PermissionType permissionType = toQt(permission);
+        if (permissionType == BrowserContextAdapter::UnsupportedPermission)
+            result.push_back(content::PERMISSION_STATUS_DENIED);
+        else {
+            QPair<QUrl, BrowserContextAdapter::PermissionType> key(toQt(requesting_origin), permissionType);
+            // TODO: Request permission from UI
+            if (m_permissions.contains(key) && m_permissions[key])
+                result.push_back(content::PERMISSION_STATUS_GRANTED);
+            else
+                result.push_back(content::PERMISSION_STATUS_DENIED);
+        }
+    }
+
+    callback.Run(result);
+    return kNoPendingOperation;
 }
 
 void PermissionManagerQt::CancelPermissionRequest(int request_id)

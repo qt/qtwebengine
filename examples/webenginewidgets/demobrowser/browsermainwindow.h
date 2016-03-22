@@ -109,6 +109,7 @@ private slots:
     void slotFileOpen();
     void slotFilePrintPreview();
     void slotFilePrint();
+    void slotFilePrintToPDF();
     void slotPrivateBrowsing();
     void slotFileSaveAs();
     void slotEditFind();
@@ -137,6 +138,7 @@ private slots:
     void slotOpenActionUrl(QAction *action);
     void slotShowWindow();
     void slotSwapFocus();
+    void slotHandlePdfPrinted(const QByteArray&);
 
 #if defined(QWEBENGINEPAGE_PRINT)
     void printRequested(QWebEngineFrame *frame);
@@ -179,6 +181,7 @@ private:
     QIcon m_stopIcon;
 
     QString m_lastSearch;
+    QString m_printerOutputFileName;
     friend class BrowserApplication;
 };
 

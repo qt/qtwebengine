@@ -84,16 +84,16 @@ public:
     virtual int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
     virtual void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
     virtual void OnResponseStarted(net::URLRequest*) override;
-    virtual void OnNetworkBytesReceived(const net::URLRequest&, int64_t) override;
-    virtual void OnNetworkBytesSent(const net::URLRequest&, int64_t) override;
-    virtual void OnURLRequestJobOrphaned(net::URLRequest*) override;
+    virtual void OnNetworkBytesReceived(net::URLRequest*, int64_t) override;
+    virtual void OnNetworkBytesSent(net::URLRequest *, int64_t) override;
     virtual void OnCompleted(net::URLRequest*, bool) override;
     virtual void OnPACScriptError(int, const base::string16&) override;
     virtual net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(net::URLRequest*, const net::AuthChallengeInfo&, const AuthCallback&, net::AuthCredentials*) override;
     virtual bool OnCanGetCookies(const net::URLRequest&, const net::CookieList&) override;
     virtual bool OnCanAccessFile(const net::URLRequest& request, const base::FilePath& path) const override;
     virtual bool OnCanEnablePrivacyMode(const GURL&, const GURL&) const override;
-    virtual bool OnFirstPartyOnlyCookieExperimentEnabled() const override;
+    virtual bool OnAreExperimentalCookieFeaturesEnabled() const override;
+    virtual bool OnAreStrictSecureCookiesEnabled() const override;
     virtual bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(const net::URLRequest&, const GURL&, const GURL&) const override;
 };
 

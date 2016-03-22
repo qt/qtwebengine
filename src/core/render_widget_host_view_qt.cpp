@@ -92,7 +92,7 @@ static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& even
   ui::LatencyInfo latency_info;
   // The latency number should only be added if the timestamp is valid.
   if (event.timeStampSeconds) {
-    const int64 time_micros = static_cast<int64>(
+    const int64_t time_micros = static_cast<int64_t>(
         event.timeStampSeconds * base::Time::kMicrosecondsPerSecond);
     latency_info.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT,
@@ -163,7 +163,7 @@ static inline bool compareTouchPoints(const QTouchEvent::TouchPoint &lhs, const 
     return lhs.state() < rhs.state();
 }
 
-static uint32 s_eventId = 0;
+static uint32_t s_eventId = 0;
 class MotionEventQt : public ui::MotionEvent {
 public:
     MotionEventQt(const QList<QTouchEvent::TouchPoint> &touchPoints, const base::TimeTicks &eventTime, Action action, const Qt::KeyboardModifiers modifiers, float dpiScale, int index = -1)
@@ -179,7 +179,7 @@ public:
         Q_ASSERT((action != ACTION_DOWN && action != ACTION_UP) || index == 0);
     }
 
-    virtual uint32 GetUniqueEventId() const Q_DECL_OVERRIDE { return eventId; }
+    virtual uint32_t GetUniqueEventId() const Q_DECL_OVERRIDE { return eventId; }
     virtual Action GetAction() const Q_DECL_OVERRIDE { return action; }
     virtual int GetActionIndex() const Q_DECL_OVERRIDE { return index; }
     virtual size_t GetPointerCount() const Q_DECL_OVERRIDE { return touchPoints.size(); }
@@ -204,6 +204,7 @@ public:
     }
     virtual int GetFlags() const Q_DECL_OVERRIDE { return flags; }
     virtual float GetPressure(size_t pointer_index) const Q_DECL_OVERRIDE { return touchPoints.at(pointer_index).pressure(); }
+    virtual float GetTilt(size_t pointer_index) const Q_DECL_OVERRIDE { return 0; }
     virtual base::TimeTicks GetEventTime() const Q_DECL_OVERRIDE { return eventTime; }
 
     virtual size_t GetHistorySize() const Q_DECL_OVERRIDE { return 0; }
@@ -218,7 +219,7 @@ private:
     QList<QTouchEvent::TouchPoint> touchPoints;
     base::TimeTicks eventTime;
     Action action;
-    const uint32 eventId;
+    const uint32_t eventId;
     int flags;
     int index;
     float dpiScale;
@@ -232,6 +233,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_needsDelegatedFrameAck(false)
     , m_didFirstVisuallyNonEmptyLayout(false)
     , m_adapterClient(0)
+    , m_imeInProgress(false)
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
@@ -594,10 +596,10 @@ void RenderWidgetHostViewQt::CopyFromCompositingSurface(const gfx::Rect& src_sub
     callback.Run(SkBitmap(), content::READBACK_FAILED);
 }
 
-void RenderWidgetHostViewQt::CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(bool)>& callback)
+void RenderWidgetHostViewQt::CopyFromCompositingSurfaceToVideoFrame(const gfx::Rect& src_subrect, const scoped_refptr<media::VideoFrame>& target, const base::Callback<void(const gfx::Rect&, bool)>& callback)
 {
     NOTIMPLEMENTED();
-    callback.Run(false);
+    callback.Run(gfx::Rect(), false);
 }
 
 bool RenderWidgetHostViewQt::CanCopyToVideoFrame() const
@@ -610,7 +612,15 @@ bool RenderWidgetHostViewQt::HasAcceleratedSurface(const gfx::Size&)
     return false;
 }
 
-void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
+void RenderWidgetHostViewQt::LockCompositingSurface()
+{
+}
+
+void RenderWidgetHostViewQt::UnlockCompositingSurface()
+{
+}
+
+void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame->metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame->metadata.root_layer_size);
@@ -621,7 +631,7 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32 output_surface_id, sco
     m_pendingOutputSurfaceId = output_surface_id;
     Q_ASSERT(frame->delegated_frame_data);
     Q_ASSERT(!m_chromiumCompositorData->frameData || m_chromiumCompositorData->frameData->resource_list.empty());
-    m_chromiumCompositorData->frameData = frame->delegated_frame_data.Pass();
+    m_chromiumCompositorData->frameData = std::move(frame->delegated_frame_data);
     m_chromiumCompositorData->frameDevicePixelRatio = frame->metadata.device_scale_factor;
 
     // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
@@ -890,6 +900,23 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     if (IsMouseLocked() && ev->key() == Qt::Key_Escape && ev->type() == QEvent::KeyRelease)
         UnlockMouse();
 
+    if (m_imeInProgress) {
+        // IME composition was not finished with a valid commit string.
+        // We're getting the composition result in a key event.
+        if (ev->key() != 0) {
+            // The key event is not a result of an IME composition. Cancel IME.
+            m_host->ImeCancelComposition();
+            m_imeInProgress = false;
+        } else {
+            if (ev->type() == QEvent::KeyRelease) {
+                m_host->ImeConfirmComposition(toString16(ev->text()), gfx::Range::InvalidRange(),
+                                              false);
+                m_imeInProgress = false;
+            }
+            return;
+        }
+    }
+
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
     if (webEvent.type == blink::WebInputEvent::RawKeyDown && !ev->text().isEmpty()) {
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
@@ -946,11 +973,12 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         }
     }
 
-    if (preeditString.isEmpty()) {
+    if (!commitString.isEmpty()) {
         gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
                                                               : gfx::Range::InvalidRange();
         m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
-    } else {
+        m_imeInProgress = false;
+    } else if (!preeditString.isEmpty()) {
         if (!selectionRange.IsValid()) {
             // We did not receive a valid selection range, hence the range is going to mark the cursor position.
             int newCursorPosition = (cursorPositionInPreeditString < 0) ? preeditString.length() : cursorPositionInPreeditString;
@@ -958,6 +986,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             selectionRange.set_end(newCursorPosition);
         }
         m_host->ImeSetComposition(toString16(preeditString), underlines, selectionRange.start(), selectionRange.end());
+        m_imeInProgress = true;
     }
 }
 
@@ -1039,11 +1068,12 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
     if (ev->gotFocus()) {
         m_host->GotFocus();
         m_host->SetActive(true);
-        Q_ASSERT(m_host->IsRenderView());
+        content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(m_host);
+        Q_ASSERT(viewHost);
         if (ev->reason() == Qt::TabFocusReason)
-            static_cast<content::RenderViewHostImpl*>(m_host)->SetInitialFocus(false);
+            viewHost->SetInitialFocus(false);
         else if (ev->reason() == Qt::BacktabFocusReason)
-            static_cast<content::RenderViewHostImpl*>(m_host)->SetInitialFocus(true);
+            viewHost->SetInitialFocus(true);
         ev->accept();
     } else if (ev->lostFocus()) {
         m_host->SetActive(false);

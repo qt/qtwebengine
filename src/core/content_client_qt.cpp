@@ -63,10 +63,10 @@
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
-static const int32 kPepperFlashPermissions = ppapi::PERMISSION_DEV |
-                                             ppapi::PERMISSION_PRIVATE |
-                                             ppapi::PERMISSION_BYPASS_USER_GESTURE |
-                                             ppapi::PERMISSION_FLASH;
+static const int32_t kPepperFlashPermissions = ppapi::PERMISSION_DEV |
+                                               ppapi::PERMISSION_PRIVATE |
+                                               ppapi::PERMISSION_BYPASS_USER_GESTURE |
+                                               ppapi::PERMISSION_FLASH;
 
 namespace switches {
 const char kPpapiFlashPath[]    = "ppapi-flash-path";
@@ -78,8 +78,8 @@ static const base::FilePath::CharType kWidevineCdmBaseDirectory[] = FILE_PATH_LI
 
 static const char kWidevineCdmPluginExtension[] = "";
 
-static const int32 kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV
-                                                 | ppapi::PERMISSION_PRIVATE;
+static const int32_t kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV
+                                                   | ppapi::PERMISSION_PRIVATE;
 
 static QString ppapiPluginsPath()
 {
@@ -156,10 +156,11 @@ void AddPepperFlashFromSystem(std::vector<content::PepperPluginInfo>* plugins)
                 << "/usr/lib64/chromium/PepperFlash/libpepflashplayer.so"; // OpenSuSE
     pluginPaths << ppapiPluginsPath() + QStringLiteral("/libpepflashplayer.so");
 #endif
+    std::string flash_version = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kPpapiFlashVersion);
     for (auto it = pluginPaths.constBegin(); it != pluginPaths.constEnd(); ++it) {
         if (!QFile::exists(*it))
             continue;
-        plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), std::string()));
+        plugins->push_back(CreatePepperFlashInfo(QtWebEngineCore::toFilePath(*it), flash_version));
     }
 }
 

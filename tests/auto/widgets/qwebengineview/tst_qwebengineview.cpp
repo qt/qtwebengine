@@ -23,11 +23,13 @@
 #include "../util.h"
 
 #include <qpainter.h>
+#include <qpagelayout.h>
 #include <qwebengineview.h>
 #include <qwebenginepage.h>
 #include <qwebenginesettings.h>
 #include <qnetworkrequest.h>
 #include <qdiriterator.h>
+#include <qtemporarydir.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);

@@ -8,6 +8,7 @@
     'dependencies': [
       '<(chromium_src_dir)/base/base.gyp:base',
       '<(chromium_src_dir)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      '<(chromium_src_dir)/chrome/tools/convert_dict/convert_dict.gyp:convert_dict',
       '<(chromium_src_dir)/components/components.gyp:devtools_discovery',
       '<(chromium_src_dir)/components/components.gyp:devtools_http_handler',
       '<(chromium_src_dir)/components/components.gyp:error_page_renderer',
@@ -68,10 +69,6 @@
       ['qt_os=="embedded_linux"', {
         'configurations': {
           'Debug_Base': {
-            # Reduce the binary size.
-            'variables': {
-              'debug_optimize%': 's',
-            },
             'ldflags': [
               # Only link with needed input sections.
               '-Wl,--gc-sections',
@@ -136,6 +133,17 @@
           'renderer/print_web_view_helper_delegate_qt.cpp',
           'renderer/print_web_view_helper_delegate_qt.h',
         ]
+      }],
+      ['icu_use_data_file_flag==1', {
+        'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_FILE'],
+      }, { # else icu_use_data_file_flag !=1
+        'conditions': [
+          ['OS=="win"', {
+            'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_SHARED'],
+          }, {
+            'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC'],
+          }],
+        ],
       }],
     ],
 }

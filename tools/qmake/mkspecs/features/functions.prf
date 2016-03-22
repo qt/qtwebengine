@@ -19,6 +19,9 @@ defineTest(isPlatformSupported) {
       skipBuild("Qt WebEngine on Windows requires MSVC 2013 or MSVC 2015.")
       return(false)
     }
+    isBuildingOnWin32() {
+      skipBuild("Qt WebEngine on Windows must be built on a 64-bit machine.")
+    }
   } else:osx {
     lessThan(QMAKE_XCODE_VERSION, 5.1) {
       skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
@@ -28,6 +31,10 @@ defineTest(isPlatformSupported) {
     darwin_major_version = $$section(QMAKE_HOST.version, ., 0, 0)
     lessThan(darwin_major_version, 13) {
       skipBuild("Qt WebEngine requires OS X version 10.9 or newer.")
+      return(false)
+    }
+    !isMinOSXSDKVersion(10, 10, 3): {
+      skipBuild("Qt WebEngine requires an OS X SDK version 10.10.3 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
       return(false)
     }
   } else {
@@ -74,6 +81,36 @@ defineTest(isQMLTestSupportApiEnabled) {
     contains(QT_CONFIG, private_tests): return(true) # enable for developer-build
     contains(QT_BUILD_PARTS, tests): return(true)
     contains(WEBENGINE_CONFIG, testsupport): return(true)
+    return(false)
+}
+
+defineTest(isBuildingOnWin32) {
+    # The check below is ugly, but necessary, as it seems to be the only reliable way to detect if the host
+    # architecture is 32 bit. QMAKE_HOST.arch does not work as it returns the architecture that the toolchain
+    # is building for, not the system's actual architecture.
+    PROGRAM_FILES_X86 = $$(ProgramW6432)
+    isEmpty(PROGRAM_FILES_X86): return(true)
+    return(false)
+}
+
+defineTest(isMinOSXSDKVersion) {
+    requested_major = $$1
+    requested_minor = $$2
+    requested_patch = $$3
+    WEBENGINE_OSX_SDK_PRODUCT_VERSION = $$system("/usr/bin/xcodebuild -sdk $$QMAKE_MAC_SDK -version ProductVersion 2>/dev/null")
+    export(WEBENGINE_OSX_SDK_PRODUCT_VERSION)
+    isEmpty(WEBENGINE_OSX_SDK_PRODUCT_VERSION) {
+        skipBuild("Could not resolve SDK product version for \'$$QMAKE_MAC_SDK\'.")
+        return(false)
+    }
+    major_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 0, 0)
+    minor_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 1, 1)
+    patch_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 2, 2)
+
+    greaterThan(major_version, $$requested_major):return(true)
+    equals(major_version, $$requested_major):greaterThan(minor_version, $$requested_minor):return(true)
+    equals(major_version, $$requested_major):equals(minor_version, $$requested_minor):!lessThan(patch_version, $$requested_patch):return(true)
+
     return(false)
 }
 

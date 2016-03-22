@@ -57,25 +57,6 @@
 #include "content/common/gpu/stream_texture_qnx.h"
 #endif
 
-static void addSyncPointCallbackDelegate(gpu::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
-{
-    syncPointManager->AddSyncPointCallback(sync_point, callback);
-}
-
-QMap<uint32, gfx::TransferableFence> transferFences()
-{
-    QMap<uint32, gfx::TransferableFence> ret;
-    content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
-    content::GpuChannelManager::SyncPointGLFences::iterator it = gpuChannelManager->sync_point_gl_fences_.begin();
-    content::GpuChannelManager::SyncPointGLFences::iterator end = gpuChannelManager->sync_point_gl_fences_.end();
-    for (; it != end; ++it) {
-        ret[it->first] = it->second->Transfer();
-        delete it->second;
-    }
-    gpuChannelManager->sync_point_gl_fences_.clear();
-    return ret;
-}
-
 base::MessageLoop *gpu_message_loop()
 {
     return content::GpuChildThread::instance()->message_loop();
@@ -85,12 +66,6 @@ gpu::SyncPointManager *sync_point_manager()
 {
     content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
     return gpuChannelManager->sync_point_manager();
-}
-
-void AddSyncPointCallbackOnGpuThread(base::MessageLoop *gpuMessageLoop, gpu::SyncPointManager *syncPointManager, uint32 sync_point, const base::Closure& callback)
-{
-    // We need to set our callback from the GPU thread, where the SyncPointManager lives.
-    gpuMessageLoop->PostTask(FROM_HERE, base::Bind(&addSyncPointCallbackDelegate, syncPointManager, sync_point, callback));
 }
 
 gpu::gles2::MailboxManager *mailbox_manager()

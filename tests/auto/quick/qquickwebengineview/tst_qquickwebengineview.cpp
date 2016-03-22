@@ -60,6 +60,7 @@ private Q_SLOTS:
     void inputMethod();
     void inputMethodHints();
     void basicRenderingSanity();
+    void printToPdf();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -459,6 +460,29 @@ void tst_QQuickWebEngineView::inputMethodHints()
     hints = Qt::InputMethodHints(query.value(Qt::ImHints).toUInt());
     QCOMPARE(hints, Qt::ImhNone);
 #endif
+}
+
+void tst_QQuickWebEngineView::printToPdf()
+{
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    QVERIFY(tempDir.isValid());
+    QQuickWebEngineView *view = webEngineView();
+    view->setUrl(urlFromTestPath("html/basic_page.html"));
+    QVERIFY(waitForLoadSucceeded(view));
+
+    QString path = tempDir.path() + "/print_success.pdf";
+    view->printToPdf(path, QQuickWebEngineView::A4, QQuickWebEngineView::Portrait);
+    QTest::qWait(500);
+    QVERIFY(QFile::exists(path));
+
+#if !defined(Q_OS_WIN)
+    path = tempDir.path() + "/print_//fail.pdf";
+#else
+    path = tempDir.path() + "/print_|fail.pdf";
+#endif // #if !defined(Q_OS_WIN)
+    view->printToPdf(path, QQuickWebEngineView::A4, QQuickWebEngineView::Portrait);
+    QTest::qWait(500);
+    QVERIFY(!QFile::exists(path));
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

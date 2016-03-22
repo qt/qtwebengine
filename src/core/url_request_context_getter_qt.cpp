@@ -93,7 +93,7 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *brow
     : m_ignoreCertificateErrors(false)
     , m_browserContext(browserContext)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
-    , m_requestInterceptors(request_interceptors.Pass())
+    , m_requestInterceptors(std::move(request_interceptors))
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
 
@@ -196,7 +196,7 @@ void URLRequestContextGetterQt::generateStorage()
     m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 
      // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.
-    m_storage->set_host_resolver(host_resolver.Pass());
+    m_storage->set_host_resolver(std::move(host_resolver));
 
     generateHttpCache();
 }
@@ -385,17 +385,14 @@ void URLRequestContextGetterQt::generateHttpCache()
     }
 
     net::HttpCache *cache = 0;
-    net::HttpNetworkSession *network_session = 0;
     net::HttpNetworkSession::Params network_session_params = generateNetworkSessionParams();
 
-    if (m_urlRequestContext->http_transaction_factory())
-        network_session = m_urlRequestContext->http_transaction_factory()->GetSession();
-
-    if (!network_session || !doNetworkSessionParamsMatch(network_session_params, network_session->params())) {
+    if (!m_httpNetworkSession || !doNetworkSessionParamsMatch(network_session_params, m_httpNetworkSession->params())) {
         cancelAllUrlRequests();
-        cache = new net::HttpCache(network_session_params, main_backend);
-    } else
-        cache = new net::HttpCache(network_session, main_backend);
+        m_httpNetworkSession.reset(new net::HttpNetworkSession(network_session_params));
+    }
+
+    cache = new net::HttpCache(m_httpNetworkSession.get(), scoped_ptr<net::HttpCache::DefaultBackend>(main_backend), false);
 
     m_storage->set_http_transaction_factory(scoped_ptr<net::HttpCache>(cache));
     m_updateHttpCache = 0;
@@ -446,14 +443,14 @@ void URLRequestContextGetterQt::generateJobFactory()
         jobFactory->SetProtocolHandler(it.key().toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(it.value())));
 
     // Set up interceptors in the reverse order.
-    scoped_ptr<net::URLRequestJobFactory> topJobFactory = jobFactory.Pass();
+    scoped_ptr<net::URLRequestJobFactory> topJobFactory = std::move(jobFactory);
 
     for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
-        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(topJobFactory.Pass(), make_scoped_ptr(*i)));
+        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(std::move(topJobFactory), make_scoped_ptr(*i)));
 
     m_requestInterceptors.weak_clear();
 
-    m_jobFactory = topJobFactory.Pass();
+    m_jobFactory = std::move(topJobFactory);
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
 }

@@ -44,6 +44,8 @@
 #include "web_contents_adapter_client.h"
 
 #include "base/bind.h"
+#include "content/public/browser/favicon_status.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -76,12 +78,12 @@ FaviconManagerPrivate::~FaviconManagerPrivate()
 {
 }
 
-int FaviconManagerPrivate::downloadIcon(const QUrl &url, bool candidate)
+int FaviconManagerPrivate::downloadIcon(const QUrl &url)
 {
     static int fakeId = 0;
     int id;
 
-    bool cached = candidate && m_icons.contains(url);
+    bool cached = m_icons.contains(url);
     if (isResourceUrl(url) || cached) {
         id = --fakeId;
         m_pendingRequests.insert(id, url);
@@ -94,13 +96,8 @@ int FaviconManagerPrivate::downloadIcon(const QUrl &url, bool candidate)
              base::Bind(&FaviconManagerPrivate::iconDownloadFinished, m_weakFactory.GetWeakPtr()));
     }
 
-    if (candidate) {
-        Q_ASSERT(!m_inProgressCandidateRequests.contains(id));
-        m_inProgressCandidateRequests.insert(id, url);
-    } else {
-        Q_ASSERT(!m_inProgressCustomRequests.contains(id));
-        m_inProgressCustomRequests.insert(id, url);
-    }
+    Q_ASSERT(!m_inProgressRequests.contains(id));
+    m_inProgressRequests.insert(id, url);
 
     return id;
 }
@@ -118,12 +115,10 @@ void FaviconManagerPrivate::iconDownloadFinished(int id,
     storeIcon(id, toQIcon(bitmaps));
 }
 
-/* Pending requests are used as a workaround for avoiding signal iconChanged when
- * accessing each cached icons or icons stored in qrc. They don't have to be downloaded
- * thus the m_inProgressCustomRequests maybe emptied right before the next icon is added to
- * in-progress-requests queue. The m_pendingRequests stores these requests until all
- * candidates are added to the queue then pending requests should be cleaned up by this
- * function.
+/* Pending requests are used to mark icons that are already downloaded (cached icons or icons
+ * stored in qrc). These requests are also stored in the m_inProgressRequests but the corresponding
+ * icons are stored in m_icons explicitly by this function. It is necessary to avoid
+ * m_inProgressRequests being emptied right before the next icon is added by a downloadIcon() call.
  */
 void FaviconManagerPrivate::downloadPendingRequests()
 {
@@ -143,10 +138,9 @@ void FaviconManagerPrivate::downloadPendingRequests()
 void FaviconManagerPrivate::storeIcon(int id, const QIcon &icon)
 {
     Q_Q(FaviconManager);
+    Q_ASSERT(m_inProgressRequests.contains(id));
 
-    bool candidate = m_inProgressCandidateRequests.contains(id);
-
-    QUrl requestUrl = candidate ? m_inProgressCandidateRequests[id] : m_inProgressCustomRequests[id];
+    QUrl requestUrl = m_inProgressRequests[id];
     FaviconInfo &faviconInfo = q->m_faviconInfoMap[requestUrl];
 
     unsigned iconCount = 0;
@@ -168,29 +162,46 @@ void FaviconManagerPrivate::storeIcon(int id, const QIcon &icon)
                 }
             }
         }
-
-        q->m_hasDownloadedIcon = true;
-    } else if (id < 0) {
-        // Icon is cached
-        q->m_hasDownloadedIcon = true;
-    } else {
+    } else if (id >= 0) {
         // Reset size if icon cannot be downloaded
         faviconInfo.size = QSize(0, 0);
     }
 
-    if (candidate) {
-        m_inProgressCandidateRequests.remove(id);
-        if (m_inProgressCandidateRequests.isEmpty())
-            m_viewClient->iconChanged(q->getProposedFaviconInfo().url);
-    } else {
-        m_inProgressCustomRequests.remove(id);
+    m_inProgressRequests.remove(id);
+    if (m_inProgressRequests.isEmpty())
+        propagateIcon();
+}
+
+void FaviconManagerPrivate::propagateIcon() const
+{
+    Q_Q(const FaviconManager);
+
+    QUrl iconUrl;
+    const QList<FaviconInfo> &faviconInfoList = q->getFaviconInfoList(true /* candidates only */);
+
+    unsigned bestArea = 0;
+    for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
+        if (it->type != FaviconInfo::Favicon)
+            continue;
+
+        if (it->isValid() && bestArea < area(it->size)) {
+            iconUrl = it->url;
+            bestArea = area(it->size);
+        }
     }
 
-    Q_EMIT q->iconDownloaded(requestUrl);
+    content::NavigationEntry *entry = m_webContents->GetController().GetVisibleEntry();
+    if (entry) {
+        content::FaviconStatus &favicon = entry->GetFavicon();
+        favicon.url = toGurl(iconUrl);
+        favicon.valid = true;
+    }
+
+    m_viewClient->iconChanged(iconUrl);
 }
 
 FaviconManager::FaviconManager(FaviconManagerPrivate *d)
-    : m_hasDownloadedIcon(false)
+    : m_hasCandidate(false)
 {
     Q_ASSERT(d);
     d_ptr.reset(d);
@@ -228,120 +239,58 @@ QList<FaviconInfo> FaviconManager::getFaviconInfoList(bool candidatesOnly) const
     return faviconInfoList;
 }
 
-
-void FaviconManager::downloadIcon(const QUrl &url, FaviconInfo::FaviconType iconType)
-{
-    Q_D(FaviconManager);
-
-    // If the favicon cannot be found in the list that means that it is not a candidate
-    // for any visited page (including the current one). In this case the type of the icon
-    // is unknown: it has to be specified explicitly.
-    if (!m_faviconInfoMap.contains(url)) {
-        FaviconInfo newFaviconInfo(url, iconType);
-        m_faviconInfoMap.insert(url, newFaviconInfo);
-    }
-
-    d->downloadIcon(url, false);
-    d->downloadPendingRequests();
-}
-
-void FaviconManager::removeIcon(const QUrl &url)
-{
-    Q_D(FaviconManager);
-    int removed = d->m_icons.remove(url);
-
-    if (removed) {
-        Q_ASSERT(removed == 1);
-        Q_ASSERT(m_faviconInfoMap.contains(url));
-        m_faviconInfoMap[url].size = QSize(0, 0);
-    }
-}
-
-bool FaviconManager::hasAvailableCandidateIcon() const
-{
-    Q_D(const FaviconManager);
-    return m_hasDownloadedIcon || !d->m_inProgressCandidateRequests.isEmpty();
-}
-
 void FaviconManager::update(const QList<FaviconInfo> &candidates)
 {
     Q_D(FaviconManager);
     updateCandidates(candidates);
 
-    for (auto it = m_faviconInfoMap.cbegin(), end = m_faviconInfoMap.cend(); it != end; ++it) {
-        const FaviconInfo &faviconInfo = it.value();
-        if (!faviconInfo.candidate || faviconInfo.type != FaviconInfo::Favicon)
+    const QList<FaviconInfo> &faviconInfoList = getFaviconInfoList(true /* candidates only */);
+    for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
+        if (it->type != FaviconInfo::Favicon)
             continue;
 
-        if (faviconInfo.isValid())
-            d->downloadIcon(faviconInfo.url, true);
+        if (it->isValid())
+            d->downloadIcon(it->url);
     }
 
     d->downloadPendingRequests();
+
+    // Reset icon if nothing was downloaded
+    if (d->m_inProgressRequests.isEmpty()) {
+        content::NavigationEntry *entry = d->m_webContents->GetController().GetVisibleEntry();
+        if (entry && !entry->GetFavicon().valid)
+            d->m_viewClient->iconChanged(QUrl());
+    }
 }
 
 void FaviconManager::updateCandidates(const QList<FaviconInfo> &candidates)
 {
+    m_hasCandidate = candidates.count();
     for (FaviconInfo candidateFaviconInfo : candidates) {
-        QUrl candidateUrl = candidateFaviconInfo.url;
-        if (m_faviconInfoMap.contains(candidateUrl)) {
-            m_faviconInfoMap[candidateUrl].candidate = true;
-            // Update type in case of the icon was downloaded manually
+        const QUrl &candidateUrl = candidateFaviconInfo.url;
+
+        if (!m_faviconInfoMap.contains(candidateUrl))
+            m_faviconInfoMap.insert(candidateUrl, candidateFaviconInfo);
+        else {
+            // The same icon can be used for more than one page with different types.
             m_faviconInfoMap[candidateUrl].type = candidateFaviconInfo.type;
-            continue;
         }
 
-        candidateFaviconInfo.candidate = true;
-        m_faviconInfoMap.insert(candidateUrl, candidateFaviconInfo);
+        m_faviconInfoMap[candidateUrl].candidate = true;
     }
 }
 
 void FaviconManager::resetCandidates()
 {
-    m_hasDownloadedIcon = false;
+    m_hasCandidate = false;
     for (auto it = m_faviconInfoMap.begin(), end = m_faviconInfoMap.end(); it != end; ++it)
         it->candidate = false;
 }
 
-
-FaviconInfo FaviconManager::getProposedFaviconInfo() const
+bool FaviconManager::hasCandidate() const
 {
-    FaviconInfo proposedFaviconInfo = getFirstFaviconInfo();
-
-    // If nothing has been downloaded yet return the first favicon
-    // if there is available for dev-tools
-    if (!m_hasDownloadedIcon)
-        return proposedFaviconInfo;
-
-    unsigned bestArea = area(proposedFaviconInfo.size);
-    for (auto it = m_faviconInfoMap.cbegin(), end = m_faviconInfoMap.cend(); it != end; ++it) {
-        const FaviconInfo &faviconInfo = it.value();
-        if (!faviconInfo.candidate || faviconInfo.type != FaviconInfo::Favicon)
-            continue;
-
-        if (faviconInfo.isValid() && bestArea < area(faviconInfo.size)) {
-            proposedFaviconInfo = faviconInfo;
-            bestArea = area(proposedFaviconInfo.size);
-        }
-    }
-
-    return proposedFaviconInfo;
+    return m_hasCandidate;
 }
-
-FaviconInfo FaviconManager::getFirstFaviconInfo() const
-{
-    for (auto it = m_faviconInfoMap.cbegin(), end = m_faviconInfoMap.cend(); it != end; ++it) {
-        const FaviconInfo &faviconInfo = it.value();
-        if (!faviconInfo.candidate || faviconInfo.type != FaviconInfo::Favicon)
-            continue;
-
-        if (faviconInfo.isValid())
-            return faviconInfo;
-    }
-
-    return FaviconInfo();
-}
-
 
 
 FaviconInfo::FaviconInfo()

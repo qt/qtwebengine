@@ -44,11 +44,11 @@ cross_compile {
     # Needed for v8, see chromium/v8/build/toolchain.gypi
     GYP_CONFIG += CXX=\"$$which($$QMAKE_CXX)\"
 }
+else {
+    GYP_CONFIG += sysroot=\"\"
+}
 
 contains(QT_ARCH, "arm") {
-    # Chromium will set a default sysroot on arm unless we give it one.
-    !cross_compile: GYP_CONFIG += sysroot=\"\"
-
     GYP_CONFIG += target_arch=arm
 
     # Extract ARM specific compiler options that we have to pass to gyp,
@@ -83,11 +83,29 @@ contains(QT_ARCH, "arm") {
     contains(QMAKE_CFLAGS, "-mthumb"): GYP_CONFIG += arm_thumb=1
 }
 
+contains(QT_ARCH, "mips") {
+    !cross_compile: GYP_CONFIG += sysroot=\"\"
+    GYP_CONFIG += target_arch=mipsel
+
+    contains(QMAKE_CFLAGS, "mips32r6"): mips_arch_variant=\"r6\"
+    else: contains(QMAKE_CFLAGS, "mips32r2"): mips_arch_variant=\"r2\"
+    else: contains(QMAKE_CFLAGS, "mips32"): mips_arch_variant=\"r1\"
+
+    contains(QMAKE_CFLAGS, "-mdsp2"): GYP_CONFIG += mips_dsp_rev=2
+    else: contains(QMAKE_CFLAGS, "-mdsp"): GYP_CONFIG += mips_dsp_rev=1
+}
+
 contains(QT_ARCH, "x86_64"): GYP_CONFIG += target_arch=x64
 contains(QT_ARCH, "i386"): GYP_CONFIG += target_arch=ia32
 contains(QT_ARCH, "arm64"): GYP_CONFIG += target_arch=arm64
+contains(QT_ARCH, "mips64"): GYP_CONFIG += target_arch=mips64el
 
 contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_codecs=1 ffmpeg_branding=Chrome
+contains(WEBENGINE_CONFIG, use_appstore_compliant_code): GYP_CONFIG += appstore_compliant_code=1
+
+# Compiling with -Os makes a huge difference in binary size, and the unwind tables is another big part,
+# but the latter are necessary for useful debug binaries.
+contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s debug_optimize=s release_unwind_tables=0
 
 !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
     GYP_CONFIG += qt_install_data=\"$$[QT_INSTALL_DATA/get]\"

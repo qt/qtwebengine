@@ -73,7 +73,7 @@ public:
 
     QUrl url;
     FaviconType type;
-    // Stores the size of the highest quality in case of multi-size icon
+    // Stores the largest size in case of multi-size icon
     QSize size;
     bool candidate;
     bool multiSize;
@@ -88,25 +88,17 @@ public:
     QIcon getIcon(const QUrl &) const;
     FaviconInfo getFaviconInfo(const QUrl &) const;
     QList<FaviconInfo> getFaviconInfoList(bool) const;
-    void downloadIcon(const QUrl &url, FaviconInfo::FaviconType iconType = FaviconInfo::Favicon);
-    void removeIcon(const QUrl &);
-
-Q_SIGNALS:
-    void iconDownloaded(const QUrl &url);
 
 private:
     FaviconManager(FaviconManagerPrivate *);
 
-    bool hasAvailableCandidateIcon() const;
     void update(const QList<FaviconInfo> &);
     void updateCandidates(const QList<FaviconInfo> &);
     void resetCandidates();
-
-    FaviconInfo getProposedFaviconInfo() const;
-    FaviconInfo getFirstFaviconInfo() const;
+    bool hasCandidate() const;
 
     QMap<QUrl, FaviconInfo> m_faviconInfoMap;
-    bool m_hasDownloadedIcon;
+    bool m_hasCandidate;
 
     Q_DISABLE_COPY(FaviconManager)
     Q_DECLARE_PRIVATE(FaviconManager)

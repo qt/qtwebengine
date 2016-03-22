@@ -40,13 +40,14 @@
 #ifndef QWEBENGINEPAGE_H
 #define QWEBENGINEPAGE_H
 
-#include <qtwebenginewidgetsglobal.h>
-#include <qwebenginecertificateerror.h>
-#include <qwebenginecallback.h>
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtWebEngineWidgets/qwebenginecertificateerror.h>
+#include <QtWebEngineCore/qwebenginecallback.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
+#include <QtGui/qpagelayout.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
@@ -267,6 +268,12 @@ public:
     void setAudioMuted(bool muted);
     bool wasRecentlyAudible();
 
+    void printToPdf(const QString &filePath, const QPageLayout &layout);
+#ifdef Q_QDOC
+    void printToPdf(const QPageLayout &layout, FunctorOrLambda resultCallback);
+#else
+    void printToPdf(const QPageLayout &layout, const QWebEngineCallback<const QByteArray&> &resultCallback);
+#endif
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);

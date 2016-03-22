@@ -51,6 +51,7 @@
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QStackedLayout>
+#include <QPageLayout>
 
 QT_BEGIN_NAMESPACE
 
@@ -113,6 +114,7 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
 
 /*!
     \fn QWebEngineView::renderProcessTerminated(QWebEnginePage::RenderProcessTerminationStatus terminationStatus, int exitCode)
+    \since 5.6
 
     This signal is emitted when the render process is terminated with a non-zero exit status.
     \a terminationStatus is the termination status of the process and \a exitCode is the status code
@@ -261,7 +263,6 @@ QWebEngineView *QWebEngineView::createWindow(QWebEnginePage::WebWindowType type)
     Q_UNUSED(type)
     return 0;
 }
-
 
 qreal QWebEngineView::zoomFactor() const
 {

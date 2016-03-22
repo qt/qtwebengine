@@ -82,19 +82,19 @@ public:
     FaviconManagerPrivate(content::WebContents *, WebContentsAdapterClient *);
     ~FaviconManagerPrivate();
 
-    int downloadIcon(const QUrl &, bool);
+    int downloadIcon(const QUrl &);
 
     void iconDownloadFinished(int, int, const GURL &, const std::vector<SkBitmap> &, const std::vector<gfx::Size> &);
     void storeIcon(int, const QIcon &);
     void downloadPendingRequests();
+    void propagateIcon() const;
 
     content::WebContents *m_webContents;
     WebContentsAdapterClient *m_viewClient;
     base::WeakPtrFactory<FaviconManagerPrivate> m_weakFactory;
 
     QMap<QUrl, QIcon> m_icons;
-    QMap<int, QUrl> m_inProgressCandidateRequests;
-    QMap<int, QUrl> m_inProgressCustomRequests;
+    QMap<int, QUrl> m_inProgressRequests;
     QMap<int, QUrl> m_pendingRequests;
 
     Q_DECLARE_PUBLIC(FaviconManager)

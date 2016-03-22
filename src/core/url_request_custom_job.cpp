@@ -130,21 +130,20 @@ bool URLRequestCustomJob::IsRedirectResponse(GURL* location, int* http_status_co
     return false;
 }
 
-bool URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead)
+int URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize)
 {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    Q_ASSERT(bytesRead);
     Q_ASSERT(m_shared);
     QMutexLocker lock(&m_shared->m_mutex);
+    if (m_shared->m_error)
+        return m_shared->m_error;
     qint64 rv = m_shared->m_device ? m_shared->m_device->read(buf->data(), bufSize) : -1;
-    if (rv >= 0) {
-        *bytesRead = static_cast<int>(rv);
-        return true;
-    } else {
-        NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, ERR_FAILED));
-    }
-    return false;
+    if (rv >= 0)
+        return static_cast<int>(rv);
+    else
+        return ERR_FAILED;
 }
+
 
 URLRequestCustomJobShared::URLRequestCustomJobShared(URLRequestCustomJob *job)
     : m_mutex(QMutex::Recursive)
@@ -261,7 +260,7 @@ void URLRequestCustomJobShared::notifyCanceled()
     if (!m_job)
         return;
     if (m_started)
-        m_job->NotifyDone(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
+        m_job->NotifyCanceled();
     else
         m_job->NotifyStartError(URLRequestStatus(URLRequestStatus::CANCELED, ERR_ABORTED));
 }
@@ -296,10 +295,8 @@ void URLRequestCustomJobShared::notifyFailure()
     if (m_device)
         m_device->close();
     const URLRequestStatus status(URLRequestStatus::FAILED, m_error);
-    const bool started = m_started;
-
-    if (started)
-        m_job->NotifyDone(status);
+    if (m_started)
+        m_job->SetStatus(status);
     else
         m_job->NotifyStartError(status);
 }

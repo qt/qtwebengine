@@ -85,6 +85,17 @@ namespace QtWebEngineCore {
 static const char kHttpErrorDomain[] = "http";
 static const char kQrcSchemeQt[] = "qrc";
 
+class RenderProcessObserverQt : public content::RenderProcessObserver {
+public:
+    void WebKitInitialized() override
+    {
+        // mark qrc as a secure scheme (avoids deprecation warnings)
+        // Can only be done after blink is initialized.
+        blink::WebString qrcScheme(base::ASCIIToUTF16(kQrcSchemeQt));
+        blink::WebSecurityPolicy::registerURLSchemeAsSecure(qrcScheme);
+    }
+};
+
 ContentRendererClientQt::ContentRendererClientQt()
 {
 }
@@ -98,12 +109,12 @@ void ContentRendererClientQt::RenderThreadStarted()
     content::RenderThread *renderThread = content::RenderThread::Get();
     m_visitedLinkSlave.reset(new visitedlink::VisitedLinkSlave);
     m_webCacheObserver.reset(new web_cache::WebCacheRenderProcessObserver());
+    m_renderProcessObserver.reset(new RenderProcessObserverQt());
     renderThread->AddObserver(m_visitedLinkSlave.data());
     renderThread->AddObserver(m_webCacheObserver.data());
     renderThread->AddObserver(UserResourceController::instance());
+    renderThread->AddObserver(m_renderProcessObserver.data());
 
-    // mark qrc as a secure scheme (avoids deprecation warnings)
-    blink::WebSecurityPolicy::registerURLSchemeAsSecure(blink::WebString::fromLatin1(kQrcSchemeQt));
 #if defined(ENABLE_SPELLCHECK)
     m_spellCheck.reset(new SpellCheck());
     renderThread->AddObserver(m_spellCheck.data());
@@ -150,9 +161,8 @@ bool ContentRendererClientQt::ShouldSuppressErrorPage(content::RenderFrame *fram
 }
 
 // To tap into the chromium localized strings. Ripped from the chrome layer (highly simplified).
-void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* renderView, blink::WebFrame *frame, const blink::WebURLRequest &failedRequest, const blink::WebURLError &error, std::string *errorHtml, base::string16 *errorDescription)
+void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* renderFrame, const blink::WebURLRequest &failedRequest, const blink::WebURLError &error, std::string *errorHtml, base::string16 *errorDescription)
 {
-    Q_UNUSED(frame)
     const bool isPost = QByteArray::fromStdString(failedRequest.httpMethod().utf8()) == QByteArrayLiteral("POST");
 
     if (errorHtml) {
@@ -164,8 +174,8 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* ren
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
         LocalizedError::GetStrings(error.reason, error.domain.utf8(), error.unreachableURL, isPost
-                                   , error.staleCopyInCache && !isPost, false, locale, renderView->GetAcceptLanguages()
-                                   , scoped_ptr<error_page::ErrorPageParams>(), &errorStrings);
+                                  , error.staleCopyInCache && !isPost, false, error_page::OfflinePageStatus::NONE, locale, renderFrame->GetRenderView()->GetAcceptLanguages()
+                                  , scoped_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 
 
@@ -177,7 +187,7 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderView* ren
     }
 
     if (errorDescription)
-        *errorDescription = LocalizedError::GetErrorDetails(error, isPost);
+        *errorDescription = LocalizedError::GetErrorDetails(error.domain.utf8(), error.reason, isPost);
 }
 
 unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)

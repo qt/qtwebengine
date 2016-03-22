@@ -216,13 +216,21 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     Q_UNUSED(errorCode);
     Q_UNUSED(errorDescription);
 
-    if (isErrorPage)
+    if (isErrorPage) {
+        Q_ASSERT(settings->testAttribute(QWebEngineSettings::ErrorPageEnabled));
+        Q_ASSERT(success);
+        Q_EMIT q->loadFinished(false);
         return;
+    }
 
     isLoading = false;
     if (success)
         explicitUrl = QUrl();
-    Q_EMIT q->loadFinished(success);
+    // Delay notifying failure until the error-page is done loading.
+    // Error-pages are not loaded on failures due to abort.
+    if (success || errorCode == -3 /* ERR_ABORTED*/ || !settings->testAttribute(QWebEngineSettings::ErrorPageEnabled)) {
+        Q_EMIT q->loadFinished(success);
+    }
     updateNavigationActions();
 }
 
@@ -304,6 +312,11 @@ void QWebEnginePagePrivate::didFetchDocumentInnerText(quint64 requestId, const Q
 void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
 {
     m_callbacks.invoke(requestId, matchCount > 0);
+}
+
+void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+{
+    m_callbacks.invoke(requestId, result);
 }
 
 void QWebEnginePagePrivate::passOnFocus(bool reverse)
@@ -490,6 +503,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 
 /*!
     \enum QWebEnginePage::RenderProcessTerminationStatus
+    \since 5.6
 
     This enum describes the status with which the render process terminated:
 
@@ -505,6 +519,7 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 
 /*!
     \fn QWebEnginePage::renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode)
+    \since 5.6
 
     This signal is emitted when the render process is terminated with a non-zero exit status.
     \a terminationStatus is the termination status of the process and \a exitCode is the status code
@@ -1623,6 +1638,38 @@ QSizeF QWebEnginePage::contentsSize() const
 {
     Q_D(const QWebEnginePage);
     return d->adapter->lastContentsSize();
+}
+
+/*!
+    Renders the current content of the page into a PDF document and saves it in the location specified in \a filePath.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+
+    If a file already exists at the provided file path, it will be overwritten.
+    \since 5.7
+*/
+void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &pageLayout)
+{
+    Q_D(const QWebEnginePage);
+    d->adapter->printToPDF(pageLayout, filePath);
+}
+
+
+/*!
+    \fn void QWebEnginePage::printToPdf(const QPageLayout &pageLayout, FunctorOrLambda resultCallback)
+    Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
+    as parameter to \a resultCallback.
+    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+
+    The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
+    will contain the PDF data, otherwise, the byte array will be empty.
+
+    \since 5.7
+*/
+void QWebEnginePage::printToPdf(const QPageLayout &pageLayout, const QWebEngineCallback<const QByteArray&> &resultCallback)
+{
+    Q_D(QWebEnginePage);
+    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
+    d->m_callbacks.registerCallback(requestId, resultCallback);
 }
 
 QT_END_NAMESPACE

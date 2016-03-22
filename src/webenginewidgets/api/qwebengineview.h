@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 class QContextMenuEvent;
+class QPageLayout;
+class QString;
 class QUrl;
 class QWebEnginePage;
 class QWebEngineSettings;

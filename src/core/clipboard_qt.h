@@ -65,7 +65,7 @@ private:
 
 class ClipboardQt : public ui::Clipboard {
 public:
-    virtual uint64 GetSequenceNumber(ui::ClipboardType type) const Q_DECL_OVERRIDE;
+    virtual uint64_t GetSequenceNumber(ui::ClipboardType type) const Q_DECL_OVERRIDE;
     virtual bool IsFormatAvailable(const FormatType& format, ui::ClipboardType type) const Q_DECL_OVERRIDE;
     virtual void Clear(ui::ClipboardType type) Q_DECL_OVERRIDE;
     virtual void ReadAvailableTypes(ui::ClipboardType type, std::vector<base::string16>* types, bool* contains_filenames) const Q_DECL_OVERRIDE;
@@ -74,8 +74,8 @@ public:
     virtual void ReadHTML(ui::ClipboardType type,
                         base::string16* markup,
                         std::string* src_url,
-                        uint32* fragment_start,
-                        uint32* fragment_end) const Q_DECL_OVERRIDE;
+                        uint32_t* fragment_start,
+                        uint32_t* fragment_end) const Q_DECL_OVERRIDE;
     virtual void ReadRTF(ui::ClipboardType type, std::string* result) const Q_DECL_OVERRIDE;
     virtual SkBitmap ReadImage(ui::ClipboardType type) const Q_DECL_OVERRIDE;
     virtual void ReadCustomData(ui::ClipboardType clipboard_type, const base::string16& type, base::string16* result) const Q_DECL_OVERRIDE;

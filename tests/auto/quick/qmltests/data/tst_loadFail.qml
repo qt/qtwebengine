@@ -140,7 +140,7 @@ TestWebEngineView {
             verify(loadRequest.isErrorPage)
 
             compare(webEngineView.url, unavailableUrl)
-            compare(webEngineView.title, unavailableUrl + " is not found")
+            compare(webEngineView.title, unavailableUrl + " failed to load")
         }
     }
 }

@@ -85,10 +85,10 @@ void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData
     content::RenderView *renderView = content::RenderView::FromWebView(frame->view());
     const bool isMainFrame = (frame == renderView->GetWebView()->mainFrame());
 
-    QList<uint64> scriptsToRun = UserResourceController::instance()->m_viewUserScriptMap.value(globalScriptsIndex).toList();
+    QList<uint64_t> scriptsToRun = UserResourceController::instance()->m_viewUserScriptMap.value(globalScriptsIndex).toList();
     scriptsToRun.append(UserResourceController::instance()->m_viewUserScriptMap.value(renderView).toList());
 
-    Q_FOREACH (uint64 id, scriptsToRun) {
+    Q_FOREACH (uint64_t id, scriptsToRun) {
         const UserScriptData &script = UserResourceController::instance()->m_scripts.value(id);
         if (script.injectionPoint != p
                 || (!script.injectForSubframes && !isMainFrame))
@@ -208,7 +208,7 @@ void UserResourceController::renderViewDestroyed(content::RenderView *renderView
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(renderView);
     if (it == m_viewUserScriptMap.end()) // ASSERT maybe?
         return;
-    Q_FOREACH (uint64 id, it.value()) {
+    Q_FOREACH (uint64_t id, it.value()) {
         m_scripts.remove(id);
     }
     m_viewUserScriptMap.remove(renderView);
@@ -239,7 +239,7 @@ void UserResourceController::clearScriptsForView(content::RenderView *view)
     ViewUserScriptMap::iterator it = m_viewUserScriptMap.find(view);
     if (it == m_viewUserScriptMap.end())
         return;
-    Q_FOREACH (uint64 id, it.value())
+    Q_FOREACH (uint64_t id, it.value())
         m_scripts.remove(id);
 
     m_viewUserScriptMap.remove(view);

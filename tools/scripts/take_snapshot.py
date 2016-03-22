@@ -84,7 +84,7 @@ def isInChromiumBlacklist(file_path):
             not '/app/theme/' in file_path and
             not '/app/resources/' in file_path and
             not '/browser/printing/' in file_path and
-            not '/browser/resources/' in file_path and
+            not ('/browser/resources/' in file_path and not '/chromeos/' in file_path) and
             not '/renderer/resources/' in file_path and
             not 'repack_locales' in file_path and
             not 'third_party/chromevox' in file_path and
@@ -94,6 +94,7 @@ def isInChromiumBlacklist(file_path):
             not 'common/localized_error.' in file_path and
             not 'common/spellcheck_' in file_path and
             not '/spellchecker/' in file_path and
+            not '/tools/convert_dict/' in file_path and
             not file_path.endswith('cf_resources.rc') and
             not file_path.endswith('version.py') and
             not file_path.endswith('.grd') and
@@ -110,18 +111,22 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('components/error_page') and
             not file_path.startswith('components/keyed_service') and
             not file_path.startswith('components/mime_util') and
+            not file_path.startswith('components/precache') and
             not file_path.startswith('components/pref_registry') and
             not file_path.startswith('components/printing') and
             not file_path.startswith('components/resources') and
             not file_path.startswith('components/scheduler') and
             not file_path.startswith('components/security_interstitials') and
+            not file_path.startswith('components/startup_metric_utils') and
             not file_path.startswith('components/strings') and
             not file_path.startswith('components/tracing') and
             not file_path.startswith('components/url_formatter') and
             not file_path.startswith('components/user_prefs') and
+            not file_path.startswith('components/version_') and
             not file_path.startswith('components/visitedlink') and
             not file_path.startswith('components/web_cache') and
             not file_path.startswith('components/webcrypto') and
+            not file_path.startswith('components/webusb') and
             not file_path.endswith('.grd') and
             not file_path.endswith('.grdp') and
             not 'components_strings' in file_path)
@@ -157,12 +162,12 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/bison')
         or (file_path.startswith('third_party/cacheinvalidation') and
             not file_path.endswith('isolate'))
+        or file_path.startswith('third_party/boringssl/src/fuzz')
         or file_path.startswith('third_party/catapult')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
         or file_path.startswith('third_party/colorama')
-        or file_path.startswith('third_party/cros_system_api')
         or file_path.startswith('third_party/cygwin')
         or file_path.startswith('third_party/cython')
         or file_path.startswith('third_party/deqp')
@@ -174,13 +179,13 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/google_appengine_cloudstorage')
         or file_path.startswith('third_party/google_toolbox_for_mac')
         or file_path.startswith('third_party/hunspell_dictionaries')
+        or (file_path.startswith('third_party/icu') and file_path.endswith('icudtl_dat.S'))
         or file_path.startswith('third_party/instrumented_libraries')
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
         or file_path.startswith('third_party/libphonenumber')
         or file_path.startswith('third_party/libaddressinput')
         or file_path.startswith('third_party/libc++')
-        or file_path.startswith('third_party/libc++abi')
         or file_path.startswith('third_party/liblouis')
         or file_path.startswith('third_party/lighttpd')
         or file_path.startswith('third_party/markdown')
@@ -188,6 +193,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/nacl_sdk_binaries')
         or (file_path.startswith('third_party/polymer') and
             not file_path.startswith('third_party/polymer/v1_0/components-chromium/'))
+        or file_path.startswith('third_party/openh264/src/res')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')

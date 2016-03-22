@@ -110,6 +110,7 @@ TestWebEngineView {
             webEngineView.reload()
             verify(webEngineView.waitForLoadSucceeded())
             compare(JSDialogParams.dialogCount, 2)
+            expectFail("", "QTBUG-51749")
             compare(webEngineView.title, "prompt.html")
         }
     }

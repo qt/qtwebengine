@@ -70,7 +70,10 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QLoggingCategory>
+#include <QMarginsF>
 #include <QMimeData>
+#include <QPageLayout>
+#include <QPageSize>
 #include <QQmlComponent>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -398,7 +401,9 @@ void QQuickWebEngineViewPrivate::urlChanged(const QUrl &url)
 void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
 {
     Q_Q(QQuickWebEngineView);
-    icon = url;
+    if (iconUrl == url)
+        return;
+    iconUrl = url;
     Q_EMIT q->iconChanged();
 }
 
@@ -843,7 +848,7 @@ void QQuickWebEngineView::setUrl(const QUrl& url)
 QUrl QQuickWebEngineView::icon() const
 {
     Q_D(const QQuickWebEngineView);
-    return d->icon;
+    return d->iconUrl;
 }
 
 void QQuickWebEngineView::loadHtml(const QString &html, const QUrl &baseUrl)
@@ -1003,6 +1008,15 @@ void QQuickWebEngineViewPrivate::didFindText(quint64 requestId, int matchCount)
     args.append(QJSValue(matchCount));
     callback.call(args);
 }
+
+void QQuickWebEngineViewPrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+{
+    QJSValue callback = m_callbacks.take(requestId);
+    QJSValueList args;
+    args.append(QJSValue(result.data()));
+    callback.call(args);
+}
+
 void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText)
 {
 #ifdef ENABLE_QML_TESTSUPPORT_API
@@ -1177,6 +1191,30 @@ bool QQuickWebEngineView::wasRecentlyAudible()
 {
     Q_D(QQuickWebEngineView);
     return d->adapter->wasRecentlyAudible();
+}
+
+void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+{
+    Q_D(const QQuickWebEngineView);
+    QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
+    QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
+    QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
+
+    d->adapter->printToPDF(pageLayout, filePath);
+}
+
+void QQuickWebEngineView::printToPdf(PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation, const QJSValue &callback)
+{
+    Q_D(QQuickWebEngineView);
+    QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
+    QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
+    QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
+
+    if (callback.isUndefined())
+        return;
+
+    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
+    d->m_callbacks.insert(requestId, callback);
 }
 
 bool QQuickWebEngineView::isFullScreen() const
@@ -1525,7 +1563,7 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         break;
     case ToggleMediaMute:
         if (d->contextMenuData.mediaUrl.isValid() && d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
-            bool enable = (d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
+            bool enable = !(d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
             d->adapter->executeMediaPlayerActionAt(d->contextMenuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
         }
         break;

@@ -92,18 +92,16 @@ public:
     virtual content::AccessTokenStore* CreateAccessTokenStore() Q_DECL_OVERRIDE;
     virtual content::QuotaPermissionContext *CreateQuotaPermissionContext() Q_DECL_OVERRIDE;
     virtual void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) Q_DECL_OVERRIDE;
-    virtual void AllowCertificateError(
-        int render_process_id,
-        int render_frame_id,
-        int cert_error,
-        const net::SSLInfo& ssl_info,
-        const GURL& request_url,
-        content::ResourceType resource_type,
-        bool overridable,
-        bool strict_enforcement,
-        bool expired_previous_decision,
-        const base::Callback<void(bool)>& callback,
-        content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
+    virtual void AllowCertificateError(content::WebContents* web_contents,
+                                       int cert_error,
+                                       const net::SSLInfo& ssl_info,
+                                       const GURL& request_url,
+                                       content::ResourceType resource_type,
+                                       bool overridable,
+                                       bool strict_enforcement,
+                                       bool expired_previous_decision,
+                                       const base::Callback<void(bool)>& callback,
+                                       content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
     content::LocationProvider* OverrideSystemLocationProvider() Q_DECL_OVERRIDE;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;

@@ -34,11 +34,126 @@
     may share the screen with other QML types, such as a TabView, or fill the screen, as specified
     within the QML application.
 
-    \section1 Rendering to OpenGL Surface
+    \section2 Initializing Web Engine
+
+    For the web engine view to be rendered, the web engine must be initialized by using
+    \l QtWebEngine::initialize in the application main source file, as illustrated by the
+    following code snippet:
+
+    \code
+    int main(int argc, char **argv)
+    {
+        Application app(argc, argv);
+
+        QtWebEngine::initialize();
+
+        QQmlApplicationEngine appEngine;
+        appEngine.load(QUrl("qrc:/main.qml"));
+
+        return app.exec();
+    }
+    \endcode
+
+    \section2 Loading Web Pages
+
+    An application can load pages into the WebEngineView, using either the \l url property or the
+    \l loadHtml method and navigate within the view's session history. The history is represented
+    by a WebEngineHistory data model that is held by the \l navigationHistory property.
+
+    The following sample QML application loads a web page using the \c url property:
+
+    \qml
+    import QtQuick 2.1
+    import QtQuick.Controls 1.1
+    import QtWebEngine 1.1
+
+    ApplicationWindow {
+        width: 1280
+        height: 720
+        visible: true
+        WebEngineView {
+            id: webview
+            url: "http://www.qt.io"
+            anchors.fill: parent
+        }
+    }
+    \endqml
+
+    The \l loadingChanged() signal is emitted when loading a page begins, ends, or fails. The
+    \l loading property holds whether the HTML page is currently loading and the load status is
+    reflected in the \l LoadStatus property.
+
+    The title of an HTML page can be accessed with the \l title property. Additionally, a web
+    page may specify an icon, which can be accessed using the \l icon property. The \l zoomFactor
+    property holds the overall size of the contents of the web page.
+
+    If a certificate error is raised while loading a web page, the \l certificateError() signal is
+    emitted. Certificate errors are handled by using the methods of the WebEngineCertificateError
+    type.
+
+    \section2 Interaction
+
+    By default, links to different pages load within the same WebEngineView object, but web sites
+    may request them to be opened as a new tab, window, or dialog. The \l newViewRequested() signal
+    is emitted when a request to load the page in a separate web engine view is issued. The
+    NewViewDestination property describes how the new view should be opened. In addition, the
+    WebEngineNewViewRequest utility type can be used to load web pages in separate web engine views.
+
+    The \l findText() method can be used to search for a string on a web page, using the options
+    described by \l FindFlags.
+
+    The \l setActiveFocusOnPress() method can be used to create a UI element that should not get
+    focus. This can be useful in a hybrid UI.
+
+    The \l linkHovered() signal is emitted when a mouse pointer passes over a link and thus
+    corresponds to the \c{mouseover} DOM event.
+
+    Actions, such as selecting and editing content, can be performed on a web page by using the
+    \l triggerWebAction() method. The available actions are described by the \l WebAction property.
+
+    The \l backgroundColorChanged() signal is emitted when the web page background color changes.
+
+    \section2 User Scripts
+
+    During the loading of a page, so called \e {user scripts} can be injected in the JavaScript
+    engine at different points. The script objects attached to the web engine view are held by the
+    \l userScripts property and injected by using the WebEngineScript type. Scripts can also be run
+    by using the runJavaScript() method in the same world as other scripts that are part of the
+    loaded site.
+
+    The \l webChannel property can be used to expose a WebChannel instance in the JavaScript context
+    of the page it is rendering as \c qt.webChannelTransport.
+
+    \section2 Fullscreen Mode
+
+    A web page can request through the JavaScript API to be loaded in fullscreen mode. The
+    \l fullScreenRequested() signal is emitted when the web page issues the request. The
+    WebEngineFullScreenRequest utility type can be used to toggle fullscreen requests. The
+    \l fullScreenCancelled method can be used to notify the browser engine when the windowing
+    system forces the application to leave fullscreen mode.
+
+    \section2 Profiles
+
+    Web engine views can be isolated from each other by using the WebEngineProfile type. A profile
+    contains settings, scripts, and the list of visited links shared by all views that belong to the
+    profile. For example, a dedicated profile could be created for a \e {private browsing} mode. The
+    current profile for the view is held by the \l profile property and the current settings are
+    held by the \l settings property. The settings are specified by using the WebEngineSettings
+    type.
+
+    \section2 Platform Features
+
+    Web pages can request access to platform features, such as geolocation or audio and video
+    capture devices. The \l featurePermissionRequested() signal is emitted when a web page requests
+    to make use of a resource. The supported platform features are described by the \l Feature
+    property. If users grant the permission, the \l grantFeaturePermission() method is used to set
+    it to \e granted.
+
+    \section2 Rendering to OpenGL Surface
 
     When using a QQuickRenderControl to render a Qt Quick user interface to an OpenGL surface, the
     WebEngineView type is not rendered correctly. The web engine view attempts to use a global
-    OpenGL context created by \l QtWebEngine::initialize(), but there is no public API for accessing
+    OpenGL context created by \l QtWebEngine::initialize, but there is no public API for accessing
     that context in order to share it with the \c QQuickRenderControl context.
 
     To have the web engine view rendered correctly, it is possible to manually create a new
@@ -418,15 +533,8 @@
 
     This signal is emitted when an invalid certificate error is raised while loading a given request.
 
-    The certificate error can be rejected by calling WebEngineCertificateError::rejectCertificate,
-    which will stop loading the request.
-
-    The certificate error can be ignored  by calling
-    WebEngineCertificateError::ignoreCertificateError, which will resume loading the request.
-
-    It is possible to defer the decision of rejecting the given certificate by calling
-    WebEngineCertificateError::defer, which is useful when waiting for user input.
-    By default, the invalid certificate will be automatically rejected.
+    The certificate error can be handled by using the methods of the WebEngineCertificateError
+    type.
 
     The corresponding handler is \c onCertificateError.
 
@@ -717,6 +825,165 @@
 */
 
 /*!
+    \qmlproperty enumeration WebEngineView::PrintedPageSizeId
+    \since QtWebEngine 1.3
+
+    This enum type lists the available page sizes as defined in the Postscript
+    PPD standard.
+
+    The enumeration values are mapped from and must match QPageSize::PageSizeId. They are also
+    duplicated in QPagedPaintDevice and QPrinter.
+
+    The defined sizes are:
+
+    \value A0 841 x 1189 mm
+    \value A1 594 x 841 mm
+    \value A2 420 x 594 mm
+    \value A3 297 x 420 mm
+    \value A4 210 x 297 mm, 8.26 x 11.69 inches
+    \value A5 148 x 210 mm
+    \value A6 105 x 148 mm
+    \value A7 74 x 105 mm
+    \value A8 52 x 74 mm
+    \value A9 37 x 52 mm
+    \value B0 1000 x 1414 mm
+    \value B1 707 x 1000 mm
+    \value B2 500 x 707 mm
+    \value B3 353 x 500 mm
+    \value B4 250 x 353 mm
+    \value B5 176 x 250 mm, 6.93 x 9.84 inches
+    \value B6 125 x 176 mm
+    \value B7 88 x 125 mm
+    \value B8 62 x 88 mm
+    \value B9 44 x 62 mm
+    \value B10 31 x 44 mm
+    \value C5E 163 x 229 mm
+    \value Comm10E 105 x 241 mm, U.S. Common 10 Envelope
+    \value DLE 110 x 220 mm
+    \value Executive 7.5 x 10 inches, 190.5 x 254 mm
+    \value Folio 210 x 330 mm
+    \value Ledger 431.8 x 279.4 mm
+    \value Legal 8.5 x 14 inches, 215.9 x 355.6 mm
+    \value Letter 8.5 x 11 inches, 215.9 x 279.4 mm
+    \value Tabloid 279.4 x 431.8 mm
+    \value Custom Unknown, or a user defined size.
+    \value A10
+    \value A3Extra
+    \value A4Extra
+    \value A4Plus
+    \value A4Small
+    \value A5Extra
+    \value B5Extra
+    \value JisB0
+    \value JisB1
+    \value JisB2
+    \value JisB3
+    \value JisB4
+    \value JisB5
+    \value JisB6
+    \value JisB7
+    \value JisB8
+    \value JisB9
+    \value JisB10
+    \value AnsiA = \c Letter
+    \value AnsiB = \c Ledger
+    \value AnsiC
+    \value AnsiD
+    \value AnsiE
+    \value LegalExtra
+    \value LetterExtra
+    \value LetterPlus
+    \value LetterSmall
+    \value TabloidExtra
+    \value ArchA
+    \value ArchB
+    \value ArchC
+    \value ArchD
+    \value ArchE
+    \value Imperial7x9
+    \value Imperial8x10
+    \value Imperial9x11
+    \value Imperial9x12
+    \value Imperial10x11
+    \value Imperial10x13
+    \value Imperial10x14
+    \value Imperial12x11
+    \value Imperial15x11
+    \value ExecutiveStandard
+    \value Note
+    \value Quarto
+    \value Statement
+    \value SuperA
+    \value SuperB
+    \value Postcard
+    \value DoublePostcard
+    \value Prc16K
+    \value Prc32K
+    \value Prc32KBig
+    \value FanFoldUS
+    \value FanFoldGerman
+    \value FanFoldGermanLegal
+    \value EnvelopeB4
+    \value EnvelopeB5
+    \value EnvelopeB6
+    \value EnvelopeC0
+    \value EnvelopeC1
+    \value EnvelopeC2
+    \value EnvelopeC3
+    \value EnvelopeC4
+    \value EnvelopeC5 = \c C5E
+    \value EnvelopeC6
+    \value EnvelopeC65
+    \value EnvelopeC7
+    \value EnvelopeDL = \c DLE
+    \value Envelope9
+    \value Envelope10 = \c Comm10E
+    \value Envelope11
+    \value Envelope12
+    \value Envelope14
+    \value EnvelopeMonarch
+    \value EnvelopePersonal
+    \value EnvelopeChou3
+    \value EnvelopeChou4
+    \value EnvelopeInvite
+    \value EnvelopeItalian
+    \value EnvelopeKaku2
+    \value EnvelopeKaku3
+    \value EnvelopePrc1
+    \value EnvelopePrc2
+    \value EnvelopePrc3
+    \value EnvelopePrc4
+    \value EnvelopePrc5
+    \value EnvelopePrc6
+    \value EnvelopePrc7
+    \value EnvelopePrc8
+    \value EnvelopePrc9
+    \value EnvelopePrc10
+    \value EnvelopeYou4
+    \value LastPageSize = \c EnvelopeYou4
+    \omitvalue NPageSize
+    \omitvalue NPaperSize
+
+    \sa WebEngineView::printToPdf()
+*/
+
+/*!
+    \qmlproperty enumeration WebEngineView::PrintedPageOrientation
+    \since QtWebEngine 1.3
+
+    Describes the orientation of a PDF document that gets created from the WebEngineView's contents.
+    The enumeration values are mapped from and must match QPageLayout::Orientation.
+
+    \value Portrait
+    The document will be created using portrait orientation.
+
+    \value Landscape
+    The document will be created using landscape orientation.
+
+    \sa WebEngineView::printToPdf()
+*/
+
+/*!
     \qmltype WebEngineFullScreenRequest
     \instantiates QQuickWebEngineFullScreenRequest
     \inqmlmodule QtWebEngine
@@ -783,6 +1050,26 @@
 
     Returns the current page's audible state (audio was recently played, or not).
 */
+
+/*!
+    \qmlmethod void WebEngineView::printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
+    \since QtWebEngine 1.3
+
+    Prints the WebEngineView's current content to a PDF document and stores it under \a filePath. The document's size will be determined
+    by the value of \a pageSizeId and its orientation will be determined using \a orientation.
+*/
+
+/*!
+    \qmlmethod void WebEngineView::printToPdf(PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation, variant resultCallback)
+    \since QtWebEngine 1.3
+
+    Prints the WebEngineView's current content to a PDF document and returns it in a byte array. The document's size will be determined
+    by the value of \a pageSizeId and its orientation will be determined using \a orientation.
+
+    The \a resultCallback must take a string parameter. This string will contain the document's data upon successful printing and an empty
+    string otherwise.
+*/
+
 
 /*!
     \qmlsignal void WebEngineView::wasRecentlyAudibleChanged(bool wasRecentlyAudible)

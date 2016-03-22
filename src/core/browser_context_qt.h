@@ -59,6 +59,7 @@ namespace QtWebEngineCore {
 
 class BrowserContextAdapter;
 class PermissionManagerQt;
+class SSLHostStateDelegateQt;
 class URLRequestContextGetterQt;
 
 class BrowserContextQt : public content::BrowserContext
@@ -86,6 +87,7 @@ public:
     net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors);
     virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
     virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
+    virtual content::BackgroundSyncController* GetBackgroundSyncController() Q_DECL_OVERRIDE;
 
     BrowserContextAdapter *adapter() { return m_adapter; }
 
@@ -103,6 +105,7 @@ private:
     scoped_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
     scoped_ptr<PermissionManagerQt> permissionManager;
+    scoped_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
     BrowserContextAdapter *m_adapter;
 #if defined(ENABLE_SPELLCHECK)
     scoped_refptr<TestingPrefStore> m_prefStore;

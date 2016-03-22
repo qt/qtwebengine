@@ -15,6 +15,7 @@ examples/webenginewidgets/browser/browser
 examples/webenginewidgets/browser/browser.app
 examples/webenginewidgets/contentmanipulation/contentmanipulation
 examples/webenginewidgets/contentmanipulation/contentmanipulation.app
+examples/webenginewidgets/simplebrowser/simplebrowser
 tests/quicktestbrowser/quicktestbrowser
 
 tests/**/tst_*

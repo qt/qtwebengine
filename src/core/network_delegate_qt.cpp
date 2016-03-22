@@ -60,7 +60,7 @@ namespace QtWebEngineCore {
 
 int pageTransitionToNavigationType(ui::PageTransition transition)
 {
-    int32 qualifier = ui::PageTransitionGetQualifier(transition);
+    int32_t qualifier = ui::PageTransitionGetQualifier(transition);
 
     if (qualifier & ui::PAGE_TRANSITION_FORWARD_BACK)
         return WebContentsAdapterClient::BackForwardNavigation;
@@ -114,7 +114,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
         interceptor->interceptRequest(requestInfo);
         if (requestInfo.changed()) {
-            int result = infoPrivate->shouldBlockRequest ? net::ERR_ABORTED : net::OK;
+            int result = infoPrivate->shouldBlockRequest ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
 
             if (qUrl != infoPrivate->url)
                 *newUrl = toGurl(infoPrivate->url);
@@ -264,15 +264,11 @@ void NetworkDelegateQt::OnResponseStarted(net::URLRequest*)
 {
 }
 
-void NetworkDelegateQt::OnNetworkBytesReceived(const net::URLRequest&, int64_t)
+void NetworkDelegateQt::OnNetworkBytesReceived(net::URLRequest*, int64_t)
 {
 }
 
-void NetworkDelegateQt::OnNetworkBytesSent(const net::URLRequest&, int64_t)
-{
-}
-
-void NetworkDelegateQt::OnURLRequestJobOrphaned(net::URLRequest*)
+void NetworkDelegateQt::OnNetworkBytesSent(net::URLRequest*, int64_t)
 {
 }
 
@@ -304,7 +300,12 @@ bool NetworkDelegateQt::OnCanEnablePrivacyMode(const GURL&, const GURL&) const
     return false;
 }
 
-bool NetworkDelegateQt::OnFirstPartyOnlyCookieExperimentEnabled() const
+bool NetworkDelegateQt::OnAreExperimentalCookieFeaturesEnabled() const
+{
+    return false;
+}
+
+bool NetworkDelegateQt::OnAreStrictSecureCookiesEnabled() const
 {
     return false;
 }

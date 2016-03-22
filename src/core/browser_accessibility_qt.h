@@ -58,9 +58,6 @@ class BrowserAccessibilityQt
 public:
     BrowserAccessibilityQt();
 
-    // BrowserAccessibility
-    virtual void OnDataChanged() Q_DECL_OVERRIDE;
-
     // QAccessibleInterface
     virtual bool isValid() const Q_DECL_OVERRIDE;
     virtual QObject *object() const Q_DECL_OVERRIDE;
@@ -145,18 +142,6 @@ public:
     virtual QAccessibleInterface* table() const Q_DECL_OVERRIDE;
 
     virtual void modelChange(QAccessibleTableModelChangeEvent *event) Q_DECL_OVERRIDE;
-
-    QString name() const { return m_name; }
-    QString description() const { return m_description; }
-    QString help() const { return m_help; }
-    QString value() const { return m_value; }
-
-private:
-    // IAccessible name, description, help, value.
-    QString m_name;
-    QString m_description;
-    QString m_help;
-    QString m_value;
 };
 
 }

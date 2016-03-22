@@ -89,27 +89,22 @@ bool URLRequestQrcJobQt::GetMimeType(std::string *mimeType) const
     return false;
 }
 
-bool URLRequestQrcJobQt::ReadRawData(IOBuffer *buf, int bufSize, int *bytesRead)
+int URLRequestQrcJobQt::ReadRawData(IOBuffer *buf, int bufSize)
 {
-    DCHECK(bytesRead);
     DCHECK_GE(m_remainingBytes, 0);
     // File has been read finished.
     if (!m_remainingBytes || !bufSize) {
-        *bytesRead = 0;
-        return true;
+        return 0;
     }
     if (m_remainingBytes < bufSize)
         bufSize = static_cast<int>(m_remainingBytes);
     qint64 rv = m_file.read(buf->data(), bufSize);
     if (rv >= 0) {
-        *bytesRead = static_cast<int>(rv);
         m_remainingBytes -= rv;
         DCHECK_GE(m_remainingBytes, 0);
-        return true;
-    } else {
-        NotifyDone(URLRequestStatus(URLRequestStatus::FAILED, ERR_FAILED));
+        return static_cast<int>(rv);
     }
-    return false;
+    return static_cast<int>(rv);
 }
 
 void URLRequestQrcJobQt::startGetHead()

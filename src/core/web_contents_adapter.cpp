@@ -49,6 +49,7 @@
 #include "browser_context_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "print_view_manager_qt.h"
 #include "qwebenginecallback_p.h"
 #include "render_view_observer_host_qt.h"
 #include "type_conversion.h"
@@ -79,6 +80,7 @@
 
 #include <QDir>
 #include <QGuiApplication>
+#include <QPageLayout>
 #include <QStringList>
 #include <QStyleHints>
 #include <QTimer>
@@ -178,6 +180,13 @@ static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint6
         adapterClient->didRunJavaScript(requestId, fromJSValue(result));
 }
 
+static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient, int requestId, const std::vector<char>& result)
+{
+    if (requestId) {
+        adapterClient->didPrintPage(requestId, QByteArray(result.data(), result.size()));
+    }
+}
+
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
     content::WebContents::CreateParams create_params(browserContext, NULL);
@@ -221,7 +230,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, ScopedVector<content::NavigationEntry> *entries, content::BrowserContext *browserContext)
+static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<scoped_ptr<content::NavigationEntry>> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
@@ -262,8 +271,10 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         // If we couldn't unpack the entry successfully, abort everything.
         if (input.status() != QDataStream::Ok) {
             *currentIndex = -1;
-            for (content::NavigationEntry *entry : *entries)
-                delete entry;
+            auto it = entries->begin();
+            auto end = entries->end();
+            for (; it != end; ++it)
+                it->reset();
             entries->clear();
             return;
         }
@@ -287,7 +298,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
         entry->SetIsOverridingUserAgent(isOverridingUserAgent);
         entry->SetTimestamp(base::Time::FromInternalValue(timestamp));
         entry->SetHttpStatusCode(httpStatusCode);
-        entries->push_back(entry.release());
+        entries->push_back(std::move(entry));
     }
 }
 
@@ -339,7 +350,7 @@ WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
-    ScopedVector<content::NavigationEntry> entries;
+    std::vector<scoped_ptr<content::NavigationEntry>> entries;
     deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
@@ -410,6 +421,10 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
 
     // This should only be necessary after having restored the history to a new WebContentsAdapter.
     d->webContents->GetController().LoadIfNecessary();
+
+#if defined(ENABLE_BASIC_PRINTING)
+    PrintViewManagerQt::CreateForWebContents(webContents());
+#endif // defined(ENABLE_BASIC_PRINTING)
 
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
@@ -554,7 +569,7 @@ QString WebContentsAdapter::pageTitle() const
 QString WebContentsAdapter::selectedText() const
 {
     Q_D(const WebContentsAdapter);
-    return toQt(d->webContents->GetRenderViewHost()->GetView()->GetSelectedText());
+    return toQt(d->webContents->GetRenderWidgetHostView()->GetSelectedText());
 }
 
 void WebContentsAdapter::undo()
@@ -817,7 +832,7 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     scoped_ptr<content::DownloadUrlParameters> params(
             content::DownloadUrlParameters::FromWebContents(webContents(), toGurl(url)));
     params->set_suggested_name(toString16(suggestedFileName));
-    dlm->DownloadUrl(params.Pass());
+    dlm->DownloadUrl(std::move(params));
 }
 
 bool WebContentsAdapter::isAudioMuted() const
@@ -897,6 +912,25 @@ void WebContentsAdapter::wasHidden()
     d->webContents->WasHidden();
 }
 
+void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
+{
+#if defined(ENABLE_BASIC_PRINTING)
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDF(pageLayout, filePath);
+#endif // if defined(ENABLE_BASIC_PRINTING)
+}
+
+quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout)
+{
+#if defined(ENABLE_BASIC_PRINTING)
+    Q_D(WebContentsAdapter);
+    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished, d->adapterClient, d->nextRequestId);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout, callback);
+    return d->nextRequestId++;
+#else
+    return 0;
+#endif // if defined(ENABLE_BASIC_PRINTING)
+}
+
 QPointF WebContentsAdapter::lastScrollOffset() const
 {
     Q_D(const WebContentsAdapter);
@@ -944,7 +978,7 @@ void WebContentsAdapter::dpiScaleChanged()
     Q_D(WebContentsAdapter);
     content::RenderWidgetHostImpl* impl = NULL;
     if (d->webContents->GetRenderViewHost())
-        impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost());
+        impl = content::RenderWidgetHostImpl::From(d->webContents->GetRenderViewHost()->GetWidget());
     if (impl)
         impl->NotifyScreenInfoChanged();
 }

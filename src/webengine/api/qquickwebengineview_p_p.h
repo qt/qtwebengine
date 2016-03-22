@@ -160,6 +160,7 @@ public:
     virtual void didFetchDocumentMarkup(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFindText(quint64, int) Q_DECL_OVERRIDE;
+    virtual void didPrintPage(quint64 requestId, const QByteArray &result) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;
@@ -209,7 +210,7 @@ public:
     QQmlComponent *contextMenuExtraItems;
     QtWebEngineCore::WebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
-    QUrl icon;
+    QUrl iconUrl;
     int loadProgress;
     bool m_fullscreenMode;
     bool isLoading;

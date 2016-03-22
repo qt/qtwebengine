@@ -53,6 +53,7 @@ TestWebEngineView {
         }
 
         function test_keyboardModifierMapping() {
+            skip("runJavaScript bug: QTBUG-51746")
             webEngineView.url = Qt.resolvedUrl("keyboardModifierMapping.html")
             waitForLoadSucceeded();
             titleSpy.wait()

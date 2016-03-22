@@ -289,7 +289,7 @@ void PrintViewManagerBaseQt::OnDidPrintPage(
 #else
   // Update the rendered document. It will send notifications to the listener.
   document->SetPage(params.page_number,
-                    metafile.Pass(),
+                    std::move(metafile),
 #if defined(OS_WIN)
                     1.0f, // shrink factor, needed on windows.
 #endif // defined(OS_WIN)
@@ -477,7 +477,7 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
   base::OneShotTimer quit_timer;
   quit_timer.Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(kPrinterSettingsTimeout),
-                   base::MessageLoop::current(), &base::MessageLoop::Quit);
+                   base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
 
   m_isInsideInnerMessageLoop = true;
 
@@ -512,7 +512,7 @@ void PrintViewManagerBaseQt::ShouldQuitFromInnerMessageLoop()
         m_isInsideInnerMessageLoop) {
       // We are in a message loop created by RenderAllMissingPagesNow. Quit from
       // it.
-      base::MessageLoop::current()->Quit();
+      base::MessageLoop::current()->QuitWhenIdle();
       m_isInsideInnerMessageLoop = false;
     }
 }

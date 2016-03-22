@@ -110,6 +110,7 @@ private:
     scoped_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
+    scoped_ptr<net::HttpNetworkSession> m_httpNetworkSession;
 
     friend class NetworkDelegateQt;
 };
