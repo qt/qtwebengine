@@ -14,7 +14,8 @@ SUBDIRS += core \
            process \
            webengine \
            webengine_plugin \
-           webengine_experimental_plugin
+           webengine_experimental_plugin \
+           plugins
 
 
 isQMLTestSupportApiEnabled() {
@@ -30,4 +31,5 @@ isQMLTestSupportApiEnabled() {
 
 qtHaveModule(widgets) {
     SUBDIRS += webenginewidgets
+    plugins.depends = webenginewidgets
 }
