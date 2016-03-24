@@ -72,9 +72,9 @@ defineTest(runConfigure) {
 defineTest(finalizeConfigure) {
     linux {
         use?(nss) {
-            log("SSL............................... Using system NSS$${EOL}")
+            log("Certificate handling.............. Using system NSS$${EOL}")
         } else {
-            log("SSL............................... Using bundled BoringSSL$${EOL}")
+            log("Certificate handling.............. Using bundled BoringSSL$${EOL}")
         }
         use?(system_icu) {
             packagesExist("icu-uc icu-i18n") {

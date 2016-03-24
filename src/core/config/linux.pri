@@ -18,11 +18,14 @@ GYP_CONFIG += \
     use_gio=0 \
     use_gnome_keyring=0 \
     use_kerberos=0 \
-    use_pango=0
+    use_pango=0 \
+    use_openssl=1
 
-!use?(nss) {
+use?(nss) {
+    GYP_CONFIG += use_nss_certs=1 \
+        use_openssl_certs=0
+} else {
     GYP_CONFIG += use_nss_certs=0 \
-        use_openssl=1 \
         use_openssl_certs=1
 }
 
