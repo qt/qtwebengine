@@ -59,7 +59,7 @@ public:
     virtual ~WebChannelIPCTransportHost();
 
     // QWebChannelAbstractTransport
-    virtual void sendMessage(const QJsonObject &message) Q_DECL_OVERRIDE;
+    void sendMessage(const QJsonObject &message) Q_DECL_OVERRIDE;
 
     void setWorldId(uint worldId);
     uint worldId() const { return m_worldId; }
