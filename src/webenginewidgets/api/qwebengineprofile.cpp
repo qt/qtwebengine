@@ -474,6 +474,7 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
 
     The profile does not take ownership of the pointer.
 
+    \since 5.6
     \sa QWebEngineUrlRequestInfo
 */
 
