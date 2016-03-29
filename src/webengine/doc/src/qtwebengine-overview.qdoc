@@ -152,7 +152,7 @@
     Each QWebEnginePage belongs to a QWebEngineProfile that can have a QWebEngineSettings
     for specifying page settings, a QWebEngineScriptCollection for running scripts on the page, and
     a QWebEngineCookieStore for accessing the HTTP cookies of Chromium. A QWebEnginePage can also
-    directly point to a script collection or cookie store.
+    directly point to a script collection.
 
     \section1 Embedding Web Content into Qt Quick Applications
 

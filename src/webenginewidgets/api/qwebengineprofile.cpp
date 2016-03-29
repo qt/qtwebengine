@@ -457,7 +457,9 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 }
 
 /*!
-    Returns the cookie store singleton, if one has been set.
+    Returns the cookie store for this profile.
+
+    \since 5.6
 */
 
 QWebEngineCookieStore* QWebEngineProfile::cookieStore()
