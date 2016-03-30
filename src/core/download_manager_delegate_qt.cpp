@@ -75,6 +75,7 @@ DownloadManagerDelegateQt::DownloadManagerDelegateQt(BrowserContextAdapter *cont
     : m_contextAdapter(contextAdapter)
     , m_currentId(0)
     , m_weakPtrFactory(this)
+    , m_downloadType(BrowserContextAdapterClient::Attachment)
 {
     Q_ASSERT(m_contextAdapter);
 }
@@ -115,6 +116,11 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
 
     QString suggestedFilename = toQt(item->GetSuggestedFilename());
     QString mimeTypeString = toQt(item->GetMimeType());
+
+    bool isAttachment = net::HttpContentDisposition(item->GetContentDisposition(), std::string()).is_attachment();
+
+    if (!isAttachment || !BrowserContextAdapterClient::UserRequested)
+        m_downloadType = BrowserContextAdapterClient::DownloadAttribute;
 
     if (suggestedFilename.isEmpty())
         suggestedFilename = toQt(net::HttpContentDisposition(item->GetContentDisposition(), std::string()).filename());
@@ -158,7 +164,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             mimeTypeString,
             suggestedFilePath,
             BrowserContextAdapterClient::UnknownSavePageFormat,
-            false /* accepted */
+            false /* accepted */,
+            m_downloadType
         };
 
         Q_FOREACH (BrowserContextAdapterClient *client, clients) {
@@ -246,7 +253,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         QStringLiteral("application/x-mimearchive"),
         suggestedFilePath,
         suggestedSaveFormat,
-        acceptedByDefault
+        acceptedByDefault,
+        BrowserContextAdapterClient::SavePage
     };
 
     Q_FOREACH (BrowserContextAdapterClient *client, clients) {
@@ -282,7 +290,8 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             toQt(download->GetMimeType()),
             QString(),
             BrowserContextAdapterClient::UnknownSavePageFormat,
-            true /* accepted */
+            true /* accepted */,
+            m_downloadType
         };
 
         Q_FOREACH (BrowserContextAdapterClient *client, clients) {

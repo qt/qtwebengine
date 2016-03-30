@@ -82,8 +82,9 @@ public:
                         bool can_save_as_complete,
                         const content::SavePackagePathPickedCallback &callback) Q_DECL_OVERRIDE;
 
-
     void cancelDownload(quint32 downloadId);
+
+    void setDownloadType(int downloadType) { m_downloadType = downloadType; }
 
     // Inherited from content::DownloadItem::Observer
     void OnDownloadUpdated(content::DownloadItem *download) Q_DECL_OVERRIDE;
@@ -96,6 +97,7 @@ private:
 
     uint64_t m_currentId;
     base::WeakPtrFactory<DownloadManagerDelegateQt> m_weakPtrFactory;
+    int m_downloadType;
 
     friend class DownloadManagerDelegateInstance;
     DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateQt);

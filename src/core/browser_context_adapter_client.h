@@ -69,6 +69,13 @@ public:
         MimeHtmlSaveFormat
     };
 
+    enum DownloadType {
+        Attachment = 0,
+        DownloadAttribute,
+        UserRequested,
+        SavePage
+    };
+
     struct DownloadItemInfo {
         const quint32 id;
         const QUrl url;
@@ -80,6 +87,7 @@ public:
         QString path;
         int savePageFormat;
         bool accepted;
+        int downloadType;
     };
 
     virtual ~BrowserContextAdapterClient() { }

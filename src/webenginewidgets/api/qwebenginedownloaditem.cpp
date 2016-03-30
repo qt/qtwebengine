@@ -80,6 +80,7 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
     , downloadId(-1)
     , downloadState(QWebEngineDownloadItem::DownloadCancelled)
     , savePageFormat(QWebEngineDownloadItem::MimeHtmlSaveFormat)
+    , type(QWebEngineDownloadItem::Attachment)
     , downloadUrl(url)
     , totalBytes(-1)
     , receivedBytes(0)
@@ -219,6 +220,22 @@ quint32 QWebEngineDownloadItem::id() const
 */
 
 /*!
+    \enum QWebEngineDownloadItem::DownloadType
+    \since 5.8
+
+    Describes the requested download's type.
+
+    \value Attachment The web server's response includes a \c Content-Disposition header with the \c attachment directive.
+           If \c Content-Disposition is present in the reply, the web server is indicating that
+           the client should prompt the user to save the content regardless of the content type.
+           See \l {RFC 2616 section 19.5.1} for details.
+    \value DownloadAttribute The user clicked the hyperlink.
+           See \l {HTML download Attribute} for details.
+    \value UserRequested The user initiated the download.
+    \value SavePage The user saved a web page.
+*/
+
+/*!
     Returns the download item's current state.
 
     \sa QWebEngineDownloadItem::DownloadState
@@ -341,6 +358,18 @@ void QWebEngineDownloadItem::setSavePageFormat(QWebEngineDownloadItem::SavePageF
 {
     Q_D(QWebEngineDownloadItem);
     d->savePageFormat = format;
+}
+
+/*!
+    Returns the requested download's type.
+    \since 5.8
+
+ */
+
+QWebEngineDownloadItem::DownloadType QWebEngineDownloadItem::type() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->type;
 }
 
 QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p, QObject *parent)

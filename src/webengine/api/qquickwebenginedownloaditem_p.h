@@ -82,6 +82,14 @@ public:
     };
     Q_ENUM(SavePageFormat)
 
+    enum DownloadType {
+        Attachment = 0,
+        DownloadAttribute,
+        UserRequested,
+        SavePage
+    };
+    Q_ENUM(DownloadType)
+
     Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
     Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged REVISION 2 FINAL)
@@ -89,6 +97,7 @@ public:
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)
     Q_PROPERTY(QString mimeType READ mimeType NOTIFY mimeTypeChanged REVISION 1)
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
+    Q_PROPERTY(DownloadType type READ type NOTIFY typeChanged REVISION 3 FINAL)
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
@@ -102,6 +111,7 @@ public:
     void setPath(QString path);
     SavePageFormat savePageFormat() const;
     void setSavePageFormat(SavePageFormat format);
+    DownloadType type() const;
 
 Q_SIGNALS:
     void stateChanged();
@@ -110,6 +120,7 @@ Q_SIGNALS:
     void totalBytesChanged();
     Q_REVISION(1) void mimeTypeChanged();
     void pathChanged();
+    Q_REVISION(3) void typeChanged();
 
 private:
     QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate*, QObject *parent = 0);

@@ -46,6 +46,7 @@
 
 #include "browser_accessibility_qt.h"
 #include "browser_context_adapter.h"
+#include "browser_context_adapter_client.h"
 #include "browser_context_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
@@ -847,10 +848,16 @@ void WebContentsAdapter::updateWebPreferences(const content::WebPreferences & we
 
 void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileName)
 {
+    Q_D(WebContentsAdapter);
     content::BrowserContext *bctx = webContents()->GetBrowserContext();
     content::DownloadManager *dlm =  content::BrowserContext::GetDownloadManager(bctx);
+    DownloadManagerDelegateQt *dlmd = d->browserContextAdapter->downloadManagerDelegate();
+
     if (!dlm)
         return;
+
+    dlmd->setDownloadType(BrowserContextAdapterClient::UserRequested);
+    dlm->SetDelegate(dlmd);
 
     scoped_ptr<content::DownloadUrlParameters> params(
             content::DownloadUrlParameters::FromWebContents(webContents(), toGurl(url)));

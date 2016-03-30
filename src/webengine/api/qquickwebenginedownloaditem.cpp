@@ -66,6 +66,7 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
     , savePageFormat(QQuickWebEngineDownloadItem::UnknownSaveFormat)
+    , type(QQuickWebEngineDownloadItem::Attachment)
     , totalBytes(-1)
     , receivedBytes(0)
 {
@@ -293,6 +294,29 @@ void QQuickWebEngineDownloadItem::setSavePageFormat(QQuickWebEngineDownloadItem:
         d->savePageFormat = format;
         Q_EMIT savePageFormatChanged();
     }
+}
+
+/*!
+    \qmlproperty enumeration WebEngineDownloadItem::type
+    \readonly
+    \since QtWebEngine 1.4
+
+    Describes the requested download's type.
+
+    \value Attachment The web server's response includes a \c Content-Disposition header with the \c attachment directive.
+           If \c Content-Disposition is present in the reply, the web server is indicating that
+           the client should prompt the user to save the content regardless of the content type.
+           See \l {RFC 2616 section 19.5.1} for details.
+    \value DownloadAttribute The user clicked the hyperlink.
+           See \l {HTML download Attribute} for details.
+    \value UserRequested The user initiated the download.
+    \value SavePage The user saved a web page.
+ */
+
+QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->type;
 }
 
 QQuickWebEngineDownloadItem::QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate *p, QObject *parent)

@@ -72,6 +72,14 @@ public:
     };
     Q_ENUM(SavePageFormat)
 
+    enum DownloadType {
+        Attachment = 0,
+        DownloadAttribute,
+        UserRequested,
+        SavePage
+    };
+    Q_ENUM(DownloadType)
+
     quint32 id() const;
     DownloadState state() const;
     qint64 totalBytes() const;
@@ -83,6 +91,7 @@ public:
     bool isFinished() const;
     SavePageFormat savePageFormat() const;
     void setSavePageFormat(SavePageFormat format);
+    DownloadType type() const;
 
 public Q_SLOTS:
     void accept();
