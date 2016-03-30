@@ -171,9 +171,6 @@ bool GLSurfaceQtGLX::InitializeOneOff()
     if (initialized)
         return true;
 
-    // http://crbug.com/245466
-    qputenv("force_s3tc_enable", "true");
-
     XInitThreads();
 
     g_display = GLContextHelper::getXDisplay();

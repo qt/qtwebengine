@@ -209,6 +209,12 @@ WebEngineContext::WebEngineContext()
     useEmbeddedSwitches = !appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
 #endif
 
+#ifdef Q_OS_LINUX
+    // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
+    // http://crbug.com/245466
+    qputenv("force_s3tc_enable", "true");
+#endif
+
 #if defined(Q_OS_WIN)
     // We must initialize the command line with the UTF-16 arguments vector we got from
     // QCoreApplication. CommandLine::Init ignores its arguments on Windows and calls
