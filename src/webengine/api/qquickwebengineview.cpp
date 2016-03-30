@@ -77,6 +77,8 @@
 #include <QScreen>
 #include <QUrl>
 #include <QTimer>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <private/qquickaccessibleattached_p.h>
 #endif // QT_NO_ACCESSIBILITY
@@ -164,7 +166,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
-    const bool hasWindowCapability = qApp->platformName().toLower() != QLatin1String("eglfs");
+    const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
     RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
     if (hasWindowCapability) {
         RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
