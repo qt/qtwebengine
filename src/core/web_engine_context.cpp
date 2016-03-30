@@ -228,6 +228,13 @@ WebEngineContext::WebEngineContext()
     useEmbeddedSwitches = !args.removeAll("--disable-embedded-switches");
 #endif
 
+#ifdef Q_OS_LINUX
+    // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
+    // http://crbug.com/245466
+    qputenv("force_s3tc_enable", "true");
+#endif
+
+
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
