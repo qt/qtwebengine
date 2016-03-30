@@ -122,7 +122,8 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
                     request->SetExtraRequestHeaderByName(header.key().toStdString(), header.value().toStdString(), /* overwrite */ true);
             }
 
-            return result;
+            if (result != net::OK)
+                return result;
         }
     }
 
