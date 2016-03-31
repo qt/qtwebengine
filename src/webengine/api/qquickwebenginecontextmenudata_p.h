@@ -37,13 +37,26 @@
 **
 ****************************************************************************/
 
-#ifndef QWEBENGINECONTEXTDATA_H
-#define QWEBENGINECONTEXTDATA_H
+#ifndef QQUICKWEBENGINECONTEXTMENUDATA_P_H
+#define QQUICKWEBENGINECONTEXTMENUDATA_P_H
 
-#include <qtwebenginewidgetsglobal.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <private/qtwebengineglobal_p.h>
+#include <QtCore/QObject>
 #include <QtCore/QPoint>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
+#include <QtQuick/QQuickItem>
 
 namespace QtWebEngineCore {
 class WebEngineContextMenuData;
@@ -51,12 +64,14 @@ class WebEngineContextMenuData;
 
 QT_BEGIN_NAMESPACE
 
-class QWEBENGINEWIDGETS_EXPORT QWebEngineContextMenuData {
+class QQuickWebEngineView;
+class QQuickWebEngineViewPrivate;
+
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineContextMenuData : public QObject {
+    Q_OBJECT
 public:
-    QWebEngineContextMenuData();
-    QWebEngineContextMenuData(const QWebEngineContextMenuData &other);
-    QWebEngineContextMenuData &operator=(const QWebEngineContextMenuData &other);
-    ~QWebEngineContextMenuData();
+    QQuickWebEngineContextMenuData();
+    ~QQuickWebEngineContextMenuData();
 
     enum MediaType {
         MediaTypeNone,
@@ -67,6 +82,21 @@ public:
         MediaTypeFile,
         MediaTypePlugin
     };
+    Q_ENUM(MediaType)
+
+    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
+    Q_PROPERTY(QPoint position READ position NOTIFY positionChanged)
+    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
+    Q_PROPERTY(QString linkText READ linkText NOTIFY linkTextChanged)
+    Q_PROPERTY(QUrl linkUrl READ linkUrl NOTIFY linkUrlChanged)
+    Q_PROPERTY(QUrl mediaUrl READ mediaUrl NOTIFY mediaUrlChanged)
+    Q_PROPERTY(MediaType mediaType READ mediaType NOTIFY mediaTypeChanged)
+    Q_PROPERTY(bool isContentEditable READ isContentEditable NOTIFY isContentEditableChanged)
+#if !defined(QT_NO_SPELLCHECK)
+    Q_PROPERTY(QString misspelledWord READ misspelledWord NOTIFY misspelledWordChanged)
+    Q_PROPERTY(QStringList spellCheckerSuggestions READ spellCheckerSuggestions NOTIFY spellCheckerSuggestionsChanged)
+#endif
+
     bool isValid() const;
 
     QPoint position() const;
@@ -82,16 +112,34 @@ public:
     QStringList spellCheckerSuggestions() const;
 #endif
 
-private:
-    void reset();
-    typedef QtWebEngineCore::WebEngineContextMenuData QWebEngineContextDataPrivate;
-    QWebEngineContextMenuData &operator=(const QWebEngineContextDataPrivate &priv);
-    const QWebEngineContextDataPrivate *d;
+Q_SIGNALS:
+    void isValidChanged();
+    void positionChanged();
+    void selectedTextChanged();
+    void linkTextChanged();
+    void linkUrlChanged();
+    void mediaUrlChanged();
+    void mediaTypeChanged();
+    void isContentEditableChanged();
+#if !defined(QT_NO_SPELLCHECK)
+    void misspelledWordChanged();
+    void spellCheckerSuggestionsChanged();
+#endif
 
-    friend class QWebEnginePagePrivate;
-    friend class QWebEnginePage;
+private:
+    void update(const QtWebEngineCore::WebEngineContextMenuData &update);
+
+    friend class QQuickWebEngineView;
+    friend class QQuickWebEngineViewPrivate;
+    Q_DISABLE_COPY(QQuickWebEngineContextMenuData)
+    typedef QtWebEngineCore::WebEngineContextMenuData QQuickWebEngineContextMenuDataPrivate;
+    QQuickWebEngineContextMenuData(const QQuickWebEngineContextMenuDataPrivate *priv, QObject *parent = 0);
+    QQuickWebEngineContextMenuData &operator=(const QQuickWebEngineContextMenuDataPrivate *priv);
+    const QQuickWebEngineContextMenuDataPrivate *d;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWEBENGINECONTEXTDATA_H
+QML_DECLARE_TYPE(const QQuickWebEngineContextMenuData);
+
+#endif // QQUICKWEBENGINECONTEXTMENUDATA_P_H

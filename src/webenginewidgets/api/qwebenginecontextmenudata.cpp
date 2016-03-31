@@ -120,6 +120,7 @@ bool QWebEngineContextMenuData::isValid() const
 
 /*!
     Resets the context data, making it invalid.
+    \internal
 
     \sa isValid()
 */
@@ -132,7 +133,7 @@ void QWebEngineContextMenuData::reset()
 /*!
     Returns the position of the context, usually the mouse position where the context menu event was triggered.
 */
-QPoint QWebEngineContextMenuData::pos() const
+QPoint QWebEngineContextMenuData::position() const
 {
     return d ? d->pos : QPoint();
 }

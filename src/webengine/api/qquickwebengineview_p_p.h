@@ -52,6 +52,7 @@
 //
 
 #include "qquickwebengineview_p.h"
+#include "qquickwebenginecontextmenudata_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
@@ -208,7 +209,7 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
-    QtWebEngineCore::WebEngineContextMenuData contextMenuData;
+    QQuickWebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
     QUrl iconUrl;
     int loadProgress;

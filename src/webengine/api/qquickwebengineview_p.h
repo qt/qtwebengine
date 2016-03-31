@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
 class QQuickWebEngineCertificateError;
+class QQuickWebEngineContextMenuData;
 class QQuickWebEngineHistory;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
@@ -116,6 +117,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged FINAL REVISION 3)
     Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION 3)
     Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3)
+    Q_PROPERTY(const QQuickWebEngineContextMenuData *contextMenuData READ contextMenuData NOTIFY contextMenuDataChanged CONSTANT REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
@@ -242,10 +244,6 @@ public:
         SavePage,
 #if !defined(QT_NO_SPELLCHECK)
         ToggleSpellcheck,
-        ReplaceMisspelledWord_1,
-        ReplaceMisspelledWord_2,
-        ReplaceMisspelledWord_3,
-        ReplaceMisspelledWord_4,
 #endif
         WebActionCount
     };
@@ -452,6 +450,8 @@ public:
     void setAudioMuted(bool muted);
     bool recentlyAudible() const;
 
+    const QQuickWebEngineContextMenuData *contextMenuData() const;
+
 #ifdef ENABLE_QML_TESTSUPPORT_API
     QQuickWebEngineTestSupport *testSupport() const;
     void setTestSupport(QQuickWebEngineTestSupport *testSupport);
@@ -476,6 +476,10 @@ public Q_SLOTS:
     Q_REVISION(2) void triggerWebAction(WebAction action);
     Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(3) void printToPdf(PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait, const QJSValue &callback = QJSValue());
+
+#if !defined(QT_NO_SPELLCHECK)
+    Q_REVISION(3) void replaceMisspelledWord(const QString &replacement);
+#endif
 
 private Q_SLOTS:
     void lazyInitialize();
@@ -506,6 +510,7 @@ Q_SIGNALS:
     Q_REVISION(3) void audioMutedChanged(bool muted);
     Q_REVISION(3) void recentlyAudibleChanged(bool recentlyAudible);
     Q_REVISION(3) void webChannelWorldChanged(uint);
+    Q_REVISION(3) void contextMenuDataChanged();
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
