@@ -5007,11 +5007,11 @@ void tst_QWebEnginePage::printToPdf()
 
     CallbackSpy<QByteArray> successfulSpy;
     page.printToPdf(layout, successfulSpy.ref());
-    QTRY_VERIFY(successfulSpy.waitForResult().length() > 0);
+    QVERIFY(successfulSpy.waitForResult().length() > 0);
 
     CallbackSpy<QByteArray> failedInvalidLayoutSpy;
     page.printToPdf(QPageLayout(), failedInvalidLayoutSpy.ref());
-    QTRY_VERIFY(!failedInvalidLayoutSpy.waitForResult().length() > 0);
+    QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
 }
 
 QTEST_MAIN(tst_QWebEnginePage)
