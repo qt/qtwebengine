@@ -716,6 +716,29 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
 }
 
 /*!
+ * Save the currently loaded web page to disk.
+ *
+ * The web page is saved to \a filePath in the specified \a{format}.
+ *
+ * This is a short cut for the following actions:
+ * \list
+ *   \li Trigger the Save web action.
+ *   \li Accept the next download item and set the specified file path and save format.
+ * \endlist
+ *
+ * This function issues an asynchronous download request for the web page and returns immediately.
+ *
+ * \sa QWebEngineDownloadItem::SavePageFormat
+ * \since 5.8
+ */
+void QWebEnginePage::save(const QString &filePath,
+                          QWebEngineDownloadItem::SavePageFormat format) const
+{
+    Q_D(const QWebEnginePage);
+    d->adapter->save(filePath, format);
+}
+
+/*!
     \property QWebEnginePage::audioMuted
     \brief whether the current page audio is muted.
     \since 5.7

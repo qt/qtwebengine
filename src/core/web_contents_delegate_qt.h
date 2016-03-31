@@ -69,6 +69,23 @@ namespace QtWebEngineCore {
 
 class WebContentsAdapterClient;
 
+class SavePageInfo
+{
+public:
+    SavePageInfo()
+        : requestedFormat(-1)
+    {
+    }
+
+    SavePageInfo(const QString &filePath, int format)
+        : requestedFilePath(filePath), requestedFormat(format)
+    {
+    }
+
+    QString requestedFilePath;
+    int requestedFormat;
+};
+
 class WebContentsDelegateQt : public content::WebContentsDelegate
                             , public content::WebContentsObserver
 {
@@ -125,6 +142,9 @@ public:
     void launchExternalURL(const QUrl &url, ui::PageTransition page_transition, bool is_main_frame);
     FaviconManager *faviconManager();
 
+    void setSavePageInfo(const SavePageInfo &spi) { m_savePageInfo = spi; }
+    const SavePageInfo &savePageInfo() { return m_savePageInfo; }
+
 private:
     WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
 
@@ -133,6 +153,7 @@ private:
     int m_lastReceivedFindReply;
     QVector<int64_t> m_loadingErrorFrameList;
     QScopedPointer<FaviconManager> m_faviconManager;
+    SavePageInfo m_savePageInfo;
 };
 
 } // namespace QtWebEngineCore

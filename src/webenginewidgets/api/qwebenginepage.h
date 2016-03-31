@@ -42,6 +42,7 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineWidgets/qwebenginecertificateerror.h>
+#include <QtWebEngineWidgets/qwebenginedownloaditem.h>
 #include <QtWebEngineCore/qwebenginecallback.h>
 
 #include <QtCore/qobject.h>
@@ -260,6 +261,9 @@ public:
     void setWebChannel(QWebChannel *, uint worldId);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
+
+    void save(const QString &filePath, QWebEngineDownloadItem::SavePageFormat format
+                                                = QWebEngineDownloadItem::MimeHtmlSaveFormat) const;
 
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);

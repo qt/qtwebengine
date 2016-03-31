@@ -41,6 +41,7 @@
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
 #include <qpa/qplatforminputcontext.h>
+#include <qwebenginedownloaditem.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
@@ -159,6 +160,7 @@ private Q_SLOTS:
     void undoActionHaveCustomText();
     void renderWidgetHostViewNotShowTopLevel();
     void getUserMediaRequest();
+    void savePage();
 
     void crashTests_LazyInitializationOfMainFrame();
 
@@ -3407,6 +3409,41 @@ void tst_QWebEnginePage::getUserMediaRequest()
     page->rejectPendingRequest(); // Should always end up calling the error callback in JS.
     QTRY_VERIFY(evaluateJavaScriptSync(page, QStringLiteral("errorCallbackCalled;")).toBool());
     delete page;
+}
+
+void tst_QWebEnginePage::savePage()
+{
+    QWebEngineView view;
+    QWebEnginePage *page = view.page();
+
+    connect(page->profile(), &QWebEngineProfile::downloadRequested,
+            [] (QWebEngineDownloadItem *item)
+    {
+        connect(item, &QWebEngineDownloadItem::finished,
+                &QTestEventLoop::instance(), &QTestEventLoop::exitLoop, Qt::QueuedConnection);
+    });
+
+    const QString urlPrefix = QStringLiteral("data:text/html,<h1>");
+    const QString text = QStringLiteral("There is Thingumbob shouting!");
+    page->load(QUrl(urlPrefix + text));
+    waitForSignal(page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(toPlainTextSync(page), text);
+
+    // Save the loaded page as HTML.
+    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
+    const QString filePath = tempDir.path() + "/thingumbob.html";
+    page->save(filePath, QWebEngineDownloadItem::CompleteHtmlSaveFormat);
+    QTestEventLoop::instance().enterLoop(10);
+
+    // Load something else.
+    page->load(QUrl(urlPrefix + QLatin1String("It's a Snark!")));
+    waitForSignal(page, SIGNAL(loadFinished(bool)));
+    QVERIFY(toPlainTextSync(page) != text);
+
+    // Load the saved page and compare the contents.
+    page->load(QUrl::fromLocalFile(filePath));
+    waitForSignal(page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(toPlainTextSync(page), text);
 }
 
 void tst_QWebEnginePage::openWindowDefaultSize()

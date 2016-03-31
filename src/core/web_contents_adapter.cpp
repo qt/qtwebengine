@@ -535,9 +535,10 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     d->webContents->Unselect();
 }
 
-void WebContentsAdapter::save()
+void WebContentsAdapter::save(const QString &filePath, int savePageFormat)
 {
     Q_D(WebContentsAdapter);
+    d->webContentsDelegate->setSavePageInfo(SavePageInfo(filePath, savePageFormat));
     d->webContents->OnSavePage();
 }
 

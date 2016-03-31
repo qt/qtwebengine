@@ -85,7 +85,7 @@ public:
     void reloadAndBypassCache();
     void load(const QUrl&);
     void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl);
-    void save();
+    void save(const QString &filePath = QString(), int savePageFormat = -1);
     QUrl activeUrl() const;
     QUrl requestedUrl() const;
     QString pageTitle() const;

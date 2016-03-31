@@ -56,6 +56,7 @@
 #include "browser_context_adapter_client.h"
 #include "browser_context_qt.h"
 #include "type_conversion.h"
+#include "web_contents_delegate_qt.h"
 #include "qtwebenginecoreglobal.h"
 
 namespace QtWebEngineCore {
@@ -211,12 +212,30 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
     if (clients.isEmpty())
         return;
 
-    const QString suggestedFileName
-            = QFileInfo(toQt(suggested_path.AsUTF8Unsafe())).completeBaseName()
-            + QStringLiteral(".mhtml");
-    const QDir defaultDownloadDirectory
-            = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    const QString suggestedFilePath = defaultDownloadDirectory.absoluteFilePath(suggestedFileName);
+    WebContentsDelegateQt *contentsDelegate = static_cast<WebContentsDelegateQt *>(
+            web_contents->GetDelegate());
+    const SavePageInfo &spi = contentsDelegate->savePageInfo();
+
+    bool acceptedByDefault = false;
+    QString suggestedFilePath = spi.requestedFilePath;
+    if (suggestedFilePath.isEmpty()) {
+        suggestedFilePath = QFileInfo(toQt(suggested_path.AsUTF8Unsafe())).completeBaseName()
+                + QStringLiteral(".mhtml");
+    } else {
+        acceptedByDefault = true;
+    }
+    if (QFileInfo(suggestedFilePath).isRelative()) {
+        const QDir downloadDir(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));
+        suggestedFilePath = downloadDir.absoluteFilePath(suggestedFilePath);
+    }
+
+    BrowserContextAdapterClient::SavePageFormat suggestedSaveFormat
+            = static_cast<BrowserContextAdapterClient::SavePageFormat>(spi.requestedFormat);
+    if (suggestedSaveFormat == BrowserContextAdapterClient::UnknownSavePageFormat)
+        suggestedSaveFormat = BrowserContextAdapterClient::MimeHtmlSaveFormat;
+
+    // Clear the delegate's SavePageInfo. It's only valid for the page currently being saved.
+    contentsDelegate->setSavePageInfo(SavePageInfo());
 
     BrowserContextAdapterClient::DownloadItemInfo info = {
         m_currentId + 1,
@@ -226,8 +245,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         0, /* receivedBytes */
         QStringLiteral("application/x-mimearchive"),
         suggestedFilePath,
-        BrowserContextAdapterClient::MimeHtmlSaveFormat,
-        false /* accepted */
+        suggestedSaveFormat,
+        acceptedByDefault
     };
 
     Q_FOREACH (BrowserContextAdapterClient *client, clients) {
