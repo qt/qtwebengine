@@ -213,6 +213,8 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
     Enables support for Pepper plugins, such as the Flash player.
 
     Disabled by default.
+
+   \sa {Pepper Plugin API Support}
 */
 bool QQuickWebEngineSettings::pluginsEnabled() const
 {
