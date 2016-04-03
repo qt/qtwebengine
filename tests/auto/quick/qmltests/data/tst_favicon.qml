@@ -64,7 +64,6 @@ TestWebEngineView {
     TestCase {
         id: test
         name: "WebEngineFavicon"
-        when: windowShown
 
         function init() {
             if (webEngineView.icon != '') {

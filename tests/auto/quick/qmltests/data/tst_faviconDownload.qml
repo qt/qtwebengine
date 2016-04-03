@@ -44,7 +44,6 @@ TestWebEngineView {
     TestCase {
         id: test
         name: "WebEngineFaviconDownload"
-        when: windowShown
 
         function init() {
             WebEngine.settings.autoLoadIconsForPage = true
