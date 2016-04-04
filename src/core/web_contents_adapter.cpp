@@ -844,6 +844,11 @@ void WebContentsAdapter::wasHidden()
 void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags)
 {
     Q_D(WebContentsAdapter);
+    // Let the permission manager remember the reply.
+    if (flags & WebContentsAdapterClient::MediaAudioCapture)
+        d->browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::AudioCapturePermission, true);
+    if (flags & WebContentsAdapterClient::MediaVideoCapture)
+        d->browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::VideoCapturePermission, true);
     MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(d->webContents.get(), securityOrigin, flags);
 }
 

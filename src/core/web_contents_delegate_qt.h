@@ -96,6 +96,7 @@ public:
     virtual void HideValidationMessage(content::WebContents *web_contents) Q_DECL_OVERRIDE;
     virtual void MoveValidationMessage(content::WebContents *web_contents, const gfx::Rect &anchor_in_root_view) Q_DECL_OVERRIDE;
     void BeforeUnloadFired(content::WebContents* tab, bool proceed, bool* proceed_to_fire_unload) Q_DECL_OVERRIDE;
+    bool CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type) Q_DECL_OVERRIDE;
 
     // WebContentsObserver overrides
     virtual void RenderFrameDeleted(content::RenderFrameHost *render_frame_host) Q_DECL_OVERRIDE;

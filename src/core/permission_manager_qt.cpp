@@ -91,6 +91,12 @@ void PermissionManagerQt::permissionRequestReply(const QUrl &origin, BrowserCont
     }
 }
 
+bool PermissionManagerQt::checkPermission(const QUrl &origin, BrowserContextAdapter::PermissionType type)
+{
+    QPair<QUrl, BrowserContextAdapter::PermissionType> key(origin, type);
+    return m_permissions.contains(key) && m_permissions[key];
+}
+
 void PermissionManagerQt::RequestPermission(content::PermissionType permission,
                                             content::RenderFrameHost *frameHost,
                                             int request_id,

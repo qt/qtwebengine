@@ -438,4 +438,18 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
         m_viewClient->windowCloseRejected();
 }
 
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type)
+{
+    switch (type) {
+    case content::MEDIA_DEVICE_AUDIO_CAPTURE:
+        return m_viewClient->browserContextAdapter()->checkPermission(toQt(security_origin), BrowserContextAdapter::AudioCapturePermission);
+    case content::MEDIA_DEVICE_VIDEO_CAPTURE:
+        return m_viewClient->browserContextAdapter()->checkPermission(toQt(security_origin), BrowserContextAdapter::VideoCapturePermission);
+    default:
+        LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
+                  << "Unsupported media stream type checked" << type;
+        return false;
+    }
+}
+
 } // namespace QtWebEngineCore

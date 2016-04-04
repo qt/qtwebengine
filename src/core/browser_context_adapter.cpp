@@ -405,6 +405,11 @@ void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, Permissio
     static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
 }
 
+bool BrowserContextAdapter::checkPermission(const QUrl &origin, PermissionType type)
+{
+    return static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->checkPermission(origin, type);
+}
+
 QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const
 {
     const QStringList list = m_httpAcceptLanguage.split(QLatin1Char(','));
