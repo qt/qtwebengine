@@ -236,6 +236,7 @@ bool QQuickWebEngineSettings::fullScreenSupportEnabled() const
 
 /*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
+    \since QtWebEngine 1.2
 
     Sets the default encoding. The value must be a string describing an encoding such as "utf-8" or
     "iso-8859-1".
