@@ -127,6 +127,8 @@
     script to run, the injection point, and the world where the script is run. This enables
     accessing the DOM to manipulate it within a world.
 
+    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
+
     Because the render process is separated from the GUI process, they should ideally share an
     OpenGL context to enable one process to access the resources uploaded by the other, such as
     images or textures. However, some inter-process communication is needed for safety and

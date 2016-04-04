@@ -62,6 +62,8 @@ using QtWebEngineCore::UserScript;
     not accessible from a different one. The worldId property provides some predefined IDs for this
     purpose.
 
+    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
+
     Use \l{WebEngineView::userScripts}{WebEngineView.userScripts} to access a list of scripts
     attached to the web view.
 */

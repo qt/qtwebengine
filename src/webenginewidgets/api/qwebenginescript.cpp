@@ -58,6 +58,8 @@ using QtWebEngineCore::UserScript;
     not accessible from a different one. ScriptWorldId provides some predefined IDs for this
     purpose.
 
+    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
+
     Use QWebEnginePage::scripts() and QWebEngineProfile::scripts() to access
     the collection of scripts associated with a single page or a
     number of pages sharing the same profile.
