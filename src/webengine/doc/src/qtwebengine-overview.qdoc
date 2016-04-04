@@ -121,8 +121,9 @@
     created is not suitable for DOM operations, where one has to wait until the DOM is ready.
 
     In addition, an injected script shares the same \e world as the other scripts executed on the
-    page, which might lead to conflicts. To avoid this, the Chromium API for
-    \e{Content Script Extensions} is implemented by \e {web engine script}. It specifies the
+    page, which might lead to conflicts. To avoid this, the QWebEngineScript class and the
+    WebEngineScript QML type provide implementations of the Chromium API for
+    \e{Content Script Extensions}. They specify the
     script to run, the injection point, and the world where the script is run. This enables
     accessing the DOM to manipulate it within a world.
 
