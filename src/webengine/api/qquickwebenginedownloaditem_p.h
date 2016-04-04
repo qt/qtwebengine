@@ -93,7 +93,7 @@ Q_SIGNALS:
     void stateChanged();
     void receivedBytesChanged();
     void totalBytesChanged();
-    void mimeTypeChanged();
+    Q_REVISION(1) void mimeTypeChanged();
     void pathChanged();
 
 private:
