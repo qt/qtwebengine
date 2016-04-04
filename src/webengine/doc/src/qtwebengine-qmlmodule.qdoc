@@ -24,7 +24,7 @@
 */
 
 /*!
-    \qmlmodule QtWebEngine 1.2
+    \qmlmodule QtWebEngine 1.3
     \title Qt WebEngine QML Types
     \brief Provides QML types for rendering web content within a QML application
     \ingroup qtwebengine-qmlmodules
@@ -33,7 +33,7 @@
     your .qml file:
 
     \badcode
-    import QtWebEngine 1.2
+    import QtWebEngine 1.3
     \endcode
 
     To link against the module, add the following QT variable to your qmake .pro
