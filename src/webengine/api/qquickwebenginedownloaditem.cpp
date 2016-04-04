@@ -267,6 +267,7 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
 
 /*!
     \qmlproperty enumeration WebEngineDownloadItem::savePageFormat
+    \since QtWebEngine 1.3
 
     Describes the format that is used to save a web page.
 

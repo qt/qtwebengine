@@ -84,7 +84,7 @@ public:
 
     Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
     Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
-    Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged)
+    Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged REVISION 2 FINAL)
     Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged)
     Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)
     Q_PROPERTY(QString mimeType READ mimeType NOTIFY mimeTypeChanged REVISION 1)
@@ -105,7 +105,7 @@ public:
 
 Q_SIGNALS:
     void stateChanged();
-    void savePageFormatChanged();
+    Q_REVISION(2) void savePageFormatChanged();
     void receivedBytesChanged();
     void totalBytesChanged();
     void mimeTypeChanged();
