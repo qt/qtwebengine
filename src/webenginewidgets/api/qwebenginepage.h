@@ -79,6 +79,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged)
+    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged)
 
 public:
     enum WebAction {
@@ -269,7 +270,7 @@ public:
 
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);
-    bool wasRecentlyAudible();
+    bool recentlyAudible() const;
 
     void printToPdf(const QString &filePath, const QPageLayout &layout);
 #ifdef Q_QDOC
@@ -308,7 +309,7 @@ Q_SIGNALS:
     void scrollPositionChanged(const QPointF &position);
     void contentsSizeChanged(const QSizeF &size);
     void audioMutedChanged(bool muted);
-    void wasRecentlyAudibleChanged(bool wasRecentlyAudible);
+    void recentlyAudibleChanged(bool recentlyAudible);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

@@ -131,7 +131,7 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     // Make sure to only emit the signal when loading isn't in progress, because it causes multiple
     // false signals to be emitted.
     if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
-        m_viewClient->wasRecentlyAudibleChanged(source->WasRecentlyAudible());
+        m_viewClient->recentlyAudibleChanged(source->WasRecentlyAudible());
     }
 }
 

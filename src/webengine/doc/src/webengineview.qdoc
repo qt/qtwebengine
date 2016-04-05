@@ -1033,22 +1033,39 @@
     \qmlproperty bool WebEngineView::audioMuted
     \brief The state of whether the current page audio is muted.
     \since QtWebEngine 1.3
+    \sa recentlyAudible
 */
 
 /*!
-    \qmlsignal void WebEngineView::audioMutedChanged(bool muted)
+    \qmlsignal WebEngineView::audioMutedChanged(bool muted)
     \since QtWebEngine 1.3
 
-    This signal is emitted when the page's audio is (un)muted using setAudioMuted method.
+    This signal is emitted when the page's audio is (un)muted using audioMuted property.
     \note Not to be confused with a specific HTML5 audio / video element being muted.
+
+    \sa audioMuted
 */
 
 /*!
-    \qmlmethod bool WebEngineView::wasRecentlyAudible()
+    \qmlproperty bool WebEngineView::recentlyAudible
+    \brief Returns the current page's audible state (audio was recently played, or not).
     \since QtWebEngine 1.3
-    \sa wasRecentlyAudibleChanged()
+    \readonly
+    \sa audioMuted
+*/
 
-    Returns the current page's audible state (audio was recently played, or not).
+/*!
+    \qmlsignal WebEngineView::recentlyAudibleChanged(bool recentlyAudible)
+    \since QtWebEngine 1.3
+
+    This signal is emitted when the page's audible state is changed, due to audio
+    being played or stopped.
+
+    \note The signal is also emitted when the audioMuted property changes.
+    Also if the audio is paused, this signal is emitted with an approximate \b{two-second
+    delay}, from the moment the audio is paused.
+
+    \sa recentlyAudible
 */
 
 /*!
@@ -1068,17 +1085,4 @@
 
     The \a resultCallback must take a string parameter. This string will contain the document's data upon successful printing and an empty
     string otherwise.
-*/
-
-
-/*!
-    \qmlsignal void WebEngineView::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
-    \since QtWebEngine 1.3
-
-    This signal is emitted when the page's audible state is changed, due to audio
-    being played or stopped.
-
-    \note The signal is also emitted when calling the setAudioMuted method.
-    Also if the audio is paused, this signal is emitted with an approximate \b{2 second
-    delay}, from the moment the audio is paused.
 */

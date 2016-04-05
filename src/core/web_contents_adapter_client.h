@@ -212,7 +212,7 @@ public:
     virtual void loadProgressChanged(int progress) = 0;
     virtual void didUpdateTargetURL(const QUrl&) = 0;
     virtual void selectionChanged() = 0;
-    virtual void wasRecentlyAudibleChanged(bool wasRecentlyAudible) = 0;
+    virtual void recentlyAudibleChanged(bool recentlyAudible) = 0;
     virtual QRectF viewportRect() const = 0;
     virtual qreal dpiScale() const = 0;
     virtual QColor backgroundColor() const = 0;

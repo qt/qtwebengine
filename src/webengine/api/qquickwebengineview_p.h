@@ -113,7 +113,8 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2)
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION 3)
-    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged REVISION 3)
+    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged FINAL REVISION 3)
+    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION 3)
     Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
@@ -447,6 +448,10 @@ public:
     uint webChannelWorld() const;
     void setWebChannelWorld(uint);
 
+    bool isAudioMuted() const;
+    void setAudioMuted(bool muted);
+    bool recentlyAudible() const;
+
 #ifdef ENABLE_QML_TESTSUPPORT_API
     QQuickWebEngineTestSupport *testSupport() const;
     void setTestSupport(QQuickWebEngineTestSupport *testSupport);
@@ -469,9 +474,6 @@ public Q_SLOTS:
     Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
     Q_REVISION(2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(2) void triggerWebAction(WebAction action);
-    Q_REVISION(3) bool isAudioMuted() const;
-    Q_REVISION(3) void setAudioMuted(bool muted);
-    Q_REVISION(3) bool wasRecentlyAudible();
     Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(3) void printToPdf(PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait, const QJSValue &callback = QJSValue());
 
@@ -502,7 +504,7 @@ Q_SIGNALS:
     Q_REVISION(3) void contentsSizeChanged(const QSizeF& size);
     Q_REVISION(3) void scrollPositionChanged(const QPointF& position);
     Q_REVISION(3) void audioMutedChanged(bool muted);
-    Q_REVISION(3) void wasRecentlyAudibleChanged(bool wasRecentlyAudible);
+    Q_REVISION(3) void recentlyAudibleChanged(bool recentlyAudible);
     Q_REVISION(3) void webChannelWorldChanged(uint);
 
 protected:

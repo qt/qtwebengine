@@ -172,10 +172,10 @@ void QWebEnginePagePrivate::selectionChanged()
     Q_EMIT q->selectionChanged();
 }
 
-void QWebEnginePagePrivate::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
+void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QWebEnginePage);
-    Q_EMIT q->wasRecentlyAudibleChanged(wasRecentlyAudible);
+    Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
 }
 
 QRectF QWebEnginePagePrivate::viewportRect() const
@@ -566,14 +566,14 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \fn void QWebEnginePage::wasRecentlyAudibleChanged(bool wasRecentlyAudible);
+    \fn void QWebEnginePage::recentlyAudibleChanged(bool recentlyAudible);
     \since 5.7
 
-    This signal is emitted when the page's audible state, \a wasRecentlyAudible, changes, because
+    This signal is emitted when the page's audible state, \a recentlyAudible, changes, because
     the audio is played or stopped.
 
     \note The signal is also emitted when calling the setAudioMuted() method.
-    Also, if the audio is paused, this signal is emitted with an approximate \e {two-second
+    Also, if the audio is paused, this signal is emitted with an approximate \b{two-second
     delay}, from the moment the audio is paused.
 */
 
@@ -721,6 +721,7 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
     \since 5.7
 
     The default value is \c false.
+    \sa recentlyAudible
 */
 bool QWebEnginePage::isAudioMuted() const {
     const Q_D(QWebEnginePage);
@@ -736,17 +737,20 @@ void QWebEnginePage::setAudioMuted(bool muted) {
     }
 }
 
-/*!
-    \since 5.7
-    \sa wasRecentlyAudibleChanged()
 
-    Returns the current page's \e {audible state}, that is, whether audio was recently played
+/*!
+    \property QWebEnginePage::recentlyAudible
+    \brief the current page's \e {audible state}, that is, whether audio was recently played
     or not.
+    \since 5.7
+
+    The default value is \c false.
+    \sa audioMuted
 */
-bool QWebEnginePage::wasRecentlyAudible()
+bool QWebEnginePage::recentlyAudible() const
 {
-    Q_D(QWebEnginePage);
-    return d->adapter->wasRecentlyAudible();
+    const Q_D(QWebEnginePage);
+    return d->adapter->recentlyAudible();
 }
 
 void QWebEnginePage::setView(QWidget *view)

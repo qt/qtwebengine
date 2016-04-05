@@ -847,7 +847,7 @@ void WebContentsAdapter::setAudioMuted(bool muted)
     d->webContents->SetAudioMuted(muted);
 }
 
-bool WebContentsAdapter::wasRecentlyAudible()
+bool WebContentsAdapter::recentlyAudible()
 {
     Q_D(WebContentsAdapter);
     return d->webContents->WasRecentlyAudible();

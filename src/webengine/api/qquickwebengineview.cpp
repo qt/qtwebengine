@@ -420,10 +420,10 @@ void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
     Q_EMIT q->linkHovered(hoveredUrl);
 }
 
-void QQuickWebEngineViewPrivate::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
+void QQuickWebEngineViewPrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QQuickWebEngineView);
-    Q_EMIT q->wasRecentlyAudibleChanged(wasRecentlyAudible);
+    Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
 }
 
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
@@ -1187,10 +1187,10 @@ void QQuickWebEngineView::setAudioMuted(bool muted) {
     }
 }
 
-bool QQuickWebEngineView::wasRecentlyAudible()
+bool QQuickWebEngineView::recentlyAudible() const
 {
-    Q_D(QQuickWebEngineView);
-    return d->adapter->wasRecentlyAudible();
+    const Q_D(QQuickWebEngineView);
+    return d->adapter->recentlyAudible();
 }
 
 void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)

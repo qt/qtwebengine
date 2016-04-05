@@ -603,7 +603,7 @@ WebView *TabWidget::newTab(bool makeCurrent)
             this, SLOT(webViewTitleChanged(QString)));
     connect(webView->page(), SIGNAL(audioMutedChanged(bool)),
             this, SLOT(webPageMutedOrAudibleChanged()));
-    connect(webView->page(), SIGNAL(wasRecentlyAudibleChanged(bool)),
+    connect(webView->page(), SIGNAL(recentlyAudibleChanged(bool)),
             this, SLOT(webPageMutedOrAudibleChanged()));
     connect(webView, SIGNAL(urlChanged(QUrl)),
             this, SLOT(webViewUrlChanged(QUrl)));
@@ -765,7 +765,7 @@ void TabWidget::webPageMutedOrAudibleChanged() {
         QString title = webView->title();
 
         bool muted = webPage->isAudioMuted();
-        bool audible = webPage->wasRecentlyAudible();
+        bool audible = webPage->recentlyAudible();
         if (muted) title += tr(" (muted)");
         else if (audible) title += tr(" (audible)");
 
