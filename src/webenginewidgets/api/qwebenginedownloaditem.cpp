@@ -206,6 +206,7 @@ quint32 QWebEngineDownloadItem::id() const
 
 /*!
     \enum QWebEngineDownloadItem::SavePageFormat
+    \since 5.7
 
     This enum describes the format that is used to save a web page.
 
@@ -320,6 +321,7 @@ bool QWebEngineDownloadItem::isFinished() const
 
 /*!
     Returns the format the web page will be saved in if this is a download request for a web page.
+    \since 5.7
 
     \sa setSavePageFormat()
 */
@@ -331,6 +333,7 @@ QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() 
 
 /*!
     Sets the \a format the web page will be saved in if this is a download request for a web page.
+    \since 5.7
 
     \sa savePageFormat()
 */
