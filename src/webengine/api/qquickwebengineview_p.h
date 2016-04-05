@@ -475,7 +475,7 @@ public Q_SLOTS:
     Q_REVISION(2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(2) void triggerWebAction(WebAction action);
     Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
-    Q_REVISION(3) void printToPdf(PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait, const QJSValue &callback = QJSValue());
+    Q_REVISION(3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
 
 #if !defined(QT_NO_SPELLCHECK)
     Q_REVISION(3) void replaceMisspelledWord(const QString &replacement);

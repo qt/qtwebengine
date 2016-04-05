@@ -1722,7 +1722,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
 
 
 /*!
-    \fn void QWebEnginePage::printToPdf(const QPageLayout &pageLayout, FunctorOrLambda resultCallback)
+    \fn void QWebEnginePage::printToPdf(FunctorOrLambda resultCallback, const QPageLayout &pageLayout)
     Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
     as parameter to \a resultCallback.
     The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
@@ -1732,7 +1732,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
 
     \since 5.7
 */
-void QWebEnginePage::printToPdf(const QPageLayout &pageLayout, const QWebEngineCallback<const QByteArray&> &resultCallback)
+void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &pageLayout)
 {
     Q_D(QWebEnginePage);
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);

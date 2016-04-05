@@ -272,11 +272,11 @@ public:
     void setAudioMuted(bool muted);
     bool recentlyAudible() const;
 
-    void printToPdf(const QString &filePath, const QPageLayout &layout);
+    void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #ifdef Q_QDOC
-    void printToPdf(const QPageLayout &layout, FunctorOrLambda resultCallback);
+    void printToPdf(FunctorOrLambda resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #else
-    void printToPdf(const QPageLayout &layout, const QWebEngineCallback<const QByteArray&> &resultCallback);
+    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #endif
 
     const QWebEngineContextMenuData &contextMenuData() const;
