@@ -218,6 +218,7 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
 
 /*!
     \qmlproperty QString WebEngineDownloadItem::mimeType
+    \since QtWebEngine 1.2
 
     Holds the MIME type of the download.
 */
