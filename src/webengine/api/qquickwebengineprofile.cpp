@@ -193,6 +193,13 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     info.savePageFormat = itemPrivate->savePageFormat;
     info.accepted = state != QQuickWebEngineDownloadItem::DownloadCancelled
                       && state != QQuickWebEngineDownloadItem::DownloadRequested;
+
+    if (state == QQuickWebEngineDownloadItem::DownloadRequested) {
+        // Delete unaccepted downloads.
+        info.accepted = false;
+        m_ongoingDownloads.remove(info.id);
+        delete download;
+    }
 }
 
 void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
