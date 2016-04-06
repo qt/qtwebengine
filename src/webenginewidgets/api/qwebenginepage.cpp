@@ -1095,6 +1095,7 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     }
 }
 
+#if !defined(QT_NO_SPELLCHECK)
 /*!
  * \since 5.7
  * Replace the current misspelled word with \a replacement.
@@ -1110,6 +1111,7 @@ void QWebEnginePage::replaceMisspelledWord(const QString &replacement)
     Q_D(QWebEnginePage);
     d->adapter->replaceMisspelling(replacement);
 }
+#endif
 
 void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
 {
