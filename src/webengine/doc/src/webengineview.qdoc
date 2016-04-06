@@ -355,6 +355,28 @@
 */
 
 /*!
+    \qmlproperty QSizeF WebEngineView::contentsSize
+    \since QtWebEngine 1.3
+
+    Size of the page contents.
+*/
+
+/*!
+    \qmlproperty QPointF WebEngineView::scrollPosition
+    \since QtWebEngine 1.3
+
+    Scroll position of the page contents.
+*/
+
+/*!
+    \qmlproperty uint WebEngineView::webChannelWorld
+    \since QtWebEngine 1.3
+
+    JavaScript world that the web channel instance used by this view is
+    installed in.
+*/
+
+/*!
     \qmlmethod void WebEngineView::loadHtml(string html, url baseUrl)
     Loads the specified \a html as the content of the web view.
 
