@@ -42,20 +42,9 @@
 #include "browserwindow.h"
 #include "webview.h"
 #include <QAuthenticator>
-#include <QNetworkProxy>
-#include <QNetworkReply>
 
 Browser::Browser()
 {
-    // QTBUG-47967 , downloading favIcon support is coming in 5.7
-    QObject::connect(&WebView::networkAccessManager(), &QNetworkAccessManager::authenticationRequired,
-                     [](QNetworkReply *, QAuthenticator *) {
-        qWarning("Authentication required for downloading favicon.");
-    });
-    QObject::connect(&WebView::networkAccessManager(), &QNetworkAccessManager::proxyAuthenticationRequired,
-                     [](const QNetworkProxy &, QAuthenticator *) {
-        qWarning("Proxy authentication required for downloading favicon.");
-    });
 }
 
 Browser::~Browser()
