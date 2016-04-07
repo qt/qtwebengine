@@ -180,7 +180,7 @@ void TabWidget::setupView(WebView *webView)
     connect(webView, &QWebEngineView::loadStarted, [this, webView]() {
         int index = indexOf(webView);
         if (index != -1) {
-            QIcon icon(QLatin1String(":loading.gif"));
+            QIcon icon(QLatin1String(":view-refresh.png"));
             setTabIcon(index, icon);
         }
     });
