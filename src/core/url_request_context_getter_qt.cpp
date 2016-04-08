@@ -153,8 +153,11 @@ void URLRequestContextGetterQt::generateStorage()
     Q_ASSERT(m_urlRequestContext);
 
     // We must stop all requests before deleting their backends.
-    if (m_storage)
+    if (m_storage) {
         cancelAllUrlRequests();
+        // we need to get rid of dangling pointer due to coming storage deletion
+        m_urlRequestContext->set_http_transaction_factory(0);
+    }
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));
 
