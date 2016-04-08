@@ -58,6 +58,8 @@
 #include "media/audio/audio_manager_base.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#include <QtCore/qcoreapplication.h>
+
 namespace QtWebEngineCore {
 
 using content::BrowserThread;
