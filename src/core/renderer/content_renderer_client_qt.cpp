@@ -89,10 +89,12 @@ class RenderProcessObserverQt : public content::RenderProcessObserver {
 public:
     void WebKitInitialized() override
     {
-        // mark qrc as a secure scheme (avoids deprecation warnings)
         // Can only be done after blink is initialized.
         blink::WebString qrcScheme(base::ASCIIToUTF16(kQrcSchemeQt));
+        // mark qrc as a secure scheme (avoids deprecation warnings)
         blink::WebSecurityPolicy::registerURLSchemeAsSecure(qrcScheme);
+        // mark qrc as a local scheme (allows local access to qrc)
+        blink::WebSecurityPolicy::registerURLSchemeAsLocal(qrcScheme);
     }
 };
 

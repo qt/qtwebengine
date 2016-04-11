@@ -701,9 +701,10 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
      return d->browserContext()->isSpellCheckEnabled();
 }
 #endif
+
 /*!
 
-    Returns the cookie store singleton, if one has been set.
+    Returns the cookie store for this profile.
 */
 QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
 {

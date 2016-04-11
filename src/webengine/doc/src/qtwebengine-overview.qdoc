@@ -121,10 +121,13 @@
     created is not suitable for DOM operations, where one has to wait until the DOM is ready.
 
     In addition, an injected script shares the same \e world as the other scripts executed on the
-    page, which might lead to conflicts. To avoid this, the Chromium API for
-    \e{Content Script Extensions} is implemented by \e {web engine script}. It specifies the
+    page, which might lead to conflicts. To avoid this, the QWebEngineScript class and the
+    WebEngineScript QML type provide implementations of the Chromium API for
+    \e{Content Script Extensions}. They specify the
     script to run, the injection point, and the world where the script is run. This enables
     accessing the DOM to manipulate it within a world.
+
+    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
 
     Because the render process is separated from the GUI process, they should ideally share an
     OpenGL context to enable one process to access the resources uploaded by the other, such as
@@ -152,7 +155,7 @@
     Each QWebEnginePage belongs to a QWebEngineProfile that can have a QWebEngineSettings
     for specifying page settings, a QWebEngineScriptCollection for running scripts on the page, and
     a QWebEngineCookieStore for accessing the HTTP cookies of Chromium. A QWebEnginePage can also
-    directly point to a script collection or cookie store.
+    directly point to a script collection.
 
     \section1 Embedding Web Content into Qt Quick Applications
 
@@ -164,19 +167,9 @@
     engine must be initialized by using \l QtWebEngine::initialize in the application main source
     file, as illustrated by the following code snippet:
 
-    \code
-    int main(int argc, char **argv)
-    {
-        Application app(argc, argv);
-
-        QtWebEngine::initialize();
-
-        QQmlApplicationEngine appEngine;
-        appEngine.load(QUrl("qrc:/main.qml"));
-
-        return app.exec();
-    }
-    \endcode
+    \quotefromfile webengine/minimal/main.cpp
+    \skipto main
+    \printuntil }
 
     An application can load pages into the WebEngineView, using either an URL or HTML string, and
     navigate within session history. By default, links to different pages load within the same
@@ -186,22 +179,9 @@
     The following sample QML application loads a web page using the \l{WebEngineView::}{url}
     property:
 
-    \qml
-    import QtQuick 2.1
-    import QtQuick.Controls 1.1
-    import QtWebEngine 1.1
-
-    ApplicationWindow {
-        width: 1280
-        height: 720
-        visible: true
-        WebEngineView {
-            id: webview
-            url: "http://www.qt.io"
-            anchors.fill: parent
-        }
-    }
-    \endqml
+    \quotefromfile webengine/minimal/main.qml
+    \skipto import
+    \printuntil /^\}/
 
     \section1 Managing Certificates
 

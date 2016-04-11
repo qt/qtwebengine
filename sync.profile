@@ -21,6 +21,7 @@
     "qtbase" => "",
     "qtdeclarative" => "",
     "qtxmlpatterns" => "",
+    "qttools" => "",
 # FIXME: take examples out into their own module to avoid a potential circular dependency later ?
     "qtquickcontrols" => "",
     "qtwebchannel" => "",

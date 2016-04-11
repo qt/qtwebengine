@@ -57,6 +57,7 @@ public:
     typedef BrowserContextAdapter::PermissionType PermissionType;
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
+    bool checkPermission(const QUrl &origin, PermissionType type);
 
     // content::PermissionManager implementation:
     int RequestPermission(

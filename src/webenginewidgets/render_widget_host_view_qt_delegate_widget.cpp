@@ -77,11 +77,16 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
         QSurfaceFormat sharedFormat = globalSharedContext->format();
 
 #ifdef Q_OS_OSX
-        // Check that the default QSurfaceFormat OpenGL profile matches the global OpenGL shared
-        // context profile, otherwise this could lead to a nasty crash.
+        // Check that the default QSurfaceFormat OpenGL profile is compatible with the global OpenGL
+        // shared context profile, otherwise this could lead to a nasty crash.
         QSurfaceFormat defaultFormat = QSurfaceFormat::defaultFormat();
-        if (defaultFormat.profile() != sharedFormat.profile()) {
-            qFatal("QWebEngine: Default QSurfaceFormat OpenGL profile does not match global shared context OpenGL profile. Please make sure you set a new QSurfaceFormat before the QtGui application instance is created.");
+
+        if (defaultFormat.profile() != sharedFormat.profile()
+            && defaultFormat.profile() == QSurfaceFormat::CoreProfile
+            && defaultFormat.version() >= qMakePair(3, 2)) {
+            qFatal("QWebEngine: Default QSurfaceFormat OpenGL profile is not compatible with the "
+                   "global shared context OpenGL profile. Please make sure you set a compatible "
+                   "QSurfaceFormat before the QtGui application instance is created.");
         }
 #endif
 

@@ -59,7 +59,7 @@
     Additionally, a web site may specify an icon, which can be accessed
     using the iconUrl() property. If the title or the icon changes, the corresponding
     titleChanged() and iconUrlChanged() signals will be emitted. The
-    zoomFactor() property can be used to change the overall size of the contents of the web view.
+    zoomFactor() property enables zooming the contents of the web page by a scale factor.
 
     If you require a custom context menu, you can implement it by reimplementing
     \l{QWidget::}{contextMenuEvent()} and populating your QMenu with the actions
@@ -231,6 +231,8 @@
 /*!
     \property QWebEngineView::zoomFactor
     \brief the zoom factor for the view
+
+    Valid values are within the range from \c{0.25} to \c{5.0}. The default factor is \c{1.0}.
 */
 
 /*!
