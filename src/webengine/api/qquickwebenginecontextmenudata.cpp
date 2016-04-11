@@ -170,7 +170,6 @@ bool QQuickWebEngineContextMenuData::isContentEditable() const
     return d ? d->isEditable : false;
 }
 
-#if !defined(QT_NO_SPELLCHECK)
 /*!
     \qmlproperty QString WebEngineDownloadItem::misspelledWord
 
@@ -194,7 +193,6 @@ QStringList QQuickWebEngineContextMenuData::spellCheckerSuggestions() const
         return d->spellCheckerSuggestions;
     return QStringList();
 }
-#endif
 
 void QQuickWebEngineContextMenuData::update(const QtWebEngineCore::WebEngineContextMenuData &update)
 {
@@ -225,13 +223,11 @@ void QQuickWebEngineContextMenuData::update(const QtWebEngineCore::WebEngineCont
     if (isContentEditable() != old.isContentEditable())
         Q_EMIT isContentEditableChanged();
 
-#if !defined(QT_NO_SPELLCHECK)
     if (misspelledWord() != old.misspelledWord())
         Q_EMIT misspelledWordChanged();
 
     if (spellCheckerSuggestions() != old.spellCheckerSuggestions())
         Q_EMIT spellCheckerSuggestionsChanged();
-#endif
 }
 
 QQuickWebEngineContextMenuData::QQuickWebEngineContextMenuData(const QQuickWebEngineContextMenuDataPrivate *p, QObject *parent)

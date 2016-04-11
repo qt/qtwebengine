@@ -176,10 +176,7 @@ public:
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;
-#if defined(ENABLE_SPELLCHECK)
     void replaceMisspelling(const QString &word);
-    void toogleSpellCheckEnabled();
-#endif
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter)

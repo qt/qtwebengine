@@ -896,11 +896,6 @@ QAction *QWebEnginePage::action(WebAction action) const
     case SavePage:
         text = tr("Save &Page");
         break;
-#if !defined(QT_NO_SPELLCHECK)
-    case ToggleSpellcheck:
-        text = tr("Check Spelling");
-        break;
-#endif
     default:
         break;
     }
@@ -1089,17 +1084,11 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case SavePage:
         d->adapter->save();
         break;
-#if !defined(QT_NO_SPELLCHECK)
-    case ToggleSpellcheck:
-        d->adapter->toogleSpellCheckEnabled();
-        break;
-#endif
     default:
         Q_UNREACHABLE();
     }
 }
 
-#if !defined(QT_NO_SPELLCHECK)
 /*!
  * \since 5.7
  * Replace the current misspelled word with \a replacement.
@@ -1115,7 +1104,6 @@ void QWebEnginePage::replaceMisspelledWord(const QString &replacement)
     Q_D(QWebEnginePage);
     d->adapter->replaceMisspelling(replacement);
 }
-#endif
 
 void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
 {
@@ -1298,7 +1286,6 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     QAction *action = 0;
     const WebEngineContextMenuData &contextMenuData = *d->contextData.d;
 
-#if !defined(QT_NO_SPELLCHECK)
     if (contextMenuData.isEditable && !contextMenuData.spellCheckerSuggestions.isEmpty()) {
         QPointer<QWebEnginePage> thisRef(this);
         for (int i=0; i < contextMenuData.spellCheckerSuggestions.count() && i < 4; i++) {
@@ -1310,7 +1297,6 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         }
         menu->addSeparator();
     }
-#endif
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
         action = QWebEnginePage::action(OpenLinkInThisWindow);
@@ -1373,15 +1359,6 @@ QMenu *QWebEnginePage::createStandardContextMenu()
 
     if (d->isFullScreenMode())
         menu->addAction(QWebEnginePage::action(ExitFullScreen));
-
-#if !defined(QT_NO_SPELLCHECK)
-    if (contextMenuData.isEditable) {
-        QAction* spellcheckAction(QWebEnginePage::action(ToggleSpellcheck));
-        menu->addAction(spellcheckAction);
-        spellcheckAction->setCheckable(true);
-        spellcheckAction->setChecked(contextMenuData.isSpellCheckerEnabled);
-    }
-#endif
 
     return menu;
 }

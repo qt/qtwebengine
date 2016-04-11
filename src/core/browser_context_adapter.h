@@ -107,13 +107,12 @@ public:
     QString httpUserAgent() const;
     void setHttpUserAgent(const QString &userAgent);
 
-#if defined(ENABLE_SPELLCHECK)
     QStringList spellCheckLanguages(const QStringList &acceptLanguages);
     void setSpellCheckLanguage(const QString &language);
     QString spellCheckLanguage() const;
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
-#endif
+
     // KEEP IN SYNC with API or add mapping layer
     enum HttpCacheType {
         MemoryHttpCache = 0,

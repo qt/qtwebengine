@@ -123,9 +123,6 @@ public:
         Unselect,
         SavePage,
         OpenLinkInNewBackgroundTab,
-#if !defined(QT_NO_SPELLCHECK)
-        ToggleSpellcheck,
-#endif
         WebActionCount
     };
 
@@ -209,9 +206,7 @@ public:
 #endif
     virtual void triggerAction(WebAction action, bool checked = false);
 
-#if !defined(QT_NO_SPELLCHECK)
     void replaceMisspelledWord(const QString &replacement);
-#endif
 
     virtual bool event(QEvent*);
 #ifdef Q_QDOC

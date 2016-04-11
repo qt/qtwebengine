@@ -612,30 +612,29 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
     return profile;
 }
 
-#if !defined(QT_NO_SPELLCHECK)
 /*!
-    \qmlmethod void QQuickWebEngineProfile::spellCheckLanguages()
+    \qmlmethod void QQuickWebEngineProfile::availableDictionaries()
 
-    Returns the subset of \a acceptLanguages supported by the spell checker.
+    Returns the subset of \a languages supported by the spell checker.
     Checks whether the spell checker dictionary is installed for the specified
-    language from the \a acceptLanguages list. If the dictionary file is missing
+    language from the \a languages list. If the dictionary file is missing
     or corrupted, the language is removed from the returned list.
 
     \since QtWebEngine 1.3
 */
 
 /*!
-    Returns the subset of \a acceptLanguages supported by the spell checker.
+    Returns the subset of \a languages supported by the spell checker.
     Checks whether the spell checker dictionary is installed for the specified
-    language from the \a acceptLanguages list. If the dictionary file is missing
+    language from the \a languages list. If the dictionary file is missing
     or corrupted, the language is removed from the returned list.
 
     \since QtWebEngine 1.3
 */
-QStringList QQuickWebEngineProfile::spellCheckLanguages(const QStringList &acceptLanguages)
+QStringList QQuickWebEngineProfile::availableDictionaries(const QStringList &languages)
 {
     const Q_D(QQuickWebEngineProfile);
-    return d->browserContext()->spellCheckLanguages(acceptLanguages);
+    return d->browserContext()->spellCheckLanguages(languages);
 }
 
 /*!
@@ -700,7 +699,6 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
      const Q_D(QQuickWebEngineProfile);
      return d->browserContext()->isSpellCheckEnabled();
 }
-#endif
 
 /*!
 

@@ -186,7 +186,6 @@ bool QWebEngineContextMenuData::isContentEditable() const
     return d ? d->isEditable : false;
 }
 
-#if !defined(QT_NO_SPELLCHECK)
 /*!
     If the context is a word considered misspelled by the spell-checker, returns the misspelled word.
 */
@@ -206,7 +205,6 @@ QStringList QWebEngineContextMenuData::spellCheckerSuggestions() const
         return d->spellCheckerSuggestions;
     return QStringList();
 }
-#endif
 
 /*!
     \internal
