@@ -229,14 +229,6 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::reload);
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Reload"), QStringLiteral("view-refresh"));
-
-        if (!data.linkUrl.isValid()) {
-            item = new MenuItemHandler(menu);
-            QObject::connect(item, &MenuItemHandler::triggered, [q] {
-                q->triggerWebAction(QQuickWebEngineView::SavePage);
-            });
-            ui()->addMenuItem(item, QQuickWebEngineView::tr("Save"));
-        }
     } else {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::Copy); });

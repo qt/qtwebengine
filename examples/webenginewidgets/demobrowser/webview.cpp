@@ -371,18 +371,21 @@ void WebView::setPage(WebPage *_page)
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
+    QMenu *menu;
     if (page()->contextMenuData().linkUrl().isValid()) {
-        QMenu *menu = new QMenu(this);
+        menu = new QMenu(this);
         menu->addAction(page()->action(QWebEnginePage::OpenLinkInThisWindow));
         menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewWindow));
         menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewBackgroundTab));
         menu->addSeparator();
         menu->addAction(page()->action(QWebEnginePage::DownloadLinkToDisk));
         menu->addAction(page()->action(QWebEnginePage::CopyLinkToClipboard));
-        menu->popup(event->globalPos());
-        return;
+    } else {
+        menu = page()->createStandardContextMenu();
     }
-    QWebEngineView::contextMenuEvent(event);
+    if (page()->contextMenuData().selectedText().isEmpty())
+        menu->addAction(page()->action(QWebEnginePage::SavePage));
+    menu->popup(event->globalPos());
 }
 
 void WebView::wheelEvent(QWheelEvent *event)

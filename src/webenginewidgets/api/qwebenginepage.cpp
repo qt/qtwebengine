@@ -1332,9 +1332,6 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         action = new QAction(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("&Reload"), menu);
         connect(action, &QAction::triggered, d->view, &QWebEngineView::reload);
         menu->addAction(action);
-
-        if (!contextMenuData.linkUrl.isValid())
-            menu->addAction(QWebEnginePage::action(SavePage));
     } else {
         menu->addAction(QWebEnginePage::action(Copy));
         menu->addAction(QWebEnginePage::action(Unselect));
