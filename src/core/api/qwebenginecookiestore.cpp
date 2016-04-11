@@ -191,6 +191,9 @@ void QWebEngineCookieStorePrivate::onCookieChanged(const QNetworkCookie &cookie,
     to get notified about the success of the operation.
     The signal handlers for removal and addition should not be used to execute heavy tasks,
     because they might block the IO thread in case of a blocking connection.
+
+    Use QWebEngineProfile::cookieStore() and QQuickWebEngineProfile::cookieStore()
+    to access the cookie store object for a specific profile.
 */
 
 /*!

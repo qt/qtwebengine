@@ -219,13 +219,10 @@ WebEngineContext::WebEngineContext()
     , m_browserRunner(content::BrowserMainRunner::Create())
     , m_globalQObject(new QObject())
 {
-    QVector<QByteArray> args;
-    Q_FOREACH (const QString& arg, QCoreApplication::arguments())
-        args << arg.toUtf8();
-
-    bool useEmbeddedSwitches = args.removeAll("--enable-embedded-switches");
+    QStringList appArgs = QCoreApplication::arguments();
+    bool useEmbeddedSwitches = appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
 #if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-    useEmbeddedSwitches = !args.removeAll("--disable-embedded-switches");
+    useEmbeddedSwitches = !appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
 #endif
 
 #ifdef Q_OS_LINUX
@@ -234,16 +231,31 @@ WebEngineContext::WebEngineContext()
     qputenv("force_s3tc_enable", "true");
 #endif
 
-
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
+
+#if defined(Q_OS_WIN)
+    // We must initialize the command line with the UTF-16 arguments vector we got from
+    // QCoreApplication. CommandLine::Init ignores its arguments on Windows and calls
+    // GetCommandLineW() instead.
+    base::CommandLine::CreateEmpty();
+    base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    base::CommandLine::StringVector argv;
+    argv.resize(appArgs.size());
+    std::transform(appArgs.constBegin(), appArgs.constEnd(), argv.begin(), &toString16);
+    parsedCommandLine->InitFromArgv(argv);
+#else
+    QVector<QByteArray> args;
+    Q_FOREACH (const QString& arg, appArgs)
+        args << arg.toUtf8();
 
     QVector<const char*> argv(args.size());
     for (int i = 0; i < args.size(); ++i)
         argv[i] = args[i].constData();
     base::CommandLine::Init(argv.size(), argv.constData());
-
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
+#endif
+
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.

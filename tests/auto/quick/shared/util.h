@@ -119,7 +119,16 @@ inline bool waitForLoadFailed(QQuickWebEngineView *webEngineView, int timeout = 
 
 inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout = 10000)
 {
-    return waitForSignal(reinterpret_cast<QObject *>(webEngineView->experimental()), SIGNAL(loadVisuallyCommitted()), timeout);
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    return waitForSignal(reinterpret_cast<QObject *>(webEngineView->testSupport()), SIGNAL(loadVisuallyCommitted()), timeout);
+#else
+    Q_UNUSED(webEngineView)
+    Q_UNUSED(timeout)
+    qFatal("Test Support API is disabled. The result is not reliable.\
+            Use the following command to build Test Support module and rebuild WebEngineView API:\
+            qmake -r WEBENGINE_CONFIG+=testsupport && make");
+    return false;
+#endif
 }
 
 #endif /* UTIL_H */

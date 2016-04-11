@@ -53,8 +53,8 @@
     using the icon() or its URL using the iconUrl() property.
     If the title or the icon changes, the corresponding titleChanged(), iconChanged()
     and iconUrlChanged() signals will be emitted.
-    The zoomFactor() property can be used to change the overall size
-    of the content displayed in the page.
+    The zoomFactor() property enables zooming the contents of the web page by a
+    scale factor.
 
     The loadStarted() signal is emitted when the page begins to load, whereas the loadProgress()
     signal is emitted whenever an element of the web page completes loading, such as an embedded
@@ -636,6 +636,8 @@
 /*!
     \property QWebEnginePage::zoomFactor
     \brief the zoom factor for the page content
+
+    Valid values are within the range from \c{0.25} to \c{5.0}. The default factor is \c{1.0}.
 */
 
 /*!

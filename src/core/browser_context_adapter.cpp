@@ -224,8 +224,13 @@ QString BrowserContextAdapter::cookiesPath() const
     if (m_offTheRecord)
         return QString();
     QString basePath = dataPath();
-    if (!basePath.isEmpty())
-        return basePath % QLatin1String("/Coookies");
+    if (!basePath.isEmpty()) {
+        // This is a typo fix. We still need the old path in order to avoid breaking migration.
+        QDir coookiesFolder(basePath % QLatin1String("/Coookies"));
+        if (coookiesFolder.exists())
+            return coookiesFolder.path();
+        return basePath % QLatin1String("/Cookies");
+    }
     return QString();
 }
 
@@ -401,6 +406,11 @@ UserResourceControllerHost *BrowserContextAdapter::userResourceController()
 void BrowserContextAdapter::permissionRequestReply(const QUrl &origin, PermissionType type, bool reply)
 {
     static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->permissionRequestReply(origin, type, reply);
+}
+
+bool BrowserContextAdapter::checkPermission(const QUrl &origin, PermissionType type)
+{
+    return static_cast<PermissionManagerQt*>(browserContext()->GetPermissionManager())->checkPermission(origin, type);
 }
 
 QString BrowserContextAdapter::httpAcceptLanguageWithoutQualities() const

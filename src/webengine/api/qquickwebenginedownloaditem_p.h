@@ -108,7 +108,7 @@ Q_SIGNALS:
     Q_REVISION(2) void savePageFormatChanged();
     void receivedBytesChanged();
     void totalBytesChanged();
-    void mimeTypeChanged();
+    Q_REVISION(1) void mimeTypeChanged();
     void pathChanged();
 
 private:

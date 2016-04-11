@@ -105,7 +105,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
 
 Q_SIGNALS:
     void extraContextMenuEntriesComponentChanged();
-    void loadVisuallyCommitted();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
