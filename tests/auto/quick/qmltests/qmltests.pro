@@ -21,6 +21,7 @@ OTHER_FILES += \
     $$PWD/data/geolocation.html \
     $$PWD/data/javascript.html \
     $$PWD/data/link.html \
+    $$PWD/data/localStorage.html \
     $$PWD/data/prompt.html \
     $$PWD/data/multifileupload.html \
     $$PWD/data/redirect.html \
@@ -54,6 +55,7 @@ OTHER_FILES += \
     $$PWD/data/tst_unhandledKeyEventPropagation.qml \
     $$PWD/data/tst_userScripts.qml \
     $$PWD/data/tst_webchannel.qml \
+    $$PWD/data/tst_settings.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/AlertDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/ConfirmDialog.qml \
