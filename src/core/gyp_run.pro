@@ -84,7 +84,6 @@ contains(QT_ARCH, "arm") {
 }
 
 contains(QT_ARCH, "mips") {
-    !cross_compile: GYP_CONFIG += sysroot=\"\"
     GYP_CONFIG += target_arch=mipsel
 
     contains(QMAKE_CFLAGS, "mips32r6"): mips_arch_variant=\"r6\"
