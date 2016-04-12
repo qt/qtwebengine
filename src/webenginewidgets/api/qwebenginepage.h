@@ -103,7 +103,6 @@ public:
         OpenLinkInThisWindow,
         OpenLinkInNewWindow,
         OpenLinkInNewTab,
-        OpenLinkInNewBackgroundTab,
         CopyLinkToClipboard,
         DownloadLinkToDisk,
 
@@ -123,6 +122,7 @@ public:
         RequestClose,
         Unselect,
         SavePage,
+        OpenLinkInNewBackgroundTab,
 #if !defined(QT_NO_SPELLCHECK)
         ToggleSpellcheck,
 #endif
