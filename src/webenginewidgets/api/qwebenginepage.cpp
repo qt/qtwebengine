@@ -151,7 +151,7 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
         return;
     iconUrl = url;
     Q_EMIT q->iconUrlChanged(iconUrl);
-    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon(iconUrl));
+    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon());
 }
 
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
@@ -1506,7 +1506,9 @@ QUrl QWebEnginePage::iconUrl() const
     \brief the icon associated with the page currently viewed
     \since 5.7
 
-    By default, this property contains a null icon.
+    By default, this property contains a null icon. If the web page specifies more than one icon,
+    the \c{icon} property encapsulates the available candidate icons in a single,
+    scalable \c{QIcon}.
 
     \sa iconChanged(), iconUrl(), iconUrlChanged()
 */
@@ -1517,7 +1519,7 @@ QIcon QWebEnginePage::icon() const
     if (d->iconUrl.isEmpty())
         return QIcon();
 
-    return d->adapter->faviconManager()->getIcon(d->iconUrl);
+    return d->adapter->faviconManager()->getIcon();
 }
 
 qreal QWebEnginePage::zoomFactor() const

@@ -52,9 +52,6 @@
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/geometry/size.h"
 
-#include <QtCore/QUrl>
-#include <QtGui/QIcon>
-
 namespace QtWebEngineCore {
 
 static inline bool isResourceUrl(const QUrl &url)
@@ -139,6 +136,11 @@ void FaviconManagerPrivate::downloadPendingRequests()
 void FaviconManagerPrivate::storeIcon(int id, const QIcon &icon)
 {
     Q_Q(FaviconManager);
+
+    // Icon download has been interrupted
+    if (m_inProgressRequests.isEmpty())
+        return;
+
     Q_ASSERT(m_inProgressRequests.contains(id));
 
     QUrl requestUrl = m_inProgressRequests[id];
@@ -169,31 +171,18 @@ void FaviconManagerPrivate::storeIcon(int id, const QIcon &icon)
     }
 
     m_inProgressRequests.remove(id);
-    if (m_inProgressRequests.isEmpty())
-        propagateIcon();
+    if (m_inProgressRequests.isEmpty()) {
+        WebEngineSettings *settings = m_viewClient->webEngineSettings();
+        bool touchIconsEnabled = settings->testAttribute(WebEngineSettings::TouchIconsEnabled);
+
+        q->generateCandidateIcon(touchIconsEnabled);
+        const QUrl &iconUrl = q->candidateIconUrl(touchIconsEnabled);
+        propagateIcon(iconUrl);
+    }
 }
 
-void FaviconManagerPrivate::propagateIcon() const
+void FaviconManagerPrivate::propagateIcon(const QUrl &iconUrl) const
 {
-    Q_Q(const FaviconManager);
-
-    WebEngineSettings *settings = m_viewClient->webEngineSettings();
-    bool touchIconsEnabled = settings->testAttribute(WebEngineSettings::TouchIconsEnabled);
-
-    QUrl iconUrl;
-    const QList<FaviconInfo> &faviconInfoList = q->getFaviconInfoList(true /* candidates only */);
-
-    unsigned bestArea = 0;
-    for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
-        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
-            continue;
-
-        if (it->isValid() && bestArea < area(it->size)) {
-            iconUrl = it->url;
-            bestArea = area(it->size);
-        }
-    }
-
     content::NavigationEntry *entry = m_webContents->GetController().GetVisibleEntry();
     if (entry) {
         content::FaviconStatus &favicon = entry->GetFavicon();
@@ -205,7 +194,7 @@ void FaviconManagerPrivate::propagateIcon() const
 }
 
 FaviconManager::FaviconManager(FaviconManagerPrivate *d)
-    : m_hasCandidate(false)
+    : m_candidateCount(0)
 {
     Q_ASSERT(d);
     d_ptr.reset(d);
@@ -220,6 +209,10 @@ FaviconManager::~FaviconManager()
 QIcon FaviconManager::getIcon(const QUrl &url) const
 {
     Q_D(const FaviconManager);
+
+    if (url.isEmpty())
+        return m_candidateIcon;
+
     if (!d->m_icons.contains(url))
         return QIcon();
 
@@ -281,7 +274,7 @@ void FaviconManager::update(const QList<FaviconInfo> &candidates)
 
 void FaviconManager::updateCandidates(const QList<FaviconInfo> &candidates)
 {
-    m_hasCandidate = candidates.count();
+    m_candidateCount = candidates.count();
     for (FaviconInfo candidateFaviconInfo : candidates) {
         const QUrl &candidateUrl = candidateFaviconInfo.url;
 
@@ -298,14 +291,71 @@ void FaviconManager::updateCandidates(const QList<FaviconInfo> &candidates)
 
 void FaviconManager::resetCandidates()
 {
-    m_hasCandidate = false;
+    Q_D(FaviconManager);
+
+    // Interrupt in progress icon downloads
+    d->m_pendingRequests.clear();
+    d->m_inProgressRequests.clear();
+
+    m_candidateCount = 0;
+    m_candidateIcon = QIcon();
     for (auto it = m_faviconInfoMap.begin(), end = m_faviconInfoMap.end(); it != end; ++it)
         it->candidate = false;
 }
 
 bool FaviconManager::hasCandidate() const
 {
-    return m_hasCandidate;
+    return (m_candidateCount > 0);
+}
+
+QUrl FaviconManager::candidateIconUrl(bool touchIconsEnabled) const
+{
+    QUrl iconUrl;
+    const QList<FaviconInfo> &faviconInfoList = getFaviconInfoList(true /* candidates only */);
+
+    unsigned bestArea = 0;
+    for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
+        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
+            continue;
+
+        if (it->isValid() && bestArea < area(it->size)) {
+            iconUrl = it->url;
+            bestArea = area(it->size);
+        }
+    }
+
+    return iconUrl;
+}
+
+void FaviconManager::generateCandidateIcon(bool touchIconsEnabled)
+{
+    Q_ASSERT(m_candidateCount);
+
+    m_candidateIcon = QIcon();
+    const QList<FaviconInfo> &faviconInfoList = getFaviconInfoList(true /* candidates only */);
+
+    for (auto it = faviconInfoList.cbegin(), end = faviconInfoList.cend(); it != end; ++it) {
+        if (!touchIconsEnabled && it->type != FaviconInfo::Favicon)
+            continue;
+
+        if (!it->isValid() || !it->isDownloaded())
+            continue;
+
+        const QIcon &icon = getIcon(it->url);
+
+        if (!it->multiSize) {
+            if (!m_candidateIcon.availableSizes().contains(it->size))
+                m_candidateIcon.addPixmap(icon.pixmap(it->size));
+
+            continue;
+        }
+
+        const auto sizes = icon.availableSizes();
+        for (const QSize &size : sizes) {
+            if (!m_candidateIcon.availableSizes().contains(size))
+                m_candidateIcon.addPixmap(icon.pixmap(size));
+        }
+    }
 }
 
 
@@ -323,6 +373,7 @@ FaviconInfo::FaviconInfo(const FaviconInfo &other)
     , type(other.type)
     , size(other.size)
     , candidate(other.candidate)
+    , multiSize(other.multiSize)
 {
 }
 

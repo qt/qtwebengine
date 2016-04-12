@@ -215,10 +215,17 @@
     \qml
     Image {
         id: appIcon
+        sourceSize: Qt.size(32, 32)
         source: webView.icon != "" ? webView.icon : "fallbackFavicon.png";
         // ...
     }
     \endqml
+
+    Specifying the \c{sourceSize} property of the \c{Image} element informs
+    the Qt WebEngine's favicon provider about the requested size. The
+    favicon provider tries to find the best fit among the web page candidate
+    icons. If \c{sourceSize} property is not specified, the provider provides
+    the icon with the largest resolution.
 */
 
 /*!

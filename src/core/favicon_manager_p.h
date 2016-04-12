@@ -87,7 +87,7 @@ public:
     void iconDownloadFinished(int, int, const GURL &, const std::vector<SkBitmap> &, const std::vector<gfx::Size> &);
     void storeIcon(int, const QIcon &);
     void downloadPendingRequests();
-    void propagateIcon() const;
+    void propagateIcon(const QUrl &) const;
 
     content::WebContents *m_webContents;
     WebContentsAdapterClient *m_viewClient;

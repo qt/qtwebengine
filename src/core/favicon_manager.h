@@ -46,6 +46,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QSize>
 #include <QtCore/QUrl>
+#include <QtGui/QIcon>
 
 #include "web_engine_settings.h"
 
@@ -85,7 +86,7 @@ class QWEBENGINE_EXPORT FaviconManager : public QObject {
 public:
     ~FaviconManager();
 
-    QIcon getIcon(const QUrl &) const;
+    QIcon getIcon(const QUrl &url = QUrl()) const;
     FaviconInfo getFaviconInfo(const QUrl &) const;
     QList<FaviconInfo> getFaviconInfoList(bool) const;
 
@@ -97,8 +98,12 @@ private:
     void resetCandidates();
     bool hasCandidate() const;
 
+    QUrl candidateIconUrl(bool touchIconsEnabled) const;
+    void generateCandidateIcon(bool touchIconsEnabled);
+
     QMap<QUrl, FaviconInfo> m_faviconInfoMap;
-    bool m_hasCandidate;
+    int m_candidateCount;
+    QIcon m_candidateIcon;
 
     Q_DISABLE_COPY(FaviconManager)
     Q_DECLARE_PRIVATE(FaviconManager)

@@ -261,16 +261,26 @@ TestWebEngineView {
 
         function test_faviconProvider_data() {
             return [
-                   { tag: "8x8", size: 8, value: 16 },
-                   { tag: "16x16", size: 16, value: 16 },
-                   { tag: "17x17", size: 17, value: 32 },
-                   { tag: "31x31", size: 31, value: 32 },
-                   { tag: "32x32", size: 32, value: 32 },
-                   { tag: "33x33", size: 33, value: 64 },
-                   { tag: "64x64", size: 64, value: 64 },
-                   { tag: "128x128", size: 128, value: 128 },
-                   { tag: "255x255", size: 255, value: 255 },
-                   { tag: "256x256", size: 256, value: 255 },
+                   { tag: "multi 8x8", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 8, value: 16 },
+                   { tag: "multi 16x16", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 16, value: 16 },
+                   { tag: "multi 17x17", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 17, value: 32 },
+                   { tag: "multi 31x31", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 31, value: 32 },
+                   { tag: "multi 32x32", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 32, value: 32 },
+                   { tag: "multi 33x33", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 33, value: 64 },
+                   { tag: "multi 64x64", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 64, value: 64 },
+                   { tag: "multi 128x128", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 128, value: 128 },
+                   { tag: "multi 255x255", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 255, value: 255 },
+                   { tag: "multi 256x256", url: Qt.resolvedUrl("favicon-multi-gray.html"), size: 256, value: 255 },
+                   { tag: "candidate 8x8", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 8, value: 16 },
+                   { tag: "candidate 16x16", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 16, value: 16 },
+                   { tag: "candidate 17x17", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 17, value: 32 },
+                   { tag: "candidate 31x31", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 31, value: 32 },
+                   { tag: "candidate 32x32", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 32, value: 32 },
+                   { tag: "candidate 33x33", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 33, value: 64 },
+                   { tag: "candidate 64x64", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 64, value: 64 },
+                   { tag: "candidate 128x128", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 128, value: 128 },
+                   { tag: "candidate 255x255", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 255, value: 255 },
+                   { tag: "candidate 256x256", url: Qt.resolvedUrl("favicon-candidates-gray.html"), size: 256, value: 255 },
             ];
         }
 
@@ -287,8 +297,7 @@ TestWebEngineView {
 
             compare(iconChangedSpy.count, 0)
 
-            var url = Qt.resolvedUrl("favicon-multi-gray.html")
-            webEngineView.url = url
+            webEngineView.url = row.url
             verify(webEngineView.waitForLoadSucceeded())
 
             iconChangedSpy.wait()
