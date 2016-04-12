@@ -195,7 +195,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         return false;
 
     contextMenuData.update(data);
-    Q_EMIT q->contextMenuDataChanged();
+    Q_EMIT q->experimental()->contextMenuDataChanged();
 
     // Populate our menu
     MenuItemHandler *item = 0;
@@ -1602,7 +1602,7 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     }
 }
 
-const QQuickWebEngineContextMenuData *QQuickWebEngineView::contextMenuData() const
+const QQuickWebEngineContextMenuData *QQuickWebEngineViewExperimental::contextMenuData() const
 {
     Q_D(const QQuickWebEngineView);
     return &d->contextMenuData;
