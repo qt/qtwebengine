@@ -106,7 +106,7 @@ using QtWebEngineCore::BrowserContextAdapter;
     \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
     \c off-the-record is set or no cache path is available.
     \value DiskHttpCache Use a disk cache. This is the default.
-    \value NoCache Disable both in-memory and disk caching.
+    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 
 /*!
@@ -470,7 +470,9 @@ void QWebEngineProfile::setHttpCacheMaximumSize(int maxSize)
 }
 
 /*!
-    Returns the cookie store singleton, if one has been set.
+    Returns the cookie store for this profile.
+
+    \since 5.6
 */
 
 QWebEngineCookieStore* QWebEngineProfile::cookieStore()
@@ -485,6 +487,7 @@ QWebEngineCookieStore* QWebEngineProfile::cookieStore()
 
     The profile does not take ownership of the pointer.
 
+    \since 5.6
     \sa QWebEngineUrlRequestInfo
 */
 

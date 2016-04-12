@@ -56,7 +56,9 @@ namespace web_cache {
 class WebCacheRenderProcessObserver;
 }
 
+#if defined(ENABLE_SPELLCHECK)
 class SpellCheck;
+#endif
 
 namespace QtWebEngineCore {
 

@@ -227,7 +227,7 @@ private slots:
     void aboutToShowRecentTriggeredAction(QAction *action);
     void downloadRequested(QWebEngineDownloadItem *download);
     void webViewLoadStarted();
-    void webViewIconChanged();
+    void webViewIconChanged(const QIcon &icon);
     void webViewTitleChanged(const QString &title);
     void webViewUrlChanged(const QUrl &url);
     void lineEditReturnPressed();

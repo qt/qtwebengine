@@ -236,6 +236,8 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         s_defaultAttributes.insert(ScrollAnimatorEnabled, smoothScrolling);
         s_defaultAttributes.insert(WebGLEnabled, webGL);
         s_defaultAttributes.insert(Accelerated2dCanvasEnabled, accelerated2dCanvas);
+        s_defaultAttributes.insert(AutoLoadIconsForPage, true);
+        s_defaultAttributes.insert(TouchIconsEnabled, false);
     }
     if (offTheRecord)
         m_attributes.insert(LocalStorageEnabled, false);

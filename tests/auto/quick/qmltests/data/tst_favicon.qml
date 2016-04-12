@@ -64,7 +64,6 @@ TestWebEngineView {
     TestCase {
         id: test
         name: "WebEngineFavicon"
-        when: windowShown
 
         function init() {
             if (webEngineView.icon != '') {
@@ -225,6 +224,22 @@ TestWebEngineView {
 
             var iconUrl = webEngineView.icon
             compare(iconUrl, Qt.resolvedUrl(""))
+        }
+
+        function test_multiIcon() {
+            compare(iconChangedSpy.count, 0)
+
+            var url = Qt.resolvedUrl("favicon-multi.html")
+            webEngineView.url = url
+            verify(webEngineView.waitForLoadSucceeded())
+
+            iconChangedSpy.wait()
+            compare(iconChangedSpy.count, 1)
+
+            // Image QML type does not support multi-sized icons thus
+            // chooses the first size
+            compare(favicon.width, 16)
+            compare(favicon.height, 16)
         }
     }
 }

@@ -83,6 +83,8 @@
 #include <QScreen>
 #include <QUrl>
 #include <QTimer>
+#include <private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
 #ifndef QT_NO_ACCESSIBILITY
 #include <private/qquickaccessibleattached_p.h>
 #endif // QT_NO_ACCESSIBILITY
@@ -171,7 +173,7 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
 RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHostViewQtDelegateForPopup(RenderWidgetHostViewQtDelegateClient *client)
 {
     Q_Q(QQuickWebEngineView);
-    const bool hasWindowCapability = qApp->platformName().toLower() != QLatin1String("eglfs");
+    const bool hasWindowCapability = QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::MultipleWindows);
     RenderWidgetHostViewQtDelegateQuick *quickDelegate = new RenderWidgetHostViewQtDelegateQuick(client, /*isPopup = */ true);
     if (hasWindowCapability) {
         RenderWidgetHostViewQtDelegateQuickWindow *wrapperWindow = new RenderWidgetHostViewQtDelegateQuickWindow(quickDelegate);
@@ -192,17 +194,19 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     if (!menu)
         return false;
 
-    contextMenuData = data;
+    contextMenuData.update(data);
+    Q_EMIT q->contextMenuDataChanged();
 
     // Populate our menu
     MenuItemHandler *item = 0;
 #if !defined(QT_NO_SPELLCHECK)
-    if (contextMenuData.isEditable && !contextMenuData.spellCheckerSuggestions.isEmpty()) {
-        for (int i=0; i < contextMenuData.spellCheckerSuggestions.count() && i < 4; i++) {
+    if (contextMenuData.isContentEditable() && !contextMenuData.spellCheckerSuggestions().isEmpty()) {
+        const QPointer<QQuickWebEngineView> qRef(q);
+        for (int i=0; i < contextMenuData.spellCheckerSuggestions().count() && i < 4; i++) {
             item = new MenuItemHandler(menu);
-            int index = QQuickWebEngineView::ReplaceMisspelledWord_1 + i;
-            QObject::connect(item, &MenuItemHandler::triggered, [q,index] { q->triggerWebAction(static_cast<QQuickWebEngineView::WebAction>(index)); });
-            ui()->addMenuItem(item, contextMenuData.spellCheckerSuggestions.at(i));
+            QString replacement = contextMenuData.spellCheckerSuggestions().at(i);
+            QObject::connect(item, &MenuItemHandler::triggered, [qRef, replacement] { qRef->replaceMisspelledWord(replacement); });
+            ui()->addMenuItem(item, replacement);
         }
         ui()->addMenuSeparator(menu);
     }
@@ -242,7 +246,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Unselect"));
     }
 
-    if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
+    if (!contextMenuData.linkText().isEmpty() && contextMenuData.linkUrl().isValid()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyLinkToClipboard); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Link URL"));
@@ -250,9 +254,9 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadLinkToDisk); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Link"));
     }
-    if (contextMenuData.mediaUrl.isValid()) {
-        switch (contextMenuData.mediaType) {
-        case WebEngineContextMenuData::MediaTypeImage:
+    if (contextMenuData.mediaUrl().isValid()) {
+        switch (contextMenuData.mediaType()) {
+        case QQuickWebEngineContextMenuData::MediaTypeImage:
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageUrlToClipboard); });
             ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Image URL"));
@@ -263,11 +267,11 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::DownloadImageToDisk); });
             ui()->addMenuItem(item, QQuickWebEngineView::tr("Save Image"));
             break;
-        case WebEngineContextMenuData::MediaTypeCanvas:
+        case QQuickWebEngineContextMenuData::MediaTypeCanvas:
             Q_UNREACHABLE();    // mediaUrl is invalid for canvases
             break;
-        case WebEngineContextMenuData::MediaTypeAudio:
-        case WebEngineContextMenuData::MediaTypeVideo:
+        case QQuickWebEngineContextMenuData::MediaTypeAudio:
+        case QQuickWebEngineContextMenuData::MediaTypeVideo:
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyMediaUrlToClipboard); });
             ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Media URL"));
@@ -280,12 +284,12 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
             item = new MenuItemHandler(menu);
             QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaLoop); });
             ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Looping"));
-            if (contextMenuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
+            if (data.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
                 item = new MenuItemHandler(menu);
                 QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaMute); });
                 ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Mute"));
             }
-            if (contextMenuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
+            if (data.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
                 item = new MenuItemHandler(menu);
                 QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleMediaControls); });
                 ui()->addMenuItem(item, QQuickWebEngineView::tr("Toggle Media Controls"));
@@ -294,7 +298,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         default:
             break;
         }
-    } else if (contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas) {
+    } else if (contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeCanvas) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::CopyImageToClipboard); });
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Copy Image"));
@@ -310,10 +314,10 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Exit Full Screen Mode"));
     }
 #if !defined(QT_NO_SPELLCHECK)
-    if (contextMenuData.isEditable) {
+    if (data.isEditable) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::ToggleSpellcheck); });
-        ui()->addMenuItem(item, QQuickWebEngineView::tr("Check Spelling"), QString(), true, true, contextMenuData.isSpellCheckerEnabled);
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("Check Spelling"), QString(), true, true, data.isSpellCheckerEnabled);
     }
 #endif
     // FIXME: expose the context menu data as an attached property to make this more useful
@@ -420,10 +424,10 @@ void QQuickWebEngineViewPrivate::didUpdateTargetURL(const QUrl &hoveredUrl)
     Q_EMIT q->linkHovered(hoveredUrl);
 }
 
-void QQuickWebEngineViewPrivate::wasRecentlyAudibleChanged(bool wasRecentlyAudible)
+void QQuickWebEngineViewPrivate::recentlyAudibleChanged(bool recentlyAudible)
 {
     Q_Q(QQuickWebEngineView);
-    Q_EMIT q->wasRecentlyAudibleChanged(wasRecentlyAudible);
+    Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
 }
 
 QRectF QQuickWebEngineViewPrivate::viewportRect() const
@@ -467,7 +471,10 @@ void QQuickWebEngineViewPrivate::loadCommitted()
 
 void QQuickWebEngineViewPrivate::loadVisuallyCommitted()
 {
-    Q_EMIT e->loadVisuallyCommitted();
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    if (m_testSupport)
+        Q_EMIT m_testSupport->loadVisuallyCommitted();
+#endif
 }
 
 Q_STATIC_ASSERT(static_cast<int>(WebEngineError::NoErrorDomain) == static_cast<int>(QQuickWebEngineView::NoErrorDomain));
@@ -1187,10 +1194,10 @@ void QQuickWebEngineView::setAudioMuted(bool muted) {
     }
 }
 
-bool QQuickWebEngineView::wasRecentlyAudible()
+bool QQuickWebEngineView::recentlyAudible() const
 {
-    Q_D(QQuickWebEngineView);
-    return d->adapter->wasRecentlyAudible();
+    const Q_D(QQuickWebEngineView);
+    return d->adapter->recentlyAudible();
 }
 
 void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
@@ -1215,6 +1222,12 @@ void QQuickWebEngineView::printToPdf(PrintedPageSizeId pageSizeId, PrintedPageOr
 
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.insert(requestId, callback);
+}
+
+void QQuickWebEngineView::replaceMisspelledWord(const QString &replacement)
+{
+    Q_D(QQuickWebEngineView);
+    d->adapter->replaceMisspelling(replacement);
 }
 
 bool QQuickWebEngineView::isFullScreen() const
@@ -1457,118 +1470,118 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
         d->adapter->unselect();
         break;
     case OpenLinkInThisWindow:
-        if (d->contextMenuData.linkUrl.isValid())
-            setUrl(d->contextMenuData.linkUrl);
+        if (d->contextMenuData.linkUrl().isValid())
+            setUrl(d->contextMenuData.linkUrl());
         break;
     case OpenLinkInNewWindow:
-        if (d->contextMenuData.linkUrl.isValid()) {
+        if (d->contextMenuData.linkUrl().isValid()) {
             QQuickWebEngineNewViewRequest request;
-            request.m_requestedUrl = d->contextMenuData.linkUrl;
+            request.m_requestedUrl = d->contextMenuData.linkUrl();
             request.m_isUserInitiated = true;
             request.m_destination = NewViewInWindow;
             Q_EMIT newViewRequested(&request);
         }
         break;
     case OpenLinkInNewTab:
-        if (d->contextMenuData.linkUrl.isValid()) {
+        if (d->contextMenuData.linkUrl().isValid()) {
             QQuickWebEngineNewViewRequest request;
-            request.m_requestedUrl = d->contextMenuData.linkUrl;
+            request.m_requestedUrl = d->contextMenuData.linkUrl();
             request.m_isUserInitiated = true;
             request.m_destination = NewViewInBackgroundTab;
             Q_EMIT newViewRequested(&request);
         }
         break;
     case CopyLinkToClipboard:
-        if (d->contextMenuData.linkUrl.isValid()) {
-            QString urlString = d->contextMenuData.linkUrl.toString(QUrl::FullyEncoded);
-            QString title = d->contextMenuData.linkText.toHtmlEscaped();
+        if (d->contextMenuData.linkUrl().isValid()) {
+            QString urlString = d->contextMenuData.linkUrl().toString(QUrl::FullyEncoded);
+            QString title = d->contextMenuData.linkText().toHtmlEscaped();
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             QString html = QStringLiteral("<a href=\"") + urlString + QStringLiteral("\">") + title + QStringLiteral("</a>");
             data->setHtml(html);
-            data->setUrls(QList<QUrl>() << d->contextMenuData.linkUrl);
+            data->setUrls(QList<QUrl>() << d->contextMenuData.linkUrl());
             qApp->clipboard()->setMimeData(data);
         }
         break;
     case DownloadLinkToDisk:
-        if (d->contextMenuData.linkUrl.isValid())
-            d->adapter->download(d->contextMenuData.linkUrl, d->contextMenuData.suggestedFileName);
+        if (d->contextMenuData.linkUrl().isValid())
+            d->adapter->download(d->contextMenuData.linkUrl(), d->contextMenuData.d->suggestedFileName);
         break;
     case CopyImageToClipboard:
-        if (d->contextMenuData.hasImageContent &&
-                (d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeImage ||
-                 d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeCanvas))
+        if (d->contextMenuData.d->hasImageContent &&
+                (d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeImage ||
+                 d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeCanvas))
         {
-            d->adapter->copyImageAt(d->contextMenuData.pos);
+            d->adapter->copyImageAt(d->contextMenuData.position());
         }
         break;
     case CopyImageUrlToClipboard:
-        if (d->contextMenuData.mediaUrl.isValid() && d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeImage) {
-            QString urlString = d->contextMenuData.mediaUrl.toString(QUrl::FullyEncoded);
-            QString title = d->contextMenuData.linkText;
+        if (d->contextMenuData.mediaUrl().isValid() && d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeImage) {
+            QString urlString = d->contextMenuData.mediaUrl().toString(QUrl::FullyEncoded);
+            QString title = d->contextMenuData.linkText();
             if (!title.isEmpty())
                 title = QStringLiteral(" alt=\"%1\"").arg(title.toHtmlEscaped());
             QMimeData *data = new QMimeData();
             data->setText(urlString);
             QString html = QStringLiteral("<img src=\"") + urlString + QStringLiteral("\"") + title + QStringLiteral("></img>");
             data->setHtml(html);
-            data->setUrls(QList<QUrl>() << d->contextMenuData.mediaUrl);
+            data->setUrls(QList<QUrl>() << d->contextMenuData.mediaUrl());
             qApp->clipboard()->setMimeData(data);
         }
         break;
     case DownloadImageToDisk:
     case DownloadMediaToDisk:
-        if (d->contextMenuData.mediaUrl.isValid())
-            d->adapter->download(d->contextMenuData.mediaUrl, d->contextMenuData.suggestedFileName);
+        if (d->contextMenuData.mediaUrl().isValid())
+            d->adapter->download(d->contextMenuData.mediaUrl(), d->contextMenuData.d->suggestedFileName);
         break;
     case CopyMediaUrlToClipboard:
-        if (d->contextMenuData.mediaUrl.isValid() &&
-                (d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
-                 d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        if (d->contextMenuData.mediaUrl().isValid() &&
+                (d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeAudio ||
+                 d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeVideo))
         {
-            QString urlString = d->contextMenuData.mediaUrl.toString(QUrl::FullyEncoded);
+            QString urlString = d->contextMenuData.mediaUrl().toString(QUrl::FullyEncoded);
             QMimeData *data = new QMimeData();
             data->setText(urlString);
-            if (d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeAudio)
+            if (d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeAudio)
                 data->setHtml(QStringLiteral("<audio src=\"") + urlString + QStringLiteral("\"></audio>"));
             else
                 data->setHtml(QStringLiteral("<video src=\"") + urlString + QStringLiteral("\"></video>"));
-            data->setUrls(QList<QUrl>() << d->contextMenuData.mediaUrl);
+            data->setUrls(QList<QUrl>() << d->contextMenuData.mediaUrl());
             qApp->clipboard()->setMimeData(data);
         }
         break;
     case ToggleMediaControls:
-        if (d->contextMenuData.mediaUrl.isValid() && d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
-            bool enable = !(d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaControls);
-            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.pos, WebContentsAdapter::MediaPlayerControls, enable);
+        if (d->contextMenuData.mediaUrl().isValid() && d->contextMenuData.d->mediaFlags & WebEngineContextMenuData::MediaCanToggleControls) {
+            bool enable = !(d->contextMenuData.d->mediaFlags & WebEngineContextMenuData::MediaControls);
+            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.position(), WebContentsAdapter::MediaPlayerControls, enable);
         }
         break;
     case ToggleMediaLoop:
-        if (d->contextMenuData.mediaUrl.isValid() &&
-                (d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
-                 d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        if (d->contextMenuData.mediaUrl().isValid() &&
+                (d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeAudio ||
+                 d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeVideo))
         {
-            bool enable = !(d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaLoop);
-            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.pos, WebContentsAdapter::MediaPlayerLoop, enable);
+            bool enable = !(d->contextMenuData.d->mediaFlags & WebEngineContextMenuData::MediaLoop);
+            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.position(), WebContentsAdapter::MediaPlayerLoop, enable);
         }
         break;
     case ToggleMediaPlayPause:
-        if (d->contextMenuData.mediaUrl.isValid() &&
-                (d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeAudio ||
-                 d->contextMenuData.mediaType == WebEngineContextMenuData::MediaTypeVideo))
+        if (d->contextMenuData.mediaUrl().isValid() &&
+                (d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeAudio ||
+                 d->contextMenuData.mediaType() == QQuickWebEngineContextMenuData::MediaTypeVideo))
         {
-            bool enable = (d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaPaused);
-            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.pos, WebContentsAdapter::MediaPlayerPlay, enable);
+            bool enable = (d->contextMenuData.d->mediaFlags & WebEngineContextMenuData::MediaPaused);
+            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.position(), WebContentsAdapter::MediaPlayerPlay, enable);
         }
         break;
     case ToggleMediaMute:
-        if (d->contextMenuData.mediaUrl.isValid() && d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
-            bool enable = !(d->contextMenuData.mediaFlags & WebEngineContextMenuData::MediaMuted);
-            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.pos, WebContentsAdapter::MediaPlayerMute, enable);
+        if (d->contextMenuData.mediaUrl().isValid() && d->contextMenuData.d->mediaFlags & WebEngineContextMenuData::MediaHasAudio) {
+            bool enable = !(d->contextMenuData.d->mediaFlags & WebEngineContextMenuData::MediaMuted);
+            d->adapter->executeMediaPlayerActionAt(d->contextMenuData.position(), WebContentsAdapter::MediaPlayerMute, enable);
         }
         break;
     case InspectElement:
-        d->adapter->inspectElementAt(d->contextMenuData.pos);
+        d->adapter->inspectElementAt(d->contextMenuData.position());
         break;
     case ExitFullScreen:
         d->adapter->exitFullScreen();
@@ -1583,22 +1596,16 @@ void QQuickWebEngineView::triggerWebAction(WebAction action)
     case ToggleSpellcheck:
         d->adapter->toogleSpellCheckEnabled();
         break;
-    case ReplaceMisspelledWord_1:
-        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(0));
-        break;
-    case ReplaceMisspelledWord_2:
-        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(1));
-        break;
-    case ReplaceMisspelledWord_3:
-        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(2));
-        break;
-    case ReplaceMisspelledWord_4:
-        d->adapter->replaceMisspelling(d->contextMenuData.spellCheckerSuggestions.at(3));
-        break;
 #endif
     default:
         Q_UNREACHABLE();
     }
+}
+
+const QQuickWebEngineContextMenuData *QQuickWebEngineView::contextMenuData() const
+{
+    Q_D(const QQuickWebEngineView);
+    return &d->contextMenuData;
 }
 
 QSizeF QQuickWebEngineView::contentsSize() const

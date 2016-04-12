@@ -76,6 +76,7 @@ static QStringList hardcodedTypes = QStringList()
     // Ignore the testSupport types without making a fuss.
     << "QQuickWebEngineTestSupport*"
     << "QQuickWebEngineErrorPage*"
+    << "const QQuickWebEngineContextMenuData*"
     << "QWebEngineCookieStore*"
     ;
 

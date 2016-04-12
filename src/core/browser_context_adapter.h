@@ -138,6 +138,8 @@ public:
         GeolocationPermission = 1,
 // Reserved:
 //        NotificationPermission = 2,
+        AudioCapturePermission = 3,
+        VideoCapturePermission = 4,
     };
 
     HttpCacheType httpCacheType() const;
@@ -163,6 +165,7 @@ public:
     UserResourceControllerHost *userResourceController();
 
     void permissionRequestReply(const QUrl &origin, PermissionType type, bool reply);
+    bool checkPermission(const QUrl &origin, PermissionType type);
 
     QString httpAcceptLanguageWithoutQualities() const;
     QString httpAcceptLanguage() const;

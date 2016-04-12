@@ -150,7 +150,7 @@ ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaControls, blink::WebContextMen
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanPrint, blink::WebContextMenuData::MediaCanPrint)
 ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanRotate, blink::WebContextMenuData::MediaCanRotate)
 
-static WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
+static inline WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData ret;
     ret.pos = QPoint(params.x, params.y);
@@ -162,8 +162,8 @@ static WebEngineContextMenuData fromParams(const content::ContextMenuParams &par
     ret.hasImageContent = params.has_image_contents;
     ret.mediaFlags = params.media_flags;
     ret.suggestedFileName = toQt(params.suggested_filename.data());
-#if defined(ENABLE_SPELLCHECK)
     ret.isEditable = params.is_editable;
+#if defined(ENABLE_SPELLCHECK)
     ret.misspelledWord = toQt(params.misspelled_word);
     ret.spellCheckerSuggestions = fromVector(params.dictionary_suggestions);
 #endif

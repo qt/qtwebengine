@@ -114,6 +114,13 @@ void SettingsDialog::loadDefaults()
     sessionCookiesCombo->setCurrentIndex(QWebEngineProfile::defaultProfile()->persistentCookiesPolicy());
     httpUserAgent->setText(QWebEngineProfile::defaultProfile()->httpUserAgent());
     httpAcceptLanguage->setText(defaultAcceptLanguage());
+
+    if (!defaultSettings->testAttribute(QWebEngineSettings::AutoLoadIconsForPage))
+        faviconDownloadMode->setCurrentIndex(0);
+    else if (!defaultSettings->testAttribute(QWebEngineSettings::TouchIconsEnabled))
+        faviconDownloadMode->setCurrentIndex(1);
+    else
+        faviconDownloadMode->setCurrentIndex(2);
 }
 
 void SettingsDialog::loadFromSettings()
@@ -164,6 +171,7 @@ void SettingsDialog::loadFromSettings()
     enableScrollAnimator->setChecked(settings.value(QLatin1String("enableScrollAnimator"), enableScrollAnimator->isChecked()).toBool());
     httpUserAgent->setText(settings.value(QLatin1String("httpUserAgent"), httpUserAgent->text()).toString());
     httpAcceptLanguage->setText(settings.value(QLatin1String("httpAcceptLanguage"), httpAcceptLanguage->text()).toString());
+    faviconDownloadMode->setCurrentIndex(settings.value(QLatin1String("faviconDownloadMode"), faviconDownloadMode->currentIndex()).toInt());
     settings.endGroup();
 
     // Privacy
@@ -223,6 +231,7 @@ void SettingsDialog::saveToSettings()
     settings.setValue(QLatin1String("userStyleSheet"), userStyleSheet->toPlainText());
     settings.setValue(QLatin1String("httpUserAgent"), httpUserAgent->text());
     settings.setValue(QLatin1String("httpAcceptLanguage"), httpAcceptLanguage->text());
+    settings.setValue(QLatin1String("faviconDownloadMode"), faviconDownloadMode->currentIndex());
     settings.endGroup();
 
     //Privacy

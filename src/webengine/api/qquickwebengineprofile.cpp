@@ -95,6 +95,7 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
     \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
     \c off-the-record is set or no cache path is available.
     \value DiskHttpCache Use a disk cache. This is the default.
+    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 
 /*!
@@ -192,6 +193,13 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     info.savePageFormat = itemPrivate->savePageFormat;
     info.accepted = state != QQuickWebEngineDownloadItem::DownloadCancelled
                       && state != QQuickWebEngineDownloadItem::DownloadRequested;
+
+    if (state == QQuickWebEngineDownloadItem::DownloadRequested) {
+        // Delete unaccepted downloads.
+        info.accepted = false;
+        m_ongoingDownloads.remove(info.id);
+        delete download;
+    }
 }
 
 void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
@@ -693,9 +701,10 @@ bool QQuickWebEngineProfile::isSpellCheckEnabled() const
      return d->browserContext()->isSpellCheckEnabled();
 }
 #endif
+
 /*!
 
-    Returns the cookie store singleton, if one has been set.
+    Returns the cookie store for this profile.
 */
 QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
 {

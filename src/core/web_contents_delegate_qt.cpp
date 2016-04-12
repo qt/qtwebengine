@@ -131,8 +131,22 @@ void WebContentsDelegateQt::NavigationStateChanged(content::WebContents* source,
     // Make sure to only emit the signal when loading isn't in progress, because it causes multiple
     // false signals to be emitted.
     if ((changed_flags & content::INVALIDATE_TYPE_TAB) && !(changed_flags & content::INVALIDATE_TYPE_LOAD)) {
-        m_viewClient->wasRecentlyAudibleChanged(source->WasRecentlyAudible());
+        m_viewClient->recentlyAudibleChanged(source->WasRecentlyAudible());
     }
+}
+
+bool WebContentsDelegateQt::ShouldPreserveAbortedURLs(content::WebContents *source)
+{
+    Q_UNUSED(source)
+
+    // Allow failed URLs to stick around in the URL bar, but only when the error-page is enabled.
+    WebEngineSettings *settings = m_viewClient->webEngineSettings();
+    bool isErrorPageEnabled = settings->testAttribute(settings->Attribute::ErrorPageEnabled);
+
+    if (isErrorPageEnabled)
+        return true;
+
+    return false;
 }
 
 void WebContentsDelegateQt::AddNewContents(content::WebContents* source, content::WebContents* new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture, bool* was_blocked)
@@ -439,6 +453,20 @@ void WebContentsDelegateQt::BeforeUnloadFired(content::WebContents *tab, bool pr
     *proceed_to_fire_unload = proceed;
     if (!proceed)
         m_viewClient->windowCloseRejected();
+}
+
+bool WebContentsDelegateQt::CheckMediaAccessPermission(content::WebContents *web_contents, const GURL& security_origin, content::MediaStreamType type)
+{
+    switch (type) {
+    case content::MEDIA_DEVICE_AUDIO_CAPTURE:
+        return m_viewClient->browserContextAdapter()->checkPermission(toQt(security_origin), BrowserContextAdapter::AudioCapturePermission);
+    case content::MEDIA_DEVICE_VIDEO_CAPTURE:
+        return m_viewClient->browserContextAdapter()->checkPermission(toQt(security_origin), BrowserContextAdapter::VideoCapturePermission);
+    default:
+        LOG(INFO) << "WebContentsDelegateQt::CheckMediaAccessPermission: "
+                  << "Unsupported media stream type checked" << type;
+        return false;
+    }
 }
 
 FaviconManager *WebContentsDelegateQt::faviconManager()

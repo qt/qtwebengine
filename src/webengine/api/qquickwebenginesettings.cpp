@@ -216,6 +216,8 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
     Enables support for Pepper plugins, such as the Flash player.
 
     Disabled by default.
+
+   \sa {Pepper Plugin API Support}
 */
 bool QQuickWebEngineSettings::pluginsEnabled() const
 {
@@ -286,6 +288,32 @@ bool QQuickWebEngineSettings::webAudioEnabled() const
 bool QQuickWebEngineSettings::accelerated2dCanvasEnabled() const
 {
     return d_ptr->testAttribute(WebEngineSettings::Accelerated2dCanvasEnabled);
+}
+
+/*!
+  \qmlproperty bool WebEngineSettings::autoLoadIconsForPage
+  \since QtWebEngine 1.3
+
+  Automatically downloads icons for web pages.
+
+  Enabled by default.
+*/
+bool QQuickWebEngineSettings::autoLoadIconsForPage() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::AutoLoadIconsForPage);
+}
+
+/*!
+  \qmlproperty bool WebEngineSettings::touchIconsEnabled
+  \since QtWebEngine 1.3
+
+  Enables support for touch icons and precomposed touch icons.
+
+  Disabled by default.
+*/
+bool QQuickWebEngineSettings::touchIconsEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::TouchIconsEnabled);
 }
 
 /*!
@@ -438,6 +466,22 @@ void QQuickWebEngineSettings::setAccelerated2dCanvasEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::Accelerated2dCanvasEnabled, on);
     if (wasOn != on)
         Q_EMIT accelerated2dCanvasEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setAutoLoadIconsForPage(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AutoLoadIconsForPage);
+    d_ptr->setAttribute(WebEngineSettings::AutoLoadIconsForPage, on);
+    if (wasOn != on)
+        Q_EMIT autoLoadIconsForPageChanged();
+}
+
+void QQuickWebEngineSettings::setTouchIconsEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::TouchIconsEnabled);
+    d_ptr->setAttribute(WebEngineSettings::TouchIconsEnabled, on);
+    if (wasOn != on)
+        Q_EMIT touchIconsEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

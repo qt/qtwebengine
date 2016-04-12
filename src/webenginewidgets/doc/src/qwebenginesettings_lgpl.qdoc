@@ -130,17 +130,23 @@
             Enables displaying the built-in error pages of Chromium. Enabled by default.
     \value  PluginsEnabled
             Enables support for Pepper plugins, such as the Flash player. Disabled by default.
+            See also \l{Pepper Plugin API Support}. (Added in Qt 5.6)
     \value  FullScreenSupportEnabled
-            Enables fullscreen support in an application. Disabled by default.
+            Enables fullscreen support in an application. Disabled by default. (Added in Qt 5.6)
     \value  ScreenCaptureEnabled
-            Enables screen capture in an application. Disabled by default.
+            Enables screen capture in an application. Disabled by default. (Added in Qt 5.7)
     \value  WebGLEnabled
-            Enables support for HTML 5 WebGL. Enabled by default if available.
+            Enables support for HTML 5 WebGL. Enabled by default if available. (Added in Qt 5.7)
     \value  WebAudioEnabled
-            Enables support for HTML 5 WebAudio. Disabled by default.
+            Enables support for HTML 5 WebAudio. Disabled by default. (Added in Qt 5.7)
     \value  Accelerated2dCanvasEnabled
             Specifies whether the HTML5 2D canvas should be a OpenGL framebuffer.
-            This makes many painting operations faster, but slows down pixel access. Enabled by default if available.
+            This makes many painting operations faster, but slows down pixel access. Enabled by default if available. (Added in Qt 5.7)
+    \value  AutoLoadIconsForPage
+            Automatically downloads icons for web pages. Enabled by default. (Added in Qt 5.7)
+    \value  TouchIconsEnabled
+            Enables support for touch icons and precomposed touch icons
+            Disabled by default. (Added in Qt 5.7)
 */
 
 /*!

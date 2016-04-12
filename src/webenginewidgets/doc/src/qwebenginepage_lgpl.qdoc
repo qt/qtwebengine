@@ -50,10 +50,11 @@
 
     The title of an HTML page can be accessed with the title() property.
     Additionally, a page may also specify an icon, which can be accessed
-    using the iconUrl() property. If the title or the icon changes, the
-    corresponding titleChanged() and iconUrlChanged() signals will be emitted.
-    The zoomFactor() property can be used to change the overall size
-    of the content displayed in the page.
+    using the icon() or its URL using the iconUrl() property.
+    If the title or the icon changes, the corresponding titleChanged(), iconChanged()
+    and iconUrlChanged() signals will be emitted.
+    The zoomFactor() property enables zooming the contents of the web page by a
+    scale factor.
 
     The loadStarted() signal is emitted when the page begins to load, whereas the loadProgress()
     signal is emitted whenever an element of the web page completes loading, such as an embedded
@@ -151,10 +152,6 @@
     \value SavePage Save the current page to disk. MHTML is the default format that is used to store
            the web page on disk. (Added in Qt 5.7)
     \value ToggleSpellcheck Enable or disable the spell checker. (Added in Qt 5.7)
-    \value ReplaceMisspelledWord_1 Replace a misspelled word. (Added in Qt 5.7)
-    \value ReplaceMisspelledWord_2 Replace a misspelled word. (Added in Qt 5.7)
-    \value ReplaceMisspelledWord_3 Replace a misspelled word. (Added in Qt 5.7)
-    \value ReplaceMisspelledWord_4 Replace a misspelled word. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
 
@@ -576,13 +573,6 @@
 */
 
 /*!
-    \property QWebEnginePage::iconUrl
-    \brief the URL of the icon associated with the page currently viewed.
-
-    \sa iconUrlChanged()
-*/
-
-/*!
     \property QWebEnginePage::requestedUrl
     \brief the URL that was originally requested to be loaded by the page
     that is currently viewed
@@ -646,6 +636,8 @@
 /*!
     \property QWebEnginePage::zoomFactor
     \brief the zoom factor for the page content
+
+    Valid values are within the range from \c{0.25} to \c{5.0}. The default factor is \c{1.0}.
 */
 
 /*!
@@ -753,14 +745,4 @@
     received. The new URL is specified by \a url.
 
     \sa url()
-*/
-
-/*!
-    \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
-
-    This signal is emitted when the icon ("favicon") associated with the page is
-    found or changed. The new URL is specified by \a url.
-
-
-    \sa iconUrl()
 */

@@ -170,6 +170,10 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     \value ResourceTypeXhr  An XMLHttpRequest.
     \value ResourceTypePing  A ping request for <a ping>.
     \value ResourceTypeServiceWorker  The main resource of a service worker.
+    \value ResourceTypeCspReport  A report of Content Security Policy (CSP)
+           violations. CSP reports are in JSON format and they are delivered by
+           HTTP POST requests to specified servers. (Added in Qt 5.7)
+   \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
     \value ResourceTypeUnknown  Unknown request type.
 */
 

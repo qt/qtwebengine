@@ -17,6 +17,7 @@ OTHER_FILES += \
     $$PWD/data/favicon.html \
     $$PWD/data/favicon2.html \
     $$PWD/data/favicon-misc.html \
+    $$PWD/data/favicon-multi.html \
     $$PWD/data/favicon-single.html \
     $$PWD/data/favicon-shortcut.html \
     $$PWD/data/favicon-touch.html \
@@ -39,6 +40,7 @@ OTHER_FILES += \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
     $$PWD/data/tst_favicon.qml \
+    $$PWD/data/tst_faviconDownload.qml \
     $$PWD/data/tst_filePicker.qml \
     $$PWD/data/tst_formValidation.qml \
     $$PWD/data/tst_geopermission.qml \
@@ -63,6 +65,7 @@ OTHER_FILES += \
     $$PWD/data/icons/small-favicon.png \
     $$PWD/data/icons/qt144.png \
     $$PWD/data/icons/qt32.ico \
+    $$PWD/data/icons/qtmulti.ico \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/AlertDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/ConfirmDialog.qml \
     $$PWD/mock-delegates/QtWebEngine/UIDelegates/FilePicker.qml \

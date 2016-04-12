@@ -40,19 +40,9 @@
     \l QtWebEngine::initialize in the application main source file, as illustrated by the
     following code snippet:
 
-    \code
-    int main(int argc, char **argv)
-    {
-        Application app(argc, argv);
-
-        QtWebEngine::initialize();
-
-        QQmlApplicationEngine appEngine;
-        appEngine.load(QUrl("qrc:/main.qml"));
-
-        return app.exec();
-    }
-    \endcode
+    \quotefromfile webengine/minimal/main.cpp
+    \skipto main
+    \printuntil }
 
     \section2 Loading Web Pages
 
@@ -62,30 +52,16 @@
 
     The following sample QML application loads a web page using the \c url property:
 
-    \qml
-    import QtQuick 2.1
-    import QtQuick.Controls 1.1
-    import QtWebEngine 1.1
+    \quotefromfile webengine/minimal/main.qml
+    \skipto import
+    \printuntil /^\}/
 
-    ApplicationWindow {
-        width: 1280
-        height: 720
-        visible: true
-        WebEngineView {
-            id: webview
-            url: "http://www.qt.io"
-            anchors.fill: parent
-        }
-    }
-    \endqml
-
-    The \l loadingChanged() signal is emitted when loading a page begins, ends, or fails. The
-    \l loading property holds whether the HTML page is currently loading and the load status is
-    reflected in the \l LoadStatus property.
+    The \l loading property holds whether an HTML page is currently loading.
+    The \l loadingChanged() signal is emitted when loading the page begins, ends, or fails.
 
     The title of an HTML page can be accessed with the \l title property. Additionally, a web
     page may specify an icon, which can be accessed using the \l icon property. The \l zoomFactor
-    property holds the overall size of the contents of the web page.
+    property enables zooming the contents of the web page by a scale factor.
 
     If a certificate error is raised while loading a web page, the \l certificateError() signal is
     emitted. Certificate errors are handled by using the methods of the WebEngineCertificateError
@@ -352,6 +328,28 @@
 
     Zoom factor for the view. Valid values are within the range from \c{0.25}
     to \c{5.0}. The default factor is \c{1.0}.
+*/
+
+/*!
+    \qmlproperty QSizeF WebEngineView::contentsSize
+    \since QtWebEngine 1.3
+
+    Size of the page contents.
+*/
+
+/*!
+    \qmlproperty QPointF WebEngineView::scrollPosition
+    \since QtWebEngine 1.3
+
+    Scroll position of the page contents.
+*/
+
+/*!
+    \qmlproperty uint WebEngineView::webChannelWorld
+    \since QtWebEngine 1.3
+
+    JavaScript world that the web channel instance used by this view is
+    installed in.
 */
 
 /*!
@@ -1033,22 +1031,39 @@
     \qmlproperty bool WebEngineView::audioMuted
     \brief The state of whether the current page audio is muted.
     \since QtWebEngine 1.3
+    \sa recentlyAudible
 */
 
 /*!
-    \qmlsignal void WebEngineView::audioMutedChanged(bool muted)
+    \qmlsignal WebEngineView::audioMutedChanged(bool muted)
     \since QtWebEngine 1.3
 
-    This signal is emitted when the page's audio is (un)muted using setAudioMuted method.
+    This signal is emitted when the page's audio is (un)muted using audioMuted property.
     \note Not to be confused with a specific HTML5 audio / video element being muted.
+
+    \sa audioMuted
 */
 
 /*!
-    \qmlmethod bool WebEngineView::wasRecentlyAudible()
+    \qmlproperty bool WebEngineView::recentlyAudible
+    \brief Returns the current page's audible state (audio was recently played, or not).
     \since QtWebEngine 1.3
-    \sa wasRecentlyAudibleChanged()
+    \readonly
+    \sa audioMuted
+*/
 
-    Returns the current page's audible state (audio was recently played, or not).
+/*!
+    \qmlsignal WebEngineView::recentlyAudibleChanged(bool recentlyAudible)
+    \since QtWebEngine 1.3
+
+    This signal is emitted when the page's audible state is changed, due to audio
+    being played or stopped.
+
+    \note The signal is also emitted when the audioMuted property changes.
+    Also if the audio is paused, this signal is emitted with an approximate \b{two-second
+    delay}, from the moment the audio is paused.
+
+    \sa recentlyAudible
 */
 
 /*!
@@ -1070,6 +1085,12 @@
     string otherwise.
 */
 
+/*!
+    \qmlmethod void WebEngineView::replaceMisspelledWord(const QString &replacement)
+    \since QtWebEngine 1.3
+
+    Replace the current misspelled word with \a replacement.
+*/
 
 /*!
     \qmlsignal void WebEngineView::wasRecentlyAudibleChanged(bool wasRecentlyAudible)

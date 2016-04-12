@@ -54,6 +54,7 @@
 QT_BEGIN_NAMESPACE
 class QMenu;
 class QWebChannel;
+class QWebEngineContextMenuData;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
 class QWebEnginePage;
@@ -72,11 +73,13 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
-    Q_PROPERTY(QUrl iconUrl READ iconUrl)
+    Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
+    Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged)
+    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged)
 
 public:
     enum WebAction {
@@ -122,10 +125,6 @@ public:
         SavePage,
 #if !defined(QT_NO_SPELLCHECK)
         ToggleSpellcheck,
-        ReplaceMisspelledWord_1,
-        ReplaceMisspelledWord_2,
-        ReplaceMisspelledWord_3,
-        ReplaceMisspelledWord_4,
 #endif
         WebActionCount
     };
@@ -210,6 +209,10 @@ public:
 #endif
     virtual void triggerAction(WebAction action, bool checked = false);
 
+#if !defined(QT_NO_SPELLCHECK)
+    void replaceMisspelledWord(const QString &replacement);
+#endif
+
     virtual bool event(QEvent*);
 #ifdef Q_QDOC
     void findText(const QString &subString, FindFlags options = 0);
@@ -239,6 +242,7 @@ public:
     QUrl url() const;
     QUrl requestedUrl() const;
     QUrl iconUrl() const;
+    QIcon icon() const;
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);
@@ -266,7 +270,7 @@ public:
 
     bool isAudioMuted() const;
     void setAudioMuted(bool muted);
-    bool wasRecentlyAudible();
+    bool recentlyAudible() const;
 
     void printToPdf(const QString &filePath, const QPageLayout &layout);
 #ifdef Q_QDOC
@@ -274,6 +278,9 @@ public:
 #else
     void printToPdf(const QPageLayout &layout, const QWebEngineCallback<const QByteArray&> &resultCallback);
 #endif
+
+    const QWebEngineContextMenuData &contextMenuData() const;
+
 Q_SIGNALS:
     void loadStarted();
     void loadProgress(int progress);
@@ -296,13 +303,13 @@ Q_SIGNALS:
     // Ex-QWebFrame signals
     void titleChanged(const QString &title);
     void urlChanged(const QUrl &url);
-    // Was iconChanged() in QWebFrame
     void iconUrlChanged(const QUrl &url);
+    void iconChanged(const QIcon &icon);
 
     void scrollPositionChanged(const QPointF &position);
     void contentsSizeChanged(const QSizeF &size);
     void audioMutedChanged(bool muted);
-    void wasRecentlyAudibleChanged(bool wasRecentlyAudible);
+    void recentlyAudibleChanged(bool recentlyAudible);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

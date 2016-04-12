@@ -847,7 +847,7 @@ void WebContentsAdapter::setAudioMuted(bool muted)
     d->webContents->SetAudioMuted(muted);
 }
 
-bool WebContentsAdapter::wasRecentlyAudible()
+bool WebContentsAdapter::recentlyAudible()
 {
     Q_D(WebContentsAdapter);
     return d->webContents->WasRecentlyAudible();
@@ -950,6 +950,11 @@ QSizeF WebContentsAdapter::lastContentsSize() const
 void WebContentsAdapter::grantMediaAccessPermission(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags flags)
 {
     Q_D(WebContentsAdapter);
+    // Let the permission manager remember the reply.
+    if (flags & WebContentsAdapterClient::MediaAudioCapture)
+        d->browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::AudioCapturePermission, true);
+    if (flags & WebContentsAdapterClient::MediaVideoCapture)
+        d->browserContextAdapter->permissionRequestReply(securityOrigin, BrowserContextAdapter::VideoCapturePermission, true);
     MediaCaptureDevicesDispatcher::GetInstance()->handleMediaAccessPermissionResponse(d->webContents.get(), securityOrigin, flags);
 }
 

@@ -52,6 +52,7 @@
 //
 
 #include "qquickwebengineview_p.h"
+#include "qquickwebenginecontextmenudata_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
@@ -104,7 +105,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
 
 Q_SIGNALS:
     void extraContextMenuEntriesComponentChanged();
-    void loadVisuallyCommitted();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -135,7 +135,7 @@ public:
     virtual void loadProgressChanged(int progress) Q_DECL_OVERRIDE;
     virtual void didUpdateTargetURL(const QUrl&) Q_DECL_OVERRIDE;
     virtual void selectionChanged() Q_DECL_OVERRIDE { }
-    virtual void wasRecentlyAudibleChanged(bool wasRecentlyAudible) Q_DECL_OVERRIDE;
+    virtual void recentlyAudibleChanged(bool recentlyAudible) Q_DECL_OVERRIDE;
     virtual QRectF viewportRect() const Q_DECL_OVERRIDE;
     virtual qreal dpiScale() const Q_DECL_OVERRIDE;
     virtual QColor backgroundColor() const Q_DECL_OVERRIDE;
@@ -208,7 +208,7 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
-    QtWebEngineCore::WebEngineContextMenuData contextMenuData;
+    QQuickWebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
     QUrl iconUrl;
     int loadProgress;

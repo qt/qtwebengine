@@ -78,7 +78,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
 
     // Initial spellcheck settings
-    std::string spellcheckLang("en-US");
+    std::string spellcheckLang = QLocale().bcp47Name().toStdString();
     base::ListValue *dictionaries = new base::ListValue;
     dictionaries->AppendString(spellcheckLang);
     registry->RegisterListPref(prefs::kSpellCheckDictionaries, dictionaries);

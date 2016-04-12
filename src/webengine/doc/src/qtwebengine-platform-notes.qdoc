@@ -68,8 +68,12 @@
 
     \section1 Pepper Plugin API Support
 
-    Qt WebEngine supports loading Pepper Plugin API (PPAPI) plugins. The plugins must be loaded
-    manually using the Chromium command line syntax with the \c --register-pepper-plugins argument.
+    Qt WebEngine supports loading Pepper Plugin API (PPAPI) plugins if
+    WebEngineSettings::pluginsEnabled or QWebEngineSettings::PluginsEnabled
+    is set.
+
+    Except for the Adobe Flash Player plugin, the plugins must be loaded manually using the
+    Chromium command line syntax with the \c --register-pepper-plugins argument.
     The argument value is a list of entries, separated by commas, that contain the file path and
     one or several MIME types, separated by semicolons:
 
@@ -84,8 +88,6 @@
     \endcode
 
     The MIME type is important because it determines which embeds the plugin is used for.
-
-    This process has been automated for the Pepper Flash player plugin.
 
     \section2 Pepper Flash Player Plugin Support
 

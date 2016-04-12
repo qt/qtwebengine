@@ -133,6 +133,10 @@ QWebEngineView *WebView::createWindow(QWebEnginePage::WebWindowType type)
         BrowserWindow *mainWindow = qobject_cast<BrowserWindow*>(window());
         return mainWindow->tabWidget()->createTab();
     }
+    case QWebEnginePage::WebBrowserBackgroundTab: {
+        BrowserWindow *mainWindow = qobject_cast<BrowserWindow*>(window());
+        return mainWindow->tabWidget()->createTab(false);
+    }
     case QWebEnginePage::WebBrowserWindow: {
         BrowserWindow *mainWindow = new BrowserWindow();
         Browser::instance().addWindow(mainWindow);
