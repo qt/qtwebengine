@@ -392,9 +392,12 @@ void TabWidget::fullScreenRequested(QWebEngineFullScreenRequest request)
         WebView *oldWebView = this->webView(m_lineEdits->currentIndex());
         webPage->setView(oldWebView);
         request.accept();
-        raise();
-        m_fullScreenView->hide();
-        m_fullScreenNotification->hide();
+        // Change the delete and window hide/show back to a simple m_fullScreenView->hide()
+        // once QTBUG-46701 gets fixed.
+        delete m_fullScreenView;
+        m_fullScreenView = 0;
+        window()->hide();
+        window()->show();
     }
 }
 
