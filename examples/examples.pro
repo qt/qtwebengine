@@ -13,5 +13,10 @@ qtHaveModule(webenginewidgets) {
         webenginewidgets/cookiebrowser \
         webenginewidgets/demobrowser \
         webenginewidgets/markdowneditor \
-        webenginewidgets/simplebrowser \
+        webenginewidgets/simplebrowser
+
+    !contains(WEBENGINE_CONFIG, no_spellcheck):!osx:!cross_compile {
+        SUBDIRS += webenginewidgets/spellchecker
+    }
+
 }

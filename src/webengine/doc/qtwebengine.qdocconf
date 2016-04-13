@@ -66,6 +66,7 @@ exampledirs +=  . \
                 ../../core/doc/snippets \
                 ../../webenginewidgets/doc/snippets
 
+examples.fileextensions += *.aff *.dic
 
 imagedirs += images
 
