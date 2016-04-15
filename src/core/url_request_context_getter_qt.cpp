@@ -308,7 +308,6 @@ void URLRequestContextGetterQt::updateHttpCache()
 void URLRequestContextGetterQt::updateJobFactory()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    Q_ASSERT(m_jobFactory);
 
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
 }
@@ -429,10 +428,9 @@ void URLRequestContextGetterQt::generateJobFactory()
     jobFactory->SetProtocolHandler(url::kFtpScheme,
         new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
 
-    QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator it = m_browserContext->customUrlSchemeHandlers().constBegin();
-    const QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator end = m_browserContext->customUrlSchemeHandlers().constEnd();
-    for (; it != end; ++it)
-        jobFactory->SetProtocolHandler(it.key().toStdString(), new CustomProtocolHandler(it.value()));
+    Q_FOREACH (const QByteArray &scheme, m_browserContext->customUrlSchemes()) {
+        jobFactory->SetProtocolHandler(scheme.toStdString(), new CustomProtocolHandler(m_browserContext));
+    }
 
     // Set up interceptors in the reverse order.
     scoped_ptr<net::URLRequestJobFactory> topJobFactory = jobFactory.Pass();

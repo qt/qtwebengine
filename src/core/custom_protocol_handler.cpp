@@ -43,8 +43,8 @@
 
 namespace QtWebEngineCore {
 
-CustomProtocolHandler::CustomProtocolHandler(QWebEngineUrlSchemeHandler *schemeHandler)
-    : m_schemeHandler(schemeHandler)
+CustomProtocolHandler::CustomProtocolHandler(QWeakPointer<const BrowserContextAdapter> adapter)
+    : m_adapter(adapter)
 {
 }
 
@@ -53,7 +53,7 @@ net::URLRequestJob *CustomProtocolHandler::MaybeCreateJob(net::URLRequest *reque
     if (!networkDelegate)
         return new net::URLRequestErrorJob(request, Q_NULLPTR, net::ERR_ACCESS_DENIED);
 
-    return new URLRequestCustomJob(request, networkDelegate, m_schemeHandler);
+    return new URLRequestCustomJob(request, networkDelegate, request->url().scheme(), m_adapter);
 }
 
 } // namespace

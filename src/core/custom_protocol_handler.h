@@ -42,10 +42,9 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QObject>
-#include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
+#include <QtCore/QWeakPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
-QT_FORWARD_DECLARE_CLASS(QWebEngineUrlSchemeHandler)
 
 namespace net {
 class NetworkDelegate;
@@ -61,13 +60,13 @@ class BrowserContextAdapter;
 class QWEBENGINE_EXPORT CustomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
 public:
-    CustomProtocolHandler(QWebEngineUrlSchemeHandler *);
+    CustomProtocolHandler(QWeakPointer<const BrowserContextAdapter> adapter);
 
     virtual net::URLRequestJob *MaybeCreateJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate) const Q_DECL_OVERRIDE;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(CustomProtocolHandler);
-    QWebEngineUrlSchemeHandler *m_schemeHandler;
+    QWeakPointer<const BrowserContextAdapter> m_adapter;
 };
 
 } // namespace

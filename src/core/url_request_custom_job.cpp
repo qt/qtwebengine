@@ -39,6 +39,7 @@
 
 #include "api/qwebengineurlrequestjob.h"
 #include "api/qwebengineurlschemehandler.h"
+#include "browser_context_adapter.h"
 #include "type_conversion.h"
 
 #include "content/public/browser/browser_thread.h"
@@ -54,9 +55,11 @@ using namespace net;
 
 namespace QtWebEngineCore {
 
-URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *networkDelegate, QWebEngineUrlSchemeHandler *schemeHandler)
+URLRequestCustomJob::URLRequestCustomJob(URLRequest *request, NetworkDelegate *networkDelegate,
+                                         const std::string &scheme, QWeakPointer<const BrowserContextAdapter> adapter)
     : URLRequestJob(request, networkDelegate)
-    , m_schemeHandler(schemeHandler)
+    , m_scheme(scheme)
+    , m_adapter(adapter)
     , m_shared(new URLRequestCustomJobShared(this))
 {
 }
@@ -328,11 +331,22 @@ void URLRequestCustomJobShared::startAsync()
         delete this;
         return;
     }
-    m_delegate = new URLRequestCustomJobDelegate(this);
-    m_asyncInitialized = true;
-    QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(m_delegate);
-    if (m_job)
-        m_job->m_schemeHandler->requestStarted(requestJob);
+
+    QWebEngineUrlSchemeHandler *schemeHandler = 0;
+    QSharedPointer<const BrowserContextAdapter> browserContext = m_job->m_adapter.toStrongRef();
+    if (browserContext)
+        schemeHandler = browserContext->customUrlSchemeHandlers()[toQByteArray(m_job->m_scheme)];
+    if (schemeHandler) {
+        m_delegate = new URLRequestCustomJobDelegate(this);
+        m_asyncInitialized = true;
+        QWebEngineUrlRequestJob *requestJob = new QWebEngineUrlRequestJob(m_delegate);
+        schemeHandler->requestStarted(requestJob);
+    } else {
+        lock.unlock();
+        abort();
+        delete this;
+        return;
+    }
 }
 
 } // namespace

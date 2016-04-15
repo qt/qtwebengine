@@ -356,6 +356,16 @@ QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUr
     return m_customUrlSchemeHandlers;
 }
 
+const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUrlSchemeHandlers() const
+{
+    return m_customUrlSchemeHandlers;
+}
+
+const QList<QByteArray> BrowserContextAdapter::customUrlSchemes() const
+{
+    return m_customUrlSchemeHandlers.keys();
+}
+
 void BrowserContextAdapter::updateCustomUrlSchemeHandlers()
 {
     if (m_browserContext->url_request_getter_.get())

@@ -73,6 +73,11 @@ inline QString toQt(const std::string &string)
     return QString::fromStdString(string);
 }
 
+inline QByteArray toQByteArray(const std::string &string)
+{
+    return QByteArray::fromStdString(string);
+}
+
 inline base::string16 toString16(const QString &qString)
 {
 #if defined(OS_WIN)

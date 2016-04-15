@@ -147,6 +147,8 @@ public:
     bool persistVisitedLinks() const;
 
     QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers();
+    const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers() const;
+    const QList<QByteArray> customUrlSchemes() const;
     void updateCustomUrlSchemeHandlers();
     void addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
     bool removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
