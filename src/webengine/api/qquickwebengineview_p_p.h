@@ -213,6 +213,7 @@ private:
     QList<QQuickWebEngineScript *> m_userScripts;
     qreal m_dpiScale;
     QColor m_backgroundColor;
+    qreal m_defaultZoomFactor;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

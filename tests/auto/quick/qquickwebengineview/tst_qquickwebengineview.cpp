@@ -60,6 +60,7 @@ private Q_SLOTS:
     void inputMethod();
     void inputMethodHints();
     void basicRenderingSanity();
+    void setZoomFactor();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -459,6 +460,25 @@ void tst_QQuickWebEngineView::inputMethodHints()
     hints = Qt::InputMethodHints(query.value(Qt::ImHints).toUInt());
     QCOMPARE(hints, Qt::ImhNone);
 #endif
+}
+
+void tst_QQuickWebEngineView::setZoomFactor()
+{
+    QQuickWebEngineView *view = webEngineView();
+
+    QVERIFY(qFuzzyCompare(view->zoomFactor(), 1.0));
+    view->setZoomFactor(2.5);
+    QVERIFY(qFuzzyCompare(view->zoomFactor(), 2.5));
+
+    view->setUrl(urlFromTestPath("html/basic_page.html"));
+    QVERIFY(waitForLoadSucceeded(view));
+    QVERIFY(qFuzzyCompare(view->zoomFactor(), 2.5));
+
+    view->setZoomFactor(0.1);
+    QVERIFY(qFuzzyCompare(view->zoomFactor(), 2.5));
+
+    view->setZoomFactor(5.5);
+    QVERIFY(qFuzzyCompare(view->zoomFactor(), 2.5));
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

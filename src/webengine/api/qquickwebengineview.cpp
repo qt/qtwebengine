@@ -114,6 +114,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_webChannel(0)
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
+    , m_defaultZoomFactor(1.0)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
@@ -721,6 +722,10 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
     Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
         script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
 
+    // set the zoomFactor if it had been changed on the old adapter.
+    if (!qFuzzyCompare(adapter->currentZoomFactor(), m_defaultZoomFactor))
+        q->setZoomFactor(m_defaultZoomFactor);
+
     // Emit signals for values that might be different from the previous WebContentsAdapter.
     emit q->titleChanged();
     emit q->urlChanged();
@@ -753,6 +758,7 @@ QQuickWebEngineView::~QQuickWebEngineView()
 
 void QQuickWebEngineViewPrivate::ensureContentsAdapter()
 {
+    Q_Q(QQuickWebEngineView);
     if (!adapter) {
         adapter = new WebContentsAdapter();
         adapter->initialize(this);
@@ -765,6 +771,10 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
         // push down the page's user scripts
         Q_FOREACH (QQuickWebEngineScript *script, m_userScripts)
             script->d_func()->bind(browserContextAdapter()->userScriptController(), adapter.data());
+        // set the zoomFactor if it had been changed on the old adapter.
+        if (!qFuzzyCompare(adapter->currentZoomFactor(), m_defaultZoomFactor))
+            q->setZoomFactor(m_defaultZoomFactor);
+
     }
 }
 
@@ -856,8 +866,11 @@ void QQuickWebEngineView::stop()
 void QQuickWebEngineView::setZoomFactor(qreal arg)
 {
     Q_D(QQuickWebEngineView);
+    d->m_defaultZoomFactor = arg;
+
     if (!d->adapter)
         return;
+
     qreal oldFactor = d->adapter->currentZoomFactor();
     d->adapter->setZoomFactor(arg);
     if (qFuzzyCompare(oldFactor, d->adapter->currentZoomFactor()))
@@ -1045,7 +1058,7 @@ qreal QQuickWebEngineView::zoomFactor() const
 {
     Q_D(const QQuickWebEngineView);
     if (!d->adapter)
-        return 1.0;
+        return d->m_defaultZoomFactor;
     return d->adapter->currentZoomFactor();
 }
 

@@ -665,7 +665,15 @@ void WebContentsAdapter::setZoomFactor(qreal factor)
     Q_D(WebContentsAdapter);
     if (factor < content::kMinimumZoomFactor || factor > content::kMaximumZoomFactor)
         return;
-    content::HostZoomMap::SetZoomLevel(d->webContents.get(), content::ZoomFactorToZoomLevel(static_cast<double>(factor)));
+
+    double zoomLevel = content::ZoomFactorToZoomLevel(static_cast<double>(factor));
+    content::HostZoomMap *zoomMap = content::HostZoomMap::GetForWebContents(d->webContents.get());
+
+    if (zoomMap) {
+        int render_process_id = d->webContents->GetRenderProcessHost()->GetID();
+        int render_view_id = d->webContents->GetRenderViewHost()->GetRoutingID();
+        zoomMap->SetTemporaryZoomLevel(render_process_id, render_view_id, zoomLevel);
+    }
 }
 
 qreal WebContentsAdapter::currentZoomFactor() const
