@@ -125,7 +125,7 @@ public:
                                      int exitCode) Q_DECL_OVERRIDE;
     virtual void requestGeometryChange(const QRect &geometry) Q_DECL_OVERRIDE;
 
-    virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
+    virtual QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() Q_DECL_OVERRIDE;
 
     void updateAction(QWebEnginePage::WebAction) const;
     void updateNavigationActions();

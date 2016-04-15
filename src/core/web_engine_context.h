@@ -44,7 +44,7 @@
 #include "base/values.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 
-#include <QExplicitlySharedDataPointer>
+#include <QSharedPointer>
 
 namespace base {
 class RunLoop;
@@ -68,7 +68,7 @@ class WebEngineContext : public base::RefCounted<WebEngineContext> {
 public:
     static scoped_refptr<WebEngineContext> current();
 
-    QtWebEngineCore::BrowserContextAdapter *defaultBrowserContext();
+    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> defaultBrowserContext();
     QObject *globalQObject();
 
     void destroyBrowserContext();
@@ -84,7 +84,7 @@ private:
     scoped_ptr<content::ContentMainRunner> m_contentRunner;
     scoped_ptr<content::BrowserMainRunner> m_browserRunner;
     QObject* m_globalQObject;
-    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
+    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
     scoped_ptr<devtools_http_handler::DevToolsHttpHandler> m_devtools;
 };
 

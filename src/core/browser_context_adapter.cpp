@@ -165,7 +165,7 @@ void BrowserContextAdapter::cancelDownload(quint32 downloadId)
     downloadManagerDelegate()->cancelDownload(downloadId);
 }
 
-BrowserContextAdapter* BrowserContextAdapter::defaultContext()
+QSharedPointer<BrowserContextAdapter> BrowserContextAdapter::defaultContext()
 {
     return WebEngineContext::current()->defaultBrowserContext();
 }

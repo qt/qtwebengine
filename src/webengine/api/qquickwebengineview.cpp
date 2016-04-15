@@ -607,7 +607,7 @@ QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
 }
 #endif // QT_NO_ACCESSIBILITY
 
-BrowserContextAdapter *QQuickWebEngineViewPrivate::browserContextAdapter()
+QSharedPointer<BrowserContextAdapter> QQuickWebEngineViewPrivate::browserContextAdapter()
 {
     return m_profile->d_ptr->browserContext();
 }

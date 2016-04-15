@@ -125,7 +125,7 @@ QT_BEGIN_NAMESPACE
   The \a download argument holds the state of the finished download instance.
 */
 
-QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
+QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)
         : m_settings(new QQuickWebEngineSettings())
         , m_browserContextRef(browserContext)
 {
@@ -242,7 +242,7 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 */
 QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
     : QObject(parent),
-      d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false)))
+      d_ptr(new QQuickWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter>::create(false)))
 {
     // Sets up the global WebEngineContext
     QQuickWebEngineProfile::defaultProfile();

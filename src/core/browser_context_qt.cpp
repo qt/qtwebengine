@@ -152,7 +152,7 @@ content::PermissionManager *BrowserContextQt::GetPermissionManager()
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers, request_interceptors.Pass());
+    url_request_getter_ = new URLRequestContextGetterQt(m_adapter->sharedFromThis(), protocol_handlers, request_interceptors.Pass());
     return url_request_getter_.get();
 }
 

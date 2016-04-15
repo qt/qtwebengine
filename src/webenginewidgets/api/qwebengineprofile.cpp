@@ -130,7 +130,7 @@ using QtWebEngineCore::BrowserContextAdapter;
   \sa QWebEngineDownloadItem
 */
 
-QWebEngineProfilePrivate::QWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
+QWebEngineProfilePrivate::QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)
         : m_settings(new QWebEngineSettings())
         , m_scriptCollection(new QWebEngineScriptCollection(new QWebEngineScriptCollectionPrivate(browserContext->userScriptController())))
         , m_browserContextRef(browserContext)
@@ -222,7 +222,7 @@ void QWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
 */
 QWebEngineProfile::QWebEngineProfile(QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(true)))
+    , d_ptr(new QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter>::create(true)))
 {
     d_ptr->q_ptr = this;
 }
@@ -239,7 +239,7 @@ QWebEngineProfile::QWebEngineProfile(QObject *parent)
 */
 QWebEngineProfile::QWebEngineProfile(const QString &storageName, QObject *parent)
     : QObject(parent)
-    , d_ptr(new QWebEngineProfilePrivate(new BrowserContextAdapter(storageName)))
+    , d_ptr(new QWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter>::create(storageName)))
 {
     d_ptr->q_ptr = this;
 }

@@ -435,7 +435,7 @@ void QWebEnginePagePrivate::setFullScreenMode(bool fullscreen)
     }
 }
 
-BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
+QSharedPointer<BrowserContextAdapter> QWebEnginePagePrivate::browserContextAdapter()
 {
     return profile->d_ptr->browserContext();
 }

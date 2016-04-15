@@ -85,7 +85,7 @@ static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
+URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
     : m_ignoreCertificateErrors(false)
     , m_browserContext(browserContext)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
@@ -293,7 +293,7 @@ void URLRequestContextGetterQt::generateUserAgent()
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    m_storage->set_http_user_agent_settings(new HttpUserAgentSettingsQt(m_browserContext.constData()));
+    m_storage->set_http_user_agent_settings(new HttpUserAgentSettingsQt(m_browserContext.data()));
 }
 
 void URLRequestContextGetterQt::updateHttpCache()
