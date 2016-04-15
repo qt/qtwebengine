@@ -80,12 +80,9 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
 
     // Initial spellcheck settings
-    std::string spellcheckLang = QLocale().bcp47Name().toStdString();
-    base::ListValue *dictionaries = new base::ListValue;
-    dictionaries->AppendString(spellcheckLang);
-    registry->RegisterListPref(prefs::kSpellCheckDictionaries, dictionaries);
-    registry->RegisterStringPref(prefs::kAcceptLanguages, spellcheckLang);
-    registry->RegisterStringPref(prefs::kSpellCheckDictionary, spellcheckLang);
+    registry->RegisterListPref(prefs::kSpellCheckDictionaries, new base::ListValue());
+    registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
+    registry->RegisterStringPref(prefs::kSpellCheckDictionary, std::string());
     registry->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
     registry->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck, false);
     registry->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, false);
