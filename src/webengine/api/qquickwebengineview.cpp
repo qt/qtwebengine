@@ -404,6 +404,7 @@ void QQuickWebEngineViewPrivate::iconChanged(const QUrl &url)
     }
 
     iconUrl = faviconProvider->attach(q, url);
+    m_history->reset();
     Q_EMIT q->iconChanged();
 }
 
