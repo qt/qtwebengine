@@ -55,16 +55,11 @@ QT_END_NAMESPACE
 class BrowserMainWindow;
 class WebPage : public QWebEnginePage {
     Q_OBJECT
-
-signals:
-    void loadingUrl(const QUrl &url);
-
 public:
     WebPage(QWebEngineProfile *profile, QObject *parent = 0);
     BrowserMainWindow *mainWindow();
 
 protected:
-    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
     QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type) Q_DECL_OVERRIDE;
 #if !defined(QT_NO_UITOOLS)
     QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
@@ -84,7 +79,6 @@ private:
     // set the webview mousepressedevent
     Qt::KeyboardModifiers m_keyboardModifiers;
     Qt::MouseButtons m_pressedButtons;
-    QUrl m_loadingUrl;
 };
 
 class WebView : public QWebEngineView {

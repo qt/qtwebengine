@@ -96,16 +96,6 @@ BrowserMainWindow *WebPage::mainWindow()
     return BrowserApplication::instance()->mainWindow();
 }
 
-bool WebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
-{
-    Q_UNUSED(type);
-    if (isMainFrame) {
-        m_loadingUrl = url;
-        emit loadingUrl(m_loadingUrl);
-    }
-    return true;
-}
-
 bool WebPage::certificateError(const QWebEngineCertificateError &error)
 {
     if (error.isOverridable()) {
@@ -357,8 +347,6 @@ void WebView::setPage(WebPage *_page)
     connect(page(), SIGNAL(statusBarMessage(QString)),
             SLOT(setStatusBarText(QString)));
 #endif
-    connect(page(), SIGNAL(loadingUrl(QUrl)),
-            this, SIGNAL(urlChanged(QUrl)));
     connect(page(), SIGNAL(iconUrlChanged(QUrl)),
             this, SLOT(onIconUrlChanged(QUrl)));
     connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
