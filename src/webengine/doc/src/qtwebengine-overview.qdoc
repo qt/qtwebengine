@@ -157,6 +157,24 @@
     a QWebEngineCookieStore for accessing the HTTP cookies of Chromium. A QWebEnginePage can also
     directly point to a script collection.
 
+    For a widget based application, the web engine is automatically initialized, unless it is
+    placed in a plugin. In that case, it must be initialized in the application main source file
+    by using \l QtWebEngine::initialize, as illustrated by the following code snippet:
+
+    \code
+    int main(int argc, char **argv)
+    {
+        QApplication app(argc, argv);
+
+        QtWebEngine::initialize();
+
+        QMainWindow window;
+        window.show();
+
+        return app.exec();
+    }
+    \endcode
+
     \section1 Embedding Web Content into Qt Quick Applications
 
     The WebEngineView QML type allows Qt Quick applications to render regions of dynamic web
