@@ -216,9 +216,9 @@ void HistoryManager::clear()
 {
     m_history.clear();
     m_lastSavedUrl = QString();
+    emit historyReset();
     m_saveTimer->changeOccurred();
     m_saveTimer->saveIfNeccessary();
-    historyReset();
 }
 
 void HistoryManager::loadSettings()
