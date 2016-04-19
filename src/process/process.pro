@@ -16,6 +16,8 @@ win32 {
 
 load(qt_app)
 
+CONFIG += build_all
+
 contains(QT_CONFIG, qt_framework) {
     # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.
     DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/5/Helpers
