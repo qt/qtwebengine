@@ -49,7 +49,7 @@ namespace QtWebEngineCore {
 class PermissionManagerQt : public content::PermissionManager {
 
 public:
-    PermissionManagerQt(BrowserContextAdapter *);
+    PermissionManagerQt();
     ~PermissionManagerQt();
     typedef BrowserContextAdapter::PermissionType PermissionType;
 
@@ -95,7 +95,6 @@ public:
     void UnsubscribePermissionStatusChange(int subscription_id) override;
 
 private:
-    BrowserContextAdapter *m_contextAdapter;
     QHash<QPair<QUrl, PermissionType>, bool> m_permissions;
     struct Request {
         int id;

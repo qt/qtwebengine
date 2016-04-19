@@ -57,7 +57,7 @@ private:
 class SSLHostStateDelegateQt : public content::SSLHostStateDelegate {
 
 public:
-    SSLHostStateDelegateQt(BrowserContextAdapter *);
+    SSLHostStateDelegateQt();
     ~SSLHostStateDelegateQt();
 
     // content::SSLHostStateDelegate implementation:
@@ -71,7 +71,6 @@ public:
     virtual bool HasAllowException(const std::string &host) const override;
 
 private:
-    BrowserContextAdapter *m_contextAdapter;
     std::map<std::string, CertPolicy> m_certPolicyforHost;
 };
 

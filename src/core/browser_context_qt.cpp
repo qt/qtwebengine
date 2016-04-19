@@ -134,7 +134,7 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
 {
     if (!sslHostStateDelegate)
-        sslHostStateDelegate.reset(new SSLHostStateDelegateQt(m_adapter));
+        sslHostStateDelegate.reset(new SSLHostStateDelegateQt());
     return sslHostStateDelegate.get();
 }
 
@@ -146,7 +146,7 @@ scoped_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate
 content::PermissionManager *BrowserContextQt::GetPermissionManager()
 {
     if (!permissionManager)
-        permissionManager.reset(new PermissionManagerQt(m_adapter));
+        permissionManager.reset(new PermissionManagerQt());
     return permissionManager.get();
 }
 
