@@ -52,6 +52,7 @@ private Q_SLOTS:
     void profileConstructors();
     void urlSchemeHandlers();
     void urlSchemeHandlerFailRequest();
+    void customUserAgent();
 };
 
 void tst_QWebEngineProfile::defaultProfile()
@@ -186,6 +187,34 @@ void tst_QWebEngineProfile::urlSchemeHandlerFailRequest()
     view.load(QUrl(QStringLiteral("foo://bar")));
     QVERIFY(loadFinishedSpy.wait());
     QCOMPARE(toPlainTextSync(view.page()), QString());
+}
+
+void tst_QWebEngineProfile::customUserAgent()
+{
+    QString defaultUserAgent = QWebEngineProfile::defaultProfile()->httpUserAgent();
+    QWebEnginePage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(QStringLiteral("<html><body>Hello world!</body></html>"));
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    // First test the user-agent is default
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), defaultUserAgent);
+
+    const QString testUserAgent = QStringLiteral("tst_QWebEngineProfile 1.0");
+    QWebEngineProfile testProfile;
+    testProfile.setHttpUserAgent(testUserAgent);
+
+    // Test a new profile with custom user-agent works
+    QWebEnginePage page2(&testProfile);
+    QSignalSpy loadFinishedSpy2(&page2, SIGNAL(loadFinished(bool)));
+    page2.setHtml(QStringLiteral("<html><body>Hello again!</body></html>"));
+    QTRY_COMPARE(loadFinishedSpy2.count(), 1);
+    QCOMPARE(evaluateJavaScriptSync(&page2, QStringLiteral("navigator.userAgent")).toString(), testUserAgent);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), defaultUserAgent);
+
+    // Test an existing page and profile with custom user-agent works
+    QWebEngineProfile::defaultProfile()->setHttpUserAgent(testUserAgent);
+    QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.userAgent")).toString(), testUserAgent);
 }
 
 QTEST_MAIN(tst_QWebEngineProfile)

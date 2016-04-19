@@ -485,6 +485,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
     params.can_load_local_resources = true;
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
+    params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->Focus();
 }
