@@ -17,6 +17,13 @@ SUBDIRS += core \
            webengine_experimental_plugin \
            plugins
 
+# allow only desktop builds of qwebengine_convert_dict
+# osx does not use hunspell
+!contains(WEBENGINE_CONFIG, no_spellcheck):!osx:!cross_compile {
+    SUBDIRS += qwebengine_convert_dict
+    qwebengine_convert_dict.subdir = tools/qwebengine_convert_dict
+    qwebengine_convert_dict.depends = core
+}
 
 isQMLTestSupportApiEnabled() {
     webengine_testsupport_plugin.subdir = webengine/plugin/testsupport

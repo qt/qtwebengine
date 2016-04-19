@@ -8,7 +8,7 @@
     'dependencies': [
       '<(chromium_src_dir)/base/base.gyp:base',
       '<(chromium_src_dir)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-      '<(chromium_src_dir)/chrome/tools/convert_dict/convert_dict.gyp:convert_dict',
+      '<(chromium_src_dir)/chrome/tools/convert_dict/convert_dict.gyp:convert_dict_lib',
       '<(chromium_src_dir)/components/components.gyp:devtools_discovery',
       '<(chromium_src_dir)/components/components.gyp:devtools_http_handler',
       '<(chromium_src_dir)/components/components.gyp:error_page_renderer',
