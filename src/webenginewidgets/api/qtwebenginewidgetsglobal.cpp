@@ -36,7 +36,7 @@
 
 #include "qtwebenginewidgetsglobal.h"
 
-#include <QCoreApplication>
+#include <QGuiApplication>
 
 namespace QtWebEngineCore
 {
@@ -46,6 +46,10 @@ namespace QtWebEngineCore
 QT_BEGIN_NAMESPACE
 static void initialize()
 {
+    // Bail out silently if the user did not construct a QGuiApplication.
+    if (!qobject_cast<QGuiApplication *>(QCoreApplication::instance()))
+        return;
+
     QtWebEngineCore::initialize();
 }
 
