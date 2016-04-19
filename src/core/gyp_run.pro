@@ -84,7 +84,6 @@ contains(QT_ARCH, "arm") {
 }
 
 contains(QT_ARCH, "mips") {
-    !cross_compile: GYP_CONFIG += sysroot=\"\"
     GYP_CONFIG += target_arch=mipsel
 
     contains(QMAKE_CFLAGS, "mips32r6"): mips_arch_variant=\"r6\"
@@ -106,6 +105,14 @@ contains(WEBENGINE_CONFIG, use_appstore_compliant_code): GYP_CONFIG += appstore_
 # Compiling with -Os makes a huge difference in binary size, and the unwind tables is another big part,
 # but the latter are necessary for useful debug binaries.
 contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s debug_optimize=s release_unwind_tables=0
+
+contains(WEBENGINE_CONFIG, no_spellcheck): {
+    GYP_CONFIG += enable_spellcheck=0
+    osx: GYP_CONFIG += use_browser_spellchecker=0
+} else {
+    GYP_CONFIG += enable_spellcheck=1
+    osx: GYP_CONFIG += use_browser_spellchecker=1
+}
 
 !contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
     GYP_CONFIG += qt_install_data=\"$$[QT_INSTALL_DATA/get]\"

@@ -113,7 +113,9 @@ void destroyContext()
 bool usingANGLE()
 {
 #if defined(Q_OS_WIN)
-    return qt_gl_global_share_context()->isOpenGLES();
+    if (qt_gl_global_share_context())
+        return qt_gl_global_share_context()->isOpenGLES();
+    return QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES;
 #else
     return false;
 #endif
@@ -296,10 +298,23 @@ WebEngineContext::WebEngineContext()
         parsedCommandLine->AppendSwitch(switches::kDisableGpu);
     } else {
         const char *glType = 0;
-        if (qt_gl_global_share_context()->isOpenGLES()) {
-            glType = gfx::kGLImplementationEGLName;
+        if (qt_gl_global_share_context()) {
+            if (qt_gl_global_share_context()->isOpenGLES()) {
+                glType = gfx::kGLImplementationEGLName;
+            } else {
+                glType = gfx::kGLImplementationDesktopName;
+            }
         } else {
-            glType = gfx::kGLImplementationDesktopName;
+            qWarning("WebEngineContext used before QtWebEngine::initialize()");
+            // We have to assume the default OpenGL module type will be used.
+            switch (QOpenGLContext::openGLModuleType()) {
+            case QOpenGLContext::LibGL:
+                glType = gfx::kGLImplementationDesktopName;
+                break;
+            case QOpenGLContext::LibGLES:
+                glType = gfx::kGLImplementationEGLName;
+                break;
+            }
         }
 
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);

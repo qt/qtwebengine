@@ -441,31 +441,45 @@ void BrowserContextAdapter::clearHttpCache()
         m_browserContext->url_request_getter_->clearHttpCache();
 }
 
-#if defined(ENABLE_SPELLCHECK)
 QStringList BrowserContextAdapter::spellCheckLanguages(const QStringList &acceptLanguages)
 {
+#if defined(ENABLE_SPELLCHECK)
     return m_browserContext->spellCheckLanguages(acceptLanguages);
+#else
+    return QStringList();
+#endif
 }
 
 void BrowserContextAdapter::setSpellCheckLanguage(const QString &language)
 {
+#if defined(ENABLE_SPELLCHECK)
     m_browserContext->setSpellCheckLanguage(language);
+#endif
 }
 
 QString BrowserContextAdapter::spellCheckLanguage() const
 {
+#if defined(ENABLE_SPELLCHECK)
     return m_browserContext->spellCheckLanguage();
+#else
+    return QString();
+#endif
 }
 
 void BrowserContextAdapter::setSpellCheckEnabled(bool enabled)
 {
+#if defined(ENABLE_SPELLCHECK)
     m_browserContext->setSpellCheckEnabled(enabled);
+#endif
 }
 
 bool BrowserContextAdapter::isSpellCheckEnabled() const
 {
+#if defined(ENABLE_SPELLCHECK)
     return m_browserContext->isSpellCheckEnabled();
-}
+#else
+    return false;
 #endif
+}
 
 } // namespace QtWebEngineCore

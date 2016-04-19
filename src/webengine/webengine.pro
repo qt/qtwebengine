@@ -57,10 +57,7 @@ isQMLTestSupportApiEnabled() {
     DEFINES += ENABLE_QML_TESTSUPPORT_API
 }
 
-no_spellcheck {
-    DEFINES += QT_NO_SPELLCHECK
-    MODULE_DEFINES += QT_NO_SPELLCHECK
-} else {
+!contains(WEBENGINE_CONFIG, no_spellcheck) {
     DEFINES += ENABLE_SPELLCHECK
 }
 

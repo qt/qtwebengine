@@ -8,9 +8,6 @@ GYP_CONFIG += \
     use_ash=0 \
     enable_widevine=1
 
-no_spellcheck: GYP_CONFIG += enable_spellcheck=0
-else: GYP_CONFIG += enable_spellcheck=1
-
 # Libvpx build needs additional search path on Windows.
 GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$OUT_PWD/$$getConfigDir()/obj/$${getChromiumSrcDir()}\""
 

@@ -1075,7 +1075,7 @@
 */
 
 /*!
-    \qmlmethod void WebEngineView::printToPdf(PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation, variant resultCallback)
+    \qmlmethod void WebEngineView::printToPdf(variant resultCallback, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
     \since QtWebEngine 1.3
 
     Prints the WebEngineView's current content to a PDF document and returns it in a byte array. The document's size will be determined

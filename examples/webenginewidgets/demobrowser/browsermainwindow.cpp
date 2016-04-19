@@ -729,7 +729,7 @@ void BrowserMainWindow::slotFilePrintToPDF()
 
     m_printerOutputFileName = printer.outputFileName();
 
-    currentTab()->page()->printToPdf(printer.pageLayout(), invoke(this, &BrowserMainWindow::slotHandlePdfPrinted));
+    currentTab()->page()->printToPdf(invoke(this, &BrowserMainWindow::slotHandlePdfPrinted), printer.pageLayout());
 
 #endif // QT_NO_PRINTER
 }

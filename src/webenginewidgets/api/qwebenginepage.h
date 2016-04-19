@@ -103,7 +103,6 @@ public:
         OpenLinkInThisWindow,
         OpenLinkInNewWindow,
         OpenLinkInNewTab,
-        OpenLinkInNewBackgroundTab,
         CopyLinkToClipboard,
         DownloadLinkToDisk,
 
@@ -123,9 +122,7 @@ public:
         RequestClose,
         Unselect,
         SavePage,
-#if !defined(QT_NO_SPELLCHECK)
-        ToggleSpellcheck,
-#endif
+        OpenLinkInNewBackgroundTab,
         WebActionCount
     };
 
@@ -209,9 +206,7 @@ public:
 #endif
     virtual void triggerAction(WebAction action, bool checked = false);
 
-#if !defined(QT_NO_SPELLCHECK)
     void replaceMisspelledWord(const QString &replacement);
-#endif
 
     virtual bool event(QEvent*);
 #ifdef Q_QDOC
@@ -272,11 +267,11 @@ public:
     void setAudioMuted(bool muted);
     bool recentlyAudible() const;
 
-    void printToPdf(const QString &filePath, const QPageLayout &layout);
+    void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #ifdef Q_QDOC
-    void printToPdf(const QPageLayout &layout, FunctorOrLambda resultCallback);
+    void printToPdf(FunctorOrLambda resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #else
-    void printToPdf(const QPageLayout &layout, const QWebEngineCallback<const QByteArray&> &resultCallback);
+    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #endif
 
     const QWebEngineContextMenuData &contextMenuData() const;

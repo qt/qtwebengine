@@ -5006,11 +5006,11 @@ void tst_QWebEnginePage::printToPdf()
     QTRY_VERIFY(!QFile::exists(path));
 
     CallbackSpy<QByteArray> successfulSpy;
-    page.printToPdf(layout, successfulSpy.ref());
+    page.printToPdf(successfulSpy.ref(), layout);
     QVERIFY(successfulSpy.waitForResult().length() > 0);
 
     CallbackSpy<QByteArray> failedInvalidLayoutSpy;
-    page.printToPdf(QPageLayout(), failedInvalidLayoutSpy.ref());
+    page.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
     QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
 }
 

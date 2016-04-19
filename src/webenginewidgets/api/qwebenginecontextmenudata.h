@@ -76,11 +76,8 @@ public:
     QUrl mediaUrl() const;
     MediaType mediaType() const;
     bool isContentEditable() const;
-
-#if !defined(QT_NO_SPELLCHECK)
     QString misspelledWord() const;
     QStringList spellCheckerSuggestions() const;
-#endif
 
 private:
     void reset();

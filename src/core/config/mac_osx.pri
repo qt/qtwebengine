@@ -26,8 +26,5 @@ GYP_CONFIG += \
     clang_use_chrome_plugins=0 \
     enable_widevine=1
 
-no_spellcheck: GYP_CONFIG += enable_spellcheck=0 use_browser_spellchecker=0
-else: GYP_CONFIG += enable_spellcheck=1 use_browser_spellchecker=1
-
 QMAKE_MAC_SDK_PATH = "$$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path)"
 exists($$QMAKE_MAC_SDK_PATH): GYP_CONFIG += mac_sdk_path=\"$${QMAKE_MAC_SDK_PATH}\"
