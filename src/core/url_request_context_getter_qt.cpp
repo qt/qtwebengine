@@ -103,6 +103,7 @@ URLRequestContextGetterQt::~URLRequestContextGetterQt()
 
 net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     if (!m_urlRequestContext) {
         m_urlRequestContext.reset(new net::URLRequestContext());
 
@@ -150,6 +151,7 @@ void URLRequestContextGetterQt::cancelAllUrlRequests()
 
 void URLRequestContextGetterQt::generateStorage()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
 
     // We must stop all requests before deleting their backends.
@@ -202,6 +204,7 @@ void URLRequestContextGetterQt::generateStorage()
 
 void URLRequestContextGetterQt::updateCookieStore()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (m_urlRequestContext && !m_updateCookieStore && !m_proxyConfigService) {
         m_updateCookieStore = 1;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateCookieStore, this));
@@ -210,6 +213,7 @@ void URLRequestContextGetterQt::updateCookieStore()
 
 void URLRequestContextGetterQt::generateCookieStore()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
     m_updateCookieStore = 0;
@@ -258,6 +262,7 @@ void URLRequestContextGetterQt::generateCookieStore()
 
 void URLRequestContextGetterQt::updateUserAgent()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (m_urlRequestContext && !m_proxyConfigService)
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateUserAgent, this));
 }
@@ -284,6 +289,7 @@ public:
 
 void URLRequestContextGetterQt::generateUserAgent()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
@@ -292,6 +298,7 @@ void URLRequestContextGetterQt::generateUserAgent()
 
 void URLRequestContextGetterQt::updateHttpCache()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     if (m_urlRequestContext && !m_updateHttpCache && !m_proxyConfigService) {
         m_updateHttpCache = 1;
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateHttpCache, this));
@@ -300,6 +307,7 @@ void URLRequestContextGetterQt::updateHttpCache()
 
 void URLRequestContextGetterQt::updateJobFactory()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     Q_ASSERT(m_jobFactory);
 
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
@@ -353,6 +361,7 @@ net::HttpNetworkSession::Params URLRequestContextGetterQt::generateNetworkSessio
 
 void URLRequestContextGetterQt::generateHttpCache()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
@@ -399,6 +408,7 @@ void URLRequestContextGetterQt::generateHttpCache()
 
 void URLRequestContextGetterQt::generateJobFactory()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
 
     m_jobFactory.reset();
