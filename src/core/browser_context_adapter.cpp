@@ -351,11 +351,6 @@ void BrowserContextAdapter::setHttpCacheMaxSize(int maxSize)
         m_browserContext->url_request_getter_->updateHttpCache();
 }
 
-QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUrlSchemeHandlers()
-{
-    return m_customUrlSchemeHandlers;
-}
-
 const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &BrowserContextAdapter::customUrlSchemeHandlers() const
 {
     return m_customUrlSchemeHandlers;
@@ -400,6 +395,12 @@ QWebEngineUrlSchemeHandler *BrowserContextAdapter::takeCustomUrlSchemeHandler(co
 void BrowserContextAdapter::addCustomUrlSchemeHandler(const QByteArray &scheme, QWebEngineUrlSchemeHandler *handler)
 {
     m_customUrlSchemeHandlers.insert(scheme, handler);
+    updateCustomUrlSchemeHandlers();
+}
+
+void BrowserContextAdapter::clearCustomUrlSchemeHandlers()
+{
+    m_customUrlSchemeHandlers.clear();
     updateCustomUrlSchemeHandlers();
 }
 

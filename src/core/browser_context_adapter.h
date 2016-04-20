@@ -146,10 +146,9 @@ public:
     bool trackVisitedLinks() const;
     bool persistVisitedLinks() const;
 
-    QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers();
     const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers() const;
     const QList<QByteArray> customUrlSchemes() const;
-    void updateCustomUrlSchemeHandlers();
+    void clearCustomUrlSchemeHandlers();
     void addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
     bool removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     QWebEngineUrlSchemeHandler *takeCustomUrlSchemeHandler(const QByteArray &);
@@ -163,6 +162,8 @@ public:
     void setHttpAcceptLanguage(const QString &httpAcceptLanguage);
 
 private:
+    void updateCustomUrlSchemeHandlers();
+
     QString m_name;
     bool m_offTheRecord;
     QScopedPointer<BrowserContextQt> m_browserContext;

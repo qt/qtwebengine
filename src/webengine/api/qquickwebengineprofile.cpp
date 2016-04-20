@@ -689,8 +689,7 @@ void QQuickWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
 void QQuickWebEngineProfile::removeAllUrlSchemeHandlers()
 {
     Q_D(QQuickWebEngineProfile);
-    d->browserContext()->customUrlSchemeHandlers().clear();
-    d->browserContext()->updateCustomUrlSchemeHandlers();
+    d->browserContext()->clearCustomUrlSchemeHandlers();
 }
 
 void QQuickWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)
