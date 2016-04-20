@@ -148,6 +148,8 @@ inline QImage toQImage(const SkBitmap &bitmap, QImage::Format format)
     return QImage((uchar *)pixelRef->pixels(), bitmap.width(), bitmap.height(), format);
 }
 
+QImage toQImage(const SkBitmap &bitmap);
+
 inline QMatrix4x4 toQt(const SkMatrix44 &m)
 {
     QMatrix4x4 qtMatrix(

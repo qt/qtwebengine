@@ -83,6 +83,7 @@ SOURCES = \
         ssl_host_state_delegate_qt.cpp \
         stream_video_node.cpp \
         surface_factory_qt.cpp \
+        type_conversion.cpp \
         url_request_context_getter_qt.cpp \
         url_request_custom_job.cpp \
         url_request_custom_job_delegate.cpp \

@@ -240,8 +240,7 @@ void ClipboardQt::WriteWebSmartPaste()
 
 void ClipboardQt::WriteBitmap(const SkBitmap& bitmap)
 {
-    QImage image(reinterpret_cast<const uchar *>(bitmap.getPixels()), bitmap.width(), bitmap.height(), QImage::Format_ARGB32);
-    getUncommittedData()->setImageData(image.copy());
+    getUncommittedData()->setImageData(toQImage(bitmap).copy());
 }
 
 void ClipboardQt::WriteBookmark(const char* title_data, size_t title_len, const char* url_data, size_t url_len)
