@@ -178,7 +178,6 @@ private Q_SLOTS:
     // [Qt] tst_QWebEnginePage::infiniteLoopJS() timeouts with DFG JIT
     // https://bugs.webkit.org/show_bug.cgi?id=79040
     // void infiniteLoopJS();
-    void navigatorCookieEnabled();
     void deleteQWebEngineViewTwice();
     void renderOnRepaintRequestedShouldNotRecurse();
     void loadSignalsOrder_data();
@@ -3058,22 +3057,6 @@ void tst_QWebEnginePage::supportedContentType()
 
     Q_FOREACH (const QString& mimeType, contentTypes)
         QVERIFY2(m_page->supportsContentType(mimeType), QString("Cannot handle content types '%1'!").arg(mimeType).toLatin1());
-#endif
-}
-
-
-void tst_QWebEnginePage::navigatorCookieEnabled()
-{
-#if !defined(QWEBENGINEPAGE_NETWORKACCESSMANAGER)
-    QSKIP("QWEBENGINEPAGE_NETWORKACCESSMANAGER");
-#else
-    m_page->networkAccessManager()->setCookieJar(0);
-    QVERIFY(!m_page->networkAccessManager()->cookieJar());
-    QVERIFY(!evaluateJavaScriptSync(m_page, "navigator.cookieEnabled").toBool());
-
-    m_page->networkAccessManager()->setCookieJar(new QNetworkCookieJar());
-    QVERIFY(m_page->networkAccessManager()->cookieJar());
-    QVERIFY(evaluateJavaScriptSync(m_page, "navigator.cookieEnabled").toBool());
 #endif
 }
 
