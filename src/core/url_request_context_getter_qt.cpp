@@ -268,33 +268,14 @@ void URLRequestContextGetterQt::updateUserAgent()
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateUserAgent, this));
 }
 
-class HttpUserAgentSettingsQt : public net::HttpUserAgentSettings
-{
-    const BrowserContextAdapter *m_browserContext;
-public:
-    HttpUserAgentSettingsQt(const BrowserContextAdapter *ctx)
-        : m_browserContext(ctx)
-    {
-    }
-
-    std::string GetAcceptLanguage() const Q_DECL_OVERRIDE
-    {
-        return m_browserContext->httpAcceptLanguage().toStdString();
-    }
-
-    std::string GetUserAgent() const Q_DECL_OVERRIDE
-    {
-        return m_browserContext->httpUserAgent().toStdString();
-    }
-};
-
 void URLRequestContextGetterQt::generateUserAgent()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    m_storage->set_http_user_agent_settings(new HttpUserAgentSettingsQt(m_browserContext.data()));
+    m_storage->set_http_user_agent_settings(
+        new net::StaticHttpUserAgentSettings(m_browserContext->httpAcceptLanguage().toStdString(), m_browserContext->httpUserAgent().toStdString()));
 }
 
 void URLRequestContextGetterQt::updateHttpCache()

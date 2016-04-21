@@ -440,7 +440,21 @@ QString BrowserContextAdapter::httpAcceptLanguage() const
 
 void BrowserContextAdapter::setHttpAcceptLanguage(const QString &httpAcceptLanguage)
 {
+    if (m_httpAcceptLanguage == httpAcceptLanguage)
+        return;
     m_httpAcceptLanguage = httpAcceptLanguage;
+
+    std::vector<content::WebContentsImpl *> list = content::WebContentsImpl::GetAllWebContents();
+    Q_FOREACH (content::WebContentsImpl *web_contents, list) {
+        if (web_contents->GetBrowserContext() == m_browserContext.data()) {
+            content::RendererPreferences* rendererPrefs = web_contents->GetMutableRendererPrefs();
+            rendererPrefs->accept_languages = httpAcceptLanguageWithoutQualities().toStdString();
+            web_contents->GetRenderViewHost()->SyncRendererPrefs();
+        }
+    }
+
+    if (m_browserContext->url_request_getter_.get())
+        m_browserContext->url_request_getter_->updateUserAgent();
 }
 
 } // namespace QtWebEngineCore
