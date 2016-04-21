@@ -88,6 +88,7 @@ using content::BrowserThread;
 URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
     : m_ignoreCertificateErrors(false)
     , m_browserContext(browserContext)
+    , m_baseJobFactory(0)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
     , m_requestInterceptors(request_interceptors.Pass())
 {
@@ -293,7 +294,9 @@ void URLRequestContextGetterQt::updateJobFactory()
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
     if (m_urlRequestContext && !m_updateJobFactory.fetchAndStoreRelaxed(1))
-        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                         base::Bind(&URLRequestContextGetterQt::regenerateJobFactory,
+                                                    this, m_browserContext->customUrlSchemes()));
 }
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first, const net::HttpNetworkSession::Params &second)
@@ -393,16 +396,16 @@ void URLRequestContextGetterQt::generateJobFactory()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(!m_jobFactory);
 
-    m_jobFactory.reset();
     scoped_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
-        // FIXME: release() passes owner-ship to the job-factory, prevent regenerating the job-factory
         jobFactory->SetProtocolHandler(it->first, it->second.release());
+        m_protocolHandlers.clear();
     }
 
     jobFactory->SetProtocolHandler(url::kDataScheme, new net::DataProtocolHandler());
@@ -413,9 +416,12 @@ void URLRequestContextGetterQt::generateJobFactory()
     jobFactory->SetProtocolHandler(url::kFtpScheme,
         new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver())));
 
-    Q_FOREACH (const QByteArray &scheme, m_browserContext->customUrlSchemes()) {
+    m_installedCustomSchemes = m_browserContext->customUrlSchemes();
+    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
         jobFactory->SetProtocolHandler(scheme.toStdString(), new CustomProtocolHandler(m_browserContext));
     }
+
+    m_baseJobFactory = jobFactory.get();
 
     // Set up interceptors in the reverse order.
     scoped_ptr<net::URLRequestJobFactory> topJobFactory = jobFactory.Pass();
@@ -423,13 +429,32 @@ void URLRequestContextGetterQt::generateJobFactory()
     for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
         topJobFactory.reset(new net::URLRequestInterceptingJobFactory(topJobFactory.Pass(), make_scoped_ptr(*i)));
 
-    m_requestInterceptors.weak_clear(); // FIXME: Prevents regenerating job-factory.
+    m_requestInterceptors.weak_clear();
 
     m_jobFactory = topJobFactory.Pass();
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
+}
 
-    m_updateJobFactory = 0;
+void URLRequestContextGetterQt::regenerateJobFactory(const QList<QByteArray> customSchemes)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(m_jobFactory);
+    Q_ASSERT(m_baseJobFactory);
+
+    m_updateJobFactory.storeRelease(0);
+    if (customSchemes == m_installedCustomSchemes)
+        return;
+
+    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), nullptr);
+    }
+
+    m_installedCustomSchemes = customSchemes;
+    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), new CustomProtocolHandler(m_browserContext));
+    }
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetworkTaskRunner() const

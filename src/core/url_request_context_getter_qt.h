@@ -89,6 +89,7 @@ private:
     void generateHttpCache();
     void generateUserAgent();
     void generateJobFactory();
+    void regenerateJobFactory(const QList<QByteArray> customSchemes);
     void cancelAllUrlRequests();
     net::HttpNetworkSession::Params generateNetworkSessionParams();
 
@@ -104,9 +105,11 @@ private:
     scoped_ptr<NetworkDelegateQt> m_networkDelegate;
     scoped_ptr<net::URLRequestContextStorage> m_storage;
     scoped_ptr<net::URLRequestJobFactory> m_jobFactory;
+    net::URLRequestJobFactoryImpl *m_baseJobFactory;
     scoped_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
+    QList<QByteArray> m_installedCustomSchemes;
 
     friend class NetworkDelegateQt;
 };
