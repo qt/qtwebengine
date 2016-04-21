@@ -95,6 +95,7 @@ private:
     bool m_ignoreCertificateErrors;
     QAtomicInt m_updateCookieStore;
     QAtomicInt m_updateHttpCache;
+    QAtomicInt m_updateJobFactory;
     QSharedPointer<BrowserContextAdapter> m_browserContext;
     content::ProtocolHandlerMap m_protocolHandlers;
 

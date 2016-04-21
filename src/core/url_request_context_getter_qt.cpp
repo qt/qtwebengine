@@ -92,6 +92,7 @@ URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserConte
     , m_requestInterceptors(request_interceptors.Pass())
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
+    m_cookieDelegate->setClient(m_browserContext->cookieStore());
 
     updateStorageSettings();
 }
@@ -121,14 +122,16 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 void URLRequestContextGetterQt::updateStorageSettings()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    // m_proxyConfigService having a non-null value is used to indicate
+    // storage is already being updated.
     if (!m_proxyConfigService.loadAcquire()) {
         // We must create the proxy config service on the UI loop on Linux because it
         // must synchronously run on the glib message loop. This will be passed to
         // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-        m_proxyConfigService = new ProxyConfigServiceQt(net::ProxyService::CreateSystemProxyConfigService(
+        m_proxyConfigService.storeRelease(new ProxyConfigServiceQt(net::ProxyService::CreateSystemProxyConfigService(
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-        ));
+        )));
         if (m_storage) {
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
         }
@@ -206,10 +209,9 @@ void URLRequestContextGetterQt::generateStorage()
 void URLRequestContextGetterQt::updateCookieStore()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (m_urlRequestContext && !m_updateCookieStore && !m_proxyConfigService) {
-        m_updateCookieStore = 1;
+    // Do not trigger an update if another is already triggered, or we are not yet initialized.
+    if (m_urlRequestContext && !m_proxyConfigService && !m_updateCookieStore.fetchAndStoreRelaxed(1))
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateCookieStore, this));
-    }
 }
 
 void URLRequestContextGetterQt::generateCookieStore()
@@ -222,7 +224,6 @@ void URLRequestContextGetterQt::generateCookieStore()
     // Unset it first to get a chance to destroy and flush the old cookie store before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
-    m_cookieDelegate->setClient(m_browserContext->cookieStore());
 
     net::CookieStore* cookieStore = 0;
     switch (m_browserContext->persistentCookiesPolicy()) {
@@ -264,6 +265,7 @@ void URLRequestContextGetterQt::generateCookieStore()
 void URLRequestContextGetterQt::updateUserAgent()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    // Do not trigger an update if all storage settings are already being updated
     if (m_urlRequestContext && !m_proxyConfigService)
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateUserAgent, this));
 }
@@ -281,17 +283,17 @@ void URLRequestContextGetterQt::generateUserAgent()
 void URLRequestContextGetterQt::updateHttpCache()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-    if (m_urlRequestContext && !m_updateHttpCache && !m_proxyConfigService) {
-        m_updateHttpCache = 1;
+    // Do not trigger a new update if another is already triggered
+    if (m_urlRequestContext && !m_proxyConfigService && !m_updateHttpCache.fetchAndStoreRelaxed(1))
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateHttpCache, this));
-    }
 }
 
 void URLRequestContextGetterQt::updateJobFactory()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
+    if (m_urlRequestContext && !m_updateJobFactory.fetchAndStoreRelaxed(1))
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
 }
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first, const net::HttpNetworkSession::Params &second)
@@ -399,6 +401,7 @@ void URLRequestContextGetterQt::generateJobFactory()
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
+        // FIXME: release() passes owner-ship to the job-factory, prevent regenerating the job-factory
         jobFactory->SetProtocolHandler(it->first, it->second.release());
     }
 
@@ -420,11 +423,13 @@ void URLRequestContextGetterQt::generateJobFactory()
     for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
         topJobFactory.reset(new net::URLRequestInterceptingJobFactory(topJobFactory.Pass(), make_scoped_ptr(*i)));
 
-    m_requestInterceptors.weak_clear();
+    m_requestInterceptors.weak_clear(); // FIXME: Prevents regenerating job-factory.
 
     m_jobFactory = topJobFactory.Pass();
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
+
+    m_updateJobFactory = 0;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetworkTaskRunner() const
