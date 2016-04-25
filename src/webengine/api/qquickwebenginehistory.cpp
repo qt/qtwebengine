@@ -223,7 +223,7 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     The WebEngineHistory type can be accessed by using the
     \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
 
-    The WebEngineHistory type providess the following WebEngineHistoryListModel data model objects:
+    The WebEngineHistory type provides the following WebEngineHistoryListModel data model objects:
 
     \list
         \li \c backItems, which contains the URLs of visited pages.
@@ -283,9 +283,8 @@ QQuickWebEngineHistory::~QQuickWebEngineHistory()
 }
 
 /*!
-    \qmlproperty QQuickWebEngineHistoryListModel WebEngineHistory::items
+    \qmlproperty WebEngineHistoryListModel WebEngineHistory::items
     \readonly
-    \since QtWebEngine 1.1
 
     URLs of back items, forward items, and the current item in the history.
 */
@@ -298,9 +297,8 @@ QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::items() const
 }
 
 /*!
-    \qmlproperty QQuickWebEngineHistoryListModel WebEngineHistory::backItems
+    \qmlproperty WebEngineHistoryListModel WebEngineHistory::backItems
     \readonly
-    \since QtWebEngine 1.1
 
     URLs of visited pages.
 */
@@ -313,9 +311,8 @@ QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::backItems() const
 }
 
 /*!
-    \qmlproperty QQuickWebEngineHistoryListModel WebEngineHistory::forwardItems
+    \qmlproperty WebEngineHistoryListModel WebEngineHistory::forwardItems
     \readonly
-    \since QtWebEngine 1.1
 
     URLs of the pages that were visited after visiting the current page.
 */

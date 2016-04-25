@@ -237,6 +237,7 @@ private Q_SLOTS:
     void restoreHistory();
     void toPlainTextLoadFinishedRace_data();
     void toPlainTextLoadFinishedRace();
+    void setZoomFactor();
 
     void printToPdf();
 
@@ -4981,6 +4982,31 @@ void tst_QWebEnginePage::toPlainTextLoadFinishedRace()
     QCOMPARE(toPlainTextSync(page), QString("lalala"));
     delete page;
     QVERIFY(spy.count() == 3);
+}
+
+void tst_QWebEnginePage::setZoomFactor()
+{
+    QWebEnginePage *page = new QWebEnginePage;
+
+    QVERIFY(qFuzzyCompare(page->zoomFactor(), 1.0));
+    page->setZoomFactor(2.5);
+    QVERIFY(qFuzzyCompare(page->zoomFactor(), 2.5));
+
+    const QUrl urlToLoad("qrc:/resources/test1.html");
+
+    QSignalSpy finishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    m_page->setUrl(urlToLoad);
+    QTRY_COMPARE(finishedSpy.count(), 1);
+    QVERIFY(finishedSpy.at(0).first().toBool());
+    QVERIFY(qFuzzyCompare(page->zoomFactor(), 2.5));
+
+    page->setZoomFactor(5.5);
+    QVERIFY(qFuzzyCompare(page->zoomFactor(), 2.5));
+
+    page->setZoomFactor(0.1);
+    QVERIFY(qFuzzyCompare(page->zoomFactor(), 2.5));
+
+    delete page;
 }
 
 void tst_QWebEnginePage::printToPdf()

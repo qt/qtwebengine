@@ -134,7 +134,7 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
   The \a download argument holds the state of the finished download instance.
 */
 
-QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(BrowserContextAdapter* browserContext)
+QQuickWebEngineProfilePrivate::QQuickWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter> browserContext)
         : m_settings(new QQuickWebEngineSettings())
         , m_browserContextRef(browserContext)
 {
@@ -261,7 +261,7 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
 */
 QQuickWebEngineProfile::QQuickWebEngineProfile(QObject *parent)
     : QObject(parent),
-      d_ptr(new QQuickWebEngineProfilePrivate(new BrowserContextAdapter(false)))
+      d_ptr(new QQuickWebEngineProfilePrivate(QSharedPointer<BrowserContextAdapter>::create(false)))
 {
     // Sets up the global WebEngineContext
     QQuickWebEngineProfile::defaultProfile();
@@ -822,8 +822,7 @@ void QQuickWebEngineProfile::removeUrlScheme(const QByteArray &scheme)
 void QQuickWebEngineProfile::removeAllUrlSchemeHandlers()
 {
     Q_D(QQuickWebEngineProfile);
-    d->browserContext()->customUrlSchemeHandlers().clear();
-    d->browserContext()->updateCustomUrlSchemeHandlers();
+    d->browserContext()->clearCustomUrlSchemeHandlers();
 }
 
 void QQuickWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)

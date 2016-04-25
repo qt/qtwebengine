@@ -69,9 +69,8 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
     return BrowserContextAdapter::UnsupportedPermission;
 }
 
-PermissionManagerQt::PermissionManagerQt(BrowserContextAdapter *contextAdapter)
-    : m_contextAdapter(contextAdapter)
-    , m_requestIdCount(0)
+PermissionManagerQt::PermissionManagerQt()
+    : m_requestIdCount(0)
     , m_subscriberIdCount(0)
 {
 }

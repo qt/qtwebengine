@@ -104,16 +104,6 @@ BrowserMainWindow *WebPage::mainWindow()
     return BrowserApplication::instance()->mainWindow();
 }
 
-bool WebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
-{
-    Q_UNUSED(type);
-    if (isMainFrame) {
-        m_loadingUrl = url;
-        emit loadingUrl(m_loadingUrl);
-    }
-    return true;
-}
-
 bool WebPage::certificateError(const QWebEngineCertificateError &error)
 {
     if (error.isOverridable()) {
@@ -385,6 +375,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     }
     if (page()->contextMenuData().selectedText().isEmpty())
         menu->addAction(page()->action(QWebEnginePage::SavePage));
+    connect(menu, &QMenu::aboutToHide, menu, &QObject::deleteLater);
     menu->popup(event->globalPos());
 }
 

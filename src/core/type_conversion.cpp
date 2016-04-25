@@ -197,5 +197,4 @@ FaviconInfo toFaviconInfo(const content::FaviconURL &favicon_url)
     return info;
 }
 
-
 } // namespace QtWebEngineCore
