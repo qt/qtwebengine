@@ -648,6 +648,10 @@ QAction *QWebEnginePage::action(WebAction action) const
         text = tr("Reload");
         icon = style->standardIcon(QStyle::SP_BrowserReload);
         break;
+    case ReloadAndBypassCache:
+        text = tr("Reload and Bypass Cache");
+        icon = style->standardIcon(QStyle::SP_BrowserReload);
+        break;
     case Cut:
         text = tr("Cut");
         break;
