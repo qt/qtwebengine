@@ -86,6 +86,7 @@ void QWebEngineViewPrivate::bind(QWebEngineView *view, QWebEnginePage *page)
         QObject::connect(page, &QWebEnginePage::titleChanged, view, &QWebEngineView::titleChanged);
         QObject::connect(page, &QWebEnginePage::urlChanged, view, &QWebEngineView::urlChanged);
         QObject::connect(page, &QWebEnginePage::iconUrlChanged, view, &QWebEngineView::iconUrlChanged);
+        QObject::connect(page, &QWebEnginePage::iconChanged, view, &QWebEngineView::iconChanged);
         QObject::connect(page, &QWebEnginePage::loadStarted, view, &QWebEngineView::loadStarted);
         QObject::connect(page, &QWebEnginePage::loadProgress, view, &QWebEngineView::loadProgress);
         QObject::connect(page, &QWebEnginePage::loadFinished, view, &QWebEngineView::loadFinished);
@@ -119,6 +120,16 @@ QWebEngineViewPrivate::QWebEngineViewPrivate()
     This signal is emitted when the render process is terminated with a non-zero exit status.
     \a terminationStatus is the termination status of the process and \a exitCode is the status code
     with which the process terminated.
+*/
+
+/*!
+    \fn void QWebEngineView::iconChanged(const QIcon &icon)
+    \since 5.7
+
+    This signal is emitted when the icon ("favicon") associated with the
+    view is changed. The new icon is specified by \a icon.
+
+    \sa icon(), iconUrl(), iconUrlChanged()
 */
 
 QWebEngineView::QWebEngineView(QWidget *parent)
@@ -196,6 +207,20 @@ QUrl QWebEngineView::url() const
 QUrl QWebEngineView::iconUrl() const
 {
     return page()->iconUrl();
+}
+
+/*!
+    \property QWebEngineView::icon
+    \brief the icon associated with the page currently viewed
+    \since 5.7
+
+    By default, this property contains a null icon.
+
+    \sa iconChanged(), iconUrl(), iconUrlChanged()
+*/
+QIcon QWebEngineView::icon() const
+{
+    return page()->icon();
 }
 
 bool QWebEngineView::hasSelection() const
