@@ -46,7 +46,9 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+
 #include "pepper_flash_browser_host_qt.h"
+#include "pepper_isolated_file_system_message_filter.h"
 
 using ppapi::host::MessageFilterHost;
 using ppapi::host::ResourceHost;
@@ -78,6 +80,19 @@ scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(pp
                     new PepperFlashBrowserHostQt(host_,
                                                  instance,
                                                  resource));
+
+    // Permissions for the following interfaces will be checked at the
+    // time of the corresponding instance's methods calls (because
+    // permission check can be performed only on the UI
+    // thread). Currently these interfaces are available only for
+    // whitelisted apps which may not have access to the other private
+    // interfaces.
+    if (message.type() == PpapiHostMsg_IsolatedFileSystem_Create::ID) {
+        PepperIsolatedFileSystemMessageFilter* isolated_fs_filter = PepperIsolatedFileSystemMessageFilter::Create(instance, host_);
+        if (!isolated_fs_filter)
+            return scoped_ptr<ResourceHost>();
+        return scoped_ptr<ResourceHost>(new MessageFilterHost(host, instance, resource, isolated_fs_filter));
+    }
 
     return scoped_ptr<ppapi::host::ResourceHost>();
 }
