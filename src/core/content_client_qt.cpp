@@ -58,6 +58,12 @@
 #include <QString>
 
 #if defined(ENABLE_PLUGINS)
+
+// The plugin logic is based on chrome/common/chrome_content_client.cc:
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
@@ -95,7 +101,6 @@ static QString ppapiPluginsPath()
 }
 
 
-// Adopted from chrome_content_client.cc
 content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path, const std::string& version)
 {
     content::PepperPluginInfo plugin;
