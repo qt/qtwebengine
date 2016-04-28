@@ -556,67 +556,6 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
 }
 
 /*!
-    \since 5.7
-
-    Sets the current \a language for the spell checker.
-    The language should match the name of the \c .bdic dictionary.
-    For example, the \a language \c en-US will load the \c en-US.bdic
-    dictionary file.
-
-    The web engine checks for the \c qtwebengine_dictionaries subdirectory
-    first in the local directory and if it is not found in the Qt
-    installation directory:
-
-    \list
-        \li QCoreApplication::applicationDirPath()/qtwebengine_dictionaries
-        \li [QLibraryInfo::DataPath]/qtwebengine_dictionaries
-    \endlist
-
-    For more information about how to compile \c .bdic dictionaries, see the
-    \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
-
-*/
-void QWebEngineProfile::setSpellCheckLanguage(const QString &language)
-{
-    Q_D(QWebEngineProfile);
-    d->browserContext()->setSpellCheckLanguage(language);
-}
-
-/*!
-    \since 5.7
-
-    Returns the language used by the spell checker.
-*/
-QString QWebEngineProfile::spellCheckLanguage() const
-{
-    const Q_D(QWebEngineProfile);
-    return d->browserContext()->spellCheckLanguage();
-}
-
-/*!
-    \since 5.7
-
-    Enables spell checker if \a enable is \c true, otherwise disables it.
-    \sa isSpellCheckEnabled()
- */
-void QWebEngineProfile::setSpellCheckEnabled(bool enable)
-{
-     Q_D(QWebEngineProfile);
-     d->browserContext()->setSpellCheckEnabled(enable);
-}
-/*!
-    \since 5.7
-
-    Returns \c true if the spell checker is enabled; otherwise returns \c false.
-    \sa setSpellCheckEnabled()
- */
-bool QWebEngineProfile::isSpellCheckEnabled() const
-{
-     const Q_D(QWebEngineProfile);
-     return d->browserContext()->isSpellCheckEnabled();
-}
-
-/*!
     Returns the default settings for all pages in this profile.
 */
 QWebEngineSettings *QWebEngineProfile::settings() const

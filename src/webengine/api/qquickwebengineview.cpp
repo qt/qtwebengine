@@ -202,16 +202,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
 
     // Populate our menu
     MenuItemHandler *item = 0;
-    if (contextMenuData.isContentEditable() && !contextMenuData.spellCheckerSuggestions().isEmpty()) {
-        const QPointer<QQuickWebEngineView> qRef(q);
-        for (int i=0; i < contextMenuData.spellCheckerSuggestions().count() && i < 4; i++) {
-            item = new MenuItemHandler(menu);
-            QString replacement = contextMenuData.spellCheckerSuggestions().at(i);
-            QObject::connect(item, &MenuItemHandler::triggered, [qRef, replacement] { qRef->replaceMisspelledWord(replacement); });
-            ui()->addMenuItem(item, replacement);
-        }
-        ui()->addMenuSeparator(menu);
-    }
+
     if (!data.linkText.isEmpty() && data.linkUrl.isValid()) {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::OpenLinkInThisWindow); });
@@ -1235,12 +1226,6 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
 
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.insert(requestId, callback);
-}
-
-void QQuickWebEngineView::replaceMisspelledWord(const QString &replacement)
-{
-    Q_D(QQuickWebEngineView);
-    d->adapter->replaceMisspelling(replacement);
 }
 
 bool QQuickWebEngineView::isFullScreen() const

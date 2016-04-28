@@ -92,8 +92,6 @@ public:
     Q_PROPERTY(QUrl mediaUrl READ mediaUrl NOTIFY mediaUrlChanged)
     Q_PROPERTY(MediaType mediaType READ mediaType NOTIFY mediaTypeChanged)
     Q_PROPERTY(bool isContentEditable READ isContentEditable NOTIFY isContentEditableChanged)
-    Q_PROPERTY(QString misspelledWord READ misspelledWord NOTIFY misspelledWordChanged)
-    Q_PROPERTY(QStringList spellCheckerSuggestions READ spellCheckerSuggestions NOTIFY spellCheckerSuggestionsChanged)
 
     bool isValid() const;
 
@@ -105,9 +103,6 @@ public:
     MediaType mediaType() const;
     bool isContentEditable() const;
 
-    QString misspelledWord() const;
-    QStringList spellCheckerSuggestions() const;
-
 Q_SIGNALS:
     void isValidChanged();
     void positionChanged();
@@ -117,8 +112,6 @@ Q_SIGNALS:
     void mediaUrlChanged();
     void mediaTypeChanged();
     void isContentEditableChanged();
-    void misspelledWordChanged();
-    void spellCheckerSuggestionsChanged();
 
 private:
     void update(const QtWebEngineCore::WebEngineContextMenuData &update);
