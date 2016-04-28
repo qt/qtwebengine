@@ -59,6 +59,7 @@ OTHER_FILES += \
     $$PWD/data/tst_navigationRequested.qml \
     $$PWD/data/tst_properties.qml \
     $$PWD/data/tst_runJavaScript.qml \
+    $$PWD/data/tst_scrollPosition.qml \
     $$PWD/data/tst_titleChanged.qml \
     $$PWD/data/tst_unhandledKeyEventPropagation.qml \
     $$PWD/data/tst_userScripts.qml \
