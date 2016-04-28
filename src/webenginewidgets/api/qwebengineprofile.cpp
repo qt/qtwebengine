@@ -558,23 +558,6 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
 /*!
     \since 5.7
 
-    Returns the subset of \a languages supported by the spell checker.
-
-    Checks whether the spell checker dictionary is installed for the specified
-    language from the \a languages list. If the dictionary file is missing
-    or corrupted, the language is removed from the returned list.
-
-    \sa setSpellCheckLanguage()
-*/
-QStringList QWebEngineProfile::availableDictionaries(const QStringList &languages)
-{
-    const Q_D(QWebEngineProfile);
-    return d->browserContext()->spellCheckLanguages(languages);
-}
-
-/*!
-    \since 5.7
-
     Sets the current \a language for the spell checker.
 */
 void QWebEngineProfile::setSpellCheckLanguage(const QString &language)

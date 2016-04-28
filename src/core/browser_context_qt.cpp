@@ -47,6 +47,7 @@
 #include "ssl_host_state_delegate_qt.h"
 #include "type_conversion.h"
 #include "url_request_context_getter_qt.h"
+#include "web_engine_library_info.h"
 
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,6 +55,7 @@
 #include "net/proxy/proxy_config_service.h"
 
 #if defined(ENABLE_SPELLCHECK)
+#include "base/base_paths.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_store.h"
@@ -201,22 +203,12 @@ net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::Pr
     return url_request_getter_.get();
 }
 
-
 #if defined(ENABLE_SPELLCHECK)
-QStringList BrowserContextQt::spellCheckLanguages(const QStringList& acceptedLanguages)
+void BrowserContextQt::failedToLoadDictionary(const std::string &language)
 {
-    QStringList result;
-#if !defined(OS_MACOSX) // no SpellcheckService::GetSpellCheckLanguages
-    m_prefService->SetString(prefs::kAcceptLanguages,acceptedLanguages.join(",").toStdString());
-
-    std::vector<std::string> vec;
-    SpellcheckService::GetSpellCheckLanguages(this, &vec);
-
-    for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); ++it) {
-        result << QString::fromStdString(*it);
-    }
-#endif
-    return result;
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    qWarning() << "Could not load dictionary for:" << toQt(language) << endl
+               << "Make sure that correct bdic file is in:" << toQt(WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES).value());
 }
 
 void BrowserContextQt::setSpellCheckLanguage(const QString &language)

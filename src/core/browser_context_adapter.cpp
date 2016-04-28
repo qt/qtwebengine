@@ -466,15 +466,6 @@ void BrowserContextAdapter::clearHttpCache()
         m_browserContext->url_request_getter_->clearHttpCache();
 }
 
-QStringList BrowserContextAdapter::spellCheckLanguages(const QStringList &acceptLanguages)
-{
-#if defined(ENABLE_SPELLCHECK)
-    return m_browserContext->spellCheckLanguages(acceptLanguages);
-#else
-    return QStringList();
-#endif
-}
-
 void BrowserContextAdapter::setSpellCheckLanguage(const QString &language)
 {
 #if defined(ENABLE_SPELLCHECK)

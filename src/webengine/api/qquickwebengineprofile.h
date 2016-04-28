@@ -131,7 +131,6 @@ public:
 
     void clearHttpCache();
 
-    Q_REVISION(2) Q_INVOKABLE QStringList availableDictionaries(const QStringList &languages);
     Q_REVISION(2) void setSpellCheckLanguage(const QString &language);
     Q_REVISION(2) QString spellCheckLanguage() const;
     Q_REVISION(2) void setSpellCheckEnabled(bool enabled);

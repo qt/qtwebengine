@@ -613,31 +613,6 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
 }
 
 /*!
-    \qmlmethod void QQuickWebEngineProfile::availableDictionaries()
-
-    Returns the subset of \a languages supported by the spell checker.
-    Checks whether the spell checker dictionary is installed for the specified
-    language from the \a languages list. If the dictionary file is missing
-    or corrupted, the language is removed from the returned list.
-
-    \since QtWebEngine 1.3
-*/
-
-/*!
-    Returns the subset of \a languages supported by the spell checker.
-    Checks whether the spell checker dictionary is installed for the specified
-    language from the \a languages list. If the dictionary file is missing
-    or corrupted, the language is removed from the returned list.
-
-    \since QtWebEngine 1.3
-*/
-QStringList QQuickWebEngineProfile::availableDictionaries(const QStringList &languages)
-{
-    const Q_D(QQuickWebEngineProfile);
-    return d->browserContext()->spellCheckLanguages(languages);
-}
-
-/*!
     \property QQuickWebEngineProfile::spellCheckLanguage
     \brief the language used by the spell checker.
 
