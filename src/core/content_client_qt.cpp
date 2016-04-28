@@ -184,6 +184,17 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
         pluginPaths << QtWebEngineCore::toQt(widevine_argument);
     else {
         pluginPaths << ppapiPluginsPath() + QStringLiteral("/") + QString::fromLatin1(kWidevineCdmAdapterFileName);
+#if defined(Q_OS_OSX)
+    QDir potentialWidevineDir(QDir::homePath() + "/Library/Application Support/Google/Chrome/WidevineCDM");
+    if (potentialWidevineDir.exists()) {
+        QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+        for (int i = 0; i < widevineVersionDirs.size(); ++i) {
+            QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
+            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/mac_x64/" + QString::fromLatin1(kWidevineCdmAdapterFileName);
+            pluginPaths << potentialWidevinePluginPath;
+        }
+    }
+#endif
 #if defined(Q_OS_LINUX)
         pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdmadapter.so") // Google Chrome
                     << QStringLiteral("/usr/lib/chromium/libwidevinecdmadapter.so"); // Arch
