@@ -121,6 +121,7 @@ private slots:
 private:
     void clean();
     void installTranslator(const QString &name);
+    QString getCommandLineUrlArgument() const;
 
     static HistoryManager *s_historyManager;
     static DownloadManager *s_downloadManager;

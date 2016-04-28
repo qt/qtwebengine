@@ -127,11 +127,7 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     socket.connectToServer(serverName);
     if (socket.waitForConnected(500)) {
         QTextStream stream(&socket);
-        QStringList args = QCoreApplication::arguments();
-        if (args.count() > 1)
-            stream << args.last();
-        else
-            stream << QString();
+        stream << getCommandLineUrlArgument();
         stream.flush();
         socket.waitForBytesWritten();
         return;
@@ -246,11 +242,13 @@ void BrowserApplication::postLaunch()
 
     // newMainWindow() needs to be called in main() for this to happen
     if (m_mainWindows.count() > 0) {
-        QStringList args = QCoreApplication::arguments();
-        if (args.count() > 1)
-            mainWindow()->loadPage(args.last());
-        else
+        const QString url = getCommandLineUrlArgument();
+        if (!url.isEmpty()) {
+            mainWindow()->loadPage(url);
+        } else {
             mainWindow()->slotHome();
+        }
+
     }
     BrowserApplication::historyManager();
 }
@@ -395,6 +393,19 @@ void BrowserApplication::installTranslator(const QString &name)
     QTranslator *translator = new QTranslator(this);
     translator->load(name, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     QApplication::installTranslator(translator);
+}
+
+QString BrowserApplication::getCommandLineUrlArgument() const
+{
+    const QStringList args = QCoreApplication::arguments();
+    if (args.count() > 1) {
+        const QString lastArg = args.last();
+        const bool isValidUrl = QUrl::fromUserInput(lastArg).isValid();
+        if (isValidUrl)
+            return lastArg;
+    }
+
+     return QString();
 }
 
 #if defined(Q_OS_OSX)
