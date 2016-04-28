@@ -42,10 +42,10 @@
 
 #include "qtwebenginecoreglobal.h"
 
+#include <QEnableSharedFromThis>
 #include <QList>
 #include <QPointer>
 #include <QScopedPointer>
-#include <QSharedData>
 #include <QString>
 #include <QVector>
 
@@ -63,14 +63,14 @@ class DownloadManagerDelegateQt;
 class UserResourceControllerHost;
 class WebEngineVisitedLinksManager;
 
-class QWEBENGINE_EXPORT BrowserContextAdapter : public QSharedData
+class QWEBENGINE_EXPORT BrowserContextAdapter : public QEnableSharedFromThis<BrowserContextAdapter>
 {
 public:
     explicit BrowserContextAdapter(bool offTheRecord = false);
     explicit BrowserContextAdapter(const QString &storagePrefix);
     virtual ~BrowserContextAdapter();
 
-    static BrowserContextAdapter* defaultContext();
+    static QSharedPointer<BrowserContextAdapter> defaultContext();
     static QObject* globalQObjectRoot();
 
     WebEngineVisitedLinksManager *visitedLinksManager();
@@ -156,8 +156,9 @@ public:
     bool trackVisitedLinks() const;
     bool persistVisitedLinks() const;
 
-    QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers();
-    void updateCustomUrlSchemeHandlers();
+    const QHash<QByteArray, QWebEngineUrlSchemeHandler *> &customUrlSchemeHandlers() const;
+    const QList<QByteArray> customUrlSchemes() const;
+    void clearCustomUrlSchemeHandlers();
     void addCustomUrlSchemeHandler(const QByteArray &, QWebEngineUrlSchemeHandler *);
     bool removeCustomUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     QWebEngineUrlSchemeHandler *takeCustomUrlSchemeHandler(const QByteArray &);
@@ -173,6 +174,8 @@ public:
     void clearHttpCache();
 
 private:
+    void updateCustomUrlSchemeHandlers();
+
     QString m_name;
     bool m_offTheRecord;
     QScopedPointer<BrowserContextQt> m_browserContext;

@@ -188,7 +188,7 @@ public:
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                        const QPixmap &pixmap, const QPoint &offset) Q_DECL_OVERRIDE;
 
-    virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
+    virtual QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() Q_DECL_OVERRIDE;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
@@ -232,6 +232,7 @@ private:
     QList<QQuickWebEngineScript *> m_userScripts;
     qreal m_dpiScale;
     QColor m_backgroundColor;
+    qreal m_defaultZoomFactor;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

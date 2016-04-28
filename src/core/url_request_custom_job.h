@@ -48,17 +48,17 @@
 #include <QtCore/QPointer>
 
 QT_FORWARD_DECLARE_CLASS(QIODevice)
-QT_FORWARD_DECLARE_CLASS(QWebEngineUrlSchemeHandler)
 
 namespace QtWebEngineCore {
 
+class BrowserContextAdapter;
 class URLRequestCustomJobDelegate;
 class URLRequestCustomJobShared;
 
 // A request job that handles reading custom URL schemes
 class URLRequestCustomJob : public net::URLRequestJob {
 public:
-    URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, QWebEngineUrlSchemeHandler *schemeHandler);
+    URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, const std::string &scheme, QWeakPointer<const BrowserContextAdapter> adapter);
     virtual void Start() Q_DECL_OVERRIDE;
     virtual void Kill() Q_DECL_OVERRIDE;
     virtual int ReadRawData(net::IOBuffer* buf, int buf_size)  Q_DECL_OVERRIDE;;
@@ -70,7 +70,8 @@ protected:
     virtual ~URLRequestCustomJob();
 
 private:
-    QWebEngineUrlSchemeHandler *m_schemeHandler;
+    std::string m_scheme;
+    QWeakPointer<const BrowserContextAdapter> m_adapter;
     URLRequestCustomJobShared *m_shared;
 
     friend class URLRequestCustomJobShared;

@@ -27,6 +27,7 @@ OTHER_FILES += \
     $$PWD/data/geolocation.html \
     $$PWD/data/javascript.html \
     $$PWD/data/link.html \
+    $$PWD/data/localStorage.html \
     $$PWD/data/prompt.html \
     $$PWD/data/multifileupload.html \
     $$PWD/data/redirect.html \
@@ -61,6 +62,7 @@ OTHER_FILES += \
     $$PWD/data/tst_unhandledKeyEventPropagation.qml \
     $$PWD/data/tst_userScripts.qml \
     $$PWD/data/tst_webchannel.qml \
+    $$PWD/data/tst_settings.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
     $$PWD/data/icons/favicon.png \
     $$PWD/data/icons/grayicons.ico \

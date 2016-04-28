@@ -164,7 +164,7 @@ namespace QtWebEngineCore {
 
 void WebEngineContext::destroyBrowserContext()
 {
-    m_defaultBrowserContext = 0;
+    m_defaultBrowserContext.reset();
 }
 
 void WebEngineContext::destroy()
@@ -198,11 +198,11 @@ scoped_refptr<WebEngineContext> WebEngineContext::current()
     return sContext;
 }
 
-BrowserContextAdapter* WebEngineContext::defaultBrowserContext()
+QSharedPointer<BrowserContextAdapter> WebEngineContext::defaultBrowserContext()
 {
     if (!m_defaultBrowserContext)
-        m_defaultBrowserContext = new BrowserContextAdapter(QStringLiteral("Default"));
-    return m_defaultBrowserContext.data();
+        m_defaultBrowserContext = QSharedPointer<BrowserContextAdapter>::create(QStringLiteral("Default"));
+    return m_defaultBrowserContext;
 }
 
 QObject *WebEngineContext::globalQObject()

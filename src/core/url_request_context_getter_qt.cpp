@@ -89,24 +89,28 @@ static const char kQrcSchemeQt[] = "qrc";
 
 using content::BrowserThread;
 
-URLRequestContextGetterQt::URLRequestContextGetterQt(BrowserContextAdapter *browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
+URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)
     : m_ignoreCertificateErrors(false)
     , m_browserContext(browserContext)
+    , m_baseJobFactory(0)
     , m_cookieDelegate(new CookieMonsterDelegateQt())
     , m_requestInterceptors(std::move(request_interceptors))
 {
     std::swap(m_protocolHandlers, *protocolHandlers);
+    m_cookieDelegate->setClient(m_browserContext->cookieStore());
 
     updateStorageSettings();
 }
 
 URLRequestContextGetterQt::~URLRequestContextGetterQt()
 {
+    m_cookieDelegate->setCookieMonster(0); // this will let CookieMonsterDelegateQt be deleted
     delete m_proxyConfigService.fetchAndStoreAcquire(0);
 }
 
 net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     if (!m_urlRequestContext) {
         m_urlRequestContext.reset(new net::URLRequestContext());
 
@@ -123,14 +127,16 @@ net::URLRequestContext *URLRequestContextGetterQt::GetURLRequestContext()
 void URLRequestContextGetterQt::updateStorageSettings()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    // m_proxyConfigService having a non-null value is used to indicate
+    // storage is already being updated.
     if (!m_proxyConfigService.loadAcquire()) {
         // We must create the proxy config service on the UI loop on Linux because it
         // must synchronously run on the glib message loop. This will be passed to
         // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-        m_proxyConfigService = new ProxyConfigServiceQt(net::ProxyService::CreateSystemProxyConfigService(
+        m_proxyConfigService.storeRelease(new ProxyConfigServiceQt(net::ProxyService::CreateSystemProxyConfigService(
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
             content::BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-        ));
+        )));
         if (m_storage) {
             content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateStorage, this));
         }
@@ -154,6 +160,7 @@ void URLRequestContextGetterQt::cancelAllUrlRequests()
 
 void URLRequestContextGetterQt::generateStorage()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
 
     // We must stop all requests before deleting their backends.
@@ -206,14 +213,15 @@ void URLRequestContextGetterQt::generateStorage()
 
 void URLRequestContextGetterQt::updateCookieStore()
 {
-    if (m_urlRequestContext && !m_updateCookieStore && !m_proxyConfigService) {
-        m_updateCookieStore = 1;
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    // Do not trigger an update if another is already triggered, or we are not yet initialized.
+    if (m_urlRequestContext && !m_proxyConfigService && !m_updateCookieStore.fetchAndStoreRelaxed(1))
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateCookieStore, this));
-    }
 }
 
 void URLRequestContextGetterQt::generateCookieStore()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
     m_updateCookieStore = 0;
@@ -221,7 +229,6 @@ void URLRequestContextGetterQt::generateCookieStore()
     // Unset it first to get a chance to destroy and flush the old cookie store before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
-    m_cookieDelegate->setClient(m_browserContext->cookieStore());
 
     net::CookieStore* cookieStore = 0;
     switch (m_browserContext->persistentCookiesPolicy()) {
@@ -262,51 +269,38 @@ void URLRequestContextGetterQt::generateCookieStore()
 
 void URLRequestContextGetterQt::updateUserAgent()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    // Do not trigger an update if all storage settings are already being updated
     if (m_urlRequestContext && !m_proxyConfigService)
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateUserAgent, this));
 }
 
-class HttpUserAgentSettingsQt : public net::HttpUserAgentSettings
-{
-    const BrowserContextAdapter *m_browserContext;
-public:
-    HttpUserAgentSettingsQt(const BrowserContextAdapter *ctx)
-        : m_browserContext(ctx)
-    {
-    }
-
-    std::string GetAcceptLanguage() const Q_DECL_OVERRIDE
-    {
-        return m_browserContext->httpAcceptLanguage().toStdString();
-    }
-
-    std::string GetUserAgent() const Q_DECL_OVERRIDE
-    {
-        return m_browserContext->httpUserAgent().toStdString();
-    }
-};
-
 void URLRequestContextGetterQt::generateUserAgent()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
-    m_storage->set_http_user_agent_settings(scoped_ptr<net::HttpUserAgentSettings>(new HttpUserAgentSettingsQt(m_browserContext.constData())));
+    m_storage->set_http_user_agent_settings(scoped_ptr<net::HttpUserAgentSettings>(
+        new net::StaticHttpUserAgentSettings(m_browserContext->httpAcceptLanguage().toStdString(), m_browserContext->httpUserAgent().toStdString())));
 }
 
 void URLRequestContextGetterQt::updateHttpCache()
 {
-    if (m_urlRequestContext && !m_updateHttpCache && !m_proxyConfigService) {
-        m_updateHttpCache = 1;
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    // Do not trigger a new update if another is already triggered
+    if (m_urlRequestContext && !m_proxyConfigService && !m_updateHttpCache.fetchAndStoreRelaxed(1))
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateHttpCache, this));
-    }
 }
 
 void URLRequestContextGetterQt::updateJobFactory()
 {
-    Q_ASSERT(m_jobFactory);
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestContextGetterQt::generateJobFactory, this));
+    if (m_urlRequestContext && !m_updateJobFactory.fetchAndStoreRelaxed(1))
+        content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                         base::Bind(&URLRequestContextGetterQt::regenerateJobFactory,
+                                                    this, m_browserContext->customUrlSchemes()));
 }
 
 static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &first, const net::HttpNetworkSession::Params &second)
@@ -357,6 +351,7 @@ net::HttpNetworkSession::Params URLRequestContextGetterQt::generateNetworkSessio
 
 void URLRequestContextGetterQt::generateHttpCache()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
     Q_ASSERT(m_storage);
 
@@ -420,9 +415,10 @@ void URLRequestContextGetterQt::clearCurrentCacheBackend()
 
 void URLRequestContextGetterQt::generateJobFactory()
 {
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(!m_jobFactory);
 
-    m_jobFactory.reset();
     scoped_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
@@ -430,6 +426,7 @@ void URLRequestContextGetterQt::generateJobFactory()
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         jobFactory->SetProtocolHandler(it->first, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
+        m_protocolHandlers.clear();
     }
 
     jobFactory->SetProtocolHandler(url::kDataScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
@@ -440,10 +437,12 @@ void URLRequestContextGetterQt::generateJobFactory()
     jobFactory->SetProtocolHandler(url::kFtpScheme,
         scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver()))));
 
-    QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator it = m_browserContext->customUrlSchemeHandlers().constBegin();
-    const QHash<QByteArray, QWebEngineUrlSchemeHandler*>::const_iterator end = m_browserContext->customUrlSchemeHandlers().constEnd();
-    for (; it != end; ++it)
-        jobFactory->SetProtocolHandler(it.key().toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(it.value())));
+    m_installedCustomSchemes = m_browserContext->customUrlSchemes();
+    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+        jobFactory->SetProtocolHandler(scheme.toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
+    }
+
+    m_baseJobFactory = jobFactory.get();
 
     // Set up interceptors in the reverse order.
     scoped_ptr<net::URLRequestJobFactory> topJobFactory = std::move(jobFactory);
@@ -456,6 +455,27 @@ void URLRequestContextGetterQt::generateJobFactory()
     m_jobFactory = std::move(topJobFactory);
 
     m_urlRequestContext->set_job_factory(m_jobFactory.get());
+}
+
+void URLRequestContextGetterQt::regenerateJobFactory(const QList<QByteArray> customSchemes)
+{
+    Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    Q_ASSERT(m_urlRequestContext);
+    Q_ASSERT(m_jobFactory);
+    Q_ASSERT(m_baseJobFactory);
+
+    m_updateJobFactory.storeRelease(0);
+    if (customSchemes == m_installedCustomSchemes)
+        return;
+
+    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), nullptr);
+    }
+
+    m_installedCustomSchemes = customSchemes;
+    Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
+        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
+    }
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> URLRequestContextGetterQt::GetNetworkTaskRunner() const
