@@ -84,7 +84,7 @@ defineTest(finalizeConfigure) {
                 skipBuild("Unmet dependencies: icu-uc, icu-i18n")
             }
         } else {
-            log("ICU............................... Using internal copy (Default, force system ICU with WEBENGINE_CONFIG += use_system_icu)$${EOL}")
+            log("ICU............................... Using internal copy (Default, force system ICU with WEBENGINE_CONFIG+=use_system_icu)$${EOL}")
         }
         use?(system_ffmpeg) {
             packagesExist("libavcodec libavformat libavutil") {
@@ -99,13 +99,13 @@ defineTest(finalizeConfigure) {
                 skipBuild("Unmet dependencies: libavcodec, libavformat, libavutil")
             }
         } else {
-            log("FFMPEG............................ Using internal copy (Default, force system FFMPEG with WEBENGINE_CONFIG += use_system_ffmpeg)$${EOL}")
+            log("FFMPEG............................ Using internal copy (Default, force system FFMPEG with WEBENGINE_CONFIG+=use_system_ffmpeg)$${EOL}")
         }
     }
     use?(proprietary_codecs) {
         log("Proprietary codecs (H264, MP3).... Enabled$${EOL}")
     } else {
-        log("Proprietary codecs (H264, MP3).... Not enabled         (Default, enable with WEBENGINE_CONFIG += use_proprietary_codecs)$${EOL}")
+        log("Proprietary codecs (H264, MP3).... Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_proprietary_codecs)$${EOL}")
     }
 }
 
