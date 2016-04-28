@@ -202,6 +202,11 @@ bool ContentRendererClientQt::IsLinkVisited(unsigned long long linkHash)
     return m_visitedLinkSlave->IsVisited(linkHash);
 }
 
+// The following is based on chrome/renderer/media/chrome_key_systems.cc:
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #if defined(ENABLE_PEPPER_CDMS)
 static bool IsPepperCdmAvailable(const std::string& pepper_type,
                                  std::vector<base::string16>* additional_param_names,

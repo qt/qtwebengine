@@ -37,6 +37,11 @@
 **
 ****************************************************************************/
 
+// This is based on chrome/renderer/pepper/chrome_renderer_pepper_host_factory.cc:
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "pepper_renderer_host_factory_qt.h"
 #include "pepper_flash_renderer_host_qt.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
