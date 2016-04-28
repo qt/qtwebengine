@@ -148,6 +148,8 @@ QWebEngineUrlRequestInterceptor *BrowserContextAdapter::requestInterceptor()
 void BrowserContextAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     m_requestInterceptor = interceptor;
+    if (m_browserContext->url_request_getter_.get())
+        m_browserContext->url_request_getter_->updateRequestInterceptor();
 }
 
 void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
