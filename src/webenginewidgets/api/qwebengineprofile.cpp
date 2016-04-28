@@ -559,6 +559,22 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
     \since 5.7
 
     Sets the current \a language for the spell checker.
+    The language should match the name of the \c .bdic dictionary.
+    For example, the \a language \c en-US will load the \c en-US.bdic
+    dictionary file.
+
+    The web engine checks for the \c qtwebengine_dictionaries subdirectory
+    first in the local directory and if it is not found in the Qt
+    installation directory:
+
+    \list
+        \li QCoreApplication::applicationDirPath()/qtwebengine_dictionaries
+        \li [QLibraryInfo::DataPath]/qtwebengine_dictionaries
+    \endlist
+
+    For more information about how to compile \c .bdic dictionaries, see the
+    \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
+
 */
 void QWebEngineProfile::setSpellCheckLanguage(const QString &language)
 {

@@ -623,6 +623,21 @@ QQuickWebEngineProfile *QQuickWebEngineProfile::defaultProfile()
     \qmlproperty QString WebEngineProfile::spellCheckLanguage
 
     This property holds the language used by the spell checker.
+    The language should match the name of the \c .bdic dictionary.
+    For example, the \a language \c en-US will load the \c en-US.bdic
+    dictionary file.
+
+    The web engine checks for the \c qtwebengine_dictionaries subdirectory
+    first in the local directory and if it is not found in the Qt
+    installation directory:
+
+    \list
+        \li QCoreApplication::applicationDirPath()/qtwebengine_dictionaries
+        \li [QLibraryInfo::DataPath]/qtwebengine_dictionaries
+    \endlist
+
+    For more information about how to compile \c .bdic dictionaries, see the
+    \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
 
     \since QtWebEngine 1.3
 */
