@@ -3983,7 +3983,9 @@ void tst_QWebEnginePage::setHtmlWithImageResource()
     page.setHtml(html);
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 0);
+    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 0);
 }
 
