@@ -46,8 +46,7 @@ information about a particular change.
    * New API for disabling or clearing HTTP cache
 
  - WebEngineSettings:
-   * New settings for controlling WebGL, WebAudio, automatic favicon
-     download and more.
+   * New settings for controlling WebGL, automatic favicon download and more.
 
 
 ****************************************************************************
@@ -72,8 +71,7 @@ information about a particular change.
    * New API for disabling or clearing HTTP cache
 
  - QWebEngineSettings:
-   * New settings for controlling WebGL, WebAudio, automatic favicon
-     download and more.
+   * New settings for controlling WebGL, automatic favicon download and more.
 
 ****************************************************************************
 *                              Examples                                    *

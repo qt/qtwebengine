@@ -264,19 +264,6 @@ bool QQuickWebEngineSettings::webGLEnabled() const
 }
 
 /*!
-    \qmlproperty bool WebEngineSettings::webAudioEnabled
-    \since QtWebEngine 1.3
-
-    Enables support for HTML 5 WebAudio.
-
-    Disabled by default.
-*/
-bool QQuickWebEngineSettings::webAudioEnabled() const
-{
-    return d_ptr->testAttribute(WebEngineSettings::WebAudioEnabled);
-}
-
-/*!
     \qmlproperty bool WebEngineSettings::accelerated2dCanvasEnabled
     \since QtWebEngine 1.3
 
@@ -451,14 +438,6 @@ void QQuickWebEngineSettings::setWebGLEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::WebGLEnabled, on);
     if (wasOn != on)
         Q_EMIT webGLEnabledChanged();
-}
-
-void QQuickWebEngineSettings::setWebAudioEnabled(bool on)
-{
-    bool wasOn = d_ptr->testAttribute(WebEngineSettings::WebAudioEnabled);
-    d_ptr->setAttribute(WebEngineSettings::WebAudioEnabled, on);
-    if (wasOn != on)
-        Q_EMIT webAudioEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setAccelerated2dCanvasEnabled(bool on)

@@ -64,7 +64,6 @@ public:
         FullScreenSupportEnabled,
         ScreenCaptureEnabled,
         WebGLEnabled,
-        WebAudioEnabled,
         Accelerated2dCanvasEnabled,
         AutoLoadIconsForPage,
         TouchIconsEnabled

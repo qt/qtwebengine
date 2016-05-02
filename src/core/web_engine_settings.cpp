@@ -222,7 +222,6 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         s_defaultAttributes.insert(PluginsEnabled, false);
         s_defaultAttributes.insert(FullScreenSupportEnabled, false);
         s_defaultAttributes.insert(ScreenCaptureEnabled, false);
-        s_defaultAttributes.insert(WebAudioEnabled, false);
         // The following defaults matches logic in render_view_host_impl.cc
         // But first we must ensure the WebContext has been initialized
         QtWebEngineCore::WebEngineContext::current();
@@ -312,7 +311,6 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->plugins_enabled = testAttribute(PluginsEnabled);
     prefs->fullscreen_supported = testAttribute(FullScreenSupportEnabled);
     prefs->accelerated_2d_canvas_enabled = testAttribute(Accelerated2dCanvasEnabled);
-    prefs->webaudio_enabled = testAttribute(WebAudioEnabled);
     prefs->experimental_webgl_enabled = testAttribute(WebGLEnabled);
 
     // Fonts settings.
