@@ -50,6 +50,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/devtools_discovery/devtools_discovery_manager.h"
@@ -178,7 +179,7 @@ DevToolsTargetDescriptor::List DevToolsDiscoveryProviderQt::GetDescriptors()
 
 namespace QtWebEngineCore {
 
-scoped_ptr<DevToolsHttpHandler> createDevToolsHttpHandler()
+std::unique_ptr<DevToolsHttpHandler> createDevToolsHttpHandler()
 {
     DevToolsHttpHandlerDelegateQt *delegate = new DevToolsHttpHandlerDelegateQt();
     if (!delegate->isValid()) {
@@ -187,9 +188,9 @@ scoped_ptr<DevToolsHttpHandler> createDevToolsHttpHandler()
     }
     scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory(delegate->bindAddress().toStdString(), delegate->port(), 1));
     // Ownership of the delegate is taken over the devtools http handler.
-    scoped_ptr<DevToolsHttpHandler> handler(new DevToolsHttpHandler(std::move(factory), std::string(), delegate, base::FilePath(), base::FilePath(), std::string(), std::string()));
+    std::unique_ptr<DevToolsHttpHandler> handler(new DevToolsHttpHandler(std::move(factory), std::string(), delegate, base::FilePath(), base::FilePath(), std::string(), std::string()));
     DevToolsDiscoveryManager::GetInstance()->AddProvider(scoped_ptr<DevToolsDiscoveryManager::Provider>(new DevToolsDiscoveryProviderQt()));
-    return handler;
+    return std::move(handler);
 }
 
 DevToolsHttpHandlerDelegateQt::DevToolsHttpHandlerDelegateQt()

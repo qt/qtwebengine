@@ -280,7 +280,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
 
-    net::CookieStore* cookieStore = 0;
+    scoped_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
     case BrowserContextAdapter::NoPersistentCookies:
         cookieStore =
@@ -310,10 +310,12 @@ void URLRequestContextGetterQt::generateCookieStore()
             );
         break;
     }
-    m_storage->set_cookie_store(cookieStore);
 
-    net::CookieMonster * const cookieMonster = cookieStore->GetCookieMonster();
-    cookieMonster->SetCookieableSchemes(kCookieableSchemes, arraysize(kCookieableSchemes));
+    net::CookieMonster * const cookieMonster = static_cast<net::CookieMonster*>(cookieStore.get());
+    m_storage->set_cookie_store(std::move(cookieStore));
+
+    const std::vector<std::string> cookieableSchemes(kCookieableSchemes, kCookieableSchemes + arraysize(kCookieableSchemes));
+    cookieMonster->SetCookieableSchemes(cookieableSchemes);
     m_cookieDelegate->setCookieMonster(cookieMonster);
 }
 
@@ -395,8 +397,6 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
         return false;
     if (first.http_auth_handler_factory != second.http_auth_handler_factory)
         return false;
-    if (first.network_delegate != second.network_delegate)
-        return false;
     if (first.http_server_properties.get() != second.http_server_properties.get())
         return false;
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
@@ -419,7 +419,6 @@ net::HttpNetworkSession::Params URLRequestContextGetterQt::generateNetworkSessio
     network_session_params.proxy_service                = m_urlRequestContext->proxy_service();
     network_session_params.ssl_config_service           = m_urlRequestContext->ssl_config_service();
     network_session_params.http_auth_handler_factory    = m_urlRequestContext->http_auth_handler_factory();
-    network_session_params.network_delegate             = m_networkDelegate.get();
     network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
     network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
     network_session_params.host_resolver                = m_urlRequestContext->host_resolver();

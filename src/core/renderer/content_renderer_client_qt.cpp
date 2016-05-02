@@ -43,13 +43,13 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/localized_error.h"
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #endif
 #include "components/cdm/renderer/widevine_key_systems.h"
 #include "components/error_page/common/error_page_params.h"
+#include "components/error_page/common/localized_error.h"
 #if defined (ENABLE_BASIC_PRINTING)
 #include "components/printing/renderer/print_web_view_helper.h"
 #endif // if defined(ENABLE_BASIC_PRINTING)
@@ -76,7 +76,7 @@
 #include "renderer/render_view_observer_qt.h"
 #include "renderer/user_resource_controller.h"
 
-#include "grit/renderer_resources.h"
+#include "components/grit/components_resources.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
@@ -111,7 +111,6 @@ void ContentRendererClientQt::RenderThreadStarted()
     m_webCacheObserver.reset(new web_cache::WebCacheRenderProcessObserver());
     m_renderProcessObserver.reset(new RenderProcessObserverQt());
     renderThread->AddObserver(m_visitedLinkSlave.data());
-    renderThread->AddObserver(m_webCacheObserver.data());
     renderThread->AddObserver(UserResourceController::instance());
     renderThread->AddObserver(m_renderProcessObserver.data());
 
@@ -147,11 +146,11 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
 bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)
 {
     // Use an internal error page, if we have one for the status code.
-    if (!LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain, httpStatusCode)) {
+    if (!error_page::LocalizedError::HasStrings(error_page::LocalizedError::kHttpErrorDomain, httpStatusCode)) {
         return false;
     }
 
-    *errorDomain = LocalizedError::kHttpErrorDomain;
+    *errorDomain = error_page::LocalizedError::kHttpErrorDomain;
     return true;
 }
 
@@ -173,8 +172,9 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
         const std::string locale = content::RenderThread::Get()->GetLocale();
         // TODO(elproxy): We could potentially get better diagnostics here by first calling
         // NetErrorHelper::GetErrorStringsForDnsProbe, but that one is harder to untangle.
-        LocalizedError::GetStrings(error.reason, error.domain.utf8(), error.unreachableURL, isPost
-                                  , error.staleCopyInCache && !isPost, false, error_page::OfflinePageStatus::NONE, locale, renderFrame->GetRenderView()->GetAcceptLanguages()
+
+        error_page::LocalizedError::GetStrings(error.reason, error.domain.utf8(), error.unreachableURL, isPost
+                                  , error.staleCopyInCache && !isPost, false, false, locale
                                   , scoped_ptr<error_page::ErrorPageParams>(), &errorStrings);
         resourceId = IDR_NET_ERROR_HTML;
 
@@ -187,7 +187,7 @@ void ContentRendererClientQt::GetNavigationErrorStrings(content::RenderFrame* re
     }
 
     if (errorDescription)
-        *errorDescription = LocalizedError::GetErrorDetails(error.domain.utf8(), error.reason, isPost);
+        *errorDescription = error_page::LocalizedError::GetErrorDetails(error.domain.utf8(), error.reason, isPost);
 }
 
 unsigned long long ContentRendererClientQt::VisitedLinkHash(const char *canonicalUrl, size_t length)
@@ -320,7 +320,7 @@ static void AddPepperBasedWidevine(std::vector<media::KeySystemInfo>* concrete_k
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
     cdm::AddWidevineWithCodecs(
-        cdm::WIDEVINE, supported_codecs,
+        supported_codecs,
         media::EmeRobustness::SW_SECURE_CRYPTO,       // Maximum audio robustness.
         media::EmeRobustness::SW_SECURE_DECODE,       // Maximum video robustness.
         media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.

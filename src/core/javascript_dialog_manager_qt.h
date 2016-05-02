@@ -61,12 +61,12 @@ public:
     // For use with the Singleton helper class from chromium
     static JavaScriptDialogManagerQt *GetInstance();
 
-    virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType,
-                                       const base::string16 &messageText, const base::string16 &defaultPromptText,
-                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) Q_DECL_OVERRIDE;
+    virtual void RunJavaScriptDialog(content::WebContents *, const GURL &, content::JavaScriptMessageType javascriptMessageType,
+                                     const base::string16 &messageText, const base::string16 &defaultPromptText,
+                                     const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage) Q_DECL_OVERRIDE;
 
-    virtual void RunBeforeUnloadDialog(content::WebContents *, const base::string16 &messageText, bool isReload,
-                                         const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE;
+    virtual void RunBeforeUnloadDialog(content::WebContents *, bool isReload,
+                                       const content::JavaScriptDialogManager::DialogClosedCallback &callback) Q_DECL_OVERRIDE;
     virtual bool HandleJavaScriptDialog(content::WebContents *, bool accept, const base::string16 *promptOverride) Q_DECL_OVERRIDE;
     virtual void CancelActiveAndPendingDialogs(content::WebContents *contents) Q_DECL_OVERRIDE { takeDialogForContents(contents); }
     virtual void ResetDialogState(content::WebContents *contents) Q_DECL_OVERRIDE { takeDialogForContents(contents); }

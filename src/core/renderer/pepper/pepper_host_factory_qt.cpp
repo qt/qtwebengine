@@ -44,6 +44,7 @@
 
 #include "pepper_host_factory_qt.h"
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/message_filter_host.h"
@@ -68,7 +69,7 @@ PepperHostFactoryQt::PepperHostFactoryQt(content::BrowserPpapiHost* host)
 
 PepperHostFactoryQt::~PepperHostFactoryQt() {}
 
-scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(ppapi::host::PpapiHost* host,
+std::unique_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(ppapi::host::PpapiHost* host,
         PP_Resource resource,
         PP_Instance instance,
         const IPC::Message& message)
@@ -77,14 +78,12 @@ scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(pp
 
 
     if (!host_->IsValidInstance(instance))
-        return scoped_ptr<ppapi::host::ResourceHost>();
+        return nullptr;
 
     if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)
             && message.type() == PpapiHostMsg_Flash_Create::ID)
-        return scoped_ptr<ppapi::host::ResourceHost>(
-                    new PepperFlashBrowserHostQt(host_,
-                                                 instance,
-                                                 resource));
+        return base::WrapUnique(
+            new PepperFlashBrowserHostQt(host_, instance, resource));
 
     // Permissions for the following interfaces will be checked at the
     // time of the corresponding instance's methods calls (because
@@ -95,11 +94,12 @@ scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(pp
     if (message.type() == PpapiHostMsg_IsolatedFileSystem_Create::ID) {
         PepperIsolatedFileSystemMessageFilter* isolated_fs_filter = PepperIsolatedFileSystemMessageFilter::Create(instance, host_);
         if (!isolated_fs_filter)
-            return scoped_ptr<ResourceHost>();
-        return scoped_ptr<ResourceHost>(new MessageFilterHost(host, instance, resource, isolated_fs_filter));
+            return nullptr;
+        return base::WrapUnique(
+            new MessageFilterHost(host_->GetPpapiHost(), instance, resource, isolated_fs_filter));
     }
 
-    return scoped_ptr<ppapi::host::ResourceHost>();
+    return nullptr;
 }
 
 }  // namespace QtWebEngineCore

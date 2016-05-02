@@ -46,6 +46,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/url_constants.h"
 #include "net/http/http_network_session.h"
@@ -116,12 +117,12 @@ private:
     content::ProtocolHandlerMap m_protocolHandlers;
 
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
-    scoped_ptr<net::URLRequestContext> m_urlRequestContext;
-    scoped_ptr<NetworkDelegateQt> m_networkDelegate;
-    scoped_ptr<net::URLRequestContextStorage> m_storage;
-    scoped_ptr<net::URLRequestJobFactory> m_jobFactory;
+    std::unique_ptr<net::URLRequestContext> m_urlRequestContext;
+    std::unique_ptr<NetworkDelegateQt> m_networkDelegate;
+    std::unique_ptr<net::URLRequestContextStorage> m_storage;
+    std::unique_ptr<net::URLRequestJobFactory> m_jobFactory;
     net::URLRequestJobFactoryImpl *m_baseJobFactory;
-    scoped_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
+    std::unique_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     scoped_ptr<net::HttpNetworkSession> m_httpNetworkSession;

@@ -47,8 +47,8 @@
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "qtwebenginecoreglobal_p.h"
 #include <QMap>
@@ -132,7 +132,6 @@ public:
     virtual void SetBackgroundColor(SkColor color) Q_DECL_OVERRIDE;
     virtual bool LockMouse() Q_DECL_OVERRIDE;
     virtual void UnlockMouse() Q_DECL_OVERRIDE;
-    virtual void MovePluginWindows(const std::vector<content::WebPluginGeometry>&) Q_DECL_OVERRIDE;
     virtual void UpdateCursor(const content::WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
     virtual void TextInputStateChanged(const ViewHostMsg_TextInputState_Params&) Q_DECL_OVERRIDE;
@@ -184,26 +183,14 @@ public:
     virtual void SetActive(bool active) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual bool IsSpeaking() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
     virtual void SpeakSelection() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual bool PostProcessEventForPluginIme(const content::NativeWebKeyboardEvent& event) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
     virtual void StopSpeaking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual void SetWindowVisibility(bool visible) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual bool SupportsSpeech() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
     virtual void ShowDefinitionForSelection() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual void WindowFrameChanged() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
 #endif // defined(OS_MACOSX)
 
-#if defined(OS_WIN)
-#if defined(USE_AURA)
-    virtual void SetParentNativeViewAccessible(gfx::NativeViewAccessible accessible_parent) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual gfx::NativeViewId GetParentForWindowlessPlugin() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED return gfx::NativeViewId(); }
-#else
-    virtual void SetClickthroughRegion(SkRegion *) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-    virtual void WillWmDestroy(void) Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
-#endif // defined(USE_AURA)
-#endif // defined(OS_WIN)
 
     // Overridden from content::BrowserAccessibilityDelegate
-    virtual content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate) Q_DECL_OVERRIDE;
+    virtual content::BrowserAccessibilityManager* CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame) Q_DECL_OVERRIDE;
 #ifndef QT_NO_ACCESSIBILITY
     virtual void accessibilityActiveChanged(bool active) Q_DECL_OVERRIDE;
 #endif // QT_NO_ACCESSIBILITY

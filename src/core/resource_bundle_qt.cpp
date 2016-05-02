@@ -53,7 +53,7 @@ void ResourceBundle::LoadCommonResources()
     AddDataPackFromPath(WebEngineLibraryInfo::getPath(QT_RESOURCES_DEVTOOLS_PAK), SCALE_FACTOR_NONE);
 }
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl)
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
 {
     LOG(WARNING) << "Unable to load image with id " << resource_id;
     NOTREACHED();  // Want to assert in debug mode.

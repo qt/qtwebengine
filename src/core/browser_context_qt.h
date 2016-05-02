@@ -74,7 +74,6 @@ public:
     virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE;
 
     virtual net::URLRequestContextGetter *GetRequestContext() Q_DECL_OVERRIDE;
-    virtual net::URLRequestContextGetter *GetRequestContextForRenderProcess(int) Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *GetMediaRequestContext() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *GetMediaRequestContextForRenderProcess(int) Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *GetMediaRequestContextForStoragePartition(const base::FilePath&, bool) Q_DECL_OVERRIDE;
@@ -84,7 +83,13 @@ public:
     virtual storage::SpecialStoragePolicy *GetSpecialStoragePolicy() Q_DECL_OVERRIDE;
     virtual content::PushMessagingService* GetPushMessagingService() Q_DECL_OVERRIDE;
     virtual content::SSLHostStateDelegate* GetSSLHostStateDelegate() Q_DECL_OVERRIDE;
-    net::URLRequestContextGetter *CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors);
+    net::URLRequestContextGetter *CreateRequestContext(
+            content::ProtocolHandlerMap *protocol_handlers,
+            content::URLRequestInterceptorScopedVector request_interceptors) Q_DECL_OVERRIDE;
+    net::URLRequestContextGetter* CreateRequestContextForStoragePartition(
+            const base::FilePath& partition_path, bool in_memory,
+            content::ProtocolHandlerMap* protocol_handlers,
+            content::URLRequestInterceptorScopedVector request_interceptors) Q_DECL_OVERRIDE;
     virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
     virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
     virtual content::BackgroundSyncController* GetBackgroundSyncController() Q_DECL_OVERRIDE;

@@ -55,10 +55,8 @@ JavaScriptDialogManagerQt *JavaScriptDialogManagerQt::GetInstance()
     return base::Singleton<JavaScriptDialogManagerQt>::get();
 }
 
-void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, const std::string &acceptLang, content::JavaScriptMessageType javascriptMessageType, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)
+void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webContents, const GURL &originUrl, content::JavaScriptMessageType javascriptMessageType, const base::string16 &messageText, const base::string16 &defaultPromptText, const content::JavaScriptDialogManager::DialogClosedCallback &callback, bool *didSuppressMessage)
 {
-    Q_UNUSED(acceptLang);
-
     WebContentsAdapterClient *client = WebContentsViewQt::from(static_cast<content::WebContentsImpl*>(webContents)->GetView())->client();
     if (!client) {
         if (didSuppressMessage)
@@ -70,10 +68,10 @@ void JavaScriptDialogManagerQt::RunJavaScriptDialog(content::WebContents *webCon
     runDialogForContents(webContents, dialogType, toQt(messageText).toHtmlEscaped(), toQt(defaultPromptText).toHtmlEscaped(), toQt(originUrl.GetOrigin()), callback);
 }
 
-void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webContents, const base::string16 &messageText,
-                                                    bool isReload, const content::JavaScriptDialogManager::DialogClosedCallback &callback) {
+void JavaScriptDialogManagerQt::RunBeforeUnloadDialog(content::WebContents *webContents, bool isReload,
+                                                      const content::JavaScriptDialogManager::DialogClosedCallback &callback) {
     Q_UNUSED(isReload);
-    runDialogForContents(webContents, WebContentsAdapterClient::UnloadDialog, toQt(messageText).toHtmlEscaped(), QString() , QUrl(), callback);
+    runDialogForContents(webContents, WebContentsAdapterClient::UnloadDialog, QString()/*toQt(messageText).toHtmlEscaped()*/, QString() , QUrl(), callback);
 }
 
 bool JavaScriptDialogManagerQt::HandleJavaScriptDialog(content::WebContents *contents, bool accept, const base::string16 *promptOverride)

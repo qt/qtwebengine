@@ -58,16 +58,16 @@ public:
     AccessTokenStoreQt();
     ~AccessTokenStoreQt();
 
-    virtual void LoadAccessTokens(const LoadAccessTokensCallbackType& request) Q_DECL_OVERRIDE;
+    virtual void LoadAccessTokens(const LoadAccessTokensCallback& request) Q_DECL_OVERRIDE;
     virtual void SaveAccessToken(const GURL& serverUrl, const base::string16& accessToken) Q_DECL_OVERRIDE;
 
 private:
     void performWorkOnUIThread();
-    void respondOnOriginatingThread(const LoadAccessTokensCallbackType& callback);
+    void respondOnOriginatingThread(const LoadAccessTokensCallback& callback);
 
 
     net::URLRequestContextGetter *m_systemRequestContext;
-    AccessTokenSet m_accessTokenSet;
+    AccessTokenMap m_accessTokenSet;
 
     DISALLOW_COPY_AND_ASSIGN(AccessTokenStoreQt);
 };

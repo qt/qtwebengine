@@ -50,13 +50,14 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
-#include "content/common/gpu/gpu_channel_manager.h"
 #include "content/gpu/gpu_child_thread.h"
+#include "gpu/ipc/service/gpu_channel_manager.h"
 
 #ifdef Q_OS_QNX
 #include "content/common/gpu/stream_texture_qnx.h"
 #endif
 
+// FIXME: Try using content::GpuChildThread::current()
 base::MessageLoop *gpu_message_loop()
 {
     return content::GpuChildThread::instance()->message_loop();
@@ -64,13 +65,13 @@ base::MessageLoop *gpu_message_loop()
 
 gpu::SyncPointManager *sync_point_manager()
 {
-    content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
+    gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
     return gpuChannelManager->sync_point_manager();
 }
 
 gpu::gles2::MailboxManager *mailbox_manager()
 {
-    content::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
+    gpu::GpuChannelManager *gpuChannelManager = content::GpuChildThread::instance()->ChannelManager();
     return gpuChannelManager->mailbox_manager();
 }
 

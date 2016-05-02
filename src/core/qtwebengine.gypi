@@ -85,7 +85,8 @@
           },
         },
         'dependencies': [
-          '<(chromium_src_dir)/ui/events/ozone/events_ozone.gyp:events_ozone_evdev'
+          '<(chromium_src_dir)/ui/events/ozone/events_ozone.gyp:events_ozone_evdev',
+          '<(chromium_src_dir)/ui/ozone/ozone.gyp:ozone_common',
         ]
       }],
       ['qt_os=="win32" and qt_gl=="opengl"', {

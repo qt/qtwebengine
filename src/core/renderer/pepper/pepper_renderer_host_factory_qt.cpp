@@ -44,6 +44,8 @@
 
 #include "pepper_renderer_host_factory_qt.h"
 #include "pepper_flash_renderer_host_qt.h"
+
+#include "base/memory/ptr_util.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
@@ -63,7 +65,7 @@ PepperRendererHostFactoryQt::~PepperRendererHostFactoryQt()
 {
 }
 
-scoped_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateResourceHost(
+std::unique_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateResourceHost(
         ppapi::host::PpapiHost* host,
         PP_Resource resource,
         PP_Instance instance,
@@ -72,16 +74,14 @@ scoped_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateResourc
     DCHECK_EQ(host_->GetPpapiHost(), host);
 
     if (!host_->IsValidInstance(instance))
-        return scoped_ptr<ppapi::host::ResourceHost>();
+        return nullptr;
 
     if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)
             && message.type() == PpapiHostMsg_Flash_Create::ID)
-            return scoped_ptr<ppapi::host::ResourceHost>(
-                        new PepperFlashRendererHostQt(host_,
-                                                      instance,
-                                                      resource));
+            return base::WrapUnique(
+                new PepperFlashRendererHostQt(host_, instance, resource));
 
-    return scoped_ptr<ppapi::host::ResourceHost>();
+    return nullptr;
 }
 
 } // QtWebEngineCore

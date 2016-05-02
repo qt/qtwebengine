@@ -230,14 +230,6 @@ bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
     return m_requestContextGetter->m_cookieDelegate->canSetCookie(toQt(request.first_party_for_cookies()), QByteArray::fromStdString(cookie_line), toQt(request.url()));
 }
 
-void NetworkDelegateQt::OnResolveProxy(const GURL&, int, const net::ProxyService&, net::ProxyInfo*)
-{
-}
-
-void NetworkDelegateQt::OnProxyFallback(const net::ProxyServer&, int)
-{
-}
-
 int NetworkDelegateQt::OnBeforeSendHeaders(net::URLRequest*, const net::CompletionCallback&, net::HttpRequestHeaders*)
 {
     return net::OK;

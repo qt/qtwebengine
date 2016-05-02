@@ -56,12 +56,12 @@
 
 #if defined(ENABLE_SPELLCHECK)
 #include "base/base_paths.h"
-#include "base/prefs/pref_member.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_store.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_factory.h"
-#include "base/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_store.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/pref_service_factory.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -75,7 +75,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
       m_prefStore(new TestingPrefStore())
 {
     m_prefStore->SetInitializationCompleted();
-    base::PrefServiceFactory factory;
+    PrefServiceFactory factory;
     factory.set_user_prefs(m_prefStore);
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
 
@@ -120,11 +120,6 @@ bool BrowserContextQt::IsOffTheRecord() const
 net::URLRequestContextGetter *BrowserContextQt::GetRequestContext()
 {
     return url_request_getter_.get();
-}
-
-net::URLRequestContextGetter *BrowserContextQt::GetRequestContextForRenderProcess(int)
-{
-    return GetRequestContext();
 }
 
 net::URLRequestContextGetter *BrowserContextQt::GetMediaRequestContext()
@@ -198,6 +193,15 @@ net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::Pr
 {
     url_request_getter_ = new URLRequestContextGetterQt(m_adapter->sharedFromThis(), protocol_handlers, std::move(request_interceptors));
     return url_request_getter_.get();
+}
+
+net::URLRequestContextGetter *BrowserContextQt::CreateRequestContextForStoragePartition(
+        const base::FilePath& partition_path, bool in_memory,
+        content::ProtocolHandlerMap* protocol_handlers,
+        content::URLRequestInterceptorScopedVector request_interceptors)
+{
+    Q_UNIMPLEMENTED();
+    return nullptr;
 }
 
 #if defined(ENABLE_SPELLCHECK)

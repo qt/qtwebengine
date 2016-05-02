@@ -42,7 +42,6 @@
 #if defined(USE_OZONE)
 
 #include "base/bind.h"
-#include "media/ozone/media_ozone_platform.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
@@ -56,15 +55,6 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
-
-
-namespace media {
-
-MediaOzonePlatform* CreateMediaOzonePlatformEglfs() {
-  return new MediaOzonePlatform;
-}
-
-}
 
 namespace ui {
 
@@ -182,11 +172,6 @@ ui::OverlayManagerOzone* OzonePlatformEglfs::GetOverlayManager() {
 scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
 {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
-}
-
-base::ScopedFD OzonePlatformEglfs::OpenClientNativePixmapDevice() const
-{
-    return base::ScopedFD();
 }
 
 OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }

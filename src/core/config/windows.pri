@@ -64,7 +64,7 @@ msvc {
 
     GYP_ARGS += "-G msvs_version=$$MSVS_VERSION"
 
-    isBuildingOnWin32(): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/8.1\""
+    isBuildingOnWin32(): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/10\""
 
 } else {
     fatal("Qt WebEngine for Windows can only be built with the Microsoft Visual Studio C++ compiler")

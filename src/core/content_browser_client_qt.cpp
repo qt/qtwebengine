@@ -244,8 +244,9 @@ public:
     int PreCreateThreads() Q_DECL_OVERRIDE
     {
         base::ThreadRestrictions::SetIOAllowed(true);
-        // Like ChromeBrowserMainExtraPartsAura::PreCreateThreads does.
-        gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, new DesktopScreenQt);
+        // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
+        gfx::Screen::SetScreenInstance(new DesktopScreenQt);
+
         return 0;
     }
 
@@ -351,7 +352,7 @@ ContentBrowserClientQt *ContentBrowserClientQt::Get()
 
 content::BrowserMainParts *ContentBrowserClientQt::CreateBrowserMainParts(const content::MainFunctionParams&)
 {
-    m_browserMainParts = new BrowserMainPartsQt;
+    m_browserMainParts = new BrowserMainPartsQt();
     return m_browserMainParts;
 }
 
@@ -399,11 +400,6 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, c
 content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
 {
     return new AccessTokenStoreQt;
-}
-
-net::URLRequestContextGetter* ContentBrowserClientQt::CreateRequestContext(content::BrowserContext* browser_context, content::ProtocolHandlerMap* protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
-{
-    return static_cast<BrowserContextQt*>(browser_context)->CreateRequestContext(protocol_handlers, std::move(request_interceptors));
 }
 
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()

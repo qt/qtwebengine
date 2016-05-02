@@ -2,8 +2,8 @@
   'variables': {
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'chrome_spellchecker_sources': [
-    '<(DEPTH)/base/prefs/testing_pref_store.cc',
-    '<(DEPTH)/base/prefs/testing_pref_store.h',
+    '<(DEPTH)/components/prefs/testing_pref_store.cc',
+    '<(DEPTH)/components/prefs/testing_pref_store.h',
     '<(DEPTH)/chrome/browser/spellchecker/feedback.cc',
     '<(DEPTH)/chrome/browser/spellchecker/feedback.h',
     '<(DEPTH)/chrome/browser/spellchecker/feedback_sender.cc',
@@ -63,6 +63,7 @@
       'type': 'static_library',
       'dependencies': [
           'chrome_resources',
+          '<(chromium_src_dir)/components/components_resources.gyp:components_resources',
           '<(chromium_src_dir)/components/components_strings.gyp:components_strings',
       ],
       'include_dirs': [
@@ -70,9 +71,6 @@
         '<(chromium_src_dir)',
         '<(chromium_src_dir)/skia/config',
         '<(chromium_src_dir)/third_party/skia/include/core',
-         # Needed to include grit-generated files in localized_error.cc:
-        '<(SHARED_INTERMEDIATE_DIR)/chrome',
-        '<(SHARED_INTERMEDIATE_DIR)/components/strings',
       ],
       'sources': [
         '<(DEPTH)/chrome/browser/media/desktop_media_list.h',
@@ -80,8 +78,6 @@
         '<(DEPTH)/chrome/browser/media/desktop_streams_registry.h',
         '<(DEPTH)/chrome/common/chrome_switches.cc',
         '<(DEPTH)/chrome/common/chrome_switches.h',
-        '<(DEPTH)/chrome/common/localized_error.cc',
-        '<(DEPTH)/chrome/common/localized_error.h',
       ],
       'conditions': [
         ['enable_spellcheck==1', {
@@ -134,7 +130,7 @@
             '<(DEPTH)/chrome/browser/printing/printer_query.h',
           ],
           'dependencies': [
-            '<(chromium_src_dir)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+            '<(chromium_src_dir)/mojo/mojo_public.gyp:mojo_cpp_bindings',
           ],
           'include_dirs': [
             '<(chromium_src_dir)/extensions',

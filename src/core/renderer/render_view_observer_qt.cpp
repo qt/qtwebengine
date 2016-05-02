@@ -46,6 +46,9 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrameContentDumper.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 RenderViewObserverQt::RenderViewObserverQt(
@@ -58,23 +61,26 @@ RenderViewObserverQt::RenderViewObserverQt(
 
 void RenderViewObserverQt::onFetchDocumentMarkup(quint64 requestId)
 {
-    Send(new RenderViewObserverHostQt_DidFetchDocumentMarkup(
-        routing_id(),
-        requestId,
-        render_view()->GetWebView()->mainFrame()->contentAsMarkup()));
+    blink::WebString markup;
+    if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame())
+        markup = blink::WebFrameContentDumper::dumpAsMarkup(
+                    static_cast<blink::WebLocalFrame*>(render_view()->GetWebView()->mainFrame()));
+    Send(new RenderViewObserverHostQt_DidFetchDocumentMarkup(routing_id(), requestId, markup));
 }
 
 void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
 {
-    Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(
-        routing_id(),
-        requestId,
-        render_view()->GetWebView()->mainFrame()->contentAsText(std::numeric_limits<std::size_t>::max())));
+    blink::WebString text;
+    if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame())
+        text = blink::WebFrameContentDumper::deprecatedDumpFrameTreeAsText(
+                    static_cast<blink::WebLocalFrame*>(render_view()->GetWebView()->mainFrame()),
+                    std::numeric_limits<std::size_t>::max());
+    Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(routing_id(), requestId, text));
 }
 
 void RenderViewObserverQt::onSetBackgroundColor(quint32 color)
 {
-    render_view()->GetWebView()->setBaseBackgroundColor(color);
+    render_view()->GetWebFrameWidget()->setBaseBackgroundColor(color);
 }
 
 void RenderViewObserverQt::OnFirstVisuallyNonEmptyLayout()

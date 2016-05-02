@@ -67,7 +67,7 @@ AccessTokenStoreQt::~AccessTokenStoreQt()
 {
 }
 
-void AccessTokenStoreQt::LoadAccessTokens(const LoadAccessTokensCallbackType& callback)
+void AccessTokenStoreQt::LoadAccessTokens(const LoadAccessTokensCallback& callback)
 {
     BrowserThread::PostTaskAndReply(BrowserThread::UI, FROM_HERE
                 , base::Bind(&AccessTokenStoreQt::performWorkOnUIThread, this)
@@ -79,7 +79,7 @@ void AccessTokenStoreQt::performWorkOnUIThread()
     m_systemRequestContext = WebEngineContext::current()->defaultBrowserContext()->browserContext()->GetRequestContext();
 }
 
-void AccessTokenStoreQt::respondOnOriginatingThread(const LoadAccessTokensCallbackType& callback)
+void AccessTokenStoreQt::respondOnOriginatingThread(const LoadAccessTokensCallback& callback)
 {
     callback.Run(m_accessTokenSet, m_systemRequestContext);
     m_systemRequestContext = 0;

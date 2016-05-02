@@ -343,8 +343,9 @@ gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
     return 0;
 }
 
-content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate)
+content::BrowserAccessibilityManager* RenderWidgetHostViewQt::CreateBrowserAccessibilityManager(content::BrowserAccessibilityDelegate* delegate, bool for_root_frame)
 {
+    Q_UNUSED(for_root_frame); // FIXME
 #ifndef QT_NO_ACCESSIBILITY
     return new content::BrowserAccessibilityManagerQt(
         m_adapterClient->accessibilityParentObject(),
@@ -423,11 +424,6 @@ void RenderWidgetHostViewQt::UnlockMouse()
     m_delegate->unlockMouse();
     qApp->restoreOverrideCursor();
     m_host->LostMouseLock();
-}
-
-void RenderWidgetHostViewQt::MovePluginWindows(const std::vector<content::WebPluginGeometry>&)
-{
-    // QT_NOT_YET_IMPLEMENTED
 }
 
 void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
@@ -974,9 +970,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         }
     }
 
+    gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
+                                                          : gfx::Range::InvalidRange();
     if (!commitString.isEmpty()) {
-        gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
-                                                              : gfx::Range::InvalidRange();
         m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
         m_imeInProgress = false;
     } else if (!preeditString.isEmpty()) {
@@ -986,7 +982,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             selectionRange.set_start(newCursorPosition);
             selectionRange.set_end(newCursorPosition);
         }
-        m_host->ImeSetComposition(toString16(preeditString), underlines, selectionRange.start(), selectionRange.end());
+        m_host->ImeSetComposition(toString16(preeditString), underlines, replacementRange, selectionRange.start(), selectionRange.end());
         m_imeInProgress = true;
     }
 }

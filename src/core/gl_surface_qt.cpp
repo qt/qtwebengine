@@ -51,7 +51,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/common/gpu/image_transport_surface.h"
+#include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -289,7 +289,7 @@ bool GLSurfaceQtWGL::Initialize()
 {
     m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
 
-    return m_surfaceBuffer->Initialize();
+    return m_surfaceBuffer->Initialize(gfx::GLSurface::SURFACE_DEFAULT);
 }
 
 void GLSurfaceQtWGL::Destroy()
@@ -557,10 +557,11 @@ std::string DriverEGL::GetPlatformExtensions()
 
 }  // namespace gfx
 
-namespace content {
+namespace gpu {
 class GpuCommandBufferStub;
 class GpuChannelManager;
-scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(GpuChannelManager*, GpuCommandBufferStub*, const gfx::GLSurfaceHandle&)
+scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(GpuChannelManager*, GpuCommandBufferStub*,
+                                                                         SurfaceHandle, gfx::GLSurface::Format)
 {
     QT_NOT_USED
     return scoped_refptr<gfx::GLSurface>();

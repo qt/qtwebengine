@@ -57,7 +57,7 @@ public:
     explicit PepperHostFactoryQt(content::BrowserPpapiHost* host);
     ~PepperHostFactoryQt() override;
 
-    virtual scoped_ptr<ppapi::host::ResourceHost> CreateResourceHost(
+    virtual std::unique_ptr<ppapi::host::ResourceHost> CreateResourceHost(
             ppapi::host::PpapiHost* host,
             PP_Resource resource,
             PP_Instance instance,

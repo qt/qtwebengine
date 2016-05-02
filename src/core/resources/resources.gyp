@@ -17,6 +17,7 @@
       '<(chromium_src_dir)/content/app/strings/content_strings.gyp:content_strings',
       '<(chromium_src_dir)/blink/public/blink_resources.gyp:blink_resources',
       '<(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
+      '<(chromium_src_dir)/components/components_resources.gyp:components_resources',
       '<(chromium_src_dir)/components/components_strings.gyp:components_strings',
       '../chrome_qt.gyp:chrome_resources',
   ],
@@ -30,6 +31,7 @@
         'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/components/components_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
@@ -45,6 +47,7 @@
         'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/components/components_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_image_resources_100_percent.pak',
@@ -60,6 +63,7 @@
         'variables': {
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_200_percent.pak',
+              '<(SHARED_INTERMEDIATE_DIR)/components/components_resources_200_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/content/app/resources/content_resources_200_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources_200_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_image_resources_200_percent.pak',

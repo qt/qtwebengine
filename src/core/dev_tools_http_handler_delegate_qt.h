@@ -56,7 +56,7 @@ class DevToolsHttpHandler;
 
 namespace QtWebEngineCore {
 
-scoped_ptr<devtools_http_handler::DevToolsHttpHandler> createDevToolsHttpHandler();
+std::unique_ptr<devtools_http_handler::DevToolsHttpHandler> createDevToolsHttpHandler();
 
 class DevToolsHttpHandlerDelegateQt : public devtools_http_handler::DevToolsHttpHandlerDelegate {
 public:

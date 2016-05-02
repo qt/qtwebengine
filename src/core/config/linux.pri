@@ -22,10 +22,14 @@ GYP_CONFIG += \
     use_openssl=1
 
 use?(nss) {
-    GYP_CONFIG += use_nss_certs=1 \
+    GYP_CONFIG += \
+        use_nss_certs=1 \
+        use_nss_verifier=1 \
         use_openssl_certs=0
 } else {
-    GYP_CONFIG += use_nss_certs=0 \
+    GYP_CONFIG += \
+        use_nss_certs=0 \
+        use_nss_verifier=0 \
         use_openssl_certs=1
 }
 

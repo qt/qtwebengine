@@ -481,7 +481,7 @@ void WebContentsAdapter::reload()
 void WebContentsAdapter::reloadAndBypassCache()
 {
     Q_D(WebContentsAdapter);
-    d->webContents->GetController().ReloadIgnoringCache(/*checkRepost = */false);
+    d->webContents->GetController().ReloadBypassingCache(/*checkRepost = */false);
     d->webContents->Focus();
 }
 
@@ -907,13 +907,13 @@ bool WebContentsAdapter::hasInspector() const
 void WebContentsAdapter::exitFullScreen()
 {
     Q_D(WebContentsAdapter);
-    d->webContents->ExitFullscreen();
+    d->webContents->ExitFullscreen(false);
 }
 
 void WebContentsAdapter::changedFullScreen()
 {
     Q_D(WebContentsAdapter);
-    d->webContents->NotifyFullscreenChanged();
+    d->webContents->NotifyFullscreenChanged(false);
 }
 
 void WebContentsAdapter::wasShown()

@@ -42,7 +42,6 @@
 
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/permission_status.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 #include "base/callback.h"

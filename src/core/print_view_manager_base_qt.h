@@ -42,8 +42,8 @@
 #define PRINT_VIEW_MANAGER_BASE_QT_H
 
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_member.h"
 #include "base/strings/string16.h"
+#include "components/prefs/pref_member.h"
 #include "components/printing/browser/print_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
