@@ -76,9 +76,11 @@ QWEBENGINE_PRIVATE_EXPORT void initialize()
         return;
     }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 1))
     // Bail out silently if the user did not construct a QGuiApplication.
     if (!qobject_cast<QGuiApplication *>(app))
         return;
+#endif
 
     if (app->thread() != QThread::currentThread()) {
         qFatal("QtWebEngine::initialize() must be called from the Qt gui thread.");
