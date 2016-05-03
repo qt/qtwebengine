@@ -134,7 +134,7 @@
     codecs can be enabled by passing the following option to qmake:
 
     \code
-    qmake WEBENGINE_CONFIG += use_proprietary_codecs
+    qmake WEBENGINE_CONFIG+=use_proprietary_codecs
     \endcode
 
     \warning When distributing proprietary codec libraries, you must acquire licenses for them.
