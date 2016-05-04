@@ -35,6 +35,10 @@ TestWebEngineView {
     width: 200
     height: 400
 
+    function removeFaviconProviderPrefix(url) {
+        return url.toString().substring(16)
+    }
+
     SignalSpy {
         id: iconChangedSpy
         target: webEngineView
@@ -108,7 +112,7 @@ TestWebEngineView {
             iconChangedSpy.wait()
             compare(iconChangedSpy.count, 1)
 
-            var iconUrl = webEngineView.icon
+            var iconUrl = removeFaviconProviderPrefix(webEngineView.icon)
             compare(iconUrl, row.expectedIconUrl)
         }
     }

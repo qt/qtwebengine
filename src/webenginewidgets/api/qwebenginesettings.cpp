@@ -83,8 +83,6 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::ScreenCaptureEnabled;
     case QWebEngineSettings::WebGLEnabled:
         return WebEngineSettings::WebGLEnabled;
-    case QWebEngineSettings::WebAudioEnabled:
-        return WebEngineSettings::WebAudioEnabled;
     case QWebEngineSettings::Accelerated2dCanvasEnabled:
         return WebEngineSettings::Accelerated2dCanvasEnabled;
     case QWebEngineSettings::AutoLoadIconsForPage:

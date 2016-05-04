@@ -88,6 +88,7 @@ base::string16 getContentsUrl(content::WebContents *webContents)
   return base::UTF8ToUTF16(webContents->GetURL().GetOrigin().spec());
 }
 
+// Based on chrome/browser/media/desktop_capture_access_handler.cc:
 scoped_ptr<content::MediaStreamUI> getDevicesForDesktopCapture(content::MediaStreamDevices &devices, content::DesktopMediaID mediaId
                                                                , bool captureAudio, bool /*display_notification*/, base::string16 /*application_title*/)
 {

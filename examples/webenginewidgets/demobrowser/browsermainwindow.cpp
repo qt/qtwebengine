@@ -56,6 +56,7 @@
 #include "chasewidget.h"
 #include "downloadmanager.h"
 #include "history.h"
+#include "printtopdfdialog.h"
 #include "settings.h"
 #include "tabwidget.h"
 #include "toolbarsearch.h"
@@ -313,9 +314,7 @@ void BrowserMainWindow::setupMenu()
     fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
 #endif
-#ifndef QT_NO_PRINTER
     fileMenu->addAction(tr("&Print to PDF..."), this, SLOT(slotFilePrintToPDF()));
-#endif // ifndef QT_NO_PRINTER
     fileMenu->addSeparator();
 
     QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
@@ -718,20 +717,17 @@ void BrowserMainWindow::slotHandlePdfPrinted(const QByteArray& result)
 
 void BrowserMainWindow::slotFilePrintToPDF()
 {
-#ifndef QT_NO_PRINTER
-    if (!currentTab())
-        return;
-    QPrinter printer;
-    QPrintDialog *dialog = new QPrintDialog(&printer, this);
-    dialog->setWindowTitle(tr("Print Document"));
-    if (dialog->exec() != QDialog::Accepted || printer.outputFileName().isEmpty() || !m_printerOutputFileName.isEmpty())
+    if (!currentTab() || !m_printerOutputFileName.isEmpty())
         return;
 
-    m_printerOutputFileName = printer.outputFileName();
+    QFileInfo info(QStringLiteral("printout.pdf"));
+    PrintToPdfDialog *dialog = new PrintToPdfDialog(info.absoluteFilePath(), this);
+    dialog->setWindowTitle(tr("Print to PDF"));
+    if (dialog->exec() != QDialog::Accepted || dialog->filePath().isEmpty())
+        return;
 
-    currentTab()->page()->printToPdf(invoke(this, &BrowserMainWindow::slotHandlePdfPrinted), printer.pageLayout());
-
-#endif // QT_NO_PRINTER
+    m_printerOutputFileName = dialog->filePath();
+    currentTab()->page()->printToPdf(invoke(this, &BrowserMainWindow::slotHandlePdfPrinted), dialog->pageLayout());
 }
 
 #if defined(QWEBENGINEPAGE_PRINT)

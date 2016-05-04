@@ -484,7 +484,7 @@ void QWebEnginePagePrivate::setFullScreenMode(bool fullscreen)
     }
 }
 
-BrowserContextAdapter *QWebEnginePagePrivate::browserContextAdapter()
+QSharedPointer<BrowserContextAdapter> QWebEnginePagePrivate::browserContextAdapter()
 {
     return profile->d_ptr->browserContext();
 }
@@ -815,6 +815,10 @@ QAction *QWebEnginePage::action(WebAction action) const
         text = tr("Reload");
         icon = style->standardIcon(QStyle::SP_BrowserReload);
         break;
+    case ReloadAndBypassCache:
+        text = tr("Reload and Bypass Cache");
+        icon = style->standardIcon(QStyle::SP_BrowserReload);
+        break;
     case Cut:
         text = tr("Cut");
         break;
@@ -896,7 +900,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case SavePage:
         text = tr("Save &Page");
         break;
-    default:
+    case NoWebAction:
+    case WebActionCount:
+        Q_UNREACHABLE();
         break;
     }
 
@@ -1084,8 +1090,11 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case SavePage:
         d->adapter->save();
         break;
-    default:
+    case NoWebAction:
+        break;
+    case WebActionCount:
         Q_UNREACHABLE();
+        break;
     }
 }
 
@@ -1157,11 +1166,10 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
             QMenu::exec(view->actions(), event.globalPos(), 0, view);
             break;
         }
-        // fall through
-    default:
+        // fallthrough
+    case Qt::NoContextMenu:
         event.ignore();
         return false;
-        break;
     }
     view->d_func()->m_pendingContextMenuEvent = false;
     return true;
@@ -1210,8 +1218,6 @@ void QWebEnginePagePrivate::javascriptDialog(QSharedPointer<JavaScriptDialogCont
     case InternalAuthorizationDialog:
         accepted = (QMessageBox::question(view, controller->title(), controller->message(), QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes);
         break;
-    default:
-        Q_UNREACHABLE();
     }
     if (accepted)
         controller->accept();
@@ -1397,7 +1403,7 @@ void QWebEnginePage::setFeaturePermission(const QUrl &securityOrigin, QWebEngine
         else
             d->adapter->grantMouseLockPermission(false);
         break;
-    default:
+    case Notifications:
         break;
     }
 }
@@ -1603,7 +1609,6 @@ QStringList QWebEnginePage::chooseFiles(FileSelectionMode mode, const QStringLis
         if (!str.isNull())
             ret << str;
         break;
-    default:
     case FilePickerController::Open:
         str = QFileDialog::getOpenFileName(view(), QString(), oldFiles.first());
         if (!str.isNull())

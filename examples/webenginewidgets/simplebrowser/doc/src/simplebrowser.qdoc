@@ -123,7 +123,6 @@
     functionality:
 
     \list
-        \li Downloading favicons
         \li Displaying error messages in case \c renderProcess dies
         \li Handling \c createWindow requests
         \li Adding custom menu items to context menus
@@ -136,20 +135,10 @@
     \printuntil WebView(
     \dots
     \skipto protected:
-    \printuntil handleIconLoaded
+    \printuntil webActionEnabledChanged
     \skipto }
     \dots
     \printline };
-
-    \section2 Downloading Favicons
-
-    To download a favicon, we use QNetworkAccessManager and create a
-    QNetworkRequest every time the URL specified by
-    QWebEngineView::iconUrlChanged is emitted:
-
-    \quotefromfile webenginewidgets/simplebrowser/webview.cpp
-    \skipto WebView::handleIconUrlChanged(
-    \printuntil }
 
     \section2 Displaying Error Messages
 

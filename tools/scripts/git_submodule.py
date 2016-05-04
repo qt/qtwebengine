@@ -50,6 +50,7 @@ class DEPSParser:
           'deps_os': {},
         }
         self.local_scope = {}
+        self.topmost_supermodule_path_prefix = ''
 
     def Lookup(self, var_name):
         return self.local_scope["vars"][var_name]
@@ -64,16 +65,18 @@ class DEPSParser:
                 subdir = dep
                 if subdir.startswith('src/'):
                     subdir = subdir[4:]
-                else:
+                # Don't skip submodules that have a supermodule path prefix set (at the moment these
+                # are 2nd level deep submodules).
+                elif not self.topmost_supermodule_path_prefix:
                     # Ignore the information about chromium itself since we get that from git,
                     # also ignore anything outside src/ (e.g. depot_tools)
                     continue
 
-                submodule = Submodule(subdir, repo)
+                submodule = Submodule(subdir, repo, sp=self.topmost_supermodule_path_prefix)
                 submodule.os = os
 
                 if not submodule.matchesOS():
-                    print '-- skipping ' + submodule.path + ' for this operating system. --'
+                    print '-- skipping ' + submodule.pathRelativeToTopMostSupermodule() + ' for this operating system. --'
                     continue
 
                 if len(rev) == 40: # Length of a git shasum
@@ -88,16 +91,36 @@ class DEPSParser:
 
         submodules = []
         submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps'], 'all'))
-        for os_dep in self.local_scope['deps_os']:
-            submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps_os'][os_dep], os_dep))
+        if 'deps_os' in self.local_scope:
+            for os_dep in self.local_scope['deps_os']:
+                submodules.extend(self.createSubmodulesFromScope(self.local_scope['deps_os'][os_dep], os_dep))
         return submodules
 
+# Strips suffix from end of text.
+def strip_end(text, suffix):
+    if not text.endswith(suffix):
+        return text
+    return text[:len(text)-len(suffix)]
+
+# Given supermodule_path = /chromium
+#      current directory = /chromium/buildtools
+#         submodule_path = third_party/foo/bar
+# returns                = buildtools
+def computeRelativePathPrefixToTopMostSupermodule(submodule_path, supermodule_path):
+    relpath = os.path.relpath(submodule_path, supermodule_path)
+    topmost_supermodule_path_prefix = strip_end(relpath, submodule_path)
+    return topmost_supermodule_path_prefix
+
 class Submodule:
-    def __init__(self, path='', url='', ref='', os=[]):
+    def __init__(self, path='', url='', ref='', os=[], sp=''):
         self.path = path
         self.url = url
         self.ref = ref
         self.os = os
+        self.topmost_supermodule_path_prefix = sp
+
+    def pathRelativeToTopMostSupermodule(self):
+        return os.path.normpath(os.path.join(self.topmost_supermodule_path_prefix, self.path))
 
     def matchesOS(self):
         if not self.os:
@@ -178,8 +201,14 @@ class Submodule:
 
     def initialize(self):
         if self.matchesOS():
-            print '\n\n-- initializing ' + self.path + ' --'
+            print '\n\n-- initializing ' + self.pathRelativeToTopMostSupermodule() + ' --'
             oldCwd = os.getcwd()
+
+            # The submodule operations should be done relative to the current submodule's
+            # supermodule.
+            if self.topmost_supermodule_path_prefix:
+                os.chdir(self.topmost_supermodule_path_prefix)
+
             if os.path.isdir(self.path):
                 self.reset()
 
@@ -203,9 +232,9 @@ class Submodule:
             print '-- skipping ' + self.path + ' for this operating system. --'
 
     def listFiles(self):
-        if self.matchesOS() and os.path.isdir(self.path):
+        if self.matchesOS() and os.path.isdir(self.pathRelativeToTopMostSupermodule()):
             currentDir = os.getcwd()
-            os.chdir(self.path)
+            os.chdir(self.pathRelativeToTopMostSupermodule())
             files = subprocessCheckOutput(['git', 'ls-files']).splitlines()
             os.chdir(currentDir)
             return files
@@ -213,6 +242,54 @@ class Submodule:
             print '-- skipping ' + self.path + ' for this operating system. --'
             return []
 
+    def parseGitModulesFileContents(self, gitmodules_lines):
+        submodules = []
+        currentSubmodule = None
+        for line in gitmodules_lines:
+            if line.find('[submodule') == 0:
+                if currentSubmodule:
+                    submodules.append(currentSubmodule)
+                currentSubmodule = Submodule()
+            tokens = line.split('=')
+            if len(tokens) >= 2:
+                key = tokens[0].strip()
+                value = tokens[1].strip()
+                if key == 'path':
+                    currentSubmodule.path = value
+                elif key == 'url':
+                    currentSubmodule.url = value
+                elif key == 'os':
+                    currentSubmodule.os = value.split(',')
+        if currentSubmodule:
+            submodules.append(currentSubmodule)
+        return submodules
+
+    # Return a flattened list of submodules starting from module, and recursively collecting child
+    # submodules.
+    def readSubmodulesFromGitModules(self, module, gitmodules_file_name, top_level_path):
+        flattened_submodules = []
+        oldCwd = os.getcwd()
+        os.chdir(module.path)
+
+        if os.path.isfile(gitmodules_file_name):
+            gitmodules_file = open(gitmodules_file_name)
+            gitmodules_lines = gitmodules_file.readlines()
+            gitmodules_file.close()
+            submodules = self.parseGitModulesFileContents(gitmodules_lines)
+
+            # When inside a 2nd level submodule or deeper, store the path relative to the topmost
+            # module.
+            for submodule in submodules:
+                submodule.topmost_supermodule_path_prefix = computeRelativePathPrefixToTopMostSupermodule(submodule.path, top_level_path)
+
+            flattened_submodules.extend(submodules)
+
+            # Recurse into deeper submodules.
+            for submodule in submodules:
+                flattened_submodules.extend(self.readSubmodulesFromGitModules(submodule, gitmodules_file_name, top_level_path))
+
+        os.chdir(oldCwd)
+        return flattened_submodules
 
     def readSubmodules(self):
         submodules = []
@@ -220,33 +297,10 @@ class Submodule:
             submodules = resolver.readSubmodules()
             print 'DEPS file provides the following submodules:'
             for submodule in submodules:
-                print '{:<80}'.format(submodule.path) + '{:<120}'.format(submodule.url) + submodule.ref
+                print '{:<80}'.format(submodule.pathRelativeToTopMostSupermodule()) + '{:<120}'.format(submodule.url) + submodule.ref
         else: # Try .gitmodules since no ref has been specified
-            if not os.path.isfile('.gitmodules'):
-                return []
-            gitmodules_file = open('.gitmodules')
-            gitmodules_lines = gitmodules_file.readlines()
-            gitmodules_file.close()
-
-            submodules = []
-            currentSubmodule = None
-            for line in gitmodules_lines:
-                if line.find('[submodule') == 0:
-                    if currentSubmodule:
-                        submodules.append(currentSubmodule)
-                    currentSubmodule = Submodule()
-                tokens = line.split('=')
-                if len(tokens) >= 2:
-                    key = tokens[0].strip()
-                    value = tokens[1].strip()
-                    if key == 'path':
-                        currentSubmodule.path = value
-                    elif key == 'url':
-                        currentSubmodule.url = value
-                    elif key == 'os':
-                        currentSubmodule.os = value.split(',')
-            if currentSubmodule:
-                submodules.append(currentSubmodule)
+            gitmodules_file_name = '.gitmodules'
+            submodules = self.readSubmodulesFromGitModules(self, gitmodules_file_name, self.path)
         return submodules
 
     def initSubmodules(self):

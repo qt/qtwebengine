@@ -39,6 +39,8 @@
 
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginehistory_p_p.h"
+
+#include "qquickwebenginefaviconprovider_p_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebengineview_p_p.h"
 #include "web_contents_adapter.h"
@@ -133,8 +135,9 @@ int QQuickWebEngineForwardHistoryListModelPrivate::offsetForIndex(int index) con
 
     \brief A data model that represents the history of a web engine page.
 
-    The WebEngineHistoryListModel type exposes the \e title, \e url, and \e offset roles. The
-    \e title and \e url specify the title and URL of the visited page. The \e offset specifies
+    The WebEngineHistoryListModel type exposes the \e title, \e url, \e icon, and \e offset roles.
+    The \e title, \e url and \e icon specify the title, URL, and favicon of the visited page.
+    The \e offset specifies
     the position of the page in respect to the current page (0). A positive number indicates that
     the page was visited after the current page, whereas a negative number indicates that the page
     was visited before the current page.
@@ -166,6 +169,7 @@ QHash<int, QByteArray> QQuickWebEngineHistoryListModel::roleNames() const
     roles[QQuickWebEngineHistory::UrlRole] = "url";
     roles[QQuickWebEngineHistory::TitleRole] = "title";
     roles[QQuickWebEngineHistory::OffsetRole] = "offset";
+    roles[QQuickWebEngineHistory::IconUrlRole] = "icon";
     return roles;
 }
 
@@ -183,7 +187,7 @@ QVariant QQuickWebEngineHistoryListModel::data(const QModelIndex &index, int rol
     if (!index.isValid())
         return QVariant();
 
-    if (role < QQuickWebEngineHistory::UrlRole || role > QQuickWebEngineHistory::OffsetRole)
+    if (role < QQuickWebEngineHistory::UrlRole || role > QQuickWebEngineHistory::IconUrlRole)
         return QVariant();
 
     if (role == QQuickWebEngineHistory::UrlRole)
@@ -194,6 +198,12 @@ QVariant QQuickWebEngineHistoryListModel::data(const QModelIndex &index, int rol
 
     if (role == QQuickWebEngineHistory::OffsetRole)
         return d->offsetForIndex(index.row());
+
+    if (role == QQuickWebEngineHistory::IconUrlRole) {
+        QUrl iconUrl = QUrl(d->adapter()->getNavigationEntryIconUrl(d->index(index.row())));
+        return QQuickWebEngineFaviconProvider::faviconProviderUrl(iconUrl);
+    }
+
     return QVariant();
 }
 
@@ -223,7 +233,7 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     The WebEngineHistory type can be accessed by using the
     \l{WebEngineView::navigationHistory}{WebEngineView.navigationHistory} property.
 
-    The WebEngineHistory type providess the following WebEngineHistoryListModel data model objects:
+    The WebEngineHistory type provides the following WebEngineHistoryListModel data model objects:
 
     \list
         \li \c backItems, which contains the URLs of visited pages.
@@ -253,7 +263,8 @@ QQuickWebEngineHistoryPrivate::~QQuickWebEngineHistoryPrivate()
     format of the list items. The appearance of each item of the list in the delegate can be defined
     separately (it is not web engine specific).
 
-    The model roles \e title and \e url specify the title and URL of the visited page. The \e offset
+    The model roles \e title, \e url, and \e icon specify the title, URL, and favicon of the
+    visited page. The \e offset
     role specifies the position of the page in respect to the current page (0). A positive number
     indicates that the page was visited after the current page, whereas a negative number indicates
     that the page was visited before the current page.
@@ -283,9 +294,8 @@ QQuickWebEngineHistory::~QQuickWebEngineHistory()
 }
 
 /*!
-    \qmlproperty QQuickWebEngineHistoryListModel WebEngineHistory::items
+    \qmlproperty WebEngineHistoryListModel WebEngineHistory::items
     \readonly
-    \since QtWebEngine 1.1
 
     URLs of back items, forward items, and the current item in the history.
 */
@@ -298,9 +308,8 @@ QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::items() const
 }
 
 /*!
-    \qmlproperty QQuickWebEngineHistoryListModel WebEngineHistory::backItems
+    \qmlproperty WebEngineHistoryListModel WebEngineHistory::backItems
     \readonly
-    \since QtWebEngine 1.1
 
     URLs of visited pages.
 */
@@ -313,9 +322,8 @@ QQuickWebEngineHistoryListModel *QQuickWebEngineHistory::backItems() const
 }
 
 /*!
-    \qmlproperty QQuickWebEngineHistoryListModel WebEngineHistory::forwardItems
+    \qmlproperty WebEngineHistoryListModel WebEngineHistory::forwardItems
     \readonly
-    \since QtWebEngine 1.1
 
     URLs of the pages that were visited after visiting the current page.
 */

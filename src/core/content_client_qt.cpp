@@ -58,6 +58,12 @@
 #include <QString>
 
 #if defined(ENABLE_PLUGINS)
+
+// The plugin logic is based on chrome/common/chrome_content_client.cc:
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
@@ -95,7 +101,6 @@ static QString ppapiPluginsPath()
 }
 
 
-// Adopted from chrome_content_client.cc
 content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path, const std::string& version)
 {
     content::PepperPluginInfo plugin;
@@ -184,6 +189,17 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
         pluginPaths << QtWebEngineCore::toQt(widevine_argument);
     else {
         pluginPaths << ppapiPluginsPath() + QStringLiteral("/") + QString::fromLatin1(kWidevineCdmAdapterFileName);
+#if defined(Q_OS_OSX)
+    QDir potentialWidevineDir(QDir::homePath() + "/Library/Application Support/Google/Chrome/WidevineCDM");
+    if (potentialWidevineDir.exists()) {
+        QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+        for (int i = 0; i < widevineVersionDirs.size(); ++i) {
+            QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
+            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/mac_x64/" + QString::fromLatin1(kWidevineCdmAdapterFileName);
+            pluginPaths << potentialWidevinePluginPath;
+        }
+    }
+#endif
 #if defined(Q_OS_LINUX)
         pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdmadapter.so") // Google Chrome
                     << QStringLiteral("/usr/lib/chromium/libwidevinecdmadapter.so"); // Arch

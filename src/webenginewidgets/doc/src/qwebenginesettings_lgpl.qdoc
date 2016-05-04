@@ -137,8 +137,6 @@
             Enables screen capture in an application. Disabled by default. (Added in Qt 5.7)
     \value  WebGLEnabled
             Enables support for HTML 5 WebGL. Enabled by default if available. (Added in Qt 5.7)
-    \value  WebAudioEnabled
-            Enables support for HTML 5 WebAudio. Disabled by default. (Added in Qt 5.7)
     \value  Accelerated2dCanvasEnabled
             Specifies whether the HTML5 2D canvas should be a OpenGL framebuffer.
             This makes many painting operations faster, but slows down pixel access. Enabled by default if available. (Added in Qt 5.7)

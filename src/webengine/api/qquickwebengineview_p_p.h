@@ -71,6 +71,7 @@ class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
 class QQuickWebEngineSettings;
+class QQuickWebEngineFaviconProvider;
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 class QQuickWebEngineTestSupport;
@@ -187,7 +188,7 @@ public:
     void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                        const QPixmap &pixmap, const QPoint &offset) Q_DECL_OVERRIDE;
 
-    virtual QtWebEngineCore::BrowserContextAdapter *browserContextAdapter() Q_DECL_OVERRIDE;
+    virtual QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() Q_DECL_OVERRIDE;
     QtWebEngineCore::WebContentsAdapter *webContentsAdapter() Q_DECL_OVERRIDE;
 
     void setDevicePixelRatio(qreal);
@@ -215,6 +216,7 @@ public:
     QQuickWebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
     QUrl iconUrl;
+    QQuickWebEngineFaviconProvider *faviconProvider;
     int loadProgress;
     bool m_fullscreenMode;
     bool isLoading;
@@ -230,6 +232,7 @@ private:
     QList<QQuickWebEngineScript *> m_userScripts;
     qreal m_dpiScale;
     QColor m_backgroundColor;
+    qreal m_defaultZoomFactor;
 };
 
 #ifndef QT_NO_ACCESSIBILITY

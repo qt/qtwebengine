@@ -71,6 +71,30 @@ static base::StringPiece PlatformResourceProvider(int key) {
     return base::StringPiece();
 }
 
+// Logging logic is based on chrome/common/logging_chrome.cc:
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+static logging::LoggingDestination DetermineLogMode(const base::CommandLine& command_line)
+{
+#ifdef NDEBUG
+    bool enable_logging = false;
+    const char *kInvertLoggingSwitch = switches::kEnableLogging;
+#else
+    bool enable_logging = true;
+    const char *kInvertLoggingSwitch = switches::kDisableLogging;
+#endif
+
+    if (command_line.HasSwitch(kInvertLoggingSwitch))
+        enable_logging = !enable_logging;
+
+    if (enable_logging)
+        return logging::LOG_TO_SYSTEM_DEBUG_LOG;
+    else
+        return logging::LOG_NONE;
+}
+
 void ContentMainDelegateQt::PreSandboxStartup()
 {
 #if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
@@ -82,18 +106,19 @@ void ContentMainDelegateQt::PreSandboxStartup()
     net::NetModule::SetResourceProvider(PlatformResourceProvider);
     ui::ResourceBundle::InitSharedInstanceWithLocale(WebEngineLibraryInfo::getApplicationLocale(), 0, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 
-    // Suppress info, warning and error messages per default.
-    int logLevel = logging::LOG_FATAL;
-
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
-    if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
-        std::string logLevelValue = parsedCommandLine->GetSwitchValueASCII(switches::kLoggingLevel);
-        int level = 0;
-        if (base::StringToInt(logLevelValue, &level) && level >= logging::LOG_INFO && level < logging::LOG_NUM_SEVERITIES)
-            logLevel = level;
-    }
+    logging::LoggingSettings settings;
+    settings.logging_dest = DetermineLogMode(*parsedCommandLine);
+    logging::InitLogging(settings);
 
-    logging::SetMinLogLevel(logLevel);
+    if (logging::GetMinLogLevel() >= logging::LOG_INFO) {
+        if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
+            std::string logLevelValue = parsedCommandLine->GetSwitchValueASCII(switches::kLoggingLevel);
+            int level = 0;
+            if (base::StringToInt(logLevelValue, &level) && level >= logging::LOG_INFO && level < logging::LOG_NUM_SEVERITIES)
+                logging::SetMinLogLevel(level);
+        }
+    }
 }
 
 content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient()

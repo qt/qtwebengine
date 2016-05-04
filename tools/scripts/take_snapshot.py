@@ -78,6 +78,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('base/android/java')
         or file_path.startswith('breakpad')
         or file_path.startswith('build/android/')
+        or file_path.startswith('buildtools/clang_format/script')
         or (file_path.startswith('chrome/') and
             not file_path.startswith('chrome/VERSION') and
             not file_path.startswith('chrome/browser/chrome_notification_types.h') and
@@ -204,6 +205,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
         or file_path.startswith('third_party/webgl')
+        or file_path.startswith('tools/memory_inspector')
         or (file_path.startswith('tools') and
            not file_path.startswith('tools/clang') and
            not file_path.startswith('tools/compile_test') and
@@ -215,7 +217,10 @@ def isInChromiumBlacklist(file_path):
            not file_path.startswith('tools/json_comment_eater') and
            not file_path.startswith('tools/json_schema_compiler') and
            not file_path.startswith('tools/idl_parser') and
-           not file_path.startswith('tools/protoc_wrapper'))
+           not file_path.startswith('tools/memory') and
+           not file_path.startswith('tools/msan') and
+           not file_path.startswith('tools/protoc_wrapper') and
+           not file_path.startswith('tools/ubsan'))
         or file_path.startswith('ui/android/java')
         or file_path.startswith('ui/app_list')
         or file_path.startswith('ui/base/ime/chromeos')
@@ -274,7 +279,7 @@ def listFilesInCurrentRepository():
     for submodule in submodules:
         submodule_files = submodule.listFiles()
         for submodule_file in submodule_files:
-            files.append(os.path.join(submodule.path, submodule_file))
+            files.append(os.path.join(submodule.pathRelativeToTopMostSupermodule(), submodule_file))
     return files
 
 def exportNinja():

@@ -57,6 +57,7 @@
 #include <QMap>
 #include <QPointer>
 #include <QScopedPointer>
+#include <QSharedPointer>
 
 namespace QtWebEngineCore {
 class BrowserContextAdapter;
@@ -69,10 +70,10 @@ class QWebEngineSettings;
 class QWebEngineProfilePrivate : public QtWebEngineCore::BrowserContextAdapterClient {
 public:
     Q_DECLARE_PUBLIC(QWebEngineProfile)
-    QWebEngineProfilePrivate(QtWebEngineCore::BrowserContextAdapter* browserContext);
+    QWebEngineProfilePrivate(QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext);
     ~QWebEngineProfilePrivate();
 
-    QtWebEngineCore::BrowserContextAdapter *browserContext() const { return m_browserContextRef.data(); }
+    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const { return m_browserContextRef; }
     QWebEngineSettings *settings() const { return m_settings; }
 
     void cancelDownload(quint32 downloadId);
@@ -85,7 +86,7 @@ private:
     QWebEngineProfile *q_ptr;
     QWebEngineSettings *m_settings;
     QScopedPointer<QWebEngineScriptCollection> m_scriptCollection;
-    QExplicitlySharedDataPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
+    QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QWebEngineDownloadItem> > m_ongoingDownloads;
 };
 

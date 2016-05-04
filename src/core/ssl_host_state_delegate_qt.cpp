@@ -72,8 +72,7 @@ void CertPolicy::Allow(const net::X509Certificate& cert, net::CertStatus error)
     m_allowed[fingerprint] |= error;
 }
 
-SSLHostStateDelegateQt::SSLHostStateDelegateQt(BrowserContextAdapter *contextAdapter)
-    : m_contextAdapter(contextAdapter)
+SSLHostStateDelegateQt::SSLHostStateDelegateQt()
 {
 }
 

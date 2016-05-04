@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 class QQmlWebChannel;
 class QQuickWebEngineCertificateError;
 class QQuickWebEngineContextMenuData;
+class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineHistory;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
@@ -517,6 +518,7 @@ private:
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
     friend class QQuickWebEngineNewViewRequest;
+    friend class QQuickWebEngineFaviconProvider;
 #ifndef QT_NO_ACCESSIBILITY
     friend class QQuickWebEngineViewAccessible;
 #endif // QT_NO_ACCESSIBILITY

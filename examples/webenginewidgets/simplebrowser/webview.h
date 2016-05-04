@@ -54,29 +54,21 @@ public:
     WebView(QWidget *parent = nullptr);
     void setPage(WebPage *page);
 
-    QIcon icon() const;
     int loadProgress() const;
     bool isWebActionEnabled(QWebEnginePage::WebAction webAction) const;
-    static QNetworkAccessManager &networkAccessManager();
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event) override;
     QWebEngineView *createWindow(QWebEnginePage::WebWindowType type) override;
 
 signals:
-    void iconChanged(const QIcon &icon);
     void webActionEnabledChanged(QWebEnginePage::WebAction webAction, bool enabled);
-
-private slots:
-    void handleIconUrlChanged(const QUrl &url);
-    void handleIconLoaded();
 
 private:
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction);
 
 private:
     int m_loadProgress;
-    QIcon m_icon;
 };
 
 #endif

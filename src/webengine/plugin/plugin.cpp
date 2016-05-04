@@ -43,6 +43,7 @@
 #include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginehistory_p.h"
+#include "qquickwebenginefaviconprovider_p_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
@@ -63,6 +64,12 @@ class QtWebEnginePlugin : public QQmlExtensionPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
+    virtual void initializeEngine(QQmlEngine *engine, const char *uri)
+    {
+        Q_UNUSED(uri);
+        engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider);
+    }
+
     virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));

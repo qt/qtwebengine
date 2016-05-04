@@ -15,6 +15,7 @@ FORMS += \
     downloads.ui \
     history.ui \
     passworddialog.ui \
+    printtopdfdialog.ui \
     proxy.ui \
     savepagedialog.ui \
     settings.ui
@@ -32,6 +33,7 @@ HEADERS += \
     fullscreennotification.h \
     history.h \
     modelmenu.h \
+    printtopdfdialog.h \
     savepagedialog.h \
     searchlineedit.h \
     settings.h \
@@ -55,6 +57,7 @@ SOURCES += \
     fullscreennotification.cpp \
     history.cpp \
     modelmenu.cpp \
+    printtopdfdialog.cpp \
     savepagedialog.cpp \
     searchlineedit.cpp \
     settings.cpp \

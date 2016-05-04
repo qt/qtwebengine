@@ -89,6 +89,18 @@ def readSubmodules():
     for sub in git_submodules:
         submodule_dict[sub.path] = sub
 
+    # Add buildtools submodules
+    buildtools_deps_file_path = "buildtools/DEPS"
+    if (os.path.isfile(buildtools_deps_file_path)):
+        with open(buildtools_deps_file_path, 'r') as buildtools_deps_file:
+            buildtools_deps = buildtools_deps_file.read()
+            if buildtools_deps:
+                buildtools_parser = GitSubmodule.DEPSParser()
+                buildtools_parser.topmost_supermodule_path_prefix = './buildtools/'
+                buildtools_submodules = buildtools_parser.parse(buildtools_deps)
+                for sub in buildtools_submodules:
+                    submodule_dict[sub.path] = sub
+
     # Remove unwanted upstream submodules
     for path in submodule_blacklist:
         if path in submodule_dict:

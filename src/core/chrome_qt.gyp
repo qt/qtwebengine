@@ -132,8 +132,6 @@
             '<(DEPTH)/chrome/browser/printing/print_job_worker_owner.h',
             '<(DEPTH)/chrome/browser/printing/printer_query.cc',
             '<(DEPTH)/chrome/browser/printing/printer_query.h',
-            '<(DEPTH)/extensions/browser/notification_types.h',
-            '<(DEPTH)/extensions/browser/notification_types.cc',
           ],
           'dependencies': [
             '<(chromium_src_dir)/third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',

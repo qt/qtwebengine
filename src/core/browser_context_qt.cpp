@@ -174,7 +174,7 @@ content::PushMessagingService *BrowserContextQt::GetPushMessagingService()
 content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
 {
     if (!sslHostStateDelegate)
-        sslHostStateDelegate.reset(new SSLHostStateDelegateQt(m_adapter));
+        sslHostStateDelegate.reset(new SSLHostStateDelegateQt());
     return sslHostStateDelegate.get();
 }
 
@@ -191,13 +191,13 @@ content::BackgroundSyncController* BrowserContextQt::GetBackgroundSyncController
 content::PermissionManager *BrowserContextQt::GetPermissionManager()
 {
     if (!permissionManager)
-        permissionManager.reset(new PermissionManagerQt(m_adapter));
+        permissionManager.reset(new PermissionManagerQt());
     return permissionManager.get();
 }
 
 net::URLRequestContextGetter *BrowserContextQt::CreateRequestContext(content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptors)
 {
-    url_request_getter_ = new URLRequestContextGetterQt(m_adapter, protocol_handlers, std::move(request_interceptors));
+    url_request_getter_ = new URLRequestContextGetterQt(m_adapter->sharedFromThis(), protocol_handlers, std::move(request_interceptors));
     return url_request_getter_.get();
 }
 

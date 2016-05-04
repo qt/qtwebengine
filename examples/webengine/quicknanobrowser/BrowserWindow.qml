@@ -237,6 +237,7 @@ ApplicationWindow {
                         z: 2
                         id: faviconImage
                         width: 16; height: 16
+                        sourceSize: Qt.size(width, height)
                         source: currentWebView && currentWebView.icon
                     }
                     style: TextFieldStyle {

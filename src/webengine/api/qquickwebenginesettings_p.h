@@ -79,7 +79,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged REVISION 1)
     Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged REVISION 2)
     Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged REVISION 2)
-    Q_PROPERTY(bool webAudioEnabled READ webAudioEnabled WRITE setWebAudioEnabled NOTIFY webAudioEnabledChanged REVISION 2)
     Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION 2)
     Q_PROPERTY(bool autoLoadIconsForPage READ autoLoadIconsForPage WRITE setAutoLoadIconsForPage NOTIFY autoLoadIconsForPageChanged REVISION 2)
     Q_PROPERTY(bool touchIconsEnabled READ touchIconsEnabled WRITE setTouchIconsEnabled NOTIFY touchIconsEnabledChanged REVISION 2)
@@ -103,7 +102,6 @@ public:
     QString defaultTextEncoding() const;
     bool screenCaptureEnabled() const;
     bool webGLEnabled() const;
-    bool webAudioEnabled() const;
     bool accelerated2dCanvasEnabled() const;
     bool autoLoadIconsForPage() const;
     bool touchIconsEnabled() const;
@@ -124,7 +122,6 @@ public:
     void setDefaultTextEncoding(QString encoding);
     void setScreenCaptureEnabled(bool on);
     void setWebGLEnabled(bool on);
-    void setWebAudioEnabled(bool on);
     void setAccelerated2dCanvasEnabled(bool on);
     void setAutoLoadIconsForPage(bool on);
     void setTouchIconsEnabled(bool on);
@@ -146,7 +143,6 @@ signals:
     Q_REVISION(1) void defaultTextEncodingChanged();
     Q_REVISION(2) void screenCaptureEnabledChanged();
     Q_REVISION(2) void webGLEnabledChanged();
-    Q_REVISION(2) void webAudioEnabledChanged();
     Q_REVISION(2) void accelerated2dCanvasEnabledChanged();
     Q_REVISION(2) void autoLoadIconsForPageChanged();
     Q_REVISION(2) void touchIconsEnabledChanged();
