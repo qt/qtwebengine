@@ -295,6 +295,34 @@ void RenderWidgetHostViewQtDelegateWidget::hideEvent(QHideEvent *event)
 bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 {
     bool handled = false;
+
+    // Mimic QWidget::event() by ignoring mouse, keyboard, touch and tablet events if the widget is
+    // disabled.
+    if (!isEnabled()) {
+        switch (event->type()) {
+        case QEvent::TabletPress:
+        case QEvent::TabletRelease:
+        case QEvent::TabletMove:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseMove:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+        case QEvent::TouchCancel:
+        case QEvent::ContextMenu:
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+#ifndef QT_NO_WHEELEVENT
+        case QEvent::Wheel:
+#endif
+            return false;
+        default:
+            break;
+        }
+    }
+
     if (event->type() == QEvent::MouseButtonDblClick) {
         // QWidget keeps the Qt4 behavior where the DblClick event would replace the Press event.
         // QtQuick is different by sending both the Press and DblClick events for the second press

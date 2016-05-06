@@ -28,9 +28,18 @@
 #include <qwebenginesettings.h>
 #include <qnetworkrequest.h>
 #include <qdiriterator.h>
+#include <qstackedlayout.h>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
+
+#define QTRY_COMPARE_WITH_TIMEOUT_FAIL_BLOCK(__expr, __expected, __timeout, __fail_block) \
+do { \
+    QTRY_IMPL(((__expr) == (__expected)), __timeout);\
+    if (__expr != __expected)\
+        __fail_block\
+    QCOMPARE((__expr), __expected); \
+} while (0)
 
 class tst_QWebEngineView : public QObject
 {
@@ -59,6 +68,8 @@ private Q_SLOTS:
     void setPalette_data();
     void setPalette();
 #endif
+    void doNotSendMouseKeyboardEventsWhenDisabled();
+    void doNotSendMouseKeyboardEventsWhenDisabled_data();
 };
 
 // This will be called before the first test function is executed.
@@ -587,6 +598,115 @@ void tst_QWebEngineView::renderingAfterMaxAndBack()
 
     QCOMPARE(image3, reference3);
 #endif
+}
+
+class KeyboardAndMouseEventRecordingWidget : public QWidget {
+public:
+    explicit KeyboardAndMouseEventRecordingWidget(QWidget *parent = 0) :
+        QWidget(parent), m_eventCounter(0) {}
+
+    bool event(QEvent *event) Q_DECL_OVERRIDE
+    {
+        QString eventString;
+        switch (event->type()) {
+        case QEvent::TabletPress:
+        case QEvent::TabletRelease:
+        case QEvent::TabletMove:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick:
+        case QEvent::MouseMove:
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+        case QEvent::TouchCancel:
+        case QEvent::ContextMenu:
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+#ifndef QT_NO_WHEELEVENT
+        case QEvent::Wheel:
+#endif
+            ++m_eventCounter;
+            event->setAccepted(true);
+            QDebug(&eventString) << event;
+            m_eventHistory.append(eventString);
+            return true;
+        default:
+            break;
+        }
+        return QWidget::event(event);
+    }
+
+    void clearEventCount()
+    {
+        m_eventCounter = 0;
+    }
+
+    int eventCount()
+    {
+        return m_eventCounter;
+    }
+
+    void printEventHistory()
+    {
+        qDebug() << "Received events are:";
+        for (int i = 0; i < m_eventHistory.size(); ++i) {
+            qDebug() << m_eventHistory[i];
+        }
+    }
+
+private:
+    int m_eventCounter;
+    QVector<QString> m_eventHistory;
+};
+
+void tst_QWebEngineView::doNotSendMouseKeyboardEventsWhenDisabled()
+{
+    QFETCH(bool, viewEnabled);
+    QFETCH(int, resultEventCount);
+
+    KeyboardAndMouseEventRecordingWidget parentWidget;
+    QWebEngineView webView(&parentWidget);
+    webView.setEnabled(viewEnabled);
+    parentWidget.setLayout(new QStackedLayout);
+    parentWidget.layout()->addWidget(&webView);
+    webView.resize(640, 480);
+    parentWidget.show();
+    QTest::qWaitForWindowExposed(&webView);
+
+    QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
+    webView.setHtml("<html><head><title>Title</title></head><body>Hello"
+                    "<input id=\"input\" type=\"text\"></body></html>");
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    // When the webView is enabled, the events are swallowed by it, and the parent widget
+    // does not receive any events, otherwise all events are processed by the parent widget.
+    parentWidget.clearEventCount();
+    QTest::mousePress(parentWidget.windowHandle(), Qt::LeftButton);
+    QTest::mouseMove(parentWidget.windowHandle(), QPoint(100, 100));
+    QTest::mouseRelease(parentWidget.windowHandle(), Qt::LeftButton,
+                        Qt::KeyboardModifiers(), QPoint(100, 100));
+
+    // Wait a bit for the mouse events to be processed, so they don't interfere with the js focus
+    // below.
+    QTest::qWait(100);
+    evaluateJavaScriptSync(webView.page(), "document.getElementById(\"input\").focus()");
+    QTest::keyPress(parentWidget.windowHandle(), Qt::Key_H);
+
+    // Wait a bit for the key press to be handled. We have to do it, because the compare
+    // below could immediately finish successfully, without alloing for the events to be handled.
+    QTest::qWait(100);
+    QTRY_COMPARE_WITH_TIMEOUT_FAIL_BLOCK(parentWidget.eventCount(), resultEventCount,
+                                         1000, parentWidget.printEventHistory(););
+}
+
+void tst_QWebEngineView::doNotSendMouseKeyboardEventsWhenDisabled_data()
+{
+    QTest::addColumn<bool>("viewEnabled");
+    QTest::addColumn<int>("resultEventCount");
+
+    QTest::newRow("enabled view receives events") << true << 0;
+    QTest::newRow("disabled view does not receive events") << false << 4;
 }
 
 QTEST_MAIN(tst_QWebEngineView)
