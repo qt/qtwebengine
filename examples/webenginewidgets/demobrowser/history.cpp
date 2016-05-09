@@ -101,7 +101,7 @@ HistoryManager::~HistoryManager()
     m_saveTimer->saveIfNeccessary();
 }
 
-QList<HistoryItem> HistoryManager::history() const
+QList<HistoryItem> &HistoryManager::history()
 {
     return m_history;
 }
@@ -118,6 +118,15 @@ void HistoryManager::addHistoryEntry(const QString &url)
     cleanUrl.setHost(cleanUrl.host().toLower());
     HistoryItem item(cleanUrl.toString(), QDateTime::currentDateTime());
     addHistoryItem(item);
+}
+
+void HistoryManager::removeHistoryEntry(const QString &url)
+{
+    QUrl cleanUrl(url);
+    cleanUrl.setPassword(QString());
+    cleanUrl.setHost(cleanUrl.host().toLower());
+    HistoryItem item(cleanUrl.toString(), QDateTime::currentDateTime());
+    removeHistoryItem(item);
 }
 
 void HistoryManager::setHistory(const QList<HistoryItem> &history, bool loadedAndSorted)
@@ -173,7 +182,7 @@ void HistoryManager::checkForExpired()
         }
         if (nextTimeout > 0)
             break;
-        HistoryItem item = m_history.takeLast();
+        const HistoryItem& item = m_history.last();
         // remove from saved file also
         m_lastSavedUrl = QString();
         emit entryRemoved(item);
@@ -188,10 +197,19 @@ void HistoryManager::addHistoryItem(const HistoryItem &item)
     if (BrowserApplication::instance()->privateBrowsing())
         return;
 
-    m_history.prepend(item);
     emit entryAdded(item);
     if (m_history.count() == 1)
         checkForExpired();
+}
+
+void HistoryManager::removeHistoryItem(const HistoryItem &item)
+{
+    for (int i = m_history.count() - 1 ; i >= 0; --i) {
+        if (item.url == m_history.at(i).url) {
+            //delete all related entries with that url
+            emit entryRemoved(m_history.at(i));
+        }
+    }
 }
 
 void HistoryManager::updateHistoryItem(const QUrl &url, const QString &title)
@@ -224,7 +242,6 @@ void HistoryManager::setHistoryLimit(int limit)
 
 void HistoryManager::clear()
 {
-    m_history.clear();
     m_lastSavedUrl = QString();
     emit historyReset();
     m_saveTimer->changeOccurred();
@@ -374,10 +391,10 @@ HistoryModel::HistoryModel(HistoryManager *history, QObject *parent)
     connect(m_history, SIGNAL(historyReset()),
             this, SLOT(historyReset()));
     connect(m_history, SIGNAL(entryRemoved(HistoryItem)),
-            this, SLOT(historyReset()));
+            this, SLOT(entryRemoved(HistoryItem)));
 
     connect(m_history, SIGNAL(entryAdded(HistoryItem)),
-            this, SLOT(entryAdded()));
+            this, SLOT(entryAdded(HistoryItem)));
     connect(m_history, SIGNAL(entryUpdated(int)),
             this, SLOT(entryUpdated(int)));
 }
@@ -385,13 +402,24 @@ HistoryModel::HistoryModel(HistoryManager *history, QObject *parent)
 void HistoryModel::historyReset()
 {
     beginResetModel();
+    m_history->history().clear();
     endResetModel();
 }
 
-void HistoryModel::entryAdded()
+void HistoryModel::entryAdded(const HistoryItem &item)
 {
     beginInsertRows(QModelIndex(), 0, 0);
+    m_history->history().prepend(item);
     endInsertRows();
+}
+
+void HistoryModel::entryRemoved(const HistoryItem &item)
+{
+    int index = m_history->history().indexOf(item);
+    Q_ASSERT(index > -1);
+    beginRemoveRows(QModelIndex(),index, index);
+    m_history->history().takeAt(index);
+    endRemoveRows();
 }
 
 void HistoryModel::entryUpdated(int offset)
@@ -468,12 +496,9 @@ bool HistoryModel::removeRows(int row, int count, const QModelIndex &parent)
         return false;
     int lastRow = row + count - 1;
     beginRemoveRows(parent, row, lastRow);
-    QList<HistoryItem> lst = m_history->history();
+    QList<HistoryItem> &lst = m_history->history();
     for (int i = lastRow; i >= row; --i)
         lst.removeAt(i);
-    disconnect(m_history, SIGNAL(historyReset()), this, SLOT(historyReset()));
-    m_history->setHistory(lst);
-    connect(m_history, SIGNAL(historyReset()), this, SLOT(historyReset()));
     endRemoveRows();
     return true;
 }
@@ -664,8 +689,6 @@ TreeProxyModel::TreeProxyModel(QObject *parent) : QSortFilterProxyModel(parent)
 
 bool TreeProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
 {
-    if (!source_parent.isValid())
-        return true;
     return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
 }
 
@@ -678,14 +701,16 @@ HistoryDialog::HistoryDialog(QWidget *parent, HistoryManager *setHistory) : QDia
     tree->setUniformRowHeights(true);
     tree->setSelectionBehavior(QAbstractItemView::SelectRows);
     tree->setTextElideMode(Qt::ElideMiddle);
-    QAbstractItemModel *model = history->historyTreeModel();
+    QAbstractItemModel *model = history->historyFilterModel();
     TreeProxyModel *proxyModel = new TreeProxyModel(this);
     connect(search, SIGNAL(textChanged(QString)),
             proxyModel, SLOT(setFilterFixedString(QString)));
     connect(removeButton, SIGNAL(clicked()), tree, SLOT(removeOne()));
-    connect(removeAllButton, SIGNAL(clicked()), history, SLOT(clear()));
+    connect(removeAllButton, SIGNAL(clicked()), tree, SLOT(removeAll()));
     proxyModel->setSourceModel(model);
+    proxyModel->setFilterKeyColumn(1);
     tree->setModel(proxyModel);
+    tree->setSortingEnabled(true);
     tree->setExpanded(proxyModel->index(0, 0), true);
     tree->setAlternatingRowColors(true);
     QFontMetrics fm(font());
@@ -739,25 +764,13 @@ HistoryFilterModel::HistoryFilterModel(QAbstractItemModel *sourceModel, QObject 
     setSourceModel(sourceModel);
 }
 
-int HistoryFilterModel::historyLocation(const QString &url) const
-{
-    load();
-    if (!m_historyHash.contains(url))
-        return 0;
-    return sourceModel()->rowCount() - m_historyHash.value(url);
-}
-
-QVariant HistoryFilterModel::data(const QModelIndex &index, int role) const
-{
-    return QAbstractProxyModel::data(index, role);
-}
-
 void HistoryFilterModel::setSourceModel(QAbstractItemModel *newSourceModel)
 {
+    beginResetModel();
     if (sourceModel()) {
         disconnect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
         disconnect(sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-                   this, SLOT(dataChanged(QModelIndex,QModelIndex)));
+                   this, SLOT(sourceDataChanged(QModelIndex,QModelIndex)));
         disconnect(sourceModel(), SIGNAL(rowsInserted(QModelIndex,int,int)),
                 this, SLOT(sourceRowsInserted(QModelIndex,int,int)));
         disconnect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
@@ -767,7 +780,6 @@ void HistoryFilterModel::setSourceModel(QAbstractItemModel *newSourceModel)
     QAbstractProxyModel::setSourceModel(newSourceModel);
 
     if (sourceModel()) {
-        m_loaded = false;
         connect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
         connect(sourceModel(), SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(sourceDataChanged(QModelIndex,QModelIndex)));
@@ -776,6 +788,8 @@ void HistoryFilterModel::setSourceModel(QAbstractItemModel *newSourceModel)
         connect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
                 this, SLOT(sourceRowsRemoved(QModelIndex,int,int)));
     }
+    load();
+    endResetModel();
 }
 
 void HistoryFilterModel::sourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight)
@@ -790,14 +804,13 @@ QVariant HistoryFilterModel::headerData(int section, Qt::Orientation orientation
 
 void HistoryFilterModel::sourceReset()
 {
-    m_loaded = false;
     beginResetModel();
+    load();
     endResetModel();
 }
 
 int HistoryFilterModel::rowCount(const QModelIndex &parent) const
 {
-    load();
     if (parent.isValid())
         return 0;
     return m_historyHash.count();
@@ -810,14 +823,12 @@ int HistoryFilterModel::columnCount(const QModelIndex &parent) const
 
 QModelIndex HistoryFilterModel::mapToSource(const QModelIndex &proxyIndex) const
 {
-    load();
     int sourceRow = sourceModel()->rowCount() - proxyIndex.internalId();
     return sourceModel()->index(sourceRow, proxyIndex.column());
 }
 
 QModelIndex HistoryFilterModel::mapFromSource(const QModelIndex &sourceIndex) const
 {
-    load();
     QString url = sourceIndex.data(HistoryModel::UrlStringRole).toString();
     if (!m_historyHash.contains(url))
         return QModelIndex();
@@ -843,7 +854,6 @@ QModelIndex HistoryFilterModel::mapFromSource(const QModelIndex &sourceIndex) co
 
 QModelIndex HistoryFilterModel::index(int row, int column, const QModelIndex &parent) const
 {
-    load();
     if (row < 0 || row >= rowCount(parent)
         || column < 0 || column >= columnCount(parent))
         return QModelIndex();
@@ -858,8 +868,6 @@ QModelIndex HistoryFilterModel::parent(const QModelIndex &) const
 
 void HistoryFilterModel::load() const
 {
-    if (m_loaded)
-        return;
     m_sourceRow.clear();
     m_historyHash.clear();
     m_historyHash.reserve(sourceModel()->rowCount());
@@ -871,15 +879,12 @@ void HistoryFilterModel::load() const
             m_historyHash[url] = sourceModel()->rowCount() - i;
         }
     }
-    m_loaded = true;
 }
 
 void HistoryFilterModel::sourceRowsInserted(const QModelIndex &parent, int start, int end)
 {
     Q_ASSERT(start == end && start == 0);
     Q_UNUSED(end);
-    if (!m_loaded)
-        return;
     QModelIndex idx = sourceModel()->index(start, 0, parent);
     QString url = idx.data(HistoryModel::UrlStringRole).toString();
     if (m_historyHash.contains(url)) {
@@ -1184,6 +1189,7 @@ bool HistoryTreeModel::removeRows(int row, int count, const QModelIndex &parent)
 
 void HistoryTreeModel::setSourceModel(QAbstractItemModel *newSourceModel)
 {
+    beginResetModel();
     if (sourceModel()) {
         disconnect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
         disconnect(sourceModel(), SIGNAL(layoutChanged()), this, SLOT(sourceReset()));
@@ -1191,6 +1197,8 @@ void HistoryTreeModel::setSourceModel(QAbstractItemModel *newSourceModel)
                 this, SLOT(sourceRowsInserted(QModelIndex,int,int)));
         disconnect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
                 this, SLOT(sourceRowsRemoved(QModelIndex,int,int)));
+        disconnect(sourceModel(), &QAbstractItemModel::dataChanged, this,
+                   &HistoryTreeModel::sourceDataChanged);
     }
 
     QAbstractProxyModel::setSourceModel(newSourceModel);
@@ -1202,9 +1210,9 @@ void HistoryTreeModel::setSourceModel(QAbstractItemModel *newSourceModel)
                 this, SLOT(sourceRowsInserted(QModelIndex,int,int)));
         connect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex,int,int)),
                 this, SLOT(sourceRowsRemoved(QModelIndex,int,int)));
+        connect(sourceModel(), &QAbstractItemModel::dataChanged, this,
+                &HistoryTreeModel::sourceDataChanged);
     }
-
-    beginResetModel();
     endResetModel();
 }
 
@@ -1292,4 +1300,11 @@ void HistoryTreeModel::sourceRowsRemoved(const QModelIndex &parent, int start, i
             --m_sourceRowCache[j];
         endRemoveRows();
     }
+}
+
+void HistoryTreeModel::sourceDataChanged(const QModelIndex &topLeft,
+                                         const QModelIndex &bottomRight,
+                                         const QVector<int> roles)
+{
+     emit dataChanged(mapFromSource(topLeft), mapFromSource(bottomRight), roles);
 }

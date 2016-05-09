@@ -520,6 +520,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     d->webContents->GetController().LoadURLWithParams(params);
     d->webContents->Focus();
+    d->webContents->Unselect();
 }
 
 void WebContentsAdapter::save()
