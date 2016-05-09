@@ -141,8 +141,6 @@ Q_SIGNALS:
     void persistentCookiesPolicyChanged();
     void httpCacheMaximumSizeChanged();
     Q_REVISION(1) void httpAcceptLanguageChanged();
-    Q_REVISION(2) void spellCheckLanguageChanged();
-    Q_REVISION(2) void spellCheckEnabledChanged();
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);
