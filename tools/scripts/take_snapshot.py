@@ -92,8 +92,10 @@ def isInChromiumBlacklist(file_path):
             not 'media/desktop_media_list.h' in file_path and
             not 'media/desktop_streams_registry.' in file_path and
             not 'common/chrome_switches.' in file_path and
-            not 'common/localized_error.' in file_path and
+            not 'common/content_restriction.h' in file_path and
             not 'common/spellcheck_' in file_path and
+            not '/renderer_host/pepper/' in file_path and
+            not '/renderer/pepper/' in file_path and
             not '/spellchecker/' in file_path and
             not '/tools/convert_dict/' in file_path and
             not file_path.endswith('cf_resources.rc') and
@@ -105,35 +107,29 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('chrome_frame')
         or file_path.startswith('chromeos')
         or file_path.startswith('cloud_print')
-        or (file_path.startswith('components') and
-            not file_path.startswith('components/cdm') and
-            not file_path.startswith('components/device_event_log') and
-            not file_path.startswith('components/devtools_') and
-            not file_path.startswith('components/error_page') and
-            not file_path.startswith('components/keyed_service') and
-            not file_path.startswith('components/mime_util') and
-            not file_path.startswith('components/precache') and
-            not file_path.startswith('components/pref_registry') and
-            not file_path.startswith('components/printing') and
-            not file_path.startswith('components/resources') and
-            not file_path.startswith('components/scheduler') and
-            not file_path.startswith('components/security_interstitials') and
-            not file_path.startswith('components/startup_metric_utils') and
-            not file_path.startswith('components/strings') and
-            not file_path.startswith('components/tracing') and
-            not file_path.startswith('components/url_formatter') and
-            not file_path.startswith('components/user_prefs') and
-            not file_path.startswith('components/version_') and
-            not file_path.startswith('components/visitedlink') and
-            not file_path.startswith('components/web_cache') and
-            not file_path.startswith('components/webcrypto') and
-            not file_path.startswith('components/webusb') and
-            not file_path.endswith('.grd') and
-            not file_path.endswith('.grdp') and
-            not 'components_strings' in file_path)
+        or file_path.startswith('components/chrome_apps/')
+        or file_path.startswith('components/cronet/')
+        or file_path.startswith('components/drive/')
+        or file_path.startswith('components/invalidation/')
+        or file_path.startswith('components/gcm_driver/')
+        or file_path.startswith('components/google/')
+        or file_path.startswith('components/metrics/')
+        or file_path.startswith('components/mus/')
+        or file_path.startswith('components/nacl/')
+        or file_path.startswith('components/omnibox/')
+        or file_path.startswith('components/policy/')
+        or file_path.startswith('components/proximity_auth/')
+        or (file_path.startswith('components/resources/terms/') and not file_path.endswith('terms_chromium.html'))
+        or file_path.startswith('components/rlz/')
+        or file_path.startswith('components/sync_driver/')
+        or file_path.startswith('components/test/')
+        or file_path.startswith('components/test_runner/')
+        or file_path.startswith('components/translate/')
+        or file_path.startswith('components/variations/')
         or file_path.startswith('content/public/android/java')
         or (file_path.startswith('content/shell') and
-            not file_path.startswith('content/shell/common'))
+            not file_path.startswith('content/shell/common') and
+            not file_path.endswith('.grd'))
         or file_path.startswith('courgette')
         or (file_path.startswith('extensions') and
             not 'browser/extension_function_registry.h' in file_path and
@@ -145,7 +141,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('media/base/android/java')
         or file_path.startswith('native_client')
         or file_path.startswith('net/android/java')
-        or file_path.startswith('pdf')
         or file_path.startswith('remoting')
         or file_path.startswith('rlz')
         or file_path.startswith('sync')
@@ -195,32 +190,23 @@ def isInChromiumBlacklist(file_path):
         or (file_path.startswith('third_party/polymer') and
             not file_path.startswith('third_party/polymer/v1_0/components-chromium/'))
         or file_path.startswith('third_party/openh264/src/res')
+        or file_path.startswith('third_party/pdfium/tools')
+        or file_path.startswith('third_party/pdfium/third_party')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')
-        or file_path.startswith('third_party/pdfium')
         or file_path.startswith('third_party/psyco_win32')
         or file_path.startswith('third_party/scons-2.0.1')
         or file_path.startswith('third_party/sfntly/src/cpp/data/fonts')
         or file_path.startswith('third_party/trace-viewer')
         or file_path.startswith('third_party/undoview')
         or file_path.startswith('third_party/webgl')
+        or file_path.startswith('tools/android')
+        or file_path.startswith('tools/luci_go')
+        or file_path.startswith('tools/metrics')
         or file_path.startswith('tools/memory_inspector')
-        or (file_path.startswith('tools') and
-           not file_path.startswith('tools/clang') and
-           not file_path.startswith('tools/compile_test') and
-           not file_path.startswith('tools/generate_library_loader') and
-           not file_path.startswith('tools/generate_shim_headers') and
-           not file_path.startswith('tools/generate_stubs') and
-           not file_path.startswith('tools/grit') and
-           not file_path.startswith('tools/gyp') and
-           not file_path.startswith('tools/json_comment_eater') and
-           not file_path.startswith('tools/json_schema_compiler') and
-           not file_path.startswith('tools/idl_parser') and
-           not file_path.startswith('tools/memory') and
-           not file_path.startswith('tools/msan') and
-           not file_path.startswith('tools/protoc_wrapper') and
-           not file_path.startswith('tools/ubsan'))
+        or file_path.startswith('tools/perf')
+        or file_path.startswith('tools/swarming_client')
         or file_path.startswith('ui/android/java')
         or file_path.startswith('ui/app_list')
         or file_path.startswith('ui/base/ime/chromeos')
