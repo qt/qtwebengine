@@ -1071,6 +1071,15 @@ void QWebEnginePagePrivate::requestGeometryChange(const QRect &geometry)
     Q_EMIT q->geometryChangeRequested(geometry);
 }
 
+bool QWebEnginePagePrivate::isEnabled() const
+{
+    const Q_Q(QWebEnginePage);
+    const QWidget *view = q->view();
+    if (view)
+        return view->isEnabled();
+    return true;
+}
+
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);

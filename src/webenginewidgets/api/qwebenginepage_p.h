@@ -124,6 +124,7 @@ public:
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus,
                                      int exitCode) Q_DECL_OVERRIDE;
     virtual void requestGeometryChange(const QRect &geometry) Q_DECL_OVERRIDE;
+    virtual bool isEnabled() const Q_DECL_OVERRIDE;
 
     virtual QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContextAdapter() Q_DECL_OVERRIDE;
 

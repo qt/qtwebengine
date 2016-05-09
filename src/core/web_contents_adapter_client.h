@@ -239,6 +239,7 @@ public:
     virtual void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode) = 0;
     virtual void requestGeometryChange(const QRect &geometry) = 0;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
+    virtual bool isEnabled() const = 0;
 
     virtual QSharedPointer<BrowserContextAdapter> browserContextAdapter() = 0;
 

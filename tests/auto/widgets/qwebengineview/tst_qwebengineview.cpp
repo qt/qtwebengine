@@ -70,6 +70,8 @@ private Q_SLOTS:
 #endif
     void doNotSendMouseKeyboardEventsWhenDisabled();
     void doNotSendMouseKeyboardEventsWhenDisabled_data();
+    void stopSettingFocusWhenDisabled();
+    void stopSettingFocusWhenDisabled_data();
 };
 
 // This will be called before the first test function is executed.
@@ -707,6 +709,36 @@ void tst_QWebEngineView::doNotSendMouseKeyboardEventsWhenDisabled_data()
 
     QTest::newRow("enabled view receives events") << true << 0;
     QTest::newRow("disabled view does not receive events") << false << 4;
+}
+
+void tst_QWebEngineView::stopSettingFocusWhenDisabled()
+{
+    QFETCH(bool, viewEnabled);
+    QFETCH(bool, focusResult);
+
+    QWebEngineView webView;
+    webView.resize(640, 480);
+    webView.show();
+    webView.setEnabled(viewEnabled);
+    QTest::qWaitForWindowExposed(&webView);
+
+    QSignalSpy loadSpy(&webView, SIGNAL(loadFinished(bool)));
+    webView.setHtml("<html><head><title>Title</title></head><body>Hello"
+                    "<input id=\"input\" type=\"text\"></body></html>");
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    QTRY_COMPARE_WITH_TIMEOUT(webView.hasFocus(), focusResult, 1000);
+    evaluateJavaScriptSync(webView.page(), "document.getElementById(\"input\").focus()");
+    QTRY_COMPARE_WITH_TIMEOUT(webView.hasFocus(), focusResult, 1000);
+}
+
+void tst_QWebEngineView::stopSettingFocusWhenDisabled_data()
+{
+    QTest::addColumn<bool>("viewEnabled");
+    QTest::addColumn<bool>("focusResult");
+
+    QTest::newRow("enabled view gets focus") << true << true;
+    QTest::newRow("disabled view does not get focus") << false << false;
 }
 
 QTEST_MAIN(tst_QWebEngineView)

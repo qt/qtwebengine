@@ -1001,6 +1001,12 @@ void QQuickWebEngineViewPrivate::renderProcessTerminated(
                                       renderProcessExitStatus(terminationStatus)), exitCode);
 }
 
+bool QQuickWebEngineViewPrivate::isEnabled() const
+{
+    const Q_Q(QQuickWebEngineView);
+    return q->isEnabled();
+}
+
 bool QQuickWebEngineView::isLoading() const
 {
     Q_D(const QQuickWebEngineView);

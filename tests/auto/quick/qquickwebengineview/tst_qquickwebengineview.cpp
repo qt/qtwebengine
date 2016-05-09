@@ -61,6 +61,8 @@ private Q_SLOTS:
     void inputMethodHints();
     void basicRenderingSanity();
     void setZoomFactor();
+    void stopSettingFocusWhenDisabled();
+    void stopSettingFocusWhenDisabled_data();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -479,6 +481,34 @@ void tst_QQuickWebEngineView::setZoomFactor()
 
     view->setZoomFactor(5.5);
     QVERIFY(qFuzzyCompare(view->zoomFactor(), 2.5));
+}
+
+void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled()
+{
+    QFETCH(bool, viewEnabled);
+    QFETCH(bool, activeFocusResult);
+
+    QQuickWebEngineView *view = webEngineView();
+    m_window->show();
+    view->setSize(QSizeF(640, 480));
+    view->setEnabled(viewEnabled);
+    view->loadHtml("<html><head><title>Title</title></head><body>Hello"
+                   "<input id=\"input\" type=\"text\"></body></html>");
+    QVERIFY(waitForLoadSucceeded(view));
+
+    // When enabled, the view should get active focus after the page is loaded.
+    QTRY_COMPARE_WITH_TIMEOUT(view->hasActiveFocus(), activeFocusResult, 1000);
+    view->runJavaScript("document.getElementById(\"input\").focus()");
+    QTRY_COMPARE_WITH_TIMEOUT(view->hasActiveFocus(), activeFocusResult, 1000);
+}
+
+void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled_data()
+{
+    QTest::addColumn<bool>("viewEnabled");
+    QTest::addColumn<bool>("activeFocusResult");
+
+    QTest::newRow("enabled view gets active focus") << true << true;
+    QTest::newRow("disabled view does not get active focus") << false << false;
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)
