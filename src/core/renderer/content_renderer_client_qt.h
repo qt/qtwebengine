@@ -44,10 +44,6 @@
 #include <QtGlobal>
 #include <QScopedPointer>
 
-namespace content {
-class RenderProcessObserver;
-}
-
 namespace visitedlink {
 class VisitedLinkSlave;
 }
@@ -81,7 +77,6 @@ public:
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
     QScopedPointer<web_cache::WebCacheRenderProcessObserver> m_webCacheObserver;
-    QScopedPointer<content::RenderProcessObserver> m_renderProcessObserver;
 #if defined(ENABLE_SPELLCHECK)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif

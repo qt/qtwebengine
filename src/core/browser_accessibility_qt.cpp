@@ -418,7 +418,7 @@ QAccessible::State BrowserAccessibilityQt::state() const
         state.expanded = true;
     if (s & (1 << ui::AX_STATE_FOCUSABLE))
         state.focusable = true;
-    if (s & (1 << ui::AX_STATE_FOCUSED))
+    if (manager()->GetFocus() == this)
         state.focused = true;
     if (s & (1 << ui::AX_STATE_HASPOPUP))
         state.hasPopup = true;
@@ -480,7 +480,7 @@ QStringList BrowserAccessibilityQt::actionNames() const
 void BrowserAccessibilityQt::doAction(const QString &actionName)
 {
     if (actionName == QAccessibleActionInterface::setFocusAction())
-        manager()->SetFocus(this, true);
+        manager()->SetFocus(*this);
 }
 
 QStringList BrowserAccessibilityQt::keyBindingsForAction(const QString &actionName) const

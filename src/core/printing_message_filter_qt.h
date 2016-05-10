@@ -84,12 +84,6 @@ class PrintingMessageFilterQt : public content::BrowserMessageFilter {
  private:
   ~PrintingMessageFilterQt() override;
 
-#if defined(OS_WIN)
-  // Used to pass resulting EMF from renderer to browser in printing.
-  void OnDuplicateSection(base::SharedMemoryHandle renderer_handle,
-                          base::SharedMemoryHandle* browser_handle);
-#endif
-
   // GetPrintSettingsForRenderView must be called via PostTask and
   // base::Bind.  Collapse the settings-specific params into a
   // struct to avoid running into issues with too many params

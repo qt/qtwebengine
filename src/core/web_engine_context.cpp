@@ -279,6 +279,9 @@ WebEngineContext::WebEngineContext()
     parsedCommandLine->AppendSwitch(switches::kDisableZeroCopy);
     parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferCompositorResources);
 
+    // Enabled on OS X and Linux but currently not working. It worked in 5.7 on OS X.
+    parsedCommandLine->AppendSwitch(switches::kDisableGpuMemoryBufferVideoFrames);
+
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
         parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
