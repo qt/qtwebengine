@@ -206,8 +206,6 @@ public:
 #endif
     virtual void triggerAction(WebAction action, bool checked = false);
 
-    void replaceMisspelledWord(const QString &replacement);
-
     virtual bool event(QEvent*);
 #ifdef Q_QDOC
     void findText(const QString &subString, FindFlags options = 0);

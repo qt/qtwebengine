@@ -170,30 +170,6 @@ bool QQuickWebEngineContextMenuData::isContentEditable() const
     return d ? d->isEditable : false;
 }
 
-/*!
-    \qmlproperty QString WebEngineDownloadItem::misspelledWord
-
-    If the context is a word considered misspelled by the spell-checker, returns the misspelled word.
-*/
-QString QQuickWebEngineContextMenuData::misspelledWord() const
-{
-    if (d)
-        return d->misspelledWord;
-    return QString();
-}
-
-/*!
-    \qmlproperty QStringList WebEngineDownloadItem::spellCheckerSuggestions
-
-    If the context is a word considered misspelled by the spell-checker, returns a list of suggested replacements.
-*/
-QStringList QQuickWebEngineContextMenuData::spellCheckerSuggestions() const
-{
-    if (d)
-        return d->spellCheckerSuggestions;
-    return QStringList();
-}
-
 void QQuickWebEngineContextMenuData::update(const QtWebEngineCore::WebEngineContextMenuData &update)
 {
     const QQuickWebEngineContextMenuData old(d);
@@ -222,12 +198,6 @@ void QQuickWebEngineContextMenuData::update(const QtWebEngineCore::WebEngineCont
 
     if (isContentEditable() != old.isContentEditable())
         Q_EMIT isContentEditableChanged();
-
-    if (misspelledWord() != old.misspelledWord())
-        Q_EMIT misspelledWordChanged();
-
-    if (spellCheckerSuggestions() != old.spellCheckerSuggestions())
-        Q_EMIT spellCheckerSuggestionsChanged();
 }
 
 QQuickWebEngineContextMenuData::QQuickWebEngineContextMenuData(const QQuickWebEngineContextMenuDataPrivate *p, QObject *parent)

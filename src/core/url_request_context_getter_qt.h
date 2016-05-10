@@ -55,9 +55,10 @@
 
 #include "cookie_monster_delegate_qt.h"
 #include "network_delegate_qt.h"
+#include "browser_context_adapter.h"
 
-#include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qsharedpointer.h>
 
 namespace net {
@@ -67,8 +68,7 @@ class ProxyConfigService;
 
 namespace QtWebEngineCore {
 
-class BrowserContextAdapter;
-
+// FIXME: This class should be split into a URLRequestContextGetter and a ProfileIOData, similar to what chrome does.
 class URLRequestContextGetterQt : public net::URLRequestContextGetter {
 public:
     URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors);
@@ -83,26 +83,36 @@ public:
     void updateHttpCache();
     void clearHttpCache();
     void updateJobFactory();
+    void updateRequestInterceptor();
 
 private:
     virtual ~URLRequestContextGetterQt();
 
     // Called on the IO thread:
+    void generateAllStorage();
     void generateStorage();
     void generateCookieStore();
     void generateHttpCache();
     void generateUserAgent();
     void generateJobFactory();
-    void regenerateJobFactory(const QList<QByteArray> customSchemes);
+    void regenerateJobFactory();
     void clearCurrentCacheBackend();
     void cancelAllUrlRequests();
     net::HttpNetworkSession::Params generateNetworkSessionParams();
 
+    void setFullConfiguration(QSharedPointer<BrowserContextAdapter> browserContext);
+
     bool m_ignoreCertificateErrors;
-    QAtomicInt m_updateCookieStore;
-    QAtomicInt m_updateHttpCache;
-    QAtomicInt m_updateJobFactory;
-    QSharedPointer<BrowserContextAdapter> m_browserContext;
+
+    QMutex m_mutex;
+    bool m_contextInitialized;
+    bool m_updateAllStorage;
+    bool m_updateCookieStore;
+    bool m_updateHttpCache;
+    bool m_updateJobFactory;
+    bool m_updateUserAgent;
+
+    QWeakPointer<BrowserContextAdapter> m_browserContext;
     content::ProtocolHandlerMap m_protocolHandlers;
 
     QAtomicPointer<net::ProxyConfigService> m_proxyConfigService;
@@ -115,7 +125,20 @@ private:
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
     scoped_ptr<net::HttpNetworkSession> m_httpNetworkSession;
+
     QList<QByteArray> m_installedCustomSchemes;
+    QWebEngineUrlRequestInterceptor* m_requestInterceptor;
+
+    // Configuration values to setup URLRequestContext in IO thread, copied from browserContext
+    // FIXME: Should later be moved to a separate ProfileIOData class.
+    BrowserContextAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
+    QString m_cookiesPath;
+    QString m_httpAcceptLanguage;
+    QString m_httpUserAgent;
+    BrowserContextAdapter::HttpCacheType m_httpCacheType;
+    QString m_httpCachePath;
+    int m_httpCacheMaxSize;
+    QList<QByteArray> m_customUrlSchemes;
 
     friend class NetworkDelegateQt;
 };

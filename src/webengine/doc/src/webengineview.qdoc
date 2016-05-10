@@ -215,10 +215,17 @@
     \qml
     Image {
         id: appIcon
+        sourceSize: Qt.size(32, 32)
         source: webView.icon != "" ? webView.icon : "fallbackFavicon.png";
         // ...
     }
     \endqml
+
+    Specifying the \c{sourceSize} property of the \c{Image} element informs
+    the Qt WebEngine's favicon provider about the requested size. The
+    favicon provider tries to find the best fit among the web page candidate
+    icons. If \c{sourceSize} property is not specified, the provider provides
+    the icon with the largest resolution.
 */
 
 /*!
@@ -1042,7 +1049,7 @@
     This signal is emitted when the page's audio is (un)muted using audioMuted property.
     \note Not to be confused with a specific HTML5 audio / video element being muted.
 
-    \sa audioMuted
+    \sa audioMuted, recentlyAudibleChanged
 */
 
 /*!
@@ -1050,7 +1057,7 @@
     \brief Returns the current page's audible state (audio was recently played, or not).
     \since QtWebEngine 1.3
     \readonly
-    \sa audioMuted
+    \sa audioMuted, recentlyAudibleChanged
 */
 
 /*!
@@ -1063,6 +1070,20 @@
     \note The signal is also emitted when the audioMuted property changes.
     Also if the audio is paused, this signal is emitted with an approximate \b{two-second
     delay}, from the moment the audio is paused.
+
+    This signal is also emitted for Flash plugin audio.
+
+    If a web page contains two videos that are started in sequence, this signal
+    gets emitted only once, for the first video to generate sound. After both
+    videos are stopped, the signal is emitted upon the last sound generated.
+    This means that the signal is emitted both when any kind of sound is
+    generated and when everything is completely silent within a web page,
+    regardless of the number of audio streams.
+
+    Spurious signal emissions might also happen. For example, when sound is
+    stopped, this signal gets emitted first with a value of \c true, and then
+    with a value of \c false. Further, when audio starts playing, the signal is
+    emitted twice with a value of \c true.
 
     \sa recentlyAudible
 */

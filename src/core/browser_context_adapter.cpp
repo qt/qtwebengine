@@ -151,6 +151,8 @@ QWebEngineUrlRequestInterceptor *BrowserContextAdapter::requestInterceptor()
 void BrowserContextAdapter::setRequestInterceptor(QWebEngineUrlRequestInterceptor *interceptor)
 {
     m_requestInterceptor = interceptor;
+    if (m_browserContext->url_request_getter_.get())
+        m_browserContext->url_request_getter_->updateRequestInterceptor();
 }
 
 void BrowserContextAdapter::addClient(BrowserContextAdapterClient *adapterClient)
@@ -464,15 +466,6 @@ void BrowserContextAdapter::clearHttpCache()
 {
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->clearHttpCache();
-}
-
-QStringList BrowserContextAdapter::spellCheckLanguages(const QStringList &acceptLanguages)
-{
-#if defined(ENABLE_SPELLCHECK)
-    return m_browserContext->spellCheckLanguages(acceptLanguages);
-#else
-    return QStringList();
-#endif
 }
 
 void BrowserContextAdapter::setSpellCheckLanguage(const QString &language)

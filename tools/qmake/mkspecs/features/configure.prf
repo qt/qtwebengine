@@ -64,6 +64,9 @@ defineTest(runConfigure) {
         }
     }
 
+    # Spellcheck support is moved to dev
+    WEBENGINE_CONFIG += no_spellcheck
+
     isEmpty(skipBuildReason): {
         cache(CONFIG, add, $$list(webengine_successfully_configured))
         !isEmpty(WEBENGINE_CONFIG) {
@@ -71,6 +74,7 @@ defineTest(runConfigure) {
             export(WEBENGINE_CONFIG)
         }
     }
+
 }
 
 # This is called from default_post, at which point we've also parsed

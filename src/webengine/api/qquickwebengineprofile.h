@@ -71,8 +71,6 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(QString httpAcceptLanguage READ httpAcceptLanguage WRITE setHttpAcceptLanguage NOTIFY httpAcceptLanguageChanged FINAL REVISION 1)
     Q_PROPERTY(PersistentCookiesPolicy persistentCookiesPolicy READ persistentCookiesPolicy WRITE setPersistentCookiesPolicy NOTIFY persistentCookiesPolicyChanged FINAL)
     Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
-    Q_PROPERTY(QString spellCheckLanguage READ spellCheckLanguage WRITE setSpellCheckLanguage NOTIFY spellCheckLanguageChanged FINAL REVISION 2)
-    Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION 2)
 
 public:
     QQuickWebEngineProfile(QObject *parent = Q_NULLPTR);
@@ -131,12 +129,6 @@ public:
 
     void clearHttpCache();
 
-    Q_REVISION(2) Q_INVOKABLE QStringList availableDictionaries(const QStringList &languages);
-    Q_REVISION(2) void setSpellCheckLanguage(const QString &language);
-    Q_REVISION(2) QString spellCheckLanguage() const;
-    Q_REVISION(2) void setSpellCheckEnabled(bool enabled);
-    Q_REVISION(2) bool isSpellCheckEnabled() const;
-
     static QQuickWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:
@@ -149,8 +141,6 @@ Q_SIGNALS:
     void persistentCookiesPolicyChanged();
     void httpCacheMaximumSizeChanged();
     Q_REVISION(1) void httpAcceptLanguageChanged();
-    Q_REVISION(2) void spellCheckLanguageChanged();
-    Q_REVISION(2) void spellCheckEnabledChanged();
 
     void downloadRequested(QQuickWebEngineDownloadItem *download);
     void downloadFinished(QQuickWebEngineDownloadItem *download);

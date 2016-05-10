@@ -49,6 +49,8 @@
 ****************************************************************************/
 
 #include "edittreeview.h"
+#include "browserapplication.h"
+#include "history.h"
 
 #include <QtGui/QKeyEvent>
 
@@ -73,13 +75,12 @@ void EditTreeView::removeOne()
     if (!model())
         return;
     QModelIndex ci = currentIndex();
-    int row = ci.row();
-    model()->removeRow(row, ci.parent());
+    BrowserApplication::historyManager()->removeHistoryEntry(model()->data(ci,HistoryModel::UrlStringRole).toString());
 }
 
 void EditTreeView::removeAll()
 {
     if (!model())
         return;
-    model()->removeRows(0, model()->rowCount(rootIndex()), rootIndex());
+    BrowserApplication::historyManager()->clear();
 }

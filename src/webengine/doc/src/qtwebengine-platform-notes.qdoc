@@ -46,6 +46,8 @@
 
     \section1 Building Qt WebEngine from Source
 
+    Static builds are not supported.
+
     The requirements for building Qt 5 modules from source are listed separately for each supported
     platform:
 
@@ -58,13 +60,63 @@
     In addition, the following tools are required for building the \l {Qt WebEngine} module:
 
     \list
-        \li Windows: Visual Studio 2013 or Visual Studio 2015
-        \li Linux: Clang or GCC version 4.7 or later
-        \li OS X: Xcode version 5.1 or later on OS X 10.9 or later
+        \li \l {All Platforms}
+        \li \l {Windows}
+        \li \l {Linux}
+        \li \l {OS X}
     \endlist
 
+    The tests for skipping the Qt WebEngine build are located in the
+    \c qtwebengine repository, in the \c tools\qmake\mkspecs subdirectory.
+    They can be found by searching for \c skipBuild.
+
+    \section2 All Platforms
+
+    On all platforms, the following tools are required:
+
+    \list
+        \li \l Python 2.7 or later
+        \li Bison, Flex
+        \li GPerf
+    \endlist
+
+    \section2 Windows
+
+    On Windows, Visual Studio 2013 or Visual Studio 2015 is required.
+
+    \section2 Linux
+
+    On Linux, Clang or GCC version 4.7 or later is required.
+
+    Qt WebEngine requires \c pkg-config to detect most of its dependencies. The
+    following \c pkg-config files are required:
+
+    \list
+        \li \c dbus-1
+        \li \c fontconfig
+    \endlist
+
+    If Qt was configured for \c xcb, the following \c pkg-config files are also
+    required:
+
+    \list
+        \li \c libdrm
+        \li \c xcomposite
+        \li \c xcursor
+        \li \c xi
+        \li \c xrandr
+        \li \c xscrnsaver
+        \li \c xtst
+    \endlist
+
+    Further, development packages for \c khr and \c libcap need to be installed.
+
+    \section2 OS X
+
+    On OS X, Xcode version 5.1 or later on OS X 10.9 or later is required.
+
     \note Qt WebEngine cannot be built for the 32-bit mode of OS X (using the
-    macx-clang-32 mkspec).
+    \c macx-clang-32 \c mkspec).
 
     \section1 Pepper Plugin API Support
 

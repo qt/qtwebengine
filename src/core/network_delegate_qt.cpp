@@ -90,7 +90,6 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     Q_ASSERT(m_requestContextGetter);
-    Q_ASSERT(m_requestContextGetter->m_browserContext);
 
     const content::ResourceRequestInfo *resourceInfo = content::ResourceRequestInfo::ForRequest(request);
 
@@ -104,7 +103,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 
     const QUrl qUrl = toQt(request->url());
 
-    QWebEngineUrlRequestInterceptor* interceptor = m_requestContextGetter->m_browserContext->requestInterceptor();
+    QWebEngineUrlRequestInterceptor* interceptor = m_requestContextGetter->m_requestInterceptor;
     if (interceptor) {
         QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType)
                                                                                            , static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType)

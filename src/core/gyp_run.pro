@@ -16,7 +16,8 @@ cross_compile {
     mac: include(config/mac_osx.pri)
     win32: include(config/windows.pri)
 }
-
+GYP_CONFIG += qtwe_process_name_debug=$$QTWEBENGINEPROCESS_NAME_DEBUG
+GYP_CONFIG += qtwe_process_name_release=$$QTWEBENGINEPROCESS_NAME_RELEASE
 GYP_CONFIG += disable_glibcxx_debug=1
 !webcore_debug: GYP_CONFIG += remove_webcore_debug_symbols=1
 !v8base_debug: GYP_CONFIG += remove_v8base_debug_symbols=1

@@ -121,12 +121,13 @@ QPixmap QQuickWebEngineFaviconProvider::requestPixmap(const QString &id, QSize *
         return QPixmap();
 
     FaviconManager *faviconManager = view->d_ptr->adapter->faviconManager();
-    Q_ASSERT(faviconManager);
 
-    const QIcon &icon = faviconManager->getIcon(iconUrl);
+    Q_ASSERT(faviconManager);
+    const FaviconInfo &faviconInfo = faviconManager->getFaviconInfo(iconUrl);
+    const QIcon &icon = faviconManager->getIcon(faviconInfo.candidate ? QUrl() : iconUrl);
 
     Q_ASSERT(!icon.isNull());
-    const QSize &bestSize = faviconManager->getFaviconInfo(iconUrl).size;
+    const QSize &bestSize = faviconInfo.size;
 
     // If source size is not specified, use the best quality
     if (!requestedSize.isValid()) {

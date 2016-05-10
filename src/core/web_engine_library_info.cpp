@@ -211,20 +211,12 @@ QString dictionariesPath()
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
     return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_dictionaries");
 #else
-    static bool initialized = false;
-    static QString potentialDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath) % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+    // first local path
+    static QString potentialDictionariesPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
 
-    if (!initialized) {
-        initialized = true;
-        if (!QFileInfo::exists(potentialDictionariesPath)) {
-            qWarning("Installed Qt WebEngine dictionaries directory not found at location %s. Trying application directory...", qPrintable(potentialDictionariesPath));
-            potentialDictionariesPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
-        }
-        if (!QFileInfo::exists(potentialDictionariesPath)) {
-            qWarning("Qt WebEngine dictionaries directory not found at location %s. Trying fallback directory... Spellcheck MAY NOT work.", qPrintable(potentialDictionariesPath));
-            potentialDictionariesPath = fallbackDir();
-        }
-    }
+    // now global one
+    if (!QFileInfo::exists(potentialDictionariesPath))
+        potentialDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath) % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
 
     return potentialDictionariesPath;
 #endif

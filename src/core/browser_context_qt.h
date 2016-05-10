@@ -92,7 +92,7 @@ public:
     BrowserContextAdapter *adapter() { return m_adapter; }
 
 #if defined(ENABLE_SPELLCHECK)
-    QStringList spellCheckLanguages(const QStringList &acceptLanguages);
+    void failedToLoadDictionary(const std::string& language) override;
     void setSpellCheckLanguage(const QString &language);
     QString spellCheckLanguage() const;
     void setSpellCheckEnabled(bool enabled);

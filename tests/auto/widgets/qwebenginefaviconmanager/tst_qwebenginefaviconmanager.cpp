@@ -55,6 +55,7 @@ private Q_SLOTS:
     void bestFavicon();
     void touchIcon();
     void multiIcon();
+    void candidateIcon();
     void downloadIconsDisabled_data();
     void downloadIconsDisabled();
     void downloadTouchIconsEnabled_data();
@@ -323,9 +324,8 @@ void tst_QWebEngineFaviconManager::bestFavicon()
     icon = m_page->icon();
     QVERIFY(!icon.isNull());
 
-    QCOMPARE(icon.availableSizes().count(), 1);
-    iconSize = icon.availableSizes().first();
-    QCOMPARE(iconSize, QSize(144, 144));
+    QVERIFY(icon.availableSizes().count() >= 1);
+    QVERIFY(icon.availableSizes().contains(QSize(144, 144)));
 }
 
 void tst_QWebEngineFaviconManager::touchIcon()
@@ -374,6 +374,33 @@ void tst_QWebEngineFaviconManager::multiIcon()
     QVERIFY(icon.availableSizes().contains(QSize(16, 16)));
     QVERIFY(icon.availableSizes().contains(QSize(32, 32)));
     QVERIFY(icon.availableSizes().contains(QSize(64, 64)));
+}
+
+void tst_QWebEngineFaviconManager::candidateIcon()
+{
+    if (!QDir(TESTS_SOURCE_DIR).exists())
+        W_QSKIP(QString("This test requires access to resources found in '%1'").arg(TESTS_SOURCE_DIR).toLatin1().constData(), SkipAll);
+
+    QSignalSpy loadFinishedSpy(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy iconUrlChangedSpy(m_page, SIGNAL(iconUrlChanged(QUrl)));
+    QSignalSpy iconChangedSpy(m_page, SIGNAL(iconChanged(QIcon)));
+
+    QUrl url = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/favicon-shortcut.html"));
+    m_page->load(url);
+
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE(iconUrlChangedSpy.count(), 1);
+    QTRY_COMPARE(iconChangedSpy.count(), 1);
+
+    QUrl iconUrl = iconUrlChangedSpy.at(0).at(0).toString();
+    QCOMPARE(m_page->iconUrl(), iconUrl);
+    QCOMPARE(iconUrl, QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginefaviconmanager/resources/icons/qt144.png")));
+
+    const QIcon &icon = m_page->icon();
+    QVERIFY(!icon.isNull());
+    QCOMPARE(icon.availableSizes().count(), 2);
+    QVERIFY(icon.availableSizes().contains(QSize(32, 32)));
+    QVERIFY(icon.availableSizes().contains(QSize(144, 144)));
 }
 
 void tst_QWebEngineFaviconManager::downloadIconsDisabled_data()
@@ -442,9 +469,8 @@ void tst_QWebEngineFaviconManager::downloadTouchIconsEnabled()
     const QIcon &icon = m_page->icon();
     QVERIFY(!icon.isNull());
 
-    QCOMPARE(icon.availableSizes().count(), 1);
-    QSize iconSize = icon.availableSizes().first();
-    QCOMPARE(iconSize, expectedIconSize);
+    QVERIFY(icon.availableSizes().count() >= 1);
+    QVERIFY(icon.availableSizes().contains(expectedIconSize));
 }
 
 QTEST_MAIN(tst_QWebEngineFaviconManager)

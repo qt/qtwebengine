@@ -151,7 +151,7 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
         return;
     iconUrl = url;
     Q_EMIT q->iconUrlChanged(iconUrl);
-    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon(iconUrl));
+    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon());
 }
 
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
@@ -1098,22 +1098,6 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     }
 }
 
-/*!
- * \since 5.7
- * Replace the current misspelled word with \a replacement.
- *
- * The current misspelled word can be found in QWebEngineContextMenuData::misspelledWord(),
- * and suggested replacements in QWebEngineContextMenuData::spellCheckerSuggestions().
- *
- * \sa contextMenuData(),
- */
-
-void QWebEnginePage::replaceMisspelledWord(const QString &replacement)
-{
-    Q_D(QWebEnginePage);
-    d->adapter->replaceMisspelling(replacement);
-}
-
 void QWebEnginePage::findText(const QString &subString, FindFlags options, const QWebEngineCallback<bool> &resultCallback)
 {
     Q_D(QWebEnginePage);
@@ -1291,18 +1275,6 @@ QMenu *QWebEnginePage::createStandardContextMenu()
     QMenu *menu = new QMenu(d->view);
     QAction *action = 0;
     const WebEngineContextMenuData &contextMenuData = *d->contextData.d;
-
-    if (contextMenuData.isEditable && !contextMenuData.spellCheckerSuggestions.isEmpty()) {
-        QPointer<QWebEnginePage> thisRef(this);
-        for (int i=0; i < contextMenuData.spellCheckerSuggestions.count() && i < 4; i++) {
-            QAction *action = new QAction(menu);
-            QString replacement = contextMenuData.spellCheckerSuggestions.at(i);
-            QObject::connect(action, &QAction::triggered, [thisRef, replacement] { if (thisRef) thisRef->replaceMisspelledWord(replacement); });
-            action->setText(replacement);
-            menu->addAction(action);
-        }
-        menu->addSeparator();
-    }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
         action = QWebEnginePage::action(OpenLinkInThisWindow);
@@ -1506,7 +1478,9 @@ QUrl QWebEnginePage::iconUrl() const
     \brief the icon associated with the page currently viewed
     \since 5.7
 
-    By default, this property contains a null icon.
+    By default, this property contains a null icon. If the web page specifies more than one icon,
+    the \c{icon} property encapsulates the available candidate icons in a single,
+    scalable \c{QIcon}.
 
     \sa iconChanged(), iconUrl(), iconUrlChanged()
 */
@@ -1517,7 +1491,7 @@ QIcon QWebEnginePage::icon() const
     if (d->iconUrl.isEmpty())
         return QIcon();
 
-    return d->adapter->faviconManager()->getIcon(d->iconUrl);
+    return d->adapter->faviconManager()->getIcon();
 }
 
 qreal QWebEnginePage::zoomFactor() const

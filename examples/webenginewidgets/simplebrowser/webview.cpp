@@ -79,8 +79,11 @@ WebView::WebView(QWidget *parent)
             status = tr("Render process killed");
             break;
         }
-        QMessageBox::critical(window(), status, tr("Render process exited with code: %1").arg(statusCode));
-        QTimer::singleShot(0, [this] { reload(); });
+        QMessageBox::StandardButton btn = QMessageBox::question(window(), status,
+                                                   tr("Render process exited with code: %1\n"
+                                                      "Do you want to reload the page ?").arg(statusCode));
+        if (btn == QMessageBox::Yes)
+            QTimer::singleShot(0, [this] { reload(); });
     });
 }
 
