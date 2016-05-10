@@ -45,6 +45,7 @@
 #include "content_client_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "permission_manager_qt.h"
+#include "type_conversion.h"
 #include "web_engine_context.h"
 #include "web_engine_visited_links_manager.h"
 #include "url_request_context_getter_qt.h"
@@ -78,6 +79,8 @@ BrowserContextAdapter::BrowserContextAdapter(bool offTheRecord)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
+    WebEngineContext::current(); // Ensure the WebEngineContext has been initialized
+    content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
 }
 
 BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
@@ -89,6 +92,8 @@ BrowserContextAdapter::BrowserContextAdapter(const QString &storageName)
     , m_visitedLinksPolicy(TrackVisitedLinksOnDisk)
     , m_httpCacheMaxSize(0)
 {
+    WebEngineContext::current(); // Ensure the WebEngineContext has been initialized
+    content::BrowserContext::Initialize(m_browserContext.data(), toFilePath(dataPath()));
 }
 
 BrowserContextAdapter::~BrowserContextAdapter()
