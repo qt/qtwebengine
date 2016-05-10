@@ -60,7 +60,7 @@ public:
     };
     YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                      const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                     ColorSpace colorspace);
+                     ColorSpace colorspace, float rMul, float rOff);
 
     virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
     {
@@ -79,7 +79,8 @@ public:
     QSizeF m_yaTexSize;
     QSizeF m_uvTexSize;
     ColorSpace m_colorSpace;
-
+    float m_resourceMultiplier;
+    float m_resourceOffset;
 };
 
 class YUVAVideoMaterial : public YUVVideoMaterial
@@ -87,7 +88,7 @@ class YUVAVideoMaterial : public YUVVideoMaterial
 public:
     YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                       const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                      ColorSpace colorspace);
+                      ColorSpace colorspace, float rMul, float rOff);
 
     virtual QSGMaterialType *type() const Q_DECL_OVERRIDE
     {
@@ -106,7 +107,7 @@ class YUVVideoNode : public QSGGeometryNode
 public:
     YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                  const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                 YUVVideoMaterial::ColorSpace colorspace);
+                 YUVVideoMaterial::ColorSpace colorspace, float rMul, float rOff);
     void setRect(const QRectF &rect);
 
 private:

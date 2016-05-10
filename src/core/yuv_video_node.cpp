@@ -283,8 +283,19 @@ void YUVVideoMaterialShader::updateState(const RenderState &state, QSGMaterial *
         break;
     }
 
-    program()->setUniformValue(m_id_yuvMatrix, QMatrix3x3(yuv_to_rgb));
-    program()->setUniformValue(m_id_yuvAdjust, QVector3D(yuv_adjust[0], yuv_adjust[1], yuv_adjust[2]));
+    float yuv_to_rgb_multiplied[9];
+    float yuv_adjust_with_offset[3];
+
+    for (int i = 0; i < 9; ++i)
+      yuv_to_rgb_multiplied[i] = yuv_to_rgb[i] * mat->m_resourceMultiplier;
+
+    for (int i = 0; i < 3; ++i)
+      yuv_adjust_with_offset[i] =
+          yuv_adjust[i] / mat->m_resourceMultiplier - mat->m_resourceOffset;
+
+
+    program()->setUniformValue(m_id_yuvMatrix, QMatrix3x3(yuv_to_rgb_multiplied));
+    program()->setUniformValue(m_id_yuvAdjust, QVector3D(yuv_adjust_with_offset[0], yuv_adjust_with_offset[1], yuv_adjust_with_offset[2]));
 
     if (state.isOpacityDirty())
         program()->setUniformValue(m_id_opacity, state.opacity());
@@ -312,7 +323,8 @@ void YUVAVideoMaterialShader::updateState(const RenderState &state, QSGMaterial 
 
 YUVVideoMaterial::YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
                                    const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                                   YUVVideoMaterial::ColorSpace colorspace)
+                                   YUVVideoMaterial::ColorSpace colorspace,
+                                   float rMul, float rOff)
     : m_yTexture(yTexture)
     , m_uTexture(uTexture)
     , m_vTexture(vTexture)
@@ -321,6 +333,8 @@ YUVVideoMaterial::YUVVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, Q
     , m_yaTexSize(yaTexSize)
     , m_uvTexSize(uvTexSize)
     , m_colorSpace(colorspace)
+    , m_resourceMultiplier(rMul)
+    , m_resourceOffset(rOff)
 {
 }
 
@@ -341,8 +355,9 @@ int YUVVideoMaterial::compare(const QSGMaterial *other) const
 
 YUVAVideoMaterial::YUVAVideoMaterial(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                                      const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                                     YUVVideoMaterial::ColorSpace colorspace)
-    : YUVVideoMaterial(yTexture, uTexture, vTexture, yaTexCoordRect, uvTexCoordRect, yaTexSize, uvTexSize, colorspace)
+                                     YUVVideoMaterial::ColorSpace colorspace,
+                                     float rMul, float rOff)
+    : YUVVideoMaterial(yTexture, uTexture, vTexture, yaTexCoordRect, uvTexCoordRect, yaTexSize, uvTexSize, colorspace, rMul, rOff)
     , m_aTexture(aTexture)
 {
     setFlag(Blending, aTexture);
@@ -363,15 +378,15 @@ int YUVAVideoMaterial::compare(const QSGMaterial *other) const
 
 YUVVideoNode::YUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture, QSGTexture *aTexture,
                            const QRectF &yaTexCoordRect, const QRectF &uvTexCoordRect, const QSizeF &yaTexSize, const QSizeF &uvTexSize,
-                           YUVVideoMaterial::ColorSpace colorspace)
+                           YUVVideoMaterial::ColorSpace colorspace, float rMul, float rOff)
     : m_geometry(QSGGeometry::defaultAttributes_TexturedPoint2D(), 4)
 {
     setGeometry(&m_geometry);
     setFlag(QSGNode::OwnsMaterial);
     if (aTexture)
-        m_material = new YUVAVideoMaterial(yTexture, uTexture, vTexture, aTexture, yaTexCoordRect, uvTexCoordRect, yaTexSize, uvTexSize, colorspace);
+        m_material = new YUVAVideoMaterial(yTexture, uTexture, vTexture, aTexture, yaTexCoordRect, uvTexCoordRect, yaTexSize, uvTexSize, colorspace, rMul, rOff);
     else
-        m_material = new YUVVideoMaterial(yTexture, uTexture, vTexture, yaTexCoordRect, uvTexCoordRect, yaTexSize, uvTexSize, colorspace);
+        m_material = new YUVVideoMaterial(yTexture, uTexture, vTexture, yaTexCoordRect, uvTexCoordRect, yaTexSize, uvTexSize, colorspace, rMul, rOff);
     setMaterial(m_material);
 }
 

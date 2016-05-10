@@ -620,8 +620,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                     initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
                     initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
                     aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
-                                                   toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
-                                                   toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size), toQt(vquad->color_space));
+                    toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
+                    toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size),
+                    toQt(vquad->color_space),
+                    vquad->resource_multiplier, vquad->resource_offset);
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;
