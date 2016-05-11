@@ -37,12 +37,13 @@ class WebView : public QWebEngineView
 {
     Q_OBJECT
 public:
-    void activateMenu(const QPoint &position)
+    void activateMenu(QWidget *widget, const QPoint &position)
     {
-        QTest::mouseMove(focusWidget(), position);
-        QTest::mousePress(focusWidget(), Qt::RightButton, 0, position);
+        QTest::mouseMove(widget, position);
+        QTest::mousePress(widget, Qt::RightButton, 0, position);
         QContextMenuEvent evcont(QContextMenuEvent::Mouse, position, mapToGlobal(position));
         event(&evcont);
+        QTest::mouseRelease(widget, Qt::RightButton, 0, position);
     }
 
     const QWebEngineContextMenuData& data()
@@ -142,6 +143,7 @@ void tst_QWebEngineSpellcheck::spellcheck()
     //type text, spellchecker needs time
     QTest::mouseMove(m_view->focusWidget(), QPoint(20,20));
     QTest::mousePress(m_view->focusWidget(), Qt::LeftButton, 0, QPoint(20,20));
+    QTest::mouseRelease(m_view->focusWidget(), Qt::LeftButton, 0, QPoint(20,20));
     QString text("I lovee Qt ....");
     for (int i = 0; i < text.length(); i++) {
         QTest::keyClicks(m_view->focusWidget(), text.at(i));
@@ -153,7 +155,7 @@ void tst_QWebEngineSpellcheck::spellcheck()
     QVERIFY(result == text);
 
     // open menu on misspelled word
-    m_view->activateMenu(rect.center());
+    m_view->activateMenu(m_view->focusWidget(), rect.center());
     waitForSignal(m_view, SIGNAL(menuReady()));
 
     // check if menu is valid

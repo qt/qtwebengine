@@ -121,6 +121,11 @@ public:
 
     void clearHttpCache();
 
+    void setSpellCheckLanguage(const QString &language);
+    QString spellCheckLanguage() const;
+    void setSpellCheckEnabled(bool enabled);
+    bool isSpellCheckEnabled() const;
+
     static QWebEngineProfile *defaultProfile();
 
 Q_SIGNALS:

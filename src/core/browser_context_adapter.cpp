@@ -53,6 +53,10 @@
 
 #include "net/proxy/proxy_service.h"
 
+#if defined(ENABLE_SPELLCHECK)
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#endif
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QString>
@@ -100,6 +104,12 @@ BrowserContextAdapter::~BrowserContextAdapter()
 {
     if (m_downloadManagerDelegate)
         content::BrowserThread::DeleteSoon(content::BrowserThread::UI, FROM_HERE, m_downloadManagerDelegate.take());
+#if defined(ENABLE_SPELLCHECK)
+    // Please note spellchecker is the only keyed service we use so far, therefore
+    // remove this check if there are other serivces also used.
+    BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
+        m_browserContext.data());
+#endif
 }
 
 void BrowserContextAdapter::setStorageName(const QString &storageName)

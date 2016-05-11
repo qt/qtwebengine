@@ -187,6 +187,30 @@ bool QWebEngineContextMenuData::isContentEditable() const
 }
 
 /*!
+    If the context is a word considered misspelled by the spell-checker, returns the misspelled word.
+
+    \since 5.8
+*/
+QString QWebEngineContextMenuData::misspelledWord() const
+{
+    if (d)
+        return d->misspelledWord;
+    return QString();
+}
+
+/*!
+    If the context is a word considered misspelled by the spell-checker, returns a list of suggested replacements.
+
+    \since 5.8
+*/
+QStringList QWebEngineContextMenuData::spellCheckerSuggestions() const
+{
+    if (d)
+        return d->spellCheckerSuggestions;
+    return QStringList();
+}
+
+/*!
     \internal
 */
 QWebEngineContextMenuData &QWebEngineContextMenuData::operator=(const QWebEngineContextDataPrivate &priv)

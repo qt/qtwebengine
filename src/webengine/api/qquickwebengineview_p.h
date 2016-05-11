@@ -94,7 +94,7 @@ private:
     const bool m_toggleOn;
 };
 
-#define LATEST_WEBENGINEVIEW_REVISION 3
+#define LATEST_WEBENGINEVIEW_REVISION 4
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -472,6 +472,8 @@ public Q_SLOTS:
     Q_REVISION(2) void triggerWebAction(WebAction action);
     Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
+    Q_REVISION(4) void replaceMisspelledWord(const QString &replacement);
+
 private Q_SLOTS:
     void lazyInitialize();
 
