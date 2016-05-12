@@ -80,7 +80,9 @@ mac {
     TARGET = Demobrowser
 }
 
-EXAMPLE_FILES = Info_mac.plist demobrowser.icns demobrowser.ico demobrowser.rc
+EXAMPLE_FILES = \
+    Info_mac.plist demobrowser.icns demobrowser.ico demobrowser.rc \
+    cookiejar.h cookiejar.cpp  # FIXME: these are currently unused.
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/demobrowser
