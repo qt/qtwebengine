@@ -83,6 +83,7 @@ public:
         CertificateNonUniqueName = -210,
         CertificateWeakKey = -211,
         CertificateNameConstraintViolation = -212,
+        CertificateValidityTooLong = -213,
     };
     Q_ENUM(Error)
 

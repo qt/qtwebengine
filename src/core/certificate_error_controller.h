@@ -70,6 +70,9 @@ public:
         CertificateNonUniqueName = -210,
         CertificateWeakKey = -211,
         CertificateNameConstraintViolation = -212,
+        CertificateValidityTooLong = -213,
+
+        CertificateErrorEnd = -214 // not an error, just an enum boundary
     };
 
     CertificateError error() const;

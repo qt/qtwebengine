@@ -99,6 +99,7 @@ QWebEngineCertificateError::~QWebEngineCertificateError()
     \value CertificateNonUniqueName The host name specified in the certificate is not unique.
     \value CertificateWeakKey The certificate contains a weak key.
     \value CertificateNameConstraintViolation The certificate claimed DNS names that are in violation of name constraints.
+    \value CertificateValidityTooLong The certificate has a validity period that is too long. (Added in Qt 5.7)
 */
 
 /*!

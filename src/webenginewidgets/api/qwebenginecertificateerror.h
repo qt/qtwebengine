@@ -69,6 +69,7 @@ public:
         CertificateNonUniqueName = -210,
         CertificateWeakKey = -211,
         CertificateNameConstraintViolation = -212,
+        CertificateValidityTooLong = -213,
     };
 
     Error error() const;
