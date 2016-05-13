@@ -45,6 +45,7 @@
 #include <QSharedData>
 #include <QSharedPointer>
 #include <QWaitCondition>
+#include <QtGui/QOffscreenSurface>
 
 #include "chromium_gpu_helper.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -98,6 +99,10 @@ private:
     QMap<uint32, gfx::TransferableFence> m_mailboxGLFences;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
+#if defined(USE_X11)
+    bool m_contextShared;
+    QScopedPointer<QOffscreenSurface> m_offsurface;
+#endif
 };
 
 } // namespace QtWebEngineCore

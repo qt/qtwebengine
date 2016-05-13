@@ -70,7 +70,6 @@
 #include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
 #include <QSGTexture>
-#include <QtGui/QOffscreenSurface>
 #include <private/qsgadaptationlayer_p.h>
 
 #if !defined(QT_NO_EGL)
@@ -91,6 +90,7 @@ namespace QtWebEngineCore {
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize);
+    ~MailboxTexture();
     virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
     virtual QSize textureSize() const Q_DECL_OVERRIDE { return m_textureSize; }
     virtual bool hasAlphaChannel() const Q_DECL_OVERRIDE { return m_hasAlpha; }
@@ -108,6 +108,9 @@ private:
     QSize m_textureSize;
     bool m_hasAlpha;
     GLenum m_target;
+#if defined(USE_X11)
+    bool m_ownsTexture;
+#endif
 #ifdef Q_OS_QNX
     EGLStreamData m_eglStreamData;
 #endif
@@ -280,6 +283,9 @@ MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QS
     , m_textureSize(textureSize)
     , m_hasAlpha(false)
     , m_target(GL_TEXTURE_2D)
+#if defined(USE_X11)
+    , m_ownsTexture(false)
+#endif
 {
     initializeOpenGLFunctions();
 
@@ -288,6 +294,21 @@ MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QS
     // rect of (0, 0) to (1, 1) while an empty texture size would set (0, 0) on all corners.
     if (m_textureSize.isEmpty())
         m_textureSize = QSize(1, 1);
+}
+
+MailboxTexture::~MailboxTexture()
+{
+#if defined(USE_X11)
+   // This is rare case, where context is not shared
+   // we created extra texture in current context, so
+   // delete it now
+   if (m_ownsTexture) {
+       QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+       QOpenGLFunctions *funcs = currentContext->functions();
+       GLuint id(m_textureId);
+       funcs->glDeleteTextures(1, &id);
+   }
+#endif
 }
 
 void MailboxTexture::bind()
@@ -390,8 +411,25 @@ RectClipNode::RectClipNode(const QRectF &rect)
 
 DelegatedFrameNode::DelegatedFrameNode()
     : m_numPendingSyncPoints(0)
+#if defined(USE_X11)
+    , m_contextShared(true)
+#endif
 {
     setFlag(UsePreprocess);
+#if defined(USE_X11)
+    QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+    QOpenGLContext *sharedContext = qt_gl_global_share_context();
+    if (!QOpenGLContext::areSharing(currentContext, sharedContext)) {
+        static bool allowNotSharedContextWarningShown = true;
+        if (allowNotSharedContextWarningShown) {
+            allowNotSharedContextWarningShown = false;
+            qWarning("Context is not shared, textures will be copied between contexts.");
+        }
+        m_offsurface.reset(new QOffscreenSurface);
+        m_offsurface->create();
+        m_contextShared = false;
+    }
+#endif
 }
 
 DelegatedFrameNode::~DelegatedFrameNode()
@@ -430,30 +468,28 @@ void DelegatedFrameNode::preprocess()
 #if defined(USE_X11)
         // Workaround when context is not shared QTBUG-48969
         // Make slow copy between two contexts.
-        QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
-        QOpenGLContext *sharedContext = qt_gl_global_share_context();
-        if (!QOpenGLContext::areSharing(currentContext,sharedContext)) {
-            static bool allowNotSharedContextWarningShown = true;
-            if (allowNotSharedContextWarningShown) {
-                allowNotSharedContextWarningShown = false;
-                qWarning("Context is not shared, textures will be copied between contexts.");
-            }
+        if (!m_contextShared) {
+            QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+            QOpenGLContext *sharedContext = qt_gl_global_share_context();
+
+            QSurface *surface = currentContext->surface();
+            Q_ASSERT(m_offsurface);
+            sharedContext->makeCurrent(m_offsurface.data());
+            QOpenGLFunctions *funcs = sharedContext->functions();
+
+            GLuint fbo = 0;
+            funcs->glGenFramebuffers(1, &fbo);
 
             Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
                 gfx::TransferableFence fence = transferredFences.take(mailboxTexture->mailboxHolder().sync_point);
                 waitChromiumSync(&fence);
                 deleteChromiumSync(&fence);
 
-                QSurface *surface = currentContext->surface();
                 // Read texture into QImage from shared context.
                 // Switch to shared context.
-                QOffscreenSurface offsurface;
-                offsurface.create();
-                sharedContext->makeCurrent(&offsurface);
-                QOpenGLFunctions *funcs = sharedContext->functions();
+                sharedContext->makeCurrent(m_offsurface.data());
+                funcs = sharedContext->functions();
                 QImage img(mailboxTexture->textureSize(), QImage::Format_RGBA8888_Premultiplied);
-                GLuint fbo = 0;
-                funcs->glGenFramebuffers(1, &fbo);
                 funcs->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
                 funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mailboxTexture->m_textureId, 0);
                 GLenum status = funcs->glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -461,13 +497,12 @@ void DelegatedFrameNode::preprocess()
                     qWarning("fbo error, skipping slow copy...");
                     continue;
                 }
-
-                funcs->glReadPixels(0, 0, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
-                funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                funcs->glReadPixels(0, 0, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(),
+                                    GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
 
                 // Restore current context.
-                currentContext->makeCurrent(surface);
                 // Create texture from QImage in current context.
+                currentContext->makeCurrent(surface);
                 GLuint texture = 0;
                 funcs = currentContext->functions();
                 funcs->glGenTextures(1, &texture);
@@ -479,7 +514,14 @@ void DelegatedFrameNode::preprocess()
                 funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), 0,
                                     GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
                 mailboxTexture->m_textureId = texture;
+                mailboxTexture->m_ownsTexture = true;
             }
+            // Cleanup allocated resources
+            sharedContext->makeCurrent(m_offsurface.data());
+            funcs = sharedContext->functions();
+            funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            funcs->glDeleteFramebuffers(1, &fbo);
+            currentContext->makeCurrent(surface);
         } else
 #endif
         {
