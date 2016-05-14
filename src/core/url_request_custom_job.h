@@ -61,7 +61,7 @@ public:
     URLRequestCustomJob(net::URLRequest *request, net::NetworkDelegate *networkDelegate, const std::string &scheme, QWeakPointer<const BrowserContextAdapter> adapter);
     virtual void Start() Q_DECL_OVERRIDE;
     virtual void Kill() Q_DECL_OVERRIDE;
-    virtual int ReadRawData(net::IOBuffer* buf, int buf_size)  Q_DECL_OVERRIDE;;
+    virtual int ReadRawData(net::IOBuffer *buf, int buf_size)  Q_DECL_OVERRIDE;
     virtual bool GetMimeType(std::string *mimeType) const Q_DECL_OVERRIDE;
     virtual bool GetCharset(std::string *charset) Q_DECL_OVERRIDE;
     virtual bool IsRedirectResponse(GURL* location, int* http_status_code) Q_DECL_OVERRIDE;

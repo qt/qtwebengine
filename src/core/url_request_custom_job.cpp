@@ -143,8 +143,12 @@ int URLRequestCustomJob::ReadRawData(IOBuffer *buf, int bufSize)
     qint64 rv = m_shared->m_device ? m_shared->m_device->read(buf->data(), bufSize) : -1;
     if (rv >= 0)
         return static_cast<int>(rv);
-    else
+    else {
+        // QIODevice::read might have called fail on us.
+        if (m_shared->m_error)
+            return m_shared->m_error;
         return ERR_FAILED;
+    }
 }
 
 
@@ -281,9 +285,11 @@ void URLRequestCustomJobShared::notifyStarted()
 
 void URLRequestCustomJobShared::fail(int error)
 {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     QMutexLocker lock(&m_mutex);
     m_error = error;
+    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO))
+        return;
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!m_job)
         return;
     content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyFailure, m_weakFactory.GetWeakPtr()));
@@ -297,11 +303,9 @@ void URLRequestCustomJobShared::notifyFailure()
         return;
     if (m_device)
         m_device->close();
-    const URLRequestStatus status(URLRequestStatus::FAILED, m_error);
-    if (m_started)
-        m_job->SetStatus(status);
-    else
-        m_job->NotifyStartError(status);
+    if (!m_started)
+        m_job->NotifyStartError(URLRequestStatus::FromError(m_error));
+    // else we fail on the next read, or the read that might already be in progress
 }
 
 GURL URLRequestCustomJobShared::requestUrl()

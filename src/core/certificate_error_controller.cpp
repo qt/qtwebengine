@@ -40,6 +40,7 @@
 #include "certificate_error_controller.h"
 #include "certificate_error_controller_p.h"
 
+#include <net/base/net_errors.h>
 #include <net/cert/x509_certificate.h>
 #include <net/ssl/ssl_info.h>
 #include <ui/base/l10n/l10n_util.h>
@@ -50,6 +51,22 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
+
+ASSERT_ENUMS_MATCH(CertificateErrorController::SslPinnedKeyNotInCertificateChain, net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid, net::ERR_CERT_BEGIN)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateCommonNameInvalid, net::ERR_CERT_COMMON_NAME_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateDateInvalid, net::ERR_CERT_DATE_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateAuthorityInvalid, net::ERR_CERT_AUTHORITY_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateContainsErrors, net::ERR_CERT_CONTAINS_ERRORS)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateUnableToCheckRevocation, net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateRevoked, net::ERR_CERT_REVOKED)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateInvalid, net::ERR_CERT_INVALID)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakSignatureAlgorithm, net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNonUniqueName, net::ERR_CERT_NON_UNIQUE_NAME)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakKey, net::ERR_CERT_WEAK_KEY)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolation, net::ERR_CERT_NAME_CONSTRAINT_VIOLATION)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong, net::ERR_CERT_VALIDITY_TOO_LONG)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CERT_END)
 
 void CertificateErrorControllerPrivate::accept(bool accepted)
 {
@@ -155,6 +172,8 @@ QString CertificateErrorController::errorString() const
         return getQStringForMessageId(IDS_CERT_ERROR_WEAK_KEY_DESCRIPTION);
     case CertificateNameConstraintViolation:
         return getQStringForMessageId(IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION);
+    case CertificateValidityTooLong:
+        return getQStringForMessageId(IDS_CERT_ERROR_VALIDITY_TOO_LONG_DESCRIPTION);
     case CertificateUnableToCheckRevocation: // Deprecated in Chromium.
     default:
         break;

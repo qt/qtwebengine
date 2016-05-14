@@ -76,7 +76,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool errorPageEnabled READ errorPageEnabled WRITE setErrorPageEnabled NOTIFY errorPageEnabledChanged)
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
     Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1)
-    Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged REVISION 1)
+    Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
     Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged REVISION 2)
     Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged REVISION 2)
     Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION 2)
@@ -140,7 +140,7 @@ signals:
     void errorPageEnabledChanged();
     void pluginsEnabledChanged();
     Q_REVISION(1) void fullScreenSupportEnabledChanged();
-    Q_REVISION(1) void defaultTextEncodingChanged();
+    void defaultTextEncodingChanged();
     Q_REVISION(2) void screenCaptureEnabledChanged();
     Q_REVISION(2) void webGLEnabledChanged();
     Q_REVISION(2) void accelerated2dCanvasEnabledChanged();
