@@ -26,7 +26,7 @@ defineTest(runConfigure) {
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
         REQUIRED_PACKAGES = dbus-1 fontconfig
-        contains(QT_CONFIG, xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
+        !cross_compile: contains(QT_CONFIG, xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
         contains(QT_CONFIG, pulseaudio): REQUIRED_PACKAGES += libpulse
         contains(QT_CONFIG, system-png): REQUIRED_PACKAGES += libpng
         contains(QT_CONFIG, system-harfbuzz): REQUIRED_PACKAGES += harfbuzz
