@@ -175,8 +175,8 @@ public:
         KilledTerminationStatus
     };
 
-    explicit QWebEnginePage(QObject *parent = 0);
-    QWebEnginePage(QWebEngineProfile *profile, QObject *parent = 0);
+    explicit QWebEnginePage(QObject *parent = Q_NULLPTR);
+    QWebEnginePage(QWebEngineProfile *profile, QObject *parent = Q_NULLPTR);
     ~QWebEnginePage();
     QWebEngineHistory *history() const;
 
@@ -195,10 +195,10 @@ public:
 
     virtual bool event(QEvent*);
 #ifdef Q_QDOC
-    void findText(const QString &subString, FindFlags options = 0);
+    void findText(const QString &subString, FindFlags options = FindFlags());
     void findText(const QString &subString, FindFlags options, FunctorOrLambda resultCallback);
 #else
-    void findText(const QString &subString, FindFlags options = 0, const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
+    void findText(const QString &subString, FindFlags options = FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 #endif
     QMenu *createStandardContextMenu();
 

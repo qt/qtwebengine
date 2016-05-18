@@ -61,7 +61,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEngineView : public QWidget {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
 
 public:
-    explicit QWebEngineView(QWidget* parent = 0);
+    explicit QWebEngineView(QWidget* parent = Q_NULLPTR);
     virtual ~QWebEngineView();
 
     QWebEnginePage* page() const;
@@ -90,10 +90,10 @@ public:
     void setZoomFactor(qreal factor);
 
 #ifdef Q_QDOC
-    void findText(const QString &subString, QWebEnginePage::FindFlags options = 0);
+    void findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags());
     void findText(const QString &subString, QWebEnginePage::FindFlags options, FunctorOrLambda resultCallback);
 #else
-    void findText(const QString &subString, QWebEnginePage::FindFlags options = 0, const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
+    void findText(const QString &subString, QWebEnginePage::FindFlags options = QWebEnginePage::FindFlags(), const QWebEngineCallback<bool> &resultCallback = QWebEngineCallback<bool>());
 #endif
 
     virtual QSize sizeHint() const Q_DECL_OVERRIDE;

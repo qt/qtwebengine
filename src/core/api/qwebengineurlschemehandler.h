@@ -52,7 +52,7 @@ class QWebEngineUrlRequestJob;
 class QWEBENGINE_EXPORT QWebEngineUrlSchemeHandler : public QObject {
     Q_OBJECT
 public:
-    QWebEngineUrlSchemeHandler(QObject *parent = 0);
+    QWebEngineUrlSchemeHandler(QObject *parent = Q_NULLPTR);
     ~QWebEngineUrlSchemeHandler();
 
     virtual void requestStarted(QWebEngineUrlRequestJob*) = 0;
