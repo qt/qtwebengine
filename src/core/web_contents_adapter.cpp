@@ -68,6 +68,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
@@ -485,7 +486,12 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     urlString.append(",");
     urlString.append(encodedData.constData(), encodedData.length());
 
-    content::NavigationController::LoadURLParams params((GURL(urlString)));
+    GURL dataUrlToLoad(urlString);
+    if (dataUrlToLoad.spec().size() > content::GetMaxURLChars()) {
+        d->adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED);
+        return;
+    }
+    content::NavigationController::LoadURLParams params((dataUrlToLoad));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
     params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
