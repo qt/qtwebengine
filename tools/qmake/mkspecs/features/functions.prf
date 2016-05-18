@@ -11,12 +11,12 @@ defineTest(isPlatformSupported) {
       return(false)
     }
     msvc {
-      !equals(MSVC_VER, "12.0"):!equals(MSVC_VER, "14.0") {
-        skipBuild("Qt WebEngine on Windows requires MSVC 2013 or MSVC 2015.")
+      !equals(MSVC_VER, "14.0") {
+        skipBuild("Qt WebEngine on Windows requires MSVC 2015 Update 2 or later.")
         return(false)
       }
     } else {
-      skipBuild("Qt WebEngine on Windows requires MSVC 2013 or MSVC 2015.")
+      skipBuild("Qt WebEngine on Windows requires MSVC 2015 Update 2 or later.")
       return(false)
     }
     isBuildingOnWin32() {
