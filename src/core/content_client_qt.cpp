@@ -57,6 +57,18 @@
 #include <QLibraryInfo>
 #include <QString>
 
+#if defined(Q_OS_WIN)
+#include <shlobj.h>
+static QString getLocalAppDataDir()
+{
+    QString result;
+    wchar_t path[MAX_PATH];
+    if (SHGetSpecialFolderPath(0, path, CSIDL_LOCAL_APPDATA, FALSE))
+        result = QDir::fromNativeSeparators(QString::fromWCharArray(path));
+    return result;
+}
+#endif
+
 #if defined(ENABLE_PLUGINS)
 
 // The plugin logic is based on chrome/common/chrome_content_client.cc:
@@ -199,10 +211,24 @@ void AddPepperWidevine(std::vector<content::PepperPluginInfo>* plugins)
             pluginPaths << potentialWidevinePluginPath;
         }
     }
+#elif defined(Q_OS_WIN)
+    QDir potentialWidevineDir(getLocalAppDataDir() + "/Google/Chrome/User Data/WidevineCDM");
+    if (potentialWidevineDir.exists()) {
+        QFileInfoList widevineVersionDirs = potentialWidevineDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name | QDir::Reversed);
+        for (int i = 0; i < widevineVersionDirs.size(); ++i) {
+            QString versionDirPath(widevineVersionDirs.at(i).absoluteFilePath());
+#ifdef WIN64
+            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/win_x64/" + QString::fromLatin1(kWidevineCdmAdapterFileName);
+#else
+            QString potentialWidevinePluginPath = versionDirPath + "/_platform_specific/win_x86/" + QString::fromLatin1(kWidevineCdmAdapterFileName);
 #endif
-#if defined(Q_OS_LINUX)
+            pluginPaths << potentialWidevinePluginPath;
+        }
+    }
+#elif defined(Q_OS_LINUX)
         pluginPaths << QStringLiteral("/opt/google/chrome/libwidevinecdmadapter.so") // Google Chrome
-                    << QStringLiteral("/usr/lib/chromium/libwidevinecdmadapter.so"); // Arch
+                    << QStringLiteral("/usr/lib/chromium/libwidevinecdmadapter.so") // Arch
+                    << QStringLiteral("/usr/lib64/chromium/libwidevinecdmadapter.so"); // OpenSUSE style
 #endif
     }
 
