@@ -22,6 +22,10 @@ defineTest(isPlatformSupported) {
     isBuildingOnWin32() {
       skipBuild("Qt WebEngine on Windows must be built on a 64-bit machine.")
     }
+    !isMinWinSDKVersion(10, 10586): {
+      skipBuild("Qt WebEngine on Windows requires a Windows SDK version 10.0.10586 or newer.")
+      return(false)
+    }
   } else:osx {
     lessThan(QMAKE_XCODE_VERSION, 5.1) {
       skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
@@ -110,6 +114,22 @@ defineTest(isMinOSXSDKVersion) {
     greaterThan(major_version, $$requested_major):return(true)
     equals(major_version, $$requested_major):greaterThan(minor_version, $$requested_minor):return(true)
     equals(major_version, $$requested_major):equals(minor_version, $$requested_minor):!lessThan(patch_version, $$requested_patch):return(true)
+
+    return(false)
+}
+
+defineTest(isMinWinSDKVersion) {
+    requested_major = $$1
+    requested_minor = $$2
+    WIN_SDK_VERSION = $$(WindowsSDKVersion)
+
+    # major.0.minor
+    major_version = $$section(WIN_SDK_VERSION, ., 0, 0)
+    minor_version = $$section(WIN_SDK_VERSION, ., 2, 2)
+
+    greaterThan(major_version, $$requested_major):return(true)
+    equals(major_version, $$requested_major):greaterThan(minor_version, $$requested_minor):return(true)
+    equals(major_version, $$requested_major):equals(minor_version, $$requested_minor)::return(true)
 
     return(false)
 }
