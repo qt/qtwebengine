@@ -82,6 +82,10 @@ QWebEngineCertificateError::~QWebEngineCertificateError()
 
     This enum describes the type of certificate error encountered.
 
+    The values of this enum type match the SSL errors Chromium provides.
+    QSslError::SslError values are not used directly, because the Qt error
+    categories cannot be mapped to the Chromium error categories.
+
     \value SslPinnedKeyNotInCertificateChain The certificate did not match the built-in public keys
             pinned for the host name.
     \value CertificateCommonNameInvalid The certificate's common name did not match the host name.
