@@ -32,6 +32,7 @@
 #include <QPushButton>
 #include <QStateMachine>
 #include <QStyle>
+#include <QtGui/QClipboard>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
 #include <QWebChannel>
@@ -121,6 +122,7 @@ private Q_SLOTS:
     void geolocationRequestJS();
     void loadFinished();
     void actionStates();
+    void pasteImage();
     void popupFormSubmission();
     void userStyleSheet();
     void userStyleSheetFromLocalFileUrl();
@@ -460,6 +462,35 @@ void tst_QWebEnginePage::actionStates()
 
     QTRY_VERIFY(reloadAction->isEnabled());
     QTRY_VERIFY(!stopAction->isEnabled());
+}
+
+static QImage imageWithoutAlpha(const QImage &image)
+{
+    QImage result = image;
+    QPainter painter(&result);
+    painter.fillRect(result.rect(), Qt::green);
+    painter.drawImage(0, 0, image);
+    return result;
+}
+
+void tst_QWebEnginePage::pasteImage()
+{
+    // Pixels with an alpha value of 0 will have different RGB values after the
+    // test -> clipboard -> webengine -> test roundtrip.
+    // Clear the alpha channel to make QCOMPARE happy.
+    const QImage origImage = imageWithoutAlpha(QImage(":/resources/image.png"));
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    clipboard->setImage(origImage);
+    QWebEnginePage *page = m_view->page();
+    page->load(QUrl("qrc:///resources/pasteimage.html"));
+    QVERIFY(waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    page->triggerAction(QWebEnginePage::Paste);
+    QTRY_VERIFY(evaluateJavaScriptSync(page,
+            "window.myImageDataURL ? window.myImageDataURL.length : 0").toInt() > 0);
+    QByteArray data = evaluateJavaScriptSync(page, "window.myImageDataURL").toByteArray();
+    data.remove(0, data.indexOf(";base64,") + 8);
+    const QImage image = QImage::fromData(QByteArray::fromBase64(data), "PNG");
+    QCOMPARE(image, origImage);
 }
 
 class ConsolePage : public QWebEnginePage

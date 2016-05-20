@@ -104,7 +104,8 @@ void BrowserContextAdapter::setStorageName(const QString &storageName)
     m_name = storageName;
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateStorageSettings();
-    m_visitedLinksManager.reset();
+    if (m_visitedLinksManager)
+        resetVisitedLinksManager();
 }
 
 void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
@@ -114,7 +115,8 @@ void BrowserContextAdapter::setOffTheRecord(bool offTheRecord)
     m_offTheRecord = offTheRecord;
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateStorageSettings();
-    m_visitedLinksManager.reset();
+    if (m_visitedLinksManager)
+        resetVisitedLinksManager();
 }
 
 BrowserContextQt *BrowserContextAdapter::browserContext()
@@ -125,7 +127,7 @@ BrowserContextQt *BrowserContextAdapter::browserContext()
 WebEngineVisitedLinksManager *BrowserContextAdapter::visitedLinksManager()
 {
     if (!m_visitedLinksManager)
-        m_visitedLinksManager.reset(new WebEngineVisitedLinksManager(this));
+        resetVisitedLinksManager();
     return m_visitedLinksManager.data();
 }
 
@@ -198,7 +200,8 @@ void BrowserContextAdapter::setDataPath(const QString &path)
     m_dataPath = path;
     if (m_browserContext->url_request_getter_.get())
         m_browserContext->url_request_getter_->updateStorageSettings();
-    m_visitedLinksManager.reset();
+    if (m_visitedLinksManager)
+        resetVisitedLinksManager();
 }
 
 QString BrowserContextAdapter::cachePath() const
@@ -339,7 +342,8 @@ void BrowserContextAdapter::setVisitedLinksPolicy(BrowserContextAdapter::Visited
     if (m_visitedLinksPolicy == visitedLinksPolicy)
         return;
     m_visitedLinksPolicy = visitedLinksPolicy;
-    m_visitedLinksManager.reset();
+    if (m_visitedLinksManager)
+        resetVisitedLinksManager();
 }
 
 int BrowserContextAdapter::httpCacheMaxSize() const
@@ -498,6 +502,11 @@ bool BrowserContextAdapter::isSpellCheckEnabled() const
 #else
     return false;
 #endif
+}
+
+void BrowserContextAdapter::resetVisitedLinksManager()
+{
+    m_visitedLinksManager.reset(new WebEngineVisitedLinksManager(this));
 }
 
 } // namespace QtWebEngineCore

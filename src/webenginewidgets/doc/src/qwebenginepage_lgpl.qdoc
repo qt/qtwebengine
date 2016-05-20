@@ -39,7 +39,8 @@
     and findText().
 
     A page can be loaded using load() or setUrl(). Alternatively, if you have
-    the HTML content readily available, you can use setHtml().
+    the HTML content readily available, you can use setHtml(). The GET method is
+    always used to load URLs.
 
     The QWebEnginePage class also offers methods to retrieve both the URL currently
     loaded by the page (see url()) as well as the URL originally requested

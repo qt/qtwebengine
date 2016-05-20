@@ -99,7 +99,7 @@ private:
 
     friend class QWebEngineProfilePrivate;
 
-    QWebEngineDownloadItem(QWebEngineDownloadItemPrivate*, QObject *parent = 0);
+    QWebEngineDownloadItem(QWebEngineDownloadItemPrivate*, QObject *parent = Q_NULLPTR);
     QScopedPointer<QWebEngineDownloadItemPrivate> d_ptr;
 };
 
