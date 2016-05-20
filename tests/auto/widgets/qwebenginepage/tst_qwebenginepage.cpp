@@ -153,7 +153,6 @@ private Q_SLOTS:
     void inputMethods();
     void inputMethodsTextFormat_data();
     void inputMethodsTextFormat();
-    void defaultTextEncoding();
     void errorPageExtension();
     void errorPageExtensionLoadFinished();
     void userAgentNewlineStripping();
@@ -2634,30 +2633,6 @@ void tst_QWebEnginePage::testEnablePersistentStorage()
 #endif
 }
 
-void tst_QWebEnginePage::defaultTextEncoding()
-{
-    QString defaultCharset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
-    QVERIFY(!defaultCharset.isEmpty());
-    QCOMPARE(QWebEngineSettings::globalSettings()->defaultTextEncoding(), defaultCharset);
-
-    m_page->settings()->setDefaultTextEncoding(QString("utf-8"));
-    QCoreApplication::processEvents();
-    QString charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
-    QCOMPARE(charset, QString("utf-8"));
-    QCOMPARE(m_page->settings()->defaultTextEncoding(), charset);
-
-    m_page->settings()->setDefaultTextEncoding(QString());
-    QCoreApplication::processEvents();
-    charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
-    QVERIFY(!charset.isEmpty());
-    QCOMPARE(charset, defaultCharset);
-
-    QWebEngineSettings::globalSettings()->setDefaultTextEncoding(QString("utf-8"));
-    QCoreApplication::processEvents();
-    charset = evaluateJavaScriptSync(m_page, "document.defaultCharset").toString();
-    QCOMPARE(charset, QString("utf-8"));
-    QCOMPARE(QWebEngineSettings::globalSettings()->defaultTextEncoding(), charset);
-}
 
 #if defined(QWEBENGINEPAGE_ERRORPAGEEXTENSION)
 class ErrorPage : public QWebEnginePage

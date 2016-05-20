@@ -71,15 +71,6 @@ TestWebEngineView {
             keyPress(Qt.Key_Enter)
             showSpy.wait()
             compare(showSpy.signalArguments[1][0], "Please enter a URL.")
-
-            webEngineView.url = Qt.resolvedUrl("about:blank")
-            verify(webEngineView.waitForLoadSucceeded())
-
-            webEngineView.url = Qt.resolvedUrl("forms.html#url_title")
-            verify(webEngineView.waitForLoadSucceeded())
-            keyPress(Qt.Key_Enter)
-            showSpy.wait()
-            compare(showSpy.signalArguments[2][1], "url_title")
         }
 
         function test_emailForm() {
@@ -97,15 +88,6 @@ TestWebEngineView {
             keyPress(Qt.Key_Enter)
             showSpy.wait()
             compare(showSpy.signalArguments[1][0], "Please include an '@' in the email address. 'invalid' is missing an '@'.")
-
-            webEngineView.url = Qt.resolvedUrl("about:blank")
-            verify(webEngineView.waitForLoadSucceeded())
-
-            webEngineView.url = Qt.resolvedUrl("forms.html#email_title")
-            verify(webEngineView.waitForLoadSucceeded())
-            keyPress(Qt.Key_Enter)
-            showSpy.wait()
-            compare(showSpy.signalArguments[2][1], "email_title")
         }
     }
 }
