@@ -44,6 +44,7 @@
 
 #include "common/qt_messages.h"
 
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "gin/arguments.h"
 #include "gin/handle.h"
@@ -153,11 +154,26 @@ content::RenderView *WebChannelTransport::GetRenderView(v8::Isolate *isolate)
 
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderView *renderView)
     : content::RenderViewObserver(renderView)
+    , content::RenderViewObserverTracker<WebChannelIPCTransport>(renderView)
+    , m_worldId(0)
+    , m_installed(false)
 {
 }
 
+void WebChannelIPCTransport::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)
+{
+    // JavaScript run before this point doesn't stick, and needs to be redone.
+    // ### FIXME: we should try no even installing before
+    blink::WebLocalFrame *frame = render_frame->GetWebFrame();
+    if (m_installed && render_frame->IsMainFrame())
+        WebChannelTransport::Install(frame, m_worldId);
+}
+
+
 void WebChannelIPCTransport::installWebChannel(uint worldId)
 {
+    m_worldId = worldId;
+    m_installed = true;
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
         return;
@@ -166,6 +182,8 @@ void WebChannelIPCTransport::installWebChannel(uint worldId)
 
 void WebChannelIPCTransport::uninstallWebChannel(uint worldId)
 {
+    Q_ASSERT(worldId = m_worldId);
+    m_installed = false;
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
         return;

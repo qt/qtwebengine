@@ -48,10 +48,14 @@
 #include <QtCore/QHash>
 #include <QtCore/QSet>
 
-namespace content {
-class RenderView;
+namespace blink {
+class WebLocalFrame;
 }
 
+namespace content {
+class RenderFrame;
+class RenderView;
+}
 
 class UserResourceController : public content::RenderProcessObserver {
 
@@ -64,22 +68,29 @@ public:
     void removeScriptForView(const UserScriptData &, content::RenderView *);
     void clearScriptsForView(content::RenderView *);
 
+    void RunScriptsAtDocumentStart(content::RenderFrame *render_frame);
+    void RunScriptsAtDocumentEnd(content::RenderFrame *render_frame);
+
 private:
     Q_DISABLE_COPY(UserResourceController)
 
     class RenderViewObserverHelper;
 
     // RenderProcessObserver implementation.
-    virtual bool OnControlMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
+    bool OnControlMessageReceived(const IPC::Message &message) override;
 
     void onAddScript(const UserScriptData &);
     void onRemoveScript(const UserScriptData &);
     void onClearScripts();
 
+    void runScripts(UserScriptData::InjectionPoint, blink::WebLocalFrame *);
+
     typedef QSet<uint64_t> UserScriptSet;
     typedef QHash<const content::RenderView *, UserScriptSet> ViewUserScriptMap;
     ViewUserScriptMap m_viewUserScriptMap;
     QHash<uint64_t, UserScriptData> m_scripts;
+
+    friend class RenderViewObserverHelper;
 };
 
 #endif // USER_RESOURCE_CONTROLLER_H

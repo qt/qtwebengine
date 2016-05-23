@@ -134,6 +134,18 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
     new QtWebEngineCore::RenderFrameObserverQt(render_frame);
 }
 
+void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame* render_frame)
+{
+    if (WebChannelIPCTransport *transport = WebChannelIPCTransport::Get(render_frame->GetRenderView()))
+        transport->RunScriptsAtDocumentStart(render_frame);
+    UserResourceController::instance()->RunScriptsAtDocumentStart(render_frame);
+}
+
+void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame* render_frame)
+{
+    UserResourceController::instance()->RunScriptsAtDocumentEnd(render_frame);
+}
+
 bool ContentRendererClientQt::HasErrorPage(int httpStatusCode, std::string *errorDomain)
 {
     // Use an internal error page, if we have one for the status code.

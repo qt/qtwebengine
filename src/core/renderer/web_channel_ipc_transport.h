@@ -42,7 +42,12 @@
 
 #include "base/values.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_view_observer_tracker.h"
 #include <QtCore/qcompilerdetection.h>
+
+namespace content {
+class RenderFrame;
+}
 
 namespace v8 {
 class Extension;
@@ -50,15 +55,22 @@ class Extension;
 
 namespace QtWebEngineCore {
 
-class WebChannelIPCTransport : public content::RenderViewObserver {
+class WebChannelIPCTransport : public content::RenderViewObserver
+                             , public content::RenderViewObserverTracker<WebChannelIPCTransport>
+{
 public:
     WebChannelIPCTransport(content::RenderView *);
+
+    void RunScriptsAtDocumentStart(content::RenderFrame *render_frame);
 
 private:
     void dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId);
     void installWebChannel(uint worldId);
     void uninstallWebChannel(uint worldId);
     virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
+
+    uint m_worldId;
+    bool m_installed;
 };
 
 } // namespace

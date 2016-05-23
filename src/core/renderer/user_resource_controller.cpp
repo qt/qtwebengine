@@ -39,6 +39,7 @@
 
 #include "user_resource_controller.h"
 
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -62,7 +63,6 @@ public:
     RenderViewObserverHelper(content::RenderView *);
 private:
     // RenderViewObserver implementation.
-    virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) Q_DECL_OVERRIDE;
     virtual void DidFinishDocumentLoad(blink::WebLocalFrame* frame) Q_DECL_OVERRIDE;
     virtual void DidFinishLoad(blink::WebLocalFrame* frame) Q_DECL_OVERRIDE;
     virtual void DidStartProvisionalLoad(blink::WebLocalFrame* frame) Q_DECL_OVERRIDE;
@@ -82,14 +82,20 @@ void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData
 {
     if (p == UserScriptData::AfterLoad && !m_pendingFrames.remove(frame))
         return;
+
+    UserResourceController::instance()->runScripts(p, frame);
+}
+
+void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink::WebLocalFrame *frame)
+{
     content::RenderView *renderView = content::RenderView::FromWebView(frame->view());
     const bool isMainFrame = (frame == renderView->GetWebView()->mainFrame());
 
-    QList<uint64_t> scriptsToRun = UserResourceController::instance()->m_viewUserScriptMap.value(globalScriptsIndex).toList();
-    scriptsToRun.append(UserResourceController::instance()->m_viewUserScriptMap.value(renderView).toList());
+    QList<uint64_t> scriptsToRun = m_viewUserScriptMap.value(globalScriptsIndex).toList();
+    scriptsToRun.append(m_viewUserScriptMap.value(renderView).toList());
 
     Q_FOREACH (uint64_t id, scriptsToRun) {
-        const UserScriptData &script = UserResourceController::instance()->m_scripts.value(id);
+        const UserScriptData &script = m_scripts.value(id);
         if (script.injectionPoint != p
                 || (!script.injectForSubframes && !isMainFrame))
             continue;
@@ -101,20 +107,23 @@ void UserResourceController::RenderViewObserverHelper::runScripts(UserScriptData
     }
 }
 
+void UserResourceController::RunScriptsAtDocumentStart(content::RenderFrame *render_frame)
+{
+    runScripts(UserScriptData::DocumentElementCreation, render_frame->GetWebFrame());
+}
+
+void UserResourceController::RunScriptsAtDocumentEnd(content::RenderFrame *render_frame)
+{
+    runScripts(UserScriptData::DocumentLoadFinished, render_frame->GetWebFrame());
+}
 
 UserResourceController::RenderViewObserverHelper::RenderViewObserverHelper(content::RenderView *renderView)
     : content::RenderViewObserver(renderView)
 {
 }
 
-void UserResourceController::RenderViewObserverHelper::DidCreateDocumentElement(blink::WebLocalFrame *frame)
-{
-    runScripts(UserScriptData::DocumentElementCreation, frame);
-}
-
 void UserResourceController::RenderViewObserverHelper::DidFinishDocumentLoad(blink::WebLocalFrame *frame)
 {
-    runScripts(UserScriptData::DocumentLoadFinished, frame);
     m_pendingFrames.insert(frame);
     base::MessageLoop::current()->PostDelayedTask(FROM_HERE, base::Bind(&UserResourceController::RenderViewObserverHelper::runScripts,
                                                                         base::Unretained(this), UserScriptData::AfterLoad, frame),
