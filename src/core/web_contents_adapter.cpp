@@ -70,6 +70,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/common/content_constants.h"
 #include <content/public/common/drop_data.h>
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -426,6 +427,12 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     PrintViewManagerQt::CreateForWebContents(webContents());
 #endif // defined(ENABLE_BASIC_PRINTING)
 
+    // Create an instance of WebEngineVisitedLinksManager to catch the first
+    // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
+    // force to initialize visited links in VisitedLinkSlave.
+    // It must be done before creating a RenderView.
+    d->browserContextAdapter->visitedLinksManager();
+
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);
@@ -511,7 +518,12 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     urlString.append(",");
     urlString.append(encodedData.constData(), encodedData.length());
 
-    content::NavigationController::LoadURLParams params((GURL(urlString)));
+    GURL dataUrlToLoad(urlString);
+    if (dataUrlToLoad.spec().size() > content::kMaxURLChars) {
+        d->adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED);
+        return;
+    }
+    content::NavigationController::LoadURLParams params((dataUrlToLoad));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
     params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);

@@ -130,7 +130,7 @@
             Enables displaying the built-in error pages of Chromium. Enabled by default.
     \value  PluginsEnabled
             Enables support for Pepper plugins, such as the Flash player. Disabled by default.
-            See also \l{Pepper Plugin API Support}. (Added in Qt 5.6)
+            See also \l{Pepper Plugin API}. (Added in Qt 5.6)
     \value  FullScreenSupportEnabled
             Enables fullscreen support in an application. Disabled by default. (Added in Qt 5.6)
     \value  ScreenCaptureEnabled
