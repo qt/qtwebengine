@@ -332,8 +332,16 @@ base::string16 WebEngineLibraryInfo::getApplicationName()
 std::string WebEngineLibraryInfo::getApplicationLocale()
 {
     base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
-    if (!parsedCommandLine->HasSwitch(switches::kLang))
-        return QLocale().bcp47Name().toStdString();
+    if (!parsedCommandLine->HasSwitch(switches::kLang)) {
+        const QString &locale = QLocale().bcp47Name();
+
+        // QLocale::bcp47Name returns "en" for American English locale. Chromium requires the "US" suffix
+        // to clarify the dialect and ignores the shorter version.
+        if (locale == "en")
+            return "en-US";
+
+        return locale.toStdString();
+    }
 
     return parsedCommandLine->GetSwitchValueASCII(switches::kLang);
 }

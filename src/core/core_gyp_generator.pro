@@ -141,6 +141,7 @@ HEADERS = \
         file_picker_controller.h \
         gl_context_qt.h \
         gl_surface_qt.h \
+        global_descriptors_qt.h \
         javascript_dialog_controller_p.h \
         javascript_dialog_controller.h \
         javascript_dialog_manager_qt.h \

@@ -76,6 +76,8 @@ private Q_SLOTS:
     void stopSettingFocusWhenDisabled_data();
     void inputEventForwardingDisabledWhenActiveFocusOnPressDisabled();
 
+    void changeLocale();
+
 private:
     inline QQuickWebEngineView *newWebEngineView();
     inline QQuickWebEngineView *webEngineView() const;
@@ -650,6 +652,41 @@ void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPress
     // Manually forcing focus should still be possible.
     view->forceActiveFocus();
     QTRY_COMPARE_WITH_TIMEOUT(view->hasActiveFocus(), true, 1000);
+}
+
+void tst_QQuickWebEngineView::changeLocale()
+{
+    QUrl url("http://non.existent/");
+
+    QLocale::setDefault(QLocale("de"));
+    QQuickWebEngineView *viewDE = newWebEngineView();
+    QSignalSpy titleSpyHU(viewDE, SIGNAL(titleChanged()));
+
+    viewDE->setUrl(url);
+    QVERIFY(waitForLoadFailed(viewDE));
+    QTRY_COMPARE(titleSpyHU.size(), 2);
+    QCOMPARE(viewDE->title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+
+    QLocale::setDefault(QLocale("en"));
+    QQuickWebEngineView *viewEN = newWebEngineView();
+    QSignalSpy titleSpyEN(viewEN, SIGNAL(titleChanged()));
+
+    viewEN->setUrl(url);
+    QVERIFY(waitForLoadFailed(viewEN));
+    QTRY_COMPARE(titleSpyEN.size(), 2);
+    QCOMPARE(viewEN->title(), QStringLiteral("%1 is not available").arg(url.toString()));
+
+    viewDE->setUrl(QUrl("about:blank"));
+    QVERIFY(waitForLoadSucceeded(viewDE));
+    titleSpyHU.clear();
+
+    viewDE->setUrl(url);
+    QVERIFY(waitForLoadFailed(viewDE));
+    QTRY_COMPARE(titleSpyHU.size(), 2);
+    QCOMPARE(viewDE->title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+
+    delete viewDE;
+    delete viewEN;
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

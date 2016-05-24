@@ -59,7 +59,9 @@
 #include "base/cpu.h"
 #endif
 
-#include <QLocale>
+#if defined(OS_LINUX)
+#include "ui/base/ui_base_switches.h"
+#endif
 
 namespace QtWebEngineCore {
 
@@ -135,6 +137,15 @@ content::ContentBrowserClient *ContentMainDelegateQt::CreateContentBrowserClient
 
 content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClient()
 {
+#if defined(OS_LINUX)
+    base::CommandLine *parsedCommandLine = base::CommandLine::ForCurrentProcess();
+
+    if (parsedCommandLine->HasSwitch(switches::kLang)) {
+        const std::string &locale = parsedCommandLine->GetSwitchValueASCII(switches::kLang);
+        ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
+    }
+#endif
+
     return new ContentRendererClientQt;
 }
 

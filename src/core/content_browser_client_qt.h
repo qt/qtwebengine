@@ -109,6 +109,10 @@ public:
     std::string GetAcceptLangs(content::BrowserContext* context) Q_DECL_OVERRIDE;
     virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) Q_DECL_OVERRIDE;
 
+#if defined(Q_OS_LINUX)
+    virtual void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) Q_DECL_OVERRIDE;
+#endif
+
 #if defined(ENABLE_PLUGINS)
     virtual void DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) Q_DECL_OVERRIDE;
 #endif

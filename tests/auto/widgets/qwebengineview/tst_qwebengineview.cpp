@@ -74,6 +74,8 @@ private Q_SLOTS:
     void doNotSendMouseKeyboardEventsWhenDisabled_data();
     void stopSettingFocusWhenDisabled();
     void stopSettingFocusWhenDisabled_data();
+
+    void changeLocale();
 };
 
 // This will be called before the first test function is executed.
@@ -739,6 +741,36 @@ void tst_QWebEngineView::stopSettingFocusWhenDisabled_data()
 
     QTest::newRow("enabled view gets focus") << true << true;
     QTest::newRow("disabled view does not get focus") << false << false;
+}
+
+void tst_QWebEngineView::changeLocale()
+{
+    QUrl url("http://non.existent/");
+
+    QLocale::setDefault(QLocale("de"));
+    QWebEngineView viewDE;
+    viewDE.setUrl(url);
+
+    QVERIFY(waitForSignal(&viewDE, SIGNAL(titleChanged(QString))));
+    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+
+    QLocale::setDefault(QLocale("en"));
+    QWebEngineView viewEN;
+    viewEN.setUrl(url);
+
+    QVERIFY(waitForSignal(&viewEN, SIGNAL(titleChanged(QString))));
+    QVERIFY(waitForSignal(&viewEN, SIGNAL(loadFinished(bool))));
+    QCOMPARE(viewEN.title(), QStringLiteral("%1 is not available").arg(url.toString()));
+
+    viewDE.setUrl(QUrl("about:blank"));
+    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+
+    viewDE.setUrl(url);
+
+    QVERIFY(waitForSignal(&viewDE, SIGNAL(titleChanged(QString))));
+    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

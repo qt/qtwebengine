@@ -85,6 +85,11 @@
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
 
+#if defined(Q_OS_LINUX)
+#include "global_descriptors_qt.h"
+#include "ui/base/resource/resource_bundle.h"
+#endif
+
 #if defined(ENABLE_PLUGINS)
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
@@ -456,6 +461,22 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
     if (processType == switches::kZygoteProcess)
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
 }
+
+#if defined(Q_OS_LINUX)
+void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings)
+{
+    const std::string &locale = GetApplicationLocale();
+    const base::FilePath &locale_file_path = ui::ResourceBundle::GetSharedInstance().GetLocaleFilePath(locale, true);
+    if (locale_file_path.empty())
+        return;
+
+    // Open pak file of the current locale in the Browser process and pass its file descriptor to the sandboxed
+    // Renderer Process. FileDescriptorInfo is responsible for closing the file descriptor.
+    int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+    base::File locale_file = base::File(locale_file_path, flags);
+    mappings->Transfer(kWebEngineLocale, base::ScopedFD(locale_file.TakePlatformFile()));
+}
+#endif
 
 #if defined(ENABLE_PLUGINS)
     void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) {

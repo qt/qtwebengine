@@ -38,9 +38,19 @@
 ****************************************************************************/
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "content/public/common/content_switches.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/data_pack.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
+
 #include "web_engine_library_info.h"
+
+#if defined(OS_LINUX)
+#include "base/posix/global_descriptors.h"
+#include "global_descriptors_qt.h"
+#endif
 
 namespace ui {
 
@@ -58,6 +68,64 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id)
     LOG(WARNING) << "Unable to load image with id " << resource_id;
     NOTREACHED();  // Want to assert in debug mode.
     return GetEmptyImage();
+}
+
+bool ResourceBundle::LocaleDataPakExists(const std::string& locale)
+{
+#if defined(OS_LINUX)
+    base::CommandLine *parsed_command_line = base::CommandLine::ForCurrentProcess();
+    std::string process_type = parsed_command_line->GetSwitchValueASCII(switches::kProcessType);
+    if (process_type == switches::kRendererProcess) {
+        // The Renderer Process is sandboxed thus only one locale is available in it.
+        // The particular one is passed by the --lang command line option.
+        if (!parsed_command_line->HasSwitch(switches::kLang) || parsed_command_line->GetSwitchValueASCII(switches::kLang) != locale)
+            return false;
+
+        auto global_descriptors = base::GlobalDescriptors::GetInstance();
+        return global_descriptors->MaybeGet(kWebEngineLocale) != -1;
+    }
+#endif
+
+    return !GetLocaleFilePath(locale, true).empty();
+}
+
+std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale)
+{
+    DCHECK(!locale_resources_data_.get()) << "locale.pak already loaded";
+
+    std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+
+#if defined(OS_LINUX)
+    int locale_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(kWebEngineLocale);
+    if (locale_fd > -1) {
+        scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+        data_pack->LoadFromFile(base::File(locale_fd));
+        locale_resources_data_.reset(data_pack.release());
+        return app_locale;
+    }
+#endif
+
+    base::FilePath locale_file_path = GetOverriddenPakPath();
+    if (locale_file_path.empty())
+        locale_file_path = GetLocaleFilePath(app_locale, true);
+
+    if (locale_file_path.empty()) {
+        // It's possible that there is no locale.pak.
+        LOG(WARNING) << "locale_file_path.empty() for locale " << app_locale;
+        return std::string();
+    }
+
+    scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+    if (!data_pack->LoadFromPath(locale_file_path)) {
+        UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
+                                  logging::GetLastSystemErrorCode(), 16000);
+        LOG(ERROR) << "failed to load locale.pak";
+        NOTREACHED();
+        return std::string();
+    }
+
+    locale_resources_data_.reset(data_pack.release());
+    return app_locale;
 }
 
 }  // namespace ui
