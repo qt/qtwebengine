@@ -59,7 +59,8 @@
     \l FFmpeg is a cross-platform solution to record, convert, and stream audio
     and video. It can be configured for use with several codecs, which rises
     licensing issues during distribution with the codec libraries. For some
-    codecs, open source implementations, such as \l {OpenH264}, are available.
+    codecs, open source implementations, such as \l{OpenH264 Project Homepage}
+    {OpenH264}, are available.
 
     \section1 Chromium DevTools
 
