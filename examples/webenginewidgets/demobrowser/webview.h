@@ -111,9 +111,6 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent(QWheelEvent *event);
 
-signals:
-    void iconChanged(const QIcon &icon);
-
 private slots:
     void setProgress(int progress);
     void loadFinished(bool success);

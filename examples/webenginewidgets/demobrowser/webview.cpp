@@ -349,6 +349,7 @@ void WebView::setPage(WebPage *_page)
     connect(page(), SIGNAL(statusBarMessage(QString)),
             SLOT(setStatusBarText(QString)));
 #endif
+    disconnect(page(), &QWebEnginePage::iconChanged, this, &WebView::iconChanged);
     connect(page(), SIGNAL(iconChanged(QIcon)),
             this, SLOT(onIconChanged(QIcon)));
     connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
