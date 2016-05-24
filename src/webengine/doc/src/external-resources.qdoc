@@ -50,6 +50,46 @@
     \title OpenH264 Project Homepage
 */
 
+/*!
+    \externalpage http://html5demos.com/drag
+    \title HTML5 Demos - Drag and Drop
+*/
+
+/*!
+    \externalpage http://html5demos.com/drag-anything
+    \title HTML5 Demos - Simple Drag and Drop
+*/
+
+/*!
+    \externalpage http://html5demos.com/dnd-upload
+    \title HTML5 Demos - Drag and Drop, Automatic Upload
+*/
+
+/*!
+    \externalpage http://html5demos.com/file-api
+    \title HTML5 Demos - File API
+*/
+
+/*!
+    \externalpage http://www.widevine.com/wv_drm.html
+    \title Widevine DRM
+*/
+
+/*!
+    \externalpage http://demo.castlabs.com/
+    \title castLabs
+*/
+
+/*!
+    \externalpage http://ssdemo04.swankmp.net/
+    \title Swank Motion Pictures, Inc.
+*/
+
+/*!
+    \externalpage https://shaka-player-demo.appspot.com/demo/
+    \title Shaka Player
+*/
+
 /*
     This prevents autolinking of each occurrence of 'WebEngine'
     To link to the WebEngine QML type, use explicit linking:

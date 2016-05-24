@@ -36,9 +36,12 @@
     \list
         \li \l{Audio and Video Codecs}
         \li \l{Chromium DevTools}
+        \li \l{Drag and Drop}
         \li \l{Fullscreen}
+        \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
         \li \l{Pepper Plugin API}
+        \li \l{Print to PDF}
         \li \l{WebRTC}
     \endlist
 
@@ -76,6 +79,21 @@
 
     For more information, see \l {Qt WebEngine Debugging and Profiling}.
 
+    \section1 Drag and Drop
+
+    Qt WebEngine supports HTML5 drag and drop.
+
+    This feature can be tested by opening an HTML5 drag and drop demo, such as
+    \l{HTML5 Demos - Drag and Drop}, \l{HTML5 Demos - Simple Drag and Drop}, or
+    \l{HTML5 Demos - Drag and Drop, Automatic Upload}, in \l{WebEngine Demo
+    Browser Example}{Demo Browser} or \l{WebEngine Quick Nano Browser}
+    {Nano Browser}.
+
+    Dragging files into the browser is not actually part of HTML5, but it is
+    supported. It can be tested by opening \l{HTML5 Demos - File API}.
+
+    Support for this feature was added in Qt 5.7.0.
+
     \section1 Fullscreen
 
     Qt WebEngine supports viewing web content in fullscreen mode. For more
@@ -91,6 +109,21 @@
     mode.
 
     Support for this feature was added in Qt 5.6.0.
+
+    \section1 HTML5 DRM
+
+    Qt WebEngine supports viewing DRM protected videos if the \l{Widevine DRM}
+    plugin has been installed.
+
+    The video format most commonly used by DRM services, H.264, requires
+    proprietary audio and video codecs. For more information about enabling the
+    codecs, see \l{Audio and Video Codecs}.
+
+    This feature can be tested by playing a video in \l{WebEngine Demo Browser
+    Example}{Demo Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}
+    from \l{castLabs}, \l{Swank Motion Pictures, Inc.}, or \l{Shaka Player}.
+
+    Support for this feature was added in Qt 5.7.0.
 
     \section1 HTML5 Geolocation
 
@@ -175,6 +208,17 @@
     plugin is installed and plugins are enabled in the browser. To test the
     feature, the \c https://helpx.adobe.com/flash-player.html page can be opened
     in the browser.
+
+    \section1 Print to PDF
+
+    Qt WebEngine supports printing a web page to a PDF file. For more
+    information, see QWebEnginePage::printToPdf() and
+    \l{WebEngineView::printToPdf}{WebEngineView.printToPdf}.
+
+    This feature can be tested in \l{WebEngine Demo Browser Example}
+    {Demo Browser} by selecting \uicontrol File > \uicontrol {Print to PDF}.
+
+    Support for this feature was added in Qt 5.7.0.
 
     \section1 WebRTC
 
