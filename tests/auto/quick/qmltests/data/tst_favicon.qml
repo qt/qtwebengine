@@ -70,14 +70,11 @@ TestWebEngineView {
         name: "WebEngineFavicon"
         when: windowShown
 
-        function init() {
-            if (webEngineView.icon != '') {
-                // If this is not the first test, then load a blank page without favicon, restoring the initial state.
-                webEngineView.url = 'about:blank'
-                verify(webEngineView.waitForLoadSucceeded())
-                iconChangedSpy.wait()
-            }
 
+        function init() {
+            // It is worth to restore the initial state with loading a blank page before all test functions.
+            webEngineView.url = 'about:blank'
+            verify(webEngineView.waitForLoadSucceeded())
             iconChangedSpy.clear()
         }
 
@@ -149,7 +146,6 @@ TestWebEngineView {
         }
 
         function test_errorPageEnabled() {
-            skip("Error page does not work properly: QTBUG-48995")
             WebEngine.settings.errorPageEnabled = true
 
             compare(iconChangedSpy.count, 0)
