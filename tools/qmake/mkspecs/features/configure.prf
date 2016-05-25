@@ -121,7 +121,7 @@ defineTest(finalizeConfigure) {
         use?(appstore_compliant_code) {
             log("AppStore Compliant ............... Enabled$${EOL}")
         } else {
-            log("AppStore Compliant ............... Not enabled         (Default, enable with WEBENGINE_CONFIG += use_appstore_compliant_code)$${EOL}")
+            log("AppStore Compliant ............... Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_appstore_compliant_code)$${EOL}")
         }
     }
 }

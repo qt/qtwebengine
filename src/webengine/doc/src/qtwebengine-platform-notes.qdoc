@@ -125,7 +125,7 @@
     calls, Qt WebEngine has to be recompiled:
 
     \code
-    qmake WEBENGINE_CONFIG += use_appstore_compliant_code
+    qmake WEBENGINE_CONFIG+=use_appstore_compliant_code
     \endcode
 
     However, this will cause some behavioral changes, such as:
