@@ -266,6 +266,13 @@ QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQ
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
     QOpenGLWidget::resizeEvent(resizeEvent);
+
+    const QPoint globalPos = mapToGlobal(pos());
+    if (globalPos != m_lastGlobalPos) {
+        m_lastGlobalPos = globalPos;
+        m_client->windowBoundsChanged();
+    }
+
     m_client->notifyResize();
 }
 
@@ -384,6 +391,7 @@ void RenderWidgetHostViewQtDelegateWidget::paintGL()
 
 void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
 {
+    m_lastGlobalPos = mapToGlobal(pos());
     m_client->windowBoundsChanged();
 }
 

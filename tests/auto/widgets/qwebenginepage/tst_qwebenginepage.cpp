@@ -23,10 +23,12 @@
 #include <QClipboard>
 #include <QDir>
 #include <QGraphicsWidget>
+#include <QHBoxLayout>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMimeDatabase>
+#include <QOpenGLWidget>
 #include <QPaintEngine>
 #include <QPushButton>
 #include <QStateMachine>
@@ -113,6 +115,8 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void thirdPartyCookiePolicy();
+    void comboBoxPopupPositionAfterMove();
+    void comboBoxPopupPositionAfterChildMove();
     void contextMenuCopy();
     void contextMenuPopulatedOnce();
     void acceptNavigationRequest();
@@ -238,6 +242,8 @@ private Q_SLOTS:
     void mouseButtonTranslation();
 
 private:
+    static QPoint elementCenter(QWebEnginePage *page, const QString &id);
+
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
     QWebEngineView* m_inputFieldsTestView;
@@ -3113,6 +3119,96 @@ void tst_QWebEnginePage::thirdPartyCookiePolicy()
 #endif
 }
 
+static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
+{
+    const auto tlws = QGuiApplication::topLevelWindows();
+    for (auto w : tlws) {
+        if (!oldTopLevelWindows.contains(w)) {
+            return w;
+        }
+    }
+    return nullptr;
+}
+
+void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QWebEngineView view;
+    view.move(screen->availableGeometry().topLeft());
+    view.resize(640, 480);
+    view.show();
+
+    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml(QLatin1String("<html><head></head><body><select id='foo'>"
+                               "<option>fran</option><option>troz</option>"
+                               "</select></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    const auto oldTlws = QGuiApplication::topLevelWindows();
+    QWindow *window = view.windowHandle();
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      elementCenter(view.page(), "foo"));
+
+    QWindow *popup = nullptr;
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QPoint popupPos = popup->position();
+
+    // Close the popup by clicking somewhere into the page.
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(1, 1));
+    QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
+
+    // Move the top-level QWebEngineView a little and check the popup's position.
+    const QPoint offset(12, 13);
+    view.move(screen->availableGeometry().topLeft() + offset);
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      elementCenter(view.page(), "foo"));
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QCOMPARE(popupPos + offset, popup->position());
+}
+
+void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
+{
+    QWidget mainWidget;
+    mainWidget.setLayout(new QHBoxLayout);
+
+    QWidget spacer;
+    spacer.setMinimumWidth(50);
+    mainWidget.layout()->addWidget(&spacer);
+
+    QWebEngineView view;
+    mainWidget.layout()->addWidget(&view);
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    mainWidget.move(screen->availableGeometry().topLeft());
+    mainWidget.resize(640, 480);
+    mainWidget.show();
+
+    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml(QLatin1String("<html><head></head><body><select autofocus id='foo'>"
+                               "<option value=\"narf\">narf</option><option>zort</option>"
+                               "</select></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    const auto oldTlws = QGuiApplication::topLevelWindows();
+    QWindow *window = view.window()->windowHandle();
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      view.mapTo(view.window(), elementCenter(view.page(), "foo")));
+
+    QWindow *popup = nullptr;
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QPoint popupPos = popup->position();
+
+    // Close the popup by clicking somewhere into the page.
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      view.mapTo(view.window(), QPoint(1, 1)));
+    QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
+
+    // Resize the "spacer" widget, and implicitly change the global position of the QWebEngineView.
+    spacer.setMinimumWidth(100);
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      view.mapTo(view.window(), elementCenter(view.page(), "foo")));
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QCOMPARE(popupPos + QPoint(50, 0), popup->position());
+}
+
 #ifdef Q_OS_MAC
 void tst_QWebEnginePage::macCopyUnicodeToClipboard()
 {
@@ -4990,6 +5086,23 @@ void tst_QWebEnginePage::mouseButtonTranslation()
     QCOMPARE(evaluateJavaScriptSync(view->page(), "lastEvent.buttons").toInt(), 3);
 
     delete view;
+}
+
+QPoint tst_QWebEnginePage::elementCenter(QWebEnginePage *page, const QString &id)
+{
+    QVariantList rectList = evaluateJavaScriptSync(page,
+            "(function(){"
+            "var elem = document.getElementById('" + id + "');"
+            "var rect = elem.getBoundingClientRect();"
+            "return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+            "})()").toList();
+
+    if (rectList.count() != 2) {
+        qWarning("elementCenter failed.");
+        return QPoint();
+    }
+
+    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
 }
 
 QTEST_MAIN(tst_QWebEnginePage)
