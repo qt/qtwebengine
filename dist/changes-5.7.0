@@ -29,6 +29,9 @@ information about a particular change.
      if the PPAPI Widevine CDM plugin is installed.
    * Spellchecking is now available if dictionaries are installed.
 
+- OS X:
+   * Added 'use_appstore_compliant_code' option to allow compiling WebEngine as Mac App Store compliant.
+
 ****************************************************************************
 *                          Qt WebEngineQML                                 *
 ****************************************************************************
