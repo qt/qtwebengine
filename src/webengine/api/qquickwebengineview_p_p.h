@@ -215,6 +215,8 @@ private:
     qreal m_dpiScale;
     QColor m_backgroundColor;
     qreal m_defaultZoomFactor;
+    // QTBUG-53467
+    bool m_menuEnabled;
 };
 
 #ifndef QT_NO_ACCESSIBILITY
