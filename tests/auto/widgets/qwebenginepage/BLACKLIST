@@ -6,3 +6,6 @@ osx
 
 [getUserMediaRequest]
 windows
+
+[setHtmlWithImageResource]
+*

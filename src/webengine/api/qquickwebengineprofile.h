@@ -150,7 +150,7 @@ private Q_SLOTS:
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineProfile)
-    QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = 0);
+    QQuickWebEngineProfile(QQuickWebEngineProfilePrivate *, QObject *parent = Q_NULLPTR);
     QQuickWebEngineSettings *settings() const;
 
     friend class QQuickWebEngineSettings;

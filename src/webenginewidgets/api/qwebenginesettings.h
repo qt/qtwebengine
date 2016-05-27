@@ -114,7 +114,7 @@ private:
     friend class QWebEngineProfilePrivate;
 
     ~QWebEngineSettings();
-    explicit QWebEngineSettings(QWebEngineSettings *parentSettings = 0);
+    explicit QWebEngineSettings(QWebEngineSettings *parentSettings = Q_NULLPTR);
 };
 
 QT_END_NAMESPACE

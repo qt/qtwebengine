@@ -47,6 +47,7 @@
     \list
         \li \l{Qt WebEngine Overview}
         \li \l{Qt WebEngine Platform Notes}
+        \li \l{Qt WebEngine Licensing}
         \li \l{Qt WebEngine Debugging and Profiling}
         \li \l{Porting from Qt WebKit to Qt WebEngine}
     \endlist

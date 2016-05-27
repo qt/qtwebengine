@@ -426,6 +426,12 @@ void WebContentsAdapter::initialize(WebContentsAdapterClient *adapterClient)
     PrintViewManagerQt::CreateForWebContents(webContents());
 #endif // defined(ENABLE_BASIC_PRINTING)
 
+    // Create an instance of WebEngineVisitedLinksManager to catch the first
+    // content::NOTIFICATION_RENDERER_PROCESS_CREATED event. This event will
+    // force to initialize visited links in VisitedLinkSlave.
+    // It must be done before creating a RenderView.
+    d->browserContextAdapter->visitedLinksManager();
+
     // Create a RenderView with the initial empty document
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     Q_ASSERT(rvh);

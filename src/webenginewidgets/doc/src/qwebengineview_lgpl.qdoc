@@ -37,8 +37,10 @@
     It can be used in various applications to display web content live from the
     Internet.
 
-    A \e {web site} can be loaded to a web view with the load() function. Like all
-    Qt widgets, the show() function must be invoked in order to display
+    A \e {web site} can be loaded to a web view with the load() function. The
+    GET method is always used to load URLs.
+
+    Like all Qt widgets, the show() function must be invoked in order to display
     the web view. The snippet below illustrates this:
 
     \snippet simple/main.cpp Using QWebEngineView

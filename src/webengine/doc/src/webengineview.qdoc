@@ -47,8 +47,11 @@
     \section2 Loading Web Pages
 
     An application can load pages into the WebEngineView, using either the \l url property or the
-    \l loadHtml method and navigate within the view's session history. The history is represented
-    by a WebEngineHistory data model that is held by the \l navigationHistory property.
+    \l loadHtml method and navigate within the view's session history. The GET
+    method is always used to load URLs.
+
+    The history is represented by a WebEngineHistory data model that is held by
+    the \l navigationHistory property.
 
     The following sample QML application loads a web page using the \c url property:
 

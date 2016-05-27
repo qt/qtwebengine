@@ -17,3 +17,6 @@ FORMS += \
 
 RESOURCES += \
     cookiebrowser.qrc
+
+target.path = $$[QT_INSTALL_EXAMPLES]/webenginewidgets/cookiebrowser
+INSTALLS += target
