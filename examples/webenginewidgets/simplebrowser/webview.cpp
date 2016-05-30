@@ -45,6 +45,7 @@
 #include "webpopupwindow.h"
 #include "webview.h"
 #include <QContextMenuEvent>
+#include <QDebug>
 #include <QMenu>
 #include <QMessageBox>
 #include <QNetworkReply>
