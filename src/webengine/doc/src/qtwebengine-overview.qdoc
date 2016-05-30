@@ -60,16 +60,16 @@
     The functionality in Qt WebEngine is divided into the following modules:
 
     \list
-        \li \l{Qt WebEngine Widgets} for creating widget-based web applications
-        \li \l{Qt WebEngine} for creating Qt Quick based web applications
-        \li \l{Qt WebEngine Core} for interacting with Chromium
+        \li \l{Qt WebEngine Widgets Module} for creating widget-based web applications
+        \li \l{Qt WebEngine Module} for creating Qt Quick based web applications
+        \li \l{Qt WebEngine Core Module} for interacting with Chromium
     \endlist
 
     Page rendering and JavaScript execution are separated from the GUI process into the Qt WebEngine
     Process. It is a library that must be shipped with the application if the Qt libraries are
     bundled into the application.
 
-    \section2 Qt WebEngine Widgets
+    \section2 Qt WebEngine Widgets Module
 
     \image qtwebenginewidgets-model.png
 
@@ -82,7 +82,7 @@
     \e cookies. Profiles can be used to isolate pages from each other. A typical use case is a
     dedicated profile for a \e {private browsing} mode, where no information is permanently saved.
 
-    \section2 Qt WebEngine
+    \section2 Qt WebEngine Module
 
     \image qtwebengine-model.png
 
@@ -90,7 +90,7 @@
     except that there is no separately accessible web engine page. The supported page functionality
     is integrated into the web engine view.
 
-    \section2 Qt WebEngine Core
+    \section2 Qt WebEngine Core Module
 
     The Qt WebEngine core is based on the \l {Chromium Project}. Chromium provides its own network
     and painting engines and is developed tightly together with its dependent modules, and
