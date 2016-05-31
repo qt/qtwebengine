@@ -1184,24 +1184,32 @@ void QQuickWebEngineView::setBackgroundColor(const QColor &color)
 
     The default value is false.
 */
-bool QQuickWebEngineView::isAudioMuted() const {
+bool QQuickWebEngineView::isAudioMuted() const
+{
     const Q_D(QQuickWebEngineView);
-    return d->adapter->isAudioMuted();
-
+    if (d->adapter)
+        return d->adapter->isAudioMuted();
+    return false;
 }
-void QQuickWebEngineView::setAudioMuted(bool muted) {
+
+void QQuickWebEngineView::setAudioMuted(bool muted)
+{
     Q_D(QQuickWebEngineView);
     bool _isAudioMuted = isAudioMuted();
-    d->adapter->setAudioMuted(muted);
-    if (_isAudioMuted != muted) {
-        Q_EMIT audioMutedChanged(muted);
+    if (d->adapter) {
+        d->adapter->setAudioMuted(muted);
+        if (_isAudioMuted != muted) {
+            Q_EMIT audioMutedChanged(muted);
+        }
     }
 }
 
 bool QQuickWebEngineView::recentlyAudible() const
 {
     const Q_D(QQuickWebEngineView);
-    return d->adapter->recentlyAudible();
+    if (d->adapter)
+        return d->adapter->recentlyAudible();
+    return false;
 }
 
 void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
