@@ -4157,29 +4157,28 @@ void tst_QWebEnginePage::baseUrl()
 
 void tst_QWebEnginePage::scrollPosition()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     // enlarged image in a small viewport, to provoke the scrollbars to appear
     QString html("<html><body><img src='qrc:/image.png' height=500 width=500/></body></html>");
 
-    QWebEnginePage page;
-    page.setViewportSize(QSize(200, 200));
+    QWebEngineView view;
+    view.setFixedSize(200,200);
+    view.show();
 
-    page.setHtml(html);
-    page.setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
-    page.setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    QTest::qWaitForWindowExposed(&view);
+
+    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
+    view.setHtml(html);
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     // try to set the scroll offset programmatically
-    page.setScrollPosition(QPoint(23, 29));
-    QCOMPARE(page.scrollPosition().x(), 23);
-    QCOMPARE(page.scrollPosition().y(), 29);
+    view.page()->runJavaScript("window.scrollTo(23, 29);");
+    QTRY_COMPARE(view.page()->scrollPosition().x(), qreal(23));
+    QCOMPARE(view.page()->scrollPosition().y(), qreal(29));
 
-    int x = page.evaluateJavaScript("window.scrollX").toInt();
-    int y = page.evaluateJavaScript("window.scrollY").toInt();
+    int x = evaluateJavaScriptSync(view.page(), "window.scrollX").toInt();
+    int y = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
     QCOMPARE(x, 23);
     QCOMPARE(y, 29);
-#endif
 }
 
 void tst_QWebEnginePage::scrollToAnchor()
