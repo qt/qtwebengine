@@ -149,19 +149,13 @@ defineReplace(extractCFlag) {
 }
 
 defineReplace(findMocables) {
-  input = $$1
-  for (file, input): \
-      infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
-  mocables = $$system("python $$QTWEBENGINE_ROOT/tools/buildscripts/find-mocables $$infiles")
-  mocables = $$replace(mocables, $$re_escape($${_PRO_FILE_PWD_}/), '')
+  mocables = $$system("$$system_path(python $$QTWEBENGINE_ROOT/tools/buildscripts/find-mocables $$_PRO_FILE_PWD_ $$1)")
+  mocables = $$replace(mocables, $$re_escape($$system_path($${_PRO_FILE_PWD_}/)), '')
   return($$mocables)
 }
 
 defineReplace(findIncludedMocFiles) {
-  input = $$1
-  for (file, input): \
-      infiles += $$absolute_path($$file, $$_PRO_FILE_PWD_)
-  return($$system("python $$QTWEBENGINE_ROOT/tools/buildscripts/find-included-moc-files $$infiles"))
+  return($$system("$$system_path(python $$QTWEBENGINE_ROOT/tools/buildscripts/find-included-moc-files $$_PRO_FILE_PWD_ $$1)"))
 }
 
 defineReplace(mocOutput) {

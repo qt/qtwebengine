@@ -124,6 +124,8 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
     , m_defaultZoomFactor(1.0)
+    // QTBUG-53467
+    , m_menuEnabled(true)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
@@ -141,6 +143,8 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
         // 1x, 2x, 3x etc assets that fit an integral number of pixels.
         setDevicePixelRatio(qMax(1, qRound(webPixelRatio)));
     }
+    if (platform == QLatin1Literal("eglfs"))
+        m_menuEnabled = false;
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
 #endif // QT_NO_ACCESSIBILITY
@@ -190,6 +194,12 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
 bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
     Q_Q(QQuickWebEngineView);
+
+    if (!m_menuEnabled) {
+        qWarning("You are trying to open context menu on eglfs backend, which is not currently supported\n"
+                 "See QTBUG-53467.");
+        return false;
+    }
 
     // Assign the WebEngineView as the parent of the menu, so mouse events are properly propagated
     // on OSX.
@@ -1073,6 +1083,12 @@ void QQuickWebEngineViewPrivate::startDragging(const content::DropData &dropData
                                                const QPixmap &pixmap, const QPoint &offset)
 {
     adapter->startDragging(q_ptr->window(), dropData, allowedActions, pixmap, offset);
+}
+
+bool QQuickWebEngineViewPrivate::isEnabled() const
+{
+    const Q_Q(QQuickWebEngineView);
+    return q->isEnabled();
 }
 
 bool QQuickWebEngineView::isLoading() const
