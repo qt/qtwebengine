@@ -217,7 +217,7 @@ bool QQuickWebEngineSettings::errorPageEnabled() const
 
     Disabled by default.
 
-   \sa {Pepper Plugin API Support}
+   \sa {Pepper Plugin API}
 */
 bool QQuickWebEngineSettings::pluginsEnabled() const
 {
