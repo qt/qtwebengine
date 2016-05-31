@@ -248,7 +248,7 @@
     \b {Qt WebEngine}
     \code
         QWebEnginePage page;
-        page.runJavascript("document.documentElement.contentEditable = true");
+        page.runJavaScript("document.documentElement.contentEditable = true");
     \endcode
 
 
@@ -287,7 +287,7 @@
         \li QWebPage::setContentEditable
         \li In the latest HTML standard, any document element can be made editable through the
             \c contentEditable attribute. So \c runJavaScript is all that is needed:
-            \c{page->runJavascript("document.documentElement.contentEditable = true")}
+            \c{page->runJavaScript("document.documentElement.contentEditable = true")}
     \row
         \li QWebPage::setLinkDelegationPolicy
         \li There is no way to connect a signal to run C++ code when a link is clicked. However,

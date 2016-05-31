@@ -203,9 +203,6 @@ private Q_SLOTS:
     void progressSignal();
     void urlChange();
     void requestedUrlAfterSetAndLoadFailures();
-    void javaScriptWindowObjectCleared_data();
-    void javaScriptWindowObjectCleared();
-    void javaScriptWindowObjectClearedOnEvaluate();
     void asyncAndDelete();
     void earlyToHtml();
     void setHtml();
@@ -3924,48 +3921,6 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
-}
-
-void tst_QWebEnginePage::javaScriptWindowObjectCleared_data()
-{
-    QTest::addColumn<QString>("html");
-    QTest::addColumn<int>("signalCount");
-    QTest::newRow("with <script>") << "<html><body><script>i=0</script><p>hello world</p></body></html>" << 1;
-    // NOTE: Empty scripts no longer cause this signal to be emitted.
-    QTest::newRow("with empty <script>") << "<html><body><script></script><p>hello world</p></body></html>" << 0;
-    QTest::newRow("without <script>") << "<html><body><p>hello world</p></body></html>" << 0;
-}
-
-void tst_QWebEnginePage::javaScriptWindowObjectCleared()
-{
-#if !defined(QWEBENGINEPAGE_JAVASCRIPTWINDOWOBJECTCLEARED)
-    QSKIP("QWEBENGINEPAGE_JAVASCRIPTWINDOWOBJECTCLEARED");
-#else
-    QWebEnginePage page;
-    QSignalSpy spy(&page, SIGNAL(javaScriptWindowObjectCleared()));
-    QFETCH(QString, html);
-    page.setHtml(html);
-
-    QFETCH(int, signalCount);
-    QCOMPARE(spy.count(), signalCount);
-#endif
-}
-
-void tst_QWebEnginePage::javaScriptWindowObjectClearedOnEvaluate()
-{
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
-    QWebEnginePage page;
-    QSignalSpy spy(&page, SIGNAL(javaScriptWindowObjectCleared()));
-    page.setHtml("<html></html>");
-    QCOMPARE(spy.count(), 0);
-    page.evaluateJavaScript("var a = 'a';");
-    QCOMPARE(spy.count(), 1);
-    // no new clear for a new script:
-    page.evaluateJavaScript("var a = 1;");
-    QCOMPARE(spy.count(), 1);
-#endif
 }
 
 void tst_QWebEnginePage::asyncAndDelete()

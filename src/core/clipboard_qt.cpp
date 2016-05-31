@@ -56,6 +56,13 @@
 
 namespace QtWebEngineCore {
 
+static void registerMetaTypes()
+{
+    qRegisterMetaType<QClipboard::Mode>("QClipboard::Mode");
+}
+
+Q_CONSTRUCTOR_FUNCTION(registerMetaTypes)
+
 Q_GLOBAL_STATIC(ClipboardChangeObserver, clipboardChangeObserver)
 
 ClipboardChangeObserver::ClipboardChangeObserver()
