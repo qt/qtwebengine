@@ -413,7 +413,7 @@ bool GLSurfaceQtEGL::Initialize()
                                         g_config,
                                         pbuffer_attributes);
     if (!m_surfaceBuffer) {
-        LOG(ERROR) << "eglCreatePbufferSurface failed with error ", GetLastEGLErrorString();
+        LOG(ERROR) << "eglCreatePbufferSurface failed with error " << GetLastEGLErrorString();
         Destroy();
         return false;
     }
