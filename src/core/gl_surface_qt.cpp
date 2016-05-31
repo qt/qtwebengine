@@ -84,6 +84,7 @@ void* g_display;
 
 const char* g_extensions = NULL;
 
+bool g_egl_surfaceless_context_supported = false;
 }  // namespace
 
 
@@ -104,6 +105,26 @@ protected:
 private:
     EGLSurface m_surfaceBuffer;
     DISALLOW_COPY_AND_ASSIGN(GLSurfaceQtEGL);
+};
+
+// The following comment is cited from chromium/ui/gl/gl_surface_egl.cc:
+// SurfacelessEGL is used as Offscreen surface when platform supports
+// KHR_surfaceless_context and GL_OES_surfaceless_context. This would avoid the
+// need to create a dummy EGLsurface in case we render to client API targets.
+class GLSurfacelessQtEGL : public GLSurfaceQt {
+public:
+    explicit GLSurfacelessQtEGL(const gfx::Size& size);
+
+ public:
+    bool Initialize() Q_DECL_OVERRIDE;
+    void Destroy() Q_DECL_OVERRIDE;
+    bool IsSurfaceless() const Q_DECL_OVERRIDE;
+    bool Resize(const gfx::Size& size) Q_DECL_OVERRIDE;
+    EGLSurface GetHandle() Q_DECL_OVERRIDE;
+    void* GetShareHandle() Q_DECL_OVERRIDE;
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(GLSurfacelessQtEGL);
 };
 
 
@@ -339,6 +360,23 @@ bool GLSurfaceQtEGL::InitializeOneOff()
         return false;
     }
 
+    g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
+    if (g_egl_surfaceless_context_supported) {
+        scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(Size(1, 1));
+        scoped_refptr<GLContext> context = GLContext::CreateGLContext(
+            NULL, surface.get(), PreferIntegratedGpu);
+
+        if (!context->MakeCurrent(surface.get()))
+            g_egl_surfaceless_context_supported = false;
+
+        // Ensure context supports GL_OES_surfaceless_context.
+        if (g_egl_surfaceless_context_supported) {
+            g_egl_surfaceless_context_supported = context->HasExtension(
+                "GL_OES_surfaceless_context");
+            context->ReleaseCurrent(surface.get());
+        }
+    }
+
     initialized = true;
     return true;
 }
@@ -488,6 +526,41 @@ void* GLSurfaceQt::GetConfig()
     return g_config;
 }
 
+GLSurfacelessQtEGL::GLSurfacelessQtEGL(const gfx::Size& size)
+    : GLSurfaceQt(size)
+{
+}
+
+bool GLSurfacelessQtEGL::Initialize()
+{
+    return true;
+}
+
+void GLSurfacelessQtEGL::Destroy()
+{
+}
+
+bool GLSurfacelessQtEGL::IsSurfaceless() const
+{
+    return true;
+}
+
+bool GLSurfacelessQtEGL::Resize(const gfx::Size& size)
+{
+    m_size = size;
+    return true;
+}
+
+EGLSurface GLSurfacelessQtEGL::GetHandle()
+{
+    return EGL_NO_SURFACE;
+}
+
+void* GLSurfacelessQtEGL::GetShareHandle()
+{
+    return NULL;
+}
+
 // static
 scoped_refptr<GLSurface>
 GLSurface::CreateOffscreenGLSurface(const gfx::Size& size)
@@ -511,7 +584,12 @@ GLSurface::CreateOffscreenGLSurface(const gfx::Size& size)
 #endif
     }
     case kGLImplementationEGLGLES2: {
-        scoped_refptr<GLSurface> surface = new GLSurfaceQtEGL(size);
+        scoped_refptr<GLSurface> surface;
+        if (g_egl_surfaceless_context_supported)
+            surface = new GLSurfacelessQtEGL(size);
+        else
+            surface = new GLSurfaceQtEGL(size);
+
         if (!surface->Initialize())
             return NULL;
         return surface;
