@@ -421,9 +421,14 @@ void tst_QWebEnginePage::geolocationRequestJS()
         W_QSKIP("Geolocation is not supported.", SkipSingle);
     }
 
-    evaluateJavaScriptSync(newPage, "var errorCode = 0; function error(err) { errorCode = err.code; } function success(pos) { } navigator.geolocation.getCurrentPosition(success, error)");
+    evaluateJavaScriptSync(newPage, "var errorCode = 0; var done = false; function error(err) { errorCode = err.code; done = true; } function success(pos) { done = true; } navigator.geolocation.getCurrentPosition(success, error)");
 
-    QTRY_COMPARE(evaluateJavaScriptSync(newPage, "errorCode").toInt(), errorCode);
+    QTRY_VERIFY(evaluateJavaScriptSync(newPage, "done").toBool());
+    int result = evaluateJavaScriptSync(newPage, "errorCode").toInt();
+    if (result == 2)
+        QEXPECT_FAIL("", "No location service available.", Continue);
+    QCOMPARE(result, errorCode);
+
     delete view;
 }
 
