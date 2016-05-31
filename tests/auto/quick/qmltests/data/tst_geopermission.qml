@@ -83,8 +83,9 @@ TestWebEngineView {
             featurePermissionSpy.wait()
             verify(geoPermissionRequested)
             compare(featurePermissionSpy.count, 1)
-            if (consoleErrorMessageSpy.count) // Print the error message if it fails to get user's location
-                fail(consoleErrorMessageSpy.signalArguments[0][0])
+            consoleErrorMessageSpy.wait()
+            verify(consoleErrorMessageSpy.signalArguments[0][0] === "Success" ||
+                   consoleErrorMessageSpy.signalArguments[0][0] === "")
         }
 
         function test_deniedGeolocationByUser() {
