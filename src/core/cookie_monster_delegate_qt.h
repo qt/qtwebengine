@@ -66,7 +66,7 @@ static const char* const kCookieableSchemes[] =
 
 class QWEBENGINE_EXPORT CookieMonsterDelegateQt: public net::CookieMonsterDelegate {
     QPointer<QWebEngineCookieStore> m_client;
-    scoped_refptr<net::CookieMonster> m_cookieMonster;
+    net::CookieMonster *m_cookieMonster;
 public:
     CookieMonsterDelegateQt();
     ~CookieMonsterDelegateQt();
@@ -84,6 +84,13 @@ public:
 
     bool canSetCookie(const QUrl &firstPartyUrl, const QByteArray &cookieLine, const QUrl &url);
     void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed, ChangeCause cause) override;
+
+private:
+    void GetAllCookiesOnIOThread(const net::CookieMonster::GetCookieListCallback& callback);
+    void SetCookieOnIOThread(const GURL& url, const std::string& cookie_line, const net::CookieMonster::SetCookiesCallback& callback);
+    void DeleteCookieOnIOThread(const GURL& url, const std::string& cookie_name);
+    void DeleteSessionCookiesOnIOThread(const net::CookieMonster::DeleteCallback& callback);
+    void DeleteAllOnIOThread(const net::CookieMonster::DeleteCallback& callback);
 };
 
 }
