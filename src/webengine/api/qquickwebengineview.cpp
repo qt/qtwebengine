@@ -55,7 +55,7 @@
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebenginescript_p_p.h"
+#include "qquickwebenginescript_p.h"
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 #include "qquickwebenginetestsupport_p.h"

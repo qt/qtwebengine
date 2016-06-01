@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
+#include "qquickwebenginescript.h"
 #include "qquickwebenginescript_p.h"
-#include "qquickwebenginescript_p_p.h"
 
 #include <QQmlFile>
 #include <QtCore/QDebug>
@@ -47,6 +47,58 @@
 #include "renderer_host/user_resource_controller_host.h"
 
 using QtWebEngineCore::UserScript;
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \class QQuickWebEngineScript
+    \brief Enables the injection of scripts in the JavaScript engine.
+    \inmodule QtWebEngine
+    \since 5.9
+
+    The QQuickWebEngineScript type enables the programmatic injection of so called \e {user scripts} in
+    the JavaScript engine at different points, determined by injectionPoint, during the loading of
+    web content.
+
+    Scripts can be executed either in the main JavaScript \e world, along with the rest of the
+    JavaScript coming from the web contents, or in their own isolated world. While the DOM of the
+    page can be accessed from any world, JavaScript variables of a function defined in one world are
+    not accessible from a different one. The worldId property provides some predefined IDs for this
+    purpose.
+*/
+
+/*!
+    \enum QQuickWebEngineScript::InjectionPoint
+
+    The point in the loading process at which the script will be executed.
+
+    \value DocumentCreation
+           The script will be executed as soon as the document is created. This is not suitable for
+           any DOM operation.
+    \value DocumentReady
+           The script will run as soon as the DOM is ready. This is equivalent to the
+           \c DOMContentLoaded event firing in JavaScript.
+    \value Deferred
+           The script will run when the page load finishes, or 500 ms after the document is ready,
+           whichever comes first.
+*/
+
+/*!
+    \enum QQuickWebEngineScript::ScriptWorldId
+
+    The world ID defining which isolated world the script is executed in.
+
+    \value MainWorld
+           The world used by the page's web contents. It can be useful in order to expose custom
+           functionality to web contents in certain scenarios.
+    \value ApplicationWorld
+           The default isolated world used for application level functionality implemented in
+           JavaScript.
+    \value UserWorld
+           The first isolated world to be used by scripts set by users if the application is not
+           making use of more worlds. As a rule of thumb, if that functionality is exposed to the
+           application users, each individual script should probably get its own isolated world.
+*/
 
 /*!
     \qmltype WebEngineScript
@@ -72,16 +124,26 @@ using QtWebEngineCore::UserScript;
     attached to the web view.
 */
 
-QQuickWebEngineScript::QQuickWebEngineScript()
-    : d_ptr(new QQuickWebEngineScriptPrivate)
+/*!
+    Constructs a new QQuickWebEngineScript with the parent \a parent.
+*/
+QQuickWebEngineScript::QQuickWebEngineScript(QObject *parent)
+    : QObject(parent)
+    , d_ptr(new QQuickWebEngineScriptPrivate)
 {
     d_ptr->q_ptr = this;
 }
 
+/*!
+   \internal
+*/
 QQuickWebEngineScript::~QQuickWebEngineScript()
 {
 }
 
+/*!
+    Returns the script object as string.
+*/
 QString QQuickWebEngineScript::toString() const
 {
     Q_D(const QQuickWebEngineScript);
@@ -106,6 +168,14 @@ QString QQuickWebEngineScript::toString() const
 }
 
 /*!
+    \property QQuickWebEngineScript::name
+    \brief The name of the script.
+
+    Can be useful to retrieve a particular script from
+    QQuickWebEngineProfile::userScripts.
+*/
+
+/*!
     \qmlproperty string WebEngineScript::name
 
     The name of the script. Can be useful to retrieve a particular script from
@@ -116,6 +186,20 @@ QString QQuickWebEngineScript::name() const
     Q_D(const QQuickWebEngineScript);
     return d->coreScript.name();
 }
+
+/*!
+    \property QQuickWebEngineScript::sourceUrl
+    \brief The remote source location of the user script (if any).
+
+    Unlike \l sourceCode, this property allows referring to user scripts that
+    are not already loaded in memory, for instance, when stored on disk.
+
+    Setting this property will change the \l sourceCode of the script.
+
+    \note At present, only file-based sources are supported.
+
+    \sa QQuickWebEngineScript::sourceCode
+*/
 
 /*!
     \qmlproperty url WebEngineScript::sourceUrl
@@ -138,6 +222,13 @@ QUrl QQuickWebEngineScript::sourceUrl() const
 }
 
 /*!
+    \property QQuickWebEngineScript::sourceCode
+    \brief The JavaScript source code of the user script.
+
+    \sa QQuickWebEngineScript::sourceUrl
+*/
+
+/*!
     \qmlproperty string WebEngineScript::sourceCode
 
     This property holds the JavaScript source code of the user script.
@@ -153,6 +244,13 @@ QString QQuickWebEngineScript::sourceCode() const
 ASSERT_ENUMS_MATCH(QQuickWebEngineScript::Deferred, UserScript::AfterLoad)
 ASSERT_ENUMS_MATCH(QQuickWebEngineScript::DocumentReady, UserScript::DocumentLoadFinished)
 ASSERT_ENUMS_MATCH(QQuickWebEngineScript::DocumentCreation, UserScript::DocumentElementCreation)
+
+/*!
+    \property QQuickWebEngineScript::injectionPoint
+    \brief  The point in the loading process at which the script will be executed.
+
+    The default value is \c Deferred.
+*/
 
 /*!
     \qmlproperty enumeration WebEngineScript::injectionPoint
@@ -177,6 +275,11 @@ QQuickWebEngineScript::InjectionPoint QQuickWebEngineScript::injectionPoint() co
 }
 
 /*!
+    \property QQuickWebEngineScript::worldId
+    \brief The world ID defining which isolated world the script is executed in.
+*/
+
+/*!
     \qmlproperty enumeration WebEngineScript::worldId
 
     The world ID defining which isolated world the script is executed in.
@@ -199,6 +302,15 @@ QQuickWebEngineScript::ScriptWorldId QQuickWebEngineScript::worldId() const
 }
 
 /*!
+    \property QQuickWebEngineScript::runOnSubframes
+    \brief Whether the script is executed on every frame or only on the main frame.
+
+    Set this property to \c true if the script is executed on every frame in the page, or \c false
+    if it is only run for the main frame.
+    The default value is \c{false}.
+*/
+
+/*!
     \qmlproperty int WebEngineScript::runOnSubframes
 
     Set this property to \c true if the script is executed on every frame in the page, or \c false
@@ -211,21 +323,20 @@ bool QQuickWebEngineScript::runOnSubframes() const
     return d->coreScript.runsOnSubFrames();
 }
 
-
-void QQuickWebEngineScript::setName(QString arg)
+void QQuickWebEngineScript::setName(const QString &name)
 {
     Q_D(QQuickWebEngineScript);
-    if (arg == name())
+    if (name == QQuickWebEngineScript::name())
         return;
     d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setName(arg);
-    Q_EMIT nameChanged(arg);
+    d->coreScript.setName(name);
+    Q_EMIT nameChanged(name);
 }
 
-void QQuickWebEngineScript::setSourceCode(QString arg)
+void QQuickWebEngineScript::setSourceCode(const QString &code)
 {
     Q_D(QQuickWebEngineScript);
-    if (arg == sourceCode())
+    if (code == sourceCode())
         return;
 
     // setting the source directly resets the sourceUrl
@@ -235,22 +346,22 @@ void QQuickWebEngineScript::setSourceCode(QString arg)
     }
 
     d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setSourceCode(arg);
-    Q_EMIT sourceCodeChanged(arg);
+    d->coreScript.setSourceCode(code);
+    Q_EMIT sourceCodeChanged(code);
 }
 
-void QQuickWebEngineScript::setSourceUrl(QUrl arg)
+void QQuickWebEngineScript::setSourceUrl(const QUrl &url)
 {
     Q_D(QQuickWebEngineScript);
-    if (arg == sourceUrl())
+    if (url == sourceUrl())
         return;
 
-    d->m_sourceUrl = arg;
+    d->m_sourceUrl = url;
     Q_EMIT sourceUrlChanged(d->m_sourceUrl);
 
-    QFile f(QQmlFile::urlToLocalFileOrQrc(arg));
+    QFile f(QQmlFile::urlToLocalFileOrQrc(url));
     if (!f.open(QIODevice::ReadOnly)) {
-        qWarning() << "Can't open user script " << arg;
+        qWarning() << "Can't open user script " << url;
         return;
     }
 
@@ -260,36 +371,36 @@ void QQuickWebEngineScript::setSourceUrl(QUrl arg)
     Q_EMIT sourceCodeChanged(source);
 }
 
-void QQuickWebEngineScript::setInjectionPoint(QQuickWebEngineScript::InjectionPoint arg)
+void QQuickWebEngineScript::setInjectionPoint(QQuickWebEngineScript::InjectionPoint injectionPoint)
 {
     Q_D(QQuickWebEngineScript);
-    if (arg == injectionPoint())
+    if (injectionPoint == QQuickWebEngineScript::injectionPoint())
         return;
     d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setInjectionPoint(static_cast<UserScript::InjectionPoint>(arg));
-    Q_EMIT injectionPointChanged(arg);
+    d->coreScript.setInjectionPoint(static_cast<UserScript::InjectionPoint>(injectionPoint));
+    Q_EMIT injectionPointChanged(injectionPoint);
 }
 
 
-void QQuickWebEngineScript::setWorldId(QQuickWebEngineScript::ScriptWorldId arg)
+void QQuickWebEngineScript::setWorldId(QQuickWebEngineScript::ScriptWorldId scriptWorldId)
 {
     Q_D(QQuickWebEngineScript);
-    if (arg == worldId())
+    if (scriptWorldId == worldId())
         return;
     d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setWorldId(arg);
-    Q_EMIT worldIdChanged(arg);
+    d->coreScript.setWorldId(scriptWorldId);
+    Q_EMIT worldIdChanged(scriptWorldId);
 }
 
 
-void QQuickWebEngineScript::setRunOnSubframes(bool arg)
+void QQuickWebEngineScript::setRunOnSubframes(bool on)
 {
     Q_D(QQuickWebEngineScript);
-    if (arg == runOnSubframes())
+    if (on == runOnSubframes())
         return;
     d->aboutToUpdateUnderlyingScript();
-    d->coreScript.setRunsOnSubFrames(arg);
-    Q_EMIT runOnSubframesChanged(arg);
+    d->coreScript.setRunsOnSubFrames(on);
+    Q_EMIT runOnSubframesChanged(on);
 }
 
 void QQuickWebEngineScript::timerEvent(QTimerEvent *e)
@@ -327,3 +438,5 @@ void QQuickWebEngineScriptPrivate::aboutToUpdateUnderlyingScript()
    // Defer updates to the next event loop
    m_basicTimer.start(0, q);
 }
+
+QT_END_NAMESPACE

@@ -42,7 +42,7 @@
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
 #include "qquickwebengineprofile_p.h"
-#include "qquickwebenginescript_p_p.h"
+#include "qquickwebenginescript_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qwebenginecookiestore.h"
 
@@ -901,6 +901,8 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 
     \brief the collection of scripts that are injected into all pages that share
     this profile.
+
+    \sa QQuickWebEngineScript, QQmlListReference
 */
 QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineProfile::userScripts()
 {

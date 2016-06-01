@@ -52,7 +52,7 @@
 //
 
 #include <private/qtwebengineglobal_p.h>
-#include "qquickwebenginescript_p.h"
+#include "qquickwebenginescript.h"
 #include <QQuickItem>
 #include <QtGui/qcolor.h>
 

@@ -34,6 +34,7 @@
 #include <QQmlListProperty>
 #include <QtTest/QtTest>
 #include <QtWebEngine/QQuickWebEngineProfile>
+#include <QtWebEngine/QQuickWebEngineScript>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
 #include <private/qquickwebenginedialogrequests_p.h>
@@ -42,7 +43,6 @@
 #include <private/qquickwebengineloadrequest_p.h>
 #include <private/qquickwebenginenavigationrequest_p.h>
 #include <private/qquickwebenginenewviewrequest_p.h>
-#include <private/qquickwebenginescript_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
 #include <private/qquickwebenginecontextmenurequest_p.h>

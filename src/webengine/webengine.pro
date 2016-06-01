@@ -45,6 +45,7 @@ HEADERS = \
         api/qquickwebenginenewviewrequest_p.h \
         api/qquickwebengineprofile.h \
         api/qquickwebengineprofile_p.h \
+        api/qquickwebenginescript.h \
         api/qquickwebenginescript_p.h \
         api/qquickwebenginesettings_p.h \
         api/qquickwebenginesingleton_p.h \
