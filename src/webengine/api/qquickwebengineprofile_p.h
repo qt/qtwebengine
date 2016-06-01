@@ -80,12 +80,19 @@ public:
     void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;
     void downloadUpdated(const DownloadItemInfo &info) Q_DECL_OVERRIDE;
 
+    // QQmlListPropertyHelpers
+    static void userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script);
+    static int userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p);
+    static QQuickWebEngineScript *userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx);
+    static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
+
 private:
     friend class QQuickWebEngineViewPrivate;
     QQuickWebEngineProfile *q_ptr;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_browserContextRef;
     QMap<quint32, QPointer<QQuickWebEngineDownloadItem> > m_ongoingDownloads;
+    QList<QQuickWebEngineScript *> m_userScripts;
 };
 
 QT_END_NAMESPACE

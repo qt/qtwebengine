@@ -116,6 +116,7 @@ protected:
     void timerEvent(QTimerEvent *e) override;
 
 private:
+    friend class QQuickWebEngineProfilePrivate;
     friend class QQuickWebEngineViewPrivate;
     Q_DECLARE_PRIVATE(QQuickWebEngineScript)
     QScopedPointer<QQuickWebEngineScriptPrivate> d_ptr;
