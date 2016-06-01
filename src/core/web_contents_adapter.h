@@ -180,6 +180,8 @@ public:
 
     void viewSource();
     bool canViewSource();
+    void focusIfNecessary();
+
 
 private:
     Q_DISABLE_COPY(WebContentsAdapter)

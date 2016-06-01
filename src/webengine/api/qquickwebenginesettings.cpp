@@ -304,6 +304,20 @@ bool QQuickWebEngineSettings::touchIconsEnabled() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::focusOnNavigationEnabled
+  \since QtWebEngine 1.4
+
+  Focus is given to the view whenever a navigation operation occurs
+  (load, stop, reload, reload and bypass cache, forward, backward, set content, and so on).
+
+  Enabled by default.
+*/
+bool QQuickWebEngineSettings::focusOnNavigationEnabled() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::FocusOnNavigationEnabled);
+}
+
+/*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -470,6 +484,14 @@ void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)
     d_ptr->setDefaultTextEncoding(encoding);
     if (oldDefaultTextEncoding.compare(encoding))
         Q_EMIT defaultTextEncodingChanged();
+}
+
+void QQuickWebEngineSettings::setFocusOnNavigationEnabled(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::FocusOnNavigationEnabled);
+    d_ptr->setAttribute(WebEngineSettings::FocusOnNavigationEnabled, on);
+    if (wasOn != on)
+        Q_EMIT focusOnNavigationEnabledChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)

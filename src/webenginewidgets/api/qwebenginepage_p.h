@@ -174,6 +174,7 @@ public:
     QWebChannel *webChannel;
     unsigned int webChannelWorldId;
     QUrl iconUrl;
+    bool m_navigationActionTriggered;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];

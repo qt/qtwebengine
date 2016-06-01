@@ -82,6 +82,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION 2)
     Q_PROPERTY(bool autoLoadIconsForPage READ autoLoadIconsForPage WRITE setAutoLoadIconsForPage NOTIFY autoLoadIconsForPageChanged REVISION 2)
     Q_PROPERTY(bool touchIconsEnabled READ touchIconsEnabled WRITE setTouchIconsEnabled NOTIFY touchIconsEnabledChanged REVISION 2)
+    Q_PROPERTY(bool focusOnNavigationEnabled READ focusOnNavigationEnabled WRITE setFocusOnNavigationEnabled NOTIFY focusOnNavigationEnabledChanged REVISION 3)
 
 public:
     ~QQuickWebEngineSettings();
@@ -105,6 +106,7 @@ public:
     bool accelerated2dCanvasEnabled() const;
     bool autoLoadIconsForPage() const;
     bool touchIconsEnabled() const;
+    bool focusOnNavigationEnabled() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -125,6 +127,7 @@ public:
     void setAccelerated2dCanvasEnabled(bool on);
     void setAutoLoadIconsForPage(bool on);
     void setTouchIconsEnabled(bool on);
+    void setFocusOnNavigationEnabled(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -146,6 +149,7 @@ signals:
     Q_REVISION(2) void accelerated2dCanvasEnabledChanged();
     Q_REVISION(2) void autoLoadIconsForPageChanged();
     Q_REVISION(2) void touchIconsEnabledChanged();
+    Q_REVISION(3) void focusOnNavigationEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

@@ -87,6 +87,10 @@
     QWebEngineScript::ScriptWorldId provides some predefined IDs for this purpose. Using the
     \c runJavaScript() version without the world ID is the same as running the script in the
     \c MainWorld.
+
+    The \l {QWebEngineSettings::FocusOnNavigationEnabled} {FocusOnNavigationEnabled} setting can be
+    used to stop the view associated with the page from automatically receiving focus when a
+    navigation operation occurs (like loading or reloading a page or navigating through history).
 */
 
 /*!

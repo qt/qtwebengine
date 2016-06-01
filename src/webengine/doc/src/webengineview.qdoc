@@ -82,7 +82,11 @@
     described by \l FindFlags.
 
     The \l setActiveFocusOnPress() method can be used to create a UI element that should not get
-    focus. This can be useful in a hybrid UI.
+    focus on press. This can be useful in a hybrid UI.
+
+    The \l {WebEngineSettings::focusOnNavigationEnabled} {focusOnNavigationEnabled} setting can be
+    used to stop the view from automatically receiving focus when a navigation operation occurs
+    (like loading or reloading a page or navigating through history).
 
     The \l linkHovered() signal is emitted when a mouse pointer passes over a link and thus
     corresponds to the \c{mouseover} DOM event.
@@ -481,7 +485,7 @@
     a web engine view can be used to create a UI element that should not get focus. This can be
     useful in a hybrid UI.
 
-    \sa activeFocusOnPressChanged()
+    \sa activeFocusOnPressChanged, WebEngineSettings::focusOnNavigationEnabled
 */
 
 /*!

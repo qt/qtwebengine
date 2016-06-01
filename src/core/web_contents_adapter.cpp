@@ -470,21 +470,21 @@ void WebContentsAdapter::stop()
         controller.RemoveEntryAtIndex(index);
 
     d->webContents->Stop();
-    d->webContents->Focus();
+    focusIfNecessary();
 }
 
 void WebContentsAdapter::reload()
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().Reload(/*checkRepost = */false);
-    d->webContents->Focus();
+    focusIfNecessary();
 }
 
 void WebContentsAdapter::reloadAndBypassCache()
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().ReloadBypassingCache(/*checkRepost = */false);
-    d->webContents->Focus();
+    focusIfNecessary();
 }
 
 void WebContentsAdapter::load(const QUrl &url)
@@ -507,7 +507,7 @@ void WebContentsAdapter::load(const QUrl &url)
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     d->webContents->GetController().LoadURLWithParams(params);
-    d->webContents->Focus();
+    focusIfNecessary();
 }
 
 void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
@@ -532,7 +532,7 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API);
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     d->webContents->GetController().LoadURLWithParams(params);
-    d->webContents->Focus();
+    focusIfNecessary();
     d->webContents->Unselect();
 }
 
@@ -646,14 +646,14 @@ void WebContentsAdapter::navigateToIndex(int offset)
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().GoToIndex(offset);
-    d->webContents->Focus();
+    focusIfNecessary();
 }
 
 void WebContentsAdapter::navigateToOffset(int offset)
 {
     Q_D(WebContentsAdapter);
     d->webContents->GetController().GoToOffset(offset);
-    d->webContents->Focus();
+    focusIfNecessary();
 }
 
 int WebContentsAdapter::navigationEntryCount()
@@ -1244,6 +1244,15 @@ void WebContentsAdapter::replaceMisspelling(const QString &word)
     Q_D(WebContentsAdapter);
     d->webContents->ReplaceMisspelling(toString16(word));
 #endif
+}
+
+void WebContentsAdapter::focusIfNecessary()
+{
+    Q_D(WebContentsAdapter);
+    const WebEngineSettings *settings = d->adapterClient->webEngineSettings();
+    bool focusOnNavigation = settings->testAttribute(WebEngineSettings::FocusOnNavigationEnabled);
+    if (focusOnNavigation)
+        d->webContents->Focus();
 }
 
 WebContentsAdapterClient::RenderProcessTerminationStatus

@@ -237,6 +237,7 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         s_defaultAttributes.insert(Accelerated2dCanvasEnabled, accelerated2dCanvas);
         s_defaultAttributes.insert(AutoLoadIconsForPage, true);
         s_defaultAttributes.insert(TouchIconsEnabled, false);
+        s_defaultAttributes.insert(FocusOnNavigationEnabled, true);
     }
     if (offTheRecord)
         m_attributes.insert(LocalStorageEnabled, false);

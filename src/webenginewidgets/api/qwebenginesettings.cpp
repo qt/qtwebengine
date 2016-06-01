@@ -89,6 +89,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::AutoLoadIconsForPage;
     case QWebEngineSettings::TouchIconsEnabled:
         return WebEngineSettings::TouchIconsEnabled;
+    case QWebEngineSettings::FocusOnNavigationEnabled:
+        return WebEngineSettings::FocusOnNavigationEnabled;
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }

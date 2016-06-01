@@ -146,6 +146,11 @@
     \value  TouchIconsEnabled
             Enables support for touch icons and precomposed touch icons
             Disabled by default. (Added in Qt 5.7)
+    \value  FocusOnNavigationEnabled
+            Gives focus to the view associated with the page, whenever a navigation operation occurs
+            (load, stop, reload, reload and bypass cache, forward, backward, set content, and so
+            on).
+            Enabled by default. (Added in Qt 5.8)
 */
 
 /*!

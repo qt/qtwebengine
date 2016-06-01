@@ -31,6 +31,8 @@
 #include <qdiriterator.h>
 #include <qstackedlayout.h>
 #include <qtemporarydir.h>
+#include <QLineEdit>
+#include <QHBoxLayout>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
@@ -74,6 +76,8 @@ private Q_SLOTS:
     void doNotSendMouseKeyboardEventsWhenDisabled_data();
     void stopSettingFocusWhenDisabled();
     void stopSettingFocusWhenDisabled_data();
+    void focusOnNavigation_data();
+    void focusOnNavigation();
 
     void changeLocale();
 };
@@ -741,6 +745,88 @@ void tst_QWebEngineView::stopSettingFocusWhenDisabled_data()
 
     QTest::newRow("enabled view gets focus") << true << true;
     QTest::newRow("disabled view does not get focus") << false << false;
+}
+
+void tst_QWebEngineView::focusOnNavigation_data()
+{
+    QTest::addColumn<bool>("focusOnNavigation");
+    QTest::addColumn<bool>("viewReceivedFocus");
+    QTest::newRow("focusOnNavigation true") << true << true;
+    QTest::newRow("focusOnNavigation false") << false << false;
+}
+
+void tst_QWebEngineView::focusOnNavigation()
+{
+    QFETCH(bool, focusOnNavigation);
+    QFETCH(bool, viewReceivedFocus);
+
+#define triggerJavascriptFocus()\
+    evaluateJavaScriptSync(webView->page(), "document.getElementById(\"input\").focus()");
+#define loadAndTriggerFocusAndCompare()\
+    QTRY_COMPARE(loadSpy.count(), 1);\
+    triggerJavascriptFocus();\
+    QTRY_COMPARE(webView->hasFocus(), viewReceivedFocus);
+
+    // Create a container widget, that will hold a line edit that has initial focus, and a web
+    // engine view.
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+    QLineEdit *label = new QLineEdit;
+    label->setText(QString::fromLatin1("Text"));
+    label->setFocus();
+
+    // Create the web view, and set its focusOnNavigation property.
+    QWebEngineView *webView = new QWebEngineView;
+    QWebEngineSettings *settings = webView->page()->settings();
+    settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, focusOnNavigation);
+    webView->resize(300, 300);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(webView);
+
+    containerWidget->setLayout(layout);
+    containerWidget->show();
+    QTest::qWaitForWindowExposed(containerWidget.data());
+
+    // Load the content, invoke javascript focus on the view, and check which widget has focus.
+    QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
+    webView->setHtml("<html><head><title>Title</title></head><body>Hello"
+                    "<input id=\"input\" type=\"text\"></body></html>");
+    loadAndTriggerFocusAndCompare();
+
+    // Load a different page, and check focus.
+    loadSpy.clear();
+    webView->setHtml("<html><head><title>Title</title></head><body>Hello 2"
+                    "<input id=\"input\" type=\"text\"></body></html>");
+    loadAndTriggerFocusAndCompare();
+
+    // Navigate to previous page in history, check focus.
+    loadSpy.clear();
+    webView->triggerPageAction(QWebEnginePage::Back);
+    loadAndTriggerFocusAndCompare();
+
+    // Navigate to next page in history, check focus.
+    loadSpy.clear();
+    webView->triggerPageAction(QWebEnginePage::Forward);
+    loadAndTriggerFocusAndCompare();
+
+    // Reload page, check focus.
+    loadSpy.clear();
+    webView->triggerPageAction(QWebEnginePage::Reload);
+    loadAndTriggerFocusAndCompare();
+
+    // Reload page bypassing cache, check focus.
+    loadSpy.clear();
+    webView->triggerPageAction(QWebEnginePage::ReloadAndBypassCache);
+    loadAndTriggerFocusAndCompare();
+
+    // Manually forcing focus on web view should work.
+    webView->setFocus();
+    QTRY_COMPARE(webView->hasFocus(), true);
+
+    // Clean up.
+#undef loadAndTriggerFocusAndCompare
+#undef triggerJavascriptFocus
 }
 
 void tst_QWebEngineView::changeLocale()

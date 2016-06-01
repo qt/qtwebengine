@@ -79,7 +79,8 @@ public:
         WebGLEnabled,
         Accelerated2dCanvasEnabled,
         AutoLoadIconsForPage,
-        TouchIconsEnabled
+        TouchIconsEnabled,
+        FocusOnNavigationEnabled
     };
 
     // Must match the values from the public API in qwebenginesettings.h.
