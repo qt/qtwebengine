@@ -44,9 +44,9 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "pepper_flash_browser_host_qt.h"
+#include "pepper_flash_clipboard_message_filter_qt.h"
 
 using ppapi::host::MessageFilterHost;
-using ppapi::host::ResourceHost;
 using ppapi::host::ResourceMessageFilter;
 
 namespace QtWebEngineCore {
@@ -69,12 +69,18 @@ scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(pp
     if (!host_->IsValidInstance(instance))
         return scoped_ptr<ppapi::host::ResourceHost>();
 
-    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)
-            && message.type() == PpapiHostMsg_Flash_Create::ID)
-        return scoped_ptr<ppapi::host::ResourceHost>(
-                    new PepperFlashBrowserHostQt(host_,
-                                                 instance,
-                                                 resource));
+    // Flash interfaces.
+    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)) {
+        switch (message.type()) {
+        case PpapiHostMsg_Flash_Create::ID:
+            return scoped_ptr<ppapi::host::ResourceHost>(new PepperFlashBrowserHostQt(host_, instance, resource));
+        case PpapiHostMsg_FlashClipboard_Create::ID: {
+            scoped_refptr<ResourceMessageFilter> clipboard_filter(new PepperFlashClipboardMessageFilter);
+            return scoped_ptr<ppapi::host::ResourceHost>(new MessageFilterHost(
+                host_->GetPpapiHost(), instance, resource, clipboard_filter));
+        }
+        }
+    }
 
     return scoped_ptr<ppapi::host::ResourceHost>();
 }
