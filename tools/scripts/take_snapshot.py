@@ -134,8 +134,9 @@ def isInChromiumBlacklist(file_path):
         or (file_path.startswith('extensions') and
             not 'browser/extension_function_registry.h' in file_path and
             not 'browser/extension_function_histogram_value.h' in file_path and
-            not 'browser/notification_types.cc' in file_path and
-            not 'browser/notification_types.h' in file_path)
+            not 'browser/notification_types.' in file_path and
+            not 'common/constants.' in file_path and
+            not 'common/url_pattern.' in file_path)
         or file_path.startswith('google_update')
         or file_path.startswith('ios')
         or file_path.startswith('media/base/android/java')
