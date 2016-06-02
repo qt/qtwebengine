@@ -339,7 +339,6 @@ void BrowserMainWindow::setupMenu()
     QAction *m_find = editMenu->addAction(tr("&Find"));
     m_find->setShortcuts(QKeySequence::Find);
     connect(m_find, SIGNAL(triggered()), this, SLOT(slotEditFind()));
-    new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
 
     QAction *m_findNext = editMenu->addAction(tr("&Find Next"));
     m_findNext->setShortcuts(QKeySequence::FindNext);
