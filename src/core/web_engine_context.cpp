@@ -78,8 +78,10 @@
 #include "web_engine_library_info.h"
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QStringList>
+#include <QSurfaceFormat>
 #include <QVector>
 #include <qpa/qplatformnativeinterface.h>
 
@@ -261,15 +263,40 @@ WebEngineContext::WebEngineContext()
 
     GLContextHelper::initialize();
 
-    if (usingANGLE() || usingSoftwareDynamicGL() || usingQtQuick2DRenderer()) {
-        parsedCommandLine->AppendSwitch(switches::kDisableGpu);
-    } else {
-        const char *glType = 0;
+    const char *glType = 0;
+    if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
         if (qt_gl_global_share_context()) {
-            if (qt_gl_global_share_context()->isOpenGLES()) {
-                glType = gfx::kGLImplementationEGLName;
+            if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
+                if (qt_gl_global_share_context()->isOpenGLES()) {
+                    glType = gfx::kGLImplementationEGLName;
+                } else {
+                    QOpenGLContext context;
+                    QSurfaceFormat format;
+
+                    format.setRenderableType(QSurfaceFormat::OpenGLES);
+                    format.setVersion(2, 0);
+
+                    context.setFormat(format);
+                    context.setShareContext(qt_gl_global_share_context());
+                    if (context.create()) {
+                        QOffscreenSurface surface;
+
+                        surface.setFormat(format);
+                        surface.create();
+
+                        if (context.makeCurrent(&surface)) {
+                            if (context.hasExtension("GL_ARB_ES2_compatibility"))
+                                glType = gfx::kGLImplementationEGLName;
+
+                            context.doneCurrent();
+                        }
+
+                        surface.destroy();
+                    }
+                }
             } else {
-                glType = gfx::kGLImplementationDesktopName;
+                if (!qt_gl_global_share_context()->isOpenGLES())
+                    glType = gfx::kGLImplementationDesktopName;
             }
         } else {
             qWarning("WebEngineContext used before QtWebEngine::initialize()");
@@ -283,9 +310,12 @@ WebEngineContext::WebEngineContext()
                 break;
             }
         }
-
-        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
     }
+
+    if (glType)
+        parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);
+    else
+        parsedCommandLine->AppendSwitch(switches::kDisableGpu);
 
     content::UtilityProcessHostImpl::RegisterUtilityMainThreadFactory(content::CreateInProcessUtilityThread);
     content::RenderProcessHostImpl::RegisterRendererMainThreadFactory(content::CreateInProcessRendererThread);
