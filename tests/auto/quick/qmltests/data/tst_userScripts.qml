@@ -49,6 +49,11 @@ Item {
         injectionPoint: WebEngineScript.DocumentReady
     }
 
+    WebEngineScript {
+        id: scriptWithMetadata
+        sourceUrl: Qt.resolvedUrl("script-with-metadata.js")
+    }
+
     TestWebEngineView {
         id: webEngineView
         width: 400
@@ -150,6 +155,23 @@ Item {
             webEngineView.url = Qt.resolvedUrl("test1.html");
             webEngineView.waitForLoadSucceeded();
             compare(webEngineView.title, "Big user script changed title");
+        }
+
+        function test_parseMetadataHeader() {
+            compare(scriptWithMetadata.name, "Test script");
+            compare(scriptWithMetadata.injectionPoint, WebEngineScript.DocumentReady);
+
+            webEngineView.userScripts = [ scriptWithMetadata ];
+
+            // @include *test*.html
+            webEngineView.url = Qt.resolvedUrl("test1.html");
+            webEngineView.waitForLoadSucceeded();
+            compare(webEngineView.title, "New title");
+
+            // @exclude *test2.html
+            webEngineView.url = Qt.resolvedUrl("test2.html");
+            webEngineView.waitForLoadSucceeded();
+            compare(webEngineView.title, "Test page with huge link area");
         }
     }
 }

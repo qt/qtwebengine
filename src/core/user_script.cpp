@@ -38,10 +38,38 @@
 ****************************************************************************/
 
 #include "common/user_script_data.h"
+#include "extensions/common/url_pattern.h"
 #include "user_script.h"
 #include "type_conversion.h"
 
+namespace {
+
+// Helper function to parse Greasemonkey headers
+bool GetDeclarationValue(const base::StringPiece& line,
+                         const base::StringPiece& prefix,
+                         std::string* value) {
+    base::StringPiece::size_type index = line.find(prefix);
+    if (index == base::StringPiece::npos)
+        return false;
+
+    std::string temp(line.data() + index + prefix.length(),
+                     line.length() - index - prefix.length());
+
+    if (temp.empty() || !base::IsUnicodeWhitespace(temp[0]))
+        return false;
+
+    base::TrimWhitespaceASCII(temp, base::TRIM_ALL, value);
+        return true;
+}
+
+}  // namespace
+
 namespace QtWebEngineCore {
+
+int UserScript::validUserScriptSchemes()
+{
+    return URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS | URLPattern::SCHEME_FILE;
+}
 
 ASSERT_ENUMS_MATCH(UserScript::AfterLoad, UserScriptData::AfterLoad)
 ASSERT_ENUMS_MATCH(UserScript::DocumentLoadFinished, UserScriptData::DocumentLoadFinished)
@@ -100,6 +128,7 @@ void UserScript::setSourceCode(const QString &source)
 {
     initData();
     scriptData->source = source.toStdString();
+    parseMetadataHeader();
 }
 
 UserScript::InjectionPoint UserScript::injectionPoint() const
@@ -167,6 +196,82 @@ bool UserScript::isNull() const
 UserScriptData &UserScript::data() const
 {
     return *(scriptData.data());
+}
+
+void UserScript::parseMetadataHeader()
+{
+    // Logic taken from Chromium (extensions/browser/user_script_loader.cc)
+    // http://wiki.greasespot.net/Metadata_block
+    const std::string &script_text = scriptData->source;
+    base::StringPiece line;
+    size_t line_start = 0;
+    size_t line_end = line_start;
+    bool in_metadata = false;
+
+    static const base::StringPiece kUserScriptBegin("// ==UserScript==");
+    static const base::StringPiece kUserScriptEnd("// ==/UserScript==");
+    static const base::StringPiece kNameDeclaration("// @name");
+    static const base::StringPiece kIncludeDeclaration("// @include");
+    static const base::StringPiece kExcludeDeclaration("// @exclude");
+    static const base::StringPiece kMatchDeclaration("// @match");
+    static const base::StringPiece kRunAtDeclaration("// @run-at");
+    static const base::StringPiece kRunAtDocumentStartValue("document-start");
+    static const base::StringPiece kRunAtDocumentEndValue("document-end");
+    static const base::StringPiece kRunAtDocumentIdleValue("document-idle");
+    // FIXME: Scripts don't run in subframes by default. If we would like to
+    // support @noframes rule, we have to change the current default behavior.
+    // static const base::StringPiece kNoFramesDeclaration("// @noframes");
+
+    static URLPattern urlPatternParser(validUserScriptSchemes());
+
+    while (line_start < script_text.length()) {
+        line_end = script_text.find('\n', line_start);
+
+        // Handle the case where there is no trailing newline in the file.
+        if (line_end == std::string::npos)
+            line_end = script_text.length() - 1;
+
+        line.set(script_text.data() + line_start, line_end - line_start);
+
+        if (!in_metadata) {
+            if (line.starts_with(kUserScriptBegin))
+                in_metadata = true;
+        } else {
+            if (line.starts_with(kUserScriptEnd))
+                break;
+
+            std::string value;
+            if (GetDeclarationValue(line, kNameDeclaration, &value)) {
+                setName(toQt(value));
+            } else if (GetDeclarationValue(line, kIncludeDeclaration, &value)) {
+                // We escape some characters that MatchPattern() considers special.
+                base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
+                base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+                scriptData->globs.push_back(value);
+            } else if (GetDeclarationValue(line, kExcludeDeclaration, &value)) {
+                base::ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
+                base::ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
+                scriptData->excludeGlobs.push_back(value);
+            } else if (GetDeclarationValue(line, kMatchDeclaration, &value)) {
+                if (URLPattern::PARSE_SUCCESS == urlPatternParser.Parse(value))
+                    scriptData->urlPatterns.push_back(value);
+            } else if (GetDeclarationValue(line, kRunAtDeclaration, &value)) {
+                if (value == kRunAtDocumentStartValue)
+                    scriptData->injectionPoint = DocumentElementCreation;
+                else if (value == kRunAtDocumentEndValue)
+                    scriptData->injectionPoint = DocumentLoadFinished;
+                else if (value == kRunAtDocumentIdleValue)
+                    scriptData->injectionPoint = AfterLoad;
+            }
+        }
+
+        line_start = line_end + 1;
+    }
+
+    // If no patterns were specified, default to @include *. This is what
+    // Greasemonkey does.
+    if (scriptData->globs.empty() && scriptData->urlPatterns.empty())
+        scriptData->globs.push_back("*");
 }
 
 } // namespace QtWebEngineCore

@@ -39,9 +39,12 @@
 
 #include "user_resource_controller.h"
 
+#include "base/strings/pattern.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "extensions/common/url_pattern.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -49,6 +52,8 @@
 
 #include "common/qt_messages.h"
 #include "common/user_script_data.h"
+#include "type_conversion.h"
+#include "user_script.h"
 
 Q_GLOBAL_STATIC(UserResourceController, qt_webengine_userResourceController)
 
@@ -56,6 +61,40 @@ static content::RenderView * const globalScriptsIndex = 0;
 
 // Scripts meant to run after the load event will be run 500ms after DOMContentLoaded if the load event doesn't come within that delay.
 static const int afterLoadTimeout = 500;
+
+static bool scriptMatchesURL(const UserScriptData &scriptData, const GURL &url) {
+    // Logic taken from Chromium (extensions/common/user_script.cc)
+    bool matchFound;
+    if (!scriptData.urlPatterns.empty()) {
+        matchFound = false;
+        for (auto it = scriptData.urlPatterns.begin(), end = scriptData.urlPatterns.end(); it != end; ++it) {
+            URLPattern urlPattern(QtWebEngineCore::UserScript::validUserScriptSchemes(), *it);
+            if (urlPattern.MatchesURL(url))
+                matchFound = true;
+        }
+        if (!matchFound)
+            return false;
+    }
+
+    if (!scriptData.globs.empty()) {
+        matchFound = false;
+        for (auto it = scriptData.globs.begin(), end = scriptData.globs.end(); it != end; ++it) {
+            if (base::MatchPattern(url.spec(), *it))
+                matchFound = true;
+        }
+        if (!matchFound)
+            return false;
+    }
+
+    if (!scriptData.excludeGlobs.empty()) {
+        for (auto it = scriptData.excludeGlobs.begin(), end = scriptData.excludeGlobs.end(); it != end; ++it) {
+            if (base::MatchPattern(url.spec(), *it))
+                return false;
+        }
+    }
+
+    return true;
+}
 
 class UserResourceController::RenderViewObserverHelper : public content::RenderViewObserver
 {
@@ -98,6 +137,8 @@ void UserResourceController::runScripts(UserScriptData::InjectionPoint p, blink:
         const UserScriptData &script = m_scripts.value(id);
         if (script.injectionPoint != p
                 || (!script.injectForSubframes && !isMainFrame))
+            continue;
+        if (!scriptMatchesURL(script, frame->document().url()))
             continue;
         blink::WebScriptSource source(blink::WebString::fromUTF8(script.source), script.url);
         if (script.worldId)

@@ -85,9 +85,12 @@ public:
 
     bool operator==(const UserScript &) const;
 
+    static int validUserScriptSchemes();
+
 private:
     void initData();
     UserScriptData &data() const;
+    void parseMetadataHeader();
     friend class UserResourceControllerHost;
 
     QScopedPointer<UserScriptData> scriptData;

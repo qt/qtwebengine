@@ -78,8 +78,16 @@
         '<(DEPTH)/chrome/browser/media/desktop_streams_registry.h',
         '<(DEPTH)/chrome/common/chrome_switches.cc',
         '<(DEPTH)/chrome/common/chrome_switches.h',
+        '<(DEPTH)/extensions/common/constants.cc',
+        '<(DEPTH)/extensions/common/constants.h',
+        '<(DEPTH)/extensions/common/url_pattern.cc',
+        '<(DEPTH)/extensions/common/url_pattern.h',
       ],
       'conditions': [
+        ['OS == "win"', {
+          # crbug.com/167187 fix size_t to int truncations
+          'msvs_disabled_warnings': [4267, ],
+        }],
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_spellchecker_sources)' ],
           'include_dirs': [
@@ -99,10 +107,6 @@
               '__STDC_FORMAT_MACROS',
           ],
           'conditions': [
-            ['OS == "win"', {
-              # crbug.com/167187 fix size_t to int truncations
-              'msvs_disabled_warnings': [4267, ],
-            }],
             [ 'OS != "mac"', {
               'sources/': [
                 ['exclude', '_mac\\.(cc|cpp|mm?)$'],

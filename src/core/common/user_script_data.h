@@ -60,6 +60,9 @@ struct UserScriptData {
     bool injectForSubframes;
     uint worldId;
     uint64_t scriptId;
+    std::vector<std::string> globs;
+    std::vector<std::string> excludeGlobs;
+    std::vector<std::string> urlPatterns;
 };
 
 QT_BEGIN_NAMESPACE
