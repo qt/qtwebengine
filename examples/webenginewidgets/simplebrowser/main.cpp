@@ -41,6 +41,7 @@
 #include "browser.h"
 #include "browserwindow.h"
 #include <QApplication>
+#include <QWebEngineSettings>
 
 QString getCommandLineUrlArgument()
 {
@@ -58,6 +59,8 @@ int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(QLatin1String(":simplebrowser.svg")));
+
+    QWebEngineSettings::defaultSettings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
 
     BrowserWindow *window = new BrowserWindow();
     Browser::instance().addWindow(window);
