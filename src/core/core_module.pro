@@ -14,6 +14,8 @@ load(qt_module)
 api_library_name = qtwebenginecoreapi$$qtPlatformTargetSuffix()
 api_library_path = $$OUT_PWD/api/$$getConfigDir()
 
+# Do not precompile any headers. We are only interested in the linker step.
+PRECOMPILED_HEADER =
 
 LIBS_PRIVATE += -L$$api_library_path
 CONFIG *= no_smart_library_merge
