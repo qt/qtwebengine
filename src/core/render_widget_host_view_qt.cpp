@@ -259,6 +259,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_didFirstVisuallyNonEmptyLayout(false)
     , m_adapterClient(0)
     , m_imeInProgress(false)
+    , m_receivedEmptyImeText(false)
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
@@ -961,7 +962,7 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     if (IsMouseLocked() && ev->key() == Qt::Key_Escape && ev->type() == QEvent::KeyRelease)
         UnlockMouse();
 
-    if (m_imeInProgress) {
+    if (m_imeInProgress && m_receivedEmptyImeText) {
         // IME composition was not finished with a valid commit string.
         // We're getting the composition result in a key event.
         if (ev->key() != 0) {
@@ -1039,6 +1040,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
                                                               : gfx::Range::InvalidRange();
         m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
         m_imeInProgress = false;
+        m_receivedEmptyImeText = false;
     } else if (!preeditString.isEmpty()) {
         if (!selectionRange.IsValid()) {
             // We did not receive a valid selection range, hence the range is going to mark the cursor position.
@@ -1048,6 +1050,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         }
         m_host->ImeSetComposition(toString16(preeditString), underlines, selectionRange.start(), selectionRange.end());
         m_imeInProgress = true;
+        m_receivedEmptyImeText = false;
+    } else {
+        m_receivedEmptyImeText = true;
     }
 }
 
