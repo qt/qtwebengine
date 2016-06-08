@@ -540,7 +540,7 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     case blink::WebCursorInfo::TypeCustom:
         if (cursorInfo.custom_image.colorType() == SkColorType::kN32_SkColorType) {
             QImage cursor = toQImage(cursorInfo.custom_image, QImage::Format_ARGB32);
-            m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor)));
+            m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor), cursorInfo.hotspot.x(), cursorInfo.hotspot.y()));
             return;
         }
         // Use arrow cursor as fallback in case the Chromium implementation changes.
