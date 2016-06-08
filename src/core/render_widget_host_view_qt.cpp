@@ -68,6 +68,10 @@
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursors_aura.h"
+#endif
+
 #include <QEvent>
 #include <QFocusEvent>
 #include <QGuiApplication>
@@ -455,7 +459,10 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 {
     content::WebCursor::CursorInfo cursorInfo;
     webCursor.GetCursorInfo(&cursorInfo);
-    Qt::CursorShape shape;
+    Qt::CursorShape shape = Qt::ArrowCursor;
+#if defined(USE_AURA)
+    int auraType = -1;
+#endif
     switch (cursorInfo.type) {
     case blink::WebCursorInfo::TypePointer:
         shape = Qt::ArrowCursor;
@@ -513,17 +520,42 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     case blink::WebCursorInfo::TypeMove:
         shape = Qt::SizeAllCursor;
         break;
+    case blink::WebCursorInfo::TypeProgress:
+        shape = Qt::BusyCursor;
+        break;
+#if defined(USE_AURA)
+    case blink::WebCursorInfo::TypeVerticalText:
+        auraType = ui::kCursorVerticalText;
+        break;
+    case blink::WebCursorInfo::TypeCell:
+        auraType = ui::kCursorCell;
+        break;
+    case blink::WebCursorInfo::TypeContextMenu:
+        auraType = ui::kCursorContextMenu;
+        break;
+    case blink::WebCursorInfo::TypeAlias:
+        auraType = ui::kCursorAlias;
+        break;
+    case blink::WebCursorInfo::TypeCopy:
+        auraType = ui::kCursorCopy;
+        break;
+    case blink::WebCursorInfo::TypeZoomIn:
+        auraType = ui::kCursorZoomIn;
+        break;
+    case blink::WebCursorInfo::TypeZoomOut:
+        auraType = ui::kCursorZoomOut;
+        break;
+#else
     case blink::WebCursorInfo::TypeVerticalText:
     case blink::WebCursorInfo::TypeCell:
     case blink::WebCursorInfo::TypeContextMenu:
     case blink::WebCursorInfo::TypeAlias:
-    case blink::WebCursorInfo::TypeProgress:
     case blink::WebCursorInfo::TypeCopy:
     case blink::WebCursorInfo::TypeZoomIn:
     case blink::WebCursorInfo::TypeZoomOut:
-        // FIXME: Load from the resource bundle.
-        shape = Qt::ArrowCursor;
+        // FIXME: Support on OS X
         break;
+#endif
     case blink::WebCursorInfo::TypeNoDrop:
     case blink::WebCursorInfo::TypeNotAllowed:
         shape = Qt::ForbiddenCursor;
@@ -543,13 +575,18 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
             m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor), cursorInfo.hotspot.x(), cursorInfo.hotspot.y()));
             return;
         }
-        // Use arrow cursor as fallback in case the Chromium implementation changes.
-        shape = Qt::ArrowCursor;
         break;
-    default:
-        Q_UNREACHABLE();
-        shape = Qt::ArrowCursor;
     }
+#if defined(USE_AURA)
+    if (auraType > 0) {
+        SkBitmap bitmap;
+        gfx::Point hotspot;
+        if (ui::GetCursorBitmap(auraType, &bitmap, &hotspot)) {
+            m_delegate->updateCursor(QCursor(QPixmap::fromImage(toQImage(bitmap)), hotspot.x(), hotspot.y()));
+            return;
+        }
+    }
+#endif
     m_delegate->updateCursor(QCursor(shape));
 }
 
