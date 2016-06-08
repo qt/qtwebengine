@@ -404,7 +404,7 @@
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 */
 
 /*!
@@ -412,7 +412,7 @@
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page, using the given \a options.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 
     \code
     findText("Qt", WebEngineView.FindBackward | WebEngineView.FindCaseSensitively);
@@ -424,7 +424,7 @@
     \since QtWebEngine 1.1
     Finds the specified string, \a subString, in the page, using the given \a options.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 
     The \a resultCallback must take a boolean parameter. It will be called with
     a value of true if the \a subString was found; otherwise the callback value
