@@ -89,5 +89,25 @@ TestWebEngineView {
             showSpy.wait()
             compare(showSpy.signalArguments[1][0], "Please include an '@' in the email address. 'invalid' is missing an '@'.")
         }
+
+        function test_textForm() {
+            webEngineView.url = Qt.resolvedUrl("forms.html#input_empty")
+            verify(webEngineView.waitForLoadSucceeded())
+            keyPress(Qt.Key_Enter)
+            showSpy.wait()
+            compare(showSpy.signalArguments[0][0], "Please fill out this field.")
+            // Title should be shown for pattern mismatch only
+            compare(showSpy.signalArguments[0][1], "")
+
+            webEngineView.url = Qt.resolvedUrl("about:blank")
+            verify(webEngineView.waitForLoadSucceeded())
+
+            webEngineView.url = Qt.resolvedUrl("forms.html#lorem_ipsum")
+            verify(webEngineView.waitForLoadSucceeded())
+            keyPress(Qt.Key_Enter)
+            showSpy.wait()
+            compare(showSpy.signalArguments[1][0], "Please match the requested format.")
+            compare(showSpy.signalArguments[1][1], "Should type 'Lorem ipsum'")
+        }
     }
 }

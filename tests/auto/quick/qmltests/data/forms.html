@@ -28,5 +28,13 @@
         <input type="email" value="invalid" required/>
         <input type="submit" name="email_invalid"/>
     </form>
+    <form>
+        <input type="text" title="empty input" required/>
+        <input type="submit" name="input_empty"/>
+    </form>
+    <form>
+        <input type="text" pattern="Lorem ipsum" value="Lorem Ipsum" title="Should type 'Lorem ipsum'"/>
+        <input type="submit" name="lorem_ipsum"/>
+    </form>
 </body>
 </html>
