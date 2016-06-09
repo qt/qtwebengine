@@ -204,7 +204,7 @@ void UIDelegatesManager::addMenuSeparator(QObject *menu)
 
 QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, const QPoint& pos)
 {
-
+    Q_ASSERT(parentMenu);
     if (!ensureComponentLoaded(Menu))
         return 0;
     QQmlContext *context = qmlContext(m_view);
@@ -217,18 +217,18 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
         QQmlProperty(menu, QStringLiteral("title")).write(title);
     if (!pos.isNull())
         QQmlProperty(menu, QStringLiteral("pos")).write(pos);
-    if (!parentMenu) {
-        QQmlProperty doneSignal(menu, QStringLiteral("onDone"));
-        static int deleteLaterIndex = menu->metaObject()->indexOfSlot("deleteLater()");
-        if (doneSignal.isSignalProperty())
-            QObject::connect(menu, doneSignal.method(), menu, menu->metaObject()->method(deleteLaterIndex));
-    } else {
-        menu->setParent(parentMenu);
 
-        QQmlListReference entries(parentMenu, defaultPropertyName(parentMenu), qmlEngine(m_view));
-        if (entries.isValid())
-            entries.append(menu);
-    }
+    menu->setParent(parentMenu);
+
+    QQmlProperty doneSignal(menu, QStringLiteral("onDone"));
+    static int deleteLaterIndex = menu->metaObject()->indexOfSlot("deleteLater()");
+    CHECK_QML_SIGNAL_PROPERTY(doneSignal, menuComponent->url());
+    QObject::connect(menu, doneSignal.method(), menu, menu->metaObject()->method(deleteLaterIndex));
+
+    QQmlListReference entries(parentMenu, defaultPropertyName(parentMenu), qmlEngine(m_view));
+    if (entries.isValid())
+        entries.append(menu);
+
     menuComponent->completeCreate();
     return menu;
 }
