@@ -281,6 +281,9 @@
     the user clicks on the web page with the right mouse button. It is
     called from the default \l{QWidget::}{contextMenuEvent()} handler. The popup menu's
     ownership is transferred to the caller.
+
+    Returns \c nullptr if the context menu data is not initialized, for example when it
+    is called when there is actually no context menu requested.
  */
 
 /*!

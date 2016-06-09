@@ -1143,6 +1143,7 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
         view->contextMenuEvent(&event);
         break;
     case Qt::CustomContextMenu:
+        contextData = data;
         Q_EMIT view->customContextMenuRequested(data.pos);
         break;
     case Qt::ActionsContextMenu:
@@ -1281,6 +1282,9 @@ bool QWebEnginePagePrivate::isEnabled() const
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
+    if (!d->contextData.d)
+        return nullptr;
+
     QMenu *menu = new QMenu(d->view);
     QAction *action = 0;
     const WebEngineContextMenuData &contextMenuData = *d->contextData.d;
