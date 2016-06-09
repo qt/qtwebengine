@@ -359,9 +359,12 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
     CHECK_QML_SIGNAL_PROPERTY(rejectSignal, authenticationDialogComponent->url());
 
     static int acceptIndex = dialogController->metaObject()->indexOfSlot("accept(QString,QString)");
+    static int deleteLaterIndex = authenticationDialog->metaObject()->indexOfSlot("deleteLater()");
     QObject::connect(authenticationDialog, acceptSignal.method(), dialogController.data(), dialogController->metaObject()->method(acceptIndex));
+    QObject::connect(authenticationDialog, acceptSignal.method(), authenticationDialog, authenticationDialog->metaObject()->method(deleteLaterIndex));
     static int rejectIndex = dialogController->metaObject()->indexOfSlot("reject()");
     QObject::connect(authenticationDialog, rejectSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));
+    QObject::connect(authenticationDialog, rejectSignal.method(), authenticationDialog, authenticationDialog->metaObject()->method(deleteLaterIndex));
 
     authenticationDialogComponent->completeCreate();
     QMetaObject::invokeMethod(authenticationDialog, "open");
