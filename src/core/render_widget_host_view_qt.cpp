@@ -954,6 +954,19 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
         QCursor::setPos(m_lockedMousePosition);
     }
 
+    if (m_imeInProgress && event->type() == QMouseEvent::MouseButtonPress) {
+        m_imeInProgress = false;
+        // Tell input method to commit the pre-edit string entered so far, and finish the
+        // composition operation.
+#ifdef Q_OS_WIN
+        // Yes the function name is counter-intuitive, but commit isn't actually implemented
+        // by the Windows QPA, and reset does exactly what is necessary in this case.
+        qApp->inputMethod()->reset();
+#else
+        qApp->inputMethod()->commit();
+#endif
+    }
+
     m_host->ForwardMouseEvent(webEvent);
 }
 
