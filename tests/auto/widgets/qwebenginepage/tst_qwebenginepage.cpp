@@ -3948,26 +3948,26 @@ void tst_QWebEnginePage::setHtml()
 
 void tst_QWebEnginePage::setHtmlWithImageResource()
 {
-    // By default, only security origins of local files can load local resources.
-    // So we should specify baseUrl to be a local file in order to get a proper origin and load the local image.
+    // We allow access to qrc resources from any security origin, including local and anonymous
 
     QLatin1String html("<html><body><p>hello world</p><img src='qrc:/resources/image.png'/></body></html>");
     QWebEnginePage page;
 
-    page.setHtml(html, QUrl(QLatin1String("file:///path/to/file")));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(html, QUrl("file:///path/to/file"));
+    QTRY_COMPARE(spy.count(), 1);
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
-    // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
+    // Now we test the opposite: without a baseUrl as a local file, we can still request qrc resources.
 
     page.setHtml(html);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QTRY_COMPARE(spy.count(), 2);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
-    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 0);
-    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 0);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 }
 
 void tst_QWebEnginePage::setHtmlWithStylesheetResource()
