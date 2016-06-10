@@ -1024,6 +1024,25 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
     std::vector<blink::WebCompositionUnderline> underlines;
+    auto ensureValidSelectionRange = [&]() {
+        if (!selectionRange.IsValid()) {
+            // We did not receive a valid selection range, hence the range is going to mark the
+            // cursor position.
+            int newCursorPosition =
+                    (cursorPositionInPreeditString < 0) ? preeditString.length()
+                                                        : cursorPositionInPreeditString;
+            selectionRange.set_start(newCursorPosition);
+            selectionRange.set_end(newCursorPosition);
+        }
+    };
+
+    auto setCompositionForPreEditString = [&](){
+        ensureValidSelectionRange();
+        m_host->ImeSetComposition(toString16(preeditString),
+                                  underlines,
+                                  selectionRange.start(),
+                                  selectionRange.end());
+    };
 
     Q_FOREACH (const QInputMethodEvent::Attribute &attribute, attributes) {
         switch (attribute.type) {
@@ -1053,16 +1072,19 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
                                                               : gfx::Range::InvalidRange();
         m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
-        m_imeInProgress = false;
-        m_receivedEmptyImeText = false;
-    } else if (!preeditString.isEmpty()) {
-        if (!selectionRange.IsValid()) {
-            // We did not receive a valid selection range, hence the range is going to mark the cursor position.
-            int newCursorPosition = (cursorPositionInPreeditString < 0) ? preeditString.length() : cursorPositionInPreeditString;
-            selectionRange.set_start(newCursorPosition);
-            selectionRange.set_end(newCursorPosition);
+
+        // We might get a commit string and a pre-edit string in a single event, which means
+        // we need to confirm the　last composition, and start a new composition.
+        if (!preeditString.isEmpty()) {
+            setCompositionForPreEditString();
+            m_imeInProgress = true;
+        } else {
+            m_imeInProgress = false;
         }
-        m_host->ImeSetComposition(toString16(preeditString), underlines, selectionRange.start(), selectionRange.end());
+        m_receivedEmptyImeText = false;
+
+    } else if (!preeditString.isEmpty()) {
+        setCompositionForPreEditString();
         m_imeInProgress = true;
         m_receivedEmptyImeText = false;
     } else {
