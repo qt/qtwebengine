@@ -58,7 +58,11 @@ private:
     void dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId);
     void installWebChannel(uint worldId);
     void uninstallWebChannel(uint worldId);
+    virtual void DidCreateDocumentElement(blink::WebLocalFrame* frame) override;
     virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
+
+    bool m_installed;
+    uint m_installedWorldId;
 };
 
 } // namespace

@@ -153,6 +153,8 @@ content::RenderView *WebChannelTransport::GetRenderView(v8::Isolate *isolate)
 
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderView *renderView)
     : content::RenderViewObserver(renderView)
+    , m_installed(false)
+    , m_installedWorldId(0)
 {
 }
 
@@ -162,6 +164,8 @@ void WebChannelIPCTransport::installWebChannel(uint worldId)
     if (!webView)
         return;
     WebChannelTransport::Install(webView->mainFrame(), worldId);
+    m_installed = true;
+    m_installedWorldId = worldId;
 }
 
 void WebChannelIPCTransport::uninstallWebChannel(uint worldId)
@@ -170,6 +174,7 @@ void WebChannelIPCTransport::uninstallWebChannel(uint worldId)
     if (!webView)
         return;
     WebChannelTransport::Uninstall(webView->mainFrame(), worldId);
+    m_installed = false;
 }
 
 void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId)
@@ -215,6 +220,13 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     v8::Handle<v8::Value> argv[argc];
     argv[0] = messageObject;
     frame->callFunctionEvenIfScriptDisabled(callback, webChannelObjectValue->ToObject(), argc, argv);
+}
+
+void WebChannelIPCTransport::DidCreateDocumentElement(blink::WebLocalFrame* frame)
+{
+    blink::WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+    if (m_installed && frame == main_frame)
+        WebChannelTransport::Install(frame, m_installedWorldId);
 }
 
 bool WebChannelIPCTransport::OnMessageReceived(const IPC::Message &message)
