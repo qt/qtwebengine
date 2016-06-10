@@ -975,15 +975,16 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     if (IsMouseLocked() && ev->key() == Qt::Key_Escape && ev->type() == QEvent::KeyRelease)
         UnlockMouse();
 
-    if (m_imeInProgress && m_receivedEmptyImeText) {
+    if (m_receivedEmptyImeText) {
         // IME composition was not finished with a valid commit string.
         // We're getting the composition result in a key event.
         if (ev->key() != 0) {
             // The key event is not a result of an IME composition. Cancel IME.
             m_host->ImeCancelComposition();
-            m_imeInProgress = false;
+            m_receivedEmptyImeText = false;
         } else {
             if (ev->type() == QEvent::KeyRelease) {
+                m_receivedEmptyImeText = false;
                 m_host->ImeConfirmComposition(toString16(ev->text()), gfx::Range::InvalidRange(),
                                               false);
                 m_imeInProgress = false;
@@ -1065,7 +1066,26 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         m_imeInProgress = true;
         m_receivedEmptyImeText = false;
     } else {
-        m_receivedEmptyImeText = true;
+        // There are so-far two known cases, when an empty QInputMethodEvent is received.
+        // First one happens when backspace is used to remove the last character in the pre-edit
+        // string, thus signaling the end of the composition.
+        // The second one happens (on Windows) when a Korean char gets composed, but instead of
+        // the event having a commit string, both strings are empty, and the actual char is received
+        // as a QKeyEvent after the QInputMethodEvent is processed.
+        // In lieu of the second case, we can't simply cancel the composition on an empty event,
+        // and then add the Korean char when QKeyEvent is received, because that leads to text
+        // flickering in the textarea (or any other element).
+        // Instead we postpone the processing of the empty QInputMethodEvent by posting it
+        // to the same focused object, and cancelling the composition on the next event loop tick.
+        if (!m_receivedEmptyImeText && m_imeInProgress) {
+            m_receivedEmptyImeText = true;
+            m_imeInProgress = false;
+            QInputMethodEvent *eventCopy = new QInputMethodEvent(*ev);
+            QGuiApplication::postEvent(qApp->focusObject(), eventCopy);
+        } else {
+            m_receivedEmptyImeText = false;
+            m_host->ImeCancelComposition();
+        }
     }
 }
 
