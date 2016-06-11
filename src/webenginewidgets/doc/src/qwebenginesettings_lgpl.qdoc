@@ -88,7 +88,8 @@
     This enum type specifies settings for web pages:
 
     \value  AutoLoadImages
-            Automatically loads images on web pages. Enabled by default.
+            Automatically dowloads images for web pages. When this setting is
+            disabled, images are loaded from the cache. Enabled by default.
     \value  JavascriptEnabled
             Enables the running of JavaScript programs. Enabled by default.
     \value  JavascriptCanOpenWindows

@@ -44,11 +44,13 @@
 #include "type_conversion.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QMetaObject>
 #include <QtCore/QThread>
 #include <QtPositioning/QGeoPositionInfoSource>
 
-#include "base/message_loop/message_loop.h"
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "content/browser/geolocation/geolocation_provider_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -63,9 +65,9 @@ public:
     QtPositioningHelper(LocationProviderQt *provider);
     ~QtPositioningHelper();
 
-    void start(bool highAccuracy);
-    void stop();
-    void refresh();
+    Q_INVOKABLE void start(bool highAccuracy);
+    Q_INVOKABLE void stop();
+    Q_INVOKABLE void refresh();
 
 private Q_SLOTS:
     void updatePosition(const QGeoPositionInfo &);
@@ -75,6 +77,7 @@ private Q_SLOTS:
 private:
     LocationProviderQt *m_locationProvider;
     QGeoPositionInfoSource *m_positionInfoSource;
+    base::WeakPtrFactory<LocationProviderQt> m_locationProviderFactory;
 
     void postToLocationProvider(const base::Closure &task);
     friend class LocationProviderQt;
@@ -83,14 +86,13 @@ private:
 QtPositioningHelper::QtPositioningHelper(LocationProviderQt *provider)
     : m_locationProvider(provider)
     , m_positionInfoSource(0)
+    , m_locationProviderFactory(provider)
 {
     Q_ASSERT(provider);
 }
 
 QtPositioningHelper::~QtPositioningHelper()
 {
-    if (m_locationProvider)
-        m_locationProvider->m_positioningHelper = 0;
 }
 
 static bool isHighAccuracySource(const QGeoPositionInfoSource *source)
@@ -186,7 +188,8 @@ void QtPositioningHelper::updatePosition(const QGeoPositionInfo &pos)
     newPos.speed =  pos.hasAttribute(QGeoPositionInfo::GroundSpeed) ? pos.attribute(QGeoPositionInfo::GroundSpeed) : -1;
     newPos.heading =  pos.hasAttribute(QGeoPositionInfo::Direction) ? pos.attribute(QGeoPositionInfo::Direction) : -1;
 
-    postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, base::Unretained(m_locationProvider), newPos));
+    if (m_locationProvider)
+        postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
 }
 
 void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
@@ -203,7 +206,8 @@ void QtPositioningHelper::error(QGeoPositionInfoSource::Error positioningError)
         newPos.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
         break;
     }
-    postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, base::Unretained(m_locationProvider), newPos));
+    if (m_locationProvider)
+        postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
 }
 
 void QtPositioningHelper::timeout()
@@ -213,7 +217,8 @@ void QtPositioningHelper::timeout()
     // argument used in JS never comes all the way to the browser process.
     // Let's just treat it like any other error where the position is unavailable.
     newPos.error_code = content::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-    postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, base::Unretained(m_locationProvider), newPos));
+    if (m_locationProvider)
+        postToLocationProvider(base::Bind(&LocationProviderQt::updatePosition, m_locationProviderFactory.GetWeakPtr(), newPos));
 }
 
 inline void QtPositioningHelper::postToLocationProvider(const base::Closure &task)
@@ -230,6 +235,7 @@ LocationProviderQt::~LocationProviderQt()
 {
     if (m_positioningHelper) {
         m_positioningHelper->m_locationProvider = 0;
+        m_positioningHelper->m_locationProviderFactory.InvalidateWeakPtrs();
         m_positioningHelper->deleteLater();
     }
 }
@@ -241,23 +247,21 @@ bool LocationProviderQt::StartProvider(bool highAccuracy)
         m_positioningHelper = new QtPositioningHelper(this);
         m_positioningHelper->moveToThread(guiThread);
     }
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(&QtPositioningHelper::start
-                                                                 , base::Unretained(m_positioningHelper), highAccuracy));
+
+    QMetaObject::invokeMethod(m_positioningHelper, "start", Qt::QueuedConnection, Q_ARG(bool, highAccuracy));
     return true;
 }
 
 void LocationProviderQt::StopProvider()
 {
     if (m_positioningHelper)
-        BrowserThread::PostTask(BrowserThread::UI,FROM_HERE, base::Bind(&QtPositioningHelper::stop
-                                                                     , base::Unretained(m_positioningHelper)));
+        QMetaObject::invokeMethod(m_positioningHelper, "stop", Qt::QueuedConnection);
 }
 
 void LocationProviderQt::RequestRefresh()
 {
     if (m_positioningHelper)
-        BrowserThread::PostTask(BrowserThread::UI,FROM_HERE, base::Bind(&QtPositioningHelper::refresh
-                                                                     , base::Unretained(m_positioningHelper)));
+        QMetaObject::invokeMethod(m_positioningHelper, "refresh", Qt::QueuedConnection);
 }
 
 void LocationProviderQt::OnPermissionGranted()

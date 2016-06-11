@@ -73,6 +73,7 @@ SOURCES = \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
         renderer/pepper/pepper_flash_browser_host_qt.cpp \
+        renderer/pepper/pepper_flash_clipboard_message_filter_qt.cpp \
         renderer/pepper/pepper_flash_renderer_host_qt.cpp \
         renderer/pepper/pepper_host_factory_qt.cpp \
         renderer/pepper/pepper_isolated_file_system_message_filter.cpp \
@@ -155,6 +156,7 @@ HEADERS = \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
         renderer/pepper/pepper_flash_browser_host_qt.h \
+        renderer/pepper/pepper_flash_clipboard_message_filter_qt.h \
         renderer/pepper/pepper_flash_renderer_host_qt.h \
         renderer/pepper/pepper_host_factory_qt.h \
         renderer/pepper/pepper_isolated_file_system_message_filter.h \

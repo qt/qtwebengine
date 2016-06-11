@@ -87,6 +87,7 @@
     \section2 Linux
 
     On Linux, Clang or GCC version 4.7 or later is required.
+    Supported configurations are \c linux-g++ and \c{linux-clang}.
 
     Qt WebEngine requires \c pkg-config to detect most of its dependencies. The
     following \c pkg-config files are required:

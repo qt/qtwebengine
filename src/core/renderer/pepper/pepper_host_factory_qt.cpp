@@ -53,10 +53,10 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 
 #include "pepper_flash_browser_host_qt.h"
+#include "pepper_flash_clipboard_message_filter_qt.h"
 #include "pepper_isolated_file_system_message_filter.h"
 
 using ppapi::host::MessageFilterHost;
-using ppapi::host::ResourceHost;
 using ppapi::host::ResourceMessageFilter;
 
 namespace QtWebEngineCore {
@@ -79,12 +79,18 @@ scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(pp
     if (!host_->IsValidInstance(instance))
         return scoped_ptr<ppapi::host::ResourceHost>();
 
-    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)
-            && message.type() == PpapiHostMsg_Flash_Create::ID)
-        return scoped_ptr<ppapi::host::ResourceHost>(
-                    new PepperFlashBrowserHostQt(host_,
-                                                 instance,
-                                                 resource));
+    // Flash interfaces.
+    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)) {
+        switch (message.type()) {
+        case PpapiHostMsg_Flash_Create::ID:
+            return scoped_ptr<ppapi::host::ResourceHost>(new PepperFlashBrowserHostQt(host_, instance, resource));
+        case PpapiHostMsg_FlashClipboard_Create::ID: {
+            scoped_refptr<ResourceMessageFilter> clipboard_filter(new PepperFlashClipboardMessageFilter);
+            return scoped_ptr<ppapi::host::ResourceHost>(new MessageFilterHost(
+                host_->GetPpapiHost(), instance, resource, clipboard_filter));
+        }
+        }
+    }
 
     // Permissions for the following interfaces will be checked at the
     // time of the corresponding instance's methods calls (because
@@ -95,8 +101,8 @@ scoped_ptr<ppapi::host::ResourceHost> PepperHostFactoryQt::CreateResourceHost(pp
     if (message.type() == PpapiHostMsg_IsolatedFileSystem_Create::ID) {
         PepperIsolatedFileSystemMessageFilter* isolated_fs_filter = PepperIsolatedFileSystemMessageFilter::Create(instance, host_);
         if (!isolated_fs_filter)
-            return scoped_ptr<ResourceHost>();
-        return scoped_ptr<ResourceHost>(new MessageFilterHost(host, instance, resource, isolated_fs_filter));
+            return scoped_ptr<ppapi::host::ResourceHost>();
+        return scoped_ptr<ppapi::host::ResourceHost>(new MessageFilterHost(host, instance, resource, isolated_fs_filter));
     }
 
     return scoped_ptr<ppapi::host::ResourceHost>();

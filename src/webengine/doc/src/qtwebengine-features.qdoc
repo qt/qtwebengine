@@ -138,6 +138,8 @@
     the user. Note that on Windows an external GPS receiver must be connected to
     the application. For more information, see \l{Qt Positioning}.
 
+    Support for this feature was added in Qt 5.5.0.
+
     \section1 Pepper Plugin API
 
     Qt WebEngine supports loading Pepper Plugin API (PPAPI) plugins if
