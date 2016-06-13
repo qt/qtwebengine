@@ -317,8 +317,8 @@ Q_SIGNALS:
     Q_REVISION(2) void windowCloseRequested();
 
 protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry);
-    void itemChange(ItemChange, const ItemChangeData &);
+    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;
+    void itemChange(ItemChange, const ItemChangeData &) Q_DECL_OVERRIDE;
 
 private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)

@@ -163,7 +163,7 @@ public:
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
 #endif // QT_NO_ACCESSIBILITY
     virtual QtWebEngineCore::WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
-    virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController);
+    virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) Q_DECL_OVERRIDE;
     virtual void runGeolocationPermissionRequest(QUrl const&) Q_DECL_OVERRIDE;
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) Q_DECL_OVERRIDE;
     virtual void hideValidationMessage() Q_DECL_OVERRIDE;
