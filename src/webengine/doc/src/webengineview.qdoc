@@ -1160,3 +1160,74 @@
 
     \sa viewSource()
 */
+
+/*!
+    \qmlsignal WebEngineView::authenticationDialogRequested(AuthenticationDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when an authentication dialog is requested.
+
+    The request can be handled by using the methods of the AuthenticationDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either
+    AuthenticationDialogRequest::dialogAccept() or AuthenticationDialogRequest::dialogReject()
+    afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::javaScriptDialogRequested(JavaScriptDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a JavaScript dialog is requested.
+
+    The request can be handled by using the methods of the JavaScriptDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either
+    JavaScriptDialogRequest::dialogAccept() or JavaScriptDialogRequest::dialogReject()
+    afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::colorDialogRequested(ColorDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a color picker dialog is requested.
+
+    The request can be handled by using the methods of the ColorDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either
+    ColorDialogRequest::dialogAccept() or ColorDialogRequest::dialogReject() afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::fileDialogRequested(FileDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a file picker dialog is requested.
+
+    The request error can be handled by using the methods of the FileDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either FileDialogRequest::dialogAccept()
+    or FileDialogRequest::dialogReject() afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::formValidationMessageRequested(FormValidationMessageRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a validation message is requested.
+
+    The request can be handled by using the methods of the FormValidationMessageRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up.
+*/

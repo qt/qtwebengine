@@ -13,6 +13,7 @@ INCLUDEPATH += $$PWD api ../core ../core/api
 SOURCES = \
         api/qquickwebenginecertificateerror.cpp \
         api/qquickwebenginecontextmenudata.cpp \
+        api/qquickwebenginedialogrequests.cpp \
         api/qquickwebenginedownloaditem.cpp \
         api/qquickwebenginehistory.cpp \
         api/qquickwebenginefaviconprovider.cpp \
@@ -34,6 +35,7 @@ HEADERS = \
         api/qtwebengineglobal_p.h \
         api/qquickwebenginecertificateerror_p.h \
         api/qquickwebenginecontextmenudata_p.h \
+        api/qquickwebenginedialogrequests_p.h \
         api/qquickwebenginedownloaditem_p.h \
         api/qquickwebenginedownloaditem_p_p.h \
         api/qquickwebenginehistory_p.h \

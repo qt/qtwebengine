@@ -227,7 +227,7 @@ public:
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
     virtual bool isFullScreenMode() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
-    virtual void runFileChooser(FilePickerController *controller) = 0;
+    virtual void runFileChooser(QSharedPointer<FilePickerController>) = 0;
     virtual void showColorDialog(QSharedPointer<ColorChooserController>) = 0;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;

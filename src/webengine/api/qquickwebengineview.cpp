@@ -54,6 +54,7 @@
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qquickwebenginescript_p_p.h"
+#include "qquickwebenginedialogrequests_p.h"
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 #include "qquickwebenginetestsupport_p.h"
@@ -380,7 +381,13 @@ void QQuickWebEngineViewPrivate::navigationRequested(int navigationType, const Q
 
 void QQuickWebEngineViewPrivate::javascriptDialog(QSharedPointer<JavaScriptDialogController> dialog)
 {
-    ui()->showDialog(dialog);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineJavaScriptDialogRequest *request = new QQuickWebEngineJavaScriptDialogRequest(dialog);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->javaScriptDialogRequested(request);
+    if (!request->isAccepted())
+        ui()->showDialog(dialog);
 }
 
 void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController)
@@ -405,12 +412,24 @@ void QQuickWebEngineViewPrivate::runGeolocationPermissionRequest(const QUrl &url
 
 void QQuickWebEngineViewPrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
 {
-    ui()->showColorDialog(controller);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineColorDialogRequest *request = new QQuickWebEngineColorDialogRequest(controller);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->colorDialogRequested(request);
+    if (!request->isAccepted())
+        ui()->showColorDialog(controller);
 }
 
-void QQuickWebEngineViewPrivate::runFileChooser(FilePickerController* controller)
+void QQuickWebEngineViewPrivate::runFileChooser(QSharedPointer<FilePickerController> controller)
 {
-    ui()->showFilePicker(controller);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineFileDialogRequest *request = new QQuickWebEngineFileDialogRequest(controller);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->fileDialogRequested(request);
+    if (!request->isAccepted())
+        ui()->showFilePicker(controller);
 }
 
 void QQuickWebEngineViewPrivate::passOnFocus(bool reverse)
@@ -678,7 +697,13 @@ void QQuickWebEngineViewPrivate::javaScriptConsoleMessage(JavaScriptConsoleMessa
 
 void QQuickWebEngineViewPrivate::authenticationRequired(QSharedPointer<AuthenticationDialogController> controller)
 {
-    ui()->showDialog(controller);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineAuthenticationDialogRequest *request = new QQuickWebEngineAuthenticationDialogRequest(controller);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->authenticationDialogRequested(request);
+    if (!request->isAccepted())
+        ui()->showDialog(controller);
 }
 
 void QQuickWebEngineViewPrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
@@ -1100,18 +1125,40 @@ void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, cons
     if (m_testSupport)
         Q_EMIT m_testSupport->validationMessageShown(mainText, subText);
 #endif
-
-    ui()->showMessageBubble(anchor, mainText, subText);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineFormValidationMessageRequest *request;
+    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::RequestTypeShow,
+                                                          anchor,mainText,subText);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->formValidationMessageRequested(request);
+    if (!request->isAccepted())
+        ui()->showMessageBubble(anchor, mainText, subText);
 }
 
 void QQuickWebEngineViewPrivate::hideValidationMessage()
 {
-    ui()->hideMessageBubble();
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineFormValidationMessageRequest *request;
+    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::RequestTypeHide);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->formValidationMessageRequested(request);
+    if (!request->isAccepted())
+        ui()->hideMessageBubble();
 }
 
 void QQuickWebEngineViewPrivate::moveValidationMessage(const QRect &anchor)
 {
-    ui()->moveMessageBubble(anchor);
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineFormValidationMessageRequest *request;
+    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::RequestTypeMove,
+                                                          anchor);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(request);
+    Q_EMIT q->formValidationMessageRequested(request);
+    if (!request->isAccepted())
+        ui()->moveMessageBubble(anchor);
 }
 
 void QQuickWebEngineViewPrivate::updateScrollPosition(const QPointF &position)

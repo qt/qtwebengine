@@ -154,6 +154,7 @@ private:
     QVector<int64_t> m_loadingErrorFrameList;
     QScopedPointer<FaviconManager> m_faviconManager;
     SavePageInfo m_savePageInfo;
+    QSharedPointer<FilePickerController> m_filePickerController;
 };
 
 } // namespace QtWebEngineCore

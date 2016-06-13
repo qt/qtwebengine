@@ -317,8 +317,9 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
     for (std::vector<base::string16>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
         acceptedMimeTypes.append(toQt(*it));
 
-    FilePickerController *controller = new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode), web_contents, toQt(params.default_file_name.value()), acceptedMimeTypes);
-    m_viewClient->runFileChooser(controller);
+    m_filePickerController.reset(new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
+                                                web_contents, toQt(params.default_file_name.value()), acceptedMimeTypes));
+    m_viewClient->runFileChooser(m_filePickerController);
 }
 
 bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)

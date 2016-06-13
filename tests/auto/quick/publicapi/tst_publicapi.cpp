@@ -36,6 +36,7 @@
 #include <QtWebEngine/QQuickWebEngineProfile>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
+#include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
 #include <private/qquickwebenginehistory_p.h>
 #include <private/qquickwebengineloadrequest_p.h>
@@ -65,6 +66,11 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineSettings::staticMetaObject
     << &QQuickWebEngineFullScreenRequest::staticMetaObject
     << &QQuickWebEngineSingleton::staticMetaObject
+    << &QQuickWebEngineAuthenticationDialogRequest::staticMetaObject
+    << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
+    << &QQuickWebEngineColorDialogRequest::staticMetaObject
+    << &QQuickWebEngineFileDialogRequest::staticMetaObject
+    << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();

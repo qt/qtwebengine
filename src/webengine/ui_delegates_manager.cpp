@@ -445,7 +445,7 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
     QMetaObject::invokeMethod(authenticationDialog, "open");
 }
 
-void UIDelegatesManager::showFilePicker(FilePickerController *controller)
+void UIDelegatesManager::showFilePicker(QSharedPointer<FilePickerController> controller)
 {
 
     if (!ensureComponentLoaded(FilePicker))
@@ -475,16 +475,14 @@ void UIDelegatesManager::showFilePicker(FilePickerController *controller)
         Q_UNREACHABLE();
     }
 
-    controller->setParent(filePicker);
-
     QQmlProperty filesPickedSignal(filePicker, QStringLiteral("onFilesSelected"));
     CHECK_QML_SIGNAL_PROPERTY(filesPickedSignal, filePickerComponent->url());
     QQmlProperty rejectSignal(filePicker, QStringLiteral("onRejected"));
     CHECK_QML_SIGNAL_PROPERTY(rejectSignal, filePickerComponent->url());
     static int acceptedIndex = controller->metaObject()->indexOfSlot("accepted(QVariant)");
-    QObject::connect(filePicker, filesPickedSignal.method(), controller, controller->metaObject()->method(acceptedIndex));
+    QObject::connect(filePicker, filesPickedSignal.method(), controller.data(), controller->metaObject()->method(acceptedIndex));
     static int rejectedIndex = controller->metaObject()->indexOfSlot("rejected()");
-    QObject::connect(filePicker, rejectSignal.method(), controller, controller->metaObject()->method(rejectedIndex));
+    QObject::connect(filePicker, rejectSignal.method(), controller.data(), controller->metaObject()->method(rejectedIndex));
 
     // delete when done.
     static int deleteLaterIndex = filePicker->metaObject()->indexOfSlot("deleteLater()");

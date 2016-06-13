@@ -59,15 +59,20 @@
 QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
+class QQuickWebEngineAuthenticationDialogRequest;
 class QQuickWebEngineCertificateError;
+class QQuickWebEngineColorDialogRequest;
 class QQuickWebEngineContextMenuData;
 class QQuickWebEngineFaviconProvider;
+class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineHistory;
+class QQuickWebEngineJavaScriptDialogRequest;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
+class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewExperimental;
 class QQuickWebEngineViewPrivate;
 
@@ -506,6 +511,12 @@ Q_SIGNALS:
     Q_REVISION(3) void audioMutedChanged(bool muted);
     Q_REVISION(3) void recentlyAudibleChanged(bool recentlyAudible);
     Q_REVISION(3) void webChannelWorldChanged(uint);
+
+    Q_REVISION(4) void authenticationDialogRequested(QQuickWebEngineAuthenticationDialogRequest *request);
+    Q_REVISION(4) void javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest *request);
+    Q_REVISION(4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
+    Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
+    Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;

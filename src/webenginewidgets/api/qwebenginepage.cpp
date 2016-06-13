@@ -1542,7 +1542,7 @@ static inline QWebEnginePage::FileSelectionMode toPublic(FilePickerController::F
     return static_cast<QWebEnginePage::FileSelectionMode>(mode);
 }
 
-void QWebEnginePagePrivate::runFileChooser(FilePickerController *controller)
+void QWebEnginePagePrivate::runFileChooser(QSharedPointer<FilePickerController> controller)
 {
     Q_Q(QWebEnginePage);
 
