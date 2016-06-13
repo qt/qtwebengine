@@ -1056,8 +1056,11 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             break;
         }
         case QInputMethodEvent::Cursor:
-            if (attribute.length)
-                cursorPositionInPreeditString = attribute.start;
+            // Always set the position of the cursor, even if it's marked invisible by Qt, otherwise
+            // there is no way the user will know which part of the composition string will be
+            // changed, when performing an IME-specific action (like selecting a different word
+            // suggestion).
+            cursorPositionInPreeditString = attribute.start;
             break;
         case QInputMethodEvent::Selection:
             selectionRange.set_start(qMin(attribute.start, (attribute.start + attribute.length)));
