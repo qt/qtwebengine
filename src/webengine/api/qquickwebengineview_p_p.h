@@ -52,7 +52,6 @@
 //
 
 #include "qquickwebengineview_p.h"
-#include "qquickwebenginecontextmenudata_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
@@ -70,6 +69,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
+class QQuickWebEngineContextMenuRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
 
@@ -101,17 +101,13 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
-    Q_PROPERTY(const QQuickWebEngineContextMenuData *contextMenuData READ contextMenuData NOTIFY contextMenuDataChanged)
 
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
 
-    const QQuickWebEngineContextMenuData *contextMenuData() const;
-
 Q_SIGNALS:
     void extraContextMenuEntriesComponentChanged();
-    void contextMenuDataChanged();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -221,7 +217,7 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
-    QQuickWebEngineContextMenuData contextMenuData;
+    QtWebEngineCore::WebEngineContextMenuData m_contextMenuData;
     QUrl explicitUrl;
     QUrl iconUrl;
     QQuickWebEngineFaviconProvider *faviconProvider;

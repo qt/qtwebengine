@@ -45,6 +45,7 @@
 #include <private/qquickwebenginescript_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
+#include <private/qquickwebenginecontextmenurequest_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -71,6 +72,7 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineColorDialogRequest::staticMetaObject
     << &QQuickWebEngineFileDialogRequest::staticMetaObject
     << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
+    << &QQuickWebEngineContextMenuRequest::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();

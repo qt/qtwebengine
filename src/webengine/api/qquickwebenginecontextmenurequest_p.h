@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-#ifndef QQUICKWEBENGINECONTEXTMENUDATA_P_H
-#define QQUICKWEBENGINECONTEXTMENUDATA_P_H
+#ifndef QQUICKWEBENGINECONTEXTMENUREQUEST_H
+#define QQUICKWEBENGINECONTEXTMENUREQUEST_H
 
 //
 //  W A R N I N G
@@ -49,30 +49,21 @@
 // version without notice, or even be removed.
 //
 // We mean it.
-//
 
 #include <private/qtwebengineglobal_p.h>
+#include <QtCore/QScopedPointer>
 #include <QtCore/QObject>
-#include <QtCore/QPoint>
-#include <QtCore/QString>
 #include <QtCore/QUrl>
-#include <QtQuick/QQuickItem>
 
 namespace QtWebEngineCore {
-class WebEngineContextMenuData;
+    class WebEngineContextMenuData;
 }
 
 QT_BEGIN_NAMESPACE
 
-class QQuickWebEngineView;
-class QQuickWebEngineViewPrivate;
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineContextMenuData : public QObject {
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineContextMenuRequest: public QObject {
     Q_OBJECT
 public:
-    QQuickWebEngineContextMenuData();
-    ~QQuickWebEngineContextMenuData();
-
     enum MediaType {
         MediaTypeNone,
         MediaTypeImage,
@@ -84,56 +75,41 @@ public:
     };
     Q_ENUM(MediaType)
 
-    Q_PROPERTY(bool isValid READ isValid NOTIFY isValidChanged)
-    Q_PROPERTY(QPoint position READ position NOTIFY positionChanged)
-    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
-    Q_PROPERTY(QString linkText READ linkText NOTIFY linkTextChanged)
-    Q_PROPERTY(QUrl linkUrl READ linkUrl NOTIFY linkUrlChanged)
-    Q_PROPERTY(QUrl mediaUrl READ mediaUrl NOTIFY mediaUrlChanged)
-    Q_PROPERTY(MediaType mediaType READ mediaType NOTIFY mediaTypeChanged)
-    Q_PROPERTY(bool isContentEditable READ isContentEditable NOTIFY isContentEditableChanged)
-    Q_PROPERTY(QString misspelledWord READ misspelledWord NOTIFY misspelledWordChanged FINAL REVISION 1)
-    Q_PROPERTY(QStringList spellCheckerSuggestions READ spellCheckerSuggestions NOTIFY spellCheckerSuggestionsChanged FINAL REVISION 1)
+    Q_PROPERTY(int x READ x CONSTANT FINAL)
+    Q_PROPERTY(int y READ y CONSTANT FINAL)
+    Q_PROPERTY(QString selectedText READ selectedText CONSTANT FINAL)
+    Q_PROPERTY(QString linkText READ linkText CONSTANT FINAL)
+    Q_PROPERTY(QUrl linkUrl READ linkUrl CONSTANT FINAL)
+    Q_PROPERTY(QUrl mediaUrl READ mediaUrl CONSTANT FINAL)
+    Q_PROPERTY(MediaType mediaType READ mediaType CONSTANT FINAL)
+    Q_PROPERTY(bool isContentEditable READ isContentEditable CONSTANT FINAL)
+    Q_PROPERTY(QString misspelledWord READ misspelledWord CONSTANT FINAL)
+    Q_PROPERTY(QStringList spellCheckerSuggestions READ spellCheckerSuggestions CONSTANT FINAL)
+    Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted FINAL)
 
-    bool isValid() const;
-
-    QPoint position() const;
+    ~QQuickWebEngineContextMenuRequest();
+    int x() const;
+    int y() const;
     QString selectedText() const;
     QString linkText() const;
     QUrl linkUrl() const;
     QUrl mediaUrl() const;
     MediaType mediaType() const;
     bool isContentEditable() const;
-
     QString misspelledWord() const;
     QStringList spellCheckerSuggestions() const;
-
-Q_SIGNALS:
-    void isValidChanged();
-    void positionChanged();
-    void selectedTextChanged();
-    void linkTextChanged();
-    void linkUrlChanged();
-    void mediaUrlChanged();
-    void mediaTypeChanged();
-    void isContentEditableChanged();
-    Q_REVISION(1) void misspelledWordChanged();
-    Q_REVISION(1) void spellCheckerSuggestionsChanged();
+    bool isAccepted() const;
+    void setAccepted(bool accepted);
 
 private:
-    void update(const QtWebEngineCore::WebEngineContextMenuData &update);
-
+    QQuickWebEngineContextMenuRequest(const QtWebEngineCore::WebEngineContextMenuData &data, QObject *parent = nullptr);
+    QScopedPointer<QtWebEngineCore::WebEngineContextMenuData> m_data;
+    bool m_accepted;
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;
-    Q_DISABLE_COPY(QQuickWebEngineContextMenuData)
-    typedef QtWebEngineCore::WebEngineContextMenuData QQuickWebEngineContextMenuDataPrivate;
-    QQuickWebEngineContextMenuData(const QQuickWebEngineContextMenuDataPrivate *priv, QObject *parent = 0);
-    QQuickWebEngineContextMenuData &operator=(const QQuickWebEngineContextMenuDataPrivate *priv);
-    const QQuickWebEngineContextMenuDataPrivate *d;
+    Q_DISABLE_COPY(QQuickWebEngineContextMenuRequest)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(const QQuickWebEngineContextMenuData);
-
-#endif // QQUICKWEBENGINECONTEXTMENUDATA_P_H
+#endif // QQUICKWEBENGINECONTEXTMENUREQUEST_H

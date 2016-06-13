@@ -41,6 +41,7 @@
 #include <QtWebEngine/QQuickWebEngineProfile>
 
 #include "qquickwebenginecertificateerror_p.h"
+#include "qquickwebenginecontextmenurequest_p.h"
 #include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginehistory_p.h"
@@ -110,6 +111,8 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
             tr("Cannot create a separate instance of FullScreenRequest"));
 
+        qmlRegisterUncreatableType<QQuickWebEngineContextMenuRequest>(uri, 1, 4, "ContextMenuRequest",
+                                                                    tr("Cannot create separate instance of ContextMenuRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAuthenticationDialogRequest>(uri, 1, 4, "AuthenticationDialogRequest",
                                                                        tr("Cannot create separate instance of AuthenticationDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineJavaScriptDialogRequest>(uri, 1, 4, "JavaScriptDialogRequest",

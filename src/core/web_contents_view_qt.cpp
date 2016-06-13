@@ -155,19 +155,19 @@ ASSERT_ENUMS_MATCH(WebEngineContextMenuData::MediaCanRotate, blink::WebContextMe
 static inline WebEngineContextMenuData fromParams(const content::ContextMenuParams &params)
 {
     WebEngineContextMenuData ret;
-    ret.pos = QPoint(params.x, params.y);
-    ret.linkUrl = toQt(params.link_url);
-    ret.linkText = toQt(params.link_text.data());
-    ret.selectedText = toQt(params.selection_text.data());
-    ret.mediaUrl = toQt(params.src_url);
-    ret.mediaType = (WebEngineContextMenuData::MediaType)params.media_type;
-    ret.hasImageContent = params.has_image_contents;
-    ret.mediaFlags = params.media_flags;
-    ret.suggestedFileName = toQt(params.suggested_filename.data());
-    ret.isEditable = params.is_editable;
+    ret.setPosition(QPoint(params.x, params.y));
+    ret.setLinkUrl(toQt(params.link_url));
+    ret.setLinkText(toQt(params.link_text.data()));
+    ret.setSelectedText(toQt(params.selection_text.data()));
+    ret.setMediaUrl(toQt(params.src_url));
+    ret.setMediaType((WebEngineContextMenuData::MediaType)params.media_type);
+    ret.setHasImageContent(params.has_image_contents);
+    ret.setMediaFlags((WebEngineContextMenuData::MediaFlags)params.media_flags);
+    ret.setSuggestedFileName(toQt(params.suggested_filename.data()));
+    ret.setIsEditable(params.is_editable);
 #if defined(ENABLE_SPELLCHECK)
-    ret.misspelledWord = toQt(params.misspelled_word);
-    ret.spellCheckerSuggestions = fromVector(params.dictionary_suggestions);
+    ret.setMisspelledWord(toQt(params.misspelled_word));
+    ret.setSpellCheckerSuggestions(fromVector(params.dictionary_suggestions));
 #endif
     return ret;
 }
@@ -183,7 +183,7 @@ void WebContentsViewQt::ShowContextMenu(content::RenderFrameHost *, const conten
     // must be initialized to true due to the way how the initialization sequence
     // in SpellCheck works ie. typing the first word triggers the creation
     // of the SpellcheckService. Use user preference store instead.
-    contextMenuData.isSpellCheckerEnabled = m_client->browserContextAdapter()->isSpellCheckEnabled();
+    contextMenuData.setIsSpellCheckerEnabled(m_client->browserContextAdapter()->isSpellCheckEnabled());
 #endif
     m_client->contextMenuRequested(contextMenuData);
 }

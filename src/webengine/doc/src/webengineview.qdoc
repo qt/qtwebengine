@@ -1231,3 +1231,16 @@
     \note Signal handlers need to call \c{request.accepted = true} to prevent a
     default dialog from showing up.
 */
+
+/*!
+    \qmlsignal WebEngineView::contextMenuRequested(ContextMenuRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a context menu is requested.
+
+    The request can be handled by using the properties of the ContextMenuRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default context menu from showing up.
+*/

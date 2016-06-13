@@ -41,7 +41,6 @@
 
 #include "qquickwebengineview_p.h"
 #include "qquickwebengineview_p_p.h"
-#include "qquickwebenginecontextmenudata_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -70,10 +69,6 @@ public:
             tr("Cannot create a separate instance of WebEngineViewExperimental"));
         qmlRegisterUncreatableType<QQuickWebEngineViewport>(uri, 1, 0, "WebEngineViewport",
             tr("Cannot create a separate instance of WebEngineViewport"));
-        qmlRegisterUncreatableType<const QQuickWebEngineContextMenuData>(uri, 1, 0, "WebEngineContextMenuData",
-            tr("Cannot create a separate instance of WebEngineContextMenuData"));
-        qmlRegisterUncreatableType<const QQuickWebEngineContextMenuData, 1>(uri, 1, 1, "WebEngineContextMenuData",
-            tr("Cannot create a separate instance of WebEngineContextMenuData"));
         // Use the latest revision of QQuickWebEngineView when importing QtWebEngine.experimental 1.0
         qmlRegisterRevision<QQuickWebEngineView, LATEST_WEBENGINEVIEW_REVISION>(uri, 1, 1);
     }

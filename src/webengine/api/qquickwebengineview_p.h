@@ -62,7 +62,7 @@ class QQmlWebChannel;
 class QQuickWebEngineAuthenticationDialogRequest;
 class QQuickWebEngineCertificateError;
 class QQuickWebEngineColorDialogRequest;
-class QQuickWebEngineContextMenuData;
+class QQuickWebEngineContextMenuRequest;
 class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineHistory;
@@ -511,7 +511,7 @@ Q_SIGNALS:
     Q_REVISION(3) void audioMutedChanged(bool muted);
     Q_REVISION(3) void recentlyAudibleChanged(bool recentlyAudible);
     Q_REVISION(3) void webChannelWorldChanged(uint);
-
+    Q_REVISION(4) void contextMenuRequested(QQuickWebEngineContextMenuRequest *request);
     Q_REVISION(4) void authenticationDialogRequested(QQuickWebEngineAuthenticationDialogRequest *request);
     Q_REVISION(4) void javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest *request);
     Q_REVISION(4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
