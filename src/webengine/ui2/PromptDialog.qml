@@ -37,60 +37,76 @@
 **
 ****************************************************************************/
 
-// FIXME: prompt missing in Qt Quick Dialogs atm. Make our own for now.
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.0
 import QtQuick 2.5
+import QtQuick.Controls 2.0 as Controls
+import QtQuick.Layouts 1.0
+import QtQuick.Dialogs 1.2
 
-ApplicationWindow {
-    signal input(string text);
-    signal accepted;
-    signal rejected;
-    property alias text: message.text;
-    property alias prompt: field.text;
+Dialog {
+    property alias text: message.text
+    property alias prompt: field.text
+    property bool handled: false
+    signal input(string text)
+    signal accepted()
+    signal rejected()
+    title: qsTr("Prompt Dialog")
+    modality: Qt.NonModal
 
-    width: 350
-    height: 100
-    flags: Qt.Dialog
-
-    onClosing: {
-        rejected();
-    }
-
-    function open() {
-        show();
-    }
-
-    ColumnLayout {
-        anchors.fill: parent;
-        anchors.margins: 4;
-        Text {
-            id: message;
-            Layout.fillWidth: true;
+    //handle the case where users simply closes the dialog
+    onVisibilityChanged: {
+        if (visible == false && handled == false) {
+            handled = true;
+            rejected();
+        } else {
+            handled = false;
         }
-        TextField {
-            id:field;
-            Layout.fillWidth: true;
+    }
+
+    function acceptDialog() {
+        input(field.text);
+        accepted();
+        handled = true;
+        close();
+    }
+
+    function rejectDialog() {
+        rejected();
+        handled = true;
+        close();
+    }
+
+    contentItem: ColumnLayout {
+        id: rootLayout
+        anchors.fill: parent
+        anchors.margins: 4
+        property int minimumWidth: rootLayout.implicitWidth + rootLayout.doubleMargins
+        property int minimumHeight: rootLayout.implicitHeight + rootLayout.doubleMargins
+        property int doubleMargins: anchors.margins * 2
+        SystemPalette { id: palette; colorGroup: SystemPalette.Active }
+        Text {
+            id: message
+            Layout.fillWidth: true
+            color: palette.windowText
+        }
+        Controls.TextField {
+            id:field
+            focus: true
+            Layout.fillWidth: true
+            onAccepted: acceptDialog()
+        }
+        Item {
+            Layout.fillHeight: true
         }
         RowLayout {
             Layout.alignment: Qt.AlignRight
-            spacing: 8;
-            Button {
-                text: "OK"
-                onClicked: {
-                    input(field.text)
-                    accepted();
-                    close();
-                    destroy();
-                }
+            spacing: 8
+            Controls.Button {
+                text: qsTr("OK")
+                onClicked: acceptDialog()
             }
-            Button {
-                text: "Cancel"
-                onClicked: {
-                    rejected();
-                    close();
-                    destroy();
-                }
+            Controls.Button {
+                text: qsTr("Cancel")
+                onClicked: rejectDialog()
             }
         }
     }

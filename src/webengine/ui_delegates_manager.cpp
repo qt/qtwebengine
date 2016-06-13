@@ -81,22 +81,6 @@ static QString fileNameForComponent(UIDelegatesManager::ComponentType type)
     return QString();
 }
 
-static QString getUIDelegatesImportDir(QQmlEngine *engine) {
-    static QString importDir;
-    static bool initialized = false;
-    if (initialized)
-        return importDir;
-    Q_FOREACH (const QString &path, engine->importPathList()) {
-        QFileInfo fi(path % QLatin1String("/QtWebEngine/UIDelegates/"));
-        if (fi.exists()) {
-            importDir = fi.absolutePath();
-            break;
-        }
-    }
-    initialized = true;
-    return importDir;
-}
-
 static QPoint calculateToolTipPosition(QPoint &position, QSize &toolTip) {
     QRect screen;
     QList<QScreen *> screens = QGuiApplication::screens();
@@ -150,16 +134,32 @@ UIDelegatesManager::UIDelegatesManager(QQuickWebEngineView *view)
 {
 }
 
+UIDelegatesManager::~UIDelegatesManager()
+{
+}
+
 #define COMPONENT_MEMBER_CASE_STATEMENT(TYPE, COMPONENT) \
     case TYPE: \
         component = &COMPONENT##Component; \
         break;
 
+bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine) {
+    foreach (const QString &path, engine->importPathList()) {
+        QFileInfo fi(path % QLatin1String("/QtWebEngine/UIDelegates/"));
+        if (fi.exists()) {
+            dirs << fi.absolutePath();
+            return true;
+        }
+    }
+    return false;
+}
+
 bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 {
     QQmlEngine* engine = qmlEngine(m_view);
-    if (getUIDelegatesImportDir(engine).isNull())
+    if (m_importDirs.isEmpty() && !initializeImportDirs(m_importDirs, engine))
         return false;
+
     QQmlComponent **component;
     switch (type) {
     FOR_EACH_COMPONENT_TYPE(COMPONENT_MEMBER_CASE_STATEMENT, NO_SEPARATOR)
@@ -176,20 +176,25 @@ bool UIDelegatesManager::ensureComponentLoaded(ComponentType type)
 #endif
     if (!engine)
         return false;
-    QFileInfo fi(getUIDelegatesImportDir(engine) % QLatin1Char('/') % fileName);
-    if (!fi.exists())
-        return false;
-    // FIXME: handle async loading
-    *component = (new QQmlComponent(engine, QUrl::fromLocalFile(fi.absoluteFilePath()), QQmlComponent::PreferSynchronous, m_view));
 
-    if ((*component)->status() != QQmlComponent::Ready) {
-        Q_FOREACH (const QQmlError& err, (*component)->errors())
-            qWarning("QtWebEngine: component error: %s\n", qPrintable(err.toString()));
-        delete *component;
-        *component = 0;
-        return false;
+    foreach (const QString &importDir, m_importDirs) {
+        QFileInfo fi(importDir % QLatin1Char('/') % fileName);
+        if (!fi.exists())
+            continue;
+        // FIXME: handle async loading
+        *component = (new QQmlComponent(engine, QUrl::fromLocalFile(fi.absoluteFilePath()),
+                                        QQmlComponent::PreferSynchronous, m_view));
+
+        if ((*component)->status() != QQmlComponent::Ready) {
+            foreach (const QQmlError &err, (*component)->errors())
+                qWarning("QtWebEngine: component error: %s\n", qPrintable(err.toString()));
+            delete *component;
+            *component = nullptr;
+            return false;
+        }
+        return true;
     }
-    return true;
+    return false;
 }
 
 #define CHECK_QML_SIGNAL_PROPERTY(prop, location) \
@@ -241,11 +246,11 @@ QObject *UIDelegatesManager::addMenu(QObject *parentMenu, const QString &title, 
 {
     Q_ASSERT(parentMenu);
     if (!ensureComponentLoaded(Menu))
-        return 0;
+        return nullptr;
     QQmlContext *context = qmlContext(m_view);
     QObject *menu = menuComponent->beginCreate(context);
     // set visual parent for non-Window-based menus
-    if (QQuickItem* item = qobject_cast<QQuickItem*>(menu))
+    if (QQuickItem *item = qobject_cast<QQuickItem*>(menu))
         item->setParentItem(m_view);
 
     if (!title.isEmpty())
@@ -321,7 +326,7 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QQmlContext *context = qmlContext(m_view);
     QObject *dialog = dialogComponent->beginCreate(context);
     // set visual parent for non-Window-based dialogs
-    if (QQuickItem* item = qobject_cast<QQuickItem*>(dialog))
+    if (QQuickItem *item = qobject_cast<QQuickItem*>(dialog))
         item->setParentItem(m_view);
     dialog->setParent(m_view);
     QQmlProperty textProp(dialog, QStringLiteral("text"));
@@ -347,8 +352,6 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
         CHECK_QML_SIGNAL_PROPERTY(inputSignal, dialogComponent->url());
         static int setTextIndex = dialogController->metaObject()->indexOfSlot("textProvided(QString)");
         QObject::connect(dialog, inputSignal.method(), dialogController.data(), dialogController->metaObject()->method(setTextIndex));
-        QQmlProperty closingSignal(dialog, QStringLiteral("onClosing"));
-        QObject::connect(dialog, closingSignal.method(), dialogController.data(), dialogController->metaObject()->method(rejectIndex));
     }
 
     dialogComponent->completeCreate();
@@ -369,7 +372,7 @@ void UIDelegatesManager::showColorDialog(QSharedPointer<ColorChooserController> 
 
     QQmlContext *context = qmlContext(m_view);
     QObject *colorDialog = colorDialogComponent->beginCreate(context);
-    if (QQuickItem* item = qobject_cast<QQuickItem*>(colorDialog))
+    if (QQuickItem *item = qobject_cast<QQuickItem*>(colorDialog))
         item->setParentItem(m_view);
     colorDialog->setParent(m_view);
 
@@ -409,7 +412,7 @@ void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogControlle
     QQmlContext *context = qmlContext(m_view);
     QObject *authenticationDialog = authenticationDialogComponent->beginCreate(context);
     // set visual parent for non-Window-based dialogs
-    if (QQuickItem* item = qobject_cast<QQuickItem*>(authenticationDialog))
+    if (QQuickItem *item = qobject_cast<QQuickItem*>(authenticationDialog))
         item->setParentItem(m_view);
     authenticationDialog->setParent(m_view);
 
@@ -450,7 +453,7 @@ void UIDelegatesManager::showFilePicker(FilePickerController *controller)
 
     QQmlContext *context = qmlContext(m_view);
     QObject *filePicker = filePickerComponent->beginCreate(context);
-    if (QQuickItem* item = qobject_cast<QQuickItem*>(filePicker))
+    if (QQuickItem *item = qobject_cast<QQuickItem*>(filePicker))
         item->setParentItem(m_view);
     filePicker->setParent(m_view);
     filePickerComponent->completeCreate();
@@ -489,6 +492,11 @@ void UIDelegatesManager::showFilePicker(FilePickerController *controller)
     QObject::connect(filePicker, rejectSignal.method(), filePicker, filePicker->metaObject()->method(deleteLaterIndex));
 
     QMetaObject::invokeMethod(filePicker, "open");
+}
+
+void UIDelegatesManager::showMenu(QObject *menu)
+{
+     QMetaObject::invokeMethod(menu, "popup");
 }
 
 void UIDelegatesManager::showMessageBubble(const QRect &anchor, const QString &mainText, const QString &subText)
@@ -555,6 +563,86 @@ void UIDelegatesManager::showToolTip(const QString &text)
     QQmlProperty(m_toolTip.data(), QStringLiteral("y")).write(position.y());
 
     QMetaObject::invokeMethod(m_toolTip.data(), "open");
+}
+
+UI2DelegatesManager::UI2DelegatesManager(QQuickWebEngineView *view) : UIDelegatesManager(view)
+{
+
+}
+
+bool UI2DelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
+{
+    foreach (const QString &path, engine->importPathList()) {
+        QFileInfo fi1(path % QLatin1String("/QtWebEngine/Controls2Delegates/"));
+        QFileInfo fi2(path % QLatin1String("/QtWebEngine/UIDelegates/"));
+        if (fi1.exists() && fi2.exists()) {
+            dirs << fi1.absolutePath() << fi2.absolutePath();
+            return true;
+        }
+    }
+    return false;
+}
+
+QObject *UI2DelegatesManager::addMenu(QObject *parentMenu, const QString &title, const QPoint &pos)
+{
+    Q_ASSERT(parentMenu);
+    if (!ensureComponentLoaded(Menu))
+        return nullptr;
+    QQmlContext *context = qmlContext(m_view);
+    QObject *menu = menuComponent->beginCreate(context);
+
+    // set visual parent for non-Window-based menus
+    if (QQuickItem *item = qobject_cast<QQuickItem*>(menu))
+        item->setParentItem(m_view);
+
+    if (!title.isEmpty())
+        menu->setProperty("title", title);
+    if (!pos.isNull()) {
+        menu->setProperty("x", pos.x());
+        menu->setProperty("y", pos.y());
+    }
+
+    menu->setParent(parentMenu);
+    QQmlProperty doneSignal(menu, QStringLiteral("onDone"));
+    CHECK_QML_SIGNAL_PROPERTY(doneSignal, menuComponent->url())
+    static int deleteLaterIndex = menu->metaObject()->indexOfSlot("deleteLater()");
+    QObject::connect(menu, doneSignal.method(), menu, menu->metaObject()->method(deleteLaterIndex));
+    menuComponent->completeCreate();
+    return menu;
+}
+
+void UI2DelegatesManager::addMenuItem(MenuItemHandler *menuItemHandler, const QString &text,
+                                      const QString &/*iconName*/, bool enabled,
+                                      bool checkable, bool checked)
+{
+    Q_ASSERT(menuItemHandler);
+    if (!ensureComponentLoaded(MenuItem))
+        return;
+
+    QObject *it = menuItemComponent->beginCreate(qmlContext(m_view));
+
+    it->setProperty("text", text);
+    it->setProperty("enabled", enabled);
+    it->setProperty("checked", checked);
+    it->setProperty("checkable", checkable);
+
+    QQmlProperty signal(it, QStringLiteral("onTriggered"));
+    CHECK_QML_SIGNAL_PROPERTY(signal, menuItemComponent->url());
+    QObject::connect(it, signal.method(), menuItemHandler,
+                     QMetaMethod::fromSignal(&MenuItemHandler::triggered));
+    menuItemComponent->completeCreate();
+
+    QObject *menu = menuItemHandler->parent();
+    it->setParent(menu);
+
+    QQmlListReference entries(menu, defaultPropertyName(menu), qmlEngine(m_view));
+    if (entries.isValid())
+        entries.append(it);
+}
+
+void UI2DelegatesManager::showMenu(QObject *menu)
+{
+    QMetaObject::invokeMethod(menu, "open");
 }
 
 } // namespace QtWebEngineCore

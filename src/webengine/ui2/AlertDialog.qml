@@ -37,62 +37,62 @@
 **
 ****************************************************************************/
 
-// FIXME: prompt missing in Qt Quick Dialogs atm. Make our own for now.
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.0
 import QtQuick 2.5
+import QtQuick.Controls 2.0 as Controls
+import QtQuick.Dialogs 1.2
+import QtQuick.Layouts 1.0
 
-ApplicationWindow {
-    signal input(string text);
-    signal accepted;
-    signal rejected;
-    property alias text: message.text;
-    property alias prompt: field.text;
+Dialog {
+    property alias text: message.text
+    property bool handled: false
+    signal accepted()
+    signal rejected()
+    title: qsTr("Alert Dialog")
+    modality: Qt.NonModal
 
-    width: 350
-    height: 100
-    flags: Qt.Dialog
-
-    onClosing: {
-        rejected();
+    //handle the case where users simply closes the dialog
+    onVisibilityChanged: {
+        if (visible == false && handled == false) {
+            handled = true;
+            rejected();
+        } else {
+            handled = false;
+        }
     }
 
-    function open() {
-        show();
+    function acceptDialog() {
+        accepted();
+        handled = true;
+        close();
     }
 
-    ColumnLayout {
-        anchors.fill: parent;
-        anchors.margins: 4;
-        Text {
-            id: message;
-            Layout.fillWidth: true;
-        }
-        TextField {
-            id:field;
-            Layout.fillWidth: true;
-        }
+    contentItem: ColumnLayout {
+        id: rootLayout
+        anchors.fill: parent
+        anchors.margins: 4
+        property int minimumWidth: rootLayout.implicitWidth + rootLayout.doubleMargins
+        property int minimumHeight: rootLayout.implicitHeight + rootLayout.doubleMargins
+        property int doubleMargins: anchors.margins * 2
+        SystemPalette { id: palette; colorGroup: SystemPalette.Active }
         RowLayout {
             Layout.alignment: Qt.AlignRight
-            spacing: 8;
-            Button {
-                text: "OK"
-                onClicked: {
-                    input(field.text)
-                    accepted();
-                    close();
-                    destroy();
-                }
+            spacing: 8
+            Image {
+                source: "information.png"
             }
-            Button {
-                text: "Cancel"
-                onClicked: {
-                    rejected();
-                    close();
-                    destroy();
-                }
+            Text {
+                id: message
+                Layout.fillWidth: true
+                color: palette.windowText
             }
         }
+        Item {
+            Layout.fillHeight: true
+        }
+        Controls.Button {
+            Layout.alignment: Qt.AlignHCenter
+            text: qsTr("OK")
+            onClicked: acceptDialog()
+        }
     }
-
 }

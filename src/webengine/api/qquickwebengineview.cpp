@@ -145,8 +145,7 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
     , m_dpiScale(1.0)
     , m_backgroundColor(Qt::white)
     , m_defaultZoomFactor(1.0)
-    // QTBUG-53467
-    , m_menuEnabled(true)
+    , m_ui2Enabled(false)
 {
     // The gold standard for mobile web content is 160 dpi, and the devicePixelRatio expected
     // is the (possibly quantized) ratio of device dpi to 160 dpi.
@@ -164,8 +163,26 @@ QQuickWebEngineViewPrivate::QQuickWebEngineViewPrivate()
         // 1x, 2x, 3x etc assets that fit an integral number of pixels.
         setDevicePixelRatio(qMax(1, qRound(webPixelRatio)));
     }
+
     if (platform == QLatin1Literal("eglfs"))
-        m_menuEnabled = false;
+        m_ui2Enabled = true;
+
+    const QByteArray dialogSet = qgetenv("QTWEBENGINE_DIALOG_SET");
+
+    if (!dialogSet.isEmpty()) {
+        if (dialogSet == QByteArrayLiteral("QtQuickControls2")) {
+            m_ui2Enabled = true;
+        } else if (dialogSet == QByteArrayLiteral("QtQuickControls1")
+                   && m_ui2Enabled) {
+            m_ui2Enabled = false;
+            qWarning("QTWEBENGINE_DIALOG_SET=QtQuickControls1 forces use of Qt Quick Controls 1 "
+                     "on an eglfs backend. This can crash your application!");
+        } else {
+            qWarning("Ignoring QTWEBENGINE_DIALOG_SET environment variable set to %s. Accepted "
+                     "values are \"QtQuickControls1\" and \"QtQuickControls2\"", dialogSet.data());
+        }
+    }
+
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
 #endif // QT_NO_ACCESSIBILITY
@@ -189,7 +206,7 @@ UIDelegatesManager *QQuickWebEngineViewPrivate::ui()
 {
     Q_Q(QQuickWebEngineView);
     if (m_uIDelegatesManager.isNull())
-        m_uIDelegatesManager.reset(new UIDelegatesManager(q));
+        m_uIDelegatesManager.reset(m_ui2Enabled ? new UI2DelegatesManager(q) : new UIDelegatesManager(q));
     return m_uIDelegatesManager.data();
 }
 
@@ -215,12 +232,6 @@ RenderWidgetHostViewQtDelegate *QQuickWebEngineViewPrivate::CreateRenderWidgetHo
 bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenuData &data)
 {
     Q_Q(QQuickWebEngineView);
-
-    if (!m_menuEnabled) {
-        qWarning("You are trying to open context menu on eglfs backend, which is not currently supported\n"
-                 "See QTBUG-53467.");
-        return false;
-    }
 
     // Assign the WebEngineView as the parent of the menu, so mouse events are properly propagated
     // on OSX.
@@ -354,7 +365,7 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
     }
 
     // Now fire the popup() method on the top level menu
-    QMetaObject::invokeMethod(menu, "popup");
+    ui()->showMenu(menu);
     return true;
 }
 

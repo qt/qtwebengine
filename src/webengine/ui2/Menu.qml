@@ -37,62 +37,21 @@
 **
 ****************************************************************************/
 
-// FIXME: prompt missing in Qt Quick Dialogs atm. Make our own for now.
-import QtQuick.Controls 1.4
-import QtQuick.Layouts 1.0
 import QtQuick 2.5
+import QtQuick.Controls 2.0 as Controls
 
-ApplicationWindow {
-    signal input(string text);
-    signal accepted;
-    signal rejected;
-    property alias text: message.text;
-    property alias prompt: field.text;
+Controls.Menu {
+    id: menu
+    signal done()
 
-    width: 350
-    height: 100
-    flags: Qt.Dialog
+    // Use private API for now
+    onAboutToHide: doneTimer.start()
 
-    onClosing: {
-        rejected();
+    // WORKAROUND On Mac the Menu may be destroyed before the MenuItem
+    // is actually triggered (see qtbase commit 08cc9b9991ae9ab51)
+    Timer {
+        id: doneTimer
+        interval: 100
+        onTriggered: menu.done()
     }
-
-    function open() {
-        show();
-    }
-
-    ColumnLayout {
-        anchors.fill: parent;
-        anchors.margins: 4;
-        Text {
-            id: message;
-            Layout.fillWidth: true;
-        }
-        TextField {
-            id:field;
-            Layout.fillWidth: true;
-        }
-        RowLayout {
-            Layout.alignment: Qt.AlignRight
-            spacing: 8;
-            Button {
-                text: "OK"
-                onClicked: {
-                    input(field.text)
-                    accepted();
-                    close();
-                    destroy();
-                }
-            }
-            Button {
-                text: "Cancel"
-                onClicked: {
-                    rejected();
-                    close();
-                    destroy();
-                }
-            }
-        }
-    }
-
 }

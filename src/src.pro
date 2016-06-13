@@ -34,8 +34,10 @@ isQMLTestSupportApiEnabled() {
 
 # FIXME: We probably want a bit more control over config options to tweak what to build/ship or not.
 # Another example of where this could be necessary is to make it easy to build proprietery codecs support.
-!contains(WEBENGINE_CONFIG, no_ui_delegates): SUBDIRS += webengine/ui
-
+!contains(WEBENGINE_CONFIG, no_ui_delegates) {
+    SUBDIRS += webengine/ui \
+               webengine/ui2
+}
 qtHaveModule(widgets) {
     SUBDIRS += webenginewidgets
     plugins.depends = webenginewidgets

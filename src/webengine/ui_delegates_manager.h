@@ -74,6 +74,7 @@ class QQmlContext;
 class QQmlComponent;
 class QQuickItem;
 class QQuickWebEngineView;
+class QQmlEngine;
 QT_END_NAMESPACE
 
 namespace QtWebEngineCore {
@@ -103,31 +104,57 @@ public:
     };
 
     UIDelegatesManager(QQuickWebEngineView *);
+    virtual ~UIDelegatesManager();
 
-    void addMenuItem(MenuItemHandler *menuItemHandler, const QString &text, const QString &iconName = QString(),
-                     bool enabled = true, bool checkable = false, bool checked = true);
+    virtual bool initializeImportDirs(QStringList &dirs, QQmlEngine *engine);
+    virtual void addMenuItem(MenuItemHandler *menuItemHandler, const QString &text,
+                             const QString &iconName = QString(),
+                             bool enabled = true,
+                             bool checkable = false, bool checked = true);
     void addMenuSeparator(QObject *menu);
-    QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
+    virtual QObject *addMenu(QObject *parentMenu, const QString &title,
+                             const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
     void showColorDialog(QSharedPointer<ColorChooserController>);
     void showDialog(QSharedPointer<JavaScriptDialogController>);
     void showDialog(QSharedPointer<AuthenticationDialogController>);
     void showFilePicker(FilePickerController *controller);
-    void showMessageBubble(const QRect &anchor, const QString &mainText, const QString &subText);
+    virtual void showMenu(QObject *menu);
+    void showMessageBubble(const QRect &anchor, const QString &mainText,
+                           const QString &subText);
     void hideMessageBubble();
     void moveMessageBubble(const QRect &anchor);
     void showToolTip(const QString &text);
 
-private:
+protected:
     bool ensureComponentLoaded(ComponentType);
 
     QQuickWebEngineView *m_view;
     QScopedPointer<QQuickItem> m_messageBubbleItem;
     QScopedPointer<QObject> m_toolTip;
+    QStringList m_importDirs;
 
     FOR_EACH_COMPONENT_TYPE(MEMBER_DECLARATION, SEMICOLON_SEPARATOR)
 
     Q_DISABLE_COPY(UIDelegatesManager)
+
+};
+
+// delegate manager for qtquickcontrols2 with fallback to qtquickcontrols1
+
+class UI2DelegatesManager : public UIDelegatesManager
+{
+public:
+    UI2DelegatesManager(QQuickWebEngineView *);
+    bool initializeImportDirs(QStringList &dirs, QQmlEngine *engine) override;
+    QObject *addMenu(QObject *parentMenu, const QString &title,
+                     const QPoint &pos = QPoint()) override;
+    void addMenuItem(MenuItemHandler *menuItemHandler, const QString &text,
+                     const QString &iconName = QString(),
+                     bool enabled = true,
+                     bool checkable = false, bool checked = false) override;
+    void showMenu(QObject *menu) override;
+    Q_DISABLE_COPY(UI2DelegatesManager)
 
 };
 
