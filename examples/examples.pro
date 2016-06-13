@@ -2,6 +2,7 @@ TEMPLATE=subdirs
 
 qtHaveModule(webengine) {
     SUBDIRS += \
+        webengine/customdialogs \
         webengine/minimal \
         webengine/quicknanobrowser
 }
