@@ -88,6 +88,12 @@
           # crbug.com/167187 fix size_t to int truncations
           'msvs_disabled_warnings': [4267, ],
         }],
+        ['enable_plugins==1', {
+          'sources': [
+            '<(DEPTH)/chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.cc',
+            '<(DEPTH)/chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h',
+          ],
+        }],
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_spellchecker_sources)' ],
           'include_dirs': [
