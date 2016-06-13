@@ -281,6 +281,9 @@
     the user clicks on the web page with the right mouse button. It is
     called from the default \l{QWidget::}{contextMenuEvent()} handler. The popup menu's
     ownership is transferred to the caller.
+
+    Returns \c nullptr if the context menu data is not initialized, for example when it
+    is called when there is actually no context menu requested.
  */
 
 /*!
@@ -411,14 +414,14 @@
     \fn void QWebEnginePage::findText(const QString &subString, FindFlags options)
     Finds the specified string, \a subString, in the page, using the given \a options.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 */
 
 /*!
     \fn void QWebEnginePage::findText(const QString &subString, FindFlags options, FunctorOrLambda resultCallback)
     Finds the specified string, \a subString, in the page, using the given \a options.
 
-    To clear the selection, just pass an empty string.
+    To clear the search highlight, just pass an empty string.
 
     The \a resultCallback must take a boolean parameter. It will be called with a value of \c true
     if the \a subString was found; otherwise the callback value will be \c false.
@@ -615,6 +618,10 @@
     \warning This function works only for HTML, for other mime types (such as XHTML and SVG)
     setContent() should be used instead.
 
+    \warning The content will be percent encoded before being sent to the renderer via IPC.
+    This may increase its size. The maximum size of the percent encoded content is
+    2 megabytes minus 30 bytes.
+
     \sa toHtml(), setContent(), load()
 */
 
@@ -629,6 +636,10 @@
     The \a data is loaded immediately; external objects are loaded asynchronously.
 
     \note This method will not affect session or global history for the page.
+
+    \warning The content will be percent encoded before being sent to the renderer via IPC.
+    This may increase its size. The maximum size of the percent encoded content is
+    2 megabytes minus 6 bytes plus the length of the mime type string.
 
     \sa toHtml(), setHtml()
 */

@@ -34,6 +34,7 @@ force_debug_info {
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
+    contains(QT_CONFIG, simulator_and_device): CONFIG += iphonesimulator_and_iphoneos
     contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
     contains(QT_CONFIG, build_all):CONFIG += build_all
 }
@@ -81,6 +82,7 @@ contains(QT_ARCH, "arm") {
         else: GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=0 arm_neon_optional=0
     }
 
+    contains(QMAKE_CFLAGS, "-marm"): GYP_CONFIG += arm_thumb=0
     contains(QMAKE_CFLAGS, "-mthumb"): GYP_CONFIG += arm_thumb=1
 }
 

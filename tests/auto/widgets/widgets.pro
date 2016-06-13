@@ -17,8 +17,3 @@ SUBDIRS += \
 !contains(WEBENGINE_CONFIG, no_spellcheck):!osx:!cross_compile {
     SUBDIRS += qwebenginespellcheck
 }
-
-qtHaveModule(positioning) {
-    SUBDIRS += positionplugin
-    qwebenginepage.depends = positionplugin
-}

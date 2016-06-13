@@ -201,9 +201,6 @@ private Q_SLOTS:
     void progressSignal();
     void urlChange();
     void requestedUrlAfterSetAndLoadFailures();
-    void javaScriptWindowObjectCleared_data();
-    void javaScriptWindowObjectCleared();
-    void javaScriptWindowObjectClearedOnEvaluate();
     void asyncAndDelete();
     void earlyToHtml();
     void setHtml();
@@ -215,7 +212,6 @@ private Q_SLOTS:
     void hitTestContent();
     void baseUrl_data();
     void baseUrl();
-    void renderHints();
     void scrollPosition();
     void scrollToAnchor();
     void scrollbarsOff();
@@ -412,16 +408,21 @@ void tst_QWebEnginePage::geolocationRequestJS()
             newPage, SLOT(requestPermission(const QUrl&, QWebEnginePage::Feature)));
 
     QSignalSpy spyLoadFinished(newPage, SIGNAL(loadFinished(bool)));
-    newPage->setHtml(QString("<html><body>test</body></html>"), QUrl());
+    newPage->setHtml(QString("<html><body>test</body></html>"), QUrl("qrc://secure/origin"));
     QTRY_COMPARE(spyLoadFinished.count(), 1);
     if (evaluateJavaScriptSync(newPage, QLatin1String("!navigator.geolocation")).toBool()) {
         delete view;
         W_QSKIP("Geolocation is not supported.", SkipSingle);
     }
 
-    evaluateJavaScriptSync(newPage, "var errorCode = 0; function error(err) { errorCode = err.code; } function success(pos) { } navigator.geolocation.getCurrentPosition(success, error)");
+    evaluateJavaScriptSync(newPage, "var errorCode = 0; var done = false; function error(err) { errorCode = err.code; done = true; } function success(pos) { done = true; } navigator.geolocation.getCurrentPosition(success, error)");
 
-    QTRY_COMPARE(evaluateJavaScriptSync(newPage, "errorCode").toInt(), errorCode);
+    QTRY_VERIFY(evaluateJavaScriptSync(newPage, "done").toBool());
+    int result = evaluateJavaScriptSync(newPage, "errorCode").toInt();
+    if (result == 2)
+        QEXPECT_FAIL("", "No location service available.", Continue);
+    QCOMPARE(result, errorCode);
+
     delete view;
 }
 
@@ -3879,48 +3880,6 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
     QVERIFY(!spy.at(1).first().toBool());
 }
 
-void tst_QWebEnginePage::javaScriptWindowObjectCleared_data()
-{
-    QTest::addColumn<QString>("html");
-    QTest::addColumn<int>("signalCount");
-    QTest::newRow("with <script>") << "<html><body><script>i=0</script><p>hello world</p></body></html>" << 1;
-    // NOTE: Empty scripts no longer cause this signal to be emitted.
-    QTest::newRow("with empty <script>") << "<html><body><script></script><p>hello world</p></body></html>" << 0;
-    QTest::newRow("without <script>") << "<html><body><p>hello world</p></body></html>" << 0;
-}
-
-void tst_QWebEnginePage::javaScriptWindowObjectCleared()
-{
-#if !defined(QWEBENGINEPAGE_JAVASCRIPTWINDOWOBJECTCLEARED)
-    QSKIP("QWEBENGINEPAGE_JAVASCRIPTWINDOWOBJECTCLEARED");
-#else
-    QWebEnginePage page;
-    QSignalSpy spy(&page, SIGNAL(javaScriptWindowObjectCleared()));
-    QFETCH(QString, html);
-    page.setHtml(html);
-
-    QFETCH(int, signalCount);
-    QCOMPARE(spy.count(), signalCount);
-#endif
-}
-
-void tst_QWebEnginePage::javaScriptWindowObjectClearedOnEvaluate()
-{
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
-    QWebEnginePage page;
-    QSignalSpy spy(&page, SIGNAL(javaScriptWindowObjectCleared()));
-    page.setHtml("<html></html>");
-    QCOMPARE(spy.count(), 0);
-    page.evaluateJavaScript("var a = 'a';");
-    QCOMPARE(spy.count(), 1);
-    // no new clear for a new script:
-    page.evaluateJavaScript("var a = 1;");
-    QCOMPARE(spy.count(), 1);
-#endif
-}
-
 void tst_QWebEnginePage::asyncAndDelete()
 {
     QWebEnginePage *page = new QWebEnginePage;
@@ -3954,28 +3913,26 @@ void tst_QWebEnginePage::setHtml()
 
 void tst_QWebEnginePage::setHtmlWithImageResource()
 {
-    // By default, only security origins of local files can load local resources.
-    // So we should specify baseUrl to be a local file in order to get a proper origin and load the local image.
+    // We allow access to qrc resources from any security origin, including local and anonymous
 
     QLatin1String html("<html><body><p>hello world</p><img src='qrc:/resources/image.png'/></body></html>");
     QWebEnginePage page;
 
-    page.setHtml(html, QUrl(QLatin1String("file:///path/to/file")));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(html, QUrl("file:///path/to/file"));
+    QTRY_COMPARE(spy.count(), 1);
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 
-    // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
+    // Now we test the opposite: without a baseUrl as a local file, we can still request qrc resources.
 
     page.setHtml(html);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QTRY_COMPARE(spy.count(), 2);
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
-    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 0);
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
-    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 0);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].width").toInt(), 128);
+    QCOMPARE(evaluateJavaScriptSync(&page, "document.images[0].height").toInt(), 128);
 }
 
 void tst_QWebEnginePage::setHtmlWithStylesheetResource()
@@ -4154,167 +4111,30 @@ void tst_QWebEnginePage::baseUrl()
     QCOMPARE(baseUrlSync(m_page), baseUrl);
 }
 
-class DummyPaintEngine: public QPaintEngine {
-public:
-
-    DummyPaintEngine()
-        : QPaintEngine(QPaintEngine::AllFeatures)
-        , renderHints(0)
-    {
-    }
-
-    bool begin(QPaintDevice*)
-    {
-        setActive(true);
-        return true;
-    }
-
-    bool end()
-    {
-        setActive(false);
-        return false;
-    }
-
-    void updateState(const QPaintEngineState& state)
-    {
-        renderHints = state.renderHints();
-    }
-
-    void drawPath(const QPainterPath&) { }
-    void drawPixmap(const QRectF&, const QPixmap&, const QRectF&) { }
-
-    QPaintEngine::Type type() const
-    {
-        return static_cast<QPaintEngine::Type>(QPaintEngine::User + 2);
-    }
-
-    QPainter::RenderHints renderHints;
-};
-
-class DummyPaintDevice: public QPaintDevice {
-public:
-    DummyPaintDevice()
-        : QPaintDevice()
-        , m_engine(new DummyPaintEngine)
-    {
-    }
-
-    ~DummyPaintDevice()
-    {
-        delete m_engine;
-    }
-
-    QPaintEngine* paintEngine() const
-    {
-        return m_engine;
-    }
-
-    QPainter::RenderHints renderHints() const
-    {
-        return m_engine->renderHints;
-    }
-
-protected:
-    int metric(PaintDeviceMetric metric) const;
-
-private:
-    DummyPaintEngine* m_engine;
-    friend class DummyPaintEngine;
-};
-
-
-int DummyPaintDevice::metric(PaintDeviceMetric metric) const
-{
-    switch (metric) {
-    case PdmWidth:
-        return 400;
-        break;
-
-    case PdmHeight:
-        return 200;
-        break;
-
-    case PdmNumColors:
-        return INT_MAX;
-        break;
-
-    case PdmDepth:
-        return 32;
-        break;
-
-    default:
-        break;
-    }
-    return 0;
-}
-
-void tst_QWebEnginePage::renderHints()
-{
-#if !defined(QWEBENGINEPAGE_RENDER)
-    QSKIP("QWEBENGINEPAGE_RENDER");
-#else
-    QString html("<html><body><p>Hello, world!</p></body></html>");
-
-    QWebEnginePage page;
-    page.setHtml(html);
-    page.setViewportSize(page.contentsSize());
-
-    // We will call frame->render and trap the paint engine state changes
-    // to ensure that GraphicsContext does not clobber the render hints.
-    DummyPaintDevice buffer;
-    QPainter painter(&buffer);
-
-    painter.setRenderHint(QPainter::TextAntialiasing, false);
-    page.render(&painter);
-    QVERIFY(!(buffer.renderHints() & QPainter::TextAntialiasing));
-    QVERIFY(!(buffer.renderHints() & QPainter::SmoothPixmapTransform));
-    QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
-
-    painter.setRenderHint(QPainter::TextAntialiasing, true);
-    page.render(&painter);
-    QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
-    QVERIFY(!(buffer.renderHints() & QPainter::SmoothPixmapTransform));
-    QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
-
-    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    page.render(&painter);
-    QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
-    QVERIFY(buffer.renderHints() & QPainter::SmoothPixmapTransform);
-    QVERIFY(!(buffer.renderHints() & QPainter::HighQualityAntialiasing));
-
-    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
-    page.render(&painter);
-    QVERIFY(buffer.renderHints() & QPainter::TextAntialiasing);
-    QVERIFY(buffer.renderHints() & QPainter::SmoothPixmapTransform);
-    QVERIFY(buffer.renderHints() & QPainter::HighQualityAntialiasing);
-#endif
-}
-
 void tst_QWebEnginePage::scrollPosition()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
     // enlarged image in a small viewport, to provoke the scrollbars to appear
     QString html("<html><body><img src='qrc:/image.png' height=500 width=500/></body></html>");
 
-    QWebEnginePage page;
-    page.setViewportSize(QSize(200, 200));
+    QWebEngineView view;
+    view.setFixedSize(200,200);
+    view.show();
 
-    page.setHtml(html);
-    page.setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
-    page.setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    QTest::qWaitForWindowExposed(&view);
+
+    QSignalSpy loadSpy(view.page(), SIGNAL(loadFinished(bool)));
+    view.setHtml(html);
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     // try to set the scroll offset programmatically
-    page.setScrollPosition(QPoint(23, 29));
-    QCOMPARE(page.scrollPosition().x(), 23);
-    QCOMPARE(page.scrollPosition().y(), 29);
+    view.page()->runJavaScript("window.scrollTo(23, 29);");
+    QTRY_COMPARE(view.page()->scrollPosition().x(), qreal(23));
+    QCOMPARE(view.page()->scrollPosition().y(), qreal(29));
 
-    int x = page.evaluateJavaScript("window.scrollX").toInt();
-    int y = page.evaluateJavaScript("window.scrollY").toInt();
+    int x = evaluateJavaScriptSync(view.page(), "window.scrollX").toInt();
+    int y = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
     QCOMPARE(x, 23);
     QCOMPARE(y, 29);
-#endif
 }
 
 void tst_QWebEnginePage::scrollToAnchor()

@@ -830,12 +830,12 @@ void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
 {
-    if (!m_gestureProvider.OnTouchEvent(motionEvent).succeeded)
+    auto result = m_gestureProvider.OnTouchEvent(motionEvent);
+    if (!result.succeeded)
         return;
 
-    bool causesScrollingIfUncancelled = true;
     blink::WebTouchEvent touchEvent = ui::CreateWebTouchEventFromMotionEvent(motionEvent,
-                                                                             causesScrollingIfUncancelled);
+                                                                             result.moved_beyond_slop_region);
     m_host->ForwardTouchEventWithLatencyInfo(touchEvent, CreateLatencyInfo(touchEvent));
 }
 

@@ -26,7 +26,7 @@ defineTest(runConfigure) {
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
         REQUIRED_PACKAGES = dbus-1 fontconfig
-        contains(QT_CONFIG, xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
+        !cross_compile: contains(QT_CONFIG, xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
         contains(QT_CONFIG, pulseaudio): REQUIRED_PACKAGES += libpulse
         contains(QT_CONFIG, system-png): REQUIRED_PACKAGES += libpng
         contains(QT_CONFIG, system-harfbuzz): REQUIRED_PACKAGES += harfbuzz
@@ -117,11 +117,16 @@ defineTest(finalizeConfigure) {
     } else {
         log("Proprietary codecs (H264, MP3).... Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_proprietary_codecs)$${EOL}")
     }
+    qtHaveModule(positioning): {
+        log("Geolocation....................... Enabled$${EOL}")
+    } else {
+        log("Geolocation....................... Not enabled         (Requires Qt Positioning module)$${EOL}")
+    }
     osx {
         use?(appstore_compliant_code) {
             log("AppStore Compliant ............... Enabled$${EOL}")
         } else {
-            log("AppStore Compliant ............... Not enabled         (Default, enable with WEBENGINE_CONFIG += use_appstore_compliant_code)$${EOL}")
+            log("AppStore Compliant ............... Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_appstore_compliant_code)$${EOL}")
         }
     }
 }

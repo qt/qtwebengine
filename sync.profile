@@ -20,7 +20,7 @@
 %dependencies = (
     "qtbase" => "",
     "qtdeclarative" => "",
-    "qtxmlpatterns" => "",
+    "qtlocation" => "",
     "qttools" => "",
 # FIXME: take examples out into their own module to avoid a potential circular dependency later ?
     "qtquickcontrols" => "",

@@ -4,8 +4,6 @@ project                 = QtWebEngine
 description             = Qt WebEngine Reference Documentation
 version                 = $QT_VERSION
 
-examplesinstallpath     = qtwebengine
-
 qhp.projects            = QtWebEngine
 
 qhp.QtWebEngine.file                = qtwebengine.qhp
@@ -42,8 +40,10 @@ tagfile                 = ../../../doc/qtwebengine/qtwebengine.tags
 
 depends += qtcore \
            qtgui \
+           qtlocation \
            qtnetwork \
            qtprintsupport \
+           qtpositioning \
            qtqml \
            qtquick \
            qtquickcontrols \

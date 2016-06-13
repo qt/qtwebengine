@@ -54,6 +54,7 @@
 #include <private/qtwebengineglobal_p.h>
 #include "qquickwebenginescript_p.h"
 #include <QQuickItem>
+#include <QtGui/qcolor.h>
 
 QT_BEGIN_NAMESPACE
 

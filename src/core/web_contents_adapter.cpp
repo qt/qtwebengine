@@ -70,6 +70,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/common/content_constants.h"
 #include <content/public/common/drop_data.h>
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -517,7 +518,12 @@ void WebContentsAdapter::setContent(const QByteArray &data, const QString &mimeT
     urlString.append(",");
     urlString.append(encodedData.constData(), encodedData.length());
 
-    content::NavigationController::LoadURLParams params((GURL(urlString)));
+    GURL dataUrlToLoad(urlString);
+    if (dataUrlToLoad.spec().size() > url::kMaxURLChars) {
+        d->adapterClient->loadFinished(false, baseUrl, false, net::ERR_ABORTED);
+        return;
+    }
+    content::NavigationController::LoadURLParams params((dataUrlToLoad));
     params.load_type = content::NavigationController::LOAD_TYPE_DATA;
     params.base_url_for_data_url = toGurl(baseUrl);
     params.virtual_url_for_data_url = baseUrl.isEmpty() ? GURL(url::kAboutBlankURL) : toGurl(baseUrl);
@@ -1114,10 +1120,7 @@ static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
 
 static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeData *mimeData)
 {
-    if (mimeData->hasText())
-        dropData->text = toNullableString16(mimeData->text());
-    if (mimeData->hasHtml())
-        dropData->html = toNullableString16(mimeData->html());
+    Q_ASSERT(dropData->filenames.empty());
     Q_FOREACH (const QUrl &url, mimeData->urls()) {
         if (url.isLocalFile()) {
             ui::FileInfo uifi;
@@ -1125,6 +1128,12 @@ static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeDat
             dropData->filenames.push_back(uifi);
         }
     }
+    if (!dropData->filenames.empty())
+        return;
+    if (mimeData->hasHtml())
+        dropData->html = toNullableString16(mimeData->html());
+    else if (mimeData->hasText())
+        dropData->text = toNullableString16(mimeData->text());
 }
 
 void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
