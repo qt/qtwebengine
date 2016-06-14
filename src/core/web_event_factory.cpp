@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2016 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtWebEngine module of the Qt Toolkit.
@@ -483,11 +483,11 @@ static inline double currentTimeForEvent(const QInputEvent* event)
 
 static WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton || (event->buttons() & Qt::LeftButton))
+    if (event->button() == Qt::LeftButton)
         return WebMouseEvent::ButtonLeft;
-    else if (event->button() == Qt::RightButton || (event->buttons() & Qt::RightButton))
+    else if (event->button() == Qt::RightButton)
         return WebMouseEvent::ButtonRight;
-    else if (event->button() == Qt::MidButton || (event->buttons() & Qt::MidButton))
+    else if (event->button() == Qt::MidButton)
         return WebMouseEvent::ButtonMiddle;
     return WebMouseEvent::ButtonNone;
 }

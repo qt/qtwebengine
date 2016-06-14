@@ -236,6 +236,7 @@ private Q_SLOTS:
     void toPlainTextLoadFinishedRace_data();
     void toPlainTextLoadFinishedRace();
     void setZoomFactor();
+    void mouseButtonTranslation();
 
 private:
     QWebEngineView* m_view;
@@ -4988,6 +4989,41 @@ void tst_QWebEnginePage::setZoomFactor()
     QVERIFY(qFuzzyCompare(page->zoomFactor(), 2.5));
 
     delete page;
+}
+
+void tst_QWebEnginePage::mouseButtonTranslation()
+{
+    QWebEngineView *view = new QWebEngineView;
+
+    QSignalSpy spy(view, SIGNAL(loadFinished(bool)));
+    view->setHtml(QStringLiteral(
+                      "<html><head><script>\
+                           var lastEvent = { 'button' : -1 }; \
+                           function saveLastEvent(event) { console.log(event); lastEvent = event; }; \
+                      </script></head>\
+                      <body>\
+                      <div style=\"height:600px;\" onmousedown=\"saveLastEvent(event)\">\
+                      </div>\
+                      </body></html>"));
+    view->show();
+    QTest::qWaitForWindowExposed(view);
+    QTRY_VERIFY(spy.count() == 1);
+
+    QVERIFY(view->focusProxy() != nullptr);
+
+    QMouseEvent evpres(QEvent::MouseButtonPress, view->rect().center(), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QGuiApplication::sendEvent(view->focusProxy(), &evpres);
+
+    QTRY_COMPARE(evaluateJavaScriptSync(view->page(), "lastEvent.button").toInt(), 0);
+    QCOMPARE(evaluateJavaScriptSync(view->page(), "lastEvent.buttons").toInt(), 1);
+
+    QMouseEvent evpres2(QEvent::MouseButtonPress, view->rect().center(), Qt::RightButton, Qt::LeftButton | Qt::RightButton, Qt::NoModifier);
+    QGuiApplication::sendEvent(view->focusProxy(), &evpres2);
+
+    QTRY_COMPARE(evaluateJavaScriptSync(view->page(), "lastEvent.button").toInt(), 2);
+    QCOMPARE(evaluateJavaScriptSync(view->page(), "lastEvent.buttons").toInt(), 3);
+
+    delete view;
 }
 
 QTEST_MAIN(tst_QWebEnginePage)
