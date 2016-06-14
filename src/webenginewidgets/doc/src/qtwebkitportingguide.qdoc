@@ -207,7 +207,15 @@
         connect(&page, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)), this, SLOT(authenticate(QNetworkReply*,QAuthenticator*)));
     \endcode
 
-    This also affects the way in which certificates are managed. For more information, see
+    \note In Qt WebEngine, the QAuthenticator must be explicitly set to null to
+    cancel authentication:
+
+    \code
+    *authenticator = QAuthenticator();
+    \endcode
+
+    Omitting the \c QNetworkAccessManager also affects the way in which
+    certificates are managed. For more information, see
     \l {Managing Certificates}.
 
     \section1 Notes About Individual Methods
