@@ -878,6 +878,13 @@ bool RenderWidgetHostViewQt::IsPopup() const
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 {
+    // Don't forward mouse events synthesized by the system, which are caused by genuine touch
+    // events. Chromium would then process for e.g. a mouse click handler twice, once due to the
+    // system synthesized mouse event, and another time due to a touch-to-gesture-to-mouse
+    // transformation done by Chromium.
+    if (event->source() == Qt::MouseEventSynthesizedBySystem)
+        return;
+
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
     if (event->type() == QMouseEvent::MouseButtonPress) {
         if (event->button() != m_clickHelper.lastPressButton
