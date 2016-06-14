@@ -127,7 +127,7 @@ public:
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     void removeAllUrlSchemeHandlers();
 
-    void clearHttpCache();
+    Q_REVISION(2) Q_INVOKABLE void clearHttpCache();
 
     static QQuickWebEngineProfile *defaultProfile();
 

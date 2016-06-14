@@ -225,6 +225,7 @@ Module {
             name: "downloadFinished"
             Parameter { name: "download"; type: "QQuickWebEngineDownloadItem"; isPointer: true }
         }
+        Method { name: "clearHttpCache"; revision: 2 }
     }
     Component {
         name: "QQuickWebEngineScript"
