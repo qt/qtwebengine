@@ -886,6 +886,13 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
         return;
 
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
+    if ((webEvent.type == blink::WebInputEvent::MouseDown || webEvent.type == blink::WebInputEvent::MouseUp)
+            && webEvent.button == blink::WebMouseEvent::ButtonNone) {
+        // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
+        return;
+    }
+
+
     if (event->type() == QMouseEvent::MouseButtonPress) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
