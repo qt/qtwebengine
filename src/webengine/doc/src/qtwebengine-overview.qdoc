@@ -104,8 +104,8 @@
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
-    This version of Qt WebEngine is based on Chromium snapshot version 45.0.2554.101, with
-    additional security fixes from the 46, 47 and 48 branches of the \l {Chromium Project}.
+    This version of Qt WebEngine is based on Chromium version 45.0.2554.101, with
+    additional security fixes from newer versions.
 
     \section2 Qt WebEngine Process
 
