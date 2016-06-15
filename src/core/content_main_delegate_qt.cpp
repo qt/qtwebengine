@@ -110,6 +110,12 @@ void ContentMainDelegateQt::PreSandboxStartup()
     logging::LoggingSettings settings;
     settings.logging_dest = DetermineLogMode(*parsedCommandLine);
     logging::InitLogging(settings);
+    // view the logs with process/thread IDs and timestamps
+    logging::SetLogItems(true, //enable_process_id
+                         true, //enable_thread_id
+                         true, //enable_timestamp
+                         false //enable_tickcount
+                        );
 
     if (logging::GetMinLogLevel() >= logging::LOG_INFO) {
         if (parsedCommandLine->HasSwitch(switches::kLoggingLevel)) {
