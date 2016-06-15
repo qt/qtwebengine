@@ -27,7 +27,7 @@
     \qmlmodule QtWebEngine 1.2
     \title Qt WebEngine QML Types
     \brief Provides QML types for rendering web content within a QML application
-    \ingroup qtwebengine-qmlmodules
+    \ingroup qtwebengine-modules
 
     The QML types can be imported into your application using the following import statements in
     your .qml file:

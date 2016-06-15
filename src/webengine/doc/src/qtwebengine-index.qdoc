@@ -38,10 +38,6 @@
 
     \annotatedlist qtwebengine-modules
 
-    For Qt Quick applications, Qt WebEngine provides the following QML modules:
-
-    \annotatedlist qtwebengine-qmlmodules
-
     \section1 Articles and Guides
 
     \list
