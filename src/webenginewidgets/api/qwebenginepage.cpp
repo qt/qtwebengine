@@ -440,6 +440,12 @@ QSharedPointer<BrowserContextAdapter> QWebEnginePagePrivate::browserContextAdapt
     return profile->d_ptr->browserContext();
 }
 
+const QObject *QWebEnginePagePrivate::holdingQObject() const
+{
+    Q_Q(const QWebEnginePage);
+    return q;
+}
+
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(parent)
     , d_ptr(new QWebEnginePagePrivate())

@@ -273,6 +273,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    QObject::disconnect(m_adapterClientDestroyedConnection);
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::removeActivationObserver(this);
 #endif // QT_NO_ACCESSIBILITY
@@ -288,6 +289,10 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
     Q_ASSERT(!m_adapterClient);
 
     m_adapterClient = adapterClient;
+    QObject::disconnect(m_adapterClientDestroyedConnection);
+    m_adapterClientDestroyedConnection = QObject::connect(adapterClient->holdingQObject(),
+                                                          &QObject::destroyed, [this] {
+                                                            m_adapterClient = nullptr; });
     if (m_initPending)
         InitAsChild(0);
 }

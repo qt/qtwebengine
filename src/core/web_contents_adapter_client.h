@@ -240,6 +240,7 @@ public:
     virtual void requestGeometryChange(const QRect &geometry) = 0;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) = 0;
     virtual bool isEnabled() const = 0;
+    virtual const QObject *holdingQObject() const = 0;
 
     virtual QSharedPointer<BrowserContextAdapter> browserContextAdapter() = 0;
 

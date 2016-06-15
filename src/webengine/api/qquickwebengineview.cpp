@@ -628,6 +628,12 @@ WebEngineSettings *QQuickWebEngineViewPrivate::webEngineSettings() const
     return m_settings->d_ptr.data();
 }
 
+const QObject *QQuickWebEngineViewPrivate::holdingQObject() const
+{
+    Q_Q(const QQuickWebEngineView);
+    return q;
+}
+
 void QQuickWebEngineViewPrivate::setDevicePixelRatio(qreal devicePixelRatio)
 {
     Q_Q(QQuickWebEngineView);
