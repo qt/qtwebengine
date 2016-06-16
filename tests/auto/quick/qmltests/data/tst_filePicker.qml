@@ -81,10 +81,8 @@ TestWebEngineView {
             FilePickerParams.selectedFilesUrl.push(Qt.resolvedUrl("test1.html"))
 
             keyPress(Qt.Key_Enter) // Focus is on the button. Open FileDialog.
-            wait(100) // The ui delegate is invoked asynchronously
-            verify(FilePickerParams.filePickerOpened)
-            titleSpy.wait()
-            compare(webEngineView.title, "test1.html")
+            tryCompare(FilePickerParams, "filePickerOpened", true)
+            tryCompare(webEngineView, "title", "test1.html")
         }
 
         function test_acceptMultipleFilesSelection() {
@@ -96,10 +94,8 @@ TestWebEngineView {
             FilePickerParams.selectedFilesUrl.push(Qt.resolvedUrl("test2.html"))
 
             keyPress(Qt.Key_Enter) // Focus is on the button. Open FileDialog.
-            wait(100)
-            verify(FilePickerParams.filePickerOpened)
-            titleSpy.wait()
-            compare(webEngineView.title, "test1.html,test2.html")
+            tryCompare(FilePickerParams, "filePickerOpened", true)
+            tryCompare(webEngineView, "title", "test1.html,test2.html")
         }
 
         function test_acceptDirectory() {
@@ -110,10 +106,8 @@ TestWebEngineView {
             FilePickerParams.selectedFilesUrl.push(Qt.resolvedUrl("../data"))
 
             keyPress(Qt.Key_Enter) // Focus is on the button. Open FileDialog.
-            wait(100) // The ui delegate is invoked asynchronously
-            verify(FilePickerParams.filePickerOpened)
-            titleSpy.wait()
-            compare(webEngineView.title, "data")
+            tryCompare(FilePickerParams, "filePickerOpened", true)
+            tryCompare(webEngineView, "title", "data")
         }
 
         function test_reject() {
