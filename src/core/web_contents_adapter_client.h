@@ -258,6 +258,7 @@ public:
     virtual void startDragging(const content::DropData &dropData, Qt::DropActions allowedActions,
                                const QPixmap &pixmap, const QPoint &offset) = 0;
     virtual bool isEnabled() const = 0;
+    virtual const QObject *holdingQObject() const = 0;
 
     virtual QSharedPointer<BrowserContextAdapter> browserContextAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

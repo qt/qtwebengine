@@ -71,6 +71,10 @@
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
+#if defined(USE_AURA)
+#include "ui/base/cursor/cursors_aura.h"
+#endif
+
 #include <QEvent>
 #include <QFocusEvent>
 #include <QGuiApplication>
@@ -249,6 +253,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 {
+    QObject::disconnect(m_adapterClientDestroyedConnection);
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::removeActivationObserver(this);
 #endif // QT_NO_ACCESSIBILITY
@@ -264,6 +269,10 @@ void RenderWidgetHostViewQt::setAdapterClient(WebContentsAdapterClient *adapterC
     Q_ASSERT(!m_adapterClient);
 
     m_adapterClient = adapterClient;
+    QObject::disconnect(m_adapterClientDestroyedConnection);
+    m_adapterClientDestroyedConnection = QObject::connect(adapterClient->holdingQObject(),
+                                                          &QObject::destroyed, [this] {
+                                                            m_adapterClient = nullptr; });
     if (m_initPending)
         InitAsChild(0);
 }
@@ -434,7 +443,10 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
 {
     content::WebCursor::CursorInfo cursorInfo;
     webCursor.GetCursorInfo(&cursorInfo);
-    Qt::CursorShape shape;
+    Qt::CursorShape shape = Qt::ArrowCursor;
+#if defined(USE_AURA)
+    int auraType = -1;
+#endif
     switch (cursorInfo.type) {
     case blink::WebCursorInfo::TypePointer:
         shape = Qt::ArrowCursor;
@@ -492,17 +504,42 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     case blink::WebCursorInfo::TypeMove:
         shape = Qt::SizeAllCursor;
         break;
+    case blink::WebCursorInfo::TypeProgress:
+        shape = Qt::BusyCursor;
+        break;
+#if defined(USE_AURA)
+    case blink::WebCursorInfo::TypeVerticalText:
+        auraType = ui::kCursorVerticalText;
+        break;
+    case blink::WebCursorInfo::TypeCell:
+        auraType = ui::kCursorCell;
+        break;
+    case blink::WebCursorInfo::TypeContextMenu:
+        auraType = ui::kCursorContextMenu;
+        break;
+    case blink::WebCursorInfo::TypeAlias:
+        auraType = ui::kCursorAlias;
+        break;
+    case blink::WebCursorInfo::TypeCopy:
+        auraType = ui::kCursorCopy;
+        break;
+    case blink::WebCursorInfo::TypeZoomIn:
+        auraType = ui::kCursorZoomIn;
+        break;
+    case blink::WebCursorInfo::TypeZoomOut:
+        auraType = ui::kCursorZoomOut;
+        break;
+#else
     case blink::WebCursorInfo::TypeVerticalText:
     case blink::WebCursorInfo::TypeCell:
     case blink::WebCursorInfo::TypeContextMenu:
     case blink::WebCursorInfo::TypeAlias:
-    case blink::WebCursorInfo::TypeProgress:
     case blink::WebCursorInfo::TypeCopy:
     case blink::WebCursorInfo::TypeZoomIn:
     case blink::WebCursorInfo::TypeZoomOut:
-        // FIXME: Load from the resource bundle.
-        shape = Qt::ArrowCursor;
+        // FIXME: Support on OS X
         break;
+#endif
     case blink::WebCursorInfo::TypeNoDrop:
     case blink::WebCursorInfo::TypeNotAllowed:
         shape = Qt::ForbiddenCursor;
@@ -519,16 +556,21 @@ void RenderWidgetHostViewQt::UpdateCursor(const content::WebCursor &webCursor)
     case blink::WebCursorInfo::TypeCustom:
         if (cursorInfo.custom_image.colorType() == SkColorType::kN32_SkColorType) {
             QImage cursor = toQImage(cursorInfo.custom_image, QImage::Format_ARGB32);
-            m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor)));
+            m_delegate->updateCursor(QCursor(QPixmap::fromImage(cursor), cursorInfo.hotspot.x(), cursorInfo.hotspot.y()));
             return;
         }
-        // Use arrow cursor as fallback in case the Chromium implementation changes.
-        shape = Qt::ArrowCursor;
         break;
-    default:
-        Q_UNREACHABLE();
-        shape = Qt::ArrowCursor;
     }
+#if defined(USE_AURA)
+    if (auraType > 0) {
+        SkBitmap bitmap;
+        gfx::Point hotspot;
+        if (ui::GetCursorBitmap(auraType, &bitmap, &hotspot)) {
+            m_delegate->updateCursor(QCursor(QPixmap::fromImage(toQImage(bitmap)), hotspot.x(), hotspot.y()));
+            return;
+        }
+    }
+#endif
     m_delegate->updateCursor(QCursor(shape));
 }
 
@@ -874,7 +916,21 @@ bool RenderWidgetHostViewQt::IsPopup() const
 
 void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
 {
+    // Don't forward mouse events synthesized by the system, which are caused by genuine touch
+    // events. Chromium would then process for e.g. a mouse click handler twice, once due to the
+    // system synthesized mouse event, and another time due to a touch-to-gesture-to-mouse
+    // transformation done by Chromium.
+    if (event->source() == Qt::MouseEventSynthesizedBySystem)
+        return;
+
     blink::WebMouseEvent webEvent = WebEventFactory::toWebMouseEvent(event, dpiScale());
+    if ((webEvent.type == blink::WebInputEvent::MouseDown || webEvent.type == blink::WebInputEvent::MouseUp)
+            && webEvent.button == blink::WebMouseEvent::ButtonNone) {
+        // Blink can only handle the 3 main mouse-buttons and may assert when processing mouse-down for no button.
+        return;
+    }
+
+
     if (event->type() == QMouseEvent::MouseButtonPress) {
         if (event->button() != m_clickHelper.lastPressButton
             || (event->timestamp() - m_clickHelper.lastPressTimestamp > static_cast<ulong>(qGuiApp->styleHints()->mouseDoubleClickInterval()))
