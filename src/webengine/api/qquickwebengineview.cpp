@@ -86,6 +86,27 @@
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
+QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event)
+{
+    static struct {
+        QKeySequence::StandardKey standardKey;
+        QQuickWebEngineView::WebAction action;
+    } editorActions[] = {
+        { QKeySequence::Cut, QQuickWebEngineView::Cut },
+        { QKeySequence::Copy, QQuickWebEngineView::Copy },
+        { QKeySequence::Paste, QQuickWebEngineView::Paste },
+        { QKeySequence::Undo, QQuickWebEngineView::Undo },
+        { QKeySequence::Redo, QQuickWebEngineView::Redo },
+        { QKeySequence::SelectAll, QQuickWebEngineView::SelectAll },
+        { QKeySequence::UnknownKey, QQuickWebEngineView::NoWebAction }
+    };
+    for (int i = 0; editorActions[i].standardKey != QKeySequence::UnknownKey; ++i)
+        if (event == editorActions[i].standardKey)
+            return editorActions[i].action;
+
+    return QQuickWebEngineView::NoWebAction;
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
 {
@@ -489,6 +510,18 @@ void QQuickWebEngineViewPrivate::focusContainer()
 void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
 {
     Q_Q(QQuickWebEngineView);
+#ifdef Q_OS_OSX
+    if (event->type() == QEvent::KeyPress) {
+        QQuickWebEngineView::WebAction action = editorActionForKeyEvent(event);
+        if (action != QQuickWebEngineView::NoWebAction) {
+            // Try triggering a registered short-cut
+            if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcut(event))
+                return;
+            q->triggerWebAction(action);
+            return;
+        }
+    }
+#endif
     if (q->parentItem())
         q->window()->sendEvent(q->parentItem(), event);
 }

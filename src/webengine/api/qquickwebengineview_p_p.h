@@ -68,6 +68,8 @@ class QQmlComponent;
 class QQmlContext;
 class QQuickWebEngineSettings;
 
+QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
+
 #ifdef ENABLE_QML_TESTSUPPORT_API
 class QQuickWebEngineTestSupport;
 #endif

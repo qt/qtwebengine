@@ -74,6 +74,7 @@ public:
     virtual void setClearColor(const QColor &) Q_DECL_OVERRIDE { }
 
 protected:
+    virtual bool event(QEvent *event) Q_DECL_OVERRIDE;
     virtual void focusInEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
     virtual void focusOutEvent(QFocusEvent *event) Q_DECL_OVERRIDE;
     virtual void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;

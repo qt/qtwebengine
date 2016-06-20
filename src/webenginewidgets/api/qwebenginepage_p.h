@@ -67,6 +67,8 @@ class QWebEngineProfile;
 class QWebEngineSettings;
 class QWebEngineView;
 
+QWebEnginePage::WebAction editorActionForKeyEvent(QKeyEvent* event);
+
 class QWebEnginePagePrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:

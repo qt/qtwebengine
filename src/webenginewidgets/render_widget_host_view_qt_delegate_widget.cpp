@@ -323,6 +323,13 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
         }
     }
 
+    if (event->type() == QEvent::ShortcutOverride) {
+        if (editorActionForKeyEvent(static_cast<QKeyEvent*>(event)) != QWebEnginePage::NoWebAction) {
+            event->accept();
+            return true;
+        }
+    }
+
     if (event->type() == QEvent::MouseButtonDblClick) {
         // QWidget keeps the Qt4 behavior where the DblClick event would replace the Press event.
         // QtQuick is different by sending both the Press and DblClick events for the second press

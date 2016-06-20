@@ -77,6 +77,8 @@
 #include <QStyle>
 #include <QUrl>
 
+#include <private/qguiapplication_p.h>
+
 QT_BEGIN_NAMESPACE
 
 using namespace QtWebEngineCore;
@@ -94,6 +96,27 @@ static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::Wind
     default:
         Q_UNREACHABLE();
     }
+}
+
+QWebEnginePage::WebAction editorActionForKeyEvent(QKeyEvent* event)
+{
+    static struct {
+        QKeySequence::StandardKey standardKey;
+        QWebEnginePage::WebAction action;
+    } editorActions[] = {
+        { QKeySequence::Cut, QWebEnginePage::Cut },
+        { QKeySequence::Copy, QWebEnginePage::Copy },
+        { QKeySequence::Paste, QWebEnginePage::Paste },
+        { QKeySequence::Undo, QWebEnginePage::Undo },
+        { QKeySequence::Redo, QWebEnginePage::Redo },
+        { QKeySequence::SelectAll, QWebEnginePage::SelectAll },
+        { QKeySequence::UnknownKey, QWebEnginePage::NoWebAction }
+    };
+    for (int i = 0; editorActions[i].standardKey != QKeySequence::UnknownKey; ++i)
+        if (event == editorActions[i].standardKey)
+            return editorActions[i].action;
+
+    return QWebEnginePage::NoWebAction;
 }
 
 QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
@@ -226,6 +249,19 @@ void QWebEnginePagePrivate::focusContainer()
 
 void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
 {
+#ifdef Q_OS_OSX
+    Q_Q(QWebEnginePage);
+    if (event->type() == QEvent::KeyPress) {
+        QWebEnginePage::WebAction action = editorActionForKeyEvent(event);
+        if (action != QWebEnginePage::NoWebAction) {
+            // Try triggering a registered short-cut
+            if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcut(event))
+                return;
+            q->triggerAction(action);
+            return;
+        }
+    }
+#endif
     if (view && view->parentWidget())
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }

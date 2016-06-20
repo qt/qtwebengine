@@ -207,6 +207,18 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodStateChanged(bool editorVis
 
 }
 
+bool RenderWidgetHostViewQtDelegateQuick::event(QEvent *event)
+{
+    if (event->type() == QEvent::ShortcutOverride) {
+        if (editorActionForKeyEvent(static_cast<QKeyEvent*>(event)) != QQuickWebEngineView::NoWebAction) {
+            event->accept();
+            return true;
+        }
+    }
+
+    return QQuickItem::event(event);
+}
+
 void RenderWidgetHostViewQtDelegateQuick::focusInEvent(QFocusEvent *event)
 {
     m_client->forwardEvent(event);
