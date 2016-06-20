@@ -74,7 +74,7 @@ QQuickWebEngineContextMenuData::~QQuickWebEngineContextMenuData()
 }
 
 /*!
-    \qmlproperty bool WebEngineDownloadItem::isValid
+    \qmlproperty bool WebEngineContextMenuData::isValid
 
     Is \c true if the context data is valid; otherwise \c false.
 */
@@ -84,7 +84,7 @@ bool QQuickWebEngineContextMenuData::isValid() const
 }
 
 /*!
-    \qmlproperty QPoint WebEngineDownloadItem::position
+    \qmlproperty QPoint WebEngineContextMenuData::position
 
 
     Returns the position of the context, usually the mouse position where the context menu event was triggered.
@@ -95,7 +95,7 @@ QPoint QQuickWebEngineContextMenuData::position() const
 }
 
 /*!
-    \qmlproperty QString WebEngineDownloadItem::linkText
+    \qmlproperty QString WebEngineContextMenuData::linkText
 
     Returns the text of a link if the context is a link.
 */
@@ -105,7 +105,7 @@ QString QQuickWebEngineContextMenuData::linkText() const
 }
 
 /*!
-    \qmlproperty QUrl WebEngineDownloadItem::linkUrl
+    \qmlproperty QUrl WebEngineContextMenuData::linkUrl
 
     Returns the URL of a link if the context is a link.
 */
@@ -115,7 +115,7 @@ QUrl QQuickWebEngineContextMenuData::linkUrl() const
 }
 
 /*!
-    \qmlproperty QString WebEngineDownloadItem::selectedText
+    \qmlproperty QString WebEngineContextMenuData::selectedText
 
     Returns the selected text of the context.
 */
@@ -125,7 +125,7 @@ QString QQuickWebEngineContextMenuData::selectedText() const
 }
 
 /*!
-    \qmlproperty QUrl WebEngineDownloadItem::mediaUrl
+    \qmlproperty QUrl WebEngineContextMenuData::mediaUrl
 
     If the context is a media element, returns the URL of that media.
 */
@@ -135,7 +135,7 @@ QUrl QQuickWebEngineContextMenuData::mediaUrl() const
 }
 
 /*!
-    \qmlproperty MediaType WebEngineDownloadItem::mediaType
+    \qmlproperty MediaType WebEngineContextMenuData::mediaType
 
     Returns the type of the media element or \c MediaTypeNone if the context is not a media element.
 
@@ -161,7 +161,7 @@ QQuickWebEngineContextMenuData::MediaType QQuickWebEngineContextMenuData::mediaT
 }
 
 /*!
-    \qmlproperty bool WebEngineDownloadItem::isContentEditable
+    \qmlproperty bool WebEngineContextMenuData::isContentEditable
 
     Returns \c true if the content is editable by the user; otherwise returns \c false.
 */
