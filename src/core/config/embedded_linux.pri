@@ -15,6 +15,7 @@ GYP_CONFIG += \
     enable_google_now=0 \
     enable_language_detection=0 \
     enable_managed_users=0 \
+    enable_pdf=0 \
     enable_plugin_installation=0 \
     enable_plugins=0 \
     enable_print_preview=0 \

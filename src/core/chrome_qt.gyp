@@ -96,6 +96,13 @@
             '<(DEPTH)/chrome/renderer/pepper/pepper_shared_memory_message_filter.h',
           ],
         }],
+        ['enable_pdf==1', {
+          'dependencies': [
+            '<(chromium_src_dir)/pdf/pdf.gyp:pdf',
+            '<(chromium_src_dir)/components/components.gyp:pdf_renderer',
+            '<(chromium_src_dir)/components/components.gyp:pdf_browser',
+          ],
+        }],
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_spellchecker_sources)' ],
           'include_dirs': [
