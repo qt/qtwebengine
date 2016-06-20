@@ -494,6 +494,12 @@ WebContentsAdapter *QWebEnginePagePrivate::webContentsAdapter()
     return adapter.data();
 }
 
+const QObject *QWebEnginePagePrivate::holdingQObject() const
+{
+    Q_Q(const QWebEnginePage);
+    return q;
+}
+
 QWebEnginePage::QWebEnginePage(QObject* parent)
     : QObject(parent)
     , d_ptr(new QWebEnginePagePrivate())

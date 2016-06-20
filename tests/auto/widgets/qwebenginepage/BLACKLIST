@@ -1,2 +1,5 @@
 [macCopyUnicodeToClipboard]
 osx
+
+[getUserMediaRequest]
+windows

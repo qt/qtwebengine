@@ -155,8 +155,8 @@ content::RenderView *WebChannelTransport::GetRenderView(v8::Isolate *isolate)
 WebChannelIPCTransport::WebChannelIPCTransport(content::RenderView *renderView)
     : content::RenderViewObserver(renderView)
     , content::RenderViewObserverTracker<WebChannelIPCTransport>(renderView)
-    , m_worldId(0)
     , m_installed(false)
+    , m_installedWorldId(0)
 {
 }
 
@@ -166,28 +166,28 @@ void WebChannelIPCTransport::RunScriptsAtDocumentStart(content::RenderFrame *ren
     // ### FIXME: we should try no even installing before
     blink::WebLocalFrame *frame = render_frame->GetWebFrame();
     if (m_installed && render_frame->IsMainFrame())
-        WebChannelTransport::Install(frame, m_worldId);
+        WebChannelTransport::Install(frame, m_installedWorldId);
 }
 
 
 void WebChannelIPCTransport::installWebChannel(uint worldId)
 {
-    m_worldId = worldId;
-    m_installed = true;
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
         return;
     WebChannelTransport::Install(webView->mainFrame(), worldId);
+    m_installed = true;
+    m_installedWorldId = worldId;
 }
 
 void WebChannelIPCTransport::uninstallWebChannel(uint worldId)
 {
-    Q_ASSERT(worldId = m_worldId);
-    m_installed = false;
+    Q_ASSERT(worldId = m_installedWorldId);
     blink::WebView *webView = render_view()->GetWebView();
     if (!webView)
         return;
     WebChannelTransport::Uninstall(webView->mainFrame(), worldId);
+    m_installed = false;
 }
 
 void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &binaryJSON, uint worldId)

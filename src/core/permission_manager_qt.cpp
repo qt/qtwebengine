@@ -55,14 +55,16 @@ BrowserContextAdapter::PermissionType toQt(content::PermissionType type)
     switch (type) {
     case content::PermissionType::GEOLOCATION:
         return BrowserContextAdapter::GeolocationPermission;
+    case content::PermissionType::AUDIO_CAPTURE:
+        return BrowserContextAdapter::AudioCapturePermission;
+    case content::PermissionType::VIDEO_CAPTURE:
+        return BrowserContextAdapter::VideoCapturePermission;
     case content::PermissionType::NOTIFICATIONS:
     case content::PermissionType::MIDI_SYSEX:
     case content::PermissionType::PUSH_MESSAGING:
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
     case content::PermissionType::MIDI:
     case content::PermissionType::DURABLE_STORAGE:
-    case content::PermissionType::AUDIO_CAPTURE:
-    case content::PermissionType::VIDEO_CAPTURE:
     case content::PermissionType::BACKGROUND_SYNC:
     case content::PermissionType::NUM:
         break;
@@ -116,6 +118,9 @@ int PermissionManagerQt::RequestPermission(content::PermissionType permission,
         callback.Run(blink::mojom::PermissionStatus::DENIED);
         return kNoPendingOperation;
     }
+    // Audio and video-capture should not come this way currently
+    Q_ASSERT(permissionType != BrowserContextAdapter::AudioCapturePermission
+          && permissionType != BrowserContextAdapter::VideoCapturePermission);
 
     content::WebContents *webContents = frameHost->GetRenderViewHost()->GetDelegate()->GetAsWebContents();
     WebContentsDelegateQt* contentsDelegate = static_cast<WebContentsDelegateQt*>(webContents->GetDelegate());
