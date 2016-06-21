@@ -55,16 +55,20 @@ defineTest(isPlatformSupported) {
 }
 
 defineTest(isPythonVersionSupported) {
-    python_error_msg = "Python version 2 (2.7 or later) is required to build Qt WebEngine."
-    python_major_version = $$system('python -c "import sys; print(sys.version_info[0])"')
+    python_error_msg = "Python version 2 (2.7.6 or later) is required to build Qt WebEngine."
+    python_version = $$system('python -c "import sys; print(sys.version_info[0:3])"')
+    python_version ~= s/[()]//g
+    python_version = $$split(python_version, ',')
+    python_major_version = $$first(python_version)
     greaterThan(python_major_version, 2) {
         skipBuild("Python version 3 is not supported by Chromium.")
         skipBuild($$python_error_msg)
         return(false)
     }
-    python_minor_version = $$system('python -c "import sys; print(sys.version_info[1])"')
-    greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): return(true)
-    skipBuild("Using Python version "$$python_major_version"."$$python_minor_version".")
+    python_minor_version = $$member(python_version, 1)
+    python_patch_version = $$member(python_version, 2)
+    greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): greaterThan(python_patch_version, 5): return(true)
+    skipBuild("Using Python version $${python_major_version}.$${python_minor_version}.$${python_patch_version}.")
     skipBuild($$python_error_msg)
     return(false)
 }
