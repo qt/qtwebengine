@@ -61,10 +61,9 @@ public:
     };
 
     FilePickerController(FileChooserMode mode, content::WebContents *contents, const QString &defaultFileName, const QStringList &acceptedMimeTypes, QObject * = 0);
-    QStringList acceptedMimeTypes();
-    QString defaultFileName();
-    FileChooserMode mode();
-    void filesSelectedInChooser(const QStringList &filesList, content::WebContents *contents);
+    QStringList acceptedMimeTypes() const;
+    QString defaultFileName() const;
+    FileChooserMode mode() const;
 
 public Q_SLOTS:
     void accepted(const QStringList &files);
@@ -72,6 +71,7 @@ public Q_SLOTS:
     void rejected();
 
 private:
+    void filesSelectedInChooser(const QStringList &filesList, content::WebContents *contents);
     QString m_defaultFileName;
     QStringList m_acceptedMimeTypes;
     content::WebContents *m_contents;

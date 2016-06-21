@@ -114,17 +114,17 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList, 
     rvh->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(this->m_mode));
 }
 
-QStringList FilePickerController::acceptedMimeTypes()
+QStringList FilePickerController::acceptedMimeTypes() const
 {
     return m_acceptedMimeTypes;
 }
 
-FilePickerController::FileChooserMode FilePickerController::mode()
+FilePickerController::FileChooserMode FilePickerController::mode() const
 {
     return m_mode;
 }
 
-QString FilePickerController::defaultFileName()
+QString FilePickerController::defaultFileName() const
 {
     return m_defaultFileName;
 }
