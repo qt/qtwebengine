@@ -37,6 +37,7 @@ private Q_SLOTS:
     void scriptModifications();
     void webChannel_data();
     void webChannel();
+    void noTransportWithoutWebChannel();
 };
 
 void tst_QWebEngineScript::domEditing()
@@ -180,13 +181,17 @@ private:
 void tst_QWebEngineScript::webChannel_data()
 {
     QTest::addColumn<int>("worldId");
-    QTest::newRow("MainWorld") << static_cast<int>(QWebEngineScript::MainWorld);
-    QTest::newRow("ApplicationWorld") << static_cast<int>(QWebEngineScript::ApplicationWorld);
+    QTest::addColumn<bool>("reloadFirst");
+    QTest::newRow("MainWorld") << static_cast<int>(QWebEngineScript::MainWorld) << false;
+    QTest::newRow("ApplicationWorld") << static_cast<int>(QWebEngineScript::ApplicationWorld) << false;
+    QTest::newRow("MainWorldWithReload") << static_cast<int>(QWebEngineScript::MainWorld) << true;
+    QTest::newRow("ApplicationWorldWithReload") << static_cast<int>(QWebEngineScript::ApplicationWorld) << true;
 }
 
 void tst_QWebEngineScript::webChannel()
 {
     QFETCH(int, worldId);
+    QFETCH(bool, reloadFirst);
     QWebEnginePage page;
     TestObject testObject;
     QScopedPointer<QWebChannel> channel(new QWebChannel(this));
@@ -205,6 +210,11 @@ void tst_QWebEngineScript::webChannel()
     page.scripts().insert(script);
     page.setHtml(QStringLiteral("<html><body></body></html>"));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    if (reloadFirst) {
+        // Check that the transport is also reinstalled on navigation
+        page.triggerAction(QWebEnginePage::Reload);
+        waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    }
     page.runJavaScript(QLatin1String(
                                 "new QWebChannel(qt.webChannelTransport,"
                                 "  function(channel) {"
@@ -216,6 +226,17 @@ void tst_QWebEngineScript::webChannel()
 
     if (worldId != QWebEngineScript::MainWorld)
         QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
+}
+
+void tst_QWebEngineScript::noTransportWithoutWebChannel()
+{
+    QWebEnginePage page;
+    page.setHtml(QStringLiteral("<html><body></body></html>"));
+
+    QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
+    page.triggerAction(QWebEnginePage::Reload);
+    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
 }
 
 QTEST_MAIN(tst_QWebEngineScript)

@@ -12,6 +12,17 @@
         <meta name="viewport" content="initial-scale=2.0"/>
     </head>
     <body>
+        <button onclick="scrollWin()", id="scroll">Click me to scroll!</button><br><br>
+
+        <script>
+            window.onload = function() {
+                document.getElementById("scroll").focus();
+            }
+
+            function scrollWin() {
+                window.scrollTo(0, 600);
+            }
+        </script>
         <div id="content">
             bla00<br/>
             bla01<br/>

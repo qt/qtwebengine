@@ -222,6 +222,7 @@ private:
     bool m_didFirstVisuallyNonEmptyLayout;
     uint32_t m_pendingOutputSurfaceId;
 
+    QMetaObject::Connection m_adapterClientDestroyedConnection;
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
 
