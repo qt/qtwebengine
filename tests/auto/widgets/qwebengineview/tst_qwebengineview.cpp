@@ -357,23 +357,21 @@ void tst_QWebEngineView::unhandledKeyEventPropagation()
 
     evaluateJavaScriptSync(webView.page(), "document.body.firstChild.focus()");
 
-    QTest::sendKeyEvent(QTest::Press, parentWidget.windowHandle(), Qt::Key_A, 'a', Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Release, parentWidget.windowHandle(), Qt::Key_A, 'a', Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Press, parentWidget.windowHandle(), Qt::Key_Left, QString(), Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Release, parentWidget.windowHandle(), Qt::Key_Left, QString(), Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Press, parentWidget.windowHandle(), Qt::Key_Left, QString(), Qt::NoModifier);
-    QTest::sendKeyEvent(QTest::Release, parentWidget.windowHandle(), Qt::Key_Left, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_A, 'a', Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_A, 'a', Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Press, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
+    QTest::sendKeyEvent(QTest::Release, webView.focusProxy(), Qt::Key_Left, QString(), Qt::NoModifier);
 
     // All this happens asychronously, wait for the last release event to know when we're done.
-    for (int i = 0; i < 20 && parentWidget.releaseEvents.size() < 3; ++i)
-        QTest::qWait(100);
+    QTRY_COMPARE(parentWidget.releaseEvents.size(), 3);
 
     // The page will consume the 'a' and the first left key presses, the second left won't be
     // used since the cursor will already be at the left end of the text input.
     // Key releases will all come back unconsumed.
     QCOMPARE(parentWidget.pressEvents.size(), 1);
     QCOMPARE(parentWidget.pressEvents[0].key(), (int)Qt::Key_Left);
-    QCOMPARE(parentWidget.releaseEvents.size(), 3);
     QCOMPARE(parentWidget.releaseEvents[0].key(), (int)Qt::Key_A);
     QCOMPARE(parentWidget.releaseEvents[1].key(), (int)Qt::Key_Left);
     QCOMPARE(parentWidget.releaseEvents[2].key(), (int)Qt::Key_Left);

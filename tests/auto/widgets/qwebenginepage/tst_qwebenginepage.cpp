@@ -3703,7 +3703,7 @@ void tst_QWebEnginePage::fullScreenRequested()
         if (acceptRequest) request.accept(); else request.reject();
     });
 
-    QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
+    QTest::keyPress(view->focusProxy(), Qt::Key_Space);
     QTRY_VERIFY(evaluateJavaScriptSync(page, "document.webkitIsFullScreen").toBool());
     page->runJavaScript("document.webkitExitFullscreen()", JavaScriptCallbackUndefined());
     QVERIFY(watcher.wait());
@@ -3711,7 +3711,7 @@ void tst_QWebEnginePage::fullScreenRequested()
     acceptRequest = false;
 
     page->runJavaScript("document.webkitFullscreenEnabled", JavaScriptCallback(true));
-    QTest::keyPress(qApp->focusWindow(), Qt::Key_Space);
+    QTest::keyPress(view->focusProxy(), Qt::Key_Space);
     QVERIFY(watcher.wait());
     page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
     QVERIFY(watcher.wait());
