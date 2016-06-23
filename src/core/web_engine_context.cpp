@@ -146,10 +146,14 @@ bool usingQtQuick2DRenderer()
     }
 
     if (device.isEmpty())
+        device = QString::fromLocal8Bit(qgetenv("QT_QUICK_BACKEND"));
+    if (device.isEmpty())
         device = QString::fromLocal8Bit(qgetenv("QMLSCENE_DEVICE"));
+    if (device.isEmpty())
+        device = QLatin1String("default");
 
-    // This assumes that the plugin is installed and is going to be used by QtQuick.
-    return device == QLatin1String("softwarecontext");
+    // Anything other than the default OpenGL device will need to render in 2D mode.
+    return device != QLatin1String("default");
 }
 
 #if defined(ENABLE_PLUGINS)
