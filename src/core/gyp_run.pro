@@ -89,9 +89,16 @@ contains(QT_ARCH, "mips") {
     !cross_compile: GYP_CONFIG += sysroot=\"\"
     GYP_CONFIG += target_arch=mipsel
 
-    contains(QMAKE_CFLAGS, "mips32r6"): mips_arch_variant=\"r6\"
-    else: contains(QMAKE_CFLAGS, "mips32r2"): mips_arch_variant=\"r2\"
-    else: contains(QMAKE_CFLAGS, "mips32"): mips_arch_variant=\"r1\"
+    MARCH = $$extractCFlag("-march=.*")
+    !isEmpty(MARCH) {
+        equals(MARCH, "mips32r6"): GYP_CONFIG += mips_arch_variant=\"r6\"
+        else: equals(MARCH, "mips32r2"): GYP_CONFIG += mips_arch_variant=\"r2\"
+        else: equals(MARCH, "mips32"): GYP_CONFIG += mips_arch_variant=\"r1\"
+    } else {
+        contains(QMAKE_CFLAGS, "mips32r6"): GYP_CONFIG += mips_arch_variant=\"r6\"
+        else: contains(QMAKE_CFLAGS, "mips32r2"): GYP_CONFIG += mips_arch_variant=\"r2\"
+        else: contains(QMAKE_CFLAGS, "mips32"): GYP_CONFIG += mips_arch_variant=\"r1\"
+    }
 
     contains(QMAKE_CFLAGS, "-mdsp2"): GYP_CONFIG += mips_dsp_rev=2
     else: contains(QMAKE_CFLAGS, "-mdsp"): GYP_CONFIG += mips_dsp_rev=1
