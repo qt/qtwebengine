@@ -477,7 +477,6 @@
     \qmlsignal WebEngineView::loadingChanged(WebEngineLoadRequest loadRequest)
 
     This signal is emitted when a page load begins, ends, or fails.
-    The corresponding handler is \c onLoadingChanged.
 
     When handling the signal with \c onLoadingChanged, various read-only
     parameters are available on the \a loadRequest:
@@ -514,8 +513,6 @@
 
     The certificate error can be handled by using the methods of the WebEngineCertificateError
     type.
-
-    The corresponding handler is \c onCertificateError.
 */
 
 /*!
@@ -526,8 +523,6 @@
     event. This event may also occur in touch interfaces for \c{mouseover}
     events that are not cancelled with \c{preventDefault()}. \a{hoveredUrl}
     provides the link's location.
-
-    The corresponding handler is \c onLinkHovered.
 */
 
 /*!
@@ -540,8 +535,8 @@
     \a level indicates the severity of the event that triggered the message, that is, whether it
     was triggered by an error or a less severe event.
 
-    The corresponding handler is \c onJavaScriptConsoleMessage. If no handler is specified,
-    the view will log the messages into a \c js \l{QLoggingCategory}{logging category}.
+    If no handler is specified, the view will log the messages into a \c js
+    \l{QLoggingCategory}{logging category}.
 
     \sa{Console Logging}
 */
@@ -562,8 +557,6 @@
 
     \snippet snippets/qtwebengine_webengineview_newviewrequested.qml 0
 
-    The corresponding handler is \c onNewViewRequested.
-
     \sa NewViewDestination, {WebEngine Quick Nano Browser}
 */
 
@@ -573,8 +566,6 @@
 
     This signal is emitted when the web page requests fullscreen mode through the
     JavaScript API.
-
-    The corresponding handler is \c onFullScreenRequested.
 
     \sa isFullScreen
 */
@@ -614,8 +605,6 @@
 
     This signal is emitted whenever the page requests the web browser window to be closed,
     for example through the JavaScript \c{window.close()} call.
-
-    The corresponding handler is \c onWindowCloseRequested.
 */
 
 /*!
