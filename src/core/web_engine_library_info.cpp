@@ -151,33 +151,6 @@ QString subProcessPath()
     return processPath;
 }
 
-QString pluginsPath()
-{
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-    static QString pluginsPath = getPath(frameworkBundle()) % QLatin1String("/Libraries");
-#else
-    static bool initialized = false;
-    static QString pluginsPath;
-
-    if (!initialized) {
-        initialized = true;
-        const QStringList directories = QCoreApplication::libraryPaths();
-        Q_FOREACH (const QString &dir, directories) {
-            const QString candidate = dir % "/" % QLatin1String("qtwebengine");
-            if (QFileInfo::exists(candidate)) {
-                pluginsPath = candidate;
-                break;
-            }
-        }
-
-        if (pluginsPath.isEmpty()) {
-            pluginsPath = fallbackDir();
-        }
-    }
-#endif
-    return pluginsPath;
-}
-
 QString localesPath()
 {
 #if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
@@ -283,8 +256,6 @@ base::FilePath WebEngineLibraryInfo::getPath(int key)
         break;
     case base::DIR_QT_LIBRARY_DATA:
         return toFilePath(icuDataPath());
-    case content::DIR_MEDIA_LIBS:
-        return toFilePath(pluginsPath());
     case ui::DIR_LOCALES:
         return toFilePath(localesPath());
     default:
