@@ -98,19 +98,6 @@
     execute JavaScript. This mitigates security issues and isolates crashes caused by specific
     content.
 
-    The document object model (DOM) of a page is constructed when the document is ready, typically
-    when the page is completely loaded. Therefore, executing scripts as soon as a document is
-    created is not suitable for DOM operations, where one has to wait until the DOM is ready.
-
-    In addition, an injected script shares the same \e world as the other scripts executed on the
-    page, which might lead to conflicts. To avoid this, the QWebEngineScript class and the
-    WebEngineScript QML type provide implementations of the Chromium API for
-    \e{Content Script Extensions}. They specify the
-    script to run, the injection point, and the world where the script is run. This enables
-    accessing the DOM to manipulate it within a world.
-
-    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
-
     \section1 Embedding Web Content into Widget Based Applications
 
     Use the QWebEngineView class to display web pages in the simplest way. Because it is a widget,
@@ -177,6 +164,24 @@
     \quotefromfile webengine/minimal/main.qml
     \skipto import
     \printuntil /^\}/
+
+    \section1 Script Injection
+
+    Qt WebEngine does not allow direct access to the document object model (DOM) of a page.
+    However, the DOM can be inspected and adapted by injecting scripts.
+
+    The DOM of a page is constructed when the document is ready, typically
+    when the page is completely loaded. Therefore, executing scripts as soon as a document is
+    created is not suitable for DOM operations, where one has to wait until the DOM is ready.
+
+    In addition, an injected script shares the same \e world as the other scripts executed on the
+    page, which might lead to conflicts. To avoid this, the QWebEngineScript class and the
+    WebEngineScript QML type provide implementations of the Chromium API for
+    \e{Content Script Extensions}. They specify the
+    script to run, the injection point, and the world where the script is run. This enables
+    accessing the DOM to manipulate it within a world.
+
+    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
 
     \section1 Managing Certificates
 
