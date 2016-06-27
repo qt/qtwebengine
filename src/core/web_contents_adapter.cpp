@@ -782,6 +782,9 @@ void WebContentsAdapter::stopFinding()
 {
     Q_D(WebContentsAdapter);
     d->webContentsDelegate->setLastSearchedString(QString());
+    // Clear any previous selection,
+    // but keep the renderer blue rectangle selection just like Chromium does.
+    d->webContents->Unselect();
     d->webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 

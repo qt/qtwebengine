@@ -2970,31 +2970,26 @@ void tst_QWebEnginePage::findText()
     QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
     m_page->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
     QTRY_COMPARE(loadSpy.count(), 1);
+
+    // Select whole page contents.
     m_page->triggerAction(QWebEnginePage::SelectAll);
     QTRY_COMPARE(m_page->hasSelection(), true);
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-    QVERIFY(!m_page->selectedHtml().isEmpty());
-#endif
+
+    // Invoke a stopFinding() operation, which should clear the currently selected text.
     m_page->findText("");
-    QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
-    QVERIFY(m_page->selectedText().isEmpty());
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-    QVERIFY(m_page->selectedHtml().isEmpty());
-#endif
+    QTRY_VERIFY(m_page->selectedText().isEmpty());
+
     QStringList words = (QStringList() << "foo" << "bar");
     foreach (QString subString, words) {
+        // Invoke a find operation, which should clear the currently selected text, should
+        // highlight all the found ocurrences, but should not update the selected text to the
+        // searched for string.
         m_page->findText(subString);
-        QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
-        QCOMPARE(m_page->selectedText(), subString);
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-        QVERIFY(m_page->selectedHtml().contains(subString));
-#endif
+        QTRY_VERIFY(m_page->selectedText().isEmpty());
+
+        // Search highlights should be cleared, selected text should still be empty.
         m_page->findText("");
-        QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
-        QVERIFY(m_page->selectedText().isEmpty());
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-        QVERIFY(m_page->selectedHtml().isEmpty());
-#endif
+        QTRY_VERIFY(m_page->selectedText().isEmpty());
     }
 }
 
