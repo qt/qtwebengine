@@ -200,9 +200,13 @@ QSGLayer *RenderWidgetHostViewQtDelegateWidget::createLayer()
     return enginePrivate->sgContext->createLayer(enginePrivate->sgRenderContext.data());
 }
 
-QSGImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
+QSGInternalImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
+    return QSGEnginePrivate::get(m_sgEngine.data())->sgContext->createInternalImageNode();
+#else
     return QSGEnginePrivate::get(m_sgEngine.data())->sgContext->createImageNode();
+#endif
 }
 
 void RenderWidgetHostViewQtDelegateWidget::update()

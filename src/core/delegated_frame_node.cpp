@@ -539,7 +539,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                     continue;
 
                 // Only QSGImageNode currently supports QSGLayer textures.
-                QSGImageNode *imageNode = apiDelegate->createImageNode();
+                QSGInternalImageNode *imageNode = apiDelegate->createImageNode();
                 imageNode->setTargetRect(toQt(quad->rect));
                 imageNode->setInnerTargetRect(toQt(quad->rect));
                 imageNode->setTexture(layer);

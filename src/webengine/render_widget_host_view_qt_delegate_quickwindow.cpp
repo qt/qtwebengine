@@ -111,7 +111,7 @@ QSGLayer *RenderWidgetHostViewQtDelegateQuickWindow::createLayer()
     return m_realDelegate->createLayer();
 }
 
-QSGImageNode *RenderWidgetHostViewQtDelegateQuickWindow::createImageNode()
+QSGInternalImageNode *RenderWidgetHostViewQtDelegateQuickWindow::createImageNode()
 {
     return m_realDelegate->createImageNode();
 }
