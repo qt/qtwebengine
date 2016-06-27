@@ -66,6 +66,10 @@
     \e cookies. Profiles can be used to isolate pages from each other. A typical use case is a
     dedicated profile for a \e {private browsing} mode, where no information is permanently saved.
 
+    \note The Qt WebEngine Widgets module uses the \l{Qt Quick Scene Graph}{Qt Quick scene graph}
+    to compose the elements of a web page into one view. This means that the UI process
+    requires OpenGL ES 2.0 or OpenGL 2.0 for its rendering.
+
     \section2 Qt WebEngine Module
 
     \image qtwebengine-model.png
@@ -91,11 +95,6 @@
     \section2 Qt WebEngine Process
 
     The Qt WebEngine Process renders web pages and executes JavaScript.
-
-    Chromium is tightly integrated to the \l{Qt Quick Scene Graph}{Qt Quick scene graph}, which is
-    based on OpenGL ES 2.0 or OpenGL 2.0 for its rendering. This provides you with one-pass
-    compositing of web content and all the Qt Quick UI. The integration to Chromium is transparent
-    to developers, who just work with Qt and JavaScript.
 
     The document object model (DOM) of a page is constructed when the document is ready, typically
     when the page is completely loaded. Therefore, executing scripts as soon as a document is
