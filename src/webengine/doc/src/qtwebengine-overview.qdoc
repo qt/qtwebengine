@@ -31,27 +31,15 @@
 
     The Qt WebEngine module provides a web browser engine that makes it easy to embed content from
     the World Wide Web into your Qt application on platforms that do not have a native web engine.
-    The web engine is not intended to function as a \e {Web Runtime}; to display web content in a
-    QML application by using APIs native to the platform, use the \l{Qt WebView} module, instead.
 
     Qt WebEngine provides C++ classes and QML types for rendering HTML, XHTML, and SVG documents,
     styled using Cascading Style Sheets (CSS) and scripted with JavaScript. HTML documents can be
     made fully editable by the user through the use of the \c{contenteditable} attribute on HTML
     elements.
 
-    Qt WebEngine supercedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
-    module, which is based on the
-    WebKit project, but has not been actively synchronized with the upstream WebKit code since
-    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
-    application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}. For new
-    applications, we recommend using Qt Quick and the WebEngineView QML type.
-
     For more information about the requirements for building Qt WebEngine from source on the
     supported platforms and for other platform-specific information, see
     \l{Qt WebEngine Platform Notes}.
-
-    The \l {Qt WebChannel} module can be used to create a bi-directional communication channel
-    between QObject objects on the C++ side and JavaScript on the QML side.
 
     \section1 Qt WebEngine Architecture
 
@@ -237,6 +225,20 @@
     The QWebEngineCookieStore class provides functions for accessing HTTP cookies of Chromium.
     The functions can be used to synchronize cookies with QNetworkAccessManager, as well as to set,
     delete, and intercept cookies during navigation.
+
+    \section1 Related Modules
+
+    Qt WebEngine supersedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
+    module, which is based on the
+    WebKit project, but has not been actively synchronized with the upstream WebKit code since
+    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
+    application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}.
+
+    The \l{Qt WebView} module allows to use a native web browser on platforms where one is
+    available.
+
+    The \l{Qt WebChannel} module can be used to create a bi-directional communication channel
+    between QObject objects on the C++ side and JavaScript on the QML side.
 
     \section1 License Information
 
