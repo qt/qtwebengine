@@ -79,7 +79,7 @@
     The Qt WebEngine core is based on the \l {Chromium Project}. Chromium provides its own network
     and painting engines and is developed tightly together with its dependent modules.
 
-    Please note that Qt WebEngine is based on Chromium, but does not contain or use any services
+    \note Qt WebEngine is based on Chromium, but does not contain or use any services
     or add-ons that might be part of the Chrome browser that is built and delivered by Google.
     You can find more detailed information about the differences between Chromium and Chrome in this
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
