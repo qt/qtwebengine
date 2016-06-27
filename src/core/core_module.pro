@@ -114,6 +114,13 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
     }
 }
 
+!win32:!build_pass:debug_and_release {
+    # Special GNU make target that ensures linking isn't done for both debug and release builds
+    # at the same time.
+    notParallel.target = .NOTPARALLEL
+    QMAKE_EXTRA_TARGETS += notParallel
+}
+
 OTHER_FILES = \
     $$files(../3rdparty/chromium/*.h, true) \
     $$files(../3rdparty/chromium/*.cc, true) \
