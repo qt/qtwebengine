@@ -77,10 +77,7 @@
     \section2 Qt WebEngine Core Module
 
     The Qt WebEngine core is based on the \l {Chromium Project}. Chromium provides its own network
-    and painting engines and is developed tightly together with its dependent modules, and
-    therefore Qt WebEngine provides better and more reliable support for the latest HTML5
-    specification than Qt WebKit. However, Qt WebEngine is thus heavier than Qt WebKit and does
-    not provide direct access to the network stack and the HTML document through C++ APIs.
+    and painting engines and is developed tightly together with its dependent modules.
 
     Please note that Qt WebEngine is based on Chromium, but does not contain or use any services
     or add-ons that might be part of the Chrome browser that is built and delivered by Google.
