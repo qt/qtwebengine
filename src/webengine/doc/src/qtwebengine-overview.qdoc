@@ -37,10 +37,6 @@
     made fully editable by the user through the use of the \c{contenteditable} attribute on HTML
     elements.
 
-    For more information about the requirements for building Qt WebEngine from source on the
-    supported platforms and for other platform-specific information, see
-    \l{Qt WebEngine Platform Notes}.
-
     \section1 Qt WebEngine Architecture
 
     \image qtwebengine-architecture.png
@@ -225,6 +221,12 @@
     The QWebEngineCookieStore class provides functions for accessing HTTP cookies of Chromium.
     The functions can be used to synchronize cookies with QNetworkAccessManager, as well as to set,
     delete, and intercept cookies during navigation.
+
+    \section1 Platform Notes
+
+    Qt WebEngine currently supports only Windows, Linux, and OS X. Due to Chromium build
+    requirements it also often requires a newer compiler than the rest of Qt. See
+    \l{Qt WebEngine Platform Notes} for further details.
 
     \section1 Related Modules
 
