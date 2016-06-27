@@ -74,9 +74,9 @@
 
     \image qtwebengine-model.png
 
-    The Qt WebEngine QML implementation contains the same elements as the C++ implementation,
-    except that there is no separately accessible web engine page. The supported page functionality
-    is integrated into the web engine view.
+    The Qt WebEngine QML implementation contains the same elements as the Qt WebEngine Widgets
+    implementation, except that there is no separately accessible web engine page.
+    The supported page functionality is integrated into the web engine view.
 
     \section2 Qt WebEngine Core Module
 
