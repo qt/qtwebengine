@@ -94,7 +94,9 @@
 
     \section2 Qt WebEngine Process
 
-    The Qt WebEngine Process renders web pages and executes JavaScript.
+    The Qt WebEngine Process is a separate executable that is used to render web pages and
+    execute JavaScript. This mitigates security issues and isolates crashes caused by specific
+    content.
 
     The document object model (DOM) of a page is constructed when the document is ready, typically
     when the page is completely loaded. Therefore, executing scripts as soon as a document is
@@ -108,11 +110,6 @@
     accessing the DOM to manipulate it within a world.
 
     \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
-
-    Because the render process is separated from the GUI process, they should ideally share an
-    OpenGL context to enable one process to access the resources uploaded by the other, such as
-    images or textures. However, some inter-process communication is needed for safety and
-    reliability, because it enables restarting a crashed process.
 
     \section1 Embedding Web Content into Widget Based Applications
 
