@@ -137,7 +137,7 @@ void HistoryManager::setHistory(const QList<HistoryItem> &history, bool loadedAn
     if (!loadedAndSorted)
         qSort(m_history.begin(), m_history.end());
 
-    checkForExpired();
+    checkForExpired(loadedAndSorted);
 
     if (loadedAndSorted) {
         m_lastSavedUrl = m_history.value(0).url;
@@ -163,7 +163,7 @@ HistoryTreeModel *HistoryManager::historyTreeModel() const
     return m_historyTreeModel;
 }
 
-void HistoryManager::checkForExpired()
+void HistoryManager::checkForExpired(bool removeEntriesDirectly)
 {
     if (m_historyLimit < 0 || m_history.isEmpty())
         return;
@@ -185,7 +185,11 @@ void HistoryManager::checkForExpired()
         const HistoryItem& item = m_history.last();
         // remove from saved file also
         m_lastSavedUrl = QString();
-        emit entryRemoved(item);
+
+        if (removeEntriesDirectly)
+            m_history.takeLast();
+        else
+            emit entryRemoved(item);
     }
 
     if (nextTimeout > 0)

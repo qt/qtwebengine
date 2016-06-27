@@ -241,6 +241,7 @@ private:
 
     ui::TextInputType m_currentInputType;
     bool m_imeInProgress;
+    bool m_receivedEmptyImeText;
     QRect m_cursorRect;
     size_t m_anchorPositionWithinSelection;
     size_t m_cursorPositionWithinSelection;

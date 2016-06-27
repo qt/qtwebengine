@@ -42,7 +42,10 @@
 
     \section1 The Code
 
-    In \c main.cpp we instantiate a QApplication and a QWebEngineView. The URL
+    In the \c main function we first set the Qt::AA_EnableHighDpiScaling.
+    This lets the web view automatically scale on high-dpi displays.
+
+    Next, we instantiate a QApplication and a QWebEngineView. The URL
     to load is set by calling \l QWebEngineView::setUrl. The view widget is
     given a reasonable default size, and shown.
     Finally, QApplication::exec() launches the main event loop.

@@ -73,6 +73,8 @@ class QQmlContext;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
 
+QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
+
 #ifdef ENABLE_QML_TESTSUPPORT_API
 class QQuickWebEngineTestSupport;
 #endif

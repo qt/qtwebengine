@@ -126,7 +126,7 @@ public slots:
 
 private slots:
     void save();
-    void checkForExpired();
+    void checkForExpired(bool removeExpiredEntriesDirectly = false);
 
 protected:
     void addHistoryItem(const HistoryItem &item);
