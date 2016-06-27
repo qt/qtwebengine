@@ -474,7 +474,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::loadingChanged(loadRequest)
+    \qmlsignal WebEngineView::loadingChanged(WebEngineLoadRequest loadRequest)
 
     This signal is emitted when a page load begins, ends, or fails.
     The corresponding handler is \c onLoadingChanged.
@@ -507,7 +507,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::certificateError(error)
+    \qmlsignal WebEngineView::certificateError(WebEngineCertificateError error)
     \since QtWebEngine 1.1
 
     This signal is emitted when an invalid certificate error is raised while loading a given request.
@@ -516,12 +516,10 @@
     type.
 
     The corresponding handler is \c onCertificateError.
-
-    \sa WebEngineCertificateError
 */
 
 /*!
-    \qmlsignal WebEngineView::linkHovered(hoveredUrl)
+    \qmlsignal WebEngineView::linkHovered(url hoveredUrl)
 
     Within a mouse-driven interface, this signal is emitted when a mouse
     pointer passes over a link, corresponding to the \c{mouseover} DOM
@@ -533,7 +531,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, message, lineNumber, sourceID)
+    \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, string message, int lineNumber, string sourceID)
     This signal is emitted when a JavaScript program tries to print a \a message to the web browser's console.
 
     For example, in case of evaluation errors the source URL may be provided in \a sourceID as well
@@ -549,7 +547,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::newViewRequested(request)
+    \qmlsignal WebEngineView::newViewRequested(WebEngineViewRequest request)
     \since QtWebEngine 1.1
 
     This signal is emitted when a page load is requested to happen in a separate
@@ -566,7 +564,7 @@
 
     The corresponding handler is \c onNewViewRequested.
 
-    \sa WebEngineNewViewRequest, NewViewDestination, {WebEngine Quick Nano Browser}
+    \sa NewViewDestination, {WebEngine Quick Nano Browser}
 */
 
 /*!
@@ -578,11 +576,11 @@
 
     The corresponding handler is \c onFullScreenRequested.
 
-    \sa WebEngineFullScreenRequest, isFullScreen
+    \sa isFullScreen
 */
 
 /*!
-    \qmlsignal WebEngineView::activeFocusOnPressChanged(bool)
+    \qmlsignal WebEngineView::activeFocusOnPressChanged(bool activeFocusOnPress)
     \since QtWebEngine 1.2
 
     This signal is emitted when the ability of the web engine view to get focus when clicked
