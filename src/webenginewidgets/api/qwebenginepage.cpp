@@ -120,13 +120,13 @@ QWebEnginePage::WebAction editorActionForKeyEvent(QKeyEvent* event)
 }
 
 QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
-    : adapter(new WebContentsAdapter)
+    : adapter(QSharedPointer<WebContentsAdapter>::create())
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , profile(_profile ? _profile : QWebEngineProfile::defaultProfile())
     , settings(new QWebEngineSettings(profile->settings()))
     , view(0)
     , isLoading(false)
-    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter.data()))
+    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userScriptController(), adapter))
     , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , fullscreenMode(false)
@@ -266,7 +266,7 @@ void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }
 
-void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry)
+void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(userGesture);
@@ -451,13 +451,13 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 
 void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
-    QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
+    QSharedPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
     if (newWebContents) {
-        adapter = newWebContents.data();
+        adapter = std::move(newWebContents);
         adapter->initialize(this);
         if (webChannel)
             adapter->setWebChannel(webChannel);
-        scriptCollection.d->rebindToContents(adapter.data());
+        scriptCollection.d->rebindToContents(adapter);
     }
 }
 

@@ -72,7 +72,7 @@ private:
     QQuickWebEngineNewViewRequest();
     QQuickWebEngineView::NewViewDestination m_destination;
     bool m_isUserInitiated;
-    QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
+    QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_adapter;
     QUrl m_requestedUrl;
     friend class QQuickWebEngineView;
     friend class QQuickWebEngineViewPrivate;

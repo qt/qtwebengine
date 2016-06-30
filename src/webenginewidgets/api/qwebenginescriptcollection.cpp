@@ -164,7 +164,7 @@ QList<QWebEngineScript> QWebEngineScriptCollection::toList() const
 }
 
 
-QWebEngineScriptCollectionPrivate::QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserScriptControllerHost *controller, QtWebEngineCore::WebContentsAdapter *webContents)
+QWebEngineScriptCollectionPrivate::QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserScriptControllerHost *controller, QSharedPointer<QtWebEngineCore::WebContentsAdapter> webContents)
     : m_scriptController(controller)
     , m_contents(webContents)
 {
@@ -221,14 +221,14 @@ void QWebEngineScriptCollectionPrivate::reserve(int capacity)
     m_scriptController->reserve(m_contents.data(), capacity);
 }
 
-void QWebEngineScriptCollectionPrivate::rebindToContents(QtWebEngineCore::WebContentsAdapter *page)
+void QWebEngineScriptCollectionPrivate::rebindToContents(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents)
 {
     Q_ASSERT(m_contents);
-    Q_ASSERT(page);
-    Q_ASSERT(m_contents != page);
+    Q_ASSERT(contents);
+    Q_ASSERT(m_contents != contents);
 
     Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents.data())) {
-        m_scriptController->addUserScript(script, page);
+        m_scriptController->addUserScript(script, contents.data());
     }
-    m_contents = page;
+    m_contents = contents;
 }
