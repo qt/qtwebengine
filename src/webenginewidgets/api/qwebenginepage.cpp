@@ -288,8 +288,11 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
 
     // Overwrite the new page's WebContents with ours.
     if (newPage->d_func() != this) {
+        // Keep the old adapter referenced until the scriptcollection is rebound
+        QExplicitlySharedDataPointer<WebContentsAdapter> oldWebContents = newPage->d_func()->adapter;
         newPage->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
+        newPage->d_func()->scriptCollection.d->rebindToContents(newWebContents);
         if (!initialGeometry.isEmpty())
             emit newPage->geometryChangeRequested(initialGeometry);
     }
