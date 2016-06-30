@@ -172,32 +172,32 @@ QWebEngineScriptCollectionPrivate::QWebEngineScriptCollectionPrivate(QtWebEngine
 
 int QWebEngineScriptCollectionPrivate::count() const
 {
-    return m_scriptController->registeredScripts(m_contents).count();
+    return m_scriptController->registeredScripts(m_contents.data()).count();
 }
 
 bool QWebEngineScriptCollectionPrivate::contains(const QWebEngineScript &s) const
 {
-    return m_scriptController->containsUserScript(*s.d, m_contents);
+    return m_scriptController->containsUserScript(*s.d, m_contents.data());
 }
 
 void QWebEngineScriptCollectionPrivate::insert(const QWebEngineScript &script)
 {
     if (!script.d)
         return;
-    m_scriptController->addUserScript(*script.d, m_contents);
+    m_scriptController->addUserScript(*script.d, m_contents.data());
 }
 
 bool QWebEngineScriptCollectionPrivate::remove(const QWebEngineScript &script)
 {
     if (!script.d)
         return false;
-    return m_scriptController->removeUserScript(*script.d, m_contents);
+    return m_scriptController->removeUserScript(*script.d, m_contents.data());
 }
 
 QList<QWebEngineScript> QWebEngineScriptCollectionPrivate::toList(const QString &scriptName) const
 {
     QList<QWebEngineScript> ret;
-    Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents))
+    Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents.data()))
         if (scriptName.isNull() || scriptName == script.name())
             ret.append(QWebEngineScript(script));
     return ret;
@@ -205,7 +205,7 @@ QList<QWebEngineScript> QWebEngineScriptCollectionPrivate::toList(const QString 
 
 QWebEngineScript QWebEngineScriptCollectionPrivate::find(const QString &name) const
 {
-    Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents))
+    Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents.data()))
         if (name == script.name())
             return QWebEngineScript(script);
     return QWebEngineScript();
@@ -213,12 +213,12 @@ QWebEngineScript QWebEngineScriptCollectionPrivate::find(const QString &name) co
 
 void QWebEngineScriptCollectionPrivate::clear()
 {
-    m_scriptController->clearAllScripts(m_contents);
+    m_scriptController->clearAllScripts(m_contents.data());
 }
 
 void QWebEngineScriptCollectionPrivate::reserve(int capacity)
 {
-    m_scriptController->reserve(m_contents, capacity);
+    m_scriptController->reserve(m_contents.data(), capacity);
 }
 
 void QWebEngineScriptCollectionPrivate::rebindToContents(QtWebEngineCore::WebContentsAdapter *page)
@@ -227,7 +227,7 @@ void QWebEngineScriptCollectionPrivate::rebindToContents(QtWebEngineCore::WebCon
     Q_ASSERT(page);
     Q_ASSERT(m_contents != page);
 
-    Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents)) {
+    Q_FOREACH (const UserScript &script, m_scriptController->registeredScripts(m_contents.data())) {
         m_scriptController->addUserScript(script, page);
     }
     m_contents = page;

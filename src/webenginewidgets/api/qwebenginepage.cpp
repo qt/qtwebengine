@@ -288,8 +288,6 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
 
     // Overwrite the new page's WebContents with ours.
     if (newPage->d_func() != this) {
-        // Keep the old adapter referenced until the scriptcollection is rebound
-        QExplicitlySharedDataPointer<WebContentsAdapter> oldWebContents = newPage->d_func()->adapter;
         newPage->d_func()->adapter = newWebContents;
         newWebContents->initialize(newPage->d_func());
         newPage->d_func()->scriptCollection.d->rebindToContents(newWebContents);
@@ -455,9 +453,6 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
     QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
     if (newWebContents) {
-        // Keep the old adapter referenced so the user-scripts are not
-        // unregistered immediately.
-        QExplicitlySharedDataPointer<WebContentsAdapter> oldWebContents = adapter;
         adapter = newWebContents.data();
         adapter->initialize(this);
         if (webChannel)

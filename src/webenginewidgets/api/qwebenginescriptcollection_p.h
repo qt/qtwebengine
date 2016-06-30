@@ -51,12 +51,13 @@
 #include "qtwebenginewidgetsglobal.h"
 
 #include "qwebenginescript.h"
+#include "web_contents_adapter.h"
 
+#include <QtCore/QExplicitlySharedDataPointer>
 #include <QtCore/QSet>
 
 namespace QtWebEngineCore {
 class UserScriptControllerHost;
-class WebContentsAdapter;
 } // namespace
 
 QT_BEGIN_NAMESPACE
@@ -78,7 +79,7 @@ public:
 
 private:
     QtWebEngineCore::UserScriptControllerHost *m_scriptController;
-    QtWebEngineCore::WebContentsAdapter *m_contents;
+    QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> m_contents;
 };
 
 QT_END_NAMESPACE
