@@ -4274,23 +4274,39 @@ void tst_QWebEnginePage::horizontalScrollAfterBack()
 #endif
 }
 
+class WebView : public QWebEngineView
+{
+    Q_OBJECT
+signals:
+    void repaintRequested();
+
+protected:
+    bool event(QEvent *event) {
+        if (event->type() == QEvent::UpdateRequest)
+            emit repaintRequested();
+
+        return QWebEngineView::event(event);
+    }
+};
+
 void tst_QWebEnginePage::evaluateWillCauseRepaint()
 {
-#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
-    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
-#else
-    QWebEngineView view;
-    QString html("<html><body>top<div id=\"junk\" style=\"display: block;\">"
-                    "junk</div>bottom</body></html>");
-    view.setHtml(html);
+    WebView view;
     view.show();
-
     QTest::qWaitForWindowExposed(&view);
-    view.page()->evaluateJavaScript(
-        "document.getElementById('junk').style.display = 'none';");
 
-    ::waitForSignal(view.page(), SIGNAL(repaintRequested(QRect)));
-#endif
+    QString html("<html><body>"
+                 "  top"
+                 "  <div id=\"junk\" style=\"display: block;\">junk</div>"
+                 "  bottom"
+                 "</body></html>");
+
+    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml(html);
+    QTRY_COMPARE(loadSpy.count(), 1);
+
+    evaluateJavaScriptSync(view.page(), "document.getElementById('junk').style.display = 'none';");
+    ::waitForSignal(&view, SIGNAL(repaintRequested()));
 }
 
 void tst_QWebEnginePage::setContent_data()
