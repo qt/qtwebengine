@@ -128,6 +128,9 @@ defineTest(finalizeConfigure) {
         } else {
             log("AppStore Compliant ............... Not enabled         (Default, enable with WEBENGINE_CONFIG+=use_appstore_compliant_code)$${EOL}")
         }
+        !isMinOSXSDKVersion(10, 10, 3) {
+            log("Force Touch API usage ............ Not enabled         (Because the OS X SDK version to be used \"$${WEBENGINE_OSX_SDK_PRODUCT_VERSION}\" is lower than the required \"10.10.3\")$${EOL}")
+        }
     }
 }
 

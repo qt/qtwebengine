@@ -23,8 +23,8 @@ defineTest(isPlatformSupported) {
       skipBuild("Qt WebEngine on Windows must be built on a 64-bit machine.")
     }
   } else:osx {
-    lessThan(QMAKE_XCODE_VERSION, 5.1) {
-      skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
+    lessThan(QMAKE_XCODE_VERSION, 6.1) {
+      skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 6.1 is required to build Qt WebEngine.")
       return(false)
     }
     # We require OS X 10.9 (darwin version 13.0.0) or newer
@@ -33,8 +33,8 @@ defineTest(isPlatformSupported) {
       skipBuild("Qt WebEngine requires OS X version 10.9 or newer.")
       return(false)
     }
-    !isMinOSXSDKVersion(10, 10, 3): {
-      skipBuild("Qt WebEngine requires an OS X SDK version 10.10.3 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
+    !isMinOSXSDKVersion(10, 10): {
+      skipBuild("Qt WebEngine requires an OS X SDK version of 10.10 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
       return(false)
     }
   } else {
@@ -101,6 +101,7 @@ defineTest(isMinOSXSDKVersion) {
     requested_major = $$1
     requested_minor = $$2
     requested_patch = $$3
+    isEmpty(requested_patch): requested_patch = 0
     WEBENGINE_OSX_SDK_PRODUCT_VERSION = $$system("/usr/bin/xcodebuild -sdk $$QMAKE_MAC_SDK -version ProductVersion 2>/dev/null")
     export(WEBENGINE_OSX_SDK_PRODUCT_VERSION)
     isEmpty(WEBENGINE_OSX_SDK_PRODUCT_VERSION) {
@@ -110,6 +111,7 @@ defineTest(isMinOSXSDKVersion) {
     major_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 0, 0)
     minor_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 1, 1)
     patch_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 2, 2)
+    isEmpty(patch_version): patch_version = 0
 
     greaterThan(major_version, $$requested_major):return(true)
     equals(major_version, $$requested_major):greaterThan(minor_version, $$requested_minor):return(true)
