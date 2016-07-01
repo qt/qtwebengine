@@ -120,7 +120,7 @@ contains(WEBENGINE_CONFIG, use_proprietary_codecs): GYP_CONFIG += proprietary_co
 for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
 !build_pass {
-    message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
+    message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}.")
     !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
 }
 

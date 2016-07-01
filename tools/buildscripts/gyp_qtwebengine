@@ -108,7 +108,8 @@ if __name__ == '__main__':
       break
 
   if not gyp_file_specified:
-      args.append(os.path.join(root_dir, 'src/core/core.gyp'))
+      args.append(os.path.join(root_dir, 'src/core/resources/resources.gyp'))
+      args.append(os.path.join(output_dir, 'core_generated.gyp'))
 
   args.extend(['-I' + i for i in additional_include_files(args)])
 
@@ -155,7 +156,7 @@ if __name__ == '__main__':
 
   # Tweak the output location and format (hardcode ninja for now if not set)
   args.extend(['--generator-output', '.'])
-  args.extend(['-Goutput_dir='+ os.path.relpath(output_dir, qtwebengine_root)])
+  args.extend(['-Goutput_dir='+ purifyGypVarPath(os.path.relpath(output_dir, qtwebengine_root))])
 
   # Tell gyp not to try finding cl.exe on Windows, Qt already requires the env to be set prior to the build.
   args.extend(['-G', 'ninja_use_custom_environment_files'])

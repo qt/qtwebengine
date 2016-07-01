@@ -36,7 +36,7 @@
       '<(chromium_src_dir)/url/url.gyp:url_lib',
       '<(chromium_src_dir)/v8/tools/gyp/v8.gyp:v8',
 
-      'chrome_qt.gyp:chrome_qt',
+      '<(qtwebengine_root)/src/core/chrome_qt.gyp:chrome_qt',
     ],
     'include_dirs': [
       '<(chromium_src_dir)',
