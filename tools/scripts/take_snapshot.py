@@ -112,8 +112,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('components/drive/')
         or file_path.startswith('components/invalidation/')
         or file_path.startswith('components/gcm_driver/')
-        or file_path.startswith('components/google/')
-        or file_path.startswith('components/metrics/')
         or file_path.startswith('components/mus/')
         or file_path.startswith('components/nacl/')
         or file_path.startswith('components/omnibox/')
@@ -125,18 +123,11 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('components/test/')
         or file_path.startswith('components/test_runner/')
         or file_path.startswith('components/translate/')
-        or file_path.startswith('components/variations/')
         or file_path.startswith('content/public/android/java')
         or (file_path.startswith('content/shell') and
             not file_path.startswith('content/shell/common') and
             not file_path.endswith('.grd'))
         or file_path.startswith('courgette')
-        or (file_path.startswith('extensions') and
-            not 'browser/extension_function_registry.h' in file_path and
-            not 'browser/extension_function_histogram_value.h' in file_path and
-            not 'browser/notification_types.' in file_path and
-            not 'common/constants.' in file_path and
-            not 'common/url_pattern.' in file_path)
         or file_path.startswith('google_update')
         or file_path.startswith('ios')
         or file_path.startswith('media/base/android/java')
@@ -181,7 +172,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/jsr-305/src')
         or file_path.startswith('third_party/junit')
         or file_path.startswith('third_party/libphonenumber')
-        or file_path.startswith('third_party/libaddressinput')
+        or file_path.startswith('third_party/libaddressinput/src/testdata')
+        or file_path.startswith('third_party/libaddressinput/src/common/src/test')
         or file_path.startswith('third_party/libc++')
         or file_path.startswith('third_party/liblouis')
         or file_path.startswith('third_party/lighttpd')
