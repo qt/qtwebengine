@@ -406,13 +406,31 @@ void BrowserMainWindow::setupMenu()
 
     m_historyBack = new QAction(tr("Back"), this);
     m_tabWidget->addWebAction(m_historyBack, QWebEnginePage::Back);
-    m_historyBack->setShortcuts(QKeySequence::Back);
+    QList<QKeySequence> backShortcuts = QKeySequence::keyBindings(QKeySequence::Back);
+    for (auto it = backShortcuts.begin(); it != backShortcuts.end();) {
+        // Chromium already handles navigate on backspace when appropriate.
+        if ((*it)[0] == Qt::Key_Backspace)
+            it = backShortcuts.erase(it);
+        else
+            ++it;
+    }
+    // For some reason Qt doesn't bind the dedicated Back key to Back.
+    backShortcuts.append(QKeySequence(Qt::Key_Back));
+    m_historyBack->setShortcuts(backShortcuts);
     m_historyBack->setIconVisibleInMenu(false);
     historyActions.append(m_historyBack);
 
     m_historyForward = new QAction(tr("Forward"), this);
     m_tabWidget->addWebAction(m_historyForward, QWebEnginePage::Forward);
-    m_historyForward->setShortcuts(QKeySequence::Forward);
+    QList<QKeySequence> fwdShortcuts = QKeySequence::keyBindings(QKeySequence::Forward);
+    for (auto it = fwdShortcuts.begin(); it != fwdShortcuts.end();) {
+        if (((*it)[0] & Qt::Key_unknown) == Qt::Key_Backspace)
+            it = fwdShortcuts.erase(it);
+        else
+            ++it;
+    }
+    fwdShortcuts.append(QKeySequence(Qt::Key_Forward));
+    m_historyForward->setShortcuts(fwdShortcuts);
     m_historyForward->setIconVisibleInMenu(false);
     historyActions.append(m_historyForward);
 
