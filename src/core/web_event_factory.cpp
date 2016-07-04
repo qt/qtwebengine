@@ -656,8 +656,8 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     webEvent.modifiers = modifiersForEvent(ev);
     webEvent.timeStampSeconds = currentTimeForEvent(ev);
 
-    webEvent.wheelTicksX = ev->angleDelta().x() / QWheelEvent::DefaultDeltasPerStep;
-    webEvent.wheelTicksY = ev->angleDelta().y() / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheelTicksX = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheelTicksY = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
 
     // We can't use the device specific QWheelEvent::pixelDelta(), so we calculate
     // a pixel delta based on ticks and scroll per line.
