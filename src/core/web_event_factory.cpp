@@ -489,6 +489,19 @@ static WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
         return WebMouseEvent::ButtonRight;
     else if (event->button() == Qt::MidButton)
         return WebMouseEvent::ButtonMiddle;
+
+    if (event->type() != QEvent::MouseMove)
+        return WebMouseEvent::ButtonNone;
+
+    // This is technically wrong, mouse move should always have ButtonNone,
+    // but it is consistent with aura and selection code depends on it:
+    if (event->buttons() & Qt::LeftButton)
+        return WebMouseEvent::ButtonLeft;
+    else if (event->buttons() & Qt::RightButton)
+        return WebMouseEvent::ButtonRight;
+    else if (event->buttons() & Qt::MidButton)
+        return WebMouseEvent::ButtonMiddle;
+
     return WebMouseEvent::ButtonNone;
 }
 
