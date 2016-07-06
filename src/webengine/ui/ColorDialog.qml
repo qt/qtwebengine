@@ -45,6 +45,6 @@ ColorDialog {
     signal selectedColor(var color)
 
     onAccepted: {
-        selectedColor(colorDialog.currentColor)
+        selectedColor(colorDialog.currentColor);
     }
 }

@@ -1,4 +1,4 @@
-module QtWebEngine.UIDelegates
+module QtWebEngine.Controls1Delegates
 AlertDialog 1.0 AlertDialog.qml
 ConfirmDialog 1.0 ConfirmDialog.qml
 FilePicker 1.0 FilePicker.qml

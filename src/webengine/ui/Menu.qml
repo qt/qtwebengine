@@ -45,7 +45,7 @@ Controls.Menu {
     signal done()
 
     // Use private API for now
-    onAboutToHide: doneTimer.start();
+    onAboutToHide: doneTimer.start()
 
     // WORKAROUND On Mac the Menu may be destroyed before the MenuItem
     // is actually triggered (see qtbase commit 08cc9b9991ae9ab51)
