@@ -96,6 +96,9 @@ public:
     virtual void focusContainer() Q_DECL_OVERRIDE;
     virtual void unhandledKeyEvent(QKeyEvent *event) Q_DECL_OVERRIDE;
     virtual void adoptNewWindow(QSharedPointer<QtWebEngineCore::WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry) Q_DECL_OVERRIDE;
+    void adoptNewWindowImpl(QWebEnginePage *newPage,
+            const QSharedPointer<QtWebEngineCore::WebContentsAdapter> &newWebContents,
+            const QRect &initialGeometry);
     virtual bool isBeingAdopted() Q_DECL_OVERRIDE;
     virtual void close() Q_DECL_OVERRIDE;
     virtual void windowCloseRejected() Q_DECL_OVERRIDE;
