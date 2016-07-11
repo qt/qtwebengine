@@ -44,11 +44,12 @@
 
 #include "render_frame_observer_qt.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/renderer/pepper/pepper_shared_memory_message_filter.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 
 #include "renderer/pepper/pepper_renderer_host_factory_qt.h"
-#include "renderer/pepper/pepper_flash_renderer_host_qt.h"
 
 namespace QtWebEngineCore {
 
@@ -65,8 +66,9 @@ RenderFrameObserverQt::~RenderFrameObserverQt()
 void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost* host)
 {
     host->GetPpapiHost()->AddHostFactoryFilter(
-        scoped_ptr<ppapi::host::HostFactory>(
-            new PepperRendererHostFactoryQt(host)));
+                scoped_ptr<ppapi::host::HostFactory>(new PepperRendererHostFactoryQt(host)));
+    host->GetPpapiHost()->AddInstanceMessageFilter(
+                scoped_ptr<ppapi::host::InstanceMessageFilter>(new PepperSharedMemoryMessageFilter(host)));
 }
 #endif
 

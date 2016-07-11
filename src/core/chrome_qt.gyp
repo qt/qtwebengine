@@ -92,6 +92,8 @@
           'sources': [
             '<(DEPTH)/chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.cc',
             '<(DEPTH)/chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h',
+            '<(DEPTH)/chrome/renderer/pepper/pepper_shared_memory_message_filter.cc',
+            '<(DEPTH)/chrome/renderer/pepper/pepper_shared_memory_message_filter.h',
           ],
         }],
         ['enable_spellcheck==1', {
