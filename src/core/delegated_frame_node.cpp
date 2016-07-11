@@ -73,11 +73,18 @@
 
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
-#include <QSGSimpleRectNode>
-#include <QSGSimpleTextureNode>
+#include <QSGFlatColorMaterial>
 #include <QSGTexture>
 #include <QtGui/QOffscreenSurface>
 #include <private/qsgadaptationlayer_p.h>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
+#include <QSGImageNode>
+#include <QSGRectangleNode>
+#else
+#include <QSGSimpleRectNode>
+#include <QSGSimpleTextureNode>
+#endif
 
 #if !defined(QT_NO_EGL)
 #include <EGL/egl.h>
@@ -538,7 +545,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 if (!layer)
                     continue;
 
-                // Only QSGImageNode currently supports QSGLayer textures.
+                // Only QSGInternalImageNode currently supports QSGLayer textures.
                 QSGInternalImageNode *imageNode = apiDelegate->createImageNode();
                 imageNode->setTargetRect(toQt(quad->rect));
                 imageNode->setInnerTargetRect(toQt(quad->rect));
@@ -550,8 +557,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
 
-                QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
-                textureNode->setTextureCoordinatesTransform(tquad->y_flipped ? QSGSimpleTextureNode::MirrorVertically : QSGSimpleTextureNode::NoTransform);
+                QSGTextureNode *textureNode = apiDelegate->createTextureNode();
+                textureNode->setTextureCoordinatesTransform(tquad->y_flipped ? QSGTextureNode::MirrorVertically : QSGTextureNode::NoTransform);
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
                 textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));
@@ -559,7 +566,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 break;
             } case cc::DrawQuad::SOLID_COLOR: {
                 const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
-                QSGSimpleRectNode *rectangleNode = new QSGSimpleRectNode;
+                QSGRectangleNode *rectangleNode = apiDelegate->createRectangleNode();
 
                 // Qt only supports MSAA and this flag shouldn't be needed.
                 // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
@@ -598,7 +605,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
 
-                QSGSimpleTextureNode *textureNode = new QSGSimpleTextureNode;
+                QSGTextureNode *textureNode = apiDelegate->createTextureNode();
                 textureNode->setRect(toQt(quad->rect));
                 textureNode->setSourceRect(toQt(tquad->tex_coord_rect));
                 textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);

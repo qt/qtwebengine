@@ -59,8 +59,15 @@ class QInputMethodEvent;
 #if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
 class QSGImageNode;
 typedef QSGImageNode QSGInternalImageNode;
+class QSGSimpleTextureNode;
+typedef QSGSimpleTextureNode QSGTextureNode;
+class QSGSimpleRectNode;
+typedef QSGSimpleRectNode QSGRectangleNode;
 #else
 class QSGInternalImageNode;
+class QSGRectangleNode;
+class QSGImageNode;
+typedef QSGImageNode QSGTextureNode;
 #endif
 
 QT_END_NAMESPACE
@@ -100,6 +107,8 @@ public:
     virtual QSGTexture *createTextureFromImage(const QImage &) = 0;
     virtual QSGLayer *createLayer() = 0;
     virtual QSGInternalImageNode *createImageNode() = 0;
+    virtual QSGTextureNode *createTextureNode() = 0;
+    virtual QSGRectangleNode *createRectangleNode() = 0;
     virtual void update() = 0;
     virtual void updateCursor(const QCursor &) = 0;
     virtual void resize(int width, int height) = 0;

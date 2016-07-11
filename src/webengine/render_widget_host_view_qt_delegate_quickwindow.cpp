@@ -116,6 +116,16 @@ QSGInternalImageNode *RenderWidgetHostViewQtDelegateQuickWindow::createImageNode
     return m_realDelegate->createImageNode();
 }
 
+QSGTextureNode *RenderWidgetHostViewQtDelegateQuickWindow::createTextureNode()
+{
+    return m_realDelegate->createTextureNode();
+}
+
+QSGRectangleNode *RenderWidgetHostViewQtDelegateQuickWindow::createRectangleNode()
+{
+    return m_realDelegate->createRectangleNode();
+}
+
 void RenderWidgetHostViewQtDelegateQuickWindow::update()
 {
     QQuickWindow::update();

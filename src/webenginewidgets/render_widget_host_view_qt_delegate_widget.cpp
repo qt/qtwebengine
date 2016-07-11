@@ -51,6 +51,11 @@
 #include <QWindow>
 #include <private/qquickwindow_p.h>
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 8, 0))
+#include <QSGSimpleRectNode>
+#include <QSGSimpleTextureNode>
+#endif
+
 namespace QtWebEngineCore {
 
 class RenderWidgetHostViewQuickItem : public QQuickItem {
@@ -237,6 +242,24 @@ QSGInternalImageNode *RenderWidgetHostViewQtDelegateWidget::createImageNode()
     return renderContext->sceneGraphContext()->createInternalImageNode();
 #else
     return renderContext->sceneGraphContext()->createImageNode();
+#endif
+}
+
+QSGTextureNode *RenderWidgetHostViewQtDelegateWidget::createTextureNode()
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
+    return quickWindow()->createImageNode();
+#else
+    return new QSGSimpleTextureNode();
+#endif
+}
+
+QSGRectangleNode *RenderWidgetHostViewQtDelegateWidget::createRectangleNode()
+{
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
+    return quickWindow()->createRectangleNode();
+#else
+    return new QSGSimpleRectNode();
 #endif
 }
 
