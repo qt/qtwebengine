@@ -75,7 +75,6 @@ public:
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
     virtual void move(const QPoint &screenPos) Q_DECL_OVERRIDE;
     virtual void inputMethodStateChanged(bool) Q_DECL_OVERRIDE {}
-    virtual void setTooltip(const QString &tooltip) Q_DECL_OVERRIDE;
     virtual void setClearColor(const QColor &) Q_DECL_OVERRIDE { }
 
 private:

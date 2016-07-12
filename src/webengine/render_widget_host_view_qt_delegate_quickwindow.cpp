@@ -138,9 +138,4 @@ void RenderWidgetHostViewQtDelegateQuickWindow::move(const QPoint &screenPos)
     QQuickWindow::setPosition(screenPos);
 }
 
-void RenderWidgetHostViewQtDelegateQuickWindow::setTooltip(const QString &tooltip)
-{
-    Q_UNUSED(tooltip);
-}
-
 } // namespace QtWebEngineCore

@@ -607,7 +607,7 @@ void RenderWidgetHostViewQt::Destroy()
 
 void RenderWidgetHostViewQt::SetTooltipText(const base::string16 &tooltip_text)
 {
-    m_delegate->setTooltip(toQt(tooltip_text));
+    m_adapterClient->setToolTip(toQt(tooltip_text));
 }
 
 void RenderWidgetHostViewQt::SelectionBoundsChanged(const ViewHostMsg_SelectionBounds_Params &params)

@@ -259,6 +259,7 @@ public:
                                const QPixmap &pixmap, const QPoint &offset) = 0;
     virtual bool isEnabled() const = 0;
     virtual const QObject *holdingQObject() const = 0;
+    virtual void setToolTip(const QString& toolTipText) = 0;
 
     virtual QSharedPointer<BrowserContextAdapter> browserContextAdapter() = 0;
     virtual WebContentsAdapter* webContentsAdapter() = 0;

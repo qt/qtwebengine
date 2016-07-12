@@ -53,8 +53,6 @@
 
 namespace QtWebEngineCore {
 
-static const int MaxTooltipLength = 1024;
-
 class RenderWidgetHostViewQuickItem : public QQuickItem {
 public:
     RenderWidgetHostViewQuickItem(RenderWidgetHostViewQtDelegateClient *client) : m_client(client)
@@ -271,14 +269,6 @@ void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVi
     QQuickWidget::setAttribute(Qt::WA_InputMethodEnabled, editorVisible);
     qApp->inputMethod()->update(Qt::ImQueryInput | Qt::ImEnabled | Qt::ImHints);
     qApp->inputMethod()->setVisible(editorVisible);
-}
-
-void RenderWidgetHostViewQtDelegateWidget::setTooltip(const QString &tooltip)
-{
-    QString wrappedTip;
-    if (!tooltip.isEmpty())
-         wrappedTip = QLatin1String("<p>") % tooltip.toHtmlEscaped().left(MaxTooltipLength) % QLatin1String("</p>");
-    setToolTip(wrappedTip);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::setClearColor(const QColor &color)
