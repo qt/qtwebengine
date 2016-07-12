@@ -115,7 +115,6 @@ private slots:
     void setProgress(int progress);
     void loadFinished(bool success);
     void setStatusBarText(const QString &string);
-    void openLinkInNewTab();
     void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
     void onIconChanged(const QIcon &icon);
 

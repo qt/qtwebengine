@@ -365,6 +365,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
         menu = new QMenu(this);
         menu->addAction(page()->action(QWebEnginePage::OpenLinkInThisWindow));
         menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewWindow));
+        menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewTab));
         menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewBackgroundTab));
         menu->addSeparator();
         menu->addAction(page()->action(QWebEnginePage::DownloadLinkToDisk));
@@ -390,11 +391,6 @@ void WebView::wheelEvent(QWheelEvent *event)
     }
 #endif
     QWebEngineView::wheelEvent(event);
-}
-
-void WebView::openLinkInNewTab()
-{
-    pageAction(QWebEnginePage::OpenLinkInNewTab)->trigger();
 }
 
 void WebView::onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)
