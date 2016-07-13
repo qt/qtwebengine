@@ -403,7 +403,10 @@ void BrowserMainWindow::setupMenu()
     viewMenu->addAction(tr("Reset &Zoom"), this, SLOT(slotViewResetZoom()), QKeySequence(Qt::CTRL | Qt::Key_0));
 
     viewMenu->addSeparator();
-    viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
+    QAction *m_pageSource = viewMenu->addAction(tr("Page S&ource"));
+    m_pageSource->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_U));
+    m_tabWidget->addWebAction(m_pageSource, QWebEnginePage::ViewSource);
+
     QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)),  Qt::Key_F11);
     a->setCheckable(true);
 
@@ -847,20 +850,6 @@ void BrowserMainWindow::slotViewFullScreen(bool makeFullScreen)
             showMaximized();
         else showNormal();
     }
-}
-
-void BrowserMainWindow::slotViewPageSource()
-{
-    if (!currentTab())
-        return;
-
-    QPlainTextEdit *view = new QPlainTextEdit;
-    view->setWindowTitle(tr("Page Source of %1").arg(currentTab()->title()));
-    view->setMinimumWidth(640);
-    view->setAttribute(Qt::WA_DeleteOnClose);
-    view->show();
-
-    currentTab()->page()->toHtml(invoke(view, &QPlainTextEdit::setPlainText));
 }
 
 void BrowserMainWindow::slotHome()

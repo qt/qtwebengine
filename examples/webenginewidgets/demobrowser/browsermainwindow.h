@@ -123,7 +123,6 @@ private slots:
     void slotViewToolbar();
     void slotViewBookmarksBar();
     void slotViewStatusbar();
-    void slotViewPageSource();
     void slotViewFullScreen(bool enable);
 
     void slotWebSearch();

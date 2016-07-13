@@ -1281,4 +1281,16 @@ FaviconManager *WebContentsAdapter::faviconManager()
     return d->webContentsDelegate->faviconManager();
 }
 
+void WebContentsAdapter::viewSource()
+{
+    Q_D(WebContentsAdapter);
+    d->webContents->ViewSource();
+}
+
+bool WebContentsAdapter::canViewSource()
+{
+    Q_D(WebContentsAdapter);
+    return d->webContents->GetController().CanViewSource();
+}
+
 } // namespace QtWebEngineCore

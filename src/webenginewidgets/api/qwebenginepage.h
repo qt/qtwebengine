@@ -81,6 +81,7 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged)
     Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged)
+    Q_PROPERTY(bool canViewSource READ canViewSource)
 
 public:
     enum WebAction {
@@ -124,6 +125,7 @@ public:
         Unselect,
         SavePage,
         OpenLinkInNewBackgroundTab,
+        ViewSource,
         WebActionCount
     };
 
@@ -279,6 +281,8 @@ public:
 #endif
 
     const QWebEngineContextMenuData &contextMenuData() const;
+    void viewSource();
+    bool canViewSource() const;
 
 Q_SIGNALS:
     void loadStarted();

@@ -81,6 +81,7 @@
 #include <QMimeData>
 #include <QStandardPaths>
 #include <QStyle>
+#include <QTimer>
 #include <QUrl>
 
 QT_BEGIN_NAMESPACE
@@ -422,6 +423,9 @@ void QWebEnginePagePrivate::updateAction(QWebEnginePage::WebAction action) const
     case QWebEnginePage::ReloadAndBypassCache:
         enabled = !isLoading;
         break;
+    case QWebEnginePage::ViewSource:
+        enabled = adapter->canViewSource();
+        break;
     default:
         break;
     }
@@ -437,6 +441,7 @@ void QWebEnginePagePrivate::updateNavigationActions()
     updateAction(QWebEnginePage::Stop);
     updateAction(QWebEnginePage::Reload);
     updateAction(QWebEnginePage::ReloadAndBypassCache);
+    updateAction(QWebEnginePage::ViewSource);
 }
 
 #ifndef QT_NO_ACTION
@@ -931,6 +936,9 @@ QAction *QWebEnginePage::action(WebAction action) const
     case SavePage:
         text = tr("Save &Page");
         break;
+    case ViewSource:
+        text = tr("&View Page Source");
+        break;
     case NoWebAction:
     case WebActionCount:
         Q_UNREACHABLE();
@@ -1120,6 +1128,17 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
         break;
     case SavePage:
         d->adapter->save();
+        break;
+    case ViewSource:
+        // This is a workaround to make the ViewSource action working in a context menu.
+        // The WebContentsAdapter::viewSource() method deletes a
+        // RenderWidgetHostViewQtDelegateWidget instance which passes the control to the event
+        // loop. If the QMenu::aboutToHide() signal is connected to the QObject::deleteLater()
+        // slot the QMenu is deleted by the event handler while the ViewSource action is still not
+        // completed. This may lead to a crash. To avoid this the WebContentsAdapter::viewSource()
+        // method is called indirectly via the QTimer::singleShot() function which schedules the
+        // the viewSource() call after the QMenu's destruction.
+        QTimer::singleShot(0, this, [d](){ d->adapter->viewSource(); });
         break;
     case NoWebAction:
         break;
@@ -1378,6 +1397,8 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         action = new QAction(QIcon::fromTheme(QStringLiteral("view-refresh")), tr("&Reload"), menu);
         connect(action, &QAction::triggered, d->view, &QWebEngineView::reload);
         menu->addAction(action);
+
+        menu->addAction(QWebEnginePage::action(ViewSource));
     } else {
         menu->addAction(QWebEnginePage::action(Copy));
         menu->addAction(QWebEnginePage::action(Unselect));
@@ -1786,6 +1807,31 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
 {
     Q_D(const QWebEnginePage);
     return d->contextData;
+}
+
+/*!
+    \since 5.8
+
+    Shows the source of the current page in a new tab.
+
+    \sa canViewSource
+*/
+void QWebEnginePage::viewSource()
+{
+    triggerAction(QWebEnginePage::ViewSource);
+}
+
+/*!
+    \property QWebEnginePage::canViewSource
+    \brief whether the source for the current page can be viewed.
+    \since 5.8
+
+    \sa viewSource()
+*/
+bool QWebEnginePage::canViewSource() const
+{
+    Q_D(const QWebEnginePage);
+    return d->adapter->canViewSource();
 }
 
 QT_END_NAMESPACE

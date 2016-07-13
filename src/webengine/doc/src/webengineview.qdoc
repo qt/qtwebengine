@@ -1128,3 +1128,20 @@
     Also if the audio is paused, this signal is emitted with an approximate \b{2 second
     delay}, from the moment the audio is paused.
 */
+
+/*!
+    \qmlmethod void WebEngineView::viewSource()
+    \since QtWebEngine 1.4
+
+    Shows the source of the current page in a new tab.
+
+    \sa canViewSource
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::canViewSource
+    \brief This property holds whether the source for the current page can be viewed.
+    \since QtWebEngine 1.4
+
+    \sa viewSource()
+*/

@@ -152,6 +152,7 @@
     \value Unselect Clear the current selection. (Added in Qt 5.7)
     \value SavePage Save the current page to disk. MHTML is the default format that is used to store
            the web page on disk. (Added in Qt 5.7)
+    \value ViewSource Shows the source of the current page in a new tab. (Added in Qt 5.8)
 
     \omitvalue WebActionCount
 

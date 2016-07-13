@@ -239,6 +239,7 @@ private Q_SLOTS:
     void mouseButtonTranslation();
 
     void printToPdf();
+    void viewSource();
 
 private:
     QWebEngineView* m_view;
@@ -4936,6 +4937,26 @@ void tst_QWebEnginePage::mouseButtonTranslation()
     QCOMPARE(evaluateJavaScriptSync(view->page(), "lastEvent.buttons").toInt(), 3);
 
     delete view;
+}
+
+void tst_QWebEnginePage::viewSource()
+{
+    TestPage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    const QUrl url("qrc:/resources/test1.html");
+
+    page.load(url);
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QCOMPARE(page.title(), QStringLiteral("Test page 1"));
+    QVERIFY(page.canViewSource());
+
+    page.viewSource();
+    QTest::qWait(200);
+    QTRY_COMPARE(page.createdWindows.size(), 1);
+
+    QTRY_COMPARE(page.createdWindows[0]->url().toString(), QStringLiteral("view-source:%1").arg(url.toString()));
+    QTRY_COMPARE(page.createdWindows[0]->title(), QStringLiteral("view-source:%1").arg(url.toString()));
+    QVERIFY(!page.createdWindows[0]->canViewSource());
 }
 
 QTEST_MAIN(tst_QWebEnginePage)

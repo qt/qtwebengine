@@ -178,6 +178,9 @@ public:
     content::WebContents *webContents() const;
     void replaceMisspelling(const QString &word);
 
+    void viewSource();
+    bool canViewSource();
+
 private:
     Q_DISABLE_COPY(WebContentsAdapter)
     Q_DECLARE_PRIVATE(WebContentsAdapter)

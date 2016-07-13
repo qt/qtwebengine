@@ -240,6 +240,10 @@ bool QQuickWebEngineViewPrivate::contextMenuRequested(const WebEngineContextMenu
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::reload);
         ui()->addMenuItem(item, QQuickWebEngineView::tr("Reload"), QStringLiteral("view-refresh"));
+
+        item = new MenuItemHandler(menu);
+        QObject::connect(item, &MenuItemHandler::triggered, q, &QQuickWebEngineView::viewSource);
+        ui()->addMenuItem(item, QQuickWebEngineView::tr("View Page Source"), QStringLiteral("view-source"), q->canViewSource());
     } else {
         item = new MenuItemHandler(menu);
         QObject::connect(item, &MenuItemHandler::triggered, [q] { q->triggerWebAction(QQuickWebEngineView::Copy); });
@@ -1276,6 +1280,18 @@ void QQuickWebEngineView::replaceMisspelledWord(const QString &replacement)
 {
     Q_D(QQuickWebEngineView);
     d->adapter->replaceMisspelling(replacement);
+}
+
+void QQuickWebEngineView::viewSource()
+{
+    Q_D(QQuickWebEngineView);
+    d->adapter->viewSource();
+}
+
+bool QQuickWebEngineView::canViewSource() const
+{
+    Q_D(const QQuickWebEngineView);
+    return d->adapter->canViewSource();
 }
 
 bool QQuickWebEngineView::isFullScreen() const
