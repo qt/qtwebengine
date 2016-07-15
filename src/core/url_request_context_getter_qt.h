@@ -127,6 +127,7 @@ private:
     // FIXME: Should later be moved to a separate ProfileIOData class.
     BrowserContextAdapter::PersistentCookiesPolicy m_persistentCookiesPolicy;
     QString m_cookiesPath;
+    QString m_channelIdPath;
     QString m_httpAcceptLanguage;
     QString m_httpUserAgent;
     BrowserContextAdapter::HttpCacheType m_httpCacheType;

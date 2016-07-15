@@ -47,6 +47,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/extras/sqlite/sqlite_channel_id_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -122,6 +123,7 @@ void URLRequestContextGetterQt::setFullConfiguration(QSharedPointer<BrowserConte
     m_requestInterceptor = browserContext->requestInterceptor();
     m_persistentCookiesPolicy = browserContext->persistentCookiesPolicy();
     m_cookiesPath = browserContext->cookiesPath();
+    m_channelIdPath = browserContext->channelIdPath();
     m_httpAcceptLanguage = browserContext->httpAcceptLanguage();
     m_httpUserAgent = browserContext->httpUserAgent();
     m_httpCacheType = browserContext->httpCacheType();
@@ -217,11 +219,6 @@ void URLRequestContextGetterQt::generateStorage()
     net::ProxyConfigService *proxyConfigService = m_proxyConfigService.fetchAndStoreAcquire(0);
     Q_ASSERT(proxyConfigService);
 
-
-    m_storage->set_channel_id_service(scoped_ptr<net::ChannelIDService>(new net::ChannelIDService(
-        new net::DefaultChannelIDStore(NULL),
-        base::WorkerPool::GetTaskRunner(true))));
-
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
 
     scoped_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
@@ -255,6 +252,7 @@ void URLRequestContextGetterQt::updateCookieStore()
     QMutexLocker lock(&m_mutex);
     m_persistentCookiesPolicy = m_browserContext.data()->persistentCookiesPolicy();
     m_cookiesPath = m_browserContext.data()->cookiesPath();
+    m_channelIdPath = m_browserContext.data()->channelIdPath();
 
     if (m_contextInitialized && !m_updateAllStorage && !m_updateCookieStore) {
         m_updateCookieStore = true;
@@ -271,6 +269,19 @@ void URLRequestContextGetterQt::generateCookieStore()
 
     QMutexLocker lock(&m_mutex);
     m_updateCookieStore = false;
+
+    scoped_refptr<net::SQLiteChannelIDStore> channel_id_db;
+    if (!m_channelIdPath.isEmpty() && m_persistentCookiesPolicy != BrowserContextAdapter::NoPersistentCookies) {
+        channel_id_db = new net::SQLiteChannelIDStore(
+                toFilePath(m_channelIdPath),
+                BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+                        BrowserThread::GetBlockingPool()->GetSequenceToken()));
+    }
+
+    m_storage->set_channel_id_service(
+            scoped_ptr<net::ChannelIDService>(new net::ChannelIDService(
+                    new net::DefaultChannelIDStore(channel_id_db.get()),
+                    base::WorkerPool::GetTaskRunner(true))));
 
     // Unset it first to get a chance to destroy and flush the old cookie store before opening a new on possibly the same file.
     m_storage->set_cookie_store(0);
