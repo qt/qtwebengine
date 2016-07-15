@@ -117,19 +117,15 @@ net::URLRequestContextGetter *BrowserContextQt::GetRequestContext()
     return url_request_getter_.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::GetMediaRequestContext()
+net::URLRequestContextGetter *BrowserContextQt::CreateMediaRequestContext()
 {
-    return GetRequestContext();
+    return url_request_getter_.get();
 }
 
-net::URLRequestContextGetter *BrowserContextQt::GetMediaRequestContextForRenderProcess(int)
+net::URLRequestContextGetter *BrowserContextQt::CreateMediaRequestContextForStoragePartition(const base::FilePath&, bool)
 {
-    return GetRequestContext();
-}
-
-net::URLRequestContextGetter *BrowserContextQt::GetMediaRequestContextForStoragePartition(const base::FilePath&, bool)
-{
-    return GetRequestContext();
+    Q_UNIMPLEMENTED();
+    return nullptr;
 }
 
 content::ResourceContext *BrowserContextQt::GetResourceContext()
@@ -167,7 +163,7 @@ content::SSLHostStateDelegate* BrowserContextQt::GetSSLHostStateDelegate()
     return sslHostStateDelegate.get();
 }
 
-scoped_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate(const base::FilePath&)
+std::unique_ptr<content::ZoomLevelDelegate> BrowserContextQt::CreateZoomLevelDelegate(const base::FilePath&)
 {
     return nullptr;
 }

@@ -40,7 +40,6 @@
 #ifndef DELEGATED_FRAME_NODE_H
 #define DELEGATED_FRAME_NODE_H
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -73,7 +72,7 @@ class ChromiumCompositorData : public QSharedData {
 public:
     ChromiumCompositorData() : frameDevicePixelRatio(1) { }
     QHash<unsigned, QSharedPointer<ResourceHolder> > resourceHolders;
-    scoped_ptr<cc::DelegatedFrameData> frameData;
+    std::unique_ptr<cc::DelegatedFrameData> frameData;
     qreal frameDevicePixelRatio;
 };
 
@@ -104,7 +103,7 @@ private:
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
     QList<gfx::TransferableFence> m_textureFences;
-    scoped_ptr<gpu::SyncPointClient> m_syncPointClient;
+    std::unique_ptr<gpu::SyncPointClient> m_syncPointClient;
 };
 
 } // namespace QtWebEngineCore

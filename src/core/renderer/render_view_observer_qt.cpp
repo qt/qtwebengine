@@ -41,7 +41,7 @@
 
 #include "common/qt_messages.h"
 
-#include "components/web_cache/renderer/web_cache_render_process_observer.h"
+#include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -53,9 +53,9 @@
 
 RenderViewObserverQt::RenderViewObserverQt(
         content::RenderView* render_view,
-        web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer)
+        web_cache::WebCacheImpl* web_cache_impl)
     : content::RenderViewObserver(render_view)
-    , m_web_cache_render_process_observer(web_cache_render_process_observer)
+    , m_web_cache_impl(web_cache_impl)
 {
 }
 
@@ -102,6 +102,6 @@ bool RenderViewObserverQt::OnMessageReceived(const IPC::Message& message)
 
 void RenderViewObserverQt::Navigate(const GURL &)
 {
-    if (m_web_cache_render_process_observer)
-        m_web_cache_render_process_observer->ExecutePendingClearCache();
+    if (m_web_cache_impl)
+        m_web_cache_impl->ExecutePendingClearCache();
 }

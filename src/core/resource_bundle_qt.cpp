@@ -98,7 +98,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale)
 #if defined(OS_LINUX)
     int locale_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(kWebEngineLocale);
     if (locale_fd > -1) {
-        scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+        std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
         data_pack->LoadFromFile(base::File(locale_fd));
         locale_resources_data_.reset(data_pack.release());
         return app_locale;
@@ -115,7 +115,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale)
         return std::string();
     }
 
-    scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
+    std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
     if (!data_pack->LoadFromPath(locale_file_path)) {
         UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                                   logging::GetLastSystemErrorCode(), 16000);

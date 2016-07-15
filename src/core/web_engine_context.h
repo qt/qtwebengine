@@ -43,7 +43,6 @@
 #include "qtwebenginecoreglobal.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 
 #include <QSharedPointer>
@@ -92,15 +91,15 @@ private:
     WebEngineContext();
     ~WebEngineContext();
 
-    scoped_ptr<base::RunLoop> m_runLoop;
-    scoped_ptr<ContentMainDelegateQt> m_mainDelegate;
-    scoped_ptr<content::ContentMainRunner> m_contentRunner;
-    scoped_ptr<content::BrowserMainRunner> m_browserRunner;
+    std::unique_ptr<base::RunLoop> m_runLoop;
+    std::unique_ptr<ContentMainDelegateQt> m_mainDelegate;
+    std::unique_ptr<content::ContentMainRunner> m_contentRunner;
+    std::unique_ptr<content::BrowserMainRunner> m_browserRunner;
     QObject* m_globalQObject;
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> m_defaultBrowserContext;
-    scoped_ptr<devtools_http_handler::DevToolsHttpHandler> m_devtools;
+    std::unique_ptr<devtools_http_handler::DevToolsHttpHandler> m_devtools;
 #if defined(ENABLE_BASIC_PRINTING)
-    scoped_ptr<printing::PrintJobManager> m_printJobManager;
+    std::unique_ptr<printing::PrintJobManager> m_printJobManager;
 #endif // defined(ENABLE_BASIC_PRINTING)
 };
 

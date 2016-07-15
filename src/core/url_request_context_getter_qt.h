@@ -44,7 +44,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
@@ -125,7 +124,7 @@ private:
     std::unique_ptr<net::DhcpProxyScriptFetcherFactory> m_dhcpProxyScriptFetcherFactory;
     scoped_refptr<CookieMonsterDelegateQt> m_cookieDelegate;
     content::URLRequestInterceptorScopedVector m_requestInterceptors;
-    scoped_ptr<net::HttpNetworkSession> m_httpNetworkSession;
+    std::unique_ptr<net::HttpNetworkSession> m_httpNetworkSession;
 
     QList<QByteArray> m_installedCustomSchemes;
     QWebEngineUrlRequestInterceptor* m_requestInterceptor;

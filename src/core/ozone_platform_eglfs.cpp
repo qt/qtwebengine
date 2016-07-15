@@ -42,6 +42,7 @@
 #if defined(USE_OZONE)
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
@@ -147,11 +148,11 @@ GpuPlatformSupportHost* OzonePlatformEglfs::GetGpuPlatformSupportHost() {
   return gpu_platform_support_host_.get();
 }
 
-scoped_ptr<PlatformWindow> OzonePlatformEglfs::CreatePlatformWindow(
+std::unique_ptr<PlatformWindow> OzonePlatformEglfs::CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds)
 {
-    return make_scoped_ptr<PlatformWindow>(
+    return base::WrapUnique(
         new EglfsWindow(delegate,
                           event_factory_ozone_.get(),
                           bounds));
@@ -161,7 +162,7 @@ ui::InputController* OzonePlatformEglfs::GetInputController() {
     return input_controller_.get();
 }
 
-scoped_ptr<ui::SystemInputInjector> OzonePlatformEglfs::CreateSystemInputInjector() {
+std::unique_ptr<ui::SystemInputInjector> OzonePlatformEglfs::CreateSystemInputInjector() {
     return nullptr;  // no input injection support.
 }
 
@@ -169,9 +170,9 @@ ui::OverlayManagerOzone* OzonePlatformEglfs::GetOverlayManager() {
     return overlay_manager_.get();
 }
 
-scoped_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
+std::unique_ptr<ui::NativeDisplayDelegate> OzonePlatformEglfs::CreateNativeDisplayDelegate()
 {
-    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
+    return base::WrapUnique(new NativeDisplayDelegateOzone());
 }
 
 OzonePlatform* CreateOzonePlatformEglfs() { return new OzonePlatformEglfs; }

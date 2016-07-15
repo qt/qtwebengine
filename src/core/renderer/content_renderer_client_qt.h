@@ -49,7 +49,7 @@ class VisitedLinkSlave;
 }
 
 namespace web_cache {
-class WebCacheRenderProcessObserver;
+class WebCacheImpl;
 }
 
 #if defined(ENABLE_SPELLCHECK)
@@ -72,14 +72,14 @@ public:
 
     virtual unsigned long long VisitedLinkHash(const char *canonicalUrl, size_t length) Q_DECL_OVERRIDE;
     virtual bool IsLinkVisited(unsigned long long linkHash) Q_DECL_OVERRIDE;
-    virtual void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) Q_DECL_OVERRIDE;
+    virtual void AddSupportedKeySystems(std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) Q_DECL_OVERRIDE;
 
     virtual void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
     virtual void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) Q_DECL_OVERRIDE;
 
 private:
     QScopedPointer<visitedlink::VisitedLinkSlave> m_visitedLinkSlave;
-    QScopedPointer<web_cache::WebCacheRenderProcessObserver> m_webCacheObserver;
+    QScopedPointer<web_cache::WebCacheImpl> m_webCacheImpl;
 #if defined(ENABLE_SPELLCHECK)
     QScopedPointer<SpellCheck> m_spellCheck;
 #endif

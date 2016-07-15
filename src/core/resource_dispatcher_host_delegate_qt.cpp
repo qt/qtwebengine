@@ -92,7 +92,7 @@ QString ResourceDispatcherHostLoginDelegateQt::realm() const
 
 QString ResourceDispatcherHostLoginDelegateQt::host() const
 {
-    return QString::fromStdString(m_authInfo->challenger.ToString());
+    return QString::fromStdString(m_authInfo->challenger.host());
 }
 
 bool ResourceDispatcherHostLoginDelegateQt::isProxy() const

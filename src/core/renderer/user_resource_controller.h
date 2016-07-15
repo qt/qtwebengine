@@ -40,7 +40,7 @@
 #ifndef USER_RESOURCE_CONTROLLER_H
 #define USER_RESOURCE_CONTROLLER_H
 
-#include "content/public/renderer/render_process_observer.h"
+#include "content/public/renderer/render_thread_observer.h"
 
 #include "common/user_script_data.h"
 
@@ -57,7 +57,7 @@ class RenderFrame;
 class RenderView;
 }
 
-class UserResourceController : public content::RenderProcessObserver {
+class UserResourceController : public content::RenderThreadObserver {
 
 public:
     static UserResourceController *instance();

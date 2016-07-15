@@ -71,10 +71,11 @@ public:
     base::FilePath GetCachePath() const;
     virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE;
 
-    virtual net::URLRequestContextGetter *GetRequestContext() Q_DECL_OVERRIDE;
-    virtual net::URLRequestContextGetter *GetMediaRequestContext() Q_DECL_OVERRIDE;
-    virtual net::URLRequestContextGetter *GetMediaRequestContextForRenderProcess(int) Q_DECL_OVERRIDE;
-    virtual net::URLRequestContextGetter *GetMediaRequestContextForStoragePartition(const base::FilePath&, bool) Q_DECL_OVERRIDE;
+    net::URLRequestContextGetter *GetRequestContext() Q_DECL_DEPRECATED;
+
+    virtual net::URLRequestContextGetter *CreateMediaRequestContext() Q_DECL_OVERRIDE;
+    virtual net::URLRequestContextGetter *CreateMediaRequestContextForStoragePartition(const base::FilePath& partition_path, bool in_memory) Q_DECL_OVERRIDE;
+
     virtual content::ResourceContext *GetResourceContext() Q_DECL_OVERRIDE;
     virtual content::DownloadManagerDelegate *GetDownloadManagerDelegate() Q_DECL_OVERRIDE;
     virtual content::BrowserPluginGuestManager* GetGuestManager() Q_DECL_OVERRIDE;
@@ -88,7 +89,7 @@ public:
             const base::FilePath& partition_path, bool in_memory,
             content::ProtocolHandlerMap* protocol_handlers,
             content::URLRequestInterceptorScopedVector request_interceptors) Q_DECL_OVERRIDE;
-    virtual scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
+    virtual std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
     virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
     virtual content::BackgroundSyncController* GetBackgroundSyncController() Q_DECL_OVERRIDE;
 
@@ -105,13 +106,13 @@ public:
 private:
     friend class ContentBrowserClientQt;
     friend class WebContentsAdapter;
-    scoped_ptr<content::ResourceContext> resourceContext;
+    std::unique_ptr<content::ResourceContext> resourceContext;
     scoped_refptr<URLRequestContextGetterQt> url_request_getter_;
-    scoped_ptr<PermissionManagerQt> permissionManager;
-    scoped_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
+    std::unique_ptr<PermissionManagerQt> permissionManager;
+    std::unique_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
     BrowserContextAdapter *m_adapter;
     scoped_refptr<TestingPrefStore> m_prefStore;
-    scoped_ptr<PrefService> m_prefService;
+    std::unique_ptr<PrefService> m_prefService;
     friend class BrowserContextAdapter;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);

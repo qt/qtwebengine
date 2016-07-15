@@ -39,6 +39,7 @@
 
 #include "content_browser_client_qt.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #if defined(ENABLE_SPELLCHECK)
@@ -58,7 +59,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
@@ -216,9 +217,9 @@ private:
     base::TimeTicks m_timerScheduledTime;
 };
 
-scoped_ptr<base::MessagePump> messagePumpFactory()
+std::unique_ptr<base::MessagePump> messagePumpFactory()
 {
-    return scoped_ptr<base::MessagePump>(new MessagePumpForUIQt);
+    return base::WrapUnique(new MessagePumpForUIQt);
 }
 
 } // namespace
@@ -250,7 +251,7 @@ public:
     {
         base::ThreadRestrictions::SetIOAllowed(true);
         // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
-        gfx::Screen::SetScreenInstance(new DesktopScreenQt);
+        display::Screen::SetScreenInstance(new DesktopScreenQt);
 
         return 0;
     }
@@ -479,10 +480,11 @@ void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base:
 #endif
 
 #if defined(ENABLE_PLUGINS)
-    void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) {
-        browser_host->GetPpapiHost()->AddHostFactoryFilter(
-            scoped_ptr<ppapi::host::HostFactory>(new QtWebEngineCore::PepperHostFactoryQt(browser_host)));
-    }
+void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host)
+{
+    browser_host->GetPpapiHost()->AddHostFactoryFilter(
+                base::WrapUnique(new QtWebEngineCore::PepperHostFactoryQt(browser_host)));
+}
 #endif
 
 content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()

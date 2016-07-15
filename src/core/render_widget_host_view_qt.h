@@ -42,7 +42,6 @@
 
 #include "render_widget_host_view_qt_delegate.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -120,7 +119,6 @@ public:
     virtual gfx::Vector2dF GetLastScrollOffset() const Q_DECL_OVERRIDE;
     virtual gfx::Size GetPhysicalBackingSize() const Q_DECL_OVERRIDE;
     virtual gfx::NativeView GetNativeView() const Q_DECL_OVERRIDE;
-    virtual gfx::NativeViewId GetNativeViewId() const Q_DECL_OVERRIDE;
     virtual gfx::NativeViewAccessible GetNativeViewAccessible() Q_DECL_OVERRIDE;
     virtual void Focus() Q_DECL_OVERRIDE;
     virtual bool HasFocus() const Q_DECL_OVERRIDE;
@@ -134,7 +132,7 @@ public:
     virtual void UnlockMouse() Q_DECL_OVERRIDE;
     virtual void UpdateCursor(const content::WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
-    virtual void TextInputStateChanged(const ViewHostMsg_TextInputState_Params&) Q_DECL_OVERRIDE;
+    virtual void TextInputStateChanged(const content::TextInputState& params) Q_DECL_OVERRIDE;
     virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
     virtual void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
@@ -146,7 +144,7 @@ public:
 
     virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
-    virtual void OnSwapCompositorFrame(uint32_t output_surface_id, scoped_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
+    virtual void OnSwapCompositorFrame(uint32_t output_surface_id, std::unique_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
     virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
@@ -214,7 +212,7 @@ private:
     bool m_touchMotionStarted;
     QMap<int, int> m_touchIdMapping;
     QList<QTouchEvent::TouchPoint> m_previousTouchPoints;
-    scoped_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
+    std::unique_ptr<RenderWidgetHostViewQtDelegate> m_delegate;
 
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     cc::ReturnedResourceArray m_resourcesToRelease;

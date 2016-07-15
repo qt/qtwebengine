@@ -59,7 +59,6 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -354,7 +353,7 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
     if (!texture) {
         if (m_resource.is_software) {
             Q_ASSERT(apiDelegate);
-            scoped_ptr<cc::SharedBitmap> sharedBitmap = content::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
+            std::unique_ptr<cc::SharedBitmap> sharedBitmap = content::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
             // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
             // to draw it but Chromium keeps this information in the quads.
             // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
@@ -634,8 +633,9 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;
+            }
 #ifdef GL_OES_EGL_image_external
-            } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
+            case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
                 MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
@@ -646,23 +646,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 svideoNode->setTextureMatrix(toQt(squad->matrix.matrix()));
                 currentLayerChain->appendChildNode(svideoNode);
                 break;
+            }
 #endif
-            }
-            case cc::DrawQuad::IO_SURFACE_CONTENT: {
-                const cc::IOSurfaceDrawQuad *ioquad = cc::IOSurfaceDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(ioquad->io_surface_resource_id(), resourceCandidates);
-                MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
-                texture->setTarget(GL_TEXTURE_RECTANGLE);
-
-                bool flip = ioquad->orientation != cc::IOSurfaceDrawQuad::FLIPPED;
-                StreamVideoNode *svideoNode = new StreamVideoNode(texture, flip, RectangleTarget);
-                QMatrix4x4 matrix;
-                matrix.scale(ioquad->io_surface_size.width(), ioquad->io_surface_size.height());
-                svideoNode->setRect(toQt(ioquad->rect));
-                svideoNode->setTextureMatrix(matrix);
-                currentLayerChain->appendChildNode(svideoNode);
-                break;
-            }
+            case cc::DrawQuad::SURFACE_CONTENT:
+                Q_UNREACHABLE();
             default:
                 qWarning("Unimplemented quad material: %d", quad->material);
             }

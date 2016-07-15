@@ -45,7 +45,6 @@
 #include "web_engine_context.h"
 
 #include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -246,7 +245,7 @@ void PrintViewManagerBaseQt::OnDidPrintPage(
 #endif
 
   // Only used when |metafile_must_be_valid| is true.
-  scoped_ptr<base::SharedMemory> shared_buf;
+  std::unique_ptr<base::SharedMemory> shared_buf;
   if (metafile_must_be_valid) {
     if (!base::SharedMemory::IsHandleValid(params.metafile_data_handle)) {
       NOTREACHED() << "invalid memory handle";
@@ -268,7 +267,7 @@ void PrintViewManagerBaseQt::OnDidPrintPage(
     }
   }
 
-  scoped_ptr<printing::PdfMetafileSkia> metafile(new printing::PdfMetafileSkia);
+  std::unique_ptr<printing::PdfMetafileSkia> metafile(new printing::PdfMetafileSkia);
   if (metafile_must_be_valid) {
     if (!metafile->InitFromData(shared_buf->memory(), params.data_size)) {
       NOTREACHED() << "Invalid metafile header";

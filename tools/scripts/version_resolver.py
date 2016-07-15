@@ -38,9 +38,9 @@ import json
 import urllib2
 import git_submodule as GitSubmodule
 
-chromium_version = '51.0.2704.106'
-chromium_branch = '2704'
-ninja_version = 'v1.6.0'
+chromium_version = '52.0.2743.76'
+chromium_branch = '2743'
+ninja_version = 'v1.7.1'
 
 json_url = 'http://omahaproxy.appspot.com/all.json'
 

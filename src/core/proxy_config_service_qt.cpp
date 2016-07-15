@@ -69,7 +69,7 @@ net::ProxyServer ProxyConfigServiceQt::fromQNetworkProxy(const QNetworkProxy &qt
 
 //================ Based on ChromeProxyConfigService =======================
 
-ProxyConfigServiceQt::ProxyConfigServiceQt(scoped_ptr<ProxyConfigService> baseService)
+ProxyConfigServiceQt::ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService)
     : m_baseService(baseService.release()),
       m_registeredObserver(false)
 {

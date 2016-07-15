@@ -343,11 +343,6 @@ gfx::NativeView RenderWidgetHostViewQt::GetNativeView() const
     return gfx::NativeView();
 }
 
-gfx::NativeViewId RenderWidgetHostViewQt::GetNativeViewId() const
-{
-    return 0;
-}
-
 gfx::NativeViewAccessible RenderWidgetHostViewQt::GetNativeViewAccessible()
 {
     return 0;
@@ -576,7 +571,7 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputStateChanged(const ViewHostMsg_TextInputState_Params &params)
+void RenderWidgetHostViewQt::TextInputStateChanged(const content::TextInputState &params)
 {
     m_currentInputType = params.type;
     m_delegate->inputMethodStateChanged(params.type != ui::TEXT_INPUT_TYPE_NONE);
@@ -660,7 +655,7 @@ void RenderWidgetHostViewQt::UnlockCompositingSurface()
 {
 }
 
-void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, scoped_ptr<cc::CompositorFrame> frame)
+void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, std::unique_ptr<cc::CompositorFrame> frame)
 {
     bool scrollOffsetChanged = (m_lastScrollOffset != frame->metadata.root_scroll_offset);
     bool contentsSizeChanged = (m_lastContentsSize != frame->metadata.root_layer_size);

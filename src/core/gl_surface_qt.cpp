@@ -50,7 +50,6 @@
 #include "qtwebenginecoreglobal_p.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"

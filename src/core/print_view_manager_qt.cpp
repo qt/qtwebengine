@@ -63,7 +63,7 @@ static const qreal kMicronsToMillimeter = 1000.0f;
 
 static std::vector<char>
 GetStdVectorFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
-    scoped_ptr<base::SharedMemory> shared_buf(
+    std::unique_ptr<base::SharedMemory> shared_buf(
                 new base::SharedMemory(handle, true));
 
     if (!shared_buf->Map(data_size)) {
@@ -76,7 +76,7 @@ GetStdVectorFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
 
 static scoped_refptr<base::RefCountedBytes>
 GetBytesFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
-     scoped_ptr<base::SharedMemory> shared_buf(
+     std::unique_ptr<base::SharedMemory> shared_buf(
                  new base::SharedMemory(handle, true));
 
     if (!shared_buf->Map(data_size)) {
@@ -139,7 +139,7 @@ static void applyQPageLayoutSettingsToDictionary(const QPageLayout &pageLayout, 
 {
     //Set page size attributes, chromium expects these in micrometers
     QSizeF pageSizeInMilimeter = pageLayout.pageSize().size(QPageSize::Millimeter);
-    scoped_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
     sizeDict->SetInteger(printing::kSettingMediaSizeWidthMicrons, pageSizeInMilimeter.width() * kMicronsToMillimeter);
     sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMilimeter.height() * kMicronsToMillimeter);
     printSettings.Set(printing::kSettingMediaSize, std::move(sizeDict));
