@@ -253,8 +253,8 @@ void URLRequestContextGetterQt::updateCookieStore()
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     QMutexLocker lock(&m_mutex);
-    m_httpAcceptLanguage = m_browserContext.data()->httpAcceptLanguage();
-    m_httpUserAgent = m_browserContext.data()->httpUserAgent();
+    m_persistentCookiesPolicy = m_browserContext.data()->persistentCookiesPolicy();
+    m_cookiesPath = m_browserContext.data()->cookiesPath();
 
     if (m_contextInitialized && !m_updateAllStorage && !m_updateCookieStore) {
         m_updateCookieStore = true;
