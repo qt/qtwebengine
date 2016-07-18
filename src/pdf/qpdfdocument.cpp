@@ -193,7 +193,7 @@ void QPdfDocumentPrivate::checkComplete()
         emit q->documentLoadFinished();
 }
 
-bool QPdfDocumentPrivate::fpdf_IsDataAvail(_FX_FILEAVAIL *pThis, size_t offset, size_t size)
+FPDF_BOOL QPdfDocumentPrivate::fpdf_IsDataAvail(_FX_FILEAVAIL *pThis, size_t offset, size_t size)
 {
     QPdfDocumentPrivate *d = static_cast<QPdfDocumentPrivate*>(pThis);
     return offset + size <= static_cast<quint64>(d->device->size());

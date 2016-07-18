@@ -1,8 +1,9 @@
-import sys, ast, os
+import sys, ast, os, argparse
 
 class Gyp(object):
-    def __init__(self, fileName):
+    def __init__(self, fileName, gypVariables):
         self.fileName = fileName
+        self.gypVariables = gypVariables
         with open(fileName, "r") as f:
             self.variables = ast.literal_eval(f.read())
 
@@ -10,6 +11,16 @@ class Gyp(object):
         for t in self.variables["targets"]:
             if t["target_name"] == name:
                 return t;
+
+        for condition in self.variables["conditions"] or []:
+            check = condition[0]
+            vars = condition[1]
+            try:
+                if eval(check, None, self.gypVariables):
+                    for t in vars["targets"] or []:
+                        if t["target_name"] == name:
+                            return t;
+            except: pass
         return None
 
     def target_defaults(self):
@@ -61,6 +72,7 @@ class ProFileSection(object):
         self.config.append(cfg)
 
     def addInclude(self, path):
+        path = path.replace("<(DEPTH)", "")
         self.includes.append("$$PWD/" + path)
 
     def generate(self):
@@ -102,42 +114,67 @@ class ProFile(ProFileSection):
             result += "\n}\n"
         return result
 
-gyp = Gyp(sys.argv[1])
+def addDependencies(gyp, proFile, gypTarget, variables):
+    for dep in gypTarget.get("dependencies") or []:
+        target = None
+        baseDir = None
+        for key, value in variables.iteritems():
+            name = "<(" + key + ")"
+            replacement = value
+            dep = dep.replace(name, replacement)
+        if ".gyp:" in dep:
+            targetFileName = dep[:dep.index(":")]
+            fileName = os.path.dirname(gyp.fileName) + "/" + targetFileName
+            subDep = dep[dep.index(":") + 1:]
+            target = Gyp(fileName, variables).target(subDep)
+            baseDir = os.path.relpath(os.path.dirname(fileName), os.path.dirname(gyp.fileName))
+        else:
+            target = gyp.target(dep)
+        if not target:
+            return
+        if target["target_name"] == "javascript":
+            continue
+        if target["target_name"] == "jsapi":
+            continue
+        pro.addSources(target["sources"], baseDir)
 
-mainTarget = gyp.target(sys.argv[2])
+        if "conditions" in target:
+            for condition in target["conditions"]:
+                if condition[0] == "OS==\"win\"":
+                    scope = ProFileSection("win32")
+                    scope.addSources(condition[1]["sources"])
+                    pro.addScope(scope)
+
+        addDependencies(gyp, proFile, target, variables)
+
+optionParser = argparse.ArgumentParser()
+optionParser.add_argument("--gyp-var", action="append")
+optionParser.add_argument("input")
+optionParser.add_argument("mainTarget")
+optionParser.add_argument("output")
+config = optionParser.parse_args()
+
+variables = {}
+for var in config.gyp_var or []:
+    key, value = var.split("=")
+    variables[key] = value
+
+gyp = Gyp(config.input, variables)
+
+mainTarget = gyp.target(config.mainTarget)
 
 pro = ProFile()
 
+print(mainTarget)
 pro.addSources(mainTarget["sources"])
 
-for dep in mainTarget["dependencies"]:
-    target = None
-    baseDir = None
-    if ".gyp:" in dep:
-        fileName = os.path.dirname(gyp.fileName) + "/" + dep[:dep.index(":")]
-        subDep = dep[dep.index(":") + 1:]
-        target = Gyp(fileName).target(subDep)
-        baseDir = os.path.relpath(os.path.dirname(fileName), os.path.dirname(gyp.fileName))
-    else:
-        target = gyp.target(dep)
-    if target["target_name"] == "javascript":
-        continue
-    if target["target_name"] == "jsapi":
-        continue
-    pro.addSources(target["sources"], baseDir)
-    
-    if "conditions" in target:
-        for condition in target["conditions"]:
-            if condition[0] == "OS==\"win\"":
-                scope = ProFileSection("win32")
-                scope.addSources(condition[1]["sources"])
-                pro.addScope(scope)
+addDependencies(gyp, pro, mainTarget, variables)
 
 target_defaults = gyp.target_defaults()
 pro.addDefines(target_defaults["defines"])
 if "include_dirs" in target_defaults:
     for path in target_defaults["include_dirs"]:
-        pro.addInclude(os.path.relpath(os.path.dirname(gyp.fileName) + "/" + path, os.path.dirname(sys.argv[3])))
+        pro.addInclude(os.path.relpath(os.path.dirname(gyp.fileName) + "/" + path, os.path.dirname(config.output)))
 
-with open(sys.argv[3], "w") as f:
+with open(config.output, "w") as f:
     f.write(pro.generate())

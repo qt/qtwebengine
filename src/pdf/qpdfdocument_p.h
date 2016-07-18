@@ -1,8 +1,8 @@
 #ifndef QPDFDOCUMENT_P_H
 #define QPDFDOCUMENT_P_H
 
-#include "fpdfview.h"
-#include "fpdf_dataavail.h"
+#include "public/fpdfview.h"
+#include "public/fpdf_dataavail.h"
 #include "qpdfdocument.h"
 
 #include <QPointer>
@@ -43,7 +43,7 @@ public:
     void tryLoadDocument();
     void checkComplete();
 
-    static bool fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
+    static FPDF_BOOL fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
     static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);
     static void fpdf_AddSegment(struct _FX_DOWNLOADHINTS* pThis, size_t offset, size_t size);
     void updateLastError();
