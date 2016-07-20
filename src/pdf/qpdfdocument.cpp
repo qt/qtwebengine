@@ -3,7 +3,6 @@
 #include "qpdfdocument_p.h"
 
 #include <QFile>
-#include <QIODevice>
 #include <QMutex>
 
 QT_BEGIN_NAMESPACE
@@ -13,12 +12,13 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
 static int libraryRefCount;
 
 QPdfDocumentPrivate::QPdfDocumentPrivate()
-    : avail(0)
-    , doc(0)
+    : avail(Q_NULLPTR)
+    , doc(Q_NULLPTR)
     , loadComplete(true)
     , lastError(QPdfDocument::NoError)
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     if (libraryRefCount == 0)
         FPDF_InitLibrary();
     ++libraryRefCount;
@@ -38,7 +38,7 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
 
 QPdfDocumentPrivate::~QPdfDocumentPrivate()
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
 
     clear();
 
@@ -50,11 +50,11 @@ void QPdfDocumentPrivate::clear()
 {
     if (doc)
         FPDF_CloseDocument(doc);
-    doc = 0;
+    doc = Q_NULLPTR;
 
     if (avail)
         FPDFAvail_Destroy(avail);
-    avail = 0;
+    avail = Q_NULLPTR;
 
     loadComplete = false;
 
@@ -115,15 +115,16 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
 
 void QPdfDocumentPrivate::_q_tryLoadingWithSizeFromContentHeader()
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     if (avail)
         return;
 
-    QNetworkReply *networkReply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
+    const QNetworkReply *networkReply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
     if(!networkReply)
         return;
 
-    QVariant contentLength = networkReply->header(QNetworkRequest::ContentLengthHeader);
+    const QVariant contentLength = networkReply->header(QNetworkRequest::ContentLengthHeader);
     if (!contentLength.isValid())
         return;
 
@@ -145,12 +146,15 @@ void QPdfDocumentPrivate::initiateAsyncLoadWithTotalSizeKnown(quint64 totalSize)
 
 void QPdfDocumentPrivate::_q_copyFromSequentialSourceDevice()
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     if (loadComplete)
         return;
-    QByteArray data = sequentialSourceDevice->read(sequentialSourceDevice->bytesAvailable());
+
+    const QByteArray data = sequentialSourceDevice->read(sequentialSourceDevice->bytesAvailable());
     if (data.isEmpty())
         return;
+
     asyncBuffer.seek(asyncBuffer.size());
     asyncBuffer.write(data);
 
@@ -159,7 +163,8 @@ void QPdfDocumentPrivate::_q_copyFromSequentialSourceDevice()
 
 void QPdfDocumentPrivate::tryLoadDocument()
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     if (!FPDFAvail_IsDocAvail(avail, this))
         return;
 
@@ -175,7 +180,8 @@ void QPdfDocumentPrivate::tryLoadDocument()
 
 void QPdfDocumentPrivate::checkComplete()
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     if (!avail || loadComplete)
         return;
 
@@ -189,6 +195,7 @@ void QPdfDocumentPrivate::checkComplete()
     for (int i = 0, count = FPDF_GetPageCount(doc); i < count; ++i)
         if (!FPDFAvail_IsPageAvail(avail, i, this))
             loadComplete = false;
+
     if (loadComplete)
         emit q->documentLoadFinished();
 }
@@ -227,7 +234,8 @@ QPdfDocument::~QPdfDocument()
 
 QPdfDocument::Error QPdfDocument::load(const QString &fileName)
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     QScopedPointer<QFile> f(new QFile(fileName));
     if (!f->open(QIODevice::ReadOnly)) {
         d->lastError = FileNotFoundError;
@@ -244,13 +252,15 @@ bool QPdfDocument::isLoading() const
 
 void QPdfDocument::load(QIODevice *device)
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     d->load(device, /*transfer ownership*/false);
 }
 
 void QPdfDocument::setPassword(const QString &password)
 {
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
+
     d->password = password.toUtf8();
 
     if (!d->doc && d->avail)
@@ -271,7 +281,9 @@ int QPdfDocument::pageCount() const
 {
     if (!d->doc)
         return 0;
-    QMutexLocker lock(pdfMutex());
+
+    const QMutexLocker lock(pdfMutex());
+
     return FPDF_GetPageCount(d->doc);
 }
 
@@ -280,7 +292,9 @@ QSizeF QPdfDocument::pageSize(int page) const
     QSizeF result;
     if (!d->doc)
         return result;
-    QMutexLocker lock(pdfMutex());
+
+    const QMutexLocker lock(pdfMutex());
+
     FPDF_GetPageSizeByIndex(d->doc, page, &result.rwidth(), &result.rheight());
     return result;
 }
@@ -290,7 +304,7 @@ QImage QPdfDocument::render(int page, const QSizeF &pageSize)
     if (!d->doc)
         return QImage();
 
-    QMutexLocker lock(pdfMutex());
+    const QMutexLocker lock(pdfMutex());
 
     FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
     if (!pdfPage)

@@ -27,7 +27,7 @@ public:
         UnsupportedSecuritySchemeError
     };
 
-    explicit QPdfDocument(QObject *parent = 0);
+    explicit QPdfDocument(QObject *parent = Q_NULLPTR);
     ~QPdfDocument();
 
     Error load(const QString &fileName);

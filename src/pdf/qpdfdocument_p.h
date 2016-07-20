@@ -1,11 +1,11 @@
 #ifndef QPDFDOCUMENT_P_H
 #define QPDFDOCUMENT_P_H
 
-#include "public/fpdfview.h"
-#include "public/fpdf_dataavail.h"
 #include "qpdfdocument.h"
 
-#include <QPointer>
+#include "public/fpdfview.h"
+#include "public/fpdf_dataavail.h"
+
 #include <qbuffer.h>
 #include <qnetworkreply.h>
 #include <qpointer.h>
@@ -52,4 +52,3 @@ public:
 QT_END_NAMESPACE
 
 #endif // QPDFDOCUMENT_P_H
-
