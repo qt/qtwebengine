@@ -756,7 +756,9 @@
     \value  ToggleMediaMute
             Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
     \value  DownloadLinkToDisk
-            Download the current link to the disk. (Added in Qt 5.6)
+            Download the current link to the disk. To implement download
+            actions, connect to the QWebEngineProfile::downloadRequested signal.
+            (Added in Qt 5.6)
     \value  DownloadImageToDisk
             Download the highlighted image to the disk. (Added in Qt 5.6)
     \value  DownloadMediaToDisk
