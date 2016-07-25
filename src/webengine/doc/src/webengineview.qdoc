@@ -791,6 +791,26 @@
 */
 
 /*!
+    \qmlproperty bool WebEngineView::activeFocusOnPress
+    \since QtWebEngine 1.2
+
+    Specifies whether the view should gain active focus when pressed.
+    The default value is \c true.
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::backgroundColor
+    \since QtWebEngine 1.2
+
+    Changes the color of the WebEngineView's background, behind the document's
+    body. Can be set to \c "transparent" or to a translucent color to see
+    through the document or to match the web content in a hybrid app to prevent
+    the white flashes that may appear during loading.
+
+    The default value is white.
+*/
+
+/*!
     \qmltype WebEngineFullScreenRequest
     \instantiates QQuickWebEngineFullScreenRequest
     \inqmlmodule QtWebEngine
