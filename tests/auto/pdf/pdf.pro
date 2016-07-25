@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = qpdfdocument
+qtHaveModule(printsupport): SUBDIRS = qpdfdocument
