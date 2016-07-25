@@ -165,7 +165,6 @@ mainTarget = gyp.target(config.mainTarget)
 
 pro = ProFile()
 
-print(mainTarget)
 pro.addSources(mainTarget["sources"])
 
 addDependencies(gyp, pro, mainTarget, variables)
