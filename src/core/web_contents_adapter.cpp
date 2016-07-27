@@ -518,7 +518,19 @@ void WebContentsAdapter::load(const QUrl &url)
     Q_UNUSED(guard);
 
     Q_D(WebContentsAdapter);
-    content::NavigationController::LoadURLParams params(toGurl(url));
+    GURL gurl = toGurl(url);
+
+    // Add URL scheme if missing from view-source URL.
+    if (url.scheme() == content::kViewSourceScheme) {
+        QUrl pageUrl = QUrl(url.toString().remove(0, strlen(content::kViewSourceScheme) + 1));
+        if (pageUrl.scheme().isEmpty()) {
+            QUrl extendedUrl = QUrl::fromUserInput(pageUrl.toString());
+            extendedUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, extendedUrl.toString()));
+            gurl = toGurl(extendedUrl);
+        }
+    }
+
+    content::NavigationController::LoadURLParams params(gurl);
     params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
     d->webContents->GetController().LoadURLWithParams(params);
