@@ -10,6 +10,9 @@ OBJECTS =
 # Fixme: -Werror=unused-parameter in core
 QMAKE_CXXFLAGS_WARN_ON =
 
+# Disable MSVC2015 warning C4577 ('noexcept' used with no exception handling mode specified)
+win32: QMAKE_CXXFLAGS_WARN_ON = -wd4577
+
 # Issue with some template compliation, smb smart should look at it
 win32: DEFINES += NOMINMAX
 
