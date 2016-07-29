@@ -564,7 +564,7 @@ void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
         q->window()->sendEvent(q->parentItem(), event);
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
+void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineNewViewRequest request;
@@ -770,7 +770,7 @@ QAccessible::State QQuickWebEngineViewAccessible::state() const
 class WebContentsAdapterOwner : public QObject
 {
 public:
-    typedef QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> AdapterPtr;
+    typedef QSharedPointer<QtWebEngineCore::WebContentsAdapter> AdapterPtr;
     WebContentsAdapterOwner(const AdapterPtr &ptr)
         : adapter(ptr)
     {}
@@ -797,9 +797,9 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
-    WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter);
+    WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter->sharedFromThis());
     adapterOwner->deleteLater();
-    adapter = webContents;
+    adapter = webContents->sharedFromThis();
     adapter->initialize(this);
 
     // associate the webChannel with the new adapter
@@ -856,7 +856,7 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
 {
     Q_Q(QQuickWebEngineView);
     if (!adapter) {
-        adapter = new WebContentsAdapter();
+        adapter = QSharedPointer<WebContentsAdapter>::create();
         adapter->initialize(this);
         if (m_backgroundColor != Qt::white)
             adapter->backgroundColorChanged();
@@ -1016,7 +1016,7 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         QUrl activeUrl = adapter->activeUrl();
-        adapter = 0;
+        adapter.reset();
         ensureContentsAdapter();
 
         if (!explicitUrl.isValid() && activeUrl.isValid())

@@ -44,7 +44,7 @@
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
-#include <QSharedData>
+#include <QSharedPointer>
 #include <QString>
 #include <QUrl>
 
@@ -69,9 +69,9 @@ class MessagePassingInterface;
 class WebContentsAdapterPrivate;
 class FaviconManager;
 
-class QWEBENGINE_EXPORT WebContentsAdapter : public QSharedData {
+class QWEBENGINE_EXPORT WebContentsAdapter : public QEnableSharedFromThis<WebContentsAdapter> {
 public:
-    static QExplicitlySharedDataPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
+    static QSharedPointer<WebContentsAdapter> createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient);
     // Takes ownership of the WebContents.
     WebContentsAdapter(content::WebContents *webContents = 0);
     ~WebContentsAdapter();

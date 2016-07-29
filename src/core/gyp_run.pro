@@ -133,7 +133,7 @@ contains(WEBENGINE_CONFIG, no_spellcheck): {
 for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 
 !build_pass {
-    message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}...")
+    message("Running gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}.")
     !system("python $$QTWEBENGINE_ROOT/tools/buildscripts/gyp_qtwebengine \"$$OUT_PWD\" $${GYP_ARGS}"): error("-- running gyp_qtwebengine failed --")
 }
 

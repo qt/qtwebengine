@@ -104,6 +104,7 @@ private:
     QScopedPointer<QSGAbstractRenderer> m_sgRenderer;
     bool m_isPopup;
     QColor m_clearColor;
+    QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;
 };
 

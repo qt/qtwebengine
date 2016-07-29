@@ -4,7 +4,10 @@ SUBDIRS += \
     inspectorserver \
     publicapi \
     qquickwebenginedefaultsurfaceformat \
-    qquickwebengineview \
-    qquickwebengineviewgraphics
+    qquickwebengineview
 
-isQMLTestSupportApiEnabled(): SUBDIRS += qmltests
+isQMLTestSupportApiEnabled() {
+    SUBDIRS += \
+        qmltests \
+        qquickwebengineviewgraphics
+}

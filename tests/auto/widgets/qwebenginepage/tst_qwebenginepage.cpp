@@ -24,10 +24,12 @@
 #include <QClipboard>
 #include <QDir>
 #include <QGraphicsWidget>
+#include <QHBoxLayout>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QMenu>
 #include <QMimeDatabase>
+#include <QOpenGLWidget>
 #include <QPaintEngine>
 #include <QPushButton>
 #include <QStateMachine>
@@ -114,6 +116,8 @@ private Q_SLOTS:
     void initTestCase();
     void cleanupTestCase();
     void thirdPartyCookiePolicy();
+    void comboBoxPopupPositionAfterMove();
+    void comboBoxPopupPositionAfterChildMove();
     void contextMenuCopy();
     void contextMenuPopulatedOnce();
     void acceptNavigationRequest();
@@ -144,7 +148,6 @@ private Q_SLOTS:
     void textEditing();
     void backActionUpdate();
     void protectBindingsRuntimeObjectsFromCollector();
-    void localURLSchemes();
     void testOptionalJSObjects();
     void testLocalStorageVisibility();
     void testEnablePersistentStorage();
@@ -241,6 +244,8 @@ private Q_SLOTS:
     void printToPdf();
 
 private:
+    static QPoint elementCenter(QWebEnginePage *page, const QString &id);
+
     QWebEngineView* m_view;
     QWebEnginePage* m_page;
     QWebEngineView* m_inputFieldsTestView;
@@ -2467,34 +2472,6 @@ void tst_QWebEnginePage::protectBindingsRuntimeObjectsFromCollector()
 #endif
 }
 
-void tst_QWebEnginePage::localURLSchemes()
-{
-#if !defined(QWEBENGINESECURITYORIGIN)
-    QSKIP("QWEBENGINESECURITYORIGIN");
-#else
-    int i = QWebEngineSecurityOrigin::localSchemes().size();
-
-    QWebEngineSecurityOrigin::removeLocalScheme("file");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-    QWebEngineSecurityOrigin::addLocalScheme("file");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-
-    QWebEngineSecurityOrigin::removeLocalScheme("qrc");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i - 1);
-    QWebEngineSecurityOrigin::addLocalScheme("qrc");
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-
-    QString myscheme = "myscheme";
-    QWebEngineSecurityOrigin::addLocalScheme(myscheme);
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i + 1);
-    QVERIFY(QWebEngineSecurityOrigin::localSchemes().contains(myscheme));
-    QWebEngineSecurityOrigin::removeLocalScheme(myscheme);
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-    QWebEngineSecurityOrigin::removeLocalScheme(myscheme);
-    QTRY_COMPARE(QWebEngineSecurityOrigin::localSchemes().size(), i);
-#endif
-}
-
 #if defined(QWEBENGINEPAGE_SETTINGS)
 static inline bool testFlag(QWebEnginePage& webPage, QWebEngineSettings::WebAttribute settingAttribute, const QString& jsObjectName, bool settingValue)
 {
@@ -2977,31 +2954,26 @@ void tst_QWebEnginePage::findText()
     QSignalSpy loadSpy(m_page, SIGNAL(loadFinished(bool)));
     m_page->setHtml(QString("<html><head></head><body><div>foo bar</div></body></html>"));
     QTRY_COMPARE(loadSpy.count(), 1);
+
+    // Select whole page contents.
     m_page->triggerAction(QWebEnginePage::SelectAll);
     QTRY_COMPARE(m_page->hasSelection(), true);
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-    QVERIFY(!m_page->selectedHtml().isEmpty());
-#endif
+
+    // Invoke a stopFinding() operation, which should clear the currently selected text.
     m_page->findText("");
-    QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
-    QVERIFY(m_page->selectedText().isEmpty());
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-    QVERIFY(m_page->selectedHtml().isEmpty());
-#endif
+    QTRY_VERIFY(m_page->selectedText().isEmpty());
+
     QStringList words = (QStringList() << "foo" << "bar");
     foreach (QString subString, words) {
+        // Invoke a find operation, which should clear the currently selected text, should
+        // highlight all the found ocurrences, but should not update the selected text to the
+        // searched for string.
         m_page->findText(subString);
-        QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
-        QCOMPARE(m_page->selectedText(), subString);
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-        QVERIFY(m_page->selectedHtml().contains(subString));
-#endif
+        QTRY_VERIFY(m_page->selectedText().isEmpty());
+
+        // Search highlights should be cleared, selected text should still be empty.
         m_page->findText("");
-        QEXPECT_FAIL("", "Unsupported: findText only highlights and doesn't update the selection.", Continue);
-        QVERIFY(m_page->selectedText().isEmpty());
-#if defined(QWEBENGINEPAGE_SELECTEDHTML)
-        QVERIFY(m_page->selectedHtml().isEmpty());
-#endif
+        QTRY_VERIFY(m_page->selectedText().isEmpty());
     }
 }
 
@@ -3152,6 +3124,96 @@ void tst_QWebEnginePage::thirdPartyCookiePolicy()
     QVERIFY(!DumpRenderTreeSupportQt::thirdPartyCookiePolicyAllows(m_page->handle(),
             QUrl("http://anotherexample.co.uk"), QUrl("http://example.co.uk")));
 #endif
+}
+
+static QWindow *findNewTopLevelWindow(const QWindowList &oldTopLevelWindows)
+{
+    const auto tlws = QGuiApplication::topLevelWindows();
+    for (auto w : tlws) {
+        if (!oldTopLevelWindows.contains(w)) {
+            return w;
+        }
+    }
+    return nullptr;
+}
+
+void tst_QWebEnginePage::comboBoxPopupPositionAfterMove()
+{
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QWebEngineView view;
+    view.move(screen->availableGeometry().topLeft());
+    view.resize(640, 480);
+    view.show();
+
+    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml(QLatin1String("<html><head></head><body><select id='foo'>"
+                               "<option>fran</option><option>troz</option>"
+                               "</select></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    const auto oldTlws = QGuiApplication::topLevelWindows();
+    QWindow *window = view.windowHandle();
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      elementCenter(view.page(), "foo"));
+
+    QWindow *popup = nullptr;
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QPoint popupPos = popup->position();
+
+    // Close the popup by clicking somewhere into the page.
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(1, 1));
+    QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
+
+    // Move the top-level QWebEngineView a little and check the popup's position.
+    const QPoint offset(12, 13);
+    view.move(screen->availableGeometry().topLeft() + offset);
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      elementCenter(view.page(), "foo"));
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QCOMPARE(popupPos + offset, popup->position());
+}
+
+void tst_QWebEnginePage::comboBoxPopupPositionAfterChildMove()
+{
+    QWidget mainWidget;
+    mainWidget.setLayout(new QHBoxLayout);
+
+    QWidget spacer;
+    spacer.setMinimumWidth(50);
+    mainWidget.layout()->addWidget(&spacer);
+
+    QWebEngineView view;
+    mainWidget.layout()->addWidget(&view);
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    mainWidget.move(screen->availableGeometry().topLeft());
+    mainWidget.resize(640, 480);
+    mainWidget.show();
+
+    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml(QLatin1String("<html><head></head><body><select autofocus id='foo'>"
+                               "<option value=\"narf\">narf</option><option>zort</option>"
+                               "</select></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
+    const auto oldTlws = QGuiApplication::topLevelWindows();
+    QWindow *window = view.window()->windowHandle();
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      view.mapTo(view.window(), elementCenter(view.page(), "foo")));
+
+    QWindow *popup = nullptr;
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QPoint popupPos = popup->position();
+
+    // Close the popup by clicking somewhere into the page.
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      view.mapTo(view.window(), QPoint(1, 1)));
+    QTRY_VERIFY(!QGuiApplication::topLevelWindows().contains(popup));
+
+    // Resize the "spacer" widget, and implicitly change the global position of the QWebEngineView.
+    spacer.setMinimumWidth(100);
+    QTest::mouseClick(window, Qt::LeftButton, Qt::KeyboardModifiers(),
+                      view.mapTo(view.window(), elementCenter(view.page(), "foo")));
+    QTRY_VERIFY(popup = findNewTopLevelWindow(oldTlws));
+    QCOMPARE(popupPos + QPoint(50, 0), popup->position());
 }
 
 #ifdef Q_OS_MAC
@@ -4925,6 +4987,23 @@ void tst_QWebEnginePage::mouseButtonTranslation()
     QCOMPARE(evaluateJavaScriptSync(view->page(), "lastEvent.buttons").toInt(), 3);
 
     delete view;
+}
+
+QPoint tst_QWebEnginePage::elementCenter(QWebEnginePage *page, const QString &id)
+{
+    QVariantList rectList = evaluateJavaScriptSync(page,
+            "(function(){"
+            "var elem = document.getElementById('" + id + "');"
+            "var rect = elem.getBoundingClientRect();"
+            "return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+            "})()").toList();
+
+    if (rectList.count() != 2) {
+        qWarning("elementCenter failed.");
+        return QPoint();
+    }
+
+    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
 }
 
 QTEST_MAIN(tst_QWebEnginePage)

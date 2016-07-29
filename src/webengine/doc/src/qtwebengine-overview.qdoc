@@ -31,27 +31,11 @@
 
     The Qt WebEngine module provides a web browser engine that makes it easy to embed content from
     the World Wide Web into your Qt application on platforms that do not have a native web engine.
-    The web engine is not intended to function as a \e {Web Runtime}; to display web content in a
-    QML application by using APIs native to the platform, use the \l{Qt WebView} module, instead.
 
     Qt WebEngine provides C++ classes and QML types for rendering HTML, XHTML, and SVG documents,
     styled using Cascading Style Sheets (CSS) and scripted with JavaScript. HTML documents can be
     made fully editable by the user through the use of the \c{contenteditable} attribute on HTML
     elements.
-
-    Qt WebEngine supercedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
-    module, which is based on the
-    WebKit project, but has not been actively synchronized with the upstream WebKit code since
-    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
-    application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}. For new
-    applications, we recommend using Qt Quick and the WebEngineView QML type.
-
-    For more information about the requirements for building Qt WebEngine from source on the
-    supported platforms and for other platform-specific information, see
-    \l{Qt WebEngine Platform Notes}.
-
-    The \l {Qt WebChannel} module can be used to create a bi-directional communication channel
-    between QObject objects on the C++ side and JavaScript on the QML side.
 
     \section1 Qt WebEngine Architecture
 
@@ -82,23 +66,24 @@
     \e cookies. Profiles can be used to isolate pages from each other. A typical use case is a
     dedicated profile for a \e {private browsing} mode, where no information is permanently saved.
 
+    \note The Qt WebEngine Widgets module uses the \l{Qt Quick Scene Graph}{Qt Quick scene graph}
+    to compose the elements of a web page into one view. This means that the UI process
+    requires OpenGL ES 2.0 or OpenGL 2.0 for its rendering.
+
     \section2 Qt WebEngine Module
 
     \image qtwebengine-model.png
 
-    The Qt WebEngine QML implementation contains the same elements as the C++ implementation,
-    except that there is no separately accessible web engine page. The supported page functionality
-    is integrated into the web engine view.
+    The Qt WebEngine QML implementation contains the same elements as the Qt WebEngine Widgets
+    implementation, except that there is no separately accessible web engine page.
+    The supported page functionality is integrated into the web engine view.
 
     \section2 Qt WebEngine Core Module
 
     The Qt WebEngine core is based on the \l {Chromium Project}. Chromium provides its own network
-    and painting engines and is developed tightly together with its dependent modules, and
-    therefore Qt WebEngine provides better and more reliable support for the latest HTML5
-    specification than Qt WebKit. However, Qt WebEngine is thus heavier than Qt WebKit and does
-    not provide direct access to the network stack and the HTML document through C++ APIs.
+    and painting engines and is developed tightly together with its dependent modules.
 
-    Please note that Qt WebEngine is based on Chromium, but does not contain or use any services
+    \note Qt WebEngine is based on Chromium, but does not contain or use any services
     or add-ons that might be part of the Chrome browser that is built and delivered by Google.
     You can find more detailed information about the differences between Chromium and Chrome in this
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
@@ -109,30 +94,9 @@
 
     \section2 Qt WebEngine Process
 
-    The Qt WebEngine Process renders web pages and executes JavaScript.
-
-    Chromium is tightly integrated to the \l{Qt Quick Scene Graph}{Qt Quick scene graph}, which is
-    based on OpenGL ES 2.0 or OpenGL 2.0 for its rendering. This provides you with one-pass
-    compositing of web content and all the Qt Quick UI. The integration to Chromium is transparent
-    to developers, who just work with Qt and JavaScript.
-
-    The document object model (DOM) of a page is constructed when the document is ready, typically
-    when the page is completely loaded. Therefore, executing scripts as soon as a document is
-    created is not suitable for DOM operations, where one has to wait until the DOM is ready.
-
-    In addition, an injected script shares the same \e world as the other scripts executed on the
-    page, which might lead to conflicts. To avoid this, the QWebEngineScript class and the
-    WebEngineScript QML type provide implementations of the Chromium API for
-    \e{Content Script Extensions}. They specify the
-    script to run, the injection point, and the world where the script is run. This enables
-    accessing the DOM to manipulate it within a world.
-
-    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
-
-    Because the render process is separated from the GUI process, they should ideally share an
-    OpenGL context to enable one process to access the resources uploaded by the other, such as
-    images or textures. However, some inter-process communication is needed for safety and
-    reliability, because it enables restarting a crashed process.
+    The Qt WebEngine Process is a separate executable that is used to render web pages and
+    execute JavaScript. This mitigates security issues and isolates crashes caused by specific
+    content.
 
     \section1 Embedding Web Content into Widget Based Applications
 
@@ -201,6 +165,24 @@
     \skipto import
     \printuntil /^\}/
 
+    \section1 Script Injection
+
+    Qt WebEngine does not allow direct access to the document object model (DOM) of a page.
+    However, the DOM can be inspected and adapted by injecting scripts.
+
+    The DOM of a page is constructed when the document is ready, typically
+    when the page is completely loaded. Therefore, executing scripts as soon as a document is
+    created is not suitable for DOM operations, where one has to wait until the DOM is ready.
+
+    In addition, an injected script shares the same \e world as the other scripts executed on the
+    page, which might lead to conflicts. To avoid this, the QWebEngineScript class and the
+    WebEngineScript QML type provide implementations of the Chromium API for
+    \e{Content Script Extensions}. They specify the
+    script to run, the injection point, and the world where the script is run. This enables
+    accessing the DOM to manipulate it within a world.
+
+    \note Chromium extensions, such as \c @include, \c @match, and \c @exclude, are not supported.
+
     \section1 Managing Certificates
 
     Qt WebEngine uses its own network stack, and therefore QSslConfiguration is not used to
@@ -249,4 +231,25 @@
     On Windows, QtWebEngineProcess.exe is located in the bin directory of your Qt application.
 
     For more information on deploying Qt applications, please see \l {Deploying Qt Applications}.
+
+    \section1 Platform Notes
+
+    Qt WebEngine currently supports only Windows, Linux, and OS X. Due to Chromium build
+    requirements it also often requires a newer compiler than the rest of Qt. See
+    \l{Qt WebEngine Platform Notes} for further details.
+
+    \section1 Related Modules
+
+    Qt WebEngine supersedes the \l{http://doc.qt.io/archives/qt-5.3/qtwebkit-index.html}{Qt WebKit}
+    module, which is based on the
+    WebKit project, but has not been actively synchronized with the upstream WebKit code since
+    Qt 5.2 and has been deprecated in Qt 5.5. For tips on how to change a Qt WebKit widgets
+    application to use Qt WebEngine widgets, see \l{Porting from Qt WebKit to Qt WebEngine}.
+
+    The \l{Qt WebView} module allows to use a native web browser on platforms where one is
+    available.
+
+    The \l{Qt WebChannel} module can be used to create a bi-directional communication channel
+    between QObject objects on the C++ side and JavaScript on the QML side.
+
 */

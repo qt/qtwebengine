@@ -348,14 +348,14 @@ WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
     webContents.reset();
 }
 
-QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
+QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
     std::vector<scoped_ptr<content::NavigationEntry>> entries;
     deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
-        return QExplicitlySharedDataPointer<WebContentsAdapter>();
+        return QSharedPointer<WebContentsAdapter>();
 
     // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
     content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->browserContext());
@@ -373,7 +373,7 @@ QExplicitlySharedDataPointer<WebContentsAdapter> WebContentsAdapter::createFromS
             content::ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(id, *file);
     }
 
-    return QExplicitlySharedDataPointer<WebContentsAdapter>(new WebContentsAdapter(newWebContents));
+    return QSharedPointer<WebContentsAdapter>::create(newWebContents);
 }
 
 WebContentsAdapter::WebContentsAdapter(content::WebContents *webContents)
@@ -835,6 +835,9 @@ void WebContentsAdapter::stopFinding()
 {
     Q_D(WebContentsAdapter);
     d->webContentsDelegate->setLastSearchedString(QString());
+    // Clear any previous selection,
+    // but keep the renderer blue rectangle selection just like Chromium does.
+    d->webContents->Unselect();
     d->webContents->StopFinding(content::STOP_FIND_ACTION_KEEP_SELECTION);
 }
 

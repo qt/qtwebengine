@@ -42,7 +42,6 @@
 
 #include "qtwebenginecoreglobal.h"
 
-#include <QExplicitlySharedDataPointer>
 #include <QScopedPointer>
 #include <QHash>
 #include <QUrl>

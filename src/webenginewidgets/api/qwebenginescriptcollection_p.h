@@ -54,25 +54,26 @@
 #include "qtwebenginewidgetsglobal.h"
 
 #include "qwebenginescript.h"
+#include "web_contents_adapter.h"
 
 #include <QtCore/QSet>
+#include <QtCore/QSharedPointer>
 
 namespace QtWebEngineCore {
 class UserResourceControllerHost;
-class WebContentsAdapter;
 } // namespace
 
 QT_BEGIN_NAMESPACE
 class QWebEngineScriptCollectionPrivate {
 public:
-    QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserResourceControllerHost *, QtWebEngineCore::WebContentsAdapter * = 0);
+    QWebEngineScriptCollectionPrivate(QtWebEngineCore::UserResourceControllerHost *, QSharedPointer<QtWebEngineCore::WebContentsAdapter> = QSharedPointer<QtWebEngineCore::WebContentsAdapter>());
 
     int count() const;
     bool contains(const QWebEngineScript &) const;
     QList<QWebEngineScript> toList(const QString &scriptName = QString()) const;
     QWebEngineScript find(const QString & name) const;
 
-    void rebindToContents(QtWebEngineCore::WebContentsAdapter *contents);
+    void rebindToContents(QSharedPointer<QtWebEngineCore::WebContentsAdapter> contents);
 
     void insert(const QWebEngineScript &);
     bool remove(const QWebEngineScript &);
@@ -81,7 +82,7 @@ public:
 
 private:
     QtWebEngineCore::UserResourceControllerHost *m_scriptController;
-    QtWebEngineCore::WebContentsAdapter *m_contents;
+    QSharedPointer<QtWebEngineCore::WebContentsAdapter> m_contents;
 };
 
 QT_END_NAMESPACE

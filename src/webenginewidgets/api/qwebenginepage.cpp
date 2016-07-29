@@ -81,6 +81,7 @@
 #include <QMimeData>
 #include <QStandardPaths>
 #include <QStyle>
+#include <QTimer>
 #include <QUrl>
 
 #include <private/qguiapplication_p.h>
@@ -127,13 +128,13 @@ QWebEnginePage::WebAction editorActionForKeyEvent(QKeyEvent* event)
 }
 
 QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
-    : adapter(new WebContentsAdapter)
+    : adapter(QSharedPointer<WebContentsAdapter>::create())
     , history(new QWebEngineHistory(new QWebEngineHistoryPrivate(this)))
     , profile(_profile ? _profile : QWebEngineProfile::defaultProfile())
     , settings(new QWebEngineSettings(profile->settings()))
     , view(0)
     , isLoading(false)
-    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userResourceController(), adapter.data()))
+    , scriptCollection(new QWebEngineScriptCollectionPrivate(browserContextAdapter()->userResourceController(), adapter))
     , m_isBeingAdopted(false)
     , m_backgroundColor(Qt::white)
     , fullscreenMode(false)
@@ -284,7 +285,7 @@ void QWebEnginePagePrivate::unhandledKeyEvent(QKeyEvent *event)
         QGuiApplication::sendEvent(view->parentWidget(), event);
 }
 
-void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry)
+void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &initialGeometry)
 {
     Q_Q(QWebEnginePage);
     Q_UNUSED(userGesture);
@@ -293,6 +294,20 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     if (!newPage)
         return;
 
+    if (newPage->d_func() == this) {
+        // If createWindow returns /this/ we must delay the adoption.
+        Q_ASSERT(q == newPage);
+        QTimer::singleShot(0, q, [this, newPage, newWebContents, initialGeometry] () {
+            adoptNewWindowImpl(newPage, newWebContents, initialGeometry);
+        });
+    } else {
+        adoptNewWindowImpl(newPage, newWebContents, initialGeometry);
+    }
+}
+
+void QWebEnginePagePrivate::adoptNewWindowImpl(QWebEnginePage *newPage,
+        const QSharedPointer<WebContentsAdapter> &newWebContents, const QRect &initialGeometry)
+{
     // Mark the new page as being in the process of being adopted, so that a second mouse move event
     // sent by newWebContents->initialize() gets filtered in RenderWidgetHostViewQt::forwardEvent.
     // The first mouse move event is being sent by q->createWindow(). This is necessary because
@@ -305,12 +320,11 @@ void QWebEnginePagePrivate::adoptNewWindow(WebContentsAdapter *newWebContents, W
     newPage->d_func()->m_isBeingAdopted = true;
 
     // Overwrite the new page's WebContents with ours.
-    if (newPage->d_func() != this) {
-        newPage->d_func()->adapter = newWebContents;
-        newWebContents->initialize(newPage->d_func());
-        if (!initialGeometry.isEmpty())
-            emit newPage->geometryChangeRequested(initialGeometry);
-    }
+    newPage->d_func()->adapter = newWebContents;
+    newWebContents->initialize(newPage->d_func());
+    newPage->d_func()->scriptCollection.d->rebindToContents(newWebContents);
+    if (!initialGeometry.isEmpty())
+        emit newPage->geometryChangeRequested(initialGeometry);
 
     // Page has finished the adoption process.
     newPage->d_func()->m_isBeingAdopted = false;
@@ -487,16 +501,13 @@ void QWebEnginePagePrivate::_q_webActionTriggered(bool checked)
 
 void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
 {
-    QExplicitlySharedDataPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
+    QSharedPointer<WebContentsAdapter> newWebContents = WebContentsAdapter::createFromSerializedNavigationHistory(input, this);
     if (newWebContents) {
-        // Keep the old adapter referenced so the user-scripts are not
-        // unregistered immediately.
-        QExplicitlySharedDataPointer<WebContentsAdapter> oldWebContents = adapter;
-        adapter = newWebContents.data();
+        adapter = std::move(newWebContents);
         adapter->initialize(this);
         if (webChannel)
             adapter->setWebChannel(webChannel, webChannelWorldId);
-        scriptCollection.d->rebindToContents(adapter.data());
+        scriptCollection.d->rebindToContents(adapter);
     }
 }
 

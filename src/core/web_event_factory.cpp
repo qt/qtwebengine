@@ -492,6 +492,19 @@ static WebMouseEvent::Button mouseButtonForEvent(QMouseEvent *event)
         return WebMouseEvent::ButtonRight;
     else if (event->button() == Qt::MidButton)
         return WebMouseEvent::ButtonMiddle;
+
+    if (event->type() != QEvent::MouseMove)
+        return WebMouseEvent::ButtonNone;
+
+    // This is technically wrong, mouse move should always have ButtonNone,
+    // but it is consistent with aura and selection code depends on it:
+    if (event->buttons() & Qt::LeftButton)
+        return WebMouseEvent::ButtonLeft;
+    else if (event->buttons() & Qt::RightButton)
+        return WebMouseEvent::ButtonRight;
+    else if (event->buttons() & Qt::MidButton)
+        return WebMouseEvent::ButtonMiddle;
+
     return WebMouseEvent::ButtonNone;
 }
 
@@ -659,8 +672,8 @@ blink::WebMouseWheelEvent WebEventFactory::toWebWheelEvent(QWheelEvent *ev, doub
     webEvent.modifiers = modifiersForEvent(ev);
     webEvent.timeStampSeconds = currentTimeForEvent(ev);
 
-    webEvent.wheelTicksX = ev->angleDelta().x() / QWheelEvent::DefaultDeltasPerStep;
-    webEvent.wheelTicksY = ev->angleDelta().y() / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheelTicksX = static_cast<float>(ev->angleDelta().x()) / QWheelEvent::DefaultDeltasPerStep;
+    webEvent.wheelTicksY = static_cast<float>(ev->angleDelta().y()) / QWheelEvent::DefaultDeltasPerStep;
 
     // We can't use the device specific QWheelEvent::pixelDelta(), so we calculate
     // a pixel delta based on ticks and scroll per line.
