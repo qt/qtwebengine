@@ -85,7 +85,7 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
     if (!gles2Library)
         return false;
 
-    gfx::GLGetProcAddressProc get_proc_address = reinterpret_cast<gfx::GLGetProcAddressProc>(base::GetFunctionPointerFromNativeLibrary(eglLibrary, "eglGetProcAddress"));
+    gl::GLGetProcAddressProc get_proc_address = reinterpret_cast<gl::GLGetProcAddressProc>(base::GetFunctionPointerFromNativeLibrary(eglLibrary, "eglGetProcAddress"));
     if (!get_proc_address) {
         LOG(ERROR) << "eglGetProcAddress not found.";
         base::UnloadNativeLibrary(eglLibrary);
@@ -93,9 +93,9 @@ bool SurfaceFactoryQt::LoadEGLGLES2Bindings(AddGLLibraryCallback add_gl_library,
         return false;
     }
 
-    gfx::SetGLGetProcAddressProc(get_proc_address);
-    gfx::AddGLNativeLibrary(eglLibrary);
-    gfx::AddGLNativeLibrary(gles2Library);
+    gl::SetGLGetProcAddressProc(get_proc_address);
+    gl::AddGLNativeLibrary(eglLibrary);
+    gl::AddGLNativeLibrary(gles2Library);
     return true;
 }
 

@@ -68,6 +68,7 @@ private:
     void installWebChannel(uint worldId);
     void uninstallWebChannel(uint worldId);
     virtual bool OnMessageReceived(const IPC::Message &message) Q_DECL_OVERRIDE;
+    virtual void OnDestruct() Q_DECL_OVERRIDE { }
 
     bool m_installed;
     uint m_installedWorldId;

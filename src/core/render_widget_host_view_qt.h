@@ -144,12 +144,12 @@ public:
 
     virtual bool CanCopyToVideoFrame() const Q_DECL_OVERRIDE;
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
-    virtual void OnSwapCompositorFrame(uint32_t output_surface_id, std::unique_ptr<cc::CompositorFrame> frame) Q_DECL_OVERRIDE;
+    virtual void OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)  Q_DECL_OVERRIDE;
+
     virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
     virtual void ClearCompositorFrame() Q_DECL_OVERRIDE;
-    virtual bool GetScreenColorProfile(std::vector<char>*) Q_DECL_OVERRIDE;
     virtual void LockCompositingSurface() Q_DECL_OVERRIDE;
     virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE;
 
@@ -184,6 +184,7 @@ public:
     virtual void StopSpeaking() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
     virtual bool SupportsSpeech() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return false; }
     virtual void ShowDefinitionForSelection() Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED }
+    virtual ui::AcceleratedWidgetMac *GetAcceleratedWidgetMac() const Q_DECL_OVERRIDE { QT_NOT_YET_IMPLEMENTED; return nullptr; }
 #endif // defined(OS_MACOSX)
 
 

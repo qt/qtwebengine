@@ -102,7 +102,7 @@ private:
     int m_numPendingSyncPoints;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
-    QList<gfx::TransferableFence> m_textureFences;
+    QList<gl::TransferableFence> m_textureFences;
     std::unique_ptr<gpu::SyncPointClient> m_syncPointClient;
 };
 

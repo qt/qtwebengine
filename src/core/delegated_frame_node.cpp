@@ -199,22 +199,22 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
-static void waitChromiumSync(gfx::TransferableFence *sync)
+static void waitChromiumSync(gl::TransferableFence *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
     // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
     // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
     switch (sync->type) {
-    case gfx::TransferableFence::NoSync:
+    case gl::TransferableFence::NoSync:
         break;
-    case gfx::TransferableFence::EglSync:
+    case gl::TransferableFence::EglSync:
 #ifdef EGL_KHR_reusable_sync
     {
         static bool resolved = false;
         static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
 
         if (!resolved) {
-            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
+            if (gl::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
             }
@@ -227,7 +227,7 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
     }
 #endif
         break;
-    case gfx::TransferableFence::ArbSync:
+    case gl::TransferableFence::ArbSync:
         typedef void (QOPENGLF_APIENTRYP WaitSyncPtr)(GLsync sync, GLbitfield flags, GLuint64 timeout);
         static WaitSyncPtr glWaitSync_ = 0;
         if (!glWaitSync_) {
@@ -240,22 +240,22 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
     }
 }
 
-static void deleteChromiumSync(gfx::TransferableFence *sync)
+static void deleteChromiumSync(gl::TransferableFence *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
     // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
     // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
     switch (sync->type) {
-    case gfx::TransferableFence::NoSync:
+    case gl::TransferableFence::NoSync:
         break;
-    case gfx::TransferableFence::EglSync:
+    case gl::TransferableFence::EglSync:
 #ifdef EGL_KHR_reusable_sync
     {
         static bool resolved = false;
         static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
 
         if (!resolved) {
-            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
+            if (gl::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
             }
@@ -270,7 +270,7 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
     }
 #endif
         break;
-    case gfx::TransferableFence::ArbSync:
+    case gl::TransferableFence::ArbSync:
         typedef void (QOPENGLF_APIENTRYP DeleteSyncPtr)(GLsync sync);
         static DeleteSyncPtr glDeleteSync_ = 0;
         if (!glDeleteSync_) {
@@ -685,7 +685,7 @@ QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, boo
 
 void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch)
 {
-    QList<gfx::TransferableFence> transferredFences;
+    QList<gl::TransferableFence> transferredFences;
     {
         QMutexLocker lock(&m_mutex);
 
@@ -717,7 +717,7 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         m_textureFences.swap(transferredFences);
     }
 
-    Q_FOREACH (gfx::TransferableFence sync, transferredFences) {
+    Q_FOREACH (gl::TransferableFence sync, transferredFences) {
         // We need to wait on the fences on the Qt current context, and
         // can therefore not use GLFence routines that uses a different
         // concept of current context.
@@ -785,9 +785,9 @@ void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTextu
     if (syncToken.HasData())
         mailboxManager->PullTextureUpdates(syncToken);
     texture->fetchTexture(mailboxManager);
-    if (!!gfx::GLContext::GetCurrent() && gfx::GLFence::IsSupported()) {
+    if (!!gl::GLContext::GetCurrent() && gl::GLFence::IsSupported()) {
         // Create a fence on the Chromium GPU-thread and context
-        gfx::GLFence *fence = gfx::GLFence::Create();
+        gl::GLFence *fence = gl::GLFence::Create();
         // But transfer it to something generic since we need to read it using Qt's OpenGL.
         frameNode->m_textureFences.append(fence->Transfer());
         delete fence;

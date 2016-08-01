@@ -47,7 +47,7 @@
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
-namespace gfx {
+namespace gl {
 
 class GLSurfaceQt: public GLSurface {
 public:

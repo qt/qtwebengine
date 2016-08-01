@@ -89,19 +89,19 @@ void GLContextHelper::destroy()
     contextHelper = 0;
 }
 
-bool GLContextHelper::initializeContextOnBrowserThread(gfx::GLContext* context, gfx::GLSurface* surface)
+bool GLContextHelper::initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface)
 {
-    return context->Initialize(surface, gfx::PreferDiscreteGpu);
+    return context->Initialize(surface, gl::PreferDiscreteGpu);
 }
 
-bool GLContextHelper::initializeContext(gfx::GLContext* context, gfx::GLSurface* surface)
+bool GLContextHelper::initializeContext(gl::GLContext* context, gl::GLSurface* surface)
 {
     bool ret = false;
     Qt::ConnectionType connType = (QThread::currentThread() == qApp->thread()) ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
     QMetaObject::invokeMethod(contextHelper, "initializeContextOnBrowserThread", connType,
             Q_RETURN_ARG(bool, ret),
-            Q_ARG(gfx::GLContext*, context),
-            Q_ARG(gfx::GLSurface*, surface));
+            Q_ARG(gl::GLContext*, context),
+            Q_ARG(gl::GLSurface*, surface));
     return ret;
 }
 
@@ -143,9 +143,11 @@ QT_END_NAMESPACE
 
 #if defined(USE_OZONE) || defined(OS_WIN)
 
-namespace gfx {
+namespace gl {
 
-scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, GLSurface* compatible_surface, GpuPreference gpu_preference)
+namespace init {
+
+scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group, GLSurface* compatible_surface, GpuPreference gpu_preference)
 {
 #if defined(OS_WIN)
     scoped_refptr<GLContext> context;
@@ -167,6 +169,8 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(GLShareGroup* share_group, G
     return context;
 }
 
-}  // namespace gfx
+}  // namespace init
+
+}  // namespace gl
 
 #endif // defined(USE_OZONE) || defined(OS_WIN)

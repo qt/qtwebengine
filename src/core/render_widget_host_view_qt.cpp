@@ -655,19 +655,19 @@ void RenderWidgetHostViewQt::UnlockCompositingSurface()
 {
 }
 
-void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, std::unique_ptr<cc::CompositorFrame> frame)
+void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)
 {
-    bool scrollOffsetChanged = (m_lastScrollOffset != frame->metadata.root_scroll_offset);
-    bool contentsSizeChanged = (m_lastContentsSize != frame->metadata.root_layer_size);
-    m_lastScrollOffset = frame->metadata.root_scroll_offset;
-    m_lastContentsSize = frame->metadata.root_layer_size;
+    bool scrollOffsetChanged = (m_lastScrollOffset != frame.metadata.root_scroll_offset);
+    bool contentsSizeChanged = (m_lastContentsSize != frame.metadata.root_layer_size);
+    m_lastScrollOffset = frame.metadata.root_scroll_offset;
+    m_lastContentsSize = frame.metadata.root_layer_size;
     Q_ASSERT(!m_needsDelegatedFrameAck);
     m_needsDelegatedFrameAck = true;
     m_pendingOutputSurfaceId = output_surface_id;
-    Q_ASSERT(frame->delegated_frame_data);
+    Q_ASSERT(frame.delegated_frame_data);
     Q_ASSERT(!m_chromiumCompositorData->frameData || m_chromiumCompositorData->frameData->resource_list.empty());
-    m_chromiumCompositorData->frameData = std::move(frame->delegated_frame_data);
-    m_chromiumCompositorData->frameDevicePixelRatio = frame->metadata.device_scale_factor;
+    m_chromiumCompositorData->frameData = std::move(frame.delegated_frame_data);
+    m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
 
     // Support experimental.viewport.devicePixelRatio, see GetScreenInfo implementation below.
     float dpiScale = this->dpiScale();
@@ -709,11 +709,6 @@ gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()
 
 void RenderWidgetHostViewQt::ClearCompositorFrame()
 {
-}
-
-bool RenderWidgetHostViewQt::GetScreenColorProfile(std::vector<char>*)
-{
-    return false;
 }
 
 void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range)

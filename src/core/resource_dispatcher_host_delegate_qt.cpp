@@ -151,7 +151,8 @@ static void LaunchURL(const GURL& url, int render_process_id,
 
 bool ResourceDispatcherHostDelegateQt::HandleExternalProtocol(const GURL& url, int child_id,
                                                               const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-                                                              bool is_main_frame, ui::PageTransition page_transition, bool has_user_gesture)
+                                                              bool is_main_frame, ui::PageTransition page_transition, bool has_user_gesture,
+                                                              content::ResourceContext* /*resource_context*/)
 {
     Q_ASSERT(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     // We don't want to launch external applications unless it is based on a user action

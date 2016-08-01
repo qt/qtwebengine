@@ -72,8 +72,8 @@ void RenderViewObserverQt::onFetchDocumentInnerText(quint64 requestId)
 {
     blink::WebString text;
     if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame())
-        text = blink::WebFrameContentDumper::deprecatedDumpFrameTreeAsText(
-                    static_cast<blink::WebLocalFrame*>(render_view()->GetWebView()->mainFrame()),
+        text = blink::WebFrameContentDumper::dumpWebViewAsText(
+                    render_view()->GetWebView(),
                     std::numeric_limits<std::size_t>::max());
     Send(new RenderViewObserverHostQt_DidFetchDocumentInnerText(routing_id(), requestId, text));
 }

@@ -58,6 +58,7 @@ private:
     void onSetBackgroundColor(quint32 color);
 
     void OnFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
+    void OnDestruct() Q_DECL_OVERRIDE { }
 
     virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
     virtual void Navigate(const GURL& url) Q_DECL_OVERRIDE;

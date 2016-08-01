@@ -890,7 +890,7 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     dlm->SetDelegate(dlmd);
 
     std::unique_ptr<content::DownloadUrlParameters> params(
-            content::DownloadUrlParameters::FromWebContents(webContents(), toGurl(url)));
+            content::DownloadUrlParameters::CreateForWebContentsMainFrame(webContents(), toGurl(url)));
     params->set_suggested_name(toString16(suggestedFileName));
     dlm->DownloadUrl(std::move(params));
 }
@@ -916,7 +916,7 @@ bool WebContentsAdapter::recentlyAudible()
 void WebContentsAdapter::copyImageAt(const QPoint &location)
 {
     Q_D(WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->CopyImageAt(location.x(), location.y());
+    d->webContents->GetRenderViewHost()->GetMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
 ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerNoAction, blink::WebMediaPlayerAction::Unknown)
@@ -1254,7 +1254,7 @@ void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &scre
     Q_D(WebContentsAdapter);
     finishDragUpdate();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->DragTargetDrop(toGfx(clientPos), toGfx(screenPos), 0);
+    rvh->DragTargetDrop(*d->currentDropData, toGfx(clientPos), toGfx(screenPos), 0);
 }
 
 void WebContentsAdapter::leaveDrag()

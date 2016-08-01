@@ -410,7 +410,7 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
         return false;
     if (first.http_auth_handler_factory != second.http_auth_handler_factory)
         return false;
-    if (first.http_server_properties.get() != second.http_server_properties.get())
+    if (first.http_server_properties != second.http_server_properties)
         return false;
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
         return false;

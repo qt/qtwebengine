@@ -310,7 +310,7 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, content::FileChooserParam
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, content::FileChooserParams::UploadFolder)
 ASSERT_ENUMS_MATCH(FilePickerController::Save, content::FileChooserParams::Save)
 
-void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, const content::FileChooserParams &params)
+void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, const content::FileChooserParams &params)
 {
     QStringList acceptedMimeTypes;
     acceptedMimeTypes.reserve(params.accept_types.size());
@@ -318,7 +318,7 @@ void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, c
         acceptedMimeTypes.append(toQt(*it));
 
     m_filePickerController.reset(new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
-                                                web_contents, toQt(params.default_file_name.value()), acceptedMimeTypes));
+                                                          web_contents(), toQt(params.default_file_name.value()), acceptedMimeTypes));
     m_viewClient->runFileChooser(m_filePickerController);
 }
 

@@ -47,6 +47,7 @@
 #include <QtGui/qpagesize.h>
 
 #include "base/values.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
@@ -94,7 +95,7 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
     DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
     DCHECK_GT(data->size(), 0U);
 
-    printing::PdfMetafileSkia metafile;
+    printing::PdfMetafileSkia metafile(printing::PDF_SKIA_DOCUMENT_TYPE);
     metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
 
     base::File file(path,
@@ -146,7 +147,7 @@ static void applyQPageLayoutSettingsToDictionary(const QPageLayout &pageLayout, 
 
     // Apply page margins
     QMargins pageMarginsInPoints = pageLayout.marginsPoints();
-    scoped_ptr<base::DictionaryValue> marginsDict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> marginsDict(new base::DictionaryValue);
     marginsDict->SetInteger(printing::kSettingMarginTop, pageMarginsInPoints.top());
     marginsDict->SetInteger(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
     marginsDict->SetInteger(printing::kSettingMarginLeft, pageMarginsInPoints.left());
