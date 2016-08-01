@@ -2,8 +2,6 @@
   'variables': {
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'chrome_spellchecker_sources': [
-    '<(DEPTH)/components/prefs/testing_pref_store.cc',
-    '<(DEPTH)/components/prefs/testing_pref_store.h',
     '<(DEPTH)/chrome/browser/spellchecker/feedback.cc',
     '<(DEPTH)/chrome/browser/spellchecker/feedback.h',
     '<(DEPTH)/chrome/browser/spellchecker/feedback_sender.cc',
@@ -78,6 +76,8 @@
         '<(DEPTH)/chrome/browser/media/desktop_streams_registry.h',
         '<(DEPTH)/chrome/common/chrome_switches.cc',
         '<(DEPTH)/chrome/common/chrome_switches.h',
+        '<(DEPTH)/components/prefs/testing_pref_store.cc',
+        '<(DEPTH)/components/prefs/testing_pref_store.h',
         '<(DEPTH)/extensions/common/constants.cc',
         '<(DEPTH)/extensions/common/constants.h',
         '<(DEPTH)/extensions/common/url_pattern.cc',
@@ -99,16 +99,13 @@
         ['enable_spellcheck==1', {
           'sources': [ '<@(chrome_spellchecker_sources)' ],
           'include_dirs': [
-          '<(chromium_src_dir)/third_party/WebKit',
+            '<(chromium_src_dir)/third_party/WebKit',
           ],
           'dependencies': [
-          '<(chromium_src_dir)/components/components.gyp:keyed_service_content',
-          '<(chromium_src_dir)/components/components.gyp:keyed_service_core',
-          '<(chromium_src_dir)/components/components.gyp:pref_registry',
-          '<(chromium_src_dir)/components/components.gyp:user_prefs',
-          '<(chromium_src_dir)/third_party/hunspell/hunspell.gyp:hunspell',
-          '<(chromium_src_dir)/third_party/icu/icu.gyp:icui18n',
-          '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
+            '<(chromium_src_dir)/chrome/tools/convert_dict/convert_dict.gyp:convert_dict_lib',
+            '<(chromium_src_dir)/third_party/hunspell/hunspell.gyp:hunspell',
+            '<(chromium_src_dir)/third_party/icu/icu.gyp:icui18n',
+            '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
           ],
           'defines': [
               '__STDC_CONSTANT_MACROS',

@@ -47,13 +47,11 @@
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
-#if defined(ENABLE_SPELLCHECK)
 QT_BEGIN_NAMESPACE
 class QStringList;
 QT_END_NAMESPACE
 class TestingPrefStore;
 class PrefService;
-#endif
 
 namespace QtWebEngineCore {
 
@@ -112,10 +110,8 @@ private:
     scoped_ptr<PermissionManagerQt> permissionManager;
     scoped_ptr<SSLHostStateDelegateQt> sslHostStateDelegate;
     BrowserContextAdapter *m_adapter;
-#if defined(ENABLE_SPELLCHECK)
     scoped_refptr<TestingPrefStore> m_prefStore;
     scoped_ptr<PrefService> m_prefService;
-#endif
     friend class BrowserContextAdapter;
 
     DISALLOW_COPY_AND_ASSIGN(BrowserContextQt);

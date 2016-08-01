@@ -54,7 +54,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "net/proxy/proxy_config_service.h"
 
-#if defined(ENABLE_SPELLCHECK)
 #include "base/base_paths.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -63,13 +62,13 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/user_prefs.h"
+#if defined(ENABLE_SPELLCHECK)
 #include "chrome/common/pref_names.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #endif
 
 namespace QtWebEngineCore {
 
-#if defined(ENABLE_SPELLCHECK)
 BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     : m_adapter(adapter),
       m_prefStore(new TestingPrefStore())
@@ -79,6 +78,7 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     factory.set_user_prefs(m_prefStore);
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
 
+#if defined(ENABLE_SPELLCHECK)
     // Initial spellcheck settings
     registry->RegisterListPref(prefs::kSpellCheckDictionaries, new base::ListValue());
     registry->RegisterStringPref(prefs::kAcceptLanguages, std::string());
@@ -86,15 +86,10 @@ BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
     registry->RegisterBooleanPref(prefs::kSpellCheckUseSpellingService, false);
     registry->RegisterBooleanPref(prefs::kEnableContinuousSpellcheck, false);
     registry->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, false);
+#endif //ENABLE_SPELLCHECK
     m_prefService = factory.Create(std::move(registry.get()));
     user_prefs::UserPrefs::Set(this, m_prefService.get());
 }
-#else
-BrowserContextQt::BrowserContextQt(BrowserContextAdapter *adapter)
-    : m_adapter(adapter)
-{
-}
-#endif //ENABLE_SPELLCHECK
 
 BrowserContextQt::~BrowserContextQt()
 {
