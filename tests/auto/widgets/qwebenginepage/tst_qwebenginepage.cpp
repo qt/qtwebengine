@@ -612,21 +612,26 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
 void tst_QWebEnginePage::popupFormSubmission()
 {
     TestPage page;
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
     QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
-    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
-    page.setHtml("<form name=form1 method=get action='' target=myNewWin>"\
-                                "<input type=hidden name=foo value='bar'>"\
-                                "</form>");
-    page.runJavaScript("window.open('', 'myNewWin', 'width=500,height=300,toolbar=0')");
-    evaluateJavaScriptSync(&page, "document.form1.submit();");
 
+    page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+    page.setHtml("<form name='form1' method=get action='' target='myNewWin'>"
+                 "  <input type='hidden' name='foo' value='bar'>"
+                 "</form>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    page.runJavaScript("window.open('', 'myNewWin', 'width=500,height=300,toolbar=0');");
+    evaluateJavaScriptSync(&page, "document.form1.submit();");
     QTRY_COMPARE(windowCreatedSpy.count(), 1);
+
     // The number of popup created should be one.
     QVERIFY(page.createdWindows.size() == 1);
 
-    QString url = page.createdWindows.takeFirst()->url().toString();
+    QTRY_VERIFY(!page.createdWindows[0]->url().isEmpty());
+    QString url = page.createdWindows[0]->url().toString();
+
     // Check if the form submission was OK.
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118597", Continue);
     QVERIFY(url.contains("?foo=bar"));
 }
 
