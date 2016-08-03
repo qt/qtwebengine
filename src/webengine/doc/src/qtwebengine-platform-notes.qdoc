@@ -114,7 +114,7 @@
 
     \section2 OS X
 
-    On OS X, Xcode version 5.1 or later on OS X 10.9 or later is required.
+    On OS X, Xcode version 6.3 or later on OS X 10.10 or later is required.
 
     \note Qt WebEngine cannot be built for the 32-bit mode of OS X (using the
     \c macx-clang-32 \c mkspec).
