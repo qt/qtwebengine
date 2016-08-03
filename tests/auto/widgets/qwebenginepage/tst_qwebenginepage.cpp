@@ -553,10 +553,15 @@ public:
     virtual QWebEnginePage* createWindow(WebWindowType) {
         TestPage* page = new TestPage(this);
         createdWindows.append(page);
+        emit windowCreated();
         return page;
     }
 
     QRect requestedGeometry;
+
+signals:
+    void windowCreated();
+
 private Q_SLOTS:
     void slotGeometryChangeRequested(const QRect& geom) {
         requestedGeometry = geom;
@@ -602,6 +607,7 @@ void tst_QWebEnginePage::acceptNavigationRequestNavigationType()
 void tst_QWebEnginePage::popupFormSubmission()
 {
     TestPage page;
+    QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     page.setHtml("<form name=form1 method=get action='' target=myNewWin>"\
                                 "<input type=hidden name=foo value='bar'>"\
@@ -609,7 +615,7 @@ void tst_QWebEnginePage::popupFormSubmission()
     page.runJavaScript("window.open('', 'myNewWin', 'width=500,height=300,toolbar=0')");
     evaluateJavaScriptSync(&page, "document.form1.submit();");
 
-    QTest::qWait(500);
+    QTRY_COMPARE(windowCreatedSpy.count(), 1);
     // The number of popup created should be one.
     QVERIFY(page.createdWindows.size() == 1);
 
@@ -3451,6 +3457,7 @@ void tst_QWebEnginePage::savePage()
 void tst_QWebEnginePage::openWindowDefaultSize()
 {
     TestPage page;
+    QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
     QWebEngineView view;
     page.setView(&view);
     view.show();
@@ -3458,11 +3465,11 @@ void tst_QWebEnginePage::openWindowDefaultSize()
     page.settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
     // Open a default window.
     page.runJavaScript("window.open()");
-    QTest::qWait(200);
+    QTRY_COMPARE(windowCreatedSpy.count(), 1);
     // Open a too small window.
     evaluateJavaScriptSync(&page, "window.open('','about:blank','width=10,height=10')");
+    QTRY_COMPARE(windowCreatedSpy.count(), 2);
 
-    QTest::qWait(200);
     // The number of popups created should be two.
     QCOMPARE(page.createdWindows.size(), 2);
 
@@ -4943,6 +4950,7 @@ void tst_QWebEnginePage::viewSource()
 {
     TestPage page;
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy windowCreatedSpy(&page, SIGNAL(windowCreated()));
     const QUrl url("qrc:/resources/test1.html");
 
     page.load(url);
@@ -4951,8 +4959,8 @@ void tst_QWebEnginePage::viewSource()
     QVERIFY(page.canViewSource());
 
     page.viewSource();
-    QTest::qWait(200);
-    QTRY_COMPARE(page.createdWindows.size(), 1);
+    QTRY_COMPARE(windowCreatedSpy.count(), 1);
+    QCOMPARE(page.createdWindows.size(), 1);
 
     QTRY_COMPARE(page.createdWindows[0]->url().toString(), QStringLiteral("view-source:%1").arg(url.toString()));
     QTRY_COMPARE(page.createdWindows[0]->title(), QStringLiteral("view-source:%1").arg(url.toString()));
