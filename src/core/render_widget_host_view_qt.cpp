@@ -239,6 +239,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_didFirstVisuallyNonEmptyLayout(false)
     , m_adapterClient(0)
     , m_imeInProgress(false)
+    , m_receivedEmptyImeText(false)
     , m_anchorPositionWithinSelection(0)
     , m_cursorPositionWithinSelection(0)
     , m_initPending(false)
@@ -945,6 +946,19 @@ void RenderWidgetHostViewQt::handleMouseEvent(QMouseEvent* event)
         QCursor::setPos(m_lockedMousePosition);
     }
 
+    if (m_imeInProgress && event->type() == QMouseEvent::MouseButtonPress) {
+        m_imeInProgress = false;
+        // Tell input method to commit the pre-edit string entered so far, and finish the
+        // composition operation.
+#ifdef Q_OS_WIN
+        // Yes the function name is counter-intuitive, but commit isn't actually implemented
+        // by the Windows QPA, and reset does exactly what is necessary in this case.
+        qApp->inputMethod()->reset();
+#else
+        qApp->inputMethod()->commit();
+#endif
+    }
+
     m_host->ForwardMouseEvent(webEvent);
 }
 
@@ -953,15 +967,16 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     if (IsMouseLocked() && ev->key() == Qt::Key_Escape && ev->type() == QEvent::KeyRelease)
         UnlockMouse();
 
-    if (m_imeInProgress) {
+    if (m_receivedEmptyImeText) {
         // IME composition was not finished with a valid commit string.
         // We're getting the composition result in a key event.
         if (ev->key() != 0) {
             // The key event is not a result of an IME composition. Cancel IME.
             m_host->ImeCancelComposition();
-            m_imeInProgress = false;
+            m_receivedEmptyImeText = false;
         } else {
             if (ev->type() == QEvent::KeyRelease) {
+                m_receivedEmptyImeText = false;
                 m_host->ImeConfirmComposition(toString16(ev->text()), gfx::Range::InvalidRange(),
                                               false);
                 m_imeInProgress = false;
@@ -1001,6 +1016,17 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
     std::vector<blink::WebCompositionUnderline> underlines;
+    auto ensureValidSelectionRange = [&]() {
+        if (!selectionRange.IsValid()) {
+            // We did not receive a valid selection range, hence the range is going to mark the
+            // cursor position.
+            int newCursorPosition =
+                    (cursorPositionInPreeditString < 0) ? preeditString.length()
+                                                        : cursorPositionInPreeditString;
+            selectionRange.set_start(newCursorPosition);
+            selectionRange.set_end(newCursorPosition);
+        }
+    };
 
     Q_FOREACH (const QInputMethodEvent::Attribute &attribute, attributes) {
         switch (attribute.type) {
@@ -1014,8 +1040,11 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             break;
         }
         case QInputMethodEvent::Cursor:
-            if (attribute.length)
-                cursorPositionInPreeditString = attribute.start;
+            // Always set the position of the cursor, even if it's marked invisible by Qt, otherwise
+            // there is no way the user will know which part of the composition string will be
+            // changed, when performing an IME-specific action (like selecting a different word
+            // suggestion).
+            cursorPositionInPreeditString = attribute.start;
             break;
         case QInputMethodEvent::Selection:
             selectionRange.set_start(qMin(attribute.start, (attribute.start + attribute.length)));
@@ -1028,18 +1057,54 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
                                                           : gfx::Range::InvalidRange();
+
+    auto setCompositionForPreEditString = [&](){
+        ensureValidSelectionRange();
+        m_host->ImeSetComposition(toString16(preeditString),
+                                  underlines,
+                                  replacementRange,
+                                  selectionRange.start(),
+                                  selectionRange.end());
+    };
+
     if (!commitString.isEmpty()) {
         m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
-        m_imeInProgress = false;
-    } else if (!preeditString.isEmpty()) {
-        if (!selectionRange.IsValid()) {
-            // We did not receive a valid selection range, hence the range is going to mark the cursor position.
-            int newCursorPosition = (cursorPositionInPreeditString < 0) ? preeditString.length() : cursorPositionInPreeditString;
-            selectionRange.set_start(newCursorPosition);
-            selectionRange.set_end(newCursorPosition);
+
+        // We might get a commit string and a pre-edit string in a single event, which means
+        // we need to confirm the　last composition, and start a new composition.
+        if (!preeditString.isEmpty()) {
+            setCompositionForPreEditString();
+            m_imeInProgress = true;
+        } else {
+            m_imeInProgress = false;
         }
-        m_host->ImeSetComposition(toString16(preeditString), underlines, replacementRange, selectionRange.start(), selectionRange.end());
+        m_receivedEmptyImeText = false;
+
+    } else if (!preeditString.isEmpty()) {
+        setCompositionForPreEditString();
         m_imeInProgress = true;
+        m_receivedEmptyImeText = false;
+    } else {
+        // There are so-far two known cases, when an empty QInputMethodEvent is received.
+        // First one happens when backspace is used to remove the last character in the pre-edit
+        // string, thus signaling the end of the composition.
+        // The second one happens (on Windows) when a Korean char gets composed, but instead of
+        // the event having a commit string, both strings are empty, and the actual char is received
+        // as a QKeyEvent after the QInputMethodEvent is processed.
+        // In lieu of the second case, we can't simply cancel the composition on an empty event,
+        // and then add the Korean char when QKeyEvent is received, because that leads to text
+        // flickering in the textarea (or any other element).
+        // Instead we postpone the processing of the empty QInputMethodEvent by posting it
+        // to the same focused object, and cancelling the composition on the next event loop tick.
+        if (!m_receivedEmptyImeText && m_imeInProgress) {
+            m_receivedEmptyImeText = true;
+            m_imeInProgress = false;
+            QInputMethodEvent *eventCopy = new QInputMethodEvent(*ev);
+            QGuiApplication::postEvent(qApp->focusObject(), eventCopy);
+        } else {
+            m_receivedEmptyImeText = false;
+            m_host->ImeCancelComposition();
+        }
     }
 }
 

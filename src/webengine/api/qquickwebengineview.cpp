@@ -93,6 +93,27 @@
 QT_BEGIN_NAMESPACE
 using namespace QtWebEngineCore;
 
+QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event)
+{
+    static struct {
+        QKeySequence::StandardKey standardKey;
+        QQuickWebEngineView::WebAction action;
+    } editorActions[] = {
+        { QKeySequence::Cut, QQuickWebEngineView::Cut },
+        { QKeySequence::Copy, QQuickWebEngineView::Copy },
+        { QKeySequence::Paste, QQuickWebEngineView::Paste },
+        { QKeySequence::Undo, QQuickWebEngineView::Undo },
+        { QKeySequence::Redo, QQuickWebEngineView::Redo },
+        { QKeySequence::SelectAll, QQuickWebEngineView::SelectAll },
+        { QKeySequence::UnknownKey, QQuickWebEngineView::NoWebAction }
+    };
+    for (int i = 0; editorActions[i].standardKey != QKeySequence::UnknownKey; ++i)
+        if (event == editorActions[i].standardKey)
+            return editorActions[i].action;
+
+    return QQuickWebEngineView::NoWebAction;
+}
+
 #ifndef QT_NO_ACCESSIBILITY
 static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *object)
 {
@@ -356,7 +377,8 @@ void QQuickWebEngineViewPrivate::allowCertificateError(const QSharedPointer<Cert
     Q_Q(QQuickWebEngineView);
 
     QQuickWebEngineCertificateError *quickController = new QQuickWebEngineCertificateError(errorController);
-    QQmlEngine::setObjectOwnership(quickController, QQmlEngine::JavaScriptOwnership);
+    // mark the object for gc by creating temporary jsvalue
+    qmlEngine(q)->newQObject(quickController);
     Q_EMIT q->certificateError(quickController);
     if (!quickController->deferred() && !quickController->answered())
         quickController->rejectCertificate();
@@ -539,11 +561,23 @@ void QQuickWebEngineViewPrivate::focusContainer()
 void QQuickWebEngineViewPrivate::unhandledKeyEvent(QKeyEvent *event)
 {
     Q_Q(QQuickWebEngineView);
+#ifdef Q_OS_OSX
+    if (event->type() == QEvent::KeyPress) {
+        QQuickWebEngineView::WebAction action = editorActionForKeyEvent(event);
+        if (action != QQuickWebEngineView::NoWebAction) {
+            // Try triggering a registered short-cut
+            if (QGuiApplicationPrivate::instance()->shortcutMap.tryShortcut(event))
+                return;
+            q->triggerWebAction(action);
+            return;
+        }
+    }
+#endif
     if (q->parentItem())
         q->window()->sendEvent(q->parentItem(), event);
 }
 
-void QQuickWebEngineViewPrivate::adoptNewWindow(WebContentsAdapter *newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
+void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> newWebContents, WindowOpenDisposition disposition, bool userGesture, const QRect &)
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineNewViewRequest request;
@@ -749,7 +783,7 @@ QAccessible::State QQuickWebEngineViewAccessible::state() const
 class WebContentsAdapterOwner : public QObject
 {
 public:
-    typedef QExplicitlySharedDataPointer<QtWebEngineCore::WebContentsAdapter> AdapterPtr;
+    typedef QSharedPointer<QtWebEngineCore::WebContentsAdapter> AdapterPtr;
     WebContentsAdapterOwner(const AdapterPtr &ptr)
         : adapter(ptr)
     {}
@@ -776,9 +810,9 @@ void QQuickWebEngineViewPrivate::adoptWebContents(WebContentsAdapter *webContent
 
     // This throws away the WebContentsAdapter that has been used until now.
     // All its states, particularly the loading URL, are replaced by the adopted WebContentsAdapter.
-    WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter);
+    WebContentsAdapterOwner *adapterOwner = new WebContentsAdapterOwner(adapter->sharedFromThis());
     adapterOwner->deleteLater();
-    adapter = webContents;
+    adapter = webContents->sharedFromThis();
     adapter->initialize(this);
 
     // associate the webChannel with the new adapter
@@ -835,7 +869,7 @@ void QQuickWebEngineViewPrivate::ensureContentsAdapter()
 {
     Q_Q(QQuickWebEngineView);
     if (!adapter) {
-        adapter = new WebContentsAdapter();
+        adapter = QSharedPointer<WebContentsAdapter>::create();
         adapter->initialize(this);
         if (m_backgroundColor != Qt::white)
             adapter->backgroundColorChanged();
@@ -995,7 +1029,7 @@ void QQuickWebEngineViewPrivate::setProfile(QQuickWebEngineProfile *profile)
     if (adapter && adapter->browserContext() != browserContextAdapter()->browserContext()) {
         // When the profile changes we need to create a new WebContentAdapter and reload the active URL.
         QUrl activeUrl = adapter->activeUrl();
-        adapter = 0;
+        adapter.reset();
         ensureContentsAdapter();
 
         if (!explicitUrl.isValid() && activeUrl.isValid())

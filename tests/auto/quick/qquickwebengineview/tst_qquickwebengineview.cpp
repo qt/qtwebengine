@@ -549,9 +549,10 @@ void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled_data()
 }
 
 class MouseTouchEventRecordingItem : public QQuickItem {
+    Q_OBJECT
 public:
-    explicit MouseTouchEventRecordingItem(QQuickItem *parent = 0) :
-        QQuickItem(parent), m_eventCounter(0) {
+    explicit MouseTouchEventRecordingItem(QQuickItem* child, QQuickItem *parent = 0) :
+        QQuickItem(parent), m_eventCounter(0), m_child(child) {
         setFlag(ItemHasContents);
         setAcceptedMouseButtons(Qt::AllButtons);
         setAcceptHoverEvents(true);
@@ -571,9 +572,6 @@ public:
         case QEvent::TouchUpdate:
         case QEvent::TouchEnd:
         case QEvent::TouchCancel:
-        case QEvent::HoverEnter:
-        case QEvent::HoverMove:
-        case QEvent::HoverLeave:
             ++m_eventCounter;
             event->accept();
             return true;
@@ -593,16 +591,34 @@ public:
         return m_eventCounter;
     }
 
+public Q_SLOTS:
+    void changeWidth() {
+        if (m_child)
+            setWidth(m_child->width());
+    }
+
+    void changeHeight() {
+        if (m_child)
+            setHeight(m_child->height());
+    }
+
 private:
     int m_eventCounter;
+    QQuickItem *m_child;
 };
 
 void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPressDisabled()
 {
     QQuickWebEngineView *view = webEngineView();
-    MouseTouchEventRecordingItem item;
+    MouseTouchEventRecordingItem item(view);
     item.setParentItem(m_window->contentItem());
-    item.setSize(QSizeF(640, 480));
+
+    // Resize the event recorder whenever the view is resized, so that all event positions
+    // are contained in both of the item regions.
+    QObject::connect(view, &QQuickItem::widthChanged, &item,
+                     &MouseTouchEventRecordingItem::changeWidth);
+    QObject::connect(view, &QQuickItem::heightChanged, &item,
+                     &MouseTouchEventRecordingItem::changeHeight);
     view->setParentItem(&item);
     view->setSize(QSizeF(640, 480));
     m_window->show();
@@ -610,6 +626,7 @@ void tst_QQuickWebEngineView::inputEventForwardingDisabledWhenActiveFocusOnPress
     // Simulate click and move of mouse, so that last known position in the application
     // is updated, thus a mouse move event is not generated when we don't expect it.
     QTest::mouseClick(view->window(), Qt::LeftButton);
+    QTRY_COMPARE(item.eventCount(), 2);
     item.clearEventCount();
 
     // First disable view, so it does not receive focus on page load.

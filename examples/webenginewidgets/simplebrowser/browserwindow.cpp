@@ -280,7 +280,17 @@ QToolBar *BrowserWindow::createToolBar()
     navigationBar->toggleViewAction()->setEnabled(false);
 
     m_historyBackAction = new QAction(this);
-    m_historyBackAction->setShortcuts(QKeySequence::Back);
+    QList<QKeySequence> backShortcuts = QKeySequence::keyBindings(QKeySequence::Back);
+    for (auto it = backShortcuts.begin(); it != backShortcuts.end();) {
+        // Chromium already handles navigate on backspace when appropriate.
+        if ((*it)[0] == Qt::Key_Backspace)
+            it = backShortcuts.erase(it);
+        else
+            ++it;
+    }
+    // For some reason Qt doesn't bind the dedicated Back key to Back.
+    backShortcuts.append(QKeySequence(Qt::Key_Back));
+    m_historyBackAction->setShortcuts(backShortcuts);
     m_historyBackAction->setIconVisibleInMenu(false);
     m_historyBackAction->setIcon(QIcon(QStringLiteral(":go-previous.png")));
     connect(m_historyBackAction, &QAction::triggered, [this]() {
@@ -289,7 +299,15 @@ QToolBar *BrowserWindow::createToolBar()
     navigationBar->addAction(m_historyBackAction);
 
     m_historyForwardAction = new QAction(this);
-    m_historyForwardAction->setShortcuts(QKeySequence::Forward);
+    QList<QKeySequence> fwdShortcuts = QKeySequence::keyBindings(QKeySequence::Forward);
+    for (auto it = fwdShortcuts.begin(); it != fwdShortcuts.end();) {
+        if (((*it)[0] & Qt::Key_unknown) == Qt::Key_Backspace)
+            it = fwdShortcuts.erase(it);
+        else
+            ++it;
+    }
+    fwdShortcuts.append(QKeySequence(Qt::Key_Forward));
+    m_historyForwardAction->setShortcuts(fwdShortcuts);
     m_historyForwardAction->setIconVisibleInMenu(false);
     m_historyForwardAction->setIcon(QIcon(QStringLiteral(":go-next.png")));
     connect(m_historyForwardAction, &QAction::triggered, [this]() {

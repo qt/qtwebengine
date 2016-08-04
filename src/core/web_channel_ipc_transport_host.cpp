@@ -61,6 +61,13 @@ WebChannelIPCTransportHost::~WebChannelIPCTransportHost()
 {
 }
 
+void WebChannelIPCTransportHost::RenderViewHostChanged(content::RenderViewHost *, content::RenderViewHost *)
+{
+    // This means that we were moved into a different RenderView, possibly in a different
+    // render process and that we lost our WebChannelIPCTransport object and its state.
+    Send(new WebChannelIPCTransport_Install(routing_id(), m_worldId));
+}
+
 void WebChannelIPCTransportHost::setWorldId(uint worldId)
 {
     if (worldId == m_worldId)

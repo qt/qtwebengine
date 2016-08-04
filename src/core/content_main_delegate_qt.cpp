@@ -160,7 +160,6 @@ bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
     PathService::Override(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
 #endif
-    PathService::Override(content::DIR_MEDIA_LIBS, WebEngineLibraryInfo::getPath(content::DIR_MEDIA_LIBS));
     PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
 #if defined(ENABLE_SPELLCHECK)
     PathService::Override(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));

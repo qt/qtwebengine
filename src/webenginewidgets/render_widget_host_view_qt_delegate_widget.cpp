@@ -315,6 +315,13 @@ QVariant RenderWidgetHostViewQtDelegateWidget::inputMethodQuery(Qt::InputMethodQ
 void RenderWidgetHostViewQtDelegateWidget::resizeEvent(QResizeEvent *resizeEvent)
 {
     QQuickWidget::resizeEvent(resizeEvent);
+
+    const QPoint globalPos = mapToGlobal(pos());
+    if (globalPos != m_lastGlobalPos) {
+        m_lastGlobalPos = globalPos;
+        m_client->windowBoundsChanged();
+    }
+
     m_client->notifyResize();
 }
 
@@ -372,11 +379,17 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
         }
     }
 
-    // We forward focus events later, once they have made it to the m_rootItem.
     switch (event->type()) {
     case QEvent::FocusIn:
     case QEvent::FocusOut:
+        // We forward focus events later, once they have made it to the m_rootItem.
         return QQuickWidget::event(event);
+    case QEvent::ShortcutOverride:
+        if (editorActionForKeyEvent(static_cast<QKeyEvent*>(event)) != QWebEnginePage::NoWebAction) {
+            event->accept();
+            return true;
+        }
+        break;
     default:
         break;
     }
@@ -400,6 +413,7 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
 
 void RenderWidgetHostViewQtDelegateWidget::onWindowPosChanged()
 {
+    m_lastGlobalPos = mapToGlobal(pos());
     m_client->windowBoundsChanged();
 }
 

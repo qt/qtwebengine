@@ -1,4 +1,5 @@
 include(common.pri)
+load(functions)
 
 # Reuse the cached sdk version value from mac/sdk.prf if available
 # otherwise query for it.
@@ -25,6 +26,10 @@ GYP_CONFIG += \
     make_clang_dir=\"$${QMAKE_CLANG_DIR}\" \
     clang_use_chrome_plugins=0 \
     enable_widevine=1
+
+# Force touch API is used in 49-based Chromium, which is included starting with 10.10.3 SDK, so we
+# disable the API usage if the SDK version is lower.
+!isMinOSXSDKVersion(10, 10, 3): GYP_CONFIG += disable_force_touch=1
 
 QMAKE_MAC_SDK_PATH = "$$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path)"
 exists($$QMAKE_MAC_SDK_PATH): GYP_CONFIG += mac_sdk_path=\"$${QMAKE_MAC_SDK_PATH}\"

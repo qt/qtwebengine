@@ -254,6 +254,16 @@ QString BrowserContextAdapter::cookiesPath() const
     return QString();
 }
 
+QString BrowserContextAdapter::channelIdPath() const
+{
+    if (m_offTheRecord)
+        return QString();
+    QString basePath = dataPath();
+    if (!basePath.isEmpty())
+        return basePath % QLatin1String("/Origin Bound Certs");
+    return QString();
+}
+
 QString BrowserContextAdapter::httpCachePath() const
 {
     if (m_offTheRecord)

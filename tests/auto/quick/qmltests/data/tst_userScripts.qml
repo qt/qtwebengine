@@ -119,19 +119,19 @@ Item {
             appendDocumentTitleScript.injectionPoint = WebEngineScript.Deferred
             webEngineView.reload();
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "New title with appendix");
+            tryCompare(webEngineView, "title", "New title with appendix");
 
             appendDocumentTitleScript.injectionPoint = WebEngineScript.DocumentReady
             changeDocumentTitleScript.injectionPoint = WebEngineScript.Deferred
             webEngineView.reload();
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "New title");
+            tryCompare(webEngineView, "title", "New title");
 
             // Make sure we can remove scripts from the preload list.
             webEngineView.userScripts = [ appendDocumentTitleScript ];
             webEngineView.reload();
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "Test page 1 with appendix");
+            tryCompare(webEngineView, "title", "Test page 1 with appendix");
 
             changeDocumentTitleScript.injectionPoint = WebEngineScript.DocumentReady
         }

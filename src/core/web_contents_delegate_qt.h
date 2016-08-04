@@ -146,7 +146,7 @@ public:
     const SavePageInfo &savePageInfo() { return m_savePageInfo; }
 
 private:
-    WebContentsAdapter *createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
+    QWeakPointer<WebContentsAdapter> createWindow(content::WebContents *new_contents, WindowOpenDisposition disposition, const gfx::Rect& initial_pos, bool user_gesture);
 
     WebContentsAdapterClient *m_viewClient;
     QString m_lastSearchedString;

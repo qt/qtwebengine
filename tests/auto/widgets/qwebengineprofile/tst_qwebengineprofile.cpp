@@ -35,6 +35,7 @@
 #include <QtWebEngineWidgets/qwebenginepage.h>
 #include <QtWebEngineWidgets/qwebenginesettings.h>
 #include <QtWebEngineWidgets/qwebengineview.h>
+#include <QtWebEngineWidgets/qwebenginedownloaditem.h>
 
 class tst_QWebEngineProfile : public QObject
 {
@@ -50,6 +51,7 @@ private Q_SLOTS:
     void urlSchemeHandlerFailOnRead();
     void customUserAgent();
     void httpAcceptLanguage();
+    void downloadItem();
 };
 
 void tst_QWebEngineProfile::defaultProfile()
@@ -360,6 +362,17 @@ void tst_QWebEngineProfile::httpAcceptLanguage()
     // Test changing an existing page and profile
     QWebEngineProfile::defaultProfile()->setHttpAcceptLanguage(testLang);
     QCOMPARE(evaluateJavaScriptSync(&page, QStringLiteral("navigator.languages")).toStringList(), QStringList(testLang));
+}
+
+void tst_QWebEngineProfile::downloadItem()
+{
+    qRegisterMetaType<QWebEngineDownloadItem *>();
+    QWebEngineProfile testProfile;
+    QWebEnginePage page(&testProfile);
+    QSignalSpy downloadSpy(&testProfile, SIGNAL(downloadRequested(QWebEngineDownloadItem *)));
+    connect(&testProfile, &QWebEngineProfile::downloadRequested, this, [=] (QWebEngineDownloadItem *item) { item->accept(); });
+    page.load(QUrl::fromLocalFile(QCoreApplication::applicationFilePath()));
+    QTRY_COMPARE(downloadSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QWebEngineProfile)

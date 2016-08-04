@@ -13,18 +13,18 @@
     'qt_install_data%': '',
     'qt_install_translations%': '',
   },
-  'dependencies': [
-      '<(chromium_src_dir)/content/app/strings/content_strings.gyp:content_strings',
-      '<(chromium_src_dir)/blink/public/blink_resources.gyp:blink_resources',
-      '<(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
-      '<(chromium_src_dir)/components/components_resources.gyp:components_resources',
-      '<(chromium_src_dir)/components/components_strings.gyp:components_strings',
-      '../chrome_qt.gyp:chrome_resources',
-  ],
   'targets': [
   {
     'target_name': 'qtwebengine_resources',
     'type': 'none',
+    'dependencies': [
+        '<(chromium_src_dir)/content/app/strings/content_strings.gyp:content_strings',
+        '<(chromium_src_dir)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
+        '<(chromium_src_dir)/components/components_resources.gyp:components_resources',
+        '<(chromium_src_dir)/components/components_strings.gyp:components_strings',
+        '<(chromium_src_dir)/third_party/WebKit/public/blink_resources.gyp:blink_resources',
+        '<(qtwebengine_root)/src/core/chrome_qt.gyp:chrome_resources',
+    ],
     'actions' : [
       {
         'action_name': 'repack_resources',

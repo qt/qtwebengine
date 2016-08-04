@@ -89,7 +89,6 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
 
 QWebEngineDownloadItemPrivate::~QWebEngineDownloadItemPrivate()
 {
-    profile->downloadDestroyed(downloadId);
 }
 
 void QWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::DownloadItemInfo &info)

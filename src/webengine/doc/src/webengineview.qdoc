@@ -504,10 +504,9 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::loadingChanged(loadRequest)
+    \qmlsignal WebEngineView::loadingChanged(WebEngineLoadRequest loadRequest)
 
     This signal is emitted when a page load begins, ends, or fails.
-    The corresponding handler is \c onLoadingChanged.
 
     When handling the signal with \c onLoadingChanged, various read-only
     parameters are available on the \a loadRequest:
@@ -537,33 +536,27 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::certificateError(error)
+    \qmlsignal WebEngineView::certificateError(WebEngineCertificateError error)
     \since QtWebEngine 1.1
 
     This signal is emitted when an invalid certificate error is raised while loading a given request.
 
     The certificate error can be handled by using the methods of the WebEngineCertificateError
     type.
-
-    The corresponding handler is \c onCertificateError.
-
-    \sa WebEngineCertificateError
 */
 
 /*!
-    \qmlsignal WebEngineView::linkHovered(hoveredUrl)
+    \qmlsignal WebEngineView::linkHovered(url hoveredUrl)
 
     Within a mouse-driven interface, this signal is emitted when a mouse
     pointer passes over a link, corresponding to the \c{mouseover} DOM
     event. This event may also occur in touch interfaces for \c{mouseover}
     events that are not cancelled with \c{preventDefault()}. \a{hoveredUrl}
     provides the link's location.
-
-    The corresponding handler is \c onLinkHovered.
 */
 
 /*!
-    \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, message, lineNumber, sourceID)
+    \qmlsignal WebEngineView::javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, string message, int lineNumber, string sourceID)
     This signal is emitted when a JavaScript program tries to print a \a message to the web browser's console.
 
     For example, in case of evaluation errors the source URL may be provided in \a sourceID as well
@@ -572,14 +565,14 @@
     \a level indicates the severity of the event that triggered the message, that is, whether it
     was triggered by an error or a less severe event.
 
-    The corresponding handler is \c onJavaScriptConsoleMessage. If no handler is specified,
-    the view will log the messages into a \c js \l{QLoggingCategory}{logging category}.
+    If no handler is specified, the view will log the messages into a \c js
+    \l{QLoggingCategory}{logging category}.
 
     \sa{Console Logging}
 */
 
 /*!
-    \qmlsignal WebEngineView::newViewRequested(request)
+    \qmlsignal WebEngineView::newViewRequested(WebEngineViewRequest request)
     \since QtWebEngine 1.1
 
     This signal is emitted when a page load is requested to happen in a separate
@@ -594,9 +587,7 @@
 
     \snippet snippets/qtwebengine_webengineview_newviewrequested.qml 0
 
-    The corresponding handler is \c onNewViewRequested.
-
-    \sa WebEngineNewViewRequest, NewViewDestination, {WebEngine Quick Nano Browser}
+    \sa NewViewDestination, {WebEngine Quick Nano Browser}
 */
 
 /*!
@@ -606,13 +597,11 @@
     This signal is emitted when the web page requests fullscreen mode through the
     JavaScript API.
 
-    The corresponding handler is \c onFullScreenRequested.
-
-    \sa WebEngineFullScreenRequest, isFullScreen
+    \sa isFullScreen
 */
 
 /*!
-    \qmlsignal WebEngineView::activeFocusOnPressChanged(bool)
+    \qmlsignal WebEngineView::activeFocusOnPressChanged(bool activeFocusOnPress)
     \since QtWebEngine 1.2
 
     This signal is emitted when the ability of the web engine view to get focus when clicked
@@ -646,8 +635,6 @@
 
     This signal is emitted whenever the page requests the web browser window to be closed,
     for example through the JavaScript \c{window.close()} call.
-
-    The corresponding handler is \c onWindowCloseRequested.
 */
 
 /*!
@@ -799,7 +786,9 @@
     \value  ToggleMediaMute
             Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
     \value  DownloadLinkToDisk
-            Download the current link to the disk. (Added in Qt 5.6)
+            Download the current link to the disk. To implement download
+            actions, connect to the QWebEngineProfile::downloadRequested signal.
+            (Added in Qt 5.6)
     \value  DownloadImageToDisk
             Download the highlighted image to the disk. (Added in Qt 5.6)
     \value  DownloadMediaToDisk

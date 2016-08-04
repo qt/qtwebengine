@@ -37,8 +37,8 @@ defineTest(isPlatformSupported) {
       skipBuild("Qt WebEngine requires OS X version 10.10 or newer.")
       return(false)
     }
-    !isMinOSXSDKVersion(10, 10, 3): {
-      skipBuild("Qt WebEngine requires an OS X SDK version 10.10.3 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
+    !isMinOSXSDKVersion(10, 10): {
+      skipBuild("Qt WebEngine requires an OS X SDK version of 10.10 or newer. Current version is $${WEBENGINE_OSX_SDK_PRODUCT_VERSION}.")
       return(false)
     }
   } else {
@@ -59,16 +59,20 @@ defineTest(isPlatformSupported) {
 }
 
 defineTest(isPythonVersionSupported) {
-    python_error_msg = "Python version 2 (2.7 or later) is required to build Qt WebEngine."
-    python_major_version = $$system('python -c "import sys; print(sys.version_info[0])"')
+    python_error_msg = "Python version 2 (2.7.5 or later) is required to build Qt WebEngine."
+    python_version = $$system('python -c "import sys; print(sys.version_info[0:3])"')
+    python_version ~= s/[()]//g
+    python_version = $$split(python_version, ',')
+    python_major_version = $$first(python_version)
     greaterThan(python_major_version, 2) {
         skipBuild("Python version 3 is not supported by Chromium.")
         skipBuild($$python_error_msg)
         return(false)
     }
-    python_minor_version = $$system('python -c "import sys; print(sys.version_info[1])"')
-    greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): return(true)
-    skipBuild("Using Python version "$$python_major_version"."$$python_minor_version".")
+    python_minor_version = $$member(python_version, 1)
+    python_patch_version = $$member(python_version, 2)
+    greaterThan(python_major_version, 1): greaterThan(python_minor_version, 6): greaterThan(python_patch_version, 4): return(true)
+    skipBuild("Using Python version $${python_major_version}.$${python_minor_version}.$${python_patch_version}.")
     skipBuild($$python_error_msg)
     return(false)
 }
@@ -101,6 +105,7 @@ defineTest(isMinOSXSDKVersion) {
     requested_major = $$1
     requested_minor = $$2
     requested_patch = $$3
+    isEmpty(requested_patch): requested_patch = 0
     WEBENGINE_OSX_SDK_PRODUCT_VERSION = $$system("/usr/bin/xcodebuild -sdk $$QMAKE_MAC_SDK -version ProductVersion 2>/dev/null")
     export(WEBENGINE_OSX_SDK_PRODUCT_VERSION)
     isEmpty(WEBENGINE_OSX_SDK_PRODUCT_VERSION) {
@@ -110,6 +115,7 @@ defineTest(isMinOSXSDKVersion) {
     major_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 0, 0)
     minor_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 1, 1)
     patch_version = $$section(WEBENGINE_OSX_SDK_PRODUCT_VERSION, ., 2, 2)
+    isEmpty(patch_version): patch_version = 0
 
     greaterThan(major_version, $$requested_major):return(true)
     equals(major_version, $$requested_major):greaterThan(minor_version, $$requested_minor):return(true)

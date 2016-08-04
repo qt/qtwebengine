@@ -92,6 +92,8 @@ private:
     RenderWidgetHostViewQtDelegateClient *m_client;
     QScopedPointer<QQuickItem> m_rootItem;
     bool m_isPopup;
+    QColor m_clearColor;
+    QPoint m_lastGlobalPos;
     QList<QMetaObject::Connection> m_windowConnections;
 };
 
