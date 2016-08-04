@@ -41,4 +41,26 @@
 
     For more information on deploying Qt applications, please see
     \l {Deploying Qt Applications}.
+
+    \section1 Deploying Qt WebEngine Applications on Windows
+
+    If your application depends on Qt WebEngine, you must deploy
+    \c{<Qt install path>/bin/QtWebEngineProcess.exe} to the application install
+    path. If you chose to deploy the binary to a different path, set the
+    \c QTWEBENGINEPROCESS_PATH environment variable to the binary's absolute
+    path (including its file name). This enables the application to find the
+    binary and execute it for every instance of QWebEngineView or
+    WebEngineView created. For example, a browser application with two tabs
+    open should have two separate processes of \c QtWebEngineProcess.exe
+    running. This is a common approach used by most modern web engines to
+    provide a stable browsing experience.
+
+    \note To support HTML5 videos, you must additionally deploy
+    \c ffmpegsumo.dll (WebM codec plugin) into the \c qtwebengine directory
+    under the application install path or under the path that the
+    \c PluginsPath variable was set to in
+    \c{<Qt install path>/<Qt version>/msvc2013/qt.conf}.
+
+    For more information about deploying applications on Windows, see
+    \l{Qt for Windows - Deployment}.
 */
