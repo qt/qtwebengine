@@ -11,6 +11,7 @@ QML_FILES += \
     Menu.qml \
     MenuItem.qml \
     MenuSeparator.qml \
+    ToolTip.qml \
     information.png \
     question.png
 
