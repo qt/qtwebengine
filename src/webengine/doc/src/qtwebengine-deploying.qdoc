@@ -42,6 +42,20 @@
     For more information on deploying Qt applications, please see
     \l {Deploying Qt Applications}.
 
+    \section1 Target Platforms
+
+    Qt WebEngine does try to support all \l{Supported Platforms} of Qt. However,
+    due to different requirements of Chromium this is not always possible. Known
+    limitations are:
+
+    \list
+        \li Qt WebEngine currently supports only Windows, Linux, and OS X.
+
+        \li On Windows, Qt WebEngine only supports Windows Vista or newer as
+            target platform. Due to use of newer API in Chromium, Windows XP is
+            not supported. WinRT is not supported, either.
+    \endlist
+
     \section1 Deploying Qt WebEngine Applications on Windows
 
     If your application depends on Qt WebEngine, you must deploy
