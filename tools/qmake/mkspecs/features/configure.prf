@@ -21,8 +21,6 @@ defineTest(runConfigure) {
     }
 
     linux {
-        # libcap-dev package doesn't ship .pc files on Ubuntu.
-        !config_libcap:skipBuild("libcap development package appears to be missing")
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
         REQUIRED_PACKAGES = dbus-1 fontconfig
