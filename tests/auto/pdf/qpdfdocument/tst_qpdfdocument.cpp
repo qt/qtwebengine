@@ -22,6 +22,7 @@ private slots:
     void close();
     void loadAfterClose();
     void closeOnDestroy();
+    void passwordClearedOnClose();
 };
 
 struct TemporaryPdf: public QTemporaryFile
@@ -101,11 +102,16 @@ void tst_QPdfDocument::loadAsync()
 void tst_QPdfDocument::password()
 {
     QPdfDocument doc;
+    QSignalSpy passwordChangedSpy(&doc, SIGNAL(passwordChanged()));
+
     QCOMPARE(doc.pageCount(), 0);
     QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
+    QCOMPARE(passwordChangedSpy.count(), 0);
     doc.setPassword(QStringLiteral("WrongPassword"));
+    QCOMPARE(passwordChangedSpy.count(), 1);
     QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
     doc.setPassword(QStringLiteral("Qt"));
+    QCOMPARE(passwordChangedSpy.count(), 2);
     QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 1);
 }
@@ -173,6 +179,27 @@ void tst_QPdfDocument::closeOnDestroy()
 
         QCOMPARE(aboutToBeClosedSpy.count(), 0);
     }
+}
+
+void tst_QPdfDocument::passwordClearedOnClose()
+{
+    TemporaryPdf tempPdf;
+    QPdfDocument doc;
+
+    QSignalSpy passwordChangedSpy(&doc, SIGNAL(passwordChanged()));
+
+    doc.setPassword(QStringLiteral("Qt"));
+    QCOMPARE(passwordChangedSpy.count(), 1);
+    QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::NoError);
+    passwordChangedSpy.clear();
+
+    doc.close(); // password is cleared on close
+    QCOMPARE(passwordChangedSpy.count(), 1);
+    passwordChangedSpy.clear();
+
+    doc.load(&tempPdf);
+    doc.close(); // signal is not emitted if password didn't change
+    QCOMPARE(passwordChangedSpy.count(), 0);
 }
 
 QTEST_MAIN(tst_QPdfDocument)

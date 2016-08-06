@@ -34,9 +34,11 @@ class QNetworkReply;
 class Q_PDF_EXPORT QPdfDocument : public QObject
 {
     Q_OBJECT
+
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged FINAL)
-    Q_PROPERTY(QString password READ password WRITE setPassword FINAL)
+    Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
     Q_PROPERTY(bool loading READ isLoading FINAL)
+
 public:
 
     enum Error {
@@ -70,6 +72,7 @@ public:
     QImage render(int page, const QSizeF &pageSize);
 
 Q_SIGNALS:
+    void passwordChanged();
     void passwordRequired();
     void documentLoadStarted();
     void documentLoadFinished();

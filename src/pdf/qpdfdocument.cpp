@@ -283,9 +283,15 @@ void QPdfDocument::load(QIODevice *device)
 
 void QPdfDocument::setPassword(const QString &password)
 {
+    const QByteArray newPassword = password.toUtf8();
+
+    if (d->password == newPassword)
+        return;
+
     const QMutexLocker lock(pdfMutex());
 
-    d->password = password.toUtf8();
+    d->password = newPassword;
+    emit passwordChanged();
 
     if (!d->doc && d->avail)
         d->tryLoadDocument();
@@ -322,6 +328,11 @@ void QPdfDocument::close()
     const QMutexLocker lock(pdfMutex());
 
     d->clear();
+
+    if (!d->password.isEmpty()) {
+        d->password.clear();
+        emit passwordChanged();
+    }
 }
 
 int QPdfDocument::pageCount() const
