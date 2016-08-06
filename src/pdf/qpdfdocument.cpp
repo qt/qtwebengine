@@ -59,9 +59,9 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
 
 QPdfDocumentPrivate::~QPdfDocumentPrivate()
 {
-    const QMutexLocker lock(pdfMutex());
+    q->close();
 
-    clear();
+    const QMutexLocker lock(pdfMutex());
 
     if (!--libraryRefCount)
         FPDF_DestroyLibrary();
@@ -249,6 +249,9 @@ QPdfDocument::QPdfDocument(QObject *parent)
     d->q = this;
 }
 
+/*!
+    Destroys the document.
+*/
 QPdfDocument::~QPdfDocument()
 {
 }
@@ -296,6 +299,29 @@ QString QPdfDocument::password() const
 QPdfDocument::Error QPdfDocument::error() const
 {
     return d->lastError;
+}
+
+/*!
+    \fn void QPdfDocument::aboutToBeClosed()
+
+    This signal is emitted whenever the document is closed.
+
+    \sa close()
+*/
+
+/*!
+  Closes the document.
+*/
+void QPdfDocument::close()
+{
+    if (!d->doc)
+        return;
+
+    emit aboutToBeClosed();
+
+    const QMutexLocker lock(pdfMutex());
+
+    d->clear();
 }
 
 int QPdfDocument::pageCount() const

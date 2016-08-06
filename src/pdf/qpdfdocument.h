@@ -61,6 +61,8 @@ public:
 
     Error error() const;
 
+    void close();
+
     int pageCount() const;
 
     QSizeF pageSize(int page) const;
@@ -71,6 +73,7 @@ Q_SIGNALS:
     void passwordRequired();
     void documentLoadStarted();
     void documentLoadFinished();
+    void aboutToBeClosed();
     void pageCountChanged();
 
 private:
