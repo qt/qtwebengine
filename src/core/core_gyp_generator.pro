@@ -196,3 +196,8 @@ qtHaveModule(positioning) {
     HEADERS += location_provider_qt.h
     DEFINES += QT_USE_POSITIONING=1
 }
+
+qtHaveModule(printsupport) {
+    SOURCES += pdfium_printing_wrapper_qt.cpp
+    HEADERS += pdfium_printing_wrapper_qt.h
+}
