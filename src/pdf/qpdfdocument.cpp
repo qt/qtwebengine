@@ -70,6 +70,8 @@ QPdfDocumentPrivate::~QPdfDocumentPrivate()
 
 void QPdfDocumentPrivate::clear()
 {
+    QMutexLocker lock(pdfMutex());
+
     if (doc)
         FPDF_CloseDocument(doc);
     doc = Q_NULLPTR;
@@ -77,6 +79,7 @@ void QPdfDocumentPrivate::clear()
     if (avail)
         FPDFAvail_Destroy(avail);
     avail = Q_NULLPTR;
+    lock.unlock();
 
     loadComplete = false;
 
@@ -94,7 +97,12 @@ void QPdfDocumentPrivate::updateLastError()
         lastError = QPdfDocument::NoError;
         return;
     }
-    switch (FPDF_GetLastError()) {
+
+    QMutexLocker lock(pdfMutex());
+    const unsigned long error = FPDF_GetLastError();
+    lock.unlock();
+
+    switch (error) {
     case FPDF_ERR_SUCCESS: lastError = QPdfDocument::NoError; break;
     case FPDF_ERR_UNKNOWN: lastError = QPdfDocument::UnknownError; break;
     case FPDF_ERR_FILE: lastError = QPdfDocument::FileNotFoundError; break;
@@ -137,8 +145,6 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
 
 void QPdfDocumentPrivate::_q_tryLoadingWithSizeFromContentHeader()
 {
-    const QMutexLocker lock(pdfMutex());
-
     if (avail)
         return;
 
@@ -163,13 +169,13 @@ void QPdfDocumentPrivate::initiateAsyncLoadWithTotalSizeKnown(quint64 totalSize)
     // FPDF_FILEACCESS setup
     m_FileLen = totalSize;
 
+    const QMutexLocker lock(pdfMutex());
+
     avail = FPDFAvail_Create(this, this);
 }
 
 void QPdfDocumentPrivate::_q_copyFromSequentialSourceDevice()
 {
-    const QMutexLocker lock(pdfMutex());
-
     if (loadComplete)
         return;
 
@@ -185,7 +191,7 @@ void QPdfDocumentPrivate::_q_copyFromSequentialSourceDevice()
 
 void QPdfDocumentPrivate::tryLoadDocument()
 {
-    const QMutexLocker lock(pdfMutex());
+    QMutexLocker lock(pdfMutex());
 
     if (!FPDFAvail_IsDocAvail(avail, this))
         return;
@@ -193,7 +199,10 @@ void QPdfDocumentPrivate::tryLoadDocument()
     Q_ASSERT(!doc);
 
     doc = FPDFAvail_GetDocument(avail, password);
+    lock.unlock();
+
     updateLastError();
+
     if (lastError == QPdfDocument::IncorrectPasswordError)
         emit q->passwordRequired();
     else if (doc)
@@ -202,8 +211,6 @@ void QPdfDocumentPrivate::tryLoadDocument()
 
 void QPdfDocumentPrivate::checkComplete()
 {
-    const QMutexLocker lock(pdfMutex());
-
     if (!avail || loadComplete)
         return;
 
@@ -214,9 +221,14 @@ void QPdfDocumentPrivate::checkComplete()
         return;
 
     loadComplete = true;
+
+    QMutexLocker lock(pdfMutex());
+
     for (int i = 0, count = FPDF_GetPageCount(doc); i < count; ++i)
         if (!FPDFAvail_IsPageAvail(avail, i, this))
             loadComplete = false;
+
+    lock.unlock();
 
     if (loadComplete)
         emit q->documentLoadFinished();
@@ -259,8 +271,6 @@ QPdfDocument::~QPdfDocument()
 
 QPdfDocument::Error QPdfDocument::load(const QString &fileName)
 {
-    const QMutexLocker lock(pdfMutex());
-
     QScopedPointer<QFile> f(new QFile(fileName));
     if (!f->open(QIODevice::ReadOnly)) {
         d->lastError = FileNotFoundError;
@@ -277,8 +287,6 @@ bool QPdfDocument::isLoading() const
 
 void QPdfDocument::load(QIODevice *device)
 {
-    const QMutexLocker lock(pdfMutex());
-
     d->load(device, /*transfer ownership*/false);
 }
 
@@ -288,8 +296,6 @@ void QPdfDocument::setPassword(const QString &password)
 
     if (d->password == newPassword)
         return;
-
-    const QMutexLocker lock(pdfMutex());
 
     d->password = newPassword;
     emit passwordChanged();
@@ -418,8 +424,6 @@ void QPdfDocument::close()
         return;
 
     emit aboutToBeClosed();
-
-    const QMutexLocker lock(pdfMutex());
 
     d->clear();
 
