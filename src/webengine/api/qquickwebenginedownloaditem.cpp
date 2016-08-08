@@ -174,13 +174,13 @@ quint32 QQuickWebEngineDownloadItem::id() const
 
     Describes the state of the download:
 
-    \value  DownloadRequested
+    \value  WebEngineDownloadItem.DownloadRequested
             Download has been requested, but it has not been accepted yet.
-    \value  DownloadInProgress
+    \value  WebEngineDownloadItem.DownloadInProgress
             Download is in progress.
-    \value  DownloadCompleted
+    \value  WebEngineDownloadItem.DownloadCompleted
             Download completed successfully.
-    \value  DownloadInterrupted
+    \value  WebEngineDownloadItem.DownloadInterrupted
             Download has been interrupted (by the server or because of lost connectivity).
 */
 

@@ -156,13 +156,13 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineScript::DocumentCreation, UserScript::Document
     The point in the loading process at which the script will be executed.
     The default value is \c Deferred.
 
-    \value DocumentCreation
+    \value WebEngineScript.DocumentCreation
            The script will be executed as soon as the document is created. This is not suitable for
            any DOM operation.
-    \value DocumentReady
+    \value WebEngineScript.DocumentReady
            The script will run as soon as the DOM is ready. This is equivalent to the
            \c DOMContentLoaded event firing in JavaScript.
-    \value Deferred
+    \value WebEngineScript.Deferred
            The script will run when the page load finishes, or 500 ms after the document is ready,
            whichever comes first.
 */
@@ -177,13 +177,13 @@ QQuickWebEngineScript::InjectionPoint QQuickWebEngineScript::injectionPoint() co
 
     The world ID defining which isolated world the script is executed in.
 
-    \value MainWorld
+    \value WebEngineScript.MainWorld
            The world used by the page's web contents. It can be useful in order to expose custom
            functionality to web contents in certain scenarios.
-    \value ApplicationWorld
+    \value WebEngineScript.ApplicationWorld
            The default isolated world used for application level functionality implemented in
            JavaScript.
-    \value UserWorld
+    \value WebEngineScript.UserWorld
            The first isolated world to be used by scripts set by users if the application is not
            making use of more worlds. As a rule of thumb, if that functionality is exposed to the
            application users, each individual script should probably get its own isolated world.

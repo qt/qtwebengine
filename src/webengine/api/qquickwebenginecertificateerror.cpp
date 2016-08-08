@@ -160,20 +160,35 @@ QUrl QQuickWebEngineCertificateError::url() const
 
     The type of the error.
 
-    \value SslPinnedKeyNotInCertificateChain The certificate did not match the built-in public keys
-           pinned for the host name.
-    \value CertificateCommonNameInvalid The certificate's common name did not match the host name.
-    \value CertificateDateInvalid The certificate is not valid at the current date and time.
-    \value CertificateAuthorityInvalid The certificate is not signed by a trusted authority.
-    \value CertificateContainsErrors The certificate contains errors.
-    \value CertificateNoRevocationMechanism The certificate has no mechanism for determining if it has been revoked.
-    \value CertificateUnableToCheckRevocation Revocation information for the certificate is not available.
-    \value CertificateRevoked The certificate has been revoked.
-    \value CertificateInvalid The certificate is invalid.
-    \value CertificateWeakSignatureAlgorithm The certificate is signed using a weak signature algorithm.
-    \value CertificateNonUniqueName The host name specified in the certificate is not unique.
-    \value CertificateWeakKey The certificate contains a weak key.
-    \value CertificateNameConstraintViolation The certificate claimed DNS names that are in violation of name constraints.
+    \value  WebEngineCertificateError.SslPinnedKeyNotInCertificateChain
+            The certificate did not match the built-in public keys pinned for
+            the host name.
+    \value  WebEngineCertificateError.CertificateCommonNameInvalid
+            The certificate's common name did not match the host name.
+    \value  WebEngineCertificateError.CertificateDateInvalid
+            The certificate is not valid at the current date and time.
+    \value  WebEngineCertificateError.CertificateAuthorityInvalid
+            The certificate is not signed by a trusted authority.
+    \value  WebEngineCertificateError.CertificateContainsErrors
+            The certificate contains errors.
+    \value  WebEngineCertificateError.CertificateNoRevocationMechanism
+            The certificate has no mechanism for determining if it has been
+            revoked.
+    \value  WebEngineCertificateError.CertificateUnableToCheckRevocation
+            Revocation information for the certificate is not available.
+    \value  WebEngineCertificateError.CertificateRevoked
+            The certificate has been revoked.
+    \value  WebEngineCertificateError.CertificateInvalid
+            The certificate is invalid.
+    \value  WebEngineCertificateError.CertificateWeakSignatureAlgorithm
+            The certificate is signed using a weak signature algorithm.
+    \value  WebEngineCertificateError.CertificateNonUniqueName
+            The host name specified in the certificate is not unique.
+    \value  WebEngineCertificateError.CertificateWeakKey
+            The certificate contains a weak key.
+    \value  WebEngineCertificateError.CertificateNameConstraintViolation
+            The certificate claimed DNS names that are in violation of name
+            constraints.
 */
 QQuickWebEngineCertificateError::Error QQuickWebEngineCertificateError::error() const
 {
