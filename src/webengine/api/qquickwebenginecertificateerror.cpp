@@ -197,6 +197,9 @@ QUrl QQuickWebEngineCertificateError::url() const
     \value  WebEngineCertificateError.CertificateValidityTooLong
             The certificate has a validity period that is too long.
             (Added in 5.7)
+    \value  WebEngineCertificateError.CertificateTransparencyRequired
+            Certificate Transparency was required for this connection, but the server
+            did not provide CT information that complied with the policy. (Added in 5.8)
 */
 QQuickWebEngineCertificateError::Error QQuickWebEngineCertificateError::error() const
 {

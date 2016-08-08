@@ -40,6 +40,7 @@
 #include "url_request_context_getter_qt.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -48,6 +49,9 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -225,6 +229,8 @@ void URLRequestContextGetterQt::generateStorage()
     Q_ASSERT(proxyConfigService);
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
+    m_storage->set_cert_transparency_verifier(base::WrapUnique(new net::MultiLogCTVerifier()));
+    m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::CTPolicyEnforcer));
 
     std::unique_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
 
@@ -435,6 +441,8 @@ net::HttpNetworkSession::Params URLRequestContextGetterQt::generateNetworkSessio
     network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
     network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
     network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
+    network_session_params.cert_transparency_verifier   = m_urlRequestContext->cert_transparency_verifier();
+    network_session_params.ct_policy_enforcer           = m_urlRequestContext->ct_policy_enforcer();
 
     return network_session_params;
 }

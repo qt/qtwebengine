@@ -71,8 +71,9 @@ public:
         CertificateWeakKey = -211,
         CertificateNameConstraintViolation = -212,
         CertificateValidityTooLong = -213,
+        CertificateTransparencyRequired = -214,
 
-        CertificateErrorEnd = -214 // not an error, just an enum boundary
+        CertificateErrorEnd = -215 // not an error, just an enum boundary
     };
 
     CertificateError error() const;
