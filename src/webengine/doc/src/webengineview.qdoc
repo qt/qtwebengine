@@ -834,131 +834,131 @@
 
     The defined sizes are:
 
-    \value A0 841 x 1189 mm
-    \value A1 594 x 841 mm
-    \value A2 420 x 594 mm
-    \value A3 297 x 420 mm
-    \value A4 210 x 297 mm, 8.26 x 11.69 inches
-    \value A5 148 x 210 mm
-    \value A6 105 x 148 mm
-    \value A7 74 x 105 mm
-    \value A8 52 x 74 mm
-    \value A9 37 x 52 mm
-    \value B0 1000 x 1414 mm
-    \value B1 707 x 1000 mm
-    \value B2 500 x 707 mm
-    \value B3 353 x 500 mm
-    \value B4 250 x 353 mm
-    \value B5 176 x 250 mm, 6.93 x 9.84 inches
-    \value B6 125 x 176 mm
-    \value B7 88 x 125 mm
-    \value B8 62 x 88 mm
-    \value B9 44 x 62 mm
-    \value B10 31 x 44 mm
-    \value C5E 163 x 229 mm
-    \value Comm10E 105 x 241 mm, U.S. Common 10 Envelope
-    \value DLE 110 x 220 mm
-    \value Executive 7.5 x 10 inches, 190.5 x 254 mm
-    \value Folio 210 x 330 mm
-    \value Ledger 431.8 x 279.4 mm
-    \value Legal 8.5 x 14 inches, 215.9 x 355.6 mm
-    \value Letter 8.5 x 11 inches, 215.9 x 279.4 mm
-    \value Tabloid 279.4 x 431.8 mm
-    \value Custom Unknown, or a user defined size.
-    \value A10
-    \value A3Extra
-    \value A4Extra
-    \value A4Plus
-    \value A4Small
-    \value A5Extra
-    \value B5Extra
-    \value JisB0
-    \value JisB1
-    \value JisB2
-    \value JisB3
-    \value JisB4
-    \value JisB5
-    \value JisB6
-    \value JisB7
-    \value JisB8
-    \value JisB9
-    \value JisB10
-    \value AnsiA = \c Letter
-    \value AnsiB = \c Ledger
-    \value AnsiC
-    \value AnsiD
-    \value AnsiE
-    \value LegalExtra
-    \value LetterExtra
-    \value LetterPlus
-    \value LetterSmall
-    \value TabloidExtra
-    \value ArchA
-    \value ArchB
-    \value ArchC
-    \value ArchD
-    \value ArchE
-    \value Imperial7x9
-    \value Imperial8x10
-    \value Imperial9x11
-    \value Imperial9x12
-    \value Imperial10x11
-    \value Imperial10x13
-    \value Imperial10x14
-    \value Imperial12x11
-    \value Imperial15x11
-    \value ExecutiveStandard
-    \value Note
-    \value Quarto
-    \value Statement
-    \value SuperA
-    \value SuperB
-    \value Postcard
-    \value DoublePostcard
-    \value Prc16K
-    \value Prc32K
-    \value Prc32KBig
-    \value FanFoldUS
-    \value FanFoldGerman
-    \value FanFoldGermanLegal
-    \value EnvelopeB4
-    \value EnvelopeB5
-    \value EnvelopeB6
-    \value EnvelopeC0
-    \value EnvelopeC1
-    \value EnvelopeC2
-    \value EnvelopeC3
-    \value EnvelopeC4
-    \value EnvelopeC5 = \c C5E
-    \value EnvelopeC6
-    \value EnvelopeC65
-    \value EnvelopeC7
-    \value EnvelopeDL = \c DLE
-    \value Envelope9
-    \value Envelope10 = \c Comm10E
-    \value Envelope11
-    \value Envelope12
-    \value Envelope14
-    \value EnvelopeMonarch
-    \value EnvelopePersonal
-    \value EnvelopeChou3
-    \value EnvelopeChou4
-    \value EnvelopeInvite
-    \value EnvelopeItalian
-    \value EnvelopeKaku2
-    \value EnvelopeKaku3
-    \value EnvelopePrc1
-    \value EnvelopePrc2
-    \value EnvelopePrc3
-    \value EnvelopePrc4
-    \value EnvelopePrc5
-    \value EnvelopePrc6
-    \value EnvelopePrc7
-    \value EnvelopePrc8
-    \value EnvelopePrc9
-    \value EnvelopePrc10
-    \value EnvelopeYou4
-    \value LastPageSize = \c EnvelopeYou4
+    \value WebEngineView.A0 841 x 1189 mm
+    \value WebEngineView.A1 594 x 841 mm
+    \value WebEngineView.A2 420 x 594 mm
+    \value WebEngineView.A3 297 x 420 mm
+    \value WebEngineView.A4 210 x 297 mm, 8.26 x 11.69 inches
+    \value WebEngineView.A5 148 x 210 mm
+    \value WebEngineView.A6 105 x 148 mm
+    \value WebEngineView.A7 74 x 105 mm
+    \value WebEngineView.A8 52 x 74 mm
+    \value WebEngineView.A9 37 x 52 mm
+    \value WebEngineView.B0 1000 x 1414 mm
+    \value WebEngineView.B1 707 x 1000 mm
+    \value WebEngineView.B2 500 x 707 mm
+    \value WebEngineView.B3 353 x 500 mm
+    \value WebEngineView.B4 250 x 353 mm
+    \value WebEngineView.B5 176 x 250 mm, 6.93 x 9.84 inches
+    \value WebEngineView.B6 125 x 176 mm
+    \value WebEngineView.B7 88 x 125 mm
+    \value WebEngineView.B8 62 x 88 mm
+    \value WebEngineView.B9 44 x 62 mm
+    \value WebEngineView.B10 31 x 44 mm
+    \value WebEngineView.C5E 163 x 229 mm
+    \value WebEngineView.Comm10E 105 x 241 mm, U.S. Common 10 Envelope
+    \value WebEngineView.DLE 110 x 220 mm
+    \value WebEngineView.Executive 7.5 x 10 inches, 190.5 x 254 mm
+    \value WebEngineView.Folio 210 x 330 mm
+    \value WebEngineView.Ledger 431.8 x 279.4 mm
+    \value WebEngineView.Legal 8.5 x 14 inches, 215.9 x 355.6 mm
+    \value WebEngineView.Letter 8.5 x 11 inches, 215.9 x 279.4 mm
+    \value WebEngineView.Tabloid 279.4 x 431.8 mm
+    \value WebEngineView.Custom Unknown, or a user defined size.
+    \value WebEngineView.A10
+    \value WebEngineView.A3Extra
+    \value WebEngineView.A4Extra
+    \value WebEngineView.A4Plus
+    \value WebEngineView.A4Small
+    \value WebEngineView.A5Extra
+    \value WebEngineView.B5Extra
+    \value WebEngineView.JisB0
+    \value WebEngineView.JisB1
+    \value WebEngineView.JisB2
+    \value WebEngineView.JisB3
+    \value WebEngineView.JisB4
+    \value WebEngineView.JisB5
+    \value WebEngineView.JisB6
+    \value WebEngineView.JisB7
+    \value WebEngineView.JisB8
+    \value WebEngineView.JisB9
+    \value WebEngineView.JisB10
+    \value WebEngineView.AnsiA = \c Letter
+    \value WebEngineView.AnsiB = \c Ledger
+    \value WebEngineView.AnsiC
+    \value WebEngineView.AnsiD
+    \value WebEngineView.AnsiE
+    \value WebEngineView.LegalExtra
+    \value WebEngineView.LetterExtra
+    \value WebEngineView.LetterPlus
+    \value WebEngineView.LetterSmall
+    \value WebEngineView.TabloidExtra
+    \value WebEngineView.ArchA
+    \value WebEngineView.ArchB
+    \value WebEngineView.ArchC
+    \value WebEngineView.ArchD
+    \value WebEngineView.ArchE
+    \value WebEngineView.Imperial7x9
+    \value WebEngineView.Imperial8x10
+    \value WebEngineView.Imperial9x11
+    \value WebEngineView.Imperial9x12
+    \value WebEngineView.Imperial10x11
+    \value WebEngineView.Imperial10x13
+    \value WebEngineView.Imperial10x14
+    \value WebEngineView.Imperial12x11
+    \value WebEngineView.Imperial15x11
+    \value WebEngineView.ExecutiveStandard
+    \value WebEngineView.Note
+    \value WebEngineView.Quarto
+    \value WebEngineView.Statement
+    \value WebEngineView.SuperA
+    \value WebEngineView.SuperB
+    \value WebEngineView.Postcard
+    \value WebEngineView.DoublePostcard
+    \value WebEngineView.Prc16K
+    \value WebEngineView.Prc32K
+    \value WebEngineView.Prc32KBig
+    \value WebEngineView.FanFoldUS
+    \value WebEngineView.FanFoldGerman
+    \value WebEngineView.FanFoldGermanLegal
+    \value WebEngineView.EnvelopeB4
+    \value WebEngineView.EnvelopeB5
+    \value WebEngineView.EnvelopeB6
+    \value WebEngineView.EnvelopeC0
+    \value WebEngineView.EnvelopeC1
+    \value WebEngineView.EnvelopeC2
+    \value WebEngineView.EnvelopeC3
+    \value WebEngineView.EnvelopeC4
+    \value WebEngineView.EnvelopeC5 = \c C5E
+    \value WebEngineView.EnvelopeC6
+    \value WebEngineView.EnvelopeC65
+    \value WebEngineView.EnvelopeC7
+    \value WebEngineView.EnvelopeDL = \c DLE
+    \value WebEngineView.Envelope9
+    \value WebEngineView.Envelope10 = \c Comm10E
+    \value WebEngineView.Envelope11
+    \value WebEngineView.Envelope12
+    \value WebEngineView.Envelope14
+    \value WebEngineView.EnvelopeMonarch
+    \value WebEngineView.EnvelopePersonal
+    \value WebEngineView.EnvelopeChou3
+    \value WebEngineView.EnvelopeChou4
+    \value WebEngineView.EnvelopeInvite
+    \value WebEngineView.EnvelopeItalian
+    \value WebEngineView.EnvelopeKaku2
+    \value WebEngineView.EnvelopeKaku3
+    \value WebEngineView.EnvelopePrc1
+    \value WebEngineView.EnvelopePrc2
+    \value WebEngineView.EnvelopePrc3
+    \value WebEngineView.EnvelopePrc4
+    \value WebEngineView.EnvelopePrc5
+    \value WebEngineView.EnvelopePrc6
+    \value WebEngineView.EnvelopePrc7
+    \value WebEngineView.EnvelopePrc8
+    \value WebEngineView.EnvelopePrc9
+    \value WebEngineView.EnvelopePrc10
+    \value WebEngineView.EnvelopeYou4
+    \value WebEngineView.LastPageSize = \c EnvelopeYou4
     \omitvalue NPageSize
     \omitvalue NPaperSize
 
@@ -972,10 +972,10 @@
     Describes the orientation of a PDF document that gets created from the WebEngineView's contents.
     The enumeration values are mapped from and must match QPageLayout::Orientation.
 
-    \value Portrait
+    \value WebEngineView.Portrait
     The document will be created using portrait orientation.
 
-    \value Landscape
+    \value WebEngineView.Landscape
     The document will be created using landscape orientation.
 
     \sa WebEngineView::printToPdf()

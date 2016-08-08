@@ -272,12 +272,16 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
 
     Describes the format that is used to save a web page.
 
-    \value UnknownSaveFormat This is not a request for downloading a complete web page.
-    \value SingleHtmlSaveFormat The page is saved as a single HTML page. Resources such as images
-           are not saved.
-    \value CompleteHtmlSaveFormat The page is saved as a complete HTML page, for example a directory
+    \value  WebEngineDownloadItem.UnknownSaveFormat
+            This is not a request for downloading a complete web page.
+    \value  WebEngineDownloadItem.SingleHtmlSaveFormat
+            The page is saved as a single HTML page. Resources such as images
+            are not saved.
+    \value  WebEngineDownloadItem.CompleteHtmlSaveFormat
+            The page is saved as a complete HTML page, for example a directory
             containing the single HTML page and the resources.
-    \value MimeHtmlSaveFormat The page is saved as a complete web page in the MIME HTML format.
+    \value  WebEngineDownloadItem.MimeHtmlSaveFormat
+            The page is saved as a complete web page in the MIME HTML format.
 */
 
 QQuickWebEngineDownloadItem::SavePageFormat QQuickWebEngineDownloadItem::savePageFormat() const

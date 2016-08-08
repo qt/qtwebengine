@@ -471,8 +471,8 @@ void QQuickWebEngineProfile::setHttpUserAgent(const QString &userAgent)
             no persistentStoragePath is available.
     \value  DiskHttpCache
             Uses a disk cache. This is the default value.
-    \value  NoCache
-            Disables caching.
+    \value  WebEngineProfile.NoCache
+            Disables caching. (Added in 5.7)
 */
 
 /*!
