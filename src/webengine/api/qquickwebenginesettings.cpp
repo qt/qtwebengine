@@ -318,6 +318,19 @@ bool QQuickWebEngineSettings::focusOnNavigationEnabled() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::printElementBackgrounds
+  \since QtWebEngine 1.4
+
+  Turns on printing of CSS backgrounds when printing to PDF.
+
+  Enabled by default.
+*/
+bool QQuickWebEngineSettings::printElementBackgrounds() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::PrintElementBackgrounds);
+}
+
+/*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -476,6 +489,14 @@ void QQuickWebEngineSettings::setTouchIconsEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::TouchIconsEnabled, on);
     if (wasOn != on)
         Q_EMIT touchIconsEnabledChanged();
+}
+
+void QQuickWebEngineSettings::setPrintElementBackgrounds(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::PrintElementBackgrounds);
+    d_ptr->setAttribute(WebEngineSettings::PrintElementBackgrounds, on);
+    if (wasOn != on)
+        Q_EMIT printElementBackgroundsChanged();
 }
 
 void QQuickWebEngineSettings::setDefaultTextEncoding(QString encoding)

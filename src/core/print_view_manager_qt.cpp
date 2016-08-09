@@ -50,7 +50,9 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/web_preferences.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/print_job_constants.h"
 
@@ -125,7 +127,7 @@ static base::DictionaryValue *createPrintSettings()
     printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
 
     printSettings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
-    printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds, false);
+    printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds, true);
     printSettings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
     printSettings->SetString(printing::kSettingDeviceName, "");
     printSettings->SetInteger(printing::kPreviewUIID, 12345678);
@@ -210,6 +212,8 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout, bool 
 
     m_printSettings->SetInteger(printing::kSettingColor, printInColor ? printing::COLOR : printing::GRAYSCALE);
     applyQPageLayoutSettingsToDictionary(pageLayout, *m_printSettings);
+    m_printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds
+        , web_contents()->GetRenderViewHost()->GetWebkitPreferences().should_print_backgrounds);
     return Send(new PrintMsg_InitiatePrintPreview(routing_id(), false));
 }
 

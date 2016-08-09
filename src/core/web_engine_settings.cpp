@@ -238,6 +238,7 @@ void WebEngineSettings::initDefaults(bool offTheRecord)
         s_defaultAttributes.insert(AutoLoadIconsForPage, true);
         s_defaultAttributes.insert(TouchIconsEnabled, false);
         s_defaultAttributes.insert(FocusOnNavigationEnabled, true);
+        s_defaultAttributes.insert(PrintElementBackgrounds, true);
     }
     if (offTheRecord)
         m_attributes.insert(LocalStorageEnabled, false);
@@ -313,6 +314,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->fullscreen_supported = testAttribute(FullScreenSupportEnabled);
     prefs->accelerated_2d_canvas_enabled = testAttribute(Accelerated2dCanvasEnabled);
     prefs->experimental_webgl_enabled = testAttribute(WebGLEnabled);
+    prefs->should_print_backgrounds = testAttribute(PrintElementBackgrounds);
 
     // Fonts settings.
     prefs->standard_font_family_map[content::kCommonScript] = toString16(fontFamily(StandardFont));

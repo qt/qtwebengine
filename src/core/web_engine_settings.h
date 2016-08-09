@@ -80,7 +80,8 @@ public:
         Accelerated2dCanvasEnabled,
         AutoLoadIconsForPage,
         TouchIconsEnabled,
-        FocusOnNavigationEnabled
+        FocusOnNavigationEnabled,
+        PrintElementBackgrounds
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

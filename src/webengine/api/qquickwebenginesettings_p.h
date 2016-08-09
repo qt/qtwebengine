@@ -83,6 +83,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool autoLoadIconsForPage READ autoLoadIconsForPage WRITE setAutoLoadIconsForPage NOTIFY autoLoadIconsForPageChanged REVISION 2)
     Q_PROPERTY(bool touchIconsEnabled READ touchIconsEnabled WRITE setTouchIconsEnabled NOTIFY touchIconsEnabledChanged REVISION 2)
     Q_PROPERTY(bool focusOnNavigationEnabled READ focusOnNavigationEnabled WRITE setFocusOnNavigationEnabled NOTIFY focusOnNavigationEnabledChanged REVISION 3)
+    Q_PROPERTY(bool printElementBackgrounds READ printElementBackgrounds WRITE setPrintElementBackgrounds NOTIFY printElementBackgroundsChanged REVISION 3)
 
 public:
     ~QQuickWebEngineSettings();
@@ -107,6 +108,7 @@ public:
     bool autoLoadIconsForPage() const;
     bool touchIconsEnabled() const;
     bool focusOnNavigationEnabled() const;
+    bool printElementBackgrounds() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -128,6 +130,7 @@ public:
     void setAutoLoadIconsForPage(bool on);
     void setTouchIconsEnabled(bool on);
     void setFocusOnNavigationEnabled(bool on);
+    void setPrintElementBackgrounds(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -150,6 +153,7 @@ signals:
     Q_REVISION(2) void autoLoadIconsForPageChanged();
     Q_REVISION(2) void touchIconsEnabledChanged();
     Q_REVISION(3) void focusOnNavigationEnabledChanged();
+    Q_REVISION(3) void printElementBackgroundsChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

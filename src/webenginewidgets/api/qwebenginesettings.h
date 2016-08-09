@@ -86,7 +86,8 @@ public:
         Accelerated2dCanvasEnabled,
         AutoLoadIconsForPage,
         TouchIconsEnabled,
-        FocusOnNavigationEnabled
+        FocusOnNavigationEnabled,
+        PrintElementBackgrounds
     };
 
     enum FontSize {

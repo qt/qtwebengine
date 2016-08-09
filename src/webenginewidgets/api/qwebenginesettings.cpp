@@ -91,6 +91,9 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::TouchIconsEnabled;
     case QWebEngineSettings::FocusOnNavigationEnabled:
         return WebEngineSettings::FocusOnNavigationEnabled;
+    case QWebEngineSettings::PrintElementBackgrounds:
+        return WebEngineSettings::PrintElementBackgrounds;
+
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }
