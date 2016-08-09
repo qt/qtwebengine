@@ -12,7 +12,12 @@
 class tst_QPdfDocument: public QObject
 {
     Q_OBJECT
+
 public:
+    tst_QPdfDocument()
+    {
+        qRegisterMetaType<QPdfDocument::Status>();
+    }
 
 private slots:
     void pageCount();
@@ -22,6 +27,7 @@ private slots:
     void close();
     void loadAfterClose();
     void closeOnDestroy();
+    void status();
     void passwordClearedOnClose();
     void metaData();
 };
@@ -71,11 +77,11 @@ void tst_QPdfDocument::loadFromIODevice()
 {
     TemporaryPdf tempPdf;
     QPdfDocument doc;
-    QSignalSpy startedSpy(&doc, SIGNAL(documentLoadStarted()));
-    QSignalSpy finishedSpy(&doc, SIGNAL(documentLoadFinished()));
+    QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
     doc.load(&tempPdf);
-    QCOMPARE(startedSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
     QCOMPARE(doc.error(), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 2);
 }
@@ -90,13 +96,13 @@ void tst_QPdfDocument::loadAsync()
     QScopedPointer<QNetworkReply> reply(nam.get(QNetworkRequest(url)));
 
     QPdfDocument doc;
-    QSignalSpy startedSpy(&doc, SIGNAL(documentLoadStarted()));
-    QSignalSpy finishedSpy(&doc, SIGNAL(documentLoadFinished()));
+    QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
 
     doc.load(reply.data());
 
-    QCOMPARE(startedSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
     QCOMPARE(doc.pageCount(), 2);
 }
 
@@ -111,6 +117,7 @@ void tst_QPdfDocument::password()
     doc.setPassword(QStringLiteral("WrongPassword"));
     QCOMPARE(passwordChangedSpy.count(), 1);
     QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::IncorrectPasswordError);
+    QCOMPARE(doc.status(), QPdfDocument::Error);
     doc.setPassword(QStringLiteral("Qt"));
     QCOMPARE(passwordChangedSpy.count(), 2);
     QCOMPARE(doc.load(QFINDTESTDATA("pdf-sample.protected.pdf")), QPdfDocument::NoError);
@@ -122,12 +129,19 @@ void tst_QPdfDocument::close()
     TemporaryPdf tempPdf;
     QPdfDocument doc;
 
-    QSignalSpy aboutToBeClosedSpy(&doc, SIGNAL(aboutToBeClosed()));
+    QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
 
     doc.load(&tempPdf);
-    QCOMPARE(aboutToBeClosedSpy.count(), 0);
+
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    statusChangedSpy.clear();
+
     doc.close();
-    QCOMPARE(aboutToBeClosedSpy.count(), 1);
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
     QCOMPARE(doc.pageCount(), 0);
 }
 
@@ -136,18 +150,24 @@ void tst_QPdfDocument::loadAfterClose()
     TemporaryPdf tempPdf;
     QPdfDocument doc;
 
-    QSignalSpy aboutToBeClosedSpy(&doc, SIGNAL(aboutToBeClosed()));
+    QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
 
     doc.load(&tempPdf);
-    QCOMPARE(aboutToBeClosedSpy.count(), 0);
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    statusChangedSpy.clear();
+
     doc.close();
-    QCOMPARE(aboutToBeClosedSpy.count(), 1);
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+    statusChangedSpy.clear();
 
-    QSignalSpy startedSpy(&doc, SIGNAL(documentLoadStarted()));
-    QSignalSpy finishedSpy(&doc, SIGNAL(documentLoadFinished()));
     doc.load(&tempPdf);
-    QCOMPARE(startedSpy.count(), 1);
-    QCOMPARE(finishedSpy.count(), 1);
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
     QCOMPARE(doc.error(), QPdfDocument::NoError);
     QCOMPARE(doc.pageCount(), 2);
 }
@@ -160,12 +180,15 @@ void tst_QPdfDocument::closeOnDestroy()
     {
         QPdfDocument *doc = new QPdfDocument;
 
-        QSignalSpy aboutToBeClosedSpy(doc, SIGNAL(aboutToBeClosed()));
         doc->load(&tempPdf);
+
+        QSignalSpy statusChangedSpy(doc, SIGNAL(statusChanged(QPdfDocument::Status)));
 
         delete doc;
 
-        QCOMPARE(aboutToBeClosedSpy.count(), 1);
+        QCOMPARE(statusChangedSpy.count(), 2);
+        QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
+        QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
     }
 
     // deleting a closed document should not emit any signal
@@ -174,12 +197,73 @@ void tst_QPdfDocument::closeOnDestroy()
         doc->load(&tempPdf);
         doc->close();
 
-        QSignalSpy aboutToBeClosedSpy(doc, SIGNAL(aboutToBeClosed()));
+        QSignalSpy statusChangedSpy(doc, SIGNAL(statusChanged(QPdfDocument::Status)));
 
         delete doc;
 
-        QCOMPARE(aboutToBeClosedSpy.count(), 0);
+        QCOMPARE(statusChangedSpy.count(), 0);
     }
+}
+
+void tst_QPdfDocument::status()
+{
+    TemporaryPdf tempPdf;
+
+    QPdfDocument doc;
+    QCOMPARE(doc.status(), QPdfDocument::Null);
+
+    QSignalSpy statusChangedSpy(&doc, SIGNAL(statusChanged(QPdfDocument::Status)));
+
+    // open existing document
+    doc.load(&tempPdf);
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Ready);
+    statusChangedSpy.clear();
+
+    QCOMPARE(doc.status(), QPdfDocument::Ready);
+
+    // close document
+    doc.close();
+
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Unloading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Null);
+    statusChangedSpy.clear();
+
+    QCOMPARE(doc.status(), QPdfDocument::Null);
+
+    // try to open non-existing document
+    doc.load(QFINDTESTDATA("does-not-exist.pdf"));
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Error);
+    QCOMPARE(doc.status(), QPdfDocument::Error);
+    statusChangedSpy.clear();
+
+    // try to open non-existing document asynchronously
+    QNetworkAccessManager accessManager;
+
+    const QUrl url("http://doesnotexist.qt.io");
+    QScopedPointer<QNetworkReply> reply(accessManager.get(QNetworkRequest(url)));
+
+    doc.load(reply.data());
+
+    QTime stopWatch;
+    stopWatch.start();
+    forever {
+        QCoreApplication::instance()->processEvents();
+        if (statusChangedSpy.count() == 2)
+            break;
+
+        if (stopWatch.elapsed() >= 30000)
+            break;
+    }
+
+    QCOMPARE(statusChangedSpy.count(), 2);
+    QCOMPARE(statusChangedSpy[0][0].value<QPdfDocument::Status>(), QPdfDocument::Loading);
+    QCOMPARE(statusChangedSpy[1][0].value<QPdfDocument::Status>(), QPdfDocument::Error);
+    statusChangedSpy.clear();
 }
 
 void tst_QPdfDocument::passwordClearedOnClose()

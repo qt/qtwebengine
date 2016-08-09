@@ -37,11 +37,19 @@ class Q_PDF_EXPORT QPdfDocument : public QObject
 
     Q_PROPERTY(int pageCount READ pageCount NOTIFY pageCountChanged FINAL)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
-    Q_PROPERTY(bool loading READ isLoading FINAL)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged FINAL)
 
 public:
+    enum Status {
+        Null,
+        Loading,
+        Ready,
+        Unloading,
+        Error
+    };
+    Q_ENUM(Status)
 
-    enum Error {
+    enum DocumentError {
         NoError,
         UnknownError,
         FileNotFoundError,
@@ -49,7 +57,7 @@ public:
         IncorrectPasswordError,
         UnsupportedSecuritySchemeError
     };
-    Q_ENUM(Error)
+    Q_ENUM(DocumentError)
 
     enum MetaDataField {
         Title,
@@ -66,9 +74,9 @@ public:
     explicit QPdfDocument(QObject *parent = Q_NULLPTR);
     ~QPdfDocument();
 
-    Error load(const QString &fileName);
+    DocumentError load(const QString &fileName);
 
-    bool isLoading() const;
+    Status status() const;
 
     void load(QIODevice *device);
     void setPassword(const QString &password);
@@ -76,7 +84,7 @@ public:
 
     QVariant metaData(MetaDataField field) const;
 
-    Error error() const;
+    DocumentError error() const;
 
     void close();
 
@@ -89,9 +97,7 @@ public:
 Q_SIGNALS:
     void passwordChanged();
     void passwordRequired();
-    void documentLoadStarted();
-    void documentLoadFinished();
-    void aboutToBeClosed();
+    void statusChanged(QPdfDocument::Status status);
     void pageCountChanged();
 
 private:

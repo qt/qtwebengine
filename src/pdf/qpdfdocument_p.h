@@ -51,7 +51,8 @@ public:
     QPointer<QIODevice> sequentialSourceDevice;
     QByteArray password;
 
-    QPdfDocument::Error lastError;
+    QPdfDocument::Status status;
+    QPdfDocument::DocumentError lastError;
 
     void clear();
 
@@ -63,6 +64,7 @@ public:
     void _q_copyFromSequentialSourceDevice();
     void tryLoadDocument();
     void checkComplete();
+    void setStatus(QPdfDocument::Status status);
 
     static FPDF_BOOL fpdf_IsDataAvail(struct _FX_FILEAVAIL* pThis, size_t offset, size_t size);
     static int fpdf_GetBlock(void* param, unsigned long position, unsigned char* pBuf, unsigned long size);

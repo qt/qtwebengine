@@ -36,9 +36,13 @@ static int libraryRefCount;
 QPdfDocumentPrivate::QPdfDocumentPrivate()
     : avail(Q_NULLPTR)
     , doc(Q_NULLPTR)
-    , loadComplete(true)
+    , loadComplete(false)
+    , status(QPdfDocument::Null)
     , lastError(QPdfDocument::NoError)
 {
+    asyncBuffer.setData(QByteArray());
+    asyncBuffer.open(QIODevice::ReadWrite);
+
     const QMutexLocker lock(pdfMutex());
 
     if (libraryRefCount == 0)
@@ -116,8 +120,6 @@ void QPdfDocumentPrivate::updateLastError()
 
 void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnership)
 {
-    clear();
-
     if (transferDeviceOwnership)
         ownDevice.reset(newDevice);
     else
@@ -127,10 +129,23 @@ void QPdfDocumentPrivate::load(QIODevice *newDevice, bool transferDeviceOwnershi
         sequentialSourceDevice = newDevice;
         device = &asyncBuffer;
         QNetworkReply *reply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
+
         if (!reply) {
+            setStatus(QPdfDocument::Error);
             qWarning() << "QPdfDocument: Loading from sequential devices only supported with QNetworkAccessManager.";
             return;
         }
+
+        if (reply->isFinished() && reply->error() != QNetworkReply::NoError) {
+            setStatus(QPdfDocument::Error);
+            return;
+        }
+
+        QObject::connect(reply, &QNetworkReply::finished, q, [this, reply](){
+            if (reply->error() != QNetworkReply::NoError || reply->bytesAvailable() == 0) {
+                this->setStatus(QPdfDocument::Error);
+            }
+        });
 
         if (reply->header(QNetworkRequest::ContentLengthHeader).isValid())
             _q_tryLoadingWithSizeFromContentHeader();
@@ -149,12 +164,16 @@ void QPdfDocumentPrivate::_q_tryLoadingWithSizeFromContentHeader()
         return;
 
     const QNetworkReply *networkReply = qobject_cast<QNetworkReply*>(sequentialSourceDevice);
-    if(!networkReply)
+    if (!networkReply) {
+        setStatus(QPdfDocument::Error);
         return;
+    }
 
     const QVariant contentLength = networkReply->header(QNetworkRequest::ContentLengthHeader);
-    if (!contentLength.isValid())
+    if (!contentLength.isValid()) {
+        setStatus(QPdfDocument::Error);
         return;
+    }
 
     QObject::connect(sequentialSourceDevice, SIGNAL(readyRead()), q, SLOT(_q_copyFromSequentialSourceDevice()));
 
@@ -203,10 +222,13 @@ void QPdfDocumentPrivate::tryLoadDocument()
 
     updateLastError();
 
-    if (lastError == QPdfDocument::IncorrectPasswordError)
+    if (lastError == QPdfDocument::IncorrectPasswordError) {
+        FPDF_CloseDocument(doc);
+        doc = Q_NULLPTR;
+
+        setStatus(QPdfDocument::Error);
         emit q->passwordRequired();
-    else if (doc)
-        emit q->documentLoadStarted();
+    }
 }
 
 void QPdfDocumentPrivate::checkComplete()
@@ -231,7 +253,16 @@ void QPdfDocumentPrivate::checkComplete()
     lock.unlock();
 
     if (loadComplete)
-        emit q->documentLoadFinished();
+        setStatus(QPdfDocument::Ready);
+}
+
+void QPdfDocumentPrivate::setStatus(QPdfDocument::Status documentStatus)
+{
+    if (status == documentStatus)
+        return;
+
+    status = documentStatus;
+    emit q->statusChanged(status);
 }
 
 FPDF_BOOL QPdfDocumentPrivate::fpdf_IsDataAvail(_FX_FILEAVAIL *pThis, size_t offset, size_t size)
@@ -269,24 +300,51 @@ QPdfDocument::~QPdfDocument()
 {
 }
 
-QPdfDocument::Error QPdfDocument::load(const QString &fileName)
+QPdfDocument::DocumentError QPdfDocument::load(const QString &fileName)
 {
+    close();
+
+    d->setStatus(QPdfDocument::Loading);
+
     QScopedPointer<QFile> f(new QFile(fileName));
     if (!f->open(QIODevice::ReadOnly)) {
         d->lastError = FileNotFoundError;
+        d->setStatus(QPdfDocument::Error);
     } else {
         d->load(f.take(), /*transfer ownership*/true);
     }
     return d->lastError;
 }
 
-bool QPdfDocument::isLoading() const
+/*!
+    \enum QPdfDocument::Status
+
+    This enum describes the current status of the document.
+
+    \value Null The initial status after the document has been created or after it has been closed.
+    \value Loading The status after load() has been called and before the document is fully loaded.
+    \value Ready The status when the document is fully loaded and its data can be accessed.
+    \value Unloading The status after close() has been called on an open document.
+                     At this point the document is still valid and all its data can be accessed.
+    \value Error The status after Loading, if loading has failed.
+
+    \sa QPdfDocument::status()
+*/
+
+/*!
+    Returns the current status of the document.
+*/
+QPdfDocument::Status QPdfDocument::status() const
 {
-    return !d->loadComplete;
+    return d->status;
 }
 
 void QPdfDocument::load(QIODevice *device)
 {
+    close();
+
+    d->setStatus(QPdfDocument::Loading);
+
     d->load(device, /*transfer ownership*/false);
 }
 
@@ -299,9 +357,6 @@ void QPdfDocument::setPassword(const QString &password)
 
     d->password = newPassword;
     emit passwordChanged();
-
-    if (!d->doc && d->avail)
-        d->tryLoadDocument();
 }
 
 QString QPdfDocument::password() const
@@ -402,7 +457,7 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     return QVariant();
 }
 
-QPdfDocument::Error QPdfDocument::error() const
+QPdfDocument::DocumentError QPdfDocument::error() const
 {
     return d->lastError;
 }
@@ -423,7 +478,7 @@ void QPdfDocument::close()
     if (!d->doc)
         return;
 
-    emit aboutToBeClosed();
+    d->setStatus(Unloading);
 
     d->clear();
 
@@ -431,6 +486,8 @@ void QPdfDocument::close()
         d->password.clear();
         emit passwordChanged();
     }
+
+    d->setStatus(Null);
 }
 
 int QPdfDocument::pageCount() const
