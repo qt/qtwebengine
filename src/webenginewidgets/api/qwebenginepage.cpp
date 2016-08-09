@@ -1703,6 +1703,18 @@ void QWebEnginePage::load(const QUrl& url)
     d->adapter->load(url);
 }
 
+/*!
+    \since 5.9
+    Issues the specified \a request and loads the response.
+
+    \sa load(), setUrl(), url(), urlChanged(), QUrl::fromUserInput()
+*/
+void QWebEnginePage::load(const QWebEngineHttpRequest& request)
+{
+    Q_D(QWebEnginePage);
+    d->adapter->load(request);
+}
+
 void QWebEnginePage::toHtml(const QWebEngineCallback<const QString &> &resultCallback) const
 {
     Q_D(const QWebEnginePage);

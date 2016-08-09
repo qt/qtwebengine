@@ -117,7 +117,7 @@
 
     \note The view remains the same until enough data has arrived to display the new URL.
 
-    \sa setUrl(), url(), urlChanged(), QUrl::fromUserInput()
+    \sa load(), setUrl(), url(), urlChanged(), QUrl::fromUserInput()
 */
 
 /*!

@@ -42,6 +42,7 @@
 
 #include "qtwebenginecoreglobal.h"
 #include "web_contents_adapter_client.h"
+#include <QtWebEngineCore/qwebenginehttprequest.h>
 
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -83,7 +84,8 @@ public:
     void stop();
     void reload();
     void reloadAndBypassCache();
-    void load(const QUrl&);
+    void load(const QUrl &url);
+    void load(const QWebEngineHttpRequest &request);
     void setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl);
     void save(const QString &filePath = QString(), int savePageFormat = -1);
     QUrl activeUrl() const;

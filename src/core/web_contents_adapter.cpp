@@ -77,6 +77,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
@@ -499,6 +500,12 @@ void WebContentsAdapter::reloadAndBypassCache()
 
 void WebContentsAdapter::load(const QUrl &url)
 {
+    QWebEngineHttpRequest request(url);
+    load(request);
+}
+
+void WebContentsAdapter::load(const QWebEngineHttpRequest &request)
+{
     // The situation can occur when relying on the editingFinished signal in QML to set the url
     // of the WebView.
     // When enter is pressed, onEditingFinished fires and the url of the webview is set, which
@@ -513,21 +520,55 @@ void WebContentsAdapter::load(const QUrl &url)
     Q_UNUSED(guard);
 
     Q_D(WebContentsAdapter);
-    GURL gurl = toGurl(url);
+    GURL gurl = toGurl(request.url());
 
     // Add URL scheme if missing from view-source URL.
-    if (url.scheme() == content::kViewSourceScheme) {
-        QUrl pageUrl = QUrl(url.toString().remove(0, strlen(content::kViewSourceScheme) + 1));
+    if (request.url().scheme() == content::kViewSourceScheme) {
+        QUrl pageUrl = QUrl(request.url().toString().remove(0,
+                                                           strlen(content::kViewSourceScheme) + 1));
         if (pageUrl.scheme().isEmpty()) {
             QUrl extendedUrl = QUrl::fromUserInput(pageUrl.toString());
-            extendedUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme, extendedUrl.toString()));
+            extendedUrl = QUrl(QString("%1:%2").arg(content::kViewSourceScheme,
+                                                    extendedUrl.toString()));
             gurl = toGurl(extendedUrl);
         }
     }
 
     content::NavigationController::LoadURLParams params(gurl);
-    params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+    params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED
+                                                     | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
+
+    switch (request.method()) {
+    case QWebEngineHttpRequest::Get:
+        params.load_type = content::NavigationController::LOAD_TYPE_DEFAULT;
+        break;
+
+    case QWebEngineHttpRequest::Post:
+        params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
+        // chromium accepts LOAD_TYPE_HTTP_POST only for the HTTP and HTTPS protocols
+        if (!params.url.SchemeIsHTTPOrHTTPS()) {
+            d->adapterClient->loadFinished(false, request.url(), false,
+                                           net::ERR_DISALLOWED_URL_SCHEME,
+                                           QCoreApplication::translate("WebContentsAdapter",
+                                           "HTTP-POST data can only be sent over HTTP(S) protocol"));
+            return;
+        }
+        break;
+    }
+
+    params.post_data = content::ResourceRequestBody::CreateFromBytes(
+                (const char*)request.postData().constData(),
+                request.postData().length());
+
+    // convert the custom headers into the format that chromium expects
+    QVector<QByteArray> headers = request.headers();
+    for (QVector<QByteArray>::const_iterator it = headers.cbegin(); it != headers.cend(); ++it) {
+        if (params.extra_headers.length() > 0)
+            params.extra_headers += '\n';
+        params.extra_headers += (*it).toStdString() + ": " + request.header(*it).toStdString();
+    }
+
     d->webContents->GetController().LoadURLWithParams(params);
     focusIfNecessary();
 }

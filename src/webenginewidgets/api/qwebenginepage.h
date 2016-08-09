@@ -44,6 +44,7 @@
 #include <QtWebEngineWidgets/qwebenginecertificateerror.h>
 #include <QtWebEngineWidgets/qwebenginedownloaditem.h>
 #include <QtWebEngineCore/qwebenginecallback.h>
+#include <QtWebEngineCore/qwebenginehttprequest.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -224,8 +225,8 @@ public:
 
     void setFeaturePermission(const QUrl &securityOrigin, Feature feature, PermissionPolicy policy);
 
-    // Ex-QWebFrame methods
     void load(const QUrl &url);
+    void load(const QWebEngineHttpRequest &request);
     void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
 

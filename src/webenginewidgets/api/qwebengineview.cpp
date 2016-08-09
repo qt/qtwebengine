@@ -175,6 +175,17 @@ void QWebEngineView::load(const QUrl& url)
     page()->load(url);
 }
 
+/*!
+    \since 5.9
+    Issues the specified \a request and loads the response.
+
+    \sa load(), setUrl(), url(), urlChanged(), QUrl::fromUserInput()
+*/
+void QWebEngineView::load(const QWebEngineHttpRequest &request)
+{
+    page()->load(request);
+}
+
 void QWebEngineView::setHtml(const QString& html, const QUrl& baseUrl)
 {
     page()->setHtml(html, baseUrl);

@@ -46,6 +46,7 @@
 
 #include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtWebEngineWidgets/qwebenginepage.h>
+#include <QtWebEngineCore/qwebenginehttprequest.h>
 
 QT_BEGIN_NAMESPACE
 class QContextMenuEvent;
@@ -71,7 +72,8 @@ public:
     QWebEnginePage* page() const;
     void setPage(QWebEnginePage* page);
 
-    void load(const QUrl& url);
+    void load(const QUrl &url);
+    void load(const QWebEngineHttpRequest &request);
     void setHtml(const QString& html, const QUrl& baseUrl = QUrl());
     void setContent(const QByteArray& data, const QString& mimeType = QString(), const QUrl& baseUrl = QUrl());
 

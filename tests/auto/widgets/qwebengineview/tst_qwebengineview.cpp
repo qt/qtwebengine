@@ -36,6 +36,9 @@
 #include <QHBoxLayout>
 #include <QQuickItem>
 #include <QQuickWidget>
+#include <QtWebEngineCore/qwebenginehttprequest.h>
+#include <QTcpServer>
+#include <QTcpSocket>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
@@ -87,6 +90,7 @@ private Q_SLOTS:
     void inputMethodsTextFormat();
     void keyboardEvents();
     void keyboardFocusAfterPopup();
+    void postData();
 };
 
 // This will be called before the first test function is executed.
@@ -1079,6 +1083,137 @@ void tst_QWebEngineView::keyboardFocusAfterPopup()
     QTest::keyClick(qApp->focusWindow(), Qt::Key_X);
     qApp->processEvents();
     QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.getElementById('input1').value").toString(), QStringLiteral("x"));
+}
+
+void tst_QWebEngineView::postData()
+{
+    QMap<QString, QString> postData;
+    // use reserved characters to make the test harder to pass
+    postData[QStringLiteral("Spä=m")] = QStringLiteral("ëgg:s");
+    postData[QStringLiteral("foo\r\n")] = QStringLiteral("ba&r");
+
+    QEventLoop eventloop;
+
+    // Set up dummy "HTTP" server
+    QTcpServer server;
+    connect(&server, &QTcpServer::newConnection, this, [this, &server, &eventloop, &postData](){
+        QTcpSocket* socket = server.nextPendingConnection();
+
+        connect(socket, &QAbstractSocket::disconnected, this, [&eventloop](){
+            eventloop.quit();
+        });
+
+        connect(socket, &QIODevice::readyRead, this, [this, socket, &server, &postData](){
+            QByteArray rawData = socket->readAll();
+            QStringList lines = QString::fromLocal8Bit(rawData).split("\r\n");
+
+            // examine request
+            QStringList request = lines[0].split(" ", QString::SkipEmptyParts);
+            bool requestOk = request.length() > 2
+                          && request[2].toUpper().startsWith("HTTP/")
+                          && request[0].toUpper() == "POST"
+                          && request[1] == "/";
+            if (!requestOk) // POST and HTTP/... can be switched(?)
+                requestOk =  request.length() > 2
+                          && request[0].toUpper().startsWith("HTTP/")
+                          && request[2].toUpper() == "POST"
+                          && request[1] == "/";
+
+            // examine headers
+            int line = 1;
+            bool headersOk = true;
+            for (; headersOk && line < lines.length(); line++) {
+                QStringList headerParts = lines[line].split(":");
+                if (headerParts.length() < 2)
+                    break;
+                QString headerKey = headerParts[0].trimmed().toLower();
+                QString headerValue = headerParts[1].trimmed().toLower();
+
+                if (headerKey == "host")
+                    headersOk = headersOk && (headerValue == "127.0.0.1")
+                                          && (headerParts.length() == 3)
+                                          && (headerParts[2].trimmed()
+                                              == QString::number(server.serverPort()));
+                if (headerKey == "content-type")
+                    headersOk = headersOk && (headerValue == "application/x-www-form-urlencoded");
+            }
+
+            // examine body
+            bool bodyOk = true;
+            if (lines.length() == line+2) {
+                QStringList postedFields = lines[line+1].split("&");
+                QMap<QString, QString> postedData;
+                for (int i = 0; bodyOk && i < postedFields.length(); i++) {
+                    QStringList postedField = postedFields[i].split("=");
+                    if (postedField.length() == 2)
+                        postedData[QUrl::fromPercentEncoding(postedField[0].toLocal8Bit())]
+                                 = QUrl::fromPercentEncoding(postedField[1].toLocal8Bit());
+                    else
+                        bodyOk = false;
+                }
+                bodyOk = bodyOk && (postedData == postData);
+            } else { // no body at all or more than 1 line
+                bodyOk = false;
+            }
+
+            // send response
+            socket->write("HTTP/1.1 200 OK\r\n");
+            socket->write("Content-Type: text/html\r\n");
+            socket->write("Content-Length: 39\r\n\r\n");
+            if (requestOk && headersOk && bodyOk)
+                //             6     6     11         7      7      2 = 39 (Content-Length)
+                socket->write("<html><body>Test Passed</body></html>\r\n");
+            else
+                socket->write("<html><body>Test Failed</body></html>\r\n");
+            socket->flush();
+
+            if (!requestOk || !headersOk || !bodyOk) {
+                qDebug() << "Dummy HTTP Server: received request was not as expected";
+                qDebug() << rawData;
+                QVERIFY(requestOk); // one of them will yield useful output and make the test fail
+                QVERIFY(headersOk);
+                QVERIFY(bodyOk);
+            }
+
+            socket->close();
+        });
+    });
+    if (!server.listen())
+        QFAIL("Dummy HTTP Server: listen() failed");
+
+    // Manual, hard coded client (commented out, but not removed - for reference and just in case)
+    /*
+    QTcpSocket client;
+    connect(&client, &QIODevice::readyRead, this, [&client, &eventloop](){
+        qDebug() << "Dummy HTTP client: data received";
+        qDebug() << client.readAll();
+        eventloop.quit();
+    });
+    connect(&client, &QAbstractSocket::connected, this, [&client](){
+        client.write("HTTP/1.1 / GET\r\n\r\n");
+    });
+    client.connectToHost(QHostAddress::LocalHost, server.serverPort());
+    */
+
+    // send the POST request
+    QWebEngineView view;
+    QString sPort = QString::number(server.serverPort());
+    view.load(QWebEngineHttpRequest::postRequest(QUrl("http://127.0.0.1:"+sPort), postData));
+
+    // timeout after 10 seconds
+    QTimer timeoutGuard(this);
+    connect(&timeoutGuard, &QTimer::timeout, this, [&eventloop](){
+        eventloop.quit();
+        QFAIL("Dummy HTTP Server: waiting for data timed out");
+    });
+    timeoutGuard.setSingleShot(true);
+    timeoutGuard.start(10000);
+
+    // start the test
+    eventloop.exec();
+
+    timeoutGuard.stop();
+    server.close();
 }
 
 QTEST_MAIN(tst_QWebEngineView)
