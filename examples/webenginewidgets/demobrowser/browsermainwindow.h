@@ -56,7 +56,10 @@
 #include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
-class QWebEngineFrame;
+#ifndef QT_NO_PRINTER
+class QPrinter;
+#endif
+class QWebEnginePage;
 QT_END_NAMESPACE
 
 class AutoSaver;
@@ -139,8 +142,9 @@ private slots:
     void slotSwapFocus();
     void slotHandlePdfPrinted(const QByteArray&);
 
-#if defined(QWEBENGINEPAGE_PRINT)
-    void printRequested(QWebEngineFrame *frame);
+#ifndef QT_NO_PRINTER
+    void slotHandlePagePrinted(bool result);
+    void printRequested(QWebEnginePage *page);
 #endif
     void geometryChangeRequested(const QRect &geometry);
     void updateToolbarActionText(bool visible);
@@ -175,6 +179,10 @@ private:
     QAction *m_viewStatusbar;
     QAction *m_restoreLastSession;
     QAction *m_addBookmark;
+
+#ifndef QT_NO_PRINTER
+    QPrinter *m_currentPrinter;
+#endif
 
     QIcon m_reloadIcon;
     QIcon m_stopIcon;

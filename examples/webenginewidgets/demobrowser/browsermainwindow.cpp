@@ -109,6 +109,9 @@ BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
     , m_historyForward(0)
     , m_stop(0)
     , m_reload(0)
+#ifndef QT_NO_PRINTER
+    , m_currentPrinter(nullptr)
+#endif
 {
     setToolButtonStyle(Qt::ToolButtonFollowStyle);
     setAttribute(Qt::WA_DeleteOnClose, true);
@@ -312,6 +315,8 @@ void BrowserMainWindow::setupMenu()
     fileMenu->addSeparator();
 #if defined(QWEBENGINEPAGE_PRINT)
     fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
+#endif
+#ifndef QT_NO_PRINTER
     fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
 #endif
     fileMenu->addAction(tr("&Print to PDF..."), this, SLOT(slotFilePrintToPDF()));
@@ -713,10 +718,10 @@ void BrowserMainWindow::slotFilePrintPreview()
 
 void BrowserMainWindow::slotFilePrint()
 {
-#if defined(QWEBENGINEPAGE_PRINT)
+#ifndef QT_NO_PRINTER
     if (!currentTab())
         return;
-    printRequested(currentTab()->page()->mainFrame());
+    printRequested(currentTab()->page());
 #endif
 }
 
@@ -750,16 +755,27 @@ void BrowserMainWindow::slotFilePrintToPDF()
     currentTab()->page()->printToPdf(invoke(this, &BrowserMainWindow::slotHandlePdfPrinted), dialog->pageLayout());
 }
 
-#if defined(QWEBENGINEPAGE_PRINT)
-void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
+#ifndef QT_NO_PRINTER
+void BrowserMainWindow::slotHandlePagePrinted(bool result)
+{
+    delete m_currentPrinter;
+    m_currentPrinter = nullptr;
+}
+
+
+void BrowserMainWindow::printRequested(QWebEnginePage *page)
 {
 #ifndef QT_NO_PRINTDIALOG
-    QPrinter printer;
-    QPrintDialog *dialog = new QPrintDialog(&printer, this);
-    dialog->setWindowTitle(tr("Print Document"));
-    if (dialog->exec() != QDialog::Accepted)
+    if (m_currentPrinter)
         return;
-    frame->print(&printer);
+    m_currentPrinter = new QPrinter();
+    QPrintDialog *dialog = new QPrintDialog(m_currentPrinter, this);
+    dialog->setWindowTitle(tr("Print Document"));
+    if (dialog->exec() != QDialog::Accepted) {
+        slotHandlePagePrinted(false);
+        return;
+    }
+    page->print(m_currentPrinter, invoke(this, &BrowserMainWindow::slotHandlePagePrinted));
 #endif
 }
 #endif
