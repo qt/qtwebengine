@@ -83,8 +83,8 @@ public:
     typedef base::Callback<void(const std::vector<char> &result)> PrintToPDFCallback;
 #if defined(ENABLE_BASIC_PRINTING)
     // Method to print a page to a Pdf document with page size \a pageSize in location \a filePath.
-    bool PrintToPDF(const QPageLayout& pageLayout, const QString& filePath);
-    bool PrintToPDFWithCallback(const QPageLayout& pageLayout, const PrintToPDFCallback& callback);
+    bool PrintToPDF(const QPageLayout &pageLayout, bool printInColor, const QString &filePath);
+    bool PrintToPDFWithCallback(const QPageLayout &pageLayout, bool printInColor, const PrintToPDFCallback &callback);
 #endif  // ENABLE_BASIC_PRINTING
 
     // PrintedPagesSource implementation.
@@ -109,7 +109,7 @@ protected:
     void OnMetafileReadyForPrinting(const PrintHostMsg_DidPreviewDocument_Params& params);
 
 #if defined(ENABLE_BASIC_PRINTING)
-    bool PrintToPDFInternal(const QPageLayout &);
+    bool PrintToPDFInternal(const QPageLayout &, bool printInColor);
 #endif //
 
     base::FilePath m_pdfOutputPath;

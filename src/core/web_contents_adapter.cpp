@@ -50,6 +50,7 @@
 #include "browser_context_qt.h"
 #include "download_manager_delegate_qt.h"
 #include "media_capture_devices_dispatcher.h"
+#include "pdfium_printing_wrapper_qt.h"
 #include "print_view_manager_qt.h"
 #include "qwebenginecallback_p.h"
 #include "render_view_observer_host_qt.h"
@@ -91,6 +92,9 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qdrag.h>
 #include <QtGui/qpixmap.h>
+#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
+#include <QtPrintSupport/qprinter.h>
+#endif  // QT_NO_PRINTER
 #include <QtWebChannel/QWebChannel>
 
 namespace QtWebEngineCore {
@@ -188,6 +192,17 @@ static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient, 
         adapterClient->didPrintPage(requestId, QByteArray(result.data(), result.size()));
     }
 }
+
+#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
+static void callbackOnPrintingOnPrinterFinished(WebContentsAdapterClient *adapterClient, int requestId, QPrinter *printer, const std::vector<char> &result)
+{
+    if (requestId) {
+        PdfiumPrintingWrapperQt printWrapper(result.data(), result.size());
+        bool printerResult = printWrapper.printOnPrinter(*printer);
+        adapterClient->didPrintPageOnPrinter(requestId, printerResult);
+    }
+}
+#endif // QT_NO_PRINTER
 
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
@@ -948,7 +963,7 @@ void WebContentsAdapter::wasHidden()
 void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
 {
 #if defined(ENABLE_BASIC_PRINTING)
-    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDF(pageLayout, filePath);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDF(pageLayout, true, filePath);
 #endif // if defined(ENABLE_BASIC_PRINTING)
 }
 
@@ -956,13 +971,33 @@ quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayo
 {
 #if defined(ENABLE_BASIC_PRINTING)
     Q_D(WebContentsAdapter);
-    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished, d->adapterClient, d->nextRequestId);
-    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout, callback);
+    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished
+                                                                 , d->adapterClient
+                                                                 , d->nextRequestId);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout, true
+                                                                               , callback);
     return d->nextRequestId++;
 #else
     return 0;
 #endif // if defined(ENABLE_BASIC_PRINTING)
 }
+
+#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
+quint64 WebContentsAdapter::printOnPrinterCallbackResult(QPrinter *printer)
+{
+#if defined(ENABLE_BASIC_PRINTING)
+    Q_D(WebContentsAdapter);
+    PrintViewManagerQt::PrintToPDFCallback callback
+            = base::Bind(&callbackOnPrintingOnPrinterFinished, d->adapterClient
+                         , d->nextRequestId, printer);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(
+                printer->pageLayout(), printer->colorMode() == QPrinter::Color, callback);
+    return d->nextRequestId++;
+#else
+    return 0;
+#endif // if defined(ENABLE_BASIC_PRINTING)
+}
+#endif // QT_NO_PRINTER
 
 QPointF WebContentsAdapter::lastScrollOffset() const
 {

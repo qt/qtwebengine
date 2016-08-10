@@ -373,6 +373,13 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &re
     m_callbacks.invoke(requestId, result);
 }
 
+#ifndef QT_NO_PRINTER
+void QWebEnginePagePrivate::didPrintPageOnPrinter(quint64 requestId, bool result)
+{
+    m_callbacks.invoke(requestId, result);
+}
+#endif
+
 void QWebEnginePagePrivate::passOnFocus(bool reverse)
 {
     if (view)
@@ -1840,6 +1847,28 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
+
+#ifndef QT_NO_PRINTER
+/*!
+    \fn void QWebEnginePage::print(const QPrinter &printer, FunctorOrLambda resultCallback)
+    Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
+
+    The settings for creating and printing the PDF document will be retrieved from the \a printer
+    object.
+    It is the users responsibility to ensure the \a printer remains valid until \a resultCallback
+    has been called.
+
+    The \a resultCallback must take a boolean as parameter. If printing was successful, this
+    boolean will have the value \c true, otherwise, its value will be \c false.
+    \since 5.8
+*/
+void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback)
+{
+    Q_D(QWebEnginePage);
+    quint64 requestId = d->adapter->printOnPrinterCallbackResult(printer);
+    d->m_callbacks.registerCallback(requestId, resultCallback);
+}
+#endif // QT_NO_PRINTER
 
 /*!
     \since 5.7

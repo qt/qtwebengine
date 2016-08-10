@@ -54,6 +54,9 @@
 
 QT_BEGIN_NAMESPACE
 class QMenu;
+#ifndef QT_NO_PRINTER
+class QPrinter;
+#endif
 class QWebChannel;
 class QWebEngineContextMenuData;
 class QWebEngineFullScreenRequest;
@@ -279,6 +282,14 @@ public:
 #else
     void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
 #endif
+
+#ifndef QT_NO_PRINTER
+#ifdef Q_QDOC
+    void print(QPrinter *printer, FunctorOrLambda resultCallback)
+#else
+    void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
+#endif // QDOC
+#endif // QT_NO_PRINTER
 
     const QWebEngineContextMenuData &contextMenuData() const;
     void viewSource();
