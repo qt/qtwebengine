@@ -88,7 +88,9 @@
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QOffscreenSurface>
-#include <QOpenGLContext>
+#ifndef QT_NO_OPENGL
+# include <QOpenGLContext>
+#endif
 #include <QStringList>
 #include <QSurfaceFormat>
 #include <QVector>
@@ -96,9 +98,11 @@
 
 using namespace QtWebEngineCore;
 
+#ifndef QT_NO_OPENGL
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
+#endif
 
 namespace {
 
@@ -115,6 +119,7 @@ void destroyContext()
     s_destroyed = true;
 }
 
+#ifndef QT_NO_OPENGL
 bool usingANGLE()
 {
 #if defined(Q_OS_WIN)
@@ -160,7 +165,7 @@ bool usingQtQuick2DRenderer()
     // Anything other than the default OpenGL device will need to render in 2D mode.
     return device != QLatin1String("default");
 }
-
+#endif //QT_NO_OPENGL
 #if defined(ENABLE_PLUGINS)
 void dummyGetPluginCallback(const std::vector<content::WebPluginInfo>&)
 {
@@ -318,6 +323,7 @@ WebEngineContext::WebEngineContext()
     GLContextHelper::initialize();
 
     const char *glType = 0;
+#ifndef QT_NO_OPENGL
     if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
         if (qt_gl_global_share_context()) {
             if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
@@ -365,6 +371,7 @@ WebEngineContext::WebEngineContext()
             }
         }
     }
+#endif
 
     if (glType)
         parsedCommandLine->AppendSwitchASCII(switches::kUseGL, glType);

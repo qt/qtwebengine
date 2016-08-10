@@ -96,7 +96,6 @@ SOURCES = \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
         ssl_host_state_delegate_qt.cpp \
-        stream_video_node.cpp \
         surface_factory_qt.cpp \
         type_conversion.cpp \
         url_request_context_getter_qt.cpp \
@@ -112,8 +111,7 @@ SOURCES = \
         web_engine_library_info.cpp \
         web_engine_settings.cpp \
         web_engine_visited_links_manager.cpp \
-        web_event_factory.cpp \
-        yuv_video_node.cpp
+        web_event_factory.cpp
 
 HEADERS = \
         access_token_store_qt.h \
@@ -178,7 +176,6 @@ HEADERS = \
         renderer_host/web_channel_ipc_transport_host.h \
         resource_context_qt.h \
         ssl_host_state_delegate_qt.h \
-        stream_video_node.h \
         surface_factory_qt.h \
         type_conversion.h \
         url_request_context_getter_qt.h \
@@ -196,8 +193,17 @@ HEADERS = \
         web_engine_library_info.h \
         web_engine_settings.h \
         web_engine_visited_links_manager.h \
-        web_event_factory.h \
-        yuv_video_node.h
+        web_event_factory.h
+
+contains(QT_CONFIG, opengl) {
+    SOURCES += \
+        yuv_video_node.cpp \
+        stream_video_node.cpp
+
+    HEADERS += \
+        yuv_video_node.h \
+        stream_video_node.h
+}
 
 qtHaveModule(positioning) {
     SOURCES += location_provider_qt.cpp

@@ -103,6 +103,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
 
+#ifndef QT_NO_OPENGL
     QOpenGLContext *globalSharedContext = QOpenGLContext::globalShareContext();
     if (globalSharedContext) {
         QSurfaceFormat sharedFormat = globalSharedContext->format();
@@ -131,7 +132,7 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
 
     setFormat(format);
 #endif
-
+#endif
     setMouseTracking(true);
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
