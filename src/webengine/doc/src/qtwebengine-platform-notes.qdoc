@@ -37,7 +37,7 @@
     different requirements of Chromium this is not always possible. Known limitations are:
 
     \list
-        \li Qt WebEngine currently supports only Windows, Linux, and OS X.
+        \li Qt WebEngine currently supports only Windows, Linux, and \macos.
 
         \li On Windows, Qt WebEngine only supports Windows Vista or newer as target platform.
             Due to use of newer API in Chromium, Windows XP is not supported. WinRT is
@@ -54,7 +54,7 @@
     \list
         \li \l{Qt for Windows - Requirements}
         \li \l{Qt for X11 Requirements}
-        \li \l{Qt for OS X - Requirements}
+        \li \l{Qt for macOS - Requirements}
     \endlist
 
     In addition, the following tools are required for building the \l {Qt WebEngine} module:
@@ -63,7 +63,7 @@
         \li \l {All Platforms}
         \li \l {Windows}
         \li \l {Linux}
-        \li \l {OS X}
+        \li \l {macOS}
     \endlist
 
     The tests for skipping the Qt WebEngine build are located in the
@@ -112,11 +112,11 @@
 
     Further, development packages for \c khr and \c libcap need to be installed.
 
-    \section2 OS X
+    \section2 \macos
 
-    On OS X, Xcode version 5.1 or later on OS X 10.9 or later is required.
+    On \macos, Xcode version 5.1 or later on \macos 10.9 or later is required.
 
-    \note Qt WebEngine cannot be built for the 32-bit mode of OS X (using the
+    \note Qt WebEngine cannot be built for the 32-bit mode of \macos (using the
     \c macx-clang-32 \c mkspec).
 
     \section1 Default QSurfaceFormat OpenGL Profile Support
@@ -125,7 +125,7 @@
     before the application instance is declared, to make sure that all created OpenGL contexts use
     the same OpenGL profile.
 
-    On OS X, if the default QSurfaceFormat is set after the application instance, the application
+    On \macos, if the default QSurfaceFormat is set after the application instance, the application
     will exit with qFatal(), and print a message that the default QSurfaceFormat should be set
     before the application instance.
 */
