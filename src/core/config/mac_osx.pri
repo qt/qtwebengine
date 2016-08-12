@@ -32,5 +32,10 @@ GYP_CONFIG += \
 # disable the API usage if the SDK version is lower.
 !isMinOSXSDKVersion(10, 10, 3): GYP_CONFIG += disable_force_touch=1
 
+# Pass a supported -fstack-protect flag depending on Xcode version.
+lessThan(QMAKE_XCODE_VERSION, 6.3) {
+  GYP_CONFIG += use_xcode_stack_protector_strong=0
+}
+
 QMAKE_MAC_SDK_PATH = "$$eval(QMAKE_MAC_SDK.$${QMAKE_MAC_SDK}.path)"
 exists($$QMAKE_MAC_SDK_PATH): GYP_CONFIG += mac_sdk_path=\"$${QMAKE_MAC_SDK_PATH}\"
