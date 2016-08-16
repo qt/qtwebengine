@@ -279,9 +279,14 @@ void QWebEnginePagePrivate::adoptNewWindow(QSharedPointer<WebContentsAdapter> ne
     if (newPage->d_func() == this) {
         // If createWindow returns /this/ we must delay the adoption.
         Q_ASSERT(q == newPage);
-        QTimer::singleShot(0, q, [this, newPage, newWebContents, initialGeometry] () {
-            adoptNewWindowImpl(newPage, newWebContents, initialGeometry);
-        });
+        // WebContents might be null if we just opened a new page for navigation, in that case
+        // avoid referencing newWebContents so that it is deleted and WebContentsDelegateQt::OpenURLFromTab
+        // will fall back to navigating current page.
+        if (newWebContents->webContents()) {
+            QTimer::singleShot(0, q, [this, newPage, newWebContents, initialGeometry] () {
+                adoptNewWindowImpl(newPage, newWebContents, initialGeometry);
+            });
+        }
     } else {
         adoptNewWindowImpl(newPage, newWebContents, initialGeometry);
     }

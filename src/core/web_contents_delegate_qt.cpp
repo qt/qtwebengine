@@ -97,6 +97,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
         if (targetAdapter)
             target = targetAdapter->webContents();
     }
+    Q_ASSERT(target);
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
     load_url_params.referrer = params.referrer;
