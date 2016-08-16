@@ -646,18 +646,18 @@
 
     Describes various high-level error types:
 
-    \value WebEngineView::NoErrorDomain
-    \value WebEngineView::InternalErrorDomain
+    \value WebEngineView.NoErrorDomain
+    \value WebEngineView.InternalErrorDomain
             Content fails to be interpreted by Qt WebEngine.
-    \value WebEngineView::ConnectionErrorDomain
+    \value WebEngineView.ConnectionErrorDomain
             Error results from faulty network connection.
-    \value WebEngineView::CertificateErrorDomain
+    \value WebEngineView.CertificateErrorDomain
             Error related to the SSL/TLS certficate.
-    \value WebEngineView::HttpErrorDomain
+    \value WebEngineView.HttpErrorDomain
             Error related to the HTTP connection.
-    \value WebEngineView::FtpErrorDomain
+    \value WebEngineView.FtpErrorDomain
             Error related to the FTP connection.
-    \value WebEngineView::DnsErrorDomain
+    \value WebEngineView.DnsErrorDomain
             Error related to the DNS connection.
 */
 
@@ -666,11 +666,11 @@
 
     Indicates the severity of a JavaScript console message:
 
-    \value  InfoMessageLevel
+    \value  WebEngineView.InfoMessageLevel
             Message is purely informative and can safely be ignored.
-    \value  WarningMessageLevel
+    \value  WebEngineView.WarningMessageLevel
             Message indicates there might be a problem that may need attention.
-    \value  ErrorMessageLevel
+    \value  WebEngineView.ErrorMessageLevel
             Message indicates there has been an error.
 */
 
@@ -679,11 +679,11 @@
 
     Reflects a page's load status:
 
-    \value  LoadStartedStatus
+    \value  WebEngineView.LoadStartedStatus
             Page is currently loading.
-    \value  LoadSucceededStatus
+    \value  WebEngineView.LoadSucceededStatus
             Page has successfully loaded, and is not currently loading.
-    \value  LoadFailedStatus
+    \value  WebEngineView.LoadFailedStatus
             Page has failed to load, and is not currently loading.
 */
 
@@ -692,16 +692,16 @@
 
     Describes how to open a new view:
 
-    \value WebEngineView::NewViewInWindow
+    \value WebEngineView.NewViewInWindow
             In a separate Window.
-    \value WebEngineView::NewViewInTab
+    \value WebEngineView.NewViewInTab
             In a tab of the same window.
-    \value WebEngineView::NewViewInDialog
+    \value WebEngineView.NewViewInDialog
             In a Window without a tab bar, toolbar, or URL bar.
-    \value WebEngineView::NewViewInBackgroundTab
+    \value WebEngineView.NewViewInBackgroundTab
             In a tab of the same window, without hiding the currently visible web engine view.
 
-    \sa WebEngineNewViewRequest::destination
+    \sa {WebEngineNewViewRequest::destination}{WebEngineNewViewRequest.destination}
 */
 
 /*!
@@ -710,8 +710,10 @@
     Describes the options available to the findText() function. The options
     can be OR-ed together from the following list:
 
-    \value FindBackward Searches backwards instead of forwards.
-    \value FindCaseSensitively By default findText() works case insensitive. Specifying
+    \value  WebEngineView.FindBackward
+            Searches backwards instead of forwards.
+    \value  WebEngineView.FindFlags FindCaseSensitively
+            By default findText() works case insensitive. Specifying
             this option changes the behavior to a case sensitive find operation.
 
     \sa findText()
@@ -723,13 +725,13 @@
 
     Describes the status with which the render process terminated:
 
-    \value  NormalTerminationStatus
+    \value  WebEngineView.NormalTerminationStatus
             The render process terminated normally.
-    \value  AbnormalTerminationStatus
+    \value  WebEngineView.AbnormalTerminationStatus
             The render process terminated with a non-zero exit status.
-    \value  CrashedTerminationStatus
+    \value  WebEngineView.CrashedTerminationStatus
             The render process crashed, for example because of a segmentation fault.
-    \value  KilledTerminationStatus
+    \value  WebEngineView.KilledTerminationStatus
             The render process was killed, for example by \c SIGKILL or task manager kill.
 */
 
@@ -739,68 +741,68 @@
 
     Describes the types of action that can be performed on a web page:
 
-    \value  NoWebAction
+    \value  WebEngineView.NoWebAction
             No action is triggered.
-    \value  Back
+    \value  WebEngineView.Back
             Navigate back in the history of navigated links.
-    \value  Forward
+    \value  WebEngineView.Forward
             Navigate forward in the history of navigated links.
-    \value  Stop
+    \value  WebEngineView.Stop
             Stop loading the current page.
-    \value  Reload
+    \value  WebEngineView.Reload
             Reload the current page.
-    \value  ReloadAndBypassCache
+    \value  WebEngineView.ReloadAndBypassCache
             Reload the current page, but do not use any local cache.
-    \value  Cut
+    \value  WebEngineView.Cut
             Cut the content currently selected into the clipboard.
-    \value  Copy
+    \value  WebEngineView.Copy
             Copy the content currently selected into the clipboard.
-    \value  Paste
+    \value  WebEngineView.Paste
             Paste content from the clipboard.
-    \value  Undo
+    \value  WebEngineView.Undo
             Undo the last editing action.
-    \value  Redo
+    \value  WebEngineView.Redo
             Redo the last editing action.
-    \value  SelectAll
+    \value  WebEngineView.SelectAll
             Select all content.
-    \value  PasteAndMatchStyle
+    \value  WebEngineView.PasteAndMatchStyle
             Paste content from the clipboard with current style.
-    \value  OpenLinkInThisWindow
+    \value  WebEngineView.OpenLinkInThisWindow
             Open the current link in the current window. (Added in Qt 5.6)
-    \value  OpenLinkInNewWindow
+    \value  WebEngineView.OpenLinkInNewWindow
             Open the current link in a new window. (Added in Qt 5.6)
-    \value  OpenLinkInNewTab
+    \value  WebEngineView.OpenLinkInNewTab
             Open the current link in a new tab. (Added in Qt 5.6)
-    \value  CopyLinkToClipboard
+    \value  WebEngineView.CopyLinkToClipboard
             Copy the current link to the clipboard. (Added in Qt 5.6)
-    \value  CopyImageToClipboard
+    \value  WebEngineView.CopyImageToClipboard
             Copy the clicked image to the clipboard. (Added in Qt 5.6)
-    \value  CopyImageUrlToClipboard
+    \value  WebEngineView.CopyImageUrlToClipboard
             Copy the clicked image's URL to the clipboard. (Added in Qt 5.6)
-    \value  CopyMediaUrlToClipboard
+    \value  WebEngineView.CopyMediaUrlToClipboard
             Copy the hovered audio or video's URL to the clipboard. (Added in Qt 5.6)
-    \value  ToggleMediaControls
+    \value  WebEngineView.ToggleMediaControls
             Toggle between showing and hiding the controls for the hovered audio or video element.
             (Added in Qt 5.6)
-    \value  ToggleMediaLoop
+    \value  WebEngineView.ToggleMediaLoop
             Toggle whether the hovered audio or video should loop on completetion or not.
            (Added in Qt 5.6)
-    \value  ToggleMediaPlayPause
+    \value  WebEngineView.ToggleMediaPlayPause
             Toggle the play/pause state of the hovered audio or video element. (Added in Qt 5.6)
-    \value  ToggleMediaMute
+    \value  WebEngineView.ToggleMediaMute
             Mute or unmute the hovered audio or video element. (Added in Qt 5.6)
-    \value  DownloadLinkToDisk
+    \value  WebEngineView.DownloadLinkToDisk
             Download the current link to the disk. To implement download
             actions, connect to the QWebEngineProfile::downloadRequested signal.
             (Added in Qt 5.6)
-    \value  DownloadImageToDisk
+    \value  WebEngineView.DownloadImageToDisk
             Download the highlighted image to the disk. (Added in Qt 5.6)
-    \value  DownloadMediaToDisk
+    \value  WebEngineView.DownloadMediaToDisk
             Download the hovered audio or video to the disk. (Added in Qt 5.6)
-    \value  InspectElement
+    \value  WebEngineView.InspectElement
             Trigger any attached Web Inspector to inspect the highlighed element.
            (Added in Qt 5.6)
-    \value  ExitFullScreen
+    \value  WebEngineView.ExitFullScreen
             Exit the fullscreen mode. (Added in Qt 5.6)
     \value  SavePage
             Save the current web page to disk. (Added in Qt 5.7)
@@ -814,13 +816,13 @@
     Describes the platform feature access categories that the user may be asked to grant or deny
     access to:
 
-    \value  Geolocation
+    \value  WebEngineView.Geolocation
             Location hardware or service.
-    \value  MediaAudioCapture
+    \value  WebEngineView.MediaAudioCapture
             Audio capture devices, such as microphones.
-    \value  MediaVideoCapture
+    \value  WebEngineView.MediaVideoCapture
             Video devices, such as cameras.
-    \value  MediaAudioVideoCapture
+    \value  WebEngineView.MediaAudioVideoCapture
             Both audio and video capture devices.
 
     \sa featurePermissionRequested(), grantFeaturePermission()
@@ -838,131 +840,131 @@
 
     The defined sizes are:
 
-    \value A0 841 x 1189 mm
-    \value A1 594 x 841 mm
-    \value A2 420 x 594 mm
-    \value A3 297 x 420 mm
-    \value A4 210 x 297 mm, 8.26 x 11.69 inches
-    \value A5 148 x 210 mm
-    \value A6 105 x 148 mm
-    \value A7 74 x 105 mm
-    \value A8 52 x 74 mm
-    \value A9 37 x 52 mm
-    \value B0 1000 x 1414 mm
-    \value B1 707 x 1000 mm
-    \value B2 500 x 707 mm
-    \value B3 353 x 500 mm
-    \value B4 250 x 353 mm
-    \value B5 176 x 250 mm, 6.93 x 9.84 inches
-    \value B6 125 x 176 mm
-    \value B7 88 x 125 mm
-    \value B8 62 x 88 mm
-    \value B9 44 x 62 mm
-    \value B10 31 x 44 mm
-    \value C5E 163 x 229 mm
-    \value Comm10E 105 x 241 mm, U.S. Common 10 Envelope
-    \value DLE 110 x 220 mm
-    \value Executive 7.5 x 10 inches, 190.5 x 254 mm
-    \value Folio 210 x 330 mm
-    \value Ledger 431.8 x 279.4 mm
-    \value Legal 8.5 x 14 inches, 215.9 x 355.6 mm
-    \value Letter 8.5 x 11 inches, 215.9 x 279.4 mm
-    \value Tabloid 279.4 x 431.8 mm
-    \value Custom Unknown, or a user defined size.
-    \value A10
-    \value A3Extra
-    \value A4Extra
-    \value A4Plus
-    \value A4Small
-    \value A5Extra
-    \value B5Extra
-    \value JisB0
-    \value JisB1
-    \value JisB2
-    \value JisB3
-    \value JisB4
-    \value JisB5
-    \value JisB6
-    \value JisB7
-    \value JisB8
-    \value JisB9
-    \value JisB10
-    \value AnsiA = \c Letter
-    \value AnsiB = \c Ledger
-    \value AnsiC
-    \value AnsiD
-    \value AnsiE
-    \value LegalExtra
-    \value LetterExtra
-    \value LetterPlus
-    \value LetterSmall
-    \value TabloidExtra
-    \value ArchA
-    \value ArchB
-    \value ArchC
-    \value ArchD
-    \value ArchE
-    \value Imperial7x9
-    \value Imperial8x10
-    \value Imperial9x11
-    \value Imperial9x12
-    \value Imperial10x11
-    \value Imperial10x13
-    \value Imperial10x14
-    \value Imperial12x11
-    \value Imperial15x11
-    \value ExecutiveStandard
-    \value Note
-    \value Quarto
-    \value Statement
-    \value SuperA
-    \value SuperB
-    \value Postcard
-    \value DoublePostcard
-    \value Prc16K
-    \value Prc32K
-    \value Prc32KBig
-    \value FanFoldUS
-    \value FanFoldGerman
-    \value FanFoldGermanLegal
-    \value EnvelopeB4
-    \value EnvelopeB5
-    \value EnvelopeB6
-    \value EnvelopeC0
-    \value EnvelopeC1
-    \value EnvelopeC2
-    \value EnvelopeC3
-    \value EnvelopeC4
-    \value EnvelopeC5 = \c C5E
-    \value EnvelopeC6
-    \value EnvelopeC65
-    \value EnvelopeC7
-    \value EnvelopeDL = \c DLE
-    \value Envelope9
-    \value Envelope10 = \c Comm10E
-    \value Envelope11
-    \value Envelope12
-    \value Envelope14
-    \value EnvelopeMonarch
-    \value EnvelopePersonal
-    \value EnvelopeChou3
-    \value EnvelopeChou4
-    \value EnvelopeInvite
-    \value EnvelopeItalian
-    \value EnvelopeKaku2
-    \value EnvelopeKaku3
-    \value EnvelopePrc1
-    \value EnvelopePrc2
-    \value EnvelopePrc3
-    \value EnvelopePrc4
-    \value EnvelopePrc5
-    \value EnvelopePrc6
-    \value EnvelopePrc7
-    \value EnvelopePrc8
-    \value EnvelopePrc9
-    \value EnvelopePrc10
-    \value EnvelopeYou4
-    \value LastPageSize = \c EnvelopeYou4
+    \value WebEngineView.A0 841 x 1189 mm
+    \value WebEngineView.A1 594 x 841 mm
+    \value WebEngineView.A2 420 x 594 mm
+    \value WebEngineView.A3 297 x 420 mm
+    \value WebEngineView.A4 210 x 297 mm, 8.26 x 11.69 inches
+    \value WebEngineView.A5 148 x 210 mm
+    \value WebEngineView.A6 105 x 148 mm
+    \value WebEngineView.A7 74 x 105 mm
+    \value WebEngineView.A8 52 x 74 mm
+    \value WebEngineView.A9 37 x 52 mm
+    \value WebEngineView.B0 1000 x 1414 mm
+    \value WebEngineView.B1 707 x 1000 mm
+    \value WebEngineView.B2 500 x 707 mm
+    \value WebEngineView.B3 353 x 500 mm
+    \value WebEngineView.B4 250 x 353 mm
+    \value WebEngineView.B5 176 x 250 mm, 6.93 x 9.84 inches
+    \value WebEngineView.B6 125 x 176 mm
+    \value WebEngineView.B7 88 x 125 mm
+    \value WebEngineView.B8 62 x 88 mm
+    \value WebEngineView.B9 44 x 62 mm
+    \value WebEngineView.B10 31 x 44 mm
+    \value WebEngineView.C5E 163 x 229 mm
+    \value WebEngineView.Comm10E 105 x 241 mm, U.S. Common 10 Envelope
+    \value WebEngineView.DLE 110 x 220 mm
+    \value WebEngineView.Executive 7.5 x 10 inches, 190.5 x 254 mm
+    \value WebEngineView.Folio 210 x 330 mm
+    \value WebEngineView.Ledger 431.8 x 279.4 mm
+    \value WebEngineView.Legal 8.5 x 14 inches, 215.9 x 355.6 mm
+    \value WebEngineView.Letter 8.5 x 11 inches, 215.9 x 279.4 mm
+    \value WebEngineView.Tabloid 279.4 x 431.8 mm
+    \value WebEngineView.Custom Unknown, or a user defined size.
+    \value WebEngineView.A10
+    \value WebEngineView.A3Extra
+    \value WebEngineView.A4Extra
+    \value WebEngineView.A4Plus
+    \value WebEngineView.A4Small
+    \value WebEngineView.A5Extra
+    \value WebEngineView.B5Extra
+    \value WebEngineView.JisB0
+    \value WebEngineView.JisB1
+    \value WebEngineView.JisB2
+    \value WebEngineView.JisB3
+    \value WebEngineView.JisB4
+    \value WebEngineView.JisB5
+    \value WebEngineView.JisB6
+    \value WebEngineView.JisB7
+    \value WebEngineView.JisB8
+    \value WebEngineView.JisB9
+    \value WebEngineView.JisB10
+    \value WebEngineView.AnsiA = \c Letter
+    \value WebEngineView.AnsiB = \c Ledger
+    \value WebEngineView.AnsiC
+    \value WebEngineView.AnsiD
+    \value WebEngineView.AnsiE
+    \value WebEngineView.LegalExtra
+    \value WebEngineView.LetterExtra
+    \value WebEngineView.LetterPlus
+    \value WebEngineView.LetterSmall
+    \value WebEngineView.TabloidExtra
+    \value WebEngineView.ArchA
+    \value WebEngineView.ArchB
+    \value WebEngineView.ArchC
+    \value WebEngineView.ArchD
+    \value WebEngineView.ArchE
+    \value WebEngineView.Imperial7x9
+    \value WebEngineView.Imperial8x10
+    \value WebEngineView.Imperial9x11
+    \value WebEngineView.Imperial9x12
+    \value WebEngineView.Imperial10x11
+    \value WebEngineView.Imperial10x13
+    \value WebEngineView.Imperial10x14
+    \value WebEngineView.Imperial12x11
+    \value WebEngineView.Imperial15x11
+    \value WebEngineView.ExecutiveStandard
+    \value WebEngineView.Note
+    \value WebEngineView.Quarto
+    \value WebEngineView.Statement
+    \value WebEngineView.SuperA
+    \value WebEngineView.SuperB
+    \value WebEngineView.Postcard
+    \value WebEngineView.DoublePostcard
+    \value WebEngineView.Prc16K
+    \value WebEngineView.Prc32K
+    \value WebEngineView.Prc32KBig
+    \value WebEngineView.FanFoldUS
+    \value WebEngineView.FanFoldGerman
+    \value WebEngineView.FanFoldGermanLegal
+    \value WebEngineView.EnvelopeB4
+    \value WebEngineView.EnvelopeB5
+    \value WebEngineView.EnvelopeB6
+    \value WebEngineView.EnvelopeC0
+    \value WebEngineView.EnvelopeC1
+    \value WebEngineView.EnvelopeC2
+    \value WebEngineView.EnvelopeC3
+    \value WebEngineView.EnvelopeC4
+    \value WebEngineView.EnvelopeC5 = \c C5E
+    \value WebEngineView.EnvelopeC6
+    \value WebEngineView.EnvelopeC65
+    \value WebEngineView.EnvelopeC7
+    \value WebEngineView.EnvelopeDL = \c DLE
+    \value WebEngineView.Envelope9
+    \value WebEngineView.Envelope10 = \c Comm10E
+    \value WebEngineView.Envelope11
+    \value WebEngineView.Envelope12
+    \value WebEngineView.Envelope14
+    \value WebEngineView.EnvelopeMonarch
+    \value WebEngineView.EnvelopePersonal
+    \value WebEngineView.EnvelopeChou3
+    \value WebEngineView.EnvelopeChou4
+    \value WebEngineView.EnvelopeInvite
+    \value WebEngineView.EnvelopeItalian
+    \value WebEngineView.EnvelopeKaku2
+    \value WebEngineView.EnvelopeKaku3
+    \value WebEngineView.EnvelopePrc1
+    \value WebEngineView.EnvelopePrc2
+    \value WebEngineView.EnvelopePrc3
+    \value WebEngineView.EnvelopePrc4
+    \value WebEngineView.EnvelopePrc5
+    \value WebEngineView.EnvelopePrc6
+    \value WebEngineView.EnvelopePrc7
+    \value WebEngineView.EnvelopePrc8
+    \value WebEngineView.EnvelopePrc9
+    \value WebEngineView.EnvelopePrc10
+    \value WebEngineView.EnvelopeYou4
+    \value WebEngineView.LastPageSize = \c EnvelopeYou4
     \omitvalue NPageSize
     \omitvalue NPaperSize
 
@@ -976,13 +978,33 @@
     Describes the orientation of a PDF document that gets created from the WebEngineView's contents.
     The enumeration values are mapped from and must match QPageLayout::Orientation.
 
-    \value Portrait
+    \value WebEngineView.Portrait
     The document will be created using portrait orientation.
 
-    \value Landscape
+    \value WebEngineView.Landscape
     The document will be created using landscape orientation.
 
     \sa WebEngineView::printToPdf()
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::activeFocusOnPress
+    \since QtWebEngine 1.2
+
+    Specifies whether the view should gain active focus when pressed.
+    The default value is \c true.
+*/
+
+/*!
+    \qmlproperty bool WebEngineView::backgroundColor
+    \since QtWebEngine 1.2
+
+    Changes the color of the WebEngineView's background, behind the document's
+    body. Can be set to \c "transparent" or to a translucent color to see
+    through the document or to match the web content in a hybrid app to prevent
+    the white flashes that may appear during loading.
+
+    The default value is white.
 */
 
 /*!

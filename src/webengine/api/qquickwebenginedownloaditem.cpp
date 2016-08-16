@@ -179,13 +179,13 @@ quint32 QQuickWebEngineDownloadItem::id() const
 
     Describes the state of the download:
 
-    \value  DownloadRequested
+    \value  WebEngineDownloadItem.DownloadRequested
             Download has been requested, but it has not been accepted yet.
-    \value  DownloadInProgress
+    \value  WebEngineDownloadItem.DownloadInProgress
             Download is in progress.
-    \value  DownloadCompleted
+    \value  WebEngineDownloadItem.DownloadCompleted
             Download completed successfully.
-    \value  DownloadInterrupted
+    \value  WebEngineDownloadItem.DownloadInterrupted
             Download has been interrupted (by the server or because of lost connectivity).
 */
 
@@ -273,12 +273,16 @@ void QQuickWebEngineDownloadItem::setPath(QString path)
 
     Describes the format that is used to save a web page.
 
-    \value UnknownSaveFormat This is not a request for downloading a complete web page.
-    \value SingleHtmlSaveFormat The page is saved as a single HTML page. Resources such as images
-           are not saved.
-    \value CompleteHtmlSaveFormat The page is saved as a complete HTML page, for example a directory
+    \value  WebEngineDownloadItem.UnknownSaveFormat
+            This is not a request for downloading a complete web page.
+    \value  WebEngineDownloadItem.SingleHtmlSaveFormat
+            The page is saved as a single HTML page. Resources such as images
+            are not saved.
+    \value  WebEngineDownloadItem.CompleteHtmlSaveFormat
+            The page is saved as a complete HTML page, for example a directory
             containing the single HTML page and the resources.
-    \value MimeHtmlSaveFormat The page is saved as a complete web page in the MIME HTML format.
+    \value  WebEngineDownloadItem.MimeHtmlSaveFormat
+            The page is saved as a complete web page in the MIME HTML format.
 */
 
 QQuickWebEngineDownloadItem::SavePageFormat QQuickWebEngineDownloadItem::savePageFormat() const

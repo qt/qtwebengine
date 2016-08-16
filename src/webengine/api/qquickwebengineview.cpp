@@ -1052,14 +1052,6 @@ void QQuickWebEngineView::setTestSupport(QQuickWebEngineTestSupport *testSupport
 
 #endif
 
-/*!
- * \qmlproperty bool WebEngineView::activeFocusOnPress
- * \since QtWebEngine 1.2
- *
- * This property specifies whether the view should gain active focus when pressed.
- * The default value is true.
- *
- */
 bool QQuickWebEngineView::activeFocusOnPress() const
 {
     Q_D(const QQuickWebEngineView);
@@ -1222,18 +1214,6 @@ qreal QQuickWebEngineView::zoomFactor() const
     return d->adapter->currentZoomFactor();
 }
 
-/*!
-    \qmlproperty bool WebEngineView::backgroundColor
-    \since QtWebEngine 1.2
-
-    Sets this property to change the color of the WebEngineView's background,
-    behing the document's body. You can set it to "transparent" or to a translucent
-    color to see through the document, or you can set this color to match your
-    web content in an hybrid app to prevent the white flashes that may appear
-    during loading.
-
-    The default value is white.
-*/
 QColor QQuickWebEngineView::backgroundColor() const
 {
     Q_D(const QQuickWebEngineView);

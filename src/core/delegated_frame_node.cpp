@@ -798,7 +798,7 @@ void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTextu
     if (syncToken.HasData())
         mailboxManager->PullTextureUpdates(syncToken);
     texture->fetchTexture(mailboxManager);
-    if (!!gfx::GLContext::GetCurrent()) {
+    if (!!gfx::GLContext::GetCurrent() && gfx::GLFence::IsSupported()) {
         // Create a fence on the Chromium GPU-thread and context
         gfx::GLFence *fence = gfx::GLFence::Create();
         // But transfer it to something generic since we need to read it using Qt's OpenGL.
