@@ -78,7 +78,8 @@ void UserScriptControllerHost::WebContentsObserverHelper::RenderViewCreated(cont
 void UserScriptControllerHost::WebContentsObserverHelper::RenderViewHostChanged(content::RenderViewHost *oldHost,
                                                                                 content::RenderViewHost *newHost)
 {
-    oldHost->Send(new RenderViewObserverHelper_ClearScripts(oldHost->GetRoutingID()));
+    if (oldHost)
+        oldHost->Send(new RenderViewObserverHelper_ClearScripts(oldHost->GetRoutingID()));
 
     content::WebContents *contents = web_contents();
     Q_FOREACH (const UserScript &script, m_controllerHost->m_perContentsScripts.value(contents))
