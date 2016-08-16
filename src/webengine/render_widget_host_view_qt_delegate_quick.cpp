@@ -131,7 +131,7 @@ void RenderWidgetHostViewQtDelegateQuick::setKeyboardFocus()
 
 bool RenderWidgetHostViewQtDelegateQuick::hasKeyboardFocus()
 {
-    return hasFocus();
+    return hasActiveFocus();
 }
 
 void RenderWidgetHostViewQtDelegateQuick::lockMouse()
