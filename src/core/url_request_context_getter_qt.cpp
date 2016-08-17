@@ -216,6 +216,7 @@ void URLRequestContextGetterQt::generateStorage()
         cancelAllUrlRequests();
         // we need to get rid of dangling pointer due to coming storage deletion
         m_urlRequestContext->set_http_transaction_factory(0);
+        m_httpNetworkSession.reset();
     }
 
     m_storage.reset(new net::URLRequestContextStorage(m_urlRequestContext.get()));

@@ -52,6 +52,7 @@ private Q_SLOTS:
     void customUserAgent();
     void httpAcceptLanguage();
     void downloadItem();
+    void changePersistentPath();
 };
 
 void tst_QWebEngineProfile::defaultProfile()
@@ -373,6 +374,25 @@ void tst_QWebEngineProfile::downloadItem()
     connect(&testProfile, &QWebEngineProfile::downloadRequested, this, [=] (QWebEngineDownloadItem *item) { item->accept(); });
     page.load(QUrl::fromLocalFile(QCoreApplication::applicationFilePath()));
     QTRY_COMPARE(downloadSpy.count(), 1);
+}
+
+void tst_QWebEngineProfile::changePersistentPath()
+{
+    QWebEngineProfile testProfile(QStringLiteral("Test"));
+    const QString oldPath = testProfile.persistentStoragePath();
+    QVERIFY(oldPath.endsWith(QStringLiteral("Test")));
+
+    // Make sure the profile has been used and the url-request-context-getter instantiated:
+    QWebEnginePage page(&testProfile);
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.load(QUrl("http://qt-project.org"));
+    if (!loadFinishedSpy.wait(10000) || !loadFinishedSpy.at(0).at(0).toBool())
+        QSKIP("Couldn't load page from network, skipping test.");
+
+    // Test we do not crash (QTBUG-55322):
+    testProfile.setPersistentStoragePath(oldPath + QLatin1Char('2'));
+    const QString newPath = testProfile.persistentStoragePath();
+    QVERIFY(newPath.endsWith(QStringLiteral("Test2")));
 }
 
 QTEST_MAIN(tst_QWebEngineProfile)
