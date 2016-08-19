@@ -25,8 +25,7 @@ RCC_DIR = $$OUT_PWD/$$getConfigDir()/.rcc
 # whenever we are cross compiling.
 cross_compile: DEFINES += QTWEBENGINE_EMBEDDED_SWITCHES
 
-contains(QT_CONFIG, egl): CONFIG += egl
-else: DEFINES += QT_NO_EGL
+qtConfig(egl): CONFIG += egl
 
 RESOURCES += devtools.qrc
 

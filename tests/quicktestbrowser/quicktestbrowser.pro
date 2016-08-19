@@ -1,4 +1,4 @@
-requires(contains(QT_CONFIG, accessibility))
+requires(qtConfig(accessibility))
 
 TEMPLATE = app
 TARGET = quicktestbrowser

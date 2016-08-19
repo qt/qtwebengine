@@ -16,9 +16,9 @@ win32 {
 
 load(qt_app)
 
-contains(QT_CONFIG, build_all): CONFIG += build_all
+qtConfig(build_all): CONFIG += build_all
 
-contains(QT_CONFIG, qt_framework) {
+qtConfig(framework) {
     # Deploy the QtWebEngineProcess app bundle into the QtWebEngineCore framework.
     DESTDIR = $$MODULE_BASE_OUTDIR/lib/QtWebEngineCore.framework/Versions/5/Helpers
 } else {
@@ -28,7 +28,7 @@ contains(QT_CONFIG, qt_framework) {
 }
 msvc: QMAKE_LFLAGS *= /LARGEADDRESSAWARE
 
-contains(QT_CONFIG, qt_framework) {
+qtConfig(framework) {
     target.path = $$[QT_INSTALL_LIBS]/QtWebEngineCore.framework/Versions/5/Helpers
 } else {
     target.path = $$[QT_INSTALL_LIBEXECS]

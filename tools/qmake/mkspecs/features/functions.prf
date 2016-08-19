@@ -50,7 +50,7 @@ defineTest(isPlatformSupported) {
     skipBuild("C++11 support is required in order to build chromium.")
     return(false)
   }
-  contains(QT_CONFIG, mirclient) {
+  qtConfig(mirclient) {
     skipBuild("Mir is not yet supported as graphics backend for Qt WebEngine.")
     return(false)
   }
@@ -90,7 +90,7 @@ defineTest(isGCCVersionSupported) {
 }
 
 defineTest(isQMLTestSupportApiEnabled) {
-    contains(QT_CONFIG, private_tests): return(true) # enable for developer-build
+    qtConfig(private_tests): return(true) # enable for developer-build
     contains(QT_BUILD_PARTS, tests): return(true)
     contains(WEBENGINE_CONFIG, testsupport): return(true)
     return(false)

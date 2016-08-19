@@ -40,9 +40,9 @@ win32-msvc* {
 # and doesn't let Chromium get access to libc symbols through dlsym.
 CONFIG -= bsymbolic_functions
 
-contains(QT_CONFIG, egl): CONFIG += egl
+qtConfig(egl): CONFIG += egl
 
-linux: contains(QT_CONFIG, separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
+linux:qtConfig(separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
 
 REPACK_DIR = $$OUT_PWD/$$getConfigDir()/gen/repack
 # Duplicated from resources/resources.gyp
@@ -58,7 +58,7 @@ resources.files = $$REPACK_DIR/qtwebengine_resources.pak \
 icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
 
 !debug_and_release|!build_all|CONFIG(release, debug|release) {
-    contains(QT_CONFIG, qt_framework) {
+    qtConfig(framework) {
         locales.version = Versions
         locales.path = Resources/qtwebengine_locales
         resources.version = Versions
@@ -83,7 +83,7 @@ icu.files = $$OUT_PWD/$$getConfigDir()/icudtl.dat
         }
     }
 
-    !contains(QT_CONFIG, qt_framework):!force_independent {
+    !qtConfig(framework):!force_independent {
         #
         # Copy essential files to the qtbase build directory for non-prefix builds
         #

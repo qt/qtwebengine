@@ -22,7 +22,7 @@ GYP_CONFIG += disable_glibcxx_debug=1
 !webcore_debug: GYP_CONFIG += remove_webcore_debug_symbols=1
 !v8base_debug: GYP_CONFIG += remove_v8base_debug_symbols=1
 
-linux:contains(QT_CONFIG, separate_debug_info): GYP_CONFIG += linux_dump_symbols=1
+linux:qtConfig(separate_debug_info): GYP_CONFIG += linux_dump_symbols=1
 
 force_debug_info {
     win32: GYP_CONFIG += win_release_extra_cflags=-Zi
@@ -34,9 +34,9 @@ force_debug_info {
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
-    contains(QT_CONFIG, simulator_and_device): CONFIG += simulator_and_device
-    contains(QT_CONFIG, debug_and_release):CONFIG += debug_and_release
-    contains(QT_CONFIG, build_all):CONFIG += build_all
+    qtConfig(simulator_and_device): CONFIG += simulator_and_device
+    qtConfig(debug_and_release): CONFIG += debug_and_release
+    qtConfig(build_all): CONFIG += build_all
 }
 
 cross_compile {
@@ -124,7 +124,7 @@ contains(WEBENGINE_CONFIG, no_spellcheck): {
     osx: GYP_CONFIG += use_browser_spellchecker=1
 }
 
-!contains(QT_CONFIG, qt_framework): contains(QT_CONFIG, private_tests) {
+!qtConfig(framework):qtConfig(private_tests) {
     GYP_CONFIG += qt_install_data=\"$$[QT_INSTALL_DATA/get]\"
     GYP_CONFIG += qt_install_translations=\"$$[QT_INSTALL_TRANSLATIONS/get]\"
 }
