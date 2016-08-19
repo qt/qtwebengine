@@ -172,8 +172,7 @@ void tst_QWebEngineSpellcheck::spellcheck()
     // check replace word
     m_view->page()->replaceMisspelledWord("love");
     text = "I love Qt ....";
-    result = evaluateJavaScriptSync(m_view->page(), "text();").toString();
-    QVERIFY(result == text);
+    QTRY_VERIFY(evaluateJavaScriptSync(m_view->page(), "text();").toString() == text);
 }
 
 QTEST_MAIN(tst_QWebEngineSpellcheck)
