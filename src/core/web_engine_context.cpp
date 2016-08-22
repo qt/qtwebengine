@@ -51,6 +51,7 @@
 #if defined(ENABLE_BASIC_PRINTING)
 #include "chrome/browser/printing/print_job_manager.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
+#include "components/devtools_http_handler/devtools_http_handler.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"

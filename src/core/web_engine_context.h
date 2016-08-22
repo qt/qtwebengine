@@ -45,7 +45,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "components/devtools_http_handler/devtools_http_handler.h"
 
 #include <QSharedPointer>
 
@@ -56,6 +55,10 @@ class RunLoop;
 namespace content {
 class BrowserMainRunner;
 class ContentMainRunner;
+}
+
+namespace devtools_http_handler {
+class DevToolsHttpHandler;
 }
 
 #if defined(ENABLE_BASIC_PRINTING)
