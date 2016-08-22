@@ -37,9 +37,11 @@
 #ifndef QPDFDOCUMENT_H
 #define QPDFDOCUMENT_H
 
-#include <QObject>
-#include <QImage>
 #include "qtpdfglobal.h"
+
+#include <QImage>
+#include <QObject>
+#include <QPdfDocumentRenderOptions>
 
 QT_BEGIN_NAMESPACE
 
@@ -107,7 +109,7 @@ public:
 
     QSizeF pageSize(int page) const;
 
-    QImage render(int page, const QSizeF &pageSize);
+    QImage render(int page, QSize imageSize, QPdfDocumentRenderOptions options = QPdfDocumentRenderOptions());
 
 Q_SIGNALS:
     void passwordChanged();

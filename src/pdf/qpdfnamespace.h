@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -34,72 +34,36 @@
 **
 ****************************************************************************/
 
-#include "pagerenderer.h"
+#ifndef QPDFNAMESPACE_H
+#define QPDFNAMESPACE_H
 
-#include <QElapsedTimer>
-#include <QLoggingCategory>
-#include <QPainter>
-#include <QPdfDocument>
-#include <QUrl>
+#include <QObject>
 
-Q_DECLARE_LOGGING_CATEGORY(lcExample)
+namespace QPdf {
+    Q_NAMESPACE
 
-PageRenderer::PageRenderer(QObject *parent)
-    : QThread(parent)
-    , m_document(nullptr)
-    , m_page(0)
-    , m_zoom(1.)
-    , m_minRenderTime(1000000000.)
-    , m_maxRenderTime(0.)
-    , m_totalRenderTime(0.)
-    , m_totalPagesRendered(0)
-{
+    enum Rotation {
+        Rotate0,
+        Rotate90,
+        Rotate180,
+        Rotate270
+    };
+    Q_ENUM_NS(Rotation)
+
+    enum RenderFlag {
+        NoRenderFlags = 0x000,
+        RenderAnnotations = 0x001,
+        RenderOptimizedForLcd = 0x002,
+        RenderGrayscale = 0x004,
+        RenderForceHalftone = 0x008,
+        RenderTextAliased = 0x010,
+        RenderImageAliased = 0x020,
+        RenderPathAliased = 0x040
+    };
+    Q_FLAG_NS(RenderFlag)
+    Q_DECLARE_FLAGS(RenderFlags, RenderFlag)
 }
 
-void PageRenderer::setDocument(QPdfDocument *document)
-{
-    m_document = document;
-}
+Q_DECLARE_OPERATORS_FOR_FLAGS(QPdf::RenderFlags)
 
-void PageRenderer::requestPage(int page, qreal zoom, Priority priority)
-{
-    // TODO maybe queue up the requests
-    m_page = page;
-    m_zoom = zoom;
-    start(priority);
-}
-
-void PageRenderer::run()
-{
-    renderPage(m_page, m_zoom);
-}
-
-void PageRenderer::renderPage(int page, qreal zoom)
-{
-    if (!m_document || m_document->status() != QPdfDocument::Ready)
-        return;
-
-    const QSizeF size = m_document->pageSize(page) * m_zoom;
-
-    QElapsedTimer timer;
-    timer.start();
-
-    const QImage &img = m_document->render(page, size.toSize());
-
-    const qreal secs = timer.nsecsElapsed() / 1000000000.0;
-    if (secs < m_minRenderTime)
-        m_minRenderTime = secs;
-
-    if (secs > m_maxRenderTime)
-        m_maxRenderTime = secs;
-
-    m_totalRenderTime += secs;
-    ++m_totalPagesRendered;
-
-    emit pageReady(page, zoom, img);
-
-    qCDebug(lcExample) << "page" << page << "zoom" << m_zoom << "size" << size << "in" << secs <<
-                          "secs; min" << m_minRenderTime <<
-                          "avg" << m_totalRenderTime / m_totalPagesRendered <<
-                          "max" << m_maxRenderTime;
-}
+#endif

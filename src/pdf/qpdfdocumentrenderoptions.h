@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 The Qt Company Ltd.
+** Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Tobias König <tobias.koenig@kdab.com>
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtPDF module of the Qt Toolkit.
@@ -34,72 +34,55 @@
 **
 ****************************************************************************/
 
-#include "pagerenderer.h"
+#ifndef QPDFDOCUMENTRENDEROPTIONS_H
+#define QPDFDOCUMENTRENDEROPTIONS_H
 
-#include <QElapsedTimer>
-#include <QLoggingCategory>
-#include <QPainter>
-#include <QPdfDocument>
-#include <QUrl>
+#include "qpdfnamespace.h"
 
-Q_DECLARE_LOGGING_CATEGORY(lcExample)
+#include <QtCore/QObject>
 
-PageRenderer::PageRenderer(QObject *parent)
-    : QThread(parent)
-    , m_document(nullptr)
-    , m_page(0)
-    , m_zoom(1.)
-    , m_minRenderTime(1000000000.)
-    , m_maxRenderTime(0.)
-    , m_totalRenderTime(0.)
-    , m_totalPagesRendered(0)
+QT_BEGIN_NAMESPACE
+
+class QPdfDocumentRenderOptions
 {
+public:
+    Q_DECL_CONSTEXPR QPdfDocumentRenderOptions() Q_DECL_NOTHROW : data(0) {}
+
+    Q_DECL_CONSTEXPR QPdf::Rotation rotation() const Q_DECL_NOTHROW { return static_cast<QPdf::Rotation>(bits.rotation); }
+    Q_DECL_RELAXED_CONSTEXPR void setRotation(QPdf::Rotation _rotation) Q_DECL_NOTHROW { bits.rotation = _rotation; }
+
+    Q_DECL_CONSTEXPR QPdf::RenderFlags renderFlags() const Q_DECL_NOTHROW { return static_cast<QPdf::RenderFlags>(bits.renderFlags); }
+    Q_DECL_RELAXED_CONSTEXPR void setRenderFlags(QPdf::RenderFlags _renderFlags) Q_DECL_NOTHROW { bits.renderFlags = _renderFlags; }
+
+private:
+    friend Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW;
+
+
+    struct Bits {
+        quint32 renderFlags : 8;
+        quint32 rotation    : 3;
+        quint32 reserved    : 21;
+        quint32 reserved2   : 32;
+    };
+
+    union {
+        Bits bits;
+        quint64 data;
+    };
+};
+
+Q_DECLARE_TYPEINFO(QPdfDocumentRenderOptions, Q_PRIMITIVE_TYPE);
+
+Q_DECL_CONSTEXPR inline bool operator==(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
+{
+    return lhs.data == rhs.data;
 }
 
-void PageRenderer::setDocument(QPdfDocument *document)
+Q_DECL_CONSTEXPR inline bool operator!=(QPdfDocumentRenderOptions lhs, QPdfDocumentRenderOptions rhs) Q_DECL_NOTHROW
 {
-    m_document = document;
+    return !operator==(lhs, rhs);
 }
 
-void PageRenderer::requestPage(int page, qreal zoom, Priority priority)
-{
-    // TODO maybe queue up the requests
-    m_page = page;
-    m_zoom = zoom;
-    start(priority);
-}
+QT_END_NAMESPACE
 
-void PageRenderer::run()
-{
-    renderPage(m_page, m_zoom);
-}
-
-void PageRenderer::renderPage(int page, qreal zoom)
-{
-    if (!m_document || m_document->status() != QPdfDocument::Ready)
-        return;
-
-    const QSizeF size = m_document->pageSize(page) * m_zoom;
-
-    QElapsedTimer timer;
-    timer.start();
-
-    const QImage &img = m_document->render(page, size.toSize());
-
-    const qreal secs = timer.nsecsElapsed() / 1000000000.0;
-    if (secs < m_minRenderTime)
-        m_minRenderTime = secs;
-
-    if (secs > m_maxRenderTime)
-        m_maxRenderTime = secs;
-
-    m_totalRenderTime += secs;
-    ++m_totalPagesRendered;
-
-    emit pageReady(page, zoom, img);
-
-    qCDebug(lcExample) << "page" << page << "zoom" << m_zoom << "size" << size << "in" << secs <<
-                          "secs; min" << m_minRenderTime <<
-                          "avg" << m_totalRenderTime / m_totalPagesRendered <<
-                          "max" << m_maxRenderTime;
-}
+#endif // QPDFDOCUMENTRENDEROPTIONS_H

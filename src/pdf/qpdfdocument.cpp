@@ -546,7 +546,17 @@ QSizeF QPdfDocument::pageSize(int page) const
     return result;
 }
 
-QImage QPdfDocument::render(int page, const QSizeF &pageSize)
+/*!
+    Renders the \a page into a QImage of size \a imageSize according to the
+    provided \a renderOptions.
+
+    Returns the rendered page or an empty image in case of an error.
+
+    Note: If the \a imageSize does not match the aspect ratio of the page in the
+    PDF document, the page is rendered scaled, so that it covers the
+    complete \a imageSize.
+*/
+QImage QPdfDocument::render(int page, QSize imageSize, QPdfDocumentRenderOptions renderOptions)
 {
     if (!d->doc)
         return QImage();
@@ -557,11 +567,44 @@ QImage QPdfDocument::render(int page, const QSizeF &pageSize)
     if (!pdfPage)
         return QImage();
 
-    QImage result(pageSize.toSize(), QImage::Format_ARGB32);
+    QImage result(imageSize, QImage::Format_ARGB32);
     result.fill(Qt::transparent);
     FPDF_BITMAP bitmap = FPDFBitmap_CreateEx(result.width(), result.height(), FPDFBitmap_BGRA, result.bits(), result.bytesPerLine());
 
-    FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), 0, 0);
+    int rotation = 0;
+    switch (renderOptions.rotation()) {
+    case QPdf::Rotate0:
+        rotation = 0;
+        break;
+    case QPdf::Rotate90:
+        rotation = 1;
+        break;
+    case QPdf::Rotate180:
+        rotation = 2;
+        break;
+    case QPdf::Rotate270:
+        rotation = 3;
+        break;
+    }
+
+    const QPdf::RenderFlags renderFlags = renderOptions.renderFlags();
+    int flags = 0;
+    if (renderFlags & QPdf::RenderAnnotations)
+        flags |= FPDF_ANNOT;
+    if (renderFlags & QPdf::RenderOptimizedForLcd)
+        flags |= FPDF_LCD_TEXT;
+    if (renderFlags & QPdf::RenderGrayscale)
+        flags |= FPDF_GRAYSCALE;
+    if (renderFlags & QPdf::RenderForceHalftone)
+        flags |= FPDF_RENDER_FORCEHALFTONE;
+    if (renderFlags & QPdf::RenderTextAliased)
+        flags |= FPDF_RENDER_NO_SMOOTHTEXT;
+    if (renderFlags & QPdf::RenderImageAliased)
+        flags |= FPDF_RENDER_NO_SMOOTHIMAGE;
+    if (renderFlags & QPdf::RenderPathAliased)
+        flags |= FPDF_RENDER_NO_SMOOTHPATH;
+
+    FPDF_RenderPageBitmap(bitmap, pdfPage, 0, 0, result.width(), result.height(), rotation, flags);
 
     FPDFBitmap_Destroy(bitmap);
 

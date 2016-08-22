@@ -29,4 +29,6 @@ HEADERS += \
     qpdfbookmarkmodel.h \
     qpdfdocument.h \
     qpdfdocument_p.h \
+    qpdfdocumentrenderoptions.h \
+    qpdfnamespace.h \
     qtpdfglobal.h
