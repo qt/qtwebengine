@@ -135,23 +135,23 @@ QUrl QQuickWebEngineContextMenuData::mediaUrl() const
 }
 
 /*!
-    \qmlproperty MediaType WebEngineContextMenuData::mediaType
+    \qmlproperty enumeration WebEngineContextMenuData::mediaType
 
     Returns the type of the media element or \c MediaTypeNone if the context is not a media element.
 
-    \value  MediaTypeNone
+    \value  WebEngineContextMenuData.MediaTypeNone
             The context is not a media element.
-    \value  MediaTypeImage
+    \value  WebEngineContextMenuData.MediaTypeImage
             The context is an image element
-    \value  MediaTypeVideo
+    \value  WebEngineContextMenuData.MediaTypeVideo
             The context is a video element
-    \value  MediaTypeAudio
+    \value  WebEngineContextMenuData.MediaTypeAudio
             The context is an audio element
-    \value  MediaTypeCanvas
+    \value  WebEngineContextMenuData.MediaTypeCanvas
             The context is a canvas element
-    \value  MediaTypeFile
+    \value  WebEngineContextMenuData.MediaTypeFile
             The context is a file
-    \value  MediaTypePlugin
+    \value  WebEngineContextMenuData.MediaTypePlugin
             The context is a plugin
 */
 

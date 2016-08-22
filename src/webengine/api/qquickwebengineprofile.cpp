@@ -467,13 +467,13 @@ void QQuickWebEngineProfile::setHttpUserAgent(const QString &userAgent)
 
     This enumeration describes the type of the HTTP cache:
 
-    \value  MemoryHttpCache
+    \value  WebEngineProfile.MemoryHttpCache
             Uses an in-memory cache. This is the only setting possible if offTheRecord is set or
             no persistentStoragePath is available.
-    \value  DiskHttpCache
+    \value  WebEngineProfile.DiskHttpCache
             Uses a disk cache. This is the default value.
-    \value  NoCache
-            Disables caching.
+    \value  WebEngineProfile.NoCache
+            Disables caching. (Added in 5.7)
 */
 
 /*!
@@ -504,13 +504,13 @@ void QQuickWebEngineProfile::setHttpCacheType(QQuickWebEngineProfile::HttpCacheT
 
     This enumeration describes the policy of cookie persistency:
 
-    \value  NoPersistentCookies
+    \value  WebEngineProfile.NoPersistentCookies
             Both session and persistent cookies are stored in memory. This is the only setting
             possible if offTheRecord is set or no persistentStoragePath is available.
-    \value  AllowPersistentCookies
+    \value  WebEngineProfile.AllowPersistentCookies
             Cookies marked persistent are saved to and restored from disk, whereas session cookies
             are only stored to disk for crash recovery. This is the default setting.
-    \value  ForcePersistentCookies
+    \value WebEngineProfile.ForcePersistentCookies
             Both session and persistent cookies are saved to and restored from disk.
 */
 
