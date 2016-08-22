@@ -14,6 +14,8 @@ defineReplace(mocAction) {
     OUTPUT_NAME = $$mocOutput($$INPUT_FILE)
     DEFINES_LIST = $$join(DEFINES, " -D", -D)
     INCPATH = $$join(INCLUDEPATH, " -I", -I)
+    # we don't generate a moc_predef file yet.
+    MOC_PREDEF_FILE =
     MOC_COMMAND = $$clean_path($$mocCmdBase())
     MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(DEFINES)"), $$DEFINES_LIST)
     MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(INCPATH)"), $$INCPATH)
