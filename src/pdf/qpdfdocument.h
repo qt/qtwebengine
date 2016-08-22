@@ -101,6 +101,8 @@ Q_SIGNALS:
     void pageCountChanged();
 
 private:
+    friend class QPdfBookmarkModelPrivate;
+
     Q_PRIVATE_SLOT(d, void _q_tryLoadingWithSizeFromContentHeader())
     Q_PRIVATE_SLOT(d, void _q_copyFromSequentialSourceDevice())
     QScopedPointer<QPdfDocumentPrivate> d;

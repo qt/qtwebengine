@@ -1,5 +1,5 @@
 TARGET = QtQPdf
-QT += gui core
+QT += gui core core-private
 QT_PRIVATE += network
 TEMPLATE = lib
 CONFIG += c++11
@@ -22,9 +22,11 @@ msvc {
 
 SOURCES += \
     jsbridge.cpp \
+    qpdfbookmarkmodel.cpp \
     qpdfdocument.cpp
 
 HEADERS += \
+    qpdfbookmarkmodel.h \
     qpdfdocument.h \
     qpdfdocument_p.h \
     qtpdfglobal.h
