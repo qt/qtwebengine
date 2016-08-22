@@ -6,3 +6,6 @@ osx
 
 [WebViewGeopermission::test_geoPermissionRequest]
 osx
+
+[WebEngineViewFocusOnNavigation::test_focusOnNavigation]
+*
