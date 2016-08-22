@@ -28,10 +28,17 @@
 #include "public/fpdf_dataavail.h"
 
 #include <qbuffer.h>
+#include <qmutex.h>
 #include <qnetworkreply.h>
 #include <qpointer.h>
 
 QT_BEGIN_NAMESPACE
+
+class QPdfMutexLocker : public QMutexLocker
+{
+public:
+    QPdfMutexLocker();
+};
 
 class QPdfDocumentPrivate: public FPDF_FILEACCESS, public FX_FILEAVAIL, public FX_DOWNLOADHINTS
 {

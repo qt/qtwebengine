@@ -33,6 +33,11 @@ QT_BEGIN_NAMESPACE
 Q_GLOBAL_STATIC_WITH_ARGS(QMutex, pdfMutex, (QMutex::Recursive));
 static int libraryRefCount;
 
+QPdfMutexLocker::QPdfMutexLocker()
+    : QMutexLocker(pdfMutex())
+{
+}
+
 QPdfDocumentPrivate::QPdfDocumentPrivate()
     : avail(Q_NULLPTR)
     , doc(Q_NULLPTR)
@@ -43,7 +48,7 @@ QPdfDocumentPrivate::QPdfDocumentPrivate()
     asyncBuffer.setData(QByteArray());
     asyncBuffer.open(QIODevice::ReadWrite);
 
-    const QMutexLocker lock(pdfMutex());
+    const QPdfMutexLocker lock;
 
     if (libraryRefCount == 0)
         FPDF_InitLibrary();
@@ -66,7 +71,7 @@ QPdfDocumentPrivate::~QPdfDocumentPrivate()
 {
     q->close();
 
-    const QMutexLocker lock(pdfMutex());
+    const QPdfMutexLocker lock;
 
     if (!--libraryRefCount)
         FPDF_DestroyLibrary();
@@ -74,7 +79,7 @@ QPdfDocumentPrivate::~QPdfDocumentPrivate()
 
 void QPdfDocumentPrivate::clear()
 {
-    QMutexLocker lock(pdfMutex());
+    QPdfMutexLocker lock;
 
     if (doc)
         FPDF_CloseDocument(doc);
@@ -102,7 +107,7 @@ void QPdfDocumentPrivate::updateLastError()
         return;
     }
 
-    QMutexLocker lock(pdfMutex());
+    QPdfMutexLocker lock;
     const unsigned long error = FPDF_GetLastError();
     lock.unlock();
 
@@ -188,7 +193,7 @@ void QPdfDocumentPrivate::initiateAsyncLoadWithTotalSizeKnown(quint64 totalSize)
     // FPDF_FILEACCESS setup
     m_FileLen = totalSize;
 
-    const QMutexLocker lock(pdfMutex());
+    const QPdfMutexLocker lock;
 
     avail = FPDFAvail_Create(this, this);
 }
@@ -210,7 +215,7 @@ void QPdfDocumentPrivate::_q_copyFromSequentialSourceDevice()
 
 void QPdfDocumentPrivate::tryLoadDocument()
 {
-    QMutexLocker lock(pdfMutex());
+    QPdfMutexLocker lock;
 
     if (!FPDFAvail_IsDocAvail(avail, this))
         return;
@@ -244,7 +249,7 @@ void QPdfDocumentPrivate::checkComplete()
 
     loadComplete = true;
 
-    QMutexLocker lock(pdfMutex());
+    QPdfMutexLocker lock;
 
     for (int i = 0, count = FPDF_GetPageCount(doc); i < count; ++i)
         if (!FPDFAvail_IsPageAvail(avail, i, this))
@@ -389,8 +394,6 @@ QString QPdfDocument::password() const
 */
 QVariant QPdfDocument::metaData(MetaDataField field) const
 {
-    const QMutexLocker lock(pdfMutex());
-
     if (!d->doc)
         return QString();
 
@@ -422,10 +425,12 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
         break;
     }
 
+    QPdfMutexLocker lock;
     const unsigned long len = FPDF_GetMetaText(d->doc, fieldName.constData(), Q_NULLPTR, 0);
 
     QVector<ushort> buf(len);
     FPDF_GetMetaText(d->doc, fieldName.constData(), buf.data(), buf.length());
+    lock.unlock();
 
     QString text = QString::fromUtf16(buf.data());
 
@@ -495,7 +500,7 @@ int QPdfDocument::pageCount() const
     if (!d->doc)
         return 0;
 
-    const QMutexLocker lock(pdfMutex());
+    const QPdfMutexLocker lock;
 
     return FPDF_GetPageCount(d->doc);
 }
@@ -506,7 +511,7 @@ QSizeF QPdfDocument::pageSize(int page) const
     if (!d->doc)
         return result;
 
-    const QMutexLocker lock(pdfMutex());
+    const QPdfMutexLocker lock;
 
     FPDF_GetPageSizeByIndex(d->doc, page, &result.rwidth(), &result.rheight());
     return result;
@@ -517,7 +522,7 @@ QImage QPdfDocument::render(int page, const QSizeF &pageSize)
     if (!d->doc)
         return QImage();
 
-    const QMutexLocker lock(pdfMutex());
+    const QPdfMutexLocker lock;
 
     FPDF_PAGE pdfPage = FPDF_LoadPage(d->doc, page);
     if (!pdfPage)
