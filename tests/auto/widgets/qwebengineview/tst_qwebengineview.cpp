@@ -80,6 +80,8 @@ private Q_SLOTS:
     void focusOnNavigation();
 
     void changeLocale();
+    void inputMethodsTextFormat_data();
+    void inputMethodsTextFormat();
 };
 
 // This will be called before the first test function is executed.
@@ -857,6 +859,69 @@ void tst_QWebEngineView::changeLocale()
     QVERIFY(waitForSignal(&viewDE, SIGNAL(titleChanged(QString))));
     QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
     QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
+}
+
+void tst_QWebEngineView::inputMethodsTextFormat_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<int>("start");
+    QTest::addColumn<int>("length");
+    QTest::addColumn<int>("underlineStyle");
+    QTest::addColumn<QColor>("underlineColor");
+    QTest::addColumn<QColor>("backgroundColor");
+
+    QTest::newRow("") << QString("") << 0 << 0 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Q") << QString("Q") << 0 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt") << QString("Qt") << 0 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt") << QString("Qt") << 0 << 2 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt") << QString("Qt") << 1 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt ") << QString("Qt ") << 0 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt ") << QString("Qt ") << 1 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt ") << QString("Qt ") << 2 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt ") << QString("Qt ") << 2 << -1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt ") << QString("Qt ") << -2 << 3 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt ") << QString("Qt ") << -1 << -1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("Qt ") << QString("Qt ") << 0 << 3 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("The Qt") << QString("The Qt") << 0 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("The Qt Company") << QString("The Qt Company") << 0 << 1 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("red") << QColor();
+    QTest::newRow("The Qt Company") << QString("The Qt Company") << 0 << 3 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("green") << QColor();
+    QTest::newRow("The Qt Company") << QString("The Qt Company") << 4 << 2 << static_cast<int>(QTextCharFormat::SingleUnderline) << QColor("green") << QColor("red");
+    QTest::newRow("The Qt Company") << QString("The Qt Company") << 7 << 7 << static_cast<int>(QTextCharFormat::NoUnderline) << QColor("green") << QColor("red");
+    QTest::newRow("The Qt Company") << QString("The Qt Company") << 7 << 7 << static_cast<int>(QTextCharFormat::NoUnderline) << QColor() << QColor("red");
+}
+
+
+void tst_QWebEngineView::inputMethodsTextFormat()
+{
+    QWebEngineView view;
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+
+    view.setHtml("<html><body>"
+                 " <input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>"
+                 "</body></html>");
+    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+
+    evaluateJavaScriptSync(view.page(), "document.getElementById('input1').focus()");
+    view.show();
+
+    QFETCH(QString, string);
+    QFETCH(int, start);
+    QFETCH(int, length);
+    QFETCH(int, underlineStyle);
+    QFETCH(QColor, underlineColor);
+    QFETCH(QColor, backgroundColor);
+
+    QList<QInputMethodEvent::Attribute> attrs;
+    QTextCharFormat format;
+    format.setUnderlineStyle(static_cast<QTextCharFormat::UnderlineStyle>(underlineStyle));
+    format.setUnderlineColor(underlineColor);
+    if (backgroundColor.isValid())
+        format.setBackground(QBrush(backgroundColor));
+    attrs.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, start, length, format));
+
+    QInputMethodEvent im(string, attrs);
+    QVERIFY(QApplication::sendEvent(view.focusProxy(), &im));
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), string);
 }
 
 QTEST_MAIN(tst_QWebEngineView)

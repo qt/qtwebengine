@@ -1026,7 +1026,25 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
             int start = qMin(attribute.start, (attribute.start + attribute.length));
             int end = qMax(attribute.start, (attribute.start + attribute.length));
-            underlines.push_back(blink::WebCompositionUnderline(start, end, /*color*/ SK_ColorBLACK, /*thick*/ false, /*backgroundColor*/ SK_ColorTRANSPARENT));
+
+            // Blink does not support negative position values. Adjust start and end positions
+            // to non-negative values.
+            if (start < 0) {
+                start = 0;
+                end = qMax(0, start + end);
+            }
+
+            QTextCharFormat format = qvariant_cast<QTextFormat>(attribute.value).toCharFormat();
+
+            QColor underlineColor(0, 0, 0, 0);
+            if (format.underlineStyle() != QTextCharFormat::NoUnderline)
+                underlineColor = format.underlineColor();
+
+            QColor backgroundColor(0, 0, 0, 0);
+            if (format.background().style() != Qt::NoBrush)
+                backgroundColor = format.background().color();
+
+            underlines.push_back(blink::WebCompositionUnderline(start, end, toSk(underlineColor), /*thick*/ false, toSk(backgroundColor)));
             break;
         }
         case QInputMethodEvent::Cursor:
