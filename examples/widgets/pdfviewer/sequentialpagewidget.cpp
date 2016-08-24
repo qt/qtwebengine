@@ -42,6 +42,7 @@ SequentialPageWidget::SequentialPageWidget(QWidget *parent)
     , m_topPageShowing(0)
     , m_zoom(1.)
     , m_screenResolution(QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72.0)
+    , m_document(nullptr)
 {
     connect(m_pageRenderer, SIGNAL(pageReady(int, qreal, QImage)), this, SLOT(pageLoaded(int, qreal, QImage)), Qt::QueuedConnection);
     grabGesture(Qt::SwipeGesture);
@@ -52,11 +53,14 @@ SequentialPageWidget::~SequentialPageWidget()
     delete m_pageRenderer;
 }
 
-void SequentialPageWidget::openDocument(const QUrl &url)
+void SequentialPageWidget::setDocument(QPdfDocument *document)
 {
-    m_pageSizes = m_pageRenderer->openDocument(url);
-    m_topPageShowing = 0;
-    invalidate();
+    m_pageRenderer->setDocument(document);
+
+    m_document = document;
+    connect(m_document, &QPdfDocument::statusChanged, this, &SequentialPageWidget::documentStatusChanged);
+
+    documentStatusChanged();
 }
 
 void SequentialPageWidget::setZoom(qreal factor)
@@ -88,6 +92,19 @@ void SequentialPageWidget::invalidate()
     qCDebug(lcExample) << "total size" << m_totalSize;
     m_pageCache.clear();
     update();
+}
+
+void SequentialPageWidget::documentStatusChanged()
+{
+    m_pageSizes.clear();
+    m_topPageShowing = 0;
+
+    if (m_document->status() == QPdfDocument::Ready) {
+        for (int page = 0; page < m_document->pageCount(); ++page)
+            m_pageSizes.append(m_document->pageSize(page));
+    }
+
+    invalidate();
 }
 
 void SequentialPageWidget::pageLoaded(int page, qreal zoom, QImage image)

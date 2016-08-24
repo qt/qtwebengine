@@ -40,8 +40,9 @@ public:
     int topPageShowing() { return m_topPageShowing; }
     int bottomPageShowing() { return m_bottomPageShowing; }
 
+    void setDocument(QPdfDocument *document);
+
 public slots:
-    void openDocument(const QUrl &url);
     void setZoom(qreal factor);
     void invalidate();
 
@@ -50,6 +51,7 @@ signals:
     void zoomChanged(qreal factor);
 
 private slots:
+    void documentStatusChanged();
     void pageLoaded(int page, qreal zoom, QImage image);
 
 private:
@@ -72,6 +74,8 @@ private:
     QSize m_totalSize;
     qreal m_zoom;
     qreal m_screenResolution; // pixels per point
+
+    QPdfDocument *m_document;
 };
 
 #endif // SEQUENTIALPAGEWIDGET_H

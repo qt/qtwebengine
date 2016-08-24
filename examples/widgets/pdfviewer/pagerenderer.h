@@ -22,24 +22,21 @@
 #ifndef PAGECACHE_H
 #define PAGECACHE_H
 
-#include <QBrush>
-#include <QHash>
-#include <QPixmap>
-#include <QRunnable>
+#include <QImage>
 #include <QThread>
-#include <QPdfDocument>
 
 class QPdfDocument;
 
 class PageRenderer : public QThread
 {
     Q_OBJECT
+
 public:
-    PageRenderer();
-    ~PageRenderer();
+    explicit PageRenderer(QObject *parent = nullptr);
 
 public slots:
-    QVector<QSizeF> openDocument(const QUrl &location);
+    void setDocument(QPdfDocument *document);
+
     void requestPage(int page, qreal zoom, Priority priority = QThread::NormalPriority);
 
 signals:
@@ -52,7 +49,7 @@ private:
     void renderPage(int page, qreal zoom);
 
 private:
-    QPdfDocument m_doc;
+    QPdfDocument *m_document;
 
     // current request only
     int m_page;

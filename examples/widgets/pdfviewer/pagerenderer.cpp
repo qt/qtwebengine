@@ -20,17 +20,18 @@
 ******************************************************************************/
 
 #include "pagerenderer.h"
+
+#include <QElapsedTimer>
+#include <QLoggingCategory>
 #include <QPainter>
 #include <QPdfDocument>
-#include <QLoggingCategory>
-#include <QElapsedTimer>
 #include <QUrl>
 
 Q_DECLARE_LOGGING_CATEGORY(lcExample)
 
-PageRenderer::PageRenderer()
-    : QThread(Q_NULLPTR)
-    , m_doc(new QPdfDocument(this))
+PageRenderer::PageRenderer(QObject *parent)
+    : QThread(parent)
+    , m_document(nullptr)
     , m_page(0)
     , m_zoom(1.)
     , m_minRenderTime(1000000000.)
@@ -40,23 +41,9 @@ PageRenderer::PageRenderer()
 {
 }
 
-PageRenderer::~PageRenderer()
+void PageRenderer::setDocument(QPdfDocument *document)
 {
-}
-
-QVector<QSizeF> PageRenderer::openDocument(const QUrl &location)
-{
-    if (location.isLocalFile())
-        m_doc.load(location.toLocalFile());
-    else {
-        qCWarning(lcExample, "non-local file loading is not implemented");
-        return QVector<QSizeF>();
-    }
-    // TODO maybe do in run() if it takes too long
-    QVector<QSizeF> pageSizes;
-    for (int page = 0; page < m_doc.pageCount(); ++page)
-        pageSizes.append(m_doc.pageSize(page));
-    return pageSizes;
+    m_document = document;
 }
 
 void PageRenderer::requestPage(int page, qreal zoom, Priority priority)
@@ -74,16 +61,26 @@ void PageRenderer::run()
 
 void PageRenderer::renderPage(int page, qreal zoom)
 {
-    QSizeF size = m_doc.pageSize(page) * m_zoom;
-    QElapsedTimer timer; timer.start();
-    const QImage &img = m_doc.render(page, size);
-    qreal secs = timer.nsecsElapsed() / 1000000000.0;
+    if (!m_document || m_document->status() != QPdfDocument::Ready)
+        return;
+
+    const QSizeF size = m_document->pageSize(page) * m_zoom;
+
+    QElapsedTimer timer;
+    timer.start();
+
+    const QImage &img = m_document->render(page, size);
+
+    const qreal secs = timer.nsecsElapsed() / 1000000000.0;
     if (secs < m_minRenderTime)
         m_minRenderTime = secs;
+
     if (secs > m_maxRenderTime)
         m_maxRenderTime = secs;
+
     m_totalRenderTime += secs;
     ++m_totalPagesRendered;
+
     emit pageReady(page, zoom, img);
 
     qCDebug(lcExample) << "page" << page << "zoom" << m_zoom << "size" << size << "in" << secs <<

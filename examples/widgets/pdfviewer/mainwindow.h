@@ -22,8 +22,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
 #include <QLoggingCategory>
+#include <QMainWindow>
 
 Q_DECLARE_LOGGING_CATEGORY(lcExample)
 
@@ -32,6 +32,7 @@ class MainWindow;
 }
 
 class QLineEdit;
+class QPdfDocument;
 class SequentialPageWidget;
 
 class MainWindow : public QMainWindow
@@ -39,7 +40,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 public slots:
@@ -66,6 +67,8 @@ private:
     SequentialPageWidget *m_pageWidget;
     QLineEdit *m_zoomEdit;
     QLineEdit *m_pageEdit;
+
+    QPdfDocument *m_document;
 };
 
 #endif // MAINWINDOW_H

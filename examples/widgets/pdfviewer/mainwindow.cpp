@@ -22,13 +22,14 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "sequentialpagewidget.h"
+
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <QScroller>
 #include <QPdfDocument>
+#include <QScroller>
 #include <QtMath>
-#include "sequentialpagewidget.h"
 
 const qreal zoomMultiplier = qSqrt(2.0);
 
@@ -40,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_pageWidget(new SequentialPageWidget(this))
     , m_zoomEdit(new QLineEdit(this))
     , m_pageEdit(new QLineEdit(this))
+    , m_document(new QPdfDocument(this))
 {
     ui->setupUi(this);
     ui->scrollArea->setWidget(m_pageWidget);
@@ -57,6 +59,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_pageEdit, SIGNAL(returnPressed()), this, SLOT(on_actionGo_triggered()));
 
     QScroller::grabGesture(ui->scrollArea);
+
+    m_pageWidget->setDocument(m_document);
 }
 
 MainWindow::~MainWindow()
@@ -66,9 +70,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::open(const QUrl &docLocation)
 {
-    if (docLocation.isLocalFile())
-        m_pageWidget->openDocument(docLocation);
-    else {
+    if (docLocation.isLocalFile()) {
+        m_document->load(docLocation.toLocalFile());
+    } else {
         qCDebug(lcExample) << docLocation << "is not a valid local file";
         QMessageBox::critical(this, tr("Failed to open"), tr("%1 is not a valid local file").arg(docLocation.toString()));
     }
