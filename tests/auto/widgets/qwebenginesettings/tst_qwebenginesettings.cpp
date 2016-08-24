@@ -27,6 +27,8 @@ class tst_QWebEngineSettings: public QObject {
 
 private Q_SLOTS:
     void resetAttributes();
+    void defaultFontFamily_data();
+    void defaultFontFamily();
 };
 
 void tst_QWebEngineSettings::resetAttributes()
@@ -56,6 +58,27 @@ void tst_QWebEngineSettings::resetAttributes()
     QCOMPARE(newSize, settings->fontSize(QWebEngineSettings::MinimumFontSize));
     settings->resetFontSize(QWebEngineSettings::MinimumFontSize);
     QCOMPARE(defaultSize, settings->fontSize(QWebEngineSettings::MinimumFontSize));
+}
+
+void tst_QWebEngineSettings::defaultFontFamily_data()
+{
+    QTest::addColumn<int>("fontFamily");
+
+    QTest::newRow("StandardFont") << static_cast<int>(QWebEngineSettings::StandardFont);
+    QTest::newRow("FixedFont") << static_cast<int>(QWebEngineSettings::FixedFont);
+    QTest::newRow("SerifFont") << static_cast<int>(QWebEngineSettings::SerifFont);
+    QTest::newRow("SansSerifFont") << static_cast<int>(QWebEngineSettings::SansSerifFont);
+    QTest::newRow("CursiveFont") << static_cast<int>(QWebEngineSettings::CursiveFont);
+    QTest::newRow("FantasyFont") << static_cast<int>(QWebEngineSettings::FantasyFont);
+}
+
+void tst_QWebEngineSettings::defaultFontFamily()
+{
+    QWebEngineProfile profile;
+    QWebEngineSettings *settings = profile.settings();
+
+    QFETCH(int, fontFamily);
+    QVERIFY(!settings->fontFamily(static_cast<QWebEngineSettings::FontFamily>(fontFamily)).isEmpty());
 }
 
 QTEST_MAIN(tst_QWebEngineSettings)
