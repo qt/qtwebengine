@@ -86,6 +86,7 @@ void SequentialPageWidget::invalidate()
     setMinimumSize(m_totalSize);
     emit zoomChanged(m_zoom);
     qCDebug(lcExample) << "total size" << m_totalSize;
+    m_pageCache.clear();
     update();
 }
 
