@@ -132,6 +132,7 @@ void SequentialPageWidget::paintEvent(QPaintEvent * event)
         QSizeF size = pageSize(page);
         if (m_pageCache.contains(page)) {
             const QImage &img = m_pageCache[page];
+            painter.fillRect((width() - img.width()) / 2, y, size.width(), size.height(), Qt::white);
             painter.drawImage((width() - img.width()) / 2, y, img);
         } else {
             painter.fillRect((width() - size.width()) / 2, y, size.width(), size.height(), m_placeholderBackground);
