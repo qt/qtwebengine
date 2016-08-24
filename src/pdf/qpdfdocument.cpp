@@ -251,9 +251,15 @@ void QPdfDocumentPrivate::checkComplete()
 
     QPdfMutexLocker lock;
 
-    for (int i = 0, count = FPDF_GetPageCount(doc); i < count; ++i)
-        if (!FPDFAvail_IsPageAvail(avail, i, this))
+    for (int i = 0, count = FPDF_GetPageCount(doc); i < count; ++i) {
+        int result = PDF_DATA_NOTAVAIL;
+        while (result == PDF_DATA_NOTAVAIL) {
+            result = FPDFAvail_IsPageAvail(avail, i, this);
+        }
+
+        if (result == PDF_DATA_ERROR)
             loadComplete = false;
+    }
 
     lock.unlock();
 
