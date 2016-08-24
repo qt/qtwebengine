@@ -42,6 +42,7 @@
         \li \l{HTML5 Geolocation}
         \li \l{Pepper Plugin API}
         \li \l{Print to PDF}
+        \li \l{View Source}
         \li \l{WebRTC}
     \endlist
 
@@ -221,6 +222,35 @@
     {Demo Browser} by selecting \uicontrol File > \uicontrol {Print to PDF}.
 
     Support for this feature was added in Qt 5.7.0.
+
+    \section1 View Source
+
+    Qt WebEngine supports viewing the HTML source of a web page.
+
+    This feature can be used from custom menus or assigned to custom events.
+    For more information, see WebEngineView::viewSource, WebEngineView::canViewSource,
+    QWebEnginePage::viewSource, and QWebEnginePage::canViewSource.
+
+    This feature can be tested by opening a web page in \l{WebEngine Widgets
+    Simple Browser Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}
+    {Nano Browser}, and then selecting \c{Page Source} in the context menu. The
+    \c{Page Source} context menu entry opens the source view in a new tab.
+
+    For opening the source view in the current tab, URLs with \l{view-source URI scheme}
+    are also supported. For example, you can type the following URL to the URL bar
+    to view the HTML source of the qt.io web page:
+    \code
+    view-source:https://www.qt.io/
+    \endcode
+
+    Auto-completion of incomplete URLs with \l{view-source URI scheme} makes the usage of
+    this feature more comfortable. For example, the following incomplete URL also loads
+    the source view of the qt.io web page:
+    \code
+    view-source:qt.io
+    \endcode
+
+    Support for this feature was added in Qt 5.8.0.
 
     \section1 WebRTC
 
