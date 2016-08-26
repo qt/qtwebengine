@@ -1,3 +1,18 @@
+defineTest(isQtMinimum) {
+    !equals(QT_MAJOR_VERSION, $$1): return(false)
+    count(ARGS, 1, greaterThan) {
+        lessThan(QT_MINOR_VERSION, $$2): return(false)
+    }
+    return(true)
+}
+
+!isQtMinimum(5, 8) {
+    defineTest(qtConfig) {
+        contains(QT_CONFIG, $$1): return(true)
+        return(false)
+    }
+}
+
 defineTest(isPlatformSupported) {
   linux {
     !gcc:!clang {

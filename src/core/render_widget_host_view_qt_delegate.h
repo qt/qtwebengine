@@ -51,6 +51,7 @@ class QEvent;
 class QPainter;
 class QSGLayer;
 class QSGNode;
+class QSGRectangleNode;
 class QSGTexture;
 class QVariant;
 class QWindow;
@@ -61,11 +62,8 @@ class QSGImageNode;
 typedef QSGImageNode QSGInternalImageNode;
 class QSGSimpleTextureNode;
 typedef QSGSimpleTextureNode QSGTextureNode;
-class QSGSimpleRectNode;
-typedef QSGSimpleRectNode QSGRectangleNode;
 #else
 class QSGInternalImageNode;
-class QSGRectangleNode;
 class QSGImageNode;
 typedef QSGImageNode QSGTextureNode;
 #endif

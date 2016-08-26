@@ -259,7 +259,8 @@ QSGRectangleNode *RenderWidgetHostViewQtDelegateWidget::createRectangleNode()
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
     return quickWindow()->createRectangleNode();
 #else
-    return new QSGSimpleRectNode();
+    QSGRenderContext *renderContext = QQuickWindowPrivate::get(quickWindow())->context;
+    return renderContext->sceneGraphContext()->createRectangleNode();
 #endif
 }
 
