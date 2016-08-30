@@ -39,8 +39,17 @@ qtConfig(system-zlib): use?(system_minizip): GYP_CONFIG += use_system_zlib=1
 qtConfig(system-png): GYP_CONFIG += use_system_libpng=1
 qtConfig(system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 qtConfig(system-harfbuzz): GYP_CONFIG += use_system_harfbuzz=1
-!contains(QT_CONFIG, pulseaudio): GYP_CONFIG += use_pulseaudio=0
 !qtConfig(glib): GYP_CONFIG += use_glib=0
+contains(QT_CONFIG, pulseaudio) {
+    GYP_CONFIG += use_pulseaudio=1
+} else {
+    GYP_CONFIG += use_pulseaudio=0
+}
+contains(QT_CONFIG, alsa) {
+    GYP_CONFIG += use_alsa=1
+} else {
+    GYP_CONFIG += use_alsa=0
+}
 use?(system_libevent): GYP_CONFIG += use_system_libevent=1
 use?(system_libwebp):  GYP_CONFIG += use_system_libwebp=1
 use?(system_libsrtp):  GYP_CONFIG += use_system_libsrtp=1
