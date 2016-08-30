@@ -93,7 +93,9 @@ QQuickWebEngineCertificateError::QQuickWebEngineCertificateError(const QSharedPo
 
 QQuickWebEngineCertificateError::~QQuickWebEngineCertificateError()
 {
-    rejectCertificate();
+    Q_D(QQuickWebEngineCertificateError);
+    if (!d->answered)
+        rejectCertificate();
 }
 
 
