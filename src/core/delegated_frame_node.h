@@ -50,6 +50,7 @@
 #include <QSharedData>
 #include <QSharedPointer>
 #include <QWaitCondition>
+#include <QtGui/QOffscreenSurface>
 
 #include "chromium_gpu_helper.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -105,6 +106,10 @@ private:
     QMutex m_mutex;
     QList<gfx::TransferableFence> m_textureFences;
     scoped_ptr<gpu::SyncPointClient> m_syncPointClient;
+#if defined(USE_X11)
+    bool m_contextShared;
+    QScopedPointer<QOffscreenSurface> m_offsurface;
+#endif
 };
 
 } // namespace QtWebEngineCore
