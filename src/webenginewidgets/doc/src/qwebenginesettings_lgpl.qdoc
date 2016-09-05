@@ -91,7 +91,8 @@
     \value  JavascriptEnabled
             Enables the running of JavaScript programs. Enabled by default.
     \value  JavascriptCanOpenWindows
-            Allows JavaScript programs to open new windows. Enabled by default.
+            Allows JavaScript programs to open popup windows without user
+            interaction. Enabled by default.
     \value  JavascriptCanAccessClipboard
             Allows JavaScript programs to read from and write to the clipboard. Disabled by
             default.

@@ -96,7 +96,7 @@ bool QQuickWebEngineSettings::javascriptEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::javascriptCanOpenWindows
 
-    Allows JavaScript programs to open new windows.
+    Allows JavaScript programs to open popup windows without user interaction.
 
     Enabled by default.
 */
