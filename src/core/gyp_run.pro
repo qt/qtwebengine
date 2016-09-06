@@ -79,6 +79,10 @@ contains(QT_ARCH, "arm") {
         contains(MFPU, "neon")|contains(MFPU, "neon-vfpv4"): GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=1
         else:!lessThan(MARMV, 7): GYP_CONFIG += arm_neon=0 arm_neon_optional=1
         else: GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=0 arm_neon_optional=0
+    } else {
+        # Chromium defaults to arm_neon=1, Qt does not.
+        GYP_CONFIG += arm_neon=0
+        !lessThan(MARMV, 7): GYP_CONFIG += arm_neon_optional=1
     }
 
     contains(QMAKE_CFLAGS, "-marm"): GYP_CONFIG += arm_thumb=0
