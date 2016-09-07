@@ -4,7 +4,7 @@ TARGET = QtWebEngineWidgets
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 
 QT += webenginecore widgets network quick
-QT_PRIVATE += quick-private gui-private core-private
+QT_PRIVATE += quick-private gui-private core-private widgets-private
 
 INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 

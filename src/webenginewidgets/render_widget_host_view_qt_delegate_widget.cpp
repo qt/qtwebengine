@@ -48,6 +48,7 @@
 #include <QWindow>
 #include <private/qsgcontext_p.h>
 #include <private/qsgengine_p.h>
+#include <private/qwidget_p.h>
 
 namespace QtWebEngineCore {
 
@@ -335,6 +336,12 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
             event->accept();
             return true;
         }
+    }
+
+    QEvent::Type type = event->type();
+    if (type == QEvent::FocusIn) {
+        QWidgetPrivate *d = QWidgetPrivate::get(this);
+        d->updateWidgetTransform(event);
     }
 
     if (event->type() == QEvent::MouseButtonDblClick) {
