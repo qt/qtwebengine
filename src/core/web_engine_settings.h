@@ -81,7 +81,8 @@ public:
         AutoLoadIconsForPage,
         TouchIconsEnabled,
         FocusOnNavigationEnabled,
-        PrintElementBackgrounds
+        PrintElementBackgrounds,
+        AllowRunningInsecureContent
     };
 
     // Must match the values from the public API in qwebenginesettings.h.

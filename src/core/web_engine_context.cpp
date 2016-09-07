@@ -103,6 +103,7 @@ QT_END_NAMESPACE
 namespace {
 
 scoped_refptr<QtWebEngineCore::WebEngineContext> sContext;
+static bool s_destroyed = false;
 
 void destroyContext()
 {
@@ -111,6 +112,7 @@ void destroyContext()
     // WebEngineContext's pointer is used.
     sContext->destroy();
     sContext = 0;
+    s_destroyed = true;
 }
 
 bool usingANGLE()
@@ -189,18 +191,29 @@ void WebEngineContext::destroy()
     // RenderProcessHostImpl should be destroyed before WebEngineContext since
     // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
     m_browserRunner.reset(0);
+
+    // Drop the false reference.
+    sContext->Release();
 }
 
 WebEngineContext::~WebEngineContext()
 {
+    // WebEngineContext::destroy() must be called before we are deleted
+    Q_ASSERT(!m_globalQObject);
+    Q_ASSERT(!m_devtools);
+    Q_ASSERT(!m_browserRunner);
 }
 
 scoped_refptr<WebEngineContext> WebEngineContext::current()
 {
+    if (s_destroyed)
+        return nullptr;
     if (!sContext.get()) {
         sContext = new WebEngineContext();
         // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
         qAddPostRoutine(destroyContext);
+        // Add a false reference so there is no race between unreferencing sContext and a global QApplication.
+        sContext->AddRef();
     }
     return sContext;
 }
