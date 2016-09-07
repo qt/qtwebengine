@@ -3,7 +3,6 @@
         <file>ApplicationRoot.qml</file>
         <file>BrowserDialog.qml</file>
         <file>BrowserWindow.qml</file>
-        <file>ContextMenuExtras.qml</file>
         <file>FeaturePermissionBar.qml</file>
         <file>FullScreenNotification.qml</file>
         <file>ButtonWithMenu.qml</file>
