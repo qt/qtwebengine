@@ -61,8 +61,8 @@ using QtWebEngineCore::UserScript;
     not accessible from a different one. ScriptWorldId provides some predefined IDs for this
     purpose.
 
-    The following Chromium extensions are supported since Qt 5.8: \c @exclude, \c @include,
-    \c @name, \c @match, and \c @run-at.
+    The following \l Greasemonkey attributes are supported since Qt 5.8:
+    \c @exclude, \c @include, \c @name, \c @match, and \c @run-at.
 
     Use QWebEnginePage::scripts() and QWebEngineProfile::scripts() to access
     the collection of scripts associated with a single page or a
