@@ -505,8 +505,7 @@ void tst_QQuickWebEngineView::printToPdf()
 
     QString path = tempDir.path() + "/print_success.pdf";
     view->printToPdf(path, QQuickWebEngineView::A4, QQuickWebEngineView::Portrait);
-    QTest::qWait(500);
-    QVERIFY(QFile::exists(path));
+    QTRY_VERIFY(QFile::exists(path));
 
 #if !defined(Q_OS_WIN)
     path = tempDir.path() + "/print_//fail.pdf";
@@ -514,8 +513,7 @@ void tst_QQuickWebEngineView::printToPdf()
     path = tempDir.path() + "/print_|fail.pdf";
 #endif // #if !defined(Q_OS_WIN)
     view->printToPdf(path, QQuickWebEngineView::A4, QQuickWebEngineView::Portrait);
-    QTest::qWait(500);
-    QVERIFY(!QFile::exists(path));
+    QTRY_VERIFY(!QFile::exists(path));
 }
 
 void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled()
