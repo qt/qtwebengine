@@ -44,6 +44,9 @@
 #include "base/threading/thread_restrictions.h"
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#if defined(USE_BROWSER_SPELLCHECKER)
+#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
+#endif
 #endif
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -377,7 +380,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     host->AddFilter(new BrowserMessageFilterQt(id));
 #endif
 #if defined(ENABLE_SPELLCHECK)
+    // SpellCheckMessageFilter is required for both Hunspell and Native configurations.
     host->AddFilter(new SpellCheckMessageFilter(id));
+#endif
+#if defined(Q_OS_MACOS) && defined(USE_BROWSER_SPELLCHECKER)
+  host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
 #if defined(ENABLE_BASIC_PRINTING)
     host->AddFilter(new PrintingMessageFilterQt(host->GetID()));

@@ -15,8 +15,12 @@ qtHaveModule(webenginewidgets) {
         webenginewidgets/markdowneditor \
         webenginewidgets/simplebrowser
 
-    !contains(WEBENGINE_CONFIG, no_spellcheck):!osx:!cross_compile {
-        SUBDIRS += webenginewidgets/spellchecker
+    !contains(WEBENGINE_CONFIG, no_spellcheck):!cross_compile {
+        !contains(WEBENGINE_CONFIG, use_native_spellchecker) {
+            SUBDIRS += webenginewidgets/spellchecker
+        } else {
+            message("Spellcheck example will not be built because it depends on usage of Hunspell dictionaries.")
+        }
     }
 
 }

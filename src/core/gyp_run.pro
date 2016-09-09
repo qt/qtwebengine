@@ -124,10 +124,16 @@ contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s
 
 contains(WEBENGINE_CONFIG, no_spellcheck): {
     GYP_CONFIG += enable_spellcheck=0
-    osx: GYP_CONFIG += use_browser_spellchecker=0
+    macos: GYP_CONFIG += use_browser_spellchecker=0
 } else {
     GYP_CONFIG += enable_spellcheck=1
-    osx: GYP_CONFIG += use_browser_spellchecker=1
+    macos {
+        contains(WEBENGINE_CONFIG, use_native_spellchecker) {
+            GYP_CONFIG += use_browser_spellchecker=1
+        } else {
+            GYP_CONFIG += use_browser_spellchecker=0
+        }
+    }
 }
 
 !qtConfig(framework):qtConfig(private_tests) {

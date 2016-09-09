@@ -69,7 +69,7 @@ QString fallbackDir() {
     return directory;
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
 static inline CFBundleRef frameworkBundle()
 {
     return CFBundleGetBundleWithIdentifier(CFSTR("org.qt-project.Qt.QtWebEngineCore"));
@@ -110,6 +110,34 @@ static QString getResourcesPath(CFBundleRef frameworkBundle)
     }
     return path;
 }
+#endif
+
+#if defined(OS_MACOSX)
+static QString getMainApplicationResourcesPath()
+{
+    QString resourcesPath;
+    CFBundleRef mainBundle = CFBundleGetMainBundle();
+    if (!mainBundle)
+        return resourcesPath;
+
+    // Will point to Resources inside an app bundle, or in case if the application is not packaged
+    // as a bundle, will point to the application directory, where the resources are assumed to be
+    // found.
+    CFURLRef resourcesRelativeUrl = CFBundleCopyResourcesDirectoryURL(mainBundle);
+    if (!resourcesRelativeUrl)
+        return resourcesPath;
+
+    CFURLRef resourcesAbsoluteUrl = CFURLCopyAbsoluteURL(resourcesRelativeUrl);
+    CFStringRef resourcesAbolutePath = CFURLCopyFileSystemPath(resourcesAbsoluteUrl,
+                                                                kCFURLPOSIXPathStyle);
+    resourcesPath = QString::fromCFString(resourcesAbolutePath);
+    CFRelease(resourcesAbolutePath);
+    CFRelease(resourcesAbsoluteUrl);
+    CFRelease(resourcesRelativeUrl);
+
+    return resourcesPath;
+}
+
 #endif
 
 QString subProcessPath()
@@ -181,18 +209,42 @@ QString localesPath()
 #if defined(ENABLE_SPELLCHECK)
 QString dictionariesPath()
 {
-#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
-    return getResourcesPath(frameworkBundle()) % QLatin1String("/qtwebengine_dictionaries");
-#else
-    // first local path
-    static QString potentialDictionariesPath = QCoreApplication::applicationDirPath() % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+    static QString potentialDictionariesPath;
+    static bool initialized = false;
+    QStringList candidatePaths;
+    if (!initialized) {
+        initialized = true;
 
-    // now global one
-    if (!QFileInfo::exists(potentialDictionariesPath))
-        potentialDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath) % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+        // First try to find dictionaries near the application.
+#ifdef OS_MACOSX
+        QString resourcesDictionariesPath = getMainApplicationResourcesPath()
+                % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+        candidatePaths << resourcesDictionariesPath;
+#endif
+        QString applicationDictionariesPath = QCoreApplication::applicationDirPath()
+                % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+        candidatePaths << applicationDictionariesPath;
+
+        // Then try to find dictionaries near the installed library.
+#if defined(OS_MACOSX) && defined(QT_MAC_FRAMEWORK_BUILD)
+        QString frameworkDictionariesPath = getResourcesPath(frameworkBundle())
+                % QLatin1String("/qtwebengine_dictionaries");
+        candidatePaths << frameworkDictionariesPath;
+#endif
+
+        QString libraryDictionariesPath = QLibraryInfo::location(QLibraryInfo::DataPath)
+                % QDir::separator() % QLatin1String("qtwebengine_dictionaries");
+        candidatePaths << libraryDictionariesPath;
+
+        Q_FOREACH (const QString &candidate, candidatePaths) {
+            if (QFileInfo::exists(candidate)) {
+                potentialDictionariesPath = candidate;
+                break;
+            }
+        }
+    }
 
     return potentialDictionariesPath;
-#endif
 }
 #endif // ENABLE_SPELLCHECK
 

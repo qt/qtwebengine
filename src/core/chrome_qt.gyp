@@ -132,6 +132,8 @@
               'sources!': [
                 '<(DEPTH)/chrome/renderer/spellchecker/platform_spelling_engine.cc',
                 '<(DEPTH)/chrome/renderer/spellchecker/platform_spelling_engine.h',
+                '<(DEPTH)/chrome/browser/spellchecker/spellcheck_message_filter_platform.h',
+                '<(DEPTH)/chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc',
               ],
             }],
           ],
