@@ -96,6 +96,11 @@ using QtWebEngineCore::BrowserContextAdapter;
     A QWebEngineUrlSchemeHandler can be registered for a profile by installUrlSchemeHandler()
     to add support for custom URL schemes. Requests for the scheme are then issued to
     QWebEngineUrlSchemeHandler::requestStarted() as QWebEngineUrlRequestJob objects.
+
+    Spellchecking HTML form fields can be enabled per profile by using the setSpellCheckEnabled()
+    method and the current language used for spellchecking can be set by using the
+    setSpellCheckLanguage() method.
+
 */
 
 /*!

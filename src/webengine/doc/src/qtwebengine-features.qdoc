@@ -42,6 +42,7 @@
         \li \l{HTML5 Geolocation}
         \li \l{Pepper Plugin API}
         \li \l{Print to PDF}
+        \li \l{Spellchecker}
         \li \l{View Source}
         \li \l{WebRTC}
     \endlist
@@ -222,6 +223,48 @@
     {Demo Browser} by selecting \uicontrol File > \uicontrol {Print to PDF}.
 
     Support for this feature was added in Qt 5.7.0.
+
+    \section1 Spellchecker
+
+    Qt WebEngine supports integrating spellchecking support into HTML forms to
+    enable users to submit spellchecked messages. When the user clicks on
+    an underlined misspelled word, the default context menu displays up to four
+    suggestions. Selecting one will replace the misspelled word.
+
+    To be able to check the spelling, the spellchecker needs dictionaries. It
+    supports dictionaries from the \l{Hunspell project}, but they have to be
+    compiled into a special binary format. A Hunspell dictionary consists of two
+    files:
+
+    \list
+
+        \li A \c .dic file that is a dictionary containing words for the
+            language
+        \li An \c .aff file that defines the meaning of special flags in the
+            dictionary
+    \endlist
+
+    These two files can be converted into the \c bdic format by using the
+    \c qwebengine_convert_dict tool that is shipped together with Qt.
+    When the Qt WebEngine spellchecker initializes, it will try to load the
+    \c bdict dictionaries and to check them for consistency. First, it searches
+    \e qtwebengine_dictionaries directories relative to the executable,
+    then it will look in \c QT_INSTALL_PREFIX/qtwebengines_dictionaries.
+
+    Spellchecking is disabled by default and can be enabled per profile by
+    using the QWebEngineProfile::setSpellCheckEnabled() method in widget-based
+    applications and the \l {QQuickWebEngineProfile::spellCheckEnabled}
+    {WebEngineProfile.spellCheckEnabled} property in Qt Quick applications.
+
+    The current language used for spellchecking is defined per profile, and can
+    be set using the QWebEngineProfile::setSpellCheckLanguage() method or the
+    \l {QQuickWebEngineProfile::spellCheckLanguage}
+    {WebEngineProfile.spellCheckLanguage} property.
+
+    This feature can be tested by building and running the
+    \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
+
+    Support for this feature was added in Qt 5.8.0.
 
     \section1 View Source
 
