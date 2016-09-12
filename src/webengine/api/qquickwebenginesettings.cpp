@@ -321,7 +321,7 @@ bool QQuickWebEngineSettings::focusOnNavigationEnabled() const
   \qmlproperty bool WebEngineSettings::printElementBackgrounds
   \since QtWebEngine 1.4
 
-  Turns on printing of CSS backgrounds when printing to PDF.
+  Turns on printing of CSS backgrounds when printing a web page.
 
   Enabled by default.
 */

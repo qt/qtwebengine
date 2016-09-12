@@ -152,7 +152,7 @@
             on).
             Enabled by default. (Added in Qt 5.8)
     \value  PrintElementBackgrounds
-            Turns on printing of CSS backgrounds when printing to PDF.
+            Turns on printing of CSS backgrounds when printing a web page.
             Enabled by default. (Added in Qt 5.8)
 */
 
