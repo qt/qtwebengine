@@ -21,6 +21,7 @@ defineTest(runConfigure) {
     }
 
     linux {
+        QT_FOR_CONFIG += gui-private
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
         REQUIRED_PACKAGES = dbus-1 fontconfig
