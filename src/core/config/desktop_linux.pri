@@ -8,6 +8,7 @@ GYP_CONFIG += \
     enable_pdf=1
 
 clang {
+    GYP_CONFIG += werror=
     GYP_CONFIG += clang=1 host_clang=1 clang_use_chrome_plugins=0 make_clang_dir=/usr
     linux-clang-libc++: GYP_CONFIG += use_system_libcxx=1
 } else {
