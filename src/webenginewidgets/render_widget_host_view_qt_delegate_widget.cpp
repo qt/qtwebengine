@@ -103,6 +103,21 @@ RenderWidgetHostViewQtDelegateWidget::RenderWidgetHostViewQtDelegateWidget(Rende
     setAttribute(Qt::WA_AcceptTouchEvents);
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_AlwaysShowToolTips);
+
+    if (parent) {
+        // Unset the popup parent if the parent is being destroyed, thus making sure a double
+        // delete does not happen.
+        // Also in case the delegate is destroyed before its parent (when a popup is simply
+        // dismissed), this connection will automatically be removed by ~QObject(), preventing
+        // a use-after-free.
+        connect(parent, &QObject::destroyed,
+                this, &RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete);
+    }
+}
+
+void RenderWidgetHostViewQtDelegateWidget::removeParentBeforeParentDelete()
+{
+    setParent(Q_NULLPTR);
 }
 
 void RenderWidgetHostViewQtDelegateWidget::initAsChild(WebContentsAdapterClient* container)
@@ -125,7 +140,11 @@ void RenderWidgetHostViewQtDelegateWidget::initAsPopup(const QRect& screenRect)
     // to be destroyed.
     setAttribute(Qt::WA_ShowWithoutActivating);
     setFocusPolicy(Qt::NoFocus);
-    setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+
+    // macOS doesn't like Qt::ToolTip when QWebEngineView is inside a modal dialog, specifically by
+    // not forwarding click events to the popup. So we use Qt::Tool which behaves the same way, but
+    // works on macOS too.
+    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
 
     setGeometry(screenRect);
     show();
