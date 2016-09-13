@@ -93,6 +93,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::FocusOnNavigationEnabled;
     case QWebEngineSettings::PrintElementBackgrounds:
         return WebEngineSettings::PrintElementBackgrounds;
+    case QWebEngineSettings::AllowRunningInsecureContent:
+        return WebEngineSettings::AllowRunningInsecureContent;
 
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;

@@ -155,6 +155,11 @@
     \value  PrintElementBackgrounds
             Turns on printing of CSS backgrounds when printing a web page.
             Enabled by default. (Added in Qt 5.8)
+    \value  AllowRunningInsecureContent
+            By default, HTTPS pages cannot run JavaScript, CSS, plugins or
+            web-sockets from HTTP URLs. This provides an override to get
+            the old insecure behavior.
+            Disabled by default. (Added in Qt 5.8)
 */
 
 /*!

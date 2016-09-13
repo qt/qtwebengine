@@ -331,6 +331,21 @@ bool QQuickWebEngineSettings::printElementBackgrounds() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::allowRunningInsecureContent
+  \since QtWebEngine 1.4
+
+  By default, HTTPS pages cannot run JavaScript, CSS, plugins or
+  web-sockets from HTTP URLs. This used to be possible and this
+  provides an override to get the old behavior.
+
+  Disabled by default.
+*/
+bool QQuickWebEngineSettings::allowRunningInsecureContent() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::AllowRunningInsecureContent);
+}
+
+/*!
     \qmlproperty QString WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -513,6 +528,15 @@ void QQuickWebEngineSettings::setFocusOnNavigationEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::FocusOnNavigationEnabled, on);
     if (wasOn != on)
         Q_EMIT focusOnNavigationEnabledChanged();
+}
+
+
+void QQuickWebEngineSettings::setAllowRunningInsecureContent(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AllowRunningInsecureContent);
+    d_ptr->setAttribute(WebEngineSettings::AllowRunningInsecureContent, on);
+    if (wasOn != on)
+        Q_EMIT allowRunningInsecureContentChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)
