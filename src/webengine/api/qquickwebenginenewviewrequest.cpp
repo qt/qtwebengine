@@ -72,6 +72,16 @@ QQuickWebEngineView::NewViewDestination QQuickWebEngineNewViewRequest::destinati
 }
 
 /*!
+    \qmlproperty QUrl WebEngineNewViewRequest::requestedUrl
+    The URL that is requested by the page.
+    \since QtWebEngine 1.6
+ */
+QUrl QQuickWebEngineNewViewRequest::requestedUrl() const
+{
+    return m_requestedUrl;
+}
+
+/*!
     \qmlproperty bool WebEngineNewViewRequest::userInitiated
     Whether this window request was directly triggered as the result of a keyboard or mouse event.
 

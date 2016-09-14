@@ -595,6 +595,8 @@ void QQuickWebEngineViewPrivate::adoptNewWindow(QSharedPointer<WebContentsAdapte
     // to start loading it and possibly return it to its parent page window.open().
     request.m_adapter = newWebContents;
     request.m_isUserInitiated = userGesture;
+    if (newWebContents)
+        request.m_requestedUrl = newWebContents->requestedUrl();
 
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:

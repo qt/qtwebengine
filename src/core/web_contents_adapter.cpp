@@ -565,15 +565,17 @@ QUrl WebContentsAdapter::activeUrl() const
 QUrl WebContentsAdapter::requestedUrl() const
 {
     Q_D(const WebContentsAdapter);
-    content::NavigationEntry* entry = d->webContents->GetController().GetVisibleEntry();
-    content::NavigationEntry* pendingEntry = d->webContents->GetController().GetPendingEntry();
+    if (d->webContents) {
+        content::NavigationEntry* entry = d->webContents->GetController().GetVisibleEntry();
+        content::NavigationEntry* pendingEntry = d->webContents->GetController().GetPendingEntry();
 
-    if (entry) {
-        if (!entry->GetOriginalRequestURL().is_empty())
-            return toQt(entry->GetOriginalRequestURL());
+        if (entry) {
+            if (!entry->GetOriginalRequestURL().is_empty())
+                return toQt(entry->GetOriginalRequestURL());
 
-        if (pendingEntry && pendingEntry == entry)
-            return toQt(entry->GetURL());
+            if (pendingEntry && pendingEntry == entry)
+                return toQt(entry->GetURL());
+        }
     }
     return QUrl();
 }
