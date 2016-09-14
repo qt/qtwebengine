@@ -187,7 +187,6 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('third_party/polymer/v1_0/components-chromium/'))
         or file_path.startswith('third_party/openh264/src/res')
         or file_path.startswith('third_party/pdfium/tools')
-        or file_path.startswith('third_party/pdfium/third_party')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')
