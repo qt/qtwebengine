@@ -73,7 +73,7 @@ private:
     int m_renderProcessId;
     int m_renderFrameId;
 
-    net::AuthChallengeInfo *m_authInfo;
+    scoped_refptr<net::AuthChallengeInfo> m_authInfo;
 
     // The request that wants login data.
     // Must only be accessed on the IO thread.
