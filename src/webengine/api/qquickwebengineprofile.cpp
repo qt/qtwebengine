@@ -264,7 +264,7 @@ QQuickWebEngineProfile::~QQuickWebEngineProfile()
 }
 
 /*!
-    \qmlproperty QString WebEngineProfile::storageName
+    \qmlproperty string WebEngineProfile::storageName
 
     The storage name that is used to create separate subdirectories for each profile that uses
     the disk for storing persistent data and cache.
@@ -343,7 +343,7 @@ void QQuickWebEngineProfile::setOffTheRecord(bool offTheRecord)
 }
 
 /*!
-    \qmlproperty QString WebEngineProfile::persistentStoragePath
+    \qmlproperty string WebEngineProfile::persistentStoragePath
 
     The path to the location where the persistent data for the browser and web content are
     stored. Persistent data includes persistent cookies, HTML5 local storage, and visited links.
@@ -380,7 +380,7 @@ void QQuickWebEngineProfile::setPersistentStoragePath(const QString &path)
 }
 
 /*!
-    \qmlproperty QString WebEngineProfile::cachePath
+    \qmlproperty string WebEngineProfile::cachePath
 
     The path to the location where the profile's caches are stored, in particular the HTTP cache.
 
@@ -415,7 +415,7 @@ void QQuickWebEngineProfile::setCachePath(const QString &path)
 }
 
 /*!
-    \qmlproperty QString WebEngineProfile::httpUserAgent
+    \qmlproperty string WebEngineProfile::httpUserAgent
 
     The user-agent string sent with HTTP to identify the browser.
 */
@@ -548,7 +548,7 @@ void QQuickWebEngineProfile::setHttpCacheMaximumSize(int maximumSize)
 }
 
 /*!
-    \qmlproperty QString WebEngineProfile::httpAcceptLanguage
+    \qmlproperty string WebEngineProfile::httpAcceptLanguage
 
     The value of the Accept-Language HTTP request-header field.
 
