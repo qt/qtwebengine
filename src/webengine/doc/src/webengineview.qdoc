@@ -342,21 +342,21 @@
 */
 
 /*!
-    \qmlproperty QSizeF WebEngineView::contentsSize
+    \qmlproperty size WebEngineView::contentsSize
     \since QtWebEngine 1.3
 
     Size of the page contents.
 */
 
 /*!
-    \qmlproperty QPointF WebEngineView::scrollPosition
+    \qmlproperty point WebEngineView::scrollPosition
     \since QtWebEngine 1.3
 
     Scroll position of the page contents.
 */
 
 /*!
-    \qmlproperty uint WebEngineView::webChannelWorld
+    \qmlproperty int WebEngineView::webChannelWorld
     \since QtWebEngine 1.3
 
     JavaScript world that the web channel instance used by this view is

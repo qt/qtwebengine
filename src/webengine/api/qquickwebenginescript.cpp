@@ -105,7 +105,7 @@ QString QQuickWebEngineScript::toString() const
 }
 
 /*!
-    \qmlproperty QString WebEngineScript::name
+    \qmlproperty string WebEngineScript::name
 
     The name of the script. Can be useful to retrieve a particular script from
     \l{WebEngineView::userScripts}{WebEngineView.userScripts}.

@@ -84,7 +84,7 @@ bool QQuickWebEngineContextMenuData::isValid() const
 }
 
 /*!
-    \qmlproperty QPoint WebEngineContextMenuData::position
+    \qmlproperty point WebEngineContextMenuData::position
 
 
     Returns the position of the context, usually the mouse position where the context menu event was triggered.
@@ -95,7 +95,7 @@ QPoint QQuickWebEngineContextMenuData::position() const
 }
 
 /*!
-    \qmlproperty QString WebEngineContextMenuData::linkText
+    \qmlproperty string WebEngineContextMenuData::linkText
 
     Returns the text of a link if the context is a link.
 */
@@ -105,7 +105,7 @@ QString QQuickWebEngineContextMenuData::linkText() const
 }
 
 /*!
-    \qmlproperty QUrl WebEngineContextMenuData::linkUrl
+    \qmlproperty url WebEngineContextMenuData::linkUrl
 
     Returns the URL of a link if the context is a link.
 */
@@ -115,7 +115,7 @@ QUrl QQuickWebEngineContextMenuData::linkUrl() const
 }
 
 /*!
-    \qmlproperty QString WebEngineContextMenuData::selectedText
+    \qmlproperty string WebEngineContextMenuData::selectedText
 
     Returns the selected text of the context.
 */
@@ -125,7 +125,7 @@ QString QQuickWebEngineContextMenuData::selectedText() const
 }
 
 /*!
-    \qmlproperty QUrl WebEngineContextMenuData::mediaUrl
+    \qmlproperty url WebEngineContextMenuData::mediaUrl
 
     If the context is a media element, returns the URL of that media.
 */
