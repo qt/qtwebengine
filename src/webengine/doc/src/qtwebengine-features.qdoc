@@ -31,7 +31,7 @@
 
     \brief Summarizes Qt WebEngine features.
 
-    Qt WebEngine supports the following Chromium features:
+    Qt WebEngine supports the following features:
 
     \list
         \li \l{Audio and Video Codecs}
@@ -40,6 +40,7 @@
         \li \l{Fullscreen}
         \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
+        \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
         \li \l{Print to PDF}
         \li \l{Spellchecker}
@@ -141,6 +142,40 @@
     the application. For more information, see \l{Qt Positioning}.
 
     Support for this feature was added in Qt 5.5.0.
+
+    \section1 Native Dialogs
+
+    A web page might request dialogs for the following functions:
+
+    \list
+        \li Entering user credentials for HTTP and proxy authentication
+        \li Displaying JavaScript alerts, confirmation dialogs, and prompts
+        \li Picking colors
+        \li Selecting files
+        \li Displaying form validation messages
+    \endlist
+
+    Qt WebEngine provides standard dialogs for these functions. In widget-based
+    applications, the standard dialogs are based on QDialog, whereas in Qt Quick
+    applications, they can be based either on Qt Quick Controls 1 or Qt Quick
+    Controls 2 (since Qt 5.8). The latter are used only on \c eglfs platforms.
+
+    To explicitly force either dialogs based on Qt Quick Controls 1 or Qt Quick
+    Controls 2, set the \c QTWEBENGINE_DIALOG_SET environment variable to either
+    \c{QtQuickControls1} or \c{QtQuickControls2}.
+
+    Qt WebEngine Widgets dialogs can be customized by reimplementing the
+    QWebEnginePage::chooseFiles(), QWebEnginePage::javaScriptAlert(),
+    QWebEnginePage::javaScriptConfirm(), and QWebEnginePage::javaScriptPrompt()
+    functions.
+
+    Since Qt 5.8, Qt Quick dialogs can be customized by connecting to the
+    WebEngineView::authenticationDialogRequested(),
+    WebEngineView::javaScriptDialogRequested(),
+    WebEngineView::colorDialogRequested(),
+    WebEngineView::fileDialogRequested(), and
+    WebEngineView::formValidationMessageRequested() signals. For an example,
+    see \l{WebEngine Qt Quick Custom Dialogs Example}.
 
     \section1 Pepper Plugin API
 
