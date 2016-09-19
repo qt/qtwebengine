@@ -131,10 +131,10 @@ public:
 
     Q_REVISION(2) Q_INVOKABLE void clearHttpCache();
 
-    Q_REVISION(3) void setSpellCheckLanguage(const QString &language);
-    Q_REVISION(3) QString spellCheckLanguage() const;
-    Q_REVISION(3) void setSpellCheckEnabled(bool enabled);
-    Q_REVISION(3) bool isSpellCheckEnabled() const;
+    void setSpellCheckLanguage(const QString &language);
+    QString spellCheckLanguage() const;
+    void setSpellCheckEnabled(bool enabled);
+    bool isSpellCheckEnabled() const;
 
     static QQuickWebEngineProfile *defaultProfile();
 
