@@ -165,14 +165,14 @@ QString QQuickWebEngineAuthenticationDialogRequest::proxyHost() const
 }
 
 /*!
-    \qmlproperty AuthenticationType AuthenticationDialogRequest::type
+    \qmlproperty enumeration AuthenticationDialogRequest::type
     \readonly
 
     The type of the authentication request.
 
-    \value  AuthenticationTypeHTTP
+    \value  WebEngineAuthenticationDialogRequest.AuthenticationTypeHTTP
             HTTP authentication.
-    \value  AuthenticationTypeProxy
+    \value  WebEngineAuthenticationDialogRequest.AuthenticationTypeProxy
             Proxy authentication.
 */
 
