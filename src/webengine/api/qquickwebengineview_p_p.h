@@ -79,45 +79,6 @@ QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 class QQuickWebEngineTestSupport;
 #endif
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio WRITE setDevicePixelRatio NOTIFY devicePixelRatioChanged)
-public:
-    QQuickWebEngineViewport(QQuickWebEngineViewPrivate *viewPrivate);
-
-    qreal devicePixelRatio() const;
-    void setDevicePixelRatio(qreal);
-
-Q_SIGNALS:
-    void devicePixelRatioChanged();
-
-private:
-    QQuickWebEngineViewPrivate *d_ptr;
-
-    Q_DECLARE_PRIVATE(QQuickWebEngineView)
-};
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
-    Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
-
-    QQuickWebEngineViewport *viewport() const;
-    void setExtraContextMenuEntriesComponent(QQmlComponent *);
-    QQmlComponent *extraContextMenuEntriesComponent() const;
-
-Q_SIGNALS:
-    void extraContextMenuEntriesComponentChanged();
-
-private:
-    QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
-    QQuickWebEngineView *q_ptr;
-    QQuickWebEngineViewPrivate *d_ptr;
-
-    Q_DECLARE_PRIVATE(QQuickWebEngineView)
-    Q_DECLARE_PUBLIC(QQuickWebEngineView)
-};
-
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
@@ -126,8 +87,6 @@ public:
     QQuickWebEngineViewPrivate();
     ~QQuickWebEngineViewPrivate();
 
-    QQuickWebEngineViewExperimental *experimental() const;
-    QQuickWebEngineViewport *viewport() const;
     QtWebEngineCore::UIDelegatesManager *ui();
 
     virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE;
@@ -208,8 +167,6 @@ public:
     static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
 
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
-    QScopedPointer<QQuickWebEngineViewExperimental> e;
-    QScopedPointer<QQuickWebEngineViewport> v;
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QQuickWebEngineProfile *m_profile;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
@@ -259,8 +216,5 @@ private:
 };
 #endif // QT_NO_ACCESSIBILITY
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QQuickWebEngineViewExperimental)
-QML_DECLARE_TYPE(QQuickWebEngineViewport)
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H
