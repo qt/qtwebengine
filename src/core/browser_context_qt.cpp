@@ -97,6 +97,16 @@ BrowserContextQt::~BrowserContextQt()
         content::BrowserThread::DeleteSoon(content::BrowserThread::IO, FROM_HERE, resourceContext.release());
 }
 
+PrefService* BrowserContextQt::GetPrefs()
+{
+    return m_prefService.get();
+}
+
+const PrefService* BrowserContextQt::GetPrefs() const
+{
+    return m_prefService.get();
+}
+
 base::FilePath BrowserContextQt::GetPath() const
 {
     return toFilePath(m_adapter->dataPath());

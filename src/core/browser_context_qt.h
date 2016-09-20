@@ -40,7 +40,7 @@
 #ifndef BROWSER_CONTEXT_QT_H
 #define BROWSER_CONTEXT_QT_H
 
-#include "content/public/browser/browser_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request_context.h"
@@ -60,13 +60,14 @@ class PermissionManagerQt;
 class SSLHostStateDelegateQt;
 class URLRequestContextGetterQt;
 
-class BrowserContextQt : public content::BrowserContext
+class BrowserContextQt : public Profile
 {
 public:
     explicit BrowserContextQt(BrowserContextAdapter *);
 
     virtual ~BrowserContextQt();
 
+    // BrowserContext implementation:
     virtual base::FilePath GetPath() const Q_DECL_OVERRIDE;
     base::FilePath GetCachePath() const;
     virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE;
@@ -92,6 +93,10 @@ public:
     virtual std::unique_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(const base::FilePath& partition_path) Q_DECL_OVERRIDE;
     virtual content::PermissionManager *GetPermissionManager() Q_DECL_OVERRIDE;
     virtual content::BackgroundSyncController* GetBackgroundSyncController() Q_DECL_OVERRIDE;
+
+    // Profile implementation:
+    PrefService* GetPrefs() override;
+    const PrefService* GetPrefs() const override;
 
     BrowserContextAdapter *adapter() { return m_adapter; }
 

@@ -74,6 +74,8 @@
         '<(DEPTH)/chrome/browser/media/desktop_media_list.h',
         '<(DEPTH)/chrome/browser/media/desktop_streams_registry.cc',
         '<(DEPTH)/chrome/browser/media/desktop_streams_registry.h',
+        '<(DEPTH)/chrome/browser/profiles/profile.cc',
+        '<(DEPTH)/chrome/browser/profiles/profile.h',
         '<(DEPTH)/chrome/common/chrome_switches.cc',
         '<(DEPTH)/chrome/common/chrome_switches.h',
         '<(DEPTH)/components/prefs/testing_pref_store.cc',
