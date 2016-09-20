@@ -285,7 +285,7 @@ public:
 
 #ifndef QT_NO_PRINTER
 #ifdef Q_QDOC
-    void print(QPrinter *printer, FunctorOrLambda resultCallback)
+    void print(QPrinter *printer, FunctorOrLambda resultCallback);
 #else
     void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
 #endif // QDOC

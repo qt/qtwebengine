@@ -1855,7 +1855,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 
 #ifndef QT_NO_PRINTER
 /*!
-    \fn void QWebEnginePage::print(const QPrinter &printer, FunctorOrLambda resultCallback)
+    \fn void QWebEnginePage::print(QPrinter *printer, FunctorOrLambda resultCallback)
     Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
 
     The settings for creating and printing the PDF document will be retrieved from the \a printer
