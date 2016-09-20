@@ -230,7 +230,7 @@ quint32 QWebEngineDownloadItem::id() const
            user to save the content regardless of the content type.
            See \l {RFC 2616 section 19.5.1} for details.
     \value DownloadAttribute The user clicked a link with the \c download
-           attribute. See \l {HTML download Attribute} for details.
+           attribute. See \l {HTML download attribute} for details.
     \value UserRequested The user initiated the download, for example by
            selecting a web action.
     \value SavePage Saving of the current page was requested (for example by

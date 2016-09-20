@@ -313,7 +313,7 @@ void QQuickWebEngineDownloadItem::setSavePageFormat(QQuickWebEngineDownloadItem:
            user to save the content regardless of the content type.
            See \l {RFC 2616 section 19.5.1} for details.
     \value WebEngineDownloadItem.DownloadAttribute The user clicked a link with the \c download
-           attribute. See \l {HTML download Attribute} for details.
+           attribute. See \l {HTML download attribute} for details.
     \value WebEngineDownloadItem.UserRequested The user initiated the download, for example by
            selecting a web action.
     \value WebEngineDownloadItem.SavePage Saving of the current page was requested (for example by
