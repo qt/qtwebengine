@@ -4895,6 +4895,9 @@ void tst_QWebEnginePage::setZoomFactor()
 
 void tst_QWebEnginePage::printToPdf()
 {
+#if !defined(QWEBENGINEPAGE_PDFPRINTINGENABLED)
+    QSKIP("QWEBENGINEPAGE_PDFPRINTINGENABLED");
+#else
     QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
     QVERIFY(tempDir.isValid());
     QWebEnginePage page;
@@ -4922,6 +4925,7 @@ void tst_QWebEnginePage::printToPdf()
     CallbackSpy<QByteArray> failedInvalidLayoutSpy;
     page.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
     QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
+#endif
 }
 
 void tst_QWebEnginePage::mouseButtonTranslation()

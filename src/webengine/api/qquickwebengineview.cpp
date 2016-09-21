@@ -1302,16 +1302,19 @@ bool QQuickWebEngineView::recentlyAudible() const
 
 void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
 {
+#if defined(ENABLE_PDF)
     Q_D(const QQuickWebEngineView);
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
 
     d->adapter->printToPDF(pageLayout, filePath);
+#endif
 }
 
 void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
 {
+#if defined (ENABLE_PDF)
     Q_D(QQuickWebEngineView);
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);
@@ -1322,6 +1325,13 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
 
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.insert(requestId, callback);
+#else
+    // Call back with null result.
+    QJSValueList args;
+    args.append(QJSValue(QByteArray().data()));
+    QJSValue callbackCopy = callback;
+    callbackCopy.call(args);
+#endif
 }
 
 void QQuickWebEngineView::replaceMisspelledWord(const QString &replacement)

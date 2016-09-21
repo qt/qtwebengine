@@ -58,9 +58,6 @@ class QAccessibleInterface;
 class QDragEnterEvent;
 class QDragMoveEvent;
 class QPageLayout;
-#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
-class QPrinter;
-#endif // QT_NO_PRINTER
 class QString;
 class QWebChannel;
 QT_END_NAMESPACE
@@ -175,11 +172,7 @@ public:
     void leaveDrag();
     void initUpdateDragCursorMessagePollingTimer();
     void printToPDF(const QPageLayout&, const QString&);
-    quint64 printToPDFCallbackResult(const QPageLayout &);
-
-#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
-    quint64 printOnPrinterCallbackResult(QPrinter *printer);
-#endif
+    quint64 printToPDFCallbackResult(const QPageLayout &, const bool colorMode = true);
 
     // meant to be used within WebEngineCore only
     content::WebContents *webContents() const;

@@ -119,9 +119,6 @@ public:
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
     virtual void didFindText(quint64 requestId, int matchCount) Q_DECL_OVERRIDE;
     virtual void didPrintPage(quint64 requestId, const QByteArray &result) Q_DECL_OVERRIDE;
-#ifndef QT_NO_PRINTER
-    virtual void didPrintPageOnPrinter(quint64 requestId, bool result) Q_DECL_OVERRIDE;
-#endif
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;
@@ -181,6 +178,9 @@ public:
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
+#ifndef QT_NO_PRINTER
+    QPrinter *currentPrinter;
+#endif // QT_NO_PRINTER
 };
 
 QT_END_NAMESPACE

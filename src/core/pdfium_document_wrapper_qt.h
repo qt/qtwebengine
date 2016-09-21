@@ -37,30 +37,35 @@
 **
 ****************************************************************************/
 
-#ifndef PDFIUM_PRINTING_WRAPPER_QT_H
-#define PDFIUM_PRINTING_WRAPPER_QT_H
+#ifndef PDFIUM_DOCUMENT_WRAPPER_QT_H
+#define PDFIUM_DOCUMENT_WRAPPER_QT_H
+
+#if defined(ENABLE_PDF)
+#include "qtwebenginecoreglobal.h"
 
 #include <QtCore/qglobal.h>
-
-QT_BEGIN_NAMESPACE
-class QPrinter;
-QT_END_NAMESPACE
+#include <QtCore/qhash.h>
+#include <QtGui/qimage.h>
 
 namespace QtWebEngineCore {
+class PdfiumPageWrapperQt;
 
-class PdfiumPrintingWrapperQt
+class QWEBENGINE_EXPORT PdfiumDocumentWrapperQt
 {
 public:
-    PdfiumPrintingWrapperQt(const void *pdfData, size_t size, const char *password = nullptr);
-    virtual ~PdfiumPrintingWrapperQt();
-    bool printOnPrinter(QPrinter &printer);
+    PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const QSize &imageSize, const char *password = nullptr);
+    virtual ~PdfiumDocumentWrapperQt();
+    QImage pageAsQImage(size_t index);
     int pageCount() const { return m_pageCount; }
 
 private:
     static int m_libraryUsers;
-    void *m_documentHandle;
     int m_pageCount;
+    void *m_documentHandle;
+    QSize m_imageSize;
+    QHash<int, PdfiumPageWrapperQt*> m_cachedPages;
 };
 
 } // namespace QtWebEngineCore
-#endif // PDFIUM_PRINTING_WRAPPER_QT_H
+#endif // defined (ENABLE_PDF)
+#endif // PDFIUM_DOCUMENT_WRAPPER_QT_H

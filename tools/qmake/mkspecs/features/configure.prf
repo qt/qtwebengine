@@ -78,6 +78,9 @@ defineTest(runConfigure) {
             else: log("System NSS not found, BoringSSL will be used.$${EOL}")
         }
     }
+    !cross_compile {
+        WEBENGINE_CONFIG += enable_pdf
+    }
     isQtMinimum(5, 8) {
         include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
         QT_FOR_CONFIG += webengine-private
