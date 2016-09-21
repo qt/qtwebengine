@@ -56,7 +56,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin, Q
     \since 5.7
     \brief The QWebEngineContextMenuData class provides context data for populating or extending a context menu with actions.
 
-    \inmodule QtWebEngine
+    \inmodule QtWebEngineWidgets
 
     QWebEngineContextMenuData is returned by QWebEnginePage::contextMenuData() after a context menu event,
     and contains information about where the context menu event took place. This is also in the context

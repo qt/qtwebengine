@@ -91,7 +91,9 @@ bool QWebEngineViewPlugin::isContainer() const
 
 QWidget *QWebEngineViewPlugin::createWidget(QWidget *parent)
 {
-    return new QWebEngineView(parent);
+    if (parent)
+        return new QWebEngineView(parent);
+    return new fake::QWebEngineView;
 }
 
 bool QWebEngineViewPlugin::isInitialized() const

@@ -34,7 +34,7 @@ use?(nss) {
         use_openssl_certs=1
 }
 
-gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): GYP_CONFIG += v8_no_delete_null_pointer_checks=1
+gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): GYP_CONFIG += no_delete_null_pointer_checks=1
 
 qtConfig(system-zlib): use?(system_minizip): GYP_CONFIG += use_system_zlib=1
 qtConfig(system-png): GYP_CONFIG += use_system_libpng=1
