@@ -40,7 +40,7 @@
 #ifndef QWEBENGINECONTEXTDATA_H
 #define QWEBENGINECONTEXTDATA_H
 
-#include <qtwebenginewidgetsglobal.h>
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qurl.h>
