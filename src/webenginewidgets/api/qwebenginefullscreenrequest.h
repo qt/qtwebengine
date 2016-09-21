@@ -37,9 +37,9 @@
 #ifndef QWEBENGINEFULLSCREENREQUEST_H
 #define QWEBENGINEFULLSCREENREQUEST_H
 
-#include <qtwebenginewidgetsglobal.h>
-#include <qurl.h>
-#include <qpointer.h>
+#include <QtWebEngineWidgets/qtwebenginewidgetsglobal.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qpointer.h>
 
 QT_BEGIN_NAMESPACE
 class QWebEnginePage;
