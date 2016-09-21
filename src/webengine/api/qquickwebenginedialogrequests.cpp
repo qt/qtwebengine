@@ -736,15 +736,15 @@ void QQuickWebEngineFileDialogRequest::dialogReject()
             request.accepted = true;
             switch (request.type) {
                 case FormValidationMessageRequest.RequestTypeShow:
-                    validationMessgae.text = request.text;
-                    validationMessgae.x = request.x;
+                    validationMessage.text = request.text;
+                    validationMessage.x = request.x;
                     validationMessage.y = request.y
-                    validationMessgae.visible = true;
+                    validationMessage.visible = true;
                     break;
                  case FormValidationMessageRequest.RequestTypeMove:
                     break;
                  case FormValidationMessageRequest.RequestTypeHide:
-                    validationMessgae.visible = false;
+                    validationMessage.visible = false;
                     break;
                  }
         }
