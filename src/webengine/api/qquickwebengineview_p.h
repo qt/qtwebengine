@@ -123,7 +123,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged FINAL REVISION 3)
     Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION 3)
     Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3)
-    Q_PROPERTY(bool canViewSource READ canViewSource FINAL REVISION 4)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
@@ -150,7 +149,6 @@ public:
     void setBackgroundColor(const QColor &color);
     QSizeF contentsSize() const;
     QPointF scrollPosition() const;
-    bool canViewSource() const;
 
     // must match WebContentsAdapterClient::NavigationRequestAction
     enum NavigationRequestAction {
@@ -247,6 +245,7 @@ public:
         RequestClose,
         Unselect,
         SavePage,
+        ViewSource,
         WebActionCount
     };
     Q_ENUM(WebAction)
@@ -477,7 +476,6 @@ public Q_SLOTS:
     Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
     Q_REVISION(4) void replaceMisspelledWord(const QString &replacement);
-    Q_REVISION(4) void viewSource();
 
 private Q_SLOTS:
     void lazyInitialize();

@@ -1889,31 +1889,6 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
     return d->contextData;
 }
 
-/*!
-    \since 5.8
-
-    Shows the source of the current page in a new tab.
-
-    \sa canViewSource
-*/
-void QWebEnginePage::viewSource()
-{
-    triggerAction(QWebEnginePage::ViewSource);
-}
-
-/*!
-    \property QWebEnginePage::canViewSource
-    \brief whether the source for the current page can be viewed.
-    \since 5.8
-
-    \sa viewSource()
-*/
-bool QWebEnginePage::canViewSource() const
-{
-    Q_D(const QWebEnginePage);
-    return d->adapter->canViewSource();
-}
-
 QT_END_NAMESPACE
 
 #include "moc_qwebenginepage.cpp"

@@ -4982,15 +4982,15 @@ void tst_QWebEnginePage::viewSource()
     page.load(url);
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
     QCOMPARE(page.title(), QStringLiteral("Test page 1"));
-    QVERIFY(page.canViewSource());
+    QVERIFY(page.action(QWebEnginePage::ViewSource)->isEnabled());
 
-    page.viewSource();
+    page.triggerAction(QWebEnginePage::ViewSource);
     QTRY_COMPARE(windowCreatedSpy.count(), 1);
     QCOMPARE(page.createdWindows.size(), 1);
 
     QTRY_COMPARE(page.createdWindows[0]->url().toString(), QStringLiteral("view-source:%1").arg(url.toString()));
     QTRY_COMPARE(page.createdWindows[0]->title(), QStringLiteral("view-source:%1").arg(url.toString()));
-    QVERIFY(!page.createdWindows[0]->canViewSource());
+    QVERIFY(!page.createdWindows[0]->action(QWebEnginePage::ViewSource)->isEnabled());
 }
 
 void tst_QWebEnginePage::viewSourceURL_data()
@@ -5035,7 +5035,7 @@ void tst_QWebEnginePage::viewSourceURL()
     QCOMPARE(arguments.at(0).toBool(), loadSucceed);
     QCOMPARE(page->url(), url);
     QCOMPARE(page->title(), title);
-    QVERIFY(!page->canViewSource());
+    QVERIFY(!page->action(QWebEnginePage::ViewSource)->isEnabled());
 
     delete page;
 }
