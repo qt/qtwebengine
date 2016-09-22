@@ -100,6 +100,7 @@ private:
     QList<QMetaObject::Connection> m_windowConnections;
     bool m_isPopup;
     bool m_initialized;
+    QPoint m_lastGlobalPos;
 };
 
 } // namespace QtWebEngineCore

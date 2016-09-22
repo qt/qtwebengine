@@ -312,6 +312,16 @@ void RenderWidgetHostViewQtDelegateQuick::inputMethodEvent(QInputMethodEvent *ev
 void RenderWidgetHostViewQtDelegateQuick::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     QQuickItem::geometryChanged(newGeometry, oldGeometry);
+
+    if (window()) {
+        // TODO(pvarga): Use QQuickItem::mapToGlobal from Qt 5.7
+        const QPoint globalPos = window()->mapToGlobal(position().toPoint());
+        if (globalPos != m_lastGlobalPos) {
+            m_lastGlobalPos = globalPos;
+            m_client->windowBoundsChanged();
+        }
+    }
+
     m_client->notifyResize();
 }
 
@@ -344,6 +354,10 @@ QSGNode *RenderWidgetHostViewQtDelegateQuick::updatePaintNode(QSGNode *oldNode, 
 
 void RenderWidgetHostViewQtDelegateQuick::onWindowPosChanged()
 {
+    if (window()) {
+        // TODO(pvarga): Use QQuickItem::mapToGlobal from Qt 5.7
+        m_lastGlobalPos = window()->mapToGlobal(position().toPoint());
+    }
     m_client->windowBoundsChanged();
 }
 
