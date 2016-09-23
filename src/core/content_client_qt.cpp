@@ -92,8 +92,6 @@ const char kPpapiFlashVersion[] = "ppapi-flash-version";
 const char kPpapiWidevinePath[] = "ppapi-widevine-path";
 }
 
-static const base::FilePath::CharType kWidevineCdmBaseDirectory[] = FILE_PATH_LITERAL("WidevineCDM");
-
 static const char kWidevineCdmPluginExtension[] = "";
 
 static const int32_t kWidevineCdmPluginPermissions = ppapi::PERMISSION_DEV

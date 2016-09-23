@@ -70,6 +70,7 @@ public:
         CertificateWeakKey = -211,
         CertificateNameConstraintViolation = -212,
         CertificateValidityTooLong = -213,
+        CertificateTransparencyRequired = -214,
     };
 
     Error error() const;

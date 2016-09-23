@@ -40,6 +40,7 @@
 #include "url_request_context_getter_qt.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -48,6 +49,9 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -225,8 +229,10 @@ void URLRequestContextGetterQt::generateStorage()
     Q_ASSERT(proxyConfigService);
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
+    m_storage->set_cert_transparency_verifier(base::WrapUnique(new net::MultiLogCTVerifier()));
+    m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::CTPolicyEnforcer));
 
-    scoped_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
+    std::unique_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
 
     // The System Proxy Resolver has issues on Windows with unconfigured network cards,
     // which is why we want to use the v8 one
@@ -234,7 +240,7 @@ void URLRequestContextGetterQt::generateStorage()
         m_dhcpProxyScriptFetcherFactory.reset(new net::DhcpProxyScriptFetcherFactory);
 
     m_storage->set_proxy_service(net::CreateProxyServiceUsingV8ProxyResolver(
-                                     scoped_ptr<net::ProxyConfigService>(proxyConfigService),
+                                     std::unique_ptr<net::ProxyConfigService>(proxyConfigService),
                                      new net::ProxyScriptFetcherImpl(m_urlRequestContext.get()),
                                      m_dhcpProxyScriptFetcherFactory->Create(m_urlRequestContext.get()),
                                      host_resolver.get(),
@@ -242,10 +248,10 @@ void URLRequestContextGetterQt::generateStorage()
                                      m_networkDelegate.get()));
 
     m_storage->set_ssl_config_service(new net::SSLConfigServiceDefaults);
-    m_storage->set_transport_security_state(scoped_ptr<net::TransportSecurityState>(new net::TransportSecurityState()));
+    m_storage->set_transport_security_state(std::unique_ptr<net::TransportSecurityState>(new net::TransportSecurityState()));
 
     m_storage->set_http_auth_handler_factory(net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
-    m_storage->set_http_server_properties(scoped_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
+    m_storage->set_http_server_properties(std::unique_ptr<net::HttpServerProperties>(new net::HttpServerPropertiesImpl));
 
      // Give |m_storage| ownership at the end in case it's |mapped_host_resolver|.
     m_storage->set_host_resolver(std::move(host_resolver));
@@ -284,7 +290,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     }
 
     m_storage->set_channel_id_service(
-            scoped_ptr<net::ChannelIDService>(new net::ChannelIDService(
+            base::WrapUnique(new net::ChannelIDService(
                     new net::DefaultChannelIDStore(channel_id_db.get()),
                     base::WorkerPool::GetTaskRunner(true))));
 
@@ -292,7 +298,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     m_storage->set_cookie_store(0);
     m_cookieDelegate->setCookieMonster(0);
 
-    scoped_ptr<net::CookieStore> cookieStore;
+    std::unique_ptr<net::CookieStore> cookieStore;
     switch (m_persistentCookiesPolicy) {
     case BrowserContextAdapter::NoPersistentCookies:
         cookieStore =
@@ -324,6 +330,7 @@ void URLRequestContextGetterQt::generateCookieStore()
     }
 
     net::CookieMonster * const cookieMonster = static_cast<net::CookieMonster*>(cookieStore.get());
+    cookieStore->SetChannelIDServiceID(m_urlRequestContext->channel_id_service()->GetUniqueID());
     m_storage->set_cookie_store(std::move(cookieStore));
 
     const std::vector<std::string> cookieableSchemes(kCookieableSchemes, kCookieableSchemes + arraysize(kCookieableSchemes));
@@ -354,7 +361,7 @@ void URLRequestContextGetterQt::generateUserAgent()
     QMutexLocker lock(&m_mutex);
     m_updateUserAgent = true;
 
-    m_storage->set_http_user_agent_settings(scoped_ptr<net::HttpUserAgentSettings>(
+    m_storage->set_http_user_agent_settings(std::unique_ptr<net::HttpUserAgentSettings>(
         new net::StaticHttpUserAgentSettings(m_httpAcceptLanguage.toStdString(), m_httpUserAgent.toStdString())));
 }
 
@@ -409,7 +416,7 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
         return false;
     if (first.http_auth_handler_factory != second.http_auth_handler_factory)
         return false;
-    if (first.http_server_properties.get() != second.http_server_properties.get())
+    if (first.http_server_properties != second.http_server_properties)
         return false;
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
         return false;
@@ -434,6 +441,8 @@ net::HttpNetworkSession::Params URLRequestContextGetterQt::generateNetworkSessio
     network_session_params.http_server_properties       = m_urlRequestContext->http_server_properties();
     network_session_params.ignore_certificate_errors    = m_ignoreCertificateErrors;
     network_session_params.host_resolver                = m_urlRequestContext->host_resolver();
+    network_session_params.cert_transparency_verifier   = m_urlRequestContext->cert_transparency_verifier();
+    network_session_params.ct_policy_enforcer           = m_urlRequestContext->ct_policy_enforcer();
 
     return network_session_params;
 }
@@ -482,9 +491,9 @@ void URLRequestContextGetterQt::generateHttpCache()
         m_httpNetworkSession.reset(new net::HttpNetworkSession(network_session_params));
     }
 
-    cache = new net::HttpCache(m_httpNetworkSession.get(), scoped_ptr<net::HttpCache::DefaultBackend>(main_backend), false);
+    cache = new net::HttpCache(m_httpNetworkSession.get(), std::unique_ptr<net::HttpCache::DefaultBackend>(main_backend), false);
 
-    m_storage->set_http_transaction_factory(scoped_ptr<net::HttpCache>(cache));
+    m_storage->set_http_transaction_factory(std::unique_ptr<net::HttpCache>(cache));
 }
 
 void URLRequestContextGetterQt::clearHttpCache()
@@ -513,36 +522,36 @@ void URLRequestContextGetterQt::generateJobFactory()
     QMutexLocker lock(&m_mutex);
     m_updateJobFactory = false;
 
-    scoped_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
+    std::unique_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
         // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
-        jobFactory->SetProtocolHandler(it->first, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
+        jobFactory->SetProtocolHandler(it->first, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
         m_protocolHandlers.clear();
     }
 
-    jobFactory->SetProtocolHandler(url::kDataScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
-    jobFactory->SetProtocolHandler(url::kFileScheme, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FileProtocolHandler(
+    jobFactory->SetProtocolHandler(url::kDataScheme, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::DataProtocolHandler()));
+    jobFactory->SetProtocolHandler(url::kFileScheme, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FileProtocolHandler(
         content::BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
-    jobFactory->SetProtocolHandler(kQrcSchemeQt, scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
+    jobFactory->SetProtocolHandler(kQrcSchemeQt, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new QrcProtocolHandlerQt()));
     jobFactory->SetProtocolHandler(url::kFtpScheme,
-        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver()))));
+        std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new net::FtpProtocolHandler(new net::FtpNetworkLayer(m_urlRequestContext->host_resolver()))));
 
     m_installedCustomSchemes = m_customUrlSchemes;
     Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
-        jobFactory->SetProtocolHandler(scheme.toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
+        jobFactory->SetProtocolHandler(scheme.toStdString(), std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
     }
 
     m_baseJobFactory = jobFactory.get();
 
     // Set up interceptors in the reverse order.
-    scoped_ptr<net::URLRequestJobFactory> topJobFactory = std::move(jobFactory);
+    std::unique_ptr<net::URLRequestJobFactory> topJobFactory = std::move(jobFactory);
 
     for (content::URLRequestInterceptorScopedVector::reverse_iterator i = m_requestInterceptors.rbegin(); i != m_requestInterceptors.rend(); ++i)
-        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(std::move(topJobFactory), make_scoped_ptr(*i)));
+        topJobFactory.reset(new net::URLRequestInterceptingJobFactory(std::move(topJobFactory), std::unique_ptr<net::URLRequestInterceptor>(*i)));
 
     m_requestInterceptors.weak_clear();
 
@@ -570,7 +579,7 @@ void URLRequestContextGetterQt::regenerateJobFactory()
 
     m_installedCustomSchemes = m_customUrlSchemes;
     Q_FOREACH (const QByteArray &scheme, m_installedCustomSchemes) {
-        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
+        m_baseJobFactory->SetProtocolHandler(scheme.toStdString(), std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(new CustomProtocolHandler(m_browserContext)));
     }
 }
 

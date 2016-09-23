@@ -58,6 +58,7 @@ public:
 #if defined(ENABLE_PLUGINS)
     void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 #endif
+    void OnDestruct() override { }
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);

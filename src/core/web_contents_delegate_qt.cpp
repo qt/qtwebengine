@@ -104,6 +104,7 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
         if (targetAdapter)
             target = targetAdapter->webContents();
     }
+    Q_ASSERT(target);
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
     load_url_params.referrer = params.referrer;
@@ -310,15 +311,16 @@ ASSERT_ENUMS_MATCH(FilePickerController::OpenMultiple, content::FileChooserParam
 ASSERT_ENUMS_MATCH(FilePickerController::UploadFolder, content::FileChooserParams::UploadFolder)
 ASSERT_ENUMS_MATCH(FilePickerController::Save, content::FileChooserParams::Save)
 
-void WebContentsDelegateQt::RunFileChooser(content::WebContents *web_contents, const content::FileChooserParams &params)
+void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, const content::FileChooserParams &params)
 {
     QStringList acceptedMimeTypes;
     acceptedMimeTypes.reserve(params.accept_types.size());
     for (std::vector<base::string16>::const_iterator it = params.accept_types.begin(); it < params.accept_types.end(); ++it)
         acceptedMimeTypes.append(toQt(*it));
 
-    FilePickerController *controller = new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode), web_contents, toQt(params.default_file_name.value()), acceptedMimeTypes);
-    m_viewClient->runFileChooser(controller);
+    m_filePickerController.reset(new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
+                                                          web_contents(), toQt(params.default_file_name.value()), acceptedMimeTypes));
+    m_viewClient->runFileChooser(m_filePickerController);
 }
 
 bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)

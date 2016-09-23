@@ -61,27 +61,27 @@ class OzonePlatformEglfs : public OzonePlatform {
   virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() override;
   virtual GpuPlatformSupport* GetGpuPlatformSupport() override;
   virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override;
-  virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
+  virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override;
-  virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
+  virtual std::unique_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate() override;
   virtual ui::InputController* GetInputController() override;
-  virtual scoped_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
+  virtual std::unique_ptr<ui::SystemInputInjector> CreateSystemInputInjector() override;
   virtual ui::OverlayManagerOzone* GetOverlayManager() override;
 
  private:
   virtual void InitializeUI() override;
   virtual void InitializeGPU() override;
-  scoped_ptr<DeviceManager> device_manager_;
+  std::unique_ptr<DeviceManager> device_manager_;
 
-  scoped_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
-  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
-  scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
+  std::unique_ptr<QtWebEngineCore::SurfaceFactoryQt> surface_factory_ozone_;
+  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;
 
-  scoped_ptr<GpuPlatformSupport> gpu_platform_support_;
-  scoped_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
-  scoped_ptr<InputController> input_controller_;
-  scoped_ptr<OverlayManagerOzone> overlay_manager_;
+  std::unique_ptr<GpuPlatformSupport> gpu_platform_support_;
+  std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
+  std::unique_ptr<InputController> input_controller_;
+  std::unique_ptr<OverlayManagerOzone> overlay_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformEglfs);
 };

@@ -59,7 +59,6 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
@@ -75,7 +74,6 @@
 #include <QOpenGLFunctions>
 #include <QSGFlatColorMaterial>
 #include <QSGTexture>
-#include <QtGui/QOffscreenSurface>
 #include <private/qsgadaptationlayer_p.h>
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
@@ -104,6 +102,7 @@ namespace QtWebEngineCore {
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize);
+    ~MailboxTexture();
     virtual int textureId() const Q_DECL_OVERRIDE { return m_textureId; }
     virtual QSize textureSize() const Q_DECL_OVERRIDE { return m_textureSize; }
     virtual bool hasAlphaChannel() const Q_DECL_OVERRIDE { return m_hasAlpha; }
@@ -121,6 +120,9 @@ private:
     QSize m_textureSize;
     bool m_hasAlpha;
     GLenum m_target;
+#if defined(USE_X11)
+    bool m_ownsTexture;
+#endif
 #ifdef Q_OS_QNX
     EGLStreamData m_eglStreamData;
 #endif
@@ -200,22 +202,22 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
-static void waitChromiumSync(gfx::TransferableFence *sync)
+static void waitChromiumSync(gl::TransferableFence *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
     // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
     // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
     switch (sync->type) {
-    case gfx::TransferableFence::NoSync:
+    case gl::TransferableFence::NoSync:
         break;
-    case gfx::TransferableFence::EglSync:
+    case gl::TransferableFence::EglSync:
 #ifdef EGL_KHR_reusable_sync
     {
         static bool resolved = false;
         static PFNEGLCLIENTWAITSYNCKHRPROC eglClientWaitSyncKHR = 0;
 
         if (!resolved) {
-            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
+            if (gl::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglClientWaitSyncKHR = (PFNEGLCLIENTWAITSYNCKHRPROC)context->getProcAddress("eglClientWaitSyncKHR");
             }
@@ -228,7 +230,7 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
     }
 #endif
         break;
-    case gfx::TransferableFence::ArbSync:
+    case gl::TransferableFence::ArbSync:
         typedef void (QOPENGLF_APIENTRYP WaitSyncPtr)(GLsync sync, GLbitfield flags, GLuint64 timeout);
         static WaitSyncPtr glWaitSync_ = 0;
         if (!glWaitSync_) {
@@ -241,22 +243,22 @@ static void waitChromiumSync(gfx::TransferableFence *sync)
     }
 }
 
-static void deleteChromiumSync(gfx::TransferableFence *sync)
+static void deleteChromiumSync(gl::TransferableFence *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
     // For that reason, let chromium_gpu_helper.cpp contain the producing code that will run in the Chromium
     // GPU thread, and put the sync consuming code here that will run in the QtQuick SG or GUI thread.
     switch (sync->type) {
-    case gfx::TransferableFence::NoSync:
+    case gl::TransferableFence::NoSync:
         break;
-    case gfx::TransferableFence::EglSync:
+    case gl::TransferableFence::EglSync:
 #ifdef EGL_KHR_reusable_sync
     {
         static bool resolved = false;
         static PFNEGLDESTROYSYNCKHRPROC eglDestroySyncKHR = 0;
 
         if (!resolved) {
-            if (gfx::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
+            if (gl::GLSurfaceQt::HasEGLExtension("EGL_KHR_fence_sync")) {
                 QOpenGLContext *context = QOpenGLContext::currentContext();
                 eglDestroySyncKHR = (PFNEGLDESTROYSYNCKHRPROC)context->getProcAddress("eglDestroySyncKHR");
             }
@@ -271,7 +273,7 @@ static void deleteChromiumSync(gfx::TransferableFence *sync)
     }
 #endif
         break;
-    case gfx::TransferableFence::ArbSync:
+    case gl::TransferableFence::ArbSync:
         typedef void (QOPENGLF_APIENTRYP DeleteSyncPtr)(GLsync sync);
         static DeleteSyncPtr glDeleteSync_ = 0;
         if (!glDeleteSync_) {
@@ -293,6 +295,9 @@ MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QS
     , m_textureSize(textureSize)
     , m_hasAlpha(false)
     , m_target(GL_TEXTURE_2D)
+#if defined(USE_X11)
+    , m_ownsTexture(false)
+#endif
 {
     initializeOpenGLFunctions();
 
@@ -301,6 +306,21 @@ MailboxTexture::MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QS
     // rect of (0, 0) to (1, 1) while an empty texture size would set (0, 0) on all corners.
     if (m_textureSize.isEmpty())
         m_textureSize = QSize(1, 1);
+}
+
+MailboxTexture::~MailboxTexture()
+{
+#if defined(USE_X11)
+   // This is rare case, where context is not shared
+   // we created extra texture in current context, so
+   // delete it now
+   if (m_ownsTexture) {
+       QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+       QOpenGLFunctions *funcs = currentContext->functions();
+       GLuint id(m_textureId);
+       funcs->glDeleteTextures(1, &id);
+   }
+#endif
 }
 
 void MailboxTexture::bind()
@@ -354,7 +374,7 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
     if (!texture) {
         if (m_resource.is_software) {
             Q_ASSERT(apiDelegate);
-            scoped_ptr<cc::SharedBitmap> sharedBitmap = content::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
+            std::unique_ptr<cc::SharedBitmap> sharedBitmap = content::HostSharedBitmapManager::current()->GetSharedBitmapFromId(m_resource.size, m_resource.mailbox_holder.mailbox);
             // QSG interprets QImage::hasAlphaChannel meaning that a node should enable blending
             // to draw it but Chromium keeps this information in the quads.
             // The input format is currently always Format_ARGB32_Premultiplied, so assume that all
@@ -402,8 +422,25 @@ RectClipNode::RectClipNode(const QRectF &rect)
 
 DelegatedFrameNode::DelegatedFrameNode()
     : m_numPendingSyncPoints(0)
+#if defined(USE_X11)
+    , m_contextShared(true)
+#endif
 {
     setFlag(UsePreprocess);
+#if defined(USE_X11)
+    QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+    QOpenGLContext *sharedContext = qt_gl_global_share_context();
+    if (!QOpenGLContext::areSharing(currentContext, sharedContext)) {
+        static bool allowNotSharedContextWarningShown = true;
+        if (allowNotSharedContextWarningShown) {
+            allowNotSharedContextWarningShown = false;
+            qWarning("Context is not shared, textures will be copied between contexts.");
+        }
+        m_offsurface.reset(new QOffscreenSurface);
+        m_offsurface->create();
+        m_contextShared = false;
+    }
+#endif
 }
 
 DelegatedFrameNode::~DelegatedFrameNode()
@@ -634,8 +671,9 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;
+            }
 #ifdef GL_OES_EGL_image_external
-            } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
+            case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
                 MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
@@ -646,23 +684,10 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 svideoNode->setTextureMatrix(toQt(squad->matrix.matrix()));
                 currentLayerChain->appendChildNode(svideoNode);
                 break;
+            }
 #endif
-            }
-            case cc::DrawQuad::IO_SURFACE_CONTENT: {
-                const cc::IOSurfaceDrawQuad *ioquad = cc::IOSurfaceDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(ioquad->io_surface_resource_id(), resourceCandidates);
-                MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
-                texture->setTarget(GL_TEXTURE_RECTANGLE);
-
-                bool flip = ioquad->orientation != cc::IOSurfaceDrawQuad::FLIPPED;
-                StreamVideoNode *svideoNode = new StreamVideoNode(texture, flip, RectangleTarget);
-                QMatrix4x4 matrix;
-                matrix.scale(ioquad->io_surface_size.width(), ioquad->io_surface_size.height());
-                svideoNode->setRect(toQt(ioquad->rect));
-                svideoNode->setTextureMatrix(matrix);
-                currentLayerChain->appendChildNode(svideoNode);
-                break;
-            }
+            case cc::DrawQuad::SURFACE_CONTENT:
+                Q_UNREACHABLE();
             default:
                 qWarning("Unimplemented quad material: %d", quad->material);
             }
@@ -698,7 +723,7 @@ QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, boo
 
 void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch)
 {
-    QList<gfx::TransferableFence> transferredFences;
+    QList<gl::TransferableFence> transferredFences;
     {
         QMutexLocker lock(&m_mutex);
 
@@ -730,36 +755,35 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         m_textureFences.swap(transferredFences);
     }
 
-    Q_FOREACH (gfx::TransferableFence sync, transferredFences) {
+    Q_FOREACH (gl::TransferableFence sync, transferredFences) {
         // We need to wait on the fences on the Qt current context, and
         // can therefore not use GLFence routines that uses a different
         // concept of current context.
         waitChromiumSync(&sync);
         deleteChromiumSync(&sync);
     }
+
 #if defined(USE_X11)
     // Workaround when context is not shared QTBUG-48969
     // Make slow copy between two contexts.
-    QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
-    QOpenGLContext *sharedContext = qt_gl_global_share_context();
-    if (!QOpenGLContext::areSharing(currentContext,sharedContext)) {
-        static bool allowNotSharedContextWarningShown = true;
-        if (allowNotSharedContextWarningShown) {
-            allowNotSharedContextWarningShown = false;
-            qWarning("Context is not shared, textures will be copied between contexts.");
-        }
+    if (!m_contextShared) {
+        QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
+        QOpenGLContext *sharedContext = qt_gl_global_share_context();
+
+        QSurface *surface = currentContext->surface();
+        Q_ASSERT(m_offsurface);
+        sharedContext->makeCurrent(m_offsurface.data());
+        QOpenGLFunctions *funcs = sharedContext->functions();
+
+        GLuint fbo = 0;
+        funcs->glGenFramebuffers(1, &fbo);
 
         Q_FOREACH (MailboxTexture *mailboxTexture, mailboxesToFetch) {
-            QSurface *surface = currentContext->surface();
             // Read texture into QImage from shared context.
             // Switch to shared context.
-            QOffscreenSurface offsurface;
-            offsurface.create();
-            sharedContext->makeCurrent(&offsurface);
-            QOpenGLFunctions *funcs = sharedContext->functions();
+            sharedContext->makeCurrent(m_offsurface.data());
+            funcs = sharedContext->functions();
             QImage img(mailboxTexture->textureSize(), QImage::Format_RGBA8888_Premultiplied);
-            GLuint fbo = 0;
-            funcs->glGenFramebuffers(1, &fbo);
             funcs->glBindFramebuffer(GL_FRAMEBUFFER, fbo);
             funcs->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mailboxTexture->m_textureId, 0);
             GLenum status = funcs->glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -767,13 +791,12 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
                 qWarning("fbo error, skipping slow copy...");
                 continue;
             }
-
-            funcs->glReadPixels(0, 0, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
-            funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            funcs->glReadPixels(0, 0, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(),
+                                GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
 
             // Restore current context.
-            currentContext->makeCurrent(surface);
             // Create texture from QImage in current context.
+            currentContext->makeCurrent(surface);
             GLuint texture = 0;
             funcs = currentContext->functions();
             funcs->glGenTextures(1, &texture);
@@ -785,7 +808,14 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
             funcs->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mailboxTexture->textureSize().width(), mailboxTexture->textureSize().height(), 0,
                                 GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
             mailboxTexture->m_textureId = texture;
+            mailboxTexture->m_ownsTexture = true;
         }
+        // Cleanup allocated resources
+        sharedContext->makeCurrent(m_offsurface.data());
+        funcs = sharedContext->functions();
+        funcs->glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        funcs->glDeleteFramebuffers(1, &fbo);
+        currentContext->makeCurrent(surface);
     }
 #endif
 }
@@ -798,9 +828,9 @@ void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTextu
     if (syncToken.HasData())
         mailboxManager->PullTextureUpdates(syncToken);
     texture->fetchTexture(mailboxManager);
-    if (!!gfx::GLContext::GetCurrent() && gfx::GLFence::IsSupported()) {
+    if (!!gl::GLContext::GetCurrent() && gl::GLFence::IsSupported()) {
         // Create a fence on the Chromium GPU-thread and context
-        gfx::GLFence *fence = gfx::GLFence::Create();
+        gl::GLFence *fence = gl::GLFence::Create();
         // But transfer it to something generic since we need to read it using Qt's OpenGL.
         frameNode->m_textureFences.append(fence->Transfer());
         delete fence;

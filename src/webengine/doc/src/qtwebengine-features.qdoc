@@ -31,7 +31,7 @@
 
     \brief Summarizes Qt WebEngine features.
 
-    Qt WebEngine supports the following Chromium features:
+    Qt WebEngine supports the following features:
 
     \list
         \li \l{Audio and Video Codecs}
@@ -40,8 +40,11 @@
         \li \l{Fullscreen}
         \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
+        \li \l{Native Dialogs}
         \li \l{Pepper Plugin API}
         \li \l{Print to PDF}
+        \li \l{Spellchecker}
+        \li \l{View Source}
         \li \l{WebRTC}
     \endlist
 
@@ -140,6 +143,40 @@
 
     Support for this feature was added in Qt 5.5.0.
 
+    \section1 Native Dialogs
+
+    A web page might request dialogs for the following functions:
+
+    \list
+        \li Entering user credentials for HTTP and proxy authentication
+        \li Displaying JavaScript alerts, confirmation dialogs, and prompts
+        \li Picking colors
+        \li Selecting files
+        \li Displaying form validation messages
+    \endlist
+
+    Qt WebEngine provides standard dialogs for these functions. In widget-based
+    applications, the standard dialogs are based on QDialog, whereas in Qt Quick
+    applications, they can be based either on Qt Quick Controls 1 or Qt Quick
+    Controls 2 (since Qt 5.8). The latter are used only on \c eglfs platforms.
+
+    To explicitly force either dialogs based on Qt Quick Controls 1 or Qt Quick
+    Controls 2, set the \c QTWEBENGINE_DIALOG_SET environment variable to either
+    \c{QtQuickControls1} or \c{QtQuickControls2}.
+
+    Qt WebEngine Widgets dialogs can be customized by reimplementing the
+    QWebEnginePage::chooseFiles(), QWebEnginePage::javaScriptAlert(),
+    QWebEnginePage::javaScriptConfirm(), and QWebEnginePage::javaScriptPrompt()
+    functions.
+
+    Since Qt 5.8, Qt Quick dialogs can be customized by connecting to the
+    WebEngineView::authenticationDialogRequested(),
+    WebEngineView::javaScriptDialogRequested(),
+    WebEngineView::colorDialogRequested(),
+    WebEngineView::fileDialogRequested(), and
+    WebEngineView::formValidationMessageRequested() signals. For an example,
+    see \l{WebEngine Qt Quick Custom Dialogs Example}.
+
     \section1 Pepper Plugin API
 
     Qt WebEngine supports loading Pepper Plugin API (PPAPI) plugins if
@@ -221,6 +258,77 @@
     {Demo Browser} by selecting \uicontrol File > \uicontrol {Print to PDF}.
 
     Support for this feature was added in Qt 5.7.0.
+
+    \section1 Spellchecker
+
+    Qt WebEngine supports integrating spellchecking support into HTML forms to
+    enable users to submit spellchecked messages. When the user clicks on
+    an underlined misspelled word, the default context menu displays up to four
+    suggestions. Selecting one will replace the misspelled word.
+
+    To be able to check the spelling, the spellchecker needs dictionaries. It
+    supports dictionaries from the \l{Hunspell project}, but they have to be
+    compiled into a special binary format. A Hunspell dictionary consists of two
+    files:
+
+    \list
+
+        \li A \c .dic file that is a dictionary containing words for the
+            language
+        \li An \c .aff file that defines the meaning of special flags in the
+            dictionary
+    \endlist
+
+    These two files can be converted into the \c bdic format by using the
+    \c qwebengine_convert_dict tool that is shipped together with Qt.
+    When the Qt WebEngine spellchecker initializes, it will try to load the
+    \c bdict dictionaries and to check them for consistency. First, it searches
+    \e qtwebengine_dictionaries directories relative to the executable,
+    then it will look in \c QT_INSTALL_PREFIX/qtwebengines_dictionaries.
+
+    Spellchecking is disabled by default and can be enabled per profile by
+    using the QWebEngineProfile::setSpellCheckEnabled() method in widget-based
+    applications and the \l {QQuickWebEngineProfile::spellCheckEnabled}
+    {WebEngineProfile.spellCheckEnabled} property in Qt Quick applications.
+
+    The current language used for spellchecking is defined per profile, and can
+    be set using the QWebEngineProfile::setSpellCheckLanguage() method or the
+    \l {QQuickWebEngineProfile::spellCheckLanguage}
+    {WebEngineProfile.spellCheckLanguage} property.
+
+    This feature can be tested by building and running the
+    \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
+
+    Support for this feature was added in Qt 5.8.0.
+
+    \section1 View Source
+
+    Qt WebEngine supports viewing the HTML source of a web page.
+
+    This feature can be used from custom menus or assigned to custom events.
+    For more information, see WebEngineView::viewSource, WebEngineView::canViewSource,
+    QWebEnginePage::viewSource, and QWebEnginePage::canViewSource.
+
+    This feature can be tested by opening a web page in \l{WebEngine Widgets
+    Simple Browser Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}
+    {Nano Browser}, and then selecting \c{Page Source} in the context menu. The
+    \c{Page Source} context menu entry opens the source view in a new tab.
+
+    For opening the source view in the current tab, URLs with \l{view-source URI scheme}
+    are also supported. For example, you can type the following URL to the URL bar
+    to view the HTML source of the qt.io web page:
+    \code
+    view-source:https://www.qt.io/
+    \endcode
+
+    Auto-completion of incomplete URLs with \l{view-source URI scheme} makes the usage of
+    this feature more comfortable. For example, the following incomplete URL also loads
+    the source view of the qt.io web page:
+    \code
+    view-source:qt.io
+    \endcode
+
+    Support for this feature was added in Qt 5.8.0.
 
     \section1 WebRTC
 

@@ -44,7 +44,6 @@
 #include "content_browser_client_qt.h"
 #include "type_conversion.h"
 
-#include "base/memory/scoped_ptr.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 

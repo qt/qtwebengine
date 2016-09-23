@@ -85,6 +85,10 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
     QQuickWebEngineProfile class, which exposes further functionality in C++. This allows Qt Quick
     applications to intercept URL requests (QQuickWebEngineProfile::setRequestInterceptor), or
     register custom URL schemes (QQuickWebEngineProfile::installUrlSchemeHandler).
+
+    Spellchecking HTML form fields can be enabled per profile by setting the \l spellCheckEnabled
+    property and the current language used for spellchecking can be set by using the
+    \l spellCheckLanguage property.
 */
 
 /*!

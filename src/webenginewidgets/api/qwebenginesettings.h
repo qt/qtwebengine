@@ -87,7 +87,8 @@ public:
         AutoLoadIconsForPage,
         TouchIconsEnabled,
         FocusOnNavigationEnabled,
-        PrintElementBackgrounds
+        PrintElementBackgrounds,
+        AllowRunningInsecureContent
     };
 
     enum FontSize {

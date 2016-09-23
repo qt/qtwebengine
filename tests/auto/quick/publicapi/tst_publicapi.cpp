@@ -36,6 +36,7 @@
 #include <QtWebEngine/QQuickWebEngineProfile>
 #include <private/qquickwebengineview_p.h>
 #include <private/qquickwebenginecertificateerror_p.h>
+#include <private/qquickwebenginedialogrequests_p.h>
 #include <private/qquickwebenginedownloaditem_p.h>
 #include <private/qquickwebenginehistory_p.h>
 #include <private/qquickwebengineloadrequest_p.h>
@@ -44,6 +45,7 @@
 #include <private/qquickwebenginescript_p.h>
 #include <private/qquickwebenginesettings_p.h>
 #include <private/qquickwebenginesingleton_p.h>
+#include <private/qquickwebenginecontextmenurequest_p.h>
 
 class tst_publicapi : public QObject {
     Q_OBJECT
@@ -65,6 +67,12 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineSettings::staticMetaObject
     << &QQuickWebEngineFullScreenRequest::staticMetaObject
     << &QQuickWebEngineSingleton::staticMetaObject
+    << &QQuickWebEngineAuthenticationDialogRequest::staticMetaObject
+    << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
+    << &QQuickWebEngineColorDialogRequest::staticMetaObject
+    << &QQuickWebEngineFileDialogRequest::staticMetaObject
+    << &QQuickWebEngineFormValidationMessageRequest::staticMetaObject
+    << &QQuickWebEngineContextMenuRequest::staticMetaObject
     ;
 
 static QList<const char *> knownEnumNames = QList<const char *>();
@@ -351,6 +359,9 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId,PrintedPageOrientation) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue,PrintedPageSizeId) --> void"
     << "QQuickWebEngineView.printToPdf(QJSValue) --> void"
+    << "QQuickWebEngineView.canViewSource --> bool"
+    << "QQuickWebEngineView.replaceMisspelledWord(QString) --> void"
+    << "QQuickWebEngineView.viewSource() --> void"
     << "QQuickWebEngineCertificateError.SslPinnedKeyNotInCertificateChain --> Error"
     << "QQuickWebEngineCertificateError.CertificateCommonNameInvalid --> Error"
     << "QQuickWebEngineCertificateError.CertificateDateInvalid --> Error"
@@ -444,6 +455,11 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineProfile.downloadRequested(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.downloadFinished(QQuickWebEngineDownloadItem*) --> void"
     << "QQuickWebEngineProfile.NoCache --> HttpCacheType"
+    << "QQuickWebEngineProfile.spellCheckLanguage --> QString"
+    << "QQuickWebEngineProfile.spellCheckEnabled --> bool"
+    << "QQuickWebEngineProfile.spellCheckLanguageChanged() --> void"
+    << "QQuickWebEngineProfile.spellCheckEnabledChanged() --> void"
+    << "QQuickWebEngineProfile.clearHttpCache() --> void"
     << "QQuickWebEngineScript.Deferred --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentReady --> InjectionPoint"
     << "QQuickWebEngineScript.DocumentCreation --> InjectionPoint"
@@ -507,6 +523,8 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineSettings.accelerated2dCanvasEnabledChanged() --> void"
     << "QQuickWebEngineSettings.autoLoadIconsForPageChanged() --> void"
     << "QQuickWebEngineSettings.touchIconsEnabledChanged() --> void"
+    << "QQuickWebEngineSettings.focusOnNavigationEnabled --> bool"
+    << "QQuickWebEngineSettings.focusOnNavigationEnabledChanged() --> void"
     << "QQuickWebEngineFullScreenRequest.origin --> QUrl"
     << "QQuickWebEngineFullScreenRequest.toggleOn --> bool"
     << "QQuickWebEngineFullScreenRequest.accept() --> void"

@@ -14,6 +14,7 @@ defineTest(isQtMinimum) {
 }
 
 defineTest(isPlatformSupported) {
+  QT_FOR_CONFIG += gui-private
   linux {
     !gcc:!clang {
       skipBuild("Qt WebEngine on Linux requires clang or GCC.")

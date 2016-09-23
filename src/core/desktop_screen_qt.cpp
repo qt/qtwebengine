@@ -39,6 +39,9 @@
 
 #include "desktop_screen_qt.h"
 
+#include "ui/display/display.h"
+#include "ui/gfx/geometry/point.h"
+
 namespace QtWebEngineCore {
 
 gfx::Point DesktopScreenQt::GetCursorScreenPoint()
@@ -47,10 +50,10 @@ gfx::Point DesktopScreenQt::GetCursorScreenPoint()
     return gfx::Point();
 }
 
-gfx::NativeWindow DesktopScreenQt::GetWindowUnderCursor()
+bool DesktopScreenQt::IsWindowUnderCursor(gfx::NativeWindow)
 {
     Q_UNREACHABLE();
-    return gfx::NativeWindow();
+    return false;
 }
 
 gfx::NativeWindow DesktopScreenQt::GetWindowAtScreenPoint(const gfx::Point& point)
@@ -65,42 +68,42 @@ int DesktopScreenQt::GetNumDisplays() const
     return 0;
 }
 
-std::vector<gfx::Display> DesktopScreenQt::GetAllDisplays() const
+std::vector<display::Display> DesktopScreenQt::GetAllDisplays() const
 {
     Q_UNREACHABLE();
-    return std::vector<gfx::Display>();
+    return std::vector<display::Display>();
 }
 
-gfx::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeView window) const
+display::Display DesktopScreenQt::GetDisplayNearestWindow(gfx::NativeView window) const
 {
     // RenderViewHostImpl::OnStartDragging uses this to determine
     // the scale factor for the view.
-    return gfx::Display();
+    return display::Display();
 }
 
-gfx::Display DesktopScreenQt::GetDisplayNearestPoint(const gfx::Point& point) const
+display::Display DesktopScreenQt::GetDisplayNearestPoint(const gfx::Point& point) const
 {
     Q_UNREACHABLE();
-    return gfx::Display();
+    return display::Display();
 }
 
-gfx::Display DesktopScreenQt::GetDisplayMatching(const gfx::Rect& match_rect) const
+display::Display DesktopScreenQt::GetDisplayMatching(const gfx::Rect& match_rect) const
 {
     Q_UNREACHABLE();
-    return gfx::Display();
+    return display::Display();
 }
 
-gfx::Display DesktopScreenQt::GetPrimaryDisplay() const
+display::Display DesktopScreenQt::GetPrimaryDisplay() const
 {
-    return gfx::Display();
+    return display::Display();
 }
 
-void DesktopScreenQt::AddObserver(gfx::DisplayObserver* observer)
+void DesktopScreenQt::AddObserver(display::DisplayObserver* observer)
 {
     Q_UNREACHABLE();
 }
 
-void DesktopScreenQt::RemoveObserver(gfx::DisplayObserver* observer)
+void DesktopScreenQt::RemoveObserver(display::DisplayObserver* observer)
 {
     Q_UNREACHABLE();
 }

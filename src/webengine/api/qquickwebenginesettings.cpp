@@ -99,7 +99,7 @@ bool QQuickWebEngineSettings::javascriptEnabled() const
 /*!
     \qmlproperty bool WebEngineSettings::javascriptCanOpenWindows
 
-    Allows JavaScript programs to open new windows.
+    Allows JavaScript programs to open popup windows without user interaction.
 
     Enabled by default.
 */
@@ -321,13 +321,28 @@ bool QQuickWebEngineSettings::focusOnNavigationEnabled() const
   \qmlproperty bool WebEngineSettings::printElementBackgrounds
   \since QtWebEngine 1.4
 
-  Turns on printing of CSS backgrounds when printing to PDF.
+  Turns on printing of CSS backgrounds when printing a web page.
 
   Enabled by default.
 */
 bool QQuickWebEngineSettings::printElementBackgrounds() const
 {
     return d_ptr->testAttribute(WebEngineSettings::PrintElementBackgrounds);
+}
+
+/*!
+  \qmlproperty bool WebEngineSettings::allowRunningInsecureContent
+  \since QtWebEngine 1.4
+
+  By default, HTTPS pages cannot run JavaScript, CSS, plugins or
+  web-sockets from HTTP URLs. This used to be possible and this
+  provides an override to get the old behavior.
+
+  Disabled by default.
+*/
+bool QQuickWebEngineSettings::allowRunningInsecureContent() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::AllowRunningInsecureContent);
 }
 
 /*!
@@ -513,6 +528,15 @@ void QQuickWebEngineSettings::setFocusOnNavigationEnabled(bool on)
     d_ptr->setAttribute(WebEngineSettings::FocusOnNavigationEnabled, on);
     if (wasOn != on)
         Q_EMIT focusOnNavigationEnabledChanged();
+}
+
+
+void QQuickWebEngineSettings::setAllowRunningInsecureContent(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AllowRunningInsecureContent);
+    d_ptr->setAttribute(WebEngineSettings::AllowRunningInsecureContent, on);
+    if (wasOn != on)
+        Q_EMIT allowRunningInsecureContentChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)

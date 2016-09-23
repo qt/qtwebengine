@@ -49,7 +49,6 @@
 #include "web_contents_adapter_client.h"
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "content/public/browser/media_observer.h"
@@ -83,6 +82,11 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   virtual void OnMediaRequestStateChanged(int render_process_id, int render_frame_id, int page_request_id, const GURL& security_origin, content::MediaStreamType stream_type, content::MediaRequestState state) Q_DECL_OVERRIDE;
 
   virtual void OnCreatingAudioStream(int /*render_process_id*/, int /*render_frame_id*/) Q_DECL_OVERRIDE { }
+  virtual void OnSetCapturingLinkSecured(int /*render_process_id*/,
+                                         int /*render_frame_id*/,
+                                         int /*page_request_id*/,
+                                         content::MediaStreamType /*stream_type*/,
+                                         bool /*is_secure*/) Q_DECL_OVERRIDE { }
 
   DesktopStreamsRegistry *getDesktopStreamsRegistry();
 
@@ -118,7 +122,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
 
   RequestsQueues m_pendingRequests;
 
-  scoped_ptr<DesktopStreamsRegistry> m_desktopStreamsRegistry;
+  std::unique_ptr<DesktopStreamsRegistry> m_desktopStreamsRegistry;
 
   content::NotificationRegistrar m_notificationsRegistrar;
 

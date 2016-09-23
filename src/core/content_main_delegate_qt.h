@@ -42,7 +42,6 @@
 
 #include "content/public/app/content_main_delegate.h"
 
-#include "base/memory/scoped_ptr.h"
 #include <QtCore/qcompilerdetection.h>
 
 #include "content_browser_client_qt.h"
@@ -63,7 +62,7 @@ public:
     bool BasicStartupComplete(int* /*exit_code*/) Q_DECL_OVERRIDE;
 
 private:
-    scoped_ptr<ContentBrowserClientQt> m_browserClient;
+    std::unique_ptr<ContentBrowserClientQt> m_browserClient;
 };
 
 } // namespace QtWebEngineCore

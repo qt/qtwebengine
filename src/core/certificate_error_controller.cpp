@@ -66,6 +66,7 @@ ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNonUniqueName, net::ER
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateWeakKey, net::ERR_CERT_WEAK_KEY)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateNameConstraintViolation, net::ERR_CERT_NAME_CONSTRAINT_VIOLATION)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateValidityTooLong, net::ERR_CERT_VALIDITY_TOO_LONG)
+ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateTransparencyRequired, net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED)
 ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CERT_END)
 
 void CertificateErrorControllerPrivate::accept(bool accepted)
@@ -174,6 +175,8 @@ QString CertificateErrorController::errorString() const
         return getQStringForMessageId(IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION);
     case CertificateValidityTooLong:
         return getQStringForMessageId(IDS_CERT_ERROR_VALIDITY_TOO_LONG_DESCRIPTION);
+    case CertificateTransparencyRequired:
+        return getQStringForMessageId(IDS_CERT_ERROR_CERTIFICATE_TRANSPARENCY_REQUIRED_DESCRIPTION);
     case CertificateUnableToCheckRevocation: // Deprecated in Chromium.
     default:
         break;

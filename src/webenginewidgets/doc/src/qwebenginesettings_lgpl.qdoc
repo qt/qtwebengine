@@ -93,7 +93,8 @@
     \value  JavascriptEnabled
             Enables the running of JavaScript programs. Enabled by default.
     \value  JavascriptCanOpenWindows
-            Allows JavaScript programs to open new windows. Enabled by default.
+            Allows JavaScript programs to open popup windows without user
+            interaction. Enabled by default.
     \value  JavascriptCanAccessClipboard
             Allows JavaScript programs to read from and write to the clipboard. Disabled by
             default.
@@ -152,8 +153,13 @@
             on).
             Enabled by default. (Added in Qt 5.8)
     \value  PrintElementBackgrounds
-            Turns on printing of CSS backgrounds when printing to PDF.
+            Turns on printing of CSS backgrounds when printing a web page.
             Enabled by default. (Added in Qt 5.8)
+    \value  AllowRunningInsecureContent
+            By default, HTTPS pages cannot run JavaScript, CSS, plugins or
+            web-sockets from HTTP URLs. This provides an override to get
+            the old insecure behavior.
+            Disabled by default. (Added in Qt 5.8)
 */
 
 /*!

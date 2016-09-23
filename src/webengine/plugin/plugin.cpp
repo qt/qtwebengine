@@ -41,6 +41,8 @@
 #include <QtWebEngine/QQuickWebEngineProfile>
 
 #include "qquickwebenginecertificateerror_p.h"
+#include "qquickwebenginecontextmenurequest_p.h"
+#include "qquickwebenginedialogrequests_p.h"
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginefaviconprovider_p_p.h"
@@ -62,7 +64,7 @@ static QObject *webEngineSingletonProvider(QQmlEngine *, QJSEngine *)
 class QtWebEnginePlugin : public QQmlExtensionPlugin
 {
     Q_OBJECT
-    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
+    Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
 public:
     virtual void initializeEngine(QQmlEngine *engine, const char *uri)
     {
@@ -108,6 +110,19 @@ public:
             tr("Cannot create a separate instance of NavigationHistory"));
         qmlRegisterUncreatableType<QQuickWebEngineFullScreenRequest>(uri, 1, 1, "FullScreenRequest",
             tr("Cannot create a separate instance of FullScreenRequest"));
+
+        qmlRegisterUncreatableType<QQuickWebEngineContextMenuRequest>(uri, 1, 4, "ContextMenuRequest",
+                                                                    tr("Cannot create separate instance of ContextMenuRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineAuthenticationDialogRequest>(uri, 1, 4, "AuthenticationDialogRequest",
+                                                                       tr("Cannot create separate instance of AuthenticationDialogRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineJavaScriptDialogRequest>(uri, 1, 4, "JavaScriptDialogRequest",
+                                                                         tr("Cannot create separate instance of JavaScriptDialogRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineColorDialogRequest>(uri, 1, 4, "ColorDialogRequest",
+                                                                         tr("Cannot create separate instance of ColorDialogRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineFileDialogRequest>(uri, 1, 4, "FileDialogRequest",
+                                                                         tr("Cannot create separate instance of FileDialogRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineFormValidationMessageRequest>(uri, 1, 4, "FormValidationMessageRequest",
+                                                                         tr("Cannot create separate instance of FormValidationMessageRequest"));
 
         // For now (1.x import), the latest revision matches the minor version of the import.
         qmlRegisterRevision<QQuickWebEngineView, LATEST_WEBENGINEVIEW_REVISION>(uri, 1, LATEST_WEBENGINEVIEW_REVISION);

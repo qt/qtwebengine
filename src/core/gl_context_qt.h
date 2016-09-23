@@ -42,7 +42,7 @@
 
 #include <QObject>
 
-namespace gfx {
+namespace gl {
 class GLContext;
 class GLSurface;
 }
@@ -54,7 +54,7 @@ class GLContextHelper : public QObject {
 public:
     static void initialize();
     static void destroy();
-    static bool initializeContext(gfx::GLContext* context, gfx::GLSurface* surface);
+    static bool initializeContext(gl::GLContext* context, gl::GLSurface* surface);
 
     static void* getEGLConfig();
     static void* getXConfig();
@@ -63,7 +63,7 @@ public:
     static void* getNativeDisplay();
 
 private:
-    Q_INVOKABLE bool initializeContextOnBrowserThread(gfx::GLContext* context, gfx::GLSurface* surface);
+    Q_INVOKABLE bool initializeContextOnBrowserThread(gl::GLContext* context, gl::GLSurface* surface);
 
     static GLContextHelper* contextHelper;
 };

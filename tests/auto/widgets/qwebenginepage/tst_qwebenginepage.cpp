@@ -3471,7 +3471,9 @@ void tst_QWebEnginePage::getUserMediaRequest()
     GetUserMediaTestPage *page = new GetUserMediaTestPage();
 
     // We need to load content from a resource in order for the securityOrigin to be valid.
+    QSignalSpy loadSpy(page, SIGNAL(loadFinished(bool)));
     page->load(QUrl("qrc:///resources/content.html"));
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     QVERIFY(evaluateJavaScriptSync(page, QStringLiteral("!!navigator.webkitGetUserMedia")).toBool());
     evaluateJavaScriptSync(page, QStringLiteral("navigator.webkitGetUserMedia({audio: true}, function() {}, function(){})"));

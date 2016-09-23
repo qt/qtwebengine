@@ -116,3 +116,8 @@
     \externalpage http://www.w3schools.com/tags/att_a_download.asp
     \title HTML download Attribute
 */
+
+/*!
+  \externalpage https://www.iana.org/assignments/uri-schemes/prov/view-source
+  \title view-source URI scheme
+*/

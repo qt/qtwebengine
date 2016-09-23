@@ -230,16 +230,18 @@ bool NetworkDelegateQt::OnCanSetCookie(const net::URLRequest& request,
     return m_requestContextGetter->m_cookieDelegate->canSetCookie(toQt(request.first_party_for_cookies()), QByteArray::fromStdString(cookie_line), toQt(request.url()));
 }
 
-int NetworkDelegateQt::OnBeforeSendHeaders(net::URLRequest*, const net::CompletionCallback&, net::HttpRequestHeaders*)
+
+int NetworkDelegateQt::OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers)
 {
     return net::OK;
 }
 
-void NetworkDelegateQt::OnBeforeSendProxyHeaders(net::URLRequest*, const net::ProxyInfo&, net::HttpRequestHeaders*)
+void NetworkDelegateQt::OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
+                                            const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers)
 {
 }
 
-void NetworkDelegateQt::OnSendHeaders(net::URLRequest*, const net::HttpRequestHeaders&)
+void NetworkDelegateQt::OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers)
 {
 }
 

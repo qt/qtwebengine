@@ -118,7 +118,7 @@ public:
     void showColorDialog(QSharedPointer<ColorChooserController>);
     void showDialog(QSharedPointer<JavaScriptDialogController>);
     void showDialog(QSharedPointer<AuthenticationDialogController>);
-    void showFilePicker(FilePickerController *controller);
+    void showFilePicker(QSharedPointer<FilePickerController>);
     virtual void showMenu(QObject *menu);
     void showMessageBubble(const QRect &anchor, const QString &mainText,
                            const QString &subText);

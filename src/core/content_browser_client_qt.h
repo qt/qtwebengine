@@ -41,9 +41,7 @@
 #define CONTENT_BROWSER_CLIENT_QT_H
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "content/public/browser/content_browser_client.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 
 #include <QtCore/qcompilerdetection.h> // Needed for Q_DECL_OVERRIDE
 
@@ -68,7 +66,7 @@ class WebContents;
 struct MainFunctionParams;
 }
 
-namespace gfx {
+namespace gl {
 class GLShareGroup;
 }
 
@@ -87,9 +85,9 @@ public:
     virtual content::BrowserMainParts* CreateBrowserMainParts(const content::MainFunctionParams&) Q_DECL_OVERRIDE;
     virtual void RenderProcessWillLaunch(content::RenderProcessHost* host) Q_DECL_OVERRIDE;
     virtual void ResourceDispatcherHostCreated() Q_DECL_OVERRIDE;
-    virtual gfx::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
+    virtual gl::GLShareGroup* GetInProcessGpuShareGroup() Q_DECL_OVERRIDE;
     virtual content::MediaObserver* GetMediaObserver() Q_DECL_OVERRIDE;
-    virtual content::AccessTokenStore* CreateAccessTokenStore() Q_DECL_OVERRIDE;
+    virtual content::GeolocationDelegate* CreateGeolocationDelegate() Q_DECL_OVERRIDE;
     virtual content::QuotaPermissionContext *CreateQuotaPermissionContext() Q_DECL_OVERRIDE;
     virtual void OverrideWebkitPrefs(content::RenderViewHost *, content::WebPreferences *) Q_DECL_OVERRIDE;
     virtual void AllowCertificateError(content::WebContents* web_contents,
@@ -102,7 +100,6 @@ public:
                                        bool expired_previous_decision,
                                        const base::Callback<void(bool)>& callback,
                                        content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
-    content::LocationProvider* OverrideSystemLocationProvider() Q_DECL_OVERRIDE;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
 
     virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
@@ -119,7 +116,7 @@ public:
 
 private:
     BrowserMainPartsQt* m_browserMainParts;
-    scoped_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
+    std::unique_ptr<ResourceDispatcherHostDelegateQt> m_resourceDispatcherHostDelegate;
     scoped_refptr<ShareGroupQtQuick> m_shareGroupQtQuick;
 };
 

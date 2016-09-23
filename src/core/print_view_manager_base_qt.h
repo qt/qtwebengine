@@ -97,7 +97,7 @@ protected:
 
     int number_pages_;  // Number of pages to print in the print job.
     int cookie_;
-    scoped_ptr<base::DictionaryValue> m_printSettings;
+    std::unique_ptr<base::DictionaryValue> m_printSettings;
 
     // content::NotificationObserver implementation.
     void Observe(int,

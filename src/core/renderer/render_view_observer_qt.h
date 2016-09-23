@@ -44,13 +44,13 @@
 #include <QtGlobal>
 
 namespace web_cache {
-class WebCacheRenderProcessObserver;
+class WebCacheImpl;
 }
 
 class RenderViewObserverQt : public content::RenderViewObserver {
 public:
     RenderViewObserverQt(content::RenderView* render_view,
-                         web_cache::WebCacheRenderProcessObserver* web_cache_render_process_observer);
+                         web_cache::WebCacheImpl* web_cache_impl);
 
 private:
     void onFetchDocumentMarkup(quint64 requestId);
@@ -58,11 +58,12 @@ private:
     void onSetBackgroundColor(quint32 color);
 
     void OnFirstVisuallyNonEmptyLayout() Q_DECL_OVERRIDE;
+    void OnDestruct() Q_DECL_OVERRIDE { }
 
     virtual bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
     virtual void Navigate(const GURL& url) Q_DECL_OVERRIDE;
 
-    web_cache::WebCacheRenderProcessObserver* m_web_cache_render_process_observer;
+    web_cache::WebCacheImpl* m_web_cache_impl;
 
     DISALLOW_COPY_AND_ASSIGN(RenderViewObserverQt);
 };

@@ -19,6 +19,8 @@ cross_compile {
 GYP_CONFIG += qtwe_process_name_debug=$$QTWEBENGINEPROCESS_NAME_DEBUG
 GYP_CONFIG += qtwe_process_name_release=$$QTWEBENGINEPROCESS_NAME_RELEASE
 GYP_CONFIG += disable_glibcxx_debug=1
+!contains(QT_CONFIG, no-pkg-config): GYP_ARGS += "-D pkg-config=\"$$pkgConfigExecutable()\""
+
 !webcore_debug: GYP_CONFIG += remove_webcore_debug_symbols=1
 !v8base_debug: GYP_CONFIG += remove_v8base_debug_symbols=1
 
@@ -80,6 +82,10 @@ contains(QT_ARCH, "arm") {
         contains(MFPU, "neon")|contains(MFPU, "neon-vfpv4"): GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=1
         else:!lessThan(MARMV, 7): GYP_CONFIG += arm_neon=0 arm_neon_optional=1
         else: GYP_CONFIG += arm_fpu=\"$$MFPU\" arm_neon=0 arm_neon_optional=0
+    } else {
+        # Chromium defaults to arm_neon=1, Qt does not.
+        GYP_CONFIG += arm_neon=0
+        !lessThan(MARMV, 7): GYP_CONFIG += arm_neon_optional=1
     }
 
     contains(QMAKE_CFLAGS, "-marm"): GYP_CONFIG += arm_thumb=0

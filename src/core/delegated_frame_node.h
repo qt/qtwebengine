@@ -40,7 +40,6 @@
 #ifndef DELEGATED_FRAME_NODE_H
 #define DELEGATED_FRAME_NODE_H
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/transferable_resource.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -50,6 +49,7 @@
 #include <QSharedData>
 #include <QSharedPointer>
 #include <QWaitCondition>
+#include <QtGui/QOffscreenSurface>
 
 #include "chromium_gpu_helper.h"
 #include "render_widget_host_view_qt_delegate.h"
@@ -73,7 +73,7 @@ class ChromiumCompositorData : public QSharedData {
 public:
     ChromiumCompositorData() : frameDevicePixelRatio(1) { }
     QHash<unsigned, QSharedPointer<ResourceHolder> > resourceHolders;
-    scoped_ptr<cc::DelegatedFrameData> frameData;
+    std::unique_ptr<cc::DelegatedFrameData> frameData;
     qreal frameDevicePixelRatio;
 };
 
@@ -103,8 +103,12 @@ private:
     int m_numPendingSyncPoints;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;
-    QList<gfx::TransferableFence> m_textureFences;
-    scoped_ptr<gpu::SyncPointClient> m_syncPointClient;
+    QList<gl::TransferableFence> m_textureFences;
+    std::unique_ptr<gpu::SyncPointClient> m_syncPointClient;
+#if defined(USE_X11)
+    bool m_contextShared;
+    QScopedPointer<QOffscreenSurface> m_offsurface;
+#endif
 };
 
 } // namespace QtWebEngineCore

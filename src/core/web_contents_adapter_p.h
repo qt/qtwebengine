@@ -55,7 +55,6 @@
 
 #include <base/callback.h>
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -84,10 +83,10 @@ public:
     ~WebContentsAdapterPrivate();
     scoped_refptr<WebEngineContext> engineContext;
     QSharedPointer<BrowserContextAdapter> browserContextAdapter;
-    scoped_ptr<content::WebContents> webContents;
-    scoped_ptr<WebContentsDelegateQt> webContentsDelegate;
-    scoped_ptr<RenderViewObserverHostQt> renderViewObserverHost;
-    scoped_ptr<WebChannelIPCTransportHost> webChannelTransport;
+    std::unique_ptr<content::WebContents> webContents;
+    std::unique_ptr<WebContentsDelegateQt> webContentsDelegate;
+    std::unique_ptr<RenderViewObserverHostQt> renderViewObserverHost;
+    std::unique_ptr<WebChannelIPCTransportHost> webChannelTransport;
     QWebChannel *webChannel;
     unsigned int webChannelWorld;
     WebContentsAdapterClient *adapterClient;

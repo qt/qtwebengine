@@ -76,9 +76,10 @@ public:
     virtual int OnBeforeURLRequest(net::URLRequest* request, const net::CompletionCallback& callback, GURL* newUrl) override;
     virtual void OnURLRequestDestroyed(net::URLRequest* request) override;
     virtual bool OnCanSetCookie(const net::URLRequest&, const std::string&, net::CookieOptions*) override;
-    virtual int OnBeforeSendHeaders(net::URLRequest*, const net::CompletionCallback&, net::HttpRequestHeaders*) override;
-    virtual void OnBeforeSendProxyHeaders(net::URLRequest*, const net::ProxyInfo&, net::HttpRequestHeaders*) override;
-    virtual void OnSendHeaders(net::URLRequest*, const net::HttpRequestHeaders&) override;
+    virtual int OnBeforeStartTransaction(net::URLRequest *request, const net::CompletionCallback &callback, net::HttpRequestHeaders *headers) override;
+    virtual void OnBeforeSendHeaders(net::URLRequest* request, const net::ProxyInfo& proxy_info,
+                                     const net::ProxyRetryInfoMap& proxy_retry_info, net::HttpRequestHeaders* headers) override;
+    virtual void OnStartTransaction(net::URLRequest *request, const net::HttpRequestHeaders &headers) override;
     virtual int OnHeadersReceived(net::URLRequest*, const net::CompletionCallback&, const net::HttpResponseHeaders*, scoped_refptr<net::HttpResponseHeaders>*, GURL*) override;
     virtual void OnBeforeRedirect(net::URLRequest*, const GURL&) override;
     virtual void OnResponseStarted(net::URLRequest*) override;

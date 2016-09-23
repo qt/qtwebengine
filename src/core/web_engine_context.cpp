@@ -103,6 +103,7 @@ QT_END_NAMESPACE
 namespace {
 
 scoped_refptr<QtWebEngineCore::WebEngineContext> sContext;
+static bool s_destroyed = false;
 
 void destroyContext()
 {
@@ -111,6 +112,7 @@ void destroyContext()
     // WebEngineContext's pointer is used.
     sContext->destroy();
     sContext = 0;
+    s_destroyed = true;
 }
 
 bool usingANGLE()
@@ -189,18 +191,29 @@ void WebEngineContext::destroy()
     // RenderProcessHostImpl should be destroyed before WebEngineContext since
     // default BrowserContext might be used by the RenderprocessHostImpl's destructor.
     m_browserRunner.reset(0);
+
+    // Drop the false reference.
+    sContext->Release();
 }
 
 WebEngineContext::~WebEngineContext()
 {
+    // WebEngineContext::destroy() must be called before we are deleted
+    Q_ASSERT(!m_globalQObject);
+    Q_ASSERT(!m_devtools);
+    Q_ASSERT(!m_browserRunner);
 }
 
 scoped_refptr<WebEngineContext> WebEngineContext::current()
 {
+    if (s_destroyed)
+        return nullptr;
     if (!sContext.get()) {
         sContext = new WebEngineContext();
         // Make sure that we ramp down Chromium before QApplication destroys its X connection, etc.
         qAddPostRoutine(destroyContext);
+        // Add a false reference so there is no race between unreferencing sContext and a global QApplication.
+        sContext->AddRef();
     }
     return sContext;
 }
@@ -309,7 +322,7 @@ WebEngineContext::WebEngineContext()
         if (qt_gl_global_share_context()) {
             if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
-                    glType = gfx::kGLImplementationEGLName;
+                    glType = gl::kGLImplementationEGLName;
                 } else {
                     QOpenGLContext context;
                     QSurfaceFormat format;
@@ -327,7 +340,7 @@ WebEngineContext::WebEngineContext()
 
                         if (context.makeCurrent(&surface)) {
                             if (context.hasExtension("GL_ARB_ES2_compatibility"))
-                                glType = gfx::kGLImplementationEGLName;
+                                glType = gl::kGLImplementationEGLName;
 
                             context.doneCurrent();
                         }
@@ -337,17 +350,17 @@ WebEngineContext::WebEngineContext()
                 }
             } else {
                 if (!qt_gl_global_share_context()->isOpenGLES())
-                    glType = gfx::kGLImplementationDesktopName;
+                    glType = gl::kGLImplementationDesktopName;
             }
         } else {
             qWarning("WebEngineContext used before QtWebEngine::initialize()");
             // We have to assume the default OpenGL module type will be used.
             switch (QOpenGLContext::openGLModuleType()) {
             case QOpenGLContext::LibGL:
-                glType = gfx::kGLImplementationDesktopName;
+                glType = gl::kGLImplementationDesktopName;
                 break;
             case QOpenGLContext::LibGLES:
-                glType = gfx::kGLImplementationEGLName;
+                glType = gl::kGLImplementationEGLName;
                 break;
             }
         }
@@ -381,6 +394,8 @@ WebEngineContext::WebEngineContext()
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
     MediaCaptureDevicesDispatcher::GetInstance();
+
+    base::ThreadRestrictions::SetIOAllowed(true);
 
 #if defined(ENABLE_PLUGINS)
     // Creating pepper plugins from the page (which calls PluginService::GetPluginInfoArray)

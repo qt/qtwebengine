@@ -59,16 +59,20 @@
 QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
+class QQuickWebEngineAuthenticationDialogRequest;
 class QQuickWebEngineCertificateError;
-class QQuickWebEngineContextMenuData;
+class QQuickWebEngineColorDialogRequest;
+class QQuickWebEngineContextMenuRequest;
 class QQuickWebEngineFaviconProvider;
+class QQuickWebEngineFileDialogRequest;
 class QQuickWebEngineHistory;
+class QQuickWebEngineJavaScriptDialogRequest;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
 class QQuickWebEngineNewViewRequest;
 class QQuickWebEngineProfile;
 class QQuickWebEngineSettings;
-class QQuickWebEngineViewExperimental;
+class QQuickWebEngineFormValidationMessageRequest;
 class QQuickWebEngineViewPrivate;
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
@@ -148,13 +152,11 @@ public:
     QPointF scrollPosition() const;
     bool canViewSource() const;
 
-    QQuickWebEngineViewExperimental *experimental() const;
-
     // must match WebContentsAdapterClient::NavigationRequestAction
     enum NavigationRequestAction {
         AcceptRequest,
         // Make room in the valid range of the enum so
-        // we can expose extra actions in experimental.
+        // we can expose extra actions.
         IgnoreRequest = 0xFF
     };
     Q_ENUM(NavigationRequestAction)
@@ -506,6 +508,12 @@ Q_SIGNALS:
     Q_REVISION(3) void audioMutedChanged(bool muted);
     Q_REVISION(3) void recentlyAudibleChanged(bool recentlyAudible);
     Q_REVISION(3) void webChannelWorldChanged(uint);
+    Q_REVISION(4) void contextMenuRequested(QQuickWebEngineContextMenuRequest *request);
+    Q_REVISION(4) void authenticationDialogRequested(QQuickWebEngineAuthenticationDialogRequest *request);
+    Q_REVISION(4) void javaScriptDialogRequested(QQuickWebEngineJavaScriptDialogRequest *request);
+    Q_REVISION(4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
+    Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
+    Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;
@@ -519,8 +527,6 @@ private:
     Q_DECLARE_PRIVATE(QQuickWebEngineView)
     QScopedPointer<QQuickWebEngineViewPrivate> d_ptr;
 
-    friend class QQuickWebEngineViewExperimental;
-    friend class QQuickWebEngineViewExperimentalExtension;
     friend class QQuickWebEngineNewViewRequest;
     friend class QQuickWebEngineFaviconProvider;
 #ifndef QT_NO_ACCESSIBILITY

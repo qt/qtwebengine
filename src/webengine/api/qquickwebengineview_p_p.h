@@ -52,7 +52,6 @@
 //
 
 #include "qquickwebengineview_p.h"
-#include "qquickwebenginecontextmenudata_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
@@ -70,6 +69,7 @@ QT_BEGIN_NAMESPACE
 class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
+class QQuickWebEngineContextMenuRequest;
 class QQuickWebEngineSettings;
 class QQuickWebEngineFaviconProvider;
 
@@ -79,49 +79,6 @@ QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 class QQuickWebEngineTestSupport;
 #endif
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewport : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio WRITE setDevicePixelRatio NOTIFY devicePixelRatioChanged)
-public:
-    QQuickWebEngineViewport(QQuickWebEngineViewPrivate *viewPrivate);
-
-    qreal devicePixelRatio() const;
-    void setDevicePixelRatio(qreal);
-
-Q_SIGNALS:
-    void devicePixelRatioChanged();
-
-private:
-    QQuickWebEngineViewPrivate *d_ptr;
-
-    Q_DECLARE_PRIVATE(QQuickWebEngineView)
-};
-
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
-    Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
-    Q_PROPERTY(const QQuickWebEngineContextMenuData *contextMenuData READ contextMenuData NOTIFY contextMenuDataChanged)
-
-    QQuickWebEngineViewport *viewport() const;
-    void setExtraContextMenuEntriesComponent(QQmlComponent *);
-    QQmlComponent *extraContextMenuEntriesComponent() const;
-
-    const QQuickWebEngineContextMenuData *contextMenuData() const;
-
-Q_SIGNALS:
-    void extraContextMenuEntriesComponentChanged();
-    void contextMenuDataChanged();
-
-private:
-    QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
-    QQuickWebEngineView *q_ptr;
-    QQuickWebEngineViewPrivate *d_ptr;
-
-    Q_DECLARE_PRIVATE(QQuickWebEngineView)
-    Q_DECLARE_PUBLIC(QQuickWebEngineView)
-};
-
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewPrivate : public QtWebEngineCore::WebContentsAdapterClient
 {
 public:
@@ -130,8 +87,6 @@ public:
     QQuickWebEngineViewPrivate();
     ~QQuickWebEngineViewPrivate();
 
-    QQuickWebEngineViewExperimental *experimental() const;
-    QQuickWebEngineViewport *viewport() const;
     QtWebEngineCore::UIDelegatesManager *ui();
 
     virtual QtWebEngineCore::RenderWidgetHostViewQtDelegate* CreateRenderWidgetHostViewQtDelegate(QtWebEngineCore::RenderWidgetHostViewQtDelegateClient *client) Q_DECL_OVERRIDE;
@@ -161,7 +116,7 @@ public:
     virtual bool contextMenuRequested(const QtWebEngineCore::WebEngineContextMenuData &) Q_DECL_OVERRIDE;
     virtual void navigationRequested(int navigationType, const QUrl &url, int &navigationRequestAction, bool isMainFrame) Q_DECL_OVERRIDE;
     virtual void javascriptDialog(QSharedPointer<QtWebEngineCore::JavaScriptDialogController>) Q_DECL_OVERRIDE;
-    virtual void runFileChooser(QtWebEngineCore::FilePickerController *controller) Q_DECL_OVERRIDE;
+    virtual void runFileChooser(QSharedPointer<QtWebEngineCore::FilePickerController>) Q_DECL_OVERRIDE;
     virtual void showColorDialog(QSharedPointer<QtWebEngineCore::ColorChooserController>) Q_DECL_OVERRIDE;
     virtual void didRunJavaScript(quint64, const QVariant&) Q_DECL_OVERRIDE;
     virtual void didFetchDocumentMarkup(quint64, const QString&) Q_DECL_OVERRIDE { }
@@ -212,8 +167,6 @@ public:
     static void userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p);
 
     QSharedPointer<QtWebEngineCore::WebContentsAdapter> adapter;
-    QScopedPointer<QQuickWebEngineViewExperimental> e;
-    QScopedPointer<QQuickWebEngineViewport> v;
     QScopedPointer<QQuickWebEngineHistory> m_history;
     QQuickWebEngineProfile *m_profile;
     QScopedPointer<QQuickWebEngineSettings> m_settings;
@@ -221,7 +174,7 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
-    QQuickWebEngineContextMenuData contextMenuData;
+    QtWebEngineCore::WebEngineContextMenuData m_contextMenuData;
     QUrl explicitUrl;
     QUrl iconUrl;
     QQuickWebEngineFaviconProvider *faviconProvider;
@@ -263,8 +216,5 @@ private:
 };
 #endif // QT_NO_ACCESSIBILITY
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QQuickWebEngineViewExperimental)
-QML_DECLARE_TYPE(QQuickWebEngineViewport)
 
 #endif // QQUICKWEBENGINEVIEW_P_P_H

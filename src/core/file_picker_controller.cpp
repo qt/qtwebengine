@@ -111,7 +111,7 @@ void FilePickerController::filesSelectedInChooser(const QStringList &filesList, 
     if (this->m_mode == UploadFolder && !filesList.isEmpty()
             && QFileInfo(filesList.first()).isDir()) // Enumerate the directory
         files = listRecursively(QDir(filesList.first()));
-    rvh->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(this->m_mode));
+    rvh->GetMainFrame()->FilesSelectedInChooser(toVector<content::FileChooserFileInfo>(files), static_cast<content::FileChooserParams::Mode>(this->m_mode));
 }
 
 QStringList FilePickerController::acceptedMimeTypes() const

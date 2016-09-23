@@ -47,6 +47,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 
 #include "browser_context_qt.h"
 #include "browser_context_adapter.h"
@@ -76,7 +77,7 @@ void AccessTokenStoreQt::LoadAccessTokens(const LoadAccessTokensCallback& callba
 
 void AccessTokenStoreQt::performWorkOnUIThread()
 {
-    m_systemRequestContext = WebEngineContext::current()->defaultBrowserContext()->browserContext()->GetRequestContext();
+    m_systemRequestContext = content::BrowserContext::GetDefaultStoragePartition(WebEngineContext::current()->defaultBrowserContext()->browserContext())->GetURLRequestContext();
 }
 
 void AccessTokenStoreQt::respondOnOriginatingThread(const LoadAccessTokensCallback& callback)

@@ -47,6 +47,7 @@
 #include <QtGui/qpagesize.h>
 
 #include "base/values.h"
+#include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "components/printing/common/print_messages.h"
@@ -63,7 +64,7 @@ static const qreal kMicronsToMillimeter = 1000.0f;
 
 static std::vector<char>
 GetStdVectorFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
-    scoped_ptr<base::SharedMemory> shared_buf(
+    std::unique_ptr<base::SharedMemory> shared_buf(
                 new base::SharedMemory(handle, true));
 
     if (!shared_buf->Map(data_size)) {
@@ -76,7 +77,7 @@ GetStdVectorFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
 
 static scoped_refptr<base::RefCountedBytes>
 GetBytesFromHandle(base::SharedMemoryHandle handle, uint32_t data_size) {
-     scoped_ptr<base::SharedMemory> shared_buf(
+     std::unique_ptr<base::SharedMemory> shared_buf(
                  new base::SharedMemory(handle, true));
 
     if (!shared_buf->Map(data_size)) {
@@ -94,7 +95,7 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
     DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
     DCHECK_GT(data->size(), 0U);
 
-    printing::PdfMetafileSkia metafile;
+    printing::PdfMetafileSkia metafile(printing::PDF_SKIA_DOCUMENT_TYPE);
     metafile.InitFromData(static_cast<const void*>(data->front()), data->size());
 
     base::File file(path,
@@ -139,14 +140,14 @@ static void applyQPageLayoutSettingsToDictionary(const QPageLayout &pageLayout, 
 {
     //Set page size attributes, chromium expects these in micrometers
     QSizeF pageSizeInMilimeter = pageLayout.pageSize().size(QPageSize::Millimeter);
-    scoped_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
     sizeDict->SetInteger(printing::kSettingMediaSizeWidthMicrons, pageSizeInMilimeter.width() * kMicronsToMillimeter);
     sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMilimeter.height() * kMicronsToMillimeter);
     printSettings.Set(printing::kSettingMediaSize, std::move(sizeDict));
 
     // Apply page margins
     QMargins pageMarginsInPoints = pageLayout.marginsPoints();
-    scoped_ptr<base::DictionaryValue> marginsDict(new base::DictionaryValue);
+    std::unique_ptr<base::DictionaryValue> marginsDict(new base::DictionaryValue);
     marginsDict->SetInteger(printing::kSettingMarginTop, pageMarginsInPoints.top());
     marginsDict->SetInteger(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
     marginsDict->SetInteger(printing::kSettingMarginLeft, pageMarginsInPoints.left());

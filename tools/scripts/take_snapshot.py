@@ -94,6 +94,9 @@ def isInChromiumBlacklist(file_path):
             not 'common/chrome_switches.' in file_path and
             not 'common/content_restriction.h' in file_path and
             not 'common/spellcheck_' in file_path and
+            not '/extensions/api/' in file_path and
+            not '/extensions/browser/api/' in file_path and
+            not '/extensions/permissions/' in file_path and
             not '/renderer_host/pepper/' in file_path and
             not '/renderer/pepper/' in file_path and
             not '/spellchecker/' in file_path and
@@ -184,7 +187,6 @@ def isInChromiumBlacklist(file_path):
             not file_path.startswith('third_party/polymer/v1_0/components-chromium/'))
         or file_path.startswith('third_party/openh264/src/res')
         or file_path.startswith('third_party/pdfium/tools')
-        or file_path.startswith('third_party/pdfium/third_party')
         or file_path.startswith('third_party/pdfsqueeze')
         or file_path.startswith('third_party/pefile')
         or file_path.startswith('third_party/perl')

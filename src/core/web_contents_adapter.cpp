@@ -247,7 +247,7 @@ static void serializeNavigationHistory(const content::NavigationController &cont
     }
 }
 
-static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<scoped_ptr<content::NavigationEntry>> *entries, content::BrowserContext *browserContext)
+static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, std::vector<std::unique_ptr<content::NavigationEntry>> *entries, content::BrowserContext *browserContext)
 {
     int version;
     input >> version;
@@ -296,7 +296,7 @@ static void deserializeNavigationHistory(QDataStream &input, int *currentIndex, 
             return;
         }
 
-        scoped_ptr<content::NavigationEntry> entry = content::NavigationController::CreateNavigationEntry(
+        std::unique_ptr<content::NavigationEntry> entry = content::NavigationController::CreateNavigationEntry(
             toGurl(virtualUrl),
             content::Referrer(toGurl(referrerUrl), static_cast<blink::WebReferrerPolicy>(referrerPolicy)),
             // Use a transition type of reload so that we don't incorrectly
@@ -367,7 +367,7 @@ WebContentsAdapterPrivate::~WebContentsAdapterPrivate()
 QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavigationHistory(QDataStream &input, WebContentsAdapterClient *adapterClient)
 {
     int currentIndex;
-    std::vector<scoped_ptr<content::NavigationEntry>> entries;
+    std::vector<std::unique_ptr<content::NavigationEntry>> entries;
     deserializeNavigationHistory(input, &currentIndex, &entries, adapterClient->browserContextAdapter()->browserContext());
 
     if (currentIndex == -1)
@@ -660,7 +660,7 @@ void WebContentsAdapter::selectAll()
 void WebContentsAdapter::requestClose()
 {
     Q_D(WebContentsAdapter);
-    d->webContents->DispatchBeforeUnload(false);
+    d->webContents->DispatchBeforeUnload();
 }
 
 void WebContentsAdapter::unselect()
@@ -889,8 +889,8 @@ void WebContentsAdapter::download(const QUrl &url, const QString &suggestedFileN
     dlmd->setDownloadType(BrowserContextAdapterClient::UserRequested);
     dlm->SetDelegate(dlmd);
 
-    scoped_ptr<content::DownloadUrlParameters> params(
-            content::DownloadUrlParameters::FromWebContents(webContents(), toGurl(url)));
+    std::unique_ptr<content::DownloadUrlParameters> params(
+            content::DownloadUrlParameters::CreateForWebContentsMainFrame(webContents(), toGurl(url)));
     params->set_suggested_name(toString16(suggestedFileName));
     dlm->DownloadUrl(std::move(params));
 }
@@ -916,7 +916,7 @@ bool WebContentsAdapter::recentlyAudible()
 void WebContentsAdapter::copyImageAt(const QPoint &location)
 {
     Q_D(WebContentsAdapter);
-    d->webContents->GetRenderViewHost()->CopyImageAt(location.x(), location.y());
+    d->webContents->GetRenderViewHost()->GetMainFrame()->CopyImageAt(location.x(), location.y());
 }
 
 ASSERT_ENUMS_MATCH(WebContentsAdapter::MediaPlayerNoAction, blink::WebMediaPlayerAction::Unknown)
@@ -1198,7 +1198,7 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
 {
     Q_D(WebContentsAdapter);
 
-    scoped_ptr<content::DropData> ownedDropData;
+    std::unique_ptr<content::DropData> ownedDropData;
     const content::DropData *rvhDropData = d->currentDropData;
     if (!rvhDropData) {
         // The drag originated outside the WebEngineView.
@@ -1254,7 +1254,7 @@ void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &scre
     Q_D(WebContentsAdapter);
     finishDragUpdate();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->DragTargetDrop(toGfx(clientPos), toGfx(screenPos), 0);
+    rvh->DragTargetDrop(*d->currentDropData, toGfx(clientPos), toGfx(screenPos), 0);
 }
 
 void WebContentsAdapter::leaveDrag()

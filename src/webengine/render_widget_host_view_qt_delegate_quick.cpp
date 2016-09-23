@@ -265,7 +265,7 @@ void RenderWidgetHostViewQtDelegateQuick::mousePressEvent(QMouseEvent *event)
     QQuickItem *parent = parentItem();
     if (!m_isPopup && (parent && parent->property("activeFocusOnPress").toBool()))
         forceActiveFocus();
-    if (parent && !parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
+    if (!m_isPopup && parent && !parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
         event->ignore();
         return;
     }
@@ -285,7 +285,7 @@ void RenderWidgetHostViewQtDelegateQuick::mouseMoveEvent(QMouseEvent *event)
 void RenderWidgetHostViewQtDelegateQuick::mouseReleaseEvent(QMouseEvent *event)
 {
     QQuickItem *parent = parentItem();
-    if (parent && !parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
+    if (!m_isPopup && parent && !parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
         event->ignore();
         return;
     }
@@ -323,7 +323,7 @@ void RenderWidgetHostViewQtDelegateQuick::touchEvent(QTouchEvent *event)
 void RenderWidgetHostViewQtDelegateQuick::hoverMoveEvent(QHoverEvent *event)
 {
     QQuickItem *parent = parentItem();
-    if (parent && !parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
+    if (!m_isPopup && parent && !parent->property("activeFocusOnPress").toBool() && !parent->hasActiveFocus()) {
         event->ignore();
         return;
     }

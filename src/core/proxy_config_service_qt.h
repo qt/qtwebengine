@@ -41,7 +41,6 @@
 #define PROXY_CONFIG_SERVICE_QT_H
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 
 #include "net/proxy/proxy_config.h"
@@ -56,7 +55,7 @@ public:
 
     static net::ProxyServer fromQNetworkProxy(const QNetworkProxy &);
 
-    explicit ProxyConfigServiceQt(scoped_ptr<ProxyConfigService> baseService);
+    explicit ProxyConfigServiceQt(std::unique_ptr<ProxyConfigService> baseService);
     ~ProxyConfigServiceQt() override;
 
     // ProxyConfigService implementation:
@@ -73,7 +72,7 @@ private:
     // Makes sure that the observer registration with the base service is set up.
     void RegisterObserver();
 
-    scoped_ptr<net::ProxyConfigService> m_baseService;
+    std::unique_ptr<net::ProxyConfigService> m_baseService;
     base::ObserverList<net::ProxyConfigService::Observer, true> m_observers;
 
     // Keep the last QNetworkProxy::applicationProxy state around.

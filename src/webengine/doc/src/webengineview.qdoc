@@ -346,21 +346,21 @@
 */
 
 /*!
-    \qmlproperty QSizeF WebEngineView::contentsSize
+    \qmlproperty size WebEngineView::contentsSize
     \since QtWebEngine 1.3
 
     Size of the page contents.
 */
 
 /*!
-    \qmlproperty QPointF WebEngineView::scrollPosition
+    \qmlproperty point WebEngineView::scrollPosition
     \since QtWebEngine 1.3
 
     Scroll position of the page contents.
 */
 
 /*!
-    \qmlproperty uint WebEngineView::webChannelWorld
+    \qmlproperty int WebEngineView::webChannelWorld
     \since QtWebEngine 1.3
 
     JavaScript world that the web channel instance used by this view is
@@ -804,7 +804,7 @@
            (Added in Qt 5.6)
     \value  WebEngineView.ExitFullScreen
             Exit the fullscreen mode. (Added in Qt 5.6)
-    \value  SavePage
+    \value  WebEngineView.SavePage
             Save the current web page to disk. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
@@ -1159,4 +1159,88 @@
     \since QtWebEngine 1.4
 
     \sa viewSource()
+*/
+
+/*!
+    \qmlsignal WebEngineView::authenticationDialogRequested(AuthenticationDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when an authentication dialog is requested.
+
+    The request can be handled by using the methods of the AuthenticationDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either
+    AuthenticationDialogRequest::dialogAccept() or AuthenticationDialogRequest::dialogReject()
+    afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::javaScriptDialogRequested(JavaScriptDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a JavaScript dialog is requested.
+
+    The request can be handled by using the methods of the JavaScriptDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either
+    JavaScriptDialogRequest::dialogAccept() or JavaScriptDialogRequest::dialogReject()
+    afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::colorDialogRequested(ColorDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a color picker dialog is requested.
+
+    The request can be handled by using the methods of the ColorDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either
+    ColorDialogRequest::dialogAccept() or ColorDialogRequest::dialogReject() afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::fileDialogRequested(FileDialogRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a file picker dialog is requested.
+
+    The request error can be handled by using the methods of the FileDialogRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up. Make sure to call either FileDialogRequest::dialogAccept()
+    or FileDialogRequest::dialogReject() afterwards.
+*/
+
+/*!
+    \qmlsignal WebEngineView::formValidationMessageRequested(FormValidationMessageRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a validation message is requested.
+
+    The request can be handled by using the methods of the FormValidationMessageRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default dialog from showing up.
+*/
+
+/*!
+    \qmlsignal WebEngineView::contextMenuRequested(ContextMenuRequest request)
+    \since QtWebEngine 1.4
+
+    This signal is emitted when a context menu is requested.
+
+    The request can be handled by using the properties of the ContextMenuRequest
+    type.
+
+    \note Signal handlers need to call \c{request.accepted = true} to prevent a
+    default context menu from showing up.
 */

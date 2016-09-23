@@ -28,7 +28,6 @@
 
 import QtQuick 2.1
 import QtWebEngine 1.2
-import QtWebEngine.experimental 1.0
 
 import QtQuick.Controls 1.0
 import QtQuick.Controls.Styles 1.0
@@ -392,10 +391,6 @@ ApplicationWindow {
                         permBar.securityOrigin = securityOrigin;
                         permBar.requestedFeature = feature;
                         permBar.visible = true;
-                    }
-
-                    experimental {
-                        extraContextMenuEntriesComponent: ContextMenuExtras {}
                     }
                 }
 

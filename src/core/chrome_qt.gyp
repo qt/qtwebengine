@@ -74,6 +74,8 @@
         '<(DEPTH)/chrome/browser/media/desktop_media_list.h',
         '<(DEPTH)/chrome/browser/media/desktop_streams_registry.cc',
         '<(DEPTH)/chrome/browser/media/desktop_streams_registry.h',
+        '<(DEPTH)/chrome/browser/profiles/profile.cc',
+        '<(DEPTH)/chrome/browser/profiles/profile.h',
         '<(DEPTH)/chrome/common/chrome_switches.cc',
         '<(DEPTH)/chrome/common/chrome_switches.h',
         '<(DEPTH)/components/prefs/testing_pref_store.cc',
@@ -92,6 +94,8 @@
           'sources': [
             '<(DEPTH)/chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.cc',
             '<(DEPTH)/chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h',
+            '<(DEPTH)/chrome/renderer/pepper/pepper_flash_font_file_host.cc',
+            '<(DEPTH)/chrome/renderer/pepper/pepper_flash_font_file_host.h',
             '<(DEPTH)/chrome/renderer/pepper/pepper_shared_memory_message_filter.cc',
             '<(DEPTH)/chrome/renderer/pepper/pepper_shared_memory_message_filter.h',
           ],

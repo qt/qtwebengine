@@ -39,6 +39,7 @@
 
 #include "content_browser_client_qt.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #if defined(ENABLE_SPELLCHECK)
@@ -47,6 +48,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/geolocation_delegate.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -58,7 +60,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/gfx/screen.h"
+#include "ui/display/screen.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_share_group.h"
@@ -216,9 +218,9 @@ private:
     base::TimeTicks m_timerScheduledTime;
 };
 
-scoped_ptr<base::MessagePump> messagePumpFactory()
+std::unique_ptr<base::MessagePump> messagePumpFactory()
 {
-    return scoped_ptr<base::MessagePump>(new MessagePumpForUIQt);
+    return base::WrapUnique(new MessagePumpForUIQt);
 }
 
 } // namespace
@@ -250,7 +252,7 @@ public:
     {
         base::ThreadRestrictions::SetIOAllowed(true);
         // Like ChromeBrowserMainExtraPartsViews::PreCreateThreads does.
-        gfx::Screen::SetScreenInstance(new DesktopScreenQt);
+        display::Screen::SetScreenInstance(new DesktopScreenQt);
 
         return 0;
     }
@@ -259,16 +261,16 @@ private:
     DISALLOW_COPY_AND_ASSIGN(BrowserMainPartsQt);
 };
 
-class QtShareGLContext : public gfx::GLContext {
+class QtShareGLContext : public gl::GLContext {
 public:
     QtShareGLContext(QOpenGLContext *qtContext)
-        : gfx::GLContext(0)
+        : gl::GLContext(0)
         , m_handle(0)
     {
         QString platform = qApp->platformName().toLower();
         QPlatformNativeInterface *pni = QGuiApplication::platformNativeInterface();
         if (platform == QLatin1String("xcb")) {
-            if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+            if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
             else
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("glxcontext"), qtContext);
@@ -279,7 +281,7 @@ public:
         else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else if (platform == QLatin1String("windows")) {
-            if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+            if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2)
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglContext"), qtContext);
             else
                 m_handle = pni->nativeResourceForContext(QByteArrayLiteral("renderingcontext"), qtContext);
@@ -295,12 +297,12 @@ public:
     virtual bool WasAllocatedUsingRobustnessExtension() { return false; }
 
     // We don't care about the rest, this context shouldn't be used except for its handle.
-    virtual bool Initialize(gfx::GLSurface *, gfx::GpuPreference) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual bool MakeCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
-    virtual void ReleaseCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual bool IsCurrent(gfx::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
+    virtual bool Initialize(gl::GLSurface *, gl::GpuPreference) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
+    virtual bool MakeCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
+    virtual void ReleaseCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
+    virtual bool IsCurrent(gl::GLSurface *) Q_DECL_OVERRIDE { Q_UNREACHABLE(); return false; }
     virtual void OnSetSwapInterval(int) Q_DECL_OVERRIDE { Q_UNREACHABLE(); }
-    virtual scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() Q_DECL_OVERRIDE
+    virtual scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() Q_DECL_OVERRIDE
     {
         return nullptr;
     }
@@ -309,9 +311,9 @@ private:
     void *m_handle;
 };
 
-class ShareGroupQtQuick : public gfx::GLShareGroup {
+class ShareGroupQtQuick : public gl::GLShareGroup {
 public:
-    virtual gfx::GLContext* GetContext() Q_DECL_OVERRIDE { return m_shareContextQtQuick.get(); }
+    virtual gl::GLContext* GetContext() Q_DECL_OVERRIDE { return m_shareContextQtQuick.get(); }
     virtual void AboutToAddFirstContext() Q_DECL_OVERRIDE;
 
 private:
@@ -384,7 +386,7 @@ void ContentBrowserClientQt::ResourceDispatcherHostCreated()
     content::ResourceDispatcherHost::Get()->SetDelegate(m_resourceDispatcherHostDelegate.get());
 }
 
-gfx::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
+gl::GLShareGroup *ContentBrowserClientQt::GetInProcessGpuShareGroup()
 {
     if (!m_shareGroupQtQuick.get())
         m_shareGroupQtQuick = new ShareGroupQtQuick;
@@ -402,9 +404,41 @@ void ContentBrowserClientQt::OverrideWebkitPrefs(content::RenderViewHost *rvh, c
         static_cast<WebContentsDelegateQt*>(webContents->GetDelegate())->overrideWebPreferences(webContents, web_prefs);
 }
 
-content::AccessTokenStore *ContentBrowserClientQt::CreateAccessTokenStore()
+namespace {
+
+// A provider of services needed by Geolocation.
+class GeolocationDelegateQt : public content::GeolocationDelegate {
+public:
+    GeolocationDelegateQt() {}
+    content::AccessTokenStore* CreateAccessTokenStore() final
+    {
+        return new AccessTokenStoreQt;
+    }
+
+    content::LocationProvider* OverrideSystemLocationProvider() final
+    {
+#ifdef QT_USE_POSITIONING
+        if (!m_location_provider)
+            m_location_provider = base::WrapUnique(new LocationProviderQt);
+        return m_location_provider.get();
+#else
+        return nullptr;
+#endif
+    }
+
+private:
+#ifdef QT_USE_POSITIONING
+    std::unique_ptr<LocationProviderQt> m_location_provider;
+#endif
+
+    DISALLOW_COPY_AND_ASSIGN(GeolocationDelegateQt);
+};
+
+}  // anonymous namespace
+
+content::GeolocationDelegate *ContentBrowserClientQt::CreateGeolocationDelegate()
 {
-    return new AccessTokenStoreQt;
+    return new GeolocationDelegateQt;
 }
 
 content::QuotaPermissionContext *ContentBrowserClientQt::CreateQuotaPermissionContext()
@@ -432,15 +466,6 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
     // If we don't give the user a chance to allow it, we can reject it right away.
     if (result && (!overridable || strict_enforcement))
         *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
-}
-
-content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()
-{
-#ifdef QT_USE_POSITIONING
-    return new LocationProviderQt;
-#else
-    return 0; // Leave it up to Chromium to figure something out.
-#endif
 }
 
 std::string ContentBrowserClientQt::GetApplicationLocale()
@@ -479,10 +504,11 @@ void ContentBrowserClientQt::GetAdditionalMappedFilesForChildProcess(const base:
 #endif
 
 #if defined(ENABLE_PLUGINS)
-    void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host) {
-        browser_host->GetPpapiHost()->AddHostFactoryFilter(
-            scoped_ptr<ppapi::host::HostFactory>(new QtWebEngineCore::PepperHostFactoryQt(browser_host)));
-    }
+void ContentBrowserClientQt::DidCreatePpapiPlugin(content::BrowserPpapiHost* browser_host)
+{
+    browser_host->GetPpapiHost()->AddHostFactoryFilter(
+                base::WrapUnique(new QtWebEngineCore::PepperHostFactoryQt(browser_host)));
+}
 #endif
 
 content::DevToolsManagerDelegate* ContentBrowserClientQt::GetDevToolsManagerDelegate()

@@ -50,12 +50,13 @@
 #include "qtwebenginecoreglobal_p.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/init/gl_initializer.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_X11)
 #include "ui/gl/gl_surface_glx.h"
@@ -68,6 +69,7 @@ extern "C" {
 #if defined(OS_WIN)
 #include "ui/gl/gl_surface_wgl.h"
 #include "ui/gl/gl_context_wgl.h"
+#include "ui/gl/vsync_provider_win.h"
 #endif
 
 // From ANGLE's egl/eglext.h.
@@ -78,7 +80,7 @@ extern "C" {
 
 using ui::GetLastEGLErrorString;
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -310,7 +312,7 @@ bool GLSurfaceQtWGL::Initialize()
 {
     m_surfaceBuffer = new PbufferGLSurfaceWGL(m_size);
 
-    return m_surfaceBuffer->Initialize(gfx::GLSurface::SURFACE_DEFAULT);
+    return m_surfaceBuffer->Initialize(gl::GLSurface::SURFACE_DEFAULT);
 }
 
 void GLSurfaceQtWGL::Destroy()
@@ -365,8 +367,8 @@ bool GLSurfaceQtEGL::InitializeOneOff()
 
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
-        scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(Size(1, 1));
-        scoped_refptr<GLContext> context = GLContext::CreateGLContext(
+        scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
+        scoped_refptr<GLContext> context = init::CreateGLContext(
             NULL, surface.get(), PreferIntegratedGpu);
 
         if (!context->MakeCurrent(surface.get()))
@@ -382,25 +384,6 @@ bool GLSurfaceQtEGL::InitializeOneOff()
 
     initialized = true;
     return true;
-}
-
-bool GLSurface::InitializeOneOffInternal()
-{
-    if (GetGLImplementation() == kGLImplementationOSMesaGL)
-        return false;
-
-    if (GetGLImplementation() == kGLImplementationEGLGLES2)
-        return GLSurfaceQtEGL::InitializeOneOff();
-
-    if (GetGLImplementation() == kGLImplementationDesktopGL) {
-#if defined(USE_X11)
-        return GLSurfaceQtGLX::InitializeOneOff();
-#elif defined(OS_WIN)
-        return GLSurfaceQtWGL::InitializeOneOff();
-#endif
-    }
-
-    return false;
 }
 
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay()
@@ -575,11 +558,36 @@ void* GLSurfacelessQtEGL::GetShareHandle()
     return NULL;
 }
 
-// static
+namespace init {
+
+bool InitializeGLOneOffPlatform()
+{
+#if defined(OS_WIN)
+    VSyncProviderWin::InitializeOneOff();
+#endif
+
+    if (GetGLImplementation() == kGLImplementationOSMesaGL)
+        return false;
+
+    if (GetGLImplementation() == kGLImplementationEGLGLES2)
+        return GLSurfaceQtEGL::InitializeOneOff();
+
+    if (GetGLImplementation() == kGLImplementationDesktopGL) {
+#if defined(USE_X11)
+        return GLSurfaceQtGLX::InitializeOneOff();
+#elif defined(OS_WIN)
+        return GLSurfaceQtWGL::InitializeOneOff();
+#endif
+    }
+
+    return false;
+}
+
 scoped_refptr<GLSurface>
-GLSurface::CreateOffscreenGLSurface(const gfx::Size& size)
+CreateOffscreenGLSurface(const gfx::Size& size)
 {
     switch (GetGLImplementation()) {
+    case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationDesktopGL: {
 #if defined(USE_X11)
         scoped_refptr<GLSurface> surface = new GLSurfaceQtGLX(size);
@@ -614,13 +622,14 @@ GLSurface::CreateOffscreenGLSurface(const gfx::Size& size)
     }
 }
 
-// static
 scoped_refptr<GLSurface>
-GLSurface::CreateViewGLSurface(gfx::AcceleratedWidget window)
+CreateViewGLSurface(gfx::AcceleratedWidget window)
 {
     QT_NOT_USED
     return NULL;
 }
+
+} // namespace init
 
 std::string DriverEGL::GetPlatformExtensions()
 {
@@ -633,16 +642,16 @@ std::string DriverEGL::GetPlatformExtensions()
     return str ? std::string(str) : "";
 }
 
-}  // namespace gfx
+}  // namespace gl
 
 namespace gpu {
 class GpuCommandBufferStub;
 class GpuChannelManager;
-scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(GpuChannelManager*, GpuCommandBufferStub*,
-                                                                         SurfaceHandle, gfx::GLSurface::Format)
+scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(GpuChannelManager*, GpuCommandBufferStub*,
+                                                                        SurfaceHandle, gl::GLSurface::Format)
 {
     QT_NOT_USED
-    return scoped_refptr<gfx::GLSurface>();
+    return scoped_refptr<gl::GLSurface>();
 }
 }
 

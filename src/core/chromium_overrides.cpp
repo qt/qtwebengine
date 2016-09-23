@@ -119,9 +119,9 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(blink::WebScreenInfo* result
 namespace content {
 
 // content/common/font_list.h
-scoped_ptr<base::ListValue> GetFontList_SlowBlocking()
+std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
 {
-    scoped_ptr<base::ListValue> font_list(new base::ListValue);
+    std::unique_ptr<base::ListValue> font_list(new base::ListValue);
 
      QFontDatabase database;
      for (auto family : database.families()){
@@ -166,9 +166,9 @@ namespace net {
 class SSLPrivateKey { };
 class X509Certificate;
 
-scoped_ptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate)
+std::unique_ptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate)
 {
-    return scoped_ptr<SSLPrivateKey>();
+    return std::unique_ptr<SSLPrivateKey>();
 }
 
 }  // namespace net

@@ -69,7 +69,11 @@ TestWebEngineView {
             tryCompare(webEngineView.scrollPosition, "y", 0);
 
             keyPress(Qt.Key_Return); // Focus is on the scroll button.
-            scrollPositionSpy.wait();
+
+            // Wait for proper scroll position change otherwise we cannot expect
+            // the new y position after reload.
+            tryCompare(webEngineView.scrollPosition, "x", 0);
+            tryCompare(webEngineView.scrollPosition, "y", 600);
 
             webEngineView.reload();
             verify(webEngineView.waitForLoadSucceeded());

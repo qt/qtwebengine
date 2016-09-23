@@ -56,7 +56,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin, Q
     \since 5.7
     \brief The QWebEngineContextMenuData class provides context data for populating or extending a context menu with actions.
 
-    \inmodule QtWebEngine
+    \inmodule QtWebEngineWidgets
 
     QWebEngineContextMenuData is returned by QWebEnginePage::contextMenuData() after a context menu event,
     and contains information about where the context menu event took place. This is also in the context
@@ -135,7 +135,7 @@ void QWebEngineContextMenuData::reset()
 */
 QPoint QWebEngineContextMenuData::position() const
 {
-    return d ? d->pos : QPoint();
+    return d ? d->position() : QPoint();
 }
 
 /*!
@@ -143,7 +143,7 @@ QPoint QWebEngineContextMenuData::position() const
 */
 QString QWebEngineContextMenuData::linkText() const
 {
-    return d ? d->linkText : QString();
+    return d ? d->linkText() : QString();
 }
 
 /*!
@@ -151,7 +151,7 @@ QString QWebEngineContextMenuData::linkText() const
 */
 QUrl QWebEngineContextMenuData::linkUrl() const
 {
-    return d ? d->linkUrl : QUrl();
+    return d ? d->linkUrl() : QUrl();
 }
 
 /*!
@@ -159,7 +159,7 @@ QUrl QWebEngineContextMenuData::linkUrl() const
 */
 QString QWebEngineContextMenuData::selectedText() const
 {
-    return d ? d->selectedText : QString();
+    return d ? d->selectedText() : QString();
 }
 
 /*!
@@ -167,7 +167,7 @@ QString QWebEngineContextMenuData::selectedText() const
 */
 QUrl QWebEngineContextMenuData::mediaUrl() const
 {
-    return d ? d->mediaUrl : QUrl();
+    return d ? d->mediaUrl() : QUrl();
 }
 
 /*!
@@ -175,7 +175,7 @@ QUrl QWebEngineContextMenuData::mediaUrl() const
 */
 QWebEngineContextMenuData::MediaType QWebEngineContextMenuData::mediaType() const
 {
-    return d ? static_cast<QWebEngineContextMenuData::MediaType>(d->mediaType) : MediaTypeNone;
+    return d ? static_cast<QWebEngineContextMenuData::MediaType>(d->mediaType()) : MediaTypeNone;
 }
 
 /*!
@@ -183,7 +183,7 @@ QWebEngineContextMenuData::MediaType QWebEngineContextMenuData::mediaType() cons
 */
 bool QWebEngineContextMenuData::isContentEditable() const
 {
-    return d ? d->isEditable : false;
+    return d ? d->isEditable() : false;
 }
 
 /*!
@@ -194,7 +194,7 @@ bool QWebEngineContextMenuData::isContentEditable() const
 QString QWebEngineContextMenuData::misspelledWord() const
 {
     if (d)
-        return d->misspelledWord;
+        return d->misspelledWord();
     return QString();
 }
 
@@ -206,7 +206,7 @@ QString QWebEngineContextMenuData::misspelledWord() const
 QStringList QWebEngineContextMenuData::spellCheckerSuggestions() const
 {
     if (d)
-        return d->spellCheckerSuggestions;
+        return d->spellCheckerSuggestions();
     return QStringList();
 }
 

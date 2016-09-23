@@ -46,6 +46,7 @@
 #include "pepper_flash_renderer_host_qt.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/renderer/pepper/pepper_flash_font_file_host.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/host/resource_host.h"
@@ -76,10 +77,43 @@ std::unique_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateRe
     if (!host_->IsValidInstance(instance))
         return nullptr;
 
+    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)) {
+        switch (message.type()) {
+        case PpapiHostMsg_Flash_Create::ID:
+            return base::WrapUnique(new PepperFlashRendererHostQt(host_, instance, resource));
+        case PpapiHostMsg_FlashFullscreen_Create::ID:
+        case PpapiHostMsg_FlashMenu_Create::ID:
+            // Not implemented
+            break;
+        }
+    }
+
+    // TODO(raymes): PDF also needs access to the FlashFontFileHost currently.
+    // We should either rename PPB_FlashFont_File to PPB_FontFile_Private or get
+    // rid of its use in PDF if possible.
     if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_FLASH)
-            && message.type() == PpapiHostMsg_Flash_Create::ID)
-            return base::WrapUnique(
-                new PepperFlashRendererHostQt(host_, instance, resource));
+        || host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
+        switch (message.type()) {
+        case PpapiHostMsg_FlashFontFile_Create::ID: {
+            ppapi::proxy::SerializedFontDescription description;
+            PP_PrivateFontCharset charset;
+            if (ppapi::UnpackMessage<PpapiHostMsg_FlashFontFile_Create>(message, &description, &charset))
+                return base::WrapUnique(new PepperFlashFontFileHost(host_, instance, resource, description, charset));
+            break;
+        }
+        case PpapiHostMsg_FlashDRM_Create::ID:
+            // Not implemented
+            break;
+        }
+    }
+
+    if (host_->GetPpapiHost()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE)) {
+        switch (message.type()) {
+        case PpapiHostMsg_PDF_Create::ID:
+            // Not implemented
+            break;
+        }
+    }
 
     return nullptr;
 }

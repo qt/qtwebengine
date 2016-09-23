@@ -86,10 +86,10 @@ public:
         : m_address(address), m_port(port), m_backlog(backlog)
     {}
 private:
-    scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-        scoped_ptr<net::ServerSocket> socket(new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+    std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
+        std::unique_ptr<net::ServerSocket> socket(new net::TCPServerSocket(nullptr, net::NetLog::Source()));
         if (socket->ListenWithAddressAndPort(m_address, m_port, m_backlog) != net::OK)
-            return scoped_ptr<net::ServerSocket>();
+            return std::unique_ptr<net::ServerSocket>();
 
         return socket;
     }
@@ -186,10 +186,10 @@ std::unique_ptr<DevToolsHttpHandler> createDevToolsHttpHandler()
         delete delegate;
         return nullptr;
     }
-    scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory(delegate->bindAddress().toStdString(), delegate->port(), 1));
+    std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(new TCPServerSocketFactory(delegate->bindAddress().toStdString(), delegate->port(), 1));
     // Ownership of the delegate is taken over the devtools http handler.
     std::unique_ptr<DevToolsHttpHandler> handler(new DevToolsHttpHandler(std::move(factory), std::string(), delegate, base::FilePath(), base::FilePath(), std::string(), std::string()));
-    DevToolsDiscoveryManager::GetInstance()->AddProvider(scoped_ptr<DevToolsDiscoveryManager::Provider>(new DevToolsDiscoveryProviderQt()));
+    DevToolsDiscoveryManager::GetInstance()->AddProvider(base::WrapUnique(new DevToolsDiscoveryProviderQt()));
     return std::move(handler);
 }
 

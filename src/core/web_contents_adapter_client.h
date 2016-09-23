@@ -71,23 +71,43 @@ class WebContentsAdapter;
 class WebContentsDelegateQt;
 class WebEngineSettings;
 
-// FIXME: make this ref-counted and implicitely shared and expose as public API maybe ?
-class WebEngineContextMenuData {
+
+class WebEngineContextMenuSharedData : public QSharedData {
 
 public:
-    WebEngineContextMenuData()
-        : mediaType(MediaTypeNone)
-        , hasImageContent(false)
-        , mediaFlags(0)
+    WebEngineContextMenuSharedData()
+        :  hasImageContent(false)
         , isEditable(false)
         , isSpellCheckerEnabled(false)
+        , mediaType(0)
+        , mediaFlags(0)
     {
     }
+    bool hasImageContent;
+    bool isEditable;
+    bool isSpellCheckerEnabled;
+    uint mediaType;
+    uint mediaFlags;
+    QPoint pos;
+    QUrl linkUrl;
+    QUrl mediaUrl;
+    QString linkText;
+    QString selectedText;
+    QString suggestedFileName;
+    QString misspelledWord;
+    QStringList spellCheckerSuggestions;
+    // Some likely candidates for future additions as we add support for the related actions:
+    //    bool isImageBlocked;
+    //    <enum tbd> mediaType;
+    //    ...
+};
 
+class WebEngineContextMenuData {
+public:
     // Must match blink::WebContextMenuData::MediaType:
     enum MediaType {
         // No special node is in context.
-        MediaTypeNone,
+        MediaTypeNone = 0x0,
         // An image node is selected.
         MediaTypeImage,
         // A video node is selected.
@@ -117,24 +137,117 @@ public:
         MediaCanRotate = 0x200,
     };
 
-    QPoint pos;
-    QUrl linkUrl;
-    QString linkText;
-    QString selectedText;
-    QUrl mediaUrl;
-    MediaType mediaType;
-    bool hasImageContent;
-    uint mediaFlags;
-    QString suggestedFileName;
-    bool isEditable;
-    bool isSpellCheckerEnabled;
-    QString misspelledWord;
-    QStringList spellCheckerSuggestions;
-// Some likely candidates for future additions as we add support for the related actions:
-//    bool isImageBlocked;
-//    <enum tbd> mediaType;
-//    ...
+    WebEngineContextMenuData():d(new WebEngineContextMenuSharedData) {
+    }
+
+    void setPosition(const QPoint &pos) {
+        d->pos = pos;
+    }
+
+    QPoint position() const {
+        return d->pos;
+    }
+
+    void setLinkUrl(const QUrl &url) {
+        d->linkUrl = url;
+    }
+
+    QUrl linkUrl() const {
+        return d->linkUrl;
+    }
+
+    void setLinkText(const QString &text) {
+        d->linkText = text;
+    }
+
+    QString linkText() const {
+        return d->linkText;
+    }
+
+    void setSelectedText(const QString &text) {
+        d->selectedText = text;
+    }
+
+    QString selectedText() const {
+        return d->selectedText;
+    }
+
+    void setMediaUrl(const QUrl &url) {
+        d->mediaUrl = url;
+    }
+
+    QUrl mediaUrl() const {
+        return d->mediaUrl;
+    }
+
+    void setMediaType(MediaType type) {
+        d->mediaType = type;
+    }
+
+    MediaType mediaType() const {
+        return MediaType(d->mediaType);
+    }
+
+    void setHasImageContent(bool imageContent) {
+        d->hasImageContent = imageContent;
+    }
+
+    bool hasImageContent() const {
+        return d->hasImageContent;
+    }
+
+    void setMediaFlags(MediaFlags flags) {
+        d->mediaFlags = flags;
+    }
+
+    MediaFlags mediaFlags() const {
+        return MediaFlags(d->mediaFlags);
+    }
+
+    void setSuggestedFileName(const QString &filename) {
+        d->suggestedFileName = filename;
+    }
+
+    QString suggestedFileName() const {
+        return d->suggestedFileName;
+    }
+
+    void setIsEditable(bool editable) {
+        d->isEditable = editable;
+    }
+
+    bool isEditable() const {
+        return d->isEditable;
+    }
+
+    void setIsSpellCheckerEnabled(bool spellCheckerEnabled) {
+        d->isSpellCheckerEnabled = spellCheckerEnabled;
+    }
+
+    bool isSpellCheckerEnabled() const {
+        return d->isSpellCheckerEnabled;
+    }
+
+    void setMisspelledWord(const QString &word) {
+        d->misspelledWord = word;
+    }
+
+    QString misspelledWord() const {
+        return d->misspelledWord;
+    }
+
+    void setSpellCheckerSuggestions(const QStringList &suggestions) {
+        d->spellCheckerSuggestions = suggestions;
+    }
+
+    QStringList spellCheckerSuggestions() const {
+        return d->spellCheckerSuggestions;
+    }
+
+private:
+    QSharedDataPointer<WebEngineContextMenuSharedData> d;
 };
+
 
 class QWEBENGINE_EXPORT WebContentsAdapterClient {
 public:
@@ -227,7 +340,7 @@ public:
     virtual void requestFullScreenMode(const QUrl &origin, bool fullscreen) = 0;
     virtual bool isFullScreenMode() const = 0;
     virtual void javascriptDialog(QSharedPointer<JavaScriptDialogController>) = 0;
-    virtual void runFileChooser(FilePickerController *controller) = 0;
+    virtual void runFileChooser(QSharedPointer<FilePickerController>) = 0;
     virtual void showColorDialog(QSharedPointer<ColorChooserController>) = 0;
     virtual void didRunJavaScript(quint64 requestId, const QVariant& result) = 0;
     virtual void didFetchDocumentMarkup(quint64 requestId, const QString& result) = 0;
