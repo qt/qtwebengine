@@ -10,10 +10,18 @@ TEMPLATE = lib
 
 include(core_common.pri)
 
+macos {
+    # This fixes namespace builds on macOS. Specifically namespace ambiguity issues between Qt and
+    # Chromium forward declarations of NSString.
+    forward_declaration_macro = $$shell_quote(\"Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;\")
+} else {
+    forward_declaration_macro = "Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS"
+}
+
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
            QT_USE_QSTRINGBUILDER \
-           Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS \
+           $$forward_declaration_macro \
            QTWEBENGINECORE_VERSION_STR=\\\"$$MODULE_VERSION\\\" \
            BUILDING_CHROMIUM
 
