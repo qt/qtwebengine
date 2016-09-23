@@ -41,7 +41,8 @@
 #define AUTHENTICATION_DIALOG_CONTROLLER_P_H
 
 #include "base/memory/ref_counted.h"
-#include "resource_dispatcher_host_delegate_qt.h"
+
+#include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 
 namespace QtWebEngineCore {
 

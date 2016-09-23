@@ -63,8 +63,8 @@
 
 #include "render_widget_host_view_qt_delegate_quick.h"
 #include "render_widget_host_view_qt_delegate_quickwindow.h"
+#include "renderer_host/user_resource_controller_host.h"
 #include "ui_delegates_manager.h"
-#include "user_resource_controller_host.h"
 #include "web_contents_adapter.h"
 #include "web_engine_error.h"
 #include "web_engine_settings.h"

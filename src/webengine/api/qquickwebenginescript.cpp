@@ -44,7 +44,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QTimerEvent>
-#include "user_resource_controller_host.h"
+#include "renderer_host/user_resource_controller_host.h"
 
 using QtWebEngineCore::UserScript;
 

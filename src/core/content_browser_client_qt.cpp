@@ -81,8 +81,8 @@
 #if defined(ENABLE_BASIC_PRINTING)
 #include "printing_message_filter_qt.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
-#include "resource_dispatcher_host_delegate_qt.h"
-#include "user_resource_controller_host.h"
+#include "renderer_host/resource_dispatcher_host_delegate_qt.h"
+#include "renderer_host/user_resource_controller_host.h"
 #include "web_contents_delegate_qt.h"
 #include "web_engine_context.h"
 #include "web_engine_library_info.h"
@@ -95,7 +95,7 @@
 #if defined(ENABLE_PLUGINS)
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
-#include "renderer/pepper/pepper_host_factory_qt.h"
+#include "renderer_host/pepper/pepper_host_factory_qt.h"
 #endif
 
 #include <QGuiApplication>
