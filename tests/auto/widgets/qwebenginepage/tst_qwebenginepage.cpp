@@ -332,25 +332,25 @@ protected:
 
 void tst_QWebEnginePage::acceptNavigationRequest()
 {
-    QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
+    QWebEngineView *view = new QWebEngineView();
+    QSignalSpy loadSpy(view, SIGNAL(loadFinished(bool)));
 
-    NavigationRequestOverride* newPage = new NavigationRequestOverride(m_view, false);
-    m_view->setPage(newPage);
+    NavigationRequestOverride* newPage = new NavigationRequestOverride(view, false);
+    view->setPage(newPage);
 
-    m_view->setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
+    view->setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
                             "<input type='text'><input type='submit'></form></body></html>"), QUrl());
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    evaluateJavaScriptSync(m_view->page(), "tstform.submit();");
+    evaluateJavaScriptSync(view->page(), "tstform.submit();");
 
     newPage->m_acceptNavigationRequest = true;
-    evaluateJavaScriptSync(m_view->page(), "tstform.submit();");
+    evaluateJavaScriptSync(view->page(), "tstform.submit();");
     QTRY_COMPARE(loadSpy.count(), 2);
 
-    QCOMPARE(toPlainTextSync(m_view->page()), QString("foo?"));
+    QCOMPARE(toPlainTextSync(view->page()), QString("foo?"));
 
-    // Restore default page
-    m_view->setPage(0);
+    delete view;
 }
 
 class JSTestPage : public QWebEnginePage
@@ -461,12 +461,10 @@ void tst_QWebEnginePage::loadFinished()
 
 void tst_QWebEnginePage::actionStates()
 {
-    QWebEnginePage* page = m_view->page();
+    m_page->load(QUrl("qrc:///resources/script.html"));
 
-    page->load(QUrl("qrc:///resources/script.html"));
-
-    QAction* reloadAction = page->action(QWebEnginePage::Reload);
-    QAction* stopAction = page->action(QWebEnginePage::Stop);
+    QAction* reloadAction = m_page->action(QWebEnginePage::Reload);
+    QAction* stopAction = m_page->action(QWebEnginePage::Stop);
 
     QTRY_VERIFY(reloadAction->isEnabled());
     QTRY_VERIFY(!stopAction->isEnabled());
@@ -1424,7 +1422,7 @@ void tst_QWebEnginePage::cursorMovements()
 void tst_QWebEnginePage::textSelection()
 {
     QWebEngineView *view = new QWebEngineView;
-    CursorTrackedPage *page = new CursorTrackedPage;
+    CursorTrackedPage *page = new CursorTrackedPage(view);
     QString content("<html><body><p id=one>The quick brown fox</p>" \
         "<p id=two>jumps over the lazy dog</p>" \
         "<p>May the source<br/>be with you!</p></body></html>");
@@ -1524,7 +1522,6 @@ void tst_QWebEnginePage::textSelection()
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfDocument)->isEnabled(), true);
 #endif
 
-    delete page;
     delete view;
 }
 
@@ -3703,9 +3700,8 @@ void tst_QWebEnginePage::runJavaScript()
 void tst_QWebEnginePage::fullScreenRequested()
 {
     JavaScriptCallbackWatcher watcher;
-    QWebEnginePage* page = new QWebEnginePage;
     QWebEngineView* view = new QWebEngineView;
-    view->setPage(page);
+    QWebEnginePage* page = view->page();
     view->show();
 
     page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
@@ -3739,7 +3735,6 @@ void tst_QWebEnginePage::fullScreenRequested()
     QVERIFY(watcher.wait());
 
     delete view;
-    delete page;
 }
 
 void tst_QWebEnginePage::symmetricUrl()
