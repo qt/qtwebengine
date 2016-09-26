@@ -22,8 +22,5 @@ windows
 [WebEngineViewUnhandledKeyEventPropagation::test_keyboardModifierMapping]
 windows
 
-[WebEngineViewUserScripts::test_bigScript]
-windows
-
 [WebEngineViewSource::test_viewSourceURL]
 windows

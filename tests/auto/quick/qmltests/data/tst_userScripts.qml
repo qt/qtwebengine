@@ -153,8 +153,7 @@ Item {
         function test_bigScript() {
             webEngineView.userScripts = [ bigUserScript ];
             webEngineView.url = Qt.resolvedUrl("test1.html");
-            webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "Big user script changed title");
+            tryCompare(webEngineView , "title", "Big user script changed title");
         }
 
         function test_parseMetadataHeader() {
