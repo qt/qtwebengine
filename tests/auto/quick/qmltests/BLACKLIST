@@ -19,9 +19,6 @@ windows
 [WebEngineViewSettings::test_javascriptDisabled]
 windows
 
-[WebEngineViewTitleChangedSignal::test_titleFirstLoad]
-windows
-
 [WebEngineViewUnhandledKeyEventPropagation::test_keyboardModifierMapping]
 windows
 

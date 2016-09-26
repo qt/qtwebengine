@@ -51,10 +51,9 @@ TestWebEngineView {
 
             var testUrl = Qt.resolvedUrl("test3.html")
             webEngineView.url = testUrl
-            verify(webEngineView.waitForLoadSucceeded())
+            spyTitle.wait()
             compare(webEngineView.title, "Test page 3")
             spyTitle.clear()
-
             spyTitle.wait()
             compare(webEngineView.title, "New Title")
         }
