@@ -9,3 +9,24 @@ osx
 
 [WebEngineViewFocusOnNavigation::test_focusOnNavigation]
 *
+
+[WebEngineViewLoadUrl::test_urlProperty]
+windows
+
+[WebEngineViewNavigationRequested::test_navigationRequested]
+*
+
+[WebEngineViewSettings::test_javascriptDisabled]
+windows
+
+[WebEngineViewTitleChangedSignal::test_titleFirstLoad]
+windows
+
+[WebEngineViewUnhandledKeyEventPropagation::test_keyboardModifierMapping]
+windows
+
+[WebEngineViewUserScripts::test_bigScript]
+windows
+
+[WebEngineViewSource::test_viewSourceURL]
+windows
