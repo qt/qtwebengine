@@ -48,17 +48,22 @@ namespace QtWebEngineCore
 }
 
 QT_BEGIN_NAMESPACE
+
+Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
+
 static void initialize()
 {
-    //On window/ANGLE, calling QtWebEngine::initialize from DllMain will result in a crash.
-    //To ensure it doesn't, we check that when loading the library
-    //QCoreApplication is not yet instantiated, ensuring the call will be deferred
-#if defined(Q_OS_WIN)
-    if (QCoreApplication::instance()
-            && QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
+    if (QCoreApplication::instance()) {
+        //On window/ANGLE, calling QtWebEngine::initialize from DllMain will result in a crash.
+        if (!qt_gl_global_share_context()) {
+            qWarning("Qt WebEngine seems to be initialized from a plugin. Please "
+                     "set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute "
+                     "before constructing QGuiApplication.");
+        }
         return;
     }
-#endif
+
+    //QCoreApplication is not yet instantiated, ensuring the call will be deferred
     qAddPreRoutine(QtWebEngineCore::initialize);
 }
 
