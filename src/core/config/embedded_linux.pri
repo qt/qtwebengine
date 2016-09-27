@@ -39,5 +39,6 @@ GYP_CONFIG += \
     use_x11=0 \
     v8_use_snapshot=false \
     want_separate_host_toolset=1 \
+    angle_enable_gl=0 \
 
 WEBENGINE_CONFIG *= reduce_binary_size
