@@ -13,9 +13,6 @@ osx
 [WebEngineViewLoadUrl::test_urlProperty]
 windows
 
-[WebEngineViewNavigationRequested::test_navigationRequested]
-*
-
 [WebEngineViewSettings::test_javascriptDisabled]
 windows
 
