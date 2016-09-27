@@ -59,7 +59,7 @@ namespace QtWebEngine {
 /*!
     \fn QtWebEngine::initialize()
 
-    Sets up an OpenGL Context that can be shared between processes. This has to be done after
+    Sets up an OpenGL Context that can be shared between threads. This has to be done after
     QGuiApplication is created, but before a Qt Quick window is created.
 
     This has the same effect as setting the Qt::AA_ShareOpenGLContexts
