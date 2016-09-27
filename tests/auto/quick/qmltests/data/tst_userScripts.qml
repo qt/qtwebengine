@@ -87,31 +87,31 @@ Item {
         function test_oneScript() {
             webEngineView.url = Qt.resolvedUrl("test1.html");
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "Test page 1");
+            tryCompare(webEngineView, "title", "Test page 1");
 
             webEngineView.userScripts = [ changeDocumentTitleScript ];
             compare(webEngineView.title, "Test page 1");
 
             webEngineView.reload();
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "New title");
+            tryCompare(webEngineView, "title", "New title");
 
             webEngineView.url = Qt.resolvedUrl("test2.html");
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "New title");
+            tryCompare(webEngineView, "title", "New title");
 
             webEngineView.userScripts = [];
             compare(webEngineView.title, "New title");
 
             webEngineView.reload();
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "Test page with huge link area");
+            tryCompare(webEngineView, "title", "Test page with huge link area");
         }
 
         function test_twoScripts() {
             webEngineView.url = Qt.resolvedUrl("test1.html");
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "Test page 1");
+            tryCompare(webEngineView, "title", "Test page 1");
 
             webEngineView.userScripts = [ changeDocumentTitleScript, appendDocumentTitleScript ];
 
@@ -139,20 +139,21 @@ Item {
         function test_setUserScriptsConditionally() {
             webEngineViewWithConditionalUserScripts.url = Qt.resolvedUrl("test1.html");
             webEngineViewWithConditionalUserScripts.waitForLoadSucceeded();
-            compare(webEngineViewWithConditionalUserScripts.title, "New title");
+            tryCompare(webEngineViewWithConditionalUserScripts, "title", "New title");
 
             webEngineViewWithConditionalUserScripts.url = Qt.resolvedUrl("test2.html");
             webEngineViewWithConditionalUserScripts.waitForLoadSucceeded();
-            compare(webEngineViewWithConditionalUserScripts.title, "Test page with huge link area with appendix");
+            tryCompare(webEngineViewWithConditionalUserScripts, "title", "Test page with huge link area with appendix");
 
             webEngineViewWithConditionalUserScripts.url = Qt.resolvedUrl("test3.html");
             webEngineViewWithConditionalUserScripts.waitForLoadSucceeded();
-            compare(webEngineViewWithConditionalUserScripts.title, "Test page 3");
+            tryCompare(webEngineViewWithConditionalUserScripts, "title", "Test page 3");
         }
 
         function test_bigScript() {
             webEngineView.userScripts = [ bigUserScript ];
             webEngineView.url = Qt.resolvedUrl("test1.html");
+            webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView , "title", "Big user script changed title");
         }
 
@@ -165,12 +166,12 @@ Item {
             // @include *test*.html
             webEngineView.url = Qt.resolvedUrl("test1.html");
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "New title");
+            tryCompare(webEngineView, "title", "New title");
 
             // @exclude *test2.html
             webEngineView.url = Qt.resolvedUrl("test2.html");
             webEngineView.waitForLoadSucceeded();
-            compare(webEngineView.title, "Test page with huge link area");
+            tryCompare(webEngineView, "title", "Test page with huge link area");
         }
     }
 }
