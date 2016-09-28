@@ -52,6 +52,11 @@ TestWebEngineView {
             var testUrl = Qt.resolvedUrl("test3.html")
             webEngineView.url = testUrl
             spyTitle.wait()
+            if (webEngineView.title == "test3.html") {
+                // This title may be emitted during loading
+                spyTitle.clear()
+                spyTitle.wait()
+            }
             compare(webEngineView.title, "Test page 3")
             spyTitle.clear()
             spyTitle.wait()
