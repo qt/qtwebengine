@@ -66,6 +66,9 @@
 
 #include "web_event_factory.h"
 #include "third_party/WebKit/Source/platform/WindowsKeyboardCodes.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 
 #include <QCoreApplication>
 #include <QElapsedTimer>
@@ -471,6 +474,549 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
     }
 }
 
+/*
+ * List of the available DOM key values can be found in the
+ * chromium/ui/events/keycodes/dom/dom_key_data_inc file.
+ * Some of the DOM keys are currently unsupported in Qt:
+ *
+ *  Modifier Keys:
+ *      - ui::DomKey::ACCEL
+ *      - ui::DomKey::FN
+ *      - ui::DomKey::FN_LOCK
+ *      - ui::DomKey::SYMBOL
+ *      - ui::DomKey::SYMBOL_LOCK
+ *      - ui::DomKey::SHIFT_LEVEL5
+ *      - ui::DomKey::ALT_GRAPH_LATCH
+ *
+ *  Editing Keys:
+ *      - ui::DomKey::CR_SEL
+ *      - ui::DomKey::ERASE_OF
+ *      - ui::DomKey::EX_SEL
+ *
+ *  UI Keys:
+ *      - ui::DomKey::ACCEPT
+ *      - ui::DomKey::AGAIN
+ *      - ui::DomKey::ATTN
+ *      - ui::DomKey::PROPS
+ *
+ *  Device Keys:
+ *      - ui::DomKey::POWER
+ *
+ *  IME and Composition Keys:
+ *      - ui::DomKey::ALL_CANDIDATES
+ *      - ui::DomKey::ALPHANUMERIC
+ *      - ui::DomKey::FINAL_MODE
+ *      - ui::DomKey::GROUP_FIRST
+ *      - ui::DomKey::GROUP_LAST
+ *      - ui::DomKey::GROUP_NEXT
+ *      - ui::DomKey::GROUP_PREVIOUS
+ *      - ui::DomKey::NEXT_CANDIDATE
+ *      - ui::DomKey::PREVIOUS_CANDIDATE
+ *      - ui::DomKey::PROCESS
+ *      - ui::DomKey::JUNJA_MODE
+ *
+ *  General-Purpose Function Keys:
+ *      - ui::DomKey::SOFT1
+ *      - ui::DomKey::SOFT2
+ *      - ui::DomKey::SOFT3
+ *      - ui::DomKey::SOFT4
+ *      - ui::DomKey::SOFT5
+ *      - ui::DomKey::SOFT6
+ *      - ui::DomKey::SOFT7
+ *      - ui::DomKey::SOFT8
+ *
+ *  Multimedia Numpad Keys:
+ *      - ui::DomKey::KEY11
+ *      - ui::DomKey::KEY12
+ *
+ *  Audio Keys:
+ *      - ui::DomKey::AUDIO_BALANCE_LEFT
+ *      - ui::DomKey::AUDIO_BALANCE_RIGHT
+ *      - ui::DomKey::AUDIO_BASS_BOOST_DOWN
+ *      - ui::DomKey::AUDIO_BASS_BOOST_UP
+ *      - ui::DomKey::AUDIO_FADER_FRONT
+ *      - ui::DomKey::AUDIO_FADER_REAR
+ *      - ui::DomKey::AUDIO_SURROUND_MODE_NEXT
+ *      - ui::DomKey::MICROPHONE_TOGGLE
+ *
+ *  Speech Keys:
+ *      - ui::DomKey::SPEECH_CORRECTION_LIST
+ *      - ui::DomKey::SPEECH_INPUT_TOGGLE
+ *
+ *  Application Keys:
+ *      - ui::DomKey::LAUNCH_CONTACTS
+ *
+ *  Mobile Phone Keys:
+ *      - ui::DomKey::APP_SWITCH
+ *      - ui::DomKey::GO_BACK
+ *      - ui::DomKey::GO_HOME
+ *      - ui::DomKey::HEADSET_HOOK
+ *      - ui::DomKey::NOTIFICATION
+ *      - ui::DomKey::MANNER_MODE
+ *
+ *  TV Keys:
+ *      - ui::DomKey::TV
+ *      - ui::DomKey::TV_3D_MODE
+ *      - ui::DomKey::TV_ANTENNA_CABLE
+ *      - ui::DomKey::TV_AUDIO_DESCRIPTION
+ *      - ui::DomKey::TV_AUDIO_DESCRIPTION_MIX_DOWN
+ *      - ui::DomKey::TV_AUDIO_DESCRIPTION_MIX_UP
+ *      - ui::DomKey::TV_CONTENTS_MENU
+ *      - ui::DomKey::TV_DATA_SERVICE
+ *      - ui::DomKey::TV_INPUT
+ *      - ui::DomKey::TV_INPUT_COMPONENT1
+ *      - ui::DomKey::TV_INPUT_COMPONENT2
+ *      - ui::DomKey::TV_INPUT_COMPOSITE1
+ *      - ui::DomKey::TV_INPUT_COMPOSITE2
+ *      - ui::DomKey::TV_INPUT_HDMI1
+ *      - ui::DomKey::TV_INPUT_HDMI2
+ *      - ui::DomKey::TV_INPUT_HDMI3
+ *      - ui::DomKey::TV_INPUT_HDMI4
+ *      - ui::DomKey::TV_INPUT_VGA1
+ *      - ui::DomKey::TV_MEDIA_CONTEXT
+ *      - ui::DomKey::TV_NETWORK
+ *      - ui::DomKey::TV_NUMBER_ENTRY
+ *      - ui::DomKey::TV_POWER
+ *      - ui::DomKey::TV_RADIO_SERVICE
+ *      - ui::DomKey::TV_SATELLITE
+ *      - ui::DomKey::TV_SATELLITE_BC
+ *      - ui::DomKey::TV_SATELLITE_CS
+ *      - ui::DomKey::TV_SATELLITE_TOGGLE
+ *      - ui::DomKey::TV_TERRESTRIAL_ANALOG
+ *      - ui::DomKey::TV_TERRESTRIAL_DIGITAL
+ *      - ui::DomKey::TV_TIMER
+ *
+ *  Media Controller Keys:
+ *      - ui::DomKey::AVR_INPUT
+ *      - ui::DomKey::AVR_POWER
+ *      - ui::DomKey::COLOR_F4_GREY
+ *      - ui::DomKey::COLOR_F5_BROWN
+ *      - ui::DomKey::CLOSED_CAPTION_TOGGLE
+ *      - ui::DomKey::DVR
+ *      - ui::DomKey::FAVORITE_CLEAR0
+ *      - ui::DomKey::FAVORITE_CLEAR1
+ *      - ui::DomKey::FAVORITE_CLEAR2
+ *      - ui::DomKey::FAVORITE_CLEAR3
+ *      - ui::DomKey::FAVORITE_RECALL0
+ *      - ui::DomKey::FAVORITE_RECALL1
+ *      - ui::DomKey::FAVORITE_RECALL2
+ *      - ui::DomKey::FAVORITE_RECALL3
+ *      - ui::DomKey::FAVORITE_STORE0
+ *      - ui::DomKey::FAVORITE_STORE1
+ *      - ui::DomKey::FAVORITE_STORE2
+ *      - ui::DomKey::FAVORITE_STORE3
+ *      - ui::DomKey::GUIDE_NEXT_DAY
+ *      - ui::DomKey::GUIDE_PREVIOUS_DAY
+ *      - ui::DomKey::INSTANT_REPLAY
+ *      - ui::DomKey::LINK
+ *      - ui::DomKey::LIST_PROGRAM
+ *      - ui::DomKey::LIVE_CONTENT
+ *      - ui::DomKey::LOCK
+ *      - ui::DomKey::MEDIA_APPS
+ *      - ui::DomKey::MEDIA_AUDIO_TRACK
+ *      - ui::DomKey::MEDIA_SKIP_BACKWARD
+ *      - ui::DomKey::MEDIA_SKIP_FORWARD
+ *      - ui::DomKey::MEDIA_SKIP
+ *      - ui::DomKey::MEDIA_STEP_BACKWARD
+ *      - ui::DomKey::MEDIA_STEP_FORWARD
+ *      - ui::DomKey::NAVIGATE_IN
+ *      - ui::DomKey::NAVIGATE_NEXT
+ *      - ui::DomKey::NAVIGATE_OUT
+ *      - ui::DomKey::NAVIGATE_PREVIOUS
+ *      - ui::DomKey::NEXT_FAVORITE_CHANNEL
+ *      - ui::DomKey::NEXT_USER_PROFILE
+ *      - ui::DomKey::ON_DEMAND
+ *      - ui::DomKey::PAIRING
+ *      - ui::DomKey::PINP_DOWN
+ *      - ui::DomKey::PINP_MOVE
+ *      - ui::DomKey::PINP_TOGGLE
+ *      - ui::DomKey::PINP_UP
+ *      - ui::DomKey::PLAY_SPEED_DOWN
+ *      - ui::DomKey::PLAY_SPEED_RESET
+ *      - ui::DomKey::PLAY_SPEED_UP
+ *      - ui::DomKey::RC_LOW_BATTERY
+ *      - ui::DomKey::RECORD_SPEED_NEXT
+ *      - ui::DomKey::RF_BYPASS
+ *      - ui::DomKey::SCAN_CHANNELS_TOGGLE
+ *      - ui::DomKey::SCREEN_MODE_NEXT
+ *      - ui::DomKey::STB_INPUT
+ *      - ui::DomKey::STB_POWER
+ *      - ui::DomKey::TELETEXT
+ *      - ui::DomKey::VIDEO_MODE_NEXT
+ *      - ui::DomKey::WINK
+ */
+static ui::DomKey getDomKeyFromQKeyEvent(QKeyEvent *ev)
+{
+    switch (ev->key()) {
+    case Qt::Key_Backspace:
+        return ui::DomKey::BACKSPACE;
+    case Qt::Key_Tab:
+    case Qt::Key_Backtab:
+        return ui::DomKey::TAB;
+    case Qt::Key_Return:
+    case Qt::Key_Enter:
+        return ui::DomKey::ENTER;
+    case Qt::Key_Escape:
+        return ui::DomKey::ESCAPE;
+    case Qt::Key_Delete:
+        return ui::DomKey::DEL;
+
+    // Special Key Values
+    case Qt::Key_unknown:
+        return ui::DomKey::UNIDENTIFIED;
+
+    // Modifier Keys
+    case Qt::Key_Alt:
+        return ui::DomKey::ALT;
+    case Qt::Key_AltGr:
+        return ui::DomKey::ALT_GRAPH;
+    case Qt::Key_CapsLock:
+        return ui::DomKey::CAPS_LOCK;
+    case Qt::Key_Control:
+        return ui::DomKey::CONTROL;
+    case Qt::Key_Hyper_L:
+    case Qt::Key_Hyper_R:
+        return ui::DomKey::HYPER;
+    case Qt::Key_Meta:
+        return ui::DomKey::META;
+    case Qt::Key_NumLock:
+        return ui::DomKey::NUM_LOCK;
+    case Qt::Key_ScrollLock:
+        return ui::DomKey::SCROLL_LOCK;
+    case Qt::Key_Shift:
+        return ui::DomKey::SHIFT;
+    case Qt::Key_Super_L:
+    case Qt::Key_Super_R:
+        return ui::DomKey::SUPER;
+
+    // Navigation Keys
+    case Qt::Key_Down:
+        return ui::DomKey::ARROW_DOWN;
+    case Qt::Key_Left:
+        return ui::DomKey::ARROW_LEFT;
+    case Qt::Key_Right:
+        return ui::DomKey::ARROW_RIGHT;
+    case Qt::Key_Up:
+        return ui::DomKey::ARROW_UP;
+    case Qt::Key_End:
+        return ui::DomKey::END;
+    case Qt::Key_Home:
+        return ui::DomKey::HOME;
+    case Qt::Key_PageUp:
+        return ui::DomKey::PAGE_UP;
+    case Qt::Key_PageDown:
+        return ui::DomKey::PAGE_DOWN;
+
+    // Editing Keys
+    case Qt::Key_Clear:
+        return ui::DomKey::CLEAR;
+    case Qt::Key_Copy:
+        return ui::DomKey::COPY;
+    case Qt::Key_Cut:
+        return ui::DomKey::CUT;
+    case Qt::Key_Insert:
+        return ui::DomKey::INSERT;
+    case Qt::Key_Paste:
+        return ui::DomKey::PASTE;
+    case Qt::Key_Redo:
+        return ui::DomKey::REDO;
+    case Qt::Key_Undo:
+        return ui::DomKey::UNDO;
+
+    // UI Keys
+    case Qt::Key_Cancel:
+        return ui::DomKey::CANCEL;
+    case Qt::Key_Menu:
+        return ui::DomKey::CONTEXT_MENU;
+    case Qt::Key_Execute:
+        return ui::DomKey::EXECUTE;
+    case Qt::Key_Find:
+        return ui::DomKey::FIND;
+    case Qt::Key_Help:
+        return ui::DomKey::HELP;
+    case Qt::Key_Pause:
+        return ui::DomKey::PAUSE;
+    case Qt::Key_Play:
+        return ui::DomKey::PLAY;
+    case Qt::Key_Select:
+        return ui::DomKey::SELECT;
+    case Qt::Key_ZoomIn:
+        return ui::DomKey::ZOOM_IN;
+    case Qt::Key_ZoomOut:
+        return ui::DomKey::ZOOM_OUT;
+
+    // Device Keys
+    case Qt::Key_MonBrightnessDown:
+        return ui::DomKey::BRIGHTNESS_DOWN;
+    case Qt::Key_MonBrightnessUp:
+        return ui::DomKey::BRIGHTNESS_UP;
+    case Qt::Key_Eject:
+        return ui::DomKey::EJECT;
+    case Qt::Key_LogOff:
+        return ui::DomKey::LOG_OFF;
+    case Qt::Key_PowerDown:
+    case Qt::Key_PowerOff:
+        return ui::DomKey::POWER_OFF;
+    case Qt::Key_Print:
+        return ui::DomKey::PRINT_SCREEN;
+    case Qt::Key_Hibernate:
+        return ui::DomKey::HIBERNATE;
+    case Qt::Key_Standby:
+        return ui::DomKey::STANDBY;
+    case Qt::Key_WakeUp:
+        return ui::DomKey::WAKE_UP;
+
+    // IME and Composition Keys
+    case Qt::Key_Codeinput:
+        return ui::DomKey::CODE_INPUT;
+    case Qt::Key_Multi_key:
+        return ui::DomKey::COMPOSE;
+    case Qt::Key_Henkan:
+        return ui::DomKey::CONVERT;
+    case Qt::Key_Mode_switch:
+        return ui::DomKey::MODE_CHANGE;
+    case Qt::Key_Muhenkan:
+        return ui::DomKey::NON_CONVERT;
+    case Qt::Key_SingleCandidate:
+        return ui::DomKey::SINGLE_CANDIDATE;
+    case Qt::Key_Hangul:
+        return ui::DomKey::HANGUL_MODE;
+    case Qt::Key_Hangul_Hanja:
+        return ui::DomKey::HANJA_MODE;
+    case Qt::Key_Eisu_Shift:
+    case Qt::Key_Eisu_toggle:
+        return ui::DomKey::EISU;
+    case Qt::Key_Hankaku:
+        return ui::DomKey::HANKAKU;
+    case Qt::Key_Hiragana:
+        return ui::DomKey::HIRAGANA;
+    case Qt::Key_Hiragana_Katakana:
+        return ui::DomKey::HIRAGANA_KATAKANA;
+    case Qt::Key_Kana_Lock:
+    case Qt::Key_Kana_Shift:
+        return ui::DomKey::KANA_MODE;
+    case Qt::Key_Kanji:
+        return ui::DomKey::KANJI_MODE;
+    case Qt::Key_Katakana:
+        return ui::DomKey::KATAKANA;
+    case Qt::Key_Romaji:
+        return ui::DomKey::ROMAJI;
+    case Qt::Key_Zenkaku:
+        return ui::DomKey::ZENKAKU;
+    case Qt::Key_Zenkaku_Hankaku:
+        return ui::DomKey::ZENKAKU_HANKAKU;
+
+    // General-Purpose Function Keys
+    case Qt::Key_F1:
+        return ui::DomKey::F1;
+    case Qt::Key_F2:
+        return ui::DomKey::F2;
+    case Qt::Key_F3:
+        return ui::DomKey::F3;
+    case Qt::Key_F4:
+        return ui::DomKey::F4;
+    case Qt::Key_F5:
+        return ui::DomKey::F5;
+    case Qt::Key_F6:
+        return ui::DomKey::F6;
+    case Qt::Key_F7:
+        return ui::DomKey::F7;
+    case Qt::Key_F8:
+        return ui::DomKey::F8;
+    case Qt::Key_F9:
+        return ui::DomKey::F9;
+    case Qt::Key_F10:
+        return ui::DomKey::F10;
+    case Qt::Key_F11:
+        return ui::DomKey::F11;
+    case Qt::Key_F12:
+        return ui::DomKey::F12;
+    case Qt::Key_F13:
+        return ui::DomKey::F13;
+    case Qt::Key_F14:
+        return ui::DomKey::F14;
+    case Qt::Key_F15:
+        return ui::DomKey::F15;
+    case Qt::Key_F16:
+        return ui::DomKey::F16;
+    case Qt::Key_F17:
+        return ui::DomKey::F17;
+    case Qt::Key_F18:
+        return ui::DomKey::F18;
+    case Qt::Key_F19:
+        return ui::DomKey::F19;
+    case Qt::Key_F20:
+        return ui::DomKey::F20;
+    case Qt::Key_F21:
+        return ui::DomKey::F21;
+    case Qt::Key_F22:
+        return ui::DomKey::F22;
+    case Qt::Key_F23:
+        return ui::DomKey::F23;
+    case Qt::Key_F24:
+        return ui::DomKey::F24;
+
+    // Multimedia Keys
+    case Qt::Key_ChannelDown:
+        return ui::DomKey::CHANNEL_DOWN;
+    case Qt::Key_ChannelUp:
+        return ui::DomKey::CHANNEL_UP;
+    case Qt::Key_Close:
+        return ui::DomKey::CLOSE;
+    case Qt::Key_MailForward:
+        return ui::DomKey::MAIL_FORWARD;
+    case Qt::Key_Reply:
+        return ui::DomKey::MAIL_REPLY;
+    case Qt::Key_Send:
+        return ui::DomKey::MAIL_SEND;
+    case Qt::Key_AudioForward:
+        return ui::DomKey::MEDIA_FAST_FORWARD;
+    case Qt::Key_MediaPause:
+        return ui::DomKey::MEDIA_PAUSE;
+    case Qt::Key_MediaPlay:
+        return ui::DomKey::MEDIA_PLAY;
+    case Qt::Key_MediaTogglePlayPause:
+        return ui::DomKey::MEDIA_PLAY_PAUSE;
+    case Qt::Key_MediaRecord:
+        return ui::DomKey::MEDIA_RECORD;
+    case Qt::Key_AudioRewind:
+        return ui::DomKey::MEDIA_REWIND;
+    case Qt::Key_MediaStop:
+        return ui::DomKey::MEDIA_STOP;
+    case Qt::Key_MediaNext:
+        return ui::DomKey::MEDIA_TRACK_NEXT;
+    case Qt::Key_MediaPrevious:
+        return ui::DomKey::MEDIA_TRACK_PREVIOUS;
+    case Qt::Key_New:
+        return ui::DomKey::NEW;
+    case Qt::Key_Open:
+        return ui::DomKey::OPEN;
+    case Qt::Key_Printer:
+        return ui::DomKey::PRINT;
+    case Qt::Key_Save:
+        return ui::DomKey::SAVE;
+    case Qt::Key_Spell:
+        return ui::DomKey::SPELL_CHECK;
+
+    // Audio Keys
+    case Qt::Key_BassDown:
+        return ui::DomKey::AUDIO_BASS_DOWN;
+    case Qt::Key_BassBoost:
+        return ui::DomKey::AUDIO_BASS_BOOST_TOGGLE;
+    case Qt::Key_BassUp:
+        return ui::DomKey::AUDIO_BASS_UP;
+    case Qt::Key_TrebleDown:
+        return ui::DomKey::AUDIO_TREBLE_DOWN;
+    case Qt::Key_TrebleUp:
+        return ui::DomKey::AUDIO_TREBLE_UP;
+    case Qt::Key_VolumeDown:
+        return ui::DomKey::AUDIO_VOLUME_DOWN;
+    case Qt::Key_VolumeUp:
+        return ui::DomKey::AUDIO_VOLUME_UP;
+    case Qt::Key_VolumeMute:
+        return ui::DomKey::AUDIO_VOLUME_MUTE;
+    case Qt::Key_MicVolumeDown:
+        return ui::DomKey::MICROPHONE_VOLUME_DOWN;
+    case Qt::Key_MicVolumeUp:
+        return ui::DomKey::MICROPHONE_VOLUME_UP;
+    case Qt::Key_MicMute:
+        return ui::DomKey::MICROPHONE_VOLUME_MUTE;
+
+    // Application Keys
+    case Qt::Key_Calculator:
+        return ui::DomKey::LAUNCH_CALCULATOR;
+    case Qt::Key_Calendar:
+        return ui::DomKey::LAUNCH_CALENDAR;
+    case Qt::Key_LaunchMail:
+        return ui::DomKey::LAUNCH_MAIL;
+    case Qt::Key_LaunchMedia:
+        return ui::DomKey::LAUNCH_MEDIA_PLAYER;
+    case Qt::Key_Music:
+        return ui::DomKey::LAUNCH_MUSIC_PLAYER;
+    case Qt::Key_Launch0:
+        return ui::DomKey::LAUNCH_MY_COMPUTER;
+    case Qt::Key_Phone:
+        return ui::DomKey::LAUNCH_PHONE;
+    case Qt::Key_ScreenSaver:
+        return ui::DomKey::LAUNCH_SCREEN_SAVER;
+    case Qt::Key_Excel:
+        return ui::DomKey::LAUNCH_SPREADSHEET;
+    case Qt::Key_WWW:
+        return ui::DomKey::LAUNCH_WEB_BROWSER;
+    case Qt::Key_WebCam:
+        return ui::DomKey::LAUNCH_WEB_CAM;
+    case Qt::Key_Word:
+        return ui::DomKey::LAUNCH_WORD_PROCESSOR;
+
+    // Browser Keys
+    case Qt::Key_Back:
+        return ui::DomKey::BROWSER_BACK;
+    case Qt::Key_Favorites:
+        return ui::DomKey::BROWSER_FAVORITES;
+    case Qt::Key_Forward:
+        return ui::DomKey::BROWSER_FORWARD;
+    case Qt::Key_HomePage:
+        return ui::DomKey::BROWSER_HOME;
+    case Qt::Key_Refresh:
+        return ui::DomKey::BROWSER_REFRESH;
+    case Qt::Key_Search:
+        return ui::DomKey::BROWSER_SEARCH;
+    case Qt::Key_Stop:
+        return ui::DomKey::BROWSER_STOP;
+
+    // Mobile Phone Keys
+    case Qt::Key_Call:
+        return ui::DomKey::CALL;
+    case Qt::Key_Camera:
+        return ui::DomKey::CAMERA;
+    case Qt::Key_CameraFocus:
+        return ui::DomKey::CAMERA_FOCUS;
+    case Qt::Key_Hangup:
+        return ui::DomKey::END_CALL;
+    case Qt::Key_LastNumberRedial:
+        return ui::DomKey::LAST_NUMBER_REDIAL;
+    case Qt::Key_VoiceDial:
+        return ui::DomKey::VOICE_DIAL;
+
+    // Media Controller Keys
+    case Qt::Key_Red:
+        return ui::DomKey::COLOR_F0_RED;
+    case Qt::Key_Green:
+        return ui::DomKey::COLOR_F1_GREEN;
+    case Qt::Key_Yellow:
+        return ui::DomKey::COLOR_F2_YELLOW;
+    case Qt::Key_Blue:
+        return ui::DomKey::COLOR_F3_BLUE;
+    case Qt::Key_BrightnessAdjust:
+        return ui::DomKey::DIMMER;
+    case Qt::Key_Display:
+        return ui::DomKey::DISPLAY_SWAP;
+    case Qt::Key_Exit:
+        return ui::DomKey::EXIT;
+    case Qt::Key_Guide:
+        return ui::DomKey::GUIDE;
+    case Qt::Key_Info:
+        return ui::DomKey::INFO;
+    case Qt::Key_MediaLast:
+        return ui::DomKey::MEDIA_LAST;
+    case Qt::Key_TopMenu:
+        return ui::DomKey::MEDIA_TOP_MENU;
+    case Qt::Key_AudioRandomPlay:
+        return ui::DomKey::RANDOM_TOGGLE;
+    case Qt::Key_Settings:
+        return ui::DomKey::SETTINGS;
+    case Qt::Key_SplitScreen:
+        return ui::DomKey::SPLIT_SCREEN_TOGGLE;
+    case Qt::Key_Subtitle:
+        return ui::DomKey::SUBTITLE;
+    case Qt::Key_Zoom:
+        return ui::DomKey::ZOOM_TOGGLE;
+
+    default:
+        return ui::DomKey::NONE;
+    }
+}
+
 static inline double currentTimeForEvent(const QInputEvent* event)
 {
     Q_ASSERT(event);
@@ -699,6 +1245,13 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     webKitEvent.nativeKeyCode = ev->nativeVirtualKey();
     webKitEvent.windowsKeyCode = windowsKeyCodeForKeyEvent(ev->key(), ev->modifiers() & Qt::KeypadModifier);
     webKitEvent.setKeyIdentifierFromWindowsKeyCode();
+    webKitEvent.domKey = getDomKeyFromQKeyEvent(ev);
+
+    ui::DomCode domCode = ui::DomCode::NONE;
+    int scanCode = ev->nativeScanCode();
+    if (scanCode)
+        domCode = ui::KeycodeConverter::NativeKeycodeToDomCode(scanCode);
+    webKitEvent.domCode = static_cast<int>(domCode);
 
     const ushort* text = ev->text().utf16();
     memcpy(&webKitEvent.text, text, std::min(sizeof(webKitEvent.text), size_t(ev->text().length() * 2)));
