@@ -49,6 +49,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -229,7 +230,9 @@ void URLRequestContextGetterQt::generateStorage()
     Q_ASSERT(proxyConfigService);
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
-    m_storage->set_cert_transparency_verifier(base::WrapUnique(new net::MultiLogCTVerifier()));
+    std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(new net::MultiLogCTVerifier());
+    ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
+    m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
     m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::CTPolicyEnforcer));
 
     std::unique_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
@@ -421,6 +424,10 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
     if (first.ignore_certificate_errors != second.ignore_certificate_errors)
         return false;
     if (first.host_resolver != second.host_resolver)
+        return false;
+    if (first.cert_transparency_verifier != second.cert_transparency_verifier)
+        return false;
+    if (first.ct_policy_enforcer != second.ct_policy_enforcer)
         return false;
 
     return true;
