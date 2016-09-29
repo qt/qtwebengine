@@ -238,9 +238,8 @@ void tst_QQuickWebEngineView::loadProgress()
     QSignalSpy loadProgressChangedSpy(webEngineView(), SIGNAL(loadProgressChanged()));
     QVERIFY(waitForLoadSucceeded(webEngineView()));
 
-    QVERIFY(loadProgressChangedSpy.count() >= 1);
-
-    QCOMPARE(webEngineView()->loadProgress(), 100);
+    loadProgressChangedSpy.wait();
+    QTRY_COMPARE(webEngineView()->loadProgress(), 100);
 }
 
 void tst_QQuickWebEngineView::show()
