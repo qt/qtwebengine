@@ -57,8 +57,8 @@ QtObject {
     id: windowParent
     // Create the initial browsing windows and open the startup page.
     Component.onCompleted: {
-        var firstWindow = windowComponent.createObject(windowParent)
-        firstWindow.webView.loadHtml('<input type="button" value="Click!" onclick="window.open(&quot;http://qt.io&quot;)">')
+        var firstWindow = windowComponent.createObject(windowParent);
+        firstWindow.webView.loadHtml('<input type="button" value="Click!" onclick="window.open(&quot;http://qt.io&quot;)">');
     }
 
     property Component windowComponent: Window {
@@ -74,9 +74,9 @@ QtObject {
 
             // Handle the signal. Dynamically create the window and
             // use its WebEngineView as the destination of our request.
-            onNewViewRequested: {
-                var newWindow = windowComponent.createObject(windowParent)
-                request.openIn(newWindow.webView)
+            onNewViewRequested: function(request) {
+                var newWindow = windowComponent.createObject(windowParent);
+                request.openIn(newWindow.webView);
             }
         }
     }
