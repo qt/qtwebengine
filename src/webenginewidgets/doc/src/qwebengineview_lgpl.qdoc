@@ -65,16 +65,13 @@
     The zoomFactor() property enables zooming the contents of the web page by a
     scale factor.
 
-    If you require a custom context menu, you can implement it by reimplementing
-    \l{QWidget::}{contextMenuEvent()} and populating your QMenu with the actions
-    obtained from pageAction(). Additional functionality, such as reloading the view,
-    copying selected text to the clipboard, or pasting into the view, is
-    encapsulated within the QAction objects returned by pageAction(). These
-    actions can be programmatically triggered using triggerPageAction().
-    Alternatively, the actions can be added to a toolbar or a menu directly.
-    The web view maintains the state of the returned actions but allows
-    modification of action properties such as \l{QAction::}{text} or
-    \l{QAction::}{icon}.
+    The widget features a context menu that is tailored to the element at
+    hand, and includes actions useful in a browser. For a custom context menu,
+    or for embedding actions in a menu or toolbar, the individual actions are available
+    via \l pageAction(). The web view maintains the state of the returned actions,
+    but allows modification of action properties such as \l{QAction::}{text} or
+    \l{QAction::}{icon}. The action semantics can also be triggered directly through
+    triggerPageAction().
 
     If you want to provide support for web sites that allow the user to open
     new windows, such as pop-up windows, you can subclass QWebEngineView and
