@@ -102,6 +102,11 @@ ApplicationWindow {
             // Make sure focus is not taken by the web view, so user can continue navigating
             // recipes with the keyboard.
             settings.focusOnNavigationEnabled: false
+
+            onContextMenuRequested: function(request) {
+                request.accepted = true
+            }
+
             property bool firstLoadComplete: false
             onLoadingChanged: {
                 if (loadRequest.status === WebEngineView.LoadSucceededStatus

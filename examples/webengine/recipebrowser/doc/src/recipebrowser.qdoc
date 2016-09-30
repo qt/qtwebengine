@@ -106,10 +106,11 @@
     We then disable the \l{WebEngineSettings::focusOnNavigationEnabled}{focusOnNavigationEnabled}
     setting to make sure that the \l{WebEngineView} does not steal focus from the \c RecipeList
     item every time its URL is changed. This allows the user to continue navigating through the
-    recipes using the keyboard.
+    recipes using the keyboard. We also disable the default context menu by accepting the
+    ContextMenuRequest.
 
     \skipto focusOnNavigationEnabled
-    \printuntil focusOnNavigationEnabled
+    \printto firstLoadComplete
 
     When the application starts, instead of directly showing the \l{WebEngineView}, we show a
     placeholder \l{Rectangle} with a \l{BusyIndicator} to provide a nicer user experience while the
