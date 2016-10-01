@@ -49,6 +49,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/cache_type.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -229,7 +230,9 @@ void URLRequestContextGetterQt::generateStorage()
     Q_ASSERT(proxyConfigService);
 
     m_storage->set_cert_verifier(net::CertVerifier::CreateDefault());
-    m_storage->set_cert_transparency_verifier(base::WrapUnique(new net::MultiLogCTVerifier()));
+    std::unique_ptr<net::MultiLogCTVerifier> ct_verifier(new net::MultiLogCTVerifier());
+    ct_verifier->AddLogs(net::ct::CreateLogVerifiersForKnownLogs());
+    m_storage->set_cert_transparency_verifier(std::move(ct_verifier));
     m_storage->set_ct_policy_enforcer(base::WrapUnique(new net::CTPolicyEnforcer));
 
     std::unique_ptr<net::HostResolver> host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
@@ -422,6 +425,10 @@ static bool doNetworkSessionParamsMatch(const net::HttpNetworkSession::Params &f
         return false;
     if (first.host_resolver != second.host_resolver)
         return false;
+    if (first.cert_transparency_verifier != second.cert_transparency_verifier)
+        return false;
+    if (first.ct_policy_enforcer != second.ct_policy_enforcer)
+        return false;
 
     return true;
 }
@@ -525,8 +532,11 @@ void URLRequestContextGetterQt::generateJobFactory()
     std::unique_ptr<net::URLRequestJobFactoryImpl> jobFactory(new net::URLRequestJobFactoryImpl());
 
     {
-        // Chromium has a few protocol handlers ready for us, only pick blob: and throw away the rest.
+        // Chromium has transferred a few protocol handlers to us, only pick blob: and chrome: and ignore the rest.
         content::ProtocolHandlerMap::iterator it = m_protocolHandlers.find(url::kBlobScheme);
+        Q_ASSERT(it != m_protocolHandlers.end());
+        jobFactory->SetProtocolHandler(it->first, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
+        it = m_protocolHandlers.find(content::kChromeUIScheme);
         Q_ASSERT(it != m_protocolHandlers.end());
         jobFactory->SetProtocolHandler(it->first, std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>(it->second.release()));
         m_protocolHandlers.clear();

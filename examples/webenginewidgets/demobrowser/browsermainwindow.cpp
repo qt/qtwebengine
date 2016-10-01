@@ -769,7 +769,7 @@ void BrowserMainWindow::printRequested(QWebEnginePage *page)
     if (m_currentPrinter)
         return;
     m_currentPrinter = new QPrinter();
-    QPrintDialog *dialog = new QPrintDialog(m_currentPrinter, this);
+    QScopedPointer<QPrintDialog> dialog(new QPrintDialog(m_currentPrinter, this));
     dialog->setWindowTitle(tr("Print Document"));
     if (dialog->exec() != QDialog::Accepted) {
         slotHandlePagePrinted(false);

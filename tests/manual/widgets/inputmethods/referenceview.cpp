@@ -26,41 +26,24 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
+#include "referenceview.h"
 
-TestWebEngineView {
-    id: webEngineView
-    width: 400
-    height: 300
+#include <QVBoxLayout>
 
+ReferenceView::ReferenceView(QWidget *parent)
+    : QWidget(parent)
+    , m_referenceInput(new QLineEdit)
+{
+    m_referenceInput->setMinimumHeight(50);
+    m_referenceInput->setMaximumWidth(250);
+    m_referenceInput->setFont(QFont(QStringLiteral("Serif"), 28));
 
-    SignalSpy {
-        id: spyTitle
-        target: webEngineView
-        signalName: "titleChanged"
-    }
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(m_referenceInput);
+    setLayout(layout);
+}
 
-
-    TestCase {
-        name: "WebEngineViewTitleChangedSignal"
-
-        function test_titleFirstLoad() {
-            compare(spyTitle.count, 0)
-
-            var testUrl = Qt.resolvedUrl("test3.html")
-            webEngineView.url = testUrl
-            spyTitle.wait()
-            if (webEngineView.title == "test3.html") {
-                // This title may be emitted during loading
-                spyTitle.clear()
-                spyTitle.wait()
-            }
-            compare(webEngineView.title, "Test page 3")
-            spyTitle.clear()
-            spyTitle.wait()
-            compare(webEngineView.title, "New Title")
-        }
-    }
+QLineEdit *ReferenceView::referenceInput()
+{
+    return m_referenceInput;
 }

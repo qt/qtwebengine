@@ -189,6 +189,8 @@ bool QWebEngineContextMenuData::isContentEditable() const
 /*!
     If the context is a word considered misspelled by the spell-checker, returns the misspelled word.
 
+    For possible replacements of the word, see spellCheckerSuggestions().
+
     \since 5.8
 */
 QString QWebEngineContextMenuData::misspelledWord() const
@@ -199,7 +201,8 @@ QString QWebEngineContextMenuData::misspelledWord() const
 }
 
 /*!
-    If the context is a word considered misspelled by the spell-checker, returns a list of suggested replacements.
+    If the context is a word considered misspelled by the spell-checker, returns a list of suggested replacements
+    for misspelledWord().
 
     \since 5.8
 */

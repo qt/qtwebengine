@@ -84,7 +84,6 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged)
     Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged)
-    Q_PROPERTY(bool canViewSource READ canViewSource)
 
 public:
     enum WebAction {
@@ -285,15 +284,13 @@ public:
 
 #ifndef QT_NO_PRINTER
 #ifdef Q_QDOC
-    void print(QPrinter *printer, FunctorOrLambda resultCallback)
+    void print(QPrinter *printer, FunctorOrLambda resultCallback);
 #else
     void print(QPrinter *printer, const QWebEngineCallback<bool> &resultCallback);
 #endif // QDOC
 #endif // QT_NO_PRINTER
 
     const QWebEngineContextMenuData &contextMenuData() const;
-    void viewSource();
-    bool canViewSource() const;
 
 Q_SIGNALS:
     void loadStarted();

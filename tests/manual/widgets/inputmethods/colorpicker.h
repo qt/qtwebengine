@@ -26,41 +26,31 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
+#ifndef COLORPICKER_H
+#define COLORPICKER_H
 
-TestWebEngineView {
-    id: webEngineView
-    width: 400
-    height: 300
+#include <QColor>
+#include <QWidget>
 
+class QLineEdit;
+class QPushButton;
 
-    SignalSpy {
-        id: spyTitle
-        target: webEngineView
-        signalName: "titleChanged"
-    }
+class ColorPicker : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit ColorPicker(QWidget *parent = 0);
 
+    QColor color() const;
+    void setColor(const QColor &);
 
-    TestCase {
-        name: "WebEngineViewTitleChangedSignal"
+public slots:
+    void colorStringChanged(const QString &);
+    void selectButtonClicked();
 
-        function test_titleFirstLoad() {
-            compare(spyTitle.count, 0)
+private:
+    QLineEdit *m_colorInput;
+    QPushButton *m_chooseButton;
+};
 
-            var testUrl = Qt.resolvedUrl("test3.html")
-            webEngineView.url = testUrl
-            spyTitle.wait()
-            if (webEngineView.title == "test3.html") {
-                // This title may be emitted during loading
-                spyTitle.clear()
-                spyTitle.wait()
-            }
-            compare(webEngineView.title, "Test page 3")
-            spyTitle.clear()
-            spyTitle.wait()
-            compare(webEngineView.title, "New Title")
-        }
-    }
-}
+#endif // COLORPICKER_H

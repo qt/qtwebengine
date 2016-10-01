@@ -26,41 +26,35 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
+#ifndef TESTVIEW_H
+#define TESTVIEW_H
 
-TestWebEngineView {
-    id: webEngineView
-    width: 400
-    height: 300
+#include <QTextCharFormat>
+#include <QWidget>
 
+class QPushButton;
+class QTableView;
 
-    SignalSpy {
-        id: spyTitle
-        target: webEngineView
-        signalName: "titleChanged"
-    }
+class TestView : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit TestView(QWidget *parent = 0);
 
+public slots:
+    void loadTestData(const QString &);
+    void startOrCancelTest();
+    void collectAndSendData();
 
-    TestCase {
-        name: "WebEngineViewTitleChangedSignal"
+signals:
+    void sendInputMethodData(int, int, QTextCharFormat::UnderlineStyle, const QColor &, const QColor &, const QString &);
+    void requestInputMethodEvent();
 
-        function test_titleFirstLoad() {
-            compare(spyTitle.count, 0)
+private:
+    QTableView *m_tableView;
+    QPushButton *m_testButton;
 
-            var testUrl = Qt.resolvedUrl("test3.html")
-            webEngineView.url = testUrl
-            spyTitle.wait()
-            if (webEngineView.title == "test3.html") {
-                // This title may be emitted during loading
-                spyTitle.clear()
-                spyTitle.wait()
-            }
-            compare(webEngineView.title, "Test page 3")
-            spyTitle.clear()
-            spyTitle.wait()
-            compare(webEngineView.title, "New Title")
-        }
-    }
-}
+    bool m_testRunning;
+};
+
+#endif // TESTVIEW_H

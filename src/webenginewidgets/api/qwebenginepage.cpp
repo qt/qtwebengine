@@ -1855,7 +1855,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 
 #ifndef QT_NO_PRINTER
 /*!
-    \fn void QWebEnginePage::print(const QPrinter &printer, FunctorOrLambda resultCallback)
+    \fn void QWebEnginePage::print(QPrinter *printer, FunctorOrLambda resultCallback)
     Renders the current content of the page into a temporary PDF document, then prints it using \a printer.
 
     The settings for creating and printing the PDF document will be retrieved from the \a printer
@@ -1887,31 +1887,6 @@ const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
 {
     Q_D(const QWebEnginePage);
     return d->contextData;
-}
-
-/*!
-    \since 5.8
-
-    Shows the source of the current page in a new tab.
-
-    \sa canViewSource
-*/
-void QWebEnginePage::viewSource()
-{
-    triggerAction(QWebEnginePage::ViewSource);
-}
-
-/*!
-    \property QWebEnginePage::canViewSource
-    \brief whether the source for the current page can be viewed.
-    \since 5.8
-
-    \sa viewSource()
-*/
-bool QWebEnginePage::canViewSource() const
-{
-    Q_D(const QWebEnginePage);
-    return d->adapter->canViewSource();
 }
 
 QT_END_NAMESPACE

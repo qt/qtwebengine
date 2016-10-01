@@ -41,6 +41,7 @@
 
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
+
 #include "browser_context_qt.h"
 #include "content_client_qt.h"
 #include "download_manager_delegate_qt.h"
@@ -49,7 +50,7 @@
 #include "web_engine_context.h"
 #include "web_engine_visited_links_manager.h"
 #include "url_request_context_getter_qt.h"
-#include "user_resource_controller_host.h"
+#include "renderer_host/user_resource_controller_host.h"
 
 #include "net/proxy/proxy_service.h"
 

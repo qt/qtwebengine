@@ -25,42 +25,16 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#ifndef WEBVIEW_H
+#define WEBVIEW_H
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
+#include <QWebEngineView>
 
-TestWebEngineView {
-    id: webEngineView
-    width: 400
-    height: 300
+class WebView : public QWebEngineView
+{
+    Q_OBJECT
+public:
+    explicit WebView(QWidget *parent = 0);
+};
 
-
-    SignalSpy {
-        id: spyTitle
-        target: webEngineView
-        signalName: "titleChanged"
-    }
-
-
-    TestCase {
-        name: "WebEngineViewTitleChangedSignal"
-
-        function test_titleFirstLoad() {
-            compare(spyTitle.count, 0)
-
-            var testUrl = Qt.resolvedUrl("test3.html")
-            webEngineView.url = testUrl
-            spyTitle.wait()
-            if (webEngineView.title == "test3.html") {
-                // This title may be emitted during loading
-                spyTitle.clear()
-                spyTitle.wait()
-            }
-            compare(webEngineView.title, "Test page 3")
-            spyTitle.clear()
-            spyTitle.wait()
-            compare(webEngineView.title, "New Title")
-        }
-    }
-}
+#endif // WEBVIEW_H

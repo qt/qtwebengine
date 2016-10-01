@@ -26,41 +26,25 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
+#include "webview.h"
 
-TestWebEngineView {
-    id: webEngineView
-    width: 400
-    height: 300
+WebView::WebView(QWidget *parent)
+    : QWebEngineView(parent)
+{
+    const QString html = QStringLiteral(
+            "<html><head>"
+            "   <style>"
+            "       input {"
+            "           width: 250px; height: 50px; font-size: 28pt;"
+            "           position: absolute; top: 50%; left: 50%; margin-left: -125px; margin-top: -25px;"
+            "           font-family: serif"
+            "       }"
+            "       body { background-color: black; }"
+            "   </style>"
+            "</head>"
+            "<body onload='document.getElementById(\"input1\").focus();'>"
+            "   <input type='text' id='input1' />"
+            "</body></html>");
 
-
-    SignalSpy {
-        id: spyTitle
-        target: webEngineView
-        signalName: "titleChanged"
-    }
-
-
-    TestCase {
-        name: "WebEngineViewTitleChangedSignal"
-
-        function test_titleFirstLoad() {
-            compare(spyTitle.count, 0)
-
-            var testUrl = Qt.resolvedUrl("test3.html")
-            webEngineView.url = testUrl
-            spyTitle.wait()
-            if (webEngineView.title == "test3.html") {
-                // This title may be emitted during loading
-                spyTitle.clear()
-                spyTitle.wait()
-            }
-            compare(webEngineView.title, "Test page 3")
-            spyTitle.clear()
-            spyTitle.wait()
-            compare(webEngineView.title, "New Title")
-        }
-    }
+    setHtml(html);
 }

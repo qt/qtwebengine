@@ -306,8 +306,7 @@
     Qt WebEngine supports viewing the HTML source of a web page.
 
     This feature can be used from custom menus or assigned to custom events.
-    For more information, see WebEngineView::viewSource, WebEngineView::canViewSource,
-    QWebEnginePage::viewSource, and QWebEnginePage::canViewSource.
+    For more information, see WebEngineView::WebAction, and QWebEnginePage::WebAction.
 
     This feature can be tested by opening a web page in \l{WebEngine Widgets
     Simple Browser Example}{Simple Browser} or \l{WebEngine Quick Nano Browser}

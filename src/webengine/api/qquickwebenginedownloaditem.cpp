@@ -307,14 +307,17 @@ void QQuickWebEngineDownloadItem::setSavePageFormat(QQuickWebEngineDownloadItem:
 
     Describes the requested download's type.
 
-    \value Attachment The web server's response includes a \c Content-Disposition header with the \c attachment directive.
-           If \c Content-Disposition is present in the reply, the web server is indicating that
-           the client should prompt the user to save the content regardless of the content type.
+    \value WebEngineDownloadItem.Attachment The web server's response includes a
+           \c Content-Disposition header with the \c attachment directive. If \c Content-Disposition
+           is present in the reply, the web server is indicating that the client should prompt the
+           user to save the content regardless of the content type.
            See \l {RFC 2616 section 19.5.1} for details.
-    \value DownloadAttribute The user clicked the hyperlink.
-           See \l {HTML download Attribute} for details.
-    \value UserRequested The user initiated the download.
-    \value SavePage The user saved a web page.
+    \value WebEngineDownloadItem.DownloadAttribute The user clicked a link with the \c download
+           attribute. See \l {HTML download attribute} for details.
+    \value WebEngineDownloadItem.UserRequested The user initiated the download, for example by
+           selecting a web action.
+    \value WebEngineDownloadItem.SavePage Saving of the current page was requested (for example by
+           the \l{WebEngineView::WebAction}{WebEngineView.SavePage} web action).
  */
 
 QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() const

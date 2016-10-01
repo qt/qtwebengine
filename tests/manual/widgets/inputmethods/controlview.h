@@ -26,41 +26,41 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.0
-import QtTest 1.0
-import QtWebEngine 1.2
+#ifndef CONTROLVIEW_H
+#define CONTROLVIEW_H
 
-TestWebEngineView {
-    id: webEngineView
-    width: 400
-    height: 300
+#include <QInputMethodEvent>
+#include <QTextCharFormat>
+#include <QWidget>
 
+class ColorPicker;
+class QComboBox;
+class QLabel;
+class QLineEdit;
+class QPushButton;
+class QSpinBox;
 
-    SignalSpy {
-        id: spyTitle
-        target: webEngineView
-        signalName: "titleChanged"
-    }
+class ControlView : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit ControlView(QWidget *parent = 0);
 
+public slots:
+    void receiveInputMethodData(int, int, QTextCharFormat::UnderlineStyle, const QColor &, const QColor &, const QString &);
+    void createAndSendInputMethodEvent();
 
-    TestCase {
-        name: "WebEngineViewTitleChangedSignal"
+signals:
+    void sendInputMethodEvent(QInputMethodEvent);
 
-        function test_titleFirstLoad() {
-            compare(spyTitle.count, 0)
+private:
+    QComboBox *m_underlineStyleCombo;
+    ColorPicker *m_underlineColorPicker;
+    ColorPicker *m_backgroundColorPicker;
+    QSpinBox *m_startSpin;
+    QSpinBox *m_lengthSpin;
+    QLineEdit *m_inputLine;
+    QPushButton *m_sendEventButton;
+};
 
-            var testUrl = Qt.resolvedUrl("test3.html")
-            webEngineView.url = testUrl
-            spyTitle.wait()
-            if (webEngineView.title == "test3.html") {
-                // This title may be emitted during loading
-                spyTitle.clear()
-                spyTitle.wait()
-            }
-            compare(webEngineView.title, "Test page 3")
-            spyTitle.clear()
-            spyTitle.wait()
-            compare(webEngineView.title, "New Title")
-        }
-    }
-}
+#endif // CONTROLVIEW_H

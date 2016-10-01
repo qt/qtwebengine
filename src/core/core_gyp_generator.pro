@@ -10,10 +10,18 @@ TEMPLATE = lib
 
 include(core_common.pri)
 
+macos {
+    # This fixes namespace builds on macOS. Specifically namespace ambiguity issues between Qt and
+    # Chromium forward declarations of NSString.
+    forward_declaration_macro = $$shell_quote(\"Q_FORWARD_DECLARE_OBJC_CLASS(name)=class name;\")
+} else {
+    forward_declaration_macro = "Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS"
+}
+
 # Defining keywords such as 'signal' clashes with the chromium code base.
 DEFINES += QT_NO_KEYWORDS \
            QT_USE_QSTRINGBUILDER \
-           Q_FORWARD_DECLARE_OBJC_CLASS=QT_FORWARD_DECLARE_CLASS \
+           $$forward_declaration_macro \
            QTWEBENGINECORE_VERSION_STR=\\\"$$MODULE_VERSION\\\" \
            BUILDING_CHROMIUM
 
@@ -73,18 +81,20 @@ SOURCES = \
         render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
-        renderer/pepper/pepper_flash_browser_host_qt.cpp \
         renderer/pepper/pepper_flash_renderer_host_qt.cpp \
-        renderer/pepper/pepper_host_factory_qt.cpp \
-        renderer/pepper/pepper_isolated_file_system_message_filter.cpp \
         renderer/pepper/pepper_renderer_host_factory_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
+        renderer_host/pepper/pepper_flash_browser_host_qt.cpp \
+        renderer_host/pepper/pepper_host_factory_qt.cpp \
+        renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp \
+        renderer_host/resource_dispatcher_host_delegate_qt.cpp \
+        renderer_host/user_resource_controller_host.cpp \
+        renderer_host/web_channel_ipc_transport_host.cpp \
         resource_bundle_qt.cpp \
         resource_context_qt.cpp \
-        resource_dispatcher_host_delegate_qt.cpp \
         ssl_host_state_delegate_qt.cpp \
         stream_video_node.cpp \
         surface_factory_qt.cpp \
@@ -93,9 +103,7 @@ SOURCES = \
         url_request_custom_job.cpp \
         url_request_custom_job_delegate.cpp \
         url_request_qrc_job_qt.cpp \
-        user_resource_controller_host.cpp \
         user_script.cpp \
-        web_channel_ipc_transport_host.cpp \
         web_contents_adapter.cpp \
         web_contents_delegate_qt.cpp \
         web_contents_view_qt.cpp \
@@ -156,17 +164,19 @@ HEADERS = \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
-        renderer/pepper/pepper_flash_browser_host_qt.h \
         renderer/pepper/pepper_flash_renderer_host_qt.h \
-        renderer/pepper/pepper_host_factory_qt.h \
-        renderer/pepper/pepper_isolated_file_system_message_filter.h \
         renderer/pepper/pepper_renderer_host_factory_qt.h \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
         renderer/user_resource_controller.h \
         renderer/web_channel_ipc_transport.h \
+        renderer_host/pepper/pepper_flash_browser_host_qt.h \
+        renderer_host/pepper/pepper_host_factory_qt.h \
+        renderer_host/pepper/pepper_isolated_file_system_message_filter.h \
+        renderer_host/resource_dispatcher_host_delegate_qt.h \
+        renderer_host/user_resource_controller_host.h \
+        renderer_host/web_channel_ipc_transport_host.h \
         resource_context_qt.h \
-        resource_dispatcher_host_delegate_qt.h \
         ssl_host_state_delegate_qt.h \
         stream_video_node.h \
         surface_factory_qt.h \
@@ -175,9 +185,7 @@ HEADERS = \
         url_request_custom_job.h \
         url_request_custom_job_delegate.h \
         url_request_qrc_job_qt.h \
-        user_resource_controller_host.h \
         user_script.h \
-        web_channel_ipc_transport_host.h \
         web_contents_adapter.h \
         web_contents_adapter_client.h \
         web_contents_adapter_p.h \

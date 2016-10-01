@@ -292,6 +292,11 @@ base::StringPiece ContentClientQt::GetDataResource(int resource_id, ui::ScaleFac
     return ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(resource_id, scale_factor);
 }
 
+base::RefCountedMemory *ContentClientQt::GetDataResourceBytes(int resource_id) const
+{
+    return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
+}
+
 base::string16 ContentClientQt::GetLocalizedString(int message_id) const
 {
     return l10n_util::GetStringUTF16(message_id);

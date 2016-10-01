@@ -155,8 +155,6 @@ private Q_SLOTS:
     void consoleOutput();
     void inputMethods_data();
     void inputMethods();
-    void inputMethodsTextFormat_data();
-    void inputMethodsTextFormat();
     void errorPageExtension();
     void errorPageExtensionLoadFinished();
     void userAgentNewlineStripping();
@@ -334,25 +332,25 @@ protected:
 
 void tst_QWebEnginePage::acceptNavigationRequest()
 {
-    QSignalSpy loadSpy(m_view, SIGNAL(loadFinished(bool)));
+    QWebEngineView *view = new QWebEngineView();
+    QSignalSpy loadSpy(view, SIGNAL(loadFinished(bool)));
 
-    NavigationRequestOverride* newPage = new NavigationRequestOverride(m_view, false);
-    m_view->setPage(newPage);
+    NavigationRequestOverride* newPage = new NavigationRequestOverride(view, false);
+    view->setPage(newPage);
 
-    m_view->setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
+    view->setHtml(QString("<html><body><form name='tstform' action='data:text/html,foo'method='get'>"
                             "<input type='text'><input type='submit'></form></body></html>"), QUrl());
     QTRY_COMPARE(loadSpy.count(), 1);
 
-    evaluateJavaScriptSync(m_view->page(), "tstform.submit();");
+    evaluateJavaScriptSync(view->page(), "tstform.submit();");
 
     newPage->m_acceptNavigationRequest = true;
-    evaluateJavaScriptSync(m_view->page(), "tstform.submit();");
+    evaluateJavaScriptSync(view->page(), "tstform.submit();");
     QTRY_COMPARE(loadSpy.count(), 2);
 
-    QCOMPARE(toPlainTextSync(m_view->page()), QString("foo?"));
+    QCOMPARE(toPlainTextSync(view->page()), QString("foo?"));
 
-    // Restore default page
-    m_view->setPage(0);
+    delete view;
 }
 
 class JSTestPage : public QWebEnginePage
@@ -463,12 +461,10 @@ void tst_QWebEnginePage::loadFinished()
 
 void tst_QWebEnginePage::actionStates()
 {
-    QWebEnginePage* page = m_view->page();
+    m_page->load(QUrl("qrc:///resources/script.html"));
 
-    page->load(QUrl("qrc:///resources/script.html"));
-
-    QAction* reloadAction = page->action(QWebEnginePage::Reload);
-    QAction* stopAction = page->action(QWebEnginePage::Stop);
+    QAction* reloadAction = m_page->action(QWebEnginePage::Reload);
+    QAction* stopAction = m_page->action(QWebEnginePage::Stop);
 
     QTRY_VERIFY(reloadAction->isEnabled());
     QTRY_VERIFY(!stopAction->isEnabled());
@@ -1426,7 +1422,7 @@ void tst_QWebEnginePage::cursorMovements()
 void tst_QWebEnginePage::textSelection()
 {
     QWebEngineView *view = new QWebEngineView;
-    CursorTrackedPage *page = new CursorTrackedPage;
+    CursorTrackedPage *page = new CursorTrackedPage(view);
     QString content("<html><body><p id=one>The quick brown fox</p>" \
         "<p id=two>jumps over the lazy dog</p>" \
         "<p>May the source<br/>be with you!</p></body></html>");
@@ -1526,7 +1522,6 @@ void tst_QWebEnginePage::textSelection()
     QCOMPARE(page->action(QWebEnginePage::SelectEndOfDocument)->isEnabled(), true);
 #endif
 
-    delete page;
     delete view;
 }
 
@@ -2402,61 +2397,6 @@ void tst_QWebEnginePage::inputMethods()
     // END - Newline test for textarea
 
     delete container;
-#endif
-}
-
-void tst_QWebEnginePage::inputMethodsTextFormat_data()
-{
-    QTest::addColumn<QString>("string");
-    QTest::addColumn<int>("start");
-    QTest::addColumn<int>("length");
-
-    QTest::newRow("") << QString("") << 0 << 0;
-    QTest::newRow("Q") << QString("Q") << 0 << 1;
-    QTest::newRow("Qt") << QString("Qt") << 0 << 1;
-    QTest::newRow("Qt") << QString("Qt") << 0 << 2;
-    QTest::newRow("Qt") << QString("Qt") << 1 << 1;
-    QTest::newRow("Qt ") << QString("Qt ") << 0 << 1;
-    QTest::newRow("Qt ") << QString("Qt ") << 1 << 1;
-    QTest::newRow("Qt ") << QString("Qt ") << 2 << 1;
-    QTest::newRow("Qt ") << QString("Qt ") << 2 << -1;
-    QTest::newRow("Qt ") << QString("Qt ") << -2 << 3;
-    QTest::newRow("Qt ") << QString("Qt ") << 0 << 3;
-    QTest::newRow("Qt by") << QString("Qt by") << 0 << 1;
-    QTest::newRow("Qt by Nokia") << QString("Qt by Nokia") << 0 << 1;
-}
-
-
-void tst_QWebEnginePage::inputMethodsTextFormat()
-{
-#if !defined(QINPUTMETHODEVENT_TEXTFORMAT)
-    QSKIP("QINPUTMETHODEVENT_TEXTFORMAT");
-#else
-    QWebEnginePage* page = new QWebEnginePage;
-    QWebEngineView* view = new QWebEngineView;
-    view->setPage(page);
-    page->settings()->setFontFamily(QWebEngineSettings::SerifFont, "FooSerifFont");
-    page->setHtml("<html><body>" \
-                                            "<input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/>");
-    evaluateJavaScriptSync(page, "document.getElementById('input1').focus()");
-    page->mainFrame()->setFocus();
-    view->show();
-
-    QFETCH(QString, string);
-    QFETCH(int, start);
-    QFETCH(int, length);
-
-    QList<QInputMethodEvent::Attribute> attrs;
-    QTextCharFormat format;
-    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-    format.setUnderlineColor(Qt::red);
-    attrs.append(QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, start, length, format));
-    QInputMethodEvent im(string, attrs);
-    page->event(&im);
-
-    QTest::qWait(1000);
-
-    delete view;
 #endif
 }
 
@@ -3760,9 +3700,8 @@ void tst_QWebEnginePage::runJavaScript()
 void tst_QWebEnginePage::fullScreenRequested()
 {
     JavaScriptCallbackWatcher watcher;
-    QWebEnginePage* page = new QWebEnginePage;
     QWebEngineView* view = new QWebEngineView;
-    view->setPage(page);
+    QWebEnginePage* page = view->page();
     view->show();
 
     page->settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
@@ -3796,7 +3735,6 @@ void tst_QWebEnginePage::fullScreenRequested()
     QVERIFY(watcher.wait());
 
     delete view;
-    delete page;
 }
 
 void tst_QWebEnginePage::symmetricUrl()
@@ -5044,15 +4982,15 @@ void tst_QWebEnginePage::viewSource()
     page.load(url);
     QTRY_COMPARE(loadFinishedSpy.count(), 1);
     QCOMPARE(page.title(), QStringLiteral("Test page 1"));
-    QVERIFY(page.canViewSource());
+    QVERIFY(page.action(QWebEnginePage::ViewSource)->isEnabled());
 
-    page.viewSource();
+    page.triggerAction(QWebEnginePage::ViewSource);
     QTRY_COMPARE(windowCreatedSpy.count(), 1);
     QCOMPARE(page.createdWindows.size(), 1);
 
     QTRY_COMPARE(page.createdWindows[0]->url().toString(), QStringLiteral("view-source:%1").arg(url.toString()));
     QTRY_COMPARE(page.createdWindows[0]->title(), QStringLiteral("view-source:%1").arg(url.toString()));
-    QVERIFY(!page.createdWindows[0]->canViewSource());
+    QVERIFY(!page.createdWindows[0]->action(QWebEnginePage::ViewSource)->isEnabled());
 }
 
 void tst_QWebEnginePage::viewSourceURL_data()
@@ -5097,7 +5035,7 @@ void tst_QWebEnginePage::viewSourceURL()
     QCOMPARE(arguments.at(0).toBool(), loadSucceed);
     QCOMPARE(page->url(), url);
     QCOMPARE(page->title(), title);
-    QVERIFY(!page->canViewSource());
+    QVERIFY(!page->action(QWebEnginePage::ViewSource)->isEnabled());
 
     delete page;
 }

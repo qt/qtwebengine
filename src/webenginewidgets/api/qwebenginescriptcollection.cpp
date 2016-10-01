@@ -40,7 +40,7 @@
 #include "qwebenginescriptcollection.h"
 #include "qwebenginescriptcollection_p.h"
 
-#include "user_resource_controller_host.h"
+#include "renderer_host/user_resource_controller_host.h"
 
 using QtWebEngineCore::UserScript;
 
