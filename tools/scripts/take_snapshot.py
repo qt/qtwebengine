@@ -91,9 +91,12 @@ def isInChromiumBlacklist(file_path):
             not 'third_party/chromevox' in file_path and
             not 'media/desktop_media_list.h' in file_path and
             not 'media/desktop_streams_registry.' in file_path and
+            not 'common/chrome_constants.' in file_path and
+            not 'common/chrome_paths' in file_path and
             not 'common/chrome_switches.' in file_path and
             not 'common/content_restriction.h' in file_path and
             not 'common/spellcheck_' in file_path and
+            not 'common/url_constants' in file_path and
             not '/extensions/api/' in file_path and
             not '/extensions/browser/api/' in file_path and
             not '/extensions/permissions/' in file_path and
