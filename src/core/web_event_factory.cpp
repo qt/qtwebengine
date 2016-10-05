@@ -647,6 +647,9 @@ static int windowsKeyCodeForKeyEvent(unsigned int keycode, bool isKeypad)
  */
 static ui::DomKey getDomKeyFromQKeyEvent(QKeyEvent *ev)
 {
+    if (!ev->text().isEmpty())
+        return ui::DomKey::FromCharacter(ev->text().toUcs4().first());
+
     switch (ev->key()) {
     case Qt::Key_Backspace:
         return ui::DomKey::BACKSPACE;
