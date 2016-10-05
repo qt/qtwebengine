@@ -2893,6 +2893,9 @@ void tst_QWebEnginePage::testJSPrompt()
 {
     JSPromptPage page;
     bool res;
+    QSignalSpy loadSpy(&page, SIGNAL(loadFinished(bool)));
+    page.setHtml(QStringLiteral("<html><body></body></html>"));
+    QTRY_COMPARE(loadSpy.count(), 1);
 
     // OK + QString()
     res = evaluateJavaScriptSync(&page,
