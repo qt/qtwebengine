@@ -82,6 +82,7 @@ private Q_SLOTS:
     void changeLocale();
     void inputMethodsTextFormat_data();
     void inputMethodsTextFormat();
+    void keyboardEvents();
 };
 
 // This will be called before the first test function is executed.
@@ -922,6 +923,95 @@ void tst_QWebEngineView::inputMethodsTextFormat()
     QInputMethodEvent im(string, attrs);
     QVERIFY(QApplication::sendEvent(view.focusProxy(), &im));
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), string);
+}
+
+void tst_QWebEngineView::keyboardEvents()
+{
+    QWebEngineView view;
+    view.show();
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.load(QUrl("qrc:///resources/keyboardEvents.html"));
+    QVERIFY(loadFinishedSpy.wait());
+
+    QStringList elements;
+    elements << "first_div" << "second_div";
+    elements << "text_input" << "radio1" << "checkbox1" << "checkbox2";
+    elements << "number_input" << "range_input" << "search_input";
+    elements << "submit_button" << "combobox" << "first_hyperlink" << "second_hyperlink";
+
+    // Iterate over the elements of the test page with the Tab key. This tests whether any
+    // element blocks the in-page navigation by Tab.
+    for (const QString &elementId : elements) {
+        QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), elementId);
+        QTest::keyPress(view.focusProxy(), Qt::Key_Tab);
+    }
+
+    // Move back to the radio buttons with the Shift+Tab key combination
+    for (int i = 0; i < 10; ++i)
+        QTest::keyPress(view.focusProxy(), Qt::Key_Tab, Qt::ShiftModifier);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("radio2"));
+
+    // Test the Space key by checking a radio button
+    QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio2').checked").toBool());
+    QTest::keyClick(view.focusProxy(), Qt::Key_Space);
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('radio2').checked").toBool());
+
+    // Test the Left key by switching the radio button
+    QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio1').checked").toBool());
+    QTest::keyPress(view.focusProxy(), Qt::Key_Left);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("radio1"));
+    QVERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('radio2').checked").toBool());
+    QVERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('radio1').checked").toBool());
+
+    // Test the Space key by unchecking a checkbox
+    evaluateJavaScriptSync(view.page(), "document.getElementById('checkbox1').focus()");
+    QVERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('checkbox1').checked").toBool());
+    QTest::keyClick(view.focusProxy(), Qt::Key_Space);
+    QTRY_VERIFY(!evaluateJavaScriptSync(view.page(), "document.getElementById('checkbox1').checked").toBool());
+
+    // Test the Up and Down keys by changing the value of a spinbox
+    evaluateJavaScriptSync(view.page(), "document.getElementById('number_input').focus()");
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('number_input').value").toInt(), 5);
+    QTest::keyPress(view.focusProxy(), Qt::Key_Up);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('number_input').value").toInt(), 6);
+    QTest::keyPress(view.focusProxy(), Qt::Key_Down);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('number_input').value").toInt(), 5);
+
+    // Test the Left, Right, Home, PageUp, End and PageDown keys by changing the value of a slider
+    evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').focus()");
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').value").toString(), QStringLiteral("5"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_Left);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').value").toString(), QStringLiteral("4"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_Right);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').value").toString(), QStringLiteral("5"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_Home);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').value").toString(), QStringLiteral("0"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_PageUp);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').value").toString(), QStringLiteral("1"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_End);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').value").toString(), QStringLiteral("10"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_PageDown);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('range_input').value").toString(), QStringLiteral("9"));
+
+    // Test the Escape key by removing the content of a search field
+    evaluateJavaScriptSync(view.page(), "document.getElementById('search_input').focus()");
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('search_input').value").toString(), QStringLiteral("test"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_Escape);
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('search_input').value").toString().isEmpty());
+
+    // Test the alpha keys by changing the values in a combobox
+    evaluateJavaScriptSync(view.page(), "document.getElementById('combobox').focus()");
+    QCOMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('combobox').value").toString(), QStringLiteral("a"));
+    QTest::keyPress(view.focusProxy(), Qt::Key_B);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('combobox').value").toString(), QStringLiteral("b"));
+    // Must wait with the second key press to simulate selection of another element
+    QTest::keyPress(view.focusProxy(), Qt::Key_C, Qt::NoModifier, 1000);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('combobox').value").toString(), QStringLiteral("c"));
+
+    // Test the Enter key by loading a page with a hyperlink
+    evaluateJavaScriptSync(view.page(), "document.getElementById('first_hyperlink').focus()");
+    QTest::keyPress(view.focusProxy(), Qt::Key_Enter);
+    QVERIFY(loadFinishedSpy.wait());
 }
 
 QTEST_MAIN(tst_QWebEngineView)

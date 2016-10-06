@@ -39,6 +39,7 @@ OTHER_FILES += \
     $$PWD/data/test3.html \
     $$PWD/data/test4.html \
     $$PWD/data/keyboardModifierMapping.html \
+    $$PWD/data/keyboardEvents.html \
     $$PWD/data/titleupdate.js \
     $$PWD/data/tst_desktopBehaviorLoadHtml.qml \
     $$PWD/data/tst_download.qml \
@@ -70,6 +71,7 @@ OTHER_FILES += \
     $$PWD/data/tst_webchannel.qml \
     $$PWD/data/tst_settings.qml \
     $$PWD/data/tst_keyboardModifierMapping.qml \
+    $$PWD/data/tst_keyboardEvents.qml \
     $$PWD/data/icons/favicon.png \
     $$PWD/data/icons/gray128.png \
     $$PWD/data/icons/gray16.png \
