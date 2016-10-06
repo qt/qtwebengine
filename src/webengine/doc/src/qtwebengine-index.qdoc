@@ -28,7 +28,6 @@
 /*!
     \page qtwebengine-index.html
     \title Qt WebEngine
-    \ingroup modules
 
     \brief Provides functionality for rendering regions of dynamic web content.
 

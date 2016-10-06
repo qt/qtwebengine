@@ -25,27 +25,20 @@
 **
 ****************************************************************************/
 
-
 /*!
-    \module QtWebEngineCore
-    \title Qt WebEngine Core C++ Classes
-    \brief Provides public API shared by both QtWebEngine and QtWebEngineWidgets
-    \since 5.6
-    \ingroup qtwebengine-modules
+    \module QtWebEngine
+    \title Qt WebEngine C++ Classes
+    \brief Exposes C++ functionality to Qt Quick.
     \ingroup modules
+
+    The Qt WebEngine module exposes C++ functionality to Qt Quick.
 
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet qtwebenginecore_build_snippet.qdoc 1
+    \snippet qtwebengine_build_snippet.qdoc 1
 
-    If you use qmake to build your projects, Qt WebEngine Core is usually
-    indirectly included through the \l{Qt WebEngine QML Types}{Qt WebEngine} or
-    \l{Qt WebEngine Widgets C++ Classes}{Qt WebEngine Widgets} modules.
+    To link against the module, add the following to your qmake project file:
 
-    To link against the module, add this line to your qmake project file:
-
-    \snippet qtwebenginecore_build_snippet.qdoc 0
-
-    However, \c webenginecore is implied by adding \c webengine or \c webenginewidgets.
+    \snippet qtwebengine_build_snippet.qdoc 0
 */
