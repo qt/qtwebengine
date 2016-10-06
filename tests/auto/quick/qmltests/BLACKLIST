@@ -16,9 +16,6 @@ windows
 [WebEngineViewSettings::test_javascriptDisabled]
 windows
 
-[WebEngineViewUnhandledKeyEventPropagation::test_keyboardModifierMapping]
-windows
-
 [WebEngineViewSource::test_viewSourceURL]
 windows
 
