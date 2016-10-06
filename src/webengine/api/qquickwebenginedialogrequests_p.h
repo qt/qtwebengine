@@ -228,9 +228,9 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFormValidationMessageRequest : p
     Q_OBJECT
 public:
     enum RequestType {
-        RequestTypeShow,
-        RequestTypeHide,
-        RequestTypeMove,
+        Show,
+        Hide,
+        Move,
     };
     Q_ENUM(RequestType)
     Q_PROPERTY(QRect anchor READ anchor CONSTANT FINAL)

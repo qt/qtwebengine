@@ -101,7 +101,7 @@ WebEngineView {
 
     onFormValidationMessageRequested: function(request) {
         switch (request.type) {
-        case FormValidationMessageRequest.RequestTypeShow:
+        case FormValidationMessageRequest.Show:
             if (useDefaultDialogs)
                 return;
 
@@ -110,9 +110,9 @@ WebEngineView {
             validationMessage.y = request.anchor.y + request.anchor.height + 10;
             validationMessage.visible = true;
             break;
-        case FormValidationMessageRequest.RequestTypeMove:
+        case FormValidationMessageRequest.Move:
             break;
-        case FormValidationMessageRequest.RequestTypeHide:
+        case FormValidationMessageRequest.Hide:
             validationMessage.visible = false;
             break;
         }
