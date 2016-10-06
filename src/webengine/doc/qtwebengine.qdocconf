@@ -18,9 +18,9 @@ qhp.QtWebEngine.customFilters.Qt.filterAttributes = qtwebengine $QT_VERSION
 
 qhp.QtWebEngine.subprojects         = classes qmltypes examples
 
-qhp.QtWebEngine.subprojects.classes.title = C++ Classes
-qhp.QtWebEngine.subprojects.classes.indexTitle = Qt WebEngine C++ Classes
-qhp.QtWebEngine.subprojects.classes.selectors = class doc:headerfile
+qhp.QtWebEngine.subprojects.classes.title = C++ Classes and Namespaces
+qhp.QtWebEngine.subprojects.classes.indexTitle = Qt WebEngine C++ Classes and Namespaces
+qhp.QtWebEngine.subprojects.classes.selectors = class group:qtwebengine-namespaces doc:headerfile
 qhp.QtWebEngine.subprojects.classes.sortPages = true
 
 qhp.QtWebEngine.subprojects.qmltypes.title = QML Types
