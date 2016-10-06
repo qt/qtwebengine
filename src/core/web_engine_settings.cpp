@@ -306,6 +306,7 @@ void WebEngineSettings::applySettingsToWebPreferences(content::WebPreferences *p
     prefs->javascript_can_access_clipboard = testAttribute(JavascriptCanAccessClipboard);
     prefs->tabs_to_links = testAttribute(LinksIncludedInFocusChain);
     prefs->local_storage_enabled = testAttribute(LocalStorageEnabled);
+    prefs->databases_enabled = testAttribute(LocalStorageEnabled);
     prefs->allow_universal_access_from_file_urls = testAttribute(LocalContentCanAccessRemoteUrls);
     prefs->xss_auditor_enabled = testAttribute(XSSAuditingEnabled);
     prefs->spatial_navigation_enabled = testAttribute(SpatialNavigationEnabled);
