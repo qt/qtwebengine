@@ -10,9 +10,6 @@ osx
 [WebViewGeopermission::test_geoPermissionRequest]
 osx
 
-[WebEngineViewFocusOnNavigation::test_focusOnNavigation]
-*
-
 [WebEngineViewLoadUrl::test_urlProperty]
 windows
 
