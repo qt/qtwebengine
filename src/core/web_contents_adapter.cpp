@@ -1059,18 +1059,12 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel, uint worldId)
 static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
 {
     QMimeData *mimeData = new QMimeData();
-    if (!dropData.text.is_null()) {
+    if (!dropData.text.is_null())
         mimeData->setText(toQt(dropData.text.string()));
-        return mimeData;
-    }
-    if (!dropData.html.is_null()) {
+    if (!dropData.html.is_null())
         mimeData->setHtml(toQt(dropData.html.string()));
-        return mimeData;
-    }
-    if (dropData.url.is_valid()) {
+    if (dropData.url.is_valid())
         mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
-        return mimeData;
-    }
     return mimeData;
 }
 
