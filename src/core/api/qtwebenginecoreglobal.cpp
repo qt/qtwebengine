@@ -40,16 +40,20 @@
 #include "qtwebenginecoreglobal_p.h"
 
 #include <QGuiApplication>
-#include <QOpenGLContext>
+#ifndef QT_NO_OPENGL
+# include <QOpenGLContext>
+#endif
 #include <QThread>
 
+#ifndef QT_NO_OPENGL
 QT_BEGIN_NAMESPACE
 Q_GUI_EXPORT void qt_gl_set_global_share_context(QOpenGLContext *context);
 Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
 QT_END_NAMESPACE
+#endif
 
 namespace QtWebEngineCore {
-
+#ifndef QT_NO_OPENGL
 static QOpenGLContext *shareContext;
 
 static void deleteShareContext()
@@ -58,6 +62,7 @@ static void deleteShareContext()
     shareContext = 0;
 }
 
+#endif
 // ### Qt 6: unify this logic and Qt::AA_ShareOpenGLContexts.
 // QtWebEngine::initialize was introduced first and meant to be called
 // after the QGuiApplication creation, when AA_ShareOpenGLContexts fills
@@ -65,6 +70,7 @@ static void deleteShareContext()
 
 QWEBENGINE_PRIVATE_EXPORT void initialize()
 {
+#ifndef QT_NO_OPENGL
 #ifdef Q_OS_WIN32
     qputenv("QT_D3DCREATE_MULTITHREADED", "1");
 #endif
@@ -100,5 +106,6 @@ QWEBENGINE_PRIVATE_EXPORT void initialize()
 
     // Classes like QOpenGLWidget check for the attribute
     app->setAttribute(Qt::AA_ShareOpenGLContexts);
+#endif // QT_NO_OPENGL
 }
 } // namespace QtWebEngineCore

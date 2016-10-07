@@ -113,11 +113,16 @@
 
     \quotefromfile webenginewidgets/markdowneditor/mainwindow.cpp
     \skipto MainWindow::MainWindow
-    \printto connect
+    \printto PreviewPage
 
     The constructor first calls \c setupUi to construct the widgets and menu
     actions according to the UI file. The text editor font is set to one
-    with a fixed character width. It then makes sure our custom
+    with a fixed character width, and the QWebEngineView widget is told not
+    to show a context menu.
+
+    \printto connect
+
+    Here the constructor makes sure our custom
     \c PreviewPage is used by the QWebEngineView instance in \c{ui->preview}.
 
     \printto ui->preview

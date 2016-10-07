@@ -163,7 +163,7 @@ void QQuickWebEngineDownloadItem::cancel()
 }
 
 /*!
-    \qmlproperty quint32 WebEngineDownloadItem::id
+    \qmlproperty int WebEngineDownloadItem::id
 
     Holds the download item's ID.
 */
@@ -222,7 +222,7 @@ qint64 QQuickWebEngineDownloadItem::receivedBytes() const
 }
 
 /*!
-    \qmlproperty QString WebEngineDownloadItem::mimeType
+    \qmlproperty string WebEngineDownloadItem::mimeType
     \since QtWebEngine 1.2
 
     Holds the MIME type of the download.
@@ -235,7 +235,7 @@ QString QQuickWebEngineDownloadItem::mimeType() const
 }
 
 /*!
-    \qmlproperty QString WebEngineDownloadItem::path
+    \qmlproperty string WebEngineDownloadItem::path
 
     Holds the full target path where data is being downloaded to.
 

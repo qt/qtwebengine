@@ -1041,7 +1041,7 @@
     ApplicationWindow {
         id: window
         WebEngineView {
-            onFullScreenRequested: {
+            onFullScreenRequested: function(request) {
                 if (request.toggleOn)
                     window.showFullScreen()
                 else

@@ -1,4 +1,4 @@
-TARGETPATH = QtWebEngine/UIDelegates
+TARGETPATH = QtWebEngine/Controls1Delegates
 
 QML_FILES += \
     # Authentication Dialog

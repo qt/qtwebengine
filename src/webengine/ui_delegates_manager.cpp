@@ -145,7 +145,7 @@ UIDelegatesManager::~UIDelegatesManager()
 
 bool UIDelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine) {
     foreach (const QString &path, engine->importPathList()) {
-        QFileInfo fi(path % QLatin1String("/QtWebEngine/UIDelegates/"));
+        QFileInfo fi(path % QLatin1String("/QtWebEngine/Controls1Delegates/"));
         if (fi.exists()) {
             dirs << fi.absolutePath();
             return true;
@@ -571,10 +571,10 @@ UI2DelegatesManager::UI2DelegatesManager(QQuickWebEngineView *view) : UIDelegate
 bool UI2DelegatesManager::initializeImportDirs(QStringList &dirs, QQmlEngine *engine)
 {
     foreach (const QString &path, engine->importPathList()) {
-        QFileInfo fi1(path % QLatin1String("/QtWebEngine/Controls2Delegates/"));
-        QFileInfo fi2(path % QLatin1String("/QtWebEngine/UIDelegates/"));
+        QFileInfo fi1(path % QLatin1String("/QtWebEngine/Controls1Delegates/"));
+        QFileInfo fi2(path % QLatin1String("/QtWebEngine/Controls2Delegates/"));
         if (fi1.exists() && fi2.exists()) {
-            dirs << fi1.absolutePath() << fi2.absolutePath();
+            dirs << fi2.absolutePath() << fi1.absolutePath();
             return true;
         }
     }

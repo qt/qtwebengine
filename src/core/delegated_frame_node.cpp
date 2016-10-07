@@ -70,9 +70,11 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
 
-#include <QOpenGLContext>
-#include <QOpenGLFunctions>
-#include <QSGFlatColorMaterial>
+#ifndef QT_NO_OPENGL
+# include <QOpenGLContext>
+# include <QOpenGLFunctions>
+# include <QSGFlatColorMaterial>
+#endif
 #include <QSGTexture>
 #include <private/qsgadaptationlayer_p.h>
 
@@ -97,8 +99,20 @@
 #define GL_TEXTURE_RECTANGLE              0x84F5
 #endif
 
-namespace QtWebEngineCore {
+#ifndef GL_LINEAR
+#define GL_LINEAR                         0x2601
+#endif
 
+#ifndef GL_RGBA
+#define GL_RGBA                           0x1908
+#endif
+
+#ifndef GL_RGB
+#define GL_RGB                            0x1907
+#endif
+
+namespace QtWebEngineCore {
+#ifndef QT_NO_OPENGL
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
 public:
     MailboxTexture(const gpu::MailboxHolder &mailboxHolder, const QSize textureSize);
@@ -128,7 +142,7 @@ private:
 #endif
     friend class DelegatedFrameNode;
 };
-
+#endif // QT_NO_OPENGL
 class ResourceHolder {
 public:
     ResourceHolder(const cc::TransferableResource &resource);
@@ -202,6 +216,7 @@ static QSGNode *buildLayerChain(QSGNode *chainParent, const cc::SharedQuadState 
     return layerChain;
 }
 
+#ifndef QT_NO_OPENGL
 static void waitChromiumSync(gl::TransferableFence *sync)
 {
     // Chromium uses its own GL bindings and stores in in thread local storage.
@@ -361,6 +376,7 @@ void MailboxTexture::fetchTexture(gpu::gles2::MailboxManager *mailboxManager)
 #endif
     }
 }
+#endif //QT_NO_OPENGL
 
 ResourceHolder::ResourceHolder(const cc::TransferableResource &resource)
     : m_resource(resource)
@@ -385,8 +401,12 @@ QSharedPointer<QSGTexture> ResourceHolder::initTexture(bool quadNeedsBlending, R
             QImage image(sharedBitmap->pixels(), m_resource.size.width(), m_resource.size.height(), format);
             texture.reset(apiDelegate->createTextureFromImage(image.copy()));
         } else {
+#ifndef QT_NO_OPENGL
             texture.reset(new MailboxTexture(m_resource.mailbox_holder, toQt(m_resource.size)));
             static_cast<MailboxTexture *>(texture.data())->setHasAlphaChannel(quadNeedsBlending);
+#else
+            Q_UNREACHABLE();
+#endif
         }
         m_texture = texture;
     }
@@ -422,12 +442,12 @@ RectClipNode::RectClipNode(const QRectF &rect)
 
 DelegatedFrameNode::DelegatedFrameNode()
     : m_numPendingSyncPoints(0)
-#if defined(USE_X11)
+#if defined(USE_X11) && !defined(QT_NO_OPENGL)
     , m_contextShared(true)
 #endif
 {
     setFlag(UsePreprocess);
-#if defined(USE_X11)
+#if defined(USE_X11) && !defined(QT_NO_OPENGL)
     QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
     QOpenGLContext *sharedContext = qt_gl_global_share_context();
     if (!QOpenGLContext::areSharing(currentContext, sharedContext)) {
@@ -449,6 +469,7 @@ DelegatedFrameNode::~DelegatedFrameNode()
 
 void DelegatedFrameNode::preprocess()
 {
+#ifndef QT_NO_OPENGL
     // With the threaded render loop the GUI thread has been unlocked at this point.
     // We can now wait for the Chromium GPU thread to produce textures that will be
     // rendered on our quads and fetch the IDs from the mailboxes we were given.
@@ -471,6 +492,7 @@ void DelegatedFrameNode::preprocess()
         // Proceed with the actual update.
         pair.second->updateTexture();
     }
+#endif
 }
 
 static YUVVideoMaterial::ColorSpace toQt(cc::YUVVideoDrawQuad::ColorSpace color_space)
@@ -614,12 +636,13 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 rectangleNode->setColor(toQt(scquad->color));
                 currentLayerChain->appendChildNode(rectangleNode);
                 break;
+#ifndef QT_NO_OPENGL
             } case cc::DrawQuad::DEBUG_BORDER: {
                 const cc::DebugBorderDrawQuad *dbquad = cc::DebugBorderDrawQuad::MaterialCast(quad);
                 QSGGeometryNode *geometryNode = new QSGGeometryNode;
 
                 QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
-                geometry->setDrawingMode(GL_LINE_LOOP);
+                geometry->setDrawingMode(QSGGeometry::DrawLineLoop);
                 geometry->setLineWidth(dbquad->width);
                 // QSGGeometry::updateRectGeometry would actually set the corners in the following order:
                 // top-left, bottom-left, top-right, bottom-right, leading to a nice criss cross, instead
@@ -638,6 +661,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 geometryNode->setFlags(QSGNode::OwnsGeometry | QSGNode::OwnsMaterial);
                 currentLayerChain->appendChildNode(geometryNode);
                 break;
+#endif
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
@@ -649,6 +673,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));
                 currentLayerChain->appendChildNode(textureNode);
                 break;
+#ifndef QT_NO_OPENGL
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
                 const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
                 ResourceHolder *yResource = findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
@@ -671,9 +696,8 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 videoNode->setRect(toQt(quad->rect));
                 currentLayerChain->appendChildNode(videoNode);
                 break;
-            }
 #ifdef GL_OES_EGL_image_external
-            case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
+            } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
                 ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
                 MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
@@ -684,9 +708,9 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 svideoNode->setTextureMatrix(toQt(squad->matrix.matrix()));
                 currentLayerChain->appendChildNode(svideoNode);
                 break;
-            }
-#endif
-            case cc::DrawQuad::SURFACE_CONTENT:
+#endif // GL_OES_EGL_image_external
+#endif // QT_NO_OPENGL
+            } case cc::DrawQuad::SURFACE_CONTENT:
                 Q_UNREACHABLE();
             default:
                 qWarning("Unimplemented quad material: %d", quad->material);
@@ -723,6 +747,7 @@ QSGTexture *DelegatedFrameNode::initAndHoldTexture(ResourceHolder *resource, boo
 
 void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxesToFetch)
 {
+#ifndef QT_NO_OPENGL
     QList<gl::TransferableFence> transferredFences;
     {
         QMutexLocker lock(&m_mutex);
@@ -818,11 +843,15 @@ void DelegatedFrameNode::fetchAndSyncMailboxes(QList<MailboxTexture *> &mailboxe
         currentContext->makeCurrent(surface);
     }
 #endif
+#else
+    Q_UNUSED(mailboxesToFetch)
+#endif //QT_NO_OPENGL
 }
 
 
 void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTexture *texture)
 {
+#ifndef QT_NO_OPENGL
     gpu::gles2::MailboxManager *mailboxManager = mailbox_manager();
     gpu::SyncToken &syncToken = texture->mailboxHolder().sync_token;
     if (syncToken.HasData())
@@ -837,6 +866,10 @@ void DelegatedFrameNode::pullTexture(DelegatedFrameNode *frameNode, MailboxTextu
     }
     if (--frameNode->m_numPendingSyncPoints == 0)
         base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&DelegatedFrameNode::fenceAndUnlockQt, frameNode));
+#else
+    Q_UNUSED(frameNode)
+    Q_UNUSED(texture)
+#endif
 }
 
 void DelegatedFrameNode::fenceAndUnlockQt(DelegatedFrameNode *frameNode)

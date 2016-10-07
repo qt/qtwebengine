@@ -46,8 +46,8 @@ Item {
     height: 1
 
     property int maxWidth: 0
-    property string mainText: "";
-    property string subText: "";
+    property string mainText: ""
+    property string subText: ""
 
     property int border: 1
 
@@ -111,40 +111,40 @@ Item {
         property int messageBoxBottom: height - border
 
         onPaint: {
-            var ctx = getContext("2d")
+            var ctx = getContext("2d");
 
-            ctx.lineWidth = bubble.border
-            ctx.strokeStyle = "#555"
-            ctx.fillStyle = "#ffffe1"
+            ctx.lineWidth = bubble.border;
+            ctx.strokeStyle = "#555";
+            ctx.fillStyle = "#ffffe1";
 
-            ctx.beginPath()
+            ctx.beginPath();
 
-            ctx.moveTo(messageBoxLeft + cornerRadius, messageBoxTop)
+            ctx.moveTo(messageBoxLeft + cornerRadius, messageBoxTop);
 
             // Arrow
-            ctx.lineTo(messageBoxLeft + bubble.arrowOffset, messageBoxTop)
-            ctx.lineTo(messageBoxLeft + bubble.arrowOffset, messageBoxTop - bubble.arrowHeight)
-            ctx.lineTo(messageBoxLeft + bubble.arrowOffset + bubble.arrowWidth, messageBoxTop)
+            ctx.lineTo(messageBoxLeft + bubble.arrowOffset, messageBoxTop);
+            ctx.lineTo(messageBoxLeft + bubble.arrowOffset, messageBoxTop - bubble.arrowHeight);
+            ctx.lineTo(messageBoxLeft + bubble.arrowOffset + bubble.arrowWidth, messageBoxTop);
 
             // Message Box
-            ctx.lineTo(messageBoxRight - cornerRadius, messageBoxTop)
-            ctx.quadraticCurveTo(messageBoxRight, messageBoxTop, messageBoxRight, messageBoxTop + cornerRadius)
-            ctx.lineTo(messageBoxRight, messageBoxBottom - cornerRadius)
-            ctx.quadraticCurveTo(messageBoxRight, messageBoxBottom, messageBoxRight - cornerRadius, messageBoxBottom)
-            ctx.lineTo(messageBoxLeft + cornerRadius, messageBoxBottom)
-            ctx.quadraticCurveTo(messageBoxLeft, messageBoxBottom, messageBoxLeft, messageBoxBottom - cornerRadius)
-            ctx.lineTo(messageBoxLeft, messageBoxTop + cornerRadius)
-            ctx.quadraticCurveTo(messageBoxLeft, messageBoxTop, messageBoxLeft + cornerRadius, messageBoxTop)
+            ctx.lineTo(messageBoxRight - cornerRadius, messageBoxTop);
+            ctx.quadraticCurveTo(messageBoxRight, messageBoxTop, messageBoxRight, messageBoxTop + cornerRadius);
+            ctx.lineTo(messageBoxRight, messageBoxBottom - cornerRadius);
+            ctx.quadraticCurveTo(messageBoxRight, messageBoxBottom, messageBoxRight - cornerRadius, messageBoxBottom);
+            ctx.lineTo(messageBoxLeft + cornerRadius, messageBoxBottom);
+            ctx.quadraticCurveTo(messageBoxLeft, messageBoxBottom, messageBoxLeft, messageBoxBottom - cornerRadius);
+            ctx.lineTo(messageBoxLeft, messageBoxTop + cornerRadius);
+            ctx.quadraticCurveTo(messageBoxLeft, messageBoxTop, messageBoxLeft + cornerRadius, messageBoxTop);
 
-            ctx.closePath()
+            ctx.closePath();
 
-            ctx.fill()
-            ctx.stroke()
+            ctx.fill();
+            ctx.stroke();
         }
 
         onPainted: {
-            bubble.width = bubbleCanvas.width
-            bubble.height = bubbleCanvas.height
+            bubble.width = bubbleCanvas.width;
+            bubble.height = bubbleCanvas.height;
         }
     }
 }

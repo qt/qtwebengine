@@ -181,8 +181,8 @@
     script to run, the injection point, and the world where the script is run. This enables
     accessing the DOM to manipulate it within a world.
 
-    The following Chromium extensions are supported since Qt 5.8: \c @exclude, \c @include,
-    \c @name, \c @match, and \c @run-at.
+    The following \l Greasemonkey attributes are supported since Qt 5.8:
+    \c @exclude, \c @include, \c @name, \c @match, and \c @run-at.
 
     \section1 Managing Certificates
 

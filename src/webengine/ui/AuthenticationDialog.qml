@@ -44,8 +44,8 @@ import QtQuick.Layouts 1.0
 import QtQuick.Window 2.2
 
 Window {
-    signal accepted(string user, string password);
-    signal rejected;
+    signal accepted(string user, string password)
+    signal rejected
     property alias text: message.text
 
     title: qsTr("Authentication Required")
@@ -75,7 +75,7 @@ Window {
         anchors.margins: 4
         property int doubleMargins: anchors.margins * 2
         Text {
-            id: message;
+            id: message
             color: palette.windowText
         }
         GridLayout {
@@ -88,7 +88,10 @@ Window {
                 id: userField
                 focus: true
                 Layout.fillWidth: true
-                onAccepted: acceptDialog()
+                onAccepted: {
+                    if (userField.text && passwordField.text)
+                        acceptDialog();
+                }
             }
             Label {
                 text: qsTr("Password:")
@@ -98,7 +101,10 @@ Window {
                 id: passwordField
                 Layout.fillWidth: true
                 echoMode: TextInput.Password
-                onAccepted: acceptDialog()
+                onAccepted: {
+                    if (userField.text && passwordField.text)
+                        acceptDialog();
+                }
             }
         }
         Item {

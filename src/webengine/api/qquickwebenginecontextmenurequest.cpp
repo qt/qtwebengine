@@ -80,7 +80,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebEngineContextMenuData::MediaTypePlugin,
     WebEngineView {
         id: view
         // ...
-        onContextMenuRequested: {
+        onContextMenuRequested: function(request) {
             request.accepted = true;
             myMenu.x = request.x;
             myMenu.y = request.y;

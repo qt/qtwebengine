@@ -100,7 +100,9 @@
 
 #include <QGuiApplication>
 #include <QLocale>
-#include <QOpenGLContext>
+#ifndef QT_NO_OPENGL
+# include <QOpenGLContext>
+#endif
 #include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -322,12 +324,14 @@ private:
 
 void ShareGroupQtQuick::AboutToAddFirstContext()
 {
+#ifndef QT_NO_OPENGL
     // This currently has to be setup by ::main in all applications using QQuickWebEngineView with delegated rendering.
     QOpenGLContext *shareContext = qt_gl_global_share_context();
     if (!shareContext) {
         qFatal("QWebEngine: OpenGL resource sharing is not set up in QtQuick. Please make sure to call QtWebEngine::initialize() in your main() function.");
     }
     m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
+#endif
 }
 
 class QuotaPermissionContextQt : public content::QuotaPermissionContext {
