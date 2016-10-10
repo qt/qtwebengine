@@ -21,3 +21,6 @@ windows
 
 [WebEngineViewSource::test_viewSourceURL]
 windows
+
+[WebViewFindText::test_findTextManyMatches]
+*
