@@ -296,8 +296,10 @@ WebEngineContext::WebEngineContext()
 
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
-        parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
-        parsedCommandLine->AppendSwitch(switches::kEnablePinch);
+        if (!parsedCommandLine->HasSwitch(switches::kDisableOverlayScrollbar))
+            parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
+        if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
+            parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
