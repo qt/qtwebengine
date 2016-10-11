@@ -88,6 +88,9 @@ void* g_display;
 const char* g_extensions = NULL;
 
 bool g_egl_surfaceless_context_supported = false;
+
+bool g_initializedEGL = false;
+
 }  // namespace
 
 
@@ -393,11 +396,17 @@ bool GLSurface::InitializeOneOffInternal()
         return GLSurfaceQtEGL::InitializeOneOff();
 
     if (GetGLImplementation() == kGLImplementationDesktopGL) {
-#if defined(USE_X11)
-        return GLSurfaceQtGLX::InitializeOneOff();
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
         return GLSurfaceQtWGL::InitializeOneOff();
+#elif defined(USE_X11)
+        if (GLSurfaceQtGLX::InitializeOneOff())
+            return true;
 #endif
+        // Fallback to trying EGL with desktop GL.
+        if (GLSurfaceQtEGL::InitializeOneOff()) {
+            g_initializedEGL = true;
+            return true;
+        }
     }
 
     return false;
@@ -579,39 +588,39 @@ void* GLSurfacelessQtEGL::GetShareHandle()
 scoped_refptr<GLSurface>
 GLSurface::CreateOffscreenGLSurface(const gfx::Size& size)
 {
+    scoped_refptr<GLSurface> surface;
     switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL: {
-#if defined(USE_X11)
-        scoped_refptr<GLSurface> surface = new GLSurfaceQtGLX(size);
-        if (!surface->Initialize())
-            return NULL;
-        return surface;
-#elif defined(OS_WIN)
-        scoped_refptr<GLSurface> surface = new GLSurfaceQtWGL(size);
-        if (!surface->Initialize())
-            return NULL;
-        return surface;
-#else
-        LOG(ERROR) << "Desktop GL is not supported on this platform.";
-        Q_UNREACHABLE();
-        return NULL;
+#if defined(OS_WIN)
+        surface = new GLSurfaceQtWGL(size);
+        if (surface->Initialize())
+            return surface;
+        break;
+#elif defined(USE_X11)
+        if (!g_initializedEGL) {
+            surface = new GLSurfaceQtGLX(size);
+            if (surface->Initialize())
+                return surface;
+        }
+        // no break
 #endif
     }
     case kGLImplementationEGLGLES2: {
-        scoped_refptr<GLSurface> surface;
         if (g_egl_surfaceless_context_supported)
             surface = new GLSurfacelessQtEGL(size);
         else
             surface = new GLSurfaceQtEGL(size);
 
-        if (!surface->Initialize())
-            return NULL;
-        return surface;
+        if (surface->Initialize())
+            return surface;
+        break;
     }
     default:
-        Q_UNREACHABLE();
-        return NULL;
+        break;
     }
+    LOG(ERROR) << "Requested OpenGL platform is not supported.";
+    Q_UNREACHABLE();
+    return NULL;
 }
 
 // static
