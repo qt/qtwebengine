@@ -61,10 +61,10 @@ class CertificateErrorController;
 
 class Q_WEBENGINE_EXPORT QQuickWebEngineCertificateError : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QUrl url READ url)
-    Q_PROPERTY(Error error READ error)
-    Q_PROPERTY(QString description READ description)
-    Q_PROPERTY(bool overridable READ overridable)
+    Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
+    Q_PROPERTY(Error error READ error CONSTANT FINAL)
+    Q_PROPERTY(QString description READ description CONSTANT FINAL)
+    Q_PROPERTY(bool overridable READ overridable CONSTANT FINAL)
 
 public:
 

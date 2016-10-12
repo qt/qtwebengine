@@ -49,8 +49,8 @@ class QWebEnginePage;
 
 class QWEBENGINEWIDGETS_EXPORT QWebEngineFullScreenRequest {
     Q_GADGET
-    Q_PROPERTY(bool toggleOn READ toggleOn)
-    Q_PROPERTY(QUrl origin READ origin)
+    Q_PROPERTY(bool toggleOn READ toggleOn CONSTANT)
+    Q_PROPERTY(QUrl origin READ origin CONSTANT)
 public:
     Q_INVOKABLE void reject();
     Q_INVOKABLE void accept();

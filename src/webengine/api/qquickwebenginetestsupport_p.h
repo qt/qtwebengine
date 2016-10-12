@@ -75,7 +75,7 @@ Q_SIGNALS:
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineTestSupport : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QQuickWebEngineErrorPage *errorPage READ errorPage)
+    Q_PROPERTY(QQuickWebEngineErrorPage *errorPage READ errorPage CONSTANT FINAL)
 
 public:
     QQuickWebEngineTestSupport();

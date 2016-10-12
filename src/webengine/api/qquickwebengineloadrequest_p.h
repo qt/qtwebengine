@@ -60,11 +60,11 @@ class QQuickWebEngineLoadRequestPrivate;
 
 class Q_WEBENGINE_EXPORT QQuickWebEngineLoadRequest : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QUrl url READ url)
-    Q_PROPERTY(QQuickWebEngineView::LoadStatus status READ status)
-    Q_PROPERTY(QString errorString READ errorString)
-    Q_PROPERTY(QQuickWebEngineView::ErrorDomain errorDomain READ errorDomain)
-    Q_PROPERTY(int errorCode READ errorCode)
+    Q_PROPERTY(QUrl url READ url CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineView::LoadStatus status READ status CONSTANT FINAL)
+    Q_PROPERTY(QString errorString READ errorString CONSTANT FINAL)
+    Q_PROPERTY(QQuickWebEngineView::ErrorDomain errorDomain READ errorDomain CONSTANT FINAL)
+    Q_PROPERTY(int errorCode READ errorCode CONSTANT FINAL)
 
 public:
     QQuickWebEngineLoadRequest(const QUrl& url, QQuickWebEngineView::LoadStatus status, const QString& errorString = QString(), int errorCode = 0, QQuickWebEngineView::ErrorDomain errorDomain = QQuickWebEngineView::NoErrorDomain, QObject* parent = 0);

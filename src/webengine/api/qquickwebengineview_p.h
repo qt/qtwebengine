@@ -81,8 +81,8 @@ class QQuickWebEngineTestSupport;
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineFullScreenRequest {
     Q_GADGET
-    Q_PROPERTY(QUrl origin READ origin)
-    Q_PROPERTY(bool toggleOn READ toggleOn)
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(bool toggleOn READ toggleOn CONSTANT FINAL)
 public:
     QQuickWebEngineFullScreenRequest();
     QQuickWebEngineFullScreenRequest(QQuickWebEngineViewPrivate *viewPrivate, const QUrl &origin, bool toggleOn);
@@ -102,27 +102,27 @@ private:
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
-    Q_PROPERTY(QUrl icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged)
-    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged)
-    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
-    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY urlChanged)
-    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged)
-    Q_PROPERTY(bool isFullScreen READ isFullScreen NOTIFY isFullScreenChanged REVISION 1)
-    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged FINAL)
+    Q_PROPERTY(QUrl icon READ icon NOTIFY iconChanged FINAL)
+    Q_PROPERTY(bool loading READ isLoading NOTIFY loadingChanged FINAL)
+    Q_PROPERTY(int loadProgress READ loadProgress NOTIFY loadProgressChanged FINAL)
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged FINAL)
+    Q_PROPERTY(bool canGoBack READ canGoBack NOTIFY urlChanged FINAL)
+    Q_PROPERTY(bool canGoForward READ canGoForward NOTIFY urlChanged FINAL)
+    Q_PROPERTY(bool isFullScreen READ isFullScreen NOTIFY isFullScreenChanged REVISION 1 FINAL)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged REVISION 1 FINAL)
     Q_PROPERTY(QQuickWebEngineProfile *profile READ profile WRITE setProfile NOTIFY profileChanged FINAL REVISION 1)
-    Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1)
+    Q_PROPERTY(QQuickWebEngineSettings *settings READ settings REVISION 1 CONSTANT FINAL)
     Q_PROPERTY(QQuickWebEngineHistory *navigationHistory READ navigationHistory CONSTANT FINAL REVISION 1)
-    Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1)
+    Q_PROPERTY(QQmlWebChannel *webChannel READ webChannel WRITE setWebChannel NOTIFY webChannelChanged REVISION 1 FINAL)
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 1)
-    Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2)
-    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2)
+    Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2 FINAL)
+    Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2 FINAL)
     Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
     Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION 3)
     Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged FINAL REVISION 3)
     Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION 3)
-    Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3)
+    Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3 FINAL)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)

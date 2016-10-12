@@ -122,12 +122,12 @@ public:
     Q_ENUM(DownloadType)
 
     Q_PROPERTY(quint32 id READ id CONSTANT FINAL)
-    Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged)
+    Q_PROPERTY(DownloadState state READ state NOTIFY stateChanged FINAL)
     Q_PROPERTY(SavePageFormat savePageFormat READ savePageFormat WRITE setSavePageFormat NOTIFY savePageFormatChanged REVISION 2 FINAL)
-    Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged)
-    Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged)
-    Q_PROPERTY(QString mimeType READ mimeType NOTIFY mimeTypeChanged REVISION 1)
-    Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
+    Q_PROPERTY(qint64 totalBytes READ totalBytes NOTIFY totalBytesChanged FINAL)
+    Q_PROPERTY(qint64 receivedBytes READ receivedBytes NOTIFY receivedBytesChanged FINAL)
+    Q_PROPERTY(QString mimeType READ mimeType NOTIFY mimeTypeChanged REVISION 1 FINAL)
+    Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged FINAL)
     Q_PROPERTY(DownloadType type READ type NOTIFY typeChanged REVISION 3 FINAL)
     Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged REVISION 4 FINAL)
 
