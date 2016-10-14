@@ -45,6 +45,7 @@ OTHER_FILES += \
     $$PWD/data/tst_favicon.qml \
     $$PWD/data/tst_faviconDownload.qml \
     $$PWD/data/tst_filePicker.qml \
+    $$PWD/data/tst_findText.qml \
     $$PWD/data/tst_focusOnNavigation.qml \
     $$PWD/data/tst_formValidation.qml \
     $$PWD/data/tst_geopermission.qml \

@@ -12,6 +12,3 @@ osx
 
 [WebEngineViewLoadUrl::test_urlProperty]
 windows
-
-[WebViewFindText::test_findTextManyMatches]
-*
