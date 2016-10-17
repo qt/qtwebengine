@@ -104,8 +104,8 @@
     On OS X, the following are required:
 
     \list
-        \li OS X 10.9 or later
-        \li Xcode 5.1 or later
+        \li OS X 10.10 or later
+        \li Xcode 6.3 or later
         \li OS X 10.10 SDK or later
     \endlist
 
