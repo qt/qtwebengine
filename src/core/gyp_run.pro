@@ -36,9 +36,7 @@ force_debug_info {
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
-    qtConfig(simulator_and_device): CONFIG += simulator_and_device
-    qtConfig(debug_and_release): CONFIG += debug_and_release
-    qtConfig(build_all): CONFIG += build_all
+    qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 }
 
 cross_compile {
