@@ -47,6 +47,7 @@
 #include <qwebenginehistory.h>
 #include <qwebenginepage.h>
 #include <qwebengineprofile.h>
+#include <qwebenginequotapermissionrequest.h>
 #include <qwebenginescript.h>
 #include <qwebenginescriptcollection.h>
 #include <qwebenginesettings.h>
@@ -165,6 +166,7 @@ private Q_SLOTS:
 
     void runJavaScript();
     void fullScreenRequested();
+    void quotaPermissionRequested();
 
 
     // Tests from tst_QWebEngineFrame
@@ -3072,6 +3074,46 @@ void tst_QWebEnginePage::fullScreenRequested()
     QVERIFY(watcher.wait());
     page->runJavaScript("document.webkitIsFullScreen", JavaScriptCallback(false));
     QVERIFY(watcher.wait());
+}
+
+void tst_QWebEnginePage::quotaPermissionRequested()
+{
+    ConsolePage page;
+    QWebEngineView view;
+    view.setPage(&page);
+    QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
+    page.load(QUrl("qrc:///resources/content.html"));
+    QVERIFY(loadFinishedSpy.wait());
+
+    connect(&page, &QWebEnginePage::quotaPermissionRequested,
+            [] (QWebEngineQuotaPermissionRequest request)
+    {
+        if (request.requestedSize() <= 5000)
+            request.accept();
+        else
+            request.reject();
+    });
+
+    evaluateJavaScriptSync(&page,
+        "navigator.webkitPersistentStorage.requestQuota(1024, function(grantedSize) {" \
+            "console.log(grantedSize);" \
+        "});");
+    QTRY_COMPARE(page.messages.count(), 1);
+    QTRY_COMPARE(page.messages[0], QString("1024"));
+
+    evaluateJavaScriptSync(&page,
+        "navigator.webkitPersistentStorage.requestQuota(6000, function(grantedSize) {" \
+            "console.log(grantedSize);" \
+        "});");
+    QTRY_COMPARE(page.messages.count(), 2);
+    QTRY_COMPARE(page.messages[1], QString("1024"));
+
+    evaluateJavaScriptSync(&page,
+        "navigator.webkitPersistentStorage.queryUsageAndQuota(function(usedBytes, grantedBytes) {" \
+            "console.log(usedBytes + ', ' + grantedBytes);" \
+        "});");
+    QTRY_COMPARE(page.messages.count(), 3);
+    QTRY_COMPARE(page.messages[2], QString("0, 1024"));
 }
 
 void tst_QWebEnginePage::symmetricUrl()

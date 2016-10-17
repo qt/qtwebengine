@@ -17,6 +17,7 @@ SOURCES = \
         api/qwebenginehistory.cpp \
         api/qwebenginepage.cpp \
         api/qwebengineprofile.cpp \
+        api/qwebenginequotapermissionrequest.cpp \
         api/qwebenginescript.cpp \
         api/qwebenginescriptcollection.cpp \
         api/qwebenginesettings.cpp \
@@ -35,6 +36,7 @@ HEADERS = \
         api/qwebenginepage_p.h \
         api/qwebengineprofile.h \
         api/qwebengineprofile_p.h \
+        api/qwebenginequotapermissionrequest.h \
         api/qwebenginescriptcollection.h \
         api/qwebenginescriptcollection_p.h \
         api/qwebenginesettings.h \

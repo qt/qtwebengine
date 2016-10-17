@@ -64,6 +64,7 @@ class QWebEngineHistory;
 class QWebEnginePage;
 class QWebEnginePagePrivate;
 class QWebEngineProfile;
+class QWebEngineQuotaPermissionRequest;
 class QWebEngineScriptCollection;
 class QWebEngineSettings;
 
@@ -330,6 +331,7 @@ Q_SIGNALS:
     void featurePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     void featurePermissionRequestCanceled(const QUrl &securityOrigin, QWebEnginePage::Feature feature);
     void fullScreenRequested(QWebEngineFullScreenRequest fullScreenRequest);
+    void quotaPermissionRequested(QWebEngineQuotaPermissionRequest quotaPermissionRequest);
 
     void authenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator);
     void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *authenticator, const QString &proxyHost);

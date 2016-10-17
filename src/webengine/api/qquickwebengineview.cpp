@@ -45,6 +45,7 @@
 #include "certificate_error_controller.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
+#include "quota_permission_controller.h"
 #include "qquickwebenginehistory_p.h"
 #include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebenginecontextmenurequest_p.h"
@@ -720,6 +721,13 @@ void QQuickWebEngineViewPrivate::runMouseLockPermissionRequest(const QUrl &secur
 
     // TODO: Add mouse lock support
     adapter->grantMouseLockPermission(false);
+}
+
+void QQuickWebEngineViewPrivate::runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+{
+    Q_Q(QQuickWebEngineView);
+    QQuickWebEngineQuotaPermissionRequest request(controller);
+    Q_EMIT q->quotaPermissionRequested(request);
 }
 
 QObject *QQuickWebEngineViewPrivate::accessibilityParentObject()
@@ -1852,6 +1860,35 @@ void QQuickWebEngineFullScreenRequest::reject()
 {
     if (m_viewPrivate)
         m_viewPrivate->setFullScreenMode(!m_toggleOn);
+}
+
+QQuickWebEngineQuotaPermissionRequest::QQuickWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+    : d_ptr(controller)
+{
+}
+
+QQuickWebEngineQuotaPermissionRequest::~QQuickWebEngineQuotaPermissionRequest()
+{
+}
+
+void QQuickWebEngineQuotaPermissionRequest::accept()
+{
+    d_ptr->accept();
+}
+
+void QQuickWebEngineQuotaPermissionRequest::reject()
+{
+    d_ptr->cancel();
+}
+
+QUrl QQuickWebEngineQuotaPermissionRequest::origin() const
+{
+    return d_ptr->origin();
+}
+
+qint64 QQuickWebEngineQuotaPermissionRequest::requestedSize() const
+{
+    return d_ptr->requestedSize();
 }
 
 QT_END_NAMESPACE

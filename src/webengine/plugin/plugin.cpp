@@ -133,6 +133,8 @@ public:
                                                                          msgUncreatableType("FileDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineFormValidationMessageRequest>(uri, 1, 4, "FormValidationMessageRequest",
                                                                          msgUncreatableType("FormValidationMessageRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineQuotaPermissionRequest>(uri, 1, 7, "QuotaPermissionRequest",
+            tr("Cannot create a separate instance of QuotaPermissionRequest"));
     }
 
 private:

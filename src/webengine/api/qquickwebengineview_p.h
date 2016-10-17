@@ -56,6 +56,12 @@
 #include <QQuickItem>
 #include <QtGui/qcolor.h>
 
+
+namespace QtWebEngineCore {
+    class QuotaPermissionController;
+}
+
+
 QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
@@ -97,6 +103,26 @@ private:
     const QUrl m_origin;
     const bool m_toggleOn;
 };
+
+class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineQuotaPermissionRequest {
+    Q_GADGET
+    Q_PROPERTY(QUrl origin READ origin CONSTANT FINAL)
+    Q_PROPERTY(qint64 requestedSize READ requestedSize CONSTANT FINAL)
+public:
+    QQuickWebEngineQuotaPermissionRequest() {}
+    QQuickWebEngineQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller);
+    ~QQuickWebEngineQuotaPermissionRequest();
+
+    Q_INVOKABLE void accept();
+    Q_INVOKABLE void reject();
+    QUrl origin() const;
+    qint64 requestedSize() const;
+
+private:
+    QSharedPointer<QtWebEngineCore::QuotaPermissionController> d_ptr;
+};
+
+#define LATEST_WEBENGINEVIEW_REVISION 7
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -529,6 +555,7 @@ Q_SIGNALS:
     Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
     Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
     Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
+    Q_REVISION(7) void quotaPermissionRequested(const QQuickWebEngineQuotaPermissionRequest &request);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();
@@ -557,5 +584,6 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QQuickWebEngineView)
 Q_DECLARE_METATYPE(QQuickWebEngineFullScreenRequest)
+Q_DECLARE_METATYPE(QQuickWebEngineQuotaPermissionRequest)
 
 #endif // QQUICKWEBENGINEVIEW_P_H

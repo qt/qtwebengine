@@ -28,7 +28,7 @@
 
 import QtQuick 2.0
 import QtTest 1.1
-import QtWebEngine 1.3
+import QtWebEngine 1.7
 
 WebEngineView {
     property var loadStatus: null

@@ -57,7 +57,7 @@ import QtQuick.Controls.Styles 1.0
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.0
 import QtQuick.Window 2.1
-import QtWebEngine 1.3
+import QtWebEngine 1.7
 
 ApplicationWindow {
     id: browserWindow
@@ -421,6 +421,13 @@ ApplicationWindow {
                         fullScreenNotification.hide();
                     }
                     request.accept();
+                }
+
+                onQuotaPermissionRequested: {
+                    if (request.requestedSize <= 5 * 1024 * 1024)
+                        request.accept();
+                    else
+                        request.reject();
                 }
 
                 onRenderProcessTerminated: {

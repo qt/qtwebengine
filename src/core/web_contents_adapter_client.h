@@ -64,6 +64,7 @@ class BrowserContextAdapter;
 class ColorChooserController;
 class FilePickerController;
 class JavaScriptDialogController;
+class QuotaPermissionController;
 class RenderWidgetHostViewQt;
 class RenderWidgetHostViewQtDelegate;
 class RenderWidgetHostViewQtDelegateClient;
@@ -367,6 +368,7 @@ public:
     virtual void runGeolocationPermissionRequest(const QUrl &securityOrigin) = 0;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) = 0;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) = 0;
+    virtual void runQuotaPermissionRequest(QSharedPointer<QuotaPermissionController>) = 0;
     virtual WebEngineSettings *webEngineSettings() const = 0;
     virtual void showValidationMessage(const QRect &anchor, const QString &mainText, const QString &subText) = 0;
     virtual void hideValidationMessage() = 0;

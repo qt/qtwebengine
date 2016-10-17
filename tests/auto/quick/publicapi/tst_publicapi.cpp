@@ -66,6 +66,7 @@ static QList<const QMetaObject *> typesToCheck = QList<const QMetaObject *>()
     << &QQuickWebEngineScript::staticMetaObject
     << &QQuickWebEngineSettings::staticMetaObject
     << &QQuickWebEngineFullScreenRequest::staticMetaObject
+    << &QQuickWebEngineQuotaPermissionRequest::staticMetaObject
     << &QQuickWebEngineSingleton::staticMetaObject
     << &QQuickWebEngineAuthenticationDialogRequest::staticMetaObject
     << &QQuickWebEngineJavaScriptDialogRequest::staticMetaObject
@@ -183,6 +184,7 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineView.javaScriptConsoleMessage(JavaScriptConsoleMessageLevel,QString,int,QString) --> void"
     << "QQuickWebEngineView.certificateError(QQuickWebEngineCertificateError*) --> void"
     << "QQuickWebEngineView.fullScreenRequested(QQuickWebEngineFullScreenRequest) --> void"
+    << "QQuickWebEngineView.quotaPermissionRequested(QQuickWebEngineQuotaPermissionRequest) --> void"
     << "QQuickWebEngineView.isFullScreenChanged() --> void"
     << "QQuickWebEngineView.featurePermissionRequested(QUrl,Feature) --> void"
     << "QQuickWebEngineView.newViewRequested(QQuickWebEngineNewViewRequest*) --> void"
@@ -529,6 +531,10 @@ static QStringList expectedAPI = QStringList()
     << "QQuickWebEngineFullScreenRequest.toggleOn --> bool"
     << "QQuickWebEngineFullScreenRequest.accept() --> void"
     << "QQuickWebEngineFullScreenRequest.reject() --> void"
+    << "QQuickWebEngineQuotaPermissionRequest.origin --> QUrl"
+    << "QQuickWebEngineQuotaPermissionRequest.requestedSize --> qlonglong"
+    << "QQuickWebEngineQuotaPermissionRequest.accept() --> void"
+    << "QQuickWebEngineQuotaPermissionRequest.reject() --> void"
     << "QQuickWebEngineSingleton.settings --> QQuickWebEngineSettings*"
     << "QQuickWebEngineSingleton.defaultProfile --> QQuickWebEngineProfile*"
     ;

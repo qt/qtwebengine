@@ -53,6 +53,7 @@
 #include "qwebenginehistory_p.h"
 #include "qwebengineprofile.h"
 #include "qwebengineprofile_p.h"
+#include "qwebenginequotapermissionrequest.h"
 #include "qwebenginescriptcollection_p.h"
 #include "qwebenginesettings.h"
 #include "qwebengineview.h"
@@ -579,6 +580,13 @@ void QWebEnginePagePrivate::runMouseLockPermissionRequest(const QUrl &securityOr
     Q_EMIT q->featurePermissionRequested(securityOrigin, QWebEnginePage::MouseLock);
 }
 
+void QWebEnginePagePrivate::runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController> controller)
+{
+    Q_Q(QWebEnginePage);
+    QWebEngineQuotaPermissionRequest request(controller);
+    Q_EMIT q->quotaPermissionRequested(request);
+}
+
 QObject *QWebEnginePagePrivate::accessibilityParentObject()
 {
     return view;
@@ -737,6 +745,17 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     that is fullscreen.
 
     \sa QWebEngineSettings::FullScreenSupportEnabled
+*/
+
+/*!
+    \fn QWebEnginePage::quotaPermissionRequested(QWebEngineQuotaPermissionRequest request)
+    \since 5.11
+
+    This signal is emitted when the web page requests larger persistent storage
+    than the application's current allocation in File System API. The default quota
+    is 0 bytes.
+
+    The request object \a request can be used to accept or reject the request.
 */
 
 /*!

@@ -54,7 +54,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
-#include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -97,6 +96,7 @@
 #include "printing_message_filter_qt.h"
 #endif // BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "qrc_protocol_handler_qt.h"
+#include "quota_permission_context_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "web_contents_delegate_qt.h"
@@ -373,16 +373,6 @@ void ShareGroupQtQuick::AboutToAddFirstContext()
     m_shareContextQtQuick = make_scoped_refptr(new QtShareGLContext(shareContext));
 #endif
 }
-
-class QuotaPermissionContextQt : public content::QuotaPermissionContext {
-public:
-    void RequestQuotaPermission(const content::StorageQuotaParams &params, int render_process_id, const PermissionCallback &callback) override
-    {
-        Q_UNUSED(params);
-        Q_UNUSED(render_process_id);
-        callback.Run(QUOTA_PERMISSION_RESPONSE_DISALLOW);
-    }
-};
 
 ContentBrowserClientQt::ContentBrowserClientQt()
     : m_browserMainParts(0)

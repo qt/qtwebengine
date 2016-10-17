@@ -1297,3 +1297,61 @@
 /*! \qmlsignal WebEngineView::navigationRequested(WebEngineNavigationRequest request)
     This signal is emitted when the navigation request \a request is issued.
 */
+
+/*!
+    \qmlsignal WebEngineView::quotaPermissionRequested(QuotaPermissionRequest request)
+    \since QtWebEngine 1.7
+
+    This signal is emitted when the web page requests larger persistent storage
+    than the application's current allocation in File System API. The default quota
+    is 0 bytes.
+
+    \sa QuotaPermissionRequest
+*/
+
+/*!
+    \qmltype QuotaPermissionRequest
+    \instantiates QQuickWebEngineQuotaPermissionRequest
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.7
+
+    \brief A utility type for the WebEngineView::quotaPermissionRequested() signal.
+
+    \sa WebEngineView::quotaPermissionRequested()
+*/
+
+/*!
+    \qmlproperty url QuotaPermissionRequest::origin
+    \readonly
+
+    The URL of the web page that issued the quota permission request.
+*/
+
+/*!
+    \qmlproperty qint64 QuotaPermissionRequest::requestedSize
+    \readonly
+
+    Contains the size of the requested disk space in bytes.
+*/
+
+/*!
+    \qmlmethod void QuotaPermissionRequest::accept()
+
+    Accepts the quota permission request.
+
+    \qml
+    WebEngineView {
+        onQuotaPermissionRequested: function(request) {
+            if (request.requestedSize <= 5 * 1024 * 1024)
+                request.accept();
+            else
+                request.reject();
+        }
+    }
+    \endqml
+*/
+
+/*!
+    \qmlmethod void QuotaPermissionRequest::reject()
+    Rejects a quota permission request.
+*/

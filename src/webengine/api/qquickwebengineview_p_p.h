@@ -129,6 +129,7 @@ public:
     virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;
     virtual void runMediaAccessPermissionRequest(const QUrl &securityOrigin, MediaRequestFlags requestFlags) Q_DECL_OVERRIDE;
     virtual void runMouseLockPermissionRequest(const QUrl &securityOrigin) Q_DECL_OVERRIDE;
+    virtual void runQuotaPermissionRequest(QSharedPointer<QtWebEngineCore::QuotaPermissionController>) Q_DECL_OVERRIDE;
     virtual QObject *accessibilityParentObject() Q_DECL_OVERRIDE;
     virtual QtWebEngineCore::WebEngineSettings *webEngineSettings() const Q_DECL_OVERRIDE;
     virtual void allowCertificateError(const QSharedPointer<CertificateErrorController> &errorController) Q_DECL_OVERRIDE;
