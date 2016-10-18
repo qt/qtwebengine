@@ -108,9 +108,8 @@ public:
     QString httpUserAgent() const;
     void setHttpUserAgent(const QString &userAgent);
 
-    QStringList spellCheckLanguages(const QStringList &acceptLanguages);
-    void setSpellCheckLanguage(const QString &language);
-    QString spellCheckLanguage() const;
+    void setSpellCheckLanguages(const QStringList &language);
+    QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 

@@ -102,8 +102,8 @@ public:
 
 #if defined(ENABLE_SPELLCHECK)
     void failedToLoadDictionary(const std::string& language) override;
-    void setSpellCheckLanguage(const QString &language);
-    QString spellCheckLanguage() const;
+    void setSpellCheckLanguages(const QStringList &languages);
+    QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 #endif

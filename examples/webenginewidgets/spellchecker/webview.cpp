@@ -51,7 +51,7 @@ WebView::WebView(QWidget *parent)
     m_spellCheckLanguages["German"] = "de-DE";
     QWebEngineProfile *profile = page()->profile();
     profile->setSpellCheckEnabled(true);
-    profile->setSpellCheckLanguage("en-US");
+    profile->setSpellCheckLanguages({"en-US"});
 }
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
@@ -65,7 +65,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     }
 
     QWebEngineProfile *profile = page()->profile();
-    const QString &language = profile->spellCheckLanguage();
+    const QString &language = profile->spellCheckLanguages().first();
     QMenu *menu = page()->createStandardContextMenu();
     menu->addSeparator();
 
@@ -85,7 +85,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
             QString lang = m_spellCheckLanguages[str];
             action->setChecked(language == lang);
             connect(action, &QAction::triggered, this, [profile, lang](){
-               profile->setSpellCheckLanguage(lang);
+               profile->setSpellCheckLanguages(QStringList()<<lang);
             });
         }
     }

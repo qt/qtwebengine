@@ -359,10 +359,10 @@ Module {
         Property { name: "httpAcceptLanguage"; revision: 1; type: "string" }
         Property { name: "persistentCookiesPolicy"; type: "PersistentCookiesPolicy" }
         Property { name: "httpCacheMaximumSize"; type: "int" }
-        Property { name: "spellCheckLanguage"; revision: 3; type: "string" }
+        Property { name: "spellCheckLanguages"; revision: 3; type: "QStringList" }
         Property { name: "spellCheckEnabled"; revision: 3; type: "bool" }
         Signal { name: "httpAcceptLanguageChanged"; revision: 1 }
-        Signal { name: "spellCheckLanguageChanged"; revision: 3 }
+        Signal { name: "spellCheckLanguagesChanged"; revision: 3 }
         Signal { name: "spellCheckEnabledChanged"; revision: 3 }
         Signal {
             name: "downloadRequested"

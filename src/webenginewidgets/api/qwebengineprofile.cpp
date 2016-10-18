@@ -98,8 +98,8 @@ using QtWebEngineCore::BrowserContextAdapter;
     QWebEngineUrlSchemeHandler::requestStarted() as QWebEngineUrlRequestJob objects.
 
     Spellchecking HTML form fields can be enabled per profile by using the setSpellCheckEnabled()
-    method and the current language used for spellchecking can be set by using the
-    setSpellCheckLanguage() method.
+    method and the current languages used for spellchecking can be set by using the
+    setSpellCheckLanguages() method.
 
 */
 
@@ -565,9 +565,9 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
 /*!
     \since 5.8
 
-    Sets the current \a language for the spell checker.
-    The language should match the name of the \c .bdic dictionary.
-    For example, the \a language \c en-US will load the \c en-US.bdic
+    Sets the current list of \a languages for the spell checker.
+    Each language should match the name of the \c .bdic dictionary.
+    For example, the language \c en-US will load the \c en-US.bdic
     dictionary file.
 
     Qt WebEngine checks for the \c qtwebengine_dictionaries subdirectory
@@ -603,21 +603,21 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
     \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
 
 */
-void QWebEngineProfile::setSpellCheckLanguage(const QString &language)
+void QWebEngineProfile::setSpellCheckLanguages(const QStringList &languages)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setSpellCheckLanguage(language);
+    d->browserContext()->setSpellCheckLanguages(languages);
 }
 
 /*!
     \since 5.8
 
-    Returns the language used by the spell checker.
+    Returns the list of languages used by the spell checker.
 */
-QString QWebEngineProfile::spellCheckLanguage() const
+QStringList QWebEngineProfile::spellCheckLanguages() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->spellCheckLanguage();
+    return d->browserContext()->spellCheckLanguages();
 }
 
 /*!
