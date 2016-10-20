@@ -137,12 +137,12 @@
 
 /*!
     \fn void QWebEngineSettings::setFontSize(FontSize type, int size)
-    Sets the font size for \a type to \a size.
+    Sets the font size for \a type to \a size in pixels.
 */
 
 /*!
     \fn int QWebEngineSettings::fontSize(FontSize type) const
-    Returns the default font size for \a type.
+    Returns the default font size for \a type in pixels.
 */
 
 /*!
