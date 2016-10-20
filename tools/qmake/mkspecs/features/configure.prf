@@ -83,11 +83,7 @@ defineTest(runConfigure) {
             export(WEBENGINE_CONFIG)
         }
     }
-}
 
-# This is called from default_post, at which point we've also parsed
-# command line options
-defineTest(finalizeConfigure) {
     unix:!darwin {
         log("System library dependencies:$${EOL}")
         use?(system_icu) {

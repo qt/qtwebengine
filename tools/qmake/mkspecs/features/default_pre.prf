@@ -21,14 +21,3 @@ EOL = $$escape_expand(\\n)
 # Call the original default_pre.
 load(default_pre)
 load(functions)
-
-# Check platform support and run config tests early enough to bail
-equals(_PRO_FILE_, "$$QTWEBENGINE_ROOT/qtwebengine.pro"): CONFIG += root_project_file
-
-root_project_file:isPlatformSupported() {
-   !exists($$QTWEBENGINE_ROOT/src/3rdparty/chromium) {
-       error("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
-   }
-   load(configure)
-   runConfigure()
-}

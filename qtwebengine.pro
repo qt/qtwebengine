@@ -1,6 +1,19 @@
 load(qt_build_config)
 load(qt_parts)
 
+isPlatformSupported() {
+   !exists(src/3rdparty/chromium): \
+       error("Submodule qtwebengine-chromium does not exist. Run 'git submodule update --init'.")
+   load(configure)
+   runConfigure()
+}
+
+!isEmpty(skipBuildReason) {
+    SUBDIRS =
+    log($${skipBuildReason}$${EOL})
+    log(QtWebEngine will not be built.$${EOL})
+}
+
 OTHER_FILES = \
     tools/buildscripts/* \
     tools/scripts/* \
