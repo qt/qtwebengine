@@ -35,152 +35,242 @@ TestWebEngineView {
     width: 400
     height: 300
 
-    property var lastUrl
-    property bool watchProgress: false
-    property int numLoadStarted: 0
-    property int numLoadSucceeded: 0
-
-    focus: true
-
-    onLoadProgressChanged: {
-        if (watchProgress && webEngineView.loadProgress != 100) {
-            watchProgress = false
-            url = ''
-        }
-    }
+    property var loadRequestArray: []
 
     onLoadingChanged: {
-        if (loadRequest.status == WebEngineView.LoadStartedStatus)
-            ++numLoadStarted
-        if (loadRequest.status == WebEngineView.LoadSucceededStatus)
-            ++numLoadSucceeded
+        loadRequestArray.push({
+            "status": loadRequest.status,
+            "url": loadRequest.url,
+            "activeUrl": webEngineView.url
+        });
+    }
+
+    function clear() {
+        // Reset loadStatus for waitForLoadSucceded
+        webEngineView.loadStatus = null;
+        loadRequestArray = [];
     }
 
     TestCase {
         name: "WebEngineViewLoadUrl"
         when: windowShown
 
+        function init() {
+            webEngineView.clear();
+        }
+
         function test_loadIgnoreEmptyUrl() {
-            var url = Qt.resolvedUrl("test1.html")
+            var url = Qt.resolvedUrl("test1.html");
+            webEngineView.url = url;
+            verify(webEngineView.waitForLoadSucceeded());
+            compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);
+            compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequestArray.length, 2);
+            compare(webEngineView.url, url);
+            webEngineView.clear();
 
-            webEngineView.url = url
-            verify(webEngineView.waitForLoadSucceeded())
-            compare(numLoadStarted, 1)
-            compare(numLoadSucceeded, 1)
-            compare(webEngineView.url, url)
+            var lastUrl = webEngineView.url;
+            webEngineView.url = "";
+            wait(1000);
+            compare(loadRequestArray.length, 0);
+            compare(webEngineView.url, lastUrl);
+            webEngineView.clear();
 
-            lastUrl = webEngineView.url
-            webEngineView.url = ''
-            wait(1000)
-            compare(numLoadStarted, 1)
-            compare(numLoadSucceeded, 1)
-            compare(webEngineView.url, lastUrl)
-
-            webEngineView.url = 'about:blank'
-            verify(webEngineView.waitForLoadSucceeded())
-            compare(numLoadStarted, 2)
-            compare(numLoadSucceeded, 2)
-            compare(webEngineView.url, 'about:blank')
+            var aboutBlank = "about:blank";
+            webEngineView.url = aboutBlank;
+            verify(webEngineView.waitForLoadSucceeded());
+            compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);
+            compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequestArray.length, 2);
+            compare(webEngineView.url, aboutBlank);
+            webEngineView.clear();
 
             // It shouldn't interrupt any ongoing load when an empty url is used.
-            watchProgress = true
-            webEngineView.url = url
-            webEngineView.waitForLoadSucceeded()
-            compare(numLoadStarted, 3)
-            compare(numLoadSucceeded, 3)
-            verify(!watchProgress)
-            compare(webEngineView.url, url)
+            var watchProgress = true;
+            var handleLoadProgress = function() {
+                if (webEngineView.loadProgress != 100) {
+                    webEngineView.url = "";
+                    watchProgress = false;
+                }
+            }
+            webEngineView.loadProgressChanged.connect(handleLoadProgress);
+            webEngineView.url = url;
+            verify(webEngineView.waitForLoadSucceeded());
+            compare(loadRequestArray[0].status, WebEngineView.LoadStartedStatus);
+            compare(loadRequestArray[1].status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequestArray.length, 2);
+            verify(!watchProgress);
+            compare(webEngineView.url, url);
+            webEngineView.loadProgressChanged.disconnect(handleLoadProgress);
+            webEngineView.clear();
         }
 
         function test_urlProperty() {
-            WebEngine.settings.errorPageEnabled = false
+            WebEngine.settings.errorPageEnabled = false;
 
-            var url = Qt.resolvedUrl("test1.html")
+            var loadRequest = null;
 
-            webEngineView.url = url
-            compare(webEngineView.url, url)
-            verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.url, url)
+            // Test succeeded load
+            var url = Qt.resolvedUrl("test1.html");
+            webEngineView.url = url;
+            tryCompare(loadRequestArray, "length", 2);
 
-            var bogusSite = "http://www.somesitethatdoesnotexist.abc/"
-            webEngineView.url = bogusSite
-            compare(webEngineView.url, bogusSite)
-            verify(webEngineView.waitForLoadFailed())
-            compare(webEngineView.url, url)
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, url);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.activeUrl, url);
+            webEngineView.clear();
 
-            webEngineView.url = "about:blank" // Reset from previous test
-            verify(webEngineView.waitForLoadSucceeded())
+            // Test failed load
+            var bogusSite = "http://www.somesitethatdoesnotexist.abc/";
+            webEngineView.url = bogusSite;
+            tryCompare(loadRequestArray, "length", 2);
 
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, bogusSite);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadFailedStatus);
+            compare(loadRequest.activeUrl, url);
+            webEngineView.clear();
+
+            // Test page redirection
+            var redirectUrl = Qt.resolvedUrl("redirect.html");
+            webEngineView.url = redirectUrl;
+            tryCompare(loadRequestArray, "length", 4);
+
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, redirectUrl);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.activeUrl, redirectUrl);
+            loadRequest = loadRequestArray[2];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, redirectUrl);
+            loadRequest = loadRequestArray[3];
+            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.activeUrl, url);
+            webEngineView.clear();
+
+            // Test clicking on a hyperlink
+            var linkUrl = Qt.resolvedUrl("link.html");
+            webEngineView.url = linkUrl;
+            tryCompare(loadRequestArray, "length", 2);
+
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, linkUrl);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.activeUrl, linkUrl);
+            webEngineView.clear();
+
+            var lastUrl = webEngineView.url;
+            mouseClick(webEngineView, 10, 10, Qt.LeftButton, Qt.NoModifiers, 50);
+            tryCompare(loadRequestArray, "length", 2);
+
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.url, url);
+            compare(loadRequest.activeUrl, lastUrl);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.url, url);
+            compare(loadRequest.activeUrl, url);
+            webEngineView.clear();
+        }
+
+        function test_loadDataUrl() {
+            WebEngine.settings.errorPageEnabled = false;
+
+            var loadRequest = null;
+
+            // Test load of a data URL
+            // QTBUG-56661: Loading an URL before the data URL load improves the probability
+            // of the render process crash after the data URL load.
+            var url = Qt.resolvedUrl("test1.html");
+            webEngineView.url = url;
+            verify(webEngineView.waitForLoadSucceeded());
+            webEngineView.clear();
+
+            var dataUrl = "data:text/html,foo";
+            webEngineView.url = dataUrl;
+            tryCompare(loadRequestArray, "length", 2);
+
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, dataUrl);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.activeUrl, dataUrl);
+            webEngineView.clear();
+
+            // QTBUG-56661: This load might fail on Windows
+            webEngineView.url = url;
+            verify(webEngineView.waitForLoadSucceeded());
+            webEngineView.clear();
+
+            // Test loadHtml after a failed load
+            var aboutBlank = "about:blank";
+            webEngineView.url = aboutBlank; // Reset from previous test
+            verify(webEngineView.waitForLoadSucceeded());
+            webEngineView.clear();
+
+            var bogusSite = "http://www.somesitethatdoesnotexist.abc/";
             var handleLoadFailed = function(loadRequest) {
                 if (loadRequest.status == WebEngineView.LoadFailedStatus) {
-                    webEngineView.loadHtml("load failed", bogusSite)
-                    // Since the load did not succeed the active url is the
-                    // url of the previous successful load.
-                    compare(webEngineView.url, "about:blank")
-                    compare(loadRequest.url, bogusSite)
+                    // loadHtml constructs data URL
+                    webEngineView.loadHtml("load failed", bogusSite);
+                    compare(loadRequest.url, bogusSite);
                 }
             }
-            webEngineView.loadingChanged.connect(handleLoadFailed)
+            webEngineView.loadingChanged.connect(handleLoadFailed);
             webEngineView.url = bogusSite
-            compare(webEngineView.url, bogusSite)
-            verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.url, bogusSite)
-            webEngineView.loadingChanged.disconnect(handleLoadFailed)
+            tryCompare(loadRequestArray, "length", 4);
+            webEngineView.loadingChanged.disconnect(handleLoadFailed);
 
-            var dataUrl = "data:text/html,foo"
-            webEngineView.url = dataUrl
-            compare(webEngineView.url, dataUrl)
-            verify(webEngineView.waitForLoadSucceeded()) // data:text/html,foo is loaded
-            compare(webEngineView.url, dataUrl)
-
-            var redirectUrl = Qt.resolvedUrl("redirect.html")
-            webEngineView.url = redirectUrl
-            compare(webEngineView.url, redirectUrl)
-            verify(webEngineView.waitForLoadSucceeded()) // redirect.html is loaded
-            compare(webEngineView.url, redirectUrl)
-            verify(webEngineView.waitForLoadSucceeded()) // test1.html is loaded
-            compare(webEngineView.url, url)
-
-            var linkUrl = Qt.resolvedUrl("link.html")
-            webEngineView.url = linkUrl
-            compare(webEngineView.url, linkUrl)
-            verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.url, linkUrl)
-
-            var handleLoadRequest = function(loadRequest) {
-                if (loadRequest.status == WebEngineView.LoadStartedStatus) {
-                    compare(webEngineView.url, lastUrl)
-                    compare(loadRequest.url, url)
-                }
-                if (loadRequest.status == WebEngineView.LoadSuceededStatus) {
-                    compare(webEngineView.url, loadRequest.url)
-                    compare(webEngineView.url, url)
-                }
-            }
-            lastUrl = webEngineView.url
-            webEngineView.loadingChanged.connect(handleLoadRequest)
-            mouseClick(webEngineView, 10, 10, Qt.LeftButton, Qt.NoModifiers, 50)
-            verify(webEngineView.waitForLoadSucceeded())
-            compare(webEngineView.url, url)
-            webEngineView.loadingChanged.disconnect(handleLoadRequest)
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, bogusSite);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadFailedStatus);
+            // Since the load did not succeed the active url is the
+            // URL of the previous successful load.
+            compare(loadRequest.activeUrl, aboutBlank);
+            loadRequest = loadRequestArray[2];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.activeUrl, aboutBlank);
+            loadRequest = loadRequestArray[3];
+            compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
+            compare(loadRequest.activeUrl, bogusSite);
+            webEngineView.clear();
         }
 
         function test_stopStatus() {
-            var url = Qt.resolvedUrl("test1.html")
+            var loadRequest = null;
 
-            var handleLoadRequest = function(loadRequest) {
-                if (loadRequest.status == WebEngineView.LoadStoppedStatus) {
-                    compare(webEngineView.url, url)
-                    compare(loadRequest.url, url)
-                }
+            var handleLoadStarted = function(loadRequest) {
+                if (loadRequest.status == WebEngineView.LoadStartedStatus)
+                    webEngineView.stop();
             }
-            webEngineView.loadingChanged.connect(handleLoadRequest)
-            webEngineView.url = url
-            compare(webEngineView.url, url)
-            webEngineView.stop()
-            verify(webEngineView.waitForLoadStopped())
-            compare(webEngineView.url, url)
-            webEngineView.loadingChanged.disconnect(handleLoadRequest)
+            webEngineView.loadingChanged.connect(handleLoadStarted);
+            var url = Qt.resolvedUrl("test1.html");
+            webEngineView.url = url;
+            tryCompare(loadRequestArray, "length", 2);
+            webEngineView.loadingChanged.disconnect(handleLoadStarted);
+
+            loadRequest = loadRequestArray[0];
+            compare(loadRequest.status, WebEngineView.LoadStartedStatus);
+            compare(loadRequest.url, url);
+            compare(loadRequest.activeUrl, url);
+            loadRequest = loadRequestArray[1];
+            compare(loadRequest.status, WebEngineView.LoadStoppedStatus);
+            compare(loadRequest.url, url);
+            compare(loadRequest.activeUrl, url);
+            webEngineView.clear();
         }
     }
 }

@@ -10,5 +10,5 @@ osx
 [WebViewGeopermission::test_geoPermissionRequest]
 osx
 
-[WebEngineViewLoadUrl::test_urlProperty]
+[WebEngineViewLoadUrl::test_loadDataUrl]
 windows
