@@ -159,7 +159,6 @@ void MediaCaptureDevicesDispatcher::handleMediaAccessPermissionResponse(content:
     if (securityOriginsMatch && (microphoneRequested || webcamRequested)) {
         switch (request.request_type) {
         case content::MEDIA_OPEN_DEVICE:
-            Q_UNREACHABLE(); // only speculative as this is for Pepper
             getDefaultDevices("", "", microphoneRequested, webcamRequested, &devices);
             break;
         case content::MEDIA_DEVICE_ACCESS:
