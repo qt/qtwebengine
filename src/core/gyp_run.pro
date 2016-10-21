@@ -2,6 +2,11 @@
 # 1) invoking gyp through the gyp_qtwebengine script, which in turn makes use of the generated gypi include files
 # 2) produce a Makefile that will run ninja, and take care of actually building everything.
 
+isQtMinimum(5, 8) {
+    include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+    QT_FOR_CONFIG += webengine-private
+}
+
 TEMPLATE = aux
 
 cross_compile {
@@ -148,8 +153,12 @@ for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 }
 
 build_pass|!debug_and_release {
+
+    ninja_binary = ninja
     ninja.target = invoke_ninja
-    ninja.commands = $$findOrBuildNinja() \$\(NINJAFLAGS\) -C "$$OUT_PWD/$$getConfigDir()"
+
+    !qtConfig(system-ninja): ninja_binary = $$shell_quote($$shell_path($$buildNinja()))
+    ninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -C $$shell_quote($$OUT_PWD/$$getConfigDir())
     QMAKE_EXTRA_TARGETS += ninja
 
     build_pass:build_all: default_target.target = all

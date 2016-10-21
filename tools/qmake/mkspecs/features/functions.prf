@@ -368,24 +368,21 @@ defineTest(use?) {
     return(false)
 }
 
-defineReplace(findOrBuildNinja) {
-  # If NINJA_PATH env var is set, prefer that.
-  # Fallback to locating our own bootstrapped ninja.
-  out = $(NINJA_PATH)
-  !exists($$out) {
+defineReplace(buildNinja) {
+
     src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
 
     out = $$shadowed($$absolute_path(ninja/ninja, $$src_3rd_party_dir))
     win32: out = $${out}.exe
 
-    # If we did not find ninja, then we bootstrap it.
+    # check if it is not already built
     !exists($$out) {
-      mkpath($$dirname(out))
-      ninja_configure = $$absolute_path(ninja/configure.py, $$src_3rd_party_dir)
-      system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$system_path($$ninja_configure)) --bootstrap")
+        mkpath($$dirname(out))
+        ninja_configure = $$absolute_path(ninja/configure.py, $$src_3rd_party_dir)
+        system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$system_path($$ninja_configure)) --bootstrap")
     }
-  }
-  return($$system_path($$out))
+
+    return($$out)
 }
 
 defineTest(skipBuild) {

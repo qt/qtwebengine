@@ -8,6 +8,13 @@
         }
     },
 
+    "tests" : {
+        "ninja": {
+            "label": "system ninja",
+            "type": "detectNinja"
+        }
+    },
+
     "features": {
         "proprietary-codecs": {
             "label": "Proprietary Codecs",
@@ -19,6 +26,11 @@
             "label": "Spellchecker",
             "purpose": "Enables the use of Chromium's spellchecker",
             "output": [ "privateFeature" ]
+        },
+        "system-ninja": {
+            "label": "Using system ninja",
+            "condition": "tests.ninja",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -27,7 +39,8 @@
             "section": "Qt WebEngine",
             "entries": [
                 "proprietary-codecs",
-                "spellchecker"
+                "spellchecker",
+                "system-ninja"
             ]
         }
     ]
