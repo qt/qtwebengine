@@ -368,21 +368,22 @@ defineTest(use?) {
     return(false)
 }
 
-defineReplace(buildNinja) {
-
+defineReplace(ninjaPath) {
     src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
-
     out = $$shadowed($$absolute_path(ninja/ninja, $$src_3rd_party_dir))
     win32: out = $${out}.exe
-
-    # check if it is not already built
-    !exists($$out) {
-        mkpath($$dirname(out))
-        ninja_configure = $$absolute_path(ninja/configure.py, $$src_3rd_party_dir)
-        system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$system_path($$ninja_configure)) --bootstrap")
-    }
-
     return($$out)
+}
+
+defineReplace(buildNinja) {
+   out = $$ninjaPath()
+   # check if it is not already build
+   !exists($$out) {
+       mkpath($$dirname(out))
+       src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
+       ninja_configure = $$absolute_path(ninja/configure.py, $$src_3rd_party_dir)
+       system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$system_path($$ninja_configure)) --bootstrap")
+   }
 }
 
 defineTest(skipBuild) {

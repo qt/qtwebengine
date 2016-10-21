@@ -155,15 +155,22 @@ for (config, GYP_CONFIG): GYP_ARGS += "-D $$config"
 build_pass|!debug_and_release {
 
     ninja_binary = ninja
-    ninja.target = invoke_ninja
+    runninja.target = run_ninja
 
-    !qtConfig(system-ninja): ninja_binary = $$shell_quote($$shell_path($$buildNinja()))
-    ninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -C $$shell_quote($$OUT_PWD/$$getConfigDir())
-    QMAKE_EXTRA_TARGETS += ninja
+    !qtConfig(system-ninja) {
+        ninja_binary = $$shell_quote($$shell_path($$ninjaPath()))
+        buildninja.target = build_ninja
+        buildninja.commands = $$buildNinja()
+        QMAKE_EXTRA_TARGETS += buildninja
+        runninja.depends = buildninja
+    }
+
+    runninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -C $$shell_quote($$OUT_PWD/$$getConfigDir())
+    QMAKE_EXTRA_TARGETS += runninja
 
     build_pass:build_all: default_target.target = all
     else: default_target.target = first
-    default_target.depends = ninja
+    default_target.depends = runninja
 
     QMAKE_EXTRA_TARGETS += default_target
 } else {
