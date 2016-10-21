@@ -48,7 +48,7 @@ HEADERS = \
     DEFINES += QT_UI_DELEGATES
 }
 
-!contains(WEBENGINE_CONFIG, no_spellcheck) {
+contains(WEBENGINE_CONFIG, use_spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 

@@ -3,7 +3,8 @@
 
     "commandline": {
         "options": {
-            "proprietary-codecs": "boolean"
+            "proprietary-codecs": "boolean",
+            "spellchecker": "boolean"
         }
     },
 
@@ -13,6 +14,11 @@
             "autoDetect": false,
             "purpose": "Enables the use of proprietary codecs such as h.264/h.265 and MP3",
             "output": [ "privateFeature" ]
+        },
+        "spellchecker": {
+            "label": "Spellchecker",
+            "purpose": "Enables the use of Chromium's spellchecker",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -20,7 +26,8 @@
         {
             "section": "Qt WebEngine",
             "entries": [
-                "proprietary-codecs"
+                "proprietary-codecs",
+                "spellchecker"
             ]
         }
     ]

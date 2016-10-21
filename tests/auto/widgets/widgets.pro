@@ -13,7 +13,7 @@ SUBDIRS += \
     qwebenginesettings \
     qwebengineview
 
-!contains(WEBENGINE_CONFIG, no_spellcheck):!cross_compile {
+!contains(WEBENGINE_CONFIG, use_spellchecker):!cross_compile {
     !contains(WEBENGINE_CONFIG, use_native_spellchecker) {
         SUBDIRS += qwebenginespellcheck
     } else {

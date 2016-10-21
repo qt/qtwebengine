@@ -79,6 +79,7 @@ defineTest(runConfigure) {
         include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
         QT_FOR_CONFIG += webengine-private
         qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
+        qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
     }
 
     isEmpty(skipBuildReason): {
