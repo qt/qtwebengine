@@ -12,6 +12,10 @@
         "ninja": {
             "label": "system ninja",
             "type": "detectNinja"
+        },
+        "gn": {
+            "label": "system gn",
+            "type": "detectGn"
         }
     },
 
@@ -31,6 +35,11 @@
             "label": "Using system ninja",
             "condition": "tests.ninja",
             "output": [ "privateFeature" ]
+        },
+        "system-gn": {
+            "label": "Using system gn",
+            "condition": "tests.gn",
+            "output": [ "privateFeature" ]
         }
     },
 
@@ -40,6 +49,7 @@
             "entries": [
                 "proprietary-codecs",
                 "spellchecker",
+                "system-gn",
                 "system-ninja"
             ]
         }

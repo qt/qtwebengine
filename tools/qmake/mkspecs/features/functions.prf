@@ -386,6 +386,25 @@ defineReplace(buildNinja) {
    }
 }
 
+defineReplace(gnPath) {
+    src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
+    out = $$shadowed($$absolute_path(chromium/tools/gn/gn, $$src_3rd_party_dir))
+    win32: out = $${out}.exe
+    return($$out)
+}
+
+defineReplace(buildGn) {
+    out = $$gnPath()
+    !qtConfig(system-ninja): ninja_path = "--path $$ninjaPath()"
+    # check if it is not already build
+    !exists($$out) {
+        mkpath($$dirname(out))
+        src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
+        gn_configure = $$system_path($$absolute_path(chromium/tools/gn/bootstrap/bootstrap.py, $$src_3rd_party_dir))
+        system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$gn_configure) --no-rebuild $$ninja_path")
+    }
+}
+
 defineTest(skipBuild) {
     skipBuildReason = "$$skipBuildReason $${EOL}$$1"
     export(skipBuildReason)
