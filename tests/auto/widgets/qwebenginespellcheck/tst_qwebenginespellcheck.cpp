@@ -103,7 +103,9 @@ void tst_QWebEngineSpellcheck::load()
 {
     m_view->page()->load(QUrl("qrc:///resources/index.html"));
     m_view->show();
-    waitForSignal(m_view->page(), SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(m_view->page(), &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
+
 }
 
 void tst_QWebEngineSpellcheck::cleanup()
@@ -170,7 +172,8 @@ void tst_QWebEngineSpellcheck::spellcheck()
 
     // open menu on misspelled word
     m_view->activateMenu(m_view->focusWidget(), rect.center());
-    waitForSignal(m_view, SIGNAL(menuReady()));
+    QSignalSpy spyMenuReady(m_view, &WebView::menuReady);
+    QVERIFY(spyMenuReady.wait());
 
     // check if menu is valid
     QVERIFY(m_view->data().isValid());

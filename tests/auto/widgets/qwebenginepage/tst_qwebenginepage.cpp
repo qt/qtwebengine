@@ -490,7 +490,8 @@ void tst_QWebEnginePage::pasteImage()
     clipboard->setImage(origImage);
     QWebEnginePage *page = m_view->page();
     page->load(QUrl("qrc:///resources/pasteimage.html"));
-    QVERIFY(waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
     page->triggerAction(QWebEnginePage::Paste);
     QTRY_VERIFY(evaluateJavaScriptSync(page,
             "window.myImageDataURL ? window.myImageDataURL.length : 0").toInt() > 0);
@@ -661,7 +662,8 @@ void tst_QWebEnginePage::userStyleSheet()
     m_page->settings()->setUserStyleSheetUrl(QUrl("data:text/css;charset=utf-8;base64,"
             + QByteArray("p { background-image: url('http://does.not/exist.png');}").toBase64()));
     m_view->setHtml("<p>hello world</p>");
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
@@ -679,7 +681,8 @@ void tst_QWebEnginePage::userStyleSheetFromLocalFileUrl()
     QUrl styleSheetUrl = QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginepage/resources/user.css"));
     m_page->settings()->setUserStyleSheetUrl(styleSheetUrl);
     m_view->setHtml("<p>hello world</p>");
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
@@ -696,7 +699,8 @@ void tst_QWebEnginePage::userStyleSheetFromQrcUrl()
 
     m_page->settings()->setUserStyleSheetUrl(QUrl("qrc:///resources/user.css"));
     m_view->setHtml("<p>hello world</p>");
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(networkManager->requestedUrls.count() >= 1);
     QCOMPARE(networkManager->requestedUrls.at(0), QUrl("http://does.not/exist.png"));
@@ -723,10 +727,12 @@ void tst_QWebEnginePage::modified()
     QSKIP("QWEBENGINEPAGE_ISMODIFIED");
 #else
     m_page->setUrl(QUrl("data:text/html,<body>blub"));
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     m_page->setUrl(QUrl("data:text/html,<body id=foo contenteditable>blah"));
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(!m_page->isModified());
 
@@ -750,7 +756,8 @@ void tst_QWebEnginePage::modified()
     QVERIFY(!m_page->history()->forwardItem().isValid());
 
     m_page->history()->back();
-    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(!m_page->history()->canGoBack());
     QVERIFY(m_page->history()->canGoForward());
@@ -772,7 +779,8 @@ void tst_QWebEnginePage::modified()
     m_page->setUrl(QUrl("data:text/html,<body>This is fourth page"));
     QCOMPARE(m_page->history()->count(), 2);
     m_page->setUrl(QUrl("data:text/html,<body>This is fifth page"));
-    QVERIFY(::waitForSignal(m_page, SIGNAL(saveFrameStateRequested(QWebEngineFrame*,QWebEngineHistoryItem*))));
+    QSignalSpy spy(m_page, &QWebEnginePage::saveFrameStateRequested);
+    QVERIFY(spy.wait());
 #endif
 }
 
@@ -2739,7 +2747,8 @@ void tst_QWebEnginePage::screenshot()
     QWebEnginePage* page = new QWebEnginePage;
     page->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
     page->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
-    ::waitForSignal(page, SIGNAL(loadFinished(bool)), 2000);
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait(2000));
 
     // take screenshot without a view
     takeScreenshot(page);
@@ -2865,7 +2874,8 @@ void tst_QWebEnginePage::testStopScheduledPageRefresh()
                                 "<meta http-equiv=\"refresh\"content=\"0;URL=qrc:///resources/index.html\">"
                                 "</head><body><h1>Page redirects immediately...</h1>"
                                 "</body></html>");
-    QVERIFY(::waitForSignal(&page1, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(&page1, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait();
     QTest::qWait(500);
     QCOMPARE(page1.url(), QUrl(QLatin1String("qrc:///resources/index.html")));
 
@@ -3217,7 +3227,8 @@ void tst_QWebEnginePage::deleteQWebEngineViewTwice()
         mainWindow.setCentralWidget(webView);
         webView->load(QUrl("qrc:///resources/frame_a.html"));
         mainWindow.show();
-        QVERIFY(::waitForSignal(webView, SIGNAL(loadFinished(bool))));
+        QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
+        QVERIFY(spyFinished.wait());
     }
 }
 
@@ -3272,7 +3283,8 @@ void tst_QWebEnginePage::renderOnRepaintRequestedShouldNotRecurse()
 
     page.setHtml("zalan loves trunk", QUrl());
 
-    QVERIFY(::waitForSignal(&r, SIGNAL(finished())));
+    QSignalSpy spyFinished(&r, &RepaintRequestedRenderer::finished);
+    QVERIFY(spyFinished.wait());
 #endif
 }
 
@@ -3323,7 +3335,8 @@ void tst_QWebEnginePage::loadSignalsOrder()
     QFETCH(QUrl, url);
     QWebEnginePage page;
     SpyForLoadSignalsOrder loadSpy(&page);
-    waitForSignal(&loadSpy, SIGNAL(started()), 500);
+    QSignalSpy spyLoadSpy(&loadSpy, &SpyForLoadSignalsOrder::started);
+    QVERIFY(spyLoadSpy.wait(500));
     page.load(url);
     QTRY_VERIFY(loadSpy.isFinished());
 }
@@ -3449,7 +3462,8 @@ void tst_QWebEnginePage::savePage()
     const QString urlPrefix = QStringLiteral("data:text/html,<h1>");
     const QString text = QStringLiteral("There is Thingumbob shouting!");
     page->load(QUrl(urlPrefix + text));
-    waitForSignal(page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QCOMPARE(toPlainTextSync(page), text);
 
     // Save the loaded page as HTML.
@@ -3460,12 +3474,12 @@ void tst_QWebEnginePage::savePage()
 
     // Load something else.
     page->load(QUrl(urlPrefix + QLatin1String("It's a Snark!")));
-    waitForSignal(page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spyFinished.wait());
     QVERIFY(toPlainTextSync(page) != text);
 
     // Load the saved page and compare the contents.
     page->load(QUrl::fromLocalFile(filePath));
-    waitForSignal(page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spyFinished.wait());
     QCOMPARE(toPlainTextSync(page), text);
 }
 
@@ -3791,7 +3805,8 @@ void tst_QWebEnginePage::progressSignal()
     QUrl dataUrl("data:text/html,<h1>Test");
     m_view->setUrl(dataUrl);
 
-    ::waitForSignal(m_view, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(m_view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(progressSpy.size() >= 2);
     int previousValue = -1;
@@ -3812,14 +3827,14 @@ void tst_QWebEnginePage::urlChange()
     QUrl dataUrl("data:text/html,<h1>Test");
     m_view->setUrl(dataUrl);
 
-    ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
+    QVERIFY(urlSpy.wait());
 
     QCOMPARE(urlSpy.size(), 1);
 
     QUrl dataUrl2("data:text/html,<html><head><title>title</title></head><body><h1>Test</body></html>");
     m_view->setUrl(dataUrl2);
 
-    ::waitForSignal(m_page, SIGNAL(urlChanged(QUrl)));
+    QVERIFY(urlSpy.wait());
 
     QCOMPARE(urlSpy.size(), 2);
 }
@@ -3922,7 +3937,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 
     const QUrl first("http://abcdef.abcdef/");
     page.setUrl(first);
-    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(spy.count(), 1);
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), first);
@@ -3932,7 +3947,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
     QVERIFY(first != second);
 
     page.load(second);
-    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(spy.count(), 2);
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), second);
@@ -4016,14 +4031,15 @@ void tst_QWebEnginePage::setHtmlWithStylesheetResource()
     QWebEngineElement webElement;
 
     page.setHtml(html, QUrl(QLatin1String("qrc:///file")));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait(200));
     webElement = page.documentElement().findFirst("p");
     QCOMPARE(webElement.styleProperty("color", QWebEngineElement::CascadedStyle), QLatin1String("red"));
 
     // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
 
     page.setHtml(html, QUrl(QLatin1String("http://www.example.com/")));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)), 200);
+    QVERIFY(spyFinished.wait(200));
     webElement = page.documentElement().findFirst("p");
     QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
     QCOMPARE(webElement.styleProperty("color", QWebEngineElement::CascadedStyle), QString());
@@ -4048,7 +4064,8 @@ void tst_QWebEnginePage::setHtmlWithBaseURL()
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QCOMPARE(spy.count(), 1);
 
     QCOMPARE(evaluateJavaScriptSync(&page, "document.images.length").toInt(), 1);
@@ -4079,7 +4096,8 @@ void tst_QWebEnginePage::setHtmlWithJSAlert()
     QString html("<html><head></head><body><script>alert('foo');</script><p>hello world</p></body></html>");
     MyPage page;
     page.setHtml(html, QUrl(QStringLiteral("http://test.origin.com/path#fragment")));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QCOMPARE(page.alerts, 1);
     QCOMPARE(toHtmlSync(&page), html);
 }
@@ -4259,9 +4277,9 @@ void tst_QWebEnginePage::scrollbarsOff()
                  "</body>");
 
 
-    QSignalSpy loadSpy(&view, SIGNAL(loadFinished(bool)));
+    QSignalSpy loadSpy(&view, &QWebEngineView::loadFinished);
     view.setHtml(html);
-    ::waitForSignal(&view, SIGNAL(loadFinished(bool)), 200);
+    QVERIFY(loadSpy.wait(200);
     QCOMPARE(loadSpy.count(), 1);
 
     mainFrame->evaluateJavaScript("checkScrollbar();");
@@ -4327,7 +4345,8 @@ void tst_QWebEnginePage::evaluateWillCauseRepaint()
     QTRY_COMPARE(loadSpy.count(), 1);
 
     evaluateJavaScriptSync(view.page(), "document.getElementById('junk').style.display = 'none';");
-    ::waitForSignal(&view, SIGNAL(repaintRequested()));
+    QSignalSpy repaintSpy(&view, &WebView::repaintRequested);
+    QVERIFY(repaintSpy.wait());
 }
 
 void tst_QWebEnginePage::setContent_data()
@@ -4441,7 +4460,7 @@ void tst_QWebEnginePage::setUrlToEmpty()
     // Set existing url
     page.setUrl(url);
     expectedLoadFinishedCount++;
-    ::waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
 
     QCOMPARE(spy.count(), expectedLoadFinishedCount);
     QCOMPARE(page.url(), url);
@@ -4602,7 +4621,8 @@ void tst_QWebEnginePage::setUrlUsingStateObject()
 
     url = QUrl("qrc:/resources/test1.html");
     m_page->setUrl(url);
-    waitForSignal(m_page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(m_page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     expectedUrlChangeCount++;
     QCOMPARE(urlChangedSpy.count(), expectedUrlChangeCount);
     QCOMPARE(m_page->url(), url);
@@ -4802,7 +4822,8 @@ void tst_QWebEnginePage::loadInSignalHandlers()
     URLSetter setter(m_page, signal, type, urlForSetter);
 
     m_page->load(url);
-    waitForSignal(&setter, SIGNAL(finished()));
+    QSignalSpy spy(&setter, &URLSetter::finished);
+    QVERIFY(spy.wait());
     QCOMPARE(m_page->url(), urlForSetter);
 }
 

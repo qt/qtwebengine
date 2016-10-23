@@ -181,7 +181,8 @@ void tst_QWebEngineView::reusePage()
     page->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
     if (html.contains("</embed>")) {
         // some reasonable time for the PluginStream to feed test.swf to flash and start painting
-        waitForSignal(view1, SIGNAL(loadFinished(bool)), 2000);
+        QSignalSpy spyFinished(view1, &QWebEngineView::loadFinished);
+        QVERIFY(spyFinished.wait(2000));
     }
 
     view1->show();
@@ -285,7 +286,8 @@ void tst_QWebEngineView::focusInputTypes()
     webView.load(url);
     mainFrame->setFocus();
 
-    QVERIFY(waitForSignal(&webView, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     // 'text' type
     QWebEngineElement inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=text]"));
@@ -404,7 +406,8 @@ void tst_QWebEngineView::horizontalScrollbarTest()
     webView.page()->load(url);
     webView.page()->setFocus();
 
-    QVERIFY(waitForSignal(&webView, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(webView.page()->scrollPosition() == QPoint(0, 0));
 
@@ -566,7 +569,8 @@ void tst_QWebEngineView::renderingAfterMaxAndBack()
 
     QWebEngineView view;
     view.page()->load(url);
-    QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(&view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
     view.show();
 
     view.page()->settings()->setMaximumPagesInCache(3);
@@ -588,7 +592,7 @@ void tst_QWebEngineView::renderingAfterMaxAndBack()
                      "</html>");
     view.page()->load(url2);
 
-    QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
+    QVERIFY(spyFinished.wait());
 
     view.showMaximized();
 
@@ -844,25 +848,29 @@ void tst_QWebEngineView::changeLocale()
     QWebEngineView viewDE;
     viewDE.setUrl(url);
 
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(titleChanged(QString))));
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyTitleChangedDE(&viewDE, &QWebEngineView::titleChanged);
+    QVERIFY(spyTitleChangedDE.wait());
+    QSignalSpy spyFinishedDE(&viewDE, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinishedDE.wait());
     QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
 
     QLocale::setDefault(QLocale("en"));
     QWebEngineView viewEN;
     viewEN.setUrl(url);
 
-    QVERIFY(waitForSignal(&viewEN, SIGNAL(titleChanged(QString))));
-    QVERIFY(waitForSignal(&viewEN, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyTitleChangedEN(&viewEN, &QWebEngineView::titleChanged);
+    QVERIFY(spyTitleChangedEN.wait());
+    QSignalSpy spyFinishedEN(&viewEN, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinishedEN.wait());
     QCOMPARE(viewEN.title(), QStringLiteral("%1 is not available").arg(url.toString()));
 
     viewDE.setUrl(QUrl("about:blank"));
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QVERIFY(spyFinishedDE.wait());
 
     viewDE.setUrl(url);
 
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(titleChanged(QString))));
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QVERIFY(spyTitleChangedDE.wait());
+    QVERIFY(spyFinishedDE.wait());
     QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
 }
 
