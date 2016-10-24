@@ -101,43 +101,62 @@ static void SavePdfFile(scoped_refptr<base::RefCountedBytes> data,
         metafile.SaveTo(&file);
 }
 
-static void applyQPageLayoutSettingsToDictionary(const QPageLayout& pageLayout, base::DictionaryValue& print_settings)
+static base::DictionaryValue *createPrintSettings()
 {
+    base::DictionaryValue *printSettings = new base::DictionaryValue();
     // TO DO: Check if we can use the request ID from Qt here somehow.
     static int internalRequestId = 0;
 
-    print_settings.SetBoolean(printing::kIsFirstRequest, internalRequestId++ == 0);
-    print_settings.SetInteger(printing::kPreviewRequestID, internalRequestId);
+    printSettings->SetBoolean(printing::kIsFirstRequest, internalRequestId++ == 0);
+    printSettings->SetInteger(printing::kPreviewRequestID, internalRequestId);
+
+    // The following are standard settings that Chromium expects to be set.
+    printSettings->SetBoolean(printing::kSettingPrintToPDF, true);
+    printSettings->SetBoolean(printing::kSettingCloudPrintDialog, false);
+    printSettings->SetBoolean(printing::kSettingPrintWithPrivet, false);
+    printSettings->SetBoolean(printing::kSettingPrintWithExtension, false);
+
+    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
+    printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
+    printSettings->SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
+    printSettings->SetInteger(printing::kSettingCopies, 1);
+    printSettings->SetBoolean(printing::kSettingCollate, false);
+    printSettings->SetBoolean(printing::kSettingGenerateDraftData, false);
+    printSettings->SetBoolean(printing::kSettingPreviewModifiable, false);
+
+    printSettings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
+    printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds, true);
+    printSettings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
+    printSettings->SetString(printing::kSettingDeviceName, "");
+    printSettings->SetInteger(printing::kPreviewUIID, 12345678);
+
+    return printSettings;
+}
+
+static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout)
+{
+    base::DictionaryValue *printSettings = createPrintSettings();
+
     //Set page size attributes, chromium expects these in micrometers
     QSizeF pageSizeInMilimeter = pageLayout.pageSize().size(QPageSize::Millimeter);
     scoped_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
     sizeDict->SetInteger(printing::kSettingMediaSizeWidthMicrons, pageSizeInMilimeter.width() * kMicronsToMillimeter);
     sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMilimeter.height() * kMicronsToMillimeter);
-    print_settings.Set(printing::kSettingMediaSize, std::move(sizeDict));
+    printSettings->Set(printing::kSettingMediaSize, std::move(sizeDict));
 
-    print_settings.SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
+    // Apply page margins
+    QMargins pageMarginsInPoints = pageLayout.marginsPoints();
+    scoped_ptr<base::DictionaryValue> marginsDict(new base::DictionaryValue);
+    marginsDict->SetInteger(printing::kSettingMarginTop, pageMarginsInPoints.top());
+    marginsDict->SetInteger(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
+    marginsDict->SetInteger(printing::kSettingMarginLeft, pageMarginsInPoints.left());
+    marginsDict->SetInteger(printing::kSettingMarginRight, pageMarginsInPoints.right());
+    printSettings->Set(printing::kSettingMarginsCustom, std::move(marginsDict));
+    printSettings->SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
 
-    // The following are standard settings that Chromium expects to be set.
-    print_settings.SetBoolean(printing::kSettingPrintToPDF, true);
-    print_settings.SetBoolean(printing::kSettingCloudPrintDialog, false);
-    print_settings.SetBoolean(printing::kSettingPrintWithPrivet, false);
-    print_settings.SetBoolean(printing::kSettingPrintWithExtension, false);
+    printSettings->SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
 
-    print_settings.SetBoolean(printing::kSettingGenerateDraftData, false);
-    print_settings.SetBoolean(printing::kSettingPreviewModifiable, false);
-    print_settings.SetInteger(printing::kSettingColor, printing::COLOR);
-    print_settings.SetInteger(printing::kSettingDuplexMode, printing::SIMPLEX);
-    print_settings.SetInteger(printing::kSettingDuplexMode, printing::UNKNOWN_DUPLEX_MODE);
-    print_settings.SetInteger(printing::kSettingCopies, 1);
-    print_settings.SetBoolean(printing::kSettingCollate, false);
-    print_settings.SetBoolean(printing::kSettingGenerateDraftData, false);
-    print_settings.SetBoolean(printing::kSettingPreviewModifiable, false);
-
-    print_settings.SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
-    print_settings.SetBoolean(printing::kSettingShouldPrintBackgrounds, false);
-    print_settings.SetBoolean(printing::kSettingHeaderFooterEnabled, false);
-    print_settings.SetString(printing::kSettingDeviceName, "");
-    print_settings.SetInteger(printing::kPreviewUIID, 12345678);
+    return printSettings;
 }
 
 } // namespace
@@ -191,8 +210,9 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout)
 {
     if (!pageLayout.isValid())
         return false;
-    m_printSettings.reset(new base::DictionaryValue());
-    applyQPageLayoutSettingsToDictionary(pageLayout, *m_printSettings);
+    m_printSettings.reset(createPrintSettingsFromQPageLayout(pageLayout));
+
+    m_printSettings->SetInteger(printing::kSettingColor, printing::COLOR);
     return Send(new PrintMsg_InitiatePrintPreview(routing_id(), false));
 }
 
