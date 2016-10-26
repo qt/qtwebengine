@@ -71,6 +71,7 @@ public:
 
     QWebEnginePage *page;
     bool m_pendingContextMenuEvent;
+    bool m_dragEntered;
 };
 
 #ifndef QT_NO_ACCESSIBILITY
