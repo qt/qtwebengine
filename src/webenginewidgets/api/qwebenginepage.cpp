@@ -1263,6 +1263,8 @@ void QWebEnginePagePrivate::runFileChooser(FilePickerController *controller)
         controller->accepted(selectedFileNames);
     else
         controller->rejected();
+
+    delete controller;
 }
 
 WebEngineSettings *QWebEnginePagePrivate::webEngineSettings() const
