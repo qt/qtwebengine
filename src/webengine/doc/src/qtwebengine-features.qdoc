@@ -151,6 +151,7 @@
         \li Linux
             \code
             /usr/lib/pepperflashplugin-nonfree/libpepflashplayer.so
+            /usr/lib/adobe-flashplugin/libpepflashplayer.so
             /usr/lib/PepperFlash/libpepflashplayer.so
             /usr/lib64/chromium/PepperFlash/libpepflashplayer.so
             \endcode
