@@ -313,6 +313,10 @@ void QWebEnginePagePrivate::adoptNewWindowImpl(QWebEnginePage *newPage,
     if (!initialGeometry.isEmpty())
         emit newPage->geometryChangeRequested(initialGeometry);
 
+    // If the constructor of the QWebEnginePage descendant set a web channel,
+    // set it on the new adapter.
+    newWebContents->setWebChannel(newPage->d_func()->webChannel);
+
     // Page has finished the adoption process.
     newPage->d_func()->m_isBeingAdopted = false;
 }
