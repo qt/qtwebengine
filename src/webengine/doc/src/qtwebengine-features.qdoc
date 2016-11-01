@@ -292,9 +292,9 @@
     {WebEngineProfile.spellCheckEnabled} property in Qt Quick applications.
 
     The current language used for spellchecking is defined per profile, and can
-    be set using the QWebEngineProfile::setSpellCheckLanguage() method or the
-    \l {QQuickWebEngineProfile::spellCheckLanguage}
-    {WebEngineProfile.spellCheckLanguage} property.
+    be set using the QWebEngineProfile::setSpellCheckLanguages() method or the
+    \l {QQuickWebEngineProfile::spellCheckLanguages}
+    {WebEngineProfile.spellCheckLanguages} property.
 
     This feature can be tested by building and running the
     \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
