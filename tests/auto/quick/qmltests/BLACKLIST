@@ -9,6 +9,3 @@ osx
 
 [WebViewGeopermission::test_geoPermissionRequest]
 osx
-
-[WebEngineViewLoadUrl::test_loadDataUrl]
-windows

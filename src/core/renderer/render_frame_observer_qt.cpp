@@ -55,6 +55,8 @@ namespace QtWebEngineCore {
 
 RenderFrameObserverQt::RenderFrameObserverQt(content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame)
+    , RenderFrameObserverTracker<RenderFrameObserverQt>(render_frame)
+    , m_isFrameDetached(false)
 {
 }
 
@@ -71,5 +73,15 @@ void RenderFrameObserverQt::DidCreatePepperPlugin(content::RendererPpapiHost* ho
                 base::WrapUnique(new PepperSharedMemoryMessageFilter(host)));
 }
 #endif
+
+void RenderFrameObserverQt::FrameDetached()
+{
+    m_isFrameDetached = true;
+}
+
+bool RenderFrameObserverQt::isFrameDetached() const
+{
+    return m_isFrameDetached;
+}
 
 } // namespace QtWebEngineCore

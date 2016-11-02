@@ -135,6 +135,12 @@ void ContentRendererClientQt::RenderFrameCreated(content::RenderFrame* render_fr
 
 void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame* render_frame)
 {
+    // Check whether the render_frame has been created and has not been detached yet.
+    // Otherwise the WebFrame is not available.
+    RenderFrameObserverQt *render_frame_observer = RenderFrameObserverQt::Get(render_frame);
+    if (!render_frame_observer || render_frame_observer->isFrameDetached())
+        return; // The frame is invisible to scripts.
+
     if (WebChannelIPCTransport *transport = WebChannelIPCTransport::Get(render_frame->GetRenderView()))
         transport->RunScriptsAtDocumentStart(render_frame);
     UserResourceController::instance()->RunScriptsAtDocumentStart(render_frame);
@@ -142,6 +148,12 @@ void ContentRendererClientQt::RunScriptsAtDocumentStart(content::RenderFrame* re
 
 void ContentRendererClientQt::RunScriptsAtDocumentEnd(content::RenderFrame* render_frame)
 {
+    // Check whether the render_frame has been created and has not been detached yet.
+    // Otherwise the WebFrame is not available.
+    RenderFrameObserverQt *render_frame_observer = RenderFrameObserverQt::Get(render_frame);
+    if (!render_frame_observer || render_frame_observer->isFrameDetached())
+        return; // The frame is invisible to scripts.
+
     UserResourceController::instance()->RunScriptsAtDocumentEnd(render_frame);
 }
 

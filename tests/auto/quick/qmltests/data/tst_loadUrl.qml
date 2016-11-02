@@ -189,13 +189,6 @@ TestWebEngineView {
             var loadRequest = null;
 
             // Test load of a data URL
-            // QTBUG-56661: Loading an URL before the data URL load improves the probability
-            // of the render process crash after the data URL load.
-            var url = Qt.resolvedUrl("test1.html");
-            webEngineView.url = url;
-            verify(webEngineView.waitForLoadSucceeded());
-            webEngineView.clear();
-
             var dataUrl = "data:text/html,foo";
             webEngineView.url = dataUrl;
             tryCompare(loadRequestArray, "length", 2);
@@ -206,11 +199,6 @@ TestWebEngineView {
             loadRequest = loadRequestArray[1];
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
             compare(loadRequest.activeUrl, dataUrl);
-            webEngineView.clear();
-
-            // QTBUG-56661: This load might fail on Windows
-            webEngineView.url = url;
-            verify(webEngineView.waitForLoadSucceeded());
             webEngineView.clear();
 
             // Test loadHtml after a failed load
@@ -247,6 +235,25 @@ TestWebEngineView {
             compare(loadRequest.status, WebEngineView.LoadSucceededStatus);
             compare(loadRequest.activeUrl, bogusSite);
             webEngineView.clear();
+        }
+
+        function test_QTBUG_56661() {
+            var url = Qt.resolvedUrl("test1.html");
+
+            // Warm up phase
+            webEngineView.url = url;
+            verify(webEngineView.waitForLoadSucceeded());
+
+            // Load data URL
+            var dataUrl = "data:text/html,foo";
+            webEngineView.url = dataUrl;
+            verify(webEngineView.waitForLoadSucceeded());
+
+            // WebEngine should not try to execute user scripts in the
+            // render frame of the warm up phase otherwise the renderer
+            // crashes.
+            webEngineView.url = url;
+            verify(webEngineView.waitForLoadSucceeded());
         }
 
         function test_stopStatus() {

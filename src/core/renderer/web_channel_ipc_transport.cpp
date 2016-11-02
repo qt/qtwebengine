@@ -164,9 +164,8 @@ void WebChannelIPCTransport::RunScriptsAtDocumentStart(content::RenderFrame *ren
 {
     // JavaScript run before this point doesn't stick, and needs to be redone.
     // ### FIXME: we should try no even installing before
-    blink::WebLocalFrame *frame = render_frame->GetWebFrame();
     if (m_installed && render_frame->IsMainFrame())
-        WebChannelTransport::Install(frame, m_installedWorldId);
+        WebChannelTransport::Install(render_frame->GetWebFrame(), m_installedWorldId);
 }
 
 
