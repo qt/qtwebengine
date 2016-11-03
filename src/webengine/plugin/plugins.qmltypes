@@ -198,9 +198,9 @@ Module {
         Enum {
             name: "RequestType"
             values: {
-                "RequestTypeShow": 0,
-                "RequestTypeHide": 1,
-                "RequestTypeMove": 2
+                "Show": 0,
+                "Hide": 1,
+                "Move": 2
             }
         }
         Property { name: "anchor"; type: "QRect"; isReadonly: true }
