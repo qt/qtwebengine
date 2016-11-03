@@ -120,6 +120,7 @@ public:
     QString path() const;
     void setPath(QString path);
     bool isFinished() const;
+    bool isPaused() const;
     SavePageFormat savePageFormat() const;
     void setSavePageFormat(SavePageFormat format);
     DownloadType type() const;
@@ -129,11 +130,14 @@ public:
 public Q_SLOTS:
     void accept();
     void cancel();
+    void pause();
+    void resume();
 
 Q_SIGNALS:
     void finished();
     void stateChanged(QWebEngineDownloadItem::DownloadState state);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void isPausedChanged(bool isPaused);
 
 private:
     Q_DISABLE_COPY(QWebEngineDownloadItem)

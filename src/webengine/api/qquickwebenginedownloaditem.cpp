@@ -39,6 +39,8 @@
 
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
+
+#include "browser_context_adapter.h"
 #include "qquickwebengineprofile_p.h"
 
 using QtWebEngineCore::BrowserContextAdapterClient;
@@ -103,6 +105,8 @@ QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWeb
     , interruptReason(QQuickWebEngineDownloadItem::NoReason)
     , totalBytes(-1)
     , receivedBytes(0)
+    , downloadFinished(false)
+    , downloadPaused(false)
 {
 }
 
@@ -144,6 +148,16 @@ void QQuickWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClien
     if (info.totalBytes != totalBytes) {
         totalBytes = info.totalBytes;
         Q_EMIT q->totalBytesChanged();
+    }
+
+    if (info.done != downloadFinished) {
+        downloadFinished = info.done;
+        Q_EMIT q->isFinishedChanged();
+    }
+
+    if (info.paused != downloadPaused) {
+        downloadPaused = info.paused;
+        Q_EMIT q->isPausedChanged();
     }
 }
 
@@ -197,6 +211,46 @@ void QQuickWebEngineDownloadItem::cancel()
         if (d->profile)
             d->profile->d_ptr->cancelDownload(d->downloadId);
     }
+}
+
+
+/*!
+    \qmlmethod void WebEngineDownloadItem::pause()
+    \since QtWebEngine 1.6
+
+    Pauses the download.
+*/
+
+void QQuickWebEngineDownloadItem::pause()
+{
+    Q_D(QQuickWebEngineDownloadItem);
+
+    QQuickWebEngineDownloadItem::DownloadState state = d->downloadState;
+
+    if (state != QQuickWebEngineDownloadItem::DownloadInProgress)
+        return;
+
+    if (d->profile)
+        d->profile->d_ptr->browserContext()->pauseDownload(d->downloadId);
+}
+
+/*!
+    \qmlmethod void WebEngineDownloadItem::resume()
+    \since QtWebEngine 1.6
+
+    Resumes the download if it was paused or interrupted.
+*/
+void QQuickWebEngineDownloadItem::resume()
+{
+    Q_D(QQuickWebEngineDownloadItem);
+
+    QQuickWebEngineDownloadItem::DownloadState state = d->downloadState;
+
+    if (d->downloadFinished || (state != QQuickWebEngineDownloadItem::DownloadInProgress && state != QQuickWebEngineDownloadItem::DownloadInterrupted))
+        return;
+
+    if (d->profile)
+        d->profile->d_ptr->browserContext()->resumeDownload(d->downloadId);
 }
 
 /*!
@@ -424,6 +478,34 @@ QString QQuickWebEngineDownloadItem::interruptReasonString() const
 {
     return BrowserContextAdapterClient::downloadInterruptReasonToString(
               static_cast<BrowserContextAdapterClient::DownloadInterruptReason>(interruptReason()));
+}
+
+/*!
+    \qmlproperty bool WebEngineDownloadItem::isFinished
+    \readonly
+    \since QtWebEngine 1.6
+
+    Whether this download is finished (completed, cancelled, or non-resumable interrupted state).
+ */
+
+bool QQuickWebEngineDownloadItem::isFinished() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->downloadFinished;
+}
+
+/*!
+    \qmlproperty bool WebEngineDownloadItem::isPaused
+    \readonly
+    \since QtWebEngine 1.6
+
+    Whether this download is paused.
+ */
+
+bool QQuickWebEngineDownloadItem::isPaused() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->downloadPaused;
 }
 
 QQuickWebEngineDownloadItem::QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate *p, QObject *parent)

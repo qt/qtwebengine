@@ -86,6 +86,8 @@ public:
     void removeClient(BrowserContextAdapterClient *adapterClient);
 
     void cancelDownload(quint32 downloadId);
+    void pauseDownload(quint32 downloadId);
+    void resumeDownload(quint32 downloadId);
 
     BrowserContextQt *browserContext();
 

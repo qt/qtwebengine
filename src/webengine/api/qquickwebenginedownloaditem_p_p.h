@@ -79,6 +79,8 @@ public:
     qint64 receivedBytes;
     QString mimeType;
     QString downloadPath;
+    bool downloadFinished;
+    bool downloadPaused;
 
     void update(const QtWebEngineCore::BrowserContextAdapterClient::DownloadItemInfo &info);
     void updateState(QQuickWebEngineDownloadItem::DownloadState newState);

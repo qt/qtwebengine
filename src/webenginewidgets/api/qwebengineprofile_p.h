@@ -76,7 +76,6 @@ public:
     QSharedPointer<QtWebEngineCore::BrowserContextAdapter> browserContext() const { return m_browserContextRef; }
     QWebEngineSettings *settings() const { return m_settings; }
 
-    void cancelDownload(quint32 downloadId);
     void downloadDestroyed(quint32 downloadId);
 
     void downloadRequested(DownloadItemInfo &info) Q_DECL_OVERRIDE;

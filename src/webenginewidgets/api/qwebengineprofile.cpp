@@ -172,11 +172,6 @@ QWebEngineProfilePrivate::~QWebEngineProfilePrivate()
     m_ongoingDownloads.clear();
 }
 
-void QWebEngineProfilePrivate::cancelDownload(quint32 downloadId)
-{
-    browserContext()->cancelDownload(downloadId);
-}
-
 void QWebEngineProfilePrivate::downloadDestroyed(quint32 downloadId)
 {
     m_ongoingDownloads.remove(downloadId);

@@ -131,9 +131,13 @@ public:
     Q_PROPERTY(DownloadType type READ type NOTIFY typeChanged REVISION 3 FINAL)
     Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged REVISION 4 FINAL)
     Q_PROPERTY(QString interruptReasonString READ interruptReasonString NOTIFY interruptReasonChanged REVISION 4 FINAL)
+    Q_PROPERTY(bool isFinished READ isFinished NOTIFY isFinishedChanged REVISION 5 FINAL)
+    Q_PROPERTY(bool isPaused READ isPaused NOTIFY isPausedChanged REVISION 5 FINAL)
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
+    Q_INVOKABLE void pause();
+    Q_INVOKABLE void resume();
 
     quint32 id() const;
     DownloadState state() const;
@@ -147,6 +151,8 @@ public:
     DownloadType type() const;
     DownloadInterruptReason interruptReason() const;
     QString interruptReasonString() const;
+    bool isFinished() const;
+    bool isPaused() const;
 
 Q_SIGNALS:
     void stateChanged();
@@ -157,6 +163,8 @@ Q_SIGNALS:
     void pathChanged();
     Q_REVISION(3) void typeChanged();
     Q_REVISION(4) void interruptReasonChanged();
+    Q_REVISION(5) void isFinishedChanged();
+    Q_REVISION(5) void isPausedChanged();
 
 private:
     QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate*, QObject *parent = 0);

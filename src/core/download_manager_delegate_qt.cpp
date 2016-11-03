@@ -92,6 +92,22 @@ void DownloadManagerDelegateQt::cancelDownload(quint32 downloadId)
         download->Cancel(/* user_cancel */ true);
 }
 
+void DownloadManagerDelegateQt::pauseDownload(quint32 downloadId)
+{
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->browserContext());
+    content::DownloadItem *download = dlm->GetDownload(downloadId);
+    if (download)
+        download->Pause();
+}
+
+void DownloadManagerDelegateQt::resumeDownload(quint32 downloadId)
+{
+    content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(m_contextAdapter->browserContext());
+    content::DownloadItem *download = dlm->GetDownload(downloadId);
+    if (download)
+        download->Resume();
+}
+
 bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* item,
                                                         const content::DownloadTargetCallback& callback)
 {
@@ -155,6 +171,8 @@ bool DownloadManagerDelegateQt::DetermineDownloadTarget(content::DownloadItem* i
             suggestedFilePath,
             BrowserContextAdapterClient::UnknownSavePageFormat,
             false /* accepted */,
+            false /* paused */,
+            false /* done */,
             m_downloadType,
             item->GetLastReason()
         };
@@ -245,6 +263,8 @@ void DownloadManagerDelegateQt::ChooseSavePath(content::WebContents *web_content
         suggestedFilePath,
         suggestedSaveFormat,
         acceptedByDefault,
+        false, /* paused */
+        false, /* done */
         BrowserContextAdapterClient::SavePage,
         BrowserContextAdapterClient::NoReason
     };
@@ -283,6 +303,8 @@ void DownloadManagerDelegateQt::OnDownloadUpdated(content::DownloadItem *downloa
             QString(),
             BrowserContextAdapterClient::UnknownSavePageFormat,
             true /* accepted */,
+            download->IsPaused(),
+            download->IsDone(),
             m_downloadType,
             download->GetLastReason()
         };

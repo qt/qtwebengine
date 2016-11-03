@@ -184,6 +184,16 @@ void BrowserContextAdapter::cancelDownload(quint32 downloadId)
     downloadManagerDelegate()->cancelDownload(downloadId);
 }
 
+void BrowserContextAdapter::pauseDownload(quint32 downloadId)
+{
+    downloadManagerDelegate()->pauseDownload(downloadId);
+}
+
+void BrowserContextAdapter::resumeDownload(quint32 downloadId)
+{
+    downloadManagerDelegate()->resumeDownload(downloadId);
+}
+
 QSharedPointer<BrowserContextAdapter> BrowserContextAdapter::defaultContext()
 {
     return WebEngineContext::current()->defaultBrowserContext();

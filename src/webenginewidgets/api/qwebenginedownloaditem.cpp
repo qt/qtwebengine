@@ -38,9 +38,11 @@
 ****************************************************************************/
 
 #include "qwebenginedownloaditem.h"
-
 #include "qwebenginedownloaditem_p.h"
+
+#include "browser_context_adapter.h"
 #include "qwebengineprofile_p.h"
+
 
 QT_BEGIN_NAMESPACE
 
@@ -116,6 +118,7 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
     , type(QWebEngineDownloadItem::Attachment)
     , interruptReason(QWebEngineDownloadItem::NoReason)
     , downloadUrl(url)
+    , downloadPaused(false)
     , totalBytes(-1)
     , receivedBytes(0)
 {
@@ -145,10 +148,16 @@ void QWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::Do
         Q_EMIT q->downloadProgress(receivedBytes, totalBytes);
     }
 
-    downloadFinished = downloadState != QWebEngineDownloadItem::DownloadInProgress;
+    if (info.done != downloadFinished) {
+        downloadFinished = info.done;
+        if (downloadFinished)
+            Q_EMIT q->finished();
+    }
 
-    if (downloadFinished)
-        Q_EMIT q->finished();
+    if (downloadPaused != info.paused) {
+        downloadPaused = info.paused;
+        Q_EMIT q->isPausedChanged(downloadPaused);
+    }
 }
 
 /*!
@@ -184,13 +193,50 @@ void QWebEngineDownloadItem::cancel()
             || state == QWebEngineDownloadItem::DownloadCancelled)
         return;
 
-    d->downloadState = QWebEngineDownloadItem::DownloadCancelled;
-    Q_EMIT stateChanged(d->downloadState);
-
     // We directly cancel the download request if the user cancels
     // before it even started, so no need to notify the profile here.
     if (state == QWebEngineDownloadItem::DownloadInProgress)
-        d->profile->cancelDownload(d->downloadId);
+        d->profile->browserContext()->cancelDownload(d->downloadId);
+    else {
+        d->downloadState = QWebEngineDownloadItem::DownloadCancelled;
+        Q_EMIT stateChanged(d->downloadState);
+    }
+}
+
+/*!
+    \since 5.10
+    Pauses the current download. Has no effect if the state is not \c DownloadInProgress.
+
+    \sa resume()
+*/
+
+void QWebEngineDownloadItem::pause()
+{
+    Q_D(QWebEngineDownloadItem);
+
+    QWebEngineDownloadItem::DownloadState state = d->downloadState;
+
+    if (state != QWebEngineDownloadItem::DownloadInProgress)
+        return;
+
+    d->profile->browserContext()->pauseDownload(d->downloadId);
+}
+
+/*!
+    \since 5.10
+    Resumes the current download if it was paused or interrupted.
+
+    \sa pause(), isPaused(), state()
+*/
+void QWebEngineDownloadItem::resume()
+{
+    Q_D(QWebEngineDownloadItem);
+
+    QWebEngineDownloadItem::DownloadState state = d->downloadState;
+
+    if (d->downloadFinished || (state != QWebEngineDownloadItem::DownloadInProgress && state != QWebEngineDownloadItem::DownloadInterrupted))
+        return;
+    d->profile->browserContext()->resumeDownload(d->downloadId);
 }
 
 /*!
@@ -206,9 +252,18 @@ quint32 QWebEngineDownloadItem::id() const
 /*!
     \fn QWebEngineDownloadItem::finished()
 
-    This signal is emitted whenever the download finishes.
+    This signal is emitted when the download finishes.
 
     \sa state(), isFinished()
+*/
+
+/*!
+    \fn QWebEngineDownloadItem::isPausedChanged(bool isPaused)
+    \since 5.10
+
+    This signal is emitted whenever \a isPaused changes.
+
+    \sa pause(), isPaused()
 */
 
 /*!
@@ -407,7 +462,7 @@ void QWebEngineDownloadItem::setPath(QString path)
 }
 
 /*!
-    Returns whether this download is finished (not in progress).
+    Returns whether this download is finished (completed, cancelled, or non-resumable interrupted state).
 
     \sa finished(), state(),
 */
@@ -416,6 +471,18 @@ bool QWebEngineDownloadItem::isFinished() const
 {
     Q_D(const QWebEngineDownloadItem);
     return d->downloadFinished;
+}
+
+/*!
+    Returns whether this download is paused.
+
+    \sa pause()
+*/
+
+bool QWebEngineDownloadItem::isPaused() const
+{
+    Q_D(const QWebEngineDownloadItem);
+    return d->downloadPaused;
 }
 
 /*!

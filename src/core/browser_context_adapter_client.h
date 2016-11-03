@@ -118,6 +118,8 @@ public:
         QString path;
         int savePageFormat;
         bool accepted;
+        bool paused;
+        bool done;
         int downloadType;
         int downloadInterruptReason;
     };

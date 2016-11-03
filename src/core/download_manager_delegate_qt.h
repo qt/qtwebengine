@@ -83,6 +83,8 @@ public:
                         const content::SavePackagePathPickedCallback &callback) override;
 
     void cancelDownload(quint32 downloadId);
+    void pauseDownload(quint32 downloadId);
+    void resumeDownload(quint32 downloadId);
 
     void setDownloadType(int downloadType) { m_downloadType = downloadType; }
 
