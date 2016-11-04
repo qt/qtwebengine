@@ -313,7 +313,7 @@ WebEngineContext::WebEngineContext()
 
     const char *glType = 0;
     if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
-        if (qt_gl_global_share_context()) {
+        if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
             if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
                     glType = gfx::kGLImplementationEGLName;
@@ -347,16 +347,7 @@ WebEngineContext::WebEngineContext()
                     glType = gfx::kGLImplementationDesktopName;
             }
         } else {
-            qWarning("WebEngineContext used before QtWebEngine::initialize()");
-            // We have to assume the default OpenGL module type will be used.
-            switch (QOpenGLContext::openGLModuleType()) {
-            case QOpenGLContext::LibGL:
-                glType = gfx::kGLImplementationDesktopName;
-                break;
-            case QOpenGLContext::LibGLES:
-                glType = gfx::kGLImplementationEGLName;
-                break;
-            }
+            qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
         }
     }
 
