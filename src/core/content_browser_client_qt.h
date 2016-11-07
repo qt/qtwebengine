@@ -102,6 +102,9 @@ public:
                                        bool expired_previous_decision,
                                        const base::Callback<void(bool)>& callback,
                                        content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
+    virtual void SelectClientCertificate(content::WebContents* web_contents,
+                                         net::SSLCertRequestInfo* cert_request_info,
+                                         scoped_ptr<content::ClientCertificateDelegate> delegate) Q_DECL_OVERRIDE;
     content::LocationProvider* OverrideSystemLocationProvider() Q_DECL_OVERRIDE;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *CreateRequestContext(content::BrowserContext *browser_context, content::ProtocolHandlerMap *protocol_handlers, content::URLRequestInterceptorScopedVector request_interceptorss) Q_DECL_OVERRIDE;

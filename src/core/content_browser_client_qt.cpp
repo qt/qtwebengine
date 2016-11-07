@@ -47,6 +47,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -432,6 +433,13 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
     // If we don't give the user a chance to allow it, we can reject it right away.
     if (result && (!overridable || strict_enforcement))
         *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
+}
+
+void ContentBrowserClientQt::SelectClientCertificate(content::WebContents * /*webContents*/,
+                                                     net::SSLCertRequestInfo * /*certRequestInfo*/,
+                                                     scoped_ptr<content::ClientCertificateDelegate> delegate)
+{
+    delegate->ContinueWithCertificate(nullptr);
 }
 
 content::LocationProvider *ContentBrowserClientQt::OverrideSystemLocationProvider()
