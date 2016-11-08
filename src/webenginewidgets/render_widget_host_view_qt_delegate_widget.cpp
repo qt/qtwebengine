@@ -202,6 +202,13 @@ QRectF RenderWidgetHostViewQtDelegateWidget::contentsRect() const
 
 void RenderWidgetHostViewQtDelegateWidget::setKeyboardFocus()
 {
+    // If the corresponding window is inactive (for example, because of a popup),
+    // the active focus cannot be set. Sync up with the Window System to try to
+    // reactivate the window in time if the other window (possibly popup) which took
+    // the focus is already closed.
+    if (window() && !window()->isActive())
+        QGuiApplication::sync();
+
     m_rootItem->forceActiveFocus();
 }
 

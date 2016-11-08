@@ -12,7 +12,7 @@ INCLUDEPATH += $$PWD
 RESOURCES += ../resources/tests.qrc
 exists($$_PRO_FILE_PWD_/$${TARGET}.qrc): RESOURCES += $${TARGET}.qrc
 
-QT += testlib network webenginewidgets widgets
+QT += testlib network webenginewidgets widgets quick quickwidgets
 macx: CONFIG -= app_bundle
 
 # This define is used by some tests to look up resources in the source tree

@@ -31,8 +31,11 @@
 #include <qdiriterator.h>
 #include <qstackedlayout.h>
 #include <qtemporarydir.h>
+#include <QCompleter>
 #include <QLineEdit>
 #include <QHBoxLayout>
+#include <QQuickItem>
+#include <QQuickWidget>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
@@ -83,6 +86,7 @@ private Q_SLOTS:
     void inputMethodsTextFormat_data();
     void inputMethodsTextFormat();
     void keyboardEvents();
+    void keyboardFocusAfterPopup();
 };
 
 // This will be called before the first test function is executed.
@@ -1012,6 +1016,61 @@ void tst_QWebEngineView::keyboardEvents()
     evaluateJavaScriptSync(view.page(), "document.getElementById('first_hyperlink').focus()");
     QTest::keyPress(view.focusProxy(), Qt::Key_Enter);
     QVERIFY(loadFinishedSpy.wait());
+}
+
+void tst_QWebEngineView::keyboardFocusAfterPopup()
+{
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+
+    QLineEdit *urlLine = new QLineEdit(containerWidget.data());
+    QStringList urlList;
+    urlList << "test";
+    QCompleter *completer = new QCompleter(urlList, urlLine);
+    completer->setCompletionMode(QCompleter::PopupCompletion);
+    urlLine->setCompleter(completer);
+    urlLine->setFocus();
+
+    QWebEngineView *webView = new QWebEngineView(containerWidget.data());
+    QSignalSpy loadFinishedSpy(webView, SIGNAL(loadFinished(bool)));
+
+    connect(urlLine, &QLineEdit::editingFinished, [=] {
+        webView->setHtml("<html><body onload=\"document.getElementById('input1').focus()\">"
+                         " <input type='text' id='input1' />"
+                         "</body></html>");
+
+        // Check whether the RenderWidgetHostView has the keyboard focus
+        QQuickWidget *rwhv = qobject_cast<QQuickWidget *>(webView->focusProxy());
+        QVERIFY(rwhv);
+        QVERIFY(rwhv->hasFocus());
+        QVERIFY(rwhv->rootObject()->hasFocus());
+        QVERIFY(rwhv->window()->windowHandle()->isActive());
+        QVERIFY(rwhv->rootObject()->hasActiveFocus());
+    });
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(urlLine);
+    layout->addWidget(webView);
+
+    containerWidget->setLayout(layout);
+    containerWidget->show();
+    QTest::qWaitForWindowExposed(containerWidget.data());
+
+    // Trigger completer's popup and select the first suggestion
+    QTest::keyClick(urlLine, Qt::Key_T);
+    qApp->processEvents();
+    QTRY_VERIFY(qApp->activePopupWidget());
+    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Down);
+    qApp->processEvents();
+    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Enter);
+    qApp->processEvents();
+
+    // After the load the focused window should forward the keyboard events to the webView
+    QVERIFY(loadFinishedSpy.wait());
+    // Wait for active focus on the input field
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+    QTest::keyClick(qApp->focusWindow(), Qt::Key_X);
+    qApp->processEvents();
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.getElementById('input1').value").toString(), QStringLiteral("x"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)
