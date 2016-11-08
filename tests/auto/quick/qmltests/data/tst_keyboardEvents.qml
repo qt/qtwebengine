@@ -39,26 +39,6 @@ TestWebEngineView {
         name: "WebEngineViewKeyboardEvents"
         when: windowShown
 
-        function getActiveElementId() {
-            var activeElementId;
-            runJavaScript("document.activeElement.id", function(result) {
-                activeElementId = result;
-            });
-            tryVerify(function() { return activeElementId != undefined });
-            return activeElementId;
-        }
-
-        function verifyElementHasFocus(element) {
-            tryVerify(function() { return getActiveElementId() == element; }, 5000,
-                "Element \"" + element + "\" has focus");
-
-        }
-
-        function setFocusToElement(element) {
-            runJavaScript("document.getElementById('" + element + "').focus()");
-            verifyElementHasFocus(element);
-        }
-
         function isElementChecked(element) {
             var elementChecked;
             runJavaScript("document.getElementById('" + element + "').checked", function(result) {

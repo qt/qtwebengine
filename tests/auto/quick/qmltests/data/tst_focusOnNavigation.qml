@@ -77,29 +77,9 @@ Item {
             ]
         }
 
-        function getActiveElementId() {
-            var activeElementId;
-            webView.runJavaScript("document.activeElement.id", function(result) {
-                activeElementId = result;
-            });
-            tryVerify(function() { return activeElementId != undefined });
-            return activeElementId;
-        }
-
-        function verifyElementHasFocus(element) {
-            tryVerify(function() { return getActiveElementId() == element; }, 5000,
-                "Element \"" + element + "\" has focus");
-
-        }
-
-        function setFocusToElement(element) {
-            webView.runJavaScript("document.getElementById('" + element + "').focus()");
-            verifyElementHasFocus(element);
-        }
-
         function loadAndTriggerFocusAndCompare(data) {
             verify(webView.waitForLoadSucceeded());
-            setFocusToElement("input");
+            webView.setFocusToElement("input");
             compare(webView.activeFocus, data.viewReceivedFocus);
         }
 

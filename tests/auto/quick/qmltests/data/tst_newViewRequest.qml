@@ -122,6 +122,7 @@ TestWebEngineView {
                 "   <button id='popupButton' onclick='popup()'>Pop Up!</button>" +
                 "</body></html>");
             verify(webEngineView.waitForLoadSucceeded());
+            verifyElementHasFocus("popupButton");
             keyPress(Qt.Key_Enter);
             tryCompare(newViewRequestedSpy, "count", 1);
 
