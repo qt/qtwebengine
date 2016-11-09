@@ -1203,6 +1203,7 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
     }
 
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->FilterDropData(d->currentDropData.get());
     rvh->DragTargetDragEnter(*d->currentDropData, toGfx(e->pos()), toGfx(screenPos),
                              toWeb(e->possibleActions()),
                              flagsFromModifiers(e->keyboardModifiers()));
@@ -1249,6 +1250,7 @@ void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &scre
     Q_D(WebContentsAdapter);
     finishDragUpdate();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+    rvh->FilterDropData(d->currentDropData.get());
     rvh->DragTargetDrop(*d->currentDropData, toGfx(clientPos), toGfx(screenPos), 0);
     d->currentDropData.reset();
 }
