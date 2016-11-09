@@ -392,6 +392,12 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
             return true;
         }
         break;
+    case QEvent::DragEnter:
+    case QEvent::DragLeave:
+    case QEvent::DragMove:
+    case QEvent::Drop:
+        // Let the parent handle these events.
+        return false;
     default:
         break;
     }
