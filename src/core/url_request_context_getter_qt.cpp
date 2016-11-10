@@ -91,8 +91,6 @@
 
 namespace QtWebEngineCore {
 
-static const char kQrcSchemeQt[] = "qrc";
-
 using content::BrowserThread;
 
 URLRequestContextGetterQt::URLRequestContextGetterQt(QSharedPointer<BrowserContextAdapter> browserContext, content::ProtocolHandlerMap *protocolHandlers, content::URLRequestInterceptorScopedVector request_interceptors)

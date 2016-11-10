@@ -85,6 +85,7 @@
 #if defined(ENABLE_BASIC_PRINTING)
 #include "printing_message_filter_qt.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
+#include "qrc_protocol_handler_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "web_contents_delegate_qt.h"
@@ -505,6 +506,11 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
     if (processType == switches::kZygoteProcess)
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
+}
+
+void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
+{
+    additional_schemes->push_back(kQrcSchemeQt);
 }
 
 #if defined(Q_OS_LINUX)

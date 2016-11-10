@@ -53,6 +53,8 @@ class URLRequestJob;
 
 namespace QtWebEngineCore {
 
+extern const char kQrcSchemeQt[];
+
 // Implements a ProtocolHandler for qrc file jobs. If |network_delegate_| is NULL,
 // then all file requests will fail with ERR_ACCESS_DENIED.
 class QrcProtocolHandlerQt : public net::URLRequestJobFactory::ProtocolHandler {

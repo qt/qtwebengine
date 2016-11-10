@@ -108,6 +108,7 @@ public:
     virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
     std::string GetAcceptLangs(content::BrowserContext* context) Q_DECL_OVERRIDE;
     virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line, int child_process_id) Q_DECL_OVERRIDE;
+    virtual void GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes) Q_DECL_OVERRIDE;
 
 #if defined(Q_OS_LINUX)
     virtual void GetAdditionalMappedFilesForChildProcess(const base::CommandLine& command_line, int child_process_id, content::FileDescriptorInfo* mappings) Q_DECL_OVERRIDE;
