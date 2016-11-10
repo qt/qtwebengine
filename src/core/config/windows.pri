@@ -19,10 +19,18 @@ GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"
 GYP_ARGS += "--no-parallel"
 
 qtConfig(angle) {
+    #FIXME: Expect LIBQTANGLE_NAME to be always set
+    #FIXME: Replace qt_egl_library and qt_glesv2_library into qt_angle_library
+    LIB_EGL=libEGL
+    LIB_GLESV2=libGLESv2
+    !isEmpty(LIBQTANGLE_NAME) {
+        LIB_EGL=$$LIBQTANGLE_NAME
+        LIB_GLESV2=$$LIBQTANGLE_NAME
+    }
     CONFIG(release, debug|release) {
-        GYP_ARGS += "-D qt_egl_library=\"libEGL.lib\" -D qt_glesv2_library=\"libGLESv2.lib\""
+        GYP_ARGS += "-D qt_egl_library=\"$${LIB_EGL}.lib\" -D qt_glesv2_library=\"$${LIB_GLESV2}.lib\""
     } else {
-        GYP_ARGS += "-D qt_egl_library=\"libEGLd.lib\" -D qt_glesv2_library=\"libGLESv2d.lib\""
+        GYP_ARGS += "-D qt_egl_library=\"$${LIB_EGL}d.lib\" -D qt_glesv2_library=\"$${LIB_GLESV2}d.lib\""
     }
     GYP_ARGS += "-D qt_gl=\"angle\""
 } else {
