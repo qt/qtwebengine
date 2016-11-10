@@ -75,6 +75,11 @@ defineTest(runConfigure) {
             else: log("System NSS not found, BoringSSL will be used.$${EOL}")
         }
     }
+    isQtMinimum(5, 8) {
+        include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+        QT_FOR_CONFIG += webengine-private
+        qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
+    }
 
     isEmpty(skipBuildReason): {
         cache(CONFIG, add, $$list(webengine_successfully_configured))
