@@ -41,7 +41,7 @@
     \list
         \li \l{Qt for Windows - Requirements}
         \li \l{Qt for X11 Requirements}
-        \li \l{Qt for OS X - Requirements}
+        \li \l{Qt for macOS - Requirements}
     \endlist
 
     In addition, the following tools are required for building the \l {Qt WebEngine} module:
@@ -50,7 +50,7 @@
         \li \l {All Platforms}
         \li \l {Windows}
         \li \l {Linux}
-        \li \l {OS X}
+        \li \l {macOS}
     \endlist
 
     The tests for skipping the Qt WebEngine build are located in the
@@ -99,22 +99,22 @@
 
     Further, development packages for \c khr and \c libcap need to be installed.
 
-    \section2 OS X
+    \section2 \macos
 
-    On OS X, the following are required:
+    On \macos, the following are required:
 
     \list
-        \li OS X 10.9 or later
+        \li \macos 10.9 or later
         \li Xcode 5.1 or later
-        \li OS X 10.10 SDK or later
+        \li \macos 10.10 SDK or later
     \endlist
 
-    \note Qt WebEngine cannot be built for the 32-bit mode of OS X (using the
+    \note Qt WebEngine cannot be built for the 32-bit mode of \macos (using the
     \c macx-clang-32 \c mkspec).
 
     \section1 Mac App Store Compatibility
 
-    By default, Qt WebEngine uses private OS X API, which might cause an application to be
+    By default, Qt WebEngine uses private \macos API, which might cause an application to be
     rejected when submitted to the Mac App Store. To configure Qt WebEngine not to use these API
     calls, Qt WebEngine has to be recompiled:
 
@@ -125,10 +125,10 @@
     However, this will cause some behavioral changes, such as:
 
     \list
-        \li The OS X Kill Ring functionality will no longer work (emacs-like copy pasting).
+        \li The \macos Kill Ring functionality will no longer work (emacs-like copy pasting).
         \li Certain Chromium sandboxing cleanup is not done.
         \li Text areas will be painted with a different style.
-        \li Text fields might be painted with a different style on Mountain Lion (OS X 10.8).
+        \li Text fields might be painted with a different style on Mountain Lion (\macos 10.8).
     \endlist
 
     \section1 Default QSurfaceFormat OpenGL Profile Support
@@ -137,7 +137,7 @@
     before the application instance is declared, to make sure that all created OpenGL contexts use
     the same OpenGL profile.
 
-    On OS X, if the default QSurfaceFormat is set after the application instance, the application
+    On \macos, if the default QSurfaceFormat is set after the application instance, the application
     will exit with qFatal(), and print a message that the default QSurfaceFormat should be set
     before the application instance.
 */

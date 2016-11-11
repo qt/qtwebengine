@@ -52,6 +52,7 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -283,7 +284,8 @@ public:
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
         else if (platform == QLatin1String("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland"))
+        else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland")
+                 || platform == QLatin1String("wayland-egl"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else if (platform == QLatin1String("windows")) {
             if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2)
@@ -477,6 +479,13 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
     // If we don't give the user a chance to allow it, we can reject it right away.
     if (result && (!overridable || strict_enforcement))
         *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
+}
+
+void ContentBrowserClientQt::SelectClientCertificate(content::WebContents * /*webContents*/,
+                                                     net::SSLCertRequestInfo * /*certRequestInfo*/,
+                                                     std::unique_ptr<content::ClientCertificateDelegate> delegate)
+{
+    delegate->ContinueWithCertificate(nullptr);
 }
 
 std::string ContentBrowserClientQt::GetApplicationLocale()

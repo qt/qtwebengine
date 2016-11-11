@@ -66,7 +66,7 @@ class QtWebEnginePlugin : public QQmlExtensionPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
 public:
-    virtual void initializeEngine(QQmlEngine *engine, const char *uri)
+    virtual void initializeEngine(QQmlEngine *engine, const char *uri) Q_DECL_OVERRIDE
     {
         Q_UNUSED(uri);
         engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider);

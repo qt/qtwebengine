@@ -107,6 +107,7 @@ static QAccessibleInterface *webAccessibleFactory(const QString &, QObject *obje
 QWebEngineViewPrivate::QWebEngineViewPrivate()
     : page(0)
     , m_pendingContextMenuEvent(false)
+    , m_dragEntered(false)
 {
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::installFactory(&webAccessibleFactory);
@@ -350,7 +351,10 @@ void QWebEngineView::dragEnterEvent(QDragEnterEvent *e)
 {
     Q_D(QWebEngineView);
     e->accept();
+    if (d->m_dragEntered)
+        d->page->d_ptr->adapter->leaveDrag();
     d->page->d_ptr->adapter->enterDrag(e, mapToGlobal(e->pos()));
+    d->m_dragEntered = true;
 }
 
 /*!
@@ -359,8 +363,11 @@ void QWebEngineView::dragEnterEvent(QDragEnterEvent *e)
 void QWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
 {
     Q_D(QWebEngineView);
+    if (!d->m_dragEntered)
+        return;
     e->accept();
     d->page->d_ptr->adapter->leaveDrag();
+    d->m_dragEntered = false;
 }
 
 /*!
@@ -369,6 +376,8 @@ void QWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
 void QWebEngineView::dragMoveEvent(QDragMoveEvent *e)
 {
     Q_D(QWebEngineView);
+    if (!d->m_dragEntered)
+        return;
     QtWebEngineCore::WebContentsAdapter *adapter = d->page->d_ptr->adapter.data();
     Qt::DropAction dropAction = adapter->updateDragPosition(e, mapToGlobal(e->pos()));
     if (Qt::IgnoreAction == dropAction) {
@@ -385,8 +394,11 @@ void QWebEngineView::dragMoveEvent(QDragMoveEvent *e)
 void QWebEngineView::dropEvent(QDropEvent *e)
 {
     Q_D(QWebEngineView);
+    if (!d->m_dragEntered)
+        return;
     e->accept();
     d->page->d_ptr->adapter->endDragging(e->pos(), mapToGlobal(e->pos()));
+    d->m_dragEntered = false;
 }
 
 #ifndef QT_NO_ACCESSIBILITY

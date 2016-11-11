@@ -250,7 +250,7 @@
 
     \section1 Platform Notes
 
-    Qt WebEngine currently supports only Windows, Linux, and OS X. Due to Chromium build
+    Qt WebEngine currently supports only Windows, Linux, and \macos. Due to Chromium build
     requirements it also often requires a newer compiler than the rest of Qt. See
     \l{Qt WebEngine Platform Notes} for further details.
 

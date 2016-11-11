@@ -1113,18 +1113,12 @@ void WebContentsAdapter::setWebChannel(QWebChannel *channel, uint worldId)
 static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
 {
     QMimeData *mimeData = new QMimeData();
-    if (!dropData.text.is_null()) {
+    if (!dropData.text.is_null())
         mimeData->setText(toQt(dropData.text.string()));
-        return mimeData;
-    }
-    if (!dropData.html.is_null()) {
+    if (!dropData.html.is_null())
         mimeData->setHtml(toQt(dropData.html.string()));
-        return mimeData;
-    }
-    if (dropData.url.is_valid()) {
+    if (dropData.url.is_valid())
         mimeData->setUrls(QList<QUrl>() << toQt(dropData.url));
-        return mimeData;
-    }
     return mimeData;
 }
 
@@ -1215,6 +1209,16 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     rvh->DragTargetDragOver(toGfx(e->pos()), toGfx(screenPos), toWeb(e->possibleActions()),
                             blink::WebInputEvent::LeftButtonDown);
+
+    base::MessageLoop *currentMessageLoop = base::MessageLoop::current();
+    DCHECK(currentMessageLoop);
+    if (!currentMessageLoop->NestableTasksAllowed()) {
+        // We're already inside a MessageLoop::RunTask call, and scheduled tasks will not be
+        // executed. That means, updateDragAction will never be called, and the RunLoop below will
+        // remain blocked forever.
+        qWarning("WebContentsAdapter::updateDragPosition called from MessageLoop::RunTask.");
+        return Qt::IgnoreAction;
+    }
 
     // Wait until we get notified via RenderViewHostDelegateView::UpdateDragCursor. This calls
     // WebContentsAdapter::updateDragAction that will eventually quit the nested loop.

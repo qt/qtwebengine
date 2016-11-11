@@ -309,8 +309,10 @@ WebEngineContext::WebEngineContext()
 
     if (useEmbeddedSwitches) {
         // Inspired by the Android port's default switches
-        parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
-        parsedCommandLine->AppendSwitch(switches::kEnablePinch);
+        if (!parsedCommandLine->HasSwitch(switches::kDisableOverlayScrollbar))
+            parsedCommandLine->AppendSwitch(switches::kEnableOverlayScrollbar);
+        if (!parsedCommandLine->HasSwitch(switches::kDisablePinch))
+            parsedCommandLine->AppendSwitch(switches::kEnablePinch);
         parsedCommandLine->AppendSwitch(switches::kEnableViewport);
         parsedCommandLine->AppendSwitch(switches::kMainFrameResizesAreOrientationChanges);
         parsedCommandLine->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
@@ -325,7 +327,7 @@ WebEngineContext::WebEngineContext()
     const char *glType = 0;
 #ifndef QT_NO_OPENGL
     if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
-        if (qt_gl_global_share_context()) {
+        if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
             if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
                     glType = gl::kGLImplementationEGLName;
@@ -359,16 +361,7 @@ WebEngineContext::WebEngineContext()
                     glType = gl::kGLImplementationDesktopName;
             }
         } else {
-            qWarning("WebEngineContext used before QtWebEngine::initialize()");
-            // We have to assume the default OpenGL module type will be used.
-            switch (QOpenGLContext::openGLModuleType()) {
-            case QOpenGLContext::LibGL:
-                glType = gl::kGLImplementationDesktopName;
-                break;
-            case QOpenGLContext::LibGLES:
-                glType = gl::kGLImplementationEGLName;
-                break;
-            }
+            qWarning("WebEngineContext used before QtWebEngine::initialize() or OpenGL context creation failed.");
         }
     }
 #endif

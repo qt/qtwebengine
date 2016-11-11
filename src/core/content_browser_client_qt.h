@@ -100,6 +100,9 @@ public:
                                        bool expired_previous_decision,
                                        const base::Callback<void(bool)>& callback,
                                        content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
+    virtual void SelectClientCertificate(content::WebContents* web_contents,
+                                         net::SSLCertRequestInfo* cert_request_info,
+                                         std::unique_ptr<content::ClientCertificateDelegate> delegate) Q_DECL_OVERRIDE;
     content::DevToolsManagerDelegate *GetDevToolsManagerDelegate() Q_DECL_OVERRIDE;
 
     virtual std::string GetApplicationLocale() Q_DECL_OVERRIDE;
