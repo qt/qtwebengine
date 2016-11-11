@@ -75,7 +75,17 @@ defineTest(isPlatformSupported) {
     return(false)
   }
   !isPythonVersionSupported(): return(false)
+  !isArchSupported(): return(false)
   return(true)
+}
+
+defineTest(isArchSupported) {
+    contains(QT_ARCH, "i386")|contains(QT_ARCH, "x86_64"): return(true)
+    contains(QT_ARCH, "arm")|contains(QT_ARCH, "arm64"): return(true)
+    contains(QT_ARCH, "mips")|contains(QT_ARCH, "mips64"): return(true)
+
+    skipBuild("QtWebEngine can only be built for x86, x86-64, ARM, Aarch64, MIPSel, and MIPS64 architectures.")
+    return(false)
 }
 
 defineTest(isPythonVersionSupported) {

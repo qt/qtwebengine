@@ -74,6 +74,7 @@
 #include "ui/events/latency_info.h"
 
 #include <QDesktopServices>
+#include <QTimer>
 
 namespace QtWebEngineCore {
 
@@ -107,13 +108,19 @@ content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents
     Q_ASSERT(target);
 
     content::NavigationController::LoadURLParams load_url_params(params.url);
+    load_url_params.source_site_instance = params.source_site_instance;
     load_url_params.referrer = params.referrer;
     load_url_params.frame_tree_node_id = params.frame_tree_node_id;
+    load_url_params.redirect_chain = params.redirect_chain;
     load_url_params.transition_type = params.transition;
     load_url_params.extra_headers = params.extra_headers;
     load_url_params.should_replace_current_entry = params.should_replace_current_entry;
     load_url_params.is_renderer_initiated = params.is_renderer_initiated;
     load_url_params.override_user_agent = content::NavigationController::UA_OVERRIDE_TRUE;
+    if (params.uses_post) {
+        load_url_params.load_type = content::NavigationController::LOAD_TYPE_HTTP_POST;
+        load_url_params.post_data = params.post_data;
+    }
 
     target->GetController().LoadURLWithParams(load_url_params);
     return target;
@@ -320,7 +327,11 @@ void WebContentsDelegateQt::RunFileChooser(content::RenderFrameHost *frameHost, 
 
     m_filePickerController.reset(new FilePickerController(static_cast<FilePickerController::FileChooserMode>(params.mode),
                                                           web_contents(), toQt(params.default_file_name.value()), acceptedMimeTypes));
-    m_viewClient->runFileChooser(m_filePickerController);
+
+    // Defer the call to not block base::MessageLoop::RunTask with modal dialogs.
+    QTimer::singleShot(0, [this] () {
+        m_viewClient->runFileChooser(m_filePickerController);
+    });
 }
 
 bool WebContentsDelegateQt::AddMessageToConsole(content::WebContents *source, int32_t level, const base::string16 &message, int32_t line_no, const base::string16 &source_id)

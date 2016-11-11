@@ -122,7 +122,7 @@ void* GLContextHelper::getXConfig()
 
 void* GLContextHelper::getEGLDisplay()
 {
-    return resourceForContext(QByteArrayLiteral("egldisplay"));
+    return resourceForIntegration(QByteArrayLiteral("egldisplay"));
 }
 
 void* GLContextHelper::getXDisplay()
