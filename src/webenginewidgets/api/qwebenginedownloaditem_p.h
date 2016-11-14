@@ -73,6 +73,7 @@ public:
     QWebEngineDownloadItem::DownloadState downloadState;
     QWebEngineDownloadItem::SavePageFormat savePageFormat;
     QWebEngineDownloadItem::DownloadType type;
+    QWebEngineDownloadItem::DownloadInterruptReason interruptReason;
     QString downloadPath;
     const QUrl downloadUrl;
     QString mimeType;

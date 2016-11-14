@@ -72,6 +72,37 @@ public:
     };
     Q_ENUM(SavePageFormat)
 
+    enum DownloadInterruptReason {
+        NoReason = 0,
+        FileFailed = 1,
+        FileAccessDenied = 2,
+        FileNoSpace = 3,
+        FileNameTooLong = 5,
+        FileTooLarge = 6,
+        FileVirusInfected = 7,
+        FileTransientError = 10,
+        FileBlocked = 11,
+        FileSecurityCheckFailed = 12,
+        FileTooShort = 13,
+        FileHashMismatch = 14,
+        NetworkFailed = 20,
+        NetworkTimeout = 21,
+        NetworkDisconnected = 22,
+        NetworkServerDown = 23,
+        NetworkInvalidRequest = 24,
+        ServerFailed = 30,
+        //ServerNoRange = 31,
+        ServerBadContent = 33,
+        ServerUnauthorized = 34,
+        ServerCertProblem = 35,
+        ServerForbidden = 36,
+        ServerUnreachable = 37,
+        UserCanceled = 40,
+        //UserShutdown = 41,
+        //Crash = 50
+    };
+    Q_ENUM(DownloadInterruptReason)
+
     enum DownloadType {
         Attachment = 0,
         DownloadAttribute,
@@ -92,6 +123,7 @@ public:
     SavePageFormat savePageFormat() const;
     void setSavePageFormat(SavePageFormat format);
     DownloadType type() const;
+    DownloadInterruptReason interruptReason() const;
 
 public Q_SLOTS:
     void accept();
@@ -101,6 +133,7 @@ Q_SIGNALS:
     void finished();
     void stateChanged(QWebEngineDownloadItem::DownloadState state);
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void interruptReasonChanged();
 
 private:
     Q_DISABLE_COPY(QWebEngineDownloadItem)

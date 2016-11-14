@@ -82,6 +82,37 @@ public:
     };
     Q_ENUM(SavePageFormat)
 
+    enum DownloadInterruptReason {
+        NoReason = 0,
+        FileFailed = 1,
+        FileAccessDenied = 2,
+        FileNoSpace = 3,
+        FileNameTooLong = 5,
+        FileTooLarge = 6,
+        FileVirusInfected = 7,
+        FileTransientError = 10,
+        FileBlocked = 11,
+        FileSecurityCheckFailed = 12,
+        FileTooShort = 13,
+        FileHashMismatch = 14,
+        NetworkFailed = 20,
+        NetworkTimeout = 21,
+        NetworkDisconnected = 22,
+        NetworkServerDown = 23,
+        NetworkInvalidRequest = 24,
+        ServerFailed = 30,
+        //ServerNoRange = 31,
+        ServerBadContent = 33,
+        ServerUnauthorized = 34,
+        ServerCertProblem = 35,
+        ServerForbidden = 36,
+        ServerUnreachable = 37,
+        UserCanceled = 40,
+        //UserShutdown = 41,
+        //Crash = 50
+    };
+    Q_ENUM(DownloadInterruptReason)
+
     enum DownloadType {
         Attachment = 0,
         DownloadAttribute,
@@ -98,6 +129,7 @@ public:
     Q_PROPERTY(QString mimeType READ mimeType NOTIFY mimeTypeChanged REVISION 1)
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged)
     Q_PROPERTY(DownloadType type READ type NOTIFY typeChanged REVISION 3 FINAL)
+    Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged REVISION 4 FINAL)
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
@@ -112,6 +144,7 @@ public:
     SavePageFormat savePageFormat() const;
     void setSavePageFormat(SavePageFormat format);
     DownloadType type() const;
+    DownloadInterruptReason interruptReason() const;
 
 Q_SIGNALS:
     void stateChanged();
@@ -121,6 +154,7 @@ Q_SIGNALS:
     Q_REVISION(1) void mimeTypeChanged();
     void pathChanged();
     Q_REVISION(3) void typeChanged();
+    Q_REVISION(4) void interruptReasonChanged();
 
 private:
     QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate*, QObject *parent = 0);

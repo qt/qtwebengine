@@ -98,6 +98,8 @@ public:
             tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 3>(uri, 1, 4, "WebEngineDownloadItem",
             tr("Cannot create a separate instance of WebEngineDownloadItem"));
+        qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 4>(uri, 1, 5, "WebEngineDownloadItem",
+            tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", msgUncreatableType("WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 1>(uri, 1, 2, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));

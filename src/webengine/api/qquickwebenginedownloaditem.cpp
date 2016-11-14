@@ -45,6 +45,34 @@ using QtWebEngineCore::BrowserContextAdapterClient;
 
 QT_BEGIN_NAMESPACE
 
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NoReason, QQuickWebEngineDownloadItem::NoReason)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileFailed, QQuickWebEngineDownloadItem::FileFailed)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileAccessDenied, QQuickWebEngineDownloadItem::FileAccessDenied)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileNoSpace, QQuickWebEngineDownloadItem::FileNoSpace)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileNameTooLong, QQuickWebEngineDownloadItem::FileNameTooLong)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileTooLarge, QQuickWebEngineDownloadItem::FileTooLarge)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileVirusInfected, QQuickWebEngineDownloadItem::FileVirusInfected)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileTransientError, QQuickWebEngineDownloadItem::FileTransientError)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileBlocked, QQuickWebEngineDownloadItem::FileBlocked)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileSecurityCheckFailed, QQuickWebEngineDownloadItem::FileSecurityCheckFailed)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileTooShort, QQuickWebEngineDownloadItem::FileTooShort)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::FileHashMismatch, QQuickWebEngineDownloadItem::FileHashMismatch)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkFailed, QQuickWebEngineDownloadItem::NetworkFailed)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkTimeout, QQuickWebEngineDownloadItem::NetworkTimeout)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkDisconnected, QQuickWebEngineDownloadItem::NetworkDisconnected)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkServerDown, QQuickWebEngineDownloadItem::NetworkServerDown)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::NetworkInvalidRequest, QQuickWebEngineDownloadItem::NetworkInvalidRequest)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerFailed, QQuickWebEngineDownloadItem::ServerFailed)
+//ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerNoRange, QQuickWebEngineDownloadItem::ServerNoRange)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerBadContent, QQuickWebEngineDownloadItem::ServerBadContent)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerUnauthorized, QQuickWebEngineDownloadItem::ServerUnauthorized)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerCertProblem, QQuickWebEngineDownloadItem::ServerCertProblem)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerForbidden, QQuickWebEngineDownloadItem::ServerForbidden)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::ServerUnreachable, QQuickWebEngineDownloadItem::ServerUnreachable)
+ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::UserCanceled, QQuickWebEngineDownloadItem::UserCanceled)
+//ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::UserShutdown, QQuickWebEngineDownloadItem::UserShutdown)
+//ASSERT_ENUMS_MATCH(BrowserContextAdapterClient::Crash, QQuickWebEngineDownloadItem::Crash)
+
 static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int state) {
     switch (state) {
     case BrowserContextAdapterClient::DownloadInProgress:
@@ -61,12 +89,18 @@ static inline QQuickWebEngineDownloadItem::DownloadState toDownloadState(int sta
     }
 }
 
+static inline QQuickWebEngineDownloadItem::DownloadInterruptReason toDownloadInterruptReason(int reason)
+{
+    return static_cast<QQuickWebEngineDownloadItem::DownloadInterruptReason>(reason);
+}
+
 QQuickWebEngineDownloadItemPrivate::QQuickWebEngineDownloadItemPrivate(QQuickWebEngineProfile *p)
     : profile(p)
     , downloadId(-1)
     , downloadState(QQuickWebEngineDownloadItem::DownloadCancelled)
     , savePageFormat(QQuickWebEngineDownloadItem::UnknownSaveFormat)
     , type(QQuickWebEngineDownloadItem::Attachment)
+    , interruptReason(QQuickWebEngineDownloadItem::NoReason)
     , totalBytes(-1)
     , receivedBytes(0)
 {
@@ -96,6 +130,11 @@ void QQuickWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClien
     Q_Q(QQuickWebEngineDownloadItem);
 
     updateState(toDownloadState(info.state));
+
+    if (toDownloadInterruptReason(info.downloadInterruptReason) != interruptReason) {
+        interruptReason = toDownloadInterruptReason(info.downloadInterruptReason);
+        Q_EMIT q->interruptReasonChanged();
+    }
 
     if (info.receivedBytes != receivedBytes) {
         receivedBytes = info.receivedBytes;
@@ -324,6 +363,52 @@ QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() co
 {
     Q_D(const QQuickWebEngineDownloadItem);
     return d->type;
+}
+
+/*!
+    \qmlproperty enumeration WebEngineDownloadItem::interruptReason
+    \readonly
+    \since QtWebEngine 1.6
+
+    Returns the reason why the download was interrupted:
+
+    \value WebEngineDownloadItem.NoReason Unknown reason or not interrupted.
+    \value WebEngineDownloadItem.FileFailed General file operation failure.
+    \value WebEngineDownloadItem.FileAccessDenied The file cannot be written locally, due to access restrictions.
+    \value WebEngineDownloadItem.FileNoSpace Insufficient space on the target drive.
+    \value WebEngineDownloadItem.FileNameTooLong The directory or file name is too long.
+    \value WebEngineDownloadItem.FileTooLarge The file size exceeds the file system limitation.
+    \value WebEngineDownloadItem.FileVirusInfected The file is infected with a virus.
+    \value WebEngineDownloadItem.FileTransientError Temporary problem (for example the file is in use,
+           out of memory, or too many files are opened at once).
+    \value WebEngineDownloadItem.FileBlocked The file was blocked due to local policy.
+    \value WebEngineDownloadItem.FileSecurityCheckFailed An attempt to check the safety of the download
+           failed due to unexpected reasons.
+    \value WebEngineDownloadItem.FileTooShort An attempt was made to seek past the end of a file when
+           opening a file (as part of resuming a previously interrupted download).
+    \value WebEngineDownloadItem.FileHashMismatch The partial file did not match the expected hash.
+
+    \value WebEngineDownloadItem.NetworkFailed General network failure.
+    \value WebEngineDownloadItem.NetworkTimeout The network operation has timed out.
+    \value WebEngineDownloadItem.NetworkDisconnected The network connection has been terminated.
+    \value WebEngineDownloadItem.NetworkServerDown The server has gone down.
+    \value WebEngineDownloadItem.NetworkInvalidRequest The network request was invalid (for example, the
+           original or redirected URL is invalid, has an unsupported scheme, or is disallowed by policy).
+
+    \value WebEngineDownloadItem.ServerFailed General server failure.
+    \value WebEngineDownloadItem.ServerBadContent The server does not have the requested data.
+    \value WebEngineDownloadItem.ServerUnauthorized The server did not authorize access to the resource.
+    \value WebEngineDownloadItem.ServerCertProblem A problem with the server certificate occurred.
+    \value WebEngineDownloadItem.ServerForbidden Access forbidden by the server.
+    \value WebEngineDownloadItem.ServerUnreachable Unexpected server response (might indicate that
+           the responding server may not be the intended server).
+    \value WebEngineDownloadItem.UserCanceled The user canceled the download.
+*/
+
+QQuickWebEngineDownloadItem::DownloadInterruptReason QQuickWebEngineDownloadItem::interruptReason() const
+{
+    Q_D(const QQuickWebEngineDownloadItem);
+    return d->interruptReason;
 }
 
 QQuickWebEngineDownloadItem::QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate *p, QObject *parent)
