@@ -1,6 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    widgets
+    widgets \
+    quick
 
 !qtHaveModule(webenginewidgets): SUBDIRS -= widgets
