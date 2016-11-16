@@ -55,7 +55,7 @@
 
 namespace QtWebEngineCore {
 
-int pageTransitionToNavigationType(ui::PageTransition transition)
+WebContentsAdapterClient::NavigationType pageTransitionToNavigationType(ui::PageTransition transition)
 {
     int32 qualifier = ui::PageTransitionGetQualifier(transition);
 
@@ -78,6 +78,18 @@ int pageTransitionToNavigationType(ui::PageTransition transition)
     }
 }
 
+QWebEngineUrlRequestInfo::ResourceType toQt(content::ResourceType resourceType)
+{
+    if (resourceType >= 0 && resourceType < content::ResourceType(QWebEngineUrlRequestInfo::ResourceTypeLast))
+        return static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType);
+    return QWebEngineUrlRequestInfo::ResourceTypeUnknown;
+}
+
+QWebEngineUrlRequestInfo::NavigationType toQt(WebContentsAdapterClient::NavigationType navigationType)
+{
+    return static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType);
+}
+
 NetworkDelegateQt::NetworkDelegateQt(URLRequestContextGetterQt *requestContext)
     : m_requestContextGetter(requestContext)
 {
@@ -91,7 +103,7 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
     const content::ResourceRequestInfo *resourceInfo = content::ResourceRequestInfo::ForRequest(request);
 
     content::ResourceType resourceType = content::RESOURCE_TYPE_LAST_TYPE;
-    int navigationType = QWebEngineUrlRequestInfo::NavigationTypeOther;
+    WebContentsAdapterClient::NavigationType navigationType = WebContentsAdapterClient::OtherNavigation;
 
     if (resourceInfo) {
         resourceType = resourceInfo->GetResourceType();
@@ -102,11 +114,11 @@ int NetworkDelegateQt::OnBeforeURLRequest(net::URLRequest *request, const net::C
 
     QWebEngineUrlRequestInterceptor* interceptor = m_requestContextGetter->m_requestInterceptor;
     if (interceptor) {
-        QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(static_cast<QWebEngineUrlRequestInfo::ResourceType>(resourceType)
-                                                                                           , static_cast<QWebEngineUrlRequestInfo::NavigationType>(navigationType)
-                                                                                           , qUrl
-                                                                                           , toQt(request->first_party_for_cookies())
-                                                                                           , QByteArray::fromStdString(request->method()));
+        QWebEngineUrlRequestInfoPrivate *infoPrivate = new QWebEngineUrlRequestInfoPrivate(toQt(resourceType),
+                                                                                           toQt(navigationType),
+                                                                                           qUrl,
+                                                                                           toQt(request->first_party_for_cookies()),
+                                                                                           QByteArray::fromStdString(request->method()));
         QWebEngineUrlRequestInfo requestInfo(infoPrivate);
         interceptor->interceptRequest(requestInfo);
         if (requestInfo.changed()) {

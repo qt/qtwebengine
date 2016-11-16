@@ -59,7 +59,7 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeFavicon, content::RESOU
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeXhr, content::RESOURCE_TYPE_XHR)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, content::RESOURCE_TYPE_PING)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, content::RESOURCE_TYPE_SERVICE_WORKER)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeUnknown, content::RESOURCE_TYPE_LAST_TYPE)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, content::RESOURCE_TYPE_LAST_TYPE)
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::TypedNavigation, QWebEngineUrlRequestInfo::NavigationTypeTyped)
@@ -166,6 +166,9 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
     \value ResourceTypePing  A ping request for <a ping>.
     \value ResourceTypeServiceWorker  The main resource of a service worker.
     \value ResourceTypeUnknown  Unknown request type.
+
+    \note For forward compatibility all values not matched should be treated as unknown,
+    not just \c ResourceTypeUnknown.
 */
 
 /*!

@@ -70,7 +70,10 @@ public:
         ResourceTypeXhr,            // a XMLHttpRequest
         ResourceTypePing,           // a ping request for <a ping>
         ResourceTypeServiceWorker,  // the main resource of a service worker.
-        ResourceTypeUnknown
+#ifndef Q_QDOC
+        ResourceTypeLast,
+#endif
+        ResourceTypeUnknown = 255
     };
 
     enum NavigationType {
