@@ -400,8 +400,10 @@ defineReplace(buildGn) {
     !exists($$out) {
         mkpath($$dirname(out))
         src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
-        gn_configure = $$system_path($$absolute_path(chromium/tools/gn/bootstrap/bootstrap.py, $$src_3rd_party_dir))
-        system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$gn_configure) --no-rebuild $$ninja_path")
+        gn_bootstrap = $$system_path($$absolute_path(chromium/tools/gn/bootstrap/bootstrap.py, $$src_3rd_party_dir))
+        gn_args = $$system_quote(is_clang=false use_sysroot=false enable_remoting=false enable_nacl=false)
+        gn_configure = $$system_quote($$gn_bootstrap) --shadow --gn-gen-args=$$gn_args $$ninja_path
+        system("cd $$system_quote($$system_path($$dirname(out))) && python $$gn_configure")
     }
 }
 
