@@ -79,7 +79,6 @@ QWebEngineDownloadItemPrivate::QWebEngineDownloadItemPrivate(QWebEngineProfilePr
     , downloadFinished(false)
     , downloadId(-1)
     , downloadState(QWebEngineDownloadItem::DownloadCancelled)
-    , savePageFormat(QWebEngineDownloadItem::MimeHtmlSaveFormat)
     , downloadUrl(url)
     , totalBytes(-1)
     , receivedBytes(0)
@@ -204,20 +203,6 @@ quint32 QWebEngineDownloadItem::id() const
 */
 
 /*!
-    \enum QWebEngineDownloadItem::SavePageFormat
-    \since 5.7
-
-    This enum describes the format that is used to save a web page.
-
-    \value UnknownSaveFormat This is not a request for downloading a complete web page.
-    \value SingleHtmlSaveFormat The page is saved as a single HTML page. Resources such as images
-           are not saved.
-    \value CompleteHtmlSaveFormat The page is saved as a complete HTML page, for example a directory
-            containing the single HTML page and the resources.
-    \value MimeHtmlSaveFormat The page is saved as a complete web page in the MIME HTML format.
-*/
-
-/*!
     Returns the download item's current state.
 
     \sa QWebEngineDownloadItem::DownloadState
@@ -316,30 +301,6 @@ bool QWebEngineDownloadItem::isFinished() const
 {
     Q_D(const QWebEngineDownloadItem);
     return d->downloadFinished;
-}
-
-/*!
-    Returns the format the web page will be saved in if this is a download request for a web page.
-    \since 5.7
-
-    \sa setSavePageFormat()
-*/
-QWebEngineDownloadItem::SavePageFormat QWebEngineDownloadItem::savePageFormat() const
-{
-    Q_D(const QWebEngineDownloadItem);
-    return d->savePageFormat;
-}
-
-/*!
-    Sets the \a format the web page will be saved in if this is a download request for a web page.
-    \since 5.7
-
-    \sa savePageFormat()
-*/
-void QWebEngineDownloadItem::setSavePageFormat(QWebEngineDownloadItem::SavePageFormat format)
-{
-    Q_D(QWebEngineDownloadItem);
-    d->savePageFormat = format;
 }
 
 QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p, QObject *parent)

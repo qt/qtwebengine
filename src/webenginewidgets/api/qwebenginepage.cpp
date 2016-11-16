@@ -44,7 +44,6 @@
 #include "browser_context_adapter.h"
 #include "certificate_error_controller.h"
 #include "color_chooser_controller.h"
-#include "favicon_manager.h"
 #include "file_picker_controller.h"
 #include "javascript_dialog_controller.h"
 #include "qwebenginefullscreenrequest.h"
@@ -68,7 +67,6 @@
 #include <QApplication>
 #include <QAuthenticator>
 #include <QClipboard>
-#include <QColorDialog>
 #include <QContextMenuEvent>
 #include <QFileDialog>
 #include <QKeyEvent>
@@ -94,9 +92,8 @@ static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::Wind
 {
     switch (disposition) {
     case WebContentsAdapterClient::NewForegroundTabDisposition:
-        return QWebEnginePage::WebBrowserTab;
     case WebContentsAdapterClient::NewBackgroundTabDisposition:
-        return QWebEnginePage::WebBrowserBackgroundTab;
+        return QWebEnginePage::WebBrowserTab;
     case WebContentsAdapterClient::NewPopupDisposition:
         return QWebEnginePage::WebDialog;
     case WebContentsAdapterClient::NewWindowDisposition:
@@ -139,7 +136,6 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , m_backgroundColor(Qt::white)
     , fullscreenMode(false)
     , webChannel(nullptr)
-    , webChannelWorldId(QWebEngineScript::MainWorld)
 {
     memset(actions, 0, sizeof(actions));
 }
@@ -184,7 +180,6 @@ void QWebEnginePagePrivate::iconChanged(const QUrl &url)
         return;
     iconUrl = url;
     Q_EMIT q->iconUrlChanged(iconUrl);
-    Q_EMIT q->iconChanged(adapter->faviconManager()->getIcon());
 }
 
 void QWebEnginePagePrivate::loadProgressChanged(int progress)
@@ -205,10 +200,8 @@ void QWebEnginePagePrivate::selectionChanged()
     Q_EMIT q->selectionChanged();
 }
 
-void QWebEnginePagePrivate::recentlyAudibleChanged(bool recentlyAudible)
+void QWebEnginePagePrivate::recentlyAudibleChanged(bool /*recentlyAudible*/)
 {
-    Q_Q(QWebEnginePage);
-    Q_EMIT q->recentlyAudibleChanged(recentlyAudible);
 }
 
 QRectF QWebEnginePagePrivate::viewportRect() const
@@ -342,8 +335,7 @@ void QWebEnginePagePrivate::adoptNewWindowImpl(QWebEnginePage *newPage,
 
     // If the constructor of the QWebEnginePage descendant set a web channel,
     // set it on the new adapter.
-    newWebContents->setWebChannel(newPage->d_func()->webChannel
-                                  , newPage->d_func()->webChannelWorldId);
+    newWebContents->setWebChannel(newPage->d_func()->webChannel, QWebEngineScript::MainWorld);
 
     // Page has finished the adoption process.
     newPage->d_func()->m_isBeingAdopted = false;
@@ -385,9 +377,9 @@ void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
     m_callbacks.invoke(requestId, matchCount > 0);
 }
 
-void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &result)
+void QWebEnginePagePrivate::didPrintPage(quint64 /*requestId*/, const QByteArray &/*result*/)
 {
-    m_callbacks.invoke(requestId, result);
+    Q_UNREACHABLE();
 }
 
 void QWebEnginePagePrivate::passOnFocus(bool reverse)
@@ -418,16 +410,7 @@ void QWebEnginePagePrivate::authenticationRequired(QSharedPointer<Authentication
 
 void QWebEnginePagePrivate::showColorDialog(QSharedPointer<ColorChooserController> controller)
 {
-    QColorDialog *dialog = new QColorDialog(controller.data()->initialColor(), view);
-
-    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), controller.data(), SLOT(accept(QColor)));
-    QColorDialog::connect(dialog, SIGNAL(rejected()), controller.data(), SLOT(reject()));
-
-    // Delete when done
-    QColorDialog::connect(dialog, SIGNAL(colorSelected(QColor)), dialog, SLOT(deleteLater()));
-    QColorDialog::connect(dialog, SIGNAL(rejected()), dialog, SLOT(deleteLater()));
-
-    dialog->open();
+    controller->reject();
 }
 
 void QWebEnginePagePrivate::runMediaAccessPermissionRequest(const QUrl &securityOrigin, WebContentsAdapterClient::MediaRequestFlags requestFlags)
@@ -525,21 +508,17 @@ void QWebEnginePagePrivate::recreateFromSerializedHistory(QDataStream &input)
         adapter = std::move(newWebContents);
         adapter->initialize(this);
         if (webChannel)
-            adapter->setWebChannel(webChannel, webChannelWorldId);
+            adapter->setWebChannel(webChannel, QWebEngineScript::MainWorld);
         scriptCollection.d->rebindToContents(adapter);
     }
 }
 
-void QWebEnginePagePrivate::updateScrollPosition(const QPointF &position)
+void QWebEnginePagePrivate::updateScrollPosition(const QPointF &/*position*/)
 {
-    Q_Q(QWebEnginePage);
-    Q_EMIT q->scrollPositionChanged(position);
 }
 
-void QWebEnginePagePrivate::updateContentsSize(const QSizeF &size)
+void QWebEnginePagePrivate::updateContentsSize(const QSizeF &/*size*/)
 {
-    Q_Q(QWebEnginePage);
-    Q_EMIT q->contentsSizeChanged(size);
 }
 
 void QWebEnginePagePrivate::setFullScreenMode(bool fullscreen)
@@ -616,56 +595,12 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
 */
 
 /*!
-    \property QWebEnginePage::scrollPosition
-    \since 5.7
-
-    \brief The scroll position of the page contents.
-*/
-
-/*!
-    \property QWebEnginePage::contentsSize
-    \since 5.7
-
-    The size of the page contents.
-*/
-
-/*!
-    \fn void QWebEnginePage::audioMutedChanged(bool muted)
-    \since 5.7
-
-    This signal is emitted when the page's \a muted state changes.
-    \note Not to be confused with a specific HTML5 audio or video element being muted.
-*/
-
-/*!
-    \fn void QWebEnginePage::recentlyAudibleChanged(bool recentlyAudible);
-    \since 5.7
-
-    This signal is emitted when the page's audible state, \a recentlyAudible, changes, because
-    the audio is played or stopped.
-
-    \note The signal is also emitted when calling the setAudioMuted() method.
-    Also, if the audio is paused, this signal is emitted with an approximate \b{two-second
-    delay}, from the moment the audio is paused.
-*/
-
-/*!
     \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
 
     This signal is emitted when the URL of the icon ("favicon") associated with the
     page is changed. The new URL is specified by \a url.
 
-    \sa iconUrl(), icon(), iconChanged()
-*/
-
-/*!
-    \fn void QWebEnginePage::iconChanged(const QIcon &icon)
-    \since 5.7
-
-    This signal is emitted when the icon ("favicon") associated with the
-    page is changed. The new icon is specified by \a icon.
-
-    \sa icon(), iconUrl(), iconUrlChanged()
+    \sa iconUrl()
 */
 
 /*!
@@ -718,45 +653,23 @@ QWebChannel *QWebEnginePage::webChannel() const
     return d->webChannel;
 }
 
-/*!
- * \overload
- *
- * Sets the web channel instance to be used by this page to \a channel and installs
- * it in the main JavaScript world.
- *
- * With this method the web channel can be accessed by web page content. If the content
- * is not under your control and might be hostile, this could be a security issue and
- * you should consider installing it in a private JavaScript world.
- *
- * \since 5.5
- * \sa QWebEngineScript::MainWorld
- */
-
-void QWebEnginePage::setWebChannel(QWebChannel *channel)
-{
-    setWebChannel(channel, QWebEngineScript::MainWorld);
-}
 
 /*!
  * Sets the web channel instance to be used by this page to \a channel and connects it to
  * web engine's transport using Chromium IPC messages. The transport is exposed in the JavaScript
- * world \a worldId as
+ * context of this page as
  * \c qt.webChannelTransport, which should be used when using the \l{Qt WebChannel JavaScript API}.
  *
  * \note The page does not take ownership of the channel object.
- * \note Only one web channel can be installed per page, setting one even in another JavaScript
- *       world uninstalls any already installed web channel.
  *
- * \since 5.7
- * \sa QWebEngineScript::ScriptWorldId
+ * \since 5.5
  */
-void QWebEnginePage::setWebChannel(QWebChannel *channel, uint worldId)
+void QWebEnginePage::setWebChannel(QWebChannel *channel)
 {
     Q_D(QWebEnginePage);
-    if (d->webChannel != channel || d->webChannelWorldId != worldId) {
+    if (d->webChannel != channel) {
         d->webChannel = channel;
-        d->webChannelWorldId = worldId;
-        d->adapter->setWebChannel(channel, worldId);
+        d->adapter->setWebChannel(channel, QWebEngineScript::MainWorld);
     }
 }
 
@@ -785,44 +698,6 @@ void QWebEnginePage::setBackgroundColor(const QColor &color)
         return;
     d->m_backgroundColor = color;
     d->adapter->backgroundColorChanged();
-}
-
-/*!
-    \property QWebEnginePage::audioMuted
-    \brief whether the current page audio is muted.
-    \since 5.7
-
-    The default value is \c false.
-    \sa recentlyAudible
-*/
-bool QWebEnginePage::isAudioMuted() const {
-    const Q_D(QWebEnginePage);
-    return d->adapter->isAudioMuted();
-}
-
-void QWebEnginePage::setAudioMuted(bool muted) {
-    Q_D(QWebEnginePage);
-    bool _isAudioMuted = isAudioMuted();
-    d->adapter->setAudioMuted(muted);
-    if (_isAudioMuted != muted) {
-        Q_EMIT audioMutedChanged(muted);
-    }
-}
-
-
-/*!
-    \property QWebEnginePage::recentlyAudible
-    \brief the current page's \e {audible state}, that is, whether audio was recently played
-    or not.
-    \since 5.7
-
-    The default value is \c false.
-    \sa audioMuted
-*/
-bool QWebEnginePage::recentlyAudible() const
-{
-    const Q_D(QWebEnginePage);
-    return d->adapter->recentlyAudible();
 }
 
 void QWebEnginePage::setView(QWidget *view)
@@ -921,9 +796,6 @@ QAction *QWebEnginePage::action(WebAction action) const
     case OpenLinkInNewTab:
         text = tr("Open Link in New Tab");
         break;
-    case OpenLinkInNewBackgroundTab:
-        text = tr("Open Link in New Background Tab");
-        break;
     case CopyLinkToClipboard:
         text = tr("Copy Link URL");
         break;
@@ -966,12 +838,6 @@ QAction *QWebEnginePage::action(WebAction action) const
     case RequestClose:
         text = tr("Close Page");
         break;
-    case Unselect:
-        text = tr("Unselect");
-        break;
-    case SavePage:
-        text = tr("Save &Page");
-        break;
     case NoWebAction:
     case WebActionCount:
         Q_UNREACHABLE();
@@ -994,7 +860,7 @@ QAction *QWebEnginePage::action(WebAction action) const
 void QWebEnginePage::triggerAction(WebAction action, bool)
 {
     Q_D(QWebEnginePage);
-    const QtWebEngineCore::WebEngineContextMenuData &menuData = *d->contextData.d;
+    const QtWebEngineCore::WebEngineContextMenuData &menuData = d->m_menuData;
     switch (action) {
     case Back:
         d->adapter->navigateToOffset(-1);
@@ -1032,9 +898,6 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case PasteAndMatchStyle:
         d->adapter->pasteAndMatchStyle();
         break;
-    case Unselect:
-        d->adapter->unselect();
-        break;
     case OpenLinkInThisWindow:
         if (menuData.linkUrl.isValid())
             setUrl(menuData.linkUrl);
@@ -1049,13 +912,6 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case OpenLinkInNewTab:
         if (menuData.linkUrl.isValid()) {
             QWebEnginePage *newPage = createWindow(WebBrowserTab);
-            if (newPage)
-                newPage->setUrl(menuData.linkUrl);
-        }
-        break;
-    case OpenLinkInNewBackgroundTab:
-        if (menuData.linkUrl.isValid()) {
-            QWebEnginePage *newPage = createWindow(WebBrowserBackgroundTab);
             if (newPage)
                 newPage->setUrl(menuData.linkUrl);
         }
@@ -1159,9 +1015,6 @@ void QWebEnginePage::triggerAction(WebAction action, bool)
     case RequestClose:
         d->adapter->requestClose();
         break;
-    case SavePage:
-        d->adapter->save();
-        break;
     case NoWebAction:
         break;
     case WebActionCount:
@@ -1205,17 +1058,16 @@ bool QWebEnginePagePrivate::contextMenuRequested(const WebEngineContextMenuData 
     if (!view || !view->d_func()->m_pendingContextMenuEvent)
         return false;
 
-    contextData.reset();
+    m_menuData = WebEngineContextMenuData();
     QContextMenuEvent event(QContextMenuEvent::Mouse, data.pos, view->mapToGlobal(data.pos));
     switch (view->contextMenuPolicy()) {
     case Qt::PreventContextMenu:
         return false;
     case Qt::DefaultContextMenu:
-        contextData = data;
+        m_menuData = data;
         view->contextMenuEvent(&event);
         break;
     case Qt::CustomContextMenu:
-        contextData = data;
         Q_EMIT view->customContextMenuRequested(data.pos);
         break;
     case Qt::ActionsContextMenu:
@@ -1354,12 +1206,9 @@ bool QWebEnginePagePrivate::isEnabled() const
 QMenu *QWebEnginePage::createStandardContextMenu()
 {
     Q_D(QWebEnginePage);
-    if (!d->contextData.d)
-        return nullptr;
-
     QMenu *menu = new QMenu(d->view);
     QAction *action = 0;
-    const WebEngineContextMenuData &contextMenuData = *d->contextData.d;
+    const WebEngineContextMenuData &contextMenuData = d->m_menuData;
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
         action = QWebEnginePage::action(OpenLinkInThisWindow);
@@ -1383,7 +1232,6 @@ QMenu *QWebEnginePage::createStandardContextMenu()
         menu->addAction(action);
     } else {
         menu->addAction(QWebEnginePage::action(Copy));
-        menu->addAction(QWebEnginePage::action(Unselect));
     }
 
     if (!contextMenuData.linkText.isEmpty() && contextMenuData.linkUrl.isValid()) {
@@ -1552,33 +1400,12 @@ QUrl QWebEnginePage::requestedUrl() const
 
     By default, this property contains an empty URL.
 
-    \sa iconUrlChanged(), icon(), iconChanged()
+    \sa iconUrlChanged()
 */
 QUrl QWebEnginePage::iconUrl() const
 {
     Q_D(const QWebEnginePage);
     return d->iconUrl;
-}
-
-/*!
-    \property QWebEnginePage::icon
-    \brief the icon associated with the page currently viewed
-    \since 5.7
-
-    By default, this property contains a null icon. If the web page specifies more than one icon,
-    the \c{icon} property encapsulates the available candidate icons in a single,
-    scalable \c{QIcon}.
-
-    \sa iconChanged(), iconUrl(), iconUrlChanged()
-*/
-QIcon QWebEnginePage::icon() const
-{
-    Q_D(const QWebEnginePage);
-
-    if (d->iconUrl.isEmpty())
-        return QIcon();
-
-    return d->adapter->faviconManager()->getIcon();
 }
 
 qreal QWebEnginePage::zoomFactor() const
@@ -1603,19 +1430,6 @@ void QWebEnginePage::runJavaScript(const QString& scriptSource, const QWebEngine
 {
     Q_D(QWebEnginePage);
     quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, QWebEngineScript::MainWorld);
-    d->m_callbacks.registerCallback(requestId, resultCallback);
-}
-
-void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
-{
-    Q_D(QWebEnginePage);
-    d->adapter->runJavaScript(scriptSource, worldId);
-}
-
-void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback)
-{
-    Q_D(QWebEnginePage);
-    quint64 requestId = d->adapter->runJavaScriptCallbackResult(scriptSource, worldId);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 }
 
@@ -1733,64 +1547,6 @@ bool QWebEnginePage::acceptNavigationRequest(const QUrl &url, NavigationType typ
     Q_UNUSED(type);
     Q_UNUSED(isMainFrame);
     return true;
-}
-
-QPointF QWebEnginePage::scrollPosition() const
-{
-    Q_D(const QWebEnginePage);
-    return d->adapter->lastScrollOffset();
-}
-
-QSizeF QWebEnginePage::contentsSize() const
-{
-    Q_D(const QWebEnginePage);
-    return d->adapter->lastContentsSize();
-}
-
-/*!
-    Renders the current content of the page into a PDF document and saves it in the location specified in \a filePath.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
-
-    If a file already exists at the provided file path, it will be overwritten.
-    \since 5.7
-*/
-void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &pageLayout)
-{
-    Q_D(const QWebEnginePage);
-    d->adapter->printToPDF(pageLayout, filePath);
-}
-
-
-/*!
-    \fn void QWebEnginePage::printToPdf(FunctorOrLambda resultCallback, const QPageLayout &pageLayout)
-    Renders the current content of the page into a PDF document and returns a byte array containing the PDF data
-    as parameter to \a resultCallback.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
-
-    The \a resultCallback must take a const reference to a QByteArray as parameter. If printing was successful, this byte array
-    will contain the PDF data, otherwise, the byte array will be empty.
-
-    \since 5.7
-*/
-void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &pageLayout)
-{
-    Q_D(QWebEnginePage);
-    quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
-    d->m_callbacks.registerCallback(requestId, resultCallback);
-}
-
-/*!
-    \since 5.7
-
-    Returns additional data about the current context menu. It is only guaranteed to be valid during the call to the QWebEngineView::contextMenuEvent()
-    handler of the associated QWebEngineView.
-
-    \sa createStandardContextMenu()
-*/
-const QWebEngineContextMenuData &QWebEnginePage::contextMenuData() const
-{
-    Q_D(const QWebEnginePage);
-    return d->contextData;
 }
 
 QT_END_NAMESPACE

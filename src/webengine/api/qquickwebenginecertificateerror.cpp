@@ -192,9 +192,6 @@ QUrl QQuickWebEngineCertificateError::url() const
     \value  WebEngineCertificateError.CertificateNameConstraintViolation
             The certificate claimed DNS names that are in violation of name
             constraints.
-    \value  WebEngineCertificateError.CertificateValidityTooLong
-            The certificate has a validity period that is too long.
-            (Added in 5.7)
 */
 QQuickWebEngineCertificateError::Error QQuickWebEngineCertificateError::error() const
 {

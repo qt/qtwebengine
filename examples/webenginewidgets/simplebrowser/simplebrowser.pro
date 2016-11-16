@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = simplebrowser
-QT += webenginewidgets
+QT += webenginewidgets network
 CONFIG += c++11
 
 HEADERS += \

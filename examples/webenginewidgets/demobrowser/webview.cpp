@@ -65,7 +65,9 @@
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
 
-#include <QWebEngineContextMenuData>
+#if defined(QWEBENGINEPAGE_HITTESTCONTENT)
+#include <QWebEngineHitTestResult>
+#endif
 
 #ifndef QT_NO_UITOOLS
 #include <QtUiTools/QUiLoader>
@@ -173,8 +175,6 @@ QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type)
 {
     if (type == QWebEnginePage::WebBrowserTab) {
         return mainWindow()->tabWidget()->newTab()->page();
-    } else if (type == QWebEnginePage::WebBrowserBackgroundTab) {
-        return mainWindow()->tabWidget()->newTab(false)->page();
     } else if (type == QWebEnginePage::WebBrowserWindow) {
         BrowserApplication::instance()->newMainWindow();
         BrowserMainWindow *mainWindow = BrowserApplication::instance()->mainWindow();
@@ -271,8 +271,11 @@ void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *aut
     passwordDialog.introLabel->setWordWrap(true);
 
     if (dialog.exec() == QDialog::Accepted) {
+        QByteArray key = BrowserApplication::authenticationKey(requestUrl, auth->realm());
         auth->setUser(passwordDialog.userNameLineEdit->text());
         auth->setPassword(passwordDialog.passwordLineEdit->text());
+        auth->setOption("key", key);
+        BrowserApplication::instance()->setLastAuthenticator(auth);
     } else {
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
@@ -299,8 +302,12 @@ void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator
     proxyDialog.introLabel->setWordWrap(true);
 
     if (dialog.exec() == QDialog::Accepted) {
-        auth->setUser(proxyDialog.userNameLineEdit->text());
+        QString user = proxyDialog.userNameLineEdit->text();
+        QByteArray key = BrowserApplication::proxyAuthenticationKey(user, proxyHost, auth->realm());
+        auth->setUser(user);
         auth->setPassword(proxyDialog.passwordLineEdit->text());
+        auth->setOption("key", key);
+        BrowserApplication::instance()->setLastProxyAuthenticator(auth);
     } else {
         // Set authenticator null if dialog is cancelled
         *auth = QAuthenticator();
@@ -311,6 +318,7 @@ WebView::WebView(QWidget* parent)
     : QWebEngineView(parent)
     , m_progress(0)
     , m_page(0)
+    , m_iconReply(0)
 {
     connect(this, SIGNAL(loadProgress(int)),
             this, SLOT(setProgress(int)));
@@ -349,9 +357,8 @@ void WebView::setPage(WebPage *_page)
     connect(page(), SIGNAL(statusBarMessage(QString)),
             SLOT(setStatusBarText(QString)));
 #endif
-    disconnect(page(), &QWebEnginePage::iconChanged, this, &WebView::iconChanged);
-    connect(page(), SIGNAL(iconChanged(QIcon)),
-            this, SLOT(onIconChanged(QIcon)));
+    connect(page(), SIGNAL(iconUrlChanged(QUrl)),
+            this, SLOT(onIconUrlChanged(QUrl)));
     connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
     page()->setForwardUnsupportedContent(true);
@@ -360,20 +367,16 @@ void WebView::setPage(WebPage *_page)
 
 void WebView::contextMenuEvent(QContextMenuEvent *event)
 {
-    QMenu *menu;
-    if (page()->contextMenuData().linkUrl().isValid()) {
-        menu = new QMenu(this);
-        menu->addAction(page()->action(QWebEnginePage::OpenLinkInThisWindow));
-        menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewWindow));
-        menu->addAction(page()->action(QWebEnginePage::OpenLinkInNewBackgroundTab));
-        menu->addSeparator();
-        menu->addAction(page()->action(QWebEnginePage::DownloadLinkToDisk));
-        menu->addAction(page()->action(QWebEnginePage::CopyLinkToClipboard));
-    } else {
-        menu = page()->createStandardContextMenu();
+    QMenu *menu = page()->createStandardContextMenu();
+    const QList<QAction*> actions = menu->actions();
+    QList<QAction*>::const_iterator it = qFind(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::OpenLinkInThisWindow));
+    if (it != actions.cend()) {
+       (*it)->setText(tr("Open Link in This Window"));
+        ++it;
+        QAction *before(it == actions.cend() ? nullptr : *it);
+        menu->insertAction(before, page()->action(QWebEnginePage::OpenLinkInNewWindow));
+        menu->insertAction(before, page()->action(QWebEnginePage::OpenLinkInNewTab));
     }
-    if (page()->contextMenuData().selectedText().isEmpty())
-        menu->addAction(page()->action(QWebEnginePage::SavePage));
     connect(menu, &QMenu::aboutToHide, menu, &QObject::deleteLater);
     menu->popup(event->globalPos());
 }
@@ -442,12 +445,33 @@ QUrl WebView::url() const
     return m_initialUrl;
 }
 
-void WebView::onIconChanged(const QIcon &icon)
+QIcon WebView::icon() const
 {
-    if (icon.isNull())
-        emit iconChanged(BrowserApplication::instance()->defaultIcon());
-    else
-        emit iconChanged(icon);
+    if (!m_icon.isNull())
+        return m_icon;
+    return BrowserApplication::instance()->defaultIcon();
+}
+
+void WebView::onIconUrlChanged(const QUrl &url)
+{
+    QNetworkRequest iconRequest(url);
+    m_iconReply = BrowserApplication::networkAccessManager()->get(iconRequest);
+    m_iconReply->setParent(this);
+    connect(m_iconReply, SIGNAL(finished()), this, SLOT(iconLoaded()));
+}
+
+void WebView::iconLoaded()
+{
+    m_icon = QIcon();
+    if (m_iconReply) {
+        QByteArray data = m_iconReply->readAll();
+        QPixmap pixmap;
+        pixmap.loadFromData(data);
+        m_icon.addPixmap(pixmap);
+        m_iconReply->deleteLater();
+        m_iconReply = 0;
+    }
+    emit iconChanged();
 }
 
 void WebView::mousePressEvent(QMouseEvent *event)

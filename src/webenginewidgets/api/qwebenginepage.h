@@ -47,14 +47,12 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
-#include <QtGui/qpagelayout.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtWidgets/qwidget.h>
 
 QT_BEGIN_NAMESPACE
 class QMenu;
 class QWebChannel;
-class QWebEngineContextMenuData;
 class QWebEngineFullScreenRequest;
 class QWebEngineHistory;
 class QWebEnginePage;
@@ -73,13 +71,8 @@ class QWEBENGINEWIDGETS_EXPORT QWebEnginePage : public QObject {
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor)
     Q_PROPERTY(QString title READ title)
     Q_PROPERTY(QUrl url READ url WRITE setUrl)
-    Q_PROPERTY(QUrl iconUrl READ iconUrl NOTIFY iconUrlChanged)
-    Q_PROPERTY(QIcon icon READ icon NOTIFY iconChanged)
+    Q_PROPERTY(QUrl iconUrl READ iconUrl)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor)
-    Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged)
-    Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged)
-    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged)
-    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged)
 
 public:
     enum WebAction {
@@ -120,9 +113,6 @@ public:
         InspectElement,
         ExitFullScreen,
         RequestClose,
-        Unselect,
-        SavePage,
-        OpenLinkInNewBackgroundTab,
         WebActionCount
     };
 
@@ -135,8 +125,7 @@ public:
     enum WebWindowType {
         WebBrowserWindow,
         WebBrowserTab,
-        WebDialog,
-        WebBrowserBackgroundTab
+        WebDialog
     };
 
     enum PermissionPolicy {
@@ -235,44 +224,23 @@ public:
     QUrl url() const;
     QUrl requestedUrl() const;
     QUrl iconUrl() const;
-    QIcon icon() const;
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal factor);
 
-    QPointF scrollPosition() const;
-    QSizeF contentsSize() const;
-
     void runJavaScript(const QString& scriptSource);
-    void runJavaScript(const QString& scriptSource, quint32 worldId);
 #ifdef Q_QDOC
     void runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback);
-    void runJavaScript(const QString& scriptSource, quint32 worldId, FunctorOrLambda resultCallback);
 #else
     void runJavaScript(const QString& scriptSource, const QWebEngineCallback<const QVariant &> &resultCallback);
-    void runJavaScript(const QString& scriptSource, quint32 worldId, const QWebEngineCallback<const QVariant &> &resultCallback);
 #endif
     QWebEngineScriptCollection &scripts();
     QWebEngineSettings *settings() const;
 
     QWebChannel *webChannel() const;
     void setWebChannel(QWebChannel *);
-    void setWebChannel(QWebChannel *, uint worldId);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
-
-    bool isAudioMuted() const;
-    void setAudioMuted(bool muted);
-    bool recentlyAudible() const;
-
-    void printToPdf(const QString &filePath, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
-#ifdef Q_QDOC
-    void printToPdf(FunctorOrLambda resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
-#else
-    void printToPdf(const QWebEngineCallback<const QByteArray&> &resultCallback, const QPageLayout &layout = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF()));
-#endif
-
-    const QWebEngineContextMenuData &contextMenuData() const;
 
 Q_SIGNALS:
     void loadStarted();
@@ -297,12 +265,6 @@ Q_SIGNALS:
     void titleChanged(const QString &title);
     void urlChanged(const QUrl &url);
     void iconUrlChanged(const QUrl &url);
-    void iconChanged(const QIcon &icon);
-
-    void scrollPositionChanged(const QPointF &position);
-    void contentsSizeChanged(const QSizeF &size);
-    void audioMutedChanged(bool muted);
-    void recentlyAudibleChanged(bool recentlyAudible);
 
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);

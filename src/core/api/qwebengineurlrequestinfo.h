@@ -73,8 +73,6 @@ public:
         ResourceTypeXhr,            // a XMLHttpRequest
         ResourceTypePing,           // a ping request for <a ping>
         ResourceTypeServiceWorker,  // the main resource of a service worker.
-        ResourceTypeCspReport,      // Content Security Policy (CSP) violation report
-        ResourceTypePluginResource, // A resource requested by a plugin
 #ifndef Q_QDOC
         ResourceTypeLast,
 #endif

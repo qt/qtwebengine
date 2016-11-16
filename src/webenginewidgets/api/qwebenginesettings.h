@@ -62,8 +62,7 @@ public:
         SerifFont,
         SansSerifFont,
         CursiveFont,
-        FantasyFont,
-        PictographFont
+        FantasyFont
     };
     enum WebAttribute {
         AutoLoadImages,
@@ -80,12 +79,7 @@ public:
         ScrollAnimatorEnabled,
         ErrorPageEnabled,
         PluginsEnabled,
-        FullScreenSupportEnabled,
-        ScreenCaptureEnabled,
-        WebGLEnabled,
-        Accelerated2dCanvasEnabled,
-        AutoLoadIconsForPage,
-        TouchIconsEnabled
+        FullScreenSupportEnabled
     };
 
     enum FontSize {

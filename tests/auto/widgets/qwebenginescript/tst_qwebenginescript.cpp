@@ -118,14 +118,12 @@ void tst_QWebEngineScript::scriptWorld()
     page.load(QUrl("about:blank"));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;"), QVariant::fromValue(true));
-    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) == \"undefined\"", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
     script.setWorldId(QWebEngineScript::ApplicationWorld);
     page.scripts().clear();
     page.scripts().insert(script);
     page.load(QUrl("about:blank"));
     waitForSignal(&page, SIGNAL(loadFinished(bool)));
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) == \"undefined\""), QVariant::fromValue(true));
-    QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
 }
 
 void tst_QWebEngineScript::scriptModifications()
@@ -183,9 +181,7 @@ void tst_QWebEngineScript::webChannel_data()
     QTest::addColumn<int>("worldId");
     QTest::addColumn<bool>("reloadFirst");
     QTest::newRow("MainWorld") << static_cast<int>(QWebEngineScript::MainWorld) << false;
-    QTest::newRow("ApplicationWorld") << static_cast<int>(QWebEngineScript::ApplicationWorld) << false;
     QTest::newRow("MainWorldWithReload") << static_cast<int>(QWebEngineScript::MainWorld) << true;
-    QTest::newRow("ApplicationWorldWithReload") << static_cast<int>(QWebEngineScript::ApplicationWorld) << true;
 }
 
 void tst_QWebEngineScript::webChannel()
@@ -196,7 +192,7 @@ void tst_QWebEngineScript::webChannel()
     TestObject testObject;
     QScopedPointer<QWebChannel> channel(new QWebChannel(this));
     channel->registerObject(QStringLiteral("object"), &testObject);
-    page.setWebChannel(channel.data(), worldId);
+    page.setWebChannel(channel.data());
 
     QFile qwebchanneljs(":/qwebchannel.js");
     QVERIFY(qwebchanneljs.exists());
@@ -220,7 +216,7 @@ void tst_QWebEngineScript::webChannel()
                                 "  function(channel) {"
                                 "    channel.objects.object.text = 'test';"
                                 "  }"
-                                ");"), worldId);
+                                ");"));
     waitForSignal(&testObject, SIGNAL(textChanged(QString)));
     QCOMPARE(testObject.text(), QStringLiteral("test"));
 

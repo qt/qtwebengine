@@ -54,7 +54,6 @@
     F(MenuItem, menuItem) SEPARATOR \
     F(MenuSeparator, menuSeparator) SEPARATOR \
     F(AlertDialog, alertDialog) SEPARATOR \
-    F(ColorDialog, colorDialog) SEPARATOR \
     F(ConfirmDialog, confirmDialog) SEPARATOR \
     F(PromptDialog, promptDialog) SEPARATOR \
     F(FilePicker, filePicker) SEPARATOR \
@@ -108,7 +107,6 @@ public:
     void addMenuSeparator(QObject *menu);
     QObject *addMenu(QObject *parentMenu, const QString &title, const QPoint &pos = QPoint());
     QQmlContext *creationContextForComponent(QQmlComponent *);
-    void showColorDialog(QSharedPointer<ColorChooserController>);
     void showDialog(QSharedPointer<JavaScriptDialogController>);
     void showDialog(QSharedPointer<AuthenticationDialogController>);
     void showFilePicker(FilePickerController *controller);

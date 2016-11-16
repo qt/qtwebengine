@@ -52,25 +52,27 @@ TestWebEngineView {
             onTriggered: parent.when = true
         }
 
+        function getPressedModifiers() {
+            var pressedModifiers;
+            runJavaScript("getPressedModifiers()", function(result) {
+                pressedModifiers = result;
+            });
+            wait(200);
+            verify(function() { return pressedModifiers != undefined });
+            return pressedModifiers;
+        }
+
         function test_keyboardModifierMapping() {
-            skip("runJavaScript bug: QTBUG-51746")
             webEngineView.url = Qt.resolvedUrl("keyboardModifierMapping.html")
             waitForLoadSucceeded();
             titleSpy.wait()
-            var callbackCalled = false;
 
             // Alt
             keyPress(Qt.Key_Alt);
             titleSpy.wait()
-            runJavaScript("getPressedModifiers()", function(result) {
-                    compare(result, "alt:pressed ctrl:no meta:no");
-                    callbackCalled = true;
-                });
-            wait(100);
-            verify(callbackCalled);
+            compare(getPressedModifiers(), "alt:pressed ctrl:no meta:no");
             keyRelease(Qt.Key_Alt)
             titleSpy.wait()
-            callbackCalled = false;
 
             // Ctrl
             // On mac Qt automatically translates Meta to Ctrl and vice versa.
@@ -79,36 +81,18 @@ TestWebEngineView {
             // For testing we assume that the flag Qt::AA_MacDontSwapCtrlAndMeta is NOT set.
             keyPress(Qt.platform.os == "osx" ? Qt.Key_Meta : Qt.Key_Control);
             titleSpy.wait()
-            runJavaScript("getPressedModifiers()", function(result) {
-                    compare(result, "alt:released ctrl:pressed meta:no");
-                    callbackCalled = true;
-                });
-            wait(100);
-            verify(callbackCalled);
+            compare(getPressedModifiers(), "alt:released ctrl:pressed meta:no");
             keyRelease(Qt.platform.os == "osx" ? Qt.Key_Meta : Qt.Key_Control);
             titleSpy.wait()
-            callbackCalled = false;
 
             // Meta (Command on Mac)
             keyPress(Qt.platform.os == "osx" ? Qt.Key_Control : Qt.Key_Meta);
             titleSpy.wait()
-            runJavaScript("getPressedModifiers()", function(result) {
-                    compare(result, "alt:released ctrl:released meta:pressed");
-                    callbackCalled = true;
-                });
-            wait(100);
-            verify(callbackCalled);
+            compare(getPressedModifiers(), "alt:released ctrl:released meta:pressed");
             keyRelease(Qt.platform.os == "osx" ? Qt.Key_Control : Qt.Key_Meta);
             titleSpy.wait()
-            callbackCalled = false;
 
-            runJavaScript("getPressedModifiers()", function(result) {
-                    compare(result, "alt:released ctrl:released meta:released");
-                    callbackCalled = true;
-                });
-            wait(100);
-            verify(callbackCalled);
-            callbackCalled = false;
+            compare(getPressedModifiers(), "alt:released ctrl:released meta:released");
         }
     }
 }

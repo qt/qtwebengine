@@ -74,7 +74,6 @@ signals:
     void closeTab(int index);
     void closeOtherTabs(int index);
     void reloadTab(int index);
-    void muteTab(int index, bool mute);
     void reloadAllTabs();
     void tabMoveRequested(int fromIndex, int toIndex);
 
@@ -91,8 +90,6 @@ private slots:
     void closeTab();
     void closeOtherTabs();
     void reloadTab();
-    void muteTab();
-    void unmuteTab();
     void contextMenuRequested(const QPoint &position);
 
 private:
@@ -219,7 +216,6 @@ public slots:
     void reloadAllTabs();
     void nextTab();
     void previousTab();
-    void setAudioMutedForTab(int index, bool mute);
 
 private slots:
     void currentChanged(int index);
@@ -227,7 +223,7 @@ private slots:
     void aboutToShowRecentTriggeredAction(QAction *action);
     void downloadRequested(QWebEngineDownloadItem *download);
     void webViewLoadStarted();
-    void webViewIconChanged(const QIcon &icon);
+    void webViewIconChanged();
     void webViewTitleChanged(const QString &title);
     void webViewUrlChanged(const QUrl &url);
     void lineEditReturnPressed();
@@ -235,7 +231,6 @@ private slots:
     void moveTab(int fromIndex, int toIndex);
     void fullScreenRequested(QWebEngineFullScreenRequest request);
     void handleTabBarDoubleClicked(int index);
-    void webPageMutedOrAudibleChanged();
 
 private:
     void setupPage(QWebEnginePage* page);

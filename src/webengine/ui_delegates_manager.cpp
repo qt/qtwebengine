@@ -328,43 +328,6 @@ void UIDelegatesManager::showDialog(QSharedPointer<JavaScriptDialogController> d
     QMetaObject::invokeMethod(dialog, "open");
 }
 
-void UIDelegatesManager::showColorDialog(QSharedPointer<ColorChooserController> controller)
-{
-    if (!ensureComponentLoaded(ColorDialog)) {
-        // Let the controller know it couldn't be loaded
-        qWarning("Failed to load dialog, rejecting.");
-        controller->reject();
-        return;
-    }
-
-    QQmlContext *context = qmlContext(m_view);
-    QObject *colorDialog = colorDialogComponent->beginCreate(context);
-    if (QQuickItem* item = qobject_cast<QQuickItem*>(colorDialog))
-        item->setParentItem(m_view);
-    colorDialog->setParent(m_view);
-
-    if (controller->initialColor().isValid())
-        colorDialog->setProperty("color", controller->initialColor());
-
-    QQmlProperty selectedColorSignal(colorDialog, QStringLiteral("onSelectedColor"));
-    CHECK_QML_SIGNAL_PROPERTY(selectedColorSignal, colorDialogComponent->url());
-    QQmlProperty rejectedSignal(colorDialog, QStringLiteral("onRejected"));
-    CHECK_QML_SIGNAL_PROPERTY(rejectedSignal, colorDialogComponent->url());
-
-    static int acceptIndex = controller->metaObject()->indexOfSlot("accept(QVariant)");
-    QObject::connect(colorDialog, selectedColorSignal.method(), controller.data(), controller->metaObject()->method(acceptIndex));
-    static int rejectIndex = controller->metaObject()->indexOfSlot("reject()");
-    QObject::connect(colorDialog, rejectedSignal.method(), controller.data(), controller->metaObject()->method(rejectIndex));
-
-     // delete later
-     static int deleteLaterIndex = colorDialog->metaObject()->indexOfSlot("deleteLater()");
-     QObject::connect(colorDialog, selectedColorSignal.method(), colorDialog, colorDialog->metaObject()->method(deleteLaterIndex));
-     QObject::connect(colorDialog, rejectedSignal.method(), colorDialog, colorDialog->metaObject()->method(deleteLaterIndex));
-
-    colorDialogComponent->completeCreate();
-    QMetaObject::invokeMethod(colorDialog, "open");
-}
-
 void UIDelegatesManager::showDialog(QSharedPointer<AuthenticationDialogController> dialogController)
 {
     Q_ASSERT(!dialogController.isNull());

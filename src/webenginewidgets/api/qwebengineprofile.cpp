@@ -54,11 +54,6 @@
 
 QT_BEGIN_NAMESPACE
 
-ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::UnknownSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::UnknownSavePageFormat)
-ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::SingleHtmlSaveFormat)
-ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::CompleteHtmlSaveFormat)
-ASSERT_ENUMS_MATCH(QWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::MimeHtmlSaveFormat)
-
 using QtWebEngineCore::BrowserContextAdapter;
 
 /*!
@@ -106,7 +101,6 @@ using QtWebEngineCore::BrowserContextAdapter;
     \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
     \c off-the-record is set or no cache path is available.
     \value DiskHttpCache Use a disk cache. This is the default.
-    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 
 /*!
@@ -183,7 +177,6 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->downloadState = QWebEngineDownloadItem::DownloadRequested;
     itemPrivate->downloadPath = info.path;
     itemPrivate->mimeType = info.mimeType;
-    itemPrivate->savePageFormat = static_cast<QWebEngineDownloadItem::SavePageFormat>(info.savePageFormat);
 
     QWebEngineDownloadItem *download = new QWebEngineDownloadItem(itemPrivate, q);
 
@@ -194,8 +187,6 @@ void QWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     QWebEngineDownloadItem::DownloadState state = download->state();
 
     info.path = download->path();
-    info.savePageFormat = static_cast<QtWebEngineCore::BrowserContextAdapterClient::SavePageFormat>(
-                download->savePageFormat());
     info.accepted = state != QWebEngineDownloadItem::DownloadCancelled;
 
     if (state == QWebEngineDownloadItem::DownloadRequested) {
@@ -656,17 +647,6 @@ void QWebEngineProfile::removeAllUrlSchemeHandlers()
 void QWebEngineProfile::destroyedUrlSchemeHandler(QWebEngineUrlSchemeHandler *obj)
 {
     removeUrlSchemeHandler(obj);
-}
-
-/*!
-    \since 5.7
-
-    Removes the profile's cache entries.
-*/
-void QWebEngineProfile::clearHttpCache()
-{
-    Q_D(QWebEngineProfile);
-    d->browserContext()->clearHttpCache();
 }
 
 QT_END_NAMESPACE

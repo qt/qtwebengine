@@ -59,11 +59,9 @@
 
     The title of an HTML document can be accessed with the title() property.
     Additionally, a web site may specify an icon, which can be accessed
-    using the icon() or its URL using the iconUrl() property.
-    If the title or the icon changes, the corresponding titleChanged(), iconChanged()
-    and iconUrlChanged() signals will be emitted.
-    The zoomFactor() property enables zooming the contents of the web page by a
-    scale factor.
+    using the iconUrl() property. If the title or the icon changes, the corresponding
+    titleChanged() and iconUrlChanged() signals will be emitted. The
+    zoomFactor() property enables zooming the contents of the web page by a scale factor.
 
     If you require a custom context menu, you can implement it by reimplementing
     \l{QWidget::}{contextMenuEvent()} and populating your QMenu with the actions
@@ -195,7 +193,7 @@
 
     By default, this property contains an empty URL.
 
-    \sa iconUrlChanged(), icon(), iconChanged()
+    \sa iconUrlChanged()
 */
 
 /*!
@@ -338,7 +336,7 @@
     This signal is emitted when the URL of the icon ("favicon") associated with the
     view is changed. The new URL is specified by \a url.
 
-    \sa iconUrl(), icon(), iconChanged()
+    \sa iconUrl()
 */
 
 /*!

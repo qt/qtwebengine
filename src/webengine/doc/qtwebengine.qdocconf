@@ -42,7 +42,6 @@ depends += qtcore \
            qtgui \
            qtlocation \
            qtnetwork \
-           qtprintsupport \
            qtpositioning \
            qtqml \
            qtquick \

@@ -43,7 +43,6 @@
 #include "qquickwebenginecertificateerror_p.h"
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginehistory_p.h"
-#include "qquickwebenginefaviconprovider_p_p.h"
 #include "qquickwebengineloadrequest_p.h"
 #include "qquickwebenginenavigationrequest_p.h"
 #include "qquickwebenginenewviewrequest_p.h"
@@ -64,12 +63,6 @@ class QtWebEnginePlugin : public QQmlExtensionPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QQmlExtensionInterface/1.0")
 public:
-    virtual void initializeEngine(QQmlEngine *engine, const char *uri) Q_DECL_OVERRIDE
-    {
-        Q_UNUSED(uri);
-        engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider);
-    }
-
     virtual void registerTypes(const char *uri) Q_DECL_OVERRIDE
     {
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
@@ -80,22 +73,17 @@ public:
 
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 2>(uri, 1, 2, "WebEngineView");
-        qmlRegisterType<QQuickWebEngineView, 3>(uri, 1, 3, "WebEngineView");
         qmlRegisterType<QQuickWebEngineProfile>(uri, 1, 1, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 1>(uri, 1, 2, "WebEngineProfile");
-        qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineScript>(uri, 1, 1, "WebEngineScript");
         qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", tr("Cannot create separate instance of WebEngineCertificateError"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 1, "WebEngineDownloadItem",
             tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 1>(uri, 1, 2, "WebEngineDownloadItem",
             tr("Cannot create a separate instance of WebEngineDownloadItem"));
-        qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 2>(uri, 1, 3, "WebEngineDownloadItem",
-            tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", tr("Cannot create separate instance of WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 1>(uri, 1, 2, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
-        qmlRegisterUncreatableType<QQuickWebEngineSettings, 2>(uri, 1, 3, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 1, "WebEngine", webEngineSingletonProvider);
         qmlRegisterUncreatableType<QQuickWebEngineHistory>(uri, 1, 1, "NavigationHistory",
             tr("Cannot create a separate instance of NavigationHistory"));

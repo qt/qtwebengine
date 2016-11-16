@@ -51,9 +51,8 @@
 
     The title of an HTML page can be accessed with the title() property.
     Additionally, a page may also specify an icon, which can be accessed
-    using the icon() or its URL using the iconUrl() property.
-    If the title or the icon changes, the corresponding titleChanged(), iconChanged()
-    and iconUrlChanged() signals will be emitted.
+    using the iconUrl() property. If the title or the icon changes, the
+    corresponding titleChanged() and iconUrlChanged() signals will be emitted.
     The zoomFactor() property enables zooming the contents of the web page by a
     scale factor.
 
@@ -79,14 +78,6 @@
     security origin, and can access each other's resources. Local resources are by default
     restricted from accessing remote content, which means that \c file:// will not be able to
     access \c http://domain.com/foo.html.
-
-    Scripts can be executed on the web page by using runJavaScript(), either in the main
-    JavaScript \e world, along with the rest of the JavaScript coming from the web contents, or in
-    their own isolated world. While the DOM of the page can be accessed from any world, JavaScript
-    variables of a function defined in one world are not accessible from a different one.
-    QWebEngineScript::ScriptWorldId provides some predefined IDs for this purpose. Using the
-    \c runJavaScript() version without the world ID is the same as running the script in the
-    \c MainWorld.
 */
 
 /*!
@@ -126,7 +117,6 @@
     \value OpenLinkInThisWindow Open the current link in the current window. (Added in Qt 5.6)
     \value OpenLinkInNewWindow Open the current link in a new window. (Added in Qt 5.6)
     \value OpenLinkInNewTab Open the current link in a new tab. (Added in Qt 5.6)
-    \value OpenLinkInNewBackgroundTab Open the current link in a new background tab. (Added in Qt 5.7)
     \value CopyLinkToClipboard Copy the current link to the clipboard. (Added in Qt 5.6)
 
     \value CopyImageToClipboard Copy the clicked image to the clipboard. (Added in Qt 5.6)
@@ -149,9 +139,6 @@
     \value RequestClose Request to close the web page. If defined, the \c{window.onbeforeunload}
            handler is run, and the user can confirm or reject to close the page. If the close
            request is confirmed, \c windowCloseRequested is emitted. (Added in Qt 5.6)
-    \value Unselect Clear the current selection. (Added in Qt 5.7)
-    \value SavePage Save the current page to disk. MHTML is the default format that is used to store
-           the web page on disk. (Added in Qt 5.7)
 
     \omitvalue WebActionCount
 
@@ -168,8 +155,6 @@
             A web browser tab.
     \value  WebDialog
             A window without decoration.
-    \value  WebBrowserBackgroundTab
-            A web browser tab without hiding the current visible WebEngineView. (Added in Qt 5.7)
 */
 
 /*!
@@ -281,9 +266,6 @@
     the user clicks on the web page with the right mouse button. It is
     called from the default \l{QWidget::}{contextMenuEvent()} handler. The popup menu's
     ownership is transferred to the caller.
-
-    Returns \c nullptr if the context menu data is not initialized, for example when it
-    is called when there is actually no context menu requested.
  */
 
 /*!
@@ -576,6 +558,13 @@
 */
 
 /*!
+    \property QWebEnginePage::iconUrl
+    \brief the URL of the icon associated with the page currently viewed.
+
+    \sa iconUrlChanged()
+*/
+
+/*!
     \property QWebEnginePage::requestedUrl
     \brief the URL that was originally requested to be loaded by the page
     that is currently viewed
@@ -652,17 +641,22 @@
 */
 
 /*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, quint32 worldId, FunctorOrLambda resultCallback)
-    \since 5.7
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
+    \overload runJavaScript()
 
-    Runs the JavaScript code contained in \a scriptSource in the world specified by \a worldId.
-    The world ID values are the same as provided by QWebEngineScript::ScriptWorldId. Using the
-    \e runJavaScript() versions without the world ID is the same as running the script in the
-    \c MainWorld.
+    This convenience function runs the JavaScript code contained in \a scriptSource.
+*/
 
-    When the script has been executed, \a resultCallback is called with the result of the last
-    executed statement. \c resultCallback can be any of a function pointer, a functor or a lambda,
-    and it is expected to take a QVariant parameter. For example:
+/*!
+    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
+
+    Runs the JavaScript code contained in \a scriptSource.
+
+    The script will run in the same \e world as other scripts that are part of the loaded site.
+
+    When the script has been executed, \a resultCallback is called with the result of the last executed statement.
+    \a resultCallback can be any of a function pointer, a functor or a lambda, and it is expected to take a
+    QVariant parameter. For example:
 
     \code
     page.runJavaScript("document.title", [](const QVariant &v) { qDebug() << v.toString(); });
@@ -672,41 +666,6 @@
     rendering of the web engine page.
 
     See scripts() for an alternative API to inject scripts.
-
-    \sa QWebEngineScript::ScriptWorldId
-*/
-
-/*!
-    \fn void QWebEnginePage::runJavaScript(const QString &scriptSource, quint32 worldId)
-    \since 5.7
-    \overload runJavaScript()
-
-    This convenience function runs the JavaScript code contained in \a scriptSource in the world
-    specified by \a worldId.
-*/
-
-/*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource)
-    \overload runJavaScript()
-
-    This convenience function runs the JavaScript code contained in \a scriptSource in the same
-    world as other scripts that are part of the loaded site.
-
-    \sa QWebEngineScript::MainWorld
-*/
-
-/*!
-    \fn void QWebEnginePage::runJavaScript(const QString& scriptSource, FunctorOrLambda resultCallback)
-    \overload runJavaScript()
-
-    Runs the JavaScript code contained in \a scriptSource.
-
-    The script will run in the same world as other scripts that are part of the loaded site.
-
-    When the script has been executed, \a resultCallback is called with the result of the last
-    executed statement.
-
-    \sa QWebEngineScript::MainWorld
 */
 
 /*!
@@ -756,4 +715,14 @@
     received. The new URL is specified by \a url.
 
     \sa url()
+*/
+
+/*!
+    \fn void QWebEnginePage::iconUrlChanged(const QUrl &url)
+
+    This signal is emitted when the icon ("favicon") associated with the page is
+    found or changed. The new URL is specified by \a url.
+
+
+    \sa iconUrl()
 */

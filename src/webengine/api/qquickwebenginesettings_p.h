@@ -77,11 +77,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled NOTIFY pluginsEnabledChanged)
     Q_PROPERTY(bool fullScreenSupportEnabled READ fullScreenSupportEnabled WRITE setFullScreenSupportEnabled NOTIFY fullScreenSupportEnabledChanged REVISION 1)
     Q_PROPERTY(QString defaultTextEncoding READ defaultTextEncoding WRITE setDefaultTextEncoding NOTIFY defaultTextEncodingChanged)
-    Q_PROPERTY(bool screenCaptureEnabled READ screenCaptureEnabled WRITE setScreenCaptureEnabled NOTIFY screenCaptureEnabledChanged REVISION 2)
-    Q_PROPERTY(bool webGLEnabled READ webGLEnabled WRITE setWebGLEnabled NOTIFY webGLEnabledChanged REVISION 2)
-    Q_PROPERTY(bool accelerated2dCanvasEnabled READ accelerated2dCanvasEnabled WRITE setAccelerated2dCanvasEnabled NOTIFY accelerated2dCanvasEnabledChanged REVISION 2)
-    Q_PROPERTY(bool autoLoadIconsForPage READ autoLoadIconsForPage WRITE setAutoLoadIconsForPage NOTIFY autoLoadIconsForPageChanged REVISION 2)
-    Q_PROPERTY(bool touchIconsEnabled READ touchIconsEnabled WRITE setTouchIconsEnabled NOTIFY touchIconsEnabledChanged REVISION 2)
 
 public:
     ~QQuickWebEngineSettings();
@@ -100,11 +95,6 @@ public:
     bool pluginsEnabled() const;
     bool fullScreenSupportEnabled() const;
     QString defaultTextEncoding() const;
-    bool screenCaptureEnabled() const;
-    bool webGLEnabled() const;
-    bool accelerated2dCanvasEnabled() const;
-    bool autoLoadIconsForPage() const;
-    bool touchIconsEnabled() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -120,11 +110,6 @@ public:
     void setPluginsEnabled(bool on);
     void setFullScreenSupportEnabled(bool on);
     void setDefaultTextEncoding(QString encoding);
-    void setScreenCaptureEnabled(bool on);
-    void setWebGLEnabled(bool on);
-    void setAccelerated2dCanvasEnabled(bool on);
-    void setAutoLoadIconsForPage(bool on);
-    void setTouchIconsEnabled(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -141,11 +126,6 @@ signals:
     void pluginsEnabledChanged();
     Q_REVISION(1) void fullScreenSupportEnabledChanged();
     void defaultTextEncodingChanged();
-    Q_REVISION(2) void screenCaptureEnabledChanged();
-    Q_REVISION(2) void webGLEnabledChanged();
-    Q_REVISION(2) void accelerated2dCanvasEnabledChanged();
-    Q_REVISION(2) void autoLoadIconsForPageChanged();
-    Q_REVISION(2) void touchIconsEnabledChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

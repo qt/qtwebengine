@@ -60,8 +60,6 @@ QT_BEGIN_NAMESPACE
 
 class QQmlWebChannel;
 class QQuickWebEngineCertificateError;
-class QQuickWebEngineContextMenuData;
-class QQuickWebEngineFaviconProvider;
 class QQuickWebEngineHistory;
 class QQuickWebEngineLoadRequest;
 class QQuickWebEngineNavigationRequest;
@@ -94,7 +92,7 @@ private:
     const bool m_toggleOn;
 };
 
-#define LATEST_WEBENGINEVIEW_REVISION 3
+#define LATEST_WEBENGINEVIEW_REVISION 2
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -114,11 +112,6 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 1)
     Q_PROPERTY(bool activeFocusOnPress READ activeFocusOnPress WRITE setActiveFocusOnPress NOTIFY activeFocusOnPressChanged REVISION 2)
     Q_PROPERTY(QColor backgroundColor READ backgroundColor WRITE setBackgroundColor NOTIFY backgroundColorChanged REVISION 2)
-    Q_PROPERTY(QSizeF contentsSize READ contentsSize NOTIFY contentsSizeChanged FINAL REVISION 3)
-    Q_PROPERTY(QPointF scrollPosition READ scrollPosition NOTIFY scrollPositionChanged FINAL REVISION 3)
-    Q_PROPERTY(bool audioMuted READ isAudioMuted WRITE setAudioMuted NOTIFY audioMutedChanged FINAL REVISION 3)
-    Q_PROPERTY(bool recentlyAudible READ recentlyAudible NOTIFY recentlyAudibleChanged FINAL REVISION 3)
-    Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
@@ -143,8 +136,6 @@ public:
     void setZoomFactor(qreal arg);
     QColor backgroundColor() const;
     void setBackgroundColor(const QColor &color);
-    QSizeF contentsSize() const;
-    QPointF scrollPosition() const;
 
     QQuickWebEngineViewExperimental *experimental() const;
 
@@ -241,8 +232,7 @@ public:
         InspectElement,
         ExitFullScreen,
         RequestClose,
-        Unselect,
-        SavePage,
+
         WebActionCount
     };
     Q_ENUM(WebAction)
@@ -270,166 +260,6 @@ public:
     };
     Q_DECLARE_FLAGS(FindFlags, FindFlag)
 
-    // must match QPageSize::PageSizeId
-    enum PrintedPageSizeId {
-        // Existing Qt sizes
-        A4,
-        B5,
-        Letter,
-        Legal,
-        Executive,
-        A0,
-        A1,
-        A2,
-        A3,
-        A5,
-        A6,
-        A7,
-        A8,
-        A9,
-        B0,
-        B1,
-        B10,
-        B2,
-        B3,
-        B4,
-        B6,
-        B7,
-        B8,
-        B9,
-        C5E,
-        Comm10E,
-        DLE,
-        Folio,
-        Ledger,
-        Tabloid,
-        Custom,
-
-        // New values derived from PPD standard
-        A10,
-        A3Extra,
-        A4Extra,
-        A4Plus,
-        A4Small,
-        A5Extra,
-        B5Extra,
-
-        JisB0,
-        JisB1,
-        JisB2,
-        JisB3,
-        JisB4,
-        JisB5,
-        JisB6,
-        JisB7,
-        JisB8,
-        JisB9,
-        JisB10,
-
-        // AnsiA = Letter,
-        // AnsiB = Ledger,
-        AnsiC,
-        AnsiD,
-        AnsiE,
-        LegalExtra,
-        LetterExtra,
-        LetterPlus,
-        LetterSmall,
-        TabloidExtra,
-
-        ArchA,
-        ArchB,
-        ArchC,
-        ArchD,
-        ArchE,
-
-        Imperial7x9,
-        Imperial8x10,
-        Imperial9x11,
-        Imperial9x12,
-        Imperial10x11,
-        Imperial10x13,
-        Imperial10x14,
-        Imperial12x11,
-        Imperial15x11,
-
-        ExecutiveStandard,
-        Note,
-        Quarto,
-        Statement,
-        SuperA,
-        SuperB,
-        Postcard,
-        DoublePostcard,
-        Prc16K,
-        Prc32K,
-        Prc32KBig,
-
-        FanFoldUS,
-        FanFoldGerman,
-        FanFoldGermanLegal,
-
-        EnvelopeB4,
-        EnvelopeB5,
-        EnvelopeB6,
-        EnvelopeC0,
-        EnvelopeC1,
-        EnvelopeC2,
-        EnvelopeC3,
-        EnvelopeC4,
-        // EnvelopeC5 = C5E,
-        EnvelopeC6,
-        EnvelopeC65,
-        EnvelopeC7,
-        // EnvelopeDL = DLE,
-
-        Envelope9,
-        // Envelope10 = Comm10E,
-        Envelope11,
-        Envelope12,
-        Envelope14,
-        EnvelopeMonarch,
-        EnvelopePersonal,
-
-        EnvelopeChou3,
-        EnvelopeChou4,
-        EnvelopeInvite,
-        EnvelopeItalian,
-        EnvelopeKaku2,
-        EnvelopeKaku3,
-        EnvelopePrc1,
-        EnvelopePrc2,
-        EnvelopePrc3,
-        EnvelopePrc4,
-        EnvelopePrc5,
-        EnvelopePrc6,
-        EnvelopePrc7,
-        EnvelopePrc8,
-        EnvelopePrc9,
-        EnvelopePrc10,
-        EnvelopeYou4,
-
-        // Last item, with commonly used synynoms from QPagedPrintEngine / QPrinter
-        LastPageSize = EnvelopeYou4,
-        NPageSize = LastPageSize,
-        NPaperSize = LastPageSize,
-
-        // Convenience overloads for naming consistency
-        AnsiA = Letter,
-        AnsiB = Ledger,
-        EnvelopeC5 = C5E,
-        EnvelopeDL = DLE,
-        Envelope10 = Comm10E
-    };
-    Q_ENUM(PrintedPageSizeId)
-
-    // must match QPageLayout::Orientation
-    enum PrintedPageOrientation {
-        Portrait,
-        Landscape
-    };
-    Q_ENUM(PrintedPageOrientation)
-
     // QmlParserStatus
     virtual void componentComplete() Q_DECL_OVERRIDE;
 
@@ -441,12 +271,6 @@ public:
     QQmlWebChannel *webChannel();
     void setWebChannel(QQmlWebChannel *);
     QQuickWebEngineHistory *navigationHistory() const;
-    uint webChannelWorld() const;
-    void setWebChannelWorld(uint);
-
-    bool isAudioMuted() const;
-    void setAudioMuted(bool muted);
-    bool recentlyAudible() const;
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     QQuickWebEngineTestSupport *testSupport() const;
@@ -457,7 +281,6 @@ public:
 
 public Q_SLOTS:
     void runJavaScript(const QString&, const QJSValue & = QJSValue());
-    Q_REVISION(3) void runJavaScript(const QString&, quint32 worldId, const QJSValue & = QJSValue());
     void loadHtml(const QString &html, const QUrl &baseUrl = QUrl());
     void goBack();
     void goForward();
@@ -470,8 +293,6 @@ public Q_SLOTS:
     Q_REVISION(1) void grantFeaturePermission(const QUrl &securityOrigin, Feature, bool granted);
     Q_REVISION(2) void setActiveFocusOnPress(bool arg);
     Q_REVISION(2) void triggerWebAction(WebAction action);
-    Q_REVISION(3) void printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
-    Q_REVISION(3) void printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId = PrintedPageSizeId::A4, PrintedPageOrientation orientation = PrintedPageOrientation::Portrait);
 private Q_SLOTS:
     void lazyInitialize();
 
@@ -496,11 +317,6 @@ Q_SIGNALS:
     Q_REVISION(2) void backgroundColorChanged();
     Q_REVISION(2) void renderProcessTerminated(RenderProcessTerminationStatus terminationStatus, int exitCode);
     Q_REVISION(2) void windowCloseRequested();
-    Q_REVISION(3) void contentsSizeChanged(const QSizeF& size);
-    Q_REVISION(3) void scrollPositionChanged(const QPointF& position);
-    Q_REVISION(3) void audioMutedChanged(bool muted);
-    Q_REVISION(3) void recentlyAudibleChanged(bool recentlyAudible);
-    Q_REVISION(3) void webChannelWorldChanged(uint);
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;
@@ -517,7 +333,6 @@ private:
     friend class QQuickWebEngineViewExperimental;
     friend class QQuickWebEngineViewExperimentalExtension;
     friend class QQuickWebEngineNewViewRequest;
-    friend class QQuickWebEngineFaviconProvider;
 #ifndef QT_NO_ACCESSIBILITY
     friend class QQuickWebEngineViewAccessible;
 #endif // QT_NO_ACCESSIBILITY

@@ -48,6 +48,7 @@
 #include <QDebug>
 #include <QMenu>
 #include <QMessageBox>
+#include <QNetworkReply>
 #include <QTimer>
 
 WebView::WebView(QWidget *parent)
@@ -59,10 +60,11 @@ WebView::WebView(QWidget *parent)
     });
     connect(this, &QWebEngineView::loadFinished, [this](bool success) {
         if (!success) {
+            qWarning() << "Could not load page: " << url();
             m_loadProgress = 0;
         }
     });
-
+    connect(this, &QWebEngineView::iconUrlChanged, this, &WebView::handleIconUrlChanged);
     connect(this, &QWebEngineView::renderProcessTerminated,
             [this](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
         QString status;
@@ -80,11 +82,8 @@ WebView::WebView(QWidget *parent)
             status = tr("Render process killed");
             break;
         }
-        QMessageBox::StandardButton btn = QMessageBox::question(window(), status,
-                                                   tr("Render process exited with code: %1\n"
-                                                      "Do you want to reload the page ?").arg(statusCode));
-        if (btn == QMessageBox::Yes)
-            QTimer::singleShot(0, [this] { reload(); });
+        QMessageBox::critical(window(), status, tr("Render process exited with code: %1").arg(statusCode));
+        QTimer::singleShot(0, [this] { reload(); });
     });
 }
 
@@ -95,6 +94,13 @@ void WebView::setPage(WebPage *page)
     createWebActionTrigger(page,QWebEnginePage::Reload);
     createWebActionTrigger(page,QWebEnginePage::Stop);
     QWebEngineView::setPage(page);
+}
+
+QIcon WebView::icon() const
+{
+    if (!m_icon.isNull())
+        return m_icon;
+    return QIcon(QLatin1String(":defaulticon.png"));
 }
 
 int WebView::loadProgress() const
@@ -115,16 +121,18 @@ bool WebView::isWebActionEnabled(QWebEnginePage::WebAction webAction) const
     return page()->action(webAction)->isEnabled();
 }
 
+QNetworkAccessManager &WebView::networkAccessManager()
+{
+    static QNetworkAccessManager networkAccessManager;
+    return networkAccessManager;
+}
+
 QWebEngineView *WebView::createWindow(QWebEnginePage::WebWindowType type)
 {
     switch (type) {
     case QWebEnginePage::WebBrowserTab: {
         BrowserWindow *mainWindow = qobject_cast<BrowserWindow*>(window());
         return mainWindow->tabWidget()->createTab();
-    }
-    case QWebEnginePage::WebBrowserBackgroundTab: {
-        BrowserWindow *mainWindow = qobject_cast<BrowserWindow*>(window());
-        return mainWindow->tabWidget()->createTab(false);
     }
     case QWebEnginePage::WebBrowserWindow: {
         BrowserWindow *mainWindow = new BrowserWindow();
@@ -155,3 +163,30 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     menu->popup(event->globalPos());
 }
 
+void WebView::handleIconUrlChanged(const QUrl &url)
+{
+    QNetworkRequest iconRequest(url);
+#ifndef QT_NO_OPENSSL
+    QSslConfiguration conf = iconRequest.sslConfiguration();
+    conf.setPeerVerifyMode(QSslSocket::VerifyNone);
+    iconRequest.setSslConfiguration(conf);
+#endif
+    QNetworkReply *iconReply = networkAccessManager().get(iconRequest);
+    iconReply->setParent(this);
+    connect(iconReply, &QNetworkReply::finished, this, &WebView::handleIconLoaded);
+}
+
+void WebView::handleIconLoaded()
+{
+    QNetworkReply *iconReply = qobject_cast<QNetworkReply*>(sender());
+    if (iconReply && iconReply->error() == QNetworkReply::NoError) {
+        QByteArray data = iconReply->readAll();
+        QPixmap pixmap;
+        pixmap.loadFromData(data);
+        m_icon.addPixmap(pixmap);
+        iconReply->deleteLater();
+    } else {
+        m_icon = QIcon(QStringLiteral(":defaulticon.png"));
+    }
+    emit iconChanged(m_icon);
+}

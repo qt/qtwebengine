@@ -241,8 +241,6 @@ private Q_SLOTS:
     void setZoomFactor();
     void mouseButtonTranslation();
 
-    void printToPdf();
-
 private:
     static QPoint elementCenter(QWebEnginePage *page, const QString &id);
 
@@ -4221,6 +4219,9 @@ void tst_QWebEnginePage::baseUrl()
 
 void tst_QWebEnginePage::scrollPosition()
 {
+#if !defined(QWEBENGINEPAGE_EVALUATEJAVASCRIPT)
+    QSKIP("QWEBENGINEPAGE_EVALUATEJAVASCRIPT");
+#else
     // enlarged image in a small viewport, to provoke the scrollbars to appear
     QString html("<html><body><img src='qrc:/image.png' height=500 width=500/></body></html>");
 
@@ -4243,6 +4244,7 @@ void tst_QWebEnginePage::scrollPosition()
     int y = evaluateJavaScriptSync(view.page(), "window.scrollY").toInt();
     QCOMPARE(x, 23);
     QCOMPARE(y, 29);
+#endif
 }
 
 void tst_QWebEnginePage::scrollToAnchor()
@@ -4924,37 +4926,6 @@ void tst_QWebEnginePage::setZoomFactor()
     QVERIFY(qFuzzyCompare(page->zoomFactor(), 2.5));
 
     delete page;
-}
-
-void tst_QWebEnginePage::printToPdf()
-{
-    QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
-    QVERIFY(tempDir.isValid());
-    QWebEnginePage page;
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
-    page.load(QUrl("qrc:///resources/basic_printing_page.html"));
-    QTRY_VERIFY(spy.count() == 1);
-
-    QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
-    QString path = tempDir.path() + "/print_1_success.pdf";
-    page.printToPdf(path, layout);
-    QTRY_VERIFY(QFile::exists(path));
-
-#if !defined(Q_OS_WIN)
-    path = tempDir.path() + "/print_//2_failed.pdf";
-#else
-    path = tempDir.path() + "/print_|2_failed.pdf";
-#endif
-    page.printToPdf(path, QPageLayout());
-    QTRY_VERIFY(!QFile::exists(path));
-
-    CallbackSpy<QByteArray> successfulSpy;
-    page.printToPdf(successfulSpy.ref(), layout);
-    QVERIFY(successfulSpy.waitForResult().length() > 0);
-
-    CallbackSpy<QByteArray> failedInvalidLayoutSpy;
-    page.printToPdf(failedInvalidLayoutSpy.ref(), QPageLayout());
-    QCOMPARE(failedInvalidLayoutSpy.waitForResult().length(), 0);
 }
 
 void tst_QWebEnginePage::mouseButtonTranslation()

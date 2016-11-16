@@ -78,8 +78,7 @@ public:
 
     enum HttpCacheType {
         MemoryHttpCache,
-        DiskHttpCache,
-        NoCache
+        DiskHttpCache
     };
     Q_ENUM(HttpCacheType)
 
@@ -126,8 +125,6 @@ public:
     void removeUrlScheme(const QByteArray &scheme);
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     void removeAllUrlSchemeHandlers();
-
-    Q_REVISION(2) Q_INVOKABLE void clearHttpCache();
 
     static QQuickWebEngineProfile *defaultProfile();
 

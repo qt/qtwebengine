@@ -54,7 +54,6 @@
 #include "qwebenginepage.h"
 
 #include "qwebenginecallback_p.h"
-#include "qwebenginecontextmenudata.h"
 #include "qwebenginescriptcollection.h"
 #include "web_contents_adapter_client.h"
 #include <QtCore/qcompilerdetection.h>
@@ -164,14 +163,13 @@ public:
     QWebEngineSettings *settings;
     QWebEngineView *view;
     QUrl explicitUrl;
-    QWebEngineContextMenuData contextData;
+    QtWebEngineCore::WebEngineContextMenuData m_menuData;
     bool isLoading;
     QWebEngineScriptCollection scriptCollection;
     bool m_isBeingAdopted;
     QColor m_backgroundColor;
     bool fullscreenMode;
     QWebChannel *webChannel;
-    unsigned int webChannelWorldId;
     QUrl iconUrl;
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;

@@ -80,11 +80,7 @@ void TabWidget::handleCurrentChanged(int index)
         emit titleChanged(view->title());
         emit loadProgress(view->loadProgress());
         emit urlChanged(view->url());
-        QIcon pageIcon = view->page()->icon();
-        if (!pageIcon.isNull())
-            emit iconChanged(pageIcon);
-        else
-            emit iconChanged(QIcon(QStringLiteral(":defaulticon.png")));
+        emit iconChanged(view->icon());
         emit webActionEnabledChanged(QWebEnginePage::Back, view->isWebActionEnabled(QWebEnginePage::Back));
         emit webActionEnabledChanged(QWebEnginePage::Forward, view->isWebActionEnabled(QWebEnginePage::Forward));
         emit webActionEnabledChanged(QWebEnginePage::Stop, view->isWebActionEnabled(QWebEnginePage::Stop));
@@ -93,7 +89,7 @@ void TabWidget::handleCurrentChanged(int index)
         emit titleChanged(QString());
         emit loadProgress(0);
         emit urlChanged(QUrl());
-        emit iconChanged(QIcon(QStringLiteral(":defaulticon.png")));
+        emit iconChanged(QIcon());
         emit webActionEnabledChanged(QWebEnginePage::Back, false);
         emit webActionEnabledChanged(QWebEnginePage::Forward, false);
         emit webActionEnabledChanged(QWebEnginePage::Stop, false);
@@ -170,14 +166,12 @@ void TabWidget::setupView(WebView *webView)
         if (currentIndex() == indexOf(webView))
             emit linkHovered(url);
     });
-    connect(webPage, &WebPage::iconChanged, [this, webView](const QIcon &icon) {
+    connect(webView, &WebView::iconChanged, [this, webView](const QIcon& icon) {
         int index = indexOf(webView);
-        QIcon ico = icon.isNull() ? QIcon(QStringLiteral(":defaulticon.png")) : icon;
-
         if (index != -1)
-            setTabIcon(index, ico);
+            setTabIcon(index, icon);
         if (currentIndex() == index)
-            emit iconChanged(ico);
+            emit iconChanged(icon);
     });
     connect(webView, &WebView::webActionEnabledChanged, [this, webView](QWebEnginePage::WebAction action, bool enabled) {
         if (currentIndex() ==  indexOf(webView))

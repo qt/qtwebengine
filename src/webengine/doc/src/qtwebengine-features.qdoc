@@ -41,7 +41,6 @@
         \li \l{HTML5 DRM}
         \li \l{HTML5 Geolocation}
         \li \l{Pepper Plugin API}
-        \li \l{Print to PDF}
         \li \l{WebRTC}
     \endlist
 
@@ -92,7 +91,7 @@
     Dragging files into the browser is not actually part of HTML5, but it is
     supported. It can be tested by opening \l{HTML5 Demos - File API}.
 
-    Support for this feature was added in Qt 5.7.0.
+    Support for this feature was added in Qt 5.6.3.
 
     \section1 Fullscreen
 
@@ -123,7 +122,7 @@
     Example}{Demo Browser} or \l{WebEngine Quick Nano Browser}{Nano Browser}
     from \l{castLabs}, \l{Swank Motion Pictures, Inc.}, or \l{Shaka Player}.
 
-    Support for this feature was added in Qt 5.7.0.
+    Support for this feature was added in Qt 5.6.3.
 
     \section1 HTML5 Geolocation
 
@@ -211,17 +210,6 @@
     plugin is installed and plugins are enabled in the browser. To test the
     feature, the \c https://helpx.adobe.com/flash-player.html page can be opened
     in the browser.
-
-    \section1 Print to PDF
-
-    Qt WebEngine supports printing a web page to a PDF file. For more
-    information, see QWebEnginePage::printToPdf() and
-    \l{WebEngineView::printToPdf}{WebEngineView.printToPdf}.
-
-    This feature can be tested in \l{WebEngine Demo Browser Example}
-    {Demo Browser} by selecting \uicontrol File > \uicontrol {Print to PDF}.
-
-    Support for this feature was added in Qt 5.7.0.
 
     \section1 WebRTC
 

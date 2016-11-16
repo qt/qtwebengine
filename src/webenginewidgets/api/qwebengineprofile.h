@@ -69,8 +69,7 @@ public:
 
     enum HttpCacheType {
         MemoryHttpCache,
-        DiskHttpCache,
-        NoCache
+        DiskHttpCache
     };
 
     enum PersistentCookiesPolicy {
@@ -118,8 +117,6 @@ public:
     void removeUrlScheme(const QByteArray &scheme);
     void removeUrlSchemeHandler(QWebEngineUrlSchemeHandler *);
     void removeAllUrlSchemeHandlers();
-
-    void clearHttpCache();
 
     static QWebEngineProfile *defaultProfile();
 

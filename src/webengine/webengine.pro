@@ -12,10 +12,8 @@ INCLUDEPATH += $$PWD api ../core ../core/api
 
 SOURCES = \
         api/qquickwebenginecertificateerror.cpp \
-        api/qquickwebenginecontextmenudata.cpp \
         api/qquickwebenginedownloaditem.cpp \
         api/qquickwebenginehistory.cpp \
-        api/qquickwebenginefaviconprovider.cpp \
         api/qquickwebengineloadrequest.cpp \
         api/qquickwebenginenavigationrequest.cpp \
         api/qquickwebenginenewviewrequest.cpp \
@@ -33,11 +31,9 @@ HEADERS = \
         api/qtwebengineglobal.h \
         api/qtwebengineglobal_p.h \
         api/qquickwebenginecertificateerror_p.h \
-        api/qquickwebenginecontextmenudata_p.h \
         api/qquickwebenginedownloaditem_p.h \
         api/qquickwebenginedownloaditem_p_p.h \
         api/qquickwebenginehistory_p.h \
-        api/qquickwebenginefaviconprovider_p_p.h \
         api/qquickwebengineloadrequest_p.h \
         api/qquickwebenginenavigationrequest_p.h \
         api/qquickwebenginenewviewrequest_p.h \
@@ -57,10 +53,6 @@ isQMLTestSupportApiEnabled() {
     HEADERS += api/qquickwebenginetestsupport_p.h
 
     DEFINES += ENABLE_QML_TESTSUPPORT_API
-}
-
-!contains(WEBENGINE_CONFIG, no_spellcheck) {
-    DEFINES += ENABLE_SPELLCHECK
 }
 
 load(qt_module)

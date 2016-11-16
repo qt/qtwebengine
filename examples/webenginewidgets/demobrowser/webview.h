@@ -101,6 +101,7 @@ public:
 
     void loadUrl(const QUrl &url);
     QUrl url() const;
+    QIcon icon() const;
 
     QString lastStatusBarText() const;
     inline int progress() const { return m_progress; }
@@ -111,19 +112,25 @@ protected:
     void contextMenuEvent(QContextMenuEvent *event);
     void wheelEvent(QWheelEvent *event);
 
+signals:
+    void iconChanged();
+
 private slots:
     void setProgress(int progress);
     void loadFinished(bool success);
     void setStatusBarText(const QString &string);
     void openLinkInNewTab();
     void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
-    void onIconChanged(const QIcon &icon);
+    void onIconUrlChanged(const QUrl &url);
+    void iconLoaded();
 
 private:
     QString m_statusBarText;
     QUrl m_initialUrl;
     int m_progress;
     WebPage *m_page;
+    QIcon m_icon;
+    QNetworkReply *m_iconReply;
 };
 
 #endif

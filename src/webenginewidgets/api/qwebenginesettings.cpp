@@ -79,16 +79,6 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::PluginsEnabled;
     case QWebEngineSettings::FullScreenSupportEnabled:
         return WebEngineSettings::FullScreenSupportEnabled;
-    case QWebEngineSettings::ScreenCaptureEnabled:
-        return WebEngineSettings::ScreenCaptureEnabled;
-    case QWebEngineSettings::WebGLEnabled:
-        return WebEngineSettings::WebGLEnabled;
-    case QWebEngineSettings::Accelerated2dCanvasEnabled:
-        return WebEngineSettings::Accelerated2dCanvasEnabled;
-    case QWebEngineSettings::AutoLoadIconsForPage:
-        return WebEngineSettings::AutoLoadIconsForPage;
-    case QWebEngineSettings::TouchIconsEnabled:
-        return WebEngineSettings::TouchIconsEnabled;
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;
     }
@@ -128,7 +118,6 @@ ASSERT_ENUMS_MATCH(WebEngineSettings::SerifFont, QWebEngineSettings::SerifFont)
 ASSERT_ENUMS_MATCH(WebEngineSettings::SansSerifFont, QWebEngineSettings::SansSerifFont)
 ASSERT_ENUMS_MATCH(WebEngineSettings::CursiveFont, QWebEngineSettings::CursiveFont)
 ASSERT_ENUMS_MATCH(WebEngineSettings::FantasyFont, QWebEngineSettings::FantasyFont)
-ASSERT_ENUMS_MATCH(WebEngineSettings::PictographFont, QWebEngineSettings::PictographFont)
 
 void QWebEngineSettings::setFontFamily(QWebEngineSettings::FontFamily which, const QString &family)
 {

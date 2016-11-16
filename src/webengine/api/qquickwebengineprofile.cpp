@@ -48,17 +48,11 @@
 #include <QQmlEngine>
 
 #include "browser_context_adapter.h"
-#include <qtwebenginecoreglobal.h>
 #include "web_engine_settings.h"
 
 using QtWebEngineCore::BrowserContextAdapter;
 
 QT_BEGIN_NAMESPACE
-
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::UnknownSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::UnknownSavePageFormat)
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::SingleHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::SingleHtmlSaveFormat)
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::CompleteHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::CompleteHtmlSaveFormat)
-ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineCore::BrowserContextAdapterClient::MimeHtmlSaveFormat)
 
 /*!
     \class QQuickWebEngineProfile
@@ -95,7 +89,6 @@ ASSERT_ENUMS_MATCH(QQuickWebEngineDownloadItem::MimeHtmlSaveFormat, QtWebEngineC
     \value MemoryHttpCache Use an in-memory cache. This is the only setting possible if
     \c off-the-record is set or no cache path is available.
     \value DiskHttpCache Use a disk cache. This is the default.
-    \value NoCache Disable both in-memory and disk caching. (Added in Qt 5.7)
 */
 
 /*!
@@ -178,8 +171,6 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
     itemPrivate->totalBytes = info.totalBytes;
     itemPrivate->mimeType = info.mimeType;
     itemPrivate->downloadPath = info.path;
-    itemPrivate->savePageFormat = static_cast<QQuickWebEngineDownloadItem::SavePageFormat>(
-                info.savePageFormat);
 
     QQuickWebEngineDownloadItem *download = new QQuickWebEngineDownloadItem(itemPrivate, q);
 
@@ -190,16 +181,8 @@ void QQuickWebEngineProfilePrivate::downloadRequested(DownloadItemInfo &info)
 
     QQuickWebEngineDownloadItem::DownloadState state = download->state();
     info.path = download->path();
-    info.savePageFormat = itemPrivate->savePageFormat;
     info.accepted = state != QQuickWebEngineDownloadItem::DownloadCancelled
                       && state != QQuickWebEngineDownloadItem::DownloadRequested;
-
-    if (state == QQuickWebEngineDownloadItem::DownloadRequested) {
-        // Delete unaccepted downloads.
-        info.accepted = false;
-        m_ongoingDownloads.remove(info.id);
-        delete download;
-    }
 }
 
 void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info)
@@ -471,8 +454,6 @@ void QQuickWebEngineProfile::setHttpUserAgent(const QString &userAgent)
             no persistentStoragePath is available.
     \value  WebEngineProfile.DiskHttpCache
             Uses a disk cache. This is the default value.
-    \value  WebEngineProfile.NoCache
-            Disables caching. (Added in 5.7)
 */
 
 /*!
@@ -620,29 +601,6 @@ QWebEngineCookieStore *QQuickWebEngineProfile::cookieStore() const
     const Q_D(QQuickWebEngineProfile);
     return d->browserContext()->cookieStore();
 }
-
-/*!
-    \qmlmethod void WebEngineProfile::clearHttpCache()
-    \since QtWebEngine 1.3
-
-    Removes the profile's cache entries.
-
-    \sa WebEngineProfile::cachePath
-*/
-
-/*!
-    \since 5.7
-
-    Removes the profile's cache entries.
-
-    \sa WebEngineProfile::clearHttpCache
-*/
-void QQuickWebEngineProfile::clearHttpCache()
-{
-    Q_D(QQuickWebEngineProfile);
-    d->browserContext()->clearHttpCache();
-}
-
 
 /*!
     Registers a request interceptor singleton \a interceptor to intercept URL requests.

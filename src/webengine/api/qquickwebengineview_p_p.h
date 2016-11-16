@@ -52,7 +52,6 @@
 //
 
 #include "qquickwebengineview_p.h"
-#include "qquickwebenginecontextmenudata_p.h"
 #include "web_contents_adapter_client.h"
 
 #include <QScopedPointer>
@@ -71,7 +70,6 @@ class QQuickWebEngineView;
 class QQmlComponent;
 class QQmlContext;
 class QQuickWebEngineSettings;
-class QQuickWebEngineFaviconProvider;
 
 QQuickWebEngineView::WebAction editorActionForKeyEvent(QKeyEvent* event);
 
@@ -101,17 +99,13 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineViewExperimental : public QObjec
     Q_OBJECT
     Q_PROPERTY(QQuickWebEngineViewport *viewport READ viewport)
     Q_PROPERTY(QQmlComponent *extraContextMenuEntriesComponent READ extraContextMenuEntriesComponent WRITE setExtraContextMenuEntriesComponent NOTIFY extraContextMenuEntriesComponentChanged)
-    Q_PROPERTY(const QQuickWebEngineContextMenuData *contextMenuData READ contextMenuData NOTIFY contextMenuDataChanged)
 
     QQuickWebEngineViewport *viewport() const;
     void setExtraContextMenuEntriesComponent(QQmlComponent *);
     QQmlComponent *extraContextMenuEntriesComponent() const;
 
-    const QQuickWebEngineContextMenuData *contextMenuData() const;
-
 Q_SIGNALS:
     void extraContextMenuEntriesComponentChanged();
-    void contextMenuDataChanged();
 
 private:
     QQuickWebEngineViewExperimental(QQuickWebEngineViewPrivate* viewPrivate);
@@ -217,10 +211,9 @@ public:
     QQuickWebEngineTestSupport *m_testSupport;
 #endif
     QQmlComponent *contextMenuExtraItems;
-    QQuickWebEngineContextMenuData contextMenuData;
+    QtWebEngineCore::WebEngineContextMenuData contextMenuData;
     QUrl explicitUrl;
     QUrl iconUrl;
-    QQuickWebEngineFaviconProvider *faviconProvider;
     int loadProgress;
     bool m_fullscreenMode;
     bool isLoading;
@@ -229,7 +222,6 @@ public:
     QMap<quint64, QJSValue> m_callbacks;
     QList<QSharedPointer<CertificateErrorController> > m_certificateErrorControllers;
     QQmlWebChannel *m_webChannel;
-    uint m_webChannelWorld;
 
 private:
     QScopedPointer<QtWebEngineCore::UIDelegatesManager> m_uIDelegatesManager;

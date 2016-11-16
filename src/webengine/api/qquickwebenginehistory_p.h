@@ -101,7 +101,6 @@ public:
         UrlRole = Qt::UserRole + 1,
         TitleRole = Qt::UserRole + 2,
         OffsetRole = Qt::UserRole + 3,
-        IconUrlRole = Qt::UserRole + 4,
     };
 
     QQuickWebEngineHistoryListModel *items() const;

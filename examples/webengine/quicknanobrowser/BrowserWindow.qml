@@ -84,8 +84,6 @@ ApplicationWindow {
         property alias errorPageEnabled: errorPageEnabled.checked;
         property alias pluginsEnabled: pluginsEnabled.checked;
         property alias fullScreenSupportEnabled: fullScreenSupportEnabled.checked;
-        property alias autoLoadIconsForPage: autoLoadIconsForPage.checked;
-        property alias touchIconsEnabled: touchIconsEnabled.checked;
     }
 
     Action {
@@ -237,7 +235,6 @@ ApplicationWindow {
                         z: 2
                         id: faviconImage
                         width: 16; height: 16
-                        sourceSize: Qt.size(width, height)
                         source: currentWebView && currentWebView.icon
                     }
                     style: TextFieldStyle {
@@ -296,19 +293,6 @@ ApplicationWindow {
                             checkable: !currentWebView.profile.offTheRecord
                             checked: (currentWebView.profile.httpCacheType == WebEngineProfile.DiskHttpCache)
                             onToggled: currentWebView.profile.httpCacheType = checked ? WebEngineProfile.DiskHttpCache : WebEngineProfile.MemoryHttpCache
-                        }
-                        MenuItem {
-                            id: autoLoadIconsForPage
-                            text: "Icons On"
-                            checkable: true
-                            checked: WebEngine.settings.autoLoadIconsForPage
-                        }
-                        MenuItem {
-                            id: touchIconsEnabled
-                            text: "Touch Icons On"
-                            checkable: true
-                            checked: WebEngine.settings.touchIconsEnabled
-                            enabled: autoLoadIconsForPage.checked
                         }
                     }
                 }
@@ -381,8 +365,6 @@ ApplicationWindow {
                 settings.errorPageEnabled: appSettings.errorPageEnabled
                 settings.pluginsEnabled: appSettings.pluginsEnabled
                 settings.fullScreenSupportEnabled: appSettings.fullScreenSupportEnabled
-                settings.autoLoadIconsForPage: appSettings.autoLoadIconsForPage
-                settings.touchIconsEnabled: appSettings.touchIconsEnabled
 
                 onCertificateError: {
                     error.defer()

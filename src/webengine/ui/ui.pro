@@ -5,7 +5,6 @@ QML_FILES += \
     AuthenticationDialog.qml \
     # JS Dialogs
     AlertDialog.qml \
-    ColorDialog.qml \
     ConfirmDialog.qml \
     FilePicker.qml \
     PromptDialog.qml \
