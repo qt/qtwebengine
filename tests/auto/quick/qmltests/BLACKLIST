@@ -1,6 +1,9 @@
 [DesktopWebEngineViewLinkHovered::test_linkHovered]
 *
 
+[DesktopWebEngineViewLinkHovered::test_linkHoveredDoesntEmitRepeated]
+*
+
 [WebViewGeopermission::test_deniedGeolocationByUser]
 osx
 
