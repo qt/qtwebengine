@@ -9,7 +9,7 @@ webengine_plugin.depends = webengine
 
 SUBDIRS += core
 
-!contains(WEBENGINE_CONFIG, use_gn) {
+!use?(gn) {
     SUBDIRS += process \
                webengine \
                webengine_plugin \

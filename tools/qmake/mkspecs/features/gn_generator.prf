@@ -1,0 +1,184 @@
+load(moc)
+load(resources)
+
+defineReplace(getTargetType) {
+    equals(TEMPLATE, "app"):return("executable")
+    equals(TEMPLATE, "lib") {
+       CONFIG(static): return("static_library")
+       return("shared_library")
+  }
+  return("none")
+}
+
+isEmpty(GN_FILE): GN_FILE = $$system_path($$_PRO_FILE_PWD_/BUILD.gn)
+isEmpty(GN_RUN_BINARY_SCRIPT): GN_RUN_BINARY_SCRIPT = "//build/gn_run_binary.py"
+isEmpty(GN_FIND_MOCABLES_SCRIPT): GN_FIND_MOCABLES_SCRIPT = "//build/gn_find_mocables.py"
+
+# MOC SETUP
+
+GN_CONTENTS += "moc_source_h_files = exec_script(\"$$GN_FIND_MOCABLES_SCRIPT\","
+GN_CONTENTS += "  [ \"$$_PRO_FILE_PWD_\","
+for (headerfile, HEADERS): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$headerfile\","
+GN_CONTENTS += "  ], \"list lines\", [\"$$system_path($$_PRO_FILE_)\"]"\
+               ")"
+GN_CONTENTS += "moc_source_cpp_files = exec_script(\"$$GN_FIND_MOCABLES_SCRIPT\","
+GN_CONTENTS += "  [ \"$$_PRO_FILE_PWD_\","
+for (sourcefile, SOURCES): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$sourcefile\","
+GN_CONTENTS += "  ], \"list lines\", [\"$$system_path($$_PRO_FILE_)\"]"\
+               ")"
+
+DEFINES_LIST = $$join(DEFINES, " -D", "-D")
+INCLUDE_LIST = $$join(INCLUDEPATH, " -I", "-I")
+
+# we don't generate a moc_predef file yet.
+MOC_PREDEF_FILE =
+MOC_COMMAND = $$clean_path($$mocCmdBase())
+MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(DEFINES)"), $$DEFINES_LIST)
+MOC_COMMAND = $$replace(MOC_COMMAND, $$re_escape("$(INCPATH)"), $$INCLUDE_LIST)
+MOC_COMMAND = $$eval($$list($$MOC_COMMAND))
+
+GN_CONTENTS += "action_foreach(\"generate_h_mocs\") {"\
+               "  script = \"$$GN_RUN_BINARY_SCRIPT\""
+GN_CONTENTS += "  sources =  moc_source_h_files" \
+               "  outputs = [ \"$target_gen_dir/.moc/moc_{{source_name_part}}.cpp\" ]"
+GN_CONTENTS += "  inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
+               "  args = ["
+for(token, MOC_COMMAND): GN_CONTENTS += "    \"$$replace(token,\',)\","
+GN_CONTENTS += "    \"{{source}}\"," \
+               "    \"-o\"," \
+               "    rebase_path(\"$target_gen_dir/.moc/moc_{{source_name_part}}.cpp\")"\
+               "  ]"
+GN_CONTENTS += "}"
+GN_CONTENTS += "action_foreach(\"generate_cpp_mocs\") {"\
+               "  script = \"$$GN_RUN_BINARY_SCRIPT\""
+GN_CONTENTS += "  sources =  moc_source_cpp_files" \
+               "  outputs = [ \"$target_gen_dir/.moc/{{source_name_part}}.moc\" ]"
+GN_CONTENTS += "  inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
+               "  args = ["
+for(token, MOC_COMMAND): GN_CONTENTS += "    \"$$replace(token,\',)\","
+GN_CONTENTS += "    \"{{source}}\"," \
+               "    \"-o\"," \
+               "    rebase_path(\"$target_gen_dir/.moc/{{source_name_part}}.moc\")"\
+               "  ]"
+GN_CONTENTS += "}"
+
+
+
+# RESOURCES SETUP
+
+CLEAN_QMAKE_RCC = $$clean_path($$QMAKE_RCC)
+
+GN_CONTENTS += "action_foreach(\"generate_resources\") {"\
+               "  script = \"$$GN_RUN_BINARY_SCRIPT\""
+GN_CONTENTS += "  sources = ["
+for (sourcefile, RESOURCES): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$sourcefile\","
+GN_CONTENTS += "  ]" \
+               "  outputs = [ \"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\" ]"
+GN_CONTENTS += "  inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
+               "  args = [" \
+               "    \"$$replace(CLEAN_QMAKE_RCC,\',)\","
+for(resource_flag, $$QMAKE_RESOURCE_FLAGS): GN_CONTENTS += "    \"$$resource_flag\""
+GN_CONTENTS += "    \"-name\"," \
+               "    \"{{source_name_part}}\"," \
+               "    \"{{source}}\"," \
+               "    \"-o\"," \
+               "    rebase_path(\"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\")"\
+               "   ]"
+GN_CONTENTS += "}"
+
+# TARGET SETUP
+
+TARGET_TYPE = $$getTargetType()
+
+GN_CONTENTS += "$${TARGET_TYPE}(\"$$TARGET\") {"
+
+!isEmpty(GN_IMPORTS) {
+for (imp, GN_IMPORTS): GN_CONTENTS += "  import(\"$$imp\")"
+}
+
+!isEmpty(QMAKE_FRAMEWORKPATH) {
+    GN_CONTENTS += "  mac_framework_dirs = ["
+    for(path, QMAKE_FRAMEWORKPATH): GN_CONTENTS += "    \"$$path\","
+    GN_CONTENTS += "  ]"
+}
+
+!isEmpty(QMAKE_CFLAGS) {
+    GN_CONTENTS += "  cflags = ["
+    for(flag, QMAKE_CFLAGS): GN_CONTENTS += "    \"$$flag\","
+    GN_CONTENTS += "  ]"
+}
+!isEmpty(QMAKE_CXXFLAGS) {
+    GN_CONTENTS += "  cflags_cc = ["
+    for(flag, QMAKE_CXXFLAGS): GN_CONTENTS += "    \"$$flag\","
+    GN_CONTENTS += "  ]"
+}
+
+GN_CONTENTS += "  defines += ["
+for (define, DEFINES): GN_CONTENTS += "    \"$$define\","
+!isEmpty(QMAKE_LIBDIR_EGL):
+    GN_CONTENTS += "    \"QT_LIBDIR_EGL=\\\"$${QMAKE_DIR_SEP}$$relative_path($$QMAKE_LIBDIR_EGL, $$[QT_SYSROOT])\\\"\","
+!isEmpty(QMAKE_LIBDIR_OPENGL_ES2)
+    GN_CONTENTS += "    \"QT_LIBDIR_GLES2=\\\"$${QMAKE_DIR_SEP}$$relative_path($$QMAKE_LIBDIR_OPENGL_ES2, $$[QT_SYSROOT])\\\"\","
+GN_CONTENTS += "  ]"
+
+# Source files to compile
+GN_CONTENTS += "  sources = ["
+for (sourcefile, SOURCES): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$sourcefile\","
+for (headerfile, HEADERS): GN_CONTENTS += "    \"$$GN_SRC_DIR/$$headerfile\","
+GN_CONTENTS += "  ]"
+
+# Add Sources generated by rcc from qrc files.
+GN_CONTENTS += "  sources += get_target_outputs(\":generate_resources\")"
+# Add moc output files to compile
+GN_CONTENTS += "  sources += get_target_outputs(\":generate_h_mocs\")"
+
+GN_CONTENTS += "  include_dirs += ["
+for (path, INCLUDEPATH): GN_CONTENTS += "    \"$$path\","
+GN_CONTENTS += "    rebase_path(\"$target_gen_dir/.moc/\")"
+GN_CONTENTS += "  ]"
+
+GN_CONTENTS += "  ldflags = ["
+for (lib, LIBS): GN_CONTENTS += "    \"$$lib\","
+GN_CONTENTS += "    \"-Wl,-rpath=$$[QT_INSTALL_LIBS]\"," \
+               "    \"-Wl,-rpath-link=\","
+GN_CONTENTS += "  ]"
+
+GN_CONTENTS += "  deps += ["
+!isEmpty(RESOURCES): GN_CONTENTS += "      \":generate_resources\","
+GN_CONTENTS += "      \":generate_h_mocs\","
+GN_CONTENTS += "      \":generate_cpp_mocs\","
+GN_CONTENTS += "  ]"
+
+!isEmpty(GN_LIBS) {
+    GN_CONTENTS += "  libs += ["
+    for (lib, GN_LIBS): GN_CONTENTS += "    \"$$lib\","
+    GN_CONTENTS += "  ]"
+}
+
+!isEmpty(GN_STATIC_LIBS) {
+    GN_CONTENTS += "  ldflags += ["
+    for (lib, GN_STATIC_LIBS) {
+        linux {
+            GN_CONTENTS += "    \"-Wl,--whole-archive\","
+            GN_CONTENTS += "  \"$$lib\","
+            GN_CONTENTS += "    \"-Wl,--no-whole-archive\","
+        } else: macos {
+            GN_CONTENTS += "    \"-Wl,-force_load,$$lib\","
+        }
+    }
+    GN_CONTENTS += "  ]"
+}
+
+GN_CONTENTS += "}"
+
+!isEmpty(GN_INCLUDES) {
+    for (inc, GN_INCLUDES): GN_CONTENTS += $$cat($$inc,lines)
+}
+
+!build_pass: write_file($$GN_FILE, GN_CONTENTS)
+
+# The generated Makefile shouldn't build anything by itself, just re-run qmake if necessary
+TEMPLATE = aux
+SOURCES =
+HEADERS =
+RESOURCES =

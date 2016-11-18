@@ -9,26 +9,32 @@ core_api.file = api/core_api.pro
 core_module.file = core_module.pro
 core_module.depends = core_api
 
-contains(WEBENGINE_CONFIG, use_gn) {
-    gn_run.file = gn_run.pro
-    SUBDIRS += gn_run
-} else {
+# core_generator.pro is a dummy .pro file that is used by qmake
+# to generate our main .gyp/BUILD.gn file
+core_generator.file = core_generator.pro
+core_generator.depends = core_headers
 
-    # core_gyp_generator.pro is a dummy .pro file that is used by qmake
-    # to generate our main .gyp file
-    core_gyp_generator.file = core_gyp_generator.pro
-    core_gyp_generator.depends = core_headers
+
+use?(gn) {
+
+    gn_run.file = gn_run.pro
+    gn_run.depends = core_generator
+
+    SUBDIRS += gn_run \
+               core_headers \
+               core_generator
+} else {
 
     # gyp_run.pro calls gyp through gyp_qtwebengine on the qmake step, and ninja on the make step.
     gyp_run.file = gyp_run.pro
-    gyp_run.depends = core_gyp_generator
+    gyp_run.depends = core_generator
     core_api.depends = gyp_run
 
     SUBDIRS += gyp_run \
                core_api \
                core_module \
                core_headers \
-               core_gyp_generator
+               core_generator
 
     !win32 {
         # gyp_configure_host.pro and gyp_configure_target.pro are phony pro files that
