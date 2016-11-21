@@ -296,6 +296,7 @@ void tst_QWebEnginePage::cleanupFiles()
 
 void tst_QWebEnginePage::initTestCase()
 {
+    QLocale::setDefault(QLocale("en"));
     cleanupFiles(); // In case there are old files from previous runs
 
     // Set custom path since the CI doesn't install test plugins.
