@@ -44,6 +44,7 @@ SOURCES = \
         chromium_gpu_helper.cpp \
         chromium_overrides.cpp \
         clipboard_qt.cpp \
+        common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
         content_client_qt.cpp \
