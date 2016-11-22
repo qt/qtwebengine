@@ -28,7 +28,10 @@ defineTest(runConfigure) {
         !cross_compile: qtConfig(xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
         contains(QT_CONFIG, pulseaudio): REQUIRED_PACKAGES += libpulse
         qtConfig(system-png): REQUIRED_PACKAGES += libpng
-        qtConfig(system-harfbuzz): REQUIRED_PACKAGES += harfbuzz
+        qtConfig(system-harfbuzz) {
+             packagesExist("\'harfbuzz >= 1.2.0\'"): WEBENGINE_CONFIG += use_system_harfbuzz
+             else: log("System harfbuzz is too old (min. version 1.2). Using Chromium's copy.$${EOL}")
+        }
         !cross_compile: REQUIRED_PACKAGES += libpci
 
         for(package, $$list($$REQUIRED_PACKAGES)) {
