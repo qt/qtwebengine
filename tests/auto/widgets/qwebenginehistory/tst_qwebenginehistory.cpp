@@ -370,22 +370,21 @@ void tst_QWebEngineHistory::saveAndRestore_crash_2()
 {
     QByteArray buffer;
     saveHistory(hist, &buffer);
-    QWebEnginePage* page2 = new QWebEnginePage(this);
-    QWebEngineHistory* hist2 = page2->history();
+    QWebEnginePage page2(this);
+    QWebEngineHistory* hist2 = page2.history();
     for (unsigned i = 0; i < 5; i++) {
         restoreHistory(hist2, &buffer);
         saveHistory(hist2, &buffer);
     }
-    delete page2;
 }
 
 void tst_QWebEngineHistory::saveAndRestore_crash_3()
 {
     QByteArray buffer;
     saveHistory(hist, &buffer);
-    QWebEnginePage* page2 = new QWebEnginePage(this);
+    QWebEnginePage page2(this);
     QWebEngineHistory* hist1 = hist;
-    QWebEngineHistory* hist2 = page2->history();
+    QWebEngineHistory* hist2 = page2.history();
     for (unsigned i = 0; i < 5; i++) {
         restoreHistory(hist1, &buffer);
         restoreHistory(hist2, &buffer);
@@ -395,7 +394,6 @@ void tst_QWebEngineHistory::saveAndRestore_crash_3()
         saveHistory(hist2, &buffer);
         hist2->clear();
     }
-    delete page2;
 }
 
 void tst_QWebEngineHistory::saveAndRestore_crash_4()
@@ -406,18 +404,18 @@ void tst_QWebEngineHistory::saveAndRestore_crash_4()
     QByteArray buffer;
     saveHistory(hist, &buffer);
 
-    QWebEnginePage* page2 = new QWebEnginePage(this);
+    QScopedPointer<QWebEnginePage> page2(new QWebEnginePage(this));
     // The initial crash was in PageCache.
     page2->settings()->setMaximumPagesInCache(3);
 
     // Load the history in a new page, waiting for the load to finish.
     QEventLoop waitForLoadFinished;
-    QObject::connect(page2, SIGNAL(loadFinished(bool)), &waitForLoadFinished, SLOT(quit()), Qt::QueuedConnection);
+    QObject::connect(page2.data(), SIGNAL(loadFinished(bool)), &waitForLoadFinished, SLOT(quit()), Qt::QueuedConnection);
     QDataStream load(&buffer, QIODevice::ReadOnly);
     load >> *page2->history();
     waitForLoadFinished.exec();
 
-    delete page2;
+    page2.reset();
     // Give some time for the PageCache cleanup 0-timer to fire.
     QTest::qWait(50);
 #endif
@@ -456,12 +454,11 @@ void tst_QWebEngineHistory::clear()
     QVERIFY(hist->count() == 1);  // Leave current item.
     QVERIFY(!actionBack->isEnabled());
 
-    QWebEnginePage* page2 = new QWebEnginePage(this);
-    QWebEngineHistory* hist2 = page2->history();
+    QWebEnginePage page2(this);
+    QWebEngineHistory* hist2 = page2.history();
     QVERIFY(hist2->count() == 0);
     hist2->clear();
     QVERIFY(hist2->count() == 0); // Do not change anything.
-    delete page2;
 }
 
 void tst_QWebEngineHistory::historyItemFromDeletedPage()
