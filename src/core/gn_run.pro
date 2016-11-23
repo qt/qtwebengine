@@ -7,8 +7,14 @@ TEMPLATE = aux
 
 build_pass|!debug_and_release {
 
+    linux: include(config/desktop_linux.pri)
+    isEmpty(gn_args): error(No gn_args found please make sure you have valid configuration.)
+
     ninja_binary = ninja
+    gn_binary = gn
+
     runninja.target = run_ninja
+    rungn.target = run_gn
 
     !qtConfig(system-ninja) {
         ninja_binary = $$shell_quote($$shell_path($$ninjaPath()))
@@ -18,18 +24,35 @@ build_pass|!debug_and_release {
         runninja.depends = buildninja
     }
 
+    CONFIG(release, debug|release):
+        gn_args += is_debug=false
+
+    gn_args += "qtwebengine_target=\"$$shell_path($$OUT_PWD/$$getConfigDir()):QtWebEngineCore\""
+
     !qtConfig(system-gn) {
+        gn_binary = $$shell_quote($$shell_path($$gnPath()))
         buildgn.target = build_gn
-        buildgn.commands = $$buildGn()
-        !qtConfig(system-ninja): buildgn.depends = buildninja
+        buildgn.commands = $$buildGn($$gn_args)
+        !qtConfig(system-ninja) {
+            buildgn.depends = buildninja
+            rungn.depends = buildninja
+        }
         QMAKE_EXTRA_TARGETS += buildgn
-        runninja.depends = buildgn
     }
 
-    runninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -C $$shell_quote($$OUT_PWD/$$getConfigDir())
+    gn_args = $$shell_quote($$gn_args)
+    gn_src_root = $$shell_quote($$shell_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
+    gn_build_root = $$shell_quote($$shell_path($$OUT_PWD/$$getConfigDir()))
+    rungn.commands = $$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root
+    QMAKE_EXTRA_TARGETS += rungn
+
+    runninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -v -C $$shell_quote($$OUT_PWD/$$getConfigDir()) QtWebEngineCore
+    runninja.depends += rungn
     QMAKE_EXTRA_TARGETS += runninja
 
-    default_target.depends = buildgn
+    build_pass:build_all: default_target.target = all
+    else: default_target.target = first
+    default_target.depends = runninja
 
     QMAKE_EXTRA_TARGETS += default_target
 } else {

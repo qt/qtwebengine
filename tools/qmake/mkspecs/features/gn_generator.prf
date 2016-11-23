@@ -93,7 +93,7 @@ GN_CONTENTS += "}"
 TARGET_TYPE = $$getTargetType()
 
 GN_CONTENTS += "$${TARGET_TYPE}(\"$$TARGET\") {"
-
+!isEmpty(GN_CREATE_PRI): GN_CONTENTS += "  create_pri_file = $$GN_CREATE_PRI"
 !isEmpty(GN_IMPORTS) {
 for (imp, GN_IMPORTS): GN_CONTENTS += "  import(\"$$imp\")"
 }

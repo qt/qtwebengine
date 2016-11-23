@@ -1,12 +1,26 @@
 option(host_build)
 
 # Look for linking information produced by gyp for our target according to core_generated.gyp
-!include($$OUT_PWD/../../core/$$getConfigDir()/convert_dict_linking.pri) {
-    error("Could not find the linking information that gyp should have generated.")
+use?(gn): linking_pri = $$OUT_PWD/../../core/$$getConfigDir()/convert_dict.pri
+else: linking_pri = $$OUT_PWD/../../core/$$getConfigDir()/convert_dict_linking.pri
+
+!include($$linking_pri) {
+    error("Could not find the linking information that gyp/gn should have generated.")
 }
 
-# skip dummy main.cpp file
-OBJECTS =
+use?(gn){
+    isEmpty(NINJA_OBJECTS): error("Missing object files from QtWebEngineCore linking pri.")
+    isEmpty(NINJA_LFLAGS): error("Missing linker flags from QtWebEngineCore linking pri")
+    isEmpty(NINJA_ARCHIVES): error("Missing archive files from QtWebEngineCore linking pri")
+    isEmpty(NINJA_LIBS): error("Missing library files from QtWebEngineCore linking pri")
+    linux: LIBS_PRIVATE = $$NINJA_OBJECTS -Wl,-whole-archive $$NINJA_ARCHIVES -Wl,-no-whole-archive
+    LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
+    QMAKE_LFLAGS += $$NINJA_LFLAGS
+    POST_TARGETDEPS += $$NINJA_TARGETDEPS
+} else {
+    # skip dummy main.cpp file
+    OBJECTS =
+}
 
 # Fixme: -Werror=unused-parameter in core
 QMAKE_CXXFLAGS_WARN_ON =
