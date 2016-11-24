@@ -29,6 +29,7 @@
 import QtQuick 2.0
 import QtTest 1.0
 import QtWebEngine 1.2
+import QtWebEngine.testsupport 1.0
 
 TestWebEngineView {
     id: webEngineView
@@ -37,6 +38,20 @@ TestWebEngineView {
     focus: true
 
     property string lastUrl
+
+    testSupport: WebEngineTestSupport {
+        property bool loadVisuallyCommittedSignalEmitted: false
+
+        function waitForLoadVisuallyCommitted() {
+            return _waitFor(function() {
+                return testSupport.loadVisuallyCommittedSignalEmitted;
+            });
+        }
+
+        onLoadVisuallyCommitted: {
+            loadVisuallyCommittedSignalEmitted = true;
+        }
+    }
 
     SignalSpy {
         id: spy
@@ -61,6 +76,7 @@ TestWebEngineView {
         }
 
         function init() {
+            webEngineView.testSupport.loadVisuallyCommittedSignalEmitted = false;
             webEngineView.lastUrl = ""
             spy.clear()
         }
@@ -75,6 +91,9 @@ TestWebEngineView {
             spy.wait()
             compare(spy.count, 1)
             compare(webEngineView.lastUrl, "")
+
+            // Wait for the page to be rendered before trying to test based on input events
+            verify(webEngineView.testSupport.waitForLoadVisuallyCommitted());
 
             mouseMove(webEngineView, 100, 100)
             spy.wait()
@@ -95,6 +114,9 @@ TestWebEngineView {
             spy.wait()
             compare(spy.count, 1)
             compare(webEngineView.lastUrl, "")
+
+            // Wait for the page to be rendered before trying to test based on input events
+            verify(webEngineView.testSupport.waitForLoadVisuallyCommitted());
 
             for (var i = 0; i < 100; i += 10)
                 mouseMove(webEngineView, 100, 100 + i)
