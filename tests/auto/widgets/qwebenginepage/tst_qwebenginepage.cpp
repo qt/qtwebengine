@@ -3410,7 +3410,7 @@ void tst_QWebEnginePage::loadSignalsOrder()
     SpyForLoadSignalsOrder loadSpy(&page);
     waitForSignal(&loadSpy, SIGNAL(started()), 500);
     page.load(url);
-    QTRY_VERIFY_WITH_TIMEOUT(loadSpy.isFinished(), 500);
+    QTRY_VERIFY(loadSpy.isFinished());
 }
 
 void tst_QWebEnginePage::undoActionHaveCustomText()
