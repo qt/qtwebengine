@@ -64,7 +64,7 @@ ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePing, content::RESOURCE
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeServiceWorker, content::RESOURCE_TYPE_SERVICE_WORKER)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeCspReport, content::RESOURCE_TYPE_CSP_REPORT)
 ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypePluginResource, content::RESOURCE_TYPE_PLUGIN_RESOURCE)
-ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeUnknown, content::RESOURCE_TYPE_LAST_TYPE)
+ASSERT_ENUMS_MATCH(QWebEngineUrlRequestInfo::ResourceTypeLast, content::RESOURCE_TYPE_LAST_TYPE)
 
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::LinkNavigation, QWebEngineUrlRequestInfo::NavigationTypeLink)
 ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::TypedNavigation, QWebEngineUrlRequestInfo::NavigationTypeTyped)
@@ -175,6 +175,9 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
            HTTP POST requests to specified servers. (Added in Qt 5.7)
    \value ResourceTypePluginResource  A resource requested by a plugin. (Added in Qt 5.7)
     \value ResourceTypeUnknown  Unknown request type.
+
+    \note For forward compatibility all values not matched should be treated as unknown,
+    not just \c ResourceTypeUnknown.
 */
 
 /*!

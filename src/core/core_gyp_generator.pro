@@ -46,6 +46,7 @@ SOURCES = \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
         color_chooser_controller.cpp \
+        common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
         content_client_qt.cpp \

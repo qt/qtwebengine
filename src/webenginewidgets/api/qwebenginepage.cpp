@@ -152,7 +152,16 @@ QWebEnginePagePrivate::~QWebEnginePagePrivate()
 
 RenderWidgetHostViewQtDelegate *QWebEnginePagePrivate::CreateRenderWidgetHostViewQtDelegate(RenderWidgetHostViewQtDelegateClient *client)
 {
-    return new RenderWidgetHostViewQtDelegateWidget(client);
+    // Set the QWebEngineView as the parent for a popup delegate, so that the new popup window
+    // responds properly to clicks in case the QWebEngineView is inside a modal QDialog. Setting the
+    // parent essentially notifies the OS that the popup window is part of the modal session, and
+    // should allow interaction.
+    // The new delegate will not be deleted by the parent view though, because we unset the parent
+    // when the parent is destroyed. The delegate will be destroyed by Chromium when the popup is
+    // dismissed.
+    // If the delegate is not for a popup, but for a newly created QWebEngineView, the parent is 0
+    // just like before.
+    return new RenderWidgetHostViewQtDelegateWidget(client, this->view);
 }
 
 void QWebEnginePagePrivate::titleChanged(const QString &title)
