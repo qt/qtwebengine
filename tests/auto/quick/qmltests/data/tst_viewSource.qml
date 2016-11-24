@@ -74,7 +74,7 @@ TestWebEngineView {
         function test_viewSource() {
             webEngineView.url = Qt.resolvedUrl("test1.html");
             verify(webEngineView.waitForLoadSucceeded());
-            compare(webEngineView.title, "Test page 1");
+            tryCompare(webEngineView, "title", "Test page 1");
             // FIXME(pvarga): Reintroduce this check in the fix for QTBUG-56117
             //verify(webEngineView.canViewSource, true);
 
@@ -83,14 +83,14 @@ TestWebEngineView {
             tryCompare(newViewRequestedSpy, "count", 1);
             verify(webEngineView.waitForLoadSucceeded());
             // The first titleChanged signal is emitted by adoptWebContents()
-            tryCompare(titleChangedSpy, "count", 2);
+            tryVerify(function() { return titleChangedSpy.count >= 2; });
 
             compare(viewRequest.destination, WebEngineView.NewViewInTab);
             verify(viewRequest.userInitiated);
             // FIXME(pvarga): Reintroduce this check in the fix for QTBUG-56117
             //verify(!webEngineView.canViewSource);
 
-            compare(webEngineView.title, "test1.html");
+            tryCompare(webEngineView, "title", "test1.html");
             compare(webEngineView.url, "view-source:" + Qt.resolvedUrl("test1.html"));
         }
 
@@ -114,14 +114,14 @@ TestWebEngineView {
 
             if (row.loadSucceed) {
                 verify(webEngineView.waitForLoadSucceeded());
-                tryCompare(titleChangedSpy, "count", 1);
+                tryVerify(function() { return titleChangedSpy.count >= 1; });
             } else {
                 verify(webEngineView.waitForLoadFailed());
-                tryCompare(titleChangedSpy, "count", 2);
+                tryVerify(function() { return titleChangedSpy.count >= 2; });
             }
 
             compare(webEngineView.url, row.url);
-            compare(webEngineView.title, row.title);
+            tryCompare(webEngineView, "title", row.title);
             // FIXME(pvarga): Reintroduce this check in the fix for QTBUG-56117
             //verify(!webEngineView.canViewSource);
         }

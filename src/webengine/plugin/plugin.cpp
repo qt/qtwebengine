@@ -66,7 +66,7 @@ class QtWebEnginePlugin : public QQmlExtensionPlugin
     Q_OBJECT
     Q_PLUGIN_METADATA(IID QQmlExtensionInterface_iid)
 public:
-    virtual void initializeEngine(QQmlEngine *engine, const char *uri)
+    virtual void initializeEngine(QQmlEngine *engine, const char *uri) Q_DECL_OVERRIDE
     {
         Q_UNUSED(uri);
         engine->addImageProvider(QQuickWebEngineFaviconProvider::identifier(), new QQuickWebEngineFaviconProvider);
@@ -77,8 +77,8 @@ public:
         Q_ASSERT(QLatin1String(uri) == QLatin1String("QtWebEngine"));
 
         qmlRegisterType<QQuickWebEngineView>(uri, 1, 0, "WebEngineView");
-        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", tr("Cannot create separate instance of WebEngineLoadRequest"));
-        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", tr("Cannot create separate instance of WebEngineNavigationRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineLoadRequest>(uri, 1, 0, "WebEngineLoadRequest", msgUncreatableType("WebEngineLoadRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineNavigationRequest>(uri, 1, 0, "WebEngineNavigationRequest", msgUncreatableType("WebEngineNavigationRequest"));
 
         qmlRegisterType<QQuickWebEngineView, 1>(uri, 1, 1, "WebEngineView");
         qmlRegisterType<QQuickWebEngineView, 2>(uri, 1, 2, "WebEngineView");
@@ -89,7 +89,7 @@ public:
         qmlRegisterType<QQuickWebEngineProfile, 2>(uri, 1, 3, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineProfile, 3>(uri, 1, 4, "WebEngineProfile");
         qmlRegisterType<QQuickWebEngineScript>(uri, 1, 1, "WebEngineScript");
-        qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", tr("Cannot create separate instance of WebEngineCertificateError"));
+        qmlRegisterUncreatableType<QQuickWebEngineCertificateError>(uri, 1, 1, "WebEngineCertificateError", msgUncreatableType("WebEngineCertificateError"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem>(uri, 1, 1, "WebEngineDownloadItem",
             tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 1>(uri, 1, 2, "WebEngineDownloadItem",
@@ -98,7 +98,7 @@ public:
             tr("Cannot create a separate instance of WebEngineDownloadItem"));
         qmlRegisterUncreatableType<QQuickWebEngineDownloadItem, 3>(uri, 1, 4, "WebEngineDownloadItem",
             tr("Cannot create a separate instance of WebEngineDownloadItem"));
-        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", tr("Cannot create separate instance of WebEngineNewViewRequest"));
+        qmlRegisterUncreatableType<QQuickWebEngineNewViewRequest>(uri, 1, 1, "WebEngineNewViewRequest", msgUncreatableType("WebEngineNewViewRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings>(uri, 1, 1, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 1>(uri, 1, 2, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 2>(uri, 1, 3, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
@@ -112,20 +112,26 @@ public:
             tr("Cannot create a separate instance of FullScreenRequest"));
 
         qmlRegisterUncreatableType<QQuickWebEngineContextMenuRequest>(uri, 1, 4, "ContextMenuRequest",
-                                                                    tr("Cannot create separate instance of ContextMenuRequest"));
+                                                                    msgUncreatableType("ContextMenuRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineAuthenticationDialogRequest>(uri, 1, 4, "AuthenticationDialogRequest",
-                                                                       tr("Cannot create separate instance of AuthenticationDialogRequest"));
+                                                                       msgUncreatableType("AuthenticationDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineJavaScriptDialogRequest>(uri, 1, 4, "JavaScriptDialogRequest",
-                                                                         tr("Cannot create separate instance of JavaScriptDialogRequest"));
+                                                                         msgUncreatableType("JavaScriptDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineColorDialogRequest>(uri, 1, 4, "ColorDialogRequest",
-                                                                         tr("Cannot create separate instance of ColorDialogRequest"));
+                                                                         msgUncreatableType("ColorDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineFileDialogRequest>(uri, 1, 4, "FileDialogRequest",
-                                                                         tr("Cannot create separate instance of FileDialogRequest"));
+                                                                         msgUncreatableType("FileDialogRequest"));
         qmlRegisterUncreatableType<QQuickWebEngineFormValidationMessageRequest>(uri, 1, 4, "FormValidationMessageRequest",
-                                                                         tr("Cannot create separate instance of FormValidationMessageRequest"));
+                                                                         msgUncreatableType("FormValidationMessageRequest"));
 
         // For now (1.x import), the latest revision matches the minor version of the import.
         qmlRegisterRevision<QQuickWebEngineView, LATEST_WEBENGINEVIEW_REVISION>(uri, 1, LATEST_WEBENGINEVIEW_REVISION);
+    }
+
+private:
+    static QString msgUncreatableType(const char *className)
+    {
+        return tr("Cannot create separate instance of %1").arg(QLatin1String(className));
     }
 };
 

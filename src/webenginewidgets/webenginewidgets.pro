@@ -4,7 +4,7 @@ TARGET = QtWebEngineWidgets
 DEFINES += QT_BUILD_WEBENGINEWIDGETS_LIB
 
 QT += webenginecore widgets network quick
-QT_PRIVATE += quick-private gui-private core-private quickwidgets
+QT_PRIVATE += quick-private gui-private core-private widgets-private quickwidgets
 
 INCLUDEPATH += $$PWD api ../core ../core/api ../webengine/api
 
@@ -48,7 +48,7 @@ HEADERS = \
     DEFINES += QT_UI_DELEGATES
 }
 
-!contains(WEBENGINE_CONFIG, no_spellcheck) {
+contains(WEBENGINE_CONFIG, use_spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 

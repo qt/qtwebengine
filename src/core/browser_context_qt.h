@@ -101,9 +101,9 @@ public:
     BrowserContextAdapter *adapter() { return m_adapter; }
 
 #if defined(ENABLE_SPELLCHECK)
-    void failedToLoadDictionary(const std::string& language);
-    void setSpellCheckLanguage(const QString &language);
-    QString spellCheckLanguage() const;
+    void failedToLoadDictionary(const std::string& language) override;
+    void setSpellCheckLanguages(const QStringList &languages);
+    QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
 #endif

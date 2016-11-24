@@ -136,14 +136,16 @@ static base::DictionaryValue *createPrintSettings()
     return printSettings;
 }
 
-static void applyQPageLayoutSettingsToDictionary(const QPageLayout &pageLayout, base::DictionaryValue &printSettings)
+static base::DictionaryValue *createPrintSettingsFromQPageLayout(const QPageLayout &pageLayout)
 {
+    base::DictionaryValue *printSettings = createPrintSettings();
+
     //Set page size attributes, chromium expects these in micrometers
     QSizeF pageSizeInMilimeter = pageLayout.pageSize().size(QPageSize::Millimeter);
     std::unique_ptr<base::DictionaryValue> sizeDict(new base::DictionaryValue);
     sizeDict->SetInteger(printing::kSettingMediaSizeWidthMicrons, pageSizeInMilimeter.width() * kMicronsToMillimeter);
     sizeDict->SetInteger(printing::kSettingMediaSizeHeightMicrons, pageSizeInMilimeter.height() * kMicronsToMillimeter);
-    printSettings.Set(printing::kSettingMediaSize, std::move(sizeDict));
+    printSettings->Set(printing::kSettingMediaSize, std::move(sizeDict));
 
     // Apply page margins
     QMargins pageMarginsInPoints = pageLayout.marginsPoints();
@@ -152,10 +154,13 @@ static void applyQPageLayoutSettingsToDictionary(const QPageLayout &pageLayout, 
     marginsDict->SetInteger(printing::kSettingMarginBottom, pageMarginsInPoints.bottom());
     marginsDict->SetInteger(printing::kSettingMarginLeft, pageMarginsInPoints.left());
     marginsDict->SetInteger(printing::kSettingMarginRight, pageMarginsInPoints.right());
-    printSettings.Set(printing::kSettingMarginsCustom, std::move(marginsDict));
-    printSettings.SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
 
-    printSettings.SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
+    printSettings->Set(printing::kSettingMarginsCustom, std::move(marginsDict));
+    printSettings->SetInteger(printing::kSettingMarginsType, printing::CUSTOM_MARGINS);
+
+    printSettings->SetBoolean(printing::kSettingLandscape, pageLayout.orientation() == QPageLayout::Landscape);
+
+    return printSettings;
 }
 
 } // namespace
@@ -209,12 +214,11 @@ bool PrintViewManagerQt::PrintToPDFInternal(const QPageLayout &pageLayout, bool 
 {
     if (!pageLayout.isValid())
         return false;
-    m_printSettings.reset(createPrintSettings());
 
-    m_printSettings->SetInteger(printing::kSettingColor, printInColor ? printing::COLOR : printing::GRAYSCALE);
-    applyQPageLayoutSettingsToDictionary(pageLayout, *m_printSettings);
+    m_printSettings.reset(createPrintSettingsFromQPageLayout(pageLayout));
     m_printSettings->SetBoolean(printing::kSettingShouldPrintBackgrounds
         , web_contents()->GetRenderViewHost()->GetWebkitPreferences().should_print_backgrounds);
+    m_printSettings->SetInteger(printing::kSettingColor, printInColor ? printing::COLOR : printing::GRAYSCALE);
     return Send(new PrintMsg_InitiatePrintPreview(routing_id(), false));
 }
 

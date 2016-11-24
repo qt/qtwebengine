@@ -197,9 +197,11 @@
 
     \section1 Proxy Support
 
-    If QNetworkProxy::applicationProxy is set, it will also be used for Qt WebEngine. Otherwise,
-    Qt WebEngine automatically picks up the proxy configuration from OS X and Windows. On Linux,
-    it acknowledges settings from KDE and Gnome.
+    Qt WebEngine uses the proxy settings from \l{Qt Network}.  If
+    QNetworkProxy::applicationProxy is set, it will also be used for Qt WebEngine, and if
+    QNetworkProxy::usesSystemConfiguration() is enabled, the proxy settings are automatically
+    retrieved from the system. Settings from an installed QNetworkProxyFactory will be ignored
+    though.
 
     If a proxy requires authentication, QWebEnginePage::proxyAuthenticationRequired is emitted.
     For Qt Quick, a dialog is shown.
@@ -248,7 +250,7 @@
 
     \section1 Platform Notes
 
-    Qt WebEngine currently supports only Windows, Linux, and OS X. Due to Chromium build
+    Qt WebEngine currently supports only Windows, Linux, and \macos. Due to Chromium build
     requirements it also often requires a newer compiler than the rest of Qt. See
     \l{Qt WebEngine Platform Notes} for further details.
 

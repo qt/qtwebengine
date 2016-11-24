@@ -139,7 +139,9 @@ PdfiumPrintingWrapperQt::PdfiumPrintingWrapperQt(const void *pdfData, size_t siz
 bool PdfiumPrintingWrapperQt::printOnPrinter(QPrinter &printer)
 {
     if (!m_documentHandle || !m_pageCount) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Failure to print on printer %ls: invalid document.\n", qUtf16Printable(printer.printerName()));
+#endif
         return false;
     }
 
@@ -172,7 +174,9 @@ bool PdfiumPrintingWrapperQt::printOnPrinter(QPrinter &printer)
 
     QPainter painter;
     if (!painter.begin(&printer)) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Failure to print on printer %ls: Could not open printer for painting.\n", qUtf16Printable(printer.printerName()));
+#endif
         return false;
     }
 

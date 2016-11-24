@@ -36,9 +36,7 @@ force_debug_info {
 # Copy this logic from qt_module.prf so that ninja can run according
 # to the same rules as the final module linking in core_module.pro.
 !host_build:if(win32|mac):!macx-xcode {
-    qtConfig(simulator_and_device): CONFIG += simulator_and_device
-    qtConfig(debug_and_release): CONFIG += debug_and_release
-    qtConfig(build_all): CONFIG += build_all
+    qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 }
 
 cross_compile {
@@ -122,12 +120,18 @@ contains(WEBENGINE_CONFIG, use_appstore_compliant_code): GYP_CONFIG += appstore_
 # but the latter are necessary for useful debug binaries.
 contains(WEBENGINE_CONFIG, reduce_binary_size): GYP_CONFIG += release_optimize=s debug_optimize=s release_unwind_tables=0
 
-contains(WEBENGINE_CONFIG, no_spellcheck): {
+!contains(WEBENGINE_CONFIG, use_spellchecker): {
     GYP_CONFIG += enable_spellcheck=0
-    osx: GYP_CONFIG += use_browser_spellchecker=0
+    macos: GYP_CONFIG += use_browser_spellchecker=0
 } else {
     GYP_CONFIG += enable_spellcheck=1
-    osx: GYP_CONFIG += use_browser_spellchecker=1
+    macos {
+        contains(WEBENGINE_CONFIG, use_native_spellchecker) {
+            GYP_CONFIG += use_browser_spellchecker=1
+        } else {
+            GYP_CONFIG += use_browser_spellchecker=0
+        }
+    }
 }
 
 !qtConfig(framework):qtConfig(private_tests) {

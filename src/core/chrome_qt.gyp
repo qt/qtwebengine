@@ -113,7 +113,7 @@
             '<(chromium_src_dir)/third_party/WebKit',
           ],
           'dependencies': [
-            '<(chromium_src_dir)/chrome/tools/convert_dict/convert_dict.gyp:convert_dict_lib',
+            '<(chromium_src_dir)/chrome/tools/convert_dict/convert_dict.gyp:convert_dict',
             '<(chromium_src_dir)/third_party/hunspell/hunspell.gyp:hunspell',
             '<(chromium_src_dir)/third_party/icu/icu.gyp:icui18n',
             '<(chromium_src_dir)/third_party/icu/icu.gyp:icuuc',
@@ -132,6 +132,8 @@
               'sources!': [
                 '<(DEPTH)/chrome/renderer/spellchecker/platform_spelling_engine.cc',
                 '<(DEPTH)/chrome/renderer/spellchecker/platform_spelling_engine.h',
+                '<(DEPTH)/chrome/browser/spellchecker/spellcheck_message_filter_platform.h',
+                '<(DEPTH)/chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc',
               ],
             }],
           ],

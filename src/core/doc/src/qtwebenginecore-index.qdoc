@@ -28,7 +28,6 @@
 /*!
     \page qtwebenginecore-index.html
     \title Qt WebEngine Core
-    \ingroup modules
 
     \brief Provides common API shared by Qt WebEngine and Qt WebEngine Widgets.
 

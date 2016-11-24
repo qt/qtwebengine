@@ -67,8 +67,6 @@ Item {
     TestCase {
         name: "WebEngineViewFocusOnNavigation"
         when: windowShown
-        function init() {
-        }
 
         function test_focusOnNavigation_data() {
             return [
@@ -79,18 +77,9 @@ Item {
             ]
         }
 
-        function triggerJavascriptFocus() {
-            var callbackCalled = false;
-            webView.runJavaScript("document.getElementById(\"input\").focus()", function(result) {
-                    callbackCalled = true;
-                });
-            wait(100);
-            verify(callbackCalled);
-        }
-
         function loadAndTriggerFocusAndCompare(data) {
             verify(webView.waitForLoadSucceeded());
-            triggerJavascriptFocus();
+            webView.setFocusToElement("input");
             compare(webView.activeFocus, data.viewReceivedFocus);
         }
 

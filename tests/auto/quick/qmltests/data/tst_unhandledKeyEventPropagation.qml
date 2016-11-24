@@ -68,12 +68,10 @@ Item {
             keyPress(Qt.Key_Left)
             keyRelease(Qt.Key_Left)
 
-            for (var i = 0; i < 20 && parentItem.releaseEvents.length < 3; i++)
-                wait(100)
-
-            compare(parentItem.pressEvents.length, 1)
+            tryCompare(parentItem.pressEvents, "length", 1)
             compare(parentItem.pressEvents[0], Qt.Key_Left)
-            compare(parentItem.releaseEvents.length, 3)
+
+            tryCompare(parentItem.releaseEvents, "length", 3)
             compare(parentItem.releaseEvents[0], Qt.Key_A)
             compare(parentItem.releaseEvents[1], Qt.Key_Left)
             compare(parentItem.releaseEvents[2], Qt.Key_Left)

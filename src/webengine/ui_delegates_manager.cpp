@@ -523,7 +523,8 @@ void UIDelegatesManager::hideMessageBubble()
 
 void UIDelegatesManager::moveMessageBubble(const QRect &anchor)
 {
-    Q_ASSERT(!m_messageBubbleItem.isNull());
+    if (m_messageBubbleItem.isNull())
+        return;
 
     QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("x")).write(anchor.x());
     QQmlProperty(m_messageBubbleItem.data(), QStringLiteral("y")).write(anchor.y() + anchor.size().height());

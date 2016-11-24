@@ -44,8 +44,6 @@ os.chdir(qtwebengine_root)
 
 def isInGitBlacklist(file_path):
     # We do need all the gyp files.
-    if file_path.endswith('.gyp') or file_path.endswith('.gypi') or file_path.endswith('.isolate'):
-        False
     if ( '.gitignore' in file_path
         or '.gitmodules' in file_path
         or '.gitattributes' in file_path
@@ -58,6 +56,10 @@ def isInChromiumBlacklist(file_path):
         return True
     # We do need all the gyp files.
     if file_path.endswith('.gyp') or file_path.endswith('.gypi') or file_path.endswith('.isolate'):
+        return False
+    # We do need all the gn file.
+    if file_path.endswith('.gn') or file_path.endswith('.gni') or file_path.endswith('typemap') or \
+    file_path.endswith('.mojom'):
         return False
     if ( '_jni' in file_path
         or 'jni_' in file_path

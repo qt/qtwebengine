@@ -735,15 +735,15 @@ void QQuickWebEngineFileDialogRequest::dialogReject()
         onFormValidationMessageRequested: function(request) {
             request.accepted = true;
             switch (request.type) {
-                case FormValidationMessageRequest.RequestTypeShow:
+                case FormValidationMessageRequest.Show:
                     validationMessage.text = request.text;
                     validationMessage.x = request.x;
                     validationMessage.y = request.y
                     validationMessage.visible = true;
                     break;
-                 case FormValidationMessageRequest.RequestTypeMove:
+                 case FormValidationMessageRequest.Move:
                     break;
-                 case FormValidationMessageRequest.RequestTypeHide:
+                 case FormValidationMessageRequest.Hide:
                     validationMessage.visible = false;
                     break;
                  }
@@ -816,11 +816,11 @@ QString QQuickWebEngineFormValidationMessageRequest::subText() const
 
     The type of the form validation message request.
 
-    \value  ValidationMessageRequest.RequestTypeShow
+    \value  ValidationMessageRequest.Show
             The form validation message should be shown.
-    \value  ValidationMessageRequest.RequestTypeHide
+    \value  ValidationMessageRequest.Hide
             The form validation message should be hidden.
-    \value  ValidationMessageRequest.RequestTypeMove
+    \value  ValidationMessageRequest.Move
             The form validation message should be moved.
 */
 

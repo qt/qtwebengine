@@ -40,9 +40,9 @@
     To include the definitions of the module's classes, use the
     following directive:
 
-    \snippet qtwebengine_build_snippet.qdoc 1
+    \snippet qtwebenginewidgets_build_snippet.qdoc 1
 
     To link against the module, add the following to your qmake project file:
 
-    \snippet qtwebengine_build_snippet.qdoc 0
+    \snippet qtwebenginewidgets_build_snippet.qdoc 0
 */

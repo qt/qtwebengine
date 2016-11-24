@@ -43,14 +43,14 @@ defineTest(isPlatformSupported) {
       return(false)
     }
   } else:osx {
-    lessThan(QMAKE_XCODE_VERSION, 6.3) {
-      skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 6.3 is required to build Qt WebEngine.")
+    lessThan(QMAKE_XCODE_VERSION, 5.1) {
+      skipBuild("Using XCode version $$QMAKE_XCODE_VERSION, but at least version 5.1 is required to build Qt WebEngine.")
       return(false)
     }
-    # We require OS X 10.10 (darwin version 14.0.0) or newer
+    # We require OS X 10.9 (darwin version 13.0.0) or newer
     darwin_major_version = $$section(QMAKE_HOST.version, ., 0, 0)
-    lessThan(darwin_major_version, 14) {
-      skipBuild("Qt WebEngine requires OS X version 10.10 or newer.")
+    lessThan(darwin_major_version, 13) {
+      skipBuild("Qt WebEngine requires OS X version 10.9 or newer.")
       return(false)
     }
     !isMinOSXSDKVersion(10, 10): {
@@ -75,7 +75,18 @@ defineTest(isPlatformSupported) {
     return(false)
   }
   !isPythonVersionSupported(): return(false)
+  !isArchSupported(): return(false)
+  isSanitizerEnabled():!isSanitizerSupported():!forceSanitizerBuild(): return(false)
   return(true)
+}
+
+defineTest(isArchSupported) {
+    contains(QT_ARCH, "i386")|contains(QT_ARCH, "x86_64"): return(true)
+    contains(QT_ARCH, "arm")|contains(QT_ARCH, "arm64"): return(true)
+    contains(QT_ARCH, "mips")|contains(QT_ARCH, "mips64"): return(true)
+
+    skipBuild("QtWebEngine can only be built for x86, x86-64, ARM, Aarch64, MIPSel, and MIPS64 architectures.")
+    return(false)
 }
 
 defineTest(isPythonVersionSupported) {
@@ -95,6 +106,106 @@ defineTest(isPythonVersionSupported) {
     skipBuild("Using Python version $${python_major_version}.$${python_minor_version}.$${python_patch_version}.")
     skipBuild($$python_error_msg)
     return(false)
+}
+
+defineTest(isSanitizerEnabled) {
+  sanitize_address|sanitize_memory|sanitize_undefined|sanitize_thread: return(true)
+  return(false)
+}
+
+defineTest(forceSanitizerBuild) {
+  contains(WEBENGINE_CONFIG, force_sanitizer_build): return(true)
+  skipBuild("Chosen sanitizer configuration is not supported. Use WEBENGINE_CONFIG+=force_sanitizer_build to force build with the chosen sanitizer configuration.")
+  return(false)
+}
+
+defineTest(isSanitizerSupported) {
+  sanitizer_combo_supported = true
+  sanitize_address {
+    asan_supported = false
+    linux-clang-libc++:isSanitizerSupportedOnLinux() {
+      asan_supported = true
+    } else:macos:isSanitizerSupportedOnMacOS() {
+      asan_supported = true
+    }
+    !$$asan_supported {
+      sanitizer_combo_supported = false
+      warning("An address sanitizer-enabled Qt WebEngine build can only be built on Linux or macOS using Clang and libc++.")
+    }
+  }
+
+  sanitize_memory {
+    sanitizer_combo_supported = false
+    warning("A memory sanitizer-enabled Qt WebEngine build is not supported.")
+  }
+
+  sanitize_undefined {
+    ubsan_supported = false
+    linux-clang-libc++:isSanitizerSupportedOnLinux():CONFIG(release, debug|release):!debug_and_release {
+      ubsan_supported = true
+    }
+    !$$ubsan_supported {
+      sanitizer_combo_supported = false
+      warning("An undefined behavior sanitizer-enabled Qt WebEngine build can only be built on Linux using Clang and libc++ in release mode.")
+    }
+  }
+
+  sanitize_thread {
+    tsan_supported = false
+    linux-clang-libc++:isSanitizerSupportedOnLinux() {
+      tsan_supported = true
+    }
+    !$$tsan_supported {
+      sanitizer_combo_supported = false
+      warning("A thread sanitizer-enabled Qt WebEngine build can only be built on Linux using Clang and libc++.")
+    }
+  }
+
+  $$sanitizer_combo_supported: return(true)
+  return(false)
+}
+
+defineTest(isSanitizerSupportedOnLinux) {
+  isSanitizerLinuxClangVersionSupported(): return(true)
+  return(false)
+}
+
+defineTest(isSanitizerSupportedOnMacOS) {
+  isEmpty(QT_APPLE_CLANG_MAJOR_VERSION) {
+    QTWEBENGINE_CLANG_IS_APPLE = false
+  } else {
+    QTWEBENGINE_CLANG_IS_APPLE = true
+  }
+  $$QTWEBENGINE_CLANG_IS_APPLE:isSanitizerMacOSAppleClangVersionSupported(): return(true)
+  else:isSanitizerMacOSClangVersionSupported(): return(true)
+  return(false)
+}
+
+defineTest(isSanitizerMacOSAppleClangVersionSupported) {
+  # Clang sanitizer suppression attributes work from Apple Clang version 7.3.0+.
+  greaterThan(QT_APPLE_CLANG_MAJOR_VERSION, 7): return(true)
+  greaterThan(QT_APPLE_CLANG_MINOR_VERSION, 2): return(true)
+
+  warning("Using Apple Clang version $${QT_APPLE_CLANG_MAJOR_VERSION}.$${QT_APPLE_CLANG_MINOR_VERSION}.$${QT_APPLE_CLANG_PATCH_VERSION}, but at least Apple Clang version 7.3.0 is required to build a sanitizer-enabled Qt WebEngine.")
+  return(false)
+}
+
+defineTest(isSanitizerMacOSClangVersionSupported) {
+  # Clang sanitizer suppression attributes work from non-apple Clang version 3.7+.
+  greaterThan(QT_CLANG_MAJOR_VERSION, 3): return(true)
+  greaterThan(QT_CLANG_MINOR_VERSION, 6): return(true)
+
+  warning("Using Clang version $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}, but at least Clang version 3.7 is required to build a sanitizer-enabled Qt WebEngine.")
+  return(false)
+}
+
+defineTest(isSanitizerLinuxClangVersionSupported) {
+  # Clang sanitizer suppression attributes work from Clang version 3.7+.
+  greaterThan(QT_CLANG_MAJOR_VERSION, 3): return(true)
+  greaterThan(QT_CLANG_MINOR_VERSION, 6): return(true)
+
+  warning("Using Clang version $${QT_CLANG_MAJOR_VERSION}.$${QT_CLANG_MINOR_VERSION}, but at least Clang version 3.7 is required to build a sanitizer-enabled Qt WebEngine.")
+  return(false)
 }
 
 defineTest(isGCCVersionSupported) {
@@ -264,28 +375,17 @@ defineReplace(findOrBuildNinja) {
   !exists($$out) {
     src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
 
-    out = $$shadowed($$absolute_path("ninja/ninja", "$$src_3rd_party_dir"))
+    out = $$shadowed($$absolute_path(ninja/ninja, $$src_3rd_party_dir))
     win32: out = $${out}.exe
 
-    out = $$system_path($$out)
     # If we did not find ninja, then we bootstrap it.
     !exists($$out) {
-      # If we are making a shadow build, copy the ninja sources to the build directory.
-      !equals(PWD, $${OUT_PWD}) {
-        log("Build directory is different from source directory - copying ninja sources to the build tree...")
-        shadow_3rd_party_path = $$system_path($$shadowed($$src_3rd_party_dir))
-
-        !exists($$dirname(out)): mkpath($$dirname(out))
-        copy_dir_files {
-          system("$$QMAKE_COPY_DIR $$system_quote($$system_path($$absolute_path("ninja", "$$src_3rd_party_dir"))) $$system_quote($$dirname(out))")
-        } else {
-          system("$$QMAKE_COPY_DIR $$system_quote($$system_path($$absolute_path("ninja", "$$src_3rd_party_dir"))) $$system_quote($$shadow_3rd_party_path)")
-        }
-      }
-      system("cd $$system_quote($$dirname(out)) && python configure.py --bootstrap")
+      mkpath($$dirname(out))
+      ninja_configure = $$absolute_path(ninja/configure.py, $$src_3rd_party_dir)
+      system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$system_path($$ninja_configure)) --bootstrap")
     }
   }
-  return($$out)
+  return($$system_path($$out))
 }
 
 defineTest(skipBuild) {

@@ -164,9 +164,8 @@ void WebChannelIPCTransport::RunScriptsAtDocumentStart(content::RenderFrame *ren
 {
     // JavaScript run before this point doesn't stick, and needs to be redone.
     // ### FIXME: we should try no even installing before
-    blink::WebLocalFrame *frame = render_frame->GetWebFrame();
     if (m_installed && render_frame->IsMainFrame())
-        WebChannelTransport::Install(frame, m_installedWorldId);
+        WebChannelTransport::Install(render_frame->GetWebFrame(), m_installedWorldId);
 }
 
 
@@ -224,9 +223,12 @@ void WebChannelIPCTransport::dispatchWebChannelMessage(const std::vector<char> &
     }
 
     v8::Handle<v8::Object> messageObject(v8::Object::New(isolate));
-    messageObject->ForceSet(v8::String::NewFromUtf8(isolate, "data")
-                       , v8::String::NewFromUtf8(isolate, json.constData(), v8::String::kNormalString, json.size())
-                       , v8::PropertyAttribute(v8::ReadOnly | v8::DontDelete));
+    v8::Maybe<bool> wasSet = messageObject->DefineOwnProperty(
+                context,
+                v8::String::NewFromUtf8(isolate, "data"),
+                v8::String::NewFromUtf8(isolate, json.constData(), v8::String::kNormalString, json.size()),
+                v8::PropertyAttribute(v8::ReadOnly | v8::DontDelete));
+    Q_ASSERT(!wasSet.IsNothing() && wasSet.FromJust());
 
     v8::Handle<v8::Function> callback = v8::Handle<v8::Function>::Cast(onmessageCallbackValue);
     const int argc = 1;

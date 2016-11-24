@@ -46,6 +46,8 @@
 
 namespace QtWebEngineCore {
 
+const char kQrcSchemeQt[] = "qrc";
+
 QrcProtocolHandlerQt::QrcProtocolHandlerQt()
 {
 }

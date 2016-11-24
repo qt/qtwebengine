@@ -491,19 +491,19 @@ void BrowserContextAdapter::clearHttpCache()
         m_browserContext->url_request_getter_->clearHttpCache();
 }
 
-void BrowserContextAdapter::setSpellCheckLanguage(const QString &language)
+void BrowserContextAdapter::setSpellCheckLanguages(const QStringList &languages)
 {
 #if defined(ENABLE_SPELLCHECK)
-    m_browserContext->setSpellCheckLanguage(language);
+    m_browserContext->setSpellCheckLanguages(languages);
 #endif
 }
 
-QString BrowserContextAdapter::spellCheckLanguage() const
+QStringList BrowserContextAdapter::spellCheckLanguages() const
 {
 #if defined(ENABLE_SPELLCHECK)
-    return m_browserContext->spellCheckLanguage();
+    return m_browserContext->spellCheckLanguages();
 #else
-    return QString();
+    return QStringList();
 #endif
 }
 

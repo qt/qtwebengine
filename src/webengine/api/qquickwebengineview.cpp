@@ -1109,7 +1109,7 @@ void QQuickWebEngineViewPrivate::showValidationMessage(const QRect &anchor, cons
 #endif
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineFormValidationMessageRequest *request;
-    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::RequestTypeShow,
+    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::Show,
                                                           anchor,mainText,subText);
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(request);
@@ -1122,7 +1122,7 @@ void QQuickWebEngineViewPrivate::hideValidationMessage()
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineFormValidationMessageRequest *request;
-    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::RequestTypeHide);
+    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::Hide);
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(request);
     Q_EMIT q->formValidationMessageRequested(request);
@@ -1134,7 +1134,7 @@ void QQuickWebEngineViewPrivate::moveValidationMessage(const QRect &anchor)
 {
     Q_Q(QQuickWebEngineView);
     QQuickWebEngineFormValidationMessageRequest *request;
-    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::RequestTypeMove,
+    request = new QQuickWebEngineFormValidationMessageRequest(QQuickWebEngineFormValidationMessageRequest::Move,
                                                           anchor);
     // mark the object for gc by creating temporary jsvalue
     qmlEngine(q)->newQObject(request);

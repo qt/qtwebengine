@@ -25,7 +25,7 @@
 #include <qwebenginepage.h>
 #include <qwidget.h>
 
-class tst_QWebEngineView : public QObject
+class tst_QWebEngineAccessibility : public QObject
 {
     Q_OBJECT
 
@@ -44,27 +44,27 @@ private Q_SLOTS:
 
 // This will be called before the first test function is executed.
 // It is only called once.
-void tst_QWebEngineView::initTestCase()
+void tst_QWebEngineAccessibility::initTestCase()
 {
 }
 
 // This will be called after the last test function is executed.
 // It is only called once.
-void tst_QWebEngineView::cleanupTestCase()
+void tst_QWebEngineAccessibility::cleanupTestCase()
 {
 }
 
 // This will be called before each test function is executed.
-void tst_QWebEngineView::init()
+void tst_QWebEngineAccessibility::init()
 {
 }
 
 // This will be called after every test function.
-void tst_QWebEngineView::cleanup()
+void tst_QWebEngineAccessibility::cleanup()
 {
 }
 
-void tst_QWebEngineView::noPage()
+void tst_QWebEngineAccessibility::noPage()
 {
     QWebEngineView webView;
     webView.show();
@@ -80,7 +80,7 @@ void tst_QWebEngineView::noPage()
     QCOMPARE(document->childCount(), 0);
 }
 
-void tst_QWebEngineView::hierarchy()
+void tst_QWebEngineAccessibility::hierarchy()
 {
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
@@ -139,7 +139,7 @@ void tst_QWebEngineView::hierarchy()
     QCOMPARE(input, child);
 }
 
-void tst_QWebEngineView::text()
+void tst_QWebEngineAccessibility::text()
 {
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
@@ -207,7 +207,7 @@ void tst_QWebEngineView::text()
     QCOMPARE(input3->text(QAccessible::Value), QStringLiteral("Good day!"));
 }
 
-void tst_QWebEngineView::value()
+void tst_QWebEngineAccessibility::value()
 {
     QWebEngineView webView;
     webView.setHtml("<html><body>" \
@@ -248,5 +248,5 @@ void tst_QWebEngineView::value()
 static QByteArrayList params = QByteArrayList()
     << "--force-renderer-accessibility";
 
-W_QTEST_MAIN(tst_QWebEngineView, params)
+W_QTEST_MAIN(tst_QWebEngineAccessibility, params)
 #include "tst_qwebengineaccessibility.moc"

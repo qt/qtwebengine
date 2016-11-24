@@ -42,6 +42,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "content/public/renderer/render_frame_observer_tracker.h"
 
 
 namespace content {
@@ -50,7 +51,10 @@ class RenderFrame;
 
 namespace QtWebEngineCore {
 
-class RenderFrameObserverQt : public content::RenderFrameObserver {
+class RenderFrameObserverQt
+        : public content::RenderFrameObserver
+        , public content::RenderFrameObserverTracker<RenderFrameObserverQt>
+{
 public:
     explicit RenderFrameObserverQt(content::RenderFrame* render_frame);
     ~RenderFrameObserverQt();
@@ -59,9 +63,14 @@ public:
     void DidCreatePepperPlugin(content::RendererPpapiHost* host) override;
 #endif
     void OnDestruct() override { }
+    void FrameDetached() override;
+
+    bool isFrameDetached() const;
 
 private:
     DISALLOW_COPY_AND_ASSIGN(RenderFrameObserverQt);
+
+    bool m_isFrameDetached;
 };
 
 } // namespace QtWebEngineCore

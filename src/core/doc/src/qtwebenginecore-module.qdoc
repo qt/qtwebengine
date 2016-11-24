@@ -32,6 +32,7 @@
     \brief Provides public API shared by both QtWebEngine and QtWebEngineWidgets
     \since 5.6
     \ingroup qtwebengine-modules
+    \ingroup modules
 
     To include the definitions of the module's classes, use the
     following directive:

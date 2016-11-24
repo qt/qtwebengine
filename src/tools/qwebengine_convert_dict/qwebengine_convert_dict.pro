@@ -1,10 +1,11 @@
 option(host_build)
 
 # Look for linking information produced by gyp for our target according to core_generated.gyp
-!include($$OUT_PWD/../../core/$$getConfigDir()/QtWebEngineCore_linking.pri) {
+!include($$OUT_PWD/../../core/$$getConfigDir()/convert_dict_linking.pri) {
     error("Could not find the linking information that gyp should have generated.")
 }
-# remove object files from linking information
+
+# skip dummy main.cpp file
 OBJECTS =
 
 # Fixme: -Werror=unused-parameter in core

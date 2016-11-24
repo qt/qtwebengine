@@ -83,9 +83,6 @@ TestWebEngineView {
         when: windowShown
 
         function init() {
-            // Workaround for QTBUG-56223
-            mouseClick(webEngineView, 0, 0)
-
             attributes.clear()
             navigationSpy.clear()
             shouldIgnoreLinkClicks = false

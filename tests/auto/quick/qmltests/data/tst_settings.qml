@@ -56,7 +56,7 @@ TestWebEngineView {
 
             webEngineView.url = Qt.resolvedUrl("javascript.html");
             verify(webEngineView.waitForLoadSucceeded());
-            compare(webEngineView.title, "New Title");
+            tryCompare(webEngineView, "title", "New Title");
         }
 
         function test_javascriptDisabled() {
@@ -64,7 +64,7 @@ TestWebEngineView {
 
             webEngineView.url = Qt.resolvedUrl("javascript.html");
             verify(webEngineView.waitForLoadSucceeded());
-            compare(webEngineView.title, "Original Title");
+            tryCompare(webEngineView, "title", "Original Title");
         }
 
         function test_localStorageDisabled() {
@@ -73,7 +73,7 @@ TestWebEngineView {
 
             webEngineView.url = Qt.resolvedUrl("localStorage.html");
             verify(webEngineView.waitForLoadSucceeded());
-            compare(webEngineView.title, "Original Title");
+            tryCompare(webEngineView, "title", "Original Title");
         }
 
         function test_localStorageEnabled() {
@@ -84,7 +84,7 @@ TestWebEngineView {
             verify(webEngineView.waitForLoadSucceeded());
             webEngineView.reload();
             verify(webEngineView.waitForLoadSucceeded());
-            compare(webEngineView.title, "New Title");
+            tryCompare(webEngineView, "title", "New Title");
         }
 
         function test_settingsAffectCurrentViewOnly()  {
@@ -100,8 +100,8 @@ TestWebEngineView {
             webEngineView2.url = testUrl;
             verify(webEngineView2.waitForLoadSucceeded());
 
-            compare(webEngineView.title, "New Title");
-            compare(webEngineView2.title, "New Title");
+            tryCompare(webEngineView, "title", "New Title");
+            tryCompare(webEngineView2, "title", "New Title");
 
             webEngineView.settings.javascriptEnabled = false;
 
@@ -110,8 +110,8 @@ TestWebEngineView {
             webEngineView2.url = testUrl;
             verify(webEngineView2.waitForLoadSucceeded());
 
-            compare(webEngineView.title, "Original Title");
-            compare(webEngineView2.title, "New Title");
+            tryCompare(webEngineView, "title", "Original Title");
+            tryCompare(webEngineView2, "title", "New Title");
 
             webEngineView2.destroy();
         }

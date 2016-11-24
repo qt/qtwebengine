@@ -39,7 +39,7 @@ gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): GYP_CONFIG += no_delete_null_p
 qtConfig(system-zlib): use?(system_minizip): GYP_CONFIG += use_system_zlib=1
 qtConfig(system-png): GYP_CONFIG += use_system_libpng=1
 qtConfig(system-jpeg): GYP_CONFIG += use_system_libjpeg=1
-qtConfig(system-harfbuzz): GYP_CONFIG += use_system_harfbuzz=1
+qtConfig(system-harfbuzz): use?(system_harfbuzz): GYP_CONFIG += use_system_harfbuzz=1
 !qtConfig(glib): GYP_CONFIG += use_glib=0
 contains(QT_CONFIG, pulseaudio) {
     GYP_CONFIG += use_pulseaudio=1

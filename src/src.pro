@@ -14,8 +14,7 @@ SUBDIRS += core \
            plugins
 
 # allow only desktop builds of qwebengine_convert_dict
-# osx does not use hunspell
-!contains(WEBENGINE_CONFIG, no_spellcheck):!osx:!cross_compile {
+contains(WEBENGINE_CONFIG, use_spellchecker):!contains(WEBENGINE_CONFIG, use_native_spellchecker):!cross_compile {
     SUBDIRS += qwebengine_convert_dict
     qwebengine_convert_dict.subdir = tools/qwebengine_convert_dict
     qwebengine_convert_dict.depends = core

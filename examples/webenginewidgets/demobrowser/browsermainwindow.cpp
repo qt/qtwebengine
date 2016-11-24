@@ -758,6 +758,8 @@ void BrowserMainWindow::slotFilePrintToPDF()
 #ifndef QT_NO_PRINTER
 void BrowserMainWindow::slotHandlePagePrinted(bool result)
 {
+    Q_UNUSED(result);
+
     delete m_currentPrinter;
     m_currentPrinter = nullptr;
 }

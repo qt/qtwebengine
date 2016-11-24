@@ -33,3 +33,7 @@ moc_*.cpp
 *.pyc
 .pch
 .obj
+
+# Compiled QML/JS code
+*.qmlc
+*.jsc

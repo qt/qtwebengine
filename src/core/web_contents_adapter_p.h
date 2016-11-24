@@ -92,7 +92,7 @@ public:
     WebContentsAdapterClient *adapterClient;
     quint64 nextRequestId;
     int lastFindRequestId;
-    const content::DropData *currentDropData;
+    std::unique_ptr<content::DropData> currentDropData;
     Qt::DropAction currentDropAction;
     bool inDragUpdateLoop;
     base::Closure dragUpdateLoopQuitClosure;

@@ -44,11 +44,15 @@
 #include "base/threading/thread_restrictions.h"
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#if defined(USE_BROWSER_SPELLCHECKER)
+#include "chrome/browser/spellchecker/spellcheck_message_filter_platform.h"
+#endif
 #endif
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/quota_permission_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -81,6 +85,7 @@
 #if defined(ENABLE_BASIC_PRINTING)
 #include "printing_message_filter_qt.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
+#include "qrc_protocol_handler_qt.h"
 #include "renderer_host/resource_dispatcher_host_delegate_qt.h"
 #include "renderer_host/user_resource_controller_host.h"
 #include "web_contents_delegate_qt.h"
@@ -280,7 +285,8 @@ public:
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("cglcontextobj"), qtContext);
         else if (platform == QLatin1String("qnx"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
-        else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland"))
+        else if (platform == QLatin1String("eglfs") || platform == QLatin1String("wayland")
+                 || platform == QLatin1String("wayland-egl"))
             m_handle = pni->nativeResourceForContext(QByteArrayLiteral("eglcontext"), qtContext);
         else if (platform == QLatin1String("windows")) {
             if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2)
@@ -377,7 +383,11 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     host->AddFilter(new BrowserMessageFilterQt(id));
 #endif
 #if defined(ENABLE_SPELLCHECK)
+    // SpellCheckMessageFilter is required for both Hunspell and Native configurations.
     host->AddFilter(new SpellCheckMessageFilter(id));
+#endif
+#if defined(Q_OS_MACOS) && defined(USE_BROWSER_SPELLCHECKER)
+  host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
 #if defined(ENABLE_BASIC_PRINTING)
     host->AddFilter(new PrintingMessageFilterQt(host->GetID()));
@@ -472,6 +482,13 @@ void ContentBrowserClientQt::AllowCertificateError(content::WebContents *webCont
         *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY;
 }
 
+void ContentBrowserClientQt::SelectClientCertificate(content::WebContents * /*webContents*/,
+                                                     net::SSLCertRequestInfo * /*certRequestInfo*/,
+                                                     std::unique_ptr<content::ClientCertificateDelegate> delegate)
+{
+    delegate->ContinueWithCertificate(nullptr);
+}
+
 std::string ContentBrowserClientQt::GetApplicationLocale()
 {
     return WebEngineLibraryInfo::getApplicationLocale();
@@ -489,6 +506,11 @@ void ContentBrowserClientQt::AppendExtraCommandLineSwitches(base::CommandLine* c
     std::string processType = command_line->GetSwitchValueASCII(switches::kProcessType);
     if (processType == switches::kZygoteProcess)
         command_line->AppendSwitchASCII(switches::kLang, GetApplicationLocale());
+}
+
+void ContentBrowserClientQt::GetAdditionalWebUISchemes(std::vector<std::string>* additional_schemes)
+{
+    additional_schemes->push_back(kQrcSchemeQt);
 }
 
 #if defined(Q_OS_LINUX)

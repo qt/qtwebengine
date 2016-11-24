@@ -55,6 +55,7 @@
 #include <QSGSimpleRectNode>
 #include <QSGSimpleTextureNode>
 #endif
+#include <private/qwidget_p.h>
 
 namespace QtWebEngineCore {
 
@@ -392,8 +393,20 @@ bool RenderWidgetHostViewQtDelegateWidget::event(QEvent *event)
             return true;
         }
         break;
+    case QEvent::DragEnter:
+    case QEvent::DragLeave:
+    case QEvent::DragMove:
+    case QEvent::Drop:
+        // Let the parent handle these events.
+        return false;
     default:
         break;
+    }
+
+    QEvent::Type type = event->type();
+    if (type == QEvent::FocusIn) {
+        QWidgetPrivate *d = QWidgetPrivate::get(this);
+        d->updateWidgetTransform(event);
     }
 
     if (event->type() == QEvent::MouseButtonDblClick) {

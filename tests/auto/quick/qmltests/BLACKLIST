@@ -1,23 +1,11 @@
 [DesktopWebEngineViewLinkHovered::test_linkHovered]
 *
 
+[DesktopWebEngineViewLinkHovered::test_linkHoveredDoesntEmitRepeated]
+*
+
 [WebViewGeopermission::test_deniedGeolocationByUser]
 osx
 
 [WebViewGeopermission::test_geoPermissionRequest]
 osx
-
-[WebEngineViewFocusOnNavigation::test_focusOnNavigation]
-*
-
-[WebEngineViewLoadUrl::test_urlProperty]
-windows
-
-[WebEngineViewSettings::test_javascriptDisabled]
-windows
-
-[WebEngineViewUnhandledKeyEventPropagation::test_keyboardModifierMapping]
-windows
-
-[WebEngineViewSource::test_viewSourceURL]
-windows

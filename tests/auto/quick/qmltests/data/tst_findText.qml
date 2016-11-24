@@ -107,5 +107,24 @@ TestWebEngineView {
             tryCompare(webEngineView, "matchCount", 0)
             verify(findFailed)
         }
+
+        function test_findTextAfterNotFound() {
+            var findFlags = 0
+            webEngineView.url = Qt.resolvedUrl("about:blank")
+            verify(webEngineView.waitForLoadSucceeded())
+
+            webEngineView.clear()
+            webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
+            tryCompare(webEngineView, "matchCount", 0)
+            verify(findFailed)
+
+            webEngineView.url = Qt.resolvedUrl("test1.html")
+            verify(webEngineView.waitForLoadSucceeded())
+
+            webEngineView.clear()
+            webEngineView.findText("hello", findFlags, webEngineView.findTextCallback)
+            tryCompare(webEngineView, "matchCount", 1)
+            verify(!findFailed)
+        }
     }
 }

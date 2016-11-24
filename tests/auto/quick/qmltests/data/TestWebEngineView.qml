@@ -27,7 +27,7 @@
 ****************************************************************************/
 
 import QtQuick 2.0
-import QtTest 1.0
+import QtTest 1.1
 import QtWebEngine 1.3
 
 WebEngineView {
@@ -62,7 +62,27 @@ WebEngineView {
         return predicate()
     }
 
+    function getActiveElementId() {
+        var activeElementId;
+        runJavaScript("document.activeElement.id", function(result) {
+            activeElementId = result;
+        });
+        testCase.tryVerify(function() { return activeElementId != undefined });
+        return activeElementId;
+    }
+
+    function verifyElementHasFocus(element) {
+        testCase.tryVerify(function() { return getActiveElementId() == element; }, 5000,
+            "Element \"" + element + "\" has focus");
+    }
+
+    function setFocusToElement(element) {
+        runJavaScript("document.getElementById('" + element + "').focus()");
+        verifyElementHasFocus(element);
+    }
+
     TestResult { id: testResult }
+    TestCase { id: testCase }
 
     onLoadingChanged: {
         loadStatus = loadRequest.status

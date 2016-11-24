@@ -1,0 +1,34 @@
+{
+    "module": "webengine",
+
+    "commandline": {
+        "options": {
+            "proprietary-codecs": "boolean",
+            "spellchecker": "boolean"
+        }
+    },
+
+    "features": {
+        "proprietary-codecs": {
+            "label": "Proprietary Codecs",
+            "autoDetect": false,
+            "purpose": "Enables the use of proprietary codecs such as h.264/h.265 and MP3",
+            "output": [ "privateFeature" ]
+        },
+        "spellchecker": {
+            "label": "Spellchecker",
+            "purpose": "Enables the use of Chromium's spellchecker",
+            "output": [ "privateFeature" ]
+        }
+    },
+
+    "summary": [
+        {
+            "section": "Qt WebEngine",
+            "entries": [
+                "proprietary-codecs",
+                "spellchecker"
+            ]
+        }
+    ]
+}

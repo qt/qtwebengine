@@ -111,6 +111,10 @@
 #define GL_RGB                            0x1907
 #endif
 
+#ifndef GL_LINE_LOOP
+#define GL_LINE_LOOP                      0x0002
+#endif
+
 namespace QtWebEngineCore {
 #ifndef QT_NO_OPENGL
 class MailboxTexture : public QSGTexture, protected QOpenGLFunctions {
@@ -642,7 +646,7 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
                 QSGGeometryNode *geometryNode = new QSGGeometryNode;
 
                 QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
-                geometry->setDrawingMode(QSGGeometry::DrawLineLoop);
+                geometry->setDrawingMode(GL_LINE_LOOP);
                 geometry->setLineWidth(dbquad->width);
                 // QSGGeometry::updateRectGeometry would actually set the corners in the following order:
                 // top-left, bottom-left, top-right, bottom-right, leading to a nice criss cross, instead

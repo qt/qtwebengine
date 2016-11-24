@@ -98,8 +98,8 @@ using QtWebEngineCore::BrowserContextAdapter;
     QWebEngineUrlSchemeHandler::requestStarted() as QWebEngineUrlRequestJob objects.
 
     Spellchecking HTML form fields can be enabled per profile by using the setSpellCheckEnabled()
-    method and the current language used for spellchecking can be set by using the
-    setSpellCheckLanguage() method.
+    method and the current languages used for spellchecking can be set by using the
+    setSpellCheckLanguages() method.
 
 */
 
@@ -565,39 +565,59 @@ QWebEngineProfile *QWebEngineProfile::defaultProfile()
 /*!
     \since 5.8
 
-    Sets the current \a language for the spell checker.
-    The language should match the name of the \c .bdic dictionary.
-    For example, the \a language \c en-US will load the \c en-US.bdic
+    Sets the current list of \a languages for the spell checker.
+    Each language should match the name of the \c .bdic dictionary.
+    For example, the language \c en-US will load the \c en-US.bdic
     dictionary file.
 
-    The web engine checks for the \c qtwebengine_dictionaries subdirectory
-    first in the local directory and if it is not found in the Qt
-    installation directory:
+    Qt WebEngine checks for the \c qtwebengine_dictionaries subdirectory
+    first in the local directory and if it is not found, in the Qt
+    installation directory.
+
+    On macOS, depending on how Qt WebEngine is configured at build time, there are two possibilities
+    how spellchecking data is found:
+
+    \list
+        \li Hunspell dictionaries (default) - .bdic dictionaries are used, just like on other
+            platforms
+        \li Native dictionaries - the macOS spellchecking APIs are used (which means the results
+            will depend on the installed OS dictionaries)
+    \endlist
+
+    Thus, in the macOS Hunspell case, Qt WebEngine will look in the \e qtwebengine_dictionaries
+    subdirectory located inside the application bundle \c Resources directory, and also in the
+    \c Resources directory located inside the Qt framework bundle.
+
+    To summarize, in case of Hunspell usage, the following paths are considered:
 
     \list
         \li QCoreApplication::applicationDirPath()/qtwebengine_dictionaries
+            or QCoreApplication::applicationDirPath()/../Contents/Resources/qtwebengine_dictionaries
+            (on macOS)
         \li [QLibraryInfo::DataPath]/qtwebengine_dictionaries
+            or path/to/QtWebEngineCore.framework/Resources/qtwebengine_dictionaries (Qt framework
+            bundle on macOS)
     \endlist
 
     For more information about how to compile \c .bdic dictionaries, see the
     \l{WebEngine Widgets Spellchecker Example}{Spellchecker Example}.
 
 */
-void QWebEngineProfile::setSpellCheckLanguage(const QString &language)
+void QWebEngineProfile::setSpellCheckLanguages(const QStringList &languages)
 {
     Q_D(QWebEngineProfile);
-    d->browserContext()->setSpellCheckLanguage(language);
+    d->browserContext()->setSpellCheckLanguages(languages);
 }
 
 /*!
     \since 5.8
 
-    Returns the language used by the spell checker.
+    Returns the list of languages used by the spell checker.
 */
-QString QWebEngineProfile::spellCheckLanguage() const
+QStringList QWebEngineProfile::spellCheckLanguages() const
 {
     const Q_D(QWebEngineProfile);
-    return d->browserContext()->spellCheckLanguage();
+    return d->browserContext()->spellCheckLanguages();
 }
 
 /*!

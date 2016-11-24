@@ -296,6 +296,7 @@ void tst_QWebEnginePage::cleanupFiles()
 
 void tst_QWebEnginePage::initTestCase()
 {
+    QLocale::setDefault(QLocale("en"));
     cleanupFiles(); // In case there are old files from previous runs
 
     // Set custom path since the CI doesn't install test plugins.
@@ -4992,6 +4993,8 @@ void tst_QWebEnginePage::viewSource()
     QCOMPARE(page.createdWindows.size(), 1);
 
     QTRY_COMPARE(page.createdWindows[0]->url().toString(), QStringLiteral("view-source:%1").arg(url.toString()));
+    // The requested URL should not be about:blank if the qrc scheme is supported
+    QTRY_COMPARE(page.createdWindows[0]->requestedUrl(), url);
     QTRY_COMPARE(page.createdWindows[0]->title(), QStringLiteral("view-source:%1").arg(url.toString()));
     QVERIFY(!page.createdWindows[0]->action(QWebEnginePage::ViewSource)->isEnabled());
 }
@@ -5001,21 +5004,24 @@ void tst_QWebEnginePage::viewSourceURL_data()
     QTest::addColumn<QUrl>("userInputUrl");
     QTest::addColumn<bool>("loadSucceed");
     QTest::addColumn<QUrl>("url");
+    QTest::addColumn<QUrl>("requestedUrl");
     QTest::addColumn<QString>("title");
 
-    QTest::newRow("view-source:") << QUrl("view-source:") << true << QUrl("view-source:") << QString("view-source:");
-    QTest::newRow("view-source:about:blank") << QUrl("view-source:about:blank") << true << QUrl("view-source:about:blank") << QString("view-source:about:blank");
+    QTest::newRow("view-source:") << QUrl("view-source:") << true << QUrl("view-source:") << QUrl("about:blank") << QString("view-source:");
+    QTest::newRow("view-source:about:blank") << QUrl("view-source:about:blank") << true << QUrl("view-source:about:blank") << QUrl("about:blank") << QString("view-source:about:blank");
 
-    QUrl testLocalUrl = QUrl(QString("view-source:%1").arg(QUrl::fromLocalFile(TESTS_SOURCE_DIR + QLatin1String("qwebenginepage/resources/test1.html")).toString()));
-    QUrl testLocalUrlWithoutScheme = QUrl(QString("view-source:%1").arg(TESTS_SOURCE_DIR + QLatin1String("qwebenginepage/resources/test1.html")));
-    QTest::newRow(testLocalUrl.toString().toStdString().c_str()) << testLocalUrl << true << testLocalUrl << QString("test1.html");
-    QTest::newRow(testLocalUrlWithoutScheme.toString().toStdString().c_str()) << testLocalUrlWithoutScheme << true << testLocalUrl << QString("test1.html");
+    QString localFilePath = QString("%1qwebenginepage/resources/test1.html").arg(TESTS_SOURCE_DIR);
+    QUrl testLocalUrl = QUrl(QString("view-source:%1").arg(QUrl::fromLocalFile(localFilePath).toString()));
+    QUrl testLocalUrlWithoutScheme = QUrl(QString("view-source:%1").arg(localFilePath));
+    QTest::newRow(testLocalUrl.toString().toStdString().c_str()) << testLocalUrl << true << testLocalUrl << QUrl::fromLocalFile(localFilePath) << QString("test1.html");
+    QTest::newRow(testLocalUrlWithoutScheme.toString().toStdString().c_str()) << testLocalUrlWithoutScheme << true << testLocalUrl << QUrl::fromLocalFile(localFilePath) << QString("test1.html");
 
-    QUrl testResourceUrl = QUrl("view-source:qrc:/resources/test1.html");
-    QTest::newRow(testResourceUrl.toString().toStdString().c_str()) << testResourceUrl << true << testResourceUrl << testResourceUrl.toString();
+    QString resourcePath = QLatin1String("qrc:/resources/test1.html");
+    QUrl testResourceUrl = QUrl(QString("view-source:%1").arg(resourcePath));
+    QTest::newRow(testResourceUrl.toString().toStdString().c_str()) << testResourceUrl << true << testResourceUrl << QUrl(resourcePath) << testResourceUrl.toString();
 
-    QTest::newRow("view-source:http://non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QString("http://non.existent/ is not available");
-    QTest::newRow("view-source:non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QString("http://non.existent/ is not available");
+    QTest::newRow("view-source:http://non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QUrl("http://non.existent/") << QString("http://non.existent/ is not available");
+    QTest::newRow("view-source:non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QUrl("http://non.existent/") << QString("http://non.existent/ is not available");
 }
 
 void tst_QWebEnginePage::viewSourceURL()
@@ -5026,6 +5032,7 @@ void tst_QWebEnginePage::viewSourceURL()
     QFETCH(QUrl, userInputUrl);
     QFETCH(bool, loadSucceed);
     QFETCH(QUrl, url);
+    QFETCH(QUrl, requestedUrl);
     QFETCH(QString, title);
 
     QWebEnginePage *page = new QWebEnginePage;
@@ -5037,6 +5044,7 @@ void tst_QWebEnginePage::viewSourceURL()
 
     QCOMPARE(arguments.at(0).toBool(), loadSucceed);
     QCOMPARE(page->url(), url);
+    QCOMPARE(page->requestedUrl(), requestedUrl);
     QCOMPARE(page->title(), title);
     QVERIFY(!page->action(QWebEnginePage::ViewSource)->isEnabled());
 

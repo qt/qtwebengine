@@ -213,18 +213,27 @@ void BrowserContextQt::failedToLoadDictionary(const std::string &language)
                << "Make sure that correct bdic file is in:" << toQt(WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES).value());
 }
 
-void BrowserContextQt::setSpellCheckLanguage(const QString &language)
+void BrowserContextQt::setSpellCheckLanguages(const QStringList &languages)
 {
-    base::ListValue dictionaries;
-    dictionaries.AppendString(language.toStdString());
-    m_prefService->Set(prefs::kSpellCheckDictionaries, dictionaries);
+    StringListPrefMember dictionaries_pref;
+    dictionaries_pref.Init(prefs::kSpellCheckDictionaries, m_prefService.get());
+    std::vector<std::string> dictionaries;
+    dictionaries.reserve(languages.size());
+    for (const auto &language : languages)
+        dictionaries.push_back(language.toStdString());
+    dictionaries_pref.SetValue(dictionaries);
 }
 
-QString BrowserContextQt::spellCheckLanguage() const
+QStringList BrowserContextQt::spellCheckLanguages() const
 {
-    std::string dictionary;
-    m_prefService->GetList(prefs::kSpellCheckDictionaries)->GetString(0, &dictionary);
-    return QString::fromStdString(dictionary);
+    QStringList spellcheck_dictionaries;
+    for (const auto &value : *m_prefService->GetList(prefs::kSpellCheckDictionaries)) {
+        std::string dictionary;
+        if (value->GetAsString(&dictionary))
+            spellcheck_dictionaries.append(QString::fromStdString(dictionary));
+    }
+
+    return spellcheck_dictionaries;
 }
 
 void BrowserContextQt::setSpellCheckEnabled(bool enabled)
