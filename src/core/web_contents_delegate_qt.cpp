@@ -51,6 +51,7 @@
 #include "file_picker_controller.h"
 #include "media_capture_devices_dispatcher.h"
 #include "network_delegate_qt.h"
+#include "render_widget_host_view_qt.h"
 #include "type_conversion.h"
 #include "web_contents_adapter_client.h"
 #include "web_contents_adapter_p.h"
@@ -385,6 +386,21 @@ void WebContentsDelegateQt::DidNavigateAnyFrame(content::RenderFrameHost* render
 void WebContentsDelegateQt::WasShown()
 {
     web_cache::WebCacheManager::GetInstance()->ObserveActivity(web_contents()->GetRenderProcessHost()->GetID());
+}
+
+void WebContentsDelegateQt::DidFirstVisuallyNonEmptyPaint()
+{
+    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView());
+    if (!rwhv)
+        return;
+
+    RenderWidgetHostViewQt::LoadVisuallyCommittedState loadVisuallyCommittedState = rwhv->getLoadVisuallyCommittedState();
+    if (loadVisuallyCommittedState == RenderWidgetHostViewQt::NotCommitted) {
+        rwhv->setLoadVisuallyCommittedState(RenderWidgetHostViewQt::DidFirstVisuallyNonEmptyPaint);
+    } else if (loadVisuallyCommittedState == RenderWidgetHostViewQt::DidFirstCompositorFrameSwap) {
+        m_viewClient->loadVisuallyCommitted();
+        rwhv->setLoadVisuallyCommittedState(RenderWidgetHostViewQt::NotCommitted);
+    }
 }
 
 void WebContentsDelegateQt::RequestToLockMouse(content::WebContents *web_contents, bool user_gesture, bool last_unlocked_by_target)
