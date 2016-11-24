@@ -119,8 +119,12 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
         ascendingOrder = false;
     }
 
-    int documentCopies = printer.copyCount();
     int pageCopies = 1;
+    int documentCopies = 1;
+
+    if (!printer.supportsMultipleCopies())
+        documentCopies = printer.copyCount();
+
     if (printer.collateCopies()) {
         pageCopies = documentCopies;
         documentCopies = 1;
