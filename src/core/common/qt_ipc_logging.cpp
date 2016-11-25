@@ -37,36 +37,12 @@
 **
 ****************************************************************************/
 
-#include "qtwebenginewidgetsglobal.h"
+#include "ipc/ipc_message.h" // For IPC_MESSAGE_LOG_ENABLED
 
-#include <QCoreApplication>
-#include <QOpenGLContext>
-
-namespace QtWebEngineCore
-{
-    extern void initialize();
-}
-
-QT_BEGIN_NAMESPACE
-
-Q_GUI_EXPORT QOpenGLContext *qt_gl_global_share_context();
-
-static void initialize()
-{
-    if (QCoreApplication::instance()) {
-        //On window/ANGLE, calling QtWebEngine::initialize from DllMain will result in a crash.
-        if (!qt_gl_global_share_context()) {
-            qWarning("Qt WebEngine seems to be initialized from a plugin. Please "
-                     "set Qt::AA_ShareOpenGLContexts using QCoreApplication::setAttribute "
-                     "before constructing QGuiApplication.");
-        }
-        return;
-    }
-
-    //QCoreApplication is not yet instantiated, ensuring the call will be deferred
-    qAddPreRoutine(QtWebEngineCore::initialize);
-}
-
-Q_CONSTRUCTOR_FUNCTION(initialize)
-
-QT_END_NAMESPACE
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+#define IPC_MESSAGE_MACROS_LOG_ENABLED
+#include "content/public/common/content_ipc_logging.h"
+#define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
+    content::RegisterIPCLogger(msg_id, logger)
+#include "common/qt_messages.h"
+#endif

@@ -229,6 +229,9 @@ void URLRequestCustomJobShared::setReplyDevice(QIODevice *device)
     if (m_device && !m_device->isReadable())
         m_device->open(QIODevice::ReadOnly);
 
+    qint64 size = m_device ? m_device->size() : -1;
+    if (size > 0)
+        m_job->set_expected_content_size(size);
     if (m_device && m_device->isReadable())
         content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, base::Bind(&URLRequestCustomJobShared::notifyStarted, m_weakFactory.GetWeakPtr()));
     else

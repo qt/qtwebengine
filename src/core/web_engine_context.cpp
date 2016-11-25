@@ -328,7 +328,14 @@ WebEngineContext::WebEngineContext()
 #ifndef QT_NO_OPENGL
     if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
-            if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
+            // If the native handle is QEGLNativeContext try to use GL ES/2, if there is no native handle
+            // assume we are using wayland and try GL ES/2, and finally Ozone demands GL ES/2 too.
+            if (qt_gl_global_share_context()->nativeHandle().isNull()
+#ifdef USE_OZONE
+                || true
+#endif
+                || !strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext"))
+            {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
                     glType = gl::kGLImplementationEGLName;
                 } else {
