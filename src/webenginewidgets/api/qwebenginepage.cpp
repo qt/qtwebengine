@@ -1957,6 +1957,9 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
     }
 #endif
     d->adapter->printToPDF(pageLayout, filePath);
+#else
+    Q_UNUSED(filePath);
+    Q_UNUSED(pageLayout);
 #endif // if defined(ENABLE_PDF)
 }
 
@@ -1990,6 +1993,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else // if defined(ENABLE_PDF)
+    Q_UNUSED(pageLayout);
     d->m_callbacks.invokeEmpty(resultCallback);
 #endif // if defined(ENABLE_PDF)
 }
@@ -2025,6 +2029,7 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
     quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(), printer->colorMode() == QPrinter::Color);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else // if defined(ENABLE_PDF)
+    Q_UNUSED(printer);
     d->m_callbacks.invokeDirectly(resultCallback, false);
 #endif // if defined(ENABLE_PDF)
 }

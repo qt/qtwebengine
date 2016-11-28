@@ -1309,6 +1309,10 @@ void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId 
     QPageLayout pageLayout(layoutSize, layoutOrientation, QMarginsF(0.0, 0.0, 0.0, 0.0));
 
     d->adapter->printToPDF(pageLayout, filePath);
+#else
+    Q_UNUSED(filePath);
+    Q_UNUSED(pageSizeId);
+    Q_UNUSED(orientation);
 #endif
 }
 
@@ -1326,6 +1330,9 @@ void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.insert(requestId, callback);
 #else
+    Q_UNUSED(pageSizeId);
+    Q_UNUSED(orientation);
+
     // Call back with null result.
     QJSValueList args;
     args.append(QJSValue(QByteArray().data()));
