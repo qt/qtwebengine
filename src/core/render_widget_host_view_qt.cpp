@@ -54,9 +54,10 @@
 #include "base/command_line.h"
 #include "cc/output/direct_renderer.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/input_messages.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -91,6 +92,13 @@
 #include <QtGui/qaccessible.h>
 
 namespace QtWebEngineCore {
+
+enum ImStateFlags {
+    TextInputStateUpdated = 1 << 0,
+    TextSelectionUpdated = 1 << 1,
+    TextSelectionBoundsUpdated = 1 << 2,
+    AllFlags = TextInputStateUpdated | TextSelectionUpdated | TextSelectionBoundsUpdated
+};
 
 static inline ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
@@ -238,13 +246,17 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_needsDelegatedFrameAck(false)
     , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
-    , m_currentInputType(ui::TEXT_INPUT_TYPE_NONE)
     , m_imeInProgress(false)
     , m_receivedEmptyImeText(false)
     , m_initPending(false)
     , m_beginFrameSource(nullptr)
     , m_needsBeginFrames(false)
     , m_addedFrameObserver(false)
+    , m_imState(0)
+    , m_anchorPositionWithinSelection(0)
+    , m_cursorPositionWithinSelection(0)
+    , m_cursorPosition(0)
+    , m_emptyPreviousSelection(true)
 {
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -255,6 +267,9 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
     m_beginFrameSource.reset(new cc::DelayBasedBeginFrameSource(
             base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
+
+    if (GetTextInputManager())
+        GetTextInputManager()->AddObserver(this);
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -263,6 +278,9 @@ RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::removeActivationObserver(this);
 #endif // QT_NO_ACCESSIBILITY
+
+    if (text_input_manager_)
+        text_input_manager_->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewQt::setDelegate(RenderWidgetHostViewQtDelegate* delegate)
@@ -576,15 +594,6 @@ void RenderWidgetHostViewQt::SetIsLoading(bool)
     // We use WebContentsDelegateQt::LoadingStateChanged to notify about loading state.
 }
 
-void RenderWidgetHostViewQt::TextInputStateChanged(const content::TextInputState &params)
-{
-    m_currentInputType = params.type;
-    m_delegate->inputMethodStateChanged(params.type != ui::TEXT_INPUT_TYPE_NONE);
-    m_delegate->setInputMethodHints(toQtInputMethodHints(params.type));
-
-    m_surroundingText = QString::fromStdString(params.value);
-}
-
 void RenderWidgetHostViewQt::ImeCancelComposition()
 {
     qApp->inputMethod()->reset();
@@ -707,16 +716,114 @@ void RenderWidgetHostViewQt::ClearCompositorFrame()
 {
 }
 
-void RenderWidgetHostViewQt::SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range)
+void RenderWidgetHostViewQt::OnUpdateTextInputStateCalled(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view, bool did_update_state)
 {
-    content::RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
-    m_adapterClient->selectionChanged();
+    Q_UNUSED(text_input_manager);
+    Q_UNUSED(updated_view);
+    Q_UNUSED(did_update_state);
+
+    ui::TextInputType type = getTextInputType();
+    m_delegate->inputMethodStateChanged(type != ui::TEXT_INPUT_TYPE_NONE);
+    m_delegate->setInputMethodHints(toQtInputMethodHints(type));
+
+    const content::TextInputState *state = text_input_manager_->GetTextInputState();
+    if (!state)
+        return;
+
+    if (GetSelectedText().empty())
+        m_cursorPosition = state->selection_start;
+
+    m_surroundingText = QString::fromStdString(state->value);
+
+    // Remove IME composition text from the surrounding text
+    if (state->composition_start != -1 && state->composition_end != -1)
+        m_surroundingText.remove(state->composition_start, state->composition_end - state->composition_start);
+
+    if (m_imState & ImStateFlags::TextInputStateUpdated) {
+        m_imState = ImStateFlags::TextInputStateUpdated;
+        return;
+    }
+
+    // Ignore selection change triggered by ime composition unless it clears an actual text selection
+    if (state->composition_start != -1 && m_emptyPreviousSelection) {
+        m_imState = 0;
+        return;
+    }
+
+    m_imState |= ImStateFlags::TextInputStateUpdated;
+    if (m_imState == ImStateFlags::AllFlags)
+        selectionChanged();
+}
+
+void RenderWidgetHostViewQt::OnSelectionBoundsChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view)
+{
+    Q_UNUSED(text_input_manager);
+    Q_UNUSED(updated_view);
+
+    m_imState |= ImStateFlags::TextSelectionBoundsUpdated;
+    if (m_imState == ImStateFlags::AllFlags)
+        selectionChanged();
+}
+
+void RenderWidgetHostViewQt::OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view)
+{
+    Q_UNUSED(text_input_manager);
+    Q_UNUSED(updated_view);
 
 #if defined(USE_X11)
-    // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
-    ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
-    clipboard_writer.WriteText(text);
-#endif
+    if (!GetSelectedText().empty()) {
+        // Set the CLIPBOARD_TYPE_SELECTION to the ui::Clipboard.
+        ui::ScopedClipboardWriter clipboard_writer(ui::CLIPBOARD_TYPE_SELECTION);
+        clipboard_writer.WriteText(GetSelectedText());
+    }
+#endif // defined(USE_X11)
+
+    m_imState |= ImStateFlags::TextSelectionUpdated;
+    if (m_imState == ImStateFlags::AllFlags)
+        selectionChanged();
+}
+
+void RenderWidgetHostViewQt::selectionChanged()
+{
+    // Reset input manager state
+    m_imState = 0;
+
+    const content::TextInputManager::TextSelection *selection = text_input_manager_->GetTextSelection();
+    if (!selection)
+        return;
+
+    if (!selection->range.IsValid())
+        return;
+
+    // Avoid duplicate empty selectionChanged() signals
+    if (GetSelectedText().empty() && m_emptyPreviousSelection) {
+        m_anchorPositionWithinSelection = m_cursorPosition;
+        m_cursorPositionWithinSelection = m_cursorPosition;
+        return;
+    }
+
+    uint newAnchorPositionWithinSelection = 0;
+    uint newCursorPositionWithinSelection = 0;
+
+    if (text_input_manager_->GetSelectionRegion()->anchor.type() == gfx::SelectionBound::RIGHT) {
+        newAnchorPositionWithinSelection = selection->range.GetMax() - selection->offset;
+        newCursorPositionWithinSelection = selection->range.GetMin() - selection->offset;
+    } else {
+        newAnchorPositionWithinSelection = selection->range.GetMin() - selection->offset;
+        newCursorPositionWithinSelection = selection->range.GetMax() - selection->offset;
+    }
+
+    if (m_anchorPositionWithinSelection == newAnchorPositionWithinSelection && m_cursorPositionWithinSelection == newCursorPositionWithinSelection)
+        return;
+
+    m_anchorPositionWithinSelection = newAnchorPositionWithinSelection;
+    m_cursorPositionWithinSelection = newCursorPositionWithinSelection;
+
+    if (!GetSelectedText().empty())
+        m_cursorPosition = newCursorPositionWithinSelection;
+
+    m_emptyPreviousSelection = GetSelectedText().empty();
+    m_adapterClient->selectionChanged();
 }
 
 void RenderWidgetHostViewQt::OnGestureEvent(const ui::GestureEventData& gesture)
@@ -820,34 +927,27 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query)
 {
     switch (query) {
     case Qt::ImEnabled:
-        return QVariant(m_currentInputType != ui::TEXT_INPUT_TYPE_NONE);
+        return QVariant(getTextInputType() != ui::TEXT_INPUT_TYPE_NONE);
     case Qt::ImFont:
+        // TODO: Implement this
         return QVariant();
     case Qt::ImCursorRectangle:
-        // QIBusPlatformInputContext might query ImCursorRectangle before the
-        // RenderWidgetHostView is created. Without an available view GetSelectionRange()
-        // returns nullptr.
-        if (!GetTextInputManager()->GetSelectionRegion())
+        if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
             return QVariant();
-        return toQt(GetTextInputManager()->GetSelectionRegion()->caret_rect);
+        return toQt(text_input_manager_->GetSelectionRegion()->caret_rect);
     case Qt::ImCursorPosition:
-        Q_ASSERT(GetTextInputManager()->GetSelectionRegion());
-        return toQt(GetTextInputManager()->GetSelectionRegion()->focus.edge_top_rounded().x());
+        return m_cursorPosition;
     case Qt::ImAnchorPosition:
-        Q_ASSERT(GetTextInputManager()->GetSelectionRegion());
-        return toQt(GetTextInputManager()->GetSelectionRegion()->anchor.edge_top_rounded().x());
+        return GetSelectedText().empty() ? m_cursorPosition : m_anchorPositionWithinSelection;
     case Qt::ImSurroundingText:
         return m_surroundingText;
-    case Qt::ImCurrentSelection: {
-        Q_ASSERT(GetTextInputManager()->GetTextSelection());
-        base::string16 text;
-        GetTextInputManager()->GetTextSelection()->GetSelectedText(&text);
-        return toQt(text);
-    }
+    case Qt::ImCurrentSelection:
+        return toQt(GetSelectedText());
     case Qt::ImMaximumTextLength:
+        // TODO: Implement this
         return QVariant(); // No limit.
     case Qt::ImHints:
-        return int(toQtInputMethodHints(m_currentInputType));
+        return int(toQtInputMethodHints(getTextInputType()));
     default:
         return QVariant();
     }
@@ -1005,6 +1105,9 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
 
 void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 {
+    // Reset input manager state
+    m_imState = 0;
+
     if (!m_host)
         return;
 
@@ -1016,19 +1119,9 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     const QList<QInputMethodEvent::Attribute> &attributes = ev->attributes();
     std::vector<blink::WebCompositionUnderline> underlines;
-    auto ensureValidSelectionRange = [&]() {
-        if (!selectionRange.IsValid()) {
-            // We did not receive a valid selection range, hence the range is going to mark the
-            // cursor position.
-            int newCursorPosition =
-                    (cursorPositionInPreeditString < 0) ? preeditString.length()
-                                                        : cursorPositionInPreeditString;
-            selectionRange.set_start(newCursorPosition);
-            selectionRange.set_end(newCursorPosition);
-        }
-    };
+    bool hasSelection = false;
 
-    Q_FOREACH (const QInputMethodEvent::Attribute &attribute, attributes) {
+    for (const auto &attribute : attributes) {
         switch (attribute.type) {
         case QInputMethodEvent::TextFormat: {
             if (preeditString.isEmpty())
@@ -1065,12 +1158,37 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             cursorPositionInPreeditString = attribute.start;
             break;
         case QInputMethodEvent::Selection:
+            hasSelection = true;
+
+            // Cancel IME composition
+            if (preeditString.isEmpty() && attribute.start + attribute.length == 0) {
+                selectionRange.set_start(0);
+                selectionRange.set_end(0);
+                break;
+            }
+
             selectionRange.set_start(qMin(attribute.start, (attribute.start + attribute.length)));
             selectionRange.set_end(qMax(attribute.start, (attribute.start + attribute.length)));
             break;
         default:
             break;
         }
+    }
+
+    if (!selectionRange.IsValid()) {
+        // We did not receive a valid selection range, hence the range is going to mark the
+        // cursor position.
+        int newCursorPosition =
+                (cursorPositionInPreeditString < 0) ? preeditString.length()
+                                                    : cursorPositionInPreeditString;
+        selectionRange.set_start(newCursorPosition);
+        selectionRange.set_end(newCursorPosition);
+    }
+
+    if (hasSelection) {
+        content::RenderFrameHost *frameHost = getFocusedFrameHost();
+        if (frameHost)
+            frameHost->Send(new InputMsg_SetEditableSelectionOffsets(frameHost->GetRoutingID(), selectionRange.start(), selectionRange.end()));
     }
 
     int replacementLength = ev->replacementLength();
@@ -1089,7 +1207,6 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
     }
 
     auto setCompositionString = [&](const QString &compositionString){
-        ensureValidSelectionRange();
         m_host->ImeSetComposition(toString16(compositionString),
                                   underlines,
                                   replacementRange,
@@ -1126,7 +1243,7 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         // flickering in the textarea (or any other element).
         // Instead we postpone the processing of the empty QInputMethodEvent by posting it
         // to the same focused object, and cancelling the composition on the next event loop tick.
-        if (!m_receivedEmptyImeText && m_imeInProgress) {
+        if (!m_receivedEmptyImeText && m_imeInProgress && !hasSelection) {
             m_receivedEmptyImeText = true;
             m_imeInProgress = false;
             QInputMethodEvent *eventCopy = new QInputMethodEvent(*ev);
@@ -1303,5 +1420,27 @@ void RenderWidgetHostViewQt::OnBeginFrameSourcePausedChanged(bool paused)
     // doesn't need to be informed about it and will just not receive more
     // begin frames.
 }
+
+content::RenderFrameHost *RenderWidgetHostViewQt::getFocusedFrameHost()
+{
+    content::RenderViewHostImpl *viewHost = content::RenderViewHostImpl::From(m_host);
+    if (!viewHost)
+        return nullptr;
+
+    content::FrameTreeNode *focusedFrame = viewHost->GetDelegate()->GetFrameTree()->GetFocusedFrame();
+    if (!focusedFrame)
+        return nullptr;
+
+    return focusedFrame->current_frame_host();
+}
+
+ui::TextInputType RenderWidgetHostViewQt::getTextInputType() const
+{
+    if (text_input_manager_ && text_input_manager_->GetTextInputState())
+        return text_input_manager_->GetTextInputState()->type;
+
+    return ui::TEXT_INPUT_TYPE_NONE;
+}
+
 
 } // namespace QtWebEngineCore

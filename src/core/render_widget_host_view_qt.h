@@ -47,6 +47,7 @@
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/view_messages.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
@@ -74,6 +75,7 @@ QT_END_NAMESPACE
 class WebContentsAdapterClient;
 
 namespace content {
+class RenderFrameHost;
 class RenderWidgetHostImpl;
 }
 
@@ -104,6 +106,7 @@ class RenderWidgetHostViewQt
 #ifndef QT_NO_ACCESSIBILITY
     , public QAccessible::ActivationObserver
 #endif // QT_NO_ACCESSIBILITY
+    , public content::TextInputManager::Observer
 {
 public:
     enum LoadVisuallyCommittedState {
@@ -140,7 +143,6 @@ public:
     virtual void UnlockMouse() Q_DECL_OVERRIDE;
     virtual void UpdateCursor(const content::WebCursor&) Q_DECL_OVERRIDE;
     virtual void SetIsLoading(bool) Q_DECL_OVERRIDE;
-    virtual void TextInputStateChanged(const content::TextInputState& params) Q_DECL_OVERRIDE;
     virtual void ImeCancelComposition() Q_DECL_OVERRIDE;
     virtual void ImeCompositionRangeChanged(const gfx::Range&, const std::vector<gfx::Rect>&) Q_DECL_OVERRIDE;
     virtual void RenderProcessGone(base::TerminationStatus, int) Q_DECL_OVERRIDE;
@@ -161,9 +163,6 @@ public:
     virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE;
     virtual void SetNeedsBeginFrames(bool needs_begin_frames) Q_DECL_OVERRIDE;
 
-    // Overridden from RenderWidgetHostViewBase.
-    virtual void SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
-
     // Overridden from ui::GestureProviderClient.
     virtual void OnGestureEvent(const ui::GestureEventData& gesture) Q_DECL_OVERRIDE;
 
@@ -176,6 +175,11 @@ public:
     virtual void windowChanged() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) Q_DECL_OVERRIDE;
+
+    // Overridden from content::TextInputManager::Observer
+    virtual void OnUpdateTextInputStateCalled(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view, bool did_update_state) Q_DECL_OVERRIDE;
+    virtual void OnSelectionBoundsChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) Q_DECL_OVERRIDE;
+    virtual void OnTextSelectionChanged(content::TextInputManager *text_input_manager, RenderWidgetHostViewBase *updated_view) Q_DECL_OVERRIDE;
 
     // cc::BeginFrameObserverBase implementation.
     bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
@@ -220,6 +224,10 @@ private:
 
     bool IsPopup() const;
 
+    void selectionChanged();
+    content::RenderFrameHost *getFocusedFrameHost();
+    ui::TextInputType getTextInputType() const;
+
     content::RenderWidgetHostImpl *m_host;
     ui::FilteredGestureProvider m_gestureProvider;
     base::TimeDelta m_eventsToNowDelta;
@@ -239,7 +247,6 @@ private:
     WebContentsAdapterClient *m_adapterClient;
     MultipleMouseClickHelper m_clickHelper;
 
-    ui::TextInputType m_currentInputType;
     bool m_imeInProgress;
     bool m_receivedEmptyImeText;
     QPoint m_previousMousePosition;
@@ -253,6 +260,11 @@ private:
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
 
+    uint m_imState;
+    uint m_anchorPositionWithinSelection;
+    uint m_cursorPositionWithinSelection;
+    uint m_cursorPosition;
+    bool m_emptyPreviousSelection;
     QString m_surroundingText;
 };
 

@@ -97,8 +97,11 @@ private Q_SLOTS:
     void postData();
 
     void softwareInputPanel();
+    void inputMethods();
+    void textSelection();
     void hiddenText();
     void emptyInputMethodEvent();
+    void imeComposition();
     void newlineInTextarea();
 };
 
@@ -1341,6 +1344,24 @@ static QPoint elementCenter(QWebEnginePage *page, const QString &id)
     return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
 }
 
+static QRect elementGeometry(QWebEnginePage *page, const QString &id)
+{
+    const QString jsCode(
+                "(function() {"
+                "   var elem = document.getElementById('" + id + "');"
+                "   var rect = elem.getBoundingClientRect();"
+                "   return [rect.left, rect.top, rect.right, rect.bottom];"
+                "})()");
+    QVariantList coords = evaluateJavaScriptSync(page, jsCode).toList();
+
+    if (coords.count() != 4) {
+        qWarning("elementGeometry faield.");
+        return QRect();
+    }
+
+    return QRect(coords[0].toInt(), coords[1].toInt(), coords[2].toInt(), coords[3].toInt());
+}
+
 void tst_QWebEngineView::softwareInputPanel()
 {
     TestInputContext testContext;
@@ -1398,6 +1419,183 @@ void tst_QWebEngineView::softwareInputPanel()
     QVERIFY(!testContext.isInputPanelVisible());
 }
 
+void tst_QWebEngineView::inputMethods()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.settings()->setFontFamily(QWebEngineSettings::SerifFont, view.settings()->fontFamily(QWebEngineSettings::FixedFont));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' style='font-family: serif' value='' maxlength='20' size='50'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QPoint textInputCenter = elementCenter(view.page(), "input1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+
+    // ImCursorRectangle
+    QVariant variant = view.focusProxy()->inputMethodQuery(Qt::ImCursorRectangle);
+    QVERIFY(elementGeometry(view.page(), "input1").contains(variant.toRect().topLeft()));
+
+    // We assigned the serif font family to be the same as the fixed font family.
+    // Then test ImFont on a serif styled element, we should get our fixed font family.
+    variant = view.focusProxy()->inputMethodQuery(Qt::ImFont);
+    QFont font = variant.value<QFont>();
+    QEXPECT_FAIL("", "UNIMPLEMENTED: RenderWidgetHostViewQt::inputMethodQuery(Qt::ImFont)", Continue);
+    QCOMPARE(view.settings()->fontFamily(QWebEngineSettings::FixedFont), font.family());
+
+    QList<QInputMethodEvent::Attribute> inputAttributes;
+
+    // Insert text
+    {
+        QString text = QStringLiteral("QtWebEngine");
+        QInputMethodEvent eventText(text, inputAttributes);
+        QApplication::sendEvent(view.focusProxy(), &eventText);
+        QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), text);
+        QCOMPARE(selectionChangedSpy.count(), 0);
+    }
+
+    {
+        QString text = QStringLiteral("QtWebEngine");
+        QInputMethodEvent eventText("", inputAttributes);
+        eventText.setCommitString(text, 0, 0);
+        QApplication::sendEvent(view.focusProxy(), &eventText);
+        QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), text);
+        QCOMPARE(selectionChangedSpy.count(), 0);
+    }
+
+    // ImMaximumTextLength
+    QEXPECT_FAIL("", "UNIMPLEMENTED: RenderWidgetHostViewQt::inputMethodQuery(Qt::ImMaximumTextLength)", Continue);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImMaximumTextLength).toInt(), 20);
+
+    // Set selection
+    inputAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 3, 2, QVariant());
+    QInputMethodEvent eventSelection1("", inputAttributes);
+
+    QApplication::sendEvent(view.focusProxy(), &eventSelection1);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 1);
+
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 3);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 5);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString("eb"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
+
+    // Set selection with negative length
+    inputAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 6, -5, QVariant());
+    QInputMethodEvent eventSelection2("", inputAttributes);
+    QApplication::sendEvent(view.focusProxy(), &eventSelection2);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 2);
+
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 1);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 6);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString("tWebE"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    // Clear the selection, so the next test does not clear any contents.
+    QInputMethodEvent::Attribute newSelection(QInputMethodEvent::Selection, 0, 0, QVariant());
+    attributes.append(newSelection);
+    QInputMethodEvent eventComposition("composition", attributes);
+    QApplication::sendEvent(view.focusProxy(), &eventComposition);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 3);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+
+    // An ongoing composition should not change the surrounding text before it is committed.
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
+
+    // Cancel current composition first
+    inputAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 0, 0, QVariant());
+    QInputMethodEvent eventSelection3("", inputAttributes);
+    QApplication::sendEvent(view.focusProxy(), &eventSelection3);
+
+    // Cancelling composition should not clear the surrounding text
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
+}
+
+void tst_QWebEngineView::textSelection()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine' size='50'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    // Tests for Selection when the Editor is NOT in Composition mode
+
+    // LEFT to RIGHT selection
+    // Mouse click event moves the current cursor to the end of the text
+    QPoint textInputCenter = elementCenter(view.page(), "input1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
+    // There was no selection to be changed by the click
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+    QList<QInputMethodEvent::Attribute> attributes;
+    QInputMethodEvent event(QString(), attributes);
+    event.setCommitString("XXX", 0, 0);
+    QApplication::sendEvent(view.focusProxy(), &event);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngineXXX"));
+
+    event.setCommitString(QString(), -2, 2); // Erase two characters.
+    QApplication::sendEvent(view.focusProxy(), &event);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngineX"));
+
+    event.setCommitString(QString(), -1, 1); // Erase one character.
+    QApplication::sendEvent(view.focusProxy(), &event);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine"));
+
+    // Move to the start of the line
+    QTest::keyClick(view.focusProxy(), Qt::Key_Home);
+
+    // Move 2 characters RIGHT
+    for (int j = 0; j < 2; ++j)
+        QTest::keyClick(view.focusProxy(), Qt::Key_Right);
+
+    // Select to the end of the line
+    QTest::keyClick(view.focusProxy(), Qt::Key_End, Qt::ShiftModifier);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 1);
+
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 2);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString("WebEngine"));
+
+    // RIGHT to LEFT selection
+    // Deselect the selection (this moves the current cursor to the end of the text)
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 2);
+
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 11);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+
+    // Move 2 characters LEFT
+    for (int i = 0; i < 2; ++i)
+        QTest::keyClick(view.focusProxy(), Qt::Key_Left);
+
+    // Select to the start of the line
+    QTest::keyClick(view.focusProxy(), Qt::Key_Home, Qt::ShiftModifier);
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 3);
+
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 9);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString("QtWebEngi"));
+}
+
 void tst_QWebEngineView::hiddenText()
 {
     QWebEngineView view;
@@ -1449,6 +1647,193 @@ void tst_QWebEngineView::emptyInputMethodEvent()
 
     QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
     QCOMPARE(inputValue, QString("QtWebEngine"));
+}
+
+void tst_QWebEngineView::imeComposition()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine inputMethod'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(!evaluateJavaScriptSync(view.page(), "window.getSelection().toString()").toString().isEmpty());
+
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QVERIFY(selectionChangedSpy.wait(100));
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QCOMPARE(selectionChangedSpy.count(), 1);
+
+    // Clear the selection, also cancel the ongoing composition if there is one.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent::Attribute newSelection(QInputMethodEvent::Selection, 0, 0, QVariant());
+        attributes.append(newSelection);
+        QInputMethodEvent event("", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "window.getSelection().toString()").toString().isEmpty());
+
+        QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+        QVERIFY(selectionChangedSpy.wait(100));
+        QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+        QCOMPARE(selectionChangedSpy.count(), 2);
+    }
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine inputMethod"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 0);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+
+    selectionChangedSpy.clear();
+
+
+    // 1. Insert a character to the beginning of the line.
+    // Send temporary text, which makes the editor has composition 'm'.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("m", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine inputMethod"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 0);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+    // Send temporary text, which makes the editor has composition 'n'.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("n", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("QtWebEngine inputMethod"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 0);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 0);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+    // Send commit text, which makes the editor conforms composition.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("o");
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oQtWebEngine inputMethod"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 1);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 1);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+
+    // 2. insert a character to the middle of the line.
+    // Send temporary text, which makes the editor has composition 'd'.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("d", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oQtWebEngine inputMethod"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 1);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 1);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+    // Send commit text, which makes the editor conforms composition.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("e");
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine inputMethod"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 2);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 2);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+
+    // 3. Insert a character to the end of the line.
+    QTest::keyClick(view.focusProxy(), Qt::Key_End);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 25);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 25);
+
+    // Send temporary text, which makes the editor has composition 't'.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("t", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine inputMethod"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 25);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 25);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+    // Send commit text, which makes the editor conforms composition.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("t");
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine inputMethodt"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 26);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 26);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+    QCOMPARE(selectionChangedSpy.count(), 0);
+
+
+    // 4. Replace the selection.
+#ifndef Q_OS_MACOS
+    QTest::keyClick(view.focusProxy(), Qt::Key_Left, Qt::ShiftModifier | Qt::ControlModifier);
+#else
+    QTest::keyClick(view.focusProxy(), Qt::Key_Left, Qt::ShiftModifier | Qt::AltModifier);
+#endif
+    QVERIFY(selectionChangedSpy.wait());
+    QCOMPARE(selectionChangedSpy.count(), 1);
+
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine inputMethodt"));
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 14);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 26);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString("inputMethodt"));
+
+    // Send temporary text, which makes the editor has composition 'w'.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("w", attributes);
+        QApplication::sendEvent(view.focusProxy(), &event);
+        QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "window.getSelection().toString()").toString().isEmpty());
+        QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("oeQtWebEngine w"));
+
+        QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+        QVERIFY(selectionChangedSpy.wait(100));
+        QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+        QCOMPARE(selectionChangedSpy.count(), 2);
+    }
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine "));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 14);
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 14);
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QCOMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
+
+    // Send commit text, which makes the editor conforms composition.
+    {
+        QList<QInputMethodEvent::Attribute> attributes;
+        QInputMethodEvent event("", attributes);
+        event.setCommitString("2");
+        QApplication::sendEvent(view.focusProxy(), &event);
+    }
+    // There is no text selection to be changed at this point thus we can't wait for selectionChanged signal.
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("oeQtWebEngine 2"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCursorPosition).toInt(), 15);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImAnchorPosition).toInt(), 15);
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImCurrentSelection).toString(), QString(""));
 }
 
 void tst_QWebEngineView::newlineInTextarea()
