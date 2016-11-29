@@ -39,22 +39,16 @@ TestWebEngineView {
 
     property string lastUrl
 
-    testSupport: WebEngineTestSupport {
-        property bool loadVisuallyCommittedSignalEmitted: false
+    testSupport: WebEngineTestSupport { }
 
-        function waitForLoadVisuallyCommitted() {
-            return _waitFor(function() {
-                return testSupport.loadVisuallyCommittedSignalEmitted;
-            });
-        }
-
-        onLoadVisuallyCommitted: {
-            loadVisuallyCommittedSignalEmitted = true;
-        }
+    SignalSpy {
+        id: loadVisuallyCommittedSpy
+        target: webEngineView.testSupport
+        signalName: "loadVisuallyCommitted"
     }
 
     SignalSpy {
-        id: spy
+        id: linkHoveredSpy
         target: webEngineView
         signalName: "linkHovered"
     }
@@ -76,60 +70,60 @@ TestWebEngineView {
         }
 
         function init() {
-            webEngineView.testSupport.loadVisuallyCommittedSignalEmitted = false;
-            webEngineView.lastUrl = ""
-            spy.clear()
+            webEngineView.lastUrl = "";
+            loadVisuallyCommittedSpy.clear();
+            linkHoveredSpy.clear();
         }
 
         function test_linkHovered() {
-            compare(spy.count, 0)
+            compare(linkHoveredSpy.count, 0);
             mouseMove(webEngineView, 100, 300)
             webEngineView.url = Qt.resolvedUrl("test2.html")
             verify(webEngineView.waitForLoadSucceeded())
 
             // We get a linkHovered signal with empty hoveredUrl after page load
-            spy.wait()
-            compare(spy.count, 1)
+            linkHoveredSpy.wait();
+            compare(linkHoveredSpy.count, 1);
             compare(webEngineView.lastUrl, "")
 
             // Wait for the page to be rendered before trying to test based on input events
-            verify(webEngineView.testSupport.waitForLoadVisuallyCommitted());
+            loadVisuallyCommittedSpy.wait();
 
             mouseMove(webEngineView, 100, 100)
-            spy.wait()
-            compare(spy.count, 2)
+            linkHoveredSpy.wait();
+            compare(linkHoveredSpy.count, 2);
             compare(webEngineView.lastUrl, Qt.resolvedUrl("test1.html"))
             mouseMove(webEngineView, 100, 300)
-            spy.wait()
-            compare(spy.count, 3)
+            linkHoveredSpy.wait();
+            compare(linkHoveredSpy.count, 3);
             compare(webEngineView.lastUrl, "")
         }
 
         function test_linkHoveredDoesntEmitRepeated() {
-            compare(spy.count, 0)
+            compare(linkHoveredSpy.count, 0);
             webEngineView.url = Qt.resolvedUrl("test2.html")
             verify(webEngineView.waitForLoadSucceeded())
 
             // We get a linkHovered signal with empty hoveredUrl after page load
-            spy.wait()
-            compare(spy.count, 1)
+            linkHoveredSpy.wait();
+            compare(linkHoveredSpy.count, 1);
             compare(webEngineView.lastUrl, "")
 
             // Wait for the page to be rendered before trying to test based on input events
-            verify(webEngineView.testSupport.waitForLoadVisuallyCommitted());
+            loadVisuallyCommittedSpy.wait();
 
             for (var i = 0; i < 100; i += 10)
                 mouseMove(webEngineView, 100, 100 + i)
 
-            spy.wait()
-            compare(spy.count, 2)
+            linkHoveredSpy.wait();
+            compare(linkHoveredSpy.count, 2);
             compare(webEngineView.lastUrl, Qt.resolvedUrl("test1.html"))
 
             for (var i = 0; i < 100; i += 10)
                 mouseMove(webEngineView, 100, 300 + i)
 
-            spy.wait()
-            compare(spy.count, 3)
+            linkHoveredSpy.wait();
+            compare(linkHoveredSpy.count, 3);
             compare(webEngineView.lastUrl, "")
         }
     }

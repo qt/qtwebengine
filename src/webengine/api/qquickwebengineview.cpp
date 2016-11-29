@@ -1066,8 +1066,8 @@ void QQuickWebEngineView::setTestSupport(QQuickWebEngineTestSupport *testSupport
 {
     Q_D(QQuickWebEngineView);
     d->m_testSupport = testSupport;
+    Q_EMIT testSupportChanged();
 }
-
 #endif
 
 bool QQuickWebEngineView::activeFocusOnPress() const
