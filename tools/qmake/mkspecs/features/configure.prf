@@ -25,6 +25,7 @@ defineTest(runConfigure) {
         QT_FOR_CONFIG += webengine-private
         qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
         qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
+        qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
     }
 
     linux {
