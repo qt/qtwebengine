@@ -347,6 +347,21 @@ bool QQuickWebEngineSettings::allowRunningInsecureContent() const
 }
 
 /*!
+  \qmlproperty bool WebEngineSettings::allowGeolocationOnInsecureOrigins
+  \since QtWebEngine 1.5
+
+  Since Qt 5.7, only secure origins such as HTTPS have been able to request
+  Geolocation features. This provides an override to allow non secure
+  origins to access Geolocation again.
+
+  Disabled by default.
+*/
+bool QQuickWebEngineSettings::allowGeolocationOnInsecureOrigins() const
+{
+    return d_ptr->testAttribute(WebEngineSettings::AllowGeolocationOnInsecureOrigins);
+}
+
+/*!
     \qmlproperty string WebEngineSettings::defaultTextEncoding
     \since QtWebEngine 1.2
 
@@ -538,6 +553,14 @@ void QQuickWebEngineSettings::setAllowRunningInsecureContent(bool on)
     d_ptr->setAttribute(WebEngineSettings::AllowRunningInsecureContent, on);
     if (wasOn != on)
         Q_EMIT allowRunningInsecureContentChanged();
+}
+
+void QQuickWebEngineSettings::setAllowGeolocationOnInsecureOrigins(bool on)
+{
+    bool wasOn = d_ptr->testAttribute(WebEngineSettings::AllowGeolocationOnInsecureOrigins);
+    d_ptr->setAttribute(WebEngineSettings::AllowGeolocationOnInsecureOrigins, on);
+    if (wasOn != on)
+        Q_EMIT allowGeolocationOnInsecureOriginsChanged();
 }
 
 void QQuickWebEngineSettings::setParentSettings(QQuickWebEngineSettings *parentSettings)

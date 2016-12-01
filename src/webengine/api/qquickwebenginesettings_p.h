@@ -85,6 +85,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineSettings : public QObject {
     Q_PROPERTY(bool focusOnNavigationEnabled READ focusOnNavigationEnabled WRITE setFocusOnNavigationEnabled NOTIFY focusOnNavigationEnabledChanged REVISION 3)
     Q_PROPERTY(bool printElementBackgrounds READ printElementBackgrounds WRITE setPrintElementBackgrounds NOTIFY printElementBackgroundsChanged REVISION 3)
     Q_PROPERTY(bool allowRunningInsecureContent READ allowRunningInsecureContent WRITE setAllowRunningInsecureContent NOTIFY allowRunningInsecureContentChanged REVISION 3)
+    Q_PROPERTY(bool allowGeolocationOnInsecureOrigins READ allowGeolocationOnInsecureOrigins WRITE setAllowGeolocationOnInsecureOrigins NOTIFY allowGeolocationOnInsecureOriginsChanged REVISION 4 FINAL)
 
 public:
     ~QQuickWebEngineSettings();
@@ -111,6 +112,7 @@ public:
     bool focusOnNavigationEnabled() const;
     bool printElementBackgrounds() const;
     bool allowRunningInsecureContent() const;
+    bool allowGeolocationOnInsecureOrigins() const;
 
     void setAutoLoadImages(bool on);
     void setJavascriptEnabled(bool on);
@@ -134,6 +136,7 @@ public:
     void setFocusOnNavigationEnabled(bool on);
     void setPrintElementBackgrounds(bool on);
     void setAllowRunningInsecureContent(bool on);
+    void setAllowGeolocationOnInsecureOrigins(bool on);
 
 signals:
     void autoLoadImagesChanged();
@@ -158,6 +161,7 @@ signals:
     Q_REVISION(3) void focusOnNavigationEnabledChanged();
     Q_REVISION(3) void printElementBackgroundsChanged();
     Q_REVISION(3) void allowRunningInsecureContentChanged();
+    Q_REVISION(4) void allowGeolocationOnInsecureOriginsChanged();
 
 private:
     explicit QQuickWebEngineSettings(QQuickWebEngineSettings *parentSettings = 0);

@@ -95,6 +95,8 @@ static WebEngineSettings::Attribute toWebEngineAttribute(QWebEngineSettings::Web
         return WebEngineSettings::PrintElementBackgrounds;
     case QWebEngineSettings::AllowRunningInsecureContent:
         return WebEngineSettings::AllowRunningInsecureContent;
+    case QWebEngineSettings::AllowGeolocationOnInsecureOrigins:
+        return WebEngineSettings::AllowGeolocationOnInsecureOrigins;
 
     default:
         return WebEngineSettings::UnsupportedInCoreSettings;

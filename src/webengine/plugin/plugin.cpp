@@ -103,6 +103,7 @@ public:
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 1>(uri, 1, 2, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 2>(uri, 1, 3, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterUncreatableType<QQuickWebEngineSettings, 3>(uri, 1, 4, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
+        qmlRegisterUncreatableType<QQuickWebEngineSettings, 4>(uri, 1, 5, "WebEngineSettings", tr("Cannot create a separate instance of WebEngineSettings"));
         qmlRegisterSingletonType<QQuickWebEngineSingleton>(uri, 1, 1, "WebEngine", webEngineSingletonProvider);
         qmlRegisterUncreatableType<QQuickWebEngineHistory>(uri, 1, 1, "NavigationHistory",
             tr("Cannot create a separate instance of NavigationHistory"));
