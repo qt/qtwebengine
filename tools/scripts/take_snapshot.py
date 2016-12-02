@@ -58,7 +58,7 @@ def isInChromiumBlacklist(file_path):
     if file_path.endswith('.gyp') or file_path.endswith('.gypi') or file_path.endswith('.isolate'):
         return False
     # We do need all the gn file.
-    if file_path.endswith('.gn') or file_path.endswith('.gni') or file_path.endswith('typemap') or \
+    if file_path.endswith('.gn') or file_path.endswith('.gni') or file_path.endswith('.typemap') or \
     file_path.endswith('.mojom'):
         return False
     if ( '_jni' in file_path
@@ -120,7 +120,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('components/drive/')
         or file_path.startswith('components/invalidation/')
         or file_path.startswith('components/gcm_driver/')
-        or file_path.startswith('components/mus/')
         or file_path.startswith('components/nacl/')
         or file_path.startswith('components/omnibox/')
         or file_path.startswith('components/policy/')
@@ -159,7 +158,13 @@ def isInChromiumBlacklist(file_path):
         or (file_path.startswith('third_party/cacheinvalidation') and
             not file_path.endswith('isolate'))
         or file_path.startswith('third_party/boringssl/src/fuzz')
-        or file_path.startswith('third_party/catapult')
+        or (file_path.startswith('third_party/catapult') and not
+            (file_path.startswith('third_party/catapult/third_party/py_vulcanize')
+            or file_path.startswith('third_party/catapult/tracing/tracing/')
+            or file_path.startswith('third_party/catapult/tracing/tracing_build')
+            or file_path.startswith('third_party/catapult/tracing/third_party')
+            or file_path.startswith('third_party/catapult/tracing/bin')
+            or file_path.endswith('tracing_project.py')))
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
