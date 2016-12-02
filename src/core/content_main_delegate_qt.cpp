@@ -48,7 +48,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "grit/net_resources.h"
+#include "net/grit/net_resources.h"
 #include "net/base/net_module.h"
 
 #include "content_client_qt.h"
