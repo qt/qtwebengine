@@ -367,8 +367,7 @@ bool GLSurfaceQtEGL::InitializeOneOff()
         LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
         return false;
     }
-#if 0
-// QTBUG-57290
+
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
         scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(gfx::Size(1, 1));
@@ -385,7 +384,7 @@ bool GLSurfaceQtEGL::InitializeOneOff()
             context->ReleaseCurrent(surface.get());
         }
     }
-#endif
+
     initialized = true;
     return true;
 }
@@ -615,13 +614,19 @@ CreateOffscreenGLSurface(const gfx::Size& size)
 #endif
     }
     case kGLImplementationEGLGLES2: {
-        if (g_egl_surfaceless_context_supported)
-            surface = new GLSurfacelessQtEGL(size);
-        else
-            surface = new GLSurfaceQtEGL(size);
-
+        surface = new GLSurfaceQtEGL(size);
         if (surface->Initialize())
             return surface;
+
+        // Surfaceless context will be used ONLY if pseudo surfaceless context
+        // is not available since some implementations of surfaceless context
+        // have problems. (e.g. QTBUG-57290)
+        if (g_egl_surfaceless_context_supported) {
+            surface = new GLSurfacelessQtEGL(size);
+            if (surface->Initialize())
+                return surface;
+        }
+
         break;
     }
     default:
