@@ -62,14 +62,14 @@
     On all platforms, the following tools are required:
 
     \list
-        \li \l Python 2.7 or later
+        \li \l Python 2.7.5 or later
         \li Bison, Flex
         \li GPerf
     \endlist
 
     \section2 Windows
 
-    On Windows, Visual Studio 2013 or Visual Studio 2015 is required.
+    On Windows, Visual Studio 2015 and Windows 10 SDK are required.
 
     \section2 Linux
 
