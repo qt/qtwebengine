@@ -62,7 +62,8 @@ void tst_QWebEngineScript::domEditing()
     page.scripts().insert(s);
     page.load(QUrl("about:blank"));
     view.show();
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "document.getElementById(\"banner\").innerText"), QVariant(QStringLiteral("Injected banner")));
     // elementFromPoint only works for exposed elements
     QTest::qWaitForWindowExposed(&view);
@@ -85,7 +86,8 @@ void tst_QWebEngineScript::injectionPoint()
                                    document.body.innerText = contents;\
                                    }, 550));\
                                    </script></head><body></body></html>"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QTRY_COMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
 }
 
@@ -116,14 +118,15 @@ void tst_QWebEngineScript::scriptWorld()
     script.setSourceCode(QStringLiteral("var userScriptTest = 1;"));
     page.scripts().insert(script);
     page.load(QUrl("about:blank"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;"), QVariant::fromValue(true));
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) == \"undefined\"", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
     script.setWorldId(QWebEngineScript::ApplicationWorld);
     page.scripts().clear();
     page.scripts().insert(script);
     page.load(QUrl("about:blank"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "typeof(userScriptTest) == \"undefined\""), QVariant::fromValue(true));
     QCOMPARE(evaluateJavaScriptSyncInWorld(&page, "typeof(userScriptTest) != \"undefined\" && userScriptTest == 1;", QWebEngineScript::ApplicationWorld), QVariant::fromValue(true));
 }
@@ -141,11 +144,12 @@ void tst_QWebEngineScript::scriptModifications()
                                  document.body.innerText = foo;});\
                                  </script></head><body></body></html>"));
     QVERIFY(page.scripts().count() == 1);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
     script.setSourceCode("var foo = \"FAILURE\"");
     page.triggerAction(QWebEnginePage::ReloadAndBypassCache);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "document.body.innerText"), QVariant::fromValue(QStringLiteral("SUCCESS")));
     QVERIFY(page.scripts().count() == 1);
     QWebEngineScript s = page.scripts().findScript(QStringLiteral("String1"));
@@ -209,11 +213,12 @@ void tst_QWebEngineScript::webChannel()
     script.setSourceCode(QString::fromLatin1(scriptSrc));
     page.scripts().insert(script);
     page.setHtml(QStringLiteral("<html><body></body></html>"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     if (reloadFirst) {
         // Check that the transport is also reinstalled on navigation
         page.triggerAction(QWebEnginePage::Reload);
-        waitForSignal(&page, SIGNAL(loadFinished(bool)));
+        QVERIFY(spyFinished.wait());
     }
     page.runJavaScript(QLatin1String(
                                 "new QWebChannel(qt.webChannelTransport,"
@@ -221,7 +226,8 @@ void tst_QWebEngineScript::webChannel()
                                 "    channel.objects.object.text = 'test';"
                                 "  }"
                                 ");"), worldId);
-    waitForSignal(&testObject, SIGNAL(textChanged(QString)));
+    QSignalSpy spyTextChanged(&testObject, &TestObject::textChanged);
+    QVERIFY(spyTextChanged.wait());
     QCOMPARE(testObject.text(), QStringLiteral("test"));
 
     if (worldId != QWebEngineScript::MainWorld)
@@ -235,7 +241,8 @@ void tst_QWebEngineScript::noTransportWithoutWebChannel()
 
     QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
     page.triggerAction(QWebEnginePage::Reload);
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
+    QVERIFY(spyFinished.wait());
     QCOMPARE(evaluateJavaScriptSync(&page, "qt.webChannelTransport"), QVariant(QVariant::Invalid));
 }
 

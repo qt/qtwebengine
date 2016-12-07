@@ -53,6 +53,7 @@ SOURCES = \
         clipboard_qt.cpp \
         color_chooser_qt.cpp \
         color_chooser_controller.cpp \
+        common/qt_ipc_logging.cpp \
         common/qt_messages.cpp \
         common/user_script_data.cpp \
         content_client_qt.cpp \
@@ -74,6 +75,7 @@ SOURCES = \
         native_web_keyboard_event_qt.cpp \
         network_delegate_qt.cpp \
         ozone_platform_eglfs.cpp \
+        pdfium_document_wrapper_qt.cpp \
         permission_manager_qt.cpp \
         process_main.cpp \
         proxy_config_service_qt.cpp \
@@ -154,6 +156,7 @@ HEADERS = \
         media_capture_devices_dispatcher.h \
         network_delegate_qt.h \
         ozone_platform_eglfs.h \
+        pdfium_document_wrapper_qt.h \
         permission_manager_qt.h \
         process_main.h \
         proxy_config_service_qt.h \
@@ -209,9 +212,4 @@ qtHaveModule(positioning) {
     SOURCES += location_provider_qt.cpp
     HEADERS += location_provider_qt.h
     DEFINES += QT_USE_POSITIONING=1
-}
-
-qtHaveModule(printsupport) {
-    SOURCES += pdfium_printing_wrapper_qt.cpp
-    HEADERS += pdfium_printing_wrapper_qt.h
 }

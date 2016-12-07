@@ -65,6 +65,10 @@ contains(WEBENGINE_CONFIG, use_spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 
+contains(WEBENGINE_CONFIG, enable_pdf) {
+    DEFINES += ENABLE_PDF
+}
+
 !build_pass {
     chromium_attributions.commands = \
         cd $$shell_quote($$shell_path($$PWD/../3rdparty)) && \

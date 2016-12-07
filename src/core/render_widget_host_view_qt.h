@@ -104,6 +104,12 @@ class RenderWidgetHostViewQt
 #endif // QT_NO_ACCESSIBILITY
 {
 public:
+    enum LoadVisuallyCommittedState {
+        NotCommitted,
+        DidFirstVisuallyNonEmptyPaint,
+        DidFirstCompositorFrameSwap
+    };
+
     RenderWidgetHostViewQt(content::RenderWidgetHost* widget);
     ~RenderWidgetHostViewQt();
 
@@ -193,7 +199,8 @@ public:
 #ifndef QT_NO_ACCESSIBILITY
     virtual void accessibilityActiveChanged(bool active) Q_DECL_OVERRIDE;
 #endif // QT_NO_ACCESSIBILITY
-    void didFirstVisuallyNonEmptyLayout();
+    LoadVisuallyCommittedState getLoadVisuallyCommittedState() const { return m_loadVisuallyCommittedState; }
+    void setLoadVisuallyCommittedState(LoadVisuallyCommittedState state) { m_loadVisuallyCommittedState = state; }
 
     gfx::SizeF lastContentsSize() const { return m_lastContentsSize; }
 
@@ -218,7 +225,7 @@ private:
     QExplicitlySharedDataPointer<ChromiumCompositorData> m_chromiumCompositorData;
     cc::ReturnedResourceArray m_resourcesToRelease;
     bool m_needsDelegatedFrameAck;
-    bool m_didFirstVisuallyNonEmptyLayout;
+    LoadVisuallyCommittedState m_loadVisuallyCommittedState;
     uint32_t m_pendingOutputSurfaceId;
 
     QMetaObject::Connection m_adapterClientDestroyedConnection;

@@ -37,30 +37,12 @@
 **
 ****************************************************************************/
 
-#ifndef PDFIUM_PRINTING_WRAPPER_QT_H
-#define PDFIUM_PRINTING_WRAPPER_QT_H
+#include "ipc/ipc_message.h" // For IPC_MESSAGE_LOG_ENABLED
 
-#include <QtCore/qglobal.h>
-
-QT_BEGIN_NAMESPACE
-class QPrinter;
-QT_END_NAMESPACE
-
-namespace QtWebEngineCore {
-
-class PdfiumPrintingWrapperQt
-{
-public:
-    PdfiumPrintingWrapperQt(const void *pdfData, size_t size, const char *password = nullptr);
-    virtual ~PdfiumPrintingWrapperQt();
-    bool printOnPrinter(QPrinter &printer);
-    int pageCount() const { return m_pageCount; }
-
-private:
-    static int m_libraryUsers;
-    void *m_documentHandle;
-    int m_pageCount;
-};
-
-} // namespace QtWebEngineCore
-#endif // PDFIUM_PRINTING_WRAPPER_QT_H
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+#define IPC_MESSAGE_MACROS_LOG_ENABLED
+#include "content/public/common/content_ipc_logging.h"
+#define IPC_LOG_TABLE_ADD_ENTRY(msg_id, logger) \
+    content::RegisterIPCLogger(msg_id, logger)
+#include "common/qt_messages.h"
+#endif

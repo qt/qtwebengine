@@ -192,21 +192,21 @@ void tst_QWebEngineUrlRequestInterceptor::requestedUrl()
     page.profile()->setRequestInterceptor(&interceptor);
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(spy.count(), 1);
     QCOMPARE(interceptor.observedUrls.at(0), QUrl("qrc:///resources/content.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("qrc:/non-existent.html"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(spy.count(), 2);
     QCOMPARE(interceptor.observedUrls.at(2), QUrl("qrc:/non-existent.html"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
 
     page.setUrl(QUrl("http://abcdef.abcdef"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(spy.count(), 3);
     QCOMPARE(interceptor.observedUrls.at(3), QUrl("http://abcdef.abcdef/"));
     QCOMPARE(page.requestedUrl(), QUrl("qrc:///resources/__placeholder__"));
@@ -222,23 +222,23 @@ void tst_QWebEngineUrlRequestInterceptor::setUrlSameUrl()
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
     QCOMPARE(spy.count(), 1);
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
     QCOMPARE(spy.count(), 2);
 
     // Now a case without redirect.
     page.setUrl(QUrl("qrc:///resources/content.html"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
     QCOMPARE(spy.count(), 3);
 
     page.setUrl(QUrl("qrc:///resources/__placeholder__"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(page.url(), QUrl("qrc:///resources/content.html"));
     QCOMPARE(spy.count(), 4);
 }
@@ -252,7 +252,7 @@ void tst_QWebEngineUrlRequestInterceptor::firstPartyUrl()
     QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
 
     page.setUrl(QUrl("qrc:///resources/firstparty.html"));
-    waitForSignal(&page, SIGNAL(loadFinished(bool)));
+    QVERIFY(spy.wait());
     QCOMPARE(interceptor.observedUrls.at(0), QUrl("qrc:///resources/firstparty.html"));
     QCOMPARE(interceptor.observedUrls.at(1), QUrl("qrc:///resources/content.html"));
     QCOMPARE(interceptor.firstPartyUrls.at(0), QUrl("qrc:///resources/firstparty.html"));

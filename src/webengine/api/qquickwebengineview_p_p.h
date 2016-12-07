@@ -123,9 +123,6 @@ public:
     virtual void didFetchDocumentInnerText(quint64, const QString&) Q_DECL_OVERRIDE { }
     virtual void didFindText(quint64, int) Q_DECL_OVERRIDE;
     virtual void didPrintPage(quint64 requestId, const QByteArray &result) Q_DECL_OVERRIDE;
-#if !defined(QT_NO_WIDGETS) && !defined(QT_NO_PRINTER)
-    virtual void didPrintPageOnPrinter(quint64, bool) Q_DECL_OVERRIDE { }
-#endif
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;

@@ -71,8 +71,6 @@ bool RenderViewObserverHostQt::OnMessageReceived(const IPC::Message& message)
                             onDidFetchDocumentMarkup)
         IPC_MESSAGE_HANDLER(RenderViewObserverHostQt_DidFetchDocumentInnerText,
                             onDidFetchDocumentInnerText)
-        IPC_MESSAGE_HANDLER(RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout,
-                            onDidFirstVisuallyNonEmptyLayout)
         IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     return handled;
@@ -87,13 +85,6 @@ void RenderViewObserverHostQt::onDidFetchDocumentMarkup(quint64 requestId, const
 void RenderViewObserverHostQt::onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText)
 {
     m_adapterClient->didFetchDocumentInnerText(requestId, toQt(innerText));
-}
-
-void RenderViewObserverHostQt::onDidFirstVisuallyNonEmptyLayout()
-{
-    RenderWidgetHostViewQt *rwhv = static_cast<RenderWidgetHostViewQt*>(web_contents()->GetRenderWidgetHostView());
-    if (rwhv)
-        rwhv->didFirstVisuallyNonEmptyLayout();
 }
 
 } // namespace QtWebEngineCore

@@ -87,6 +87,7 @@ protected:
 
 private slots:
     void onWindowPosChanged();
+    void removeParentBeforeParentDelete();
 
 private:
     RenderWidgetHostViewQtDelegateClient *m_client;

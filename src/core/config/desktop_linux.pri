@@ -5,6 +5,8 @@ include(linux.pri)
 GYP_CONFIG += \
     desktop_linux=1 \
     enable_widevine=1 \
+    enable_basic_printing=1 \
+    enable_print_preview=1 \
     enable_pdf=1
 
 clang {
