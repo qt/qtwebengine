@@ -36,23 +36,22 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
-#include "pdfium_printing_wrapper_qt.h"
+#if defined (ENABLE_PDF)
+#include "pdfium_document_wrapper_qt.h"
 
 #include <QtCore/qhash.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>
-#include <QtPrintSupport/qprinter.h>
 
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdfview.h"
 
 namespace QtWebEngineCore {
-int PdfiumPrintingWrapperQt::m_libraryUsers = 0;
+int PdfiumDocumentWrapperQt::m_libraryUsers = 0;
 
-class PDFiumPageWrapper {
+class QWEBENGINE_EXPORT PdfiumPageWrapperQt {
 public:
-    PDFiumPageWrapper(void *data, int pageIndex, int targetWidth, int targetHeight)
+    PdfiumPageWrapperQt(void *data, int pageIndex, int targetWidth, int targetHeight)
         : m_pageData(FPDF_LoadPage(data, pageIndex))
         , m_width(FPDF_GetPageWidth(m_pageData))
         , m_height(FPDF_GetPageHeight(m_pageData))
@@ -61,7 +60,7 @@ public:
     {
     }
 
-    PDFiumPageWrapper()
+    PdfiumPageWrapperQt()
         : m_pageData(nullptr)
         , m_width(-1)
         , m_height(-1)
@@ -70,7 +69,7 @@ public:
     {
     }
 
-    virtual ~PDFiumPageWrapper()
+    virtual ~PdfiumPageWrapperQt()
     {
         FPDF_ClosePage(m_pageData);
     }
@@ -125,111 +124,49 @@ private:
 };
 
 
-PdfiumPrintingWrapperQt::PdfiumPrintingWrapperQt(const void *pdfData, size_t size, const char *password)
+PdfiumDocumentWrapperQt::PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const QSize& imageSize, const char *password)
+    : m_imageSize(imageSize * 2.0)
 {
-   Q_ASSERT(pdfData);
-   Q_ASSERT(size);
-   if (m_libraryUsers++ == 0)
-       FPDF_InitLibrary();
+    Q_ASSERT(pdfData);
+    Q_ASSERT(size);
+    if (m_libraryUsers++ == 0)
+        FPDF_InitLibrary();
 
-   m_documentHandle = FPDF_LoadMemDocument(pdfData, static_cast<int>(size), password);
-   m_pageCount = FPDF_GetPageCount(m_documentHandle);
+    m_documentHandle = FPDF_LoadMemDocument(pdfData, static_cast<int>(size), password);
+    m_pageCount = FPDF_GetPageCount(m_documentHandle);
 }
 
-bool PdfiumPrintingWrapperQt::printOnPrinter(QPrinter &printer)
+QImage PdfiumDocumentWrapperQt::pageAsQImage(size_t index)
 {
     if (!m_documentHandle || !m_pageCount) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
-        qWarning("Failure to print on printer %ls: invalid document.\n", qUtf16Printable(printer.printerName()));
-#endif
-        return false;
+        qWarning("Failure to generate QImage from invalid or empty PDF document.");
+        return QImage();
     }
 
-    int toPage = printer.toPage();
-    int fromPage = printer.fromPage();
-    bool ascendingOrder = true;
-
-    if (fromPage == 0 && toPage == 0) {
-        fromPage = 1;
-        toPage = m_pageCount;
-    }
-    fromPage = qMax(1, fromPage);
-    toPage = qMin(m_pageCount, toPage);
-
-    if (printer.pageOrder() == QPrinter::LastPageFirst) {
-        qSwap(fromPage, toPage);
-        ascendingOrder = false;
+    if (static_cast<int>(index) >= m_pageCount) {
+        qWarning("Failure to generate QImage from PDF data: index out of bounds.");
+        return QImage();
     }
 
-    int documentCopies = printer.copyCount();
-    int pageCopies = 1;
-    if (printer.collateCopies()) {
-        pageCopies = documentCopies;
-        documentCopies = 1;
+    PdfiumPageWrapperQt *pageWrapper = nullptr;
+    if (!m_cachedPages.contains(index)) {
+        pageWrapper = new PdfiumPageWrapperQt(m_documentHandle, index,
+                                              m_imageSize.width(), m_imageSize.height());
+        m_cachedPages.insert(index, pageWrapper);
+    } else {
+        pageWrapper = m_cachedPages.value(index);
     }
 
-    QRect printerPageRect = printer.pageRect();
-    int doubledPrinterWidth = 2 * printerPageRect.width();
-    int doubledPrinterHeight = 2 * printerPageRect.height();
-
-    QPainter painter;
-    if (!painter.begin(&printer)) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
-        qWarning("Failure to print on printer %ls: Could not open printer for painting.\n", qUtf16Printable(printer.printerName()));
-#endif
-        return false;
-    }
-
-    QHash<int, PDFiumPageWrapper*> cachedPages;
-    for (int printedDocuments = 0; printedDocuments < documentCopies; printedDocuments++) {
-        int currentPageIndex = fromPage;
-        while (true) {
-            for (int printedPages = 0; printedPages < pageCopies; printedPages++) {
-                if (printer.printerState() == QPrinter::Aborted
-                        || printer.printerState() == QPrinter::Error)
-                    return false;
-
-                PDFiumPageWrapper *currentPageWrapper;
-                if (!cachedPages.contains(currentPageIndex - 1)) {
-                    currentPageWrapper
-                            = new PDFiumPageWrapper(m_documentHandle, currentPageIndex - 1
-                                                    , doubledPrinterWidth, doubledPrinterHeight);
-                    cachedPages.insert(currentPageIndex - 1, currentPageWrapper);
-                } else {
-                    currentPageWrapper = cachedPages.value(currentPageIndex - 1);
-                }
-
-                QImage currentImage = currentPageWrapper->image();
-                painter.drawImage(printerPageRect, currentImage, currentImage.rect());
-                if (printedPages < pageCopies - 1)
-                    printer.newPage();
-            }
-
-            if (currentPageIndex == toPage)
-                break;
-
-            if (ascendingOrder)
-                currentPageIndex++;
-            else
-                currentPageIndex--;
-
-            printer.newPage();
-        }
-        if (printedDocuments < documentCopies - 1)
-            printer.newPage();
-    }
-    painter.end();
-
-    qDeleteAll(cachedPages);
-
-    return true;
+    return pageWrapper->image();
 }
 
-PdfiumPrintingWrapperQt::~PdfiumPrintingWrapperQt()
+PdfiumDocumentWrapperQt::~PdfiumDocumentWrapperQt()
 {
+    qDeleteAll(m_cachedPages);
     FPDF_CloseDocument(m_documentHandle);
     if (--m_libraryUsers == 0)
         FPDF_DestroyLibrary();
 }
 
 }
+#endif // defined (ENABLE_PDF)

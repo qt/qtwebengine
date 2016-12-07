@@ -120,6 +120,7 @@ void URLRequestQrcJobQt::startGetHead()
     // Open file
     if (m_file.open(QIODevice::ReadOnly)) {
         m_remainingBytes = m_file.size();
+        set_expected_content_size(m_remainingBytes);
         // Notify that the headers are complete
         NotifyHeadersComplete();
     } else {

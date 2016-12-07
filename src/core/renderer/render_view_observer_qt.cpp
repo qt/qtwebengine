@@ -83,11 +83,6 @@ void RenderViewObserverQt::onSetBackgroundColor(quint32 color)
     render_view()->GetWebFrameWidget()->setBaseBackgroundColor(color);
 }
 
-void RenderViewObserverQt::OnFirstVisuallyNonEmptyLayout()
-{
-    Send(new RenderViewObserverHostQt_DidFirstVisuallyNonEmptyLayout(routing_id()));
-}
-
 bool RenderViewObserverQt::OnMessageReceived(const IPC::Message& message)
 {
     bool handled = true;

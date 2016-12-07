@@ -88,7 +88,8 @@ void tst_QWebEngineAccessibility::hierarchy()
         "<input type='text' value='some text'></input>" \
         "</body></html>");
     webView.show();
-    ::waitForSignal(&webView, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     QVERIFY(view);
@@ -150,7 +151,8 @@ void tst_QWebEngineAccessibility::text()
         "<input type='text' value='Good day!' placeholder='day'></input>" \
         "</body></html>");
     webView.show();
-    ::waitForSignal(&webView, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     // Wait for accessibility to be fully initialized
@@ -215,7 +217,8 @@ void tst_QWebEngineAccessibility::value()
         "<div class='progress' role='progressbar' aria-valuenow='77' aria-valuemin='22' aria-valuemax='99'></div>" \
         "</body></html>");
     webView.show();
-    ::waitForSignal(&webView, SIGNAL(loadFinished(bool)));
+    QSignalSpy spyFinished(&webView, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QAccessibleInterface *view = QAccessible::queryAccessibleInterface(&webView);
     QTRY_COMPARE(view->child(0)->childCount(), 2);

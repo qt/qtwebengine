@@ -125,7 +125,7 @@ class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_PROPERTY(uint webChannelWorld READ webChannelWorld WRITE setWebChannelWorld NOTIFY webChannelWorldChanged REVISION 3)
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
-    Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport FINAL)
+    Q_PROPERTY(QQuickWebEngineTestSupport *testSupport READ testSupport WRITE setTestSupport NOTIFY testSupportChanged FINAL)
 #endif
 
     Q_FLAGS(FindFlags);
@@ -512,6 +512,10 @@ Q_SIGNALS:
     Q_REVISION(4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
     Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
     Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
+
+#ifdef ENABLE_QML_TESTSUPPORT_API
+    void testSupportChanged();
+#endif
 
 protected:
     void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) Q_DECL_OVERRIDE;

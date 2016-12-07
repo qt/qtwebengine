@@ -151,7 +151,8 @@ void tst_QQuickWebEngineView::stopEnabledAfterLoadStarted()
 
     LoadStartedCatcher catcher(webEngineView());
     webEngineView()->setUrl(urlFromTestPath("html/basic_page.html"));
-    waitForSignal(&catcher, SIGNAL(finished()));
+    QSignalSpy spy(&catcher, &LoadStartedCatcher::finished);
+    QVERIFY(spy.wait());
 
     QCOMPARE(webEngineView()->isLoading(), true);
 

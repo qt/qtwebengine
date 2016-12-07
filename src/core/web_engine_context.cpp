@@ -240,17 +240,15 @@ QObject *WebEngineContext::globalQObject()
 #define CHROMIUM_VERSION // This is solely to keep Qt Creator happy.
 #endif
 
+const static char kChromiumFlagsEnv[] = "QTWEBENGINE_CHROMIUM_FLAGS";
+const static char kDisableSandboxEnv[] = "QTWEBENGINE_DISABLE_SANDBOX";
+
 WebEngineContext::WebEngineContext()
     : m_mainDelegate(new ContentMainDelegateQt)
     , m_contentRunner(content::ContentMainRunner::Create())
     , m_browserRunner(content::BrowserMainRunner::Create())
     , m_globalQObject(new QObject())
 {
-    QStringList appArgs = QCoreApplication::arguments();
-    bool useEmbeddedSwitches = appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
-#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
-    useEmbeddedSwitches = !appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
-#endif
 
 #ifdef Q_OS_LINUX
     // Call qputenv before BrowserMainRunnerImpl::Initialize is called.
@@ -261,32 +259,35 @@ WebEngineContext::WebEngineContext()
     // Allow us to inject javascript like any webview toolkit.
     content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 
-#if defined(Q_OS_WIN)
-    // We must initialize the command line with the UTF-16 arguments vector we got from
-    // QCoreApplication. CommandLine::Init ignores its arguments on Windows and calls
-    // GetCommandLineW() instead.
     base::CommandLine::CreateEmpty();
     base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    QStringList appArgs = QCoreApplication::arguments();
+    if (qEnvironmentVariableIsSet(kChromiumFlagsEnv)) {
+        appArgs = appArgs.mid(0, 1); // Take application name and drop the rest
+        appArgs.append(QString::fromLocal8Bit(qgetenv(kChromiumFlagsEnv)).split(' '));
+    }
+
+    bool useEmbeddedSwitches = false;
+#if defined(QTWEBENGINE_EMBEDDED_SWITCHES)
+    useEmbeddedSwitches = !appArgs.removeAll(QStringLiteral("--disable-embedded-switches"));
+#else
+    useEmbeddedSwitches = appArgs.removeAll(QStringLiteral("--enable-embedded-switches"));
+#endif
     base::CommandLine::StringVector argv;
     argv.resize(appArgs.size());
-    std::transform(appArgs.constBegin(), appArgs.constEnd(), argv.begin(), &toString16);
-    parsedCommandLine->InitFromArgv(argv);
+#if defined(Q_OS_WIN)
+    for (int i = 0; i < appArgs.size(); ++i)
+        argv[i] = toString16(appArgs[i]);
 #else
-    QVector<QByteArray> args;
-    Q_FOREACH (const QString& arg, appArgs)
-        args << arg.toUtf8();
-
-    QVector<const char*> argv(args.size());
-    for (int i = 0; i < args.size(); ++i)
-        argv[i] = args[i].constData();
-    base::CommandLine::Init(argv.size(), argv.constData());
-    base::CommandLine* parsedCommandLine = base::CommandLine::ForCurrentProcess();
+    for (int i = 0; i < appArgs.size(); ++i)
+        argv[i] = appArgs[i].toStdString();
 #endif
+    parsedCommandLine->InitFromArgv(argv);
 
     parsedCommandLine->AppendSwitchPath(switches::kBrowserSubprocessPath, WebEngineLibraryInfo::getPath(content::CHILD_PROCESS_EXE));
 
     // Enable sandboxing on OS X and Linux (Desktop / Embedded) by default.
-    bool disable_sandbox = qEnvironmentVariableIsSet("QTWEBENGINE_DISABLE_SANDBOX");
+    bool disable_sandbox = qEnvironmentVariableIsSet(kDisableSandboxEnv);
     if (!disable_sandbox) {
 #if defined(Q_OS_WIN)
         parsedCommandLine->AppendSwitch(switches::kNoSandbox);
@@ -328,7 +329,14 @@ WebEngineContext::WebEngineContext()
 #ifndef QT_NO_OPENGL
     if (!usingANGLE() && !usingSoftwareDynamicGL() && !usingQtQuick2DRenderer()) {
         if (qt_gl_global_share_context() && qt_gl_global_share_context()->isValid()) {
-            if (!strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext")) {
+            // If the native handle is QEGLNativeContext try to use GL ES/2, if there is no native handle
+            // assume we are using wayland and try GL ES/2, and finally Ozone demands GL ES/2 too.
+            if (qt_gl_global_share_context()->nativeHandle().isNull()
+#ifdef USE_OZONE
+                || true
+#endif
+                || !strcmp(qt_gl_global_share_context()->nativeHandle().typeName(), "QEGLNativeContext"))
+            {
                 if (qt_gl_global_share_context()->isOpenGLES()) {
                     glType = gl::kGLImplementationEGLName;
                 } else {

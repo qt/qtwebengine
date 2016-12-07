@@ -10,4 +10,3 @@ CHROMIUM_SRC_DIR = $$QTWEBENGINE_ROOT/$$getChromiumSrcDir()
 INCLUDEPATH += $$CHROMIUM_SRC_DIR
 
 qtHaveModule(positioning):QT += positioning
-qtHaveModule(printsupport):QT += printsupport

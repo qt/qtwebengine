@@ -31,8 +31,11 @@
 #include <qdiriterator.h>
 #include <qstackedlayout.h>
 #include <qtemporarydir.h>
+#include <QCompleter>
 #include <QLineEdit>
 #include <QHBoxLayout>
+#include <QQuickItem>
+#include <QQuickWidget>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
@@ -83,6 +86,7 @@ private Q_SLOTS:
     void inputMethodsTextFormat_data();
     void inputMethodsTextFormat();
     void keyboardEvents();
+    void keyboardFocusAfterPopup();
 };
 
 // This will be called before the first test function is executed.
@@ -177,7 +181,8 @@ void tst_QWebEngineView::reusePage()
     page->setHtml(html, QUrl::fromLocalFile(TESTS_SOURCE_DIR));
     if (html.contains("</embed>")) {
         // some reasonable time for the PluginStream to feed test.swf to flash and start painting
-        waitForSignal(view1, SIGNAL(loadFinished(bool)), 2000);
+        QSignalSpy spyFinished(view1, &QWebEngineView::loadFinished);
+        QVERIFY(spyFinished.wait(2000));
     }
 
     view1->show();
@@ -281,7 +286,8 @@ void tst_QWebEngineView::focusInputTypes()
     webView.load(url);
     mainFrame->setFocus();
 
-    QVERIFY(waitForSignal(&webView, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     // 'text' type
     QWebEngineElement inputElement = mainFrame->documentElement().findFirst(QLatin1String("input[type=text]"));
@@ -400,7 +406,8 @@ void tst_QWebEngineView::horizontalScrollbarTest()
     webView.page()->load(url);
     webView.page()->setFocus();
 
-    QVERIFY(waitForSignal(&webView, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(webView, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
 
     QVERIFY(webView.page()->scrollPosition() == QPoint(0, 0));
 
@@ -562,7 +569,8 @@ void tst_QWebEngineView::renderingAfterMaxAndBack()
 
     QWebEngineView view;
     view.page()->load(url);
-    QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyFinished(&view, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinished.wait());
     view.show();
 
     view.page()->settings()->setMaximumPagesInCache(3);
@@ -584,7 +592,7 @@ void tst_QWebEngineView::renderingAfterMaxAndBack()
                      "</html>");
     view.page()->load(url2);
 
-    QVERIFY(waitForSignal(&view, SIGNAL(loadFinished(bool))));
+    QVERIFY(spyFinished.wait());
 
     view.showMaximized();
 
@@ -840,25 +848,29 @@ void tst_QWebEngineView::changeLocale()
     QWebEngineView viewDE;
     viewDE.setUrl(url);
 
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(titleChanged(QString))));
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyTitleChangedDE(&viewDE, &QWebEngineView::titleChanged);
+    QVERIFY(spyTitleChangedDE.wait());
+    QSignalSpy spyFinishedDE(&viewDE, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinishedDE.wait());
     QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
 
     QLocale::setDefault(QLocale("en"));
     QWebEngineView viewEN;
     viewEN.setUrl(url);
 
-    QVERIFY(waitForSignal(&viewEN, SIGNAL(titleChanged(QString))));
-    QVERIFY(waitForSignal(&viewEN, SIGNAL(loadFinished(bool))));
+    QSignalSpy spyTitleChangedEN(&viewEN, &QWebEngineView::titleChanged);
+    QVERIFY(spyTitleChangedEN.wait());
+    QSignalSpy spyFinishedEN(&viewEN, &QWebEngineView::loadFinished);
+    QVERIFY(spyFinishedEN.wait());
     QCOMPARE(viewEN.title(), QStringLiteral("%1 is not available").arg(url.toString()));
 
     viewDE.setUrl(QUrl("about:blank"));
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QVERIFY(spyFinishedDE.wait());
 
     viewDE.setUrl(url);
 
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(titleChanged(QString))));
-    QVERIFY(waitForSignal(&viewDE, SIGNAL(loadFinished(bool))));
+    QVERIFY(spyTitleChangedDE.wait());
+    QVERIFY(spyFinishedDE.wait());
     QCOMPARE(viewDE.title(), QStringLiteral("Nicht verf\u00FCgbar: %1").arg(url.toString()));
 }
 
@@ -1012,6 +1024,61 @@ void tst_QWebEngineView::keyboardEvents()
     evaluateJavaScriptSync(view.page(), "document.getElementById('first_hyperlink').focus()");
     QTest::keyPress(view.focusProxy(), Qt::Key_Enter);
     QVERIFY(loadFinishedSpy.wait());
+}
+
+void tst_QWebEngineView::keyboardFocusAfterPopup()
+{
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+
+    QLineEdit *urlLine = new QLineEdit(containerWidget.data());
+    QStringList urlList;
+    urlList << "test";
+    QCompleter *completer = new QCompleter(urlList, urlLine);
+    completer->setCompletionMode(QCompleter::PopupCompletion);
+    urlLine->setCompleter(completer);
+    urlLine->setFocus();
+
+    QWebEngineView *webView = new QWebEngineView(containerWidget.data());
+    QSignalSpy loadFinishedSpy(webView, SIGNAL(loadFinished(bool)));
+
+    connect(urlLine, &QLineEdit::editingFinished, [=] {
+        webView->setHtml("<html><body onload=\"document.getElementById('input1').focus()\">"
+                         " <input type='text' id='input1' />"
+                         "</body></html>");
+
+        // Check whether the RenderWidgetHostView has the keyboard focus
+        QQuickWidget *rwhv = qobject_cast<QQuickWidget *>(webView->focusProxy());
+        QVERIFY(rwhv);
+        QVERIFY(rwhv->hasFocus());
+        QVERIFY(rwhv->rootObject()->hasFocus());
+        QVERIFY(rwhv->window()->windowHandle()->isActive());
+        QVERIFY(rwhv->rootObject()->hasActiveFocus());
+    });
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(urlLine);
+    layout->addWidget(webView);
+
+    containerWidget->setLayout(layout);
+    containerWidget->show();
+    QTest::qWaitForWindowExposed(containerWidget.data());
+
+    // Trigger completer's popup and select the first suggestion
+    QTest::keyClick(urlLine, Qt::Key_T);
+    qApp->processEvents();
+    QTRY_VERIFY(qApp->activePopupWidget());
+    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Down);
+    qApp->processEvents();
+    QTest::keyClick(qApp->activePopupWidget(), Qt::Key_Enter);
+    qApp->processEvents();
+
+    // After the load the focused window should forward the keyboard events to the webView
+    QVERIFY(loadFinishedSpy.wait());
+    // Wait for active focus on the input field
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+    QTest::keyClick(qApp->focusWindow(), Qt::Key_X);
+    qApp->processEvents();
+    QTRY_COMPARE(evaluateJavaScriptSync(webView->page(), "document.getElementById('input1').value").toString(), QStringLiteral("x"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

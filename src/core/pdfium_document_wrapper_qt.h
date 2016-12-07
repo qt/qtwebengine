@@ -37,36 +37,35 @@
 **
 ****************************************************************************/
 
-#ifndef RENDER_VIEW_OBSERVER_HOST_QT_H
-#define RENDER_VIEW_OBSERVER_HOST_QT_H
+#ifndef PDFIUM_DOCUMENT_WRAPPER_QT_H
+#define PDFIUM_DOCUMENT_WRAPPER_QT_H
 
-#include "content/public/browser/web_contents_observer.h"
+#if defined(ENABLE_PDF)
+#include "qtwebenginecoreglobal.h"
 
-#include <QtGlobal>
-
-namespace content {
-    class WebContents;
-}
+#include <QtCore/qglobal.h>
+#include <QtCore/qhash.h>
+#include <QtGui/qimage.h>
 
 namespace QtWebEngineCore {
+class PdfiumPageWrapperQt;
 
-class WebContentsAdapterClient;
-
-class RenderViewObserverHostQt : public content::WebContentsObserver
+class QWEBENGINE_EXPORT PdfiumDocumentWrapperQt
 {
 public:
-    RenderViewObserverHostQt(content::WebContents*, WebContentsAdapterClient *adapterClient);
-    void fetchDocumentMarkup(quint64 requestId);
-    void fetchDocumentInnerText(quint64 requestId);
+    PdfiumDocumentWrapperQt(const void *pdfData, size_t size, const QSize &imageSize, const char *password = nullptr);
+    virtual ~PdfiumDocumentWrapperQt();
+    QImage pageAsQImage(size_t index);
+    int pageCount() const { return m_pageCount; }
 
 private:
-    bool OnMessageReceived(const IPC::Message& message) Q_DECL_OVERRIDE;
-    void onDidFetchDocumentMarkup(quint64 requestId, const base::string16& markup);
-    void onDidFetchDocumentInnerText(quint64 requestId, const base::string16& innerText);
-
-    WebContentsAdapterClient *m_adapterClient;
+    static int m_libraryUsers;
+    int m_pageCount;
+    void *m_documentHandle;
+    QSize m_imageSize;
+    QHash<int, PdfiumPageWrapperQt*> m_cachedPages;
 };
 
 } // namespace QtWebEngineCore
-
-#endif // RENDER_VIEW_OBSERVER_HOST_QT_H
+#endif // defined (ENABLE_PDF)
+#endif // PDFIUM_DOCUMENT_WRAPPER_QT_H

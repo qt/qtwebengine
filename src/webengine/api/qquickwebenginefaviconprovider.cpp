@@ -152,7 +152,7 @@ QQuickWebEngineView *QQuickWebEngineFaviconProvider::viewForIconUrl(const QUrl &
     // latest WebEngineView which was raised an iconChanged signal.
     if (m_latestView) {
         QList<QUrl> *iconUrls = m_iconUrlMap[m_latestView];
-        if (iconUrls->contains(iconUrl))
+        if (iconUrls && iconUrls->contains(iconUrl))
             return m_latestView;
     }
 

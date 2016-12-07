@@ -236,7 +236,7 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_touchMotionStarted(false)
     , m_chromiumCompositorData(new ChromiumCompositorData)
     , m_needsDelegatedFrameAck(false)
-    , m_didFirstVisuallyNonEmptyLayout(false)
+    , m_loadVisuallyCommittedState(NotCommitted)
     , m_adapterClient(0)
     , m_imeInProgress(false)
     , m_receivedEmptyImeText(false)
@@ -676,9 +676,11 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, c
 
     m_delegate->update();
 
-    if (m_didFirstVisuallyNonEmptyLayout) {
+    if (m_loadVisuallyCommittedState == NotCommitted) {
+        m_loadVisuallyCommittedState = DidFirstCompositorFrameSwap;
+    } else if (m_loadVisuallyCommittedState == DidFirstVisuallyNonEmptyPaint) {
         m_adapterClient->loadVisuallyCommitted();
-        m_didFirstVisuallyNonEmptyLayout = false;
+        m_loadVisuallyCommittedState = NotCommitted;
     }
 
     if (scrollOffsetChanged)
@@ -1242,11 +1244,6 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         m_host->Blur();
         ev->accept();
     }
-}
-
-void RenderWidgetHostViewQt::didFirstVisuallyNonEmptyLayout()
-{
-    m_didFirstVisuallyNonEmptyLayout = true;
 }
 
 } // namespace QtWebEngineCore

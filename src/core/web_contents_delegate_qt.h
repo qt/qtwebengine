@@ -135,6 +135,7 @@ public:
     virtual void DidUpdateFaviconURL(const std::vector<content::FaviconURL> &candidates) Q_DECL_OVERRIDE;
     virtual void DidNavigateAnyFrame(content::RenderFrameHost *render_frame_host, const content::LoadCommittedDetails &details, const content::FrameNavigateParams &params) Q_DECL_OVERRIDE;
     virtual void WasShown() Q_DECL_OVERRIDE;
+    virtual void DidFirstVisuallyNonEmptyPaint() Q_DECL_OVERRIDE;
 
     void overrideWebPreferences(content::WebContents *, content::WebPreferences*);
     void allowCertificateError(const QSharedPointer<CertificateErrorController> &) ;

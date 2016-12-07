@@ -91,45 +91,25 @@ private:
     QQuickWebEngineView *m_webEngineView;
 };
 
-/**
- * Starts an event loop that runs until the given signal is received.
- * Optionally the event loop
- * can return earlier on a timeout.
- *
- * \return \p true if the requested signal was received
- *         \p false on timeout
- */
-inline bool waitForSignal(QObject *obj, const char *signal, int timeout = 10000)
-{
-    QEventLoop loop;
-    QObject::connect(obj, signal, &loop, SLOT(quit()));
-    QTimer timer;
-    QSignalSpy timeoutSpy(&timer, SIGNAL(timeout()));
-    if (timeout > 0) {
-        QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-        timer.setSingleShot(true);
-        timer.start(timeout);
-    }
-    loop.exec();
-    return timeoutSpy.isEmpty();
-}
-
 inline bool waitForLoadSucceeded(QQuickWebEngineView *webEngineView, int timeout = 10000)
 {
     LoadSpy loadSpy(webEngineView);
-    return waitForSignal(&loadSpy, SIGNAL(loadSucceeded()), timeout);
+    QSignalSpy spy(&loadSpy, &LoadSpy::loadSucceeded);
+    return spy.wait(timeout);
 }
 
 inline bool waitForLoadFailed(QQuickWebEngineView *webEngineView, int timeout = 10000)
 {
     LoadSpy loadSpy(webEngineView);
-    return waitForSignal(&loadSpy, SIGNAL(loadFailed()), timeout);
+    QSignalSpy spy(&loadSpy, &LoadSpy::loadFailed);
+    return spy.wait(timeout);
 }
 
 inline bool waitForViewportReady(QQuickWebEngineView *webEngineView, int timeout = 10000)
 {
 #ifdef ENABLE_QML_TESTSUPPORT_API
-    return waitForSignal(reinterpret_cast<QObject *>(webEngineView->testSupport()), SIGNAL(loadVisuallyCommitted()), timeout);
+    QSignalSpy spy(reinterpret_cast<QObject *>(webEngineView->testSupport()), SIGNAL(loadVisuallyCommitted()));
+    return spy.wait(timeout);
 #else
     Q_UNUSED(webEngineView)
     Q_UNUSED(timeout)
