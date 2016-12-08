@@ -183,11 +183,13 @@ static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint6
         adapterClient->didRunJavaScript(requestId, fromJSValue(result));
 }
 
+#if defined(ENABLE_BASIC_PRINTING)
 static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient, int requestId, const std::vector<char>& result)
 {
     if (requestId)
         adapterClient->didPrintPage(requestId, QByteArray(result.data(), result.size()));
 }
+#endif
 
 static content::WebContents *createBlankWebContents(WebContentsAdapterClient *adapterClient, content::BrowserContext *browserContext)
 {
