@@ -109,4 +109,6 @@ OTHER_FILES = \
     $$files(../3rdparty/chromium/*.mm, true) \
     $$files(../3rdparty/chromium/*.py, true) \
     $$files(../3rdparty/chromium/*.gyp, true) \
-    $$files(../3rdparty/chromium/*.gypi, true)
+    $$files(../3rdparty/chromium/*.gypi, true) \
+    $$files(../3rdparty/chromium/*.gn, true) \
+    $$files(../3rdparty/chromium/*.gni, true)
