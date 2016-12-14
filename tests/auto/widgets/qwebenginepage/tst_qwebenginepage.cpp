@@ -3989,16 +3989,10 @@ void tst_QWebEnginePage::setHtmlWithImageResource()
 
 void tst_QWebEnginePage::setHtmlWithStylesheetResource()
 {
-#if !defined(QWEBENGINEELEMENT)
-    QSKIP("QWEBENGINEELEMENT");
-#else
-    // By default, only security origins of local files can load local resources.
-    // So we should specify baseUrl to be a local file in order to be able to download the local stylesheet.
-
     const char* htmlData =
         "<html>"
             "<head>"
-                "<link rel='stylesheet' href='qrc:/style.css' type='text/css' />"
+                "<link rel='stylesheet' href='qrc:/resources/style.css' type='text/css' />"
             "</head>"
             "<body>"
                 "<p id='idP'>some text</p>"
@@ -4006,22 +4000,21 @@ void tst_QWebEnginePage::setHtmlWithStylesheetResource()
         "</html>";
     QLatin1String html(htmlData);
     QWebEnginePage page;
-    QWebEngineElement webElement;
-
-    page.setHtml(html, QUrl(QLatin1String("qrc:///file")));
     QSignalSpy spyFinished(&page, &QWebEnginePage::loadFinished);
-    QVERIFY(spyFinished.wait(200));
-    webElement = page.documentElement().findFirst("p");
-    QCOMPARE(webElement.styleProperty("color", QWebEngineElement::CascadedStyle), QLatin1String("red"));
 
-    // Now we test the opposite: without a baseUrl as a local file, we cannot request local resources.
+    // We allow access to qrc resources from any security origin, including local and anonymous
+    page.setHtml(html, QUrl("file:///path/to/file"));
+    QVERIFY(spyFinished.wait());
+    QCOMPARE(evaluateJavaScriptSync(&page, "window.getComputedStyle(document.getElementById('idP')).color").toString(), QString("rgb(255, 0, 0)"));
 
-    page.setHtml(html, QUrl(QLatin1String("http://www.example.com/")));
-    QVERIFY(spyFinished.wait(200));
-    webElement = page.documentElement().findFirst("p");
-    QEXPECT_FAIL("", "https://bugs.webkit.org/show_bug.cgi?id=118659", Continue);
-    QCOMPARE(webElement.styleProperty("color", QWebEngineElement::CascadedStyle), QString());
-#endif
+    page.setHtml(html, QUrl(QLatin1String("qrc:/")));
+    QVERIFY(spyFinished.wait());
+    QCOMPARE(evaluateJavaScriptSync(&page, "window.getComputedStyle(document.getElementById('idP')).color").toString(), QString("rgb(255, 0, 0)"));
+
+    // Now we test the opposite: without a baseUrl as a local file, we can still request qrc resources.
+    page.setHtml(html);
+    QVERIFY(spyFinished.wait());
+    QCOMPARE(evaluateJavaScriptSync(&page, "window.getComputedStyle(document.getElementById('idP')).color").toString(), QString("rgb(255, 0, 0)"));
 }
 
 void tst_QWebEnginePage::setHtmlWithBaseURL()
