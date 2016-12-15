@@ -89,7 +89,7 @@
     \l{https://chromium.googlesource.com/chromium/src/+/master/docs/chromium_browser_vs_google_chrome.md}{overview}
     that is part of the documentation in the \l {Chromium Project} upstream source tree.
 
-    This version of Qt WebEngine is based on Chromium version 49.0.2623.111, with
+    This version of Qt WebEngine is based on Chromium version 53.0.2785.148, with
     additional security fixes from newer versions.
 
     \section2 Qt WebEngine Process
@@ -199,7 +199,7 @@
 
     Qt WebEngine uses the proxy settings from \l{Qt Network}.  If
     QNetworkProxy::applicationProxy is set, it will also be used for Qt WebEngine, and if
-    QNetworkProxy::usesSystemConfiguration() is enabled, the proxy settings are automatically
+    QNetworkProxyFactory::usesSystemConfiguration() is enabled, the proxy settings are automatically
     retrieved from the system. Settings from an installed QNetworkProxyFactory will be ignored
     though.
 

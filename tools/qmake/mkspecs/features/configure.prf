@@ -20,13 +20,20 @@ defineTest(runConfigure) {
         qtCompileTest($$test)
     }
 
+    isQtMinimum(5, 8) {
+        include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+        QT_FOR_CONFIG += webengine-private
+        qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
+        qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
+    }
+
     linux {
         QT_FOR_CONFIG += gui-private
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
         REQUIRED_PACKAGES = dbus-1 fontconfig
         !cross_compile: qtConfig(xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
-        contains(QT_CONFIG, pulseaudio): REQUIRED_PACKAGES += libpulse
+        qtConfig(pulseaudio): REQUIRED_PACKAGES += libpulse
         qtConfig(system-png): REQUIRED_PACKAGES += libpng
         qtConfig(system-harfbuzz) {
              packagesExist("\'harfbuzz >= 1.2.0\'"): WEBENGINE_CONFIG += use_system_harfbuzz
@@ -80,12 +87,6 @@ defineTest(runConfigure) {
     }
     !cross_compile {
         WEBENGINE_CONFIG += enable_pdf
-    }
-    isQtMinimum(5, 8) {
-        include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
-        QT_FOR_CONFIG += webengine-private
-        qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
-        qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
     }
 
     isEmpty(skipBuildReason): {

@@ -275,7 +275,7 @@ void ClipboardQt::WriteData(const FormatType& format, const char* data_data, siz
 bool ClipboardQt::IsFormatAvailable(const ui::Clipboard::FormatType& format, ui::ClipboardType type) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    return mimeData->hasFormat(QString::fromStdString(format.ToString()));
+    return mimeData && mimeData->hasFormat(QString::fromStdString(format.ToString()));
 }
 
 void ClipboardQt::Clear(ui::ClipboardType type)
@@ -292,6 +292,8 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardType type, std::vector<base::s
 
     types->clear();
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    if (!mimeData)
+        return;
     if (mimeData->hasImage())
         types->push_back(toString16(QStringLiteral("image/png")));
     Q_FOREACH (const QString &mimeType, mimeData->formats())
@@ -306,13 +308,15 @@ void ClipboardQt::ReadAvailableTypes(ui::ClipboardType type, std::vector<base::s
 void ClipboardQt::ReadText(ui::ClipboardType type, base::string16* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    *result = toString16(mimeData->text());
+    if (mimeData)
+        *result = toString16(mimeData->text());
 }
 
 void ClipboardQt::ReadAsciiText(ui::ClipboardType type, std::string* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
-    *result = mimeData->text().toStdString();
+    if (mimeData)
+        *result = mimeData->text().toStdString();
 }
 
 void ClipboardQt::ReadHTML(ui::ClipboardType type, base::string16* markup, std::string* src_url, uint32_t* fragment_start, uint32_t* fragment_end) const
@@ -324,6 +328,8 @@ void ClipboardQt::ReadHTML(ui::ClipboardType type, base::string16* markup, std::
     *fragment_end = 0;
 
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    if (!mimeData)
+        return;
     *markup = toString16(mimeData->html());
     *fragment_end = static_cast<uint32_t>(markup->length());
 }
@@ -331,6 +337,8 @@ void ClipboardQt::ReadHTML(ui::ClipboardType type, base::string16* markup, std::
 void ClipboardQt::ReadRTF(ui::ClipboardType type, std::string* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    if (!mimeData)
+        return;
     const QByteArray byteArray = mimeData->data(QString::fromLatin1(kMimeTypeRTF));
     *result = std::string(byteArray.constData(), byteArray.length());
 }
@@ -338,6 +346,8 @@ void ClipboardQt::ReadRTF(ui::ClipboardType type, std::string* result) const
 SkBitmap ClipboardQt::ReadImage(ui::ClipboardType type) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    if (!mimeData)
+        return SkBitmap();
     QImage image = qvariant_cast<QImage>(mimeData->imageData());
 
     image = image.convertToFormat(QImage::Format_ARGB32);
@@ -354,6 +364,8 @@ SkBitmap ClipboardQt::ReadImage(ui::ClipboardType type) const
 void ClipboardQt::ReadCustomData(ui::ClipboardType clipboard_type, const base::string16& type, base::string16* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData(clipboard_type == ui::CLIPBOARD_TYPE_COPY_PASTE ? QClipboard::Clipboard : QClipboard::Selection);
+    if (!mimeData)
+        return;
     const QByteArray customData = mimeData->data(QString::fromLatin1(kMimeTypeWebCustomDataCopy));
     ui::ReadCustomDataForType(customData.constData(), customData.size(), type, result);
 }
@@ -366,6 +378,8 @@ void ClipboardQt::ReadBookmark(base::string16* title, std::string* url) const
 void ClipboardQt::ReadData(const FormatType& format, std::string* result) const
 {
     const QMimeData *mimeData = QGuiApplication::clipboard()->mimeData();
+    if (!mimeData)
+        return;
     const QByteArray byteArray = mimeData->data(QString::fromStdString(format.ToString()));
     *result = std::string(byteArray.constData(), byteArray.length());
 }

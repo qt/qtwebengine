@@ -86,7 +86,7 @@ contains(QT_ARCH, "arm") {
         !lessThan(MARMV, 7): GYP_CONFIG += arm_neon_optional=1
     }
 
-    contains(QMAKE_CFLAGS, "-marm"): GYP_CONFIG += arm_thumb=0
+    if(isEmpty(MARMV)|lessThan(MARMV, 7)):contains(QMAKE_CFLAGS, "-marm"): GYP_CONFIG += arm_thumb=0
     contains(QMAKE_CFLAGS, "-mthumb"): GYP_CONFIG += arm_thumb=1
 }
 
