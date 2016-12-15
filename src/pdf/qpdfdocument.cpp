@@ -39,8 +39,8 @@ QPdfMutexLocker::QPdfMutexLocker()
 }
 
 QPdfDocumentPrivate::QPdfDocumentPrivate()
-    : avail(Q_NULLPTR)
-    , doc(Q_NULLPTR)
+    : avail(nullptr)
+    , doc(nullptr)
     , loadComplete(false)
     , status(QPdfDocument::Null)
     , lastError(QPdfDocument::NoError)
@@ -83,11 +83,11 @@ void QPdfDocumentPrivate::clear()
 
     if (doc)
         FPDF_CloseDocument(doc);
-    doc = Q_NULLPTR;
+    doc = nullptr;
 
     if (avail)
         FPDFAvail_Destroy(avail);
-    avail = Q_NULLPTR;
+    avail = nullptr;
     lock.unlock();
 
     loadComplete = false;
@@ -229,7 +229,7 @@ void QPdfDocumentPrivate::tryLoadDocument()
 
     if (lastError == QPdfDocument::IncorrectPasswordError) {
         FPDF_CloseDocument(doc);
-        doc = Q_NULLPTR;
+        doc = nullptr;
 
         setStatus(QPdfDocument::Error);
         emit q->passwordRequired();
@@ -432,7 +432,7 @@ QVariant QPdfDocument::metaData(MetaDataField field) const
     }
 
     QPdfMutexLocker lock;
-    const unsigned long len = FPDF_GetMetaText(d->doc, fieldName.constData(), Q_NULLPTR, 0);
+    const unsigned long len = FPDF_GetMetaText(d->doc, fieldName.constData(), nullptr, 0);
 
     QVector<ushort> buf(len);
     FPDF_GetMetaText(d->doc, fieldName.constData(), buf.data(), buf.length());

@@ -71,7 +71,7 @@ public:
     };
     Q_ENUM(MetaDataField)
 
-    explicit QPdfDocument(QObject *parent = Q_NULLPTR);
+    explicit QPdfDocument(QObject *parent = nullptr);
     ~QPdfDocument();
 
     DocumentError load(const QString &fileName);

@@ -43,7 +43,7 @@ signals:
     void pageReady(int page, qreal zoom, QImage image);
 
 protected:
-    void run() Q_DECL_OVERRIDE;
+    void run() override;
 
 private:
     void renderPage(int page, qreal zoom);
