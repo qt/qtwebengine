@@ -386,7 +386,7 @@ void ContentBrowserClientQt::RenderProcessWillLaunch(content::RenderProcessHost*
     // SpellCheckMessageFilter is required for both Hunspell and Native configurations.
     host->AddFilter(new SpellCheckMessageFilter(id));
 #endif
-#if defined(Q_OS_MACOS) && defined(USE_BROWSER_SPELLCHECKER)
+#if defined(Q_OS_MACOS) && defined(ENABLE_SPELLCHECK) && defined(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
 #if defined(ENABLE_BASIC_PRINTING)

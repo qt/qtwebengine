@@ -7,6 +7,7 @@ TEMPLATE = aux
 
 build_pass|!debug_and_release {
 
+    macos: include(config/mac_osx.pri)
     linux: include(config/desktop_linux.pri)
     isEmpty(gn_args): error(No gn_args found please make sure you have valid configuration.)
 

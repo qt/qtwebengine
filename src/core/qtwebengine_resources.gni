@@ -81,10 +81,6 @@ repack("qtwebengine_repack_resources_devtools") {
 chrome_repack_locales("qtwebengine_repack_locales_pack") {
   input_locales = locales
   output_dir_name = "qtwebengine_locales"
-  if (is_mac) {
-    output_locales = locales_as_mac_outputs
-  } else {
-    output_locales = locales
-  }
+  output_locales = locales
 }
 

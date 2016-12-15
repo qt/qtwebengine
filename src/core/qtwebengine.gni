@@ -13,6 +13,7 @@ include_dirs = [
 
 deps = [
   "//base",
+  "//components/cdm/renderer",
   "//components/devtools_http_handler",
   "//components/error_page/common",
   "//components/keyed_service/content",
@@ -30,6 +31,7 @@ deps = [
   "//third_party/WebKit/public:blink",
   "//third_party/widevine/cdm:version_h",
   "//ui/accessibility",
+  "//third_party/mesa:mesa_headers",
   ":qtwebengine_sources",
   ":qtwebengine_resources"
 ]

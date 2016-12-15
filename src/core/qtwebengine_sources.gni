@@ -27,6 +27,11 @@ source_set("qtwebengine_sources") {
         "//chrome/renderer/pepper/pepper_shared_memory_message_filter.cc",
         "//chrome/renderer/pepper/pepper_shared_memory_message_filter.h",
       ]
+
+      deps += [
+        # Need to depend on //content/ppapi_plugin, which is private, thus depending on parent.
+        "//content",
+      ]
   }
 
   if (enable_spellcheck) {
@@ -49,8 +54,6 @@ source_set("qtwebengine_sources") {
         "//chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h",
         "//chrome/browser/spellchecker/spellcheck_message_filter.cc",
         "//chrome/browser/spellchecker/spellcheck_message_filter.h",
-        "//chrome/browser/spellchecker/spellcheck_message_filter_platform.h",
-        "//chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc",
         "//chrome/browser/spellchecker/spellcheck_platform_mac.mm",
         "//chrome/browser/spellchecker/spellcheck_service.cc",
         "//chrome/browser/spellchecker/spellcheck_service.h",
@@ -84,11 +87,18 @@ source_set("qtwebengine_sources") {
       include_dirs += [
         "//third_party/WebKit"
       ]
-      deps = [
+      deps += [
         "//third_party/icu",
         "//third_party/hunspell",
         "//chrome/tools/convert_dict"
       ]
+
+      if (is_mac && use_browser_spellchecker) {
+        sources += [
+          "//chrome/browser/spellchecker/spellcheck_message_filter_platform.h",
+          "//chrome/browser/spellchecker/spellcheck_message_filter_platform_mac.cc",
+        ]
+      }
   }
 
   if (enable_basic_printing || enable_print_preview) {
