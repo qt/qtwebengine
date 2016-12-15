@@ -61,7 +61,7 @@ private:
 
 private:
     QHash<int, QImage> m_pageCache;
-    QList<int> m_cachedPagesLRU;
+    QVector<int> m_cachedPagesLRU;
     int m_pageCacheLimit;
     QVector<QSizeF> m_pageSizes;
     PageRenderer *m_pageRenderer;
