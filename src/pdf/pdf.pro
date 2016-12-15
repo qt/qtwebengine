@@ -5,9 +5,9 @@ TEMPLATE = lib
 CONFIG += c++11
 CONFIG -= precompile_header # Not supported by upstream header files
 win32: DEFINES += NOMINMAX
-INCLUDEPATH += ../3rdparty/pdfium/fpdfsdk/include
-INCLUDEPATH += ../3rdparty/pdfium
-INCLUDEPATH += ../3rdparty/pdfium/third_party/freetype/include
+INCLUDEPATH += $$QTPDF_ROOT/src/3rdparty/pdfium/fpdfsdk/include
+INCLUDEPATH += $$QTPDF_ROOT/src/3rdparty/pdfium
+INCLUDEPATH += $$QTPDF_ROOT/src/3rdparty/pdfium/third_party/freetype/include
 load(qt_module)
 
 LIBS_PRIVATE += -L$$MODULE_BASE_OUTDIR/lib -lqtpdfium$$qtPlatformTargetSuffix()
