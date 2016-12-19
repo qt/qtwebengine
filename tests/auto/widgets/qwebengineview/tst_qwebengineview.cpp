@@ -93,6 +93,7 @@ private Q_SLOTS:
 
     void softwareInputPanel();
     void hiddenText();
+    void emptyInputMethodEvent();
 };
 
 // This will be called before the first test function is executed.
@@ -1217,6 +1218,34 @@ void tst_QWebEngineView::hiddenText()
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
     QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
     QVERIFY(!(view.focusProxy()->inputMethodHints() & Qt::ImhHiddenText));
+}
+
+void tst_QWebEngineView::emptyInputMethodEvent()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(!evaluateJavaScriptSync(view.page(), "window.getSelection().toString()").toString().isEmpty());
+
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QVERIFY(selectionChangedSpy.wait(100));
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QCOMPARE(selectionChangedSpy.count(), 1);
+
+    // Send empty QInputMethodEvent
+    QInputMethodEvent emptyEvent;
+    QApplication::sendEvent(view.focusProxy(), &emptyEvent);
+
+    QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
+    QCOMPARE(inputValue, QString("QtWebEngine"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

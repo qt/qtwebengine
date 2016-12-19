@@ -1114,7 +1114,10 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
             QGuiApplication::postEvent(qApp->focusObject(), eventCopy);
         } else {
             m_receivedEmptyImeText = false;
-            m_host->ImeCancelComposition();
+            if (m_imeInProgress) {
+                m_imeInProgress = false;
+                m_host->ImeCancelComposition();
+            }
         }
     }
 }

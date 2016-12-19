@@ -1882,20 +1882,6 @@ void tst_QWebEnginePage::inputMethods()
 
     //END - Tests for Selection when the Editor is not in Composition mode
 
-    //START - Test for sending empty QInputMethodEvent
-    page->setHtml("<html><body>" \
-                                            "<input type='text' id='input3' value='QtWebEngine2'/>" \
-                                            "</body></html>");
-    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input3'); inputEle.focus(); inputEle.select();");
-
-    //Send empty QInputMethodEvent
-    QInputMethodEvent emptyEvent;
-    page->event(&emptyEvent);
-
-    QString inputValue = evaluateJavaScriptSync(page, "document.getElementById('input3').value").toString();
-    QCOMPARE(inputValue, QString("QtWebEngine2"));
-    //END - Test for sending empty QInputMethodEvent
-
     page->setHtml("<html><body>" \
                                             "<input type='text' id='input4' value='QtWebEngine inputMethod'/>" \
                                             "</body></html>");
