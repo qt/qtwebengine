@@ -44,6 +44,7 @@ SOURCES = \
         browser_accessibility_manager_qt.cpp \
         browser_accessibility_qt.cpp \
         browser_context_adapter.cpp \
+        browser_context_adapter_client.cpp \
         browser_context_qt.cpp \
         browser_message_filter_qt.cpp \
         certificate_error_controller.cpp \

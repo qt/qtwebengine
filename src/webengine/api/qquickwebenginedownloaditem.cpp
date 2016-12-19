@@ -401,12 +401,27 @@ QQuickWebEngineDownloadItem::DownloadType QQuickWebEngineDownloadItem::type() co
     \value WebEngineDownloadItem.ServerUnreachable Unexpected server response (might indicate that
            the responding server may not be the intended server).
     \value WebEngineDownloadItem.UserCanceled The user canceled the download.
+
+    \sa interruptReasonString()
 */
 
 QQuickWebEngineDownloadItem::DownloadInterruptReason QQuickWebEngineDownloadItem::interruptReason() const
 {
     Q_D(const QQuickWebEngineDownloadItem);
     return d->interruptReason;
+}
+
+/*!
+    Returns a human-readable description of the reason for interrupting the download.
+    \since QtWebEngine 1.6
+
+    \sa interruptReason()
+*/
+
+QString QQuickWebEngineDownloadItem::interruptReasonString() const
+{
+    return BrowserContextAdapterClient::downloadInterruptReasonToString(
+              static_cast<BrowserContextAdapterClient::DownloadInterruptReason>(interruptReason()));
 }
 
 QQuickWebEngineDownloadItem::QQuickWebEngineDownloadItem(QQuickWebEngineDownloadItemPrivate *p, QObject *parent)

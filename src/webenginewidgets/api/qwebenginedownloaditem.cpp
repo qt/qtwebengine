@@ -464,12 +464,27 @@ QWebEngineDownloadItem::DownloadType QWebEngineDownloadItem::type() const
 /*!
     Returns the reason why the download was interrupted.
     \since 5.9
+
+    \sa interruptReasonString()
 */
 
 QWebEngineDownloadItem::DownloadInterruptReason QWebEngineDownloadItem::interruptReason() const
 {
     Q_D(const QWebEngineDownloadItem);
     return d->interruptReason;
+}
+
+/*!
+    Returns a human-readable description of the reason for interrupting the download.
+    \since 5.9
+
+    \sa interruptReason()
+*/
+
+QString QWebEngineDownloadItem::interruptReasonString() const
+{
+    return BrowserContextAdapterClient::downloadInterruptReasonToString(
+              static_cast<BrowserContextAdapterClient::DownloadInterruptReason>(interruptReason()));
 }
 
 QWebEngineDownloadItem::QWebEngineDownloadItem(QWebEngineDownloadItemPrivate *p, QObject *parent)

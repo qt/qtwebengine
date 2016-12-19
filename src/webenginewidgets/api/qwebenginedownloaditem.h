@@ -124,6 +124,7 @@ public:
     void setSavePageFormat(SavePageFormat format);
     DownloadType type() const;
     DownloadInterruptReason interruptReason() const;
+    QString interruptReasonString() const;
 
 public Q_SLOTS:
     void accept();

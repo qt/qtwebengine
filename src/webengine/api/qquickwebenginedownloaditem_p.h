@@ -130,6 +130,7 @@ public:
     Q_PROPERTY(QString path READ path WRITE setPath NOTIFY pathChanged FINAL)
     Q_PROPERTY(DownloadType type READ type NOTIFY typeChanged REVISION 3 FINAL)
     Q_PROPERTY(DownloadInterruptReason interruptReason READ interruptReason NOTIFY interruptReasonChanged REVISION 4 FINAL)
+    Q_PROPERTY(QString interruptReasonString READ interruptReasonString NOTIFY interruptReasonChanged REVISION 4 FINAL)
 
     Q_INVOKABLE void accept();
     Q_INVOKABLE void cancel();
@@ -145,6 +146,7 @@ public:
     void setSavePageFormat(SavePageFormat format);
     DownloadType type() const;
     DownloadInterruptReason interruptReason() const;
+    QString interruptReasonString() const;
 
 Q_SIGNALS:
     void stateChanged();

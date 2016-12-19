@@ -76,6 +76,7 @@ public:
         SavePage
     };
 
+    // Keep in sync with content::DownloadInterruptReason
     enum DownloadInterruptReason {
         NoReason = 0,
         FileFailed = 1,
@@ -125,6 +126,7 @@ public:
 
     virtual void downloadRequested(DownloadItemInfo &info) = 0;
     virtual void downloadUpdated(const DownloadItemInfo &info) = 0;
+    static QString downloadInterruptReasonToString(DownloadInterruptReason reason);
 };
 
 } // namespace
