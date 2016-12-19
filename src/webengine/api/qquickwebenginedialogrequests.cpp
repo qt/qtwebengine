@@ -810,7 +810,7 @@ QString QQuickWebEngineFormValidationMessageRequest::subText() const
 }
 
 /*!
-    \qmlproperty enumeration ValidationMessageRequest::type
+    \qmlproperty enumeration FormValidationMessageRequest::type
     \readonly
 
     The type of the form validation message request.
