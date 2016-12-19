@@ -32,17 +32,15 @@
 #include <QOpenGLWidget>
 #include <QPaintEngine>
 #include <QPushButton>
+#include <QScreen>
 #include <QStateMachine>
-#include <QStyle>
 #include <QtGui/QClipboard>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
 #include <QWebChannel>
-#include <private/qinputmethod_p.h>
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
-#include <qpa/qplatforminputcontext.h>
 #include <qwebenginedownloaditem.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
@@ -65,38 +63,6 @@ static void removeRecursive(const QString& dirname)
             dir.remove(entries[i].fileName());
     QDir().rmdir(dirname);
 }
-
-class TestInputContext : public QPlatformInputContext
-{
-public:
-    TestInputContext()
-    : m_visible(false)
-    {
-        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
-        inputMethodPrivate->testContext = this;
-    }
-
-    ~TestInputContext()
-    {
-        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
-        inputMethodPrivate->testContext = 0;
-    }
-
-    virtual void showInputPanel()
-    {
-        m_visible = true;
-    }
-    virtual void hideInputPanel()
-    {
-        m_visible = false;
-    }
-    virtual bool isInputPanelVisible() const
-    {
-        return m_visible;
-    }
-
-    bool m_visible;
-};
 
 class tst_QWebEnginePage : public QObject
 {
@@ -1741,32 +1707,6 @@ void tst_QWebEnginePage::inputMethods()
 
     clickOnPage(page, textInputCenter);
 
-    // This part of the test checks if the SIP (Software Input Panel) is triggered,
-    // which normally happens on mobile platforms, when a user input form receives
-    // a mouse click.
-    int  inputPanel = 0;
-    if (viewType == "QWebEngineView") {
-        if (QWebEngineView* wv = qobject_cast<QWebEngineView*>(view))
-            inputPanel = wv->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel);
-    } else if (viewType == "QGraphicsWebView") {
-        if (QGraphicsWebView* wv = qobject_cast<QGraphicsWebView*>(view))
-            inputPanel = wv->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel);
-    }
-
-    // For non-mobile platforms RequestSoftwareInputPanel event is not called
-    // because there is no SIP (Software Input Panel) triggered. In the case of a
-    // mobile platform, an input panel, e.g. virtual keyboard, is usually invoked
-    // and the RequestSoftwareInputPanel event is called. For these two situations
-    // this part of the test can verified as the checks below.
-    if (inputPanel)
-        QVERIFY(testContext.isInputPanelVisible());
-    else
-        QVERIFY(!testContext.isInputPanelVisible());
-    testContext.hideInputPanel();
-
-    clickOnPage(page, textInputCenter);
-    QVERIFY(testContext.isInputPanelVisible());
-
     //ImMicroFocus
     QVariant variant = page->inputMethodQuery(Qt::ImMicroFocus);
     QVERIFY(inputs.at(0).geometry().contains(variant.toRect().topLeft()));
@@ -1969,14 +1909,6 @@ void tst_QWebEnginePage::inputMethods()
 
     clickOnPage(page, textInputCenter);
     QVERIFY(!(inputMethodHints(view) & Qt::ImhHiddenText));
-
-    page->setHtml("<html><body><p>nothing to input here");
-    testContext.hideInputPanel();
-
-    QWebEngineElement para = page->mainFrame()->findFirstElement("p");
-    clickOnPage(page, para.geometry().center());
-
-    QVERIFY(!testContext.isInputPanelVisible());
 
     //START - Test for sending empty QInputMethodEvent
     page->setHtml("<html><body>" \
@@ -2300,15 +2232,6 @@ void tst_QWebEnginePage::inputMethods()
     anchorPosition =  variant.toInt();
     QCOMPARE(anchorPosition, 12);
 
-    // Check sending RequestSoftwareInputPanel event
-    page->setHtml("<html><body>" \
-                                            "<input type='text' id='input5' value='QtWebEngine inputMethod'/>" \
-                                            "<div id='btnDiv' onclick='i=document.getElementById(&quot;input5&quot;); i.focus();'>abc</div>"\
-                                            "</body></html>");
-    QWebEngineElement inputElement = page->mainFrame()->findFirstElement("div");
-    clickOnPage(page, inputElement.geometry().center());
-
-    QVERIFY(!testContext.isInputPanelVisible());
 
     // START - Newline test for textarea
     qApp->processEvents();
