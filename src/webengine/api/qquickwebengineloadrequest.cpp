@@ -120,6 +120,26 @@ QString QQuickWebEngineLoadRequest::errorString() const
     return d->errorString;
 }
 
+/*!
+    \qmlproperty enumeration WebEngineLoadRequest::errorDomain
+    This enumeration holds the type of a load request error:
+
+    \value  WebEngineView.NoErrorDomain
+            Error type is not known.
+    \value  WebEngineView.InternalErrorDomain
+            Content cannot be interpreted by Qt WebEngine.
+    \value  WebEngineView.ConnectionErrorDomain
+            Error results from a faulty network connection.
+    \value  WebEngineView.CertificateErrorDomain
+            Error is related to the SSL/TLS certificate.
+    \value  WebEngineView.HttpErrorDomain
+            Error is related to the HTTP connection.
+    \value  WebEngineView.FtpErrorDomain
+            Error is related to the FTP connection.
+    \value  WebEngineView.DnsErrorDomain
+            Error is related to the DNS connection.
+*/
+
 QQuickWebEngineView::ErrorDomain QQuickWebEngineLoadRequest::errorDomain() const
 {
     Q_D(const QQuickWebEngineLoadRequest);

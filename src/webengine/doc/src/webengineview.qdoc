@@ -513,28 +513,8 @@
     This signal is emitted when a page load begins, ends, or fails.
 
     When handling the signal with \c onLoadingChanged, various read-only
-    parameters are available on the \a loadRequest:
-
-    \table
-    \header
-        \li Property
-        \li Description
-    \row
-        \li url
-        \li The location of the resource that is loading.
-    \row
-        \li status
-        \li The \l{LoadStatus}{load status} of the page.
-    \row
-        \li errorString
-        \li The description of load error.
-    \row
-        \li errorCode
-        \li The HTTP error code.
-    \row
-        \li errorDomain
-        \li The high-level \l{ErrorDomain}{error type}.
-    \endtable
+    parameters are available on the WebEngineLoadRequest specified by
+    \a loadRequest.
 
     \sa loading, LoadStatus, ErrorDomain
 */
@@ -652,7 +632,7 @@
     \value WebEngineView.ConnectionErrorDomain
             Error results from faulty network connection.
     \value WebEngineView.CertificateErrorDomain
-            Error related to the SSL/TLS certficate.
+            Error related to the SSL/TLS certificate.
     \value WebEngineView.HttpErrorDomain
             Error related to the HTTP connection.
     \value WebEngineView.FtpErrorDomain
