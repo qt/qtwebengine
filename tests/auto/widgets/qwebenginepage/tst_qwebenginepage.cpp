@@ -1637,24 +1637,6 @@ void tst_QWebEnginePage::inputMethods_data()
 }
 
 #if defined(QWEBENGINEPAGE_INPUTMETHODQUERY)
-static Qt::InputMethodHints inputMethodHints(QObject* object)
-{
-    if (QGraphicsObject* o = qobject_cast<QGraphicsObject*>(object))
-        return o->inputMethodHints();
-    if (QWidget* w = qobject_cast<QWidget*>(object))
-        return w->inputMethodHints();
-    return Qt::InputMethodHints();
-}
-
-static bool inputMethodEnabled(QObject* object)
-{
-    if (QGraphicsObject* o = qobject_cast<QGraphicsObject*>(object))
-        return o->flags() & QGraphicsItem::ItemAcceptsInputMethod;
-    if (QWidget* w = qobject_cast<QWidget*>(object))
-        return w->testAttribute(Qt::WA_InputMethodEnabled);
-    return false;
-}
-
 static void clickOnPage(QWebEnginePage* page, const QPoint& position)
 {
     QMouseEvent evpres(QEvent::MouseButtonPress, position, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
@@ -1899,16 +1881,6 @@ void tst_QWebEnginePage::inputMethods()
     QCOMPARE(selectionValue, QString("QtWebK"));
 
     //END - Tests for Selection when the Editor is not in Composition mode
-
-    //ImhHiddenText
-    QPoint passwordInputCenter = inputs.at(1).geometry().center();
-    clickOnPage(page, passwordInputCenter);
-
-    QVERIFY(inputMethodEnabled(view));
-    QVERIFY(inputMethodHints(view) & Qt::ImhHiddenText);
-
-    clickOnPage(page, textInputCenter);
-    QVERIFY(!(inputMethodHints(view) & Qt::ImhHiddenText));
 
     //START - Test for sending empty QInputMethodEvent
     page->setHtml("<html><body>" \

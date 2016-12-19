@@ -92,6 +92,7 @@ private Q_SLOTS:
     void keyboardFocusAfterPopup();
 
     void softwareInputPanel();
+    void hiddenText();
 };
 
 // This will be called before the first test function is executed.
@@ -1191,6 +1192,31 @@ void tst_QWebEngineView::softwareInputPanel()
     QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, btnDivCenter);
 
     QVERIFY(!testContext.isInputPanelVisible());
+}
+
+void tst_QWebEngineView::hiddenText()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine' size='50'/><br>"
+                 "  <input type='password' id='password1'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QPoint passwordInputCenter = elementCenter(view.page(), "password1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, passwordInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("password1"));
+
+    QVERIFY(view.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
+    QVERIFY(view.focusProxy()->inputMethodHints() & Qt::ImhHiddenText);
+
+    QPoint textInputCenter = elementCenter(view.page(), "input1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+    QVERIFY(!(view.focusProxy()->inputMethodHints() & Qt::ImhHiddenText));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

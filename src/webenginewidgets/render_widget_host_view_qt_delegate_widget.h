@@ -75,6 +75,7 @@ public:
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
     virtual void move(const QPoint &screenPos) Q_DECL_OVERRIDE;
     virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
+    virtual void setInputMethodHints(Qt::InputMethodHints) Q_DECL_OVERRIDE;
     virtual void setClearColor(const QColor &color) Q_DECL_OVERRIDE;
 
 protected:

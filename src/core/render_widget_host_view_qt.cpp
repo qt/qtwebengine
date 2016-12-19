@@ -116,7 +116,7 @@ static inline Qt::InputMethodHints toQtInputMethodHints(ui::TextInputType inputT
     case ui::TEXT_INPUT_TYPE_SEARCH:
         return Qt::ImhPreferLowercase | Qt::ImhNoAutoUppercase;
     case ui::TEXT_INPUT_TYPE_PASSWORD:
-        return Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase;
+        return Qt::ImhSensitiveData | Qt::ImhNoPredictiveText | Qt::ImhNoAutoUppercase | Qt::ImhHiddenText;
     case ui::TEXT_INPUT_TYPE_EMAIL:
         return Qt::ImhEmailCharactersOnly;
     case ui::TEXT_INPUT_TYPE_NUMBER:
@@ -575,6 +575,7 @@ void RenderWidgetHostViewQt::TextInputStateChanged(const content::TextInputState
 {
     m_currentInputType = params.type;
     m_delegate->inputMethodStateChanged(params.type != ui::TEXT_INPUT_TYPE_NONE);
+    m_delegate->setInputMethodHints(toQtInputMethodHints(params.type));
 }
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
