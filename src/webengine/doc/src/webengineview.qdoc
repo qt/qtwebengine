@@ -681,6 +681,9 @@
 
     \value  WebEngineView.LoadStartedStatus
             Page is currently loading.
+    \value  WebEngineView.LoadStoppedStatus
+            Loading the page was stopped by the stop() method or by the loader
+            code or network stack in Chromium.
     \value  WebEngineView.LoadSucceededStatus
             Page has successfully loaded, and is not currently loading.
     \value  WebEngineView.LoadFailedStatus
