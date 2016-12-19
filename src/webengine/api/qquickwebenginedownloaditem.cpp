@@ -88,7 +88,7 @@ QQuickWebEngineDownloadItemPrivate::~QQuickWebEngineDownloadItemPrivate()
     Stores the state of a download to be used to manage requested downloads.
 
     By default, the download is rejected unless the user explicitly accepts it with
-    WebEngineDownloadItem::accept().
+    accept().
 */
 
 void QQuickWebEngineDownloadItemPrivate::update(const BrowserContextAdapterClient::DownloadItemInfo &info)
@@ -122,8 +122,6 @@ void QQuickWebEngineDownloadItemPrivate::updateState(QQuickWebEngineDownloadItem
     \qmlmethod void WebEngineDownloadItem::accept()
 
     Accepts the download request, which will start the download.
-
-   \sa WebEngineDownloadItem::cancel()
 */
 
 void QQuickWebEngineDownloadItem::accept()
