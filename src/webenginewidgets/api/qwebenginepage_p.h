@@ -179,9 +179,9 @@ public:
 
     mutable QtWebEngineCore::CallbackDirectory m_callbacks;
     mutable QAction *actions[QWebEnginePage::WebActionCount];
-#ifndef QT_NO_PRINTER
+#if defined(ENABLE_PRINTING)
     QPrinter *currentPrinter;
-#endif // QT_NO_PRINTER
+#endif
 };
 
 QT_END_NAMESPACE

@@ -499,6 +499,9 @@ void tst_QQuickWebEngineView::setZoomFactor()
 
 void tst_QQuickWebEngineView::printToPdf()
 {
+#if !defined(ENABLE_PDF)
+    QSKIP("ENABLE_PDF");
+#else
     QTemporaryDir tempDir(QDir::tempPath() + "/tst_qwebengineview-XXXXXX");
     QVERIFY(tempDir.isValid());
     QQuickWebEngineView *view = webEngineView();
@@ -523,6 +526,7 @@ void tst_QQuickWebEngineView::printToPdf()
     QList<QVariant> failedArguments = savePdfSpy.takeFirst();
     QVERIFY2(failedArguments.at(0).toString() == path, "File path for second saved PDF does not match arguments");
     QVERIFY2(failedArguments.at(1).toBool() == false, "Printing to PDF file succeeded though it should fail");
+#endif // !defined(ENABLE_PDF)
 }
 
 void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled()

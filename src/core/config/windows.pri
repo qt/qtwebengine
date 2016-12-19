@@ -6,10 +6,7 @@ GYP_CONFIG += \
     disable_nacl=1 \
     remoting=0 \
     use_ash=0 \
-    enable_widevine=1 \
-    enable_basic_printing=1 \
-    enable_print_preview=1 \
-    enable_pdf=1
+    enable_widevine=1
 
 # Libvpx build needs additional search path on Windows.
 GYP_ARGS += "-D qtwe_chromium_obj_dir=\"$$OUT_PWD/$$getConfigDir()/obj/$${getChromiumSrcDir()}\""

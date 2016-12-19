@@ -52,11 +52,13 @@ contains(WEBENGINE_CONFIG, use_spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 
-contains(WEBENGINE_CONFIG, enable_pdf) {
+use?(printing) {
+    DEFINES += ENABLE_PRINTING
+    QT += printsupport
+}
+
+use?(pdf) {
     DEFINES += ENABLE_PDF
 }
 
-qtHaveModule(printsupport) {
-    QT += printsupport
-}
 load(qt_module)

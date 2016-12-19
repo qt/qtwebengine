@@ -1,11 +1,15 @@
 {
     "module": "webengine",
+    "depends": [
+        "printsupport"
+    ],
 
     "testDir": "tools/qmake/config.tests",
 
     "commandline": {
         "options": {
             "alsa": "boolean",
+            "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
             "pulseaudio": "boolean",
             "spellchecker": "boolean"
@@ -51,6 +55,13 @@
             "condition": "libs.pulseaudio",
             "output": [ "privateFeature" ]
         },
+        "printing-and-pdf": {
+            "label": "Printing and PDF",
+            "condition": "module.printsupport && features.printer",
+            "autoDetect": "!features.cross_compile",
+            "purpose": "Enables printing and output to PDF",
+            "output": [ "privateFeature" ]
+        },
         "proprietary-codecs": {
             "label": "Proprietary Codecs",
             "autoDetect": false,
@@ -78,6 +89,7 @@
         {
             "section": "Qt WebEngine",
             "entries": [
+                "printing-and-pdf",
                 "proprietary-codecs",
                 "spellchecker",
                 "system-gn",

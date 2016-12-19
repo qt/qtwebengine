@@ -75,7 +75,6 @@ SOURCES = \
         native_web_keyboard_event_qt.cpp \
         network_delegate_qt.cpp \
         ozone_platform_eglfs.cpp \
-        pdfium_document_wrapper_qt.cpp \
         permission_manager_qt.cpp \
         process_main.cpp \
         proxy_config_service_qt.cpp \
@@ -156,7 +155,6 @@ HEADERS = \
         media_capture_devices_dispatcher.h \
         network_delegate_qt.h \
         ozone_platform_eglfs.h \
-        pdfium_document_wrapper_qt.h \
         permission_manager_qt.h \
         process_main.h \
         proxy_config_service_qt.h \
@@ -197,6 +195,26 @@ HEADERS = \
         web_engine_settings.h \
         web_engine_visited_links_manager.h \
         web_event_factory.h
+
+
+use?(pdf) {
+    SOURCES += pdfium_document_wrapper_qt.cpp
+    HEADERS += pdfium_document_wrapper_qt.h
+}
+
+use?(printing) {
+    SOURCES += \
+        printing_message_filter_qt.cpp \
+        print_view_manager_base_qt.cpp \
+        print_view_manager_qt.cpp \
+        renderer/print_web_view_helper_delegate_qt.cpp
+
+    HEADERS += \
+        printing_message_filter_qt.h \
+        print_view_manager_base_qt.h \
+        print_view_manager_qt.h \
+        renderer/print_web_view_helper_delegate_qt.h
+}
 
 contains(QT_CONFIG, opengl) {
     SOURCES += \

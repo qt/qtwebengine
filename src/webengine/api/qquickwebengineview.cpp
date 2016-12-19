@@ -1326,7 +1326,7 @@ void QQuickWebEngineView::printToPdf(const QString& filePath, PrintedPageSizeId 
 
 void QQuickWebEngineView::printToPdf(const QJSValue &callback, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
 {
-#if defined (ENABLE_PDF)
+#if defined(ENABLE_PDF)
     Q_D(QQuickWebEngineView);
     QPageSize layoutSize(static_cast<QPageSize::PageSizeId>(pageSizeId));
     QPageLayout::Orientation layoutOrientation = static_cast<QPageLayout::Orientation>(orientation);

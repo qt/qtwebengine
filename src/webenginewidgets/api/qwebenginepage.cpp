@@ -80,9 +80,11 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
+#if defined(QT_PRINTSUPPORT_LIB)
 #ifndef QT_NO_PRINTER
 #include <QPrinter>
-#endif
+#endif //QT_NO_PRINTER
+#endif //QT_PRINTSUPPORT_LIB
 #include <QStandardPaths>
 #include <QStyle>
 #include <QTimer>
@@ -96,8 +98,7 @@ using namespace QtWebEngineCore;
 
 static const int MaxTooltipLength = 1024;
 
-#ifndef QT_NO_PRINTER
-#if defined(ENABLE_PDF)
+#if defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
 static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 {
     QRect printerPageRect = printer.pageRect();
@@ -174,8 +175,7 @@ static bool printPdfDataOnPrinter(const QByteArray& data, QPrinter& printer)
 
     return true;
 }
-#endif // defined(ENABLE_PDF)
-#endif // QT_NO_PRINTER
+#endif // defined(ENABLE_PRINTING) && defined(ENABLE_PDF)
 
 static QWebEnginePage::WebWindowType toWindowType(WebContentsAdapterClient::WindowOpenDisposition disposition)
 {
@@ -227,7 +227,7 @@ QWebEnginePagePrivate::QWebEnginePagePrivate(QWebEngineProfile *_profile)
     , fullscreenMode(false)
     , webChannel(nullptr)
     , webChannelWorldId(QWebEngineScript::MainWorld)
-#ifndef QT_NO_PRINTER
+#if defined(ENABLE_PRINTING)
     , currentPrinter(nullptr)
 #endif
 {
@@ -484,7 +484,7 @@ void QWebEnginePagePrivate::didFindText(quint64 requestId, int matchCount)
 void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &result)
 {
 #if defined(ENABLE_PDF)
-#ifndef QT_NO_PRINTER
+#if defined(ENABLE_PRINTING)
     // If no currentPrinter is set that means that were printing to PDF only.
     if (!currentPrinter) {
         m_callbacks.invoke(requestId, result);
@@ -497,7 +497,7 @@ void QWebEnginePagePrivate::didPrintPage(quint64 requestId, const QByteArray &re
     currentPrinter = nullptr;
 #else // If print support is disabled, only PDF printing is available.
     m_callbacks.invoke(requestId, result);
-#endif // ifndef QT_NO_PRINTER
+#endif // defined(ENABLE_PRINTING)
 #else // defined(ENABLE_PDF)
     // we should never enter this branch, but just for safe-keeping...
     Q_UNUSED(result);
@@ -1985,7 +1985,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
 {
 #if defined(ENABLE_PDF)
     Q_D(const QWebEnginePage);
-#ifndef QT_NO_PRINTER
+#if defined(ENABLE_PRINTING)
     if (d->currentPrinter) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
@@ -1994,7 +1994,7 @@ void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &page
 #endif
         return;
     }
-#endif
+#endif // ENABLE_PRINTING
     d->adapter->printToPDF(pageLayout, filePath);
 #else
     Q_UNUSED(filePath);
@@ -2018,7 +2018,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 {
     Q_D(QWebEnginePage);
 #if defined(ENABLE_PDF)
-#ifndef QT_NO_PRINTER
+#if defined(ENABLE_PRINTING)
     if (d->currentPrinter) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Cannot print to PDF while at the same time printing on printer %ls", qUtf16Printable(d->currentPrinter->printerName()));
@@ -2028,7 +2028,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
         d->m_callbacks.invokeEmpty(resultCallback);
         return;
     }
-#endif // ifndef QT_NO_PRINTER
+#endif // ENABLE_PRINTING
     quint64 requestId = d->adapter->printToPDFCallbackResult(pageLayout);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else // if defined(ENABLE_PDF)
@@ -2037,6 +2037,7 @@ void QWebEnginePage::printToPdf(const QWebEngineCallback<const QByteArray&> &res
 #endif // if defined(ENABLE_PDF)
 }
 
+#if defined(QT_PRINTSUPPORT_LIB)
 #ifndef QT_NO_PRINTER
 /*!
     \fn void QWebEnginePage::print(QPrinter *printer, FunctorOrLambda resultCallback)
@@ -2055,6 +2056,7 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
 {
     Q_D(QWebEnginePage);
 #if defined(ENABLE_PDF)
+#if defined(ENABLE_PRINTING)
     if (d->currentPrinter) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 7, 0)
         qWarning("Cannot print page on printer %ls: Already printing on %ls.", qUtf16Printable(printer->printerName()), qUtf16Printable(d->currentPrinter->printerName()));
@@ -2065,6 +2067,7 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
         return;
     }
     d->currentPrinter = printer;
+#endif // ENABLE_PRINTING
     quint64 requestId = d->adapter->printToPDFCallbackResult(printer->pageLayout(), printer->colorMode() == QPrinter::Color);
     d->m_callbacks.registerCallback(requestId, resultCallback);
 #else // if defined(ENABLE_PDF)
@@ -2072,7 +2075,8 @@ void QWebEnginePage::print(QPrinter *printer, const QWebEngineCallback<bool> &re
     d->m_callbacks.invokeDirectly(resultCallback, false);
 #endif // if defined(ENABLE_PDF)
 }
-#endif // QT_NO_PRINTER
+#endif // if defined(QT_NO_PRINTER)
+#endif // if defined(QT_PRINTSUPPORT_LIB)
 
 /*!
     \since 5.7

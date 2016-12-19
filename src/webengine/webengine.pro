@@ -65,7 +65,7 @@ contains(WEBENGINE_CONFIG, use_spellchecker) {
     DEFINES += ENABLE_SPELLCHECK
 }
 
-contains(WEBENGINE_CONFIG, enable_pdf) {
+use?(pdf) {
     DEFINES += ENABLE_PDF
 }
 
