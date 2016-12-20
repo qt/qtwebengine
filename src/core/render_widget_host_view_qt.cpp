@@ -576,6 +576,8 @@ void RenderWidgetHostViewQt::TextInputStateChanged(const content::TextInputState
     m_currentInputType = params.type;
     m_delegate->inputMethodStateChanged(params.type != ui::TEXT_INPUT_TYPE_NONE);
     m_delegate->setInputMethodHints(toQtInputMethodHints(params.type));
+
+    m_surroundingText = QString::fromStdString(params.value);
 }
 
 void RenderWidgetHostViewQt::ImeCancelComposition()
@@ -837,7 +839,7 @@ QVariant RenderWidgetHostViewQt::inputMethodQuery(Qt::InputMethodQuery query) co
     case Qt::ImAnchorPosition:
         return static_cast<uint>(m_anchorPositionWithinSelection);
     case Qt::ImSurroundingText:
-        return toQt(selection_text_);
+        return m_surroundingText;
     case Qt::ImCurrentSelection:
         return toQt(GetSelectedText());
     case Qt::ImMaximumTextLength:
@@ -970,7 +972,13 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
         } else {
             if (ev->type() == QEvent::KeyRelease) {
                 m_receivedEmptyImeText = false;
-                m_host->ImeConfirmComposition(toString16(ev->text()), gfx::Range::InvalidRange(),
+                m_host->ImeSetComposition(toString16(ev->text()),
+                                          std::vector<blink::WebCompositionUnderline>(),
+                                          gfx::Range::InvalidRange(),
+                                          gfx::Range::InvalidRange().start(),
+                                          gfx::Range::InvalidRange().end());
+                m_host->ImeConfirmComposition(base::string16(),
+                                              gfx::Range::InvalidRange(),
                                               false);
                 m_imeInProgress = false;
             }
@@ -979,16 +987,15 @@ void RenderWidgetHostViewQt::handleKeyEvent(QKeyEvent *ev)
     }
 
     content::NativeWebKeyboardEvent webEvent = WebEventFactory::toWebKeyboardEvent(ev);
-    if (webEvent.type == blink::WebInputEvent::RawKeyDown && !ev->text().isEmpty()) {
+    bool keyDownTextInsertion = webEvent.type == blink::WebInputEvent::RawKeyDown && webEvent.text[0];
+    webEvent.skip_in_browser = keyDownTextInsertion;
+    m_host->ForwardKeyboardEvent(webEvent);
+
+    if (keyDownTextInsertion) {
         // Blink won't consume the RawKeyDown, but rather the Char event in this case.
         // Make sure to skip the former on the way back. The same os_event will be set on both of them.
         webEvent.skip_in_browser = true;
-        m_host->ForwardKeyboardEvent(webEvent);
-
-        webEvent.skip_in_browser = false;
         webEvent.type = blink::WebInputEvent::Char;
-        m_host->ForwardKeyboardEvent(webEvent);
-    } else {
         m_host->ForwardKeyboardEvent(webEvent);
     }
 }
@@ -1000,9 +1007,6 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
 
     QString commitString = ev->commitString();
     QString preeditString = ev->preeditString();
-
-    int replacementStart = ev->replacementStart();
-    int replacementLength = ev->replacementLength();
 
     int cursorPositionInPreeditString = -1;
     gfx::Range selectionRange = gfx::Range::InvalidRange();
@@ -1066,33 +1070,45 @@ void RenderWidgetHostViewQt::handleInputMethodEvent(QInputMethodEvent *ev)
         }
     }
 
-    gfx::Range replacementRange = (replacementLength > 0) ? gfx::Range(replacementStart, replacementStart + replacementLength)
-                                                          : gfx::Range::InvalidRange();
+    int replacementLength = ev->replacementLength();
+    gfx::Range replacementRange = gfx::Range::InvalidRange();
 
-    auto setCompositionForPreEditString = [&](){
+    if (replacementLength > 0)
+    {
+        int start = ev->replacementStart();
+
+        if (start >= 0)
+            replacementRange = gfx::Range(start, start + replacementLength);
+        else if (m_surroundingText.length() + start >= 0) {
+            start = m_surroundingText.length() + start;
+            replacementRange = gfx::Range(start, start + replacementLength);
+        }
+    }
+
+    auto setCompositionString = [&](const QString &compositionString){
         ensureValidSelectionRange();
-        m_host->ImeSetComposition(toString16(preeditString),
+        m_host->ImeSetComposition(toString16(compositionString),
                                   underlines,
                                   replacementRange,
                                   selectionRange.start(),
                                   selectionRange.end());
     };
 
-    if (!commitString.isEmpty()) {
-        m_host->ImeConfirmComposition(toString16(commitString), replacementRange, false);
+    if (!commitString.isEmpty() || replacementLength > 0) {
+        setCompositionString(commitString);
+        m_host->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(), false);
 
         // We might get a commit string and a pre-edit string in a single event, which means
         // we need to confirm the　last composition, and start a new composition.
         if (!preeditString.isEmpty()) {
-            setCompositionForPreEditString();
+            setCompositionString(preeditString);
             m_imeInProgress = true;
         } else {
             m_imeInProgress = false;
         }
-        m_receivedEmptyImeText = false;
-
+        m_receivedEmptyImeText = commitString.isEmpty();
     } else if (!preeditString.isEmpty()) {
-        setCompositionForPreEditString();
+        setCompositionString(preeditString);
         m_imeInProgress = true;
         m_receivedEmptyImeText = false;
     } else {

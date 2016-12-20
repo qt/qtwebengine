@@ -94,6 +94,7 @@ private Q_SLOTS:
     void softwareInputPanel();
     void hiddenText();
     void emptyInputMethodEvent();
+    void newlineInTextarea();
 };
 
 // This will be called before the first test function is executed.
@@ -1246,6 +1247,105 @@ void tst_QWebEngineView::emptyInputMethodEvent()
 
     QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
     QCOMPARE(inputValue, QString("QtWebEngine"));
+}
+
+void tst_QWebEngineView::newlineInTextarea()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.page()->setHtml("<html><body>"
+                         "  <textarea rows='5' cols='1' id='input1'></textarea>"
+                         "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
+
+    // Enter Key without key text
+    QKeyEvent keyPressEnter(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
+    QKeyEvent keyReleaseEnter(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier);
+    QApplication::sendEvent(view.focusProxy(), &keyPressEnter);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseEnter);
+
+    QList<QInputMethodEvent::Attribute> attribs;
+
+    QInputMethodEvent eventText(QString(), attribs);
+    eventText.setCommitString("\n");
+    QApplication::sendEvent(view.focusProxy(), &eventText);
+
+    QInputMethodEvent eventText2(QString(), attribs);
+    eventText2.setCommitString("third line");
+    QApplication::sendEvent(view.focusProxy(), &eventText2);
+
+    qApp->processEvents();
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("\n\nthird line"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
+
+    // Enter Key with key text '\r'
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
+
+    QKeyEvent keyPressEnterWithCarriageReturn(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\r");
+    QKeyEvent keyReleaseEnterWithCarriageReturn(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier);
+    QApplication::sendEvent(view.focusProxy(), &keyPressEnterWithCarriageReturn);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseEnterWithCarriageReturn);
+
+    QApplication::sendEvent(view.focusProxy(), &eventText);
+    QApplication::sendEvent(view.focusProxy(), &eventText2);
+
+    qApp->processEvents();
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("\n\nthird line"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
+
+    // Enter Key with key text '\n'
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
+
+    QKeyEvent keyPressEnterWithLineFeed(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\n");
+    QKeyEvent keyReleaseEnterWithLineFeed(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier, "\n");
+    QApplication::sendEvent(view.focusProxy(), &keyPressEnterWithLineFeed);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseEnterWithLineFeed);
+
+    QApplication::sendEvent(view.focusProxy(), &eventText);
+    QApplication::sendEvent(view.focusProxy(), &eventText2);
+
+    qApp->processEvents();
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("\n\nthird line"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
+
+    // Enter Key with key text "\n\r"
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
+
+    QKeyEvent keyPressEnterWithLFCR(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\n\r");
+    QKeyEvent keyReleaseEnterWithLFCR(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier, "\n\r");
+    QApplication::sendEvent(view.focusProxy(), &keyPressEnterWithLFCR);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseEnterWithLFCR);
+
+    QApplication::sendEvent(view.focusProxy(), &eventText);
+    QApplication::sendEvent(view.focusProxy(), &eventText2);
+
+    qApp->processEvents();
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("\n\nthird line"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
+
+    // Return Key without key text
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString().isEmpty());
+
+    QKeyEvent keyPressReturn(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
+    QKeyEvent keyReleaseReturn(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier);
+    QApplication::sendEvent(view.focusProxy(), &keyPressReturn);
+    QApplication::sendEvent(view.focusProxy(), &keyReleaseReturn);
+
+    QApplication::sendEvent(view.focusProxy(), &eventText);
+    QApplication::sendEvent(view.focusProxy(), &eventText2);
+
+    qApp->processEvents();
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString(), QString("\n\nthird line"));
+    QTRY_COMPARE(view.focusProxy()->inputMethodQuery(Qt::ImSurroundingText).toString(), QString("\n\nthird line"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)
