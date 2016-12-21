@@ -576,7 +576,7 @@
 */
 
 /*!
-    \qmlsignal WebEngineView::newViewRequested(WebEngineViewRequest request)
+    \qmlsignal WebEngineView::newViewRequested(WebEngineNewViewRequest request)
     \since QtWebEngine 1.1
 
     This signal is emitted when a page load is requested to happen in a separate
