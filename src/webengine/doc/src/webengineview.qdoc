@@ -387,8 +387,8 @@
     \qmlmethod void WebEngineView::runJavaScript(string script, variant callback)
     Runs the specified \a script in the content of the web view.
 
-    In case a callback function is provided, it will be invoked after the script
-    finishes running.
+    The \a callback parameter is optional. If a callback function is provided,
+    it will be invoked after the script finishes running.
 
     \code
     runJavaScript("document.title", function(result) { console.log(result); });
