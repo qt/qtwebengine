@@ -1021,8 +1021,13 @@
 */
 
 /*!
+    \qmlproperty url WebEngineFullScreenRequest::origin
+    \readonly
+    The URL of the web page that issued the fullscreen request.
+*/
+
+/*!
     \qmlproperty bool WebEngineFullScreenRequest::toggleOn
-    \since QtWebEngine 1.1
     \readonly
 
     Returns \c{true} if the application should toggle fullscreen mode on, \c{false} otherwise.
@@ -1032,7 +1037,6 @@
 
 /*!
     \qmlmethod void WebEngineFullScreenRequest::accept()
-    \since QtWebEngine 1.1
 
     Call this method to accept the fullscreen request. It sets the WebEngineView::isFullScreen
     property to be equal to toggleOn.
@@ -1053,6 +1057,11 @@
     \endqml
 
     \sa toggleOn
+*/
+
+/*!
+    \qmlmethod void WebEngineFullScreenRequest::reject()
+    Rejects a fullscreen request.
 */
 
 /*!
