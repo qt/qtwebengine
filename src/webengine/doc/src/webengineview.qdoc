@@ -1247,3 +1247,7 @@
     \note Signal handlers need to call \c{request.accepted = true} to prevent a
     default context menu from showing up.
 */
+
+/*! \qmlsignal WebEngineView::navigationRequested(WebEngineNavigationRequest request)
+    This signal is emitted when the navigation request \a request is issued.
+*/
