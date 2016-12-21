@@ -1,5 +1,6 @@
 include(common.pri)
-QT_FOR_CONFIG += gui-private
+include($$QTWEBENGINE_OUT_ROOT/qtwebengine-config.pri)
+QT_FOR_CONFIG += gui-private webengine-private
 
 # linux_use_bundled_gold currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)
 # Disable it along with the -Wl,--threads flag just in case gold isn't installed on the system.
@@ -41,12 +42,12 @@ qtConfig(system-png): GYP_CONFIG += use_system_libpng=1
 qtConfig(system-jpeg): GYP_CONFIG += use_system_libjpeg=1
 qtConfig(system-harfbuzz): use?(system_harfbuzz): GYP_CONFIG += use_system_harfbuzz=1
 !qtConfig(glib): GYP_CONFIG += use_glib=0
-contains(QT_CONFIG, pulseaudio) {
+qtConfig(pulseaudio) {
     GYP_CONFIG += use_pulseaudio=1
 } else {
     GYP_CONFIG += use_pulseaudio=0
 }
-contains(QT_CONFIG, alsa) {
+qtConfig(alsa) {
     GYP_CONFIG += use_alsa=1
 } else {
     GYP_CONFIG += use_alsa=0

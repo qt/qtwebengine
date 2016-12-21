@@ -249,6 +249,13 @@ WebEngineContext::WebEngineContext()
     , m_browserRunner(content::BrowserMainRunner::Create())
     , m_globalQObject(new QObject())
 {
+#if defined(USE_X11)
+    QString platform = qApp->platformName();
+    if (platform != QLatin1String("xcb")) {
+         qWarning("WebEngine compiled with X11 support, however qpa backend is not xcb. "
+                  "This may fail.");
+    }
+#endif
 
 #ifdef Q_OS_LINUX
     // Call qputenv before BrowserMainRunnerImpl::Initialize is called.

@@ -39,8 +39,8 @@
 // found in the LICENSE file.
 
 #include "print_web_view_helper_delegate_qt.h"
-
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "web_engine_library_info.h"
 
 namespace QtWebEngineCore {
 PrintWebViewHelperDelegateQt::~PrintWebViewHelperDelegateQt()
@@ -69,4 +69,12 @@ bool PrintWebViewHelperDelegateQt::OverridePrint(blink::WebLocalFrame* frame)
     return false;
 }
 
+}
+
+namespace printing {
+// std::string PrintingContextDelegate::GetAppLocale()
+std::string getApplicationLocale()
+{
+    return WebEngineLibraryInfo::getApplicationLocale();
+}
 }

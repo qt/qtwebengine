@@ -614,13 +614,19 @@ CreateOffscreenGLSurface(const gfx::Size& size)
 #endif
     }
     case kGLImplementationEGLGLES2: {
-        if (g_egl_surfaceless_context_supported)
-            surface = new GLSurfacelessQtEGL(size);
-        else
-            surface = new GLSurfaceQtEGL(size);
-
+        surface = new GLSurfaceQtEGL(size);
         if (surface->Initialize())
             return surface;
+
+        // Surfaceless context will be used ONLY if pseudo surfaceless context
+        // is not available since some implementations of surfaceless context
+        // have problems. (e.g. QTBUG-57290)
+        if (g_egl_surfaceless_context_supported) {
+            surface = new GLSurfacelessQtEGL(size);
+            if (surface->Initialize())
+                return surface;
+        }
+
         break;
     }
     default:
