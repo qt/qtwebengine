@@ -1108,6 +1108,12 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
 
     d->currentDropAction = Qt::IgnoreAction;
     QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
+    bool dValid = true;
+    QMetaObject::Connection onDestroyed = QObject::connect(dragSource, &QObject::destroyed, [&dValid](){
+        dValid = false;
+        QDrag::cancel();
+    });
+
     drag->setMimeData(mimeDataFromDropData(*d->currentDropData));
     if (!pixmap.isNull()) {
         drag->setPixmap(pixmap);
@@ -1119,9 +1125,15 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
         drag->exec(allowedActions);
     }
 
-    content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->DragSourceSystemDragEnded();
-    d->currentDropData.reset();
+    QObject::disconnect(onDestroyed);
+    if (dValid) {
+        if (d->webContents) {
+            content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
+            if (rvh)
+                rvh->DragSourceSystemDragEnded();
+        }
+        d->currentDropData.reset();
+    }
 }
 
 static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
