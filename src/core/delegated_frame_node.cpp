@@ -171,6 +171,245 @@ private:
     QSGGeometry m_geometry;
 };
 
+class DelegatedNodeTreeHandler
+{
+public:
+    DelegatedNodeTreeHandler(QVector<QSGNode*> *sceneGraphNodes)
+        : m_sceneGraphNodes(sceneGraphNodes)
+    {
+    }
+
+    virtual ~DelegatedNodeTreeHandler(){}
+
+    virtual void setupRenderPassNode(QSGTexture *, const QRect &, QSGNode *) = 0;
+    virtual void setupTextureContentNode(QSGTexture *, const QRect &, QSGTexture::Filtering,
+                                         QSGTextureNode::TextureCoordinatesTransformMode,
+                                         QSGNode *) = 0;
+    virtual void setupTiledContentNode(QSGTexture *, const QRect &, const QRectF &,
+                                       QSGTexture::Filtering, QSGNode *) = 0;
+    virtual void setupSolidColorNode(const QRect &, const QColor &, QSGNode *) = 0;
+    virtual void setupDebugBorderNode(QSGGeometry *, QSGFlatColorMaterial *, QSGNode *) = 0;
+
+#ifndef QT_NO_OPENGL
+    virtual void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
+                           const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
+                           YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
+                                   QSGNode *) = 0;
+#ifdef GL_OES_EGL_image_external
+    virtual void setupStreamVideoNode(MailboxTexture *, const QRectF &,
+                                      const QMatrix4x4 &, QSGNode *) = 0;
+#endif // GL_OES_EGL_image_external
+#endif // QT_NO_OPENGL
+protected:
+    QVector<QSGNode*> *m_sceneGraphNodes;
+};
+
+class DelegatedNodeTreeUpdater : public DelegatedNodeTreeHandler
+{
+public:
+    DelegatedNodeTreeUpdater(QVector<QSGNode*> *sceneGraphNodes)
+        : DelegatedNodeTreeHandler(sceneGraphNodes)
+        , m_nodeIterator(sceneGraphNodes->begin())
+    {
+    }
+
+    void setupRenderPassNode(QSGTexture *layer, const QRect &rect, QSGNode *) Q_DECL_OVERRIDE
+    {
+        QSGInternalImageNode *imageNode = static_cast<QSGInternalImageNode*>(*m_nodeIterator++);
+        imageNode->setTargetRect(rect);
+        imageNode->setInnerTargetRect(rect);
+        imageNode->setTexture(layer);
+        imageNode->update();
+    }
+
+    void setupTextureContentNode(QSGTexture *texture, const QRect &rect,
+                                 QSGTexture::Filtering filtering,
+                                 QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
+                                 QSGNode *) Q_DECL_OVERRIDE
+    {
+        QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
+        if (textureNode->texture() != texture)
+            textureNode->setTexture(texture);
+        if (textureNode->textureCoordinatesTransform() != texCoordTransForm)
+            textureNode->setTextureCoordinatesTransform(texCoordTransForm);
+        if (textureNode->rect() != rect)
+            textureNode->setRect(rect);
+        if (textureNode->filtering() != filtering)
+            textureNode->setFiltering(filtering);
+    }
+    void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
+                               QSGTexture::Filtering filtering, QSGNode *) Q_DECL_OVERRIDE
+    {
+        QSGTextureNode *textureNode = static_cast<QSGTextureNode*>(*m_nodeIterator++);
+
+        if (textureNode->rect() != rect)
+            textureNode->setRect(rect);
+        if (textureNode->sourceRect() != sourceRect)
+            textureNode->setSourceRect(sourceRect);
+        if (textureNode->filtering() != filtering)
+            textureNode->setFiltering(filtering);
+        if (textureNode->texture() != texture)
+            textureNode->setTexture(texture);
+    }
+    void setupSolidColorNode(const QRect &rect, const QColor &color, QSGNode *) Q_DECL_OVERRIDE
+    {
+         QSGRectangleNode *rectangleNode = static_cast<QSGRectangleNode*>(*m_nodeIterator++);
+
+         if (rectangleNode->rect() != rect)
+             rectangleNode->setRect(rect);
+         if (rectangleNode->color() != color)
+             rectangleNode->setColor(color);
+    }
+
+    void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
+                              QSGNode *) Q_DECL_OVERRIDE
+    {
+        QSGGeometryNode *geometryNode = static_cast<QSGGeometryNode*>(*m_nodeIterator++);
+
+        geometryNode->setGeometry(geometry);
+        geometryNode->setMaterial(material);
+    }
+#ifndef QT_NO_OPENGL
+    void setupYUVVideoNode(QSGTexture *, QSGTexture *, QSGTexture *, QSGTexture *,
+                           const QRectF &, const QRectF &, const QSizeF &, const QSizeF &,
+                           YUVVideoMaterial::ColorSpace, float, float, const QRectF &,
+                           QSGNode *) Q_DECL_OVERRIDE
+    {
+        Q_UNREACHABLE();
+    }
+#ifdef GL_OES_EGL_image_external
+    void setupStreamVideoNode(MailboxTexture *, const QRectF &,
+                              const QMatrix4x4 &, QSGNode *) Q_DECL_OVERRIDE
+    {
+        Q_UNREACHABLE();
+    }
+#endif // GL_OES_EGL_image_external
+#endif // QT_NO_OPENGL
+
+private:
+    QVector<QSGNode*>::iterator m_nodeIterator;
+};
+
+class DelegatedNodeTreeCreator : public DelegatedNodeTreeHandler
+{
+public:
+    DelegatedNodeTreeCreator(QVector<QSGNode*> *sceneGraphNodes,
+                             RenderWidgetHostViewQtDelegate *apiDelegate)
+        : DelegatedNodeTreeHandler(sceneGraphNodes)
+        , m_apiDelegate(apiDelegate)
+    {
+    }
+
+    void setupRenderPassNode(QSGTexture *layer, const QRect &rect,
+                             QSGNode *layerChain) Q_DECL_OVERRIDE
+    {
+        // Only QSGInternalImageNode currently supports QSGLayer textures.
+        QSGInternalImageNode *imageNode = m_apiDelegate->createImageNode();
+        imageNode->setTargetRect(rect);
+        imageNode->setInnerTargetRect(rect);
+        imageNode->setTexture(layer);
+        imageNode->update();
+
+        layerChain->appendChildNode(imageNode);
+        m_sceneGraphNodes->append(imageNode);
+    }
+
+    void setupTextureContentNode(QSGTexture *texture, const QRect &rect,
+                                 QSGTexture::Filtering filtering,
+                                 QSGTextureNode::TextureCoordinatesTransformMode texCoordTransForm,
+                                 QSGNode *layerChain) Q_DECL_OVERRIDE
+    {
+        QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
+        textureNode->setTextureCoordinatesTransform(texCoordTransForm);
+        textureNode->setRect(rect);
+        textureNode->setTexture(texture);
+        textureNode->setFiltering(filtering);
+
+        layerChain->appendChildNode(textureNode);
+        m_sceneGraphNodes->append(textureNode);
+    }
+
+    void setupTiledContentNode(QSGTexture *texture, const QRect &rect, const QRectF &sourceRect,
+                               QSGTexture::Filtering filtering,
+                               QSGNode *layerChain) Q_DECL_OVERRIDE
+    {
+        QSGTextureNode *textureNode = m_apiDelegate->createTextureNode();
+        textureNode->setRect(rect);
+        textureNode->setSourceRect(sourceRect);
+        textureNode->setFiltering(filtering);
+        textureNode->setTexture(texture);
+
+        layerChain->appendChildNode(textureNode);
+        m_sceneGraphNodes->append(textureNode);
+    }
+
+    void setupSolidColorNode(const QRect &rect, const QColor &color,
+                             QSGNode *layerChain) Q_DECL_OVERRIDE
+    {
+        QSGRectangleNode *rectangleNode = m_apiDelegate->createRectangleNode();
+        rectangleNode->setRect(rect);
+        rectangleNode->setColor(color);
+
+        layerChain->appendChildNode(rectangleNode);
+        m_sceneGraphNodes->append(rectangleNode);
+    }
+
+    void setupDebugBorderNode(QSGGeometry *geometry, QSGFlatColorMaterial *material,
+                              QSGNode *layerChain) Q_DECL_OVERRIDE
+    {
+        QSGGeometryNode *geometryNode = new QSGGeometryNode;
+        geometryNode->setFlags(QSGNode::OwnsGeometry | QSGNode::OwnsMaterial);
+
+        geometryNode->setGeometry(geometry);
+        geometryNode->setMaterial(material);
+
+        layerChain->appendChildNode(geometryNode);
+        m_sceneGraphNodes->append(geometryNode);
+    }
+
+#ifndef QT_NO_OPENGL
+    void setupYUVVideoNode(QSGTexture *yTexture, QSGTexture *uTexture, QSGTexture *vTexture,
+                           QSGTexture *aTexture, const QRectF &yaTexCoordRect,
+                           const QRectF &uvTexCoordRect, const QSizeF &yaTexSize,
+                           const QSizeF &uvTexSize, YUVVideoMaterial::ColorSpace colorspace,
+                           float rMul, float rOff, const QRectF &rect,
+                           QSGNode *layerChain) Q_DECL_OVERRIDE
+    {
+        YUVVideoNode *videoNode = new YUVVideoNode(
+                    yTexture,
+                    uTexture,
+                    vTexture,
+                    aTexture,
+                    yaTexCoordRect,
+                    uvTexCoordRect,
+                    yaTexSize,
+                    uvTexSize,
+                    colorspace,
+                    rMul,
+                    rOff);
+        videoNode->setRect(rect);
+
+        layerChain->appendChildNode(videoNode);
+        m_sceneGraphNodes->append(videoNode);
+    }
+#ifdef GL_OES_EGL_image_external
+    void setupStreamVideoNode(MailboxTexture *texture, const QRectF &rect,
+                              const QMatrix4x4 &textureMatrix, QSGNode *layerChain) Q_DECL_OVERRIDE
+    {
+        StreamVideoNode *svideoNode = new StreamVideoNode(texture, false, ExternalTarget);
+        svideoNode->setRect(rect);
+        svideoNode->setTextureMatrix(textureMatrix);
+        layerChain->appendChildNode(svideoNode);
+        m_sceneGraphNodes->append(svideoNode);
+    }
+#endif // GL_OES_EGL_image_external
+#endif // QT_NO_OPENGL
+
+private:
+    RenderWidgetHostViewQtDelegate *m_apiDelegate;
+};
+
+
 static inline QSharedPointer<QSGLayer> findRenderPassLayer(const cc::RenderPassId &id, const QVector<QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > > &list)
 {
     typedef QPair<cc::RenderPassId, QSharedPointer<QSGLayer> > Pair;
@@ -513,7 +752,67 @@ static YUVVideoMaterial::ColorSpace toQt(cc::YUVVideoDrawQuad::ColorSpace color_
     return YUVVideoMaterial::REC_601;
 }
 
-void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, cc::ReturnedResourceArray *resourcesToRelease, RenderWidgetHostViewQtDelegate *apiDelegate)
+static bool areSharedQuadStatesEqual(const cc::SharedQuadState *layerState,
+                                     const cc::SharedQuadState *prevLayerState)
+{
+    if (layerState->is_clipped != prevLayerState->is_clipped
+        || layerState->clip_rect != prevLayerState->clip_rect)
+        return false;
+    if (layerState->quad_to_target_transform != prevLayerState->quad_to_target_transform)
+        return false;
+    return qFuzzyCompare(layerState->opacity, prevLayerState->opacity);
+}
+
+// Compares if the frame data that we got from the Chromium Compositor is
+// *structurally* equivalent to the one of the previous frame.
+// If it is, we will just reuse and update the old nodes where necessary.
+static bool areRenderPassStructuresEqual(cc::DelegatedFrameData *frameData,
+                                         cc::DelegatedFrameData *previousFrameData)
+{
+    if (!previousFrameData)
+        return false;
+
+    if (previousFrameData->render_pass_list.size() != frameData->render_pass_list.size())
+        return false;
+
+    for (unsigned i = 0; i < frameData->render_pass_list.size(); ++i) {
+        cc::RenderPass *newPass = frameData->render_pass_list.at(i).get();
+        cc::RenderPass *prevPass = previousFrameData->render_pass_list.at(i).get();
+
+        if (newPass->id != prevPass->id)
+            return false;
+
+        if (newPass->quad_list.size() != prevPass->quad_list.size())
+            return false;
+
+        cc::QuadList::ConstBackToFrontIterator it = newPass->quad_list.BackToFrontBegin();
+        cc::QuadList::ConstBackToFrontIterator end = newPass->quad_list.BackToFrontEnd();
+        cc::QuadList::ConstBackToFrontIterator prevIt = prevPass->quad_list.BackToFrontBegin();
+        cc::QuadList::ConstBackToFrontIterator prevEnd = prevPass->quad_list.BackToFrontEnd();
+        for (; it != end && prevIt != prevEnd; ++it, ++prevIt) {
+            const cc::DrawQuad *quad = *it;
+            const cc::DrawQuad *prevQuad = *prevIt;
+            if (!areSharedQuadStatesEqual(quad->shared_quad_state, prevQuad->shared_quad_state))
+                return false;
+            if (quad->material != prevQuad->material)
+                return false;
+#ifndef QT_NO_OPENGL
+            if (quad->material == cc::DrawQuad::YUV_VIDEO_CONTENT)
+                return false;
+#ifdef GL_OES_EGL_image_external
+            if (quad->material == cc::DrawQuad::STREAM_VIDEO_CONTENT)
+                return false;
+#endif // GL_OES_EGL_image_external
+#endif // QT_NO_OPENGL
+
+        }
+    }
+    return true;
+}
+
+void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData,
+                                cc::ReturnedResourceArray *resourcesToRelease,
+                                RenderWidgetHostViewQtDelegate *apiDelegate)
 {
     m_chromiumCompositorData = chromiumCompositorData;
     cc::DelegatedFrameData* frameData = m_chromiumCompositorData->frameData.get();
@@ -524,13 +823,11 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     // countering the scale of devicePixel-scaled tiles when rendering them
     // to the final surface.
     QMatrix4x4 matrix;
-    matrix.scale(1 / m_chromiumCompositorData->frameDevicePixelRatio, 1 / m_chromiumCompositorData->frameDevicePixelRatio);
-    setMatrix(matrix);
+    matrix.scale(1 / m_chromiumCompositorData->frameDevicePixelRatio,
+                 1 / m_chromiumCompositorData->frameDevicePixelRatio);
+    if (QSGTransformNode::matrix() != matrix)
+        setMatrix(matrix);
 
-    // Keep the old objects in scope to hold a ref on layers, resources and textures
-    // that we can re-use. Destroy the remaining objects before returning.
-    SGObjects previousSGObjects;
-    qSwap(m_sgObjects, previousSGObjects);
     QHash<unsigned, QSharedPointer<ResourceHolder> > resourceCandidates;
     qSwap(m_chromiumCompositorData->resourceHolders, resourceCandidates);
 
@@ -547,14 +844,32 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
     }
 
     frameData->resource_list.clear();
+    QScopedPointer<DelegatedNodeTreeHandler> nodeHandler;
 
-    // There is currently no way to know which and how quads changed since the last frame.
-    // We have to reconstruct the node chain with their geometries on every update.
-    // Intermediate render pass node chains are going to be destroyed when previousSGObjects
-    // goes out of scope together with any QSGLayer that could reference them.
-    while (QSGNode *oldChain = firstChild())
-        delete oldChain;
+    // We first compare if the render passes from the previous frame data are structurally
+    // equivalent to the render passes in the current frame data. If they are, we are going
+    // to reuse the old nodes. Otherwise, we will delete the old nodes and build a new tree.
+    cc::DelegatedFrameData *previousFrameData = m_chromiumCompositorData->previousFrameData.get();
+    const bool buildNewTree = !areRenderPassStructuresEqual(frameData, previousFrameData);
 
+    m_chromiumCompositorData->previousFrameData = nullptr;
+    SGObjects previousSGObjects;
+    QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
+    if (buildNewTree) {
+        // Keep the old objects in scope to hold a ref on layers, resources and textures
+        // that we can re-use. Destroy the remaining objects before returning.
+        qSwap(m_sgObjects, previousSGObjects);
+        // Discard the scene graph nodes from the previous frame.
+        while (QSGNode *oldChain = firstChild())
+            delete oldChain;
+        m_sceneGraphNodes.clear();
+        nodeHandler.reset(new DelegatedNodeTreeCreator(&m_sceneGraphNodes, apiDelegate));
+    } else {
+        // Save the texture strong refs so they only go out of scope when the method returns and
+        // the new vector of texture strong refs has been filled.
+        qSwap(m_sgObjects.textureStrongRefs, textureStrongRefs);
+        nodeHandler.reset(new DelegatedNodeTreeUpdater(&m_sceneGraphNodes));
+    }
     // The RenderPasses list is actually a tree where a parent RenderPass is connected
     // to its dependencies through a RenderPassId reference in one or more RenderPassQuads.
     // The list is already ordered with intermediate RenderPasses placed before their
@@ -568,149 +883,168 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
 
         QSGNode *renderPassParent = 0;
         if (pass != rootRenderPass) {
-            QSharedPointer<QSGLayer> rpLayer = findRenderPassLayer(pass->id, previousSGObjects.renderPassLayers);
-            if (!rpLayer) {
-                rpLayer = QSharedPointer<QSGLayer>(apiDelegate->createLayer());
-                // Avoid any premature texture update since we need to wait
-                // for the GPU thread to produce the dependent resources first.
-                rpLayer->setLive(false);
-            }
-            QSharedPointer<QSGRootNode> rootNode(new QSGRootNode);
+            QSharedPointer<QSGLayer> rpLayer;
+            if (buildNewTree) {
+                rpLayer = findRenderPassLayer(pass->id, previousSGObjects.renderPassLayers);
+                if (!rpLayer) {
+                    rpLayer = QSharedPointer<QSGLayer>(apiDelegate->createLayer());
+                    // Avoid any premature texture update since we need to wait
+                    // for the GPU thread to produce the dependent resources first.
+                    rpLayer->setLive(false);
+                }
+                QSharedPointer<QSGRootNode> rootNode(new QSGRootNode);
+                rpLayer->setItem(rootNode.data());
+                m_sgObjects.renderPassLayers.append(QPair<cc::RenderPassId,
+                                                    QSharedPointer<QSGLayer> >(pass->id, rpLayer));
+                m_sgObjects.renderPassRootNodes.append(rootNode);
+                renderPassParent = rootNode.data();
+            } else
+                rpLayer = findRenderPassLayer(pass->id, m_sgObjects.renderPassLayers);
+
             rpLayer->setRect(toQt(pass->output_rect));
             rpLayer->setSize(toQt(pass->output_rect.size()));
             rpLayer->setFormat(pass->has_transparent_background ? GL_RGBA : GL_RGB);
-            rpLayer->setItem(rootNode.data());
-            m_sgObjects.renderPassLayers.append(QPair<cc::RenderPassId, QSharedPointer<QSGLayer> >(pass->id, rpLayer));
-            m_sgObjects.renderPassRootNodes.append(rootNode);
-            renderPassParent = rootNode.data();
         } else
             renderPassParent = this;
 
-        QSGNode *renderPassChain = buildRenderPassChain(renderPassParent);
-        const cc::SharedQuadState *currentLayerState = 0;
-        QSGNode *currentLayerChain = 0;
+        const cc::SharedQuadState *currentLayerState = nullptr;
+        QSGNode *currentLayerChain = nullptr;
+
+        QSGNode *renderPassChain = nullptr;
+        if (buildNewTree)
+            renderPassChain = buildRenderPassChain(renderPassParent);
 
         cc::QuadList::ConstBackToFrontIterator it = pass->quad_list.BackToFrontBegin();
         cc::QuadList::ConstBackToFrontIterator end = pass->quad_list.BackToFrontEnd();
         for (; it != end; ++it) {
             const cc::DrawQuad *quad = *it;
 
-            if (currentLayerState != quad->shared_quad_state) {
+            if (buildNewTree && currentLayerState != quad->shared_quad_state) {
                 currentLayerState = quad->shared_quad_state;
                 currentLayerChain = buildLayerChain(renderPassChain, currentLayerState);
             }
 
             switch (quad->material) {
             case cc::DrawQuad::RENDER_PASS: {
-                const cc::RenderPassDrawQuad *renderPassQuad = cc::RenderPassDrawQuad::MaterialCast(quad);
-                QSGTexture *layer = findRenderPassLayer(renderPassQuad->render_pass_id, m_sgObjects.renderPassLayers).data();
+                const cc::RenderPassDrawQuad *renderPassQuad
+                        = cc::RenderPassDrawQuad::MaterialCast(quad);
+                QSGTexture *layer = findRenderPassLayer(renderPassQuad->render_pass_id,
+                                                        m_sgObjects.renderPassLayers).data();
+
                 // cc::GLRenderer::DrawRenderPassQuad silently ignores missing render passes.
                 if (!layer)
                     continue;
-
-                // Only QSGInternalImageNode currently supports QSGLayer textures.
-                QSGInternalImageNode *imageNode = apiDelegate->createImageNode();
-                imageNode->setTargetRect(toQt(quad->rect));
-                imageNode->setInnerTargetRect(toQt(quad->rect));
-                imageNode->setTexture(layer);
-                imageNode->update();
-                currentLayerChain->appendChildNode(imageNode);
+                nodeHandler->setupRenderPassNode(layer, toQt(quad->rect), currentLayerChain);
                 break;
             } case cc::DrawQuad::TEXTURE_CONTENT: {
                 const cc::TextureDrawQuad *tquad = cc::TextureDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
+                ResourceHolder *resource = findAndHoldResource(tquad->resource_id(),
+                                                               resourceCandidates);
 
-                QSGTextureNode *textureNode = apiDelegate->createTextureNode();
-                textureNode->setTextureCoordinatesTransform(tquad->y_flipped ? QSGTextureNode::MirrorVertically : QSGTextureNode::NoTransform);
-                textureNode->setRect(toQt(quad->rect));
-                textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
-                textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));
-                currentLayerChain->appendChildNode(textureNode);
+                nodeHandler->setupTextureContentNode(
+                                              initAndHoldTexture(resource,
+                                                                 quad->ShouldDrawWithBlending(),
+                                                                 apiDelegate),
+                                              toQt(quad->rect),
+                                              resource->transferableResource().filter == GL_LINEAR
+                                                               ? QSGTexture::Linear
+                                                               : QSGTexture::Nearest,
+                                              tquad->y_flipped ? QSGTextureNode::MirrorVertically
+                                                               : QSGTextureNode::NoTransform,
+                                              currentLayerChain);
                 break;
             } case cc::DrawQuad::SOLID_COLOR: {
                 const cc::SolidColorDrawQuad *scquad = cc::SolidColorDrawQuad::MaterialCast(quad);
-                QSGRectangleNode *rectangleNode = apiDelegate->createRectangleNode();
-
                 // Qt only supports MSAA and this flag shouldn't be needed.
                 // If we ever want to use QSGRectangleNode::setAntialiasing for this we should
                 // try to see if we can do something similar for tile quads first.
                 Q_UNUSED(scquad->force_anti_aliasing_off);
-
-                rectangleNode->setRect(toQt(quad->rect));
-                rectangleNode->setColor(toQt(scquad->color));
-                currentLayerChain->appendChildNode(rectangleNode);
+                nodeHandler->setupSolidColorNode(toQt(quad->rect), toQt(scquad->color),
+                                                 currentLayerChain);
                 break;
 #ifndef QT_NO_OPENGL
             } case cc::DrawQuad::DEBUG_BORDER: {
-                const cc::DebugBorderDrawQuad *dbquad = cc::DebugBorderDrawQuad::MaterialCast(quad);
-                QSGGeometryNode *geometryNode = new QSGGeometryNode;
+                const cc::DebugBorderDrawQuad *dbquad
+                        = cc::DebugBorderDrawQuad::MaterialCast(quad);
 
-                QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
+                QSGGeometry *geometry
+                        = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), 4);
                 geometry->setDrawingMode(GL_LINE_LOOP);
                 geometry->setLineWidth(dbquad->width);
-                // QSGGeometry::updateRectGeometry would actually set the corners in the following order:
-                // top-left, bottom-left, top-right, bottom-right, leading to a nice criss cross, instead
-                // of having a closed loop.
+                // QSGGeometry::updateRectGeometry would actually set the
+                // corners in the following order:
+                // top-left, bottom-left, top-right, bottom-right, leading to a nice criss cross,
+                // instead of having a closed loop.
                 const gfx::Rect &r(dbquad->rect);
                 geometry->vertexDataAsPoint2D()[0].set(r.x(), r.y());
                 geometry->vertexDataAsPoint2D()[1].set(r.x() + r.width(), r.y());
                 geometry->vertexDataAsPoint2D()[2].set(r.x() + r.width(), r.y() + r.height());
                 geometry->vertexDataAsPoint2D()[3].set(r.x(), r.y() + r.height());
-                geometryNode->setGeometry(geometry);
 
                 QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
                 material->setColor(toQt(dbquad->color));
-                geometryNode->setMaterial(material);
 
-                geometryNode->setFlags(QSGNode::OwnsGeometry | QSGNode::OwnsMaterial);
-                currentLayerChain->appendChildNode(geometryNode);
+                nodeHandler->setupDebugBorderNode(geometry, material, currentLayerChain);
                 break;
 #endif
             } case cc::DrawQuad::TILED_CONTENT: {
                 const cc::TileDrawQuad *tquad = cc::TileDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(tquad->resource_id(), resourceCandidates);
-
-                QSGTextureNode *textureNode = apiDelegate->createTextureNode();
-                textureNode->setRect(toQt(quad->rect));
-                textureNode->setSourceRect(toQt(tquad->tex_coord_rect));
-                textureNode->setFiltering(resource->transferableResource().filter == GL_LINEAR ? QSGTexture::Linear : QSGTexture::Nearest);
-                textureNode->setTexture(initAndHoldTexture(resource, quad->ShouldDrawWithBlending(), apiDelegate));
-                currentLayerChain->appendChildNode(textureNode);
+                ResourceHolder *resource
+                        = findAndHoldResource(tquad->resource_id(), resourceCandidates);
+                nodeHandler->setupTiledContentNode(
+                                    initAndHoldTexture(resource,
+                                                       quad->ShouldDrawWithBlending(),
+                                                       apiDelegate),
+                                    toQt(quad->rect), toQt(tquad->tex_coord_rect),
+                                    resource->transferableResource().filter
+                                            == GL_LINEAR ? QSGTexture::Linear
+                                                         : QSGTexture::Nearest,
+                                    currentLayerChain);
                 break;
 #ifndef QT_NO_OPENGL
             } case cc::DrawQuad::YUV_VIDEO_CONTENT: {
                 const cc::YUVVideoDrawQuad *vquad = cc::YUVVideoDrawQuad::MaterialCast(quad);
-                ResourceHolder *yResource = findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
-                ResourceHolder *uResource = findAndHoldResource(vquad->u_plane_resource_id(), resourceCandidates);
-                ResourceHolder *vResource = findAndHoldResource(vquad->v_plane_resource_id(), resourceCandidates);
+                ResourceHolder *yResource
+                        = findAndHoldResource(vquad->y_plane_resource_id(), resourceCandidates);
+                ResourceHolder *uResource
+                        = findAndHoldResource(vquad->u_plane_resource_id(), resourceCandidates);
+                ResourceHolder *vResource
+                        = findAndHoldResource(vquad->v_plane_resource_id(), resourceCandidates);
                 ResourceHolder *aResource = 0;
-                // This currently requires --enable-vp8-alpha-playback and needs a video with alpha data to be triggered.
+                // This currently requires --enable-vp8-alpha-playback and
+                // needs a video with alpha data to be triggered.
                 if (vquad->a_plane_resource_id())
-                    aResource = findAndHoldResource(vquad->a_plane_resource_id(), resourceCandidates);
+                    aResource = findAndHoldResource(vquad->a_plane_resource_id(),
+                                                    resourceCandidates);
 
-                YUVVideoNode *videoNode = new YUVVideoNode(
-                    initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
-                    initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
-                    initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
-                    aResource ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending()) : 0,
-                    toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
-                    toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size),
-                    toQt(vquad->color_space),
-                    vquad->resource_multiplier, vquad->resource_offset);
-                videoNode->setRect(toQt(quad->rect));
-                currentLayerChain->appendChildNode(videoNode);
+                nodeHandler->setupYUVVideoNode(
+                            initAndHoldTexture(yResource, quad->ShouldDrawWithBlending()),
+                            initAndHoldTexture(uResource, quad->ShouldDrawWithBlending()),
+                            initAndHoldTexture(vResource, quad->ShouldDrawWithBlending()),
+                            aResource
+                                ? initAndHoldTexture(aResource, quad->ShouldDrawWithBlending())
+                                : 0,
+                            toQt(vquad->ya_tex_coord_rect), toQt(vquad->uv_tex_coord_rect),
+                            toQt(vquad->ya_tex_size), toQt(vquad->uv_tex_size),
+                            toQt(vquad->color_space),
+                            vquad->resource_multiplier, vquad->resource_offset,
+                            toQt(quad->rect),
+                            currentLayerChain);
                 break;
 #ifdef GL_OES_EGL_image_external
             } case cc::DrawQuad::STREAM_VIDEO_CONTENT: {
                 const cc::StreamVideoDrawQuad *squad = cc::StreamVideoDrawQuad::MaterialCast(quad);
-                ResourceHolder *resource = findAndHoldResource(squad->resource_id(), resourceCandidates);
-                MailboxTexture *texture = static_cast<MailboxTexture *>(initAndHoldTexture(resource, quad->ShouldDrawWithBlending()));
-                texture->setTarget(GL_TEXTURE_EXTERNAL_OES); // since this is not default TEXTURE_2D type
+                ResourceHolder *resource = findAndHoldResource(squad->resource_id(),
+                                                               resourceCandidates);
+                MailboxTexture *texture
+                        = static_cast<MailboxTexture *>(
+                            initAndHoldTexture(resource, quad->ShouldDrawWithBlending())
+                            );
+                // since this is not default TEXTURE_2D type
+                texture->setTarget(GL_TEXTURE_EXTERNAL_OES);
 
-                StreamVideoNode *svideoNode = new StreamVideoNode(texture, false, ExternalTarget);
-                svideoNode->setRect(toQt(squad->rect));
-                svideoNode->setTextureMatrix(toQt(squad->matrix.matrix()));
-                currentLayerChain->appendChildNode(svideoNode);
+                nodeHandler->setupStreamVideoNode(texture, toQt(squad->rect),
+                                                  toQt(squad->matrix.matrix()), currentLayerChain);
                 break;
 #endif // GL_OES_EGL_image_external
 #endif // QT_NO_OPENGL
@@ -721,9 +1055,11 @@ void DelegatedFrameNode::commit(ChromiumCompositorData *chromiumCompositorData, 
             }
         }
     }
+    // Send resources of remaining candidates back to the child compositors so that
+    // they can be freed or reused.
+    typedef QHash<unsigned, QSharedPointer<ResourceHolder> >::const_iterator
+            ResourceHolderIterator;
 
-    // Send resources of remaining candidates back to the child compositors so that they can be freed or reused.
-    typedef QHash<unsigned, QSharedPointer<ResourceHolder> >::const_iterator ResourceHolderIterator;
     ResourceHolderIterator end = resourceCandidates.constEnd();
     for (ResourceHolderIterator it = resourceCandidates.constBegin(); it != end ; ++it)
         resourcesToRelease->push_back((*it)->returnResource());

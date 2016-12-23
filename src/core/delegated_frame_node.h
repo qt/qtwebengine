@@ -74,6 +74,7 @@ public:
     ChromiumCompositorData() : frameDevicePixelRatio(1) { }
     QHash<unsigned, QSharedPointer<ResourceHolder> > resourceHolders;
     std::unique_ptr<cc::DelegatedFrameData> frameData;
+    std::unique_ptr<cc::DelegatedFrameData> previousFrameData;
     qreal frameDevicePixelRatio;
 };
 
@@ -100,6 +101,7 @@ private:
         QVector<QSharedPointer<QSGRootNode> > renderPassRootNodes;
         QVector<QSharedPointer<QSGTexture> > textureStrongRefs;
     } m_sgObjects;
+    QVector<QSGNode*> m_sceneGraphNodes;
     int m_numPendingSyncPoints;
     QWaitCondition m_mailboxesFetchedWaitCond;
     QMutex m_mutex;

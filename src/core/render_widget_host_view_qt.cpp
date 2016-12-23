@@ -666,6 +666,8 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, c
     m_pendingOutputSurfaceId = output_surface_id;
     Q_ASSERT(frame.delegated_frame_data);
     Q_ASSERT(!m_chromiumCompositorData->frameData || m_chromiumCompositorData->frameData->resource_list.empty());
+    if (m_chromiumCompositorData->frameData.get())
+        m_chromiumCompositorData->previousFrameData = std::move(m_chromiumCompositorData->frameData);
     m_chromiumCompositorData->frameData = std::move(frame.delegated_frame_data);
     m_chromiumCompositorData->frameDevicePixelRatio = frame.metadata.device_scale_factor;
 
