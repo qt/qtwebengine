@@ -88,8 +88,11 @@ void WebContentsViewQt::RenderViewCreated(content::RenderViewHost* host)
 {
     // The render process is done creating the RenderView and it's ready to be routed
     // messages at this point.
-    if (m_client)
-        host->GetView()->SetBackgroundColor(toSk(m_client->backgroundColor()));
+    if (m_client && host) {
+        content::RenderWidgetHostView* rwhv = host->GetView();
+        if (rwhv)
+            rwhv->SetBackgroundColor(toSk(m_client->backgroundColor()));
+    }
 }
 
 void WebContentsViewQt::CreateView(const gfx::Size& initial_size, gfx::NativeView context)
