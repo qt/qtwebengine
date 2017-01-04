@@ -643,7 +643,8 @@ static bool checkInternalScheme(const QByteArray &scheme)
     static QSet<QByteArray> internalSchemes;
     if (internalSchemes.isEmpty()) {
         internalSchemes << QByteArrayLiteral("qrc") << QByteArrayLiteral("data") << QByteArrayLiteral("blob")
-                        << QByteArrayLiteral("http") << QByteArrayLiteral("ftp") << QByteArrayLiteral("javascript");
+                        << QByteArrayLiteral("http") << QByteArrayLiteral("https") << QByteArrayLiteral("ftp")
+                        << QByteArrayLiteral("javascript");
     }
     return internalSchemes.contains(scheme);
 }
