@@ -1,6 +1,7 @@
+equals(QMAKE_HOST.os, Windows): EXE_SUFFIX = .exe
 
 defineTest(qtConfTest_detectNinja) {
-    ninja = $$qtConfFindInPath("ninja")
+    ninja = $$qtConfFindInPath("ninja$$EXE_SUFFIX")
     !isEmpty(ninja) {
         qtLog("Found ninja from path: $$ninja")
         qtRunLoggedCommand("$$ninja --version", version)|return(false)
@@ -12,7 +13,7 @@ defineTest(qtConfTest_detectNinja) {
 }
 
 defineTest(qtConfTest_detectGn) {
-    gn = $$qtConfFindInPath("gn")
+    gn = $$qtConfFindInPath("gn$$EXE_SUFFIX")
     !isEmpty(gn) {
         qtRunLoggedCommand("$$gn --version", version)|return(false)
         #accept all for now
