@@ -31,7 +31,7 @@
 
     The way to package and deploy applications varies between operating systems.
     For Windows and \macos, \l{The Windows Deployment Tool}{windeployqt} and
-    \l{Deploying Applications on OS X}{macdeployqt} automate the steps to
+    \l{Deploying Applications on macOS}{macdeployqt} automate the steps to
     generate a stand-alone application package.
 
     When manually deploying applications that depend on Qt WebEngine, all the
