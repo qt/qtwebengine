@@ -974,7 +974,7 @@ void WebContentsAdapter::inspectElementAt(const QPoint &location)
 {
     Q_D(WebContentsAdapter);
     if (content::DevToolsAgentHost::HasFor(d->webContents.get())) {
-        content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->InspectElement(location.x(), location.y());
+        content::DevToolsAgentHost::GetOrCreateFor(d->webContents.get())->InspectElement(nullptr, location.x(), location.y());
     }
 }
 

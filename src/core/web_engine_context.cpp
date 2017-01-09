@@ -51,7 +51,7 @@
 #if defined(ENABLE_BASIC_PRINTING)
 #include "chrome/browser/printing/print_job_manager.h"
 #endif // defined(ENABLE_BASIC_PRINTING)
-#include "components/devtools_http_handler/devtools_http_handler.h"
+#include "content/browser/devtools/devtools_http_handler.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"
@@ -183,13 +183,15 @@ void WebEngineContext::destroyBrowserContext()
 
 void WebEngineContext::destroy()
 {
+    if (m_devtoolsServer)
+        m_devtoolsServer->stop();
     delete m_globalQObject;
     m_globalQObject = 0;
     base::MessagePump::Delegate *delegate = m_runLoop->loop_;
     // Flush the UI message loop before quitting.
     while (delegate->DoWork()) { }
     GLContextHelper::destroy();
-    m_devtools.reset(0);
+    m_devtoolsServer.reset(0);
     m_runLoop->AfterRun();
 
     // Force to destroy RenderProcessHostImpl by destroying BrowserMainRunner.
@@ -205,7 +207,7 @@ WebEngineContext::~WebEngineContext()
 {
     // WebEngineContext::destroy() must be called before we are deleted
     Q_ASSERT(!m_globalQObject);
-    Q_ASSERT(!m_devtools);
+    Q_ASSERT(!m_devtoolsServer);
     Q_ASSERT(!m_browserRunner);
 }
 
@@ -404,7 +406,8 @@ WebEngineContext::WebEngineContext()
     m_runLoop.reset(new base::RunLoop);
     m_runLoop->BeforeRun();
 
-    m_devtools = createDevToolsHttpHandler();
+    m_devtoolsServer.reset(new DevToolsServerQt());
+    m_devtoolsServer->start();
     // Force the initialization of MediaCaptureDevicesDispatcher on the UI
     // thread to avoid a thread check assertion in its constructor when it
     // first gets referenced on the IO thread.
