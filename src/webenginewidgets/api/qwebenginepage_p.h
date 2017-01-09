@@ -119,6 +119,7 @@ public:
     virtual void didFetchDocumentInnerText(quint64 requestId, const QString& result) Q_DECL_OVERRIDE;
     virtual void didFindText(quint64 requestId, int matchCount) Q_DECL_OVERRIDE;
     virtual void didPrintPage(quint64 requestId, const QByteArray &result) Q_DECL_OVERRIDE;
+    virtual void didPrintPageToPdf(const QString &filePath, bool success) Q_DECL_OVERRIDE;
     virtual void passOnFocus(bool reverse) Q_DECL_OVERRIDE;
     virtual void javaScriptConsoleMessage(JavaScriptConsoleMessageLevel level, const QString& message, int lineNumber, const QString& sourceID) Q_DECL_OVERRIDE;
     virtual void authenticationRequired(QSharedPointer<QtWebEngineCore::AuthenticationDialogController>) Q_DECL_OVERRIDE;

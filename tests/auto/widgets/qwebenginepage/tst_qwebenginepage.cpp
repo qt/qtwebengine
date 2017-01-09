@@ -4899,10 +4899,15 @@ void tst_QWebEnginePage::printToPdf()
     page.load(QUrl("qrc:///resources/basic_printing_page.html"));
     QTRY_VERIFY(spy.count() == 1);
 
+    QSignalSpy savePdfSpy(&page, SIGNAL(pdfPrintingFinished(const QString&, bool)));
     QPageLayout layout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(0.0, 0.0, 0.0, 0.0));
     QString path = tempDir.path() + "/print_1_success.pdf";
     page.printToPdf(path, layout);
-    QTRY_VERIFY(QFile::exists(path));
+    QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
+
+    QList<QVariant> successArguments = savePdfSpy.takeFirst();
+    QVERIFY2(successArguments.at(0).toString() == path, "File path for first saved PDF does not match arguments");
+    QVERIFY2(successArguments.at(1).toBool() == true, "Printing to PDF file failed though it should succeed");
 
 #if !defined(Q_OS_WIN)
     path = tempDir.path() + "/print_//2_failed.pdf";
@@ -4910,7 +4915,11 @@ void tst_QWebEnginePage::printToPdf()
     path = tempDir.path() + "/print_|2_failed.pdf";
 #endif
     page.printToPdf(path, QPageLayout());
-    QTRY_VERIFY(!QFile::exists(path));
+    QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
+
+    QList<QVariant> failedArguments = savePdfSpy.takeFirst();
+    QVERIFY2(failedArguments.at(0).toString() == path, "File path for second saved PDF does not match arguments");
+    QVERIFY2(failedArguments.at(1).toBool() == false, "Printing to PDF file succeeded though it should fail");
 
     CallbackSpy<QByteArray> successfulSpy;
     page.printToPdf(successfulSpy.ref(), layout);

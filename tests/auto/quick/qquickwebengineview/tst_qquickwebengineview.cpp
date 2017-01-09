@@ -505,9 +505,13 @@ void tst_QQuickWebEngineView::printToPdf()
     view->setUrl(urlFromTestPath("html/basic_page.html"));
     QVERIFY(waitForLoadSucceeded(view));
 
+    QSignalSpy savePdfSpy(view, SIGNAL(pdfPrintingFinished(const QString&, bool)));
     QString path = tempDir.path() + "/print_success.pdf";
     view->printToPdf(path, QQuickWebEngineView::A4, QQuickWebEngineView::Portrait);
-    QTRY_VERIFY(QFile::exists(path));
+    QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
+    QList<QVariant> successArguments = savePdfSpy.takeFirst();
+    QVERIFY2(successArguments.at(0).toString() == path, "File path for first saved PDF does not match arguments");
+    QVERIFY2(successArguments.at(1).toBool() == true, "Printing to PDF file failed though it should succeed");
 
 #if !defined(Q_OS_WIN)
     path = tempDir.path() + "/print_//fail.pdf";
@@ -515,7 +519,10 @@ void tst_QQuickWebEngineView::printToPdf()
     path = tempDir.path() + "/print_|fail.pdf";
 #endif // #if !defined(Q_OS_WIN)
     view->printToPdf(path, QQuickWebEngineView::A4, QQuickWebEngineView::Portrait);
-    QTRY_VERIFY(!QFile::exists(path));
+    QTRY_VERIFY2(savePdfSpy.count() == 1, "Printing to PDF file failed without signal");
+    QList<QVariant> failedArguments = savePdfSpy.takeFirst();
+    QVERIFY2(failedArguments.at(0).toString() == path, "File path for second saved PDF does not match arguments");
+    QVERIFY2(failedArguments.at(1).toBool() == false, "Printing to PDF file succeeded though it should fail");
 }
 
 void tst_QQuickWebEngineView::stopSettingFocusWhenDisabled()

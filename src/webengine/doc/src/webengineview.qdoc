@@ -1109,11 +1109,31 @@
 */
 
 /*!
+    \qmlsignal WebEngineView::pdfPrintingFinished(string filePath, bool success)
+    \since QtWebEngine 1.5
+
+    This signal is emitted when printing the web page into a PDF file has
+    finished.
+    \a filePath will contain the path the file was requested to be created
+    at, and \a success will be \c true if the file was successfully created and
+    \c false otherwise.
+
+    \sa printToPdf()
+*/
+
+/*!
     \qmlmethod void WebEngineView::printToPdf(const QString &filePath, PrintedPageSizeId pageSizeId, PrintedPageOrientation orientation)
     \since QtWebEngine 1.3
 
-    Prints the WebEngineView's current content to a PDF document and stores it under \a filePath. The document's size will be determined
-    by the value of \a pageSizeId and its orientation will be determined using \a orientation.
+    Prints the WebEngineView's current content to a PDF document and stores it
+    under \a filePath. The document's size will be determined by the value of
+    \a pageSizeId and its orientation will be determined using \a orientation.
+
+    This method issues an asynchronous request for printing the web page into a
+    PDF and returns immediately. To be informed about the result of the
+    request, connect to the signal pdfPrintingFinished().
+
+    \sa pdfPrintingFinished()
 */
 
 /*!

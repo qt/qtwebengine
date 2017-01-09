@@ -98,7 +98,7 @@ private:
     const bool m_toggleOn;
 };
 
-#define LATEST_WEBENGINEVIEW_REVISION 4
+#define LATEST_WEBENGINEVIEW_REVISION 5
 
 class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineView : public QQuickItem {
     Q_OBJECT
@@ -512,6 +512,7 @@ Q_SIGNALS:
     Q_REVISION(4) void colorDialogRequested(QQuickWebEngineColorDialogRequest *request);
     Q_REVISION(4) void fileDialogRequested(QQuickWebEngineFileDialogRequest *request);
     Q_REVISION(4) void formValidationMessageRequested(QQuickWebEngineFormValidationMessageRequest *request);
+    Q_REVISION(5) void pdfPrintingFinished(const QString &filePath, bool success);
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
     void testSupportChanged();

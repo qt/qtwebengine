@@ -322,6 +322,8 @@ Q_SIGNALS:
     void audioMutedChanged(bool muted);
     void recentlyAudibleChanged(bool recentlyAudible);
 
+    void pdfPrintingFinished(const QString &filePath, bool success);
+
 protected:
     virtual QWebEnginePage *createWindow(WebWindowType type);
     virtual QStringList chooseFiles(FileSelectionMode mode, const QStringList &oldFiles, const QStringList &acceptedMimeTypes);

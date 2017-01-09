@@ -359,6 +359,12 @@ void QWebEnginePagePrivate::loadFinished(bool success, const QUrl &url, bool isE
     updateNavigationActions();
 }
 
+void QWebEnginePagePrivate::didPrintPageToPdf(const QString &filePath, bool success)
+{
+    Q_Q(QWebEnginePage);
+    Q_EMIT q->pdfPrintingFinished(filePath, success);
+}
+
 void QWebEnginePagePrivate::focusContainer()
 {
     if (view)
@@ -726,6 +732,19 @@ QWebEnginePage::QWebEnginePage(QObject* parent)
     that is fullscreen.
 
     \sa QWebEngineSettings::FullScreenSupportEnabled
+*/
+
+/*!
+    \fn void QWebEnginePage::pdfPrintingFinished(const QString &filePath, bool success)
+    \since 5.9
+
+    This signal is emitted when printing the web page into a PDF file has
+    finished.
+    \a filePath will contain the path the file was requested to be created
+    at, and \a success will be \c true if the file was successfully created and
+    \c false otherwise.
+
+    \sa printToPdf()
 */
 
 /*!
@@ -1936,11 +1955,19 @@ QSizeF QWebEnginePage::contentsSize() const
 }
 
 /*!
-    Renders the current content of the page into a PDF document and saves it in the location specified in \a filePath.
-    The page size and orientation of the produced PDF document are taken from the values specified in \a pageLayout.
+    Renders the current content of the page into a PDF document and saves it
+    in the location specified in \a filePath.
+    The page size and orientation of the produced PDF document are taken from
+    the values specified in \a pageLayout.
+
+    This method issues an asynchronous request for printing the web page into
+    a PDF and returns immediately.
+    To be informed about the result of the request, connect to the signal
+    pdfPrintingFinished().
 
     If a file already exists at the provided file path, it will be overwritten.
     \since 5.7
+    \sa pdfPrintingFinished()
 */
 void QWebEnginePage::printToPdf(const QString &filePath, const QPageLayout &pageLayout)
 {

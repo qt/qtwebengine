@@ -184,10 +184,19 @@ static void callbackOnEvaluateJS(WebContentsAdapterClient *adapterClient, quint6
 }
 
 #if defined(ENABLE_BASIC_PRINTING)
-static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient, int requestId, const std::vector<char>& result)
+static void callbackOnPrintingFinished(WebContentsAdapterClient *adapterClient,
+                                       int requestId,
+                                       const std::vector<char>& result)
 {
     if (requestId)
         adapterClient->didPrintPage(requestId, QByteArray(result.data(), result.size()));
+}
+
+static void callbackOnPdfSavingFinished(WebContentsAdapterClient *adapterClient,
+                                        const QString& filePath,
+                                        bool success)
+{
+    adapterClient->didPrintPageToPdf(filePath, success);
 }
 #endif
 
@@ -963,19 +972,28 @@ void WebContentsAdapter::wasHidden()
 void WebContentsAdapter::printToPDF(const QPageLayout &pageLayout, const QString &filePath)
 {
 #if defined(ENABLE_BASIC_PRINTING)
-    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDF(pageLayout, true, filePath);
+    Q_D(WebContentsAdapter);
+    PrintViewManagerQt::PrintToPDFFileCallback callback = base::Bind(&callbackOnPdfSavingFinished,
+                                                                d->adapterClient,
+                                                                filePath);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFFileWithCallback(pageLayout,
+                                                                                   true,
+                                                                                   filePath,
+                                                                                   callback);
 #endif // if defined(ENABLE_BASIC_PRINTING)
 }
 
-quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout, const bool colorMode)
+quint64 WebContentsAdapter::printToPDFCallbackResult(const QPageLayout &pageLayout,
+                                                     const bool colorMode)
 {
 #if defined(ENABLE_BASIC_PRINTING)
     Q_D(WebContentsAdapter);
-    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished
-                                                                 , d->adapterClient
-                                                                 , d->nextRequestId);
-    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout, colorMode
-                                                                               , callback);
+    PrintViewManagerQt::PrintToPDFCallback callback = base::Bind(&callbackOnPrintingFinished,
+                                                                 d->adapterClient,
+                                                                 d->nextRequestId);
+    PrintViewManagerQt::FromWebContents(webContents())->PrintToPDFWithCallback(pageLayout,
+                                                                               colorMode,
+                                                                               callback);
     return d->nextRequestId++;
 #else
     return 0;
