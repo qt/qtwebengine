@@ -9,6 +9,7 @@
     "commandline": {
         "options": {
             "alsa": "boolean",
+            "pepper-plugins": "boolean",
             "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
             "pulseaudio": "boolean",
@@ -55,6 +56,12 @@
             "condition": "libs.pulseaudio",
             "output": [ "privateFeature" ]
         },
+        "pepper-plugins": {
+            "label": "Pepper Plugins",
+            "autoDetect": "!features.cross_compile",
+            "purpose": "Enables use of Pepper Flash and Widevine plugins",
+            "output": [ "privateFeature" ]
+        },
         "printing-and-pdf": {
             "label": "Printing and PDF",
             "condition": "module.printsupport && features.printer",
@@ -89,6 +96,7 @@
         {
             "section": "Qt WebEngine",
             "entries": [
+                "pepper-plugins",
                 "printing-and-pdf",
                 "proprietary-codecs",
                 "spellchecker",

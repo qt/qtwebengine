@@ -3,8 +3,7 @@ GYP_ARGS += "-D qt_os=\"desktop_linux\""
 include(linux.pri)
 
 GYP_CONFIG += \
-    desktop_linux=1 \
-    enable_widevine=1
+    desktop_linux=1
 
 clang {
     GYP_CONFIG += werror=

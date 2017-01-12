@@ -25,3 +25,9 @@ use?(pdf) {
 } else {
     GYP_CONFIG += enable_pdf=0
 }
+
+use?(pepper_plugins) {
+    GYP_CONFIG += enable_plugins=1 enable_widevine=1
+} else {
+    GYP_CONFIG += enable_plugins=0 enable_widevine=0
+}

@@ -15,7 +15,6 @@ GYP_CONFIG += \
     enable_language_detection=0 \
     enable_managed_users=0 \
     enable_plugin_installation=0 \
-    enable_plugins=0 \
     enable_session_service=0 \
     enable_task_manager=0 \
     enable_themes=0 \

@@ -82,15 +82,10 @@ SOURCES = \
         render_view_observer_host_qt.cpp \
         render_widget_host_view_qt.cpp \
         renderer/content_renderer_client_qt.cpp \
-        renderer/pepper/pepper_flash_renderer_host_qt.cpp \
-        renderer/pepper/pepper_renderer_host_factory_qt.cpp \
         renderer/render_frame_observer_qt.cpp \
         renderer/render_view_observer_qt.cpp \
         renderer/user_resource_controller.cpp \
         renderer/web_channel_ipc_transport.cpp \
-        renderer_host/pepper/pepper_flash_browser_host_qt.cpp \
-        renderer_host/pepper/pepper_host_factory_qt.cpp \
-        renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp \
         renderer_host/resource_dispatcher_host_delegate_qt.cpp \
         renderer_host/user_resource_controller_host.cpp \
         renderer_host/web_channel_ipc_transport_host.cpp \
@@ -163,15 +158,10 @@ HEADERS = \
         render_widget_host_view_qt.h \
         render_widget_host_view_qt_delegate.h \
         renderer/content_renderer_client_qt.h \
-        renderer/pepper/pepper_flash_renderer_host_qt.h \
-        renderer/pepper/pepper_renderer_host_factory_qt.h \
         renderer/render_frame_observer_qt.h \
         renderer/render_view_observer_qt.h \
         renderer/user_resource_controller.h \
         renderer/web_channel_ipc_transport.h \
-        renderer_host/pepper/pepper_flash_browser_host_qt.h \
-        renderer_host/pepper/pepper_host_factory_qt.h \
-        renderer_host/pepper/pepper_isolated_file_system_message_filter.h \
         renderer_host/resource_dispatcher_host_delegate_qt.h \
         renderer_host/user_resource_controller_host.h \
         renderer_host/web_channel_ipc_transport_host.h \
@@ -200,6 +190,22 @@ HEADERS = \
 use?(pdf) {
     SOURCES += pdfium_document_wrapper_qt.cpp
     HEADERS += pdfium_document_wrapper_qt.h
+}
+
+use?(pepper_plugins) {
+    SOURCES += \
+        renderer_host/pepper/pepper_flash_browser_host_qt.cpp \
+        renderer_host/pepper/pepper_host_factory_qt.cpp \
+        renderer_host/pepper/pepper_isolated_file_system_message_filter.cpp \
+        renderer/pepper/pepper_flash_renderer_host_qt.cpp \
+        renderer/pepper/pepper_renderer_host_factory_qt.cpp
+
+    HEADERS += \
+        renderer_host/pepper/pepper_flash_browser_host_qt.h \
+        renderer_host/pepper/pepper_host_factory_qt.h \
+        renderer_host/pepper/pepper_isolated_file_system_message_filter.h \
+        renderer/pepper/pepper_flash_renderer_host_qt.h \
+        renderer/pepper/pepper_renderer_host_factory_qt.h
 }
 
 use?(printing) {
