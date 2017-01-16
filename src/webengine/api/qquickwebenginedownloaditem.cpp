@@ -183,6 +183,8 @@ quint32 QQuickWebEngineDownloadItem::id() const
             Download is in progress.
     \value  WebEngineDownloadItem.DownloadCompleted
             Download completed successfully.
+    \value  WebEngineDownloadItem.DownloadCancelled
+            Download was cancelled by the user.
     \value  WebEngineDownloadItem.DownloadInterrupted
             Download has been interrupted (by the server or because of lost connectivity).
 */

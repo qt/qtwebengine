@@ -267,7 +267,7 @@ bool QQuickWebEngineSettings::webGLEnabled() const
     \qmlproperty bool WebEngineSettings::accelerated2dCanvasEnabled
     \since QtWebEngine 1.3
 
-    Specifies whether the HTML 5 2D canvas should be a OpenGL framebuffer.
+    Specifies whether the HTML 5 2D canvas should be an OpenGL framebuffer.
     This makes many painting operations faster, but slows down pixel access.
 
     Enabled by default if available.

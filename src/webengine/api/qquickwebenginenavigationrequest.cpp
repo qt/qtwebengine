@@ -63,6 +63,20 @@ public:
     bool isMainFrame;
 };
 
+/*!
+    \qmltype WebEngineNavigationRequest
+    \instantiates QQuickWebEngineNavigationRequest
+    \inqmlmodule QtWebEngine
+    \since QtWebEngine 1.0
+
+    \brief Represents a request for navigating to a web page as part of
+    \l{WebEngineView::navigationRequested()}.
+
+    To accept or reject a request, set \l action to
+    \c WebEngineNavigationRequest.AcceptRequest or
+    \c WebEngineNavigationRequest.IgnoreRequest.
+*/
+
 QQuickWebEngineNavigationRequest::QQuickWebEngineNavigationRequest(const QUrl& url, QQuickWebEngineView::NavigationType navigationType, bool mainFrame, QObject* parent)
     : QObject(parent)
     , d_ptr(new QQuickWebEngineNavigationRequestPrivate(url, navigationType, mainFrame))
@@ -73,6 +87,17 @@ QQuickWebEngineNavigationRequest::~QQuickWebEngineNavigationRequest()
 {
 }
 
+/*!
+    \qmlproperty enumeration WebEngineNavigationRequest::action
+
+    Whether to accept or ignore the navigation request.
+
+    \value  WebEngineNavigationRequest.AcceptRequest
+            Accepts a navigation request.
+    \value  WebEngineNavigationRequest.IgnoreRequest
+            Ignores a navigation request.
+*/
+
 void QQuickWebEngineNavigationRequest::setAction(QQuickWebEngineView::NavigationRequestAction action)
 {
     Q_D(QQuickWebEngineNavigationRequest);
@@ -82,6 +107,13 @@ void QQuickWebEngineNavigationRequest::setAction(QQuickWebEngineView::Navigation
     d->action = action;
     emit actionChanged();
 }
+
+/*!
+    \qmlproperty url WebEngineNavigationRequest::url
+    \readonly
+
+    The URL of the web page to go to.
+*/
 
 QUrl QQuickWebEngineNavigationRequest::url() const
 {
@@ -95,11 +127,38 @@ QQuickWebEngineView::NavigationRequestAction QQuickWebEngineNavigationRequest::a
     return d->action;
 }
 
+/*!
+    \qmlproperty enumeration WebEngineNavigationRequest::navigationType
+    \readonly
+
+    The method used to navigate to a web page.
+
+    \value  WebEngineNavigationRequest.LinkClickedNavigation
+            Clicking a link.
+    \value  WebEngineNavigationRequest.TypedNavigation
+            Entering an URL on the address bar.
+    \value  WebEngineNavigationRequest.FormSubmittedNavigation
+            Submitting a form.
+    \value  WebEngineNavigationRequest.BackForwardNavigation
+            Using navigation history to go to the previous or next page.
+    \value  WebEngineNavigationRequest.ReloadNavigation
+            Reloading the page.
+    \value  WebEngineNavigationRequest.OtherNavigation
+            Using some other method to go to a page.
+*/
+
 QQuickWebEngineView::NavigationType QQuickWebEngineNavigationRequest::navigationType() const
 {
     Q_D(const QQuickWebEngineNavigationRequest);
     return d->navigationType;
 }
+
+/*!
+    \qmlproperty bool WebEngineNavigationRequest::isMainFrame
+    \readonly
+
+    Whether the navigation issue is requested for a top level page.
+*/
 
 bool QQuickWebEngineNavigationRequest::isMainFrame() const
 {

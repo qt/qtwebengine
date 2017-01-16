@@ -312,11 +312,10 @@ QString QQuickWebEngineJavaScriptDialogRequest::message() const
 }
 
 /*!
-    \qmlproperty string JavaScriptDialogRequest::defaultPrompt
+    \qmlproperty string JavaScriptDialogRequest::defaultText
     \readonly
 
-    The default text if the requested dialog box is of
-    the \l type PromptDialog.
+    The default prompt text, if the requested dialog is a prompt.
 */
 
 
@@ -811,7 +810,7 @@ QString QQuickWebEngineFormValidationMessageRequest::subText() const
 }
 
 /*!
-    \qmlproperty enumeration ValidationMessageRequest::type
+    \qmlproperty enumeration FormValidationMessageRequest::type
     \readonly
 
     The type of the form validation message request.
