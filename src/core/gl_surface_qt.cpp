@@ -365,7 +365,8 @@ bool GLSurfaceQtEGL::InitializeOneOff()
         LOG(ERROR) << "eglInitialize failed with error " << GetLastEGLErrorString();
         return false;
     }
-
+#if 0
+// QTBUG-57290
     g_egl_surfaceless_context_supported = ExtensionsContain(g_extensions, "EGL_KHR_surfaceless_context");
     if (g_egl_surfaceless_context_supported) {
         scoped_refptr<GLSurface> surface = new GLSurfacelessQtEGL(Size(1, 1));
@@ -382,7 +383,7 @@ bool GLSurfaceQtEGL::InitializeOneOff()
             context->ReleaseCurrent(surface.get());
         }
     }
-
+#endif
     initialized = true;
     return true;
 }
