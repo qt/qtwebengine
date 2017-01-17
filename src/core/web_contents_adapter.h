@@ -166,7 +166,7 @@ public:
                        Qt::DropActions allowedActions, const QPixmap &pixmap, const QPoint &offset);
     void enterDrag(QDragEnterEvent *e, const QPoint &screenPos);
     Qt::DropAction updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos);
-    void updateDragAction(Qt::DropAction action);
+    void updateDragAction(int action);
     void finishDragUpdate();
     void endDragging(const QPoint &clientPos, const QPoint &screenPos);
     void leaveDrag();

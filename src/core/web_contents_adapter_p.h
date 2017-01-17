@@ -55,6 +55,7 @@
 
 #include <base/callback.h>
 #include "base/memory/ref_counted.h"
+#include <third_party/WebKit/public/platform/WebDragOperation.h>
 
 #include <QScopedPointer>
 #include <QSharedPointer>
@@ -93,7 +94,7 @@ public:
     quint64 nextRequestId;
     int lastFindRequestId;
     std::unique_ptr<content::DropData> currentDropData;
-    Qt::DropAction currentDropAction;
+    blink::WebDragOperation currentDropAction;
     bool inDragUpdateLoop;
     base::Closure dragUpdateLoopQuitClosure;
     QScopedPointer<QTimer> updateDragCursorMessagePollingTimer;
