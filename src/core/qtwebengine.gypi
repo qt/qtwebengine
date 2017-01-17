@@ -5,6 +5,11 @@
     'variables': {
       'version_script_location%': '<(chromium_src_dir)/build/util/version.py',
     },
+    'configurations': {
+      'Release': {
+        'defines': [ 'QT_NO_DEBUG' ],
+      },
+    },
     'dependencies': [
       '<(chromium_src_dir)/base/base.gyp:base',
       '<(chromium_src_dir)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
