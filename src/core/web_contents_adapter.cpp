@@ -1198,6 +1198,32 @@ Qt::DropAction toQt(blink::WebDragOperation op)
     return Qt::IgnoreAction;
 }
 
+static int toWeb(Qt::MouseButtons buttons)
+{
+    int result = 0;
+    if (buttons & Qt::LeftButton)
+        result |= blink::WebInputEvent::LeftButtonDown;
+    if (buttons & Qt::RightButton)
+        result |= blink::WebInputEvent::RightButtonDown;
+    if (buttons & Qt::MiddleButton)
+        result |= blink::WebInputEvent::MiddleButtonDown;
+    return result;
+}
+
+static int toWeb(Qt::KeyboardModifiers modifiers)
+{
+    int result = 0;
+    if (modifiers & Qt::ShiftModifier)
+        result |= blink::WebInputEvent::ShiftKey;
+    if (modifiers & Qt::ControlModifier)
+        result |= blink::WebInputEvent::ControlKey;
+    if (modifiers & Qt::AltModifier)
+        result |= blink::WebInputEvent::AltKey;
+    if (modifiers & Qt::MetaModifier)
+        result |= blink::WebInputEvent::MetaKey;
+    return result;
+}
+
 Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos)
 {
     Q_D(WebContentsAdapter);
@@ -1205,7 +1231,7 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     d->lastDragClientPos = toGfx(e->pos());
     d->lastDragScreenPos = toGfx(screenPos);
     rvh->DragTargetDragOver(d->lastDragClientPos, d->lastDragScreenPos, toWeb(e->possibleActions()),
-                            blink::WebInputEvent::LeftButtonDown);
+                            toWeb(e->mouseButtons()) | toWeb(e->keyboardModifiers()));
 
     base::MessageLoop *currentMessageLoop = base::MessageLoop::current();
     DCHECK(currentMessageLoop);
