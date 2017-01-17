@@ -1090,6 +1090,18 @@ static QMimeData *mimeDataFromDropData(const content::DropData &dropData)
     return mimeData;
 }
 
+static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
+{
+    int result = blink::WebDragOperationNone;
+    if (action & Qt::CopyAction)
+        result |= blink::WebDragOperationCopy;
+    if (action & Qt::LinkAction)
+        result |= blink::WebDragOperationLink;
+    if (action & Qt::MoveAction)
+        result |= blink::WebDragOperationMove;
+    return static_cast<blink::WebDragOperationsMask>(result);
+}
+
 void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropData &dropData,
                                        Qt::DropActions allowedActions, const QPixmap &pixmap,
                                        const QPoint &offset)
@@ -1129,23 +1141,15 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     if (dValid) {
         if (d->webContents) {
             content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-            if (rvh)
+            if (rvh) {
+                rvh->DragSourceEndedAt(d->lastDragClientPos.x(), d->lastDragClientPos.y(),
+                                       d->lastDragScreenPos.x(), d->lastDragScreenPos.y(),
+                                       d->currentDropAction);
                 rvh->DragSourceSystemDragEnded();
+            }
         }
         d->currentDropData.reset();
     }
-}
-
-static blink::WebDragOperationsMask toWeb(const Qt::DropActions action)
-{
-    int result = blink::WebDragOperationNone;
-    if (action & Qt::CopyAction)
-        result |= blink::WebDragOperationCopy;
-    if (action & Qt::LinkAction)
-        result |= blink::WebDragOperationLink;
-    if (action & Qt::MoveAction)
-        result |= blink::WebDragOperationMove;
-    return static_cast<blink::WebDragOperationsMask>(result);
 }
 
 static void fillDropDataFromMimeData(content::DropData *dropData, const QMimeData *mimeData)
@@ -1198,7 +1202,9 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
 {
     Q_D(WebContentsAdapter);
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
-    rvh->DragTargetDragOver(toGfx(e->pos()), toGfx(screenPos), toWeb(e->possibleActions()),
+    d->lastDragClientPos = toGfx(e->pos());
+    d->lastDragScreenPos = toGfx(screenPos);
+    rvh->DragTargetDragOver(d->lastDragClientPos, d->lastDragScreenPos, toWeb(e->possibleActions()),
                             blink::WebInputEvent::LeftButtonDown);
 
     base::MessageLoop *currentMessageLoop = base::MessageLoop::current();
@@ -1246,7 +1252,9 @@ void WebContentsAdapter::endDragging(const QPoint &clientPos, const QPoint &scre
     finishDragUpdate();
     content::RenderViewHost *rvh = d->webContents->GetRenderViewHost();
     rvh->FilterDropData(d->currentDropData.get());
-    rvh->DragTargetDrop(*d->currentDropData, toGfx(clientPos), toGfx(screenPos), 0);
+    d->lastDragClientPos = toGfx(clientPos);
+    d->lastDragScreenPos = toGfx(screenPos);
+    rvh->DragTargetDrop(*d->currentDropData, d->lastDragClientPos, d->lastDragScreenPos, 0);
     d->currentDropData.reset();
 }
 

@@ -55,6 +55,7 @@
 
 #include <base/callback.h>
 #include "base/memory/ref_counted.h"
+#include <ui/gfx/geometry/point.h>
 #include <third_party/WebKit/public/platform/WebDragOperation.h>
 
 #include <QScopedPointer>
@@ -96,6 +97,8 @@ public:
     std::unique_ptr<content::DropData> currentDropData;
     blink::WebDragOperation currentDropAction;
     bool inDragUpdateLoop;
+    gfx::Point lastDragClientPos;
+    gfx::Point lastDragScreenPos;
     base::Closure dragUpdateLoopQuitClosure;
     QScopedPointer<QTimer> updateDragCursorMessagePollingTimer;
 };
