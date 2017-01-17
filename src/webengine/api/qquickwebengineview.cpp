@@ -1519,8 +1519,13 @@ void QQuickWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
 void QQuickWebEngineView::dragMoveEvent(QDragMoveEvent *e)
 {
     Q_D(QQuickWebEngineView);
-    e->accept();
-    d->adapter->updateDragPosition(e, mapToScreen(this, e->pos()));
+    Qt::DropAction dropAction = d->adapter->updateDragPosition(e, mapToScreen(this, e->pos()));
+    if (Qt::IgnoreAction == dropAction) {
+        e->ignore();
+    } else {
+        e->setDropAction(dropAction);
+        e->accept();
+    }
 }
 
 void QQuickWebEngineView::dropEvent(QDropEvent *e)
