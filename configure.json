@@ -87,6 +87,7 @@
         },
         "system-gn": {
             "label": "Using system gn",
+            "autoDetect": false,
             "condition": "tests.gn",
             "output": [ "privateFeature" ]
         }
@@ -100,7 +101,6 @@
                 "printing-and-pdf",
                 "proprietary-codecs",
                 "spellchecker",
-                "system-gn",
                 "system-ninja",
                 {
                     "type": "feature",
