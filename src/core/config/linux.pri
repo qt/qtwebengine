@@ -21,7 +21,9 @@ GYP_CONFIG += \
     use_gnome_keyring=0 \
     use_kerberos=0 \
     use_pango=0 \
-    use_openssl=1
+    use_openssl=1 \
+    use_allocator=none \
+    use_experimental_allocator_shim=0
 
 use?(nss) {
     GYP_CONFIG += \

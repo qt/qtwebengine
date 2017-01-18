@@ -13,11 +13,11 @@ INCLUDEPATH += \
 
 QT += testlib network quick webengine
 
-macx: CONFIG -= app_bundle
-
 # This define is used by some tests to look up resources in the source tree
 DEFINES += TESTS_SOURCE_DIR=\\\"$$PWD/\\\"
 
 isQMLTestSupportApiEnabled() {
     DEFINES += ENABLE_QML_TESTSUPPORT_API
 }
+
+include(../embed_info_plist.pri)

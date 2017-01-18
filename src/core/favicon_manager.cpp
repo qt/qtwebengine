@@ -138,10 +138,8 @@ void FaviconManagerPrivate::storeIcon(int id, const QIcon &icon)
     Q_Q(FaviconManager);
 
     // Icon download has been interrupted
-    if (m_inProgressRequests.isEmpty())
+    if (!m_inProgressRequests.contains(id))
         return;
-
-    Q_ASSERT(m_inProgressRequests.contains(id));
 
     QUrl requestUrl = m_inProgressRequests[id];
     FaviconInfo &faviconInfo = q->m_faviconInfoMap[requestUrl];
