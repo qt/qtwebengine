@@ -35,6 +35,7 @@ defineTest(runConfigure) {
     }
     isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
+        linux: !cross_compile: use_gold_linker: WEBENGINE_CONFIG += use_gn
     }
 
     linux {

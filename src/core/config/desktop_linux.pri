@@ -3,7 +3,8 @@ include(linux.pri)
 use?(gn) {
     gn_args += \
         is_clang=false \
-        use_sysroot=false
+        use_sysroot=false \
+        use_system_libffi=false
 
     use?(icecc) {
         gn_args += use_debug_fission=false
