@@ -15,3 +15,7 @@ FORMS    += mainwindow.ui
 
 RESOURCES += \
     resources.qrc
+
+target.path = $$[QT_INSTALL_EXAMPLES]/pdf/pdfviewer
+INSTALLS += target
+
