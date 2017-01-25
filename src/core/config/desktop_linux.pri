@@ -1,19 +1,9 @@
+include(linux.pri)
 
 use?(gn) {
-    include(common.pri)
     gn_args += \
-        use_qt=true \
         is_clang=false \
-        use_sysroot=false \
-        enable_remoting=false \
-        enable_nacl=false \
-        use_kerberos=false \
-        is_component_build=false \
-        use_experimental_allocator_shim=false \
-        use_allocator=\"none\" \
-        v8_use_external_startup_data=false \
-        linux_use_bundled_binutils=false \
-        treat_warnings_as_errors=false
+        use_sysroot=false
 
     use?(icecc) {
         gn_args += use_debug_fission=false
@@ -22,8 +12,6 @@ use?(gn) {
 } else {
 
     GYP_ARGS += "-D qt_os=\"desktop_linux\""
-
-    include(linux.pri)
 
     GYP_CONFIG += \
         desktop_linux=1

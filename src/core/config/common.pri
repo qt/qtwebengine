@@ -1,6 +1,15 @@
 # Shared configuration for all our supported platforms
 
 use?(gn) {
+    gn_args += \
+        use_qt=true \
+        is_component_build=false \
+        enable_remoting=false \
+        enable_nacl=false \
+        use_experimental_allocator_shim=false \
+        use_allocator=\"none\" \
+        v8_use_external_startup_data=false \
+        treat_warnings_as_errors=false
 
     use?(printing) {
         gn_args += enable_basic_printing=true enable_print_preview=true
