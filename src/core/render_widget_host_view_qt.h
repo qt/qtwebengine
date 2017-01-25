@@ -43,6 +43,7 @@
 #include "render_widget_host_view_qt_delegate.h"
 
 #include "base/memory/weak_ptr.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -99,6 +100,7 @@ class RenderWidgetHostViewQt
     , public ui::GestureProviderClient
     , public RenderWidgetHostViewQtDelegateClient
     , public base::SupportsWeakPtr<RenderWidgetHostViewQt>
+    , public cc::BeginFrameObserverBase
 #ifndef QT_NO_ACCESSIBILITY
     , public QAccessible::ActivationObserver
 #endif // QT_NO_ACCESSIBILITY
@@ -157,6 +159,7 @@ public:
     virtual void ClearCompositorFrame() Q_DECL_OVERRIDE;
     virtual void LockCompositingSurface() Q_DECL_OVERRIDE;
     virtual void UnlockCompositingSurface() Q_DECL_OVERRIDE;
+    virtual void SetNeedsBeginFrames(bool needs_begin_frames) Q_DECL_OVERRIDE;
 
     // Overridden from RenderWidgetHostViewBase.
     virtual void SelectionChanged(const base::string16 &text, size_t offset, const gfx::Range &range) Q_DECL_OVERRIDE;
@@ -173,6 +176,10 @@ public:
     virtual void windowChanged() Q_DECL_OVERRIDE;
     virtual bool forwardEvent(QEvent *) Q_DECL_OVERRIDE;
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) Q_DECL_OVERRIDE;
+
+    // cc::BeginFrameObserverBase implementation.
+    bool OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args) override;
+    void OnBeginFrameSourcePausedChanged(bool paused) override;
 
     void handleMouseEvent(QMouseEvent*);
     void handleKeyEvent(QKeyEvent*);
@@ -209,6 +216,7 @@ private:
     void clearPreviousTouchMotionState();
     QList<QTouchEvent::TouchPoint> mapTouchPointIds(const QList<QTouchEvent::TouchPoint> &inputPoints);
     float dpiScale() const;
+    void updateNeedsBeginFramesInternal();
 
     bool IsPopup() const;
 
@@ -237,6 +245,10 @@ private:
     QPoint m_lockedMousePosition;
 
     bool m_initPending;
+
+    std::unique_ptr<cc::SyntheticBeginFrameSource> m_beginFrameSource;
+    bool m_needsBeginFrames;
+    bool m_addedFrameObserver;
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;

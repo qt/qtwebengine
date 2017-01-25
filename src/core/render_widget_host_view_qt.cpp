@@ -52,7 +52,7 @@
 #include "web_event_factory.h"
 
 #include "base/command_line.h"
-#include "cc/output/compositor_frame_ack.h"
+#include "cc/output/direct_renderer.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/text_input_manager.h"
@@ -241,6 +241,9 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     , m_imeInProgress(false)
     , m_receivedEmptyImeText(false)
     , m_initPending(false)
+    , m_beginFrameSource(nullptr)
+    , m_needsBeginFrames(false)
+    , m_addedFrameObserver(false)
 {
     m_host->SetView(this);
 #ifndef QT_NO_ACCESSIBILITY
@@ -248,6 +251,9 @@ RenderWidgetHostViewQt::RenderWidgetHostViewQt(content::RenderWidgetHost* widget
     if (QAccessible::isActive())
         content::BrowserAccessibilityStateImpl::GetInstance()->EnableAccessibility();
 #endif // QT_NO_ACCESSIBILITY
+    auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+    m_beginFrameSource.reset(new cc::DelayBasedBeginFrameSource(
+            base::MakeUnique<cc::DelayBasedTimeSource>(task_runner)));
 }
 
 RenderWidgetHostViewQt::~RenderWidgetHostViewQt()
@@ -846,11 +852,12 @@ void RenderWidgetHostViewQt::ProcessAckedTouchEvent(const content::TouchEventWit
 
 void RenderWidgetHostViewQt::sendDelegatedFrameAck()
 {
-    cc::CompositorFrameAck ack;
-    m_resourcesToRelease.swap(ack.resources);
-    content::RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+    m_beginFrameSource->DidFinishFrame(this, 0);
+    cc::ReturnedResourceArray resources;
+    m_resourcesToRelease.swap(resources);
+    content::RenderWidgetHostImpl::SendReclaimCompositorResources(
         m_host->GetRoutingID(), m_pendingOutputSurfaceId,
-        m_host->GetProcess()->GetID(), ack);
+        m_host->GetProcess()->GetID(), true, resources);
 }
 
 void RenderWidgetHostViewQt::processMotionEvent(const ui::MotionEvent &motionEvent)
@@ -1249,6 +1256,41 @@ void RenderWidgetHostViewQt::handleFocusEvent(QFocusEvent *ev)
         m_host->Blur();
         ev->accept();
     }
+}
+
+void RenderWidgetHostViewQt::SetNeedsBeginFrames(bool needs_begin_frames)
+{
+    m_needsBeginFrames = needs_begin_frames;
+    updateNeedsBeginFramesInternal();
+}
+
+void RenderWidgetHostViewQt::updateNeedsBeginFramesInternal()
+{
+    if (!m_beginFrameSource)
+        return;
+
+    if (m_addedFrameObserver == m_needsBeginFrames)
+        return;
+
+    if (m_needsBeginFrames)
+        m_beginFrameSource->AddObserver(this);
+    else
+        m_beginFrameSource->RemoveObserver(this);
+    m_addedFrameObserver = m_needsBeginFrames;
+}
+
+bool RenderWidgetHostViewQt::OnBeginFrameDerivedImpl(const cc::BeginFrameArgs& args)
+{
+    m_beginFrameSource->OnUpdateVSyncParameters(args.frame_time, args.interval);
+    m_host->Send(new ViewMsg_BeginFrame(m_host->GetRoutingID(), args));
+    return true;
+}
+
+void RenderWidgetHostViewQt::OnBeginFrameSourcePausedChanged(bool paused)
+{
+    // Ignored for now.  If the begin frame source is paused, the renderer
+    // doesn't need to be informed about it and will just not receive more
+    // begin frames.
 }
 
 } // namespace QtWebEngineCore
