@@ -203,17 +203,6 @@ Qt::DropActions toQtDropActions(blink::WebDragOperationsMask ops)
     return result;
 }
 
-Qt::DropAction toQt(blink::WebDragOperation op)
-{
-    if (op == blink::WebDragOperationCopy)
-        return Qt::CopyAction;
-    if (op == blink::WebDragOperationLink)
-        return Qt::LinkAction;
-    if (op == blink::WebDragOperationMove || op == blink::WebDragOperationDelete)
-        return Qt::MoveAction;
-    return Qt::IgnoreAction;
-}
-
 void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
                                       blink::WebDragOperationsMask allowed_ops,
                                       const gfx::ImageSkia &image,
@@ -235,7 +224,7 @@ void WebContentsViewQt::StartDragging(const content::DropData &drop_data,
 
 void WebContentsViewQt::UpdateDragCursor(blink::WebDragOperation dragOperation)
 {
-    m_client->webContentsAdapter()->updateDragAction(toQt(dragOperation));
+    m_client->webContentsAdapter()->updateDragAction(dragOperation);
 }
 
 void WebContentsViewQt::TakeFocus(bool reverse)

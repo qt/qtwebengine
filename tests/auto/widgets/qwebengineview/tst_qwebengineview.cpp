@@ -22,8 +22,10 @@
 #include <qtest.h>
 #include "../util.h"
 
+#include <private/qinputmethod_p.h>
 #include <qpainter.h>
 #include <qpagelayout.h>
+#include <qpa/qplatforminputcontext.h>
 #include <qwebengineview.h>
 #include <qwebenginepage.h>
 #include <qwebenginesettings.h>
@@ -39,6 +41,7 @@
 #include <QtWebEngineCore/qwebenginehttprequest.h>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QStyle>
 
 #define VERIFY_INPUTMETHOD_HINTS(actual, expect) \
     QVERIFY(actual == expect);
@@ -91,6 +94,10 @@ private Q_SLOTS:
     void keyboardEvents();
     void keyboardFocusAfterPopup();
     void postData();
+
+    void softwareInputPanel();
+    void hiddenText();
+    void emptyInputMethodEvent();
 };
 
 // This will be called before the first test function is executed.
@@ -1214,6 +1221,166 @@ void tst_QWebEngineView::postData()
 
     timeoutGuard.stop();
     server.close();
+}
+
+class TestInputContext : public QPlatformInputContext
+{
+public:
+    TestInputContext()
+    : m_visible(false)
+    {
+        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = this;
+    }
+
+    ~TestInputContext()
+    {
+        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
+        inputMethodPrivate->testContext = 0;
+    }
+
+    virtual void showInputPanel()
+    {
+        m_visible = true;
+    }
+    virtual void hideInputPanel()
+    {
+        m_visible = false;
+    }
+    virtual bool isInputPanelVisible() const
+    {
+        return m_visible;
+    }
+
+    bool m_visible;
+};
+
+static QPoint elementCenter(QWebEnginePage *page, const QString &id)
+{
+    const QString jsCode(
+            "(function(){"
+            "   var elem = document.getElementById('" + id + "');"
+            "   var rect = elem.getBoundingClientRect();"
+            "   return [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2];"
+            "})()");
+    QVariantList rectList = evaluateJavaScriptSync(page, jsCode).toList();
+
+    if (rectList.count() != 2) {
+        qWarning("elementCenter failed.");
+        return QPoint();
+    }
+
+    return QPoint(rectList.at(0).toInt(), rectList.at(1).toInt());
+}
+
+void tst_QWebEngineView::softwareInputPanel()
+{
+    TestInputContext testContext;
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='' size='50'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QPoint textInputCenter = elementCenter(view.page(), "input1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+
+    // This part of the test checks if the SIP (Software Input Panel) is triggered,
+    // which normally happens on mobile platforms, when a user input form receives
+    // a mouse click.
+    int inputPanel = view.style()->styleHint(QStyle::SH_RequestSoftwareInputPanel);
+
+    // For non-mobile platforms RequestSoftwareInputPanel event is not called
+    // because there is no SIP (Software Input Panel) triggered. In the case of a
+    // mobile platform, an input panel, e.g. virtual keyboard, is usually invoked
+    // and the RequestSoftwareInputPanel event is called. For these two situations
+    // this part of the test can verified as the checks below.
+    if (inputPanel)
+        QTRY_VERIFY(testContext.isInputPanelVisible());
+    else
+        QTRY_VERIFY(!testContext.isInputPanelVisible());
+    testContext.hideInputPanel();
+
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_VERIFY(testContext.isInputPanelVisible());
+
+    view.setHtml("<html><body><p id='para'>nothing to input here</p></body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+    testContext.hideInputPanel();
+
+    QPoint paraCenter = elementCenter(view.page(), "para");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, paraCenter);
+
+    QVERIFY(!testContext.isInputPanelVisible());
+
+    // Check sending RequestSoftwareInputPanel event
+    view.page()->setHtml("<html><body>"
+                         "  <input type='text' id='input1' value='QtWebEngine inputMethod'/>"
+                         "  <div id='btnDiv' onclick='i=document.getElementById(&quot;input1&quot;); i.focus();'>abc</div>"
+                         "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QPoint btnDivCenter = elementCenter(view.page(), "btnDiv");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, btnDivCenter);
+
+    QVERIFY(!testContext.isInputPanelVisible());
+}
+
+void tst_QWebEngineView::hiddenText()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine' size='50'/><br>"
+                 "  <input type='password' id='password1'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    QPoint passwordInputCenter = elementCenter(view.page(), "password1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, passwordInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("password1"));
+
+    QVERIFY(view.focusProxy()->testAttribute(Qt::WA_InputMethodEnabled));
+    QVERIFY(view.focusProxy()->inputMethodHints() & Qt::ImhHiddenText);
+
+    QPoint textInputCenter = elementCenter(view.page(), "input1");
+    QTest::mouseClick(view.focusProxy(), Qt::LeftButton, 0, textInputCenter);
+    QTRY_COMPARE(evaluateJavaScriptSync(view.page(), "document.activeElement.id").toString(), QStringLiteral("input1"));
+    QVERIFY(!(view.focusProxy()->inputMethodHints() & Qt::ImhHiddenText));
+}
+
+void tst_QWebEngineView::emptyInputMethodEvent()
+{
+    QWebEngineView view;
+    view.show();
+
+    QSignalSpy selectionChangedSpy(&view, SIGNAL(selectionChanged()));
+    QSignalSpy loadFinishedSpy(&view, SIGNAL(loadFinished(bool)));
+    view.setHtml("<html><body>"
+                 "  <input type='text' id='input1' value='QtWebEngine'/>"
+                 "</body></html>");
+    QVERIFY(loadFinishedSpy.wait());
+
+    evaluateJavaScriptSync(view.page(), "var inputEle = document.getElementById('input1'); inputEle.focus(); inputEle.select();");
+    QTRY_VERIFY(!evaluateJavaScriptSync(view.page(), "window.getSelection().toString()").toString().isEmpty());
+
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QVERIFY(selectionChangedSpy.wait(100));
+    QEXPECT_FAIL("", "https://bugreports.qt.io/browse/QTBUG-53134", Continue);
+    QCOMPARE(selectionChangedSpy.count(), 1);
+
+    // Send empty QInputMethodEvent
+    QInputMethodEvent emptyEvent;
+    QApplication::sendEvent(view.focusProxy(), &emptyEvent);
+
+    QString inputValue = evaluateJavaScriptSync(view.page(), "document.getElementById('input1').value").toString();
+    QCOMPARE(inputValue, QString("QtWebEngine"));
 }
 
 QTEST_MAIN(tst_QWebEngineView)

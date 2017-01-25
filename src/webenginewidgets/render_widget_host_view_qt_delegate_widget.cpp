@@ -323,6 +323,11 @@ void RenderWidgetHostViewQtDelegateWidget::inputMethodStateChanged(bool editorVi
     qApp->inputMethod()->setVisible(editorVisible);
 }
 
+void RenderWidgetHostViewQtDelegateWidget::setInputMethodHints(Qt::InputMethodHints hints)
+{
+    QQuickWidget::setInputMethodHints(hints);
+}
+
 void RenderWidgetHostViewQtDelegateWidget::setClearColor(const QColor &color)
 {
     QQuickWidget::setClearColor(color);
