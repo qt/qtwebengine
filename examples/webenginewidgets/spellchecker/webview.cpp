@@ -65,7 +65,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
     }
 
     QWebEngineProfile *profile = page()->profile();
-    const QString &language = profile->spellCheckLanguages().first();
+    const QStringList &languages = profile->spellCheckLanguages();
     QMenu *menu = page()->createStandardContextMenu();
     menu->addSeparator();
 
@@ -83,7 +83,7 @@ void WebView::contextMenuEvent(QContextMenuEvent *event)
             QAction *action = subMenu->addAction(str);
             action->setCheckable(true);
             QString lang = m_spellCheckLanguages[str];
-            action->setChecked(language == lang);
+            action->setChecked(languages.contains(lang));
             connect(action, &QAction::triggered, this, [profile, lang](){
                profile->setSpellCheckLanguages(QStringList()<<lang);
             });

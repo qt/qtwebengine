@@ -112,6 +112,7 @@ public:
     virtual void resize(int width, int height) = 0;
     virtual void move(const QPoint &) = 0;
     virtual void inputMethodStateChanged(bool editorVisible) = 0;
+    virtual void setInputMethodHints(Qt::InputMethodHints hints) = 0;
     virtual void setClearColor(const QColor &color) = 0;
 };
 

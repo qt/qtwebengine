@@ -348,7 +348,7 @@ WebContentsAdapterPrivate::WebContentsAdapterPrivate()
     , adapterClient(0)
     , nextRequestId(CallbackDirectory::ReservedCallbackIdsEnd)
     , lastFindRequestId(0)
-    , currentDropAction(Qt::IgnoreAction)
+    , currentDropAction(blink::WebDragOperationNone)
     , inDragUpdateLoop(false)
     , updateDragCursorMessagePollingTimer(new QTimer)
 {
@@ -1169,7 +1169,7 @@ void WebContentsAdapter::startDragging(QObject *dragSource, const content::DropD
     d->currentDropData->file_contents.clear();
     d->currentDropData->file_description_filename.clear();
 
-    d->currentDropAction = Qt::IgnoreAction;
+    d->currentDropAction = blink::WebDragOperationNone;
     QDrag *drag = new QDrag(dragSource);    // will be deleted by Qt's DnD implementation
     bool dValid = true;
     QMetaObject::Connection onDestroyed = QObject::connect(dragSource, &QObject::destroyed, [&dValid](){
@@ -1246,6 +1246,17 @@ void WebContentsAdapter::enterDrag(QDragEnterEvent *e, const QPoint &screenPos)
                              flagsFromModifiers(e->keyboardModifiers()));
 }
 
+Qt::DropAction toQt(blink::WebDragOperation op)
+{
+    if (op & blink::WebDragOperationCopy)
+        return Qt::CopyAction;
+    if (op & blink::WebDragOperationLink)
+        return Qt::LinkAction;
+    if (op & blink::WebDragOperationMove || op & blink::WebDragOperationDelete)
+        return Qt::MoveAction;
+    return Qt::IgnoreAction;
+}
+
 Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const QPoint &screenPos)
 {
     Q_D(WebContentsAdapter);
@@ -1273,13 +1284,13 @@ Qt::DropAction WebContentsAdapter::updateDragPosition(QDragMoveEvent *e, const Q
     loop.Run();
     d->updateDragCursorMessagePollingTimer->stop();
 
-    return d->currentDropAction;
+    return toQt(d->currentDropAction);
 }
 
-void WebContentsAdapter::updateDragAction(Qt::DropAction action)
+void WebContentsAdapter::updateDragAction(int action)
 {
     Q_D(WebContentsAdapter);
-    d->currentDropAction = action;
+    d->currentDropAction = static_cast<blink::WebDragOperation>(action);
     finishDragUpdate();
 }
 

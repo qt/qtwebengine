@@ -74,6 +74,7 @@ public:
     virtual void resize(int width, int height) Q_DECL_OVERRIDE;
     virtual void move(const QPoint&) Q_DECL_OVERRIDE { }
     virtual void inputMethodStateChanged(bool editorVisible) Q_DECL_OVERRIDE;
+    virtual void setInputMethodHints(Qt::InputMethodHints) Q_DECL_OVERRIDE { }
     // The QtQuick view doesn't have a backbuffer of its own and doesn't need this
     virtual void setClearColor(const QColor &) Q_DECL_OVERRIDE { }
 
