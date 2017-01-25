@@ -28,6 +28,11 @@ defineTest(runConfigure) {
         qtConfig(printing-and-pdf): WEBENGINE_CONFIG += use_printing use_pdf
         qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
         qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
+        qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
+    } else {
+        cross_compile: WEBENGINE_CONFIG += embedded_build
+    }
+    isQtMinimum(5, 9) {
         qtConfig(appstore-compliant): WEBENGINE_CONFIG += use_appstore_compliant_code
     }
 
@@ -36,14 +41,14 @@ defineTest(runConfigure) {
         !config_khr:skipBuild("khronos development headers appear to be missing (mesa/libegl1-mesa-dev)")
 
         REQUIRED_PACKAGES = dbus-1 fontconfig
-        !cross_compile: qtConfig(xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
+        !contains(WEBENGINE_CONFIG, embedded_build): qtConfig(xcb): REQUIRED_PACKAGES += libdrm xcomposite xcursor xi xrandr xscrnsaver xtst
         qtConfig(pulseaudio): REQUIRED_PACKAGES += libpulse
         qtConfig(system-png): REQUIRED_PACKAGES += libpng
         qtConfig(system-harfbuzz) {
              packagesExist("\'harfbuzz >= 1.2.0\'"): WEBENGINE_CONFIG += use_system_harfbuzz
              else: log("System harfbuzz is too old (min. version 1.2). Using Chromium's copy.$${EOL}")
         }
-        !cross_compile: REQUIRED_PACKAGES += libpci
+        !contains(WEBENGINE_CONFIG, embedded_build): REQUIRED_PACKAGES += libpci
 
         for(package, $$list($$REQUIRED_PACKAGES)) {
             !packagesExist($$package):skipBuild("Unmet dependency: $$package")
@@ -84,7 +89,7 @@ defineTest(runConfigure) {
             WEBENGINE_CONFIG += use_bundled_snappy
         }
 
-        !cross_compile {
+        !contains(WEBENGINE_CONFIG, embedded_build) {
             packagesExist(nss): WEBENGINE_CONFIG += use_nss
             else: log("System NSS not found, BoringSSL will be used.$${EOL}")
         }

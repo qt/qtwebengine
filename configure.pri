@@ -23,3 +23,12 @@ defineTest(qtConfTest_detectGn) {
     qtLog("Building own gn")
     return(false)
 }
+
+defineTest(qtConfTest_embedded) {
+    lessThan(QT_MINOR_VERSION, 9) {
+        cross_compile: return(true)
+        return(false)
+    }
+    $$qtConfEvaluate("features.cross_compile"): return(true)
+    return(false)
+}
