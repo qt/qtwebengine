@@ -65,21 +65,25 @@
 #include "ui/gfx/platform_font.h"
 #endif
 
+#if defined(USE_OPENSSL_CERTS)
+#include "net/ssl/openssl_client_key_store.h"
+#endif
+
 namespace QtWebEngineCore {
-void GetScreenInfoFromNativeWindow(QWindow* window, blink::WebScreenInfo* results)
+void GetScreenInfoFromNativeWindow(QWindow* window, content::ScreenInfo* results)
 {
     QScreen* screen = window->screen();
 
-    blink::WebScreenInfo r;
-    r.deviceScaleFactor = screen->devicePixelRatio();
-    r.depthPerComponent = 8;
+    content::ScreenInfo r;
+    r.device_scale_factor = screen->devicePixelRatio();
+    r.depth_per_component = 8;
     r.depth = screen->depth();
-    r.isMonochrome = (r.depth == 1);
+    r.is_monochrome = (r.depth == 1);
 
     QRect screenGeometry = screen->geometry();
-    r.rect = blink::WebRect(screenGeometry.x(), screenGeometry.y(), screenGeometry.width(), screenGeometry.height());
+    r.rect = gfx::Rect(screenGeometry.x(), screenGeometry.y(), screenGeometry.width(), screenGeometry.height());
     QRect available = screen->availableGeometry();
-    r.availableRect = blink::WebRect(available.x(), available.y(), available.width(), available.height());
+    r.available_rect = gfx::Rect(available.x(), available.y(), available.width(), available.height());
     *results = r;
 }
 
@@ -108,14 +112,15 @@ WebContentsView* CreateWebContentsView(WebContentsImpl *web_contents,
 }
 
 // static
-void RenderWidgetHostViewBase::GetDefaultScreenInfo(blink::WebScreenInfo* results) {
+void WebContentsView::GetDefaultScreenInfo(content::ScreenInfo* results)
+{
     QWindow dummy;
     QtWebEngineCore::GetScreenInfoFromNativeWindow(&dummy, results);
 }
 
 } // namespace content
 
-#if defined(USE_AURA) && !defined(USE_OZONE)
+#if defined(USE_AURA) || defined(USE_OZONE)
 namespace content {
 
 // content/common/font_list.h
@@ -123,22 +128,25 @@ std::unique_ptr<base::ListValue> GetFontList_SlowBlocking()
 {
     std::unique_ptr<base::ListValue> font_list(new base::ListValue);
 
-     QFontDatabase database;
-     for (auto family : database.families()){
-         base::ListValue* font_item = new base::ListValue();
-         font_item->Append(new base::StringValue(family.toStdString()));
-         font_item->Append(new base::StringValue(family.toStdString()));  // should be localized name.
-         // TODO: Support localized family names.
-         font_list->Append(font_item);
-     }
+    QFontDatabase database;
+    for (auto family : database.families()){
+        std::unique_ptr<base::ListValue> font_item(new base::ListValue());
+        font_item->AppendString(family.toStdString());
+        font_item->AppendString(family.toStdString());  // localized name.
+        // TODO(yusukes): Support localized family names.
+        font_list->Append(std::move(font_item));
+    }
     return std::move(font_list);
 }
 
 #if defined(ENABLE_PLUGINS)
 // content/browser/renderer_host/pepper/pepper_truetype_font_list.h
-void GetFontFamilies_SlowBlocking(std::vector<std::string> *)
+void GetFontFamilies_SlowBlocking(std::vector<std::string> *font_families)
 {
-    QT_NOT_USED
+    QFontDatabase database;
+    for (auto family : database.families()){
+        font_families->push_back(family.toStdString());
+    }
 }
 
 void GetFontsInFamily_SlowBlocking(const std::string &, std::vector<ppapi::proxy::SerializedTrueTypeFontDesc> *)
@@ -149,26 +157,14 @@ void GetFontsInFamily_SlowBlocking(const std::string &, std::vector<ppapi::proxy
 
 } // namespace content
 
-namespace ui {
-
-OSExchangeData::Provider* OSExchangeData::CreateProvider()
-{
-    QT_NOT_USED
-    return 0;
-}
-
-} // namespace ui
-
-#endif // defined(USE_AURA) && !defined(USE_OZONE)
+#endif // defined(USE_AURA) || defined(USE_OZONE)
 
 #if defined(USE_OPENSSL_CERTS)
 namespace net {
-class SSLPrivateKey { };
-class X509Certificate;
 
-std::unique_ptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate)
+scoped_refptr<SSLPrivateKey> FetchClientCertPrivateKey(X509Certificate* certificate)
 {
-    return std::unique_ptr<SSLPrivateKey>();
+    return OpenSSLClientKeyStore::GetInstance()->FetchClientCertPrivateKey(certificate);
 }
 
 }  // namespace net

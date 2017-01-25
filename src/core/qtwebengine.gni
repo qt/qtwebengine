@@ -1,10 +1,8 @@
+import("//third_party/widevine/cdm/widevine.gni")
+
 chromium_version = exec_script("//build/util/version.py", [ "-f", rebase_path("//chrome/VERSION"),
                                                             "-t", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"],
                                                             "list lines")
-
-declare_args() {
-  use_qt = true
-}
 
 include_dirs = [
   "//skia/config",
@@ -13,20 +11,17 @@ include_dirs = [
 
 deps = [
   "//base",
-  "//components/cdm/renderer",
-  "//components/devtools_http_handler",
   "//components/error_page/common",
   "//components/keyed_service/content",
   "//components/visitedlink/browser",
   "//components/visitedlink/renderer",
   "//components/web_cache/browser",
-  "//components/web_cache/public/interfaces",
   "//components/web_cache/renderer",
   "//content/public/app:browser",
   "//content/public/browser",
   "//content/public/common",
+  "//content/public/renderer",
   "//net:net_browser_services",
-  "//services/shell/public/cpp",
   "//skia",
   "//third_party/WebKit/public:blink",
   "//third_party/widevine/cdm:version_h",
@@ -40,8 +35,10 @@ if (enable_widevine) {
   deps += [ "//components/cdm/renderer"]
 }
 
-# fixme:
+if (is_linux && !is_desktop_linux) {
+  deps += [ "//ui/events/ozone:events_ozone_evdev"]
+}
+
 defines = [
-  "QTWEBENGINEPROCESS_NAME=\"QtWebEngineProcess\"",
   "CHROMIUM_VERSION=\"" + chromium_version[0] + "\""
 ]

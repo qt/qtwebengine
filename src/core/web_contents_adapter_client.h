@@ -254,16 +254,15 @@ public:
     // This must match window_open_disposition_list.h.
     enum WindowOpenDisposition {
         UnknownDisposition = 0,
-        SuppressOpenDisposition = 1,
-        CurrentTabDisposition = 2,
-        SingletonTabDisposition = 3,
-        NewForegroundTabDisposition = 4,
-        NewBackgroundTabDisposition = 5,
-        NewPopupDisposition = 6,
-        NewWindowDisposition = 7,
-        SaveToDiskDisposition = 8,
-        OffTheRecordDisposition = 9,
-        IgnoreActionDisposition = 10,
+        CurrentTabDisposition = 1,
+        SingletonTabDisposition = 2,
+        NewForegroundTabDisposition = 3,
+        NewBackgroundTabDisposition = 4,
+        NewPopupDisposition = 5,
+        NewWindowDisposition = 6,
+        SaveToDiskDisposition = 7,
+        OffTheRecordDisposition = 8,
+        IgnoreActionDisposition = 9,
     };
 
     // Must match the values in javascript_message_type.h.

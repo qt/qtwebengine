@@ -135,6 +135,8 @@ protected:
 private:
     content::NotificationRegistrar m_registrar;
     scoped_refptr<printing::PrintJob> m_printJob;
+    // Closure for quitting nested message loop.
+    base::Closure m_quitClosure;
 
     bool m_isInsideInnerMessageLoop;
     bool m_isExpectingFirstPage;

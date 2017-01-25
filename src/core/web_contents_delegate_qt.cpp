@@ -101,7 +101,7 @@ WebContentsDelegateQt::WebContentsDelegateQt(content::WebContents *webContents, 
 content::WebContents *WebContentsDelegateQt::OpenURLFromTab(content::WebContents *source, const content::OpenURLParams &params)
 {
     content::WebContents *target = source;
-    if (params.disposition != CURRENT_TAB) {
+    if (params.disposition != WindowOpenDisposition::CURRENT_TAB) {
         QSharedPointer<WebContentsAdapter> targetAdapter = createWindow(0, params.disposition, gfx::Rect(), params.user_gesture);
         if (targetAdapter)
             target = targetAdapter->webContents();

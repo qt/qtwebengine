@@ -64,6 +64,7 @@ public:
         content::PermissionType permission,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
+        bool user_gesture,
         const base::Callback<void(blink::mojom::PermissionStatus)>& callback) override;
 
     void CancelPermissionRequest(int request_id) override;
@@ -82,6 +83,7 @@ public:
         const std::vector<content::PermissionType>& permission,
         content::RenderFrameHost* render_frame_host,
         const GURL& requesting_origin,
+        bool user_gesture,
         const base::Callback<void(
             const std::vector<blink::mojom::PermissionStatus>&)>& callback) override;
 

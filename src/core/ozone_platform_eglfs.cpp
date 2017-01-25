@@ -52,7 +52,6 @@
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
-#include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -140,10 +139,6 @@ ui::CursorFactoryOzone* OzonePlatformEglfs::GetCursorFactoryOzone() {
   return cursor_factory_ozone_.get();
 }
 
-GpuPlatformSupport* OzonePlatformEglfs::GetGpuPlatformSupport() {
-  return gpu_platform_support_.get();
-}
-
 GpuPlatformSupportHost* OzonePlatformEglfs::GetGpuPlatformSupportHost() {
   return gpu_platform_support_host_.get();
 }
@@ -186,13 +181,12 @@ void OzonePlatformEglfs::InitializeUI() {
   device_manager_ = CreateDeviceManager();
   cursor_factory_ozone_.reset(new CursorFactoryOzone());
   event_factory_ozone_.reset(new EventFactoryEvdev(NULL, device_manager_.get(), NULL));
-  gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
+  gpu_platform_support_host_.reset(ui::CreateStubGpuPlatformSupportHost());
   input_controller_ = CreateStubInputController();
 }
 
 void OzonePlatformEglfs::InitializeGPU() {
   surface_factory_ozone_.reset(new QtWebEngineCore::SurfaceFactoryQt());
-  gpu_platform_support_.reset(CreateStubGpuPlatformSupport());
 }
 
 }  // namespace ui

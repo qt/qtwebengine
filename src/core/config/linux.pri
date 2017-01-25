@@ -4,16 +4,30 @@ QT_FOR_CONFIG += gui-private webengine-private
 
 use?(gn) {
     gn_args += \
+        use_cups=false \
         use_gconf=false \
         use_gio=false \
+        use_gnome_keyring=false \
         use_kerberos=false \
         linux_use_bundled_binutils=false
 
-    #qtConfig(system-zlib): use?(system_minizip): gn_args += use_system_zlib=true use_system_minizip=true
-    #qtConfig(system-png): gn_args += use_system_libpng=true
+    use?(nss) {
+        gn_args += \
+            use_nss_certs=true \
+            use_openssl_certs=false
+    } else {
+        gn_args += \
+            use_nss_certs=false \
+            use_openssl_certs=true
+    }
+    gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
+
+
+    qtConfig(system-zlib): use?(system_minizip): gn_args += use_system_zlib=true use_system_minizip=true
+    qtConfig(system-png): gn_args += use_system_libpng=true
     qtConfig(system-jpeg): gn_args += use_system_libjpeg=true
-    qtConfig(system-harfbuzz): use?(system_harfbuzz): gn_args += use_system_harfbuzz=true
-    !qtConfig(glib): gn_args += use_glib=false
+    use?(system_harfbuzz): gn_args += use_system_harfbuzz=true
+    !use?(glib): gn_args += use_glib=false
     qtConfig(pulseaudio) {
         gn_args += use_pulseaudio=true
     } else {
@@ -24,20 +38,20 @@ use?(gn) {
     } else {
         gn_args += use_alsa=false
     }
+    packagesExist(libffi): gn_args += use_system_libffi=true
+    else: gn_args += use_system_libffi=false
 
-    #use?(system_libevent): gn_args += use_system_libevent=true
-    #use?(system_libwebp):  gn_args += use_system_libwebp=true
+    use?(system_libevent): gn_args += use_system_libevent=true
+    use?(system_libwebp):  gn_args += use_system_libwebp=true
     #use?(system_libsrtp):  gn_args += use_system_libsrtp=true
-    #use?(system_libxslt):  gn_args += use_system_libxml=true use_system_libxslt=true
+    use?(system_libxslt):  gn_args += use_system_libxml=true use_system_libxslt=true
     #use?(system_jsoncpp):  gn_args += use_system_jsoncpp=true
     #use?(system_opus):     gn_args += use_system_opus=true
-    #use?(system_snappy):   gn_args += use_system_snappy=true
+    use?(system_snappy):   gn_args += use_system_snappy=true
     #use?(system_vpx):      gn_args += use_system_libvpx=true
-    #use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file_flag=false
+    #use?(system_icu):      gn_args += use_system_icu=true icu_use_data_file=false
     #use?(system_ffmpeg):   gn_args += use_system_ffmpeg=true
     #use?(system_protobuf): gn_args += use_system_protobuf=true
-
-    #gcc:!clang: greaterThan(QT_GCC_MAJOR_VERSION, 5): gn_args += no_delete_null_pointer_checks=true
 }
 
 # linux_use_bundled_gold currently relies on a hardcoded relative path from chromium/src/out/(Release|Debug)

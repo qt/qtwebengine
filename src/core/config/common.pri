@@ -4,8 +4,11 @@ use?(gn) {
     gn_args += \
         use_qt=true \
         is_component_build=false \
-        enable_remoting=false \
+        is_shared=true \
+        enable_media_router=false \
         enable_nacl=false \
+        enable_remoting=false \
+        enable_web_speech=false \
         use_experimental_allocator_shim=false \
         use_allocator=\"none\" \
         v8_use_external_startup_data=false \
@@ -40,6 +43,12 @@ use?(gn) {
     } else {
         gn_args += enable_webrtc=false
     }
+
+    CONFIG(release, debug|release) {
+        force_debug_info: gn_args += symbol_level=1
+        else: gn_args += symbol_level=0
+    }
+
     !webcore_debug: gn_args += remove_webcore_debug_symbols=true
     !v8base_debug: gn_args += remove_v8base_debug_symbols=true
 

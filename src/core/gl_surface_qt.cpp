@@ -174,6 +174,26 @@ bool GLSurfaceGLX::IsCreateContextSupported()
     return ExtensionsContain(g_extensions, "GLX_ARB_create_context");
 }
 
+bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
+{
+    return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_robustness");
+}
+
+bool GLSurfaceGLX::IsCreateContextProfileSupported()
+{
+    return false; // ExtensionsContain(g_extensions, "GLX_ARB_create_context_profile");
+}
+
+bool GLSurfaceGLX::IsCreateContextES2ProfileSupported()
+{
+    return ExtensionsContain(g_extensions, "GLX_ARB_create_context_es2_profile");
+}
+
+bool GLSurfaceGLX::IsOMLSyncControlSupported()
+{
+    return false; // ExtensionsContain(g_extensions, "GLX_OML_sync_control");
+}
+
 bool GLSurfaceGLX::HasGLXExtension(const char *name)
 {
     return ExtensionsContain(g_extensions, name);
@@ -187,11 +207,6 @@ bool GLSurfaceGLX::IsTextureFromPixmapSupported()
 const char* GLSurfaceGLX::GetGLXExtensions()
 {
     return g_extensions;
-}
-
-bool GLSurfaceGLX::IsCreateContextRobustnessSupported()
-{
-    return false;
 }
 
 bool GLSurfaceQtGLX::InitializeOneOff()

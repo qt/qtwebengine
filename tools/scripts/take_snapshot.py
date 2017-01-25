@@ -76,10 +76,8 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('android_webview')
         or file_path.startswith('apps/')
         or file_path.startswith('ash/')
-        or file_path.startswith('athena')
-        or file_path.startswith('base/android/java')
+        or file_path.startswith('base/android')
         or file_path.startswith('breakpad')
-        or file_path.startswith('build/android/')
         or file_path.startswith('buildtools/clang_format/script')
         or (file_path.startswith('chrome/') and
             not file_path.startswith('chrome/VERSION') and
@@ -91,8 +89,8 @@ def isInChromiumBlacklist(file_path):
             not '/renderer/resources/' in file_path and
             not 'repack_locales' in file_path and
             not 'third_party/chromevox' in file_path and
-            not 'media/desktop_media_list.h' in file_path and
-            not 'media/desktop_streams_registry.' in file_path and
+            not 'media/webrtc/desktop_media_list.h' in file_path and
+            not 'media/webrtc/desktop_streams_registry.' in file_path and
             not 'common/chrome_constants.' in file_path and
             not 'common/chrome_paths' in file_path and
             not 'common/chrome_switches.' in file_path and
@@ -113,8 +111,8 @@ def isInChromiumBlacklist(file_path):
             not file_path.endswith('.json') and
             not file_path.endswith('chrome_version.rc.version'))
         or file_path.startswith('chrome_frame')
+        or file_path.startswith('chromecast')
         or file_path.startswith('chromeos')
-        or file_path.startswith('cloud_print')
         or file_path.startswith('components/chrome_apps/')
         or file_path.startswith('components/cronet/')
         or file_path.startswith('components/drive/')
@@ -126,7 +124,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('components/proximity_auth/')
         or (file_path.startswith('components/resources/terms/') and not file_path.endswith('terms_chromium.html'))
         or file_path.startswith('components/rlz/')
-        or file_path.startswith('components/sync_driver/')
+        or file_path.startswith('components/sync/')
         or file_path.startswith('components/test/')
         or file_path.startswith('components/test_runner/')
         or file_path.startswith('components/translate/')
@@ -142,7 +140,6 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('net/android/java')
         or file_path.startswith('remoting')
         or file_path.startswith('rlz')
-        or file_path.startswith('sync')
         or file_path.startswith('testing/android')
         or file_path.startswith('testing/buildbot')
         or file_path.startswith('third_party/WebKit/LayoutTests')
@@ -158,13 +155,7 @@ def isInChromiumBlacklist(file_path):
         or (file_path.startswith('third_party/cacheinvalidation') and
             not file_path.endswith('isolate'))
         or file_path.startswith('third_party/boringssl/src/fuzz')
-        or (file_path.startswith('third_party/catapult') and not
-            (file_path.startswith('third_party/catapult/third_party/py_vulcanize')
-            or file_path.startswith('third_party/catapult/tracing/tracing/')
-            or file_path.startswith('third_party/catapult/tracing/tracing_build')
-            or file_path.startswith('third_party/catapult/tracing/third_party')
-            or file_path.startswith('third_party/catapult/tracing/bin')
-            or file_path.endswith('tracing_project.py')))
+        or file_path.startswith('third_party/catapult')
         or file_path.startswith('third_party/chromite')
         or file_path.startswith('third_party/cld_2')
         or file_path.startswith('third_party/codesighs')
@@ -173,6 +164,7 @@ def isInChromiumBlacklist(file_path):
         or file_path.startswith('third_party/cython')
         or file_path.startswith('third_party/deqp')
         or file_path.startswith('third_party/elfutils')
+        or file_path.startswith('third_party/freetype-android')
         or file_path.startswith('third_party/google_input_tools')
         or file_path.startswith('third_party/gperf')
         or file_path.startswith('third_party/gnu_binutils')
@@ -303,6 +295,7 @@ def exportChromium():
     # Add LASTCHANGE files which are not tracked by git.
     files.append('build/util/LASTCHANGE')
     files.append('build/util/LASTCHANGE.blink')
+    files.append('skia/ext/skia_commit_hash.h')
     print 'copying files to ' + third_party_chromium
     for i in xrange(len(files)):
         printProgress(i+1, len(files))

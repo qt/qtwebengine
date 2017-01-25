@@ -694,7 +694,7 @@ void RenderWidgetHostViewQt::OnSwapCompositorFrame(uint32_t output_surface_id, c
         m_adapterClient->updateContentsSize(toQt(m_lastContentsSize));
 }
 
-void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)
+void RenderWidgetHostViewQt::GetScreenInfo(content::ScreenInfo* results)
 {
     QWindow* window = m_delegate->window();
     if (!window)
@@ -702,7 +702,7 @@ void RenderWidgetHostViewQt::GetScreenInfo(blink::WebScreenInfo* results)
     GetScreenInfoFromNativeWindow(window, results);
 
     // Support experimental.viewport.devicePixelRatio
-    results->deviceScaleFactor *= dpiScale();
+    results->device_scale_factor *= dpiScale();
 }
 
 gfx::Rect RenderWidgetHostViewQt::GetBoundsInRootWindow()

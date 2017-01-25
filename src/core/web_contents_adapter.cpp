@@ -372,7 +372,7 @@ QSharedPointer<WebContentsAdapter> WebContentsAdapter::createFromSerializedNavig
     // Unlike WebCore, Chromium only supports Restoring to a new WebContents instance.
     content::WebContents* newWebContents = createBlankWebContents(adapterClient, adapterClient->browserContextAdapter()->browserContext());
     content::NavigationController &controller = newWebContents->GetController();
-    controller.Restore(currentIndex, content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY, &entries);
+    controller.Restore(currentIndex, content::RestoreType::LAST_SESSION_EXITED_CLEANLY, &entries);
 
     if (controller.GetActiveEntry()) {
         // Set up the file access rights for the selected navigation entry.

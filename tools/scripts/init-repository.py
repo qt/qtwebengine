@@ -80,6 +80,7 @@ def updateLastChange():
     print 'updating LASTCHANGE files'
     subprocess.call(['python', 'build/util/lastchange.py', '-o', 'build/util/LASTCHANGE'])
     subprocess.call(['python', 'build/util/lastchange.py', '-s', 'third_party/WebKit', '-o', 'build/util/LASTCHANGE.blink'])
+    subprocess.call(['python', 'build/util/lastchange.py', '-m', 'SKIA_COMMIT_HASH', '-s', 'third_party/skia', '--header', 'skia/ext/skia_commit_hash.h'])
     os.chdir(currentDir)
 
 def initUpstreamSubmodules():

@@ -152,7 +152,7 @@ public:
     virtual bool HasAcceleratedSurface(const gfx::Size&) Q_DECL_OVERRIDE;
     virtual void OnSwapCompositorFrame(uint32_t output_surface_id, cc::CompositorFrame frame)  Q_DECL_OVERRIDE;
 
-    virtual void GetScreenInfo(blink::WebScreenInfo* results) Q_DECL_OVERRIDE;
+    void GetScreenInfo(content::ScreenInfo* results);
     virtual gfx::Rect GetBoundsInRootWindow() Q_DECL_OVERRIDE;
     virtual void ProcessAckedTouchEvent(const content::TouchEventWithLatencyInfo &touch, content::InputEventAckState ack_result) Q_DECL_OVERRIDE;
     virtual void ClearCompositorFrame() Q_DECL_OVERRIDE;

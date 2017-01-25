@@ -98,8 +98,7 @@ public:
                                        bool overridable,
                                        bool strict_enforcement,
                                        bool expired_previous_decision,
-                                       const base::Callback<void(bool)>& callback,
-                                       content::CertificateRequestResultType* result) Q_DECL_OVERRIDE;
+                                       const base::Callback<void(content::CertificateRequestResultType)>& callback) Q_DECL_OVERRIDE;
     virtual void SelectClientCertificate(content::WebContents* web_contents,
                                          net::SSLCertRequestInfo* cert_request_info,
                                          std::unique_ptr<content::ClientCertificateDelegate> delegate) Q_DECL_OVERRIDE;

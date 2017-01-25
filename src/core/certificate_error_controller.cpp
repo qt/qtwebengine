@@ -71,7 +71,7 @@ ASSERT_ENUMS_MATCH(CertificateErrorController::CertificateErrorEnd, net::ERR_CER
 
 void CertificateErrorControllerPrivate::accept(bool accepted)
 {
-    callback.Run(accepted);
+    callback.Run(accepted ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE : content::CERTIFICATE_REQUEST_RESULT_TYPE_DENY);
 }
 
 CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_error,
@@ -80,7 +80,7 @@ CertificateErrorControllerPrivate::CertificateErrorControllerPrivate(int cert_er
                                                                      content::ResourceType resource_type,
                                                                      bool _overridable,
                                                                      bool strict_enforcement,
-                                                                     const base::Callback<void(bool)>& cb
+                                                                     const base::Callback<void(content::CertificateRequestResultType)>& cb
                                                                     )
     : certError(CertificateErrorController::CertificateError(cert_error))
     , requestUrl(toQt(request_url))

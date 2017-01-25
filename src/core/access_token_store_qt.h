@@ -41,7 +41,7 @@
 #define ACCESS_TOKEN_STORE_QT_H
 
 #include "base/memory/ref_counted.h"
-#include "content/public/browser/access_token_store.h"
+#include "device/geolocation/access_token_store.h"
 
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/QFile>
@@ -53,7 +53,7 @@ class URLRequestContextGetter;
 
 namespace QtWebEngineCore {
 
-class AccessTokenStoreQt : public content::AccessTokenStore {
+class AccessTokenStoreQt : public device::AccessTokenStore {
 public:
     AccessTokenStoreQt();
     ~AccessTokenStoreQt();

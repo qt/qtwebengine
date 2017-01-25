@@ -2,6 +2,16 @@ GYP_ARGS += "-D qt_os=\"win32\" -I config/windows.gypi"
 
 include(common.pri)
 
+gn_args += \
+    is_clang=false \
+    use_sysroot=false \
+    use_kerberos=true \
+    enable_notifications=false \
+    enable_session_service=false \
+    ninja_use_custom_environment_files=false \
+    is_multi_dll_chrome=false \
+    win_link_timing=true
+
 GYP_CONFIG += \
     disable_nacl=1 \
     remoting=0 \
@@ -15,6 +25,16 @@ GYP_ARGS += "-D perl_exe=\"perl.exe\" -D bison_exe=\"bison.exe\" -D gperf_exe=\"
 
 # Gyp's parallel processing is broken on Windows
 GYP_ARGS += "--no-parallel"
+
+
+isDeveloperBuild() {
+    gn_args += \
+        is_win_fastlink=true \
+        use_incremental_linking=true
+} else {
+    gn_args += \
+        use_incremental_linking=false
+}
 
 qtConfig(angle) {
     #FIXME: Expect LIBQTANGLE_NAME to be always set
@@ -70,6 +90,12 @@ msvc {
     }
 
     GYP_ARGS += "-G msvs_version=$$MSVS_VERSION"
+    gn_args += visual_studio_version=$$MSVS_VERSION
+
+    SDK_PATH = $$(WINDOWSSDKDIR)
+    VS_PATH= $$(VSINSTALLDIR)
+    gn_args += visual_studio_path=$$shell_quote($$VS_PATH)
+    gn_args += windows_sdk_path=$$shell_quote($$SDK_PATH)
 
     isBuildingOnWin32(): GYP_ARGS += "-D windows_sdk_path=\"C:/Program Files/Windows Kits/10\""
 

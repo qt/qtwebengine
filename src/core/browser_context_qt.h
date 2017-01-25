@@ -72,8 +72,6 @@ public:
     base::FilePath GetCachePath() const;
     virtual bool IsOffTheRecord() const Q_DECL_OVERRIDE;
 
-    net::URLRequestContextGetter *GetRequestContext();
-
     virtual net::URLRequestContextGetter *CreateMediaRequestContext() Q_DECL_OVERRIDE;
     virtual net::URLRequestContextGetter *CreateMediaRequestContextForStoragePartition(const base::FilePath& partition_path, bool in_memory) Q_DECL_OVERRIDE;
 
@@ -97,6 +95,7 @@ public:
     // Profile implementation:
     PrefService* GetPrefs() override;
     const PrefService* GetPrefs() const override;
+    net::URLRequestContextGetter *GetRequestContext() override;
 
     BrowserContextAdapter *adapter() { return m_adapter; }
 

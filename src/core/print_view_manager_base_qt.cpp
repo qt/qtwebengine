@@ -44,6 +44,8 @@
 #include "type_conversion.h"
 #include "web_engine_context.h"
 
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -483,9 +485,11 @@ bool PrintViewManagerBaseQt::RunInnerMessageLoop() {
 
   // Need to enable recursive task.
   {
-    base::MessageLoop::ScopedNestableTaskAllower allow(
-        base::MessageLoop::current());
-    base::MessageLoop::current()->Run();
+      base::RunLoop runLoop;
+      m_quitClosure = runLoop.QuitClosure();
+      base::MessageLoop* loop = base::MessageLoop::current();
+      base::MessageLoop::ScopedNestableTaskAllower allowNested(loop);
+      runLoop.Run();
   }
 
   bool success = true;

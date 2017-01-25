@@ -56,7 +56,7 @@
 
 namespace QtWebEngineCore {
 
-using content::AccessTokenStore;
+using device::AccessTokenStore;
 using content::BrowserThread;
 
 AccessTokenStoreQt::AccessTokenStoreQt()

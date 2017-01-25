@@ -4,11 +4,14 @@ use?(gn) {
     gn_args += \
         is_clang=false \
         use_sysroot=false \
-        use_system_libffi=false
+        enable_session_service=false \
+        enable_notifications=false \
+        toolkit_views=false
 
     use?(icecc) {
         gn_args += use_debug_fission=false
     }
+    !use_gold_linker: gn_args += use_gold=false
 
 } else {
 
