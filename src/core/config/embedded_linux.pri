@@ -18,7 +18,6 @@ GYP_CONFIG += \
     enable_session_service=0 \
     enable_task_manager=0 \
     enable_themes=0 \
-    enable_webrtc=0 \
     gtest_target_type=none \
     host_clang=0 \
     notifications=0 \

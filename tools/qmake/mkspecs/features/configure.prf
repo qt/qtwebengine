@@ -28,6 +28,7 @@ defineTest(runConfigure) {
         qtConfig(printing-and-pdf): WEBENGINE_CONFIG += use_printing use_pdf
         qtConfig(proprietary-codecs): WEBENGINE_CONFIG += use_proprietary_codecs
         qtConfig(spellchecker): WEBENGINE_CONFIG += use_spellchecker
+        qtConfig(webrtc): WEBENGINE_CONFIG += use_webrtc
         qtConfig(embedded): WEBENGINE_CONFIG += embedded_build
     } else {
         cross_compile: WEBENGINE_CONFIG += embedded_build

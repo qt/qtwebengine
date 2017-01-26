@@ -35,6 +35,12 @@ use?(gn) {
         gn_args += enable_spellcheck=false
     }
 
+    use?(webrtc) {
+        gn_args += enable_webrtc=true
+    } else {
+        gn_args += enable_webrtc=false
+    }
+
 } else {
     # Trigger Qt-specific build conditions.
     GYP_CONFIG += use_qt=1
@@ -68,3 +74,6 @@ use?(gn) {
         GYP_CONFIG += enable_plugins=0 enable_widevine=0
     }
 }
+
+use?(webrtc): GYP_CONFIG += enable_webrtc=1
+else: GYP_CONFIG += enable_webrtc=0

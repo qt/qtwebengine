@@ -14,7 +14,8 @@
             "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
             "pulseaudio": "boolean",
-            "spellchecker": "boolean"
+            "spellchecker": "boolean",
+            "webrtc": "boolean"
         }
     },
 
@@ -92,6 +93,12 @@
             "purpose": "Enables the use of Chromium's spellchecker",
             "output": [ "privateFeature" ]
         },
+        "webrtc": {
+            "label": "WebRTC",
+            "autoDetect": "!features.embedded",
+            "purpose": "Enables WebRTC support",
+            "output": [ "privateFeature" ]
+        },
         "system-ninja": {
             "label": "Using system ninja",
             "condition": "tests.ninja",
@@ -114,6 +121,7 @@
                 "printing-and-pdf",
                 "proprietary-codecs",
                 "spellchecker",
+                "webrtc",
                 "system-ninja",
                 {
                     "type": "feature",
