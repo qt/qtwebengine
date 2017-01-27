@@ -20,9 +20,9 @@ use?(gn) {
     gn_run.file = gn_run.pro
     gn_run.depends = core_generator
 
-    SUBDIRS += gn_run \
-               core_headers \
-               core_generator
+    SUBDIRS += core_headers \
+               core_generator \
+               gn_run
 } else {
 
     # gyp_run.pro calls gyp through gyp_qtwebengine on the qmake step, and ninja on the make step.
@@ -30,10 +30,7 @@ use?(gn) {
     gyp_run.depends = core_generator
     core_api.depends = gyp_run
 
-    SUBDIRS += gyp_run \
-               core_api \
-               core_module \
-               core_headers \
+    SUBDIRS += core_headers \
                core_generator
 
     !win32 {
@@ -48,4 +45,8 @@ use?(gn) {
         gyp_run.depends += gyp_configure_host gyp_configure_target
         SUBDIRS += gyp_configure_host gyp_configure_target
     }
+
+    SUBDIRS += gyp_run \
+               core_api \
+               core_module
 }
