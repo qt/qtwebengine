@@ -23,4 +23,11 @@ INCLUDEPATH += $$CHROMIUM_SRC_DIR
 SOURCES += \
     main.cpp
 
+# Support converting dictionaries in a prefix build, by supplying
+# the path to the ICU data file located in the Qt build path, rather
+# than the install path (which is not present at build time).
+icu_data_dir.name = QT_WEBENGINE_ICU_DATA_DIR
+icu_data_dir.value = $$OUT_PWD/../../../src/core/$$getConfigDir()
+QT_TOOL_ENV = icu_data_dir
 load(qt_tool)
+QT_TOOL_ENV =
