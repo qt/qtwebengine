@@ -42,8 +42,8 @@
 
 #include <QtCore/qcompilerdetection.h>
 
-#include "content/browser/geolocation/location_provider_base.h"
-#include "content/public/common/geoposition.h"
+#include "device/geolocation/geoposition.h"
+#include "device/geolocation/location_provider.h"
 
 QT_FORWARD_DECLARE_CLASS(QThread)
 
@@ -54,25 +54,26 @@ class MessageLoop;
 namespace QtWebEngineCore {
 class QtPositioningHelper;
 
-class LocationProviderQt : public content::LocationProviderBase
+class LocationProviderQt : public device::LocationProvider
 {
 public:
     LocationProviderQt();
     virtual ~LocationProviderQt();
 
-    // LocationProviderBase
-    virtual bool StartProvider(bool highAccuracy) Q_DECL_OVERRIDE;
-    virtual void StopProvider() Q_DECL_OVERRIDE;
-    virtual void GetPosition(content::Geoposition *position) Q_DECL_OVERRIDE { *position = m_lastKnownPosition; }
-    virtual void RequestRefresh() Q_DECL_OVERRIDE;
-    virtual void OnPermissionGranted() Q_DECL_OVERRIDE;
+    // LocationProvider
+    bool StartProvider(bool high_accuracy) override;
+    void StopProvider() override;
+    const device::Geoposition& GetPosition() override { return m_lastKnownPosition; }
+    void OnPermissionGranted() override;
+    void SetUpdateCallback(const LocationProviderUpdateCallback& callback) override;
 
 private:
     friend class QtPositioningHelper;
 
-    void updatePosition(const content::Geoposition &);
+    void updatePosition(const device::Geoposition &);
 
-    content::Geoposition m_lastKnownPosition;
+    device::Geoposition m_lastKnownPosition;
+    LocationProviderUpdateCallback m_callback;
     QtPositioningHelper *m_positioningHelper;
 };
 //#define QT_USE_POSITIONING 1
