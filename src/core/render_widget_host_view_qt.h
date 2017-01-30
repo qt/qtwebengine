@@ -244,6 +244,8 @@ private:
 
     gfx::Vector2dF m_lastScrollOffset;
     gfx::SizeF m_lastContentsSize;
+
+    QString m_surroundingText;
 };
 
 } // namespace QtWebEngineCore

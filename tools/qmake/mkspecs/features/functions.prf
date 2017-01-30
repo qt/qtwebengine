@@ -260,6 +260,11 @@ defineTest(isMinWinSDKVersion) {
     requested_minor = $$2
     WIN_SDK_VERSION = $$(WindowsSDKVersion)
 
+    isEmpty(WIN_SDK_VERSION)|equals(WIN_SDK_VERSION, "\\") {
+        skipBuild("Could not detect Windows SDK version (\'WindowsSDKVersion\' environment variable is not set).")
+        return(false)
+    }
+
     # major.0.minor
     major_version = $$section(WIN_SDK_VERSION, ., 0, 0)
     minor_version = $$section(WIN_SDK_VERSION, ., 2, 2)

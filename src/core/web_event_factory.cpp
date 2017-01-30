@@ -1259,5 +1259,14 @@ content::NativeWebKeyboardEvent WebEventFactory::toWebKeyboardEvent(QKeyEvent *e
     const ushort* text = ev->text().utf16();
     memcpy(&webKitEvent.text, text, std::min(sizeof(webKitEvent.text), size_t(ev->text().length() * 2)));
     memcpy(&webKitEvent.unmodifiedText, text, std::min(sizeof(webKitEvent.unmodifiedText), size_t(ev->text().length() * 2)));
+
+    if (webKitEvent.windowsKeyCode == VK_RETURN) {
+        // This is the same behavior as GTK:
+        // We need to treat the enter key as a key press of character \r. This
+        // is apparently just how webkit handles it and what it expects.
+        webKitEvent.unmodifiedText[0] = '\r';
+        webKitEvent.text[0] = webKitEvent.unmodifiedText[0];
+    }
+
     return webKitEvent;
 }
