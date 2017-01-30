@@ -87,6 +87,8 @@ void MainWindow::open(const QUrl &docLocation)
 {
     if (docLocation.isLocalFile()) {
         m_document->load(docLocation.toLocalFile());
+        const auto documentTitle = m_document->metaData(QPdfDocument::Title).toString();
+        setWindowTitle(!documentTitle.isEmpty() ? documentTitle : QStringLiteral("PDF Viewer"));
     } else {
         qCDebug(lcExample) << docLocation << "is not a valid local file";
         QMessageBox::critical(this, tr("Failed to open"), tr("%1 is not a valid local file").arg(docLocation.toString()));
