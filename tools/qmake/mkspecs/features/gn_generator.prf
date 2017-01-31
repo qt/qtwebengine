@@ -56,7 +56,7 @@ GN_CONTENTS += "    sources =  moc_source_h_files" \
                "    outputs = [ \"$target_gen_dir/.moc/moc_{{source_name_part}}.cpp\" ]"
 GN_CONTENTS += "    inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
                "    args = ["
-for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\',)\","
+for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\",\\\")\","
 GN_CONTENTS += "      \"{{source}}\"," \
                "      \"-o\"," \
                "      rebase_path(\"$target_gen_dir/.moc/moc_{{source_name_part}}.cpp\")"\
@@ -70,7 +70,7 @@ GN_CONTENTS += "    sources =  moc_source_cpp_files" \
                "    outputs = [ \"$target_gen_dir/.moc/{{source_name_part}}.moc\" ]"
 GN_CONTENTS += "    inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
                "    args = ["
-for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\',)\","
+for(token, MOC_COMMAND): GN_CONTENTS += "      \"$$replace(token,\",\\\")\","
 GN_CONTENTS += "      \"{{source}}\"," \
                "      \"-o\"," \
                "      rebase_path(\"$target_gen_dir/.moc/{{source_name_part}}.moc\")"\
@@ -90,7 +90,7 @@ GN_CONTENTS += "  ]" \
                "  outputs = [ \"$target_gen_dir/.rcc/qrc_{{source_name_part}}.cpp\" ]"
 GN_CONTENTS += "  inputs = [ \"$$system_path($$_PRO_FILE_)\" ]" \
                "  args = [" \
-               "    \"$$replace(CLEAN_QMAKE_RCC,\',)\","
+               "    \"$$replace(CLEAN_QMAKE_RCC,\",\\\")\","
 for(resource_flag, $$QMAKE_RESOURCE_FLAGS): GN_CONTENTS += "    \"$$resource_flag\""
 GN_CONTENTS += "    \"-name\"," \
                "    \"{{source_name_part}}\"," \
@@ -140,7 +140,12 @@ GN_CONTENTS += "  if (!defined(defines)) {"\
 GN_CONTENTS += "  defines += ["
 # Remove single quotes around function macro defines, so that GN doesn't escape them, thus breaking
 # the macro.
-for (define, DEFINES): GN_CONTENTS += "    \"$$replace(define,\',)\","
+# Also add a layer of escaping for double quotes.
+for (define, DEFINES): {
+  define = $$replace(define,\",\\\")
+  define = $$replace(define,\',)
+  GN_CONTENTS += "    \"$$define\","
+}
 !isEmpty(QMAKE_LIBDIR_EGL):
     GN_CONTENTS += "    \"QT_LIBDIR_EGL=\\\"$${QMAKE_DIR_SEP}$$relative_path($$QMAKE_LIBDIR_EGL, $$[QT_SYSROOT])\\\"\","
 !isEmpty(QMAKE_LIBDIR_OPENGL_ES2)
