@@ -84,6 +84,7 @@ private Q_SLOTS:
     void stopSettingFocusWhenDisabled_data();
     void focusOnNavigation_data();
     void focusOnNavigation();
+    void focusInternalRenderWidgetHostViewQuickItem();
 
     void changeLocale();
     void inputMethodsTextFormat_data();
@@ -843,9 +844,58 @@ void tst_QWebEngineView::focusOnNavigation()
     webView->setFocus();
     QTRY_COMPARE(webView->hasFocus(), true);
 
+
     // Clean up.
 #undef loadAndTriggerFocusAndCompare
 #undef triggerJavascriptFocus
+}
+
+void tst_QWebEngineView::focusInternalRenderWidgetHostViewQuickItem()
+{
+    // Create a container widget, that will hold a line edit that has initial focus, and a web
+    // engine view.
+    QScopedPointer<QWidget> containerWidget(new QWidget);
+    QLineEdit *label = new QLineEdit;
+    label->setText(QString::fromLatin1("Text"));
+    label->setFocus();
+
+    // Create the web view, and set its focusOnNavigation property to false, so it doesn't
+    // get initial focus.
+    QWebEngineView *webView = new QWebEngineView;
+    QWebEngineSettings *settings = webView->page()->settings();
+    settings->setAttribute(QWebEngineSettings::FocusOnNavigationEnabled, false);
+    webView->resize(300, 300);
+
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->addWidget(label);
+    layout->addWidget(webView);
+
+    containerWidget->setLayout(layout);
+    containerWidget->show();
+    QTest::qWaitForWindowExposed(containerWidget.data());
+
+    // Load the content, and check that focus is not set.
+    QSignalSpy loadSpy(webView, SIGNAL(loadFinished(bool)));
+    webView->setHtml("<html><head><title>Title</title></head><body>Hello"
+                    "<input id=\"input\" type=\"text\"></body></html>");
+    QTRY_COMPARE(loadSpy.count(), 1);
+    QTRY_COMPARE(webView->hasFocus(), false);
+
+    // Manually trigger focus.
+    webView->setFocus();
+
+    // Check that focus is set in QWebEngineView and all internal classes.
+    QTRY_COMPARE(webView->hasFocus(), true);
+
+    QQuickWidget *renderWidgetHostViewQtDelegateWidget =
+            qobject_cast<QQuickWidget *>(webView->focusProxy());
+    QVERIFY(renderWidgetHostViewQtDelegateWidget);
+    QTRY_COMPARE(renderWidgetHostViewQtDelegateWidget->hasFocus(), true);
+
+    QQuickItem *renderWidgetHostViewQuickItem =
+            renderWidgetHostViewQtDelegateWidget->rootObject();
+    QVERIFY(renderWidgetHostViewQuickItem);
+    QTRY_COMPARE(renderWidgetHostViewQuickItem->hasFocus(), true);
 }
 
 void tst_QWebEngineView::changeLocale()

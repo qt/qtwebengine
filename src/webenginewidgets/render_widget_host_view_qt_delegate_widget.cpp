@@ -64,6 +64,8 @@ public:
     RenderWidgetHostViewQuickItem(RenderWidgetHostViewQtDelegateClient *client) : m_client(client)
     {
         setFlag(ItemHasContents, true);
+        // Mark that this item should receive focus when the parent QQuickWidget receives focus.
+        setFocus(true);
     }
 protected:
     void focusInEvent(QFocusEvent *event) override
