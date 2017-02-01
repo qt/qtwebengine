@@ -46,6 +46,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QString>
+#include <QtQml/QQmlListProperty>
 
 namespace QtWebEngineCore {
 class BrowserContextAdapter;
@@ -55,6 +56,7 @@ QT_BEGIN_NAMESPACE
 
 class QQuickWebEngineDownloadItem;
 class QQuickWebEngineProfilePrivate;
+class QQuickWebEngineScript;
 class QQuickWebEngineSettings;
 class QWebEngineCookieStore;
 class QWebEngineUrlRequestInterceptor;
@@ -73,6 +75,7 @@ class Q_WEBENGINE_EXPORT QQuickWebEngineProfile : public QObject {
     Q_PROPERTY(int httpCacheMaximumSize READ httpCacheMaximumSize WRITE setHttpCacheMaximumSize NOTIFY httpCacheMaximumSizeChanged FINAL)
     Q_PROPERTY(QStringList spellCheckLanguages READ spellCheckLanguages WRITE setSpellCheckLanguages NOTIFY spellCheckLanguagesChanged FINAL REVISION 3)
     Q_PROPERTY(bool spellCheckEnabled READ isSpellCheckEnabled WRITE setSpellCheckEnabled NOTIFY spellCheckEnabledChanged FINAL REVISION 3)
+    Q_PROPERTY(QQmlListProperty<QQuickWebEngineScript> userScripts READ userScripts FINAL REVISION 4)
 
 public:
     QQuickWebEngineProfile(QObject *parent = Q_NULLPTR);
@@ -135,6 +138,8 @@ public:
     QStringList spellCheckLanguages() const;
     void setSpellCheckEnabled(bool enabled);
     bool isSpellCheckEnabled() const;
+
+    QQmlListProperty<QQuickWebEngineScript> userScripts();
 
     static QQuickWebEngineProfile *defaultProfile();
 

@@ -51,75 +51,37 @@
 // We mean it.
 //
 
-#include <private/qtwebengineglobal_p.h>
-#include <QtCore/QObject>
-#include <QtCore/QUrl>
+#include "qquickwebenginescript.h"
+
+#include <QtCore/QBasicTimer>
+#include "user_script.h"
+#include "web_contents_adapter.h"
+
+namespace QtWebEngineCore {
+class UserResourceControllerHost;
+class WebContentsAdapter;
+} // namespace
 
 QT_BEGIN_NAMESPACE
-class QQuickWebEngineScriptPrivate;
-class QQuickWebEngineView;
 
-class Q_WEBENGINE_PRIVATE_EXPORT QQuickWebEngineScript : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged FINAL)
-    Q_PROPERTY(QUrl sourceUrl READ sourceUrl WRITE setSourceUrl NOTIFY sourceUrlChanged FINAL)
-    Q_PROPERTY(QString sourceCode READ sourceCode WRITE setSourceCode NOTIFY sourceCodeChanged FINAL)
-    Q_PROPERTY(InjectionPoint injectionPoint READ injectionPoint WRITE setInjectionPoint NOTIFY injectionPointChanged FINAL)
-    Q_PROPERTY(ScriptWorldId worldId READ worldId WRITE setWorldId NOTIFY worldIdChanged FINAL)
-    Q_PROPERTY(bool runOnSubframes READ runOnSubframes WRITE setRunOnSubframes NOTIFY runOnSubframesChanged FINAL)
-
-
+class QQuickWebEngineScriptPrivate {
 public:
-    enum InjectionPoint {
-        Deferred,
-        DocumentReady,
-        DocumentCreation
-    };
-    Q_ENUM(InjectionPoint)
+    Q_DECLARE_PUBLIC(QQuickWebEngineScript)
+    QQuickWebEngineScriptPrivate();
+    void aboutToUpdateUnderlyingScript();
+    void bind(QtWebEngineCore::UserResourceControllerHost *, QtWebEngineCore::WebContentsAdapter * = 0);
 
-    enum ScriptWorldId {
-        MainWorld = 0,
-        ApplicationWorld,
-        UserWorld
-    };
-    Q_ENUM(ScriptWorldId)
-
-    QQuickWebEngineScript();
-    ~QQuickWebEngineScript();
-    Q_INVOKABLE QString toString() const;
-
-    QString name() const;
-    QUrl sourceUrl() const;
-    QString sourceCode() const;
-    InjectionPoint injectionPoint() const;
-    ScriptWorldId worldId() const;
-    bool runOnSubframes() const;
-
-public Q_SLOTS:
-    void setName(QString arg);
-    void setSourceUrl(QUrl arg);
-    void setSourceCode(QString arg);
-    void setInjectionPoint(InjectionPoint arg);
-    void setWorldId(ScriptWorldId arg);
-    void setRunOnSubframes(bool arg);
-
-Q_SIGNALS:
-    void nameChanged(QString arg);
-    void sourceUrlChanged(QUrl arg);
-    void sourceCodeChanged(QString arg);
-    void injectionPointChanged(InjectionPoint arg);
-    void worldIdChanged(ScriptWorldId arg);
-    void runOnSubframesChanged(bool arg);
-
-protected:
-    void timerEvent(QTimerEvent *e) override;
+    QtWebEngineCore::UserScript coreScript;
+    QBasicTimer m_basicTimer;
+    QtWebEngineCore::UserResourceControllerHost *m_controllerHost;
+    QtWebEngineCore::WebContentsAdapter *m_adapter;
+    QUrl m_sourceUrl;
 
 private:
-    friend class QQuickWebEngineViewPrivate;
-    Q_DECLARE_PRIVATE(QQuickWebEngineScript)
-    QScopedPointer<QQuickWebEngineScriptPrivate> d_ptr;
+    QQuickWebEngineScript *q_ptr;
+
 };
+
 QT_END_NAMESPACE
 
 #endif // QQUICKWEBENGINESCRIPT_P_H

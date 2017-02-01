@@ -9,11 +9,13 @@
     "commandline": {
         "options": {
             "alsa": "boolean",
+            "embedded": "boolean",
             "pepper-plugins": "boolean",
             "printing-and-pdf": "boolean",
             "proprietary-codecs": "boolean",
             "pulseaudio": "boolean",
-            "spellchecker": "boolean"
+            "spellchecker": "boolean",
+            "webrtc": "boolean"
         }
     },
 
@@ -41,10 +43,21 @@
         "gn": {
             "label": "system gn",
             "type": "detectGn"
+        },
+        "embedded": {
+            "label": "embedded",
+            "type": "embedded"
         }
     },
 
     "features": {
+        "embedded": {
+            "label": "Embedded build",
+            "condition": "config.unix",
+            "autoDetect": "tests.embedded",
+            "purpose": "Enables the embedded build configuration",
+            "output": [ "privateFeature" ]
+        },
         "alsa": {
             "label": "ALSA",
             "condition": "config.unix && libs.alsa",
@@ -58,14 +71,14 @@
         },
         "pepper-plugins": {
             "label": "Pepper Plugins",
-            "autoDetect": "!features.cross_compile",
+            "autoDetect": "!features.embedded",
             "purpose": "Enables use of Pepper Flash and Widevine plugins",
             "output": [ "privateFeature" ]
         },
         "printing-and-pdf": {
             "label": "Printing and PDF",
             "condition": "module.printsupport && features.printer",
-            "autoDetect": "!features.cross_compile",
+            "autoDetect": "!features.embedded",
             "purpose": "Enables printing and output to PDF",
             "output": [ "privateFeature" ]
         },
@@ -80,6 +93,12 @@
             "purpose": "Enables the use of Chromium's spellchecker",
             "output": [ "privateFeature" ]
         },
+        "webrtc": {
+            "label": "WebRTC",
+            "autoDetect": "!features.embedded",
+            "purpose": "Enables WebRTC support",
+            "output": [ "privateFeature" ]
+        },
         "system-ninja": {
             "label": "Using system ninja",
             "condition": "tests.ninja",
@@ -87,6 +106,7 @@
         },
         "system-gn": {
             "label": "Using system gn",
+            "autoDetect": false,
             "condition": "tests.gn",
             "output": [ "privateFeature" ]
         }
@@ -96,11 +116,12 @@
         {
             "section": "Qt WebEngine",
             "entries": [
+                "embedded",
                 "pepper-plugins",
                 "printing-and-pdf",
                 "proprietary-codecs",
                 "spellchecker",
-                "system-gn",
+                "webrtc",
                 "system-ninja",
                 {
                     "type": "feature",

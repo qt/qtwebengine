@@ -34,6 +34,7 @@
 #include <QtGui/qpa/qwindowsysteminterface.h>
 #include <QtQml/QQmlEngine>
 #include <QtTest/QtTest>
+#include <QtWebEngine/QQuickWebEngineProfile>
 #include <private/qquickwebengineview_p.h>
 
 #include <functional>
@@ -77,6 +78,7 @@ private Q_SLOTS:
     void inputEventForwardingDisabledWhenActiveFocusOnPressDisabled();
 
     void changeLocale();
+    void userScripts();
 
 private:
     inline QQuickWebEngineView *newWebEngineView();
@@ -718,6 +720,29 @@ void tst_QQuickWebEngineView::changeLocale()
 
     delete viewDE;
     delete viewEN;
+}
+
+void tst_QQuickWebEngineView::userScripts()
+{
+    QScopedPointer<QQuickWebEngineView> webEngineView1(newWebEngineView());
+    webEngineView1->setParentItem(m_window->contentItem());
+    QScopedPointer<QQuickWebEngineView> webEngineView2(newWebEngineView());
+    webEngineView2->setParentItem(m_window->contentItem());
+
+    QQmlListReference list(webEngineView1->profile(), "userScripts");
+    QQuickWebEngineScript script;
+    script.setSourceCode("document.title = 'New title';");
+    list.append(&script);
+
+    webEngineView1->setUrl(urlFromTestPath("html/basic_page.html"));
+    QVERIFY(waitForLoadSucceeded(webEngineView1.data()));
+    QTRY_COMPARE(webEngineView1->title(), QStringLiteral("New title"));
+
+    webEngineView2->setUrl(urlFromTestPath("html/basic_page.html"));
+    QVERIFY(waitForLoadSucceeded(webEngineView2.data()));
+    QTRY_COMPARE(webEngineView2->title(), QStringLiteral("New title"));
+
+    list.clear();
 }
 
 QTEST_MAIN(tst_QQuickWebEngineView)

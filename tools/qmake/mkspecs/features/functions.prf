@@ -260,6 +260,11 @@ defineTest(isMinWinSDKVersion) {
     requested_minor = $$2
     WIN_SDK_VERSION = $$(WindowsSDKVersion)
 
+    isEmpty(WIN_SDK_VERSION)|equals(WIN_SDK_VERSION, "\\") {
+        skipBuild("Could not detect Windows SDK version (\'WindowsSDKVersion\' environment variable is not set).")
+        return(false)
+    }
+
     # major.0.minor
     major_version = $$section(WIN_SDK_VERSION, ., 0, 0)
     minor_version = $$section(WIN_SDK_VERSION, ., 2, 2)
@@ -381,19 +386,23 @@ defineReplace(buildNinja) {
    !exists($$out) {
        mkpath($$dirname(out))
        src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
-       ninja_configure = $$absolute_path(ninja/configure.py, $$src_3rd_party_dir)
-       system("cd $$system_quote($$system_path($$dirname(out))) && python $$system_quote($$system_path($$ninja_configure)) --bootstrap")
+       ninja_configure =  $$system_quote($$system_path($$absolute_path(ninja/configure.py, $$src_3rd_party_dir)))
+       !system("cd $$system_quote($$system_path($$dirname(out))) && python $$ninja_configure --bootstrap") {
+            error("NINJA build error!")
+       }
    }
 }
 
 defineReplace(gnPath) {
     src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
-    out = $$shadowed($$absolute_path(chromium/tools/gn/gn, $$src_3rd_party_dir))
+    out = $$shadowed($$absolute_path(chromium/tools/gn/out/Release/gn, $$src_3rd_party_dir))
+
     win32: out = $${out}.exe
     return($$out)
 }
 
 defineReplace(buildGn) {
+    gn_args = $$1
     out = $$gnPath()
     !qtConfig(system-ninja): ninja_path = "--path $$ninjaPath()"
     # check if it is not already build
@@ -401,9 +410,11 @@ defineReplace(buildGn) {
         mkpath($$dirname(out))
         src_3rd_party_dir = $$absolute_path("$${getChromiumSrcDir()}/../", "$$QTWEBENGINE_ROOT")
         gn_bootstrap = $$system_path($$absolute_path(chromium/tools/gn/bootstrap/bootstrap.py, $$src_3rd_party_dir))
-        gn_args = $$system_quote(is_clang=false use_sysroot=false enable_remoting=false enable_nacl=false)
+        gn_args = $$system_quote($$gn_args)
         gn_configure = $$system_quote($$gn_bootstrap) --shadow --gn-gen-args=$$gn_args $$ninja_path
-        system("cd $$system_quote($$system_path($$dirname(out))) && python $$gn_configure")
+        !system("cd $$system_quote($$system_path($$dirname(out))) && python $$gn_configure") {
+            error("GN build error!")
+        }
     }
 }
 

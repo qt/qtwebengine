@@ -55,7 +55,7 @@
 #include "qquickwebenginenewviewrequest_p.h"
 #include "qquickwebengineprofile_p.h"
 #include "qquickwebenginesettings_p.h"
-#include "qquickwebenginescript_p_p.h"
+#include "qquickwebenginescript_p.h"
 
 #ifdef ENABLE_QML_TESTSUPPORT_API
 #include "qquickwebenginetestsupport_p.h"
@@ -1527,8 +1527,13 @@ void QQuickWebEngineView::dragLeaveEvent(QDragLeaveEvent *e)
 void QQuickWebEngineView::dragMoveEvent(QDragMoveEvent *e)
 {
     Q_D(QQuickWebEngineView);
-    e->accept();
-    d->adapter->updateDragPosition(e, mapToScreen(this, e->pos()));
+    Qt::DropAction dropAction = d->adapter->updateDragPosition(e, mapToScreen(this, e->pos()));
+    if (Qt::IgnoreAction == dropAction) {
+        e->ignore();
+    } else {
+        e->setDropAction(dropAction);
+        e->accept();
+    }
 }
 
 void QQuickWebEngineView::dropEvent(QDropEvent *e)

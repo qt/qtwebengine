@@ -42,6 +42,7 @@
 #include "qquickwebenginedownloaditem_p.h"
 #include "qquickwebenginedownloaditem_p_p.h"
 #include "qquickwebengineprofile_p.h"
+#include "qquickwebenginescript_p.h"
 #include "qquickwebenginesettings_p.h"
 #include "qwebenginecookiestore.h"
 
@@ -49,6 +50,7 @@
 
 #include "browser_context_adapter.h"
 #include <qtwebenginecoreglobal.h>
+#include "renderer_host/user_resource_controller_host.h"
 #include "web_engine_settings.h"
 
 using QtWebEngineCore::BrowserContextAdapter;
@@ -227,6 +229,38 @@ void QQuickWebEngineProfilePrivate::downloadUpdated(const DownloadItemInfo &info
         Q_EMIT q->downloadFinished(download);
         m_ongoingDownloads.remove(info.id);
     }
+}
+
+void QQuickWebEngineProfilePrivate::userScripts_append(QQmlListProperty<QQuickWebEngineScript> *p, QQuickWebEngineScript *script)
+{
+    Q_ASSERT(p && p->data);
+    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
+    QtWebEngineCore::UserResourceControllerHost *resourceController = d->browserContext()->userResourceController();
+    d->m_userScripts.append(script);
+    script->d_func()->bind(resourceController);
+}
+
+int QQuickWebEngineProfilePrivate::userScripts_count(QQmlListProperty<QQuickWebEngineScript> *p)
+{
+    Q_ASSERT(p && p->data);
+    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
+    return d->m_userScripts.count();
+}
+
+QQuickWebEngineScript *QQuickWebEngineProfilePrivate::userScripts_at(QQmlListProperty<QQuickWebEngineScript> *p, int idx)
+{
+    Q_ASSERT(p && p->data);
+    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
+    return d->m_userScripts.at(idx);
+}
+
+void QQuickWebEngineProfilePrivate::userScripts_clear(QQmlListProperty<QQuickWebEngineScript> *p)
+{
+    Q_ASSERT(p && p->data);
+    QQuickWebEngineProfilePrivate *d = static_cast<QQuickWebEngineProfilePrivate *>(p->data);
+    QtWebEngineCore::UserResourceControllerHost *resourceController = d->browserContext()->userResourceController();
+    resourceController->clearAllScripts(NULL);
+    d->m_userScripts.clear();
 }
 
 /*!
@@ -849,6 +883,35 @@ QQuickWebEngineSettings *QQuickWebEngineProfile::settings() const
 {
     const Q_D(QQuickWebEngineProfile);
     return d->settings();
+}
+
+/*!
+    \qmlproperty list<WebEngineScript> WebEngineProfile::userScripts
+    \since 1.5
+
+    Returns the collection of WebEngineScripts that are injected into all pages that share
+    this profile.
+
+    \sa WebEngineScript
+*/
+
+/*!
+    \property QQuickWebEngineProfile::userScripts
+    \since 5.9
+
+    \brief the collection of scripts that are injected into all pages that share
+    this profile.
+
+    \sa QQuickWebEngineScript, QQmlListReference
+*/
+QQmlListProperty<QQuickWebEngineScript> QQuickWebEngineProfile::userScripts()
+{
+    Q_D(QQuickWebEngineProfile);
+    return QQmlListProperty<QQuickWebEngineScript>(this, d,
+                                                   d->userScripts_append,
+                                                   d->userScripts_count,
+                                                   d->userScripts_at,
+                                                   d->userScripts_clear);
 }
 
 QT_END_NAMESPACE

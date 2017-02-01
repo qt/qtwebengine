@@ -4,9 +4,11 @@ include(core_common.pri)
 # Needed to set a CFBundleIdentifier
 QMAKE_INFO_PLIST = Info_mac.plist
 
-# Look for linking information produced by gyp for our target according to core_generated.gyp
-!include($$OUT_PWD/$$getConfigDir()/$${TARGET}_linking.pri) {
-    error("Could not find the linking information that gyp should have generated.")
+use?(gn): linking_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}.pri
+else: linking_pri = $$OUT_PWD/$$getConfigDir()/$${TARGET}_linking.pri
+
+!include($$linking_pri) {
+    error("Could not find the linking information that gyp/gn should have generated.")
 }
 
 load(qt_module)
@@ -16,6 +18,30 @@ api_library_path = $$OUT_PWD/api/$$getConfigDir()
 
 # Do not precompile any headers. We are only interested in the linker step.
 PRECOMPILED_HEADER =
+
+use?(gn){
+    isEmpty(NINJA_OBJECTS): error("Missing object files from QtWebEngineCore linking pri.")
+    isEmpty(NINJA_LFLAGS): error("Missing linker flags from QtWebEngineCore linking pri")
+    isEmpty(NINJA_ARCHIVES): error("Missing archive files from QtWebEngineCore linking pri")
+    isEmpty(NINJA_LIBS): error("Missing library files from QtWebEngineCore linking pri")
+    NINJA_OBJECTS = $$eval($$list($$NINJA_OBJECTS))
+    # Do manual response file linking for macOS and Linux
+    unix {
+        RSP_FILE = $$OUT_PWD/$$getConfigDir()/$${TARGET}.rsp
+        for(object, NINJA_OBJECTS): RSP_CONTENT += $$object
+        write_file($$RSP_FILE, RSP_CONTENT)
+        macos:LIBS_PRIVATE += -Wl,-filelist,$$shell_quote($$RSP_FILE)
+        linux:LIBS_PRIVATE += @$$RSP_FILE
+    } else {
+        OBJECTS = $$NINJA_OBJECTS
+    }
+    linux: LIBS_PRIVATE += -Wl,--start-group $$NINJA_ARCHIVES -Wl,--end-group
+    else: LIBS_PRIVATE += $$NINJA_ARCHIVES
+    LIBS_PRIVATE += $$NINJA_LIB_DIRS $$NINJA_LIBS
+    QMAKE_LFLAGS += $$NINJA_LFLAGS
+    POST_TARGETDEPS += $$NINJA_TARGETDEPS
+}
+
 
 LIBS_PRIVATE += -L$$api_library_path
 CONFIG *= no_smart_library_merge
@@ -44,7 +70,12 @@ qtConfig(egl): CONFIG += egl
 
 linux:qtConfig(separate_debug_info): QMAKE_POST_LINK="cd $(DESTDIR) && $(STRIP) --strip-unneeded $(TARGET)"
 
-REPACK_DIR = $$OUT_PWD/$$getConfigDir()/gen/repack
+use?(gn) {
+    REPACK_DIR = $$OUT_PWD/$$getConfigDir()
+} else {
+    REPACK_DIR = $$OUT_PWD/$$getConfigDir()/gen/repack
+}
+
 # Duplicated from resources/resources.gyp
 LOCALE_LIST = am ar bg bn ca cs da de el en-GB en-US es-419 es et fa fi fil fr gu he hi hr hu id it ja kn ko lt lv ml mr ms nb nl pl pt-BR pt-PT ro ru sk sl sr sv sw ta te th tr uk vi zh-CN zh-TW
 for(LOC, LOCALE_LIST) {

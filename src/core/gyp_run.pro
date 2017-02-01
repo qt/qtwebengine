@@ -9,7 +9,7 @@ isQtMinimum(5, 8) {
 
 TEMPLATE = aux
 
-cross_compile {
+contains(WEBENGINE_CONFIG, embedded_build) {
     GYP_ARGS = "-D qt_cross_compile=1"
     posix: GYP_ARGS += "-D os_posix=1"
     qnx: include(config/embedded_qnx.pri)

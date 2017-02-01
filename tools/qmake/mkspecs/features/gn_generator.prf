@@ -10,6 +10,18 @@ defineReplace(getTargetType) {
   return("none")
 }
 
+defineReplace(filter_flag_values) {
+    value_to_check = $$1
+    macos:equals(value_to_check, "$(EXPORT_ARCH_ARGS)") {
+        # EXPORT_ARCH_ARGS comes from qtbase/mkspecs/features/mac/default_post.prf which is a way
+        # to figure out the architectures to pass to the compiler at Makefile time. Because this
+        # variable expansion is not supported by GN, we filter it out. GN takes care of assigning
+        # the architecture itself.
+        return("")
+    }
+    return($$value_to_check)
+}
+
 isEmpty(GN_FILE): GN_FILE = $$system_path($$_PRO_FILE_PWD_/BUILD.gn)
 isEmpty(GN_RUN_BINARY_SCRIPT): GN_RUN_BINARY_SCRIPT = "//build/gn_run_binary.py"
 isEmpty(GN_FIND_MOCABLES_SCRIPT): GN_FIND_MOCABLES_SCRIPT = "//build/gn_find_mocables.py"
@@ -93,7 +105,7 @@ GN_CONTENTS += "}"
 TARGET_TYPE = $$getTargetType()
 
 GN_CONTENTS += "$${TARGET_TYPE}(\"$$TARGET\") {"
-
+!isEmpty(GN_CREATE_PRI): GN_CONTENTS += "  create_pri_file = $$GN_CREATE_PRI"
 !isEmpty(GN_IMPORTS) {
 for (imp, GN_IMPORTS): GN_CONTENTS += "  import(\"$$imp\")"
 }
@@ -106,12 +118,19 @@ for (imp, GN_IMPORTS): GN_CONTENTS += "  import(\"$$imp\")"
 
 !isEmpty(QMAKE_CFLAGS) {
     GN_CONTENTS += "  cflags = ["
-    for(flag, QMAKE_CFLAGS): GN_CONTENTS += "    \"$$flag\","
+    for(flag, QMAKE_CFLAGS): GN_CONTENTS += "    \"$$filter_flag_values($$flag)\","
     GN_CONTENTS += "  ]"
 }
+
+# Stop the barrage of unused variables warnings.
+gcc|clang {
+    QMAKE_CXXFLAGS += "-Wno-unused-parameter"
+    QMAKE_CXXFLAGS += "-Wno-unused-variable"
+}
+
 !isEmpty(QMAKE_CXXFLAGS) {
     GN_CONTENTS += "  cflags_cc = ["
-    for(flag, QMAKE_CXXFLAGS): GN_CONTENTS += "    \"$$flag\","
+    for(flag, QMAKE_CXXFLAGS): GN_CONTENTS += "    \"$$filter_flag_values($$flag)\","
     GN_CONTENTS += "  ]"
 }
 
@@ -119,7 +138,9 @@ GN_CONTENTS += "  if (!defined(defines)) {"\
                "    defines = []"\
                "  }"
 GN_CONTENTS += "  defines += ["
-for (define, DEFINES): GN_CONTENTS += "    \"$$define\","
+# Remove single quotes around function macro defines, so that GN doesn't escape them, thus breaking
+# the macro.
+for (define, DEFINES): GN_CONTENTS += "    \"$$replace(define,\',)\","
 !isEmpty(QMAKE_LIBDIR_EGL):
     GN_CONTENTS += "    \"QT_LIBDIR_EGL=\\\"$${QMAKE_DIR_SEP}$$relative_path($$QMAKE_LIBDIR_EGL, $$[QT_SYSROOT])\\\"\","
 !isEmpty(QMAKE_LIBDIR_OPENGL_ES2)
@@ -147,9 +168,12 @@ GN_CONTENTS += "  if (!defined(ldflags)) {"\
                "    ldflags = []"\
                "  }"
 GN_CONTENTS += "  ldflags += ["
-for (flag, QMAKE_LFLAGS): GN_CONTENTS += "    \"$$flag\","
+for (flag, QMAKE_LFLAGS): GN_CONTENTS += "    \"$$filter_flag_values($$flag)\","
 for (flag, GN_FLAGS): GN_CONTENTS += "    \"$$flag\","
-!isEmpty(QMAKE_RPATHDIR): GN_CONTENTS += "    \"-Wl,-rpath=$${QMAKE_RPATHDIR}\","
+!isEmpty(QMAKE_RPATHDIR) {
+    macos: GN_CONTENTS += "    \"-Wl,-rpath,$${QMAKE_RPATHDIR}\","
+    else:unix: GN_CONTENTS += "    \"-Wl,-rpath=$${QMAKE_RPATHDIR}\","
+}
 !isEmpty(QMAKE_RPATHLINKDIR): GN_CONTENTS += "    \"-Wl,-rpath-link=$${QMAKE_RPATHLINKDIR}\","
 GN_CONTENTS += "  ]"
 

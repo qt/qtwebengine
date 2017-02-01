@@ -61,6 +61,12 @@ Item {
     }
 
     TestWebEngineView {
+        id: webEngineView2
+        width: 400
+        height: 300
+    }
+
+    TestWebEngineView {
         id: webEngineViewWithConditionalUserScripts
         width: 400
         height: 300
@@ -82,6 +88,7 @@ Item {
         function init() {
             webEngineView.url = "";
             webEngineView.userScripts = [];
+            webEngineView.profile.userScripts = [];
         }
 
         function test_oneScript() {
@@ -172,6 +179,18 @@ Item {
             webEngineView.url = Qt.resolvedUrl("test2.html");
             webEngineView.waitForLoadSucceeded();
             tryCompare(webEngineView, "title", "Test page with huge link area");
+        }
+
+        function test_profileWideScript() {
+            webEngineView.profile.userScripts = [ changeDocumentTitleScript ];
+
+            webEngineView.url = Qt.resolvedUrl("test1.html");
+            webEngineView.waitForLoadSucceeded();
+            compare(webEngineView.title, "New title");
+
+            webEngineView2.url = Qt.resolvedUrl("test1.html");
+            webEngineView2.waitForLoadSucceeded();
+            compare(webEngineView2.title, "New title");
         }
     }
 }

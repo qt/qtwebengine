@@ -32,17 +32,15 @@
 #include <QOpenGLWidget>
 #include <QPaintEngine>
 #include <QPushButton>
+#include <QScreen>
 #include <QStateMachine>
-#include <QStyle>
 #include <QtGui/QClipboard>
 #include <QtTest/QtTest>
 #include <QTextCharFormat>
 #include <QWebChannel>
-#include <private/qinputmethod_p.h>
 #include <qnetworkcookiejar.h>
 #include <qnetworkreply.h>
 #include <qnetworkrequest.h>
-#include <qpa/qplatforminputcontext.h>
 #include <qwebenginedownloaditem.h>
 #include <qwebenginefullscreenrequest.h>
 #include <qwebenginehistory.h>
@@ -65,38 +63,6 @@ static void removeRecursive(const QString& dirname)
             dir.remove(entries[i].fileName());
     QDir().rmdir(dirname);
 }
-
-class TestInputContext : public QPlatformInputContext
-{
-public:
-    TestInputContext()
-    : m_visible(false)
-    {
-        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
-        inputMethodPrivate->testContext = this;
-    }
-
-    ~TestInputContext()
-    {
-        QInputMethodPrivate* inputMethodPrivate = QInputMethodPrivate::get(qApp->inputMethod());
-        inputMethodPrivate->testContext = 0;
-    }
-
-    virtual void showInputPanel()
-    {
-        m_visible = true;
-    }
-    virtual void hideInputPanel()
-    {
-        m_visible = false;
-    }
-    virtual bool isInputPanelVisible() const
-    {
-        return m_visible;
-    }
-
-    bool m_visible;
-};
 
 class tst_QWebEnginePage : public QObject
 {
@@ -1671,24 +1637,6 @@ void tst_QWebEnginePage::inputMethods_data()
 }
 
 #if defined(QWEBENGINEPAGE_INPUTMETHODQUERY)
-static Qt::InputMethodHints inputMethodHints(QObject* object)
-{
-    if (QGraphicsObject* o = qobject_cast<QGraphicsObject*>(object))
-        return o->inputMethodHints();
-    if (QWidget* w = qobject_cast<QWidget*>(object))
-        return w->inputMethodHints();
-    return Qt::InputMethodHints();
-}
-
-static bool inputMethodEnabled(QObject* object)
-{
-    if (QGraphicsObject* o = qobject_cast<QGraphicsObject*>(object))
-        return o->flags() & QGraphicsItem::ItemAcceptsInputMethod;
-    if (QWidget* w = qobject_cast<QWidget*>(object))
-        return w->testAttribute(Qt::WA_InputMethodEnabled);
-    return false;
-}
-
 static void clickOnPage(QWebEnginePage* page, const QPoint& position)
 {
     QMouseEvent evpres(QEvent::MouseButtonPress, position, Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
@@ -1740,32 +1688,6 @@ void tst_QWebEnginePage::inputMethods()
     QPoint textInputCenter = inputs.at(0).geometry().center();
 
     clickOnPage(page, textInputCenter);
-
-    // This part of the test checks if the SIP (Software Input Panel) is triggered,
-    // which normally happens on mobile platforms, when a user input form receives
-    // a mouse click.
-    int  inputPanel = 0;
-    if (viewType == "QWebEngineView") {
-        if (QWebEngineView* wv = qobject_cast<QWebEngineView*>(view))
-            inputPanel = wv->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel);
-    } else if (viewType == "QGraphicsWebView") {
-        if (QGraphicsWebView* wv = qobject_cast<QGraphicsWebView*>(view))
-            inputPanel = wv->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel);
-    }
-
-    // For non-mobile platforms RequestSoftwareInputPanel event is not called
-    // because there is no SIP (Software Input Panel) triggered. In the case of a
-    // mobile platform, an input panel, e.g. virtual keyboard, is usually invoked
-    // and the RequestSoftwareInputPanel event is called. For these two situations
-    // this part of the test can verified as the checks below.
-    if (inputPanel)
-        QVERIFY(testContext.isInputPanelVisible());
-    else
-        QVERIFY(!testContext.isInputPanelVisible());
-    testContext.hideInputPanel();
-
-    clickOnPage(page, textInputCenter);
-    QVERIFY(testContext.isInputPanelVisible());
 
     //ImMicroFocus
     QVariant variant = page->inputMethodQuery(Qt::ImMicroFocus);
@@ -1959,38 +1881,6 @@ void tst_QWebEnginePage::inputMethods()
     QCOMPARE(selectionValue, QString("QtWebK"));
 
     //END - Tests for Selection when the Editor is not in Composition mode
-
-    //ImhHiddenText
-    QPoint passwordInputCenter = inputs.at(1).geometry().center();
-    clickOnPage(page, passwordInputCenter);
-
-    QVERIFY(inputMethodEnabled(view));
-    QVERIFY(inputMethodHints(view) & Qt::ImhHiddenText);
-
-    clickOnPage(page, textInputCenter);
-    QVERIFY(!(inputMethodHints(view) & Qt::ImhHiddenText));
-
-    page->setHtml("<html><body><p>nothing to input here");
-    testContext.hideInputPanel();
-
-    QWebEngineElement para = page->mainFrame()->findFirstElement("p");
-    clickOnPage(page, para.geometry().center());
-
-    QVERIFY(!testContext.isInputPanelVisible());
-
-    //START - Test for sending empty QInputMethodEvent
-    page->setHtml("<html><body>" \
-                                            "<input type='text' id='input3' value='QtWebEngine2'/>" \
-                                            "</body></html>");
-    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input3'); inputEle.focus(); inputEle.select();");
-
-    //Send empty QInputMethodEvent
-    QInputMethodEvent emptyEvent;
-    page->event(&emptyEvent);
-
-    QString inputValue = evaluateJavaScriptSync(page, "document.getElementById('input3').value").toString();
-    QCOMPARE(inputValue, QString("QtWebEngine2"));
-    //END - Test for sending empty QInputMethodEvent
 
     page->setHtml("<html><body>" \
                                             "<input type='text' id='input4' value='QtWebEngine inputMethod'/>" \
@@ -2299,98 +2189,6 @@ void tst_QWebEnginePage::inputMethods()
     variant = page->inputMethodQuery(Qt::ImAnchorPosition);
     anchorPosition =  variant.toInt();
     QCOMPARE(anchorPosition, 12);
-
-    // Check sending RequestSoftwareInputPanel event
-    page->setHtml("<html><body>" \
-                                            "<input type='text' id='input5' value='QtWebEngine inputMethod'/>" \
-                                            "<div id='btnDiv' onclick='i=document.getElementById(&quot;input5&quot;); i.focus();'>abc</div>"\
-                                            "</body></html>");
-    QWebEngineElement inputElement = page->mainFrame()->findFirstElement("div");
-    clickOnPage(page, inputElement.geometry().center());
-
-    QVERIFY(!testContext.isInputPanelVisible());
-
-    // START - Newline test for textarea
-    qApp->processEvents();
-    page->setHtml("<html><body>" \
-                                            "<textarea rows='5' cols='1' id='input5' value=''/>" \
-                                            "</body></html>");
-    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input5'); inputEle.focus(); inputEle.select();");
-
-    // Enter Key without key text
-    QKeyEvent keyEnter(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier);
-    page->event(&keyEnter);
-    QList<QInputMethodEvent::Attribute> attribs;
-
-    QInputMethodEvent eventText(QString(), attribs);
-    eventText.setCommitString("\n");
-    page->event(&eventText);
-
-    QInputMethodEvent eventText2(QString(), attribs);
-    eventText2.setCommitString("third line");
-    page->event(&eventText2);
-    qApp->processEvents();
-
-    QString inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString("\n\nthird line"));
-
-    // Enter Key with key text '\r'
-    evaluateJavaScriptSync(page, "var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString(""));
-
-    QKeyEvent keyEnterWithCarriageReturn(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\r");
-    page->event(&keyEnterWithCarriageReturn);
-    page->event(&eventText);
-    page->event(&eventText2);
-    qApp->processEvents();
-
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString("\n\nthird line"));
-
-    // Enter Key with key text '\n'
-    page->runJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString(""));
-
-    QKeyEvent keyEnterWithLineFeed(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\n");
-    page->event(&keyEnterWithLineFeed);
-    page->event(&eventText);
-    page->event(&eventText2);
-    qApp->processEvents();
-
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString("\n\nthird line"));
-
-    // Enter Key with key text "\n\r"
-    page->runJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString(""));
-
-    QKeyEvent keyEnterWithLFCR(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier, "\n\r");
-    page->event(&keyEnterWithLFCR);
-    page->event(&eventText);
-    page->event(&eventText2);
-    qApp->processEvents();
-
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString("\n\nthird line"));
-
-    // Return Key without key text
-    page->runJavaScript("var inputEle = document.getElementById('input5'); inputEle.value = ''; inputEle.focus(); inputEle.select();");
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString(""));
-
-    QKeyEvent keyReturn(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier);
-    page->event(&keyReturn);
-    page->event(&eventText);
-    page->event(&eventText2);
-    qApp->processEvents();
-
-    inputValue2 = evaluateJavaScriptSync(page, "document.getElementById('input5').value").toString();
-    QCOMPARE(inputValue2, QString("\n\nthird line"));
-
-    // END - Newline test for textarea
 #endif
 }
 
