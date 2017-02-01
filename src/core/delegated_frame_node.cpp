@@ -454,7 +454,7 @@ DelegatedFrameNode::DelegatedFrameNode()
 #if defined(USE_X11) && !defined(QT_NO_OPENGL)
     QOpenGLContext *currentContext = QOpenGLContext::currentContext() ;
     QOpenGLContext *sharedContext = qt_gl_global_share_context();
-    if (!QOpenGLContext::areSharing(currentContext, sharedContext)) {
+    if (currentContext && sharedContext && !QOpenGLContext::areSharing(currentContext, sharedContext)) {
         static bool allowNotSharedContextWarningShown = true;
         if (allowNotSharedContextWarningShown) {
             allowNotSharedContextWarningShown = false;
