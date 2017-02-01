@@ -5,12 +5,6 @@ osx
 [WebViewGeopermission::test_geoPermissionRequest]
 osx
 
-[DesktopWebEngineViewLinkHovered::test_linkHovered]
-linux
-
-[DesktopWebEngineViewLinkHovered::test_linkHoveredDoesntEmitRepeated]
-linux
-
 [WebEngineViewSingleFileUpload::test_acceptDirectory]
 *
 

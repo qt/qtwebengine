@@ -90,11 +90,11 @@ TestWebEngineView {
             loadVisuallyCommittedSpy.wait();
 
             mouseMove(webEngineView, 100, 100)
-            linkHoveredSpy.wait(10000);
+            linkHoveredSpy.wait(12000);
             compare(linkHoveredSpy.count, 2);
             compare(webEngineView.lastUrl, Qt.resolvedUrl("test1.html"))
             mouseMove(webEngineView, 100, 300)
-            linkHoveredSpy.wait(10000);
+            linkHoveredSpy.wait(12000);
             compare(linkHoveredSpy.count, 3);
             compare(webEngineView.lastUrl, "")
         }
@@ -115,14 +115,14 @@ TestWebEngineView {
             for (var i = 0; i < 100; i += 10)
                 mouseMove(webEngineView, 100, 100 + i)
 
-            linkHoveredSpy.wait(10000);
+            linkHoveredSpy.wait(12000);
             compare(linkHoveredSpy.count, 2);
             compare(webEngineView.lastUrl, Qt.resolvedUrl("test1.html"))
 
             for (var i = 0; i < 100; i += 10)
                 mouseMove(webEngineView, 100, 300 + i)
 
-            linkHoveredSpy.wait(10000);
+            linkHoveredSpy.wait(12000);
             compare(linkHoveredSpy.count, 3);
             compare(webEngineView.lastUrl, "")
         }

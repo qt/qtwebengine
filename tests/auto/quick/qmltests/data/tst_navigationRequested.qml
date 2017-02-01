@@ -92,9 +92,9 @@ TestWebEngineView {
         function test_navigationRequested() {
             // Test if we get notified about main frame and iframe loads
             compare(navigationSpy.count, 0)
-            webEngineView.url = Qt.resolvedUrl("test2.html")
+            webEngineView.url = Qt.resolvedUrl("test-iframe.html")
             navigationSpy.wait()
-            compare(attributes.mainUrl, Qt.resolvedUrl("test2.html"))
+            compare(attributes.mainUrl, Qt.resolvedUrl("test-iframe.html"))
             navigationSpy.wait()
             compare(attributes.iframeUrl, Qt.resolvedUrl("test1.html"))
             compare(navigationSpy.count, 2)
@@ -111,7 +111,7 @@ TestWebEngineView {
         function test_ignoreLinkClickedRequest() {
             // Test if we can ignore clicked link requests
             compare(navigationSpy.count, 0)
-            webEngineView.url = Qt.resolvedUrl("test2.html")
+            webEngineView.url = Qt.resolvedUrl("test-iframe.html")
             verify(webEngineView.waitForLoadSucceeded())
 
             shouldIgnoreLinkClicks = true
@@ -129,9 +129,9 @@ TestWebEngineView {
         function test_ignoreSubFrameRequest() {
             // Test if we can ignore sub frame requests
             shouldIgnoreSubFrameRequests = true
-            webEngineView.url = Qt.resolvedUrl("test2.html")
+            webEngineView.url = Qt.resolvedUrl("test-iframe.html")
             tryCompare(navigationSpy, "count", 2)
-            compare(attributes.mainUrl, Qt.resolvedUrl("test2.html"))
+            compare(attributes.mainUrl, Qt.resolvedUrl("test-iframe.html"))
             compare(attributes.iframeUrl, Qt.resolvedUrl("test1.html"))
             // We ignored the sub frame request, so
             // the main frame load should still succeed.
