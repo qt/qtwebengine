@@ -159,10 +159,6 @@ build_pass|!debug_and_release {
 
     !qtConfig(system-ninja) {
         ninja_binary = $$shell_quote($$shell_path($$ninjaPath()))
-        buildninja.target = build_ninja
-        buildninja.commands = $$buildNinja()
-        QMAKE_EXTRA_TARGETS += buildninja
-        runninja.depends = buildninja
     }
 
     runninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -C $$shell_quote($$OUT_PWD/$$getConfigDir())

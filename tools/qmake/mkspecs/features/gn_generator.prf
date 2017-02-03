@@ -224,7 +224,7 @@ GN_CONTENTS += "}"
     for (inc, GN_INCLUDES): GN_CONTENTS += $$cat($$inc,lines)
 }
 
-!build_pass: write_file($$GN_FILE, GN_CONTENTS)
+build_pass|!debug_and_release: write_file($$GN_FILE, GN_CONTENTS)
 
 # The generated Makefile shouldn't build anything by itself, just re-run qmake if necessary
 TEMPLATE = aux

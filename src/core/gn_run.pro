@@ -5,11 +5,9 @@ isQtMinimum(5, 8) {
 
 TEMPLATE = aux
 
-build_pass|!debug_and_release {
+qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 
-    macos: include(config/mac_osx.pri)
-    linux: include(config/desktop_linux.pri)
-    isEmpty(gn_args): error(No gn_args found please make sure you have valid configuration.)
+build_pass|!debug_and_release {
 
     ninja_binary = ninja
     gn_binary = gn
@@ -17,13 +15,7 @@ build_pass|!debug_and_release {
     runninja.target = run_ninja
     rungn.target = run_gn
 
-    !qtConfig(system-ninja) {
-        ninja_binary = $$shell_quote($$shell_path($$ninjaPath()))
-        buildninja.target = build_ninja
-        buildninja.commands = $$buildNinja()
-        QMAKE_EXTRA_TARGETS += buildninja
-        runninja.depends = buildninja
-    }
+    gn_args = $$gnArgs()
 
     CONFIG(release, debug|release):
         gn_args += is_debug=false
@@ -32,13 +24,10 @@ build_pass|!debug_and_release {
 
     !qtConfig(system-gn) {
         gn_binary = $$shell_quote($$shell_path($$gnPath()))
-        buildgn.target = build_gn
-        buildgn.commands = $$buildGn($$gn_args)
-        !qtConfig(system-ninja) {
-            buildgn.depends = buildninja
-            rungn.depends = buildninja
-        }
-        QMAKE_EXTRA_TARGETS += buildgn
+    }
+
+    !qtConfig(system-ninja) {
+        ninja_binary = $$shell_quote($$shell_path($$ninjaPath()))
     }
 
     gn_args = $$shell_quote($$gn_args)
@@ -54,7 +43,6 @@ build_pass|!debug_and_release {
     build_pass:build_all: default_target.target = all
     else: default_target.target = first
     default_target.depends = runninja
-
     QMAKE_EXTRA_TARGETS += default_target
 } else {
     # Special GNU make target for the meta Makefile that ensures that our debug and release Makefiles won't both run ninja in parallel.

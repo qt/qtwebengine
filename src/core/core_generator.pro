@@ -1,6 +1,7 @@
 
 use?(gn) {
     include(core_gn_config.pri)
+    qtConfig(debug_and_release): CONFIG += debug_and_release
 } else {
     include(core_gyp_config.pri)
 }
