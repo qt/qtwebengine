@@ -81,6 +81,8 @@
 #include "dev_tools_http_handler_delegate_qt.h"
 #ifdef QT_USE_POSITIONING
 #include "location_provider_qt.h"
+#else
+#include "device/geolocation/location_provider.h"
 #endif
 #include "media_capture_devices_dispatcher.h"
 #if defined(ENABLE_BASIC_PRINTING)
