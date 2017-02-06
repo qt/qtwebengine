@@ -49,7 +49,8 @@ QT_BEGIN_NAMESPACE
     \since 5.6
 
     To implement a custom URL scheme for QtWebEngine, you must write a class derived from this class,
-    and reimplement requestStarted().
+    and reimplement requestStarted(). Then install it via QWebEngineProfile::installUrlSchemeHandler()
+    or QQuickWebEngineProfile::installUrlSchemeHandler().
 
     \inmodule QtWebEngineCore
 

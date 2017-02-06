@@ -47,7 +47,8 @@ QT_BEGIN_NAMESPACE
     \since 5.4
     \inmodule QtWebEngineWidgets
 
-    Provides information about a certificate error.
+    Provides information about a certificate error. This class is used as a parameter of
+    QWebEnginePage::certificateError().
 */
 
 class QWebEngineCertificateErrorPrivate {

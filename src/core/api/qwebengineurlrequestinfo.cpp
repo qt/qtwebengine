@@ -96,6 +96,9 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     interceptor on the profile enables intercepting, blocking, and modifying URL requests
     before they reach the networking stack of Chromium.
 
+    You can install the interceptor on a profile via QWebEngineProfile::setRequestInterceptor()
+    or QQuickWebEngineProfile::setRequestInterceptor().
+
     \sa interceptRequest(), QWebEngineUrlRequestInfo
 */
 
@@ -108,14 +111,12 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
 /*!
     \fn void QWebEngineUrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
 
-    Reimplementing this virtual function and setting the interceptor on a profile makes
-    it possible to intercept URL requests. This function is executed on the IO thread,
-    and therefore running long tasks here will block networking.
+    Reimplementing this virtual function makes it possible to intercept URL
+    requests. This function is executed on the IO thread, and therefore running
+    long tasks here will block networking.
 
     \a info contains the information about the URL request and will track internally
     whether its members have been altered.
-
-    \sa QWebEngineProfile::setRequestInterceptor()
 */
 
 
