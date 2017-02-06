@@ -257,6 +257,7 @@ private:
     QWebEngineProfile *m_profile;
     QWebEngineView *m_fullScreenView;
     FullScreenNotification *m_fullScreenNotification;
+    QRect m_oldWindowGeometry;
 };
 
 #endif // TABWIDGET_H

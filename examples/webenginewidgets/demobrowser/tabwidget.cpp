@@ -97,12 +97,6 @@ TabBar::TabBar(QWidget *parent)
     setMovable(true);
 }
 
-TabWidget::~TabWidget()
-{
-    delete m_fullScreenNotification;
-    delete m_fullScreenView;
-}
-
 void TabBar::selectTabAction()
 {
     if (QShortcut *shortCut = qobject_cast<QShortcut*>(sender())) {
@@ -327,6 +321,12 @@ TabWidget::TabWidget(QWidget *parent)
     m_lineEdits = new QStackedWidget(this);
 }
 
+TabWidget::~TabWidget()
+{
+    if (m_fullScreenView)
+        delete m_fullScreenView;
+}
+
 void TabWidget::clear()
 {
     // clear the recently closed tabs
@@ -430,23 +430,23 @@ void TabWidget::fullScreenRequested(QWebEngineFullScreenRequest request)
             });
             m_fullScreenView->addAction(exitFullScreenAction);
         }
+        m_oldWindowGeometry = window()->geometry();
+        m_fullScreenView->setGeometry(m_oldWindowGeometry);
         webPage->setView(m_fullScreenView);
         request.accept();
         m_fullScreenView->showFullScreen();
-        m_fullScreenView->raise();
         m_fullScreenNotification->show();
+        window()->hide();
     } else {
         if (!m_fullScreenView)
             return;
         WebView *oldWebView = this->webView(m_lineEdits->currentIndex());
         webPage->setView(oldWebView);
         request.accept();
-        // Change the delete and window hide/show back to a simple m_fullScreenView->hide()
-        // once QTBUG-46701 gets fixed.
         delete m_fullScreenView;
         m_fullScreenView = 0;
-        window()->hide();
         window()->show();
+        window()->setGeometry(m_oldWindowGeometry);
     }
 }
 
