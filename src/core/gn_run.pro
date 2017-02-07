@@ -24,8 +24,9 @@ build_pass|!debug_and_release {
 
     gn_args = $$gnArgs()
 
-    CONFIG(release, debug|release):
+    CONFIG(release, debug|release) {
         gn_args += is_debug=false
+    }
 
     gn_args += "qtwebengine_target=\"$$shell_path($$OUT_PWD/$$getConfigDir()):QtWebEngineCore\""
 
