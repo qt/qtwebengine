@@ -5,6 +5,13 @@ isQtMinimum(5, 8) {
 
 TEMPLATE = aux
 
+defineReplace(runGn) {
+    message("Running: $$1")
+    !system($$1) {
+        error("GN run error!")
+    }
+}
+
 qtConfig(debug_and_release): CONFIG += debug_and_release build_all
 
 build_pass|!debug_and_release {
@@ -33,7 +40,7 @@ build_pass|!debug_and_release {
     gn_args = $$shell_quote($$gn_args)
     gn_src_root = $$shell_quote($$shell_path($$QTWEBENGINE_ROOT/$$getChromiumSrcDir()))
     gn_build_root = $$shell_quote($$shell_path($$OUT_PWD/$$getConfigDir()))
-    rungn.commands = $$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root
+    rungn.commands = $$runGn($$gn_binary gen $$gn_build_root --args=$$gn_args --root=$$gn_src_root)
     QMAKE_EXTRA_TARGETS += rungn
 
     runninja.commands = $$ninja_binary \$\(NINJAFLAGS\) -v -C $$shell_quote($$OUT_PWD/$$getConfigDir()) QtWebEngineCore
