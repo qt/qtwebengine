@@ -154,15 +154,29 @@ content::ContentRendererClient *ContentMainDelegateQt::CreateContentRendererClie
 #define ICU_UTIL_DATA_SHARED 1
 #define ICU_UTIL_DATA_STATIC 2
 
+static void SafeOverridePathImpl(const char *keyName, int key, const base::FilePath &path)
+{
+    if (path.empty())
+        return;
+
+    // Do not create directories for overridden paths.
+    if (PathService::OverrideAndCreateIfNeeded(key, path, false, false))
+        return;
+
+    qWarning("Path override failed for key %s and path '%s'", keyName, path.value().c_str());
+}
+
+#define SafeOverridePath(KEY, PATH) SafeOverridePathImpl(#KEY, KEY, PATH)
+
 bool ContentMainDelegateQt::BasicStartupComplete(int *exit_code)
 {
-    PathService::Override(base::FILE_EXE, WebEngineLibraryInfo::getPath(base::FILE_EXE));
+    SafeOverridePath(base::FILE_EXE, WebEngineLibraryInfo::getPath(base::FILE_EXE));
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
-    PathService::Override(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
+    SafeOverridePath(base::DIR_QT_LIBRARY_DATA, WebEngineLibraryInfo::getPath(base::DIR_QT_LIBRARY_DATA));
 #endif
-    PathService::Override(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
+    SafeOverridePath(ui::DIR_LOCALES, WebEngineLibraryInfo::getPath(ui::DIR_LOCALES));
 #if defined(ENABLE_SPELLCHECK)
-    PathService::Override(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
+    SafeOverridePath(base::DIR_APP_DICTIONARIES, WebEngineLibraryInfo::getPath(base::DIR_APP_DICTIONARIES));
 #endif
     SetContentClient(new ContentClientQt);
     return false;

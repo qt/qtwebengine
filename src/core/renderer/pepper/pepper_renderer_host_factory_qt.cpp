@@ -81,8 +81,16 @@ std::unique_ptr<ppapi::host::ResourceHost> PepperRendererHostFactoryQt::CreateRe
         switch (message.type()) {
         case PpapiHostMsg_Flash_Create::ID:
             return base::WrapUnique(new PepperFlashRendererHostQt(host_, instance, resource));
+        case PpapiHostMsg_FlashMenu_Create::ID: {
+            ppapi::host::ReplyMessageContext reply_context(
+                ppapi::proxy::ResourceMessageReplyParams(resource, 0),
+                NULL,
+                MSG_ROUTING_NONE);
+            reply_context.params.set_result(PP_ERROR_USERCANCEL);
+            host_->GetPpapiHost()->SendReply(reply_context, PpapiPluginMsg_FlashMenu_ShowReply(-1));
+            break;
+        }
         case PpapiHostMsg_FlashFullscreen_Create::ID:
-        case PpapiHostMsg_FlashMenu_Create::ID:
             // Not implemented
             break;
         }
