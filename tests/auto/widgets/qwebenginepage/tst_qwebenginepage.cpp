@@ -3713,8 +3713,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
 
     const QUrl first("http://abcdef.abcdef/");
     page.setUrl(first);
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), first);
     QVERIFY(!spy.at(0).first().toBool());
@@ -3723,8 +3722,7 @@ void tst_QWebEnginePage::requestedUrlAfterSetAndLoadFailures()
     QVERIFY(first != second);
 
     page.load(second);
-    QVERIFY(spy.wait());
-    QCOMPARE(spy.count(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
     QCOMPARE(page.url(), first);
     QCOMPARE(page.requestedUrl(), second);
     QVERIFY(!spy.at(1).first().toBool());
@@ -4494,11 +4492,11 @@ void tst_QWebEnginePage::loadFinishedAfterNotFoundError()
 
     page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, false);
     page.setUrl(QUrl("http://non.existent/url"));
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 1, 12000);
 
     page.settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
     page.setUrl(QUrl("http://another.non.existent/url"));
-    QTRY_COMPARE(spy.count(), 2);
+    QTRY_COMPARE_WITH_TIMEOUT(spy.count(), 2, 12000);
 }
 
 class URLSetter : public QObject {
@@ -4816,8 +4814,8 @@ void tst_QWebEnginePage::viewSourceURL_data()
     QUrl testResourceUrl = QUrl(QString("view-source:%1").arg(resourcePath));
     QTest::newRow(testResourceUrl.toString().toStdString().c_str()) << testResourceUrl << true << testResourceUrl << QUrl(resourcePath) << testResourceUrl.toString();
 
-    QTest::newRow("view-source:http://non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QUrl("http://non.existent/") << QString("http://non.existent/ is not available");
-    QTest::newRow("view-source:non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QUrl("http://non.existent/") << QString("http://non.existent/ is not available");
+    QTest::newRow("view-source:http://non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QUrl("http://non.existent/") << QString("non.existent");
+    QTest::newRow("view-source:non.existent") << QUrl("view-source:non.existent") << false << QUrl("view-source:http://non.existent/") << QUrl("http://non.existent/") << QString("non.existent");
 }
 
 void tst_QWebEnginePage::viewSourceURL()
@@ -4835,7 +4833,7 @@ void tst_QWebEnginePage::viewSourceURL()
     QSignalSpy loadFinishedSpy(&page, SIGNAL(loadFinished(bool)));
 
     page.load(userInputUrl);
-    QTRY_COMPARE(loadFinishedSpy.count(), 1);
+    QTRY_COMPARE_WITH_TIMEOUT(loadFinishedSpy.count(), 1, 12000);
     QList<QVariant> arguments = loadFinishedSpy.takeFirst();
 
     QCOMPARE(arguments.at(0).toBool(), loadSucceed);

@@ -126,7 +126,7 @@ TestWebEngineView {
             // Test failed load
             var bogusSite = "http://www.somesitethatdoesnotexist.abc/";
             webEngineView.url = bogusSite;
-            tryCompare(loadRequestArray, "length", 2);
+            tryCompare(loadRequestArray, "length", 2, 12000);
 
             loadRequest = loadRequestArray[0];
             compare(loadRequest.status, WebEngineView.LoadStartedStatus);
@@ -217,7 +217,7 @@ TestWebEngineView {
             }
             webEngineView.loadingChanged.connect(handleLoadFailed);
             webEngineView.url = bogusSite
-            tryCompare(loadRequestArray, "length", 4);
+            tryCompare(loadRequestArray, "length", 4, 12000);
             webEngineView.loadingChanged.disconnect(handleLoadFailed);
 
             loadRequest = loadRequestArray[0];

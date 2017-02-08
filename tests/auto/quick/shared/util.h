@@ -98,7 +98,7 @@ inline bool waitForLoadSucceeded(QQuickWebEngineView *webEngineView, int timeout
     return spy.wait(timeout);
 }
 
-inline bool waitForLoadFailed(QQuickWebEngineView *webEngineView, int timeout = 10000)
+inline bool waitForLoadFailed(QQuickWebEngineView *webEngineView, int timeout = 20000)
 {
     LoadSpy loadSpy(webEngineView);
     QSignalSpy spy(&loadSpy, &LoadSpy::loadFailed);

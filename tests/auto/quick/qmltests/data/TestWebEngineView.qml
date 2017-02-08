@@ -53,7 +53,7 @@ WebEngineView {
         return _waitFor(function() { return windowCloseRequestedSignalEmitted; });
     }
     function _waitFor(predicate) {
-        var timeout = 5000
+        var timeout = 12000
         var i = 0
         while (i < timeout && !predicate()) {
             testResult.wait(50)

@@ -854,6 +854,7 @@ void tst_QWebEngineView::focusOnNavigation()
 
 void tst_QWebEngineView::changeLocale()
 {
+    QSKIP("Error pages no longer have useful titles in Chromium 55");
     QUrl url("http://non.existent/");
 
     QLocale::setDefault(QLocale("de"));
