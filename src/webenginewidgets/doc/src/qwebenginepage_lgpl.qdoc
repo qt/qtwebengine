@@ -538,7 +538,7 @@
     This signal is emitted whenever the page requests the web browser window to be closed,
     for example through the JavaScript \c{window.close()} call.
 
-    \sa QWebEnginePage::RequestClose
+    \sa RequestClose
 */
 
 /*!

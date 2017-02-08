@@ -96,7 +96,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     interceptor on the profile enables intercepting, blocking, and modifying URL requests
     before they reach the networking stack of Chromium.
 
-    \sa QWebEngineUrlRequestInterceptor::interceptRequest, QWebEngineUrlRequestInfo
+    \sa interceptRequest(), QWebEngineUrlRequestInfo
 */
 
 /*!
@@ -115,7 +115,7 @@ ASSERT_ENUMS_MATCH(QtWebEngineCore::WebContentsAdapterClient::OtherNavigation, Q
     \a info contains the information about the URL request and will track internally
     whether its members have been altered.
 
-    \sa QWebEngineProfile::setRequestInterceptor
+    \sa QWebEngineProfile::setRequestInterceptor()
 */
 
 
@@ -183,7 +183,7 @@ QWebEngineUrlRequestInfo::QWebEngineUrlRequestInfo(QWebEngineUrlRequestInfoPriva
 /*!
     Returns the resource type of the request.
 
-    \sa QWebEngineUrlRequestInfo::ResourceType
+    \sa ResourceType
 */
 
 QWebEngineUrlRequestInfo::ResourceType QWebEngineUrlRequestInfo::resourceType() const
@@ -208,7 +208,7 @@ QWebEngineUrlRequestInfo::ResourceType QWebEngineUrlRequestInfo::resourceType() 
 /*!
     Returns the navigation type of the request.
 
-    \sa QWebEngineUrlRequestInfo::NavigationType
+    \sa NavigationType
 */
 
 QWebEngineUrlRequestInfo::NavigationType QWebEngineUrlRequestInfo::navigationType() const

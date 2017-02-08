@@ -302,7 +302,7 @@ QQuickWebEngineProfile::~QQuickWebEngineProfile()
     The storage name that is used to create separate subdirectories for each profile that uses
     the disk for storing persistent data and cache.
 
-    \sa QQuickWebEngineProfile::persistentStoragePath, QQuickWebEngineProfile::cachePath
+    \sa persistentStoragePath, cachePath
 */
 
 QString QQuickWebEngineProfile::storageName() const

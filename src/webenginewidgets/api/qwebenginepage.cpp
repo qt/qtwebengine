@@ -823,7 +823,7 @@ QWebEngineSettings *QWebEnginePage::settings() const
  * that is exposed in the JavaScript context of this page as \c qt.webChannelTransport.
  *
  * \since 5.5
- * \sa setWebChannel
+ * \sa setWebChannel()
  */
 QWebChannel *QWebEnginePage::webChannel() const
 {

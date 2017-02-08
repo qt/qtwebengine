@@ -179,7 +179,7 @@ quint32 QWebEngineDownloadItem::id() const
 
     This signal is emitted whenever the download's \a state changes.
 
-    \sa state(), QWebEngineDownloadItem::DownloadState
+    \sa state(), DownloadState
 */
 
 /*!
@@ -240,7 +240,7 @@ quint32 QWebEngineDownloadItem::id() const
 /*!
     Returns the download item's current state.
 
-    \sa QWebEngineDownloadItem::DownloadState
+    \sa DownloadState
 */
 
 QWebEngineDownloadItem::DownloadState QWebEngineDownloadItem::state() const
